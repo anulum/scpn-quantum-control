@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "source_root": "src/scpn_quantum_control",
+  "register_path": "data/coverage/coverage_debt_register.json",
+  "debt_threshold_percent": 100.0,
+  "justified_exclusions_path": "docs/release_coverage_exclusions.json",
+  "claim_ledger_path": "data/differentiable_phase_qnode/claim_ledger.json",
+  "claim_surface_key": "implementation_surface",
+  "high_line_debt_minimum": 50,
+  "baseline": {
+    "artifact_name": "coverage-gap-audit-3.12",
+    "artifact_sha256": "8c8f60fa2bac006ebcf67e62b42271ec5c2736a933dfd136da5c1ca7147381a9",
+    "origin_commit": "4c3a4fee4935ca4eb8c75bb7f33b3262038faeaa",
+    "python_version": "3.12",
+    "remote_ci_run": 29180328986,
+    "source_url": "https://github.com/anulum/scpn-quantum-control/actions/runs/29180328986"
+  },
+  "baseline_invalidated_paths": [
+    {
+      "path": "src/scpn_quantum_control/compiler/mlir.py",
+      "reason": "Executable ownership changed in decomposition commit de9b58c3ad4debd2ea193b9cf6481e5edc4532b4; retain the path as unmeasured until branch-enabled remote CI refreshes it."
+    }
+  ],
+  "runtime_hot_paths": [
+    {
+      "path": "src/scpn_quantum_control/qpu_compute_runtime.py",
+      "reason": "Primary QPU compute runtime dispatch."
+    },
+    {
+      "path": "src/scpn_quantum_control/phase/qnode_circuit.py",
+      "reason": "Registered Phase-QNode circuit execution core."
+    },
+    {
+      "path": "src/scpn_quantum_control/hardware/runner.py",
+      "reason": "Provider execution and result-normalisation boundary."
+    },
+    {
+      "path": "src/scpn_quantum_control/control/realtime_runtime.py",
+      "reason": "Closed-loop real-time control runtime."
+    },
+    {
+      "path": "src/scpn_quantum_control/whole_program_trace_values.py",
+      "reason": "Whole-program AD traced-value execution core."
+    }
+  ],
+  "current_artifact_rule": "Fresh coverage evidence may improve or close registered debt. It must not introduce an unregistered debt path or increase known missing executable lines for a measured baseline row. Unmeasured rows require the next successful remote CI refresh before a numerical non-regression budget is set."
+}

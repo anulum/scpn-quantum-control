@@ -47,6 +47,11 @@ def test_ci_coverage_job_collects_branches_and_preserves_the_line_gate() -> None
     assert "Upload coverage policy evidence" in workflow
     assert "coverage.xml" in workflow
     assert "coverage-gap-audit.json" in workflow
+    assert "Audit coverage-debt register" in workflow
+    assert "python tools/audit_coverage_debt.py" in workflow
+    assert "mypy --strict tools/audit_coverage_debt.py" in workflow
+    assert "--coverage-audit coverage-gap-audit.json" in workflow
+    assert "--check-current" in workflow
 
 
 def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:

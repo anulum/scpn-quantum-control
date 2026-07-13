@@ -76,6 +76,16 @@ def test_static_gates_include_coverage_policy_and_tool_typing() -> None:
     assert strict_cmd[-1] == "tools/audit_coverage_policy.py"
 
 
+def test_static_gates_include_coverage_debt_register_and_tool_typing() -> None:
+    """Preflight must audit the debt register and keep its generator strict."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+
+    assert gate_map["coverage-debt"][-1] == "tools/audit_coverage_debt.py"
+    strict_cmd = gate_map["mypy-strict-coverage-debt"]
+    assert "--strict" in strict_cmd
+    assert strict_cmd[-1] == "tools/audit_coverage_debt.py"
+
+
 def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     """Differentiable docstring-clean modules must stay under Ruff D."""
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}

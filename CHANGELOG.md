@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-13 — Replaced the stale 684-file coverage-debt snapshot with a
+  deterministic 100% recovery register derived from remote CI evidence. The
+  typed audit prioritises public claim-bearing and runtime-critical modules,
+  tracks post-baseline source decomposition explicitly, honours justified
+  exclusions, and blocks new or regressing measured debt in CI/preflight
+  without changing the separate 90% aggregate line gate.
 - 2026-07-13 — Enabled coverage.py branch collection while preserving the
   existing 90% line gate through a typed Cobertura policy audit. CI now requires
   real branch opportunity data and reports the branch rate in observation mode;

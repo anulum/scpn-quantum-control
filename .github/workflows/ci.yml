@@ -64,6 +64,10 @@ jobs:
         run: python tools/audit_coverage_policy.py --validate-policy
       - name: Type-check coverage policy audit
         run: mypy --strict tools/audit_coverage_policy.py
+      - name: Audit coverage-debt register
+        run: python tools/audit_coverage_debt.py
+      - name: Type-check coverage-debt audit
+        run: mypy --strict tools/audit_coverage_debt.py
       - name: Audit differentiable promotion language
         run: python tools/check_differentiable_promotion_language.py
       - name: Ruff docstring ratchet for differentiable module hardening
@@ -120,7 +124,11 @@ jobs:
           python tools/audit_coverage_policy.py --coverage-xml coverage.xml
       - name: Audit coverage gaps (3.12 only)
         if: matrix.python-version == '3.12'
-        run: python tools/audit_coverage_gaps.py --json > coverage-gap-audit.json
+        run: |
+          python tools/audit_coverage_gaps.py --json > coverage-gap-audit.json
+          python tools/audit_coverage_debt.py \
+            --coverage-audit coverage-gap-audit.json \
+            --check-current
       - name: Upload coverage policy evidence (3.12 only)
         if: matrix.python-version == '3.12'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1

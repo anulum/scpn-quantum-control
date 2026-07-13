@@ -24,12 +24,14 @@ Gates (in order):
   14. test typing tool — strict typing for the cohort-policy audit
   15. coverage policy — preserve line gate and require branch telemetry
   16. coverage policy tool — strict typing for the coverage-policy audit
-  17. version-sync   — version string consistency across 5 carrier files
-  18. rust-pyi       — Rust PyO3 exports match local typing contract
-  19. mypy           — type errors
-  20. mypy-strict-dp — strict typing ratchet for differentiable programming
-  21. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
-  22. bandit         — security scan
+  17. coverage debt — current 100% recovery register and priority drift
+  18. coverage debt tool — strict typing for the debt-register audit
+  19. version-sync   — version string consistency across 5 carrier files
+  20. rust-pyi       — Rust PyO3 exports match local typing contract
+  21. mypy           — type errors
+  22. mypy-strict-dp — strict typing ratchet for differentiable programming
+  23. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
+  24. bandit         — security scan
 
 Usage:
   python tools/preflight.py                # all gates (default)
@@ -148,6 +150,11 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     (
         "mypy-strict-coverage-policy",
         [_PY, "-m", "mypy", "--strict", "tools/audit_coverage_policy.py"],
+    ),
+    ("coverage-debt", [_PY, "tools/audit_coverage_debt.py"]),
+    (
+        "mypy-strict-coverage-debt",
+        [_PY, "-m", "mypy", "--strict", "tools/audit_coverage_debt.py"],
     ),
     ("version-sync", [_PY, "scripts/check_version_consistency.py"]),
     ("rust-pyi", [_PY, "tools/check_rust_pyi_exports.py"]),

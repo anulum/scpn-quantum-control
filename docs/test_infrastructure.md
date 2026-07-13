@@ -51,7 +51,7 @@ reported 6,301 errors in 388 of 968 tracked Python test files; 5,076 were
 mechanical annotations with intentional invalid-input tests and hide ownership.
 
 `tools/test_typing_policy.json` is the machine-readable policy. Its initial
-14-file `repository_policy` cohort covers coverage, licence, release,
+15-file `repository_policy` cohort covers coverage, coverage debt, licence, release,
 generated-surface, commit, secret, TODO, version, branch, module-size,
 CI/pre-push, and local preflight gate tests. `tools/audit_test_typing_policy.py`
 validates that every enforced path is tracked and runs strict mypy over the
@@ -266,6 +266,25 @@ is mandatory but observational until the policy records an evidence-backed
 branch threshold. The pre-branch remote baseline is 92.5151% line coverage at
 origin `4c3a4fee` (CI run `29180328986`). Coverage recovery must stay
 module-specific; coverage-bucket tests remain forbidden.
+
+The separate 100% recovery register is
+`data/coverage/coverage_debt_register.json`. It is generated and audited by
+`tools/audit_coverage_debt.py` under `tools/coverage_debt_policy.json`; it does
+not replace or raise the aggregate 90% line gate. The current register derives
+from Python 3.12 CI run `29180328986`, honors the justified exclusions ledger,
+and marks source paths added or executably decomposed after that run as
+unmeasured until remote CI refreshes them. Debt is ordered first by public
+claim-ledger ownership, then explicit runtime hot paths, unmeasured paths,
+large known line debt, and remaining measured gaps. CI rejects new unregistered
+debt or increased missing-line counts on previously measured rows while
+accepting improvements and first measurements of explicitly unmeasured rows.
+Refresh only from a downloaded CI artifact:
+
+```bash
+python tools/audit_coverage_debt.py \
+  --coverage-audit /path/to/coverage-gap-audit.json \
+  --write-register
+```
 
 ### Docker image — reproduction/CI only
 
