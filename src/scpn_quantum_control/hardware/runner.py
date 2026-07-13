@@ -37,8 +37,23 @@ if TYPE_CHECKING:
 
 
 def _get_structured_logger(name: str) -> Any:
-    """Return a structlog logger, or a stdlib fallback if structlog is
-    absent. Keeps the optional ``[logging]`` extra truly optional.
+    """Return a structured logger with an optional-dependency fallback.
+
+    Parameters
+    ----------
+    name : str
+        Name assigned to the returned logger.
+
+    Returns
+    -------
+    Any
+        Structlog-compatible logger when the logging extra is available;
+        otherwise, a standard-library logger.
+
+    Notes
+    -----
+    The fallback keeps the optional ``[logging]`` extra truly optional.
+
     """
     try:
         from ..logging_setup import get_logger
