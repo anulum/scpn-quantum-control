@@ -26,13 +26,15 @@ Gates (in order):
   16. coverage policy tool — strict typing for the coverage-policy audit
   17. coverage debt — current 100% recovery register and priority drift
   18. coverage debt tool — strict typing for the debt-register audit
-  19. rustfmt        — canonical formatting across the Rust engine crate
-  20. version-sync   — version string consistency across 5 carrier files
-  21. rust-pyi       — Rust PyO3 exports match local typing contract
-  22. mypy           — type errors
-  23. mypy-strict-dp — strict typing ratchet for differentiable programming
-  24. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
-  25. bandit         — security scan
+  19. external-validation — environment and evidence-bundle manifest drift
+  20. external-validation tool — strict typing for the manifest gate
+  21. rustfmt        — canonical formatting across the Rust engine crate
+  22. version-sync   — version string consistency across 5 carrier files
+  23. rust-pyi       — Rust PyO3 exports match local typing contract
+  24. mypy           — type errors
+  25. mypy-strict-dp — strict typing ratchet for differentiable programming
+  26. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
+  27. bandit         — security scan
 
 Usage:
   python tools/preflight.py                # all gates (default)
@@ -158,6 +160,20 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     (
         "mypy-strict-coverage-debt",
         [_PY, "-m", "mypy", "--strict", "tools/audit_coverage_debt.py"],
+    ),
+    (
+        "differentiable-external-validation",
+        [_PY, "tools/check_differentiable_external_validation.py"],
+    ),
+    (
+        "mypy-strict-differentiable-external-validation",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "tools/check_differentiable_external_validation.py",
+        ],
     ),
     (
         "rustfmt",

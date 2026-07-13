@@ -20,6 +20,7 @@ from scpn_quantum_control.differentiable_external_validation import (
     ExternalValidationArtifactBundle,
     ExternalValidationArtifactEntry,
     ExternalValidationEnvironmentLock,
+    ExternalValidationEnvironmentLockValidation,
     build_external_validation_artifact_bundle,
     build_external_validation_environment_lock,
     load_external_validation_artifact_bundle,
@@ -31,6 +32,7 @@ from scpn_quantum_control.differentiable_external_validation import (
     validate_external_validation_artifact_bundle,
     validate_external_validation_environment_lock,
 )
+from tools import check_differentiable_external_validation as _manifest_gate
 
 
 def test_build_external_validation_environment_lock_records_exact_lockfiles() -> None:
@@ -284,6 +286,148 @@ def test_committed_external_validation_artifact_bundle_matches_files() -> None:
     assert (
         "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.md"
     ) in validation.checked_paths
+
+
+def test_external_validation_manifest_gate_passes_live_pairs(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """The repository gate must accept both current committed manifest pairs."""
+    assert _manifest_gate.audit_manifests() == ()
+    assert _manifest_gate.main([]) == 0
+    assert "manifest gate: PASS" in capsys.readouterr().out
+
+
+def test_external_validation_manifest_gate_prefixes_both_failure_classes(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """The gate must distinguish environment drift from bundle drift."""
+    environment_failure = ExternalValidationEnvironmentLockValidation(
+        passed=False,
+        errors=("environment drift",),
+        checked_paths=(),
+    )
+    bundle_failure = ExternalValidationEnvironmentLockValidation(
+        passed=False,
+        errors=("bundle drift",),
+        checked_paths=(),
+    )
+    monkeypatch.setattr(
+        _manifest_gate, "load_external_validation_environment_lock", lambda path: object()
+    )
+    monkeypatch.setattr(
+        _manifest_gate, "load_external_validation_artifact_bundle", lambda path: object()
+    )
+    monkeypatch.setattr(
+        _manifest_gate,
+        "validate_external_validation_environment_lock",
+        lambda manifest, repo_root: environment_failure,
+    )
+    monkeypatch.setattr(
+        _manifest_gate,
+        "validate_external_validation_artifact_bundle",
+        lambda bundle, repo_root: bundle_failure,
+    )
+
+    assert _manifest_gate.audit_manifests() == (
+        "environment: environment drift",
+        "bundle: bundle drift",
+    )
+    assert _manifest_gate.main([]) == 1
+    output = capsys.readouterr().out
+    assert "manifest gate: FAIL" in output
+    assert "environment: environment drift" in output
+    assert "bundle: bundle drift" in output
+
+
+def test_external_validation_manifest_gate_refreshes_dependency_order(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Refresh the environment pair before building its dependent bundle."""
+    environment_path = tmp_path / "environment.json"
+    environment_markdown_path = tmp_path / "environment.md"
+    bundle_path = tmp_path / "bundle.json"
+    bundle_markdown_path = tmp_path / "bundle.md"
+    environment = ExternalValidationEnvironmentLock(
+        artifact_id="environment",
+        schema=EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_SCHEMA,
+        python_version="3.12.0",
+        platform="test",
+        lockfiles=(),
+        classification="functional_non_isolated",
+        claim_boundary="no isolated_affinity benchmark claims",
+    )
+    bundle = ExternalValidationArtifactBundle(
+        artifact_id="bundle",
+        schema="scpn_qc_differentiable_external_validation_artifact_bundle_v1",
+        entries=(),
+        classification="functional_non_isolated",
+        claim_boundary="no isolated_affinity benchmark claims",
+    )
+    monkeypatch.setattr(_manifest_gate, "ROOT", tmp_path)
+    monkeypatch.setattr(_manifest_gate, "ENVIRONMENT_PATH", environment_path)
+    monkeypatch.setattr(
+        _manifest_gate,
+        "ENVIRONMENT_MARKDOWN_PATH",
+        environment_markdown_path,
+    )
+    monkeypatch.setattr(_manifest_gate, "BUNDLE_PATH", bundle_path)
+    monkeypatch.setattr(_manifest_gate, "BUNDLE_MARKDOWN_PATH", bundle_markdown_path)
+    monkeypatch.setattr(
+        _manifest_gate,
+        "build_external_validation_environment_lock",
+        lambda repo_root: environment,
+    )
+
+    def build_bundle(*, repo_root: Path) -> ExternalValidationArtifactBundle:
+        assert repo_root == tmp_path
+        assert environment_path.is_file()
+        assert environment_markdown_path.is_file()
+        return bundle
+
+    monkeypatch.setattr(
+        _manifest_gate,
+        "build_external_validation_artifact_bundle",
+        build_bundle,
+    )
+    monkeypatch.setattr(
+        _manifest_gate,
+        "render_external_validation_environment_lock_markdown",
+        lambda manifest: "environment markdown",
+    )
+    monkeypatch.setattr(
+        _manifest_gate,
+        "render_external_validation_artifact_bundle_markdown",
+        lambda manifest: "bundle markdown",
+    )
+
+    _manifest_gate.refresh_manifests()
+
+    assert json.loads(environment_path.read_text(encoding="utf-8"))["artifact_id"] == (
+        "environment"
+    )
+    assert json.loads(bundle_path.read_text(encoding="utf-8"))["artifact_id"] == "bundle"
+    assert environment_markdown_path.read_text(encoding="utf-8") == "environment markdown\n"
+    assert bundle_markdown_path.read_text(encoding="utf-8") == "bundle markdown\n"
+
+
+def test_external_validation_manifest_gate_write_mode_refreshes_then_checks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The write CLI mode must refresh before its mandatory validation pass."""
+    calls: list[str] = []
+
+    def audit() -> tuple[()]:
+        """Record the read-only audit call and return no findings."""
+        calls.append("audit")
+        return ()
+
+    monkeypatch.setattr(_manifest_gate, "refresh_manifests", lambda: calls.append("refresh"))
+    monkeypatch.setattr(_manifest_gate, "audit_manifests", audit)
+
+    assert _manifest_gate.main(["--write"]) == 0
+    assert calls == ["refresh", "audit"]
 
 
 def test_provider_gradient_boundary_artifact_preserves_no_submit_boundary() -> None:

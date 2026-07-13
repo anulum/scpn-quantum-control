@@ -5,6 +5,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-13 — Added a typed CI/preflight gate for the differentiable
+  external-validation environment lock and dependent artefact bundle, refreshed
+  their stale file metadata in dependency order, and gave the reproduction-only
+  Docker image a credential-free synthetic Git index so tracked-file policy
+  audits work without copying host history, remotes, objects, or credentials.
+  The synthetic index honours `.gitignore`; recursive Rust build outputs,
+  bytecode caches, local backups, and ignored campaign-run logs are excluded
+  from the Docker context.
 - 2026-07-13 — Added a crate-wide Rustfmt gate to local preflight and the CI
   Rust audit job, and canonicalised the four queued Kuramoto engine formatting
   drifts. The change is layout-only; numerical expressions, PyO3 surfaces, and

@@ -86,6 +86,16 @@ COPY scripts/ scripts/
 # (tests/test_tier_benchmark_regression_gate.py fails closed without them).
 COPY benchmarks/ benchmarks/
 
+# Git-backed repository-policy audits need an index, but the host .git tree,
+# history, remotes, objects, and credentials are deliberately excluded from the
+# build context. Apply the repository ignore contract, then create a
+# credential-free synthetic Git index over the curated tracked files copied
+# above. Ignored fixtures remain readable without becoming policy inputs.
+COPY .gitignore .gitignore
+RUN git init -q \
+    && git add -A \
+    && chown sqc:sqc /app /app/.git
+
 RUN mkdir -p /home/sqc/.cache/pytest /home/sqc/.config/matplotlib \
     && chown -R sqc:sqc /home/sqc/.cache /home/sqc/.config
 

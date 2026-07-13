@@ -300,6 +300,26 @@ Formatting drift fails before Rust tests or advisory conclusions are accepted.
 The gate is crate-wide so a touched module cannot leave adjacent Rust owners in
 an uncheckable state.
 
+### Differentiable external-validation manifests
+
+The external-validation environment lock and its dependent artefact bundle are
+checked before the Python test matrix. Run the typed gate in read-only mode to
+detect stale file digests, sizes, line counts, or bundle membership:
+
+```bash
+python tools/check_differentiable_external_validation.py
+```
+
+When a pinned input changes intentionally, refresh the environment JSON and
+Markdown first, then the bundle that hashes that pair, with:
+
+```bash
+python tools/check_differentiable_external_validation.py --write
+```
+
+CI and local preflight execute the read-only form. This keeps an unrelated
+matrix job from being the first place where manifest drift is discovered.
+
 ### Docker image — reproduction/CI only
 
 The root `Dockerfile` (built and exercised by
@@ -314,6 +334,18 @@ image. It is intentionally not slimmed — slimming would defeat its only
 purpose. For a production deployment, install the published wheel
 (`pip install scpn-quantum-control`) into your own base image rather than
 reusing this one.
+
+Repository-policy tests resolve tracked paths through Git. The image therefore
+creates a synthetic index over only the curated files copied into the build;
+the host `.git` directory, history, remotes, objects, and credentials remain
+excluded by `.dockerignore`. This preserves the same tracked-file contract
+without widening the reproduction image's trust boundary. The copied
+`.gitignore` keeps ignored fixtures readable without admitting them to policy
+audits. Recursive Rust
+`target/` build products are also excluded from the context because the image
+copies source and fixtures only. Local backup archives and ignored campaign-run
+logs are excluded for the same reason; committed root `results/` fixtures remain
+part of the reproduction surface.
 
 ### Coverage-exclusions ledger
 

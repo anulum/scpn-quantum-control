@@ -14,6 +14,9 @@
 **/.venv/
 **/.venv-*/
 __pycache__
+**/__pycache__/
+**/*.pyc
+**/*.pyo
 *.egg-info
 dist/
 build/
@@ -21,6 +24,9 @@ docs/internal/
 docs-site/
 site/
 .coordination/
-scpn_quantum_engine/target/
+**/target/
+BACKUP/
+ARCHIVE/
+scripts/**/results/
 *.bundle
 *.whl

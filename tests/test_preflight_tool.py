@@ -102,6 +102,18 @@ def test_static_gates_include_manifest_scoped_rustfmt() -> None:
     ]
 
 
+def test_static_gates_include_external_validation_manifest_audit() -> None:
+    """Preflight must check both external-validation manifest pairs strictly."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+
+    assert gate_map["differentiable-external-validation"][-1] == (
+        "tools/check_differentiable_external_validation.py"
+    )
+    strict_cmd = gate_map["mypy-strict-differentiable-external-validation"]
+    assert "--strict" in strict_cmd
+    assert strict_cmd[-1] == "tools/check_differentiable_external_validation.py"
+
+
 def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     """Differentiable docstring-clean modules must stay under Ruff D."""
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}

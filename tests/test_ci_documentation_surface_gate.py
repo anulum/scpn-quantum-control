@@ -54,6 +54,33 @@ def test_ci_coverage_job_collects_branches_and_preserves_the_line_gate() -> None
     assert "--check-current" in workflow
 
 
+def test_ci_lint_gates_differentiable_external_validation_manifests() -> None:
+    """CI lint must reject pinned-input drift before expensive test matrices."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "Audit differentiable external-validation manifests" in workflow
+    assert "python tools/check_differentiable_external_validation.py" in workflow
+    assert "Type-check differentiable external-validation manifest audit" in workflow
+    assert "mypy --strict tools/check_differentiable_external_validation.py" in workflow
+
+
+def test_docker_reproduction_image_builds_credential_free_git_index() -> None:
+    """Docker policy audits need an index without copying host Git metadata."""
+    dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
+    dockerignore = Path(".dockerignore").read_text(encoding="utf-8")
+
+    assert "RUN git init -q" in dockerfile
+    assert "&& git add -A" in dockerfile
+    assert "&& chown sqc:sqc /app /app/.git" in dockerfile
+    assert "COPY .gitignore .gitignore" in dockerfile
+    assert "credential-free synthetic Git index" in dockerfile
+    assert dockerignore.splitlines()[0] == ".git"
+    assert "**/target/" in dockerignore.splitlines()
+    assert "**/__pycache__/" in dockerignore.splitlines()
+    assert "BACKUP/" in dockerignore.splitlines()
+    assert "scripts/**/results/" in dockerignore.splitlines()
+
+
 def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
     """CI must enforce strict mypy on promoted differentiable modules."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")

@@ -68,6 +68,10 @@ jobs:
         run: python tools/audit_coverage_debt.py
       - name: Type-check coverage-debt audit
         run: mypy --strict tools/audit_coverage_debt.py
+      - name: Audit differentiable external-validation manifests
+        run: python tools/check_differentiable_external_validation.py
+      - name: Type-check differentiable external-validation manifest audit
+        run: mypy --strict tools/check_differentiable_external_validation.py
       - name: Audit differentiable promotion language
         run: python tools/check_differentiable_promotion_language.py
       - name: Ruff docstring ratchet for differentiable module hardening
