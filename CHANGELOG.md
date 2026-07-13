@@ -6,6 +6,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Fixed
 - 2026-07-13 — Closed the next live P0 claim-bearing coverage row for the
+  differentiable-programming orchestration owner. A dedicated, strictly typed
+  static-alias provenance-guard cohort now exercises all malformed provenance,
+  unsupported frontend, absent IR/SSA, mutation, and branch-metadata guards
+  without growing the existing 849-line edge suite. Production orchestration,
+  public APIs, scientific outputs, and benchmark claims are unchanged.
+- 2026-07-13 — Closed the next live P0 claim-bearing coverage row for the
   differentiable CPU framework-overlay profile. Strictly typed regressions now
   cover default-path resolution, destructive target rejection, partial and
   underscore-named distribution discovery, incomplete metadata, and both CLI
