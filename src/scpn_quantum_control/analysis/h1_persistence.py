@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — H1 Persistence
-"""H1 persistence at the BKT transition: does p_h1 = 0.72 emerge?
+"""Evaluate H1 persistence at the BKT transition against p_h1 = 0.72.
 
 The persistent homology H1 measures topological loops (vortices)
 in the oscillator phase configuration. At the BKT transition:
