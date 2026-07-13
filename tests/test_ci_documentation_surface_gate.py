@@ -88,7 +88,8 @@ def test_docker_reproduction_image_builds_credential_free_git_index() -> None:
     dockerignore_path = Path(".dockerignore")
     if not dockerfile_path.is_file() or not dockerignore_path.is_file():
         pytest.skip(
-            "Docker build metadata is host-only and is not copied into the reproduction image"
+            "host-side meta-test: Dockerfile and .dockerignore are not copied "
+            "into the reproduction image, so this contract runs on the host and CI only"
         )
 
     dockerfile = dockerfile_path.read_text(encoding="utf-8")

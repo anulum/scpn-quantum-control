@@ -92,6 +92,10 @@ def test_static_gates_include_manifest_scoped_rustfmt() -> None:
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
     command = gate_map["rustfmt"]
 
+    # ``_CARGO`` resolves to an absolute path only when a Rust toolchain is on
+    # PATH; the reproduction image ships no cargo, so preflight falls back to the
+    # bare ``"cargo"`` name. Assert the exact resolved path when cargo exists and
+    # the bare fallback otherwise.
     cargo = which("cargo")
     if cargo is None:
         assert command[0] == "cargo"
