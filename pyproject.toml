@@ -203,7 +203,6 @@ ignore = [
 "figures/**" = ["D"]
 "data/**" = ["D"]
 "*.py" = ["D"]
-"src/scpn_quantum_control/control/qaoa_pulsed_cost.py" = ["D401"]
 "src/scpn_quantum_control/control/structured_ansatz.py" = ["D205", "D401"]
 "src/scpn_quantum_control/crypto/topology_auth.py" = ["D401"]
 "src/scpn_quantum_control/forecasting/neural_operator_advantage.py" = ["D400"]

@@ -119,7 +119,7 @@ class FRCPlasmaSurrogate:
         return float(self.reference_s_parameter * ratio**self.s_compression_exponent)
 
     def mrti_amplitude(self, field_profile: NDArray[np.float64], dt_s: float) -> float:
-        """Final MRTI perturbation amplitude after the compression window.
+        """Compute the final MRTI perturbation amplitude after the compression window.
 
         ``gamma^2 = A_T k g - k^2 B^2 / (mu0 (rho_h + rho_l))`` integrated as
         ``a = a0 * exp(sum_t max(gamma, 0) dt)``; the magnetic-tension term sets
