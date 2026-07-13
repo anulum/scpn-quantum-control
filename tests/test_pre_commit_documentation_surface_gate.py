@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 
@@ -24,6 +25,21 @@ def test_pre_push_hook_gates_documentation_surface() -> None:
     assert "tools/documentation_surface_allowlist.json" in preflight
     assert "--fail-on-findings" in preflight
     assert "tools/check_differentiable_promotion_language.py" in preflight
+
+
+def test_pre_commit_mypy_version_matches_developer_lock() -> None:
+    """The isolated commit hook must use the same mypy release as CI and developers."""
+    config = Path(".pre-commit-config.yaml").read_text(encoding="utf-8")
+    requirements = Path("requirements-dev.txt").read_text(encoding="utf-8")
+    mirror_match = re.search(
+        r"repo: https://github\.com/pre-commit/mirrors-mypy\s+rev: v([0-9.]+)",
+        config,
+    )
+    lock_match = re.search(r"(?m)^mypy==([0-9.]+)$", requirements)
+
+    assert mirror_match is not None, "pre-commit mypy mirror pin is missing"
+    assert lock_match is not None, "requirements-dev mypy pin is missing"
+    assert mirror_match.group(1) == lock_match.group(1)
 
 
 def test_pre_push_hook_gates_differentiable_strict_mypy_ratchet() -> None:

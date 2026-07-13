@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-13 — Completed the mypy 2.3.0 integration by aligning the isolated
+  pre-commit mirror with the developer/CI lock and accepting its narrowed NumPy
+  sort-kind type directly instead of retaining a now-redundant cast in the
+  whole-program trace-value runtime. A regression now locks the hook and
+  developer versions together. Sort validation, emitted Program AD operations,
+  derivative behavior, public APIs, and benchmark claims are unchanged.
 - 2026-07-13 — Closed the live P0 Phase-QNode tape coverage row. Public-contract
   regressions now exercise every reachable record validator, context lifecycle,
   supported-plan provider boundary, and fail-closed scalar/vector control. The

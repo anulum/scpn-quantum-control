@@ -1403,7 +1403,7 @@ class TraceADArray:
             return _trace_sort(
                 _coerce_trace_array(args[0], self.context),
                 axis=sort_axis,
-                kind=cast(_TraceSortKind | None, kind),
+                kind=kind,
             )
         if func is np.argsort:
             if len(args) != 1:
