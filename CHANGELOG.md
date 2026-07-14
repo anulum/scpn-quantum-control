@@ -34,6 +34,23 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   benchmark claims are unchanged.
 
 ### Fixed
+- 2026-07-14 — Closed the registered Phase-QNode JAX transform quality debt
+  through public value, native transform, PyTree, sharding, AOT/export, input,
+  and unsupported-circuit routes. Sixty-eight focused tests cover all 546
+  statements and 198 branches in the 1,322-line execution leaf; CI and the
+  permitted local gate share an exact 13-file strict-MyPy and NumPy-docstring
+  cohort plus target-only 100% branch coverage. CI runs that coverage only
+  after its CPU JAX overlay is installed, verified, and proven importable with
+  at least one device, preventing optional-dependency skips from substituting
+  for real execution. Shared PyTree validation now has one finite reconstruction
+  boundary, and duplicate private fallbacks behind public gate and Pauli-label
+  validation were removed. The extracted quality-policy module keeps
+  `tools/preflight.py` below the GodFile threshold; the strict cross-language
+  inventory remains 47/47 with zero open refactors.
+  Public signatures, supported transforms, statevector numerics, native/polyglot
+  kernels, provider and hardware execution, benchmark inputs, and performance
+  claims are unchanged, so no counterpart or comparison-benchmark refresh
+  applies.
 - 2026-07-14 — Restored lock-faithful wheel builds across the Python 3.11,
   3.12, and 3.13 CI matrix and the reproduction Docker image. The authoritative
   development input now pins Hatchling alongside the build frontend, all three

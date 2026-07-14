@@ -38,7 +38,6 @@ from scpn_quantum_control.phase import (
 
 def test_phase_jax_registered_qnode_native_transform_audit_uses_no_callback() -> None:
     """Registered Phase-QNode transforms should lower through native JAX APIs."""
-
     if not is_phase_jax_available():
         pytest.skip("JAX optional dependency is not installed")
     circuit = PhaseQNodeCircuit(
@@ -96,7 +95,6 @@ def test_phase_jax_registered_qnode_native_transform_audit_uses_no_callback() ->
 
 def test_phase_jax_registered_qnode_pytree_transform_audit_uses_no_callback() -> None:
     """Registered Phase-QNode PyTrees should lower through native JAX transforms."""
-
     if not is_phase_jax_available():
         pytest.skip("JAX optional dependency is not installed")
     circuit = PhaseQNodeCircuit(
@@ -164,7 +162,6 @@ def test_phase_jax_registered_qnode_pytree_transform_audit_uses_no_callback() ->
 
 def test_phase_jax_registered_qnode_sharding_transform_audit_uses_no_callback() -> None:
     """Registered Phase-QNode batches should lower through native JAX pmap."""
-
     if not is_phase_jax_available():
         pytest.skip("JAX optional dependency is not installed")
     import jax
@@ -276,6 +273,7 @@ def test_phase_jax_registered_qnode_sharding_transform_audit_fails_closed_withou
 
 
 def test_phase_jax_registered_qnode_statevector_lowering_matches_scpn_reference() -> None:
+    """Native statevector autodiff should match the canonical SCPN reference."""
     if not is_phase_jax_available():
         pytest.skip("JAX optional dependency is not installed")
     circuit = PhaseQNodeCircuit(
@@ -318,6 +316,7 @@ def test_phase_jax_registered_qnode_statevector_lowering_matches_scpn_reference(
 
 
 def test_phase_jax_registered_qnode_statevector_lowering_jits_without_callback() -> None:
+    """Jitted statevector lowering should remain native and callback-free."""
     if not is_phase_jax_available():
         pytest.skip("JAX optional dependency is not installed")
     circuit = PhaseQNodeCircuit(
@@ -341,6 +340,7 @@ def test_phase_jax_registered_qnode_statevector_lowering_jits_without_callback()
 
 
 def test_phase_jax_registered_qnode_lowering_covers_gate_and_observable_family() -> None:
+    """Native lowering should execute the complete registered gate vocabulary."""
     if not is_phase_jax_available():
         pytest.skip("JAX optional dependency is not installed")
     params = np.linspace(0.11, 0.91, 10)
@@ -394,6 +394,7 @@ def test_phase_jax_registered_qnode_lowering_covers_gate_and_observable_family()
 
 
 def test_phase_jax_registered_qnode_lowering_matches_dense_and_covariance_observables() -> None:
+    """Dense and covariance observables should match parameter-shift gradients."""
     if not is_phase_jax_available():
         pytest.skip("JAX optional dependency is not installed")
     dense_params = np.array([0.31, -0.17], dtype=float)

@@ -217,6 +217,38 @@ def test_ci_phase_qnode_vector_job_enforces_exact_branch_coverage() -> None:
     assert "needs['phase-qnode-vector-quality'].result" in workflow
 
 
+def test_ci_phase_jax_qnode_gate_runs_after_the_real_cpu_overlay() -> None:
+    """CI must execute exact JAX QNode coverage with the verified CPU overlay."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "Type-check Phase-QNode JAX quality cohort" in workflow
+    assert "Ruff NumPy docstrings for Phase-QNode JAX quality cohort" in workflow
+    assert "Run Phase-QNode JAX focused coverage" in workflow
+    assert "tests/test_phase_jax_qnode_transforms.py" in workflow
+    assert "tests/test_phase_jax_qnode_statevector_edges.py" in workflow
+    assert "--data-file=.coverage.phase-jax-qnode" in workflow
+    assert "--source=src/scpn_quantum_control/phase" in workflow
+    assert "Enforce Phase-QNode JAX exact coverage" in workflow
+    assert "--include=*/jax_qnode_transforms.py" in workflow
+    assert "--fail-under=100" in workflow
+    overlay_position = workflow.index("Build CPU-only differentiable framework overlay")
+    runtime_probe_position = workflow.index("Verify real JAX runtime for Phase-QNode coverage")
+    coverage_position = workflow.index("Run Phase-QNode JAX focused coverage")
+    parity_job_position = workflow.index("  differentiable-parity:")
+    next_job_position = workflow.index("\n  security:", parity_job_position)
+    assert (
+        parity_job_position
+        < overlay_position
+        < runtime_probe_position
+        < coverage_position
+        < next_job_position
+    )
+    assert "import jax; devices=jax.devices()" in workflow
+    assert "primary={devices[0]}" in workflow
+    assert "SCPN_FRAMEWORK_OVERLAY:$PYTHONPATH" in workflow
+    assert "differentiable-parity" in workflow[workflow.index("  ci-gate:") :]
+
+
 def test_coverage_sources_are_filesystem_paths_not_importable_packages() -> None:
     """Coverage discovery must not import and then unload NumPy/Qiskit state."""
     filesystem_target = "--cov=src/scpn_quantum_control"

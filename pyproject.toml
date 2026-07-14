@@ -228,7 +228,9 @@ enable_error_code = ["ignore-without-code"]
 # job (the pinned CI surface is hash-locked), so expose its source tree here for
 # import resolution. Its own strict gate owns its internals (see the override
 # below), and it is never added to `files`, so mypy resolves but does not re-check it.
-mypy_path = ["src", "oscillatools/src"]
+# ``tests`` is included only for resolving shared strict-cohort helpers; the
+# broad ``files`` inventory below still excludes the legacy test tree.
+mypy_path = ["src", "oscillatools/src", "tests"]
 # Test-typing policy (R2-M01, 2026-07-13): tests/ stays outside this broad
 # `files` set because the pre-ratchet census found 6,301 errors in 388 of 968
 # tracked Python test files; 5,076 were mechanical `no-untyped-def` findings. Instead,

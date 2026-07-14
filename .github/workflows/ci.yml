@@ -231,6 +231,39 @@ jobs:
           src/scpn_quantum_control/phase/qnode_vector_transforms.py
           tests/test_phase_qnode_vector_transforms.py
           tests/test_phase_qnode_rust_parity.py
+      - name: Type-check Phase-QNode JAX quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/jax_qnode_transforms.py
+          src/scpn_quantum_control/phase/jax_compatibility.py
+          tests/_phase_jax_bridge_test_helpers.py
+          tests/_phase_jax_qnode_test_helpers.py
+          tests/test_phase_jax_bridge_aot_export.py
+          tests/test_phase_jax_qnode_transforms.py
+          tests/test_phase_jax_qnode_transforms_integration.py
+          tests/test_phase_jax_qnode_input_validation.py
+          tests/test_phase_jax_qnode_pytree_validation.py
+          tests/test_phase_jax_qnode_aot_validation.py
+          tests/test_phase_jax_qnode_statevector_edges.py
+          tools/phase_jax_qnode_quality_gates.py
+          tests/test_phase_jax_qnode_quality_gate.py
+      - name: Ruff NumPy docstrings for Phase-QNode JAX quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/jax_qnode_transforms.py
+          src/scpn_quantum_control/phase/jax_compatibility.py
+          tests/_phase_jax_bridge_test_helpers.py
+          tests/_phase_jax_qnode_test_helpers.py
+          tests/test_phase_jax_bridge_aot_export.py
+          tests/test_phase_jax_qnode_transforms.py
+          tests/test_phase_jax_qnode_transforms_integration.py
+          tests/test_phase_jax_qnode_input_validation.py
+          tests/test_phase_jax_qnode_pytree_validation.py
+          tests/test_phase_jax_qnode_aot_validation.py
+          tests/test_phase_jax_qnode_statevector_edges.py
+          tools/phase_jax_qnode_quality_gates.py
+          tests/test_phase_jax_qnode_quality_gate.py
       - name: Type-check whole-program trace-value quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -810,6 +843,34 @@ jobs:
           install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY" --install
           echo "PYTHONPATH=$SCPN_FRAMEWORK_OVERLAY:$PYTHONPATH" >> "$GITHUB_ENV"
           install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY" --verify
+      - name: Verify real JAX runtime for Phase-QNode coverage
+        run: >-
+          python -c
+          "import jax; devices=jax.devices();
+          print(f'JAX {jax.__version__}; devices={devices}; primary={devices[0]}')"
+      - name: Run Phase-QNode JAX focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.phase-jax-qnode
+          --branch
+          --source=src/scpn_quantum_control/phase
+          -m pytest -q
+          tests/test_phase_jax_qnode_transforms.py
+          tests/test_phase_jax_qnode_transforms_integration.py
+          tests/test_phase_jax_bridge_aot_export.py
+          tests/test_phase_jax_qnode_input_validation.py
+          tests/test_phase_jax_qnode_pytree_validation.py
+          tests/test_phase_jax_qnode_aot_validation.py
+          tests/test_phase_jax_qnode_statevector_edges.py
+      - name: Enforce Phase-QNode JAX exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.phase-jax-qnode
+          --precision=2
+          --fail-under=100
+          --include=*/jax_qnode_transforms.py
       - name: Run differentiable parity tests
         run: >
           pytest

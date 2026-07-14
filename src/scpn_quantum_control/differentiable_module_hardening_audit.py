@@ -662,8 +662,19 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
         ),
         _record(
             "src/scpn_quantum_control/phase/jax_qnode_transforms.py",
-            ("tests/test_phase_jax_qnode_transforms.py",),
-            ("registered QNode transforms", "compiler-boundary diagnostics"),
+            (
+                "tests/test_phase_jax_qnode_transforms.py",
+                "tests/test_phase_jax_qnode_transforms_integration.py",
+                "tests/test_phase_jax_bridge_aot_export.py",
+                "tests/test_phase_jax_qnode_input_validation.py",
+                "tests/test_phase_jax_qnode_pytree_validation.py",
+                "tests/test_phase_jax_qnode_aot_validation.py",
+                "tests/test_phase_jax_qnode_statevector_edges.py",
+            ),
+            (
+                "registered QNode public fail-closed transforms",
+                "exact native, PyTree, PMAP, and AOT coverage",
+            ),
         ),
         _record(
             "src/scpn_quantum_control/phase/natural_gradient.py",

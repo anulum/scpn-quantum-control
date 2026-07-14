@@ -235,6 +235,73 @@ or partial paths. Its tests use real public compiler/runtime execution: mock,
 monkeypatch, frozen-record mutation, and private-helper coverage shortcuts are
 outside this lane's evidence model.
 
+## Phase-QNode JAX quality ratchet
+
+The registered Phase-QNode JAX execution leaf has a dedicated public-path
+quality lane. Static checks cover the two production consumers, both shared
+test helpers, seven public-route test owners, and the extracted gate policy and
+its direct test. Keeping the ordered policy in
+`tools/phase_jax_qnode_quality_gates.py` prevents `tools/preflight.py` from
+crossing the GodFile threshold while CI and the permitted local focused gates
+consume one definition. CI executes the owner coverage inside the
+`differentiable-parity` job after that job installs and verifies its CPU JAX
+overlay. A dedicated import and device probe then proves that the real JAX
+runtime is usable before any optional-dependency skip can enter the coverage
+cohort; the base hash-locked CI environment intentionally does not claim an
+optional JAX runtime.
+
+```bash
+quality_paths=(
+  src/scpn_quantum_control/phase/jax_qnode_transforms.py
+  src/scpn_quantum_control/phase/jax_compatibility.py
+  tests/_phase_jax_bridge_test_helpers.py
+  tests/_phase_jax_qnode_test_helpers.py
+  tests/test_phase_jax_bridge_aot_export.py
+  tests/test_phase_jax_qnode_transforms.py
+  tests/test_phase_jax_qnode_transforms_integration.py
+  tests/test_phase_jax_qnode_input_validation.py
+  tests/test_phase_jax_qnode_pytree_validation.py
+  tests/test_phase_jax_qnode_aot_validation.py
+  tests/test_phase_jax_qnode_statevector_edges.py
+  tools/phase_jax_qnode_quality_gates.py
+  tests/test_phase_jax_qnode_quality_gate.py
+)
+python -m mypy --strict --explicit-package-bases "${quality_paths[@]}"
+python -m ruff check --isolated --select D,D413 \
+  --config 'lint.pydocstyle.convention = "numpy"' "${quality_paths[@]}"
+```
+
+The executable cohort comprises the seven `test_phase_jax_*` owners above,
+including the AOT/export owner. Coverage records branch data under the phase
+source root but reports only the registered-QNode leaf:
+
+```bash
+coverage_tests=(
+  tests/test_phase_jax_qnode_transforms.py
+  tests/test_phase_jax_qnode_transforms_integration.py
+  tests/test_phase_jax_bridge_aot_export.py
+  tests/test_phase_jax_qnode_input_validation.py
+  tests/test_phase_jax_qnode_pytree_validation.py
+  tests/test_phase_jax_qnode_aot_validation.py
+  tests/test_phase_jax_qnode_statevector_edges.py
+)
+python -m coverage run --rcfile=/dev/null \
+  --data-file=.coverage.phase-jax-qnode --branch \
+  --source=src/scpn_quantum_control/phase \
+  -m pytest -q "${coverage_tests[@]}"
+python -m coverage report --rcfile=/dev/null \
+  --data-file=.coverage.phase-jax-qnode \
+  --include='*/jax_qnode_transforms.py' --fail-under=100 --show-missing
+```
+
+The current contract is 546 statements and 198 branches with no missing or
+partial paths. Positive value, transform, PyTree, sharding, and AOT/export
+cases execute the installed JAX runtime through public APIs. Controlled loader
+doubles exercise missing-capability and malformed-result refusal contracts
+through the same public facades; they do not replace the installed-runtime
+parity cases. Private production-helper calls, coverage exclusions, provider
+jobs, and benchmark claims are outside this evidence lane.
+
 ## Test Categories
 
 ### 1. Pipeline Wiring Tests (`test_pipeline_wiring_performance.py`)

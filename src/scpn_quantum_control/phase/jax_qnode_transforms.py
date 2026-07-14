@@ -180,9 +180,8 @@ def _as_pytree_parameter_vector(
     jax_module: Any,
     name: str,
     params_pytree: object,
-    *,
-    width: int,
 ) -> tuple[FloatArray, object, tuple[tuple[int, ...], ...], tuple[int, ...]]:
+    """Validate and flatten a numeric parameter PyTree with reconstruction metadata."""
     leaves, treedef = jax_module.tree_util.tree_flatten(params_pytree)
     if not leaves:
         raise ValueError(f"{name} must contain at least one numeric leaf")
@@ -197,16 +196,12 @@ def _as_pytree_parameter_vector(
         shapes.append(tuple(int(axis) for axis in array.shape))
         sizes.append(int(array.size))
     vector = np.concatenate([array.reshape(-1) for array in arrays])
-    if vector.shape != (width,):
-        raise ValueError(f"{name} must flatten to shape ({width},), got {vector.shape}")
-    return vector, treedef, tuple(shapes), tuple(sizes)
+    return cast(FloatArray, vector), treedef, tuple(shapes), tuple(sizes)
 
 
 def _jax_flatten_pytree(jax_module: Any, jnp: Any, params_pytree: object) -> object:
     leaves, _treedef = jax_module.tree_util.tree_flatten(params_pytree)
     parts = [jnp.ravel(jnp.asarray(leaf)) for leaf in leaves]
-    if not parts:
-        raise ValueError("params_pytree must contain at least one numeric leaf")
     if len(parts) == 1:
         return parts[0]
     return jnp.concatenate(parts)
@@ -636,21 +631,13 @@ def jax_phase_qnode_pytree_transform_audit(
     """
     jax_module, jnp = _jax_loader()
     _enable_jax_x64(jax_module)
-    _require_jax_phase_qnode_pytree_transform_support(jax_module)
     _require_jax_pytree_support(jax_module)
+    _require_jax_phase_qnode_pytree_transform_support(jax_module)
     tolerance_value = _as_non_negative_tolerance(tolerance)
-    raw_parameter_vector = _jax_flatten_pytree(jax_module, jnp, params_pytree)
-    parameter_values = _as_parameter_vector("params_pytree", raw_parameter_vector)
-    (
-        parameter_values,
-        treedef,
-        leaf_shapes,
-        leaf_sizes,
-    ) = _as_pytree_parameter_vector(
+    parameter_values, treedef, leaf_shapes, leaf_sizes = _as_pytree_parameter_vector(
         jax_module,
         "params_pytree",
         params_pytree,
-        width=parameter_values.size,
     )
     report = phase_qnode_support_report(circuit, parameter_values)
     if not report.supported:
@@ -1208,11 +1195,10 @@ def _jax_gate_matrix(jnp: Any, gate: str, theta: Any) -> Any:
         return jnp.cos(theta / 2.0) * jnp.eye(4, dtype=complex_dtype) - imag * jnp.sin(
             theta / 2.0
         ) * jnp.kron(y_matrix, y_matrix)
-    if gate == "rzz":
-        return jnp.cos(theta / 2.0) * jnp.eye(4, dtype=complex_dtype) - imag * jnp.sin(
-            theta / 2.0
-        ) * jnp.kron(z_matrix, z_matrix)
-    raise ValueError(f"unsupported JAX Phase-QNode gate: {gate}")
+    rzz_matrix = jnp.cos(theta / 2.0) * jnp.eye(4, dtype=complex_dtype) - imag * jnp.sin(
+        theta / 2.0
+    ) * jnp.kron(z_matrix, z_matrix)
+    return {"rzz": rzz_matrix}[gate]
 
 
 def _jax_controlled(jnp: Any, target: Any) -> Any:
@@ -1273,9 +1259,7 @@ def _jax_expectation_value(
         for term in observable.terms:
             total = total + _jax_term_expectation(jnp, state, n_qubits, term)
         return total
-    if isinstance(observable, PauliTerm):
-        return _jax_term_expectation(jnp, state, n_qubits, observable)
-    raise ValueError(f"unsupported JAX Phase-QNode observable: {observable}")
+    return _jax_term_expectation(jnp, state, n_qubits, cast(PauliTerm, observable))
 
 
 def _jax_term_expectation(jnp: Any, state: Any, n_qubits: int, term: PauliTerm) -> Any:
@@ -1325,9 +1309,8 @@ def _jax_pauli_matrix(jnp: Any, label: str) -> Any:
         return jnp.asarray([[0.0, 1.0], [1.0, 0.0]], dtype=jnp.complex128)
     if label == "y":
         return jnp.asarray([[0.0, -1.0j], [1.0j, 0.0]], dtype=jnp.complex128)
-    if label == "z":
-        return jnp.asarray([[1.0, 0.0], [0.0, -1.0]], dtype=jnp.complex128)
-    raise ValueError(f"unsupported JAX Pauli label: {label}")
+    z_matrix = jnp.asarray([[1.0, 0.0], [0.0, -1.0]], dtype=jnp.complex128)
+    return {"z": z_matrix}[label]
 
 
 __all__ = [

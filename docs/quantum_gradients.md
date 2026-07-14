@@ -2129,6 +2129,12 @@ evidence, and reports `host_callback=False`.
 statevector value-and-gradient row per local JAX device through `jax.pmap`,
 checks every row against SCPN parameter-shift references, labels single-device
 CPU runs as pmap smoke evidence, and reports `host_callback=False`.
+`jax_phase_qnode_aot_export_audit(...)` lowers the same registered local value
+route through `jax.jit(...).lower(...)`, records StableHLO and compiler
+metadata, serialises a `jax.export` artefact when the installed runtime supports
+the route, deserialises it, and checks local replay against SCPN values. The
+result remains diagnostic: persistent cross-platform export, exported VJPs,
+provider/hardware execution, and performance promotion stay blocked.
 `run_jax_phase_qnode_lowering_matrix(...)` makes the
 native-lowering boundary explicit: bounded QNN native, custom-VJP, JIT, VMAP,
 PyTree, registered deterministic statevector, registered deterministic
@@ -2141,6 +2147,15 @@ the bounded passes and emits explicit blockers for full arbitrary
 `jacfwd`/`jacrev`/Hessian transform algebra, finite-shot/provider/hardware
 routes, hardware/provider callback transform safety, and promotion-grade
 isolated benchmark evidence.
+
+The focused registered-QNode owner lane runs 68 tests through these public
+value, transform, PyTree, sharding, AOT, and refusal routes. It covers all 546
+statements and 198 branches in `phase/jax_qnode_transforms.py`. Unknown gates
+are rejected by the public support report before lowering, and invalid Pauli
+labels are rejected during circuit construction, so the quality refactor
+removed only duplicate private fallbacks behind those invariants. Numerical
+statevector semantics, the supported transform matrix, native ABI surfaces,
+and benchmark inputs remain unchanged.
 
 For parity checks against a caller-owned JAX objective, use
 `check_jax_parameter_shift_agreement(...)` with a JAX-derived gradient callable:

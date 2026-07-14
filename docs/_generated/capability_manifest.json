@@ -13,7 +13,7 @@
     "python_model_source_modules": 559,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 987
+    "test_files": 993
   },
   "documentation": {
     "examples": [
@@ -6349,6 +6349,7 @@
       "tests/_internal_corpus_markers.py",
       "tests/_mlir_native_compilation_test_helpers.py",
       "tests/_phase_jax_bridge_test_helpers.py",
+      "tests/_phase_jax_qnode_test_helpers.py",
       "tests/_phase_pennylane_bridge_test_helpers.py",
       "tests/_phase_torch_bridge_test_helpers.py",
       "tests/_program_ad_rust_bridge_test_fixtures.py",
@@ -6882,6 +6883,11 @@
       "tests/test_phase_jax_gradients_integration.py",
       "tests/test_phase_jax_maturity.py",
       "tests/test_phase_jax_maturity_integration.py",
+      "tests/test_phase_jax_qnode_aot_validation.py",
+      "tests/test_phase_jax_qnode_input_validation.py",
+      "tests/test_phase_jax_qnode_pytree_validation.py",
+      "tests/test_phase_jax_qnode_quality_gate.py",
+      "tests/test_phase_jax_qnode_statevector_edges.py",
       "tests/test_phase_jax_qnode_transforms.py",
       "tests/test_phase_jax_qnode_transforms_integration.py",
       "tests/test_phase_model_training_evidence.py",

@@ -887,6 +887,8 @@ def test_main_uses_coverage_pytest_by_default(
         "studio Program-AD exact coverage threshold",
         "phase-qnode vector focused coverage",
         "phase-qnode vector exact coverage threshold",
+        "phase-jax-qnode focused coverage",
+        "phase-jax-qnode exact coverage threshold",
         "whole-program trace-value focused coverage",
         "whole-program trace-value exact coverage threshold",
         "studio Program-AD exact browser coverage",

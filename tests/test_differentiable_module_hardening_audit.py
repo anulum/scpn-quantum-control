@@ -53,6 +53,20 @@ def test_differentiable_module_hardening_registry_covers_current_scope() -> None
     assert "src/scpn_quantum_control/phase/differentiable_audit_contracts.py" in module_paths
     assert "src/scpn_quantum_control/phase/qnode_circuit.py" in module_paths
     assert "src/scpn_quantum_control/phase/jax_bridge.py" in module_paths
+    jax_qnode_record = next(
+        record
+        for record in registry
+        if record.module_path == "src/scpn_quantum_control/phase/jax_qnode_transforms.py"
+    )
+    assert jax_qnode_record.test_paths == (
+        "tests/test_phase_jax_qnode_transforms.py",
+        "tests/test_phase_jax_qnode_transforms_integration.py",
+        "tests/test_phase_jax_bridge_aot_export.py",
+        "tests/test_phase_jax_qnode_input_validation.py",
+        "tests/test_phase_jax_qnode_pytree_validation.py",
+        "tests/test_phase_jax_qnode_aot_validation.py",
+        "tests/test_phase_jax_qnode_statevector_edges.py",
+    )
     assert "src/scpn_quantum_control/phase/torch_autograd_function.py" in module_paths
     assert "src/scpn_quantum_control/phase/torch_module_state.py" in module_paths
     assert "src/scpn_quantum_control/phase/torch_device_state.py" in module_paths

@@ -184,7 +184,7 @@
     },
     {
       "path": "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
-      "lines": 1010,
+      "lines": 1021,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Static registry and filesystem audit for differentiable module ownership, coverage, typing, docs, and wiring status.",
@@ -211,7 +211,7 @@
     },
     {
       "path": "src/scpn_quantum_control/phase/jax_qnode_transforms.py",
-      "lines": 1339,
+      "lines": 1322,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Registered Phase-QNode statevector execution, PyTree transforms, PMAP sharding, and AOT/export JAX route family.",

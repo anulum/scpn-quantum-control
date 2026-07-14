@@ -11,9 +11,9 @@ Gates (in order):
   1. repository lint, format, documentation, generated-surface, policy, and security audits
   2. focused strict-typing and NumPy-docstring ratchets for promoted owner cohorts
   3. Rust formatting, version/export consistency, and repository typing gates
-  4. exact MLIR-leaf, Phase-QNode-affinity, Phase-QNode-vector, Studio
-     Program-AD, and trace-value statement/branch coverage (default coverage
-     mode only)
+  4. exact MLIR-leaf, Phase-QNode-affinity, Phase-QNode-vector, Phase-QNode
+     JAX, Studio Program-AD, and trace-value statement/branch coverage (default
+     coverage mode only)
   5. repository pytest with the selected coverage mode
   6. Bandit security scan
 
@@ -42,11 +42,13 @@ from shutil import which
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import program_ad_quality_gates as _program_ad_quality_gates
 else:
     _repo_root = str(Path(__file__).resolve().parents[1])
     if _repo_root not in sys.path:
         sys.path.insert(0, _repo_root)
+    _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
     _program_ad_quality_gates = import_module("tools.program_ad_quality_gates")
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -61,6 +63,11 @@ STUDIO_PROGRAM_AD_COVERAGE_COHORT = _program_ad_quality_gates.STUDIO_PROGRAM_AD_
 STUDIO_PROGRAM_AD_BROWSER_TESTS = _program_ad_quality_gates.STUDIO_PROGRAM_AD_BROWSER_TESTS
 STUDIO_PROGRAM_AD_COVERAGE_DATA_FILE = (
     _program_ad_quality_gates.STUDIO_PROGRAM_AD_COVERAGE_DATA_FILE
+)
+PHASE_JAX_QNODE_QUALITY_RATCHET = _phase_jax_qnode_quality_gates.PHASE_JAX_QNODE_QUALITY_RATCHET
+PHASE_JAX_QNODE_COVERAGE_COHORT = _phase_jax_qnode_quality_gates.PHASE_JAX_QNODE_COVERAGE_COHORT
+PHASE_JAX_QNODE_COVERAGE_DATA_FILE = (
+    _phase_jax_qnode_quality_gates.PHASE_JAX_QNODE_COVERAGE_DATA_FILE
 )
 
 DIFFERENTIABLE_DOCSTRING_RATCHET = [
@@ -434,6 +441,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             *PHASE_QNODE_VECTOR_QUALITY_RATCHET,
         ],
     ),
+    *_phase_jax_qnode_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-whole-program-trace-values",
         [
@@ -747,6 +755,8 @@ PHASE_QNODE_VECTOR_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     ),
 ]
 
+PHASE_JAX_QNODE_COVERAGE_GATES = _phase_jax_qnode_quality_gates.build_coverage_gates(_PY)
+
 WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
         "whole-program trace-value focused coverage",
@@ -894,6 +904,7 @@ def main() -> int:
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_VECTOR_COVERAGE_GATES)
+            gates.extend(PHASE_JAX_QNODE_COVERAGE_GATES)
             gates.extend(WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES)
             gates.append(STUDIO_PROGRAM_AD_BROWSER_COVERAGE_GATE)
             gates.append(("pytest + coverage", _PYTEST_COV))

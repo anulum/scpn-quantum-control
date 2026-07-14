@@ -150,6 +150,15 @@ Its paired tests mirror those boundaries: the bridge test retains optional-depen
 while gradient, compatibility, registered-QNode transform, and maturity integration behavior lives
 in four module-named surfaces backed by one shared strictly typed fake JAX runtime.
 
+The registered-QNode leaf remains one cohesive execution owner at 1,322 physical lines. Its public
+routes share one finite PyTree normalisation boundary with `jax_compatibility.py`, while the
+compatibility leaf retains its own expected-width check; neither leaf imports the JAX facade or
+creates a dependency back-edge. Seven responsibility-specific public-path test modules separate
+flat/native integration, input validation, PyTree validation, AOT failure diagnostics, and
+statevector refusal behaviour. The permanent gate covers all 546 statements and 198 branches in
+the registered-QNode leaf. This split keeps test and quality-policy responsibilities outside the
+execution owner without moving a second runtime lifecycle into it.
+
 The Torch bridge completed the same bounded decomposition. Its 19 immutable result, route,
 evidence, matrix, and cloud-plan records live in the dependency-free
 `phase/torch_bridge_contracts.py` leaf. Optional Torch loading, numeric/tensor validation, and the

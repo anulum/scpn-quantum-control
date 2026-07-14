@@ -432,6 +432,10 @@ def run_jax_pytree_compatibility_audit(
         jax_module,
         "params_pytree",
         params_pytree,
+    )
+    parameter_vector = _as_parameter_vector(
+        "params_pytree",
+        parameter_vector,
         width=feature_matrix.shape[1],
     )
     feature_tensor = jnp.asarray(feature_matrix)
@@ -563,6 +567,10 @@ def run_jax_nested_transform_algebra_audit(
         jax_module,
         "params_pytree",
         params_pytree,
+    )
+    parameter_vector = _as_parameter_vector(
+        "params_pytree",
+        parameter_vector,
         width=feature_matrix.shape[1],
     )
     feature_tensor = jnp.asarray(feature_matrix)
