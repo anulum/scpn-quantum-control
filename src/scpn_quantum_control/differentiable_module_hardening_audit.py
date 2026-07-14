@@ -349,6 +349,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("public-language guard", "support-surface alignment errors"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_claim_rendering.py",
+            ("tests/test_differentiable_claim_rendering.py",),
+            ("byte-for-byte committed markdown parity", "markdown table-control escaping"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_external_validation.py",
             ("tests/test_differentiable_external_validation.py",),
             ("lockfile checksum drift", "artefact-bundle checksum drift"),
