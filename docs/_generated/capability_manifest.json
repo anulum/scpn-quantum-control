@@ -13,7 +13,7 @@
     "python_model_source_modules": 559,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 978
+    "test_files": 984
   },
   "documentation": {
     "examples": [
@@ -7305,6 +7305,12 @@
       "tests/test_whole_program_trace_metadata.py",
       "tests/test_whole_program_trace_predicates.py",
       "tests/test_whole_program_trace_runtime.py",
+      "tests/test_whole_program_trace_value_linalg.py",
+      "tests/test_whole_program_trace_value_operators.py",
+      "tests/test_whole_program_trace_value_selection.py",
+      "tests/test_whole_program_trace_value_shapes.py",
+      "tests/test_whole_program_trace_value_signal.py",
+      "tests/test_whole_program_trace_values.py",
       "tests/test_wilson_loop.py",
       "tests/test_wirtinger_calculus.py",
       "tests/test_witness_discovery.py",

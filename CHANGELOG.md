@@ -34,6 +34,20 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   benchmark claims are unchanged.
 
 ### Fixed
+- 2026-07-14 — Closed the operator-intercepted whole-program trace-value
+  contract and quality debt. The runtime now treats the executable primitive
+  registry as the single validation source, removes dead helpers and duplicate
+  post-registry guards, documents every value/protocol contract, rejects
+  derivative-losing output buffers, and preserves NumPy identities for empty
+  square determinant, inverse, and matrix-power traces. The cohesive runtime
+  shrank from 4,994 to 4,562 physical lines; 101 of 115 top-level definitions
+  remain one mutually recursive value/dispatch component, while six focused
+  responsibility-specific test owners remain below the GodFile threshold. CI
+  and the default local gate share exact strict-MyPy, NumPy-docstring, and
+  58-file focused coverage cohorts; the production target passes 2,346/2,346
+  statements and 1,094/1,094 branches with no partials. Existing non-empty
+  Rust replay and bounded LLVM lowering contracts, provider/hardware behavior,
+  numerical benchmark inputs, and performance claims are unchanged.
 - 2026-07-14 — Closed the tracked real-time runtime quality debt with public
   control-loop, tracker, and batch-summary regressions for past clock targets,
   caller-driven scheduling, over-budget start jitter, native-kernel rejection,

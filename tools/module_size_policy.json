@@ -337,11 +337,11 @@
     },
     {
       "path": "src/scpn_quantum_control/whole_program_trace_values.py",
-      "lines": 4994,
+      "lines": 4562,
       "kind": "source",
       "disposition": "cohesive",
-      "responsibility": "Operator-intercepted forward-AD TraceADScalar and TraceADArray value runtime.",
-      "dependency_boundary": "Depends on parameter contracts, every focused Program-AD primitive-rule leaf, and trace metadata/predicate/runtime helpers; differentiable, vmap, and whole-program AD APIs consume the mutually recursive value classes.",
+      "responsibility": "Operator-intercepted forward-AD TraceADScalar and TraceADArray value/protocol runtime over registry-gated NumPy dispatch.",
+      "dependency_boundary": "Depends one-way on parameter, registry, trace metadata/predicate/context, and focused array, assembly, cumulative, elementwise, interpolation, linalg, product, reduction, selection, shape, signal, and stencil primitive leaves; differentiable, vmap, and whole-program AD APIs consume the mutually recursive value classes, while six responsibility-specific test owners remain below the 1000-line threshold.",
       "reassess_when": "A non-value runtime lifecycle appears or class dispatch can be separated without cyclic imports."
     },
     {

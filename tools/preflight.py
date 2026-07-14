@@ -8,37 +8,18 @@
 """Local CI preflight — mirrors every CI gate so failures are caught before push.
 
 Gates (in order):
-  1. ruff check      — lint errors
-  2. ruff format     — formatting drift
-  3. docs surface    — public docs/docstring surface regression gate
-  4. diff-promo-lang  — differentiable promotion-language evidence gate
-  5. diff-baselines  — differentiable competitive-baseline freshness gate
-  6. diff-transform  — differentiable transform-algebra metamorphic gate
-  7. diff-support-page — generated registry/planner page + capability-manifest alignment
-  8. diff-support typing — strict typing for the page generator and focused tests
-  9. ruff D ratchet  — NumPy-style docstring ratchet for differentiable hardening
-  10. realtime typing — strict typing for the realtime runtime and focused tests
-  11. realtime docs  — NumPy docstrings for the realtime runtime and focused tests
-  12. test-quality   — forbid coverage-bucket pytest modules
-  13. module-size    — tracked oversized-code responsibility inventory
-  14. module-size typing — strict typing for the inventory tool
-  15. licence-readiness — canonical cross-language source headers and licence boundaries
-  16. licence typing — strict typing for the licence-readiness audit
-  17. test typing    — additive strict-mypy cohort for repository tests
-  18. test typing tool — strict typing for the cohort-policy audit
-  19. coverage policy — preserve line gate and require branch telemetry
-  20. coverage policy tool — strict typing for the coverage-policy audit
-  21. coverage debt — current 100% recovery register and priority drift
-  22. coverage debt tool — strict typing for the debt-register audit
-  23. external-validation — environment and evidence-bundle manifest drift
-  24. external-validation tool — strict typing for the manifest gate
-  25. rustfmt        — canonical formatting across the Rust engine crate
-  26. version-sync   — version string consistency across 5 carrier files
-  27. rust-pyi       — Rust PyO3 exports match local typing contract
-  28. mypy           — type errors
-  29. mypy-strict-dp — strict typing ratchet for differentiable programming
-  30. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
-  31. bandit         — security scan
+  1. repository lint, format, documentation, generated-surface, policy, and security audits
+  2. focused strict-typing and NumPy-docstring ratchets for promoted owner cohorts
+  3. Rust formatting, version/export consistency, and repository typing gates
+  4. exact whole-program trace-value statement/branch coverage (default coverage mode only)
+  5. repository pytest with the selected coverage mode
+  6. Bandit security scan
+
+The exact trace-value gate uses an explicit responsibility-scoped test cohort,
+an isolated coverage data file, and a 100% statement/branch threshold for
+``whole_program_trace_values.py``. ``--no-tests`` and ``--no-coverage`` skip
+that executable coverage gate while retaining its static typing/docstring
+ratchets.
 
 Usage:
   python tools/preflight.py                # all gates (default)
@@ -52,7 +33,7 @@ import subprocess  # nosec B404
 import sys
 import time
 from collections.abc import Iterable
-from os import X_OK, access, environ, pathsep
+from os import X_OK, access, devnull, environ, pathsep
 from pathlib import Path
 from shutil import which
 
@@ -94,6 +75,79 @@ REALTIME_RUNTIME_QUALITY_RATCHET = [
     "tests/test_realtime_runtime.py",
     "tests/test_realtime_runtime_branches.py",
 ]
+
+WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = [
+    "src/scpn_quantum_control/whole_program_trace_values.py",
+    "tests/test_whole_program_trace_values.py",
+    "tests/test_whole_program_trace_value_operators.py",
+    "tests/test_whole_program_trace_value_selection.py",
+    "tests/test_whole_program_trace_value_signal.py",
+    "tests/test_whole_program_trace_value_linalg.py",
+    "tests/test_whole_program_trace_value_shapes.py",
+]
+
+WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT = [
+    "tests/test_program_ad_adjoint_generation.py",
+    "tests/test_program_ad_adjoint_generation_docstrings.py",
+    "tests/test_program_ad_alias_contracts.py",
+    "tests/test_program_ad_alias_effects.py",
+    "tests/test_program_ad_array_indexing_registry.py",
+    "tests/test_program_ad_binary_elementwise_registry.py",
+    "tests/test_program_ad_broadcast_assembly.py",
+    "tests/test_program_ad_cumulative_primitives.py",
+    "tests/test_program_ad_cumulative_primitives_docstrings.py",
+    "tests/test_program_ad_effect_ir.py",
+    "tests/test_program_ad_elementwise_registry.py",
+    "tests/test_program_ad_fail_closed_boundaries.py",
+    "tests/test_program_ad_finite_difference_gradient_check.py",
+    "tests/test_program_ad_finite_difference_stencils.py",
+    "tests/test_program_ad_interpolation.py",
+    "tests/test_program_ad_interpolation_primitives_docstrings.py",
+    "tests/test_program_ad_like_constructors.py",
+    "tests/test_program_ad_linalg_core.py",
+    "tests/test_program_ad_linalg_direct_rules.py",
+    "tests/test_program_ad_linalg_matrix_ops.py",
+    "tests/test_program_ad_linalg_registry.py",
+    "tests/test_program_ad_linalg_spectral.py",
+    "tests/test_program_ad_product_contractions.py",
+    "tests/test_program_ad_reduction_norms.py",
+    "tests/test_program_ad_reduction_primitives_docstrings.py",
+    "tests/test_program_ad_registry.py",
+    "tests/test_program_ad_runtime_registry_dispatch.py",
+    "tests/test_program_ad_selection_direct_rules.py",
+    "tests/test_program_ad_selection_folds.py",
+    "tests/test_program_ad_selection_order_statistics.py",
+    "tests/test_program_ad_selection_primitives_docstrings.py",
+    "tests/test_program_ad_selection_registry.py",
+    "tests/test_program_ad_shape_transforms.py",
+    "tests/test_program_ad_signal_primitives.py",
+    "tests/test_program_ad_split_assembly.py",
+    "tests/test_program_ad_stack_block_assembly.py",
+    "tests/test_program_ad_static_array_assembly.py",
+    "tests/test_program_ad_stencil_primitives_docstrings.py",
+    "tests/test_program_ad_structural_finite_difference_gradient_check.py",
+    "tests/test_program_ad_trapezoid.py",
+    "tests/test_program_ad_triangular_diagonal_assembly.py",
+    "tests/test_program_ad_unary_ufuncs.py",
+    "tests/test_program_adjoint_replay.py",
+    "tests/test_whole_program_ad_contracts.py",
+    "tests/test_whole_program_ad_finite_difference_gradient_check.py",
+    "tests/test_whole_program_ad_numpy_structural.py",
+    "tests/test_whole_program_ad_runtime.py",
+    "tests/test_whole_program_frontend.py",
+    "tests/test_whole_program_frontend_contracts.py",
+    "tests/test_whole_program_trace_metadata.py",
+    "tests/test_whole_program_trace_predicates.py",
+    "tests/test_whole_program_trace_runtime.py",
+    "tests/test_whole_program_trace_value_linalg.py",
+    "tests/test_whole_program_trace_value_operators.py",
+    "tests/test_whole_program_trace_value_selection.py",
+    "tests/test_whole_program_trace_value_shapes.py",
+    "tests/test_whole_program_trace_value_signal.py",
+    "tests/test_whole_program_trace_values.py",
+]
+
+WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE = ".coverage.whole-program-trace-values"
 
 _PYTEST_BASE = [
     _PY,
@@ -210,6 +264,32 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "--config",
             'lint.pydocstyle.convention = "numpy"',
             *REALTIME_RUNTIME_QUALITY_RATCHET,
+        ],
+    ),
+    (
+        "mypy-strict-whole-program-trace-values",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "--explicit-package-bases",
+            *WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET,
+        ],
+    ),
+    (
+        "ruff D whole-program trace-value quality ratchet",
+        [
+            _PY,
+            "-m",
+            "ruff",
+            "check",
+            "--isolated",
+            "--select",
+            "D,D413",
+            "--config",
+            'lint.pydocstyle.convention = "numpy"',
+            *WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET,
         ],
     ),
     ("test-quality", [_PY, "tools/audit_test_quality.py"]),
@@ -389,6 +469,39 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     ),
 ]
 
+WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES: list[tuple[str, list[str]]] = [
+    (
+        "whole-program trace-value focused coverage",
+        [
+            _PY,
+            "-m",
+            "coverage",
+            "run",
+            f"--rcfile={devnull}",
+            f"--data-file={WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE}",
+            "--branch",
+            "-m",
+            "pytest",
+            "-q",
+            *WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT,
+        ],
+    ),
+    (
+        "whole-program trace-value exact coverage threshold",
+        [
+            _PY,
+            "-m",
+            "coverage",
+            "report",
+            f"--rcfile={devnull}",
+            f"--data-file={WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE}",
+            "--precision=2",
+            "--fail-under=100",
+            "--include=*/whole_program_trace_values.py",
+        ],
+    ),
+]
+
 BANDIT_GATE: tuple[str, list[str]] = (
     "bandit",
     [_PY, "-m", "bandit", "-r", "src/", "-ll", "-q"],
@@ -497,6 +610,7 @@ def main() -> int:
         if no_coverage:
             gates.append(("pytest", _PYTEST_BASE))
         else:
+            gates.extend(WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES)
             gates.append(("pytest + coverage", _PYTEST_COV))
 
     gates.append(BANDIT_GATE)

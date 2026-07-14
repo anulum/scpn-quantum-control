@@ -15,6 +15,7 @@ from pathlib import Path
 import pytest
 import tomllib
 
+from scpn_quantum_control import TraceADArray, TraceADScalar
 from scpn_quantum_control.control import realtime_runtime
 
 
@@ -83,6 +84,39 @@ def test_realtime_runtime_autodoc_matches_public_exports() -> None:
     ]
 
     assert members == realtime_runtime.__all__
+
+
+def test_ci_gates_whole_program_trace_value_quality_and_exact_coverage() -> None:
+    """CI must retain trace-value typing, docs, and focused 100% coverage."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "Type-check whole-program trace-value quality cohort" in workflow
+    assert "Ruff NumPy docstrings for whole-program trace-value quality cohort" in workflow
+    assert "whole-program-trace-value-quality:" in workflow
+    assert "Run whole-program trace-value focused coverage" in workflow
+    assert "Enforce whole-program trace-value exact coverage" in workflow
+    assert "--data-file=.coverage.whole-program-trace-values" in workflow
+    assert "--include=*/whole_program_trace_values.py" in workflow
+    assert "--fail-under=100" in workflow
+    assert "needs['whole-program-trace-value-quality'].result" in workflow
+
+
+def test_trace_value_autodoc_exposes_both_public_value_types() -> None:
+    """Direct trace-value autodoc must retain both operator-intercepted types."""
+    autodoc = Path("docs/autodoc.md").read_text(encoding="utf-8")
+    block_start = autodoc.index("::: scpn_quantum_control.whole_program_trace_values")
+    block_end = autodoc.index("\n\n", block_start)
+    members_line = next(
+        line.strip()
+        for line in autodoc[block_start:block_end].splitlines()
+        if line.strip().startswith("members:")
+    )
+    members = [
+        item.strip()
+        for item in members_line.removeprefix("members: [").removesuffix("]").split(",")
+    ]
+
+    assert members == [TraceADScalar.__name__, TraceADArray.__name__]
 
 
 def test_ci_lint_job_gates_additive_test_typing_policy() -> None:

@@ -448,6 +448,18 @@ That ratchet covers the manifest builders, checksum validators, renderer
 contracts, and fail-closed drift branches while repository-wide docstring
 enforcement remains open rollout debt.
 
+The operator-intercepted whole-program trace-value runtime has a separate
+permanent quality gate. CI and the default local gate share the same ordered
+source/test cohort for strict MyPy and NumPy docstrings, then run one explicit
+58-file Program-AD/whole-program trace cohort with branch telemetry and require
+exact 100% statement and branch coverage for
+`whole_program_trace_values.py`. The responsibility-specific protocol,
+operator, selection, signal, linear-algebra, and shape tests are individually
+below the module-size threshold. The gate validates Python trace dispatch and
+compact IR generation; it does not relabel the existing bounded Rust replay or
+LLVM lowering surfaces, and it does not create a new benchmark or performance
+claim.
+
 Differentiable CI reproducibility is split into explicit sparse, full, optional
 GPU-contract, scheduled metadata, and isolated-runner lanes. The sparse and full
 CPU profiles run across Python 3.11, 3.12, and 3.13 using the pinned

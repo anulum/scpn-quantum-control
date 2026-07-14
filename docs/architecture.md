@@ -248,13 +248,24 @@ framework, identical-circuit, runner, dependency, and fail-closed classification
 
 | Selected module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
-| `whole_program_trace_values.py` | Operator-intercepted forward-AD trace value runtime (`TraceADScalar`/`TraceADArray` and helpers) | Cohesion audit: 106/122 definitions form one strongly connected component; class dispatch and value construction make primitive-family splits cyclic |
+| `whole_program_trace_values.py` | Operator-intercepted forward-AD trace value runtime (`TraceADScalar`/`TraceADArray` and helpers) | Cohesion rescan: 101/115 top-level definitions form one strongly connected component; class dispatch and value construction make primitive-family splits cyclic |
 | `compiler/mlir_whole_program_emitter.py` | Native LLVM text emission for recorded whole-program AD operations and their derivatives | Cohesion audit: 45/46 top-level definitions form one 114-edge component spanning dispatch, linalg helpers, batch scaffolds, operands and formatting; the native driver is the sole production importer |
 | `benchmarks/differentiable_programming.py` | Differentiable-programming execution facade after contract/quantum leaf extraction | Program/external cases are tested facade monkeypatch seams for ten runtime/compiler/JAX dependencies; alias moves would break diagnostic substitution |
 | `benchmarks/differentiable_external_comparison.py` | External framework, runner, and identical-circuit comparison facade after contract extraction | The 40-function residual is one 65-edge component; focused tests make 43 monkeypatch calls across 16 facade globals, so alias moves would bypass substitutions |
 | `program_ad_linalg_primitives.py` | Program-AD linear-algebra primitive rules and conditioning diagnostics | One dominant cluster; satellites are registry-dispatched rules |
 | `whole_program_frontend.py` | Static source/bytecode introspection and report assembly after contract extraction | The residual private metadata record and 45 functions form one connected pipeline; public records live in the one-way contracts leaf |
 | `program_ad_assembly_primitives.py` | Program-AD assembly primitive rules (stack/concat/triu/tril) | One dominant cluster |
+
+The 2026-07-14 trace-value rescan reduced the runtime from 4,994 to 4,562
+physical lines and from 122 to 115 top-level definitions by deleting dead
+helpers and duplicate post-registry validation. The remaining 14 definitions
+outside the 101-definition component are static boundary normalisers, label
+formatters, and fail-closed selection validators; none owns an independent
+execution lifecycle. Dependencies remain one-way from the value runtime into
+the parameter/registry, trace metadata/predicate/context, and focused primitive
+rule leaves recorded in `tools/module_size_policy.json`. Tests are split by
+protocol, operator, selection, signal, linear-algebra, and shape responsibility;
+all six owners remain below the 1,000-line threshold.
 
 The remaining large paired tests deliberately follow those source ownership decisions:
 

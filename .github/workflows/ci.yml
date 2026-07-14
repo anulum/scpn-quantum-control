@@ -117,6 +117,27 @@ jobs:
           src/scpn_quantum_control/control/realtime_runtime.py
           tests/test_realtime_runtime.py
           tests/test_realtime_runtime_branches.py
+      - name: Type-check whole-program trace-value quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/whole_program_trace_values.py
+          tests/test_whole_program_trace_values.py
+          tests/test_whole_program_trace_value_operators.py
+          tests/test_whole_program_trace_value_selection.py
+          tests/test_whole_program_trace_value_signal.py
+          tests/test_whole_program_trace_value_linalg.py
+          tests/test_whole_program_trace_value_shapes.py
+      - name: Ruff NumPy docstrings for whole-program trace-value quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/whole_program_trace_values.py
+          tests/test_whole_program_trace_values.py
+          tests/test_whole_program_trace_value_operators.py
+          tests/test_whole_program_trace_value_selection.py
+          tests/test_whole_program_trace_value_signal.py
+          tests/test_whole_program_trace_value_linalg.py
+          tests/test_whole_program_trace_value_shapes.py
       - name: Ruff docstring ratchet for differentiable module hardening
         run: >-
           ruff check --isolated --select D,D413
@@ -145,6 +166,93 @@ jobs:
           tools/differentiable_reviewer_evidence_catalog.py
           tools/differentiable_reviewer_evidence_page.py
           tests/test_differentiable_reviewer_evidence_page.py
+
+  whole-program-trace-value-quality:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Run whole-program trace-value focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.whole-program-trace-values
+          --branch
+          -m pytest -q
+          tests/test_program_ad_adjoint_generation.py
+          tests/test_program_ad_adjoint_generation_docstrings.py
+          tests/test_program_ad_alias_contracts.py
+          tests/test_program_ad_alias_effects.py
+          tests/test_program_ad_array_indexing_registry.py
+          tests/test_program_ad_binary_elementwise_registry.py
+          tests/test_program_ad_broadcast_assembly.py
+          tests/test_program_ad_cumulative_primitives.py
+          tests/test_program_ad_cumulative_primitives_docstrings.py
+          tests/test_program_ad_effect_ir.py
+          tests/test_program_ad_elementwise_registry.py
+          tests/test_program_ad_fail_closed_boundaries.py
+          tests/test_program_ad_finite_difference_gradient_check.py
+          tests/test_program_ad_finite_difference_stencils.py
+          tests/test_program_ad_interpolation.py
+          tests/test_program_ad_interpolation_primitives_docstrings.py
+          tests/test_program_ad_like_constructors.py
+          tests/test_program_ad_linalg_core.py
+          tests/test_program_ad_linalg_direct_rules.py
+          tests/test_program_ad_linalg_matrix_ops.py
+          tests/test_program_ad_linalg_registry.py
+          tests/test_program_ad_linalg_spectral.py
+          tests/test_program_ad_product_contractions.py
+          tests/test_program_ad_reduction_norms.py
+          tests/test_program_ad_reduction_primitives_docstrings.py
+          tests/test_program_ad_registry.py
+          tests/test_program_ad_runtime_registry_dispatch.py
+          tests/test_program_ad_selection_direct_rules.py
+          tests/test_program_ad_selection_folds.py
+          tests/test_program_ad_selection_order_statistics.py
+          tests/test_program_ad_selection_primitives_docstrings.py
+          tests/test_program_ad_selection_registry.py
+          tests/test_program_ad_shape_transforms.py
+          tests/test_program_ad_signal_primitives.py
+          tests/test_program_ad_split_assembly.py
+          tests/test_program_ad_stack_block_assembly.py
+          tests/test_program_ad_static_array_assembly.py
+          tests/test_program_ad_stencil_primitives_docstrings.py
+          tests/test_program_ad_structural_finite_difference_gradient_check.py
+          tests/test_program_ad_trapezoid.py
+          tests/test_program_ad_triangular_diagonal_assembly.py
+          tests/test_program_ad_unary_ufuncs.py
+          tests/test_program_adjoint_replay.py
+          tests/test_whole_program_ad_contracts.py
+          tests/test_whole_program_ad_finite_difference_gradient_check.py
+          tests/test_whole_program_ad_numpy_structural.py
+          tests/test_whole_program_ad_runtime.py
+          tests/test_whole_program_frontend.py
+          tests/test_whole_program_frontend_contracts.py
+          tests/test_whole_program_trace_metadata.py
+          tests/test_whole_program_trace_predicates.py
+          tests/test_whole_program_trace_runtime.py
+          tests/test_whole_program_trace_value_linalg.py
+          tests/test_whole_program_trace_value_operators.py
+          tests/test_whole_program_trace_value_selection.py
+          tests/test_whole_program_trace_value_shapes.py
+          tests/test_whole_program_trace_value_signal.py
+          tests/test_whole_program_trace_values.py
+      - name: Enforce whole-program trace-value exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.whole-program-trace-values
+          --precision=2
+          --fail-under=100
+          --include=*/whole_program_trace_values.py
 
   test:
     needs: lint
@@ -721,13 +829,14 @@ jobs:
           EOF
 
   ci-gate:
-    needs: [lint, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
+    needs: [lint, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: Check all jobs passed
         run: |
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
+             [[ "${{ needs['whole-program-trace-value-quality'].result }}" != "success" ]] || \
              [[ "${{ needs.test.result }}" != "success" ]] || \
              [[ "${{ needs.test-extra-platforms.result }}" != "success" ]] || \
              [[ "${{ needs.type-check.result }}" != "success" ]] || \

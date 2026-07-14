@@ -225,11 +225,78 @@ def test_ci_and_preflight_share_realtime_runtime_quality_cohort() -> None:
         assert ci_paths == _preflight.REALTIME_RUNTIME_QUALITY_RATCHET
 
 
+def test_static_gates_include_whole_program_trace_value_quality_ratchets() -> None:
+    """Trace-value runtime and focused owners must stay typed and documented."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+    strict_cmd = gate_map["mypy-strict-whole-program-trace-values"]
+    docstring_cmd = gate_map["ruff D whole-program trace-value quality ratchet"]
+    cohort = _preflight.WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET
+
+    assert "--strict" in strict_cmd
+    assert "--explicit-package-bases" in strict_cmd
+    assert strict_cmd[-len(cohort) :] == cohort
+    assert "--isolated" in docstring_cmd
+    assert "D,D413" in docstring_cmd
+    assert 'lint.pydocstyle.convention = "numpy"' in docstring_cmd
+    assert docstring_cmd[-len(cohort) :] == cohort
+
+
+def test_default_preflight_has_exact_whole_program_trace_value_coverage() -> None:
+    """Default local coverage must enforce the explicit trace cohort at 100%."""
+    gate_map = dict(_preflight.WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES)
+    run_cmd = gate_map["whole-program trace-value focused coverage"]
+    report_cmd = gate_map["whole-program trace-value exact coverage threshold"]
+    cohort = _preflight.WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT
+    data_file = _preflight.WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE
+
+    assert run_cmd[:4] == [_preflight._PY, "-m", "coverage", "run"]
+    assert "--branch" in run_cmd
+    assert run_cmd[-len(cohort) :] == cohort
+    assert f"--data-file={data_file}" in run_cmd
+    assert report_cmd[:4] == [_preflight._PY, "-m", "coverage", "report"]
+    assert "--precision=2" in report_cmd
+    assert "--fail-under=100" in report_cmd
+    assert "--include=*/whole_program_trace_values.py" in report_cmd
+    assert f"--data-file={data_file}" in report_cmd
+
+
+def test_ci_and_preflight_share_whole_program_trace_value_cohorts() -> None:
+    """CI and local gates must preserve identical quality and coverage file order."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    quality_steps = (
+        "Type-check whole-program trace-value quality cohort",
+        "Ruff NumPy docstrings for whole-program trace-value quality cohort",
+    )
+
+    for step_name in quality_steps:
+        block_start = workflow.index(f"      - name: {step_name}")
+        block_end = workflow.index("\n      - name:", block_start + 1)
+        ci_paths = [
+            line.strip()
+            for line in workflow[block_start:block_end].splitlines()
+            if line.strip().startswith(("src/", "tests/"))
+        ]
+        assert ci_paths == _preflight.WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET
+
+    coverage_start = workflow.index("      - name: Run whole-program trace-value focused coverage")
+    coverage_end = workflow.index("\n      - name:", coverage_start + 1)
+    ci_coverage_paths = [
+        line.strip()
+        for line in workflow[coverage_start:coverage_end].splitlines()
+        if line.strip().startswith("tests/")
+    ]
+    assert ci_coverage_paths == _preflight.WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT
+    assert "Enforce whole-program trace-value exact coverage" in workflow
+    assert "--include=*/whole_program_trace_values.py" in workflow
+    assert "--fail-under=100" in workflow
+    assert "needs['whole-program-trace-value-quality'].result" in workflow
+
+
 def test_ci_and_preflight_share_the_docstring_ratchet_cohort() -> None:
     """CI and the local static gate must enforce the same ordered file cohort."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
     block_start = workflow.index("      - name: Ruff docstring ratchet")
-    block_end = workflow.index("\n\n  test:", block_start)
+    block_end = workflow.index("\n\n  whole-program-trace-value-quality:", block_start)
     ci_paths = [
         line.strip()
         for line in workflow[block_start:block_end].splitlines()
@@ -589,7 +656,13 @@ def test_main_uses_coverage_pytest_by_default(
     monkeypatch.setattr(_preflight, "run_gate", fake_run_gate)
 
     assert _preflight.main() == 0
-    assert calls == ["lint", "pytest + coverage", "bandit"]
+    assert calls == [
+        "lint",
+        "whole-program trace-value focused coverage",
+        "whole-program trace-value exact coverage threshold",
+        "pytest + coverage",
+        "bandit",
+    ]
 
 
 def test_main_stops_on_first_failed_gate(

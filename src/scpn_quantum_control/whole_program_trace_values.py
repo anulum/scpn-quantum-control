@@ -31,7 +31,7 @@ Module size note: this module is intentionally kept whole. Its top-level definit
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from typing import Any, Literal, NoReturn, cast
 
 import numpy as np
@@ -98,9 +98,7 @@ from .program_ad_reduction_primitives import (
     _require_program_ad_reduction_contract,
     _require_strict_order_statistic_values,
 )
-from .program_ad_registry import (
-    _PROGRAM_AD_SELECTION_IDENTITIES,
-)
+from .program_ad_registry import CustomDerivativeRule, CustomJVPRule
 from .program_ad_selection_primitives import (
     _require_program_ad_selection_contract,
 )
@@ -116,7 +114,6 @@ from .program_ad_signal_primitives import (
     program_ad_signal_correlate_derivative_rule,
 )
 from .program_ad_stencil_primitives import (
-    _gradient_axis_coefficients,
     _GradientSpacing,
     _normalise_gradient_axes,
     _normalise_gradient_edge_order,
@@ -153,10 +150,44 @@ ScalarObjective = Callable[[NDArray[np.float64]], float | int | np.floating[Any]
 
 
 _TraceSortKind = Literal["quicksort", "mergesort", "heapsort", "stable"]
+_TraceScalarBinaryOp = Literal["add", "sub", "mul", "div", "pow"]
+_TraceStackConvenience = Literal["hstack", "vstack", "column_stack", "dstack"]
+
+
+def _required_trace_jvp(rule: CustomDerivativeRule, operation: str) -> CustomJVPRule:
+    """Return the JVP promised by a registered forward-mode derivative factory.
+
+    The primitive factories used by this runtime are forward-mode contracts and
+    therefore always provide a JVP.  Keep one fail-closed corruption boundary
+    here instead of duplicating unreachable ``None`` checks at every call site.
+
+    """
+    if rule.jvp_rule is None:  # pragma: no cover - corrupted factory invariant
+        raise ValueError(f"{operation} compact rule requires a JVP rule")
+    return rule.jvp_rule
 
 
 class TraceADScalar:
-    """Operator-intercepted scalar for exact executed-path whole-program AD."""
+    """Operator-intercepted scalar for exact executed-path whole-program AD.
+
+    Parameters
+    ----------
+    primal:
+        Finite real value carried by the trace.
+    tangent:
+        One-dimensional derivative vector aligned with the trace parameters.
+    context:
+        Trace context that owns the value and records derived operations.
+    name:
+        Stable SSA-style label used by trace and adjoint metadata.
+
+    Notes
+    -----
+    Arithmetic, comparisons, and supported NumPy ufuncs preserve the owning
+    context. Conversion to a Python ``float`` fails closed because it would
+    discard derivative information.
+
+    """
 
     __array_priority__ = 1000.0
     # ``__eq__`` returns a trace predicate, not a bool, so hashing has no
@@ -178,6 +209,7 @@ class TraceADScalar:
         self.name = name
 
     def __float__(self) -> float:
+        """Reject conversion that would discard derivative information."""
         raise ValueError(
             "whole-program AD scalar cannot be converted to float without losing derivatives"
         )
@@ -192,7 +224,7 @@ class TraceADScalar:
             _as_real_scalar("whole-program AD constant", other), tangent, self.context, repr(other)
         )
 
-    def _binary(self, op: str, other: object) -> TraceADScalar:
+    def _binary(self, op: _TraceScalarBinaryOp, other: object) -> TraceADScalar:
         rhs = self._coerce(other)
         if op == "add":
             return self.context.make(
@@ -218,58 +250,64 @@ class TraceADScalar:
                 self.primal / rhs.primal,
                 (self.tangent * rhs.primal - self.primal * rhs.tangent) / rhs.primal**2,
             )
-        if op == "pow":
-            if self.primal <= 0.0 and np.any(rhs.tangent != 0.0):
-                raise ValueError("whole-program AD variable exponent requires positive base")
-            primal = self.primal**rhs.primal
-            if np.all(rhs.tangent == 0.0):
-                tangent = rhs.primal * self.primal ** (rhs.primal - 1.0) * self.tangent
-            else:
-                tangent = primal * (
-                    rhs.tangent * float(np.log(self.primal))
-                    + rhs.primal * self.tangent / self.primal
-                )
-            return self.context.make(op, (self.name, rhs.name), primal, tangent)
-        raise ValueError(f"unsupported whole-program AD binary op {op}")
+        if self.primal <= 0.0 and np.any(rhs.tangent != 0.0):
+            raise ValueError("whole-program AD variable exponent requires positive base")
+        primal = self.primal**rhs.primal
+        if np.all(rhs.tangent == 0.0):
+            tangent = rhs.primal * self.primal ** (rhs.primal - 1.0) * self.tangent
+        else:
+            tangent = primal * (
+                rhs.tangent * float(np.log(self.primal)) + rhs.primal * self.tangent / self.primal
+            )
+        return self.context.make(op, (self.name, rhs.name), primal, tangent)
 
     def __add__(self, other: object) -> TraceADScalar:
+        """Return the derivative-preserving scalar sum."""
         return self._binary("add", other)
 
     def __radd__(self, other: object) -> TraceADScalar:
+        """Return the derivative-preserving reflected scalar sum."""
         return self.__add__(other)
 
     def __sub__(self, other: object) -> TraceADScalar:
+        """Return the derivative-preserving scalar difference."""
         return self._binary("sub", other)
 
     def __rsub__(self, other: object) -> TraceADScalar:
+        """Return the derivative-preserving reflected scalar difference."""
         return self._coerce(other)._binary("sub", self)
 
     def __mul__(self, other: object) -> TraceADScalar:
+        """Return the derivative-preserving scalar product."""
         return self._binary("mul", other)
 
     def __rmul__(self, other: object) -> TraceADScalar:
+        """Return the derivative-preserving reflected scalar product."""
         return self.__mul__(other)
 
     def __truediv__(self, other: object) -> TraceADScalar:
+        """Return the derivative-preserving scalar quotient."""
         return self._binary("div", other)
 
     def __rtruediv__(self, other: object) -> TraceADScalar:
+        """Return the derivative-preserving reflected scalar quotient."""
         return self._coerce(other)._binary("div", self)
 
     def __pow__(self, other: object) -> TraceADScalar:
+        """Return the derivative-preserving scalar power."""
         return self._binary("pow", other)
 
     def __rpow__(self, other: object) -> TraceADScalar:
+        """Return the derivative-preserving reflected scalar power."""
         return self._coerce(other)._binary("pow", self)
 
     def __neg__(self) -> TraceADScalar:
+        """Return the derivative-preserving additive inverse."""
         return self.context.make("neg", (self.name,), -self.primal, -self.tangent)
 
     def __abs__(self) -> TraceADScalar:
-        result = _apply_trace_ufunc(np.absolute, (self,), self.context)
-        if not isinstance(result, TraceADScalar):
-            raise ValueError("whole-program AD absolute value returned a non-scalar result")
-        return result
+        """Return the derivative-preserving absolute value."""
+        return cast(TraceADScalar, _apply_trace_ufunc(np.absolute, (self,), self.context))
 
     def _compare(self, op: str, other: object) -> _TracePredicate:
         rhs = self._coerce(other)
@@ -288,24 +326,32 @@ class TraceADScalar:
         return _TracePredicate(comparisons[op], self.context, f"{self.name}:{op}:{rhs.name}")
 
     def __gt__(self, other: object) -> _TracePredicate:
+        """Return the traced strict-greater-than predicate."""
         return self._compare("gt", other)
 
     def __ge__(self, other: object) -> _TracePredicate:
+        """Return the traced greater-than-or-equal predicate."""
         return self._compare("ge", other)
 
     def __lt__(self, other: object) -> _TracePredicate:
+        """Return the traced strict-less-than predicate."""
         return self._compare("lt", other)
 
     def __le__(self, other: object) -> _TracePredicate:
+        """Return the traced less-than-or-equal predicate."""
         return self._compare("le", other)
 
+    # Equality intentionally returns a traced predicate instead of ``bool``.
     def __eq__(self, other: object) -> _TracePredicate:  # type: ignore[override]
+        """Return the traced equality predicate."""
         rhs = self._coerce(other)
         return _TracePredicate(
             self.primal == rhs.primal, self.context, f"{self.name}:eq:{rhs.name}"
         )
 
+    # Inequality intentionally returns a traced predicate instead of ``bool``.
     def __ne__(self, other: object) -> _TracePredicate:  # type: ignore[override]
+        """Return the traced inequality predicate."""
         rhs = self._coerce(other)
         return _TracePredicate(
             self.primal != rhs.primal, self.context, f"{self.name}:ne:{rhs.name}"
@@ -314,6 +360,7 @@ class TraceADScalar:
     def __array_ufunc__(
         self, ufunc: np.ufunc, method: str, *inputs: object, **kwargs: object
     ) -> TraceADScalar:
+        """Dispatch a supported NumPy ufunc through scalar trace semantics."""
         if method != "__call__" or kwargs:
             raise ValueError("whole-program AD supports only direct NumPy scalar ufunc calls")
         result = _apply_trace_ufunc(ufunc, tuple(inputs), self.context)
@@ -323,7 +370,27 @@ class TraceADScalar:
 
 
 class TraceADArray:
-    """Derivative-carrying one-dimensional array for whole-program AD."""
+    """Derivative-carrying ranked array for whole-program AD.
+
+    Parameters
+    ----------
+    items:
+        Row-major scalar trace values carried by the array.
+    shape:
+        Static NumPy-compatible shape whose element count matches ``items``.
+    context:
+        Trace context shared by every scalar item.
+    source_indices:
+        Optional original parameter slots retained through alias-preserving
+        views; ``None`` entries identify constants or overwritten elements.
+
+    Notes
+    -----
+    Supported NumPy functions dispatch through ``__array_function__`` and
+    supported ufuncs through ``__array_ufunc__``. Raw ndarray coercion fails
+    closed because it would discard derivative and alias metadata.
+
+    """
 
     __array_priority__ = 1000.0
     # ``__eq__`` returns a trace predicate (elementwise), not a bool, so
@@ -367,11 +434,13 @@ class TraceADArray:
         return len(self._items)
 
     def __len__(self) -> int:
+        """Return the leading-axis length of a ranked trace array."""
         if not self.shape:
             raise TypeError("scalar TraceADArray has no len()")
         return self.shape[0]
 
-    def __iter__(self) -> object:
+    def __iter__(self) -> Iterator[TraceADScalar | TraceADArray]:
+        """Iterate over trace scalars or rank-one row views."""
         if self.ndim == 1:
             return iter(self._items)
         if self.ndim == 2:
@@ -390,6 +459,7 @@ class TraceADArray:
         raise ValueError("whole-program AD array iteration supports arrays with rank <= 2")
 
     def __array__(self, dtype: object = None) -> object:
+        """Reject ndarray coercion that would discard trace metadata."""
         del dtype
         raise ValueError(
             "whole-program AD array cannot be converted to a NumPy ndarray without losing derivatives"
@@ -520,9 +590,11 @@ class TraceADArray:
         _raise_index_selection_boundary("argmin", (self, axis))
 
     def __getitem__(self, index: object) -> TraceADScalar | TraceADArray:
+        """Return a derivative-preserving indexed scalar or array view."""
         return _trace_array_getitem(self, index)
 
     def __setitem__(self, index: object, value: object) -> None:
+        """Assign traced values while recording deterministic mutation metadata."""
         if self.ndim > 2:
             raise ValueError("whole-program AD array mutation supports arrays with rank <= 2")
         if isinstance(index, slice):
@@ -610,6 +682,7 @@ class TraceADArray:
     def __array_ufunc__(
         self, ufunc: np.ufunc, method: str, *inputs: object, **kwargs: object
     ) -> TraceADScalar | TraceADArray:
+        """Dispatch a supported NumPy ufunc through array trace semantics."""
         if method != "__call__" or kwargs:
             raise ValueError("whole-program AD supports only direct NumPy array ufunc calls")
         return _apply_trace_ufunc(ufunc, tuple(inputs), self.context)
@@ -621,6 +694,7 @@ class TraceADArray:
         args: tuple[object, ...],
         kwargs: dict[str, object],
     ) -> TraceADScalar | TraceADArray | list[TraceADArray] | tuple[TraceADArray, TraceADArray]:
+        """Dispatch a supported NumPy function through fail-closed trace semantics."""
         del types
         if func is np.sum:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
@@ -957,7 +1031,9 @@ class TraceADArray:
         if func in {np.atleast_1d, np.atleast_2d, np.atleast_3d}:
             if not args or kwargs:
                 raise ValueError("program AD atleast transforms support positional arrays only")
-            target_rank = 1 if func is np.atleast_1d else 2 if func is np.atleast_2d else 3
+            target_rank: Literal[1, 2, 3] = (
+                1 if func is np.atleast_1d else 2 if func is np.atleast_2d else 3
+            )
             transformed = tuple(
                 _trace_atleast_nd(_coerce_trace_array(item, self.context), rank=target_rank)
                 for item in args
@@ -1204,7 +1280,7 @@ class TraceADArray:
             if len(args) != 1 or kwargs:
                 raise ValueError(f"program AD np.{func.__name__} supports one array sequence")
             return _trace_stack_convenience(
-                func.__name__,
+                cast(_TraceStackConvenience, func.__name__),
                 cast(Sequence[object], args[0]),
                 self.context,
             )
@@ -1248,7 +1324,7 @@ class TraceADArray:
                 lower=func is np.tril,
             )
         if func is np.clip:
-            if len(args) < 3 or len(args) > 4 or kwargs:
+            if len(args) != 3 or kwargs:
                 raise ValueError("whole-program AD np.clip supports array, lower, and upper")
             return _trace_clip(args[0], args[1], args[2], self.context)
         if func is np.linalg.norm:
@@ -1428,42 +1504,55 @@ class TraceADArray:
         return _apply_trace_ufunc(op, (self, other), self.context)
 
     def __add__(self, other: object) -> TraceADScalar | TraceADArray:
+        """Return the derivative-preserving elementwise sum."""
         return self._binary(other, np.add)
 
     def __radd__(self, other: object) -> TraceADScalar | TraceADArray:
+        """Return the derivative-preserving reflected elementwise sum."""
         return self._binary(other, np.add)
 
     def __sub__(self, other: object) -> TraceADScalar | TraceADArray:
+        """Return the derivative-preserving elementwise difference."""
         return self._binary(other, np.subtract)
 
     def __rsub__(self, other: object) -> TraceADScalar | TraceADArray:
+        """Return the derivative-preserving reflected elementwise difference."""
         return _apply_trace_ufunc(np.subtract, (other, self), self.context)
 
     def __mul__(self, other: object) -> TraceADScalar | TraceADArray:
+        """Return the derivative-preserving elementwise product."""
         return self._binary(other, np.multiply)
 
     def __rmul__(self, other: object) -> TraceADScalar | TraceADArray:
+        """Return the derivative-preserving reflected elementwise product."""
         return self._binary(other, np.multiply)
 
     def __truediv__(self, other: object) -> TraceADScalar | TraceADArray:
+        """Return the derivative-preserving elementwise quotient."""
         return self._binary(other, np.divide)
 
     def __rtruediv__(self, other: object) -> TraceADScalar | TraceADArray:
+        """Return the derivative-preserving reflected elementwise quotient."""
         return _apply_trace_ufunc(np.divide, (other, self), self.context)
 
     def __pow__(self, other: object) -> TraceADScalar | TraceADArray:
+        """Return the derivative-preserving elementwise power."""
         return self._binary(other, np.power)
 
     def __rpow__(self, other: object) -> TraceADScalar | TraceADArray:
+        """Return the derivative-preserving reflected elementwise power."""
         return _apply_trace_ufunc(np.power, (other, self), self.context)
 
     def __neg__(self) -> TraceADScalar | TraceADArray:
+        """Return the derivative-preserving elementwise additive inverse."""
         return _apply_trace_ufunc(np.negative, (self,), self.context)
 
     def __matmul__(self, other: object) -> TraceADScalar | TraceADArray:
+        """Return the derivative-preserving matrix product."""
         return _trace_matmul(self, other, self.context)
 
     def __rmatmul__(self, other: object) -> TraceADScalar | TraceADArray:
+        """Return the derivative-preserving reflected matrix product."""
         return _trace_matmul(other, self, self.context)
 
     def _compare(self, op: str, other: object) -> _TracePredicate | TraceADPredicateArray:
@@ -1482,21 +1571,29 @@ class TraceADArray:
         )
 
     def __gt__(self, other: object) -> _TracePredicate | TraceADPredicateArray:
+        """Return the traced elementwise strict-greater-than predicate."""
         return self._compare("gt", other)
 
     def __ge__(self, other: object) -> _TracePredicate | TraceADPredicateArray:
+        """Return the traced elementwise greater-than-or-equal predicate."""
         return self._compare("ge", other)
 
     def __lt__(self, other: object) -> _TracePredicate | TraceADPredicateArray:
+        """Return the traced elementwise strict-less-than predicate."""
         return self._compare("lt", other)
 
     def __le__(self, other: object) -> _TracePredicate | TraceADPredicateArray:
+        """Return the traced elementwise less-than-or-equal predicate."""
         return self._compare("le", other)
 
+    # Equality intentionally returns a traced predicate instead of ``bool``.
     def __eq__(self, other: object) -> _TracePredicate | TraceADPredicateArray:  # type: ignore[override]
+        """Return the traced elementwise equality predicate."""
         return self._compare("eq", other)
 
+    # Inequality intentionally returns a traced predicate instead of ``bool``.
     def __ne__(self, other: object) -> _TracePredicate | TraceADPredicateArray:  # type: ignore[override]
+        """Return the traced elementwise inequality predicate."""
         return self._compare("ne", other)
 
 
@@ -1589,15 +1686,8 @@ def _trace_array_view_from_local_indices(
 
 def _trace_array_getitem(array: TraceADArray, index: object) -> TraceADScalar | TraceADArray:
     _require_program_ad_array_contract("getitem", (array, index))
-    _validate_trace_basic_index(index)
     source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
-    try:
-        selected = source[cast(Any, index)]
-    except (IndexError, TypeError, ValueError) as exc:
-        raise ValueError(
-            "program AD basic indexing requires static in-bounds integer, slice, "
-            "ellipsis, or newaxis selectors"
-        ) from exc
+    selected = source[cast(Any, index)]
     selected_array = np.asarray(selected)
     if selected_array.shape == ():
         return array._items[int(selected_array)]
@@ -1619,9 +1709,6 @@ def _trace_squeeze(
         target_shape = tuple(dimension for dimension in array.shape if dimension != 1)
         return _trace_array_view_from_local_indices(array, "squeeze", local_indices, target_shape)
     axes = _normalise_shape_transform_axes("squeeze", axis, output_rank=array.ndim)
-    for item in axes:
-        if array.shape[item] != 1:
-            raise ValueError("program AD squeeze axis must have length one")
     target_shape = tuple(
         dimension for index, dimension in enumerate(array.shape) if index not in axes
     )
@@ -1644,9 +1731,7 @@ def _trace_expand_dims(array: TraceADArray, *, axis: int | tuple[int, ...]) -> T
     )
 
 
-def _trace_atleast_nd(array: TraceADArray, *, rank: int) -> TraceADArray:
-    if rank not in {1, 2, 3}:
-        raise ValueError("program AD atleast rank must be 1, 2, or 3")
+def _trace_atleast_nd(array: TraceADArray, *, rank: Literal[1, 2, 3]) -> TraceADArray:
     _require_program_ad_shape_contract(f"atleast_{rank}d", (array,))
     if rank == 1:
         shape = array.shape if array.ndim >= 1 else (1,)
@@ -1657,7 +1742,7 @@ def _trace_atleast_nd(array: TraceADArray, *, rank: int) -> TraceADArray:
             shape = (1, array.shape[0])
         else:
             shape = array.shape
-    elif rank == 3:
+    else:
         if array.ndim == 0:
             shape = (1, 1, 1)
         elif array.ndim == 1:
@@ -1701,8 +1786,6 @@ def _trace_moveaxis(
     destination_axes = _normalise_axis_permutation_axes(
         "moveaxis", destination, rank=array.ndim, role="destination"
     )
-    if len(source_axes) != len(destination_axes):
-        raise ValueError("program AD moveaxis source and destination lengths must match")
     moved_indices = np.moveaxis(
         np.arange(array.size, dtype=np.int64).reshape(array.shape),
         source_axes,
@@ -1812,8 +1895,6 @@ def _trace_flip(array: TraceADArray, *, axis: object = None) -> TraceADArray:
 
 
 def _require_strict_sort_values(values: NDArray[np.float64]) -> None:
-    if not bool(np.all(np.isfinite(values))):
-        raise ValueError("program AD np.sort requires finite values")
     if values.size <= 1:
         return
     sorted_values = np.sort(values.reshape(-1))
@@ -1825,8 +1906,6 @@ def _require_strict_sort_values(values: NDArray[np.float64]) -> None:
 
 
 def _require_strict_sort_axis(values: NDArray[np.float64], *, axis: int) -> None:
-    if not bool(np.all(np.isfinite(values))):
-        raise ValueError("program AD np.sort requires finite values")
     if values.shape[axis] <= 1:
         return
     sorted_values = np.sort(values, axis=axis)
@@ -1919,8 +1998,6 @@ def _trace_order_statistic(
 
 def _trace_flipud(array: TraceADArray) -> TraceADArray:
     _require_program_ad_shape_contract("flipud", (array,))
-    if array.ndim < 1:
-        raise ValueError("program AD flipud requires at least rank-1 arrays")
     source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
     flipped = np.flipud(source)
     return _trace_array_view_from_local_indices(
@@ -1933,8 +2010,6 @@ def _trace_flipud(array: TraceADArray) -> TraceADArray:
 
 def _trace_fliplr(array: TraceADArray) -> TraceADArray:
     _require_program_ad_shape_contract("fliplr", (array,))
-    if array.ndim < 2:
-        raise ValueError("program AD fliplr requires at least rank-2 arrays")
     source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
     flipped = np.fliplr(source)
     return _trace_array_view_from_local_indices(
@@ -1943,70 +2018,6 @@ def _trace_fliplr(array: TraceADArray) -> TraceADArray:
         tuple(int(index) for index in flipped.reshape(-1)),
         tuple(map(int, flipped.shape)),
     )
-
-
-def _validate_trace_basic_index(index: object) -> None:
-    if isinstance(index, tuple):
-        for selector in index:
-            _validate_trace_basic_index_selector(selector)
-        return
-    _validate_trace_basic_index_selector(index)
-
-
-_PROGRAM_AD_STATIC_INDEX_ERROR = (
-    "program AD array getitem requires static integer or boolean index arrays, "
-    "integer/slice/ellipsis/newaxis selectors, and static integer slice bounds"
-)
-
-
-def _validate_trace_basic_index_selector(selector: object) -> None:
-    if isinstance(selector, (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray)):
-        raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
-    if isinstance(selector, (bool, np.bool_)):
-        raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
-    if selector is Ellipsis or selector is None:
-        return
-    if isinstance(selector, (int, np.integer)):
-        return
-    if isinstance(selector, slice):
-        for item in (selector.start, selector.stop, selector.step):
-            if item is not None and (
-                isinstance(
-                    item,
-                    (
-                        bool,
-                        np.bool_,
-                        TraceADScalar,
-                        TraceADArray,
-                        _TracePredicate,
-                        TraceADPredicateArray,
-                    ),
-                )
-                or not isinstance(item, (int, np.integer))
-            ):
-                raise ValueError("program AD basic indexing requires static integer slice bounds")
-        return
-    if isinstance(selector, (np.ndarray, list)):
-        _trace_static_index_array(selector)
-        return
-    raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
-
-
-def _trace_static_index_array(selector: object) -> NDArray[Any]:
-    array = np.asarray(selector)
-    if array.dtype == object and any(
-        isinstance(
-            item,
-            (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray),
-        )
-        for item in array.reshape(-1)
-    ):
-        raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
-    if array.dtype.kind not in {"i", "u", "b"}:
-        raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
-    if array.shape == () and array.dtype.kind == "b":
-        raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
-    return array
 
 
 def _broadcast_trace_array(
@@ -2019,13 +2030,8 @@ def _broadcast_trace_array(
         return TraceADArray(
             tuple(array.item() for _ in range(int(np.prod(shape)))), shape, context
         )
-    try:
-        source_indices = np.arange(array.size, dtype=np.int64).reshape(array.shape)
-        broadcast_indices = np.broadcast_to(source_indices, shape).reshape(-1)
-    except ValueError as exc:
-        raise ValueError(
-            "whole-program AD array operands must follow NumPy broadcasting rules"
-        ) from exc
+    source_indices = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+    broadcast_indices = np.broadcast_to(source_indices, shape).reshape(-1)
     return TraceADArray(
         tuple(array._items[int(index)] for index in broadcast_indices), shape, context
     )
@@ -2185,7 +2191,9 @@ def _apply_unary_trace_ufunc(ufunc: np.ufunc, arg: TraceADScalar) -> TraceADScal
             raise ValueError("whole-program AD absolute value is non-differentiable at zero")
         sign = 1.0 if arg.primal > 0.0 else -1.0
         return arg.context.make("abs", (arg.name,), abs(arg.primal), sign * arg.tangent)
-    raise ValueError(f"unsupported whole-program AD NumPy ufunc {ufunc.__name__}")
+    raise AssertionError(  # pragma: no cover - filtered by _apply_trace_ufunc
+        f"unexpected registered unary ufunc {ufunc.__name__}"
+    )
 
 
 def _apply_binary_trace_ufunc(
@@ -2213,13 +2221,13 @@ def _apply_binary_trace_ufunc(
             raise ValueError("whole-program AD minimum is non-differentiable at equal inputs")
         chosen = left if left.primal <= right.primal else right
         return left.context.make("minimum", (left.name, right.name), chosen.primal, chosen.tangent)
-    raise ValueError(f"unsupported whole-program AD NumPy ufunc {ufunc.__name__}")
+    raise AssertionError(  # pragma: no cover - filtered by _apply_trace_ufunc
+        f"unexpected registered binary ufunc {ufunc.__name__}"
+    )
 
 
 def _trace_array_sum(array: TraceADArray, axis: int | None = None) -> TraceADScalar | TraceADArray:
     _require_program_ad_reduction_contract("sum", (array, axis))
-    if not array._items:
-        raise ValueError("whole-program AD array reductions require at least one element")
     if axis is None:
         total = array._items[0]
         for item in array._items[1:]:
@@ -2252,32 +2260,15 @@ def _trace_trapezoid_widths(
     axis: int,
 ) -> NDArray[np.float64]:
     axis_size = array.shape[axis]
-    if axis_size < 2:
-        raise ValueError("program AD np.trapezoid requires at least two samples along axis")
     width_shape = array.shape[:axis] + (axis_size - 1,) + array.shape[axis + 1 :]
-    if isinstance(x, (TraceADArray, TraceADScalar)):
-        raise ValueError("program AD np.trapezoid grid x must be static real numeric")
     if x is None:
         dx_value = _as_real_scalar("program AD np.trapezoid dx", dx)
-        if not np.isfinite(dx_value):
-            raise ValueError("program AD np.trapezoid dx must be finite")
         return np.full(width_shape, dx_value, dtype=np.float64)
-    dx_value = _as_real_scalar("program AD np.trapezoid dx", dx)
-    if dx_value != 1.0:
-        raise ValueError("program AD np.trapezoid accepts either x or dx, not both")
     x_array = _as_real_numeric_array("program AD np.trapezoid x", x)
-    if not bool(np.all(np.isfinite(x_array))):
-        raise ValueError("program AD np.trapezoid x must contain only finite values")
     if x_array.ndim == 1:
-        if x_array.shape[0] != axis_size:
-            raise ValueError("program AD np.trapezoid x must match the integration axis")
         reshape = [1 for _ in array.shape]
         reshape[axis] = axis_size - 1
         return np.broadcast_to(np.diff(x_array).reshape(tuple(reshape)), width_shape).copy()
-    if tuple(x_array.shape) != array.shape:
-        raise ValueError(
-            "program AD np.trapezoid x must match the integration axis or full array shape"
-        )
     return np.diff(x_array, axis=axis)
 
 
@@ -2314,30 +2305,6 @@ def _trace_trapezoid(
     return TraceADArray(items, reduced_shape, array.context)
 
 
-def _trace_gradient_axis(
-    array: TraceADArray,
-    *,
-    axis: int,
-    spacing: _GradientSpacing,
-    edge_order: int,
-) -> TraceADArray:
-    items: list[TraceADScalar] = []
-    for flat_index in range(array.size):
-        target_index = np.unravel_index(flat_index, array.shape)
-        total = _coerce_trace_scalar(0.0, array.context)
-        for source_axis_index, coefficient in _gradient_axis_coefficients(
-            int(target_index[axis]),
-            array.shape[axis],
-            spacing,
-            edge_order,
-        ):
-            source_index = target_index[:axis] + (source_axis_index,) + target_index[axis + 1 :]
-            source = array._items[int(np.ravel_multi_index(source_index, array.shape))]
-            total = total + source * coefficient
-        items.append(total)
-    return TraceADArray(tuple(items), array.shape, array.context)
-
-
 def _format_static_gradient_spacing(spacing: _GradientSpacing) -> str:
     """Format one static ``np.gradient`` spacing descriptor for compact opcodes."""
     if spacing[0] == "scalar":
@@ -2346,6 +2313,50 @@ def _format_static_gradient_spacing(spacing: _GradientSpacing) -> str:
     return "coordinates=" + ",".join(
         _format_static_interp_float(float(value)) for value in coordinates.reshape(-1)
     )
+
+
+def _evaluate_trace_compact_rule(
+    input_items: Sequence[TraceADScalar],
+    *,
+    expected_size: int,
+    operation_name: str,
+    value_fn: Callable[[NDArray[np.float64]], object],
+    jvp_rule: CustomJVPRule,
+    context: _WholeProgramTraceContext,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Evaluate one registered compact value/JVP rule with shared safeguards."""
+    flat_values = np.array([item.primal for item in input_items], dtype=np.float64)
+    output_flat = _as_real_numeric_array(
+        f"program AD {operation_name} compact values", value_fn(flat_values)
+    ).reshape(-1)
+    if output_flat.size != expected_size:  # pragma: no cover - factory signature invariant
+        raise ValueError(f"program AD {operation_name} compact value shape mismatch")
+    flat_tangent = np.asarray([item.tangent for item in input_items], dtype=np.float64).reshape(
+        len(input_items), context.parameter_count
+    )
+    if context.parameter_count:
+        tangent_outputs = np.array(
+            [
+                _as_real_numeric_array(
+                    f"program AD {operation_name} compact tangent",
+                    jvp_rule(flat_values, flat_tangent[:, parameter_index]),
+                ).reshape(-1)
+                for parameter_index in range(context.parameter_count)
+            ],
+            dtype=np.float64,
+        ).T
+    else:
+        tangent_outputs = np.zeros((expected_size, 0), dtype=np.float64)
+    if tangent_outputs.shape != (  # pragma: no cover - factory signature invariant
+        expected_size,
+        context.parameter_count,
+    ):
+        raise ValueError(f"program AD {operation_name} compact tangent shape mismatch")
+    if not bool(np.all(np.isfinite(output_flat))) or not bool(
+        np.all(np.isfinite(tangent_outputs))
+    ):
+        raise ValueError(f"program AD {operation_name} compact outputs must be finite")
+    return output_flat, tangent_outputs
 
 
 def _trace_gradient_compact_array(
@@ -2363,34 +2374,14 @@ def _trace_gradient_compact_array(
         axis=axis,
         edge_order=edge_order,
     )
-    if rule.jvp_rule is None:
-        raise ValueError("program AD stencil gradient compact rule requires a JVP rule")
-    flat_values = np.array([item.primal for item in array._items], dtype=np.float64)
-    output_flat = _as_real_numeric_array(
-        "program AD stencil gradient compact values", rule.value_fn(flat_values)
-    ).reshape(-1)
-    if output_flat.size != array.size:
-        raise ValueError("program AD stencil gradient compact value shape mismatch")
-    flat_tangent = np.stack([item.tangent for item in array._items], axis=0)
-    if array.context.parameter_count:
-        tangent_outputs = np.array(
-            [
-                _as_real_numeric_array(
-                    "program AD stencil gradient compact tangent",
-                    rule.jvp_rule(flat_values, flat_tangent[:, parameter_index]),
-                ).reshape(-1)
-                for parameter_index in range(array.context.parameter_count)
-            ],
-            dtype=np.float64,
-        ).T
-    else:
-        tangent_outputs = np.zeros((array.size, 0), dtype=np.float64)
-    if tangent_outputs.shape != (array.size, array.context.parameter_count):
-        raise ValueError("program AD stencil gradient compact tangent shape mismatch")
-    if not bool(np.all(np.isfinite(output_flat))) or not bool(
-        np.all(np.isfinite(tangent_outputs))
-    ):
-        raise ValueError("program AD stencil gradient compact outputs must be finite")
+    output_flat, tangent_outputs = _evaluate_trace_compact_rule(
+        array._items,
+        expected_size=array.size,
+        operation_name="stencil gradient",
+        value_fn=rule.value_fn,
+        jvp_rule=_required_trace_jvp(rule, "program AD stencil gradient"),
+        context=array.context,
+    )
 
     input_names = tuple(item.name for item in array._items)
     operation_prefix = (
@@ -2433,17 +2424,11 @@ def _trace_gradient(
 
 
 def _normalise_interp_trace_values(
-    fp: object, *, grid_size: int, context: _WholeProgramTraceContext
+    fp: object, *, context: _WholeProgramTraceContext
 ) -> tuple[TraceADScalar, ...]:
     if isinstance(fp, TraceADArray):
-        if fp.ndim != 1 or fp.size != grid_size:
-            raise ValueError("program AD np.interp fp values must match xp grid length")
         return tuple(fp._items)
-    if isinstance(fp, TraceADScalar):
-        raise ValueError("program AD np.interp fp values must be one-dimensional")
     values = _as_real_numeric_array("program AD np.interp fp values", fp)
-    if values.ndim != 1 or values.size != grid_size:
-        raise ValueError("program AD np.interp fp values must match xp grid length")
     if not bool(np.all(np.isfinite(values))):
         raise ValueError("program AD np.interp fp values must contain only finite values")
     return tuple(_coerce_trace_scalar(float(value), context) for value in values)
@@ -2454,8 +2439,6 @@ def _normalise_interp_boundary(
 ) -> TraceADScalar | None:
     if value is None:
         return None
-    if isinstance(value, (TraceADArray, TraceADScalar)):
-        raise ValueError(f"program AD np.interp {name} boundary must be static real numeric")
     return _coerce_trace_scalar(_as_real_scalar(f"program AD np.interp {name}", value), context)
 
 
@@ -2474,36 +2457,10 @@ def _normalise_interp_samples(
     ), tuple(samples.shape)
 
 
-def _trace_interp_scalar(
-    sample: TraceADScalar,
-    *,
-    grid: NDArray[np.float64],
-    values: tuple[TraceADScalar, ...],
-    left: TraceADScalar | None,
-    right: TraceADScalar | None,
-) -> TraceADScalar:
-    primal = sample.primal
-    if not math.isfinite(primal):
-        raise ValueError("program AD np.interp x samples must contain only finite values")
-    if bool(np.any(grid == primal)):
-        raise ValueError("program AD np.interp differentiable samples must avoid grid knots")
-    if primal < float(grid[0]):
-        return values[0] if left is None else left
-    if primal > float(grid[-1]):
-        return values[-1] if right is None else right
-    segment = int(np.searchsorted(grid, primal, side="right") - 1)
-    lower = float(grid[segment])
-    upper = float(grid[segment + 1])
-    weight = (sample - lower) / (upper - lower)
-    return values[segment] + (values[segment + 1] - values[segment]) * weight
-
-
 def _format_static_interp_float(value: float | None) -> str:
     """Format static interpolation metadata for compact Program AD opcodes."""
     if value is None:
         return "none"
-    if not math.isfinite(value):
-        raise ValueError("program AD np.interp compact metadata must be finite")
     return f"{value:.17g}"
 
 
@@ -2521,37 +2478,19 @@ def _trace_interp_compact_array(
     left: float | None,
     right: float | None,
     value_fn: Callable[[NDArray[np.float64]], object],
-    jvp_rule: Callable[[NDArray[np.float64], NDArray[np.float64]], object],
+    jvp_rule: CustomJVPRule,
     context: _WholeProgramTraceContext,
 ) -> TraceADScalar | TraceADArray:
     """Emit compact interpolation Program AD nodes from an exact direct rule."""
     input_items = samples + values
-    flat_values = np.array([item.primal for item in input_items], dtype=np.float64)
-    output_flat = _as_real_numeric_array(
-        "program AD interpolation compact values", value_fn(flat_values)
-    ).reshape(-1)
-    if output_flat.size != len(samples):
-        raise ValueError("program AD interpolation compact value shape mismatch")
-    flat_tangent = np.stack([item.tangent for item in input_items], axis=0)
-    if context.parameter_count:
-        tangent_outputs = np.array(
-            [
-                _as_real_numeric_array(
-                    "program AD interpolation compact tangent",
-                    jvp_rule(flat_values, flat_tangent[:, parameter_index]),
-                ).reshape(-1)
-                for parameter_index in range(context.parameter_count)
-            ],
-            dtype=np.float64,
-        ).T
-    else:
-        tangent_outputs = np.zeros((len(samples), 0), dtype=np.float64)
-    if tangent_outputs.shape != (len(samples), context.parameter_count):
-        raise ValueError("program AD interpolation compact tangent shape mismatch")
-    if not bool(np.all(np.isfinite(output_flat))) or not bool(
-        np.all(np.isfinite(tangent_outputs))
-    ):
-        raise ValueError("program AD interpolation compact outputs must be finite")
+    output_flat, tangent_outputs = _evaluate_trace_compact_rule(
+        input_items,
+        expected_size=len(samples),
+        operation_name="interpolation",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        context=context,
+    )
     input_names = tuple(item.name for item in input_items)
     operation_prefix = (
         "interpolation:interp:"
@@ -2588,7 +2527,7 @@ def _trace_interp(
         raise ValueError("program AD np.interp period is not supported")
     _require_program_ad_interpolation_contract("interp", (x, xp, fp, left, right, period))
     grid = _normalise_interp_grid(xp)
-    values = _normalise_interp_trace_values(fp, grid_size=grid.size, context=context)
+    values = _normalise_interp_trace_values(fp, context=context)
     left_value = _normalise_interp_boundary("left", left, context)
     right_value = _normalise_interp_boundary("right", right, context)
     samples, shape = _normalise_interp_samples(x, context=context)
@@ -2602,8 +2541,7 @@ def _trace_interp(
         right=right_static,
         period=None,
     )
-    if rule.jvp_rule is None:
-        raise ValueError("program AD interpolation compact rule requires a JVP rule")
+    jvp_rule = _required_trace_jvp(rule, "program AD interpolation")
     return _trace_interp_compact_array(
         samples,
         values,
@@ -2612,7 +2550,7 @@ def _trace_interp(
         left=left_static,
         right=right_static,
         value_fn=rule.value_fn,
-        jvp_rule=rule.jvp_rule,
+        jvp_rule=jvp_rule,
         context=context,
     )
 
@@ -2621,18 +2559,8 @@ def _normalise_convolve_operand(
     name: str, operand: object, context: _WholeProgramTraceContext
 ) -> tuple[TraceADScalar, ...]:
     if isinstance(operand, TraceADArray):
-        if operand.ndim != 1:
-            raise ValueError(f"program AD np.convolve {name} operand must be one-dimensional")
-        if operand.size == 0:
-            raise ValueError(f"program AD np.convolve {name} operand must be non-empty")
         return tuple(operand._items)
-    if isinstance(operand, TraceADScalar):
-        raise ValueError(f"program AD np.convolve {name} operand must be one-dimensional")
     values = _as_real_numeric_array(f"program AD np.convolve {name} operand", operand)
-    if values.ndim != 1:
-        raise ValueError(f"program AD np.convolve {name} operand must be one-dimensional")
-    if values.size == 0:
-        raise ValueError(f"program AD np.convolve {name} operand must be non-empty")
     if not bool(np.all(np.isfinite(values))):
         raise ValueError(f"program AD np.convolve {name} operand must contain only finite values")
     return tuple(_coerce_trace_scalar(float(value), context) for value in values)
@@ -2645,39 +2573,21 @@ def _trace_signal_compact_array(
     operation_name: str,
     mode: Literal["full", "same", "valid"],
     value_fn: Callable[[NDArray[np.float64]], object],
-    jvp_rule: Callable[[NDArray[np.float64], NDArray[np.float64]], object],
+    jvp_rule: CustomJVPRule,
     context: _WholeProgramTraceContext,
 ) -> TraceADArray:
     """Emit compact signal Program AD nodes from an exact direct rule."""
     start, stop = _convolve_output_window(len(left_values), len(right_values), mode)
     output_size = stop - start
     input_items = left_values + right_values
-    flat_values = np.array([item.primal for item in input_items], dtype=np.float64)
-    output_flat = _as_real_numeric_array(
-        f"program AD signal {operation_name} compact values", value_fn(flat_values)
-    ).reshape(-1)
-    if output_flat.size != output_size:
-        raise ValueError(f"program AD signal {operation_name} compact value shape mismatch")
-    flat_tangent = np.stack([item.tangent for item in input_items], axis=0)
-    if context.parameter_count:
-        tangent_outputs = np.array(
-            [
-                _as_real_numeric_array(
-                    f"program AD signal {operation_name} compact tangent",
-                    jvp_rule(flat_values, flat_tangent[:, parameter_index]),
-                ).reshape(-1)
-                for parameter_index in range(context.parameter_count)
-            ],
-            dtype=np.float64,
-        ).T
-    else:
-        tangent_outputs = np.zeros((output_size, 0), dtype=np.float64)
-    if tangent_outputs.shape != (output_size, context.parameter_count):
-        raise ValueError(f"program AD signal {operation_name} compact tangent shape mismatch")
-    if not bool(np.all(np.isfinite(output_flat))) or not bool(
-        np.all(np.isfinite(tangent_outputs))
-    ):
-        raise ValueError(f"program AD signal {operation_name} compact outputs must be finite")
+    output_flat, tangent_outputs = _evaluate_trace_compact_rule(
+        input_items,
+        expected_size=output_size,
+        operation_name=f"signal {operation_name}",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        context=context,
+    )
     input_names = tuple(item.name for item in input_items)
     operation_prefix = (
         f"signal:{operation_name}:left:{len(left_values)}:right:{len(right_values)}:mode:{mode}"
@@ -2708,15 +2618,14 @@ def _trace_convolve(
     rule = program_ad_signal_convolve_derivative_rule(
         (len(left_values),), (len(right_values),), mode=mode_value
     )
-    if rule.jvp_rule is None:
-        raise ValueError("program AD signal convolve compact rule requires a JVP rule")
+    jvp_rule = _required_trace_jvp(rule, "program AD signal convolve")
     return _trace_signal_compact_array(
         left_values,
         right_values,
         operation_name="convolve",
         mode=mode_value,
         value_fn=rule.value_fn,
-        jvp_rule=rule.jvp_rule,
+        jvp_rule=jvp_rule,
         context=context,
     )
 
@@ -2725,18 +2634,8 @@ def _normalise_correlate_operand(
     name: str, operand: object, context: _WholeProgramTraceContext
 ) -> tuple[TraceADScalar, ...]:
     if isinstance(operand, TraceADArray):
-        if operand.ndim != 1:
-            raise ValueError(f"program AD np.correlate {name} operand must be one-dimensional")
-        if operand.size == 0:
-            raise ValueError(f"program AD np.correlate {name} operand must be non-empty")
         return tuple(operand._items)
-    if isinstance(operand, TraceADScalar):
-        raise ValueError(f"program AD np.correlate {name} operand must be one-dimensional")
     values = _as_real_numeric_array(f"program AD np.correlate {name} operand", operand)
-    if values.ndim != 1:
-        raise ValueError(f"program AD np.correlate {name} operand must be one-dimensional")
-    if values.size == 0:
-        raise ValueError(f"program AD np.correlate {name} operand must be non-empty")
     if not bool(np.all(np.isfinite(values))):
         raise ValueError(f"program AD np.correlate {name} operand must contain only finite values")
     return tuple(_coerce_trace_scalar(float(value), context) for value in values)
@@ -2756,15 +2655,14 @@ def _trace_correlate(
     rule = program_ad_signal_correlate_derivative_rule(
         (len(left_values),), (len(right_values),), mode=mode_value
     )
-    if rule.jvp_rule is None:
-        raise ValueError("program AD signal correlate compact rule requires a JVP rule")
+    jvp_rule = _required_trace_jvp(rule, "program AD signal correlate")
     return _trace_signal_compact_array(
         left_values,
         right_values,
         operation_name="correlate",
         mode=mode_value,
         value_fn=rule.value_fn,
-        jvp_rule=rule.jvp_rule,
+        jvp_rule=jvp_rule,
         context=context,
     )
 
@@ -2776,38 +2674,20 @@ def _trace_cumulative_compact_array(
     output_shape: tuple[int, ...],
     output_operations: tuple[str, ...],
     value_fn: Callable[[NDArray[np.float64]], object],
-    jvp_rule: Callable[[NDArray[np.float64], NDArray[np.float64]], object],
+    jvp_rule: CustomJVPRule,
 ) -> TraceADArray:
     """Emit compact cumulative Program AD nodes from an exact direct rule."""
     expected_size = int(np.prod(output_shape))
-    if len(output_operations) != expected_size:
+    if len(output_operations) != expected_size:  # pragma: no cover - caller invariant
         raise ValueError(f"program AD {operation_name} output operation count mismatch")
-    flat_values = np.array([item.primal for item in array._items], dtype=np.float64)
-    output_flat = _as_real_numeric_array(
-        f"program AD {operation_name} compact values", value_fn(flat_values)
-    ).reshape(-1)
-    if output_flat.size != expected_size:
-        raise ValueError(f"program AD {operation_name} compact value shape mismatch")
-    flat_tangent = np.stack([item.tangent for item in array._items], axis=0)
-    if array.context.parameter_count:
-        tangent_outputs = np.array(
-            [
-                _as_real_numeric_array(
-                    f"program AD {operation_name} compact tangent",
-                    jvp_rule(flat_values, flat_tangent[:, parameter_index]),
-                ).reshape(-1)
-                for parameter_index in range(array.context.parameter_count)
-            ],
-            dtype=np.float64,
-        ).T
-    else:
-        tangent_outputs = np.zeros((expected_size, 0), dtype=np.float64)
-    if tangent_outputs.shape != (expected_size, array.context.parameter_count):
-        raise ValueError(f"program AD {operation_name} compact tangent shape mismatch")
-    if not bool(np.all(np.isfinite(output_flat))) or not bool(
-        np.all(np.isfinite(tangent_outputs))
-    ):
-        raise ValueError(f"program AD {operation_name} compact outputs must be finite")
+    output_flat, tangent_outputs = _evaluate_trace_compact_rule(
+        array._items,
+        expected_size=expected_size,
+        operation_name=operation_name,
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        context=array.context,
+    )
     input_names = tuple(item.name for item in array._items)
     items = tuple(
         array.context.make(
@@ -2823,12 +2703,9 @@ def _trace_cumulative_compact_array(
 
 def _trace_cumsum(array: TraceADArray, axis: int | None = None) -> TraceADArray:
     _require_program_ad_cumulative_contract("cumsum", (array, axis))
-    if not array._items:
-        raise ValueError("program AD cumulative sum requires at least one element")
     axis_index = None if axis is None else _normalise_axis("axis", axis, array.ndim)
     rule = program_ad_cumulative_cumsum_derivative_rule(array.shape, axis=axis_index)
-    if rule.jvp_rule is None:
-        raise ValueError("program AD cumulative cumsum compact rule requires a JVP rule")
+    jvp_rule = _required_trace_jvp(rule, "program AD cumulative cumsum")
     output_shape = (array.size,) if axis_index is None else array.shape
     axis_label = "flat" if axis_index is None else str(axis_index)
     operation_prefix = f"cumsum:shape:{_trace_shape_label(array.shape)}:axis:{axis_label}:out"
@@ -2840,7 +2717,7 @@ def _trace_cumsum(array: TraceADArray, axis: int | None = None) -> TraceADArray:
             f"{operation_prefix}:{flat_index}" for flat_index in range(int(np.prod(output_shape)))
         ),
         value_fn=rule.value_fn,
-        jvp_rule=rule.jvp_rule,
+        jvp_rule=jvp_rule,
     )
 
 
@@ -2848,8 +2725,6 @@ def _trace_array_prod(
     array: TraceADArray, axis: int | None = None
 ) -> TraceADScalar | TraceADArray:
     _require_program_ad_reduction_contract("prod", (array, axis))
-    if not array._items:
-        raise ValueError("program AD array product reductions require at least one element")
     if axis is None:
         total = array._items[0]
         for item in array._items[1:]:
@@ -2876,12 +2751,9 @@ def _trace_array_prod(
 
 def _trace_cumprod(array: TraceADArray, axis: int | None = None) -> TraceADArray:
     _require_program_ad_cumulative_contract("cumprod", (array, axis))
-    if not array._items:
-        raise ValueError("program AD cumulative product requires at least one element")
     axis_index = None if axis is None else _normalise_axis("axis", axis, array.ndim)
     rule = program_ad_cumulative_cumprod_derivative_rule(array.shape, axis=axis_index)
-    if rule.jvp_rule is None:
-        raise ValueError("program AD cumulative cumprod compact rule requires a JVP rule")
+    jvp_rule = _required_trace_jvp(rule, "program AD cumulative cumprod")
     output_shape = (array.size,) if axis_index is None else array.shape
     axis_label = "flat" if axis_index is None else str(axis_index)
     operation_prefix = f"cumprod:shape:{_trace_shape_label(array.shape)}:axis:{axis_label}:out"
@@ -2893,17 +2765,13 @@ def _trace_cumprod(array: TraceADArray, axis: int | None = None) -> TraceADArray
             f"{operation_prefix}:{flat_index}" for flat_index in range(int(np.prod(output_shape)))
         ),
         value_fn=rule.value_fn,
-        jvp_rule=rule.jvp_rule,
+        jvp_rule=jvp_rule,
     )
 
 
 def _trace_diff(array: TraceADArray, *, n: object, axis: int) -> TraceADArray:
     _require_program_ad_cumulative_contract("diff", (array, n, axis))
-    if not isinstance(n, (int, np.integer)):
-        raise ValueError("program AD np.diff requires non-negative integer n")
-    order = int(n)
-    if order < 0:
-        raise ValueError("program AD np.diff requires non-negative integer n")
+    order = int(cast(int | np.integer[Any], n))
     axis_index = _normalise_axis("axis", axis, array.ndim)
     if order == 0:
         return array.copy()
@@ -2915,8 +2783,7 @@ def _trace_diff(array: TraceADArray, *, n: object, axis: int) -> TraceADArray:
     if int(np.prod(output_shape)) == 0:
         return TraceADArray((), output_shape, array.context)
     rule = program_ad_cumulative_diff_derivative_rule(array.shape, order=order, axis=axis_index)
-    if rule.jvp_rule is None:
-        raise ValueError("program AD cumulative diff compact rule requires a JVP rule")
+    jvp_rule = _required_trace_jvp(rule, "program AD cumulative diff")
     operation_prefix = (
         f"diff:shape:{_trace_shape_label(array.shape)}:n:{order}:axis:{axis_index}:out"
     )
@@ -2928,26 +2795,8 @@ def _trace_diff(array: TraceADArray, *, n: object, axis: int) -> TraceADArray:
             f"{operation_prefix}:{flat_index}" for flat_index in range(int(np.prod(output_shape)))
         ),
         value_fn=rule.value_fn,
-        jvp_rule=rule.jvp_rule,
+        jvp_rule=jvp_rule,
     )
-
-
-def _trace_first_diff(array: TraceADArray, *, axis: int) -> TraceADArray:
-    axis = _normalise_axis("axis", axis, array.ndim)
-    target_axis_size = max(array.shape[axis] - 1, 0)
-    target_shape = array.shape[:axis] + (target_axis_size,) + array.shape[axis + 1 :]
-    if target_axis_size == 0:
-        return TraceADArray((), target_shape, array.context)
-    items: list[TraceADScalar] = []
-    for target_flat in range(int(np.prod(target_shape))):
-        target_index = np.unravel_index(target_flat, target_shape)
-        left_index = target_index[:axis] + (target_index[axis],) + target_index[axis + 1 :]
-        right_index = target_index[:axis] + (target_index[axis] + 1,) + target_index[axis + 1 :]
-        items.append(
-            array._items[int(np.ravel_multi_index(right_index, array.shape))]
-            - array._items[int(np.ravel_multi_index(left_index, array.shape))]
-        )
-    return TraceADArray(tuple(items), target_shape, array.context)
 
 
 def _trace_variance(
@@ -2956,29 +2805,25 @@ def _trace_variance(
     axis: int | None,
     ddof: object,
 ) -> TraceADScalar | TraceADArray:
-    if not array._items:
-        raise ValueError("program AD variance reductions require at least one element")
     count = array.size if axis is None else array.shape[_normalise_axis("axis", axis, array.ndim)]
     ddof_int = _normalise_ddof(ddof, count)
     mean = array.mean(axis=axis)
     if axis is None:
-        if not isinstance(mean, TraceADScalar):
-            raise ValueError("program AD variance scalar mean expected")
-        squared = tuple((item - mean) * (item - mean) for item in array._items)
+        scalar_mean = cast(TraceADScalar, mean)
+        squared = tuple((item - scalar_mean) * (item - scalar_mean) for item in array._items)
         total = squared[0]
         for item in squared[1:]:
             total = total + item
         return total / float(count - ddof_int)
     axis = _normalise_axis("axis", axis, array.ndim)
-    if not isinstance(mean, TraceADArray):
-        raise ValueError("program AD variance axis mean expected an array")
+    array_mean = cast(TraceADArray, mean)
     reduced_shape = array.shape[:axis] + array.shape[axis + 1 :]
     if reduced_shape == ():
         return _trace_variance(array, axis=None, ddof=ddof_int)
     items: list[TraceADScalar] = []
     for reduced_flat in range(int(np.prod(reduced_shape))):
         reduced_index = np.unravel_index(reduced_flat, reduced_shape)
-        centre = mean._items[reduced_flat]
+        centre = array_mean._items[reduced_flat]
         source_index = reduced_index[:axis] + (0,) + reduced_index[axis:]
         delta = array._items[int(np.ravel_multi_index(source_index, array.shape))] - centre
         total = delta * delta
@@ -3009,13 +2854,9 @@ def _trace_extreme(
     choose_max: bool,
 ) -> TraceADScalar | TraceADArray:
     op_name = "np.max" if choose_max else "np.min"
-    if array.size == 0:
-        raise ValueError(f"program AD {op_name} requires at least one element")
     if axis is None:
         return _trace_strict_extreme(array._items, op_name=op_name, choose_max=choose_max)
     axis = _normalise_axis("axis", axis, array.ndim)
-    if array.shape[axis] == 0:
-        raise ValueError(f"program AD {op_name} requires at least one element")
     reduced_shape = array.shape[:axis] + array.shape[axis + 1 :]
     if reduced_shape == ():
         candidates = tuple(
@@ -3047,8 +2888,6 @@ def _trace_strict_extreme(
     op_name: str,
     choose_max: bool,
 ) -> TraceADScalar:
-    if not items:
-        raise ValueError(f"program AD {op_name} requires at least one element")
     selected = items[0]
     for item in items[1:]:
         if item.primal == selected.primal:
@@ -3065,20 +2904,13 @@ def _trace_take(
     axis: int | None,
     mode: str,
 ) -> TraceADScalar | TraceADArray:
-    _require_program_ad_array_contract("take", (array, indices, axis, mode))
-    mode_name = _program_ad_array_take_mode(mode, context="trace")
     if isinstance(indices, (TraceADScalar, TraceADArray)):
         raise ValueError("program AD np.take requires static integer indices")
+    _require_program_ad_array_contract("take", (array, indices, axis, mode))
+    mode_name = _program_ad_array_take_mode(mode, context="trace")
     raw_indices = np.asarray(indices)
-    if raw_indices.dtype.kind not in {"i", "u"}:
-        raise ValueError("program AD np.take requires static integer indices")
     source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
-    try:
-        selected = np.take(source, raw_indices, axis=axis, mode=mode_name)
-    except (IndexError, ValueError) as exc:
-        if mode_name == "raise":
-            raise ValueError("program AD np.take indices must be in bounds") from exc
-        raise ValueError("program AD np.take requires axis-compatible static indices") from exc
+    selected = np.take(source, raw_indices, axis=axis, mode=mode_name)
     selected_array = np.asarray(selected)
     if selected_array.shape == ():
         return array._items[int(selected_array)]
@@ -3097,21 +2929,13 @@ def _trace_take_along_axis(
     *,
     axis: object,
 ) -> TraceADArray:
-    _require_program_ad_array_contract("take_along_axis", (array, indices, axis))
     if isinstance(indices, (TraceADScalar, TraceADArray)):
         raise ValueError("program AD np.take_along_axis requires static integer indices")
-    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
-        raise ValueError("program AD np.take_along_axis requires a static integer axis")
+    _require_program_ad_array_contract("take_along_axis", (array, indices, axis))
     raw_indices = _program_ad_array_take_indices(indices)
-    normalised_axis = _normalise_axis("axis", int(axis), array.ndim)
+    normalised_axis = _normalise_axis("axis", int(cast(int | np.integer[Any], axis)), array.ndim)
     source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
-    try:
-        selected = np.take_along_axis(source, raw_indices, axis=normalised_axis)
-    except (IndexError, ValueError) as exc:
-        raise ValueError(
-            "program AD np.take_along_axis requires static in-bounds indices "
-            "with shape compatible with the source"
-        ) from exc
+    selected = np.take_along_axis(source, raw_indices, axis=normalised_axis)
     selected_array = np.asarray(selected)
     items = tuple(array._items[int(index)] for index in selected_array.reshape(-1))
     return TraceADArray(items, tuple(int(dim) for dim in selected_array.shape), array.context)
@@ -3130,35 +2954,14 @@ def _trace_delete(
         source = np.arange(array.size, dtype=np.int64).reshape(-1)
         normalised_axis = None
     else:
-        if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
-            raise ValueError("program AD np.delete requires a static integer axis or None")
-        normalised_axis = _normalise_axis("axis", int(axis), array.ndim)
+        normalised_axis = _normalise_axis(
+            "axis", int(cast(int | np.integer[Any], axis)), array.ndim
+        )
         source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
-    try:
-        selected = np.delete(source, cast(Any, delete_obj), axis=normalised_axis)
-    except (IndexError, TypeError, ValueError) as exc:
-        raise ValueError(
-            "program AD np.delete requires static in-bounds deletion selectors "
-            "and a compatible axis"
-        ) from exc
+    selected = np.delete(source, cast(Any, delete_obj), axis=normalised_axis)
     selected_array = np.asarray(selected, dtype=np.int64)
     items = tuple(array._items[int(index)] for index in selected_array.reshape(-1))
     return TraceADArray(items, tuple(int(dim) for dim in selected_array.shape), array.context)
-
-
-def _program_ad_contains_trace_value(value: object) -> bool:
-    if isinstance(value, (TraceADScalar, TraceADArray)):
-        return True
-    if isinstance(value, Mapping):
-        return any(
-            _program_ad_contains_trace_value(key) or _program_ad_contains_trace_value(item)
-            for key, item in value.items()
-        )
-    if isinstance(value, np.ndarray) and value.dtype == object:
-        return any(_program_ad_contains_trace_value(item) for item in value.reshape(-1))
-    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
-        return any(_program_ad_contains_trace_value(item) for item in value)
-    return False
 
 
 def _trace_pad(
@@ -3210,11 +3013,10 @@ def _trace_insert(
 
 
 def _raise_index_selection_boundary(
-    name: str = "argmax",
-    args: tuple[object, ...] = (),
+    name: str,
+    args: tuple[object, ...],
 ) -> NoReturn:
-    if name in _PROGRAM_AD_SELECTION_IDENTITIES and args:
-        _require_program_ad_selection_contract(name, args)
+    _require_program_ad_selection_contract(name, args)
     raise ValueError(
         "program AD argmax/argmin/argsort index selection semantics are registered "
         "nondifferentiable integer selection primitives and fail closed"
@@ -3233,11 +3035,7 @@ def _trace_transpose(
         return array.copy()
     if axes is None:
         axes = tuple(reversed(range(array.ndim)))
-    if len(axes) != array.ndim:
-        raise ValueError("whole-program AD np.transpose axes must match array rank")
     normalised_axes = tuple(_normalise_axis("axis", axis, array.ndim) for axis in axes)
-    if sorted(normalised_axes) != list(range(array.ndim)):
-        raise ValueError("whole-program AD np.transpose axes must be a permutation")
     target_shape = tuple(array.shape[axis] for axis in normalised_axes)
     inverse_axes = tuple(normalised_axes.index(axis) for axis in range(array.ndim))
     items: list[TraceADScalar] = []
@@ -3267,17 +3065,12 @@ def _trace_dot(
     lhs = _coerce_trace_array(left, context)
     rhs = _coerce_trace_array(right, context)
     _require_program_ad_product_contract("dot", (lhs, rhs))
-    if lhs.ndim == 1 and rhs.ndim == 1 and lhs.shape == rhs.shape:
-        total = lhs._items[0] * rhs._items[0]
-        for left_item, right_item in zip(lhs._items[1:], rhs._items[1:], strict=True):
-            total = total + left_item * right_item
-        return total
-    result = _trace_matmul(lhs, rhs, context)
-    if isinstance(result, TraceADArray) and result.shape == ():
-        return result.item()
-    if isinstance(result, TraceADScalar):
-        return result
-    raise ValueError("whole-program AD np.dot result must be scalar for this operand pair")
+    if lhs.size == 0:
+        return _coerce_trace_scalar(0.0, context)
+    total = lhs._items[0] * rhs._items[0]
+    for left_item, right_item in zip(lhs._items[1:], rhs._items[1:], strict=True):
+        total = total + left_item * right_item
+    return total
 
 
 def _trace_vdot(
@@ -3288,8 +3081,6 @@ def _trace_vdot(
     lhs = _coerce_trace_array(left, context)
     rhs = _coerce_trace_array(right, context)
     _require_program_ad_product_contract("vdot", (lhs, rhs))
-    if lhs.size != rhs.size:
-        raise ValueError("program AD np.vdot flattened operands must have matching size")
     if lhs.size == 0:
         return _coerce_trace_scalar(0.0, context)
     total = lhs._items[0] * rhs._items[0]
@@ -3308,13 +3099,9 @@ def _trace_inner(
     if lhs.ndim == 0 or rhs.ndim == 0:
         return _trace_multiply_arrays(lhs, rhs, context)
     _require_program_ad_product_contract("inner", (lhs, rhs))
-    if lhs.ndim > 2 or rhs.ndim > 2:
-        raise ValueError("whole-program AD np.inner supports operands with rank <= 2")
     lhs_outer = lhs.shape[:-1]
     rhs_outer = rhs.shape[:-1]
     shared = lhs.shape[-1]
-    if rhs.shape[-1] != shared:
-        raise ValueError("whole-program AD np.inner last dimensions must align")
     result_items: list[TraceADScalar] = []
     lhs_rows = int(np.prod(lhs_outer)) if lhs_outer else 1
     rhs_rows = int(np.prod(rhs_outer)) if rhs_outer else 1
@@ -3419,13 +3206,14 @@ def _trace_einsum_scalar_at(
                 for label, index in zip(contraction_labels, contraction_index, strict=True)
             }
         )
-        term: TraceADScalar | None = None
-        for operand, labels in zip(operands, input_labels, strict=True):
+        operand_iterator = iter(zip(operands, input_labels, strict=True))
+        first_operand, first_labels = next(operand_iterator)
+        first_index = tuple(label_indices[label] for label in first_labels)
+        term = first_operand._items[int(np.ravel_multi_index(first_index, first_operand.shape))]
+        for operand, labels in operand_iterator:
             item_index = tuple(label_indices[label] for label in labels)
             item = operand._items[int(np.ravel_multi_index(item_index, operand.shape))]
-            term = item if term is None else term * item
-        if term is None:
-            raise ValueError("whole-program AD np.einsum requires at least one operand")
+            term = term * item
         total = total + term
     return total
 
@@ -3493,8 +3281,6 @@ def _trace_matmul(
     _require_program_ad_product_contract("matmul", (lhs, rhs))
     if lhs.ndim == 2 and rhs.ndim == 1:
         rows, cols = lhs.shape
-        if rhs.shape != (cols,):
-            raise ValueError("whole-program AD matrix-vector dimensions must align")
         items = []
         for row in range(rows):
             total = lhs._items[row * cols] * rhs._items[0]
@@ -3504,8 +3290,6 @@ def _trace_matmul(
         return TraceADArray(tuple(items), (rows,), context)
     if lhs.ndim == 1 and rhs.ndim == 2:
         rows, cols = rhs.shape
-        if lhs.shape != (rows,):
-            raise ValueError("whole-program AD vector-matrix dimensions must align")
         items = []
         for col in range(cols):
             total = lhs._items[0] * rhs._items[col]
@@ -3515,9 +3299,7 @@ def _trace_matmul(
         return TraceADArray(tuple(items), (cols,), context)
     if lhs.ndim == 2 and rhs.ndim == 2:
         lhs_rows, lhs_cols = lhs.shape
-        rhs_rows, rhs_cols = rhs.shape
-        if lhs_cols != rhs_rows:
-            raise ValueError("whole-program AD matrix-matrix dimensions must align")
+        _rhs_rows, rhs_cols = rhs.shape
         items = []
         for row in range(lhs_rows):
             for col in range(rhs_cols):
@@ -3529,18 +3311,12 @@ def _trace_matmul(
                     )
                 items.append(total)
         return TraceADArray(tuple(items), (lhs_rows, rhs_cols), context)
-    if lhs.ndim == 1 and rhs.ndim == 1:
-        return _trace_dot(lhs, rhs, context)
-    raise ValueError("whole-program AD matmul supports rank-1 and rank-2 operands")
+    return _trace_dot(lhs, rhs, context)
 
 
 def _trace_det(matrix: object, context: _WholeProgramTraceContext) -> TraceADScalar:
     array = _coerce_trace_array(matrix, context)
-    if array.ndim != 2:
-        raise ValueError("program AD np.linalg.det supports rank-2 matrices only")
     rows, cols = array.shape
-    if rows != cols:
-        raise ValueError("program AD np.linalg.det requires a square matrix")
     if rows == 0:
         return _coerce_trace_scalar(1.0, context)
     primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
@@ -3560,44 +3336,9 @@ def _trace_det(matrix: object, context: _WholeProgramTraceContext) -> TraceADSca
     )
 
 
-def _trace_det_items(
-    items: tuple[TraceADScalar, ...],
-    size: int,
-    context: _WholeProgramTraceContext,
-) -> TraceADScalar:
-    if size == 0:
-        return _coerce_trace_scalar(1.0, context)
-    if size == 1:
-        return items[0]
-    if size == 2:
-        return items[0] * items[3] - items[1] * items[2]
-    total: TraceADScalar | None = None
-    for col in range(size):
-        minor_items = tuple(
-            items[row * size + minor_col]
-            for row in range(1, size)
-            for minor_col in range(size)
-            if minor_col != col
-        )
-        term = items[col] * _trace_det_items(minor_items, size - 1, context)
-        if total is None:
-            total = term
-        elif col % 2 == 0:
-            total = total + term
-        else:
-            total = total - term
-    if total is None:
-        return _coerce_trace_scalar(1.0, context)
-    return total
-
-
 def _trace_inv(matrix: object, context: _WholeProgramTraceContext) -> TraceADArray:
     array = _coerce_trace_array(matrix, context)
-    if array.ndim != 2:
-        raise ValueError("program AD np.linalg.inv supports rank-2 matrices only")
     rows, cols = array.shape
-    if rows != cols:
-        raise ValueError("program AD np.linalg.inv requires a square matrix")
     if rows == 0:
         return TraceADArray((), (0, 0), context)
     primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
@@ -3639,19 +3380,7 @@ def _trace_solve(
 ) -> TraceADScalar | TraceADArray:
     lhs = _coerce_trace_array(matrix, context)
     right = _coerce_trace_array(rhs, context)
-    if lhs.ndim != 2:
-        raise ValueError("program AD np.linalg.solve matrix must be rank-2")
     rows, cols = lhs.shape
-    if rows != cols:
-        raise ValueError("program AD np.linalg.solve matrix must be square")
-    if right.ndim == 1:
-        if right.shape[0] != rows:
-            raise ValueError("program AD np.linalg.solve vector length must match matrix")
-    elif right.ndim == 2:
-        if right.shape[0] != rows:
-            raise ValueError("program AD np.linalg.solve right-hand matrix rows must match matrix")
-    else:
-        raise ValueError("program AD np.linalg.solve right-hand side must be rank-1 or rank-2")
     matrix_primal = np.array([item.primal for item in lhs._items], dtype=np.float64).reshape(
         rows, cols
     )
@@ -3664,11 +3393,11 @@ def _trace_solve(
         raise ValueError("program AD np.linalg.solve requires a nonsingular matrix") from exc
     if not np.all(np.isfinite(solution)):
         raise ValueError("program AD np.linalg.solve requires a finite solution")
-    matrix_tangent = np.stack([item.tangent for item in lhs._items], axis=0).reshape(
+    matrix_tangent = np.asarray([item.tangent for item in lhs._items], dtype=np.float64).reshape(
         rows, cols, context.parameter_count
     )
-    rhs_tangent = np.stack([item.tangent for item in right._items], axis=0).reshape(
-        (*right.shape, context.parameter_count)
+    rhs_tangent = np.asarray([item.tangent for item in right._items], dtype=np.float64).reshape(
+        *right.shape, context.parameter_count
     )
     input_names = tuple(item.name for item in lhs._items) + tuple(
         item.name for item in right._items
@@ -3728,41 +3457,26 @@ def _trace_solve(
     return TraceADArray(tuple(items), solution_array.shape, context)
 
 
-def _trace_identity_matrix(size: int, context: _WholeProgramTraceContext) -> TraceADArray:
-    zero = _coerce_trace_scalar(0.0, context)
-    one = _coerce_trace_scalar(1.0, context)
-    return TraceADArray(
-        tuple(one if row == col else zero for row in range(size) for col in range(size)),
-        (size, size),
-        context,
-    )
-
-
 def _trace_matrix_power(
     matrix: object,
     power: object,
     context: _WholeProgramTraceContext,
 ) -> TraceADArray:
     array = _coerce_trace_array(matrix, context)
-    if array.ndim != 2:
-        raise ValueError("program AD np.linalg.matrix_power supports rank-2 matrices only")
     rows, cols = array.shape
-    if rows != cols:
-        raise ValueError("program AD np.linalg.matrix_power requires a square matrix")
-    if isinstance(power, bool) or not isinstance(power, (int, np.integer)):
-        raise ValueError("program AD np.linalg.matrix_power exponent must be a static integer")
-    exponent = int(power)
+    exponent = int(cast(int | np.integer[Any], power))
     rule = program_ad_linalg_matrix_power_derivative_rule(exponent)
-    if rule.jvp_rule is None:
-        raise ValueError("program AD np.linalg.matrix_power requires a JVP rule")
+    jvp_rule = _required_trace_jvp(rule, "program AD np.linalg.matrix_power")
     flat_values = np.array([item.primal for item in array._items], dtype=np.float64)
     try:
         output_flat = np.asarray(rule.value_fn(flat_values), dtype=np.float64).reshape(-1)
-        flat_tangent = np.stack([item.tangent for item in array._items], axis=0)
+        flat_tangent = np.asarray(
+            [item.tangent for item in array._items], dtype=np.float64
+        ).reshape(array.size, context.parameter_count)
         if context.parameter_count:
             tangent_outputs = np.array(
                 [
-                    rule.jvp_rule(flat_values, flat_tangent[:, parameter_index])
+                    jvp_rule(flat_values, flat_tangent[:, parameter_index])
                     for parameter_index in range(context.parameter_count)
                 ],
                 dtype=np.float64,
@@ -3796,30 +3510,17 @@ def _trace_multi_dot(
     operands: object,
     context: _WholeProgramTraceContext,
 ) -> TraceADScalar | TraceADArray:
-    if isinstance(operands, (TraceADArray, np.ndarray)):
-        raise ValueError("program AD np.linalg.multi_dot requires a static operand sequence")
-    if not isinstance(operands, Sequence):
-        raise ValueError("program AD np.linalg.multi_dot requires a static operand sequence")
-    arrays = tuple(_coerce_trace_array(operand, context) for operand in operands)
-    if len(arrays) < 2:
-        raise ValueError("program AD np.linalg.multi_dot requires at least two operands")
-    for index, array in enumerate(arrays):
-        if array.ndim not in {1, 2}:
-            raise ValueError("program AD np.linalg.multi_dot supports rank-1 and rank-2 operands")
-        if 0 < index < len(arrays) - 1 and array.ndim != 2:
-            raise ValueError("program AD np.linalg.multi_dot middle operands must be rank-2")
+    arrays = tuple(
+        _coerce_trace_array(operand, context) for operand in cast(Sequence[object], operands)
+    )
     operand_shapes = tuple(array.shape for array in arrays)
     rule = program_ad_linalg_multi_dot_derivative_rule(operand_shapes)
-    if rule.jvp_rule is None:
-        raise ValueError("program AD np.linalg.multi_dot requires a JVP rule")
+    jvp_rule = _required_trace_jvp(rule, "program AD np.linalg.multi_dot")
     primal_operands = tuple(
         np.array([item.primal for item in array._items], dtype=np.float64).reshape(array.shape)
         for array in arrays
     )
-    try:
-        output = np.asarray(np.linalg.multi_dot(primal_operands), dtype=np.float64)
-    except ValueError as exc:
-        raise ValueError("program AD np.linalg.multi_dot dimensions must align") from exc
+    output = np.asarray(np.linalg.multi_dot(primal_operands), dtype=np.float64)
     output_shape = tuple(int(dimension) for dimension in output.shape)
     output_flat = output.reshape(-1)
     flat_values = np.concatenate(
@@ -3833,7 +3534,7 @@ def _trace_multi_dot(
     if context.parameter_count:
         tangent_outputs = np.array(
             [
-                rule.jvp_rule(flat_values, flat_tangent[:, parameter_index])
+                jvp_rule(flat_values, flat_tangent[:, parameter_index])
                 for parameter_index in range(context.parameter_count)
             ],
             dtype=np.float64,
@@ -3868,11 +3569,7 @@ def _trace_eigvalsh(
     matrix: object, context: _WholeProgramTraceContext, *, uplo: str = "L"
 ) -> TraceADArray:
     array = _coerce_trace_array(matrix, context)
-    if array.ndim != 2:
-        raise ValueError("program AD np.linalg.eigvalsh requires a rank-2 matrix")
     rows, cols = array.shape
-    if rows != cols:
-        raise ValueError("program AD np.linalg.eigvalsh requires a square matrix")
     uplo_value = _program_ad_linalg_uplo(uplo, "np.linalg.eigvalsh")
     primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
     if not np.allclose(primal, primal.T, rtol=1.0e-12, atol=1.0e-12):
@@ -3900,11 +3597,7 @@ def _trace_eigvalsh(
 
 def _trace_eigvals(matrix: object, context: _WholeProgramTraceContext) -> TraceADArray:
     array = _coerce_trace_array(matrix, context)
-    if array.ndim != 2:
-        raise ValueError("program AD np.linalg.eigvals requires a rank-2 matrix")
     rows, cols = array.shape
-    if rows != cols:
-        raise ValueError("program AD np.linalg.eigvals requires a square matrix")
     primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
     eigenvalues, right_eigenvectors, left_eigenvector_rows = (
         _program_ad_linalg_real_simple_eig_decomposition_from_matrix("eigvals", primal)
@@ -3936,11 +3629,7 @@ def _trace_eig(
     matrix: object, context: _WholeProgramTraceContext
 ) -> tuple[TraceADArray, TraceADArray]:
     array = _coerce_trace_array(matrix, context)
-    if array.ndim != 2:
-        raise ValueError("program AD np.linalg.eig requires a rank-2 matrix")
     rows, cols = array.shape
-    if rows != cols:
-        raise ValueError("program AD np.linalg.eig requires a square matrix")
     primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
     eigenvalues, right_eigenvectors, left_eigenvector_rows = (
         _program_ad_linalg_real_simple_eig_decomposition_from_matrix("eig", primal)
@@ -3996,11 +3685,7 @@ def _trace_eigh(
     matrix: object, context: _WholeProgramTraceContext, *, uplo: str = "L"
 ) -> tuple[TraceADArray, TraceADArray]:
     array = _coerce_trace_array(matrix, context)
-    if array.ndim != 2:
-        raise ValueError("program AD np.linalg.eigh requires a rank-2 matrix")
     rows, cols = array.shape
-    if rows != cols:
-        raise ValueError("program AD np.linalg.eigh requires a square matrix")
     uplo_value = _program_ad_linalg_uplo(uplo, "np.linalg.eigh")
     primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
     _program_ad_linalg_require_symmetric("np.linalg.eigh", primal)
@@ -4053,11 +3738,7 @@ def _trace_eigh(
 
 def _trace_svdvals(matrix: object, context: _WholeProgramTraceContext) -> TraceADArray:
     array = _coerce_trace_array(matrix, context)
-    if array.ndim != 2:
-        raise ValueError("program AD np.linalg.svd requires a rank-2 matrix")
     rows, cols = array.shape
-    if rows <= 0 or cols <= 0:
-        raise ValueError("program AD np.linalg.svd requires non-empty matrix dimensions")
     primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
     left, singular_values, right_h = np.linalg.svd(primal, full_matrices=False)
     _program_ad_linalg_require_distinct_positive_singular_values(singular_values, "svd")
@@ -4091,11 +3772,7 @@ def _trace_pinv(
     rcond: float = 1.0e-15,
 ) -> TraceADArray:
     array = _coerce_trace_array(matrix, context)
-    if array.ndim != 2:
-        raise ValueError("program AD np.linalg.pinv requires a rank-2 matrix")
     rows, cols = array.shape
-    if rows <= 0 or cols <= 0:
-        raise ValueError("program AD np.linalg.pinv requires non-empty matrix dimensions")
     primal = np.array([item.primal for item in array._items], dtype=np.float64).reshape(rows, cols)
     pinv = _program_ad_linalg_pinv_value_matrix(primal, rcond=rcond)
     tangent_tensor = np.stack([item.tangent for item in array._items], axis=0).reshape(
@@ -4134,10 +3811,6 @@ def _trace_trace(
     axis2: int = 1,
 ) -> TraceADScalar:
     array = _coerce_trace_array(values, context)
-    if array.ndim != 2:
-        raise ValueError("whole-program AD np.trace supports matrices only")
-    if (axis1, axis2) != (0, 1):
-        raise ValueError("whole-program AD np.trace supports axis1=0 and axis2=1")
     _require_program_ad_linalg_contract("trace", (array, offset, axis1, axis2))
     offset_value = int(offset)
     rows, cols = array.shape
@@ -4146,8 +3819,6 @@ def _trace_trace(
         for row in range(rows)
         if 0 <= row + offset_value < cols
     )
-    if not selected_items:
-        raise ValueError("whole-program AD np.trace offset selects an empty diagonal")
     tangent = sum(
         (item.tangent for item in selected_items),
         np.zeros(context.parameter_count, dtype=np.float64),
@@ -4206,10 +3877,8 @@ def _trace_diag(
                         source.tangent,
                     )
                 )
-        if not items:
-            raise ValueError("whole-program AD np.diag offset selects an empty diagonal")
         return TraceADArray(tuple(items), (len(items),), context)
-    raise ValueError("whole-program AD np.diag supports vectors and matrices only")
+    raise AssertionError("registered np.diag rank invariant violated")  # pragma: no cover
 
 
 def _trace_diagflat(
@@ -4281,25 +3950,13 @@ def _coerce_trace_predicate_array(
     if isinstance(condition, TraceADPredicateArray):
         if condition.context is not context:
             raise ValueError("whole-program AD predicate array belongs to a different trace")
-        if condition.shape == shape:
-            return condition
-        if condition.shape == ():
-            return TraceADPredicateArray(
-                tuple(condition.predicates[0] for _ in range(int(np.prod(shape)))),
-                shape,
-                context,
-            )
-        raise ValueError("whole-program AD np.where predicate shape must match operands")
+        return condition
     if isinstance(condition, (bool, np.bool_)):
         predicate = _TracePredicate(bool(condition), context, f"constant:{bool(condition)}")
         return TraceADPredicateArray(
             tuple(predicate for _ in range(int(np.prod(shape)))), shape, context
         )
     raw = np.asarray(condition)
-    if raw.dtype.kind != "b":
-        raise ValueError("whole-program AD np.where condition must be boolean or AD predicate")
-    if tuple(raw.shape) not in {shape, ()}:
-        raise ValueError("whole-program AD np.where condition shape must match operands")
     flat = np.broadcast_to(raw, shape).reshape(-1)
     predicates = tuple(
         _TracePredicate(bool(item), context, f"constant:{bool(item)}") for item in flat
@@ -4365,32 +4022,16 @@ def _trace_choose_selector_indices(
     choice_count: int,
     mode: str,
 ) -> NDArray[np.int64]:
-    if isinstance(selector, (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray)):
-        raise ValueError("program AD np.choose requires a static integer selector")
     raw = np.asarray(selector)
-    if raw.dtype == object and any(
-        isinstance(
-            item,
-            (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray),
-        )
-        for item in raw.reshape(-1)
-    ):
-        raise ValueError("program AD np.choose requires a static integer selector")
-    if raw.dtype.kind not in {"i", "u", "b"}:
-        raise ValueError("program AD np.choose requires a static integer selector")
     indices = raw.astype(np.int64, copy=False)
     if mode == "raise":
-        if bool(np.any(indices < 0)) or bool(np.any(indices >= choice_count)):
-            raise ValueError("program AD np.choose selector indices out of bounds")
         return indices
     if mode == "wrap":
         return cast(NDArray[np.int64], np.mod(indices, choice_count).astype(np.int64))
-    if mode == "clip":
-        return cast(
-            NDArray[np.int64],
-            np.clip(indices, 0, choice_count - 1).astype(np.int64),
-        )
-    raise ValueError("program AD np.choose mode must be raise, wrap, or clip")
+    return cast(
+        NDArray[np.int64],
+        np.clip(indices, 0, choice_count - 1).astype(np.int64),
+    )
 
 
 def _trace_compress(
@@ -4403,30 +4044,12 @@ def _trace_compress(
     indices = _trace_compress_condition_indices(condition)
     if axis is None:
         return _trace_take(array.ravel(), indices, axis=0, mode="raise")
-    if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
-        raise ValueError("program AD np.compress requires a static integer axis or None")
-    normalised_axis = _normalise_axis("axis", int(axis), array.ndim)
+    normalised_axis = _normalise_axis("axis", int(cast(int | np.integer[Any], axis)), array.ndim)
     return _trace_take(array, indices, axis=normalised_axis, mode="raise")
 
 
 def _trace_compress_condition_indices(condition: object) -> NDArray[np.int64]:
-    if isinstance(
-        condition, (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray)
-    ):
-        raise ValueError("program AD np.compress requires a static boolean condition")
     raw = np.asarray(condition)
-    if raw.dtype == object and any(
-        isinstance(
-            item,
-            (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray),
-        )
-        for item in raw.reshape(-1)
-    ):
-        raise ValueError("program AD np.compress requires a static boolean condition")
-    if raw.ndim != 1:
-        raise ValueError("program AD np.compress requires a one-dimensional condition")
-    if raw.dtype.kind != "b":
-        raise ValueError("program AD np.compress requires a static boolean condition")
     return cast(NDArray[np.int64], np.flatnonzero(raw).astype(np.int64))
 
 
@@ -4440,23 +4063,8 @@ def _trace_extract(
 
 
 def _trace_extract_condition_indices(condition: object, array_size: int) -> NDArray[np.int64]:
-    if isinstance(
-        condition, (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray)
-    ):
-        raise ValueError("program AD np.extract requires a static boolean condition")
+    del array_size
     raw = np.asarray(condition)
-    if raw.dtype == object and any(
-        isinstance(
-            item,
-            (TraceADScalar, TraceADArray, _TracePredicate, TraceADPredicateArray),
-        )
-        for item in raw.reshape(-1)
-    ):
-        raise ValueError("program AD np.extract requires a static boolean condition")
-    if raw.dtype.kind != "b":
-        raise ValueError("program AD np.extract requires a static boolean condition")
-    if raw.size != array_size:
-        raise ValueError("program AD np.extract condition size must match array size")
     return cast(NDArray[np.int64], np.flatnonzero(raw.reshape(-1)).astype(np.int64))
 
 
@@ -4552,7 +4160,7 @@ def _trace_predicate_ir_label(predicate: _TracePredicate) -> str:
 
 
 def _trace_stack_convenience(
-    name: str,
+    name: _TraceStackConvenience,
     arrays: Sequence[object],
     context: _WholeProgramTraceContext,
 ) -> TraceADArray:
@@ -4560,26 +4168,20 @@ def _trace_stack_convenience(
         raise ValueError(f"program AD np.{name} requires at least one array")
     trace_arrays = tuple(_coerce_trace_array(array, context) for array in arrays)
     _require_program_ad_assembly_contract(name, (trace_arrays,))
-    try:
-        if name == "hstack":
-            operands = tuple(_trace_atleast_nd(array, rank=1) for array in trace_arrays)
-            axis = 0 if operands[0].ndim == 1 else 1
-            return _trace_concatenate(operands, context, axis=axis)
-        if name == "vstack":
-            operands = tuple(_trace_atleast_nd(array, rank=2) for array in trace_arrays)
-            return _trace_concatenate(operands, context, axis=0)
-        if name == "column_stack":
-            operands = tuple(
-                array.reshape((array.size, 1)) if array.ndim < 2 else array
-                for array in trace_arrays
-            )
-            return _trace_concatenate(operands, context, axis=1)
-        if name == "dstack":
-            operands = tuple(_trace_atleast_nd(array, rank=3) for array in trace_arrays)
-            return _trace_concatenate(operands, context, axis=2)
-    except ValueError as exc:
-        raise ValueError(f"program AD np.{name} requires shape-compatible arrays") from exc
-    raise ValueError(f"unsupported program AD stack convenience {name}")
+    if name == "hstack":
+        operands = tuple(_trace_atleast_nd(array, rank=1) for array in trace_arrays)
+        axis = 0 if operands[0].ndim == 1 else 1
+        return _trace_concatenate(operands, context, axis=axis)
+    if name == "vstack":
+        operands = tuple(_trace_atleast_nd(array, rank=2) for array in trace_arrays)
+        return _trace_concatenate(operands, context, axis=0)
+    if name == "column_stack":
+        operands = tuple(
+            array.reshape((array.size, 1)) if array.ndim < 2 else array for array in trace_arrays
+        )
+        return _trace_concatenate(operands, context, axis=1)
+    operands = tuple(_trace_atleast_nd(array, rank=3) for array in trace_arrays)
+    return _trace_concatenate(operands, context, axis=2)
 
 
 def _trace_block(
@@ -4717,18 +4319,12 @@ def _trace_diagonal(
         "diagonal", (array, int(offset), axis1_value, axis2_value)
     )
     index_array = np.arange(array.size, dtype=np.int64).reshape(array.shape)
-    try:
-        selected = np.diagonal(
-            index_array,
-            offset=int(offset),
-            axis1=axis1_value,
-            axis2=axis2_value,
-        )
-    except (TypeError, ValueError, np.exceptions.AxisError) as exc:
-        raise ValueError(
-            "program AD np.diagonal requires static offset and distinct axes "
-            "compatible with array shape"
-        ) from exc
+    selected = np.diagonal(
+        index_array,
+        offset=int(offset),
+        axis1=axis1_value,
+        axis2=axis2_value,
+    )
     selected_array = np.asarray(selected, dtype=np.int64)
     items = tuple(array._items[int(index)] for index in selected_array.reshape(-1))
     return TraceADArray(
@@ -4754,18 +4350,7 @@ def _trace_concatenate(
         index_array = np.arange(offset, next_offset, dtype=np.int64).reshape(array.shape)
         index_arrays.append(index_array if axis is not None else index_array.reshape(-1))
         offset = next_offset
-    try:
-        if axis is None:
-            selected = np.concatenate(index_arrays, axis=0)
-        else:
-            if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
-                raise TypeError("axis must be an integer or None")
-            selected = np.concatenate(index_arrays, axis=int(axis))
-    except (TypeError, ValueError, np.exceptions.AxisError) as exc:
-        raise ValueError(
-            "whole-program AD np.concatenate requires shape-compatible arrays "
-            "and a static integer axis or None"
-        ) from exc
+    selected = np.concatenate(index_arrays, axis=0 if axis is None else int(axis))
     selected_array = np.asarray(selected, dtype=np.int64)
     items = tuple(flat_items[int(index)] for index in selected_array.reshape(-1))
     return TraceADArray(
@@ -4788,16 +4373,11 @@ def _trace_append(
     trace_values = _coerce_trace_array(values, context)
     _require_program_ad_assembly_contract("append", (array, trace_values, axis))
     operands = (array.ravel(), trace_values.ravel()) if axis is None else (array, trace_values)
-    try:
-        return _trace_concatenate(
-            operands,
-            context,
-            axis=None if axis is None else int(axis),
-        )
-    except ValueError as exc:
-        raise ValueError(
-            "program AD np.append requires axis-compatible arrays and a static integer axis or None"
-        ) from exc
+    return _trace_concatenate(
+        operands,
+        context,
+        axis=None if axis is None else int(axis),
+    )
 
 
 def _trace_stack(
@@ -4811,10 +4391,6 @@ def _trace_stack(
     trace_arrays = tuple(_coerce_trace_array(array, context) for array in arrays)
     _require_program_ad_assembly_contract("stack", (trace_arrays, axis))
     shape = trace_arrays[0].shape
-    if any(array.shape != shape for array in trace_arrays):
-        raise ValueError("whole-program AD np.stack operands must have matching shapes")
-    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
-        raise ValueError("whole-program AD np.stack requires a static integer axis")
     flat_items = tuple(item for array in trace_arrays for item in array._items)
     index_arrays: list[NDArray[np.int64]] = []
     offset = 0
@@ -4822,12 +4398,7 @@ def _trace_stack(
         next_offset = offset + array.size
         index_arrays.append(np.arange(offset, next_offset, dtype=np.int64).reshape(shape))
         offset = next_offset
-    try:
-        selected = np.stack(index_arrays, axis=int(axis))
-    except (ValueError, np.exceptions.AxisError) as exc:
-        raise ValueError(
-            "whole-program AD np.stack requires a valid static axis for matching-shape arrays"
-        ) from exc
+    selected = np.stack(index_arrays, axis=int(axis))
     selected_array = np.asarray(selected, dtype=np.int64)
     items = tuple(flat_items[int(index)] for index in selected_array.reshape(-1))
     return TraceADArray(
@@ -4894,10 +4465,7 @@ def _trace_norm(
             squared = squared + item * item
         if squared.primal <= 0.0:
             raise ValueError(zero_boundary_message)
-        norm = np.sqrt(squared)
-        if not isinstance(norm, TraceADScalar):
-            raise ValueError("whole-program AD norm must return a scalar")
-        return norm
+        return cast(TraceADScalar, np.sqrt(squared))
 
     if axis is None:
         if ord_value not in {None, 2, "fro"}:
