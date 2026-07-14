@@ -35,6 +35,9 @@ STUDIO_PROGRAM_AD_BROWSER_TESTS = [
 STUDIO_PROGRAM_AD_COVERAGE_DATA_FILE = ".coverage.studio-program-ad"
 """Isolated coverage database for the Python artifact owner."""
 
+STUDIO_PROGRAM_AD_REQUIRE_NATIVE_ENV = "SCPN_PROGRAM_AD_REQUIRE_NATIVE"
+"""Environment switch that makes the dedicated native CI owner fail hard."""
+
 
 def build_static_quality_gates(python: str) -> list[Gate]:
     """Build strict Python typing and NumPy-docstring gates.
@@ -231,6 +234,7 @@ __all__ = [
     "STUDIO_PROGRAM_AD_COVERAGE_COHORT",
     "STUDIO_PROGRAM_AD_COVERAGE_DATA_FILE",
     "STUDIO_PROGRAM_AD_QUALITY_RATCHET",
+    "STUDIO_PROGRAM_AD_REQUIRE_NATIVE_ENV",
     "build_browser_coverage_gate",
     "build_browser_test_gate",
     "build_python_coverage_gates",

@@ -34,6 +34,23 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   benchmark claims are unchanged.
 
 ### Fixed
+- 2026-07-14 — Closed the Python 3.12 aggregate-coverage and Docker
+  reproduction-context failures without skips, debt rebaselining, or audit
+  weakening. Program-AD artifact tests now install a strictly typed,
+  deterministic native-contract seam only when the optional engine export is
+  unavailable, so the aggregate matrix executes the complete Python owner
+  instead of skipping its module at collection. The dedicated exact-coverage
+  job builds and installs the current PyO3 wheel and requires native mode;
+  missing modules, nested import failures, or absent replay exports fail hard,
+  while the shared integration assertion proves the canonical `[19; 6, 2]`
+  result through the real engine with zero skips. The Docker image now copies
+  its own Dockerfile and the standalone oscillatools README required by
+  Hatchling, and the build-environment audit rejects absent, commented,
+  extended, or duplicate context-copy lines. Runtime APIs, Program-AD IR and
+  numerical semantics, Rust/WASM/browser owners, benchmark inputs, and
+  performance claims are unchanged, so no comparison-benchmark refresh
+  applies. The strict cross-language inventory remains 47/47 with zero open
+  GodFile refactors.
 - 2026-07-14 — Closed the registered Phase-QNode JAX transform quality debt
   through public value, native transform, PyTree, sharding, AOT/export, input,
   and unsupported-circuit routes. Sixty-eight focused tests cover all 546

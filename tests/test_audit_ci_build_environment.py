@@ -85,6 +85,8 @@ def _write_replay_repository(root: Path) -> None:
         (root / path).write_text(_lock(version, path), encoding="utf-8")
     (root / build_audit.CI_WORKFLOW_PATH).write_text(_ci(), encoding="utf-8")
     (root / build_audit.DOCKERFILE_PATH).write_text(
+        "COPY Dockerfile Dockerfile\n"
+        "COPY oscillatools/README.md oscillatools/README.md\n"
         f"RUN {build_audit.DOCKER_INSTALL_COMMAND}\n",
         encoding="utf-8",
     )
@@ -271,9 +273,37 @@ def test_installed_backend_rejects_missing_wrong_and_unimportable_hatchling() ->
 
 def test_consumer_audit_rejects_matrix_install_gate_docker_and_fixture_drift() -> None:
     """Every consumer must remain wired to the hash-locked no-isolation path."""
-    valid_docker = f"RUN {build_audit.DOCKER_INSTALL_COMMAND}\n"
+    valid_docker = (
+        "COPY Dockerfile Dockerfile\n"
+        "COPY oscillatools/README.md oscillatools/README.md\n"
+        f"RUN {build_audit.DOCKER_INSTALL_COMMAND}\n"
+    )
     valid_wheel_test = 'args = ["--no-isolation"]\n'
     assert build_audit.audit_consumers(_ci(), valid_docker, valid_wheel_test) == ()
+
+    missing_context = f"RUN {build_audit.DOCKER_INSTALL_COMMAND}\n"
+    assert build_audit.audit_consumers(_ci(), missing_context, valid_wheel_test) == (
+        "Docker reproduction context must copy Dockerfile exactly once",
+        "Docker reproduction context must copy oscillatools/README.md exactly once",
+    )
+    disguised_context = (
+        "# COPY Dockerfile Dockerfile\n"
+        "COPY Dockerfile Dockerfile.extra\n"
+        "# COPY oscillatools/README.md oscillatools/README.md\n"
+        "COPY oscillatools/README.md oscillatools/README.md.backup\n"
+        f"RUN {build_audit.DOCKER_INSTALL_COMMAND}\n"
+    )
+    assert build_audit.audit_consumers(_ci(), disguised_context, valid_wheel_test) == (
+        "Docker reproduction context must copy Dockerfile exactly once",
+        "Docker reproduction context must copy oscillatools/README.md exactly once",
+    )
+    duplicate_context = valid_docker.replace(
+        "COPY Dockerfile Dockerfile\n",
+        "COPY Dockerfile Dockerfile\nCOPY Dockerfile Dockerfile\n",
+    )
+    assert build_audit.audit_consumers(_ci(), duplicate_context, valid_wheel_test) == (
+        "Docker reproduction context must copy Dockerfile exactly once",
+    )
 
     broken_ci = _ci().replace('python-version: "3.11"', 'python-version: "3.10"')
     broken_ci = broken_ci.replace(build_audit.LOCK_INSTALL_COMMAND, "pip install unpinned")
@@ -285,6 +315,8 @@ def test_consumer_audit_rejects_matrix_install_gate_docker_and_fixture_drift() -
     assert any("execute the build-environment audit" in error for error in errors)
     assert any("security job" in error for error in errors)
     assert any("Docker" in error for error in errors)
+    assert any("Dockerfile exactly once" in error for error in errors)
+    assert any("oscillatools/README.md exactly once" in error for error in errors)
     assert any("real wheel tests" in error for error in errors)
 
 

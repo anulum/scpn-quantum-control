@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 import os
 import runpy
@@ -17,11 +18,11 @@ import struct
 import subprocess
 import sys
 from pathlib import Path
-from typing import cast
+from types import ModuleType
+from typing import Protocol, cast
 
 import pytest
 
-pytest.importorskip("scpn_quantum_engine", reason="Rust engine (pyo3) not installed")
 pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
 
 from scpn_quantum_control.studio import (  # noqa: E402
@@ -30,6 +31,92 @@ from scpn_quantum_control.studio import (  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMITTED_JSON = REPO_ROOT / artifact.DEFAULT_PROGRAM_AD_REPLAY_JSON_PATH
+_REQUIRE_NATIVE_ENGINE_ENV = "SCPN_PROGRAM_AD_REQUIRE_NATIVE"
+
+
+class _ProgramADReplayEngine(Protocol):
+    """Typed replay export shared by aggregate and native-required owners."""
+
+    def program_ad_effect_ir_interpret_value_and_gradient(
+        self,
+        ir: str,
+        inputs: list[float],
+    ) -> str:
+        """Replay one effect-IR program and return the engine JSON result."""
+
+
+class _DeterministicReplayEngine(ModuleType):
+    """Aggregate-test engine with the native replay export's exact contract."""
+
+    def program_ad_effect_ir_interpret_value_and_gradient(
+        self,
+        ir: str,
+        inputs: list[float],
+    ) -> str:
+        """Return the frozen rational result or an unsupported verdict."""
+        assert inputs == [3.0, 5.0]
+        return _engine_payload(supported=ir == artifact._canonical_ir())
+
+
+def _native_engine_or_none() -> ModuleType | None:
+    """Return the native engine, failing hard when CI requires it."""
+    required = os.environ.get(_REQUIRE_NATIVE_ENGINE_ENV) == "1"
+    try:
+        engine = importlib.import_module("scpn_quantum_engine")
+    except ModuleNotFoundError as exc:
+        if exc.name != "scpn_quantum_engine" or required:
+            raise
+        return None
+    export = getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None)
+    if not callable(export):
+        if required:
+            raise RuntimeError("native engine lacks the Program-AD replay export")
+        return None
+    return engine
+
+
+@pytest.fixture(autouse=True)
+def _install_dependency_aware_engine(
+    monkeypatch: pytest.MonkeyPatch,
+    request: pytest.FixtureRequest,
+) -> None:
+    """Use a deterministic seam only when the native replay is unavailable."""
+    selection_owners = ("_selected_engine", "_subprocess_engine_path")
+    if any(owner in request.fixturenames for owner in selection_owners):
+        return
+    if _native_engine_or_none() is None:
+        monkeypatch.setitem(
+            sys.modules,
+            "scpn_quantum_engine",
+            _DeterministicReplayEngine("scpn_quantum_engine"),
+        )
+
+
+@pytest.fixture
+def _selected_engine() -> ModuleType:
+    """Return the required native engine or the aggregate contract seam."""
+    engine = _native_engine_or_none()
+    return engine or _DeterministicReplayEngine("scpn_quantum_engine")
+
+
+@pytest.fixture
+def _subprocess_engine_path(tmp_path: Path) -> Path | None:
+    """Return an aggregate-only module path for the real CLI subprocess."""
+    if _native_engine_or_none() is not None:
+        return None
+    seam_root = tmp_path / "program-ad-engine-seam"
+    seam_root.mkdir()
+    source = (
+        "def program_ad_effect_ir_interpret_value_and_gradient(\n"
+        "    ir: str, inputs: list[float]\n"
+        ") -> str:\n"
+        '    """Replay the frozen aggregate-test rational program."""\n'
+        f"    if ir != {artifact._canonical_ir()!r} or inputs != [3.0, 5.0]:\n"
+        '        raise ValueError("unsupported aggregate replay input")\n'
+        f"    return {_engine_payload()!r}\n"
+    )
+    (seam_root / "scpn_quantum_engine.py").write_text(source, encoding="utf-8")
+    return seam_root
 
 
 def _committed_payload() -> dict[str, object]:
@@ -222,8 +309,8 @@ def test_engine_boundary_rejects_noncanonical_json(raw: str, match: str) -> None
         artifact._parse_engine_replay_result(raw)
 
 
-def test_real_engine_rejects_an_unsupported_program() -> None:
-    """The installed Rust engine rejects an empty-effects program end to end."""
+def test_selected_engine_rejects_an_unsupported_program() -> None:
+    """The selected replay boundary rejects an empty-effects program end to end."""
     empty = json.dumps(
         {
             "format": "program_ad_effect_ir.v1",
@@ -237,6 +324,55 @@ def test_real_engine_rejects_an_unsupported_program() -> None:
     )
     with pytest.raises(ValueError, match="not a supported bounded replay"):
         artifact._engine_value_and_gradient(empty)
+
+
+def test_selected_engine_replays_the_committed_rational_program(
+    _selected_engine: ModuleType,
+) -> None:
+    """The selected owner reproduces the committed value and gradient."""
+    engine = cast(_ProgramADReplayEngine, _selected_engine)
+    raw = engine.program_ad_effect_ir_interpret_value_and_gradient(
+        artifact._canonical_ir(),
+        [3.0, 5.0],
+    )
+    result = artifact._parse_engine_replay_result(raw)
+    assert result.value == 19.0
+    assert result.gradient == (6.0, 2.0)
+
+
+def test_native_engine_selection_fails_closed_when_required(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Exact CI cannot silently replace a missing or malformed native export."""
+
+    def missing_engine(_name: str) -> ModuleType:
+        raise ModuleNotFoundError("missing native engine", name="scpn_quantum_engine")
+
+    monkeypatch.setattr(importlib, "import_module", missing_engine)
+    monkeypatch.delenv(_REQUIRE_NATIVE_ENGINE_ENV, raising=False)
+    assert _native_engine_or_none() is None
+    monkeypatch.setenv(_REQUIRE_NATIVE_ENGINE_ENV, "1")
+    with pytest.raises(ModuleNotFoundError, match="missing native engine"):
+        _native_engine_or_none()
+
+    malformed = ModuleType("scpn_quantum_engine")
+    monkeypatch.setattr(importlib, "import_module", lambda _name: malformed)
+    with pytest.raises(RuntimeError, match="lacks the Program-AD replay export"):
+        _native_engine_or_none()
+
+
+def test_native_engine_selection_does_not_mask_nested_import_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An engine dependency failure is never misreported as optional absence."""
+
+    def missing_nested_dependency(_name: str) -> ModuleType:
+        raise ModuleNotFoundError("missing runtime", name="native_runtime_dependency")
+
+    monkeypatch.delenv(_REQUIRE_NATIVE_ENGINE_ENV, raising=False)
+    monkeypatch.setattr(importlib, "import_module", missing_nested_dependency)
+    with pytest.raises(ModuleNotFoundError, match="missing runtime"):
+        _native_engine_or_none()
 
 
 def test_main_check_passes_on_the_committed_artifact(
@@ -324,13 +460,18 @@ def test_module_guard_executes_the_real_cli(
     assert json.loads(capsys.readouterr().out)["schema"] == artifact.PROGRAM_AD_REPLAY_SCHEMA
 
 
-def test_python_module_cli_checks_the_committed_artifact_in_a_real_process() -> None:
-    """A separate Python process verifies the committed unit without test doubles."""
+def test_python_module_cli_checks_the_committed_artifact_in_a_real_process(
+    _subprocess_engine_path: Path | None,
+) -> None:
+    """A separate Python process verifies the selected replay-engine contract."""
     environment = os.environ.copy()
     paths = [str(REPO_ROOT / "src"), str(REPO_ROOT / "oscillatools" / "src")]
+    if _subprocess_engine_path is not None:
+        paths.insert(0, str(_subprocess_engine_path))
     if current := environment.get("PYTHONPATH"):
         paths.append(current)
     environment["PYTHONPATH"] = os.pathsep.join(paths)
+    process_root = _subprocess_engine_path or REPO_ROOT
     completed = subprocess.run(  # noqa: S603
         [
             sys.executable,
@@ -340,7 +481,7 @@ def test_python_module_cli_checks_the_committed_artifact_in_a_real_process() -> 
             "--json-path",
             str(COMMITTED_JSON),
         ],
-        cwd=REPO_ROOT,
+        cwd=process_root,
         env=environment,
         check=False,
         capture_output=True,

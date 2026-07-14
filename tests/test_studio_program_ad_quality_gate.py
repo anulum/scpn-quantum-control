@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+from tools import program_ad_quality_gates
+
 
 def _load_preflight_module() -> ModuleType:
     """Load the executable preflight module with its sibling imports available.
@@ -135,6 +137,21 @@ def test_ci_and_preflight_share_studio_program_ad_cohorts() -> None:
     assert "Enforce Studio Program-AD exact coverage" in workflow
     assert "--include=*/program_ad_replay_artifact.py" in workflow
     assert "needs['studio-program-ad-quality'].result" in workflow
+    coverage_job = workflow[
+        workflow.index("  studio-program-ad-quality:") : workflow.index(
+            "\n  whole-program-trace-value-quality:"
+        )
+    ]
+    native_env = program_ad_quality_gates.STUDIO_PROGRAM_AD_REQUIRE_NATIVE_ENV
+    assert f'{native_env}: "1"' in coverage_job
+
+
+def test_aggregate_owner_cannot_restore_the_native_collection_skip() -> None:
+    """The aggregate owner must reach its seam before optional engine selection."""
+    owner = Path(program_ad_quality_gates.STUDIO_PROGRAM_AD_COVERAGE_COHORT[0])
+    source = owner.read_text(encoding="utf-8")
+
+    assert 'pytest.importorskip("scpn_quantum_engine"' not in source
 
 
 def test_local_studio_program_ad_runtime_gates_match_ci() -> None:

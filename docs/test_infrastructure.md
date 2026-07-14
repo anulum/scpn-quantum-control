@@ -130,8 +130,14 @@ python -m coverage report --rcfile=/dev/null \
 
 The ST-12 replay is gated as one polyglot owner. Python emission and validation
 must remain strict-MyPy clean, fully NumPy-documented, and exactly covered. The
-test cohort uses the installed current Rust engine, strict JSON files, a real
-module subprocess, and no engine monkeypatch:
+test cohort uses strict JSON files and a separate module subprocess. In the
+aggregate Python matrix, where the compiled engine is intentionally absent, a
+test-only deterministic replay seam implements the native export's exact JSON
+contract in both the pytest process and that subprocess; this prevents
+optional-dependency collection from masking the Python owner. The same
+integration assertion exercises the seam in aggregate mode and the real export
+in required mode, so neither execution contains a skip. The dedicated owner
+command below requires the installed current Rust engine:
 
 ```bash
 quality_paths=(
@@ -143,7 +149,7 @@ quality_paths=(
 python -m mypy --strict --explicit-package-bases "${quality_paths[@]}"
 python -m ruff check --isolated --select D,D413 \
   --config 'lint.pydocstyle.convention = "numpy"' "${quality_paths[@]}"
-python -m coverage run --rcfile=/dev/null \
+SCPN_PROGRAM_AD_REQUIRE_NATIVE=1 python -m coverage run --rcfile=/dev/null \
   --data-file=.coverage.studio-program-ad --branch \
   -m pytest -q tests/test_studio_program_ad_replay_artifact.py
 python -m coverage report --rcfile=/dev/null \
@@ -155,8 +161,10 @@ The same local default lane runs the Rust crate tests, rebuilds the release
 `wasm32-unknown-unknown` kernel, type-checks the Studio workspace, and enforces
 exact statement, branch, function, and line coverage over the browser verifier
 and React card. CI builds and installs the current PyO3 wheel before Python
-coverage, so a missing or stale engine cannot turn the owner test into a skip;
-the Studio web job executes the browser cohort against the freshly built WASM:
+coverage and sets `SCPN_PROGRAM_AD_REQUIRE_NATIVE=1`. A missing module, nested
+engine dependency failure, or absent replay export therefore fails hard rather
+than selecting the aggregate seam or producing a skip. The Studio web job
+executes the browser cohort against the freshly built WASM:
 
 ```bash
 cargo test --locked \
@@ -589,6 +597,14 @@ before the three-version test matrix can start. Any intentional build-tool
 upgrade therefore requires one coherent source-pin, three-lock, generated
 external-validation, documentation, and audit-constant refresh.
 
+The Docker reproduction context also carries the root `Dockerfile` and the
+`oscillatools/README.md` declared by the standalone package metadata. The audit
+requires each canonical `COPY` instruction as exactly one normalized Dockerfile
+line; comments, longer destinations, and duplicate copies cannot satisfy the
+contract. Consequently the live build-environment audit can read its own
+Docker consumer inside the image, and the no-isolation oscillatools wheel can
+resolve every metadata file without reaching outside the curated context.
+
 ### Braket-constrained setuptools advisory waiver
 
 The Python 3.12 security job scans the complete hash-pinned CI lock with
@@ -683,12 +699,14 @@ copies source and fixtures only. Local backup archives and ignored campaign-run
 logs are excluded for the same reason; committed root `results/` fixtures remain
 part of the reproduction surface.
 
-Static assertions over `Dockerfile` and `.dockerignore` run on the host, where
-those build inputs exist, and skip inside the built image because neither file
-is part of its curated runtime context. The Rustfmt preflight contract likewise
-checks an absolute Cargo executable when the Rust toolchain is installed and
-the explicit `cargo` fallback when it is absent; the manifest-scoped command
-arguments remain mandatory in both environments.
+The image now carries `Dockerfile` so the live build-environment audit can
+validate its exact reproduction consumer. The joint credential-free-index
+assertion over `Dockerfile` and `.dockerignore` still runs on the host and skips
+inside the image because `.dockerignore` is not part of the curated runtime
+context. The Rustfmt preflight contract likewise checks an absolute Cargo
+executable when the Rust toolchain is installed and the explicit `cargo`
+fallback when it is absent; the manifest-scoped command arguments remain
+mandatory in both environments.
 
 ### Coverage-exclusions ledger
 

@@ -31,6 +31,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
 
+COPY Dockerfile Dockerfile
 COPY .pre-commit-config.yaml pyproject.toml mkdocs.yml requirements.txt requirements-dev.txt README.md LICENSE ROADMAP.md ./
 # The changelog, public-claim, and rendered-docs-header guards read these
 # root documents.
@@ -39,9 +40,10 @@ COPY ARCHITECTURE.md DEPRECATIONS.md CONTRIBUTORS.md GOVERNANCE.md NOTICE.md SUP
 COPY requirements-ci-cross-platform-smoke.txt requirements-ci-py311-linux.txt requirements-ci-py312-linux.txt requirements-ci-py313-linux.txt requirements-ci-studio-platform.txt ./
 COPY src/ src/
 COPY oscillatools/src/ oscillatools/src/
-# The standalone-package decision test asserts the oscillatools distribution's
-# metadata (name, numpy+scipy floor, extras), so its pyproject must be present.
+# The standalone-package decision and real wheel tests require the complete
+# Hatchling metadata pair, including the README declared by its pyproject.
 COPY oscillatools/pyproject.toml oscillatools/pyproject.toml
+COPY oscillatools/README.md oscillatools/README.md
 
 ENV PYTHONPATH=/app/src:/app/oscillatools/src:/app
 ENV XDG_CACHE_HOME=/home/sqc/.cache

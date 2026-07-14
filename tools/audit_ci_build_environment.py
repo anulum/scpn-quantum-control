@@ -46,6 +46,11 @@ LOCK_INSTALL_COMMAND = "python -m pip install --require-hashes -r ${{ matrix.req
 DOCKER_INSTALL_COMMAND = (
     "pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.txt"
 )
+DOCKER_CONTEXT_COPIES = (
+    "COPY Dockerfile Dockerfile",
+    "COPY oscillatools/README.md oscillatools/README.md",
+)
+"""Build metadata that must survive into the reproduction image."""
 SECURITY_JOB_ENVIRONMENT = (
     "  security:\n"
     "    needs: lint\n"
@@ -403,6 +408,7 @@ def audit_installed_backend(
 def audit_consumers(ci_text: str, dockerfile_text: str, wheel_test_text: str) -> tuple[str, ...]:
     """Validate CI, Docker, and wheel-test wiring to the locked environment."""
     errors: list[str] = []
+    docker_lines = tuple(line.strip() for line in dockerfile_text.splitlines())
     for python_version, path in LOCKS_BY_PYTHON:
         mapping = f'python-version: "{python_version}"\n            requirements-file: {path}'
         if ci_text.count(mapping) != 1:
@@ -415,6 +421,10 @@ def audit_consumers(ci_text: str, dockerfile_text: str, wheel_test_text: str) ->
         errors.append("CI security job must expose both source trees through PYTHONPATH")
     if DOCKER_INSTALL_COMMAND not in dockerfile_text:
         errors.append("Docker must install the Python 3.12 CI lock with --require-hashes")
+    for copy_command in DOCKER_CONTEXT_COPIES:
+        if docker_lines.count(copy_command) != 1:
+            copied_path = copy_command.removeprefix("COPY ").split(maxsplit=1)[0]
+            errors.append(f"Docker reproduction context must copy {copied_path} exactly once")
     if wheel_test_text.count('"--no-isolation"') != 1:
         errors.append("real wheel tests must exercise the installed build environment")
     return tuple(errors)
