@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, ClassVar, TypeAlias, cast
+from typing import Any, ClassVar, TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -169,7 +169,8 @@ class _FakeJAX:
                 forward[index] += step
                 backward[index] -= step
                 hessian[:, index] = (gradient_fn(forward) - gradient_fn(backward)) / (2.0 * step)
-            return cast(FloatArray, 0.5 * (hessian + hessian.T))
+            symmetrized: FloatArray = 0.5 * (hessian + hessian.T)
+            return symmetrized
 
         return wrapped
 

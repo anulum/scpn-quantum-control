@@ -34,6 +34,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   benchmark claims are unchanged.
 
 ### Fixed
+- 2026-07-15 — Made the Phase-QNode JAX strict-typing cohort stable across the
+  locked CI and developer NumPy typing surfaces. The shared fake-Hessian helper
+  now binds its symmetrized array to the declared `FloatArray` contract instead
+  of using an inference-sensitive cast that MyPy 2.3 reports as redundant
+  under the CI lock and necessary with older NumPy typing. The helper
+  arithmetic and all production JAX, quantum, provider, polyglot, and benchmark
+  behavior are unchanged.
 - 2026-07-14 — Closed the Python 3.12 aggregate-coverage and Docker
   reproduction-context failures without skips, debt rebaselining, or audit
   weakening. Program-AD artifact tests now install a strictly typed,
