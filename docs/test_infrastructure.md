@@ -93,6 +93,66 @@ Rust/NumPy numerical parity and batch-throughput contract. It is intentionally
 outside the strict three-file ratchet until its pre-existing typing debt is
 migrated as its own owner.
 
+## MLIR leaf quality ratchet
+
+The four implementation leaves behind `compiler.mlir` have an exact focused
+quality lane. The static cohort contains those four sources, the shared typed
+native-compilation helper, and 14 responsibility-specific test owners. CI and
+the local gate definition keep the ordered lists identical; policy tests fail
+if either side drifts. Strict MyPy intentionally omits
+`--explicit-package-bases` because the native-compilation tests import their
+top-level shared helper by its installed test-module name.
+
+```bash
+quality_paths=(
+  src/scpn_quantum_control/compiler/mlir_enzyme_audit.py
+  src/scpn_quantum_control/compiler/mlir_phase_qnode_runtime.py
+  src/scpn_quantum_control/compiler/mlir_transform_plan_assembly.py
+  src/scpn_quantum_control/compiler/mlir_workload_compilation.py
+  tests/_mlir_native_compilation_test_helpers.py
+  tests/test_mlir_enzyme_audit.py
+  tests/test_mlir_toolchain_probe_hardening.py
+  tests/test_mlir_phase_qnode_runtime.py
+  tests/test_phase_qnode_compiler_lowering.py
+  tests/test_mlir_transform_plan.py
+  tests/test_mlir_transform_plan_assembly.py
+  tests/test_mlir_workload_compilation.py
+  tests/test_mlir_executable_batching_integration.py
+  tests/test_mlir_native_compilation_integration.py
+  tests/test_mlir_scalar_native_compilation_integration.py
+  tests/test_mlir_vector_native_compilation_integration.py
+  tests/test_mlir_matrix_native_compilation_integration.py
+  tests/test_mlir_matrix_2x2_native_compilation_integration.py
+  tests/test_mlir_symmetric_native_compilation_integration.py
+)
+python -m mypy --strict "${quality_paths[@]}"
+python -m ruff check --isolated --select D,D413 \
+  --config 'lint.pydocstyle.convention = "numpy"' "${quality_paths[@]}"
+```
+
+The executable cohort is the same list without the helper or four production
+paths. It exercises public Enzyme audit, toolchain, Phase-QNode, transform-plan,
+custom-rule, batching, and native scalar/vector/matrix/symmetric compiler
+routes. Coverage is isolated to the four leaf targets and fails below exact
+statement and branch coverage:
+
+```bash
+coverage_tests=("${quality_paths[@]:5}")
+python -m coverage run --rcfile=/dev/null \
+  --data-file=.coverage.mlir-leaf-quality --branch \
+  --source=src/scpn_quantum_control/compiler \
+  -m pytest -q "${coverage_tests[@]}"
+python -m coverage report --rcfile=/dev/null \
+  --data-file=.coverage.mlir-leaf-quality \
+  --include='*/mlir_enzyme_audit.py,*/mlir_phase_qnode_runtime.py,*/mlir_transform_plan_assembly.py,*/mlir_workload_compilation.py' \
+  --fail-under=100 --show-missing
+```
+
+The contract currently covers 414 statements and 138 branches with no missing
+or partial paths. Its tests use real public compiler/runtime execution: mock,
+monkeypatch, frozen-record mutation, and private-helper coverage shortcuts are
+outside this lane's evidence model.
+
 ## Test Categories
 
 ### 1. Pipeline Wiring Tests (`test_pipeline_wiring_performance.py`)

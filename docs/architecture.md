@@ -64,18 +64,26 @@ deliberate architecture, not pending refactors:
 The former 3,382-line MLIR native-compilation integration bucket is now source-owned: the public
 compiler facade/custom executable, scalar, vector, dimension-generic matrix, fixed 2x2,
 symmetric 2x2, and executable-batching lifecycles have separate test modules plus one 32-line
-typed batching helper. The 1,047-line fixed-2x2 test stays whole because its five parity tests
+typed batching helper. The 1,046-line fixed-2x2 test stays whole because its five parity tests
 mirror the single closed-form dense-2x2 production family and share the same registry, plan,
 Python-native, and Rust-native lifecycle. All 26 original definitions remain exactly once with
 AST-equivalent bodies.
 
-The MLIR compiler facade is now 503 lines of exact records, kernel, evidence, and implementation
+The MLIR compiler facade is now 504 lines of exact records, kernel, evidence, and implementation
 re-exports. Transform-plan assembly lives in `mlir_transform_plan_assembly.py`;
 Kuramoto/custom executable compilation in `mlir_workload_compilation.py`; toolchain probing and
 maturity aggregation in `mlir_enzyme_audit.py`; and registered Phase-QNode lowering/runtime
 execution in `mlir_phase_qnode_runtime.py`. All 22 former facade definitions have one
 AST-equivalent leaf owner, every leaf has a one-way dependency on existing lower-level contracts,
 and focused boundary tests prevent a facade back-edge.
+
+Those four implementation leaves are 653, 291, 229, and 296 physical lines respectively, so the
+stable facade and every extracted owner remain below the 1,000-line GodFile threshold. Their
+permanent focused quality lane executes public compiler/runtime paths across 14 test owners and
+requires exact coverage of all 414 statements and 138 branches in the four leaves. The same lane
+strict-types and NumPy-docstring-checks the four sources, the shared native-compilation test helper,
+and those 14 test owners. The larger 1,556-line transform-plan test owner is an already-registered,
+cohesive test file and shrank during this quality pass; it is not a new size-policy exception.
 
 The Rust Program-AD replay surface is now a 98-line stable module owner that includes focused
 schema/parser, scalar-forward, numeric-state, numeric-dispatch, reverse-dispatch, reduction,

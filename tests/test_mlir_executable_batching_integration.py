@@ -31,7 +31,6 @@ from scpn_quantum_control.differentiable import (
 
 def test_executable_ad_kernel_batching_rule_dispatches_native_value_jvp_and_vjp() -> None:
     """Primitive vmap batching should dispatch native executable kernels without fallback calls."""
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "batched_matrix_2x2_determinant", "1")
     rule = CustomDerivativeRule(
         name="native_batched_matrix_2x2_determinant_rule",

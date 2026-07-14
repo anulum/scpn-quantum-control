@@ -102,8 +102,8 @@ def test_workload_compilers_fail_closed_on_invalid_inputs() -> None:
         )
 
 
-def test_workload_runtime_closures_fail_closed_on_rule_and_shape_drift() -> None:
-    """Exercise the compiled JVP/VJP guards after deliberate rule drift."""
+def test_workload_runtime_closures_snapshot_rules_and_reject_shape_drift() -> None:
+    """Preserve compiled directional availability and reject tangent shape drift."""
     rule = _quadratic_rule()
     kernel = leaf.compile_custom_derivative_rule_to_executable(
         rule,
@@ -117,14 +117,58 @@ def test_workload_runtime_closures_fail_closed_on_rule_and_shape_drift() -> None
             np.array([0.2], dtype=np.float64),
             np.array([0.5, 0.7], dtype=np.float64),
         )
-    original_jvp = rule.jvp_rule
-    object.__setattr__(rule, "jvp_rule", None)
-    with pytest.raises(ValueError, match="has no JVP"):
-        kernel.jvp(np.array([0.2]), np.array([0.5]))
-    object.__setattr__(rule, "jvp_rule", original_jvp)
-    object.__setattr__(rule, "vjp_rule", None)
+
+    jvp_only = CustomDerivativeRule(
+        name="jvp_only",
+        value_fn=lambda values: np.array([values[0] ** 2], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array(
+            [2.0 * values[0] * tangent[0]], dtype=np.float64
+        ),
+    )
+    vjp_only = CustomDerivativeRule(
+        name="vjp_only",
+        value_fn=lambda values: np.array([values[0] ** 2], dtype=np.float64),
+        vjp_rule=lambda values, cotangent: np.array(
+            [2.0 * values[0] * cotangent[0]], dtype=np.float64
+        ),
+    )
+    jvp_kernel = leaf.compile_custom_derivative_rule_to_executable(
+        jvp_only,
+        np.array([0.2], dtype=np.float64),
+        sample_tangent=np.array([0.5], dtype=np.float64),
+    )
+    vjp_kernel = leaf.compile_custom_derivative_rule_to_executable(
+        vjp_only,
+        np.array([0.2], dtype=np.float64),
+        sample_cotangent=np.array([1.0], dtype=np.float64),
+    )
+
     with pytest.raises(ValueError, match="has no VJP"):
-        kernel.vjp(np.array([0.2]), np.array([1.0]))
+        jvp_kernel.vjp(np.array([0.2]), np.array([1.0]))
+    with pytest.raises(ValueError, match="has no JVP"):
+        vjp_kernel.jvp(np.array([0.2]), np.array([0.5]))
+
+
+def test_kuramoto_workload_compiles_raw_public_inputs_without_metadata() -> None:
+    """Compile raw Kuramoto arrays and honour metadata suppression."""
+    coupling = np.array([[0.0, 0.5], [0.5, 0.0]], dtype=np.float64)
+    omega = np.array([0.1, -0.2], dtype=np.float64)
+
+    module = leaf.compile_kuramoto_to_mlir(
+        coupling,
+        MLIRCompileConfig(time=0.25, include_metadata=False),
+        omega,
+    )
+
+    assert module.resource_counts == {
+        "n_oscillators": 2,
+        "omega_terms": 2,
+        "coupling_terms": 1,
+        "trotter_steps": 1,
+        "trotter_order": 1,
+    }
+    assert "scpn.coupling" in module.text
+    assert "scpn.metadata" not in module.text
 
 
 def test_registered_and_linalg_lowering_rules_reject_invalid_results() -> None:

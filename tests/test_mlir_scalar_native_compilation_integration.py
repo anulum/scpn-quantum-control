@@ -29,7 +29,6 @@ from scpn_quantum_control.differentiable import (
 
 def test_native_llvm_jit_scalar_quadratic_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT scalar AD kernels should execute and update compiler contracts."""
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "scalar_quadratic", "1")
     rule = CustomDerivativeRule(
         name="native_scalar_quadratic_rule",
@@ -145,7 +144,6 @@ def test_native_llvm_jit_scalar_quadratic_kernel_executes_and_marks_plan_native(
 
 def test_native_llvm_jit_scalar_unary_sin_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT nonlinear scalar unary AD kernels should execute."""
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "scalar_unary_sin", "1")
     rule = CustomDerivativeRule(
         name="native_scalar_unary_sin_rule",
@@ -257,7 +255,6 @@ def test_native_llvm_jit_scalar_unary_sin_kernel_executes_and_marks_plan_native(
 
 def test_native_llvm_jit_scalar_binary_multiply_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT scalar binary elementwise AD kernels should execute."""
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "scalar_binary_multiply", "1")
     rule = CustomDerivativeRule(
         name="native_scalar_binary_multiply_rule",

@@ -14,7 +14,7 @@ import hashlib
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Any, TypeAlias
+from typing import Any, TypeAlias, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -280,10 +280,17 @@ def _phase_qnode_dialect_operation(operation: Any) -> dict[str, object]:
 
 
 def _phase_qnode_observable_terms(observable: Any) -> list[dict[str, object]]:
-    from scpn_quantum_control.phase.qnode_circuit import PauliTerm, SparsePauliHamiltonian
+    from scpn_quantum_control.phase.qnode_circuit import (
+        DenseHermitianObservable,
+        PauliCovarianceObservable,
+        PauliTerm,
+        SparsePauliHamiltonian,
+    )
 
     if isinstance(observable, SparsePauliHamiltonian):
         return [term.to_dict() for term in observable.terms]
-    if isinstance(observable, PauliTerm):
-        return [observable.to_dict()]
-    return [{"kind": str(observable)}]
+    structured = cast(
+        "PauliTerm | PauliCovarianceObservable | DenseHermitianObservable",
+        observable,
+    )
+    return [structured.to_dict()]

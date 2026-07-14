@@ -257,6 +257,76 @@ def test_static_gates_include_phase_qnode_vector_quality_ratchets() -> None:
     assert docstring_cmd[-len(cohort) :] == cohort
 
 
+def test_static_gates_include_mlir_leaf_quality_ratchets() -> None:
+    """MLIR leaves and their real integration cohort must stay fully typed and documented."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+    strict_cmd = gate_map["mypy-strict-mlir-leaf-quality"]
+    docstring_cmd = gate_map["ruff D MLIR-leaf quality ratchet"]
+    cohort = _preflight.MLIR_LEAF_QUALITY_RATCHET
+
+    assert "--strict" in strict_cmd
+    assert strict_cmd[-len(cohort) :] == cohort
+    assert "--isolated" in docstring_cmd
+    assert "D,D413" in docstring_cmd
+    assert 'lint.pydocstyle.convention = "numpy"' in docstring_cmd
+    assert docstring_cmd[-len(cohort) :] == cohort
+
+
+def test_default_preflight_has_exact_mlir_leaf_coverage() -> None:
+    """Default local coverage must enforce all post-baseline MLIR leaves at 100%."""
+    gate_map = dict(_preflight.MLIR_LEAF_COVERAGE_GATES)
+    run_cmd = gate_map["MLIR leaf focused coverage"]
+    report_cmd = gate_map["MLIR leaf exact coverage threshold"]
+    cohort = _preflight.MLIR_LEAF_COVERAGE_COHORT
+    data_file = _preflight.MLIR_LEAF_COVERAGE_DATA_FILE
+    source = _preflight.MLIR_LEAF_COVERAGE_SOURCE
+    include = _preflight.MLIR_LEAF_COVERAGE_INCLUDE
+
+    assert run_cmd[:4] == [_preflight._PY, "-m", "coverage", "run"]
+    assert "--branch" in run_cmd
+    assert f"--source={source}" in run_cmd
+    assert f"--include={include}" not in run_cmd
+    assert run_cmd[-len(cohort) :] == cohort
+    assert f"--data-file={data_file}" in run_cmd
+    assert report_cmd[:4] == [_preflight._PY, "-m", "coverage", "report"]
+    assert "--precision=2" in report_cmd
+    assert "--fail-under=100" in report_cmd
+    assert f"--include={include}" in report_cmd
+    assert f"--data-file={data_file}" in report_cmd
+
+
+def test_ci_and_preflight_share_mlir_leaf_cohorts() -> None:
+    """CI and local MLIR gates must preserve identical quality and coverage order."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    quality_steps = (
+        "Type-check MLIR leaf quality cohort",
+        "Ruff NumPy docstrings for MLIR leaf quality cohort",
+    )
+
+    for step_name in quality_steps:
+        block_start = workflow.index(f"      - name: {step_name}")
+        block_end = workflow.index("\n      - name:", block_start + 1)
+        ci_paths = [
+            line.strip()
+            for line in workflow[block_start:block_end].splitlines()
+            if line.strip().startswith(("src/", "tests/"))
+        ]
+        assert ci_paths == _preflight.MLIR_LEAF_QUALITY_RATCHET
+
+    coverage_start = workflow.index("      - name: Run MLIR leaf focused coverage")
+    coverage_end = workflow.index("\n      - name:", coverage_start + 1)
+    ci_coverage_paths = [
+        line.strip()
+        for line in workflow[coverage_start:coverage_end].splitlines()
+        if line.strip().startswith("tests/")
+    ]
+    assert ci_coverage_paths == _preflight.MLIR_LEAF_COVERAGE_COHORT
+    assert "Enforce MLIR leaf exact coverage" in workflow
+    assert f"--source={_preflight.MLIR_LEAF_COVERAGE_SOURCE}" in workflow
+    assert f"--include={_preflight.MLIR_LEAF_COVERAGE_INCLUDE}" in workflow
+    assert "needs['mlir-leaf-quality'].result" in workflow
+
+
 def test_default_preflight_has_exact_phase_qnode_vector_coverage() -> None:
     """Default local coverage must enforce the public vector owner at 100%."""
     gate_map = dict(_preflight.PHASE_QNODE_VECTOR_COVERAGE_GATES)
@@ -362,7 +432,7 @@ def test_ci_and_preflight_share_the_docstring_ratchet_cohort() -> None:
     """CI and the local static gate must enforce the same ordered file cohort."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
     block_start = workflow.index("      - name: Ruff docstring ratchet")
-    block_end = workflow.index("\n\n  phase-qnode-vector-quality:", block_start)
+    block_end = workflow.index("\n\n  mlir-leaf-quality:", block_start)
     ci_paths = [
         line.strip()
         for line in workflow[block_start:block_end].splitlines()
@@ -724,6 +794,8 @@ def test_main_uses_coverage_pytest_by_default(
     assert _preflight.main() == 0
     assert calls == [
         "lint",
+        "MLIR leaf focused coverage",
+        "MLIR leaf exact coverage threshold",
         "phase-qnode vector focused coverage",
         "phase-qnode vector exact coverage threshold",
         "whole-program trace-value focused coverage",

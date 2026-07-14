@@ -251,11 +251,7 @@ def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) ->
     def mlir_runtime_blocker(status: PrimitiveLoweringStatus) -> str | None:
         if has_mlir_runtime_contract(status):
             return None
-        if not status.has_lowering_rule:
-            return "blocked: no MLIR-runtime lowering rule"
-        if not status.mlir_runtime_verification.startswith("verified:"):
-            return "blocked: no verified MLIR-runtime provenance"
-        return "blocked: MLIR-runtime contract incomplete"
+        return "blocked: no MLIR-runtime lowering rule"
 
     def primitive_readiness(status: PrimitiveLoweringStatus) -> dict[str, bool | str]:
         registry_contract = has_registry_contract(status)

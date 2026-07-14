@@ -11,14 +11,15 @@ Gates (in order):
   1. repository lint, format, documentation, generated-surface, policy, and security audits
   2. focused strict-typing and NumPy-docstring ratchets for promoted owner cohorts
   3. Rust formatting, version/export consistency, and repository typing gates
-  4. exact whole-program trace-value statement/branch coverage (default coverage mode only)
+  4. exact MLIR-leaf, Phase-QNode-vector, and trace-value statement/branch coverage
+     (default coverage mode only)
   5. repository pytest with the selected coverage mode
   6. Bandit security scan
 
-The exact trace-value gate uses an explicit responsibility-scoped test cohort,
-an isolated coverage data file, and a 100% statement/branch threshold for
-``whole_program_trace_values.py``. ``--no-tests`` and ``--no-coverage`` skip
-that executable coverage gate while retaining its static typing/docstring
+Each exact owner gate uses an explicit responsibility-scoped test cohort, an
+isolated coverage data file, and a 100% statement/branch threshold for only its
+named production modules. ``--no-tests`` and ``--no-coverage`` skip those
+executable coverage gates while retaining their static typing/docstring
 ratchets.
 
 Usage:
@@ -80,6 +81,45 @@ PHASE_QNODE_VECTOR_QUALITY_RATCHET = [
     "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
     "tests/test_phase_qnode_vector_transforms.py",
     "tests/test_phase_qnode_rust_parity.py",
+]
+
+MLIR_LEAF_QUALITY_RATCHET = [
+    "src/scpn_quantum_control/compiler/mlir_enzyme_audit.py",
+    "src/scpn_quantum_control/compiler/mlir_phase_qnode_runtime.py",
+    "src/scpn_quantum_control/compiler/mlir_transform_plan_assembly.py",
+    "src/scpn_quantum_control/compiler/mlir_workload_compilation.py",
+    "tests/_mlir_native_compilation_test_helpers.py",
+    "tests/test_mlir_enzyme_audit.py",
+    "tests/test_mlir_toolchain_probe_hardening.py",
+    "tests/test_mlir_phase_qnode_runtime.py",
+    "tests/test_phase_qnode_compiler_lowering.py",
+    "tests/test_mlir_transform_plan.py",
+    "tests/test_mlir_transform_plan_assembly.py",
+    "tests/test_mlir_workload_compilation.py",
+    "tests/test_mlir_executable_batching_integration.py",
+    "tests/test_mlir_native_compilation_integration.py",
+    "tests/test_mlir_scalar_native_compilation_integration.py",
+    "tests/test_mlir_vector_native_compilation_integration.py",
+    "tests/test_mlir_matrix_native_compilation_integration.py",
+    "tests/test_mlir_matrix_2x2_native_compilation_integration.py",
+    "tests/test_mlir_symmetric_native_compilation_integration.py",
+]
+
+MLIR_LEAF_COVERAGE_COHORT = [
+    "tests/test_mlir_enzyme_audit.py",
+    "tests/test_mlir_toolchain_probe_hardening.py",
+    "tests/test_mlir_phase_qnode_runtime.py",
+    "tests/test_phase_qnode_compiler_lowering.py",
+    "tests/test_mlir_transform_plan.py",
+    "tests/test_mlir_transform_plan_assembly.py",
+    "tests/test_mlir_workload_compilation.py",
+    "tests/test_mlir_executable_batching_integration.py",
+    "tests/test_mlir_native_compilation_integration.py",
+    "tests/test_mlir_scalar_native_compilation_integration.py",
+    "tests/test_mlir_vector_native_compilation_integration.py",
+    "tests/test_mlir_matrix_native_compilation_integration.py",
+    "tests/test_mlir_matrix_2x2_native_compilation_integration.py",
+    "tests/test_mlir_symmetric_native_compilation_integration.py",
 ]
 
 PHASE_QNODE_VECTOR_COVERAGE_COHORT = [
@@ -157,6 +197,12 @@ WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT = [
     "tests/test_whole_program_trace_values.py",
 ]
 
+MLIR_LEAF_COVERAGE_DATA_FILE = ".coverage.mlir-leaf-quality"
+MLIR_LEAF_COVERAGE_SOURCE = "src/scpn_quantum_control/compiler"
+MLIR_LEAF_COVERAGE_INCLUDE = (
+    "*/mlir_enzyme_audit.py,*/mlir_phase_qnode_runtime.py,"
+    "*/mlir_transform_plan_assembly.py,*/mlir_workload_compilation.py"
+)
 PHASE_QNODE_VECTOR_COVERAGE_DATA_FILE = ".coverage.phase-qnode-vector"
 WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE = ".coverage.whole-program-trace-values"
 
@@ -275,6 +321,31 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "--config",
             'lint.pydocstyle.convention = "numpy"',
             *REALTIME_RUNTIME_QUALITY_RATCHET,
+        ],
+    ),
+    (
+        "mypy-strict-mlir-leaf-quality",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            *MLIR_LEAF_QUALITY_RATCHET,
+        ],
+    ),
+    (
+        "ruff D MLIR-leaf quality ratchet",
+        [
+            _PY,
+            "-m",
+            "ruff",
+            "check",
+            "--isolated",
+            "--select",
+            "D,D413",
+            "--config",
+            'lint.pydocstyle.convention = "numpy"',
+            *MLIR_LEAF_QUALITY_RATCHET,
         ],
     ),
     (
@@ -506,6 +577,40 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     ),
 ]
 
+MLIR_LEAF_COVERAGE_GATES: list[tuple[str, list[str]]] = [
+    (
+        "MLIR leaf focused coverage",
+        [
+            _PY,
+            "-m",
+            "coverage",
+            "run",
+            f"--rcfile={devnull}",
+            f"--data-file={MLIR_LEAF_COVERAGE_DATA_FILE}",
+            "--branch",
+            f"--source={MLIR_LEAF_COVERAGE_SOURCE}",
+            "-m",
+            "pytest",
+            "-q",
+            *MLIR_LEAF_COVERAGE_COHORT,
+        ],
+    ),
+    (
+        "MLIR leaf exact coverage threshold",
+        [
+            _PY,
+            "-m",
+            "coverage",
+            "report",
+            f"--rcfile={devnull}",
+            f"--data-file={MLIR_LEAF_COVERAGE_DATA_FILE}",
+            "--precision=2",
+            "--fail-under=100",
+            f"--include={MLIR_LEAF_COVERAGE_INCLUDE}",
+        ],
+    ),
+]
+
 PHASE_QNODE_VECTOR_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
         "phase-qnode vector focused coverage",
@@ -680,6 +785,7 @@ def main() -> int:
         if no_coverage:
             gates.append(("pytest", _PYTEST_BASE))
         else:
+            gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_VECTOR_COVERAGE_GATES)
             gates.extend(WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES)
             gates.append(("pytest + coverage", _PYTEST_COV))

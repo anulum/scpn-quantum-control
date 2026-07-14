@@ -34,7 +34,6 @@ from scpn_quantum_control.differentiable import (
 
 def test_native_llvm_jit_matrix_2x2_determinant_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT determinant AD kernels should execute exact scalar matrix AD."""
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "matrix_2x2_determinant", "1")
     rule = CustomDerivativeRule(
         name="native_matrix_2x2_determinant_rule",

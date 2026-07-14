@@ -24,7 +24,6 @@ def _eager_batching_rule(
     out_axes: int,
 ) -> object:
     """Small primitive batching rule used by compiler-AD registry tests."""
-
     del axes, out_axes
     if len(args) != 1:
         raise ValueError("test batching rule expects one batched argument")

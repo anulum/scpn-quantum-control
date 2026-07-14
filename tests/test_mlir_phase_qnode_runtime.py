@@ -19,6 +19,8 @@ import pytest
 import scpn_quantum_control.compiler.mlir as facade
 import scpn_quantum_control.compiler.mlir_phase_qnode_runtime as leaf
 from scpn_quantum_control.phase.qnode_circuit import (
+    DenseHermitianObservable,
+    PauliCovarianceObservable,
     PauliTerm,
     PhaseQNodeCircuit,
     SparsePauliHamiltonian,
@@ -143,15 +145,37 @@ def test_phase_qnode_runtime_rejects_nonfinite_parameters_and_tolerances() -> No
     executable = _runtime_executable()
     with pytest.raises(ValueError, match="finite real"):
         executable.value(np.array([np.nan]))
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
     with pytest.raises(ValueError, match="finite and non-negative"):
-        leaf._as_mlir_runtime_tolerance(-1.0, "atol")
+        leaf.compile_phase_qnode_circuit_to_mlir_runtime(circuit, np.array([0.2]), atol=-1.0)
 
 
-def test_phase_qnode_observable_terms_cover_sparse_and_fallback_contracts() -> None:
-    """Serialize sparse Pauli observables and preserve foreign fallback kinds."""
-    term = PauliTerm(1.0, ((0, "z"),))
-    sparse = SparsePauliHamiltonian((term,))
-    marker = object()
+def test_phase_qnode_lowering_preserves_structured_observable_metadata() -> None:
+    """Serialize every registered composite observable through public lowering."""
+    left = PauliTerm(1.0, ((0, "x"),))
+    right = PauliTerm(-0.5, ((0, "z"),))
+    observables = (
+        SparsePauliHamiltonian((left, right)),
+        PauliCovarianceObservable(left, right),
+        DenseHermitianObservable(np.diag([1.0, -1.0]).astype(np.complex128)),
+    )
 
-    assert leaf._phase_qnode_observable_terms(sparse) == [term.to_dict()]
-    assert leaf._phase_qnode_observable_terms(marker) == [{"kind": str(marker)}]
+    for observable in observables:
+        circuit = PhaseQNodeCircuit(
+            n_qubits=1,
+            operations=(("ry", (0,), 0),),
+            observable=observable,
+        )
+        module = leaf.lower_phase_qnode_circuit_to_mlir(circuit, np.array([0.2]))
+        expected = (
+            [term.to_dict() for term in observable.terms]
+            if isinstance(observable, SparsePauliHamiltonian)
+            else [observable.to_dict()]
+        )
+
+        assert module.metadata["observable_terms"] == expected
+        assert module.resource_counts["phase_qnode_observable_terms"] == len(expected)

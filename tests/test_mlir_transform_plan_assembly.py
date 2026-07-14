@@ -58,8 +58,8 @@ def test_transform_plan_lowering_rejects_non_plan_inputs() -> None:
         leaf.compile_compiler_ad_transform_plan_to_mlir(object())  # type: ignore[arg-type]
 
 
-def test_transform_plan_reports_unverified_runtime_and_registry_only_status() -> None:
-    """Classify an unverified VJP-only registry row without overstating readiness."""
+def test_transform_plan_reports_registry_only_status_without_runtime_lowering() -> None:
+    """Classify a VJP-only registry row without overstating runtime readiness."""
     status = PrimitiveLoweringStatus(
         identity=PrimitiveIdentity("test", "vjp_only", "1"),
         rule_name="vjp_only_rule",
@@ -69,19 +69,11 @@ def test_transform_plan_reports_unverified_runtime_and_registry_only_status() ->
         has_batching_rule=True,
         has_shape_rule=True,
         has_dtype_rule=True,
-        has_lowering_rule=True,
         static_derivative_factory="test.factory",
         static_signature="vector[n]",
         nondifferentiable_policy="zero_cotangent",
         nondifferentiable_boundary="declared",
         nondifferentiable_boundary_policy="fail_closed",
-        mlir_lowering="available: MLIR-runtime lowering",
-        mlir_runtime_verification="verified: test runtime",
-    )
-    object.__setattr__(
-        status,
-        "mlir_runtime_verification",
-        "available: no verified provenance",
     )
 
     module = leaf.compile_compiler_ad_transform_plan_to_mlir(CompilerADTransformPlan((status,)))
@@ -89,5 +81,5 @@ def test_transform_plan_reports_unverified_runtime_and_registry_only_status() ->
 
     assert readiness["verdict"] == "registry_contract_only"
     assert module.metadata["mlir_runtime_blockers"]["test:vjp_only@1"] == (
-        "blocked: no verified MLIR-runtime provenance"
+        "blocked: no MLIR-runtime lowering rule"
     )

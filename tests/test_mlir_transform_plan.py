@@ -54,7 +54,6 @@ from scpn_quantum_control.differentiable import (
 
 def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends() -> None:
     """Compiler-backed AD planning should expose real dialect metadata without backend overclaim."""
-
     identity = PrimitiveIdentity("scpn.quantum", "rx_expectation", "1")
     rule = CustomDerivativeRule(
         name="rx_expectation_rule",
@@ -270,7 +269,6 @@ def test_compiler_ad_transform_plan_emits_dialect_ops_and_fail_closed_backends()
 
 def test_compiler_ad_plan_does_not_count_uncontracted_policy_effect_coverage() -> None:
     """Compiler AD provenance should not overstate semantics for derivative-only rules."""
-
     identity = PrimitiveIdentity("scpn.quantum", "derivative_only", "1")
     rule = CustomDerivativeRule(
         name="derivative_only_rule",
@@ -298,7 +296,6 @@ def test_compiler_ad_plan_does_not_count_uncontracted_policy_effect_coverage() -
 
 def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
     """Policy-only primitives should remain uncontracted without boundary metadata."""
-
     identity = PrimitiveIdentity("scpn.quantum", "policy_only", "1")
     rule = CustomDerivativeRule(
         name="policy_only_rule",
@@ -423,7 +420,6 @@ def test_compiler_ad_plan_marks_policy_only_primitives_uncontracted() -> None:
 
 def test_compiler_ad_rust_backend_metadata_requires_static_signature_parity() -> None:
     """Rust backend claims should fail closed unless they bind the same static contract."""
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "rust_signature_guard", "1")
     base_metadata: dict[str, str] = {
         "native_backend": "native_llvm_jit",
@@ -493,7 +489,6 @@ def test_compiler_ad_rust_backend_metadata_requires_static_signature_parity() ->
 
 def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
     """Compiler AD planning should expose static linalg signatures without native overclaim."""
-
     registry = CustomDerivativeRegistry()
     for name in ("matrix_power", "multi_dot"):
         contract = primitive_contract_for(PrimitiveIdentity("scpn.program_ad.linalg", name, "1"))
@@ -850,7 +845,6 @@ def test_compiler_ad_plan_surfaces_static_linalg_lowering_metadata() -> None:
 
 def test_compiler_ad_plan_promotes_static_derivative_factory_contracts() -> None:
     """Compiler AD plans should expose static derivative factory contracts directly."""
-
     primitive_keys = (
         "scpn.program_ad.array:getitem",
         "scpn.program_ad.shape:reshape",
@@ -940,7 +934,6 @@ def test_compiler_ad_plan_promotes_static_derivative_factory_contracts() -> None
 
 def test_compiler_ad_plan_does_not_count_not_required_static_factories() -> None:
     """Compiler AD resource counts should count only actual static factories."""
-
     registry = CustomDerivativeRegistry()
     for key in (
         "scpn.program_ad.elementwise:sin",
@@ -977,7 +970,6 @@ def test_compiler_ad_plan_does_not_count_not_required_static_factories() -> None
 
 def test_compiler_ad_transform_plan_rejects_incomplete_static_factory_metadata() -> None:
     """Compiler AD planning should fail closed on unpaired static factory metadata."""
-
     rule = CustomDerivativeRule(
         name="incomplete_static_metadata_rule",
         value_fn=lambda values: np.array([values[0]], dtype=np.float64),
@@ -1026,7 +1018,6 @@ def test_compiler_ad_transform_plan_rejects_incomplete_static_factory_metadata()
 
 def test_primitive_lowering_status_rejects_conflicting_static_metadata() -> None:
     """Primitive lowering status should reject contradictory static metadata fields."""
-
     identity = PrimitiveIdentity("scpn.test", "conflicting_static_metadata", "1")
     rule_name = "conflicting_static_metadata_rule"
     cases = (
@@ -1067,7 +1058,6 @@ def test_primitive_lowering_status_rejects_conflicting_static_metadata() -> None
 
 def test_primitive_lowering_status_rejects_inconsistent_lowering_rule_provenance() -> None:
     """Primitive lowering status should keep lowering-rule provenance consistent."""
-
     identity = PrimitiveIdentity("scpn.test", "lowering_provenance", "1")
     cases = (
         (
@@ -1102,7 +1092,6 @@ def test_primitive_lowering_status_rejects_inconsistent_lowering_rule_provenance
 
 def test_primitive_lowering_status_rejects_native_backend_overclaims() -> None:
     """Primitive lowering status should fail closed on native backend availability claims."""
-
     identity = PrimitiveIdentity("scpn.test", "native_backend_overclaim", "1")
     with pytest.raises(ValueError, match="rust_lowering"):
         PrimitiveLoweringStatus(
@@ -1135,7 +1124,6 @@ def test_primitive_lowering_status_rejects_native_backend_overclaims() -> None:
 
 def test_static_linalg_lowering_factories_verify_executable_kernels() -> None:
     """Static linalg lowering factories should execute verified MLIR-runtime kernels."""
-
     matrix = np.array([[2.0, -0.5], [0.75, 1.5]], dtype=np.float64)
     tangent_matrix = np.array([[0.1, -0.2], [0.3, 0.4]], dtype=np.float64)
     left = np.array([0.75, -1.5], dtype=np.float64)
@@ -1199,7 +1187,6 @@ def test_static_linalg_lowering_factories_verify_executable_kernels() -> None:
 
 def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
     """Concrete static linalg lowering rules should mark only MLIR-runtime execution available."""
-
     identity = PrimitiveIdentity("scpn.program_ad.linalg", "matrix_power", "1")
     contract = primitive_contract_for(identity)
     registry = CustomDerivativeRegistry()
@@ -1370,7 +1357,6 @@ def test_static_linalg_lowering_rules_register_into_compiler_ad_plan() -> None:
 
 def test_static_linalg_lowering_rules_register_multi_shape_compiler_ad_plan() -> None:
     """Static linalg lowerings should plan and verify multiple concrete signatures."""
-
     registry = CustomDerivativeRegistry()
     matrix_power_identity = PrimitiveIdentity("scpn.program_ad.linalg", "matrix_power", "1")
     multi_dot_identity = PrimitiveIdentity("scpn.program_ad.linalg", "multi_dot", "1")
@@ -1470,7 +1456,6 @@ def test_static_linalg_lowering_rules_register_multi_shape_compiler_ad_plan() ->
 
 def test_compiler_ad_transform_plan_rejects_empty_and_executable_backend_claims() -> None:
     """Compiler AD planning must fail closed until executable backends exist."""
-
     with pytest.raises(ValueError, match="at least one primitive"):
         CompilerADTransformPlan(())
     status = PrimitiveLoweringStatus(
@@ -1516,7 +1501,6 @@ def test_compiler_ad_transform_plan_rejects_empty_and_executable_backend_claims(
 
 def test_mlir_compiler_api_exported_from_package_root() -> None:
     """MLIR compiler surfaces should remain stable package-root imports."""
-
     assert scpn.CompilerADExecutableConfig is CompilerADExecutableConfig
     assert scpn.CompilerADKernelVerification is CompilerADKernelVerification
     assert scpn.CompilerADTransformPlan is CompilerADTransformPlan

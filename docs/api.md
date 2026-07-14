@@ -469,17 +469,25 @@ deterministic MLIR provenance plus deterministic LLVM-style scalar-gradient
 provenance for verified scalar-output kernels, binds normalized value/JVP/VJP
 runtime kernels, exposes verified scalar-output `gradient()` execution through
 VJP cotangent-one semantics, and verifies those kernels against the source rule
-before returning. `compile_phase_qnode_circuit_to_mlir_runtime()` promotes the
+before returning. The executable snapshots the optional JVP/VJP callbacks once
+at compilation, so its verified closures cannot drift if the source rule record
+is subsequently replaced or tampered with. Missing transform directions remain
+absent rather than becoming deferred runtime failures.
+`compile_phase_qnode_circuit_to_mlir_runtime()` promotes the
 registered local `PhaseQNodeCircuit` lowering from textual metadata to a
 verified SCPN MLIR-runtime adapter with explicit dialect operation records,
 runtime parameter shape/type checks, value/parameter-shift-gradient execution,
-and a blocked interpreter-fallback success claim. It does not claim native
+and a blocked interpreter-fallback success claim. Dialect metadata retains the
+canonical serialized payload for `PauliTerm`, `SparsePauliHamiltonian`,
+`PauliCovarianceObservable`, and `DenseHermitianObservable` instead of reducing
+structured observables to display strings. It does not claim native
 LLVM/JIT, provider, hardware, dynamic-circuit, or arbitrary-QNode compilation.
 `run_enzyme_mlir_maturity_audit()` is the Enzyme/MLIR provider-exceedance gate:
 it compiles and verifies a registered Phase-QNode through the SCPN MLIR-runtime
 adapter, records the bounded in-process native LLVM/JIT support surface, probes
-local `enzyme`, `opt`, `mlir-opt`, and `clang` commands with version metadata
-when present, validates attached native Enzyme execution evidence, validates an
+local `enzyme`, `opt`, `mlir-opt`, and `clang` commands only after resolving a
+real executable and records version metadata when present, validates attached
+native Enzyme execution evidence, validates an
 attached MLIR/LLVM correctness artefact ID, validates the isolated benchmark
 attachment against the Phase-QNode affinity artefact contract, and returns
 hard-gap rows when the compiler stack or native Enzyme execution path is

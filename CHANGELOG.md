@@ -34,6 +34,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   benchmark claims are unchanged.
 
 ### Fixed
+- 2026-07-14 — Closed the four extracted MLIR implementation leaves at exact
+  focused quality. Phase-QNode lowering now preserves canonical structured
+  metadata for Pauli terms, sparse Hamiltonians, Pauli covariance, and dense
+  Hermitian observables; custom-rule executables snapshot their optional
+  JVP/VJP callbacks at compilation; the transform-plan blocker reports only
+  reachable contract states; and Enzyme maturity probes canonicalize and
+  validate real toolchain executables without a duplicate correctness gap.
+  Fourteen real public-path test owners cover 414/414 statements and 138/138
+  branches, while a permanent 19-file CI/local cohort enforces strict MyPy and
+  NumPy docstrings with exact cohort-parity policy tests. The 229-, 296-, 653-,
+  and 291-line leaves and 504-line facade remain below the GodFile threshold;
+  the pre-existing cohesive 1,556-line transform-plan test shrank. Rust/native
+  LLVM kernels, provider and hardware execution, benchmark definitions, inputs,
+  timing algorithms, and performance claims are unchanged, so no polyglot
+  comparison benchmark refresh is required.
 - 2026-07-14 — Closed the honest Phase-QNode vector-transform coverage and
   contract debt without restoring the removed synthetic Jacobian substitution.
   JVP/VJP now validate their fail-closed policy once and reuse the typed

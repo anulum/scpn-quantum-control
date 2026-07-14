@@ -110,6 +110,15 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.phase.tensorflow_bridge` / `scpn_quantum_control.phase.tensorflow_maintenance` | Shallow loader and signature-compatibility facade over the TensorFlow contract, gradient, and compatibility leaves. TensorFlow is explicitly maintained as compatibility-only evidence for bounded routes; broad Graph/XLA parity, arbitrary Phase-QNode lowering, provider callbacks, hardware gradients, and performance promotion stay blocked. |
 | `scpn_quantum_control.compiler.mlir` | Compiler/program AD lowering, native executable kernel helpers, Phase-QNode MLIR-runtime execution adapters, support-profile reports, and the Enzyme/MLIR maturity audit that records executable SCPN MLIR-runtime correctness, native LLVM/JIT support metadata, local toolchain versions, typed native Enzyme execution evidence, typed MLIR/LLVM correctness evidence, and hard gaps until successful native Enzyme plus isolated benchmark artefacts exist. Native LLVM/JIT promotion is separately guarded by `LLVMJITClaimGate`, `build_llvm_jit_claim_gate`, `llvm_jit_claim_gate_from_dict`, and `render_llvm_jit_claim_gate_markdown`, which require executable lowering, correctness tests, crash-safety tests, isolated benchmark artifact IDs, rollback policy, and fallback policy before any JIT promotion. |
 
+The MLIR facade delegates to four sub-1,000-line implementation leaves. Its
+custom-rule executable captures the available JVP/VJP callbacks at compile
+time, and its Phase-QNode dialect records preserve canonical structured
+observable payloads for Pauli terms, sparse Hamiltonians, Pauli covariance, and
+dense Hermitian observables. Toolchain maturity probes admit only resolved real
+executables. These are local compiler-contract guarantees; they do not promote
+native LLVM/JIT, Rust, provider, hardware, arbitrary-QNode, or performance
+support.
+
 ## Common objects
 
 | Object family | Examples | Use |

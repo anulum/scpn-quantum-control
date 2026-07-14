@@ -53,6 +53,7 @@ ENZYME_MLIR_BREADTH_ARTIFACT_PATH = (
 
 
 def test_phase_qnode_compiler_lowering_reports_registered_subset() -> None:
+    """Lower the registered Phase-QNode subset with bounded claim metadata."""
     circuit = PhaseQNodeCircuit(
         n_qubits=2,
         operations=(("ry", (0,), 0), ("cnot", (0, 1)), ("rzz", (0, 1), 1)),
@@ -82,6 +83,7 @@ def test_phase_qnode_compiler_lowering_reports_registered_subset() -> None:
 
 
 def test_phase_qnode_mlir_runtime_executes_value_and_gradient() -> None:
+    """Execute public value and gradient kernels from the verified runtime adapter."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("ry", (0,), 0), ("rx", (0,), 1)),
@@ -115,6 +117,7 @@ def test_phase_qnode_mlir_runtime_executes_value_and_gradient() -> None:
 
 
 def test_phase_qnode_mlir_runtime_verifies_shape_and_dtype() -> None:
+    """Reject runtime parameters whose shape or dtype violates the compiled contract."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("ry", (0,), 0),),
@@ -132,6 +135,7 @@ def test_phase_qnode_mlir_runtime_verifies_shape_and_dtype() -> None:
 
 
 def test_phase_qnode_mlir_runtime_exports_are_public() -> None:
+    """Keep Phase-QNode runtime records and compilers on public facades."""
     assert (
         compiler.compile_phase_qnode_circuit_to_mlir_runtime
         is compile_phase_qnode_circuit_to_mlir_runtime
@@ -145,6 +149,7 @@ def test_phase_qnode_mlir_runtime_exports_are_public() -> None:
 
 
 def test_phase_qnode_compiler_lowering_fails_closed_for_unsupported_circuit() -> None:
+    """Reject unsupported Phase-QNode gates before emitting MLIR metadata."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("u3", (0,), 0),),
@@ -156,6 +161,7 @@ def test_phase_qnode_compiler_lowering_fails_closed_for_unsupported_circuit() ->
 
 
 def test_enzyme_mlir_maturity_audit_records_runtime_evidence_and_toolchain_gaps() -> None:
+    """Record verified runtime checks alongside absent native toolchain gaps."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("ry", (0,), 0), ("rx", (0,), 1)),
@@ -183,6 +189,7 @@ def test_enzyme_mlir_maturity_audit_records_runtime_evidence_and_toolchain_gaps(
 
 
 def test_enzyme_mlir_maturity_audit_records_versions_but_requires_execution_artifacts() -> None:
+    """Keep detected toolchain versions non-promotional without execution artefacts."""
     result = run_enzyme_mlir_maturity_audit(
         toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
         version_probe=lambda executable: f"{executable} version 1.2.3",
@@ -200,6 +207,7 @@ def test_enzyme_mlir_maturity_audit_records_versions_but_requires_execution_arti
 
 
 def test_enzyme_mlir_maturity_audit_keeps_runtime_gap_non_promotional() -> None:
+    """Retain named native execution failures as promotion-blocking hard gaps."""
     evidence = EnzymeNativeExecutionEvidence(
         artifact_id="enzyme-runtime-gap-001",
         status="hard_gap",
@@ -229,6 +237,7 @@ def test_enzyme_mlir_maturity_audit_keeps_runtime_gap_non_promotional() -> None:
 
 
 def test_enzyme_mlir_maturity_audit_separates_installed_toolchain_from_runtime_gap() -> None:
+    """Distinguish installed compiler commands from failed native execution."""
     evidence = EnzymeNativeExecutionEvidence(
         artifact_id="enzyme-runtime-gap-installed-stack-001",
         status="hard_gap",
@@ -264,6 +273,7 @@ def test_enzyme_mlir_maturity_audit_separates_installed_toolchain_from_runtime_g
 
 
 def test_enzyme_mlir_maturity_audit_requires_all_artifacts_for_promotion() -> None:
+    """Require every evidence attachment before provider-exceedance promotion."""
     evidence = EnzymeNativeExecutionEvidence(
         artifact_id="enzyme-success-001",
         status="success",
@@ -322,6 +332,7 @@ def _compiler_ad_breadth_evidence(
 
 
 def test_enzyme_mlir_maturity_audit_requires_complete_compiler_ad_breadth() -> None:
+    """Accept a complete linked compiler-AD breadth evidence chain."""
     evidence = EnzymeNativeExecutionEvidence(
         artifact_id="enzyme-success-001",
         status="success",
@@ -419,6 +430,7 @@ def _compiler_ad_breadth_artifact(
 
 
 def test_enzyme_mlir_maturity_audit_requires_validated_isolated_benchmark() -> None:
+    """Reject an isolated benchmark identifier without validated attachment evidence."""
     evidence = EnzymeNativeExecutionEvidence(
         artifact_id="enzyme-success-001",
         status="success",
@@ -454,6 +466,7 @@ def test_enzyme_mlir_maturity_audit_requires_validated_isolated_benchmark() -> N
 
 
 def test_enzyme_mlir_maturity_audit_accepts_validated_isolated_benchmark() -> None:
+    """Accept promotion-ready isolated benchmark evidence with matching identifiers."""
     evidence = EnzymeNativeExecutionEvidence(
         artifact_id="enzyme-success-001",
         status="success",
@@ -485,6 +498,7 @@ def test_enzyme_mlir_maturity_audit_accepts_validated_isolated_benchmark() -> No
 
 
 def test_enzyme_mlir_breadth_artifact_builds_promotion_evidence() -> None:
+    """Derive promotion evidence from a complete passing breadth artefact."""
     artifact = _compiler_ad_breadth_artifact()
     evidence = artifact.to_breadth_evidence()
     payload = artifact.to_dict()
@@ -500,6 +514,7 @@ def test_enzyme_mlir_breadth_artifact_builds_promotion_evidence() -> None:
 
 
 def test_enzyme_mlir_breadth_artifact_blocks_failed_case() -> None:
+    """Prevent breadth promotion when any required compiler-AD case fails."""
     artifact = _compiler_ad_breadth_artifact(case_overrides={"loop_activity": False})
 
     assert artifact.promotion_ready is False
@@ -510,6 +525,7 @@ def test_enzyme_mlir_breadth_artifact_blocks_failed_case() -> None:
 
 
 def test_enzyme_mlir_breadth_gap_artifact_records_missing_cases() -> None:
+    """Materialise explicit hard-gap rows for every unobserved breadth case."""
     observed_case = EnzymeMLIRCompilerADBreadthCaseEvidence(
         case_id="scalar_forward_mode",
         status="success",
@@ -544,6 +560,7 @@ def test_enzyme_mlir_breadth_gap_artifact_records_missing_cases() -> None:
 
 
 def test_enzyme_mlir_breadth_gap_artifact_rejects_duplicate_observations() -> None:
+    """Reject duplicate raw observations before building a breadth gap artefact."""
     observed_case = EnzymeMLIRCompilerADBreadthCaseEvidence(
         case_id="scalar_forward_mode",
         status="success",
@@ -601,6 +618,7 @@ def test_enzyme_mlir_breadth_artifact_writer_preserves_gap_boundary(tmp_path: Pa
 
 
 def test_enzyme_mlir_maturity_audit_derives_breadth_from_artifact() -> None:
+    """Derive breadth promotion evidence from a linked raw artefact when omitted."""
     evidence = EnzymeNativeExecutionEvidence(
         artifact_id="enzyme-success-001",
         status="success",
@@ -632,6 +650,7 @@ def test_enzyme_mlir_maturity_audit_derives_breadth_from_artifact() -> None:
 
 
 def test_enzyme_mlir_maturity_audit_blocks_nonpromotional_breadth_artifact() -> None:
+    """Report failed case identifiers from a non-promotional breadth artefact."""
     result = run_enzyme_mlir_maturity_audit(
         toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
         version_probe=lambda executable: f"{executable} version 1.2.3",
@@ -649,7 +668,29 @@ def test_enzyme_mlir_maturity_audit_blocks_nonpromotional_breadth_artifact() -> 
     assert "compiler AD breadth case hard gaps: loop_activity" in result.hard_gaps
 
 
+def test_enzyme_mlir_maturity_audit_separates_benchmark_and_case_gaps() -> None:
+    """Do not invent failed breadth cases for an unready benchmark attachment."""
+    attachment = _benchmark_attachment(promotion_ready=False)
+    artifact = _compiler_ad_breadth_artifact(isolated_benchmark_evidence=attachment)
+
+    result = run_enzyme_mlir_maturity_audit(
+        toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
+        version_probe=lambda executable: f"{executable} version 1.2.3",
+        isolated_benchmark_artifact_id="iso-bench-001",
+        isolated_benchmark_evidence=attachment,
+        native_enzyme_execution_artifact_id="enzyme-success-001",
+        mlir_llvm_correctness_artifact_id="mlir-correctness-001",
+        compiler_ad_breadth_artifact=artifact,
+    )
+
+    assert artifact.failed_case_ids == ()
+    assert "validated isolated benchmark evidence missing" in result.hard_gaps
+    assert "compiler AD breadth artifact not promotion-ready" in result.hard_gaps
+    assert not any("compiler AD breadth case hard gaps" in gap for gap in result.hard_gaps)
+
+
 def test_enzyme_mlir_maturity_audit_reports_gap_artifact_case_ids() -> None:
+    """Expose every missing case identifier carried by a raw gap artefact."""
     observed_case = EnzymeMLIRCompilerADBreadthCaseEvidence(
         case_id="scalar_reverse_mode",
         status="success",
@@ -685,6 +726,7 @@ def test_enzyme_mlir_maturity_audit_reports_gap_artifact_case_ids() -> None:
 
 
 def test_enzyme_mlir_maturity_audit_rejects_benchmark_attachment_mismatch() -> None:
+    """Reject mismatched isolated benchmark identifiers across audit attachments."""
     with pytest.raises(ValueError, match="isolated_benchmark_evidence.benchmark_artifact_id"):
         run_enzyme_mlir_maturity_audit(
             toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
@@ -697,6 +739,7 @@ def test_enzyme_mlir_maturity_audit_rejects_benchmark_attachment_mismatch() -> N
 
 
 def test_enzyme_mlir_benchmark_attachment_rejects_incomplete_case_set() -> None:
+    """Require benchmark attachments to name the complete breadth case set."""
     validation = PhaseQNodeAffinityArtifactValidation(
         artifact_path="data/benchmarks/enzyme_mlir_iso.json",
         artifact_sha256="b" * 64,
@@ -718,6 +761,7 @@ def test_enzyme_mlir_benchmark_attachment_rejects_incomplete_case_set() -> None:
 
 
 def test_enzyme_mlir_breadth_case_rejects_malformed_success() -> None:
+    """Reject successful breadth rows that omit finite execution evidence."""
     with pytest.raises(ValueError, match="success case rows require finite"):
         EnzymeMLIRCompilerADBreadthCaseEvidence(
             case_id="scalar_forward_mode",
@@ -735,11 +779,13 @@ def test_enzyme_mlir_breadth_case_rejects_malformed_success() -> None:
 
 
 def test_enzyme_mlir_compiler_ad_breadth_rejects_missing_case() -> None:
+    """Reject derived breadth evidence with a non-passing required case."""
     with pytest.raises(ValueError, match="compiler AD breadth cases"):
         _compiler_ad_breadth_evidence(case_overrides={"matrix_vjp": False})
 
 
 def test_enzyme_mlir_maturity_audit_rejects_breadth_benchmark_mismatch() -> None:
+    """Reject breadth evidence linked to a different isolated benchmark."""
     evidence = EnzymeNativeExecutionEvidence(
         artifact_id="enzyme-success-001",
         status="success",
@@ -766,6 +812,7 @@ def test_enzyme_mlir_maturity_audit_rejects_breadth_benchmark_mismatch() -> None
 
 
 def test_committed_enzyme_mlir_audit_records_installed_native_probe() -> None:
+    """Validate the committed audit's installed native probe classification."""
     payload = json.loads(ENZYME_MLIR_AUDIT_PATH.read_text(encoding="utf-8"))
 
     assert payload["classification"] == "hard_gap"
@@ -828,6 +875,7 @@ def test_committed_enzyme_mlir_breadth_artifact_records_case_level_gaps() -> Non
 
 
 def test_enzyme_mlir_evidence_validation_paths() -> None:
+    """Exercise fail-closed validation for native execution evidence records."""
     with pytest.raises(ValueError, match="hard-gap Enzyme evidence"):
         EnzymeNativeExecutionEvidence(
             artifact_id="gap",
@@ -862,6 +910,7 @@ def test_enzyme_mlir_evidence_validation_paths() -> None:
 
 
 def test_enzyme_mlir_maturity_audit_exports_are_public() -> None:
+    """Keep maturity-audit records and builders identical across public facades."""
     assert compiler.run_enzyme_mlir_maturity_audit is run_enzyme_mlir_maturity_audit
     assert scpn.run_enzyme_mlir_maturity_audit is run_enzyme_mlir_maturity_audit
     assert compiler.EnzymeMLIRMaturityAuditResult is EnzymeMLIRMaturityAuditResult

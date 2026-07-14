@@ -138,39 +138,45 @@ def compile_custom_derivative_rule_to_executable(
             "value kernel output", rule.value_fn(_as_finite_vector("values", raw_values))
         )
 
-    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
-        if rule.jvp_rule is None:
-            raise ValueError(f"rule {rule.name} has no JVP rule")
-        checked_values = _as_finite_vector("values", raw_values)
-        checked_tangent = _as_finite_vector("tangent", raw_tangent)
-        if checked_tangent.shape != checked_values.shape:
-            raise ValueError("tangent shape must match values shape")
-        return _as_finite_vector(
-            "JVP kernel output", rule.jvp_rule(checked_values, checked_tangent)
-        )
+    jvp_rule = rule.jvp_rule
+    if jvp_rule is None:
+        jvp_kernel = None
+    else:
 
-    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
-        if rule.vjp_rule is None:
-            raise ValueError(f"rule {rule.name} has no VJP rule")
-        checked_values = _as_finite_vector("values", raw_values)
-        checked_cotangent = _as_finite_vector("cotangent", raw_cotangent)
-        return _as_finite_vector(
-            "VJP kernel output", rule.vjp_rule(checked_values, checked_cotangent)
-        )
+        def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
+            checked_values = _as_finite_vector("values", raw_values)
+            checked_tangent = _as_finite_vector("tangent", raw_tangent)
+            if checked_tangent.shape != checked_values.shape:
+                raise ValueError("tangent shape must match values shape")
+            return _as_finite_vector(
+                "JVP kernel output", jvp_rule(checked_values, checked_tangent)
+            )
+
+    vjp_rule = rule.vjp_rule
+    if vjp_rule is None:
+        vjp_kernel = None
+    else:
+
+        def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
+            checked_values = _as_finite_vector("values", raw_values)
+            checked_cotangent = _as_finite_vector("cotangent", raw_cotangent)
+            return _as_finite_vector(
+                "VJP kernel output", vjp_rule(checked_values, checked_cotangent)
+            )
 
     verification = _verify_executable_ad_kernel(
         rule,
         values,
         value_kernel,
-        jvp_kernel if rule.jvp_rule is not None else None,
-        vjp_kernel if rule.vjp_rule is not None else None,
+        jvp_kernel,
+        vjp_kernel,
         compile_config,
         sample_tangent=sample_tangent,
         sample_cotangent=sample_cotangent,
     )
     llvm_gradient_ir = (
         _compile_scalar_gradient_llvm_ir(rule, values, vjp_kernel)
-        if verification.gradient_close is True and rule.vjp_rule is not None
+        if verification.gradient_close is True and vjp_kernel is not None
         else None
     )
     return ExecutableCompilerADKernel(
@@ -178,8 +184,8 @@ def compile_custom_derivative_rule_to_executable(
         backend=compile_config.backend,
         mlir_module=mlir_module,
         value_kernel=value_kernel,
-        jvp_kernel=jvp_kernel if rule.jvp_rule is not None else None,
-        vjp_kernel=vjp_kernel if rule.vjp_rule is not None else None,
+        jvp_kernel=jvp_kernel,
+        vjp_kernel=vjp_kernel,
         verification=verification,
         llvm_gradient_ir=llvm_gradient_ir,
     )

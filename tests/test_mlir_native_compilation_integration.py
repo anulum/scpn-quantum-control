@@ -34,7 +34,6 @@ from scpn_quantum_control.kuramoto_core import KuramotoProblem, build_kuramoto_p
 
 def _problem() -> KuramotoProblem:
     """Build the deterministic Kuramoto fixture used by MLIR smoke tests."""
-
     return build_kuramoto_problem(
         np.array(
             [
@@ -51,7 +50,6 @@ def _problem() -> KuramotoProblem:
 
 def test_kuramoto_mlir_emits_deterministic_text_digest_and_resources() -> None:
     """MLIR export should be deterministic and explicit about compiler resources."""
-
     module = compile_kuramoto_to_mlir(
         _problem(),
         MLIRCompileConfig(time=0.4, trotter_steps=2, trotter_order=2),
@@ -74,7 +72,6 @@ def test_kuramoto_mlir_emits_deterministic_text_digest_and_resources() -> None:
 
 def test_kuramoto_mlir_rejects_invalid_compile_config() -> None:
     """MLIR config should fail closed before emitting misleading IR."""
-
     with pytest.raises(ValueError, match="trotter_steps"):
         MLIRCompileConfig(time=0.1, trotter_steps=0)
     with pytest.raises(ValueError, match="time"):
@@ -83,7 +80,6 @@ def test_kuramoto_mlir_rejects_invalid_compile_config() -> None:
 
 def test_differentiable_mlir_lowers_custom_derivative_rule_deterministically() -> None:
     """Differentiable primitive lowering should be deterministic and auditable."""
-
     rule = CustomDerivativeRule(
         name="linear_residual",
         value_fn=lambda values: np.array(
@@ -127,7 +123,6 @@ def test_differentiable_mlir_lowers_custom_derivative_rule_deterministically() -
 
 def test_custom_derivative_rule_compiles_to_verified_executable_ad_kernel() -> None:
     """Compiler AD should execute differentiated primitive kernels with MLIR provenance."""
-
     identity = PrimitiveIdentity("scpn.quantum", "rx_expectation", "1")
     rule = CustomDerivativeRule(
         name="rx_expectation_rule",
@@ -181,7 +176,6 @@ def test_custom_derivative_rule_compiles_to_verified_executable_ad_kernel() -> N
 
 def test_executable_compiler_ad_kernel_verifies_scalar_gradient_output() -> None:
     """Executable compiler AD should expose verified scalar-output gradients."""
-
     rule = CustomDerivativeRule(
         name="quadratic_phase_rule",
         value_fn=lambda values: np.array([values[0] ** 2 + np.sin(values[1])], dtype=np.float64),
@@ -223,7 +217,6 @@ def test_executable_compiler_ad_kernel_verifies_scalar_gradient_output() -> None
 
 def test_differentiable_mlir_rejects_executable_target_claims() -> None:
     """LLVM/JIT target names must fail until backed by a real executable backend."""
-
     with pytest.raises(ValueError, match="target"):
         DifferentiableMLIRCompileConfig(target="llvm")
     with pytest.raises(ValueError, match="backend"):

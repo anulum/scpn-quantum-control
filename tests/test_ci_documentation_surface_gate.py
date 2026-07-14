@@ -148,6 +148,25 @@ def test_ci_coverage_job_collects_branches_and_preserves_the_line_gate() -> None
     assert "--check-current" in workflow
 
 
+def test_ci_mlir_leaf_job_enforces_exact_branch_coverage() -> None:
+    """CI must gate the complete post-baseline MLIR leaf owner at 100%."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "mlir-leaf-quality:" in workflow
+    assert "Run MLIR leaf focused coverage" in workflow
+    assert "tests/test_mlir_toolchain_probe_hardening.py" in workflow
+    assert "tests/test_phase_qnode_compiler_lowering.py" in workflow
+    assert "--data-file=.coverage.mlir-leaf-quality" in workflow
+    assert "--source=src/scpn_quantum_control/compiler" in workflow
+    assert "Enforce MLIR leaf exact coverage" in workflow
+    assert "*/mlir_enzyme_audit.py" in workflow
+    assert "*/mlir_phase_qnode_runtime.py" in workflow
+    assert "*/mlir_transform_plan_assembly.py" in workflow
+    assert "*/mlir_workload_compilation.py" in workflow
+    assert "--fail-under=100" in workflow
+    assert "needs['mlir-leaf-quality'].result" in workflow
+
+
 def test_ci_phase_qnode_vector_job_enforces_exact_branch_coverage() -> None:
     """CI must give the vector-transform owner an exact focused branch gate."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")

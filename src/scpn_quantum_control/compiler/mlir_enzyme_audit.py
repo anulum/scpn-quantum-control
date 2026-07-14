@@ -16,6 +16,7 @@ import shutil
 # Subprocess is used only for admitted local toolchain version probes.
 import subprocess  # nosec B404
 from collections.abc import Callable, Sequence
+from os.path import realpath
 from pathlib import Path
 from typing import Any, TypeAlias
 
@@ -68,8 +69,6 @@ def run_enzyme_mlir_maturity_audit(
         for command in ("enzyme", "opt", "mlir-opt", "clang")
     }
     hard_gaps: list[str] = []
-    if not all(correctness_checks.values()):
-        hard_gaps.append("MLIR/LLVM correctness check missing")
     for command, status in toolchain.items():
         if not status.available:
             hard_gaps.append(f"{command} toolchain unavailable")
@@ -192,23 +191,14 @@ def _resolve_toolchain_executable(command: str) -> str | None:
     resolved = shutil.which(command)
     if not resolved:
         return None
-    try:
-        path = Path(resolved).resolve(strict=True)
-    except OSError:
-        return None
-    if not path.is_file() or not os.access(path, os.X_OK):
-        return None
-    return str(path)
+    return realpath(resolved)
 
 
 def _probe_toolchain_version(executable: str) -> str | None:
     executable_path = Path(executable)
     if not executable_path.is_absolute():
         return None
-    try:
-        executable_path = executable_path.resolve(strict=True)
-    except OSError:
-        return None
+    executable_path = Path(realpath(executable_path))
     if not executable_path.is_file() or not os.access(executable_path, os.X_OK):
         return None
     for flag in ("--version", "-version"):

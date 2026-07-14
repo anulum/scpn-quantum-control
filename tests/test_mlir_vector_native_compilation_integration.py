@@ -30,7 +30,6 @@ from scpn_quantum_control.differentiable import (
 
 def test_native_llvm_jit_vector_dot_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT vector dot-product AD kernels should execute."""
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "vector_dot", "1")
     rule = CustomDerivativeRule(
         name="native_vector_dot_rule",
@@ -184,7 +183,6 @@ def test_native_llvm_jit_vector_dot_kernel_executes_and_marks_plan_native() -> N
 
 def test_native_llvm_jit_vector_squared_norm_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT vector squared-norm AD kernels should execute."""
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "vector_squared_norm", "1")
     rule = CustomDerivativeRule(
         name="native_vector_squared_norm_rule",

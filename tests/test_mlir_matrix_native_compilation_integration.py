@@ -34,7 +34,6 @@ from scpn_quantum_control.differentiable import (
 
 def test_native_llvm_jit_matrix_quadratic_form_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT matrix quadratic-form AD kernels should execute."""
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "matrix_quadratic_form", "1")
 
     def unpack(values: FloatArray) -> tuple[FloatArray, FloatArray]:
@@ -239,7 +238,6 @@ def test_native_llvm_jit_matrix_quadratic_form_kernel_executes_and_marks_plan_na
 
 def test_native_llvm_jit_matrix_vector_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT matrix-vector AD kernels should execute vector-output AD."""
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "matrix_vector_product", "1")
 
     def unpack(values: FloatArray) -> tuple[FloatArray, FloatArray]:
@@ -438,7 +436,6 @@ def test_native_llvm_jit_matrix_vector_kernel_executes_and_marks_plan_native() -
 
 def test_native_llvm_jit_matrix_matrix_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT matrix-matrix AD kernels should execute matrix-output AD."""
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "matrix_matrix_product", "1")
 
     def unpack(values: FloatArray) -> tuple[FloatArray, FloatArray]:
@@ -646,7 +643,6 @@ def test_native_llvm_jit_matrix_matrix_kernel_executes_and_marks_plan_native() -
 
 def test_native_llvm_jit_matrix_trace_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT matrix trace AD kernels should execute scalar-output AD."""
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "matrix_trace", "1")
     rule = CustomDerivativeRule(
         name="native_matrix_trace_rule",
@@ -805,7 +801,6 @@ def test_native_llvm_jit_matrix_frobenius_norm_squared_kernel_executes_and_marks
     None
 ):
     """Native LLVM/JIT Frobenius-squared AD kernels should execute scalar matrix reductions."""
-
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "matrix_frobenius_norm_squared", "1")
     rule = CustomDerivativeRule(
         name="native_matrix_frobenius_norm_squared_rule",
