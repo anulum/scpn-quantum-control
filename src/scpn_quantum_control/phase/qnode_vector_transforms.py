@@ -161,6 +161,40 @@ class PhaseQNodeVectorTransformReadinessSuiteResult:
         }
 
 
+def _evaluate_vector_jacobian(
+    objective: VectorObjective,
+    params: FloatArray,
+    *,
+    parameters: Sequence[Parameter] | None,
+    rule: ParameterShiftRule | None,
+    shift_terms: int,
+) -> tuple[FloatArray, FloatArray, int]:
+    vector_value = _as_vector_output("objective(params)", objective(params.copy()))
+    rows: list[FloatArray] = []
+    for output_index in range(vector_value.size):
+
+        def scalar_component(candidate: FloatArray, *, index: int = output_index) -> float:
+            candidate_value = _as_vector_output(
+                "objective(shifted_params)",
+                objective(candidate.copy()),
+                width=vector_value.size,
+            )
+            return float(candidate_value[index])
+
+        rows.append(
+            parameter_shift_gradient(
+                scalar_component,
+                params,
+                parameters=parameters,
+                rule=rule,
+            )
+        )
+
+    jacobian = np.vstack(rows).astype(np.float64, copy=True)
+    evaluations = _parameter_shift_evaluations(params.size, vector_value.size, shift_terms)
+    return vector_value, jacobian, evaluations
+
+
 def execute_phase_qnode_vector_jacobian(
     transform: str,
     objective: VectorObjective,
@@ -200,39 +234,20 @@ def execute_phase_qnode_vector_jacobian(
             reason="vector QNode execution supports only jacfwd or jacrev",
         )
 
-    vector_value = _as_vector_output("objective(params)", objective(values.copy()))
-    rows: list[FloatArray] = []
-    for output_index in range(vector_value.size):
-
-        def scalar_component(candidate: FloatArray, *, index: int = output_index) -> float:
-            candidate_value = _as_vector_output(
-                "objective(shifted_params)",
-                objective(candidate.copy()),
-                width=vector_value.size,
-            )
-            return float(candidate_value[index])
-
-        rows.append(
-            parameter_shift_gradient(
-                scalar_component,
-                values,
-                parameters=parameters,
-                rule=rule,
-            )
-        )
-
-    jacobian = np.vstack(rows).astype(np.float64, copy=True)
+    vector_value, jacobian, evaluations = _evaluate_vector_jacobian(
+        objective,
+        values,
+        parameters=parameters,
+        rule=rule,
+        shift_terms=plan.support_plan.backend_plan.shift_terms,
+    )
     return _supported_result(
         label,
         plan,
         params=values,
         values=vector_value,
         jacobian=jacobian,
-        parameter_shift_evaluations=_parameter_shift_evaluations(
-            values.size,
-            vector_value.size,
-            plan.support_plan.backend_plan.shift_terms,
-        ),
+        parameter_shift_evaluations=evaluations,
     )
 
 
@@ -330,36 +345,22 @@ def execute_phase_qnode_vector_jvp(
     label = ".".join(plan.transforms)
     if plan.fail_closed:
         return _blocked_result(label, plan, params=values)
-    jacobian_result = execute_phase_qnode_vector_jacobian(
-        "jacfwd",
+    vector_value, jacobian, evaluations = _evaluate_vector_jacobian(
         objective,
         values,
-        gate=gate,
-        observable=observable,
-        backend=backend,
-        adapter=adapter,
-        shots=shots,
-        shift_terms=shift_terms,
-        allow_hardware=allow_hardware,
         parameters=parameters,
         rule=rule,
+        shift_terms=plan.support_plan.backend_plan.shift_terms,
     )
-    if jacobian_result.fail_closed or jacobian_result.jacobian is None:
-        return _blocked_result(
-            label,
-            plan,
-            params=values,
-            reason=jacobian_result.failure_reason,
-        )
     return _supported_result(
         label,
         plan,
         params=values,
-        values=jacobian_result.values,
-        jacobian=jacobian_result.jacobian,
+        values=vector_value,
+        jacobian=jacobian,
         tangent=tangent_vector,
-        jvp=jacobian_result.jacobian @ tangent_vector,
-        parameter_shift_evaluations=jacobian_result.parameter_shift_evaluations,
+        jvp=jacobian @ tangent_vector,
+        parameter_shift_evaluations=evaluations,
     )
 
 
@@ -394,41 +395,27 @@ def execute_phase_qnode_vector_vjp(
     label = ".".join(plan.transforms)
     if plan.fail_closed:
         return _blocked_result(label, plan, params=values)
-    jacobian_result = execute_phase_qnode_vector_jacobian(
-        "jacrev",
+    vector_value, jacobian, evaluations = _evaluate_vector_jacobian(
         objective,
         values,
-        gate=gate,
-        observable=observable,
-        backend=backend,
-        adapter=adapter,
-        shots=shots,
-        shift_terms=shift_terms,
-        allow_hardware=allow_hardware,
         parameters=parameters,
         rule=rule,
+        shift_terms=plan.support_plan.backend_plan.shift_terms,
     )
-    if jacobian_result.fail_closed or jacobian_result.jacobian is None:
-        return _blocked_result(
-            label,
-            plan,
-            params=values,
-            reason=jacobian_result.failure_reason,
-        )
     cotangent_vector = _as_parameter_vector(
         "cotangent",
         cotangent,
-        width=jacobian_result.jacobian.shape[0],
+        width=jacobian.shape[0],
     )
     return _supported_result(
         label,
         plan,
         params=values,
-        values=jacobian_result.values,
-        jacobian=jacobian_result.jacobian,
+        values=vector_value,
+        jacobian=jacobian,
         cotangent=cotangent_vector,
-        vjp=jacobian_result.jacobian.T @ cotangent_vector,
-        parameter_shift_evaluations=jacobian_result.parameter_shift_evaluations,
+        vjp=jacobian.T @ cotangent_vector,
+        parameter_shift_evaluations=evaluations,
     )
 
 

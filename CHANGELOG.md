@@ -34,6 +34,22 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   benchmark claims are unchanged.
 
 ### Fixed
+- 2026-07-14 — Closed the honest Phase-QNode vector-transform coverage and
+  contract debt without restoring the removed synthetic Jacobian substitution.
+  JVP/VJP now validate their fail-closed policy once and reuse the typed
+  vector-Jacobian computation shared with public `jacfwd`/`jacrev`, removing two
+  unreachable nested-refusal branches. A public regression exhaustively locks
+  equal directional/backing-Jacobian support across every declared gate,
+  observable, backend, and adapter with shot, hardware-policy, and shift-term
+  variants. CI and the default local gate definition now share exact strict
+  MyPy, NumPy-docstring, and focused 100% coverage contracts: 203/203 statements
+  and 46/46 branches through 15 public tests. The 700-line source and 468-line
+  direct test owner remain below the GodFile threshold; the Rust parity owner
+  now has complete test docstrings and joins the static quality cohort, with
+  installed directional and vector-Hessian exports passing real parity checks.
+  Parameter-shift arithmetic, public exports, provider/hardware refusal, Rust
+  ABI and parity kernels, benchmark inputs, and performance claims are
+  unchanged.
 - 2026-07-14 — Closed the operator-intercepted whole-program trace-value
   contract and quality debt. The runtime now treats the executable primitive
   registry as the single validation source, removes dead helpers and duplicate

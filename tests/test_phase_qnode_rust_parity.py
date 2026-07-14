@@ -105,6 +105,7 @@ def _scalar_objective(params: NDArray[np.float64]) -> float:
 
 
 def test_rust_phase_qnode_fubini_study_metric_matches_python_qfi_surface() -> None:
+    """Rust Fubini-Study and QFI outputs match the Python surface."""
     rust_metric = _require_export("phase_qnode_fubini_study_metric_rust")
     theta = 0.31
     state_re, state_im, derivatives_re, derivatives_im = _ry_state_and_derivative(theta)
@@ -149,6 +150,7 @@ def test_rust_program_ad_value_and_gradient_replay_matches_scalar_reference() ->
 
 
 def test_rust_phase_qnode_computational_basis_fisher_matches_python_surface() -> None:
+    """Rust computational-basis Fisher outputs match the Python surface."""
     rust_fisher = _require_export("phase_qnode_computational_basis_fisher_rust")
     theta = 0.31
     state_re, state_im, derivatives_re, derivatives_im = _ry_state_and_derivative(theta)
@@ -184,6 +186,7 @@ def test_rust_phase_qnode_computational_basis_fisher_matches_python_surface() ->
 
 
 def test_rust_phase_qnode_directional_transforms_match_python_surfaces() -> None:
+    """Rust directional contractions match real Python transform results."""
     rust_jvp = _require_export("phase_qnode_vector_jvp_rust")
     rust_vjp = _require_export("phase_qnode_vector_vjp_rust")
     rust_hvp = _require_export("phase_qnode_hessian_vector_product_rust")
@@ -214,6 +217,7 @@ def test_rust_phase_qnode_directional_transforms_match_python_surfaces() -> None
 
 
 def test_rust_phase_qnode_vector_hessian_tensor_matches_python_surface() -> None:
+    """Rust vector-Hessian validation matches the Python tensor result."""
     rust_hessian_tensor = _require_export("phase_qnode_vector_hessian_tensor_rust")
     params = np.array([0.31, -0.17], dtype=np.float64)
 
@@ -228,6 +232,7 @@ def test_rust_phase_qnode_vector_hessian_tensor_matches_python_surface() -> None
 
 
 def test_rust_phase_qnode_complex_contract_matches_python_fail_closed_boundary() -> None:
+    """Rust and Python publish the same real-only derivative boundary."""
     rust_contract = _require_export("phase_qnode_complex_derivative_contract_rust")()
     python_contract = phase_qnode_complex_derivative_contract()
 
@@ -239,6 +244,7 @@ def test_rust_phase_qnode_complex_contract_matches_python_fail_closed_boundary()
 
 
 def test_rust_parameter_shift_gradient_uncertainty_matches_python_surface() -> None:
+    """Rust finite-shot uncertainty matches the Python evidence surface."""
     rust_uncertainty = engine.parameter_shift_gradient_uncertainty_rust
     plus_values = np.array([0.8, 0.1], dtype=np.float64)
     minus_values = np.array([0.2, -0.3], dtype=np.float64)

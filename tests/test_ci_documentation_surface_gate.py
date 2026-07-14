@@ -148,6 +148,20 @@ def test_ci_coverage_job_collects_branches_and_preserves_the_line_gate() -> None
     assert "--check-current" in workflow
 
 
+def test_ci_phase_qnode_vector_job_enforces_exact_branch_coverage() -> None:
+    """CI must give the vector-transform owner an exact focused branch gate."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "phase-qnode-vector-quality:" in workflow
+    assert "Run Phase-QNode vector focused coverage" in workflow
+    assert "tests/test_phase_qnode_vector_transforms.py" in workflow
+    assert "--data-file=.coverage.phase-qnode-vector" in workflow
+    assert "Enforce Phase-QNode vector exact coverage" in workflow
+    assert "--include=*/qnode_vector_transforms.py" in workflow
+    assert "--fail-under=100" in workflow
+    assert "needs['phase-qnode-vector-quality'].result" in workflow
+
+
 def test_coverage_sources_are_filesystem_paths_not_importable_packages() -> None:
     """Coverage discovery must not import and then unload NumPy/Qiskit state."""
     filesystem_target = "--cov=src/scpn_quantum_control"

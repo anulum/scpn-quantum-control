@@ -117,6 +117,19 @@ jobs:
           src/scpn_quantum_control/control/realtime_runtime.py
           tests/test_realtime_runtime.py
           tests/test_realtime_runtime_branches.py
+      - name: Type-check Phase-QNode vector quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/qnode_vector_transforms.py
+          tests/test_phase_qnode_vector_transforms.py
+          tests/test_phase_qnode_rust_parity.py
+      - name: Ruff NumPy docstrings for Phase-QNode vector quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/qnode_vector_transforms.py
+          tests/test_phase_qnode_vector_transforms.py
+          tests/test_phase_qnode_rust_parity.py
       - name: Type-check whole-program trace-value quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -166,6 +179,36 @@ jobs:
           tools/differentiable_reviewer_evidence_catalog.py
           tools/differentiable_reviewer_evidence_page.py
           tests/test_differentiable_reviewer_evidence_page.py
+
+  phase-qnode-vector-quality:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Run Phase-QNode vector focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.phase-qnode-vector
+          --branch
+          -m pytest -q
+          tests/test_phase_qnode_vector_transforms.py
+      - name: Enforce Phase-QNode vector exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.phase-qnode-vector
+          --precision=2
+          --fail-under=100
+          --include=*/qnode_vector_transforms.py
 
   whole-program-trace-value-quality:
     needs: lint
@@ -829,13 +872,14 @@ jobs:
           EOF
 
   ci-gate:
-    needs: [lint, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
+    needs: [lint, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: Check all jobs passed
         run: |
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
+             [[ "${{ needs['phase-qnode-vector-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['whole-program-trace-value-quality'].result }}" != "success" ]] || \
              [[ "${{ needs.test.result }}" != "success" ]] || \
              [[ "${{ needs.test-extra-platforms.result }}" != "success" ]] || \

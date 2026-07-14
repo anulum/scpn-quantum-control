@@ -241,6 +241,72 @@ def test_static_gates_include_whole_program_trace_value_quality_ratchets() -> No
     assert docstring_cmd[-len(cohort) :] == cohort
 
 
+def test_static_gates_include_phase_qnode_vector_quality_ratchets() -> None:
+    """Vector QNode runtime and tests must stay strictly typed and documented."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+    strict_cmd = gate_map["mypy-strict-phase-qnode-vector"]
+    docstring_cmd = gate_map["ruff D phase-qnode-vector quality ratchet"]
+    cohort = _preflight.PHASE_QNODE_VECTOR_QUALITY_RATCHET
+
+    assert "--strict" in strict_cmd
+    assert "--explicit-package-bases" in strict_cmd
+    assert strict_cmd[-len(cohort) :] == cohort
+    assert "--isolated" in docstring_cmd
+    assert "D,D413" in docstring_cmd
+    assert 'lint.pydocstyle.convention = "numpy"' in docstring_cmd
+    assert docstring_cmd[-len(cohort) :] == cohort
+
+
+def test_default_preflight_has_exact_phase_qnode_vector_coverage() -> None:
+    """Default local coverage must enforce the public vector owner at 100%."""
+    gate_map = dict(_preflight.PHASE_QNODE_VECTOR_COVERAGE_GATES)
+    run_cmd = gate_map["phase-qnode vector focused coverage"]
+    report_cmd = gate_map["phase-qnode vector exact coverage threshold"]
+    cohort = _preflight.PHASE_QNODE_VECTOR_COVERAGE_COHORT
+    data_file = _preflight.PHASE_QNODE_VECTOR_COVERAGE_DATA_FILE
+
+    assert run_cmd[:4] == [_preflight._PY, "-m", "coverage", "run"]
+    assert "--branch" in run_cmd
+    assert run_cmd[-len(cohort) :] == cohort
+    assert f"--data-file={data_file}" in run_cmd
+    assert report_cmd[:4] == [_preflight._PY, "-m", "coverage", "report"]
+    assert "--precision=2" in report_cmd
+    assert "--fail-under=100" in report_cmd
+    assert "--include=*/qnode_vector_transforms.py" in report_cmd
+    assert f"--data-file={data_file}" in report_cmd
+
+
+def test_ci_and_preflight_share_phase_qnode_vector_cohorts() -> None:
+    """CI and local gates must preserve identical vector-owner file order."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    quality_steps = (
+        "Type-check Phase-QNode vector quality cohort",
+        "Ruff NumPy docstrings for Phase-QNode vector quality cohort",
+    )
+
+    for step_name in quality_steps:
+        block_start = workflow.index(f"      - name: {step_name}")
+        block_end = workflow.index("\n      - name:", block_start + 1)
+        ci_paths = [
+            line.strip()
+            for line in workflow[block_start:block_end].splitlines()
+            if line.strip().startswith(("src/", "tests/"))
+        ]
+        assert ci_paths == _preflight.PHASE_QNODE_VECTOR_QUALITY_RATCHET
+
+    coverage_start = workflow.index("      - name: Run Phase-QNode vector focused coverage")
+    coverage_end = workflow.index("\n      - name:", coverage_start + 1)
+    ci_coverage_paths = [
+        line.strip()
+        for line in workflow[coverage_start:coverage_end].splitlines()
+        if line.strip().startswith("tests/")
+    ]
+    assert ci_coverage_paths == _preflight.PHASE_QNODE_VECTOR_COVERAGE_COHORT
+    assert "Enforce Phase-QNode vector exact coverage" in workflow
+    assert "--include=*/qnode_vector_transforms.py" in workflow
+    assert "needs['phase-qnode-vector-quality'].result" in workflow
+
+
 def test_default_preflight_has_exact_whole_program_trace_value_coverage() -> None:
     """Default local coverage must enforce the explicit trace cohort at 100%."""
     gate_map = dict(_preflight.WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES)
@@ -296,7 +362,7 @@ def test_ci_and_preflight_share_the_docstring_ratchet_cohort() -> None:
     """CI and the local static gate must enforce the same ordered file cohort."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
     block_start = workflow.index("      - name: Ruff docstring ratchet")
-    block_end = workflow.index("\n\n  whole-program-trace-value-quality:", block_start)
+    block_end = workflow.index("\n\n  phase-qnode-vector-quality:", block_start)
     ci_paths = [
         line.strip()
         for line in workflow[block_start:block_end].splitlines()
@@ -658,6 +724,8 @@ def test_main_uses_coverage_pytest_by_default(
     assert _preflight.main() == 0
     assert calls == [
         "lint",
+        "phase-qnode vector focused coverage",
+        "phase-qnode vector exact coverage threshold",
         "whole-program trace-value focused coverage",
         "whole-program trace-value exact coverage threshold",
         "pytest + coverage",

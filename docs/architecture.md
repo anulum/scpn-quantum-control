@@ -186,6 +186,18 @@ Its paired tests follow the same ownership boundary: the facade file retains onl
 while builder, support, execution, and differentiation integration behavior lives in separate
 module-named test surfaces.
 
+The vector-transform owner stays cohesive and below the extraction threshold: the 700-line
+`phase/qnode_vector_transforms.py` module owns one immutable result family, fail-closed planning,
+one shared typed vector-Jacobian computation, directional contractions, component Hessians, manual
+`vmap(grad)`, and its readiness record. JVP/VJP no longer re-enter the public Jacobian planner after
+an equivalent outer decision; a public declared-capability matrix regression locks the
+`jvp`/`jacfwd` and `vjp`/`jacrev` support invariant. Its 468-line direct test owner remains a separate
+responsibility surface under exact statement/branch coverage, strict typing, and NumPy-docstring
+gates. The 282-line Rust parity owner shares the static quality cohort and exercises installed
+native directional and vector-Hessian exports. Rust counterparts consume already-materialised
+Jacobians or Hessian tensors, so this Python control-flow consolidation does not change the native
+ABI or numerical kernel boundary.
+
 Provider capability discovery now separates provider-neutral governance from vendor metadata
 normalization. `hardware/provider_capability_core.py` owns no-submit snapshots and decisions,
 route-bound assessment/probing, and OpenPulse readiness.
@@ -287,7 +299,7 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 558 (excluding package initialisers) |
+| Python modules | 559 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 81 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% line gate; branch telemetry required and currently observational) |

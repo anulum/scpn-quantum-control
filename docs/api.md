@@ -43,6 +43,18 @@ shift-compatible objectives. They emit finite-difference agreement certificates
 with pass/fail status, absolute and relative error maxima, and evaluation counts
 so notebooks, CI, and provider adapters can share the same verification record.
 
+For deterministic one-dimensional vector outputs, use
+`execute_phase_qnode_vector_jacobian(...)`,
+`execute_phase_qnode_vector_jvp(...)`,
+`execute_phase_qnode_vector_vjp(...)`, or
+`execute_phase_qnode_vector_hessian(...)`. These public phase-facade routes
+share one typed parameter-shift Jacobian computation after fail-closed planning;
+directional support is locked to its `jacfwd`/`jacrev` backing policy across the
+declared gate, observable, backend, and adapter matrix. Tangent, cotangent,
+parameter, and output shapes remain explicit runtime contracts. Finite-shot,
+provider, framework-adapter, and unapproved hardware routes do not execute the
+objective.
+
 For registered local training-suite evidence, use
 `run_differentiable_model_training_evidence_suite(...)` to replay the seeded
 QNN, QGNN, QSNN, Kuramoto-XY, open-system-control, and

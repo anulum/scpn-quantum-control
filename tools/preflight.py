@@ -76,6 +76,16 @@ REALTIME_RUNTIME_QUALITY_RATCHET = [
     "tests/test_realtime_runtime_branches.py",
 ]
 
+PHASE_QNODE_VECTOR_QUALITY_RATCHET = [
+    "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+    "tests/test_phase_qnode_vector_transforms.py",
+    "tests/test_phase_qnode_rust_parity.py",
+]
+
+PHASE_QNODE_VECTOR_COVERAGE_COHORT = [
+    "tests/test_phase_qnode_vector_transforms.py",
+]
+
 WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/whole_program_trace_values.py",
     "tests/test_whole_program_trace_values.py",
@@ -147,6 +157,7 @@ WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT = [
     "tests/test_whole_program_trace_values.py",
 ]
 
+PHASE_QNODE_VECTOR_COVERAGE_DATA_FILE = ".coverage.phase-qnode-vector"
 WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE = ".coverage.whole-program-trace-values"
 
 _PYTEST_BASE = [
@@ -264,6 +275,32 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "--config",
             'lint.pydocstyle.convention = "numpy"',
             *REALTIME_RUNTIME_QUALITY_RATCHET,
+        ],
+    ),
+    (
+        "mypy-strict-phase-qnode-vector",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "--explicit-package-bases",
+            *PHASE_QNODE_VECTOR_QUALITY_RATCHET,
+        ],
+    ),
+    (
+        "ruff D phase-qnode-vector quality ratchet",
+        [
+            _PY,
+            "-m",
+            "ruff",
+            "check",
+            "--isolated",
+            "--select",
+            "D,D413",
+            "--config",
+            'lint.pydocstyle.convention = "numpy"',
+            *PHASE_QNODE_VECTOR_QUALITY_RATCHET,
         ],
     ),
     (
@@ -469,6 +506,39 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     ),
 ]
 
+PHASE_QNODE_VECTOR_COVERAGE_GATES: list[tuple[str, list[str]]] = [
+    (
+        "phase-qnode vector focused coverage",
+        [
+            _PY,
+            "-m",
+            "coverage",
+            "run",
+            f"--rcfile={devnull}",
+            f"--data-file={PHASE_QNODE_VECTOR_COVERAGE_DATA_FILE}",
+            "--branch",
+            "-m",
+            "pytest",
+            "-q",
+            *PHASE_QNODE_VECTOR_COVERAGE_COHORT,
+        ],
+    ),
+    (
+        "phase-qnode vector exact coverage threshold",
+        [
+            _PY,
+            "-m",
+            "coverage",
+            "report",
+            f"--rcfile={devnull}",
+            f"--data-file={PHASE_QNODE_VECTOR_COVERAGE_DATA_FILE}",
+            "--precision=2",
+            "--fail-under=100",
+            "--include=*/qnode_vector_transforms.py",
+        ],
+    ),
+]
+
 WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
         "whole-program trace-value focused coverage",
@@ -610,6 +680,7 @@ def main() -> int:
         if no_coverage:
             gates.append(("pytest", _PYTEST_BASE))
         else:
+            gates.extend(PHASE_QNODE_VECTOR_COVERAGE_GATES)
             gates.extend(WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES)
             gates.append(("pytest + coverage", _PYTEST_COV))
 

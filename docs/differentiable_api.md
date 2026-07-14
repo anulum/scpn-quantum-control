@@ -59,7 +59,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.phase.qnode_framework_parity` | Bounded real-framework parity suite for SCPN, JAX, PyTorch, TensorFlow, and PennyLane with dependency-sparse classifications. |
 | `scpn_quantum_control.phase.qnode_affinity_benchmark` | Affinity-labelled local benchmark metadata harness for registered Phase-QNode execution, including raw timing rows, host isolation context, and fail-closed raw-artifact attachment validation. |
 | `scpn_quantum_control.phase.qnode_transforms` | Executable scalar local QNode transform evidence for `grad`, `value_and_grad`, `hessian`, `hessian_vector_product`, `jvp`, `vjp`, `jacfwd`, and `jacrev`, with real-only complex/W boundaries and fail-closed vectorized/provider/framework-native boundaries. |
-| `scpn_quantum_control.phase.qnode_vector_transforms` | Executable deterministic native vector-output QNode `jvp`, `vjp`, vector Hessian tensor, Jacobian evidence for `jacfwd`/`jacrev`, plus host-side manual `vmap(grad)` over scalar local parameter-shift objectives, with real-only complex/W boundaries and fail-closed finite-shot, hardware, provider, and framework-native vectorization boundaries. |
+| `scpn_quantum_control.phase.qnode_vector_transforms` | Executable deterministic native vector-output QNode `jvp`, `vjp`, vector Hessian tensor, Jacobian evidence for `jacfwd`/`jacrev`, plus host-side manual `vmap(grad)` over scalar local parameter-shift objectives. Directional transforms validate their policy once and reuse the typed Jacobian computation shared with the public Jacobian routes; a declared-capability regression locks equal support for `jvp`/`jacfwd` and `vjp`/`jacrev`. Real-only complex/W boundaries and finite-shot, hardware, provider, and framework-native vectorization boundaries remain fail closed. |
 | `scpn_quantum_control.phase.qnode_provider_transforms` | Provider-callback QNode transform evidence for scalar `grad`, `value_and_grad`, `jvp`, `vjp`, scalar `jacfwd`/`jacrev`, and manual `vmap(grad)` with shifted-sample records, finite-shot uncertainty propagation, and fail-closed hardware policy. |
 | `scpn_quantum_control.phase.qiskit_bridge_contracts` | One-way record/validation leaf for all nine Qiskit shifted-circuit, gradient, Runtime, provider-workflow, evidence-bundle, and maturity contracts plus provider-method registries, constructor validation, and JSON-ready serialization. The bridge and phase package re-export the exact public class objects. |
 | `scpn_quantum_control.phase.qiskit_gradients` | One-way local execution leaf for fully bound shifted-circuit generation, deterministic Qiskit Statevector parameter-shift gradients, and finite-shot provider-contract surrogate uncertainty, including multi-frequency rules. |
@@ -1227,6 +1227,13 @@ native manual `vmap(grad)` routes are planned as supported. Framework `vmap`,
 nested ML/provider adapters, finite-shot curvature, nested tape transforms,
 unsupported vector-output planning routes, and hardware nesting fail closed
 with reasons and alternatives.
+
+For the deterministic native vector-output executor, `jvp` and `jacfwd` share
+the same support inputs and restrictions, as do `vjp` and `jacrev`. The direct
+public owner exhaustively checks that invariant across the declared capability
+matrix. Supported directional execution therefore reuses one typed
+parameter-shift Jacobian computation after the outer policy decision; it does
+not manufacture a second, unreachable refusal seam.
 
 ## Minimal composed objective
 

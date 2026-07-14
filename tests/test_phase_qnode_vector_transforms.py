@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from itertools import product
+
 import numpy as np
 import pytest
 from numpy.typing import NDArray
@@ -20,6 +22,7 @@ from scpn_quantum_control.phase import (
     execute_phase_qnode_vector_jvp,
     execute_phase_qnode_vector_vjp,
     execute_phase_qnode_vmap_grad,
+    list_gradient_support_capabilities,
     plan_gradient_transform_nesting,
     run_phase_qnode_vector_transform_readiness_suite,
 )
@@ -66,6 +69,7 @@ def _vector_hessian(params: FloatArray) -> FloatArray:
 
 
 def test_phase_qnode_vector_jacobians_match_analytic_reference() -> None:
+    """Vector Jacobian routes match the closed-form two-output reference."""
     params = np.array([0.31, -0.17], dtype=float)
 
     jacfwd = execute_phase_qnode_vector_jacobian("jacfwd", _vector_objective, params)
@@ -86,6 +90,7 @@ def test_phase_qnode_vector_jacobians_match_analytic_reference() -> None:
 
 
 def test_phase_qnode_vector_jvp_and_vjp_match_jacobian_reference() -> None:
+    """Directional routes contract the same public analytic Jacobian."""
     params = np.array([0.31, -0.17], dtype=float)
     tangent = np.array([0.5, -1.25], dtype=float)
     cotangent = np.array([2.0, -0.75], dtype=float)
@@ -111,7 +116,67 @@ def test_phase_qnode_vector_jvp_and_vjp_match_jacobian_reference() -> None:
     assert "vector-output phase-QNode directional" in jvp.claim_boundary
 
 
+def test_directional_and_jacobian_plans_have_matching_support() -> None:
+    """Every declared route gives directional and backing Jacobian equal support."""
+    gates = tuple(capability.name for capability in list_gradient_support_capabilities("gate"))
+    observables = tuple(
+        capability.name for capability in list_gradient_support_capabilities("observable")
+    )
+    backends = tuple(
+        capability.name for capability in list_gradient_support_capabilities("backend")
+    )
+    adapters = tuple(
+        capability.name for capability in list_gradient_support_capabilities("adapter")
+    )
+
+    for gate, observable, backend, adapter, shots, allow_hardware, shift_terms in product(
+        gates,
+        observables,
+        backends,
+        adapters,
+        (None, 256),
+        (False, True),
+        (1, 2),
+    ):
+        for directional_transform, jacobian_transform in (("jvp", "jacfwd"), ("vjp", "jacrev")):
+            directional_plan = plan_gradient_transform_nesting(
+                directional_transform,
+                gate=gate,
+                observable=observable,
+                backend=backend,
+                adapter=adapter,
+                n_params=2,
+                shift_terms=shift_terms,
+                shots=shots,
+                allow_hardware=allow_hardware,
+            )
+            jacobian_plan = plan_gradient_transform_nesting(
+                jacobian_transform,
+                gate=gate,
+                observable=observable,
+                backend=backend,
+                adapter=adapter,
+                n_params=2,
+                shift_terms=shift_terms,
+                shots=shots,
+                allow_hardware=allow_hardware,
+            )
+
+            assert directional_plan.supported is jacobian_plan.supported, (
+                directional_transform,
+                jacobian_transform,
+                gate,
+                observable,
+                backend,
+                adapter,
+                shots,
+                allow_hardware,
+                shift_terms,
+            )
+
+
 def test_phase_qnode_vector_hessian_matches_componentwise_reference() -> None:
+    """Vector Hessians match component-wise closed-form second derivatives."""
     params = np.array([0.31, -0.17], dtype=float)
 
     result = execute_phase_qnode_vector_hessian(_vector_objective, params)
@@ -128,6 +193,7 @@ def test_phase_qnode_vector_hessian_matches_componentwise_reference() -> None:
 
 
 def test_phase_qnode_vector_jvp_vjp_validate_direction_shapes() -> None:
+    """Directional routes reject tangent and cotangent shape mismatches."""
     params = np.array([0.31, -0.17], dtype=float)
 
     with pytest.raises(ValueError, match="tangent"):
@@ -141,6 +207,7 @@ def test_phase_qnode_vector_jvp_vjp_validate_direction_shapes() -> None:
 
 
 def test_phase_qnode_vector_jvp_vjp_fail_closed_for_unsafe_routes() -> None:
+    """Directional routes fail closed for hardware and framework adapters."""
     params = np.array([0.31, -0.17], dtype=float)
 
     hardware = execute_phase_qnode_vector_jvp(
@@ -166,6 +233,7 @@ def test_phase_qnode_vector_jvp_vjp_fail_closed_for_unsafe_routes() -> None:
 
 
 def test_phase_qnode_vmap_grad_matches_rowwise_analytic_reference() -> None:
+    """Manual vectorized gradients match row-wise analytic references."""
     batched_params = np.array(
         [[0.2, -0.4], [0.7, 0.1], [-0.3, 0.6]],
         dtype=float,
@@ -188,6 +256,7 @@ def test_phase_qnode_vmap_grad_matches_rowwise_analytic_reference() -> None:
 
 
 def test_phase_qnode_vector_transforms_fail_closed_for_unsafe_routes() -> None:
+    """Jacobian and vectorized routes fail closed outside local execution."""
     params = np.array([0.2, -0.4], dtype=float)
     batched_params = np.array([[0.2, -0.4], [0.7, 0.1]], dtype=float)
 
@@ -222,6 +291,7 @@ def test_phase_qnode_vector_transforms_fail_closed_for_unsafe_routes() -> None:
 
 
 def test_phase_qnode_vector_hessian_fails_closed_for_unsafe_routes() -> None:
+    """Vector Hessians reject finite-shot and framework-adapter routes."""
     params = np.array([0.2, -0.4], dtype=float)
 
     finite_shot = execute_phase_qnode_vector_hessian(
@@ -245,6 +315,7 @@ def test_phase_qnode_vector_hessian_fails_closed_for_unsafe_routes() -> None:
 
 
 def test_phase_qnode_vector_transforms_validate_shapes_and_finiteness() -> None:
+    """Public vector routes validate output shapes and finite values."""
     params = np.array([0.2, -0.4], dtype=float)
 
     with pytest.raises(ValueError, match="vector output"):
@@ -318,6 +389,7 @@ def test_vector_jacobian_refuses_supported_non_jacobian_transform() -> None:
 
 
 def test_phase_qnode_vector_transforms_reject_complex_derivative_inputs() -> None:
+    """All vector derivative routes reject complex-valued inputs."""
     real_params = np.array([0.2, -0.4], dtype=float)
 
     with pytest.raises(ValueError, match="real-valued.*complex"):
@@ -357,6 +429,7 @@ def test_phase_qnode_vector_transforms_reject_complex_derivative_inputs() -> Non
 
 
 def test_phase_qnode_vector_transform_readiness_suite_records_boundaries() -> None:
+    """The readiness suite records supported and fail-closed boundaries."""
     suite = run_phase_qnode_vector_transform_readiness_suite()
     payload = suite.to_dict()
 
@@ -378,6 +451,7 @@ def test_phase_qnode_vector_transform_readiness_suite_records_boundaries() -> No
 
 
 def test_transform_nesting_supports_native_manual_vmap_grad_only() -> None:
+    """Transform planning permits only native manual vectorized gradients."""
     native = plan_gradient_transform_nesting(("vmap", "grad"), n_params=2)
     jax = plan_gradient_transform_nesting(("vmap", "grad"), adapter="jax", n_params=2)
 

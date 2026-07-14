@@ -2833,6 +2833,16 @@ The vector JVP and VJP routes are computed as `jacobian @ tangent` and
 validate tangent/cotangent shapes and fail closed for finite-shot, hardware,
 provider, and framework-native adapter routes.
 
+The directional and backing-Jacobian planners receive the same normalized gate,
+observable, backend, adapter, parameter count, parameter-shift term count, shot
+budget, and hardware policy. The declared support matrix therefore guarantees
+that a supported `jvp` has a supported `jacfwd` policy and a supported `vjp` has
+a supported `jacrev` policy. The executor validates the directional plan once
+and calls the shared typed Jacobian computation directly; it does not repeat a
+public plan and retain an unreachable nested-refusal branch. A public regression
+checks this invariant across every declared gate, observable, backend, and
+adapter with deterministic/finite-shot and hardware-policy variants.
+
 When `scpn_quantum_engine` is installed, the matching PyO3 parity kernels are
 `phase_qnode_vector_jvp_rust(jacobian, tangent)` and
 `phase_qnode_vector_vjp_rust(jacobian, cotangent)`. They are dense contraction
@@ -2874,6 +2884,16 @@ records supported `jacfwd`, `jacrev`, vector `jvp`, vector `vjp`, vector
 scenarios. The implementation deliberately does not claim provider
 vectorization, framework-native `vmap`, finite-shot batched-gradient
 statistics, or hardware transform execution.
+
+CI and the default local gate definition run the direct public test owner under
+branch coverage and then report only
+`phase/qnode_vector_transforms.py` with `--fail-under=100`. The 700-line
+production owner, 468-line direct test owner, and 282-line Rust parity owner are
+held under strict MyPy and isolated NumPy-docstring checks. The quality gate
+neither widens the coverage claim to the rest of `phase` nor substitutes mocked
+or private-helper execution for public transform calls. Installed native
+directional and vector-Hessian exports are exercised separately as real parity
+tests rather than counted as Python coverage.
 
 ## Provider-callback QNode transforms
 
