@@ -486,6 +486,54 @@ python tools/check_differentiable_external_validation.py --write
 CI and local preflight execute the read-only form. This keeps an unrelated
 matrix job from being the first place where manifest drift is discovered.
 
+### Braket-constrained setuptools advisory waiver
+
+The Python 3.12 security job scans the complete hash-pinned CI lock with
+`pip-audit`. It temporarily ignores exactly `PYSEC-2026-3447`, which affects
+`setuptools<83.0.0`: on macOS APFS or HFS+, a decomposed Unicode filename can
+bypass a composed-form `MANIFEST.in` exclusion and enter a source distribution.
+The exception does not classify the advisory as a false positive.
+
+The lock cannot move independently to the fixed release. Both
+`amazon-braket-default-simulator` and `amazon-braket-schemas` declare the exact
+distribution requirement `setuptools==81.0.0`; the 2026-07-14 source check
+confirmed the same pin in the then-current upstream releases
+[`1.39.5`](https://pypi.org/project/amazon-braket-default-simulator/1.39.5/)
+and [`1.31.0`](https://pypi.org/project/amazon-braket-schemas/1.31.0/).
+All three Python CI locks therefore retain the two PyPI-published 81.0.0
+distribution hashes. Raising only the lock to 83.0.0 makes the hashed install
+unsatisfiable.
+
+The project build boundary limits exposure: `pyproject.toml` uses
+`hatchling.build`, not setuptools, and repository Python code does not import
+setuptools. CI installs the transitive package on Linux from the locked wheel;
+it does not use setuptools to construct this project's source distribution.
+The macOS source-distribution risk remains recorded until the upstream pin is
+removed.
+
+`tools/audit_dependency_security_waiver.py` fails closed unless all of these
+conditions remain true:
+
+- both installed Braket distributions still declare the exact 81.0.0 pin;
+- every Python CI lock carries that version, its two source-verified hashes,
+  and exactly the same two transitive owners;
+- this project still builds with Hatchling and has no setuptools import;
+- CI runs the policy audit and ignores only `PYSEC-2026-3447`; and
+- this operator boundary and its removal rule remain documented.
+
+The security job enforces strict typing, NumPy docstrings, and exact 100%
+statement/branch coverage on the policy tool before it executes both the live
+waiver audit and the complete dependency scan. A second ignored advisory or an
+upstream metadata change fails the policy gate.
+
+Remove the waiver as one dependency-lock change when neither Braket pin owner
+requires `setuptools<83.0.0`, whether the dependency disappears or its allowed
+range admits a fixed release: regenerate all three hashed CI locks, refresh
+the dependent external-validation manifests, remove the single
+`--ignore-vuln` argument and this temporary policy gate, then require an
+exception-free `pip-audit` result. Do not broaden or prolong the exception to
+accommodate an unrelated advisory.
+
 ### Docker image — reproduction/CI only
 
 The root `Dockerfile` (built and exercised by

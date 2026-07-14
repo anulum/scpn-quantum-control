@@ -34,6 +34,17 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   benchmark claims are unchanged.
 
 ### Fixed
+- 2026-07-14 — Restored a satisfiable Braket-enabled CI dependency closure
+  while retaining detection of `PYSEC-2026-3447`. Amazon Braket's simulator
+  and schema packages hard-pin `setuptools==81.0.0`, so a fail-closed policy
+  audit now verifies the installed upstream metadata, all three hashed locks,
+  the Hatchling build boundary, absence of setuptools imports, operator
+  documentation, and the exact CI command before `pip-audit` ignores that one
+  source-distribution advisory. The security job enforces strict typing,
+  NumPy docstrings, and exact statement/branch coverage for the audit tool;
+  any additional exception or upstream pin change fails the gate. Runtime,
+  quantum-provider execution, numerical kernels, polyglot compute, and
+  benchmark claims are unchanged.
 - 2026-07-14 — Hardened the Studio Program-AD replay as a cryptographically
   bound v2 polyglot contract. The Python emitter now validates finite typed Rust
   responses, rejects duplicate-key/non-standard JSON, bounds IR and input

@@ -887,12 +887,30 @@ jobs:
       - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
       - run: python tools/audit_serialization_surface.py
       - run: bandit -r src/ scripts/ -ll -q
+      - name: Verify the constrained dependency advisory waiver
+        run: |
+          python -m mypy --strict --explicit-package-bases \
+            tools/audit_dependency_security_waiver.py \
+            tests/test_audit_dependency_security_waiver.py
+          python -m ruff check --isolated --select D,D413 \
+            --config 'lint.pydocstyle.convention = "numpy"' \
+            tools/audit_dependency_security_waiver.py \
+            tests/test_audit_dependency_security_waiver.py
+          python -m coverage run --rcfile=/dev/null \
+            --data-file=.coverage.dependency-security-waiver --branch \
+            -m pytest -q tests/test_audit_dependency_security_waiver.py
+          python -m coverage report --rcfile=/dev/null \
+            --data-file=.coverage.dependency-security-waiver --precision=2 \
+            --fail-under=100 \
+            --include='*/audit_dependency_security_waiver.py'
+      - run: python tools/audit_dependency_security_waiver.py
       # Audit the full hash-pinned CI lock — every transitive pin the CI jobs
       # actually install — rather than the top-level dev inputs. `--no-deps`
       # because the lock is already a complete closure. The former
       # CVE-2026-4539 (pygments ≤2.19.2) exception is obsolete: the lock pins
-      # pygments 2.20.0.
-      - run: pip-audit -r requirements-ci-py312-linux.txt --no-deps --desc on
+      # pygments 2.20.0. The only active exception is fail-closed by the waiver
+      # audit above and documented in docs/test_infrastructure.md.
+      - run: pip-audit -r requirements-ci-py312-linux.txt --no-deps --desc on --ignore-vuln PYSEC-2026-3447
 
   rust-audit:
     needs: lint
