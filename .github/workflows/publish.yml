@@ -29,6 +29,11 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install --require-hashes -r requirements-publish.txt
       - run: python -m build
+      - name: Audit built wheel contents
+        run: >-
+          python tools/check_wheel_contents.py
+          --project pyproject.toml
+          'dist/*.whl'
       - uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b  # release/v1
         with:
           attestations: true

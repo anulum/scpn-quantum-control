@@ -60,6 +60,21 @@ jobs:
         run: python tools/audit_test_typing_policy.py
       - name: Type-check test-typing policy audit
         run: mypy --strict tools/audit_test_typing_policy.py
+      - name: Type-check wheel-content release gate
+        run: >-
+          mypy --strict --explicit-package-bases
+          tools/check_wheel_contents.py
+          tests/test_wheel_contents.py
+      - name: Lint and format-check wheel-content release gate
+        run: |
+          ruff check tools/check_wheel_contents.py tests/test_wheel_contents.py
+          ruff format --check tools/check_wheel_contents.py tests/test_wheel_contents.py
+      - name: Ruff NumPy docstrings for wheel-content release gate
+        run: >-
+          ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          tools/check_wheel_contents.py
+          tests/test_wheel_contents.py
       - name: Validate line and branch coverage policy
         run: python tools/audit_coverage_policy.py --validate-policy
       - name: Type-check coverage policy audit

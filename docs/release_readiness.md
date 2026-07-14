@@ -30,6 +30,8 @@ The page is a blocker policy for artefact-backed releases. It governs:
 - licence and commercial-route consistency across metadata, docs, and headers,
 - stable-contract fixture and capability generation reproducibility,
 - coverage and behavioural gating thresholds,
+- built-wheel identity, importable contents, compatibility tags, and RECORD
+  integrity before any PyPI upload,
 - open-surface scientific gaps that remain bounded until explicit gates pass.
 
 This page records the release-blocker closure path for the next package tag.
@@ -63,6 +65,7 @@ single place to prove that the same route is repeatable across machines.
 | Behavioural quality gate | Tests satisfy the smoke-only, assertion-density, and exception-contract-density thresholds. |
 | Licence readiness gate | `pyproject.toml`, `LICENSE`, README, [`core_package_boundary.md`](core_package_boundary.md), [`licensing_faq.md`](licensing_faq.md), and source/tool SPDX headers agree that this repository is `AGPL-3.0-or-later` with a commercial route until an approved split changes all surfaces. |
 | Core-artifact determinism | Stable core contracts and backend capability artefacts are reproducible from committed metadata, and exported digests are checked before tagging. |
+| Wheel content publication gate | Every built wheel matches its project name and version, carries matching WHEEL compatibility tags, contains each required Python package or compiled extension, and has a closed, size- and sha256-verified RECORD. This post-build gate is separate from the six source-readiness checks above and blocks all three PyPI workflows before upload. |
 
 For any package tag or public release note touching stable-core contracts or backend
 capabilities, the preferred gate is:
@@ -78,6 +81,36 @@ The bundle is a no-QPU reproducibility command that composes:
 - `scpn-bench stable-core-preflight-gate`
 
 Use component gates only for targeted component-only verification.
+
+
+## Wheel content publication gate
+
+The tag workflows build and validate the exact wheel archives they would send
+to PyPI. The validator uses only the Python standard library, reads identity
+from the distribution's `pyproject.toml`, and fails closed on unsafe ZIP paths,
+duplicate or linked members, missing packages, empty native extensions,
+filename/WHEEL tag drift, or incomplete and incorrect RECORD rows. Run the
+applicable command after building a distribution locally:
+
+```bash
+python tools/check_wheel_contents.py --project pyproject.toml 'dist/*.whl'
+
+python tools/check_wheel_contents.py \
+  --project oscillatools/pyproject.toml \
+  'oscillatools/dist/*.whl'
+
+python tools/check_wheel_contents.py \
+  --project scpn_quantum_engine/pyproject.toml \
+  --package scpn_quantum_engine \
+  --extension scpn_quantum_engine.scpn_quantum_engine \
+  'dist/*.whl'
+```
+
+The Rust build matrix checks each platform wheel before artifact upload. Its
+publish job checks the aggregated downloads again before trusted publication.
+The parent and oscillatools workflows check their wheels immediately after
+`python -m build`. A source-tree test or successful build alone is not wheel
+content evidence.
 
 
 ## Coverage and test-quality closure boundary
@@ -295,8 +328,11 @@ Before tagging:
 8. Run `tools/audit_release_readiness.py --fail-on-blocker` with the hardware
    result-pack evidence argument when applicable.
 9. Run the scoped docs build and version-consistency checks.
-10. Commit with the required authorship line after staged-diff audit.
-11. Push the commit and wait for CI before creating a release tag.
+10. Build every distribution being released and run its Wheel content command
+    above against the produced archives.
+11. Commit with the required authorship line after staged-diff audit.
+12. Push the commit and wait for CI before creating a release tag. The tag
+    workflow re-runs the Wheel content gate against the publication artifacts.
 
 ## 0.10.0 release, v0.10 surface, and documentation scope
 

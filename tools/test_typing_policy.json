@@ -40,7 +40,8 @@
         "tests/test_enforce_main_branch_policy.py",
         "tests/test_module_size_policy.py",
         "tests/test_pre_commit_documentation_surface_gate.py",
-        "tests/test_preflight_tool.py"
+        "tests/test_preflight_tool.py",
+        "tests/test_wheel_contents.py"
       ],
       "id": "repository_policy",
       "order": 0,

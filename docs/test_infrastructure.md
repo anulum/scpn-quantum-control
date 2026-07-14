@@ -51,9 +51,10 @@ reported 6,301 errors in 388 of 968 tracked Python test files; 5,076 were
 mechanical annotations with intentional invalid-input tests and hide ownership.
 
 `tools/test_typing_policy.json` is the machine-readable policy. Its initial
-15-file `repository_policy` cohort covers coverage, coverage debt, licence, release,
+16-file `repository_policy` cohort covers coverage, coverage debt, licence, release,
 generated-surface, commit, secret, TODO, version, branch, module-size,
-CI/pre-push, and local preflight gate tests. `tools/audit_test_typing_policy.py`
+CI/pre-push, local preflight, and built-wheel publication gate tests.
+`tools/audit_test_typing_policy.py`
 validates that every enforced path is tracked and runs strict mypy over the
 exact cohort; CI and the no-test local preflight execute the same command.
 

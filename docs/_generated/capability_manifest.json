@@ -13,7 +13,7 @@
     "python_model_source_modules": 559,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 977
+    "test_files": 978
   },
   "documentation": {
     "examples": [
@@ -7294,6 +7294,7 @@
       "tests/test_vqls_gs_branches.py",
       "tests/test_vqls_gs_claim_boundary.py",
       "tests/test_vqs_alternative_readiness.py",
+      "tests/test_wheel_contents.py",
       "tests/test_whole_program_ad_contracts.py",
       "tests/test_whole_program_ad_finite_difference_gradient_check.py",
       "tests/test_whole_program_ad_numpy_structural.py",

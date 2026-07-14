@@ -5,6 +5,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-14 — Added a standard-library wheel-content release gate for the
+  parent, oscillatools, and PyO3 distributions. It verifies filename,
+  METADATA, WHEEL compatibility tags, required package and native-extension
+  payloads, safe archive paths, and closed sha256/size RECORD integrity. All
+  three PyPI workflows now block before artifact upload or trusted
+  publication, with strict typing, NumPy docstring, real-built-wheel, and
+  focused 100% statement/branch coverage gates. Runtime APIs, numerical
+  kernels, provider and hardware execution, polyglot compute, and benchmark
+  claims are unchanged.
 - 2026-07-14 — Added a generated differentiable reviewer-evidence page that
   maps all five DP-015 criticisms and the seven DP-030 evidence-package rows
   to scoped runnable commands or stable public open-gap pointers. The gate
