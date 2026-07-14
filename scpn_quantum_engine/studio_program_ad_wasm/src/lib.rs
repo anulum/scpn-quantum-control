@@ -22,6 +22,11 @@
 
 use scpn_quantum_program_ad_replay::program_ad_ir::interpret_program_ad_effect_ir_value_and_gradient;
 
+/// Maximum UTF-8 effect-IR size shared with the Python artifact packer.
+pub const MAX_PROGRAM_AD_REPLAY_IR_BYTES: usize = 1_048_576;
+/// Maximum scalar-input arity shared with the Python artifact packer.
+pub const MAX_PROGRAM_AD_REPLAY_INPUTS: usize = 4_096;
+
 /// Fail-closed status codes for the program-AD replay FFI.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 #[repr(i32)]
@@ -33,6 +38,7 @@ pub enum ProgramAdStatus {
     ReplayError = -4,
     Unsupported = -5,
     OutputMismatch = -6,
+    NonFiniteInput = -7,
 }
 
 impl From<ProgramAdStatus> for i32 {
@@ -62,6 +68,9 @@ pub fn parse_replay_input(bytes: &[u8]) -> Result<(String, Vec<f64>), ProgramAdS
         return Err(ProgramAdStatus::InvalidLength);
     }
     let ir_len = read_u32(bytes, 0) as usize;
+    if ir_len == 0 || ir_len > MAX_PROGRAM_AD_REPLAY_IR_BYTES {
+        return Err(ProgramAdStatus::InvalidLength);
+    }
     let after_ir = 4usize
         .checked_add(ir_len)
         .ok_or(ProgramAdStatus::InvalidLength)?;
@@ -75,6 +84,9 @@ pub fn parse_replay_input(bytes: &[u8]) -> Result<(String, Vec<f64>), ProgramAdS
         .map_err(|_| ProgramAdStatus::InvalidUtf8)?
         .to_owned();
     let n_inputs = read_u32(bytes, after_ir) as usize;
+    if n_inputs > MAX_PROGRAM_AD_REPLAY_INPUTS {
+        return Err(ProgramAdStatus::InvalidLength);
+    }
     let expected_len = inputs_header_end
         .checked_add(
             n_inputs
@@ -87,7 +99,11 @@ pub fn parse_replay_input(bytes: &[u8]) -> Result<(String, Vec<f64>), ProgramAdS
     }
     let mut inputs = Vec::with_capacity(n_inputs);
     for index in 0..n_inputs {
-        inputs.push(read_f64(bytes, inputs_header_end + index * 8));
+        let value = read_f64(bytes, inputs_header_end + index * 8);
+        if !value.is_finite() {
+            return Err(ProgramAdStatus::NonFiniteInput);
+        }
+        inputs.push(value);
     }
     Ok((ir, inputs))
 }
@@ -296,6 +312,25 @@ mod tests {
         assert_eq!(
             parse_replay_input(&bad_utf8).expect_err("utf8"),
             ProgramAdStatus::InvalidUtf8
+        );
+        assert_eq!(
+            parse_replay_input(&encode("", &[])).expect_err("empty IR"),
+            ProgramAdStatus::InvalidLength
+        );
+        let oversized_ir = "x".repeat(MAX_PROGRAM_AD_REPLAY_IR_BYTES + 1);
+        assert_eq!(
+            parse_replay_input(&encode(&oversized_ir, &[])).expect_err("oversized IR"),
+            ProgramAdStatus::InvalidLength
+        );
+        let oversized_inputs = vec![0.0; MAX_PROGRAM_AD_REPLAY_INPUTS + 1];
+        assert_eq!(
+            parse_replay_input(&encode("{}", &oversized_inputs))
+                .expect_err("oversized input arity"),
+            ProgramAdStatus::InvalidLength
+        );
+        assert_eq!(
+            parse_replay_input(&encode("{}", &[f64::NAN])).expect_err("non-finite input"),
+            ProgramAdStatus::NonFiniteInput
         );
     }
 

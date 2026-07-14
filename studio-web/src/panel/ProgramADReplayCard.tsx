@@ -46,7 +46,7 @@ export function ProgramADReplayCard({
     setState({ phase: "running" });
     try {
       const kernel = await loadKernel();
-      setState({ phase: "done", verdict: verifyProgramAdUnit(unit, kernel) });
+      setState({ phase: "done", verdict: await verifyProgramAdUnit(unit, kernel) });
     } catch (error) {
       const reason = error instanceof Error ? error.message : "kernel load failed";
       setState({ phase: "error", reason });

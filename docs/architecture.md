@@ -21,6 +21,32 @@ under `accel/` now ships as the standalone `oscillatools` distribution;
 This split is why the same repository can support both reproducible research
 workflows and integration-oriented development.
 
+## Studio Program-AD replay trust chain
+
+The Studio ST-12 card is an end-to-end verification chain, not a JavaScript
+reimplementation of automatic differentiation. The v2 committed unit at
+`data/studio/program_ad_replay_rational_20260714.json` freezes a rational
+effect-IR program, finite scalar inputs, the Rust engine's exact value and
+gradient, and a SHA-256 digest over the packed bytes consumed by the browser
+kernel. The Python emitter rejects duplicate-key or non-standard JSON, malformed
+engine responses, non-finite numbers, oversized IR, and oversized input arity;
+its check mode distinguishes drift from an unreadable or unverifiable artifact.
+
+The browser accepts only the exact v2 schema, artifact identity, claim boundary,
+parameter targets, and declared digest. It recomputes the input SHA-256 with Web
+Crypto before invoking the standalone Rust WASM replay. Changing the frozen
+program and the expected result together therefore remains `unverifiable`, not
+`match`. A canonical input whose recomputed value or gradient differs remains a
+`mismatch`. The Rust parser shares the Python limits of 1,048,576 UTF-8 IR bytes
+and 4,096 scalar inputs and rejects non-finite bindings before the bounded replay.
+
+The wire layout and canonical replay bytes are unchanged from v1; v2 adds the
+cryptographic binding and strict metadata contract. The numerical Program-AD
+algorithm, rational fixture, and expected `[19; 6, 2]` result are unchanged, so
+no comparison benchmark artifact is invalidated. Focused native Rust tests, a
+release WASM build, real-WASM browser/component tests, and exact Python plus
+TypeScript owner coverage are the applicable cross-language evidence.
+
 ## Module size and single-responsibility policy
 
 Module boundaries in this codebase are governed by **single responsibility, not line

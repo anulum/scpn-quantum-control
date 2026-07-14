@@ -184,6 +184,25 @@ def test_ci_phase_qnode_affinity_job_enforces_exact_quality_and_coverage() -> No
     assert "needs['phase-qnode-affinity-quality'].result" in workflow
 
 
+def test_ci_studio_program_ad_job_enforces_exact_polyglot_quality() -> None:
+    """CI must bind the Studio replay across Python, Rust, WASM, and TypeScript."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "Type-check Studio Program-AD replay quality cohort" in workflow
+    assert "Ruff NumPy docstrings for Studio Program-AD replay quality cohort" in workflow
+    assert "studio-program-ad-quality:" in workflow
+    assert "Build the current Rust engine wheel for artifact regeneration" in workflow
+    assert "Run Studio Program-AD focused coverage" in workflow
+    assert "--data-file=.coverage.studio-program-ad" in workflow
+    assert "Enforce Studio Program-AD exact coverage" in workflow
+    assert "--include=*/program_ad_replay_artifact.py" in workflow
+    assert "Enforce Program-AD browser owner exact coverage (ST-12)" in workflow
+    assert "--coverage.include=src/panel/programAd.ts" in workflow
+    assert "--coverage.include=src/panel/ProgramADReplayCard.tsx" in workflow
+    assert workflow.count("--coverage.thresholds.branches=100") >= 1
+    assert "needs['studio-program-ad-quality'].result" in workflow
+
+
 def test_ci_phase_qnode_vector_job_enforces_exact_branch_coverage() -> None:
     """CI must give the vector-transform owner an exact focused branch gate."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")

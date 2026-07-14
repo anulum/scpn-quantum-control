@@ -11,8 +11,9 @@ Gates (in order):
   1. repository lint, format, documentation, generated-surface, policy, and security audits
   2. focused strict-typing and NumPy-docstring ratchets for promoted owner cohorts
   3. Rust formatting, version/export consistency, and repository typing gates
-  4. exact MLIR-leaf, Phase-QNode-affinity, Phase-QNode-vector, and trace-value
-     statement/branch coverage (default coverage mode only)
+  4. exact MLIR-leaf, Phase-QNode-affinity, Phase-QNode-vector, Studio
+     Program-AD, and trace-value statement/branch coverage (default coverage
+     mode only)
   5. repository pytest with the selected coverage mode
   6. Bandit security scan
 
@@ -34,15 +35,33 @@ import subprocess  # nosec B404
 import sys
 import time
 from collections.abc import Iterable
+from importlib import import_module
 from os import X_OK, access, devnull, environ, pathsep
 from pathlib import Path
 from shutil import which
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from tools import program_ad_quality_gates as _program_ad_quality_gates
+else:
+    _repo_root = str(Path(__file__).resolve().parents[1])
+    if _repo_root not in sys.path:
+        sys.path.insert(0, _repo_root)
+    _program_ad_quality_gates = import_module("tools.program_ad_quality_gates")
 
 ROOT = Path(__file__).resolve().parent.parent
 _PY = sys.executable
 _CARGO = which("cargo") or "cargo"
+_PNPM = which("pnpm") or "pnpm"
 _RUNTIME_SOURCE_ROOTS = (ROOT / "src", ROOT / "oscillatools" / "src")
 _HELP_FLAGS = frozenset({"-h", "--help"})
+
+STUDIO_PROGRAM_AD_QUALITY_RATCHET = _program_ad_quality_gates.STUDIO_PROGRAM_AD_QUALITY_RATCHET
+STUDIO_PROGRAM_AD_COVERAGE_COHORT = _program_ad_quality_gates.STUDIO_PROGRAM_AD_COVERAGE_COHORT
+STUDIO_PROGRAM_AD_BROWSER_TESTS = _program_ad_quality_gates.STUDIO_PROGRAM_AD_BROWSER_TESTS
+STUDIO_PROGRAM_AD_COVERAGE_DATA_FILE = (
+    _program_ad_quality_gates.STUDIO_PROGRAM_AD_COVERAGE_DATA_FILE
+)
 
 DIFFERENTIABLE_DOCSTRING_RATCHET = [
     "src/scpn_quantum_control/differentiable_architecture_map.py",
@@ -363,6 +382,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             *PHASE_QNODE_AFFINITY_QUALITY_RATCHET,
         ],
     ),
+    *_program_ad_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-mlir-leaf-quality",
         [
@@ -684,6 +704,16 @@ PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     ),
 ]
 
+STUDIO_PROGRAM_AD_COVERAGE_GATES = _program_ad_quality_gates.build_python_coverage_gates(_PY)
+STUDIO_PROGRAM_AD_RUNTIME_GATES = _program_ad_quality_gates.build_runtime_gates(
+    _CARGO,
+    _PNPM,
+)
+STUDIO_PROGRAM_AD_BROWSER_TEST_GATE = _program_ad_quality_gates.build_browser_test_gate(_PNPM)
+STUDIO_PROGRAM_AD_BROWSER_COVERAGE_GATE = _program_ad_quality_gates.build_browser_coverage_gate(
+    _PNPM
+)
+
 PHASE_QNODE_VECTOR_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
         "phase-qnode vector focused coverage",
@@ -855,13 +885,17 @@ def main() -> int:
     gates: list[tuple[str, list[str]]] = list(STATIC_GATES)
 
     if not skip_tests:
+        gates.extend(STUDIO_PROGRAM_AD_RUNTIME_GATES)
         if no_coverage:
+            gates.append(STUDIO_PROGRAM_AD_BROWSER_TEST_GATE)
             gates.append(("pytest", _PYTEST_BASE))
         else:
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
+            gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_VECTOR_COVERAGE_GATES)
             gates.extend(WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES)
+            gates.append(STUDIO_PROGRAM_AD_BROWSER_COVERAGE_GATE)
             gates.append(("pytest + coverage", _PYTEST_COV))
 
     gates.append(BANDIT_GATE)

@@ -134,6 +134,21 @@ jobs:
           tools/run_phase_qnode_affinity_benchmark.py
           tests/test_phase_qnode_affinity_benchmark.py
           tests/test_lean_phase_import.py
+      - name: Type-check Studio Program-AD replay quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/studio/program_ad_replay_artifact.py
+          tests/test_studio_program_ad_replay_artifact.py
+          tools/program_ad_quality_gates.py
+          tests/test_studio_program_ad_quality_gate.py
+      - name: Ruff NumPy docstrings for Studio Program-AD replay quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/studio/program_ad_replay_artifact.py
+          tests/test_studio_program_ad_replay_artifact.py
+          tools/program_ad_quality_gates.py
+          tests/test_studio_program_ad_quality_gate.py
       - name: Type-check MLIR leaf quality cohort
         run: >-
           python -m mypy --strict
@@ -346,6 +361,44 @@ jobs:
           --precision=2
           --fail-under=100
           --include=*/qnode_vector_transforms.py
+
+  studio-program-ad-quality:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install pinned Python and Studio dependencies
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - name: Build the current Rust engine wheel for artifact regeneration
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.51.0
+        with:
+          args: --release --features extension-module --out dist -m scpn_quantum_engine/Cargo.toml
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Run Studio Program-AD focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.studio-program-ad
+          --branch
+          -m pytest -q
+          tests/test_studio_program_ad_replay_artifact.py
+      - name: Enforce Studio Program-AD exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.studio-program-ad
+          --precision=2
+          --fail-under=100
+          --include=*/program_ad_replay_artifact.py
 
   whole-program-trace-value-quality:
     needs: lint
@@ -982,6 +1035,19 @@ jobs:
         run: cargo test --locked
       - name: Test with enforced coverage thresholds
         run: pnpm test:coverage
+      - name: Enforce Program-AD browser owner exact coverage (ST-12)
+        run: >-
+          pnpm exec vitest run
+          src/panel/programAd.test.ts
+          src/panel/ProgramADReplayCard.test.tsx
+          --coverage
+          --coverage.reporter=text
+          --coverage.include=src/panel/programAd.ts
+          --coverage.include=src/panel/ProgramADReplayCard.tsx
+          --coverage.thresholds.statements=100
+          --coverage.thresholds.branches=100
+          --coverage.thresholds.functions=100
+          --coverage.thresholds.lines=100
       - name: Build the portal and the federation remote
         run: pnpm build
       - name: Assert the ESM remote entry carries the locked federation name
@@ -1009,7 +1075,7 @@ jobs:
           EOF
 
   ci-gate:
-    needs: [lint, mlir-leaf-quality, phase-qnode-affinity-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
+    needs: [lint, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -1018,6 +1084,7 @@ jobs:
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs['mlir-leaf-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['phase-qnode-affinity-quality'].result }}" != "success" ]] || \
+             [[ "${{ needs['studio-program-ad-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['phase-qnode-vector-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['whole-program-trace-value-quality'].result }}" != "success" ]] || \
              [[ "${{ needs.test.result }}" != "success" ]] || \

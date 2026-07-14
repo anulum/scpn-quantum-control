@@ -79,7 +79,7 @@ export function QuantumStudioPanel() {
         <ProgramADReplayCard unit={programAdUnit.value} />
       ) : (
         <Unverifiable
-          surface="program_ad_replay_rational_20260708.json"
+          surface="program_ad_replay_rational_20260714.json"
           reason={programAdUnit.reason}
         />
       )}

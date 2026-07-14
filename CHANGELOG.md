@@ -34,6 +34,21 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   benchmark claims are unchanged.
 
 ### Fixed
+- 2026-07-14 — Hardened the Studio Program-AD replay as a cryptographically
+  bound v2 polyglot contract. The Python emitter now validates finite typed Rust
+  responses, rejects duplicate-key/non-standard JSON, bounds IR and input
+  arity, provides stable drift diagnostics, and stamps SHA-256 over the exact
+  replay bytes. The browser requires canonical schema, artifact identity, claim
+  boundary, targets, and digest, then verifies the bytes with Web Crypto before
+  the real Rust WASM replay; changing input and expectation together can no
+  longer render `match`. The Rust parser shares the 1 MiB/4,096-input bounds and
+  rejects non-finite values. Permanent CI/local gates enforce strict MyPy,
+  NumPy docstrings, current-engine Python tests at exact 100% statement/branch
+  coverage, native Rust tests, release-WASM construction, TS strict mode, and
+  exact browser/component coverage through real WASM and HTTP loading. All
+  changed owners remain below the GodFile threshold. Canonical bytes, numerical
+  replay semantics, and `[19; 6, 2]` results are unchanged, so no comparison
+  benchmark refresh applies.
 - 2026-07-14 — Made Phase-QNode affinity artefact promotion fail closed. The
   validator now checks finite ordered timing rows and complete host/dependency
   schema, recomputes isolation failures from raw metadata, and rejects forged

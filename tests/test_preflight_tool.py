@@ -27,7 +27,15 @@ def _load_tool_module(module_name: str, filename: str) -> ModuleType:
         raise ImportError(f"Cannot load {module_name} from {module_path}")
     module = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = module
-    spec.loader.exec_module(module)
+    tool_dir = str(module_path.parent)
+    inserted_tool_dir = tool_dir not in sys.path
+    if inserted_tool_dir:
+        sys.path.insert(0, tool_dir)
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        if inserted_tool_dir:
+            sys.path.remove(tool_dir)
     return module
 
 
@@ -839,7 +847,15 @@ def test_main_uses_plain_pytest_when_coverage_is_disabled(
     monkeypatch.setattr(_preflight, "run_gate", fake_run_gate)
 
     assert _preflight.main() == 0
-    assert calls == ["lint", "pytest", "bandit"]
+    assert calls == [
+        "lint",
+        "studio Program-AD Rust kernel tests",
+        "studio Program-AD WASM release build",
+        "studio Program-AD browser strict typecheck",
+        "studio Program-AD focused browser tests",
+        "pytest",
+        "bandit",
+    ]
 
 
 def test_main_uses_coverage_pytest_by_default(
@@ -860,14 +876,20 @@ def test_main_uses_coverage_pytest_by_default(
     assert _preflight.main() == 0
     assert calls == [
         "lint",
+        "studio Program-AD Rust kernel tests",
+        "studio Program-AD WASM release build",
+        "studio Program-AD browser strict typecheck",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",
         "phase-qnode affinity exact coverage threshold",
+        "studio Program-AD focused coverage",
+        "studio Program-AD exact coverage threshold",
         "phase-qnode vector focused coverage",
         "phase-qnode vector exact coverage threshold",
         "whole-program trace-value focused coverage",
         "whole-program trace-value exact coverage threshold",
+        "studio Program-AD exact browser coverage",
         "pytest + coverage",
         "bandit",
     ]

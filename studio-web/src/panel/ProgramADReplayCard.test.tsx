@@ -17,7 +17,6 @@ import {
   type KernelReplay,
   type ProgramAdUnit,
   instantiateProgramAd,
-  parseProgramAdUnit,
   programAdUnit,
 } from "./programAd";
 
@@ -67,6 +66,20 @@ describe("ProgramADReplayCard", () => {
     await waitFor(() => expect(screen.getByText(/claim forged/)).toBeTruthy());
   });
 
+  it("refuses a forged replay input even when its expected claim changes too", async () => {
+    const base = unit();
+    const last = base.inputHex.endsWith("00") ? "01" : "00";
+    const forged: ProgramAdUnit = {
+      ...base,
+      inputHex: `${base.inputHex.slice(0, -2)}${last}`,
+      expectedValue: 0,
+      expectedGradient: [0, 0],
+    };
+    render(<ProgramADReplayCard unit={forged} loadKernel={async () => replay} />);
+    fireEvent.click(screen.getByRole("button"));
+    await waitFor(() => expect(screen.getByText(/SHA-256 binding/)).toBeTruthy());
+  });
+
   it("surfaces a kernel load failure as a loud boundary", async () => {
     render(
       <ProgramADReplayCard
@@ -78,5 +91,18 @@ describe("ProgramADReplayCard", () => {
     );
     fireEvent.click(screen.getByRole("button"));
     await waitFor(() => expect(screen.getByText(/unverifiable — boom/)).toBeTruthy());
+  });
+
+  it("uses a stable boundary when a loader throws a non-Error value", async () => {
+    render(
+      <ProgramADReplayCard
+        unit={unit()}
+        loadKernel={async () => {
+          throw "not-an-error";
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button"));
+    await waitFor(() => expect(screen.getByText(/unverifiable — kernel load failed/)).toBeTruthy());
   });
 });

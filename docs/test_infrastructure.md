@@ -126,6 +126,55 @@ python -m coverage report --rcfile=/dev/null \
   --fail-under=100 --include='*/qnode_affinity_benchmark.py'
 ```
 
+## Studio Program-AD replay quality ratchet
+
+The ST-12 replay is gated as one polyglot owner. Python emission and validation
+must remain strict-MyPy clean, fully NumPy-documented, and exactly covered. The
+test cohort uses the installed current Rust engine, strict JSON files, a real
+module subprocess, and no engine monkeypatch:
+
+```bash
+quality_paths=(
+  src/scpn_quantum_control/studio/program_ad_replay_artifact.py
+  tests/test_studio_program_ad_replay_artifact.py
+  tools/program_ad_quality_gates.py
+  tests/test_studio_program_ad_quality_gate.py
+)
+python -m mypy --strict --explicit-package-bases "${quality_paths[@]}"
+python -m ruff check --isolated --select D,D413 \
+  --config 'lint.pydocstyle.convention = "numpy"' "${quality_paths[@]}"
+python -m coverage run --rcfile=/dev/null \
+  --data-file=.coverage.studio-program-ad --branch \
+  -m pytest -q tests/test_studio_program_ad_replay_artifact.py
+python -m coverage report --rcfile=/dev/null \
+  --data-file=.coverage.studio-program-ad --precision=2 \
+  --fail-under=100 --include='*/program_ad_replay_artifact.py'
+```
+
+The same local default lane runs the Rust crate tests, rebuilds the release
+`wasm32-unknown-unknown` kernel, type-checks the Studio workspace, and enforces
+exact statement, branch, function, and line coverage over the browser verifier
+and React card. CI builds and installs the current PyO3 wheel before Python
+coverage, so a missing or stale engine cannot turn the owner test into a skip;
+the Studio web job executes the browser cohort against the freshly built WASM:
+
+```bash
+cargo test --locked \
+  --manifest-path scpn_quantum_engine/studio_program_ad_wasm/Cargo.toml
+cargo build --release --locked --target wasm32-unknown-unknown \
+  --manifest-path scpn_quantum_engine/studio_program_ad_wasm/Cargo.toml
+pnpm --dir studio-web typecheck
+pnpm --dir studio-web exec vitest run \
+  src/panel/programAd.test.ts src/panel/ProgramADReplayCard.test.tsx \
+  --coverage \
+  --coverage.include=src/panel/programAd.ts \
+  --coverage.include=src/panel/ProgramADReplayCard.tsx \
+  --coverage.thresholds.statements=100 \
+  --coverage.thresholds.branches=100 \
+  --coverage.thresholds.functions=100 \
+  --coverage.thresholds.lines=100
+```
+
 ## MLIR leaf quality ratchet
 
 The four implementation leaves behind `compiler.mlir` have an exact focused

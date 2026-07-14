@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 836,
     "public_documentation_pages": 271,
-    "python_model_classes": 1003,
+    "python_model_classes": 1004,
     "python_model_source_modules": 559,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 984
+    "test_files": 985
   },
   "documentation": {
     "examples": [
@@ -3491,6 +3491,10 @@
       {
         "name": "ProgramADRegistryDispatchCoverageRow",
         "path": "src/scpn_quantum_control/program_ad_registry.py"
+      },
+      {
+        "name": "ProgramADReplayArtifactValidation",
+        "path": "src/scpn_quantum_control/studio/program_ad_replay_artifact.py"
       },
       {
         "name": "ProgramADSSAValue",
@@ -7217,6 +7221,7 @@
       "tests/test_studio_kuramoto_reference.py",
       "tests/test_studio_kuramoto_scenario_artifact.py",
       "tests/test_studio_manifest.py",
+      "tests/test_studio_program_ad_quality_gate.py",
       "tests/test_studio_program_ad_replay_artifact.py",
       "tests/test_studio_qec_readiness_bundle.py",
       "tests/test_studio_qpu_result_pack.py",
