@@ -53,10 +53,52 @@ REQUIRED_ARCHITECTURE_LAYER_IDS: tuple[DifferentiableArchitectureLayerId, ...] =
     "benchmark_and_claim_governance",
 )
 
+_REQUIRED_LAYER_SEQUENCE_FIELDS = (
+    "owner_modules",
+    "inventory_surface_ids",
+    "baseline_categories",
+    "python_surfaces",
+    "rust_surfaces",
+    "polyglot_surfaces",
+    "test_surfaces",
+    "docs_surfaces",
+    "benchmark_surfaces",
+    "next_hardening_rounds",
+)
+_CANONICAL_LAYER_ROUTING_FIELDS = (
+    "title",
+    "role",
+    *_REQUIRED_LAYER_SEQUENCE_FIELDS,
+    "blockers",
+    "claim_boundary",
+)
+
 
 @dataclass(frozen=True)
 class DifferentiableArchitectureMapLayer:
-    """One architecture layer tied to inventory, scorecard, and evidence paths."""
+    """Tie one architecture layer to inventory, scorecard, and evidence paths.
+
+    Parameters
+    ----------
+    layer_id : DifferentiableArchitectureLayerId
+        Stable identifier from :data:`REQUIRED_ARCHITECTURE_LAYER_IDS`.
+    title, role : str
+        Reviewer-facing title and the layer's routing responsibility.
+    owner_modules, python_surfaces, rust_surfaces, polyglot_surfaces : tuple[str, ...]
+        Owning modules and implementation paths across language boundaries.
+    inventory_surface_ids : tuple[str, ...]
+        Rust/Python inventory rows routed through this layer.
+    baseline_categories : tuple[DifferentiableBaselineCategory, ...]
+        External-baseline categories governed by this layer.
+    test_surfaces, docs_surfaces : tuple[str, ...]
+        Repository paths that prove and document the routing.
+    benchmark_surfaces : tuple[str, ...]
+        Benchmark or evidence artifact identifiers attached to the layer.
+    blockers, next_hardening_rounds : tuple[str, ...]
+        Explicit gaps and the rounds that own their remediation.
+    claim_boundary : str
+        Non-promotional interpretation attached to the layer.
+    """
 
     layer_id: DifferentiableArchitectureLayerId | str
     title: str
@@ -75,38 +117,64 @@ class DifferentiableArchitectureMapLayer:
     claim_boundary: str
 
     def __post_init__(self) -> None:
-        """Validate layer fields before emitting architecture evidence."""
+        """Validate layer fields before emitting architecture evidence.
+
+        Raises
+        ------
+        ValueError
+            If the layer identifier is unknown, required text or sequence
+            fields are empty, blockers contain blank text, or a sequence
+            contains duplicate entries.
+        """
         for field_name in (
             "layer_id",
             "title",
             "role",
             "claim_boundary",
         ):
-            if not str(getattr(self, field_name)).strip():
-                raise ValueError(f"{field_name} must be non-empty")
-        for field_name in (
-            "owner_modules",
-            "inventory_surface_ids",
-            "baseline_categories",
-            "python_surfaces",
-            "rust_surfaces",
-            "polyglot_surfaces",
-            "test_surfaces",
-            "docs_surfaces",
-            "benchmark_surfaces",
-            "next_hardening_rounds",
-        ):
             value = getattr(self, field_name)
-            if not value or any(not str(item).strip() for item in value):
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{field_name} must be non-empty")
+        if self.layer_id not in REQUIRED_ARCHITECTURE_LAYER_IDS:
+            raise ValueError(f"unknown architecture layer_id: {self.layer_id}")
+        for field_name in _REQUIRED_LAYER_SEQUENCE_FIELDS:
+            value = getattr(self, field_name)
+            if (
+                not isinstance(value, tuple)
+                or not value
+                or any(not isinstance(item, str) or not item.strip() for item in value)
+            ):
                 raise ValueError(f"{field_name} must contain non-empty entries")
+        if not isinstance(self.blockers, tuple) or any(
+            not isinstance(blocker, str) or not blocker.strip() for blocker in self.blockers
+        ):
+            raise ValueError("blockers must contain only non-empty entries")
+        for field_name in (*_REQUIRED_LAYER_SEQUENCE_FIELDS, "blockers"):
+            duplicates = _duplicates(getattr(self, field_name))
+            if duplicates:
+                raise ValueError(
+                    f"{field_name} must not contain duplicate entries: {', '.join(duplicates)}"
+                )
 
     @property
     def rustification_ready(self) -> bool:
-        """Return whether this layer is free of declared Rustification blockers."""
+        """Return whether the layer is free of declared Rustification blockers.
+
+        Returns
+        -------
+        bool
+            ``True`` only when no blocker is attached to the layer.
+        """
         return not self.blockers
 
     def to_dict(self) -> dict[str, object]:
-        """Return a JSON-ready architecture layer."""
+        """Return a JSON-ready architecture layer.
+
+        Returns
+        -------
+        dict[str, object]
+            Layer fields with tuples materialised as JSON-ready lists.
+        """
         return {
             "layer_id": self.layer_id,
             "title": self.title,
@@ -129,7 +197,21 @@ class DifferentiableArchitectureMapLayer:
 
 @dataclass(frozen=True)
 class DifferentiableArchitectureMap:
-    """Deterministic architecture map for differentiable Rustification routing."""
+    """Aggregate deterministic differentiable Rustification routing layers.
+
+    Parameters
+    ----------
+    schema, artifact_id : str
+        Versioned schema and committed artifact identifiers.
+    layers : tuple[DifferentiableArchitectureMapLayer, ...]
+        Ordered architecture routing layers.
+    rustification_ready : bool
+        Whether every layer and both upstream evidence sources are ready.
+    ready_layer_count, total_layer_count : int
+        Ready and total layer counts.
+    claim_boundary : str
+        Non-promotional interpretation attached to the map.
+    """
 
     schema: str
     artifact_id: str
@@ -139,8 +221,48 @@ class DifferentiableArchitectureMap:
     total_layer_count: int
     claim_boundary: str
 
+    def __post_init__(self) -> None:
+        """Reject structurally empty architecture-map records.
+
+        Raises
+        ------
+        ValueError
+            If identity text has the wrong type or is blank, layers are not a
+            non-empty tuple of architecture-layer records, readiness is not a
+            boolean, or counts are not non-negative integers. Cross-field and
+            upstream invariants are checked by
+            :func:`validate_differentiable_architecture_map`.
+        """
+        for field_name in ("schema", "artifact_id", "claim_boundary"):
+            value = getattr(self, field_name)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{field_name} must be non-empty")
+        if (
+            not isinstance(self.layers, tuple)
+            or not self.layers
+            or any(
+                not isinstance(layer, DifferentiableArchitectureMapLayer) for layer in self.layers
+            )
+        ):
+            raise ValueError("layers must be a non-empty tuple of architecture layers")
+        if type(self.rustification_ready) is not bool:
+            raise ValueError("rustification_ready must be a bool")
+        if (
+            type(self.ready_layer_count) is not int
+            or type(self.total_layer_count) is not int
+            or self.ready_layer_count < 0
+            or self.total_layer_count < 0
+        ):
+            raise ValueError("architecture layer counts must be non-negative integers")
+
     def to_dict(self) -> dict[str, object]:
-        """Return a JSON-ready architecture map."""
+        """Return a JSON-ready architecture map.
+
+        Returns
+        -------
+        dict[str, object]
+            Aggregate fields and serialised architecture layers.
+        """
         return {
             "schema": self.schema,
             "artifact_id": self.artifact_id,
@@ -154,7 +276,23 @@ class DifferentiableArchitectureMap:
 
 @dataclass(frozen=True)
 class DifferentiableArchitectureMapValidation:
-    """Validation result for a differentiable architecture map."""
+    """Record fail-closed architecture-map validation evidence.
+
+    Parameters
+    ----------
+    passed : bool
+        Whether every structural, upstream, routing, and path check passed.
+    errors : tuple[str, ...]
+        Deterministically ordered validation findings.
+    checked_layer_ids, checked_inventory_surface_ids : tuple[str, ...]
+        Layer and inventory identifiers inspected by the validator.
+    checked_baseline_categories : tuple[DifferentiableBaselineCategory, ...]
+        Scorecard categories inspected by the validator.
+    checked_paths : tuple[str, ...]
+        Repository-relative evidence paths inspected by the validator.
+    claim_boundary : str
+        Non-promotional interpretation attached to the evidence.
+    """
 
     passed: bool
     errors: tuple[str, ...]
@@ -165,7 +303,13 @@ class DifferentiableArchitectureMapValidation:
     claim_boundary: str
 
     def to_dict(self) -> dict[str, object]:
-        """Return JSON-ready architecture-map validation evidence."""
+        """Return JSON-ready architecture-map validation evidence.
+
+        Returns
+        -------
+        dict[str, object]
+            Validation fields with tuples materialised as lists.
+        """
         return {
             "passed": self.passed,
             "errors": list(self.errors),
@@ -182,7 +326,28 @@ def run_differentiable_architecture_map(
     inventory: DifferentiableRustPythonInventory | None = None,
     scorecard: DifferentiableBaselineScorecard | None = None,
 ) -> DifferentiableArchitectureMap:
-    """Build the architecture and Rustification map from committed evidence."""
+    """Build the architecture and Rustification map from committed evidence.
+
+    Parameters
+    ----------
+    inventory : DifferentiableRustPythonInventory, optional
+        Preloaded Rust/Python inventory. The committed inventory is built when
+        omitted.
+    scorecard : DifferentiableBaselineScorecard, optional
+        Preloaded external-baseline scorecard. The committed scorecard is built
+        when omitted.
+
+    Returns
+    -------
+    DifferentiableArchitectureMap
+        Six ordered routing layers with aggregate readiness.
+
+    Raises
+    ------
+    ValueError
+        If the supplied inventory omits a surface required by the canonical
+        architecture routing specification.
+    """
     loaded_inventory = (
         run_differentiable_rust_python_inventory() if inventory is None else inventory
     )
@@ -212,7 +377,25 @@ def validate_differentiable_architecture_map(
     scorecard: DifferentiableBaselineScorecard | None = None,
     repo_root: Path = REPO_ROOT,
 ) -> DifferentiableArchitectureMapValidation:
-    """Validate architecture layers, references, paths, and readiness invariants."""
+    """Validate architecture layers, references, paths, and readiness invariants.
+
+    Parameters
+    ----------
+    architecture_map : DifferentiableArchitectureMap
+        Candidate architecture map to validate.
+    inventory : DifferentiableRustPythonInventory, optional
+        Inventory against which every routed surface is checked.
+    scorecard : DifferentiableBaselineScorecard, optional
+        Scorecard against which every routed category is checked.
+    repo_root : pathlib.Path, optional
+        Repository root used to resolve declared evidence paths.
+
+    Returns
+    -------
+    DifferentiableArchitectureMapValidation
+        Fail-closed upstream, identity, routing, coverage, path, and readiness
+        evidence.
+    """
     loaded_inventory = (
         run_differentiable_rust_python_inventory() if inventory is None else inventory
     )
@@ -229,7 +412,8 @@ def validate_differentiable_architecture_map(
         f"inventory validation failed: {error}" for error in inventory_validation.errors
     ]
     errors.extend(f"scorecard validation failed: {error}" for error in scorecard_validation.errors)
-    inventory_surface_ids = {row.surface_id for row in loaded_inventory.rows}
+    inventory_rows = {row.surface_id: row for row in loaded_inventory.rows}
+    inventory_surface_ids = set(inventory_rows)
     baseline_categories = {row.category for row in loaded_scorecard.rows}
     checked_paths: set[str] = set()
     checked_inventory_ids: set[str] = set()
@@ -238,6 +422,10 @@ def validate_differentiable_architecture_map(
 
     if architecture_map.schema != DIFFERENTIABLE_ARCHITECTURE_MAP_SCHEMA:
         errors.append(f"unexpected architecture-map schema: {architecture_map.schema}")
+    if architecture_map.artifact_id != DIFFERENTIABLE_ARCHITECTURE_MAP_ARTIFACT_ID:
+        errors.append(f"unexpected architecture-map artifact_id: {architecture_map.artifact_id}")
+    if architecture_map.claim_boundary != DIFFERENTIABLE_ARCHITECTURE_MAP_CLAIM_BOUNDARY:
+        errors.append("architecture-map claim_boundary does not match the canonical boundary")
     if architecture_map.total_layer_count != len(architecture_map.layers):
         errors.append("total_layer_count does not match layer count")
     ready_count = sum(1 for layer in architecture_map.layers if layer.rustification_ready)
@@ -264,12 +452,40 @@ def validate_differentiable_architecture_map(
             checked_baseline_categories.add(category)
             if category not in baseline_categories:
                 errors.append(f"{layer.layer_id}: unknown baseline category: {category}")
+        if layer.claim_boundary != DIFFERENTIABLE_ARCHITECTURE_MAP_CLAIM_BOUNDARY:
+            errors.append(
+                f"{layer.layer_id}: claim_boundary does not match the canonical boundary"
+            )
         if architecture_map.rustification_ready and layer.blockers:
             errors.append(f"{layer.layer_id}: ready architecture layers must not carry blockers")
         for path in _layer_paths(layer):
             checked_paths.add(path)
-            if not (repo_root / path).exists():
+            candidate_path = Path(path)
+            if candidate_path.is_absolute() or ".." in candidate_path.parts:
+                errors.append(
+                    f"{layer.layer_id}: evidence path must be repository-relative: {path}"
+                )
+            elif not (repo_root / candidate_path).exists():
                 errors.append(f"{layer.layer_id}: evidence path does not exist: {path}")
+
+    for surface_id in sorted(inventory_surface_ids - checked_inventory_ids):
+        errors.append(f"unmapped inventory surface: {surface_id}")
+    for category in sorted(baseline_categories - checked_baseline_categories):
+        errors.append(f"unmapped baseline category: {category}")
+
+    try:
+        expected_layers = _default_architecture_layers(inventory_rows)
+    except ValueError as error:
+        errors.append(f"cannot derive canonical architecture routing: {error}")
+    else:
+        for layer, expected_layer in zip(architecture_map.layers, expected_layers, strict=False):
+            if layer.layer_id != expected_layer.layer_id:
+                continue
+            for field_name in _CANONICAL_LAYER_ROUTING_FIELDS:
+                if getattr(layer, field_name) != getattr(expected_layer, field_name):
+                    errors.append(
+                        f"{layer.layer_id}: {field_name} does not match inventory-derived routing"
+                    )
 
     return DifferentiableArchitectureMapValidation(
         passed=not errors,
@@ -290,7 +506,18 @@ def validate_differentiable_architecture_map(
 def render_differentiable_architecture_map_markdown(
     architecture_map: DifferentiableArchitectureMap,
 ) -> str:
-    """Render a reviewer-facing Markdown summary of the architecture map."""
+    """Render a reviewer-facing Markdown summary of the architecture map.
+
+    Parameters
+    ----------
+    architecture_map : DifferentiableArchitectureMap
+        Architecture routing evidence to render without changing its status.
+
+    Returns
+    -------
+    str
+        SPDX-prefixed Markdown with readiness, blockers, and hardening rounds.
+    """
     lines = [
         "<!--",
         "SPDX-License-Identifier: AGPL-3.0-or-later",
@@ -335,6 +562,7 @@ def render_differentiable_architecture_map_markdown(
 def _default_architecture_layers(
     inventory_rows: Mapping[str, DifferentiableRustPythonInventoryRow],
 ) -> tuple[DifferentiableArchitectureMapLayer, ...]:
+    """Build the canonical ordered architecture layers from inventory rows."""
     return (
         _layer(
             "public_api_facade",
@@ -404,6 +632,14 @@ def _layer(
     categories: tuple[DifferentiableBaselineCategory, ...],
     inventory_rows: Mapping[str, DifferentiableRustPythonInventoryRow],
 ) -> DifferentiableArchitectureMapLayer:
+    """Assemble one canonical layer or reject absent inventory surfaces."""
+    missing_surface_ids = tuple(
+        surface_id for surface_id in surface_ids if surface_id not in inventory_rows
+    )
+    if missing_surface_ids:
+        raise ValueError(
+            "missing required inventory surface(s): " + ", ".join(missing_surface_ids)
+        )
     rows = tuple(inventory_rows[surface_id] for surface_id in surface_ids)
     return DifferentiableArchitectureMapLayer(
         layer_id=layer_id,
@@ -432,6 +668,7 @@ def _layer(
 
 
 def _layer_paths(layer: DifferentiableArchitectureMapLayer) -> Iterable[str]:
+    """Yield repository paths declared by one architecture layer."""
     yield from layer.owner_modules
     yield from layer.python_surfaces
     yield from layer.rust_surfaces
@@ -441,6 +678,7 @@ def _layer_paths(layer: DifferentiableArchitectureMapLayer) -> Iterable[str]:
 
 
 def _duplicates(values: Iterable[str]) -> tuple[str, ...]:
+    """Return sorted values that occur more than once."""
     seen: set[str] = set()
     duplicates: set[str] = set()
     for value in values:
@@ -451,10 +689,12 @@ def _duplicates(values: Iterable[str]) -> tuple[str, ...]:
 
 
 def _unique_paths(paths: Iterable[str]) -> tuple[str, ...]:
+    """Preserve the first occurrence of each non-empty path."""
     return tuple(dict.fromkeys(path for path in paths if path))
 
 
 def _markdown_cell(value: str) -> str:
+    """Escape line breaks and table delimiters for one Markdown cell."""
     return value.replace("\n", " ").replace("|", "\\|")
 
 

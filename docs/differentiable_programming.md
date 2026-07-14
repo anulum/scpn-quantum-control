@@ -263,10 +263,17 @@ framework bridges, Program AD core, compiler/native execution, provider and
 hardware boundary, and benchmark/claim governance. The committed artefacts live
 at `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json`
 and `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md`.
-The map validates layer IDs, inventory surface references, baseline categories,
-source/test/docs paths, and blocker state before broad Rust migration starts.
-It is routing evidence only and does not promote Rust, LLVM/JIT, provider,
-hardware, GPU, performance, or `isolated_affinity` claims.
+The map fails closed unless its schema, artifact identity, claim boundary, six
+ordered layer IDs, counts, and readiness agree. Validation first checks the
+upstream inventory and scorecard, then requires every inventory surface and
+every scorecard category to be routed, requires each layer to match the routing
+derived from the current inventory, and rejects missing, absolute, or
+parent-traversing source/test/docs paths. Layer construction also rejects blank
+or duplicate routing entries and blank blockers. A byte-parity regression locks
+the committed JSON and Markdown to the public serializer and renderer; the
+external-validation bundle pins their checksums. The map remains routing
+evidence only and does not promote Rust, LLVM/JIT, provider, hardware, GPU,
+performance, or `isolated_affinity` claims.
 The current public technical report is
 [Differentiable External-Validation Technical Report](differentiable_external_validation_report.md).
 It summarizes the comparison package, provider-family status, reproducibility

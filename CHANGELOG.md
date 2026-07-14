@@ -5,6 +5,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-14 — Closed the P0 differentiable architecture-map contract and
+  coverage debt. Construction now rejects unknown layer identities, blank or
+  duplicate routing entries, and malformed counts; validation locks canonical
+  identity and claim boundaries, complete inventory/scorecard coverage, exact
+  inventory-derived routing, and repository-relative evidence paths. The
+  committed JSON now follows the Program-AD replay and Qiskit Runtime split
+  paths, with dependent external-validation checksums refreshed. Rust and
+  polyglot implementations, provider and hardware execution, and benchmark
+  claims are unchanged.
 - 2026-07-14 — Closed the P0 Rust/Python inventory contract and coverage debt
   through public row construction, injected ledgers, validation, serialization,
   dispatch, exports, and rendering. Runtime records now reject unknown status

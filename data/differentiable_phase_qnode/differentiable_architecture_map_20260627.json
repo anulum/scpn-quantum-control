@@ -108,7 +108,7 @@
       ],
       "owner_modules": [
         "src/scpn_quantum_control/phase/pennylane_bridge.py",
-        "src/scpn_quantum_control/phase/qiskit_bridge.py"
+        "src/scpn_quantum_control/phase/qiskit_runtime.py"
       ],
       "polyglot_surfaces": [
         "docs/differentiable_api.md",
@@ -125,6 +125,9 @@
         "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
         "src/scpn_quantum_control/phase/torch_bridge.py",
         "src/scpn_quantum_control/phase/qiskit_bridge.py",
+        "src/scpn_quantum_control/phase/qiskit_bridge_contracts.py",
+        "src/scpn_quantum_control/phase/qiskit_gradients.py",
+        "src/scpn_quantum_control/phase/qiskit_runtime.py",
         "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py"
       ],
       "role": "Routes local QNode evidence into JAX, PyTorch, PennyLane, and Qiskit boundaries.",
@@ -143,7 +146,9 @@
         "tests/test_phase_qnode_vector_transforms.py",
         "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
-        "tests/test_phase_qiskit_bridge.py",
+        "tests/test_phase_qiskit_bridge_contracts.py",
+        "tests/test_phase_qiskit_gradients.py",
+        "tests/test_phase_qiskit_runtime.py",
         "tests/test_phase_provider_hardware_gradient_audit.py"
       ],
       "title": "QNode framework bridge layer"
@@ -210,12 +215,12 @@
       ],
       "role": "Owns whole-program frontend evidence and bounded Rust Program AD replay.",
       "rust_surfaces": [
-        "scpn_quantum_engine/src/program_ad_ir.rs",
-        "scpn_quantum_engine/src/program_ad_trapezoid_reduction.rs",
-        "scpn_quantum_engine/src/program_ad_interpolation_reduction.rs",
-        "scpn_quantum_engine/src/program_ad_signal_reduction.rs",
-        "scpn_quantum_engine/src/program_ad_stencil_reduction.rs",
-        "scpn_quantum_engine/src/program_ad_cumulative_reduction.rs",
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_ir.rs",
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_trapezoid_reduction.rs",
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_interpolation_reduction.rs",
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_signal_reduction.rs",
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_stencil_reduction.rs",
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_cumulative_reduction.rs",
         "scpn_quantum_engine/fuzz/fuzz_targets/program_ad_ir.rs",
         "scpn_quantum_engine/tests/program_ad_ir.rs",
         "scpn_quantum_engine/tests/program_ad_interpolation.rs",
@@ -375,7 +380,7 @@
         "Round 5 Rustification readiness"
       ],
       "owner_modules": [
-        "src/scpn_quantum_control/phase/qiskit_bridge.py",
+        "src/scpn_quantum_control/phase/qiskit_runtime.py",
         "src/scpn_quantum_control/phase/hardware_gradient_campaign.py"
       ],
       "polyglot_surfaces": [
@@ -383,6 +388,9 @@
       ],
       "python_surfaces": [
         "src/scpn_quantum_control/phase/qiskit_bridge.py",
+        "src/scpn_quantum_control/phase/qiskit_bridge_contracts.py",
+        "src/scpn_quantum_control/phase/qiskit_gradients.py",
+        "src/scpn_quantum_control/phase/qiskit_runtime.py",
         "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py",
         "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
         "src/scpn_quantum_control/differentiable_api.py",
@@ -399,7 +407,9 @@
       ],
       "rustification_ready": false,
       "test_surfaces": [
-        "tests/test_phase_qiskit_bridge.py",
+        "tests/test_phase_qiskit_bridge_contracts.py",
+        "tests/test_phase_qiskit_gradients.py",
+        "tests/test_phase_qiskit_runtime.py",
         "tests/test_phase_provider_hardware_gradient_audit.py",
         "tests/test_differentiable_api.py",
         "tests/test_differentiable_programming_benchmarks.py",
