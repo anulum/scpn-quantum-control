@@ -249,7 +249,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.control.realtime_runtime
     options:
-      members: [RealtimeRuntimeConfig, RealtimeTickRecord, RealtimeRunResult, VirtualRealtimeClock, MonotonicRealtimeClock, run_realtime_control_loop]
+      members: [CycleSample, RealtimeSLAConfig, RealtimeSLAReport, MonotonicRealtimeClock, RealtimeClock, RealtimeRunResult, RealtimeRuntimeConfig, RealtimeTickRecord, SubMicrosecondReport, SubMicrosecondTracker, VirtualRealtimeClock, enforce_realtime_sla, evaluate_realtime_sla, run_realtime_control_loop, summarise_cycle_samples]
 
 ## Cloud-Native Deployment
 

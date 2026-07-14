@@ -26,19 +26,17 @@ tests/
 ## Running Tests
 
 ```bash
-# Full suite (skip slow 18-qubit tests)
+# Local module-specific run
+pytest tests/test_xy_kuramoto.py -v --tb=short
+
+# Local realtime-runtime cohort
+pytest tests/test_realtime_runtime.py tests/test_realtime_runtime_branches.py \
+  tests/test_sub_us_tracker.py -q --tb=short
+
+# CI-only full suite (do not run locally)
 pytest tests/ -v --tb=short -m "not slow"
 
-# Single file
-pytest tests/test_xy_kuramoto.py -v --tb=short -s
-
-# With performance output
-pytest tests/test_pipeline_wiring_performance.py -v -s
-
-# Rust benchmarks
-pytest tests/test_rust_path_benchmarks.py -v -s
-
-# Coverage with branch telemetry
+# CI-only whole-package coverage with branch telemetry
 pytest tests/ --cov=src/scpn_quantum_control --cov-branch --cov-report=html -m "not slow"
 ```
 
@@ -69,6 +67,31 @@ input.
 python tools/audit_test_typing_policy.py
 python tools/audit_test_typing_policy.py --validate-only --json
 ```
+
+## Realtime runtime quality ratchet
+
+The runtime source and its two direct test owners form a fixed three-file
+quality cohort. CI and the local static-gate definition execute these exact
+commands and ordered paths, so a future edit cannot silently fall back to the
+repository's transitional docstring exclusions or non-strict test typing:
+
+```bash
+python -m mypy --strict --explicit-package-bases \
+  src/scpn_quantum_control/control/realtime_runtime.py \
+  tests/test_realtime_runtime.py \
+  tests/test_realtime_runtime_branches.py
+
+python -m ruff check --isolated --select D,D413 \
+  --config 'lint.pydocstyle.convention = "numpy"' \
+  src/scpn_quantum_control/control/realtime_runtime.py \
+  tests/test_realtime_runtime.py \
+  tests/test_realtime_runtime_branches.py
+```
+
+Focused behaviour runs add `tests/test_sub_us_tracker.py` because it owns the
+Rust/NumPy numerical parity and batch-throughput contract. It is intentionally
+outside the strict three-file ratchet until its pre-existing typing debt is
+migrated as its own owner.
 
 ## Test Categories
 

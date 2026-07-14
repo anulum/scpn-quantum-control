@@ -17,26 +17,28 @@ Gates (in order):
   7. diff-support-page — generated registry/planner page + capability-manifest alignment
   8. diff-support typing — strict typing for the page generator and focused tests
   9. ruff D ratchet  — NumPy-style docstring ratchet for differentiable hardening
-  10. test-quality   — forbid coverage-bucket pytest modules
-  11. module-size    — tracked oversized-code responsibility inventory
-  12. module-size typing — strict typing for the inventory tool
-  13. licence-readiness — canonical cross-language source headers and licence boundaries
-  14. licence typing — strict typing for the licence-readiness audit
-  15. test typing    — additive strict-mypy cohort for repository tests
-  16. test typing tool — strict typing for the cohort-policy audit
-  17. coverage policy — preserve line gate and require branch telemetry
-  18. coverage policy tool — strict typing for the coverage-policy audit
-  19. coverage debt — current 100% recovery register and priority drift
-  20. coverage debt tool — strict typing for the debt-register audit
-  21. external-validation — environment and evidence-bundle manifest drift
-  22. external-validation tool — strict typing for the manifest gate
-  23. rustfmt        — canonical formatting across the Rust engine crate
-  24. version-sync   — version string consistency across 5 carrier files
-  25. rust-pyi       — Rust PyO3 exports match local typing contract
-  26. mypy           — type errors
-  27. mypy-strict-dp — strict typing ratchet for differentiable programming
-  28. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
-  29. bandit         — security scan
+  10. realtime typing — strict typing for the realtime runtime and focused tests
+  11. realtime docs  — NumPy docstrings for the realtime runtime and focused tests
+  12. test-quality   — forbid coverage-bucket pytest modules
+  13. module-size    — tracked oversized-code responsibility inventory
+  14. module-size typing — strict typing for the inventory tool
+  15. licence-readiness — canonical cross-language source headers and licence boundaries
+  16. licence typing — strict typing for the licence-readiness audit
+  17. test typing    — additive strict-mypy cohort for repository tests
+  18. test typing tool — strict typing for the cohort-policy audit
+  19. coverage policy — preserve line gate and require branch telemetry
+  20. coverage policy tool — strict typing for the coverage-policy audit
+  21. coverage debt — current 100% recovery register and priority drift
+  22. coverage debt tool — strict typing for the debt-register audit
+  23. external-validation — environment and evidence-bundle manifest drift
+  24. external-validation tool — strict typing for the manifest gate
+  25. rustfmt        — canonical formatting across the Rust engine crate
+  26. version-sync   — version string consistency across 5 carrier files
+  27. rust-pyi       — Rust PyO3 exports match local typing contract
+  28. mypy           — type errors
+  29. mypy-strict-dp — strict typing ratchet for differentiable programming
+  30. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
+  31. bandit         — security scan
 
 Usage:
   python tools/preflight.py                # all gates (default)
@@ -85,6 +87,12 @@ DIFFERENTIABLE_DOCSTRING_RATCHET = [
     "tools/differentiable_reviewer_evidence_catalog.py",
     "tools/differentiable_reviewer_evidence_page.py",
     "tests/test_differentiable_reviewer_evidence_page.py",
+]
+
+REALTIME_RUNTIME_QUALITY_RATCHET = [
+    "src/scpn_quantum_control/control/realtime_runtime.py",
+    "tests/test_realtime_runtime.py",
+    "tests/test_realtime_runtime_branches.py",
 ]
 
 _PYTEST_BASE = [
@@ -176,6 +184,32 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "--config",
             'lint.pydocstyle.convention = "numpy"',
             *DIFFERENTIABLE_DOCSTRING_RATCHET,
+        ],
+    ),
+    (
+        "mypy-strict-realtime-runtime",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "--explicit-package-bases",
+            *REALTIME_RUNTIME_QUALITY_RATCHET,
+        ],
+    ),
+    (
+        "ruff D realtime-runtime quality ratchet",
+        [
+            _PY,
+            "-m",
+            "ruff",
+            "check",
+            "--isolated",
+            "--select",
+            "D,D413",
+            "--config",
+            'lint.pydocstyle.convention = "numpy"',
+            *REALTIME_RUNTIME_QUALITY_RATCHET,
         ],
     ),
     ("test-quality", [_PY, "tools/audit_test_quality.py"]),

@@ -757,20 +757,46 @@ the primitive includes verified Rust backend provenance.
 ### `control.realtime_runtime`
 
 ```python
-from scpn_quantum_control import RealtimeRuntimeConfig, VirtualRealtimeClock
-from scpn_quantum_control import run_realtime_control_loop
+from scpn_quantum_control import (
+    CycleSample,
+    RealtimeRuntimeConfig,
+    RealtimeSLAConfig,
+    SubMicrosecondTracker,
+    VirtualRealtimeClock,
+    evaluate_realtime_sla,
+    run_realtime_control_loop,
+)
 
 clock = VirtualRealtimeClock()
 config = RealtimeRuntimeConfig(sample_period_s=0.01, deadline_s=0.005)
 result = run_realtime_control_loop(10, step_fn, config=config, clock=clock)
 result.missed_deadlines
 result.max_latency_s
+
+sla = evaluate_realtime_sla(result, sla=RealtimeSLAConfig(max_latency_s=0.005))
+
+tracker = SubMicrosecondTracker(target_rate_hz=100_000)
+tracker.record(CycleSample(cycle_id=0, start_ns=0, end_ns=3_000, deadline_ns=5_000))
+sub_us_report = tracker.report()
 ```
 
 The runtime records scheduled start, actual start, finish time, latency, jitter,
 deadline-miss state, and numeric metrics for fixed-period software control
-loops. It can use a monotonic wall clock or deterministic virtual clock. It is
-not an intra-shot hardware-latency claim.
+loops. SLA helpers evaluate maximum and p95/p99 latency, maximum jitter, and
+deadline-miss rate. The streaming tracker and `summarise_cycle_samples` batch
+path report nanosecond timestamp telemetry with Rust/NumPy parity. The runtime
+can use a monotonic wall clock or deterministic virtual clock. It is not an
+intra-shot hardware-latency claim. See [Real-Time Runtime](realtime_runtime.md)
+for timing definitions, failure semantics, acceleration dispatch, and measured
+throughput context.
+
+The complete public surface comprises the `RealtimeClock`,
+`MonotonicRealtimeClock`, and `VirtualRealtimeClock` clock boundaries;
+`RealtimeRuntimeConfig`, `RealtimeTickRecord`, `RealtimeRunResult`, and
+`run_realtime_control_loop` fixed-period contracts; `RealtimeSLAConfig`,
+`RealtimeSLAReport`, `evaluate_realtime_sla`, and `enforce_realtime_sla` SLA
+contracts; and `CycleSample`, `SubMicrosecondReport`, `SubMicrosecondTracker`,
+and `summarise_cycle_samples` high-rate telemetry contracts.
 
 ### `deployment.cloud_native`
 

@@ -34,6 +34,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   benchmark claims are unchanged.
 
 ### Fixed
+- 2026-07-14 — Closed the tracked real-time runtime quality debt with public
+  control-loop, tracker, and batch-summary regressions for past clock targets,
+  caller-driven scheduling, over-budget start jitter, native-kernel rejection,
+  and partial optional-engine installs. The runtime source and its two focused
+  test owners now carry complete NumPy-style contracts and permanent strict
+  MyPy and isolated Ruff D gates in CI and the local static-gate definition;
+  the API, autodoc, runtime guide, and operator commands reflect the complete
+  fixed-period, SLA, and sub-microsecond surface. Executable timing and SLA
+  logic, Rust ABI and numerical kernels, provider and hardware behaviour, and
+  measured benchmark claims are unchanged. The package-root facade now exports
+  the already-public `RealtimeClock` protocol alongside every other member of
+  the module's existing `__all__` contract.
 - 2026-07-14 — Corrected the differentiable docstring ratchet so CI and the
   static gate bypass the repository-wide transitional `D` ignore, enforce the
   NumPy convention plus explicit `D413`, and cover the claim ledger, extracted

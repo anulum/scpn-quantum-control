@@ -19,16 +19,16 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.control.realtime_runtime import (
+    CycleSample,
     MonotonicRealtimeClock,
     RealtimeRunResult,
     RealtimeRuntimeConfig,
     RealtimeSLAConfig,
     RealtimeTickRecord,
+    SubMicrosecondTracker,
     VirtualRealtimeClock,
-    _jitter_percentiles,
     _jitter_percentiles_numpy,
     _normalise_metrics,
-    _sub_us_summary,
     evaluate_realtime_sla,
     run_realtime_control_loop,
     summarise_cycle_samples,
@@ -41,6 +41,16 @@ def test_monotonic_clock_now_and_sleep() -> None:
     start = clock.now()
     clock.sleep_until(start + 5.0e-4)
     assert clock.now() >= start
+
+
+def test_monotonic_clock_returns_immediately_for_past_target() -> None:
+    """A missed wall-clock target must not request an invalid negative sleep."""
+    clock = MonotonicRealtimeClock()
+    past_target = clock.now() - 1.0
+
+    clock.sleep_until(past_target)
+
+    assert clock.now() >= past_target
 
 
 def test_virtual_clock_advance_rejects_negative() -> None:
@@ -78,6 +88,33 @@ def test_control_loop_requires_positive_tick_count() -> None:
     config = RealtimeRuntimeConfig(sample_period_s=0.001, deadline_s=0.001)
     with pytest.raises(ValueError, match="n_ticks must be a positive integer"):
         run_realtime_control_loop(0, lambda _index: {}, config=config)
+
+
+def test_unaligned_loop_reports_start_jitter_without_waiting_for_schedule() -> None:
+    """Caller-driven ticks retain their schedule and expose over-budget jitter."""
+    clock = VirtualRealtimeClock()
+    config = RealtimeRuntimeConfig(
+        sample_period_s=0.010,
+        deadline_s=0.009,
+        jitter_budget_s=0.001,
+        max_missed_deadlines=2,
+        align_to_period=False,
+    )
+    durations = (0.002, 0.004)
+
+    def step(index: int) -> dict[str, float]:
+        clock.advance(durations[index])
+        return {"duration_s": durations[index]}
+
+    result = run_realtime_control_loop(2, step, config=config, clock=clock)
+
+    assert result.completed
+    assert result.missed_deadlines == 1
+    assert result.records[1].scheduled_start_s == pytest.approx(0.010)
+    assert result.records[1].actual_start_s == pytest.approx(0.002)
+    assert result.records[1].latency_s == pytest.approx(0.004)
+    assert result.records[1].jitter_s == pytest.approx(0.008)
+    assert result.records[1].deadline_missed
 
 
 def test_evaluate_sla_requires_records() -> None:
@@ -147,39 +184,88 @@ def test_jitter_percentiles_numpy_empty_is_zero() -> None:
     assert _jitter_percentiles_numpy(np.array([], dtype=np.float64)) == (0.0, 0.0, 0.0, 0.0)
 
 
-def test_jitter_percentiles_falls_back_to_numpy(monkeypatch: pytest.MonkeyPatch) -> None:
-    """When the native percentile kernel errors, the numpy path is used."""
-    jitters = np.array([1.0, 2.0, 3.0], dtype=np.float64)
+def test_public_reports_recover_when_optional_native_kernels_fail(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Public streaming and batch reports survive a rejected native dispatch."""
+    native_present = False
+    calls = {"percentiles": 0, "summary": 0}
     try:
         import scpn_quantum_engine as engine
 
-        if hasattr(engine, "sub_us_jitter_percentiles"):
+        if hasattr(engine, "sub_us_jitter_percentiles") and hasattr(
+            engine, "sub_us_tracker_summary"
+        ):
+            native_present = True
 
-            def _raise(*_args: object, **_kwargs: object) -> object:
-                raise ValueError("forced numpy fallback")
+            def reject_percentiles(*_args: object, **_kwargs: object) -> object:
+                calls["percentiles"] += 1
+                raise ValueError("rejected percentile input")
 
-            monkeypatch.setattr(engine, "sub_us_jitter_percentiles", _raise)
+            def reject_summary(*_args: object, **_kwargs: object) -> object:
+                calls["summary"] += 1
+                raise ValueError("rejected summary input")
+
+            monkeypatch.setattr(engine, "sub_us_jitter_percentiles", reject_percentiles)
+            monkeypatch.setattr(engine, "sub_us_tracker_summary", reject_summary)
     except ImportError:
         pass
-    assert _jitter_percentiles(jitters) == _jitter_percentiles_numpy(jitters)
+
+    tracker = SubMicrosecondTracker(target_rate_hz=1_000_000)
+    samples = (
+        CycleSample(cycle_id=0, start_ns=0, end_ns=400, deadline_ns=500),
+        CycleSample(cycle_id=1, start_ns=1_100, end_ns=1_600, deadline_ns=1_500),
+        CycleSample(cycle_id=2, start_ns=1_900, end_ns=2_500, deadline_ns=2_600),
+    )
+    for sample in samples:
+        tracker.record(sample)
+    streamed = tracker.report()
+    batched = summarise_cycle_samples(
+        [sample.start_ns for sample in samples],
+        [sample.end_ns for sample in samples],
+        [sample.deadline_ns for sample in samples],
+        target_rate_hz=1_000_000,
+    )
+
+    assert streamed == batched
+    assert streamed.jitter_p50_ns == 100.0
+    assert streamed.jitter_p95_ns == 190.0
+    assert streamed.jitter_p99_ns == 198.0
+    assert streamed.jitter_max_ns == 200.0
+    assert streamed.deadline_misses == 1
+    if native_present:
+        assert calls == {"percentiles": 1, "summary": 1}
 
 
-def test_sub_us_summary_falls_back_to_numpy(monkeypatch: pytest.MonkeyPatch) -> None:
-    """When the native summary kernel errors, the numpy path is used."""
-    start = np.array([0, 1000, 2000], dtype=np.int64)
-    end = np.array([500, 1500, 2500], dtype=np.int64)
-    deadline = np.array([1000, 2000, 3000], dtype=np.int64)
+def test_public_reports_use_numpy_when_native_exports_are_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A partial optional engine install must retain public report semantics."""
     try:
         import scpn_quantum_engine as engine
 
-        if hasattr(engine, "sub_us_tracker_summary"):
-
-            def _raise(*_args: object, **_kwargs: object) -> object:
-                raise ValueError("forced numpy fallback")
-
-            monkeypatch.setattr(engine, "sub_us_tracker_summary", _raise)
+        monkeypatch.delattr(engine, "sub_us_jitter_percentiles", raising=False)
+        monkeypatch.delattr(engine, "sub_us_tracker_summary", raising=False)
     except ImportError:
         pass
-    report = summarise_cycle_samples(start, end, deadline, target_rate_hz=1000)
-    assert report.cycles_observed == 3
-    assert _sub_us_summary(start, end, deadline, 1.0e6)[5] == 3
+
+    tracker = SubMicrosecondTracker(target_rate_hz=1_000_000)
+    samples = (
+        CycleSample(cycle_id=0, start_ns=0, end_ns=400, deadline_ns=500),
+        CycleSample(cycle_id=1, start_ns=1_100, end_ns=1_600, deadline_ns=1_500),
+        CycleSample(cycle_id=2, start_ns=1_900, end_ns=2_500, deadline_ns=2_600),
+    )
+    for sample in samples:
+        tracker.record(sample)
+    streamed = tracker.report()
+    batched = summarise_cycle_samples(
+        [sample.start_ns for sample in samples],
+        [sample.end_ns for sample in samples],
+        [sample.deadline_ns for sample in samples],
+        target_rate_hz=1_000_000,
+    )
+
+    assert streamed == batched
+    assert streamed.cycles_observed == 3
+    assert streamed.jitter_p99_ns == 198.0
+    assert streamed.deadline_misses == 1

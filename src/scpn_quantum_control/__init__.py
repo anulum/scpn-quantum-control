@@ -239,6 +239,7 @@ from .control.qpetri import QuantumPetriCampaignReport, QuantumPetriNet, Quantum
 from .control.realtime_runtime import (
     CycleSample,
     MonotonicRealtimeClock,
+    RealtimeClock,
     RealtimeRunResult,
     RealtimeRuntimeConfig,
     RealtimeSLAConfig,
@@ -1172,6 +1173,7 @@ __all__ = [
     "EntropyHealthReport",
     "QRNGStream",
     "MonotonicRealtimeClock",
+    "RealtimeClock",
     "RealtimeRunResult",
     "RealtimeSLAConfig",
     "RealtimeSLAReport",

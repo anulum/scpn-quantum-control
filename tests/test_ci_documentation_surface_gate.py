@@ -15,6 +15,8 @@ from pathlib import Path
 import pytest
 import tomllib
 
+from scpn_quantum_control.control import realtime_runtime
+
 
 def test_ci_lint_job_gates_documentation_surface() -> None:
     """CI must fail if repository documentation-surface findings reappear."""
@@ -50,6 +52,37 @@ def test_ci_lint_job_gates_generated_differentiable_reviewer_evidence() -> None:
     assert "tools/differentiable_reviewer_evidence_catalog.py" in workflow
     assert "tools/differentiable_reviewer_evidence_page.py" in workflow
     assert "tests/test_differentiable_reviewer_evidence_page.py" in workflow
+
+
+def test_ci_lint_job_gates_realtime_runtime_quality_cohort() -> None:
+    """CI must retain strict typing and NumPy docstrings for realtime runtime."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "Type-check realtime runtime quality cohort" in workflow
+    assert "python -m mypy --strict --explicit-package-bases" in workflow
+    assert "Ruff NumPy docstrings for realtime runtime quality cohort" in workflow
+    assert "python -m ruff check --isolated --select D,D413" in workflow
+    assert "src/scpn_quantum_control/control/realtime_runtime.py" in workflow
+    assert "tests/test_realtime_runtime.py" in workflow
+    assert "tests/test_realtime_runtime_branches.py" in workflow
+
+
+def test_realtime_runtime_autodoc_matches_public_exports() -> None:
+    """Autodoc must include every realtime export once and in canonical order."""
+    autodoc = Path("docs/autodoc.md").read_text(encoding="utf-8")
+    block_start = autodoc.index("::: scpn_quantum_control.control.realtime_runtime")
+    block_end = autodoc.index("\n\n", block_start)
+    members_line = next(
+        line.strip()
+        for line in autodoc[block_start:block_end].splitlines()
+        if line.strip().startswith("members:")
+    )
+    members = [
+        item.strip()
+        for item in members_line.removeprefix("members: [").removesuffix("]").split(",")
+    ]
+
+    assert members == realtime_runtime.__all__
 
 
 def test_ci_lint_job_gates_additive_test_typing_policy() -> None:

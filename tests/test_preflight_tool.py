@@ -191,6 +191,40 @@ def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     assert "tests/test_differentiable_reviewer_evidence_page.py" in docstring_cmd
 
 
+def test_static_gates_include_realtime_runtime_quality_ratchets() -> None:
+    """Realtime runtime source and focused tests must stay typed and documented."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+    strict_cmd = gate_map["mypy-strict-realtime-runtime"]
+    docstring_cmd = gate_map["ruff D realtime-runtime quality ratchet"]
+
+    assert "--strict" in strict_cmd
+    assert "--explicit-package-bases" in strict_cmd
+    assert strict_cmd[-3:] == _preflight.REALTIME_RUNTIME_QUALITY_RATCHET
+    assert "--isolated" in docstring_cmd
+    assert "D,D413" in docstring_cmd
+    assert 'lint.pydocstyle.convention = "numpy"' in docstring_cmd
+    assert docstring_cmd[-3:] == _preflight.REALTIME_RUNTIME_QUALITY_RATCHET
+
+
+def test_ci_and_preflight_share_realtime_runtime_quality_cohort() -> None:
+    """CI and local static gates must enforce the same realtime file order."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    step_names = (
+        "Type-check realtime runtime quality cohort",
+        "Ruff NumPy docstrings for realtime runtime quality cohort",
+    )
+
+    for step_name in step_names:
+        block_start = workflow.index(f"      - name: {step_name}")
+        block_end = workflow.index("\n      - name:", block_start + 1)
+        ci_paths = [
+            line.strip()
+            for line in workflow[block_start:block_end].splitlines()
+            if line.strip().startswith(("src/", "tests/"))
+        ]
+        assert ci_paths == _preflight.REALTIME_RUNTIME_QUALITY_RATCHET
+
+
 def test_ci_and_preflight_share_the_docstring_ratchet_cohort() -> None:
     """CI and the local static gate must enforce the same ordered file cohort."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")

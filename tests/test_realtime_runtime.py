@@ -14,6 +14,7 @@ from collections.abc import Mapping
 import pytest
 
 import scpn_quantum_control as scpn
+from scpn_quantum_control.control import realtime_runtime
 from scpn_quantum_control.control.realtime_runtime import (
     RealtimeRuntimeConfig,
     RealtimeSLAConfig,
@@ -26,7 +27,6 @@ from scpn_quantum_control.control.realtime_runtime import (
 
 def test_realtime_control_loop_records_deadline_jitter_and_misses() -> None:
     """Realtime runtime should account for deterministic deadline misses."""
-
     clock = VirtualRealtimeClock()
     config = RealtimeRuntimeConfig(
         sample_period_s=0.01,
@@ -52,7 +52,6 @@ def test_realtime_control_loop_records_deadline_jitter_and_misses() -> None:
 
 def test_realtime_control_loop_fails_when_deadline_budget_is_exceeded() -> None:
     """Realtime runtime should abort instead of hiding repeated deadline misses."""
-
     clock = VirtualRealtimeClock()
     config = RealtimeRuntimeConfig(
         sample_period_s=0.01,
@@ -70,7 +69,6 @@ def test_realtime_control_loop_fails_when_deadline_budget_is_exceeded() -> None:
 
 def test_realtime_sla_accepts_sub_millisecond_loop() -> None:
     """SLA gate should pass when all observed latency stays within <1 ms budget."""
-
     clock = VirtualRealtimeClock()
     config = RealtimeRuntimeConfig(
         sample_period_s=0.0012,
@@ -102,7 +100,6 @@ def test_realtime_sla_accepts_sub_millisecond_loop() -> None:
 
 def test_realtime_sla_rejects_latency_breach() -> None:
     """SLA gate should fail closed on millisecond-class latency overshoot."""
-
     clock = VirtualRealtimeClock()
     config = RealtimeRuntimeConfig(
         sample_period_s=0.0014,
@@ -132,11 +129,7 @@ def test_realtime_sla_rejects_latency_breach() -> None:
         enforce_realtime_sla(result, sla=sla)
 
 
-def test_realtime_runtime_api_exported_from_package_root() -> None:
-    """Realtime runtime surfaces should remain stable package-root imports."""
-
-    assert scpn.RealtimeRuntimeConfig is RealtimeRuntimeConfig
-    assert scpn.RealtimeSLAConfig is RealtimeSLAConfig
-    assert scpn.run_realtime_control_loop is run_realtime_control_loop
-    assert scpn.evaluate_realtime_sla is evaluate_realtime_sla
-    assert scpn.enforce_realtime_sla is enforce_realtime_sla
+@pytest.mark.parametrize("name", realtime_runtime.__all__)
+def test_realtime_runtime_api_exported_from_package_root(name: str) -> None:
+    """Every realtime runtime public symbol must retain its package-root export."""
+    assert getattr(scpn, name) is getattr(realtime_runtime, name)
