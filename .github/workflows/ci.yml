@@ -41,6 +41,30 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
       - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Verify the lock-faithful CI build environment
+        run: |
+          python -m mypy --strict --explicit-package-bases \
+            tools/audit_ci_build_environment.py \
+            tests/test_audit_ci_build_environment.py
+          python -m ruff check \
+            tools/audit_ci_build_environment.py \
+            tests/test_audit_ci_build_environment.py
+          python -m ruff format --check \
+            tools/audit_ci_build_environment.py \
+            tests/test_audit_ci_build_environment.py
+          python -m ruff check --isolated --select D,D413 \
+            --config 'lint.pydocstyle.convention = "numpy"' \
+            tools/audit_ci_build_environment.py \
+            tests/test_audit_ci_build_environment.py
+          python -m bandit -q tools/audit_ci_build_environment.py
+          python -m coverage run --rcfile=/dev/null \
+            --data-file=.coverage.ci-build-environment --branch \
+            -m pytest -q tests/test_audit_ci_build_environment.py
+          python -m coverage report --rcfile=/dev/null \
+            --data-file=.coverage.ci-build-environment --precision=2 \
+            --fail-under=100 \
+            --include='*/audit_ci_build_environment.py'
+          python tools/audit_ci_build_environment.py
       - run: ruff check src/ tests/
       - run: ruff format --check src/ tests/
       - name: Audit documentation surface
@@ -878,6 +902,8 @@ jobs:
   security:
     needs: lint
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6

@@ -14,9 +14,9 @@ amazon-braket-schemas==1.29.1 \
     # via
     #   amazon-braket-default-simulator
     #   amazon-braket-sdk
-amazon-braket-sdk==1.117.3 \
-    --hash=sha256:27fe7b2ea61b981bbed5f002d021b10df90a6aca400b04787b28a8e439ef5333 \
-    --hash=sha256:d1f40023b05fb2a6b3b28fc18f9acbe23aa5ebe14f4879d1d86bfd626e801727
+amazon-braket-sdk==1.121.0 \
+    --hash=sha256:4266c710c12dfd3eca8bcc334ebfff91f38941f778301a99292cec6ea2ced65a \
+    --hash=sha256:cd3fcaaa719fae149400c79a7ba9d5a678fa4e367ce6abdcb90d3ec110a36296
     # via -r requirements-dev.txt
 annotated-types==0.7.0 \
     --hash=sha256:1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53 \
@@ -702,6 +702,10 @@ h11==0.16.0 \
     # via
     #   httpcore
     #   uvicorn
+hatchling==1.31.0 \
+    --hash=sha256:6b48ad4068a482ed7239b3a8215bc55b47aad3345d58dfc94e553c5d2d46211b \
+    --hash=sha256:aac80bec8b6fe35e8480f1c335be8910fa210a0e6f735a139be205dadcacb544
+    # via -r requirements-dev.txt
 httpcore==1.0.9 \
     --hash=sha256:2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55 \
     --hash=sha256:6e34463af53fd2ab5d807f399a9b45ea31c3dfa2276f15a2c3f00afff6e176e8
@@ -1225,9 +1229,9 @@ matplotlib==3.11.0 \
     --hash=sha256:e6b3e64dea5062c570f04358e2711859f3531b459f29516274fbad889079e4f3 \
     --hash=sha256:f857524b442f0f36e641868ce2171aafa88cb0bc0644f4e1d8a5df9b32649fef
     # via -r requirements-dev.txt
-mcp==1.28.0 \
-    --hash=sha256:559d3f9943674cafbe5744c5d3794f3237e8b47f9bbc58e20c0fad680d8487c2 \
-    --hash=sha256:9c1e7cf3a9125557e418ecd4fed8e9adddce81b0dfdae4d6601d700f5beb71a4
+mcp==1.28.1 \
+    --hash=sha256:2726bca5e7193f61c5dde8b12500a6de2d9acf6d1a1c0be9e8c2e706437991df \
+    --hash=sha256:d51e36a5f5644faea4f85ea649bfffa6bc6c26770d42798ad6a3de3d2ba69683
     # via -r requirements-dev.txt
 mdurl==0.1.2 \
     --hash=sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8 \
@@ -1404,9 +1408,9 @@ nest-asyncio==1.6.0 \
     --hash=sha256:6f172d5449aca15afd6c646851f4e31e02c598d553a667e38cafa997cfec55fe \
     --hash=sha256:87af6efd6b5e897c81050477ef65c62e2b2f35d51703cae01aff2905b1852e1c
     # via amazon-braket-sdk
-networkx==3.4.2 \
-    --hash=sha256:307c3669428c5362aab27c8a1260aa8f47c4e91d3891f48be0141738d8d053e1 \
-    --hash=sha256:df5d4365b724cf81b8c6a7312509d0c22386097011ad1abe274afd5e9d3bbc5f
+networkx==3.6.1 \
+    --hash=sha256:26b7c357accc0c8cde558ad486283728b65b6a95d85ee1cd66bafab4c8168509 \
+    --hash=sha256:d47fbf302e7d9cbbb9e2555a0d267983d2aa476bac30e90dfbe5669bd57f3762
     # via
     #   -r requirements.txt
     #   amazon-braket-sdk
@@ -1635,6 +1639,7 @@ packaging==26.2 \
     --hash=sha256:ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661
     # via
     #   build
+    #   hatchling
     #   matplotlib
     #   mkdocs
     #   pip-audit
@@ -1649,6 +1654,7 @@ pathspec==1.1.1 \
     --hash=sha256:17db5ecd524104a120e173814c90367a96a98d07c45b2e10c2f3919fff91bf5a \
     --hash=sha256:a00ce642f577bf7f473932318056212bc4f8bfdf53128c78bbd5af0b9b20b189
     # via
+    #   hatchling
     #   mkdocs
     #   mypy
 pillow==12.3.0 \
@@ -1764,6 +1770,7 @@ pluggy==1.6.0 \
     --hash=sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3 \
     --hash=sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746
     # via
+    #   hatchling
     #   pytest
     #   pytest-cov
 pre-commit==4.5.1 \
@@ -2828,6 +2835,10 @@ tomli-w==1.2.0 \
     --hash=sha256:188306098d013b691fcadc011abd66727d3c414c571bb01b1a174ba8c983cf90 \
     --hash=sha256:2dd14fac5a47c27be9cd4c976af5a12d87fb1f0b4512f81d69cce3b35ae25021
     # via pip-audit
+trove-classifiers==2026.6.1.19 \
+    --hash=sha256:ab4c4ec93cc4a4e7815fa759906e05e6bb3f2fbd92ea0f897288c6a43efd15b3 \
+    --hash=sha256:c5132b4b61a829d11cfbd2d72e97f20a45ed6edb95e45c5efdeb5e00836b2745
+    # via hatchling
 types-defusedxml==0.7.0.20260504 \
     --hash=sha256:2ab2828a3f97111ba1c16cee273ad4124a831fc9198c41bf8368ff6ea48ad300 \
     --hash=sha256:a959e3a0a43b93e464bd625d91ec9193a2703ddc10443bdd627792485fae0b10

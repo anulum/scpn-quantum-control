@@ -20,12 +20,12 @@
       "size_bytes": 750
     },
     {
-      "line_count": 39,
+      "line_count": 40,
       "path": "requirements-dev.txt",
-      "pinned_package_count": 27,
+      "pinned_package_count": 28,
       "role": "Developer verification dependency lock input",
-      "sha256": "527a565ac8952f601308c42de023618ce165891387cd21e4c5201a9d4a0a9add",
-      "size_bytes": 965
+      "sha256": "d5586f0157b889bf8037214df6d2d7500bd0c90ebf9ef05c8e36fe1cf281d231",
+      "size_bytes": 983
     },
     {
       "line_count": 351,
@@ -36,28 +36,28 @@
       "size_bytes": 27183
     },
     {
-      "line_count": 3008,
+      "line_count": 3019,
       "path": "requirements-ci-py311-linux.txt",
-      "pinned_package_count": 156,
+      "pinned_package_count": 158,
       "role": "Python 3.11 Linux CI lockfile",
-      "sha256": "0a14fddb91f379a7bcb62dc012ddfb0516030cbc7cb9c603e6ca0b5fc8559751",
-      "size_bytes": 222549
+      "sha256": "4c7d06efcf6956c6aec2e0f305cf063503993561d7c54c0f0d7d722a3dc3e522",
+      "size_bytes": 223046
     },
     {
-      "line_count": 2963,
+      "line_count": 2974,
       "path": "requirements-ci-py312-linux.txt",
-      "pinned_package_count": 156,
+      "pinned_package_count": 158,
       "role": "Python 3.12 Linux CI lockfile",
-      "sha256": "a7349a53b354d119335d724b1912e3268a6d4d230184dc767a26bb07c3f11b77",
-      "size_bytes": 218724
+      "sha256": "62a83c5e005282fa7e2a71d81779771dfbdd28a59835b35e71f02deb98318562",
+      "size_bytes": 219221
     },
     {
-      "line_count": 3004,
+      "line_count": 3015,
       "path": "requirements-ci-py313-linux.txt",
-      "pinned_package_count": 156,
+      "pinned_package_count": 158,
       "role": "Python 3.13 Linux CI lockfile",
-      "sha256": "f95b8039089e0decc48519d2c80ed0cebcd170770ec1aafbf27ce956551bba7e",
-      "size_bytes": 222474
+      "sha256": "af1cdfe5833ef159f73dbd352ca9e151606ad51d7624b83147e373883ebc9786",
+      "size_bytes": 222971
     },
     {
       "line_count": 54,
@@ -77,6 +77,6 @@
     }
   ],
   "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
-  "python_version": "3.12.3",
+  "python_version": "3.12.13",
   "schema": "scpn_qc_differentiable_external_validation_environment_lock_v1"
 }

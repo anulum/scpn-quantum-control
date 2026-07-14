@@ -486,6 +486,42 @@ python tools/check_differentiable_external_validation.py --write
 CI and local preflight execute the read-only form. This keeps an unrelated
 matrix job from being the first place where manifest drift is discovered.
 
+### Lock-faithful CI build environment
+
+The parent and standalone oscillatools projects both build through
+`hatchling.build`. Their real-wheel regression deliberately invokes
+`python -m build --wheel --no-isolation`: release validation must exercise the
+environment that the CI matrix and reproduction Docker image actually install,
+not an unpinned backend downloaded into a temporary isolation environment.
+
+`requirements-dev.txt` is the authoritative input for that environment. It
+pins the build frontend (`build==1.5.1`) and backend (`hatchling==1.31.0`), and
+all Python 3.11, 3.12, and 3.13 CI locks carry those exact releases, their two
+PyPI-published SHA-256 hashes, and the direct `requirements-dev.txt` ownership
+record. Regenerate each lock with its matching interpreter and the repository's
+current generator version, pip-tools 7.5.3:
+
+```bash
+python3.11 -m piptools compile --allow-unsafe --generate-hashes \
+  --output-file=requirements-ci-py311-linux.txt requirements-dev.txt
+python3.12 -m piptools compile --allow-unsafe --generate-hashes \
+  --output-file=requirements-ci-py312-linux.txt requirements-dev.txt
+python3.13 -m piptools compile --allow-unsafe --generate-hashes \
+  --output-file=requirements-ci-py313-linux.txt requirements-dev.txt
+```
+
+`tools/audit_ci_build_environment.py` fails closed on project metadata, root
+developer-extra, direct-pin, interpreter-provenance, distribution-hash,
+pip-compile-owner, CI-matrix, Docker-install, real-wheel-fixture, installed
+version, backend-import, or security-job import-path drift. The security job
+exposes both source trees through `PYTHONPATH` before its focused pytest
+coverage gate imports the repository-wide `tests/conftest.py`; it does not rely
+on an undeclared editable install. The CI lint job enforces strict MyPy, Ruff,
+NumPy docstrings, Bandit, and exact statement/branch coverage for this audit
+before the three-version test matrix can start. Any intentional build-tool
+upgrade therefore requires one coherent source-pin, three-lock, generated
+external-validation, documentation, and audit-constant refresh.
+
 ### Braket-constrained setuptools advisory waiver
 
 The Python 3.12 security job scans the complete hash-pinned CI lock with
