@@ -978,10 +978,12 @@ jobs:
         run: |
           python -m mypy --strict --explicit-package-bases \
             tools/audit_dependency_security_waiver.py \
+            tools/yaml_mapping_key_audit.py \
             tests/test_audit_dependency_security_waiver.py
           python -m ruff check --isolated --select D,D413 \
             --config 'lint.pydocstyle.convention = "numpy"' \
             tools/audit_dependency_security_waiver.py \
+            tools/yaml_mapping_key_audit.py \
             tests/test_audit_dependency_security_waiver.py
           python -m coverage run --rcfile=/dev/null \
             --data-file=.coverage.dependency-security-waiver --branch \
@@ -989,7 +991,7 @@ jobs:
           python -m coverage report --rcfile=/dev/null \
             --data-file=.coverage.dependency-security-waiver --precision=2 \
             --fail-under=100 \
-            --include='*/audit_dependency_security_waiver.py'
+            --include='*/audit_dependency_security_waiver.py,*/yaml_mapping_key_audit.py'
       - run: python tools/audit_dependency_security_waiver.py
       # Audit the full hash-pinned CI lock — every transitive pin the CI jobs
       # actually install — rather than the top-level dev inputs. `--no-deps`

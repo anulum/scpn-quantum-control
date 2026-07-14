@@ -635,6 +635,19 @@ own a canonical step with exactly one direct run key, preventing a later
 duplicate YAML key from replacing the policy audit while leaving a text-only
 command scan green.
 
+Mapping-key spelling is part of the security boundary. A semantic PyYAML
+compose-tree audit rejects every double-quoted block or flow mapping key that
+contains a YAML escape, including nested sequence-owned, multiline or
+commented explicit (`?`), tagged, anchored, and aliased forms. Source marks
+distinguish escaped keys from escaped values without collapsing duplicate
+mapping nodes. This closes the decode-after-scan forms `"\u0069f"`,
+`"continue-on-\u0065rror"`, and `"d\u0065faults"`, which standard YAML resolves
+to `if`, `continue-on-error`, and `defaults`. Escapes in ordinary scalar values remain
+valid, including multiline sequence values. Malformed YAML fails the semantic
+audit closed. The raw structural pass remains an independent duplicate-key
+and canonical-ownership defence, while workflow, job, and step mapping keys
+must use their canonical unescaped spellings.
+
 Remove the waiver as one dependency-lock change when neither Braket pin owner
 requires `setuptools<83.0.0`, whether the dependency disappears or its allowed
 range admits a fixed release: regenerate all three hashed CI locks, refresh

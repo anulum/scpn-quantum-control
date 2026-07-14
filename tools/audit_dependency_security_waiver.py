@@ -19,13 +19,14 @@ from __future__ import annotations
 
 import argparse
 import ast
+import importlib
 import importlib.metadata
 import re
 import shlex
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import cast
+from typing import Protocol, cast
 
 import tomllib
 from packaging.requirements import InvalidRequirement, Requirement
@@ -76,6 +77,27 @@ _SECURITY_EXECUTION_CONTROL_RE = re.compile(
     r"^\s*(?:-\s+)?(?P<quote>['\"]?)"
     r"(?P<key>if|continue-on-error|shell|defaults|<<)(?P=quote)\s*:"
 )
+
+
+class _YamlMappingKeyAuditModule(Protocol):
+    """Typed dynamic import surface supporting script and package execution."""
+
+    def has_escaped_double_quoted_mapping_key(self, source: str) -> bool:
+        """Inspect mapping-key spelling in one YAML document."""
+
+
+def _load_yaml_mapping_key_audit() -> _YamlMappingKeyAuditModule:
+    """Load the semantic helper in package and direct-script contexts."""
+    try:
+        module = importlib.import_module("tools.yaml_mapping_key_audit")
+    except ModuleNotFoundError as exc:
+        if exc.name not in {"tools", "tools.yaml_mapping_key_audit"}:
+            raise
+        module = importlib.import_module("yaml_mapping_key_audit")
+    return cast(_YamlMappingKeyAuditModule, module)
+
+
+_YAML_KEY_AUDIT = _load_yaml_mapping_key_audit()
 
 
 @dataclass(frozen=True)
@@ -548,6 +570,13 @@ def audit_ci_workflow(workflow_text: str) -> tuple[str, ...]:
         errors.append(
             f"CI pip-audit command must scan the full lock and ignore only {ADVISORY_ID}"
         )
+    try:
+        escaped_mapping_key = _YAML_KEY_AUDIT.has_escaped_double_quoted_mapping_key(workflow_text)
+    except ValueError:
+        errors.append("CI workflow must be valid YAML for semantic mapping-key audit")
+    else:
+        if escaped_mapping_key:
+            errors.append("CI must not encode mapping keys with YAML escapes")
     if any(_TOP_LEVEL_DEFAULTS_RE.match(line) for line in workflow_text.splitlines()):
         errors.append("CI must not override run defaults at workflow scope")
 

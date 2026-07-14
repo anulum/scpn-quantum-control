@@ -9,13 +9,17 @@
 
 from __future__ import annotations
 
+import importlib
 import runpy
 import sys
 from pathlib import Path
+from types import ModuleType
+from typing import cast
 
 import pytest
 
 from tools import audit_dependency_security_waiver as waiver
+from tools import yaml_mapping_key_audit
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -150,6 +154,29 @@ def test_script_entrypoint_executes_the_repository_audit(tmp_path: Path) -> None
         sys.argv = original_argv
 
     assert exc_info.value.code == 0
+
+
+def test_semantic_helper_loader_falls_back_only_for_the_missing_package(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Direct scripts may fall back without masking a nested import defect."""
+
+    def missing_tools_package(name: str) -> ModuleType:
+        if name == "tools.yaml_mapping_key_audit":
+            raise ModuleNotFoundError("missing tools package", name="tools")
+        if name == "yaml_mapping_key_audit":
+            return yaml_mapping_key_audit
+        raise AssertionError(f"unexpected import: {name}")
+
+    monkeypatch.setattr(importlib, "import_module", missing_tools_package)
+    assert waiver._load_yaml_mapping_key_audit() is yaml_mapping_key_audit
+
+    def missing_nested_dependency(name: str) -> ModuleType:
+        raise ModuleNotFoundError("missing nested dependency", name="unexpected_dependency")
+
+    monkeypatch.setattr(importlib, "import_module", missing_nested_dependency)
+    with pytest.raises(ModuleNotFoundError, match="missing nested dependency"):
+        waiver._load_yaml_mapping_key_audit()
 
 
 def test_lock_parser_reads_exact_version_hashes_and_pin_owners() -> None:
@@ -313,14 +340,21 @@ def test_ci_workflow_audit_rejects_nonblocking_execution_controls() -> None:
         "jobs.security must not define execution control: continue-on-error",
     )
 
-    job_controls = _workflow().replace(
-        "  security:\n",
-        "  security:\n"
-        "    if: false\n"
-        "    defaults:\n"
-        "      run:\n"
-        "        shell: bash {0} || true\n"
-        "    <<: *nonblocking\n",
+    job_controls = (
+        _workflow()
+        .replace(
+            "jobs:\n",
+            "nonblocking: &nonblocking {}\njobs:\n",
+        )
+        .replace(
+            "  security:\n",
+            "  security:\n"
+            "    if: false\n"
+            "    defaults:\n"
+            "      run:\n"
+            "        shell: bash {0} || true\n"
+            "    <<: *nonblocking\n",
+        )
     )
     assert waiver.audit_ci_workflow(job_controls) == (
         "jobs.security must not define execution control: if",
@@ -334,7 +368,9 @@ def test_ci_workflow_audit_rejects_nonblocking_execution_controls() -> None:
         "CI must not override run defaults at workflow scope",
     )
 
-    quoted_workflow_defaults = '"defaults" : *nonblocking\n' + _workflow()
+    quoted_workflow_defaults = (
+        'nonblocking: &nonblocking {}\n"defaults" : *nonblocking\n' + _workflow()
+    )
     assert waiver.audit_ci_workflow(quoted_workflow_defaults) == (
         "CI must not override run defaults at workflow scope",
     )
@@ -346,6 +382,152 @@ def test_ci_workflow_audit_rejects_nonblocking_execution_controls() -> None:
     assert waiver.audit_ci_workflow(quoted_condition) == (
         "jobs.security must not define execution control: if",
     )
+
+
+def test_ci_workflow_audit_rejects_escaped_double_quoted_mapping_keys() -> None:
+    """YAML escapes must not hide security controls from the raw audit."""
+    pip_audit_command = _shlex_join(waiver.EXPECTED_PIP_AUDIT_COMMAND)
+    expected = ("CI must not encode mapping keys with YAML escapes",)
+    live_workflow = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    pip_audit_step = f"      - run: {pip_audit_command}\n"
+    assert live_workflow.count(pip_audit_step) == 1
+
+    escaped_condition = live_workflow.replace(
+        pip_audit_step,
+        f'      - "\\u0069f": false\n        run: {pip_audit_command}\n',
+    )
+    escaped_nonblocking = live_workflow.replace(
+        pip_audit_step,
+        f'      - run: {pip_audit_command}\n        "continue-on-\\u0065rror": true\n',
+    )
+    escaped_defaults = '"d\\u0065faults":\n  run:\n    shell: bash {0} || true\n' + live_workflow
+
+    assert waiver.audit_ci_workflow(escaped_condition) == expected
+    assert waiver.audit_ci_workflow(escaped_nonblocking) == expected
+    assert waiver.audit_ci_workflow(escaped_defaults) == expected
+    for noncanonical_key in (
+        '    ? "\\u0069f"\n    : false\n',
+        '    !!str "\\x69f": false\n',
+        '    &control "\\U00000069f": false\n',
+        '    ? "i\\\n      \\u0066"\n    : false\n',
+        '    ? "\\u0069f" # execution control\n    : false\n',
+        '    ? # execution control\n      "\\u0069f"\n    : false\n',
+        '    ? !!str\n      "\\u0069f"\n    : false\n',
+        '    ? &control # execution control\n      "\\u0069f"\n    : false\n',
+        '    nested:\n      - - "\\x69f": false\n',
+    ):
+        escaped_control = _workflow().replace("  security:\n", "  security:\n" + noncanonical_key)
+        assert waiver.audit_ci_workflow(escaped_control) == expected
+
+    escaped_value = _workflow().replace(
+        f"      - run: {waiver.WAIVER_GATE_COMMAND}\n",
+        f'      - name: "waiver \\u0061udit"\n        run: {waiver.WAIVER_GATE_COMMAND}\n',
+    )
+    assert waiver.audit_ci_workflow(escaped_value) == ()
+    escaped_multiline_value = _workflow().replace(
+        "    steps:\n",
+        '    environment: ["ordinary\\\n      \\u0076alue"]\n    steps:\n',
+    )
+    assert waiver.audit_ci_workflow(escaped_multiline_value) == ()
+    assert not yaml_mapping_key_audit.has_escaped_double_quoted_mapping_key("plain: value")
+
+    flow_style_step = live_workflow.replace(
+        pip_audit_step,
+        f'      - {{"\\u0069f": false, run: {pip_audit_command}}}\n',
+    )
+    assert waiver.audit_ci_workflow(flow_style_step) == (
+        f"CI pip-audit command must scan the full lock and ignore only {waiver.ADVISORY_ID}",
+        *expected,
+    )
+
+    malformed = live_workflow.replace("jobs:\n", '"unterminated\\q\njobs:\n')
+    assert "CI workflow must be valid YAML for semantic mapping-key audit" in (
+        waiver.audit_ci_workflow(malformed)
+    )
+
+
+def test_semantic_mapping_key_audit_handles_aliases_and_empty_documents() -> None:
+    """Aliases remain inspectable while empty documents and values stay valid."""
+    assert not yaml_mapping_key_audit.has_escaped_double_quoted_mapping_key("")
+    assert not yaml_mapping_key_audit.has_escaped_double_quoted_mapping_key(
+        'label: "escaped \\u0076alue"\n'
+    )
+    alias_key = 'label: &control "\\u0069f"\n? *control\n: false\n'
+    assert yaml_mapping_key_audit.has_escaped_double_quoted_mapping_key(alias_key)
+    nested_mapping_key = '? {"\\u0069f": false}\n: value\n'
+    assert yaml_mapping_key_audit.has_escaped_double_quoted_mapping_key(nested_mapping_key)
+    recursive_alias = "root: &root [*root]\n"
+    assert not yaml_mapping_key_audit.has_escaped_double_quoted_mapping_key(recursive_alias)
+
+
+def test_semantic_mapping_key_audit_fails_closed_on_invalid_composer_contracts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Unavailable YAML and malformed compose graphs must fail closed."""
+
+    class Composer:
+        def __init__(self, root: object | None) -> None:
+            self.root = root
+
+        def compose(self, _source: str) -> object | None:
+            return self.root
+
+    class Mark:
+        def __init__(self, index: object) -> None:
+            self.index = index
+
+    class Node:
+        def __init__(
+            self,
+            *,
+            kind: object = "scalar",
+            value: object = "safe",
+            style: object = None,
+            start: object = 0,
+            end: object = 0,
+        ) -> None:
+            self.id = kind
+            self.value = value
+            self.style = style
+            self.start_mark = Mark(start)
+            self.end_mark = Mark(end)
+
+    def install(root: object) -> None:
+        monkeypatch.setattr(
+            yaml_mapping_key_audit,
+            "import_module",
+            lambda _name: cast(object, Composer(root)),
+        )
+
+    def missing_yaml(_name: str) -> object:
+        raise ModuleNotFoundError("missing yaml")
+
+    monkeypatch.setattr(
+        yaml_mapping_key_audit,
+        "import_module",
+        missing_yaml,
+    )
+    with pytest.raises(ValueError, match="not valid composable YAML"):
+        yaml_mapping_key_audit.has_escaped_double_quoted_mapping_key("safe: value\n")
+
+    invalid_roots = (
+        Node(kind=None),
+        Node(kind="unknown"),
+        Node(kind="sequence", value=None),
+        Node(kind="mapping", value=None),
+        Node(kind="mapping", value=[Node()]),
+        Node(kind="mapping", value=[(Node(),)]),
+    )
+    for root in invalid_roots:
+        install(root)
+        with pytest.raises(ValueError, match="composed YAML"):
+            yaml_mapping_key_audit.has_escaped_double_quoted_mapping_key("safe: value\n")
+
+    for start, end in ((True, 1), (-1, 1), (1, 0), (0, 99)):
+        key = Node(style='"', start=start, end=end)
+        install(Node(kind="mapping", value=[(key, Node())]))
+        with pytest.raises(ValueError, match="composed YAML"):
+            yaml_mapping_key_audit.has_escaped_double_quoted_mapping_key('"safe": value\n')
 
 
 def test_ci_workflow_audit_rejects_ambiguous_or_replaced_steps() -> None:

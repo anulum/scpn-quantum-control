@@ -63,6 +63,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   statement/branch coverage for the audit before tests run. Runtime APIs,
   quantum execution, numerical kernels, polyglot compute, and benchmark claims
   are unchanged.
+- 2026-07-14 — Closed a second-order YAML decoding bypass in the constrained
+  Braket advisory waiver audit. A duplicate-preserving semantic compose-tree
+  audit now rejects escaped double-quoted block and flow mapping keys across
+  workflow, job, and step ownership, including nested-sequence, multiline or
+  commented explicit-key, tagged, anchored, and aliased forms. Regressions pin
+  the reported escaped spellings of `if`, `continue-on-error`, and top-level
+  `defaults`, while escaped scalar values, including multiline sequence
+  values, remain valid and the duplicate-key raw audit remains intact.
+  Dependency locks, runtime APIs, quantum execution, numerical kernels,
+  polyglot compute, and benchmark claims are unchanged.
 - 2026-07-14 — Closed execution-control bypasses in the constrained Braket
   advisory waiver. The repository audit now requires its policy command and
   `pip-audit` to own distinct, unconditional, blocking `jobs.security` steps
