@@ -35,6 +35,13 @@ _PHASE_DIR = Path(__file__).resolve().parents[1] / "src" / "scpn_quantum_control
 _ROOT_DIR = _PHASE_DIR.parent
 
 
+class _LeanPackage(ModuleType):
+    """Bare package module carrying the loader's explicit shell marker."""
+
+    __path__: list[str]
+    __lean_shell__: bool
+
+
 def _ensure_package(qualified_name: str, directory: Path) -> ModuleType:
     """Return the package for ``qualified_name``, installing a lean shell if absent.
 
@@ -45,8 +52,8 @@ def _ensure_package(qualified_name: str, directory: Path) -> ModuleType:
     existing = sys.modules.get(qualified_name)
     if existing is not None:
         return existing
-    shell = ModuleType(qualified_name)
-    shell.__path__ = [str(directory)]  # type: ignore[attr-defined]
+    shell = _LeanPackage(qualified_name)
+    shell.__path__ = [str(directory)]
     shell.__package__ = qualified_name
     shell.__lean_shell__ = True  # marker: __init__ body deliberately not executed
     sys.modules[qualified_name] = shell

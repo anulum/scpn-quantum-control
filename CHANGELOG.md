@@ -34,6 +34,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   benchmark claims are unchanged.
 
 ### Fixed
+- 2026-07-14 — Made Phase-QNode affinity artefact promotion fail closed. The
+  validator now checks finite ordered timing rows and complete host/dependency
+  schema, recomputes isolation failures from raw metadata, and rejects forged
+  labels, production flags, or failure lists. Observation-mode validation can
+  no longer return `promotion_ready=True` for functional evidence. The lean
+  loader and replayable CLI command path are strictly typed, the source/CLI/test
+  cohort has complete NumPy docstrings, and CI plus the default local gate share
+  a 61-test exact 100% statement/branch owner gate. Six derived ML350 validation
+  records were refreshed without changing their raw timing rows. The 911-line
+  owner remains below the GodFile threshold; Phase-QNode arithmetic, Rust/native
+  kernels, provider/hardware execution, benchmark inputs, timing procedure, and
+  performance claims are unchanged, so no comparison benchmark rerun applies.
 - 2026-07-14 — Closed the four extracted MLIR implementation leaves at exact
   focused quality. Phase-QNode lowering now preserves canonical structured
   metadata for Pauli terms, sparse Hamiltonians, Pauli covariance, and dense

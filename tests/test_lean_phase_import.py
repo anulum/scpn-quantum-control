@@ -46,6 +46,7 @@ load_phase_module = _lean.load_phase_module
 
 
 def test_load_returns_module_with_benchmark_entry_points() -> None:
+    """The lean loader exposes the real affinity benchmark entry points."""
     module = load_phase_module("qnode_affinity_benchmark")
 
     assert callable(module.run_phase_qnode_affinity_benchmark)
@@ -54,6 +55,7 @@ def test_load_returns_module_with_benchmark_entry_points() -> None:
 
 
 def test_loaded_benchmark_runs_and_classifies_non_isolated() -> None:
+    """A leaf loaded without package initializers remains executable."""
     module = load_phase_module("qnode_affinity_benchmark")
 
     result = module.run_phase_qnode_affinity_benchmark(
@@ -70,6 +72,7 @@ def test_loaded_benchmark_runs_and_classifies_non_isolated() -> None:
 
 
 def test_load_is_idempotent() -> None:
+    """Repeated leaf loads reuse the exact cached module object."""
     first = load_phase_module("qnode_affinity_benchmark")
     second = load_phase_module("qnode_affinity_benchmark")
 
@@ -77,6 +80,7 @@ def test_load_is_idempotent() -> None:
 
 
 def test_in_package_relative_import_resolves_to_real_source() -> None:
+    """Sibling imports resolve against the checked-out phase source tree."""
     # The benchmark leaf does ``from .qnode_circuit import ...``; loading it must
     # bind the sibling against the real source tree, not leave it unresolved.
     load_phase_module("qnode_affinity_benchmark")
@@ -88,16 +92,19 @@ def test_in_package_relative_import_resolves_to_real_source() -> None:
 
 @pytest.mark.parametrize("bad", ["a.b", "a/b", "..", "", "qnode affinity", "qnode-affinity"])
 def test_non_identifier_submodule_rejected(bad: str) -> None:
+    """Only bare Python identifiers may reach source-path resolution."""
     with pytest.raises(ValueError, match="bare identifier"):
         load_phase_module(bad)
 
 
 def test_missing_submodule_raises_module_not_found() -> None:
+    """Absent leaf files fail with a precise module-not-found error."""
     with pytest.raises(ModuleNotFoundError, match="no phase module"):
         load_phase_module("module_that_does_not_exist")
 
 
 def test_lean_path_skips_heavy_init_in_fresh_interpreter(tmp_path: Path) -> None:
+    """A fresh process proves that heavy package initializers stay dormant."""
     # A fresh interpreter proves the behaviour the loader exists for: the leaf
     # loads, the package root is a lean shell whose __init__ never ran, and the
     # optional heavy dependency mitiq is never imported.
@@ -141,6 +148,7 @@ def test_lean_path_skips_heavy_init_in_fresh_interpreter(tmp_path: Path) -> None
 
 
 def test_benchmark_cli_runs_end_to_end(tmp_path: Path) -> None:
+    """The benchmark CLI writes complete evidence with a replayable command."""
     output = tmp_path / "affinity.json"
 
     completed = subprocess.run(
@@ -161,6 +169,69 @@ def test_benchmark_cli_runs_end_to_end(tmp_path: Path) -> None:
     )
 
     assert completed.returncode == 0, completed.stderr
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert payload["evidence_label"] == "functional_non_isolated"
+    assert payload["production_benchmark"] is False
+    command = payload["metadata"]["command"]
+    assert "tools/run_phase_qnode_affinity_benchmark.py" in command
+    assert "--repetitions 2" in command
+    assert "--warmups 1" in command
+    assert f"--output {output}" in command
+
+
+def test_benchmark_cli_preserves_recorded_outer_command(tmp_path: Path) -> None:
+    """Orchestrators can retain the exact admitted outer isolation command."""
+    output = tmp_path / "recorded-command.json"
+    recorded_command = "taskset -c 2 chrt -f 1 python tools/run_phase_qnode_affinity_benchmark.py"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(_TOOLS_DIR / "run_phase_qnode_affinity_benchmark.py"),
+            "--repetitions",
+            "1",
+            "--warmups",
+            "0",
+            "--recorded-command",
+            recorded_command,
+            "--output",
+            str(output),
+        ],
+        cwd=str(_REPO_ROOT),
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert payload["metadata"]["command"] == recorded_command
+
+
+def test_benchmark_cli_require_isolated_fails_with_diagnostic_json(tmp_path: Path) -> None:
+    """Strict CLI mode writes diagnostics but exits non-zero when isolation fails."""
+    output = tmp_path / "strict-diagnostic.json"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(_TOOLS_DIR / "run_phase_qnode_affinity_benchmark.py"),
+            "--repetitions",
+            "1",
+            "--warmups",
+            "0",
+            "--require-isolated",
+            "--output",
+            str(output),
+        ],
+        cwd=str(_REPO_ROOT),
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+
+    assert completed.returncode != 0
+    assert "isolated_affinity evidence was required" in completed.stderr
     payload = json.loads(output.read_text(encoding="utf-8"))
     assert payload["evidence_label"] == "functional_non_isolated"
     assert payload["production_benchmark"] is False

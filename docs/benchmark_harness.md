@@ -69,7 +69,9 @@ Differentiable Phase-QNode benchmark evidence uses
 `tools/run_phase_qnode_affinity_benchmark.py` CLI. The raw JSON records command,
 requested CPU affinity, observed process affinity, isolation method, host load
 before and after, CPU/governor or frequency context, dependency versions,
-warmups, repetitions, runner metadata, and timing rows.
+warmups, repetitions, runner metadata, and timing rows. The CLI's default
+command field includes every run argument and shell-quotes paths; orchestrated
+runs can pass `--recorded-command` to retain outer controls such as `chrt`.
 
 Rows are labelled `isolated_affinity` only when reserved CPU affinity, low host
 load, matching observed process affinity, governor or frequency metadata, fixed
@@ -85,6 +87,10 @@ runner configuration on the reserved Linux x64 benchmark host.
 `validate_phase_qnode_affinity_artifact(...)` is the attachment gate for those
 raw JSON files: it hashes the artefact into a deterministic
 `phase-qnode-affinity:<sha>` benchmark ID, counts raw timing rows, checks
-host-isolation metadata, and reports `promotion_ready=True` only for
-`isolated_affinity` artefacts with `production_benchmark=True` and no recorded
-isolation failures.
+finite ordered timing values and complete host/dependency metadata, recomputes
+the isolation policy from those untrusted fields, and rejects disagreements
+between the recomputed label, production flag, and recorded failures.
+`promotion_ready=True` always requires internally consistent
+`isolated_affinity` evidence. Calling the validator with
+`require_isolated=False` changes only the reported requirement set for
+observation evidence; it can never promote `functional_non_isolated` data.

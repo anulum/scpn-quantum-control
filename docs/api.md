@@ -495,6 +495,9 @@ unavailable. The audit remains non-promotional until successful native Enzyme
 execution evidence, MLIR/LLVM correctness evidence, compiler-AD breadth
 evidence derived from a raw `EnzymeMLIRCompilerADBreadthArtifact`, and a
 promotion-ready `EnzymeMLIRBenchmarkAttachment` are attached together.
+The affinity validator parses finite timing and host metadata, recomputes the
+isolation verdict, and rejects recorded label, production-flag, or failure-list
+contradictions; observation-mode validation never grants promotion readiness.
 The 2026-06-16 committed evidence includes a bounded native LLVM Enzyme scalar
 probe; it is not arbitrary-program AD, provider execution, hardware execution,
 or performance evidence.

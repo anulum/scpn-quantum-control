@@ -93,6 +93,39 @@ Rust/NumPy numerical parity and batch-throughput contract. It is intentionally
 outside the strict three-file ratchet until its pre-existing typing debt is
 migrated as its own owner.
 
+## Phase-QNode affinity quality ratchet
+
+The benchmark evidence source, lean loader, CLI, and their two public-path test
+owners form one ordered five-file quality cohort. CI and the local gate
+definition enforce strict typing and NumPy docstrings over exactly those files:
+
+```bash
+quality_paths=(
+  src/scpn_quantum_control/phase/qnode_affinity_benchmark.py
+  tools/lean_phase_import.py
+  tools/run_phase_qnode_affinity_benchmark.py
+  tests/test_phase_qnode_affinity_benchmark.py
+  tests/test_lean_phase_import.py
+)
+python -m mypy --strict --explicit-package-bases "${quality_paths[@]}"
+python -m ruff check --isolated --select D,D413 \
+  --config 'lint.pydocstyle.convention = "numpy"' "${quality_paths[@]}"
+```
+
+The required `phase-qnode-affinity-quality` CI job and the default local gate
+definition run the same two test owners with isolated branch data, then report
+only `qnode_affinity_benchmark.py` at an exact 100% threshold:
+
+```bash
+python -m coverage run --rcfile=/dev/null \
+  --data-file=.coverage.phase-qnode-affinity --branch \
+  -m pytest -q tests/test_phase_qnode_affinity_benchmark.py \
+  tests/test_lean_phase_import.py
+python -m coverage report --rcfile=/dev/null \
+  --data-file=.coverage.phase-qnode-affinity --precision=2 \
+  --fail-under=100 --include='*/qnode_affinity_benchmark.py'
+```
+
 ## MLIR leaf quality ratchet
 
 The four implementation leaves behind `compiler.mlir` have an exact focused

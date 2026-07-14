@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import platform
 import sys
@@ -19,7 +20,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from importlib import metadata
 from pathlib import Path
-from typing import Literal, TypeAlias, cast
+from typing import Literal, NoReturn, TypeAlias, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -37,7 +38,30 @@ EvidenceLabel = Literal["isolated_affinity", "functional_non_isolated"]
 
 @dataclass(frozen=True)
 class PhaseQNodeAffinityBenchmarkMetadata:
-    """Benchmark command and host metadata."""
+    """Benchmark command, host, dependency, and isolation metadata.
+
+    Parameters
+    ----------
+    command:
+        Shell-escaped command capable of reproducing the measured run.
+    affinity_cpus, observed_affinity_cpus:
+        Requested and operating-system-observed CPU-index tuples.
+    isolation_method:
+        Declared process-isolation mechanism.
+    host_load_before, host_load_after:
+        One-, five-, and fifteen-minute host load samples.
+    cpu_model, governor, frequency_mhz:
+        Captured processor identity, frequency policy, and frequency samples.
+    python_version, dependency_versions:
+        Python and benchmark dependency versions.
+    runner_environment, runner_labels:
+        CI runner classification and labels, empty for a local process.
+    repetitions, warmups:
+        Recorded sample and discarded warm-up counts.
+    heavy_concurrent_jobs:
+        Whether the operator reported competing heavy workloads.
+
+    """
 
     command: str
     affinity_cpus: tuple[int, ...]
@@ -57,7 +81,7 @@ class PhaseQNodeAffinityBenchmarkMetadata:
     heavy_concurrent_jobs: bool
 
     def to_dict(self) -> dict[str, object]:
-        """Return JSON-ready benchmark metadata."""
+        """Return a JSON-ready copy of the captured metadata."""
         return {
             "command": self.command,
             "affinity_cpus": list(self.affinity_cpus),
@@ -80,7 +104,24 @@ class PhaseQNodeAffinityBenchmarkMetadata:
 
 @dataclass(frozen=True)
 class PhaseQNodeAffinityBenchmarkResult:
-    """Raw timing rows and isolation classification."""
+    """Raw timing rows and their isolation classification.
+
+    Parameters
+    ----------
+    evidence_label:
+        Isolation-policy classification derived from measured metadata.
+    production_benchmark:
+        Whether the run is eligible for production benchmark claims.
+    metadata:
+        Reproduction and host-isolation metadata.
+    raw_timing_rows:
+        Per-repetition timing, value, and gradient-norm records.
+    isolation_failures:
+        Ordered policy failures that blocked isolated classification.
+    claim_boundary:
+        Human-readable limit on permitted benchmark claims.
+
+    """
 
     evidence_label: EvidenceLabel
     production_benchmark: bool
@@ -90,7 +131,7 @@ class PhaseQNodeAffinityBenchmarkResult:
     claim_boundary: str
 
     def to_dict(self) -> dict[str, object]:
-        """Return JSON-ready benchmark evidence."""
+        """Return the complete benchmark evidence as JSON-ready values."""
         return {
             "evidence_label": self.evidence_label,
             "production_benchmark": self.production_benchmark,
@@ -103,7 +144,25 @@ class PhaseQNodeAffinityBenchmarkResult:
 
 @dataclass(frozen=True)
 class PhaseQNodeAffinityArtifactValidation:
-    """Fail-closed attachment verdict for a Phase-QNode benchmark JSON file."""
+    """Fail-closed attachment verdict for one benchmark JSON artefact.
+
+    Parameters
+    ----------
+    artifact_path, artifact_sha256, benchmark_artifact_id:
+        Source path, full content digest, and deterministic attachment ID.
+    evidence_label, production_benchmark:
+        Untrusted raw classification fields retained for audit output.
+    promotion_ready:
+        Whether strict isolated-promotion requirements pass. Observation-only
+        validation never changes this meaning.
+    raw_timing_row_count:
+        Number of timing rows found in the raw JSON list.
+    missing_requirements:
+        Requested-mode schema, consistency, and isolation-policy failures.
+    claim_boundary:
+        Raw claim boundary or a conservative fallback when it is invalid.
+
+    """
 
     artifact_path: str
     artifact_sha256: str
@@ -143,7 +202,30 @@ def classify_affinity_evidence(
     runner_environment: str = "",
     runner_labels: tuple[str, ...] = (),
 ) -> EvidenceLabel:
-    """Classify benchmark evidence under the core-isolation policy."""
+    """Classify benchmark evidence under the core-isolation policy.
+
+    Parameters
+    ----------
+    reserved_cpus, observed_affinity_cpus:
+        Requested and operating-system-observed CPU indexes.
+    host_load_before, host_load_after:
+        Host load samples captured around the benchmark loop.
+    command:
+        Reproduction command carrying an admitted isolation marker.
+    governor, frequency_mhz:
+        CPU frequency-policy evidence.
+    heavy_concurrent_jobs:
+        Whether competing workloads were present.
+    runner_environment, runner_labels:
+        Optional GitHub Actions runner evidence.
+
+    Returns
+    -------
+    EvidenceLabel
+        ``isolated_affinity`` only when every policy check passes; otherwise
+        ``functional_non_isolated``.
+
+    """
     failures = _isolation_failures(
         reserved_cpus=reserved_cpus,
         observed_affinity_cpus=observed_affinity_cpus,
@@ -169,7 +251,32 @@ def run_phase_qnode_affinity_benchmark(
     command: str | None = None,
     heavy_concurrent_jobs: bool = False,
 ) -> PhaseQNodeAffinityBenchmarkResult:
-    """Run a small local Phase-QNode timing loop with reproducibility metadata."""
+    """Run a bounded Phase-QNode timing loop with reproduction metadata.
+
+    Parameters
+    ----------
+    repetitions, warmups:
+        Recorded repetitions and discarded warm-up iterations.
+    reserved_cpus:
+        CPU indexes reserved by the outer runner, or ``None`` to observe only.
+    host_load_before, host_load_after:
+        Optional externally captured load samples for deterministic replay.
+    command:
+        Reproduction command, or ``None`` for the module-level default.
+    heavy_concurrent_jobs:
+        Operator declaration of competing heavy workloads.
+
+    Returns
+    -------
+    PhaseQNodeAffinityBenchmarkResult
+        Raw timing rows, measured host metadata, and isolation verdict.
+
+    Raises
+    ------
+    ValueError
+        If counts or reserved CPU indexes violate the input contract.
+
+    """
     if repetitions < 1:
         raise ValueError("repetitions must be positive")
     if warmups < 0:
@@ -262,43 +369,132 @@ def validate_phase_qnode_affinity_artifact(
 ) -> PhaseQNodeAffinityArtifactValidation:
     """Validate raw Phase-QNode benchmark JSON before promotion attachment.
 
-    The validator does not upgrade local evidence. It only reports
-    ``promotion_ready=True`` when the committed raw JSON already carries the
-    isolated label, production flag, timing rows, host metadata, and no
-    isolation failures required by the benchmark runner contract.
+    The validator does not trust or upgrade recorded labels. It parses all
+    numerical and host metadata, recomputes the isolation policy, and compares
+    the result with recorded failures. ``promotion_ready`` always means strict
+    isolated promotion; ``require_isolated=False`` only makes
+    ``missing_requirements`` report observation-mode schema consistency.
+
+    Parameters
+    ----------
+    artifact_path:
+        UTF-8 JSON artefact to hash and validate.
+    require_isolated:
+        Whether ``missing_requirements`` includes isolated-promotion failures.
+
+    Returns
+    -------
+    PhaseQNodeAffinityArtifactValidation
+        Content-addressed, fail-closed validation evidence.
+
+    Raises
+    ------
+    OSError
+        If the artefact cannot be read.
+    ValueError
+        If the artefact is not UTF-8 JSON with an object at its root.
+
     """
     path = Path(artifact_path)
     artifact_bytes = path.read_bytes()
     artifact_sha256 = hashlib.sha256(artifact_bytes).hexdigest()
     benchmark_artifact_id = f"phase-qnode-affinity:{artifact_sha256[:16]}"
     payload = _json_object_from_bytes(artifact_bytes, path)
-    metadata_payload = _mapping_value(payload, "metadata")
-    timing_rows = _list_value(payload, "raw_timing_rows")
-    isolation_failures = _list_value(payload, "isolation_failures")
+    observational_requirements: list[str] = []
 
-    evidence_label = _string_value(payload, "evidence_label")
-    production_benchmark = _bool_value(payload, "production_benchmark")
-    raw_timing_row_count = len(timing_rows)
-    missing_requirements: list[str] = []
+    evidence_label_value = payload.get("evidence_label")
+    evidence_label = evidence_label_value if isinstance(evidence_label_value, str) else ""
+    if evidence_label not in ("isolated_affinity", "functional_non_isolated"):
+        observational_requirements.append("recognized evidence label")
 
-    if require_isolated and evidence_label != "isolated_affinity":
-        missing_requirements.append("isolated_affinity evidence label")
-    if require_isolated and not production_benchmark:
-        missing_requirements.append("production benchmark flag")
-    if raw_timing_row_count < 1:
-        missing_requirements.append("raw timing rows")
-    if require_isolated and isolation_failures:
-        missing_requirements.append("empty isolation failures")
+    production_value = payload.get("production_benchmark")
+    production_benchmark = production_value if isinstance(production_value, bool) else False
+    if not isinstance(production_value, bool):
+        observational_requirements.append("boolean production benchmark flag")
 
-    missing_requirements.extend(
-        _missing_metadata_requirements(metadata_payload, require_isolated=require_isolated)
+    isolation_failures = _string_sequence(payload.get("isolation_failures"))
+    if isolation_failures is None:
+        isolation_failures = ()
+        observational_requirements.append("string isolation failures")
+
+    raw_timing_row_count, timing_requirements = _timing_row_requirements(
+        payload.get("raw_timing_rows")
     )
-    promotion_ready = not missing_requirements
-    claim_boundary = _string_value(payload, "claim_boundary") or (
-        "Phase-QNode affinity benchmark artefacts are promotional only when "
-        "validated as isolated_affinity with raw timing rows and complete host "
-        "isolation metadata."
+    observational_requirements.extend(timing_requirements)
+
+    metadata_payload = payload.get("metadata")
+    metadata, metadata_requirements = _parse_artifact_metadata(metadata_payload)
+    observational_requirements.extend(metadata_requirements)
+    if metadata is not None and raw_timing_row_count != metadata.repetitions:
+        observational_requirements.append("raw timing row count matching repetitions")
+
+    claim_boundary_value = payload.get("claim_boundary")
+    claim_boundary = claim_boundary_value.strip() if isinstance(claim_boundary_value, str) else ""
+    if not claim_boundary:
+        observational_requirements.append("non-empty claim boundary")
+        claim_boundary = (
+            "Phase-QNode affinity benchmark artefacts are promotional only when "
+            "validated as isolated_affinity with raw timing rows and complete host "
+            "isolation metadata."
+        )
+
+    recomputed_failures: tuple[str, ...] = ()
+    if metadata is not None:
+        recomputed_failures = tuple(
+            _isolation_failures(
+                reserved_cpus=metadata.affinity_cpus,
+                observed_affinity_cpus=metadata.observed_affinity_cpus,
+                host_load_before=metadata.host_load_before,
+                host_load_after=metadata.host_load_after,
+                command=metadata.command,
+                governor=metadata.governor,
+                frequency_mhz=metadata.frequency_mhz,
+                heavy_concurrent_jobs=metadata.heavy_concurrent_jobs,
+                runner_environment=metadata.runner_environment,
+                runner_labels=metadata.runner_labels,
+                github_actions=bool(metadata.runner_environment or metadata.runner_labels),
+            )
+        )
+        expected_label = (
+            "isolated_affinity" if not recomputed_failures else "functional_non_isolated"
+        )
+        if evidence_label in ("isolated_affinity", "functional_non_isolated") and (
+            evidence_label != expected_label
+        ):
+            observational_requirements.append(
+                "evidence label consistent with recomputed isolation policy"
+            )
+        if isolation_failures != recomputed_failures:
+            observational_requirements.append(
+                "recorded isolation failures match recomputed policy"
+            )
+
+    if (
+        isinstance(production_value, bool)
+        and evidence_label in ("isolated_affinity", "functional_non_isolated")
+        and production_benchmark != (evidence_label == "isolated_affinity")
+    ):
+        observational_requirements.append(
+            "production benchmark flag consistent with evidence label"
+        )
+
+    observational_requirements = list(_deduplicated_requirements(observational_requirements))
+    promotion_requirements = list(observational_requirements)
+    if evidence_label != "isolated_affinity":
+        promotion_requirements.append("isolated_affinity evidence label")
+    if not production_benchmark:
+        promotion_requirements.append("production benchmark flag")
+    if isolation_failures:
+        promotion_requirements.append("empty isolation failures")
+    promotion_requirements.extend(
+        f"isolation policy: {failure}" for failure in recomputed_failures
     )
+    promotion_requirements = list(_deduplicated_requirements(promotion_requirements))
+
+    missing_requirements = (
+        promotion_requirements if require_isolated else observational_requirements
+    )
+    promotion_ready = not promotion_requirements
     return PhaseQNodeAffinityArtifactValidation(
         artifact_path=str(path),
         artifact_sha256=artifact_sha256,
@@ -324,9 +520,13 @@ def _isolation_failures(
     heavy_concurrent_jobs: bool,
     runner_environment: str = "",
     runner_labels: tuple[str, ...] = (),
+    github_actions: bool | None = None,
 ) -> list[str]:
     failures: list[str] = []
-    if os.environ.get("GITHUB_ACTIONS") == "true" and (
+    running_on_github = (
+        os.environ.get("GITHUB_ACTIONS") == "true" if github_actions is None else github_actions
+    )
+    if running_on_github and (
         runner_environment != "self-hosted" or "isolated-benchmark" not in runner_labels
     ):
         failures.append("remote self-hosted isolated-benchmark runner")
@@ -351,63 +551,282 @@ def _isolation_failures(
 
 def _json_object_from_bytes(raw_payload: bytes, path: Path) -> Mapping[str, object]:
     try:
-        payload = json.loads(raw_payload.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        payload = json.loads(
+            raw_payload.decode("utf-8"),
+            object_pairs_hook=_unique_json_object,
+            parse_constant=_reject_json_constant,
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
         raise ValueError(f"{path} is not valid UTF-8 JSON") from exc
     if not isinstance(payload, dict):
         raise ValueError(f"{path} must contain a JSON object")
     return cast(Mapping[str, object], payload)
 
 
-def _mapping_value(payload: Mapping[str, object], key: str) -> Mapping[str, object]:
-    value = payload.get(key)
-    if isinstance(value, dict):
-        return cast(Mapping[str, object], value)
-    return {}
+def _unique_json_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    """Build one JSON object while rejecting duplicate field names."""
+    payload: dict[str, object] = {}
+    for key, value in pairs:
+        if key in payload:
+            raise ValueError(f"duplicate JSON object key: {key}")
+        payload[key] = value
+    return payload
 
 
-def _list_value(payload: Mapping[str, object], key: str) -> tuple[object, ...]:
-    value = payload.get(key)
-    if isinstance(value, list):
-        return tuple(value)
-    return ()
+def _reject_json_constant(value: str) -> NoReturn:
+    """Reject non-standard JSON constants such as NaN and Infinity."""
+    raise ValueError(f"non-finite JSON constant: {value}")
 
 
-def _string_value(payload: Mapping[str, object], key: str) -> str:
-    value = payload.get(key)
-    return value if isinstance(value, str) else ""
+@dataclass(frozen=True)
+class _ParsedAffinityMetadata:
+    """Typed metadata recovered from an untrusted benchmark JSON object."""
+
+    command: str
+    affinity_cpus: tuple[int, ...]
+    observed_affinity_cpus: tuple[int, ...]
+    isolation_method: str
+    host_load_before: tuple[float, float, float]
+    host_load_after: tuple[float, float, float]
+    cpu_model: str
+    governor: str
+    frequency_mhz: tuple[float, ...]
+    python_version: str
+    dependency_versions: dict[str, str]
+    runner_environment: str
+    runner_labels: tuple[str, ...]
+    repetitions: int
+    warmups: int
+    heavy_concurrent_jobs: bool
 
 
-def _bool_value(payload: Mapping[str, object], key: str) -> bool:
-    value = payload.get(key)
-    return value if isinstance(value, bool) else False
+def _parse_artifact_metadata(
+    value: object,
+) -> tuple[_ParsedAffinityMetadata | None, tuple[str, ...]]:
+    """Return typed benchmark metadata plus all violated schema requirements."""
+    if not isinstance(value, dict):
+        return None, ("metadata object",)
+    payload = cast(Mapping[str, object], value)
+    requirements: list[str] = []
 
+    command = _non_empty_string(payload.get("command"))
+    if command is None:
+        requirements.append("fixed command metadata")
 
-def _missing_metadata_requirements(
-    metadata_payload: Mapping[str, object],
-    *,
-    require_isolated: bool,
-) -> tuple[str, ...]:
-    missing: list[str] = []
-    if not _string_value(metadata_payload, "command"):
-        missing.append("fixed command metadata")
-    if not _list_value(metadata_payload, "affinity_cpus"):
-        missing.append("reserved CPU affinity metadata")
-    if not _list_value(metadata_payload, "observed_affinity_cpus"):
-        missing.append("observed CPU affinity metadata")
-    if len(_list_value(metadata_payload, "host_load_before")) != 3:
-        missing.append("host load before metadata")
-    if len(_list_value(metadata_payload, "host_load_after")) != 3:
-        missing.append("host load after metadata")
+    affinity_cpus = _cpu_sequence(payload.get("affinity_cpus"))
+    if affinity_cpus is None:
+        requirements.append("reserved CPU affinity metadata")
+    observed_affinity_cpus = _cpu_sequence(payload.get("observed_affinity_cpus"))
+    if observed_affinity_cpus is None:
+        requirements.append("observed CPU affinity metadata")
     if (
-        require_isolated
-        and not _string_value(metadata_payload, "governor")
-        and not _list_value(metadata_payload, "frequency_mhz")
+        affinity_cpus is not None
+        and observed_affinity_cpus is not None
+        and affinity_cpus != observed_affinity_cpus
     ):
-        missing.append("governor or frequency metadata")
-    if _bool_value(metadata_payload, "heavy_concurrent_jobs"):
-        missing.append("no heavy concurrent jobs")
-    return tuple(missing)
+        requirements.append("matching observed CPU affinity metadata")
+
+    isolation_method = _non_empty_string(payload.get("isolation_method"))
+    if isolation_method not in {"taskset", "chrt", "not_declared"}:
+        requirements.append("recognized isolation method metadata")
+    if (
+        command is not None
+        and isolation_method in {"taskset", "chrt", "not_declared"}
+        and isolation_method != _isolation_method(command)
+    ):
+        requirements.append("isolation method matching command metadata")
+
+    host_load_before = _fixed_float_sequence(payload.get("host_load_before"), length=3)
+    if host_load_before is None or any(load < 0.0 for load in host_load_before):
+        requirements.append("host load before metadata")
+    host_load_after = _fixed_float_sequence(payload.get("host_load_after"), length=3)
+    if host_load_after is None or any(load < 0.0 for load in host_load_after):
+        requirements.append("host load after metadata")
+
+    cpu_model = _non_empty_string(payload.get("cpu_model"))
+    if cpu_model is None:
+        requirements.append("CPU model metadata")
+    governor = _non_empty_string(payload.get("governor"))
+    if governor is None:
+        requirements.append("governor metadata")
+    frequency_mhz = _float_sequence(payload.get("frequency_mhz"), allow_empty=True)
+    if frequency_mhz is None or any(frequency <= 0.0 for frequency in frequency_mhz):
+        requirements.append("positive CPU frequency metadata")
+    if (governor is None or governor == "unknown") and not frequency_mhz:
+        requirements.append("governor or frequency metadata")
+
+    python_version = _non_empty_string(payload.get("python_version"))
+    if python_version is None:
+        requirements.append("Python version metadata")
+    dependency_versions = _dependency_version_mapping(payload.get("dependency_versions"))
+    if dependency_versions is None:
+        requirements.append("dependency version metadata")
+
+    runner_environment_value = payload.get("runner_environment")
+    runner_environment = (
+        runner_environment_value.strip() if isinstance(runner_environment_value, str) else None
+    )
+    if runner_environment is None:
+        requirements.append("runner environment metadata")
+    runner_labels = _string_sequence(payload.get("runner_labels"))
+    if runner_labels is None or len(set(runner_labels)) != len(runner_labels):
+        requirements.append("runner label metadata")
+
+    repetitions = _integer_at_least(payload.get("repetitions"), minimum=1)
+    if repetitions is None:
+        requirements.append("positive repetition count")
+    warmups = _integer_at_least(payload.get("warmups"), minimum=0)
+    if warmups is None:
+        requirements.append("non-negative warmup count")
+    heavy_jobs_value = payload.get("heavy_concurrent_jobs")
+    heavy_concurrent_jobs = heavy_jobs_value if isinstance(heavy_jobs_value, bool) else None
+    if heavy_concurrent_jobs is None:
+        requirements.append("boolean heavy concurrent jobs metadata")
+
+    if requirements:
+        return None, _deduplicated_requirements(requirements)
+    return (
+        _ParsedAffinityMetadata(
+            command=cast(str, command),
+            affinity_cpus=cast(tuple[int, ...], affinity_cpus),
+            observed_affinity_cpus=cast(tuple[int, ...], observed_affinity_cpus),
+            isolation_method=cast(str, isolation_method),
+            host_load_before=cast(tuple[float, float, float], host_load_before),
+            host_load_after=cast(tuple[float, float, float], host_load_after),
+            cpu_model=cast(str, cpu_model),
+            governor=cast(str, governor),
+            frequency_mhz=cast(tuple[float, ...], frequency_mhz),
+            python_version=cast(str, python_version),
+            dependency_versions=cast(dict[str, str], dependency_versions),
+            runner_environment=cast(str, runner_environment),
+            runner_labels=cast(tuple[str, ...], runner_labels),
+            repetitions=cast(int, repetitions),
+            warmups=cast(int, warmups),
+            heavy_concurrent_jobs=cast(bool, heavy_concurrent_jobs),
+        ),
+        (),
+    )
+
+
+def _timing_row_requirements(value: object) -> tuple[int, tuple[str, ...]]:
+    """Return raw row count plus schema and numerical-integrity failures."""
+    if not isinstance(value, list):
+        return 0, ("raw timing row list", "raw timing rows")
+    requirements: list[str] = []
+    if not value:
+        requirements.append("raw timing rows")
+    for index, row_value in enumerate(value):
+        if not isinstance(row_value, dict):
+            requirements.append("well-formed raw timing rows")
+            continue
+        row = cast(Mapping[str, object], row_value)
+        iteration = _finite_float(row.get("iteration"))
+        seconds = _finite_float(row.get("seconds"))
+        measured_value = _finite_float(row.get("value"))
+        gradient_norm = _finite_float(row.get("gradient_norm"))
+        if (
+            iteration != float(index)
+            or seconds is None
+            or seconds < 0.0
+            or measured_value is None
+            or gradient_norm is None
+            or gradient_norm < 0.0
+        ):
+            requirements.append("well-formed raw timing rows")
+    return len(value), _deduplicated_requirements(requirements)
+
+
+def _non_empty_string(value: object) -> str | None:
+    """Return a stripped non-empty string, otherwise ``None``."""
+    if not isinstance(value, str):
+        return None
+    stripped = value.strip()
+    return stripped or None
+
+
+def _string_sequence(value: object) -> tuple[str, ...] | None:
+    """Return a tuple of non-empty strings from a JSON list."""
+    if not isinstance(value, list):
+        return None
+    strings: list[str] = []
+    for item in value:
+        parsed = _non_empty_string(item)
+        if parsed is None:
+            return None
+        strings.append(parsed)
+    return tuple(strings)
+
+
+def _cpu_sequence(value: object) -> tuple[int, ...] | None:
+    """Return a sorted, unique, non-negative CPU-index tuple."""
+    if not isinstance(value, list) or not value:
+        return None
+    if any(not isinstance(item, int) or isinstance(item, bool) or item < 0 for item in value):
+        return None
+    cpus = tuple(cast(list[int], value))
+    if cpus != tuple(sorted(set(cpus))):
+        return None
+    return cpus
+
+
+def _finite_float(value: object) -> float | None:
+    """Return a finite JSON number while rejecting booleans."""
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        return None
+    try:
+        result = float(value)
+    except OverflowError:
+        return None
+    return result if math.isfinite(result) else None
+
+
+def _float_sequence(value: object, *, allow_empty: bool) -> tuple[float, ...] | None:
+    """Return finite floats from a JSON list under the requested empty policy."""
+    if not isinstance(value, list) or (not allow_empty and not value):
+        return None
+    parsed = tuple(_finite_float(item) for item in value)
+    if any(item is None for item in parsed):
+        return None
+    return tuple(cast(tuple[float, ...], parsed))
+
+
+def _fixed_float_sequence(
+    value: object,
+    *,
+    length: int,
+) -> tuple[float, float, float] | None:
+    """Return one three-value finite sequence used by load averages."""
+    parsed = _float_sequence(value, allow_empty=False)
+    if parsed is None or len(parsed) != length or length != 3:
+        return None
+    return (parsed[0], parsed[1], parsed[2])
+
+
+def _integer_at_least(value: object, *, minimum: int) -> int | None:
+    """Return a JSON integer at or above ``minimum`` while rejecting booleans."""
+    if not isinstance(value, int) or isinstance(value, bool) or value < minimum:
+        return None
+    return value
+
+
+def _dependency_version_mapping(value: object) -> dict[str, str] | None:
+    """Return required non-empty dependency-version strings."""
+    if not isinstance(value, dict):
+        return None
+    versions: dict[str, str] = {}
+    for key, item in cast(dict[str, object], value).items():
+        parsed = _non_empty_string(item)
+        if not key.strip() or parsed is None:
+            return None
+        versions[key.strip()] = parsed
+    if not {"python", "numpy"}.issubset(versions):
+        return None
+    return versions
+
+
+def _deduplicated_requirements(requirements: list[str]) -> tuple[str, ...]:
+    """Return first-seen validation requirements without duplicates."""
+    return tuple(dict.fromkeys(requirements))
 
 
 def _load_average() -> tuple[float, float, float]:

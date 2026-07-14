@@ -241,6 +241,22 @@ def test_static_gates_include_whole_program_trace_value_quality_ratchets() -> No
     assert docstring_cmd[-len(cohort) :] == cohort
 
 
+def test_static_gates_include_phase_qnode_affinity_quality_ratchets() -> None:
+    """Affinity source, CLI tools, and tests must stay typed and documented."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+    strict_cmd = gate_map["mypy-strict-phase-qnode-affinity"]
+    docstring_cmd = gate_map["ruff D phase-qnode-affinity quality ratchet"]
+    cohort = _preflight.PHASE_QNODE_AFFINITY_QUALITY_RATCHET
+
+    assert "--strict" in strict_cmd
+    assert "--explicit-package-bases" in strict_cmd
+    assert strict_cmd[-len(cohort) :] == cohort
+    assert "--isolated" in docstring_cmd
+    assert "D,D413" in docstring_cmd
+    assert 'lint.pydocstyle.convention = "numpy"' in docstring_cmd
+    assert docstring_cmd[-len(cohort) :] == cohort
+
+
 def test_static_gates_include_phase_qnode_vector_quality_ratchets() -> None:
     """Vector QNode runtime and tests must stay strictly typed and documented."""
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
@@ -325,6 +341,56 @@ def test_ci_and_preflight_share_mlir_leaf_cohorts() -> None:
     assert f"--source={_preflight.MLIR_LEAF_COVERAGE_SOURCE}" in workflow
     assert f"--include={_preflight.MLIR_LEAF_COVERAGE_INCLUDE}" in workflow
     assert "needs['mlir-leaf-quality'].result" in workflow
+
+
+def test_default_preflight_has_exact_phase_qnode_affinity_coverage() -> None:
+    """Default local coverage must enforce the affinity evidence owner at 100%."""
+    gate_map = dict(_preflight.PHASE_QNODE_AFFINITY_COVERAGE_GATES)
+    run_cmd = gate_map["phase-qnode affinity focused coverage"]
+    report_cmd = gate_map["phase-qnode affinity exact coverage threshold"]
+    cohort = _preflight.PHASE_QNODE_AFFINITY_COVERAGE_COHORT
+    data_file = _preflight.PHASE_QNODE_AFFINITY_COVERAGE_DATA_FILE
+
+    assert run_cmd[:4] == [_preflight._PY, "-m", "coverage", "run"]
+    assert "--branch" in run_cmd
+    assert run_cmd[-len(cohort) :] == cohort
+    assert f"--data-file={data_file}" in run_cmd
+    assert report_cmd[:4] == [_preflight._PY, "-m", "coverage", "report"]
+    assert "--precision=2" in report_cmd
+    assert "--fail-under=100" in report_cmd
+    assert "--include=*/qnode_affinity_benchmark.py" in report_cmd
+    assert f"--data-file={data_file}" in report_cmd
+
+
+def test_ci_and_preflight_share_phase_qnode_affinity_cohorts() -> None:
+    """CI and local gates must preserve identical affinity-owner file order."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    quality_steps = (
+        "Type-check Phase-QNode affinity quality cohort",
+        "Ruff NumPy docstrings for Phase-QNode affinity quality cohort",
+    )
+
+    for step_name in quality_steps:
+        block_start = workflow.index(f"      - name: {step_name}")
+        block_end = workflow.index("\n      - name:", block_start + 1)
+        ci_paths = [
+            line.strip()
+            for line in workflow[block_start:block_end].splitlines()
+            if line.strip().startswith(("src/", "tools/", "tests/"))
+        ]
+        assert ci_paths == _preflight.PHASE_QNODE_AFFINITY_QUALITY_RATCHET
+
+    coverage_start = workflow.index("      - name: Run Phase-QNode affinity focused coverage")
+    coverage_end = workflow.index("\n      - name:", coverage_start + 1)
+    ci_coverage_paths = [
+        line.strip()
+        for line in workflow[coverage_start:coverage_end].splitlines()
+        if line.strip().startswith("tests/")
+    ]
+    assert ci_coverage_paths == _preflight.PHASE_QNODE_AFFINITY_COVERAGE_COHORT
+    assert "Enforce Phase-QNode affinity exact coverage" in workflow
+    assert "--include=*/qnode_affinity_benchmark.py" in workflow
+    assert "needs['phase-qnode-affinity-quality'].result" in workflow
 
 
 def test_default_preflight_has_exact_phase_qnode_vector_coverage() -> None:
@@ -796,6 +862,8 @@ def test_main_uses_coverage_pytest_by_default(
         "lint",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
+        "phase-qnode affinity focused coverage",
+        "phase-qnode affinity exact coverage threshold",
         "phase-qnode vector focused coverage",
         "phase-qnode vector exact coverage threshold",
         "whole-program trace-value focused coverage",

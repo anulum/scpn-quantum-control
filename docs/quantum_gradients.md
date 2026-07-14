@@ -2647,7 +2647,8 @@ four evidence classes:
 - attached `EnzymeMLIRBenchmarkAttachment` built from
   `PhaseQNodeAffinityArtifactValidation`, so the isolated benchmark gate is
   satisfied only by promotion-ready `isolated_affinity` evidence with raw timing
-  rows and complete host metadata;
+  rows and complete host metadata whose label, production flag, and recorded
+  failures agree with a fresh isolation-policy recomputation;
 - hard gaps for missing toolchains when they are absent, failed native Enzyme
   execution, missing derived compiler-AD breadth evidence, missing isolated
   benchmark artefacts, raw breadth case failures, and missing validated

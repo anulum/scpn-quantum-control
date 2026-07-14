@@ -7,7 +7,8 @@
   "missing_requirements": [
     "isolated_affinity evidence label",
     "production benchmark flag",
-    "empty isolation failures"
+    "empty isolation failures",
+    "isolation policy: host load must remain low before and after benchmark"
   ],
   "production_benchmark": false,
   "promotion_ready": false,

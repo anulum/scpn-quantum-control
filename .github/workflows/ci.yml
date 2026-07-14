@@ -117,6 +117,23 @@ jobs:
           src/scpn_quantum_control/control/realtime_runtime.py
           tests/test_realtime_runtime.py
           tests/test_realtime_runtime_branches.py
+      - name: Type-check Phase-QNode affinity quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/qnode_affinity_benchmark.py
+          tools/lean_phase_import.py
+          tools/run_phase_qnode_affinity_benchmark.py
+          tests/test_phase_qnode_affinity_benchmark.py
+          tests/test_lean_phase_import.py
+      - name: Ruff NumPy docstrings for Phase-QNode affinity quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/qnode_affinity_benchmark.py
+          tools/lean_phase_import.py
+          tools/run_phase_qnode_affinity_benchmark.py
+          tests/test_phase_qnode_affinity_benchmark.py
+          tests/test_lean_phase_import.py
       - name: Type-check MLIR leaf quality cohort
         run: >-
           python -m mypy --strict
@@ -268,6 +285,37 @@ jobs:
           --precision=2
           --fail-under=100
           --include=*/mlir_enzyme_audit.py,*/mlir_phase_qnode_runtime.py,*/mlir_transform_plan_assembly.py,*/mlir_workload_compilation.py
+
+  phase-qnode-affinity-quality:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Run Phase-QNode affinity focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.phase-qnode-affinity
+          --branch
+          -m pytest -q
+          tests/test_phase_qnode_affinity_benchmark.py
+          tests/test_lean_phase_import.py
+      - name: Enforce Phase-QNode affinity exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.phase-qnode-affinity
+          --precision=2
+          --fail-under=100
+          --include=*/qnode_affinity_benchmark.py
 
   phase-qnode-vector-quality:
     needs: lint
@@ -961,7 +1009,7 @@ jobs:
           EOF
 
   ci-gate:
-    needs: [lint, mlir-leaf-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
+    needs: [lint, mlir-leaf-quality, phase-qnode-affinity-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -969,6 +1017,7 @@ jobs:
         run: |
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs['mlir-leaf-quality'].result }}" != "success" ]] || \
+             [[ "${{ needs['phase-qnode-affinity-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['phase-qnode-vector-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['whole-program-trace-value-quality'].result }}" != "success" ]] || \
              [[ "${{ needs.test.result }}" != "success" ]] || \

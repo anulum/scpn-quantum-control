@@ -167,6 +167,23 @@ def test_ci_mlir_leaf_job_enforces_exact_branch_coverage() -> None:
     assert "needs['mlir-leaf-quality'].result" in workflow
 
 
+def test_ci_phase_qnode_affinity_job_enforces_exact_quality_and_coverage() -> None:
+    """CI must keep affinity evidence typed, documented, and exactly covered."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "Type-check Phase-QNode affinity quality cohort" in workflow
+    assert "Ruff NumPy docstrings for Phase-QNode affinity quality cohort" in workflow
+    assert "phase-qnode-affinity-quality:" in workflow
+    assert "Run Phase-QNode affinity focused coverage" in workflow
+    assert "tests/test_phase_qnode_affinity_benchmark.py" in workflow
+    assert "tests/test_lean_phase_import.py" in workflow
+    assert "--data-file=.coverage.phase-qnode-affinity" in workflow
+    assert "Enforce Phase-QNode affinity exact coverage" in workflow
+    assert "--include=*/qnode_affinity_benchmark.py" in workflow
+    assert "--fail-under=100" in workflow
+    assert "needs['phase-qnode-affinity-quality'].result" in workflow
+
+
 def test_ci_phase_qnode_vector_job_enforces_exact_branch_coverage() -> None:
     """CI must give the vector-transform owner an exact focused branch gate."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")

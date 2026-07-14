@@ -11,8 +11,8 @@ Gates (in order):
   1. repository lint, format, documentation, generated-surface, policy, and security audits
   2. focused strict-typing and NumPy-docstring ratchets for promoted owner cohorts
   3. Rust formatting, version/export consistency, and repository typing gates
-  4. exact MLIR-leaf, Phase-QNode-vector, and trace-value statement/branch coverage
-     (default coverage mode only)
+  4. exact MLIR-leaf, Phase-QNode-affinity, Phase-QNode-vector, and trace-value
+     statement/branch coverage (default coverage mode only)
   5. repository pytest with the selected coverage mode
   6. Bandit security scan
 
@@ -75,6 +75,19 @@ REALTIME_RUNTIME_QUALITY_RATCHET = [
     "src/scpn_quantum_control/control/realtime_runtime.py",
     "tests/test_realtime_runtime.py",
     "tests/test_realtime_runtime_branches.py",
+]
+
+PHASE_QNODE_AFFINITY_QUALITY_RATCHET = [
+    "src/scpn_quantum_control/phase/qnode_affinity_benchmark.py",
+    "tools/lean_phase_import.py",
+    "tools/run_phase_qnode_affinity_benchmark.py",
+    "tests/test_phase_qnode_affinity_benchmark.py",
+    "tests/test_lean_phase_import.py",
+]
+
+PHASE_QNODE_AFFINITY_COVERAGE_COHORT = [
+    "tests/test_phase_qnode_affinity_benchmark.py",
+    "tests/test_lean_phase_import.py",
 ]
 
 PHASE_QNODE_VECTOR_QUALITY_RATCHET = [
@@ -203,6 +216,7 @@ MLIR_LEAF_COVERAGE_INCLUDE = (
     "*/mlir_enzyme_audit.py,*/mlir_phase_qnode_runtime.py,"
     "*/mlir_transform_plan_assembly.py,*/mlir_workload_compilation.py"
 )
+PHASE_QNODE_AFFINITY_COVERAGE_DATA_FILE = ".coverage.phase-qnode-affinity"
 PHASE_QNODE_VECTOR_COVERAGE_DATA_FILE = ".coverage.phase-qnode-vector"
 WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE = ".coverage.whole-program-trace-values"
 
@@ -321,6 +335,32 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "--config",
             'lint.pydocstyle.convention = "numpy"',
             *REALTIME_RUNTIME_QUALITY_RATCHET,
+        ],
+    ),
+    (
+        "mypy-strict-phase-qnode-affinity",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "--explicit-package-bases",
+            *PHASE_QNODE_AFFINITY_QUALITY_RATCHET,
+        ],
+    ),
+    (
+        "ruff D phase-qnode-affinity quality ratchet",
+        [
+            _PY,
+            "-m",
+            "ruff",
+            "check",
+            "--isolated",
+            "--select",
+            "D,D413",
+            "--config",
+            'lint.pydocstyle.convention = "numpy"',
+            *PHASE_QNODE_AFFINITY_QUALITY_RATCHET,
         ],
     ),
     (
@@ -611,6 +651,39 @@ MLIR_LEAF_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     ),
 ]
 
+PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
+    (
+        "phase-qnode affinity focused coverage",
+        [
+            _PY,
+            "-m",
+            "coverage",
+            "run",
+            f"--rcfile={devnull}",
+            f"--data-file={PHASE_QNODE_AFFINITY_COVERAGE_DATA_FILE}",
+            "--branch",
+            "-m",
+            "pytest",
+            "-q",
+            *PHASE_QNODE_AFFINITY_COVERAGE_COHORT,
+        ],
+    ),
+    (
+        "phase-qnode affinity exact coverage threshold",
+        [
+            _PY,
+            "-m",
+            "coverage",
+            "report",
+            f"--rcfile={devnull}",
+            f"--data-file={PHASE_QNODE_AFFINITY_COVERAGE_DATA_FILE}",
+            "--precision=2",
+            "--fail-under=100",
+            "--include=*/qnode_affinity_benchmark.py",
+        ],
+    ),
+]
+
 PHASE_QNODE_VECTOR_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
         "phase-qnode vector focused coverage",
@@ -786,6 +859,7 @@ def main() -> int:
             gates.append(("pytest", _PYTEST_BASE))
         else:
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
+            gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_VECTOR_COVERAGE_GATES)
             gates.extend(WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES)
             gates.append(("pytest + coverage", _PYTEST_COV))
