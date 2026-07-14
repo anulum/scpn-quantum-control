@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-14 — Closed the P0 claim-bearing coverage and contract debt for the
+  unified differentiable API facade. Public dispatcher regressions now execute
+  every numerical, compiler, benchmark, governance, diagnostic, and validation
+  route with 100% statement and branch coverage. Parameterized facade calls
+  have complete NumPy-style contracts, and the public guide records required
+  dispatcher inputs and fail-closed errors. Numerical algorithms, provider and
+  hardware policy, polyglot kernels, and benchmark claims are unchanged.
 - 2026-07-13 — Closed the live Phase-QNode scalar-transform coverage row.
   The scalar executor now reports an actionable fail-closed reason when a
   separately supported gradient-tape plan reaches its non-tape execution seam.

@@ -25,6 +25,7 @@ from scpn_quantum_control.differentiable_api import (
     DifferentiableDashboardCapabilityState,
     DifferentiableDashboardStatus,
     UnifiedDifferentiableAPIResult,
+    UnifiedDifferentiableOperation,
     differentiable_api,
     differentiable_benchmark_report,
     differentiable_compile_report,
@@ -56,6 +57,10 @@ def _scalar_objective(values: FloatArray) -> float:
 
 def _vector_objective(values: FloatArray) -> FloatArray:
     return np.array([values[0] + values[1], values[0] * values[1]], dtype=float)
+
+
+def _periodic_objective(values: FloatArray) -> float:
+    return float(np.cos(values[0]) + np.sin(values[1]))
 
 
 def test_unified_differentiable_value_and_gradient_share_schema() -> None:
@@ -102,6 +107,78 @@ def test_unified_differentiable_jacobian_and_hessian_routes_are_explicit() -> No
         atol=1e-4,
     )
     assert hessian.value == pytest.approx(1.0)
+
+
+def test_unified_dispatcher_routes_numeric_operations_and_defaults() -> None:
+    values = np.array([0.3, -0.2], dtype=float)
+
+    value_default = differentiable_api(
+        "value",
+        objective=_periodic_objective,
+        values=values,
+    )
+    value_explicit = differentiable_api(
+        "value",
+        objective=_periodic_objective,
+        values=values,
+        method="finite_difference",
+        step=1.0e-6,
+    )
+    gradient_default = differentiable_api(
+        "gradient",
+        objective=_periodic_objective,
+        values=values,
+    )
+    jacobian_default = differentiable_api(
+        "jacobian",
+        objective=_vector_objective,
+        values=values,
+    )
+    jacobian_explicit = differentiable_api(
+        "jacobian",
+        objective=_vector_objective,
+        values=values,
+        method="finite_difference",
+        step=5.0e-7,
+    )
+    hessian_default = differentiable_api(
+        "hessian",
+        objective=_scalar_objective,
+        values=values,
+    )
+    hessian_explicit = differentiable_api(
+        "hessian",
+        objective=_scalar_objective,
+        values=values,
+        method="finite_difference",
+        step=5.0e-5,
+    )
+
+    expected_value = _periodic_objective(values)
+    assert value_default.method == "parameter_shift"
+    assert value_default.value == pytest.approx(expected_value)
+    assert value_explicit.method == "finite_difference_central"
+    assert value_explicit.value == pytest.approx(expected_value)
+    assert gradient_default.gradient is not None
+    np.testing.assert_allclose(
+        gradient_default.gradient,
+        np.array([-np.sin(values[0]), np.cos(values[1])], dtype=float),
+        atol=1.0e-12,
+    )
+    assert jacobian_default.jacobian is not None
+    assert jacobian_explicit.jacobian is not None
+    np.testing.assert_allclose(
+        jacobian_default.jacobian,
+        jacobian_explicit.jacobian,
+        atol=1.0e-8,
+    )
+    assert hessian_default.hessian is not None
+    assert hessian_explicit.hessian is not None
+    np.testing.assert_allclose(
+        hessian_default.hessian,
+        hessian_explicit.hessian,
+        atol=1.0e-4,
+    )
 
 
 def test_unified_differentiable_support_report_fails_closed_for_unsupported_route() -> None:
@@ -155,15 +232,25 @@ def test_unified_differentiable_compile_report_filters_registered_primitives() -
     report = differentiable_compile_report(
         primitive_identities=("scpn.program_ad.array:getitem@1",)
     )
+    default_dispatch = differentiable_api("compile_report")
+    explicit_dispatch = differentiable_api(
+        "compile_report",
+        primitive_identities=("scpn.program_ad.array:getitem@1",),
+        method="jvp_vjp_adjoint",
+    )
 
     assert report.operation == "compile_report"
     assert report.supported
     assert report.payload["primitive_count"] == 1
     assert report.payload["primitive_identities"] == ["scpn.program_ad.array:getitem@1"]
     assert "scpn_diff.primitive" in str(report.payload["mlir"])
+    assert int(default_dispatch.payload["primitive_count"]) > 1
+    assert explicit_dispatch.to_dict() == report.to_dict()
 
     with pytest.raises(ValueError, match="unknown primitive identities"):
         differentiable_compile_report(primitive_identities=("missing:primitive@1",))
+    with pytest.raises(ValueError, match="must be non-empty"):
+        differentiable_compile_report(primitive_identities=())
 
 
 def test_unified_differentiable_transform_algebra_report_is_bounded() -> None:
@@ -220,7 +307,7 @@ def test_unified_differentiable_qfi_fss_report_uses_default_fss_sizes() -> None:
 def test_unified_differentiable_benchmark_report_is_non_performance_evidence() -> None:
     _require_torch_backend()
 
-    report = differentiable_benchmark_report()
+    report = differentiable_api("benchmark_report")
 
     assert report.operation == "benchmark_report"
     assert report.supported
@@ -228,6 +315,7 @@ def test_unified_differentiable_benchmark_report_is_non_performance_evidence() -
     assert report.payload["quantum_gradient_case_count"] > 0
     assert report.payload["support_audit_passed"] is True
     assert "not isolated performance" in report.claim_boundary
+    assert scpn.differentiable_benchmark_report is differentiable_benchmark_report
 
 
 def test_unified_differentiable_dispatcher_and_root_exports() -> None:
@@ -307,3 +395,7 @@ def test_unified_differentiable_dispatcher_and_root_exports() -> None:
 
     with pytest.raises(ValueError, match="objective is required"):
         differentiable_api("gradient", values=values)
+    with pytest.raises(ValueError, match="values are required"):
+        differentiable_api("gradient", objective=_scalar_objective)
+    with pytest.raises(ValueError, match="unsupported unified differentiable operation"):
+        differentiable_api(cast(UnifiedDifferentiableOperation, "unsupported"))

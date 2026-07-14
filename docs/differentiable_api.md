@@ -220,6 +220,24 @@ assert qfi_fss.payload["bkt_fit"]["model"] == "bkt_log_correction"
 assert "no hardware" in qfi_fss.claim_boundary
 ```
 
+### Dispatcher input contract
+
+| Operation | Required caller inputs | Default and boundary |
+|---|---|---|
+| `value`, `gradient` | `objective`, `values` | `method="parameter_shift"`; an explicit method may also receive `step`. |
+| `jacobian`, `hessian` | `objective`, `values` | `method="finite_difference"`; default steps are `1e-6` and `1e-4`, respectively. |
+| `frontend_report` | `objective` | Inspects source and bytecode without executing the callable. |
+| `support_report`, `diagnostic_report` | Route selectors, or their documented defaults | Hardware consideration remains disabled unless `allow_hardware=True`; planning still does not submit work. |
+| `compile_report` | None, or a non-empty `primitive_identities` subset | Omitting the subset reports every registered primitive; an empty or unknown subset raises `ValueError`. |
+| `qfi_fss_report` | Optional `system_sizes`, `k_range`, and `max_dense_gib` | Uses the bounded local finite-size defaults when inputs are omitted. |
+| Other report operations | None | Dispatches the corresponding public report builder and preserves its claim boundary. |
+
+Missing numerical inputs and unknown operation identifiers raise `ValueError`;
+the dispatcher never guesses an objective, parameter vector, or unsupported
+operation. All routes return the same evidence envelope, but their
+`supported`, `fail_closed`, and `claim_boundary` fields retain the delegated
+route's meaning.
+
 `UnifiedDifferentiableAPIResult` is the stable evidence envelope for the façade.
 It always carries `operation`, `supported`, `fail_closed`, `method`, derivative
 arrays when applicable, a route-specific `payload`, and a claim boundary.

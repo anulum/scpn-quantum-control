@@ -6,7 +6,10 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — differentiable API module
 # scpn-quantum-control -- unified differentiable API facade
-"""Unified differentiable-programming facade over supported local routes."""
+"""Unified differentiable-programming facade over supported local routes.
+
+All returned evidence retains the claim boundary of the delegated route.
+"""
 
 from __future__ import annotations
 
@@ -68,7 +71,24 @@ def differentiable_value(
     method: str = "parameter_shift",
     step: float | None = None,
 ) -> UnifiedDifferentiableAPIResult:
-    """Evaluate a scalar objective through the unified differentiable facade."""
+    """Evaluate a scalar objective without exposing its computed gradient.
+
+    Parameters
+    ----------
+    objective:
+        Scalar objective accepted by the registered differentiation route.
+    values:
+        Parameter values supplied to the objective.
+    method:
+        Registered scalar differentiation method.
+    step:
+        Optional finite-difference step forwarded to the selected method.
+
+    Returns
+    -------
+    UnifiedDifferentiableAPIResult
+        Supported ``value`` envelope with evaluation provenance.
+    """
     result = value_and_grad(objective, values, method=method, step=step)
     return UnifiedDifferentiableAPIResult(
         operation="value",
@@ -93,7 +113,24 @@ def differentiable_gradient(
     method: str = "parameter_shift",
     step: float | None = None,
 ) -> UnifiedDifferentiableAPIResult:
-    """Evaluate a scalar objective and gradient through the unified facade."""
+    """Evaluate a scalar objective and its gradient.
+
+    Parameters
+    ----------
+    objective:
+        Scalar objective accepted by the registered differentiation route.
+    values:
+        Parameter values supplied to the objective.
+    method:
+        Registered scalar differentiation method.
+    step:
+        Optional finite-difference step forwarded to the selected method.
+
+    Returns
+    -------
+    UnifiedDifferentiableAPIResult
+        Supported ``gradient`` envelope with a copied ``float64`` gradient.
+    """
     result = value_and_grad(objective, values, method=method, step=step)
     return UnifiedDifferentiableAPIResult(
         operation="gradient",
@@ -118,7 +155,24 @@ def differentiable_jacobian(
     method: str = "finite_difference",
     step: float = 1.0e-6,
 ) -> UnifiedDifferentiableAPIResult:
-    """Evaluate a vector objective and Jacobian through the unified facade."""
+    """Evaluate a vector objective and its Jacobian.
+
+    Parameters
+    ----------
+    objective:
+        Vector objective accepted by the registered differentiation route.
+    values:
+        Parameter values supplied to the objective.
+    method:
+        Registered Jacobian method.
+    step:
+        Positive finite-difference step used by diagnostic routes.
+
+    Returns
+    -------
+    UnifiedDifferentiableAPIResult
+        Supported ``jacobian`` envelope with objective and evaluation data.
+    """
     result = value_and_jacobian(objective, values, method=method, step=step)
     return UnifiedDifferentiableAPIResult(
         operation="jacobian",
@@ -144,7 +198,24 @@ def differentiable_hessian(
     method: str = "finite_difference",
     step: float = 1.0e-4,
 ) -> UnifiedDifferentiableAPIResult:
-    """Evaluate a scalar objective and Hessian through the unified facade."""
+    """Evaluate a scalar objective and its Hessian.
+
+    Parameters
+    ----------
+    objective:
+        Scalar objective accepted by the registered differentiation route.
+    values:
+        Parameter values supplied to the objective.
+    method:
+        Registered Hessian method.
+    step:
+        Positive finite-difference step used by diagnostic routes.
+
+    Returns
+    -------
+    UnifiedDifferentiableAPIResult
+        Supported ``hessian`` envelope with evaluation provenance.
+    """
     result = value_and_hessian(objective, values, method=method, step=step)
     return UnifiedDifferentiableAPIResult(
         operation="hessian",
@@ -174,7 +245,31 @@ def differentiable_support_report(
     shots: int | None = None,
     allow_hardware: bool = False,
 ) -> UnifiedDifferentiableAPIResult:
-    """Return a fail-closed support report for a quantum-gradient route."""
+    """Return a fail-closed support report for a quantum-gradient route.
+
+    Parameters
+    ----------
+    gate, observable:
+        Registered circuit gate and observable identifiers.
+    backend, transform, adapter:
+        Requested execution, differentiation, and integration route.
+    n_params, shift_terms:
+        Parameter count and parameter-shift terms per parameter.
+    shots:
+        Optional finite-shot budget.
+    allow_hardware:
+        Whether planning may consider an explicitly approved hardware route.
+
+    Returns
+    -------
+    UnifiedDifferentiableAPIResult
+        Support-plan envelope, including blocked reasons when unsupported.
+
+    Raises
+    ------
+    ValueError
+        If a planning dimension or shot budget is invalid.
+    """
     plan = plan_gradient_support(
         gate=gate,
         observable=observable,
@@ -211,7 +306,31 @@ def explain_differentiability(
     shots: int | None = None,
     allow_hardware: bool = False,
 ) -> DifferentiabilityDiagnosticReport:
-    """Explain whether a differentiable route can run and why it may fail closed."""
+    """Explain whether a differentiable route can run and why it may fail closed.
+
+    Parameters
+    ----------
+    gate, observable:
+        Registered circuit gate and observable identifiers.
+    backend, transform, adapter:
+        Requested execution, differentiation, and integration route.
+    n_params, shift_terms:
+        Parameter count and parameter-shift terms per parameter.
+    shots:
+        Optional finite-shot budget.
+    allow_hardware:
+        Whether planning may consider an explicitly approved hardware route.
+
+    Returns
+    -------
+    DifferentiabilityDiagnosticReport
+        Dependency, device, backend, alternative, and blocked-reason matrices.
+
+    Raises
+    ------
+    ValueError
+        If a planning dimension or shot budget is invalid.
+    """
     plan = plan_gradient_support(
         gate=gate,
         observable=observable,
@@ -277,7 +396,27 @@ def differentiable_compile_report(
     registry: CustomDerivativeRegistry = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
     transform: str = "jvp_vjp_adjoint",
 ) -> UnifiedDifferentiableAPIResult:
-    """Return compiler-AD planning evidence for registered primitives."""
+    """Return compiler-AD planning evidence for registered primitives.
+
+    Parameters
+    ----------
+    primitive_identities:
+        Optional non-empty subset of registered primitive identities.
+    registry:
+        Custom-derivative registry used to build the transform plan.
+    transform:
+        Compiler-AD transform requested for every selected primitive.
+
+    Returns
+    -------
+    UnifiedDifferentiableAPIResult
+        Compile-plan envelope containing deterministic MLIR interchange text.
+
+    Raises
+    ------
+    ValueError
+        If the subset is empty, unknown, or otherwise invalid.
+    """
     plan = build_compiler_ad_transform_plan(registry, transform=transform)
     selected = _selected_primitive_keys(primitive_identities)
     statuses = (
@@ -496,6 +635,16 @@ def differentiable_frontend_report(
     suitable for dashboards and audits that need deterministic source/bytecode
     metadata without promoting executable compiler lowering, provider, hardware,
     or performance claims.
+
+    Parameters
+    ----------
+    objective:
+        Python callable to inspect without executing.
+
+    Returns
+    -------
+    UnifiedDifferentiableAPIResult
+        Static frontend envelope with source and bytecode provenance.
     """
     report = compile_whole_program_frontend(objective)
     return UnifiedDifferentiableAPIResult(
@@ -533,7 +682,35 @@ def differentiable_api(
     k_range: ArrayLike | None = None,
     max_dense_gib: float | None = None,
 ) -> UnifiedDifferentiableAPIResult:
-    """Dispatch one supported unified differentiable operation."""
+    """Dispatch one supported unified differentiable operation.
+
+    Parameters
+    ----------
+    operation:
+        Public operation identifier selecting the delegated route.
+    objective, values:
+        Numerical inputs required by value, derivative, and frontend routes.
+    method, step:
+        Optional differentiation method and diagnostic step override.
+    gate, observable, backend, transform, adapter:
+        Quantum-gradient support and diagnostic route selectors.
+    n_params, shift_terms, shots, allow_hardware:
+        Quantum-gradient planning dimensions and hardware-policy controls.
+    primitive_identities, registry:
+        Compiler-AD primitive subset and derivative registry.
+    system_sizes, k_range, max_dense_gib:
+        Bounded QFI finite-size-scaling inputs and dense workspace budget.
+
+    Returns
+    -------
+    UnifiedDifferentiableAPIResult
+        Stable evidence envelope returned by the delegated public route.
+
+    Raises
+    ------
+    ValueError
+        If the operation is unknown or a required route input is absent.
+    """
     if operation == "value":
         return differentiable_value(
             _require_objective(objective),
