@@ -34,6 +34,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   benchmark claims are unchanged.
 
 ### Fixed
+- 2026-07-14 — Closed execution-control bypasses in the constrained Braket
+  advisory waiver. The repository audit now requires its policy command and
+  `pip-audit` to own distinct, unconditional, blocking `jobs.security` steps
+  with one direct run key each; job/step conditions, `continue-on-error`, YAML
+  merges, custom shells, workflow/job run defaults, ambiguous job mappings,
+  and duplicate-run-key
+  replacement all fail closed. Mutation regressions cover the independently
+  reported `if: false` and `continue-on-error: true` cases. Dependency pins,
+  runtime APIs, quantum execution, numerical kernels, polyglot compute, and
+  benchmark claims are unchanged.
 - 2026-07-14 — Restored a satisfiable Braket-enabled CI dependency closure
   while retaining detection of `PYSEC-2026-3447`. Amazon Braket's simulator
   and schema packages hard-pin `setuptools==81.0.0`, so a fail-closed policy

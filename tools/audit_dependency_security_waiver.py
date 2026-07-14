@@ -63,7 +63,19 @@ EXPECTED_PIP_AUDIT_COMMAND = (
 )
 WAIVER_GATE_COMMAND = "python tools/audit_dependency_security_waiver.py"
 WAIVER_DOC_HEADING = "### Braket-constrained setuptools advisory waiver"
-_RUN_KEY_RE = re.compile(r"^(?P<indent>\s*)(?:-\s+)?run:\s*(?P<value>.*)$")
+_RUN_KEY_RE = re.compile(
+    r"^(?P<indent>\s*)(?P<sequence>-\s+)?(?P<quote>['\"]?)run(?P=quote):\s*"
+    r"(?P<value>.*)$"
+)
+_JOBS_KEY_RE = re.compile(r"^jobs:\s*(?:#.*)?$")
+_SECURITY_JOB_KEY_RE = re.compile(r"^  security:\s*(?:#.*)?$")
+_SECURITY_STEPS_KEY_RE = re.compile(r"^    steps:\s*(?:#.*)?$")
+_SECURITY_STEP_ITEM_RE = re.compile(r"^      -\s+")
+_TOP_LEVEL_DEFAULTS_RE = re.compile(r"^(?P<quote>['\"]?)defaults(?P=quote)\s*:")
+_SECURITY_EXECUTION_CONTROL_RE = re.compile(
+    r"^\s*(?:-\s+)?(?P<quote>['\"]?)"
+    r"(?P<key>if|continue-on-error|shell|defaults|<<)(?P=quote)\s*:"
+)
 
 
 @dataclass(frozen=True)
@@ -104,6 +116,27 @@ class LockPin:
     version: str
     hashes: frozenset[str]
     via: frozenset[str]
+
+
+@dataclass(frozen=True)
+class WorkflowRun:
+    """One parsed GitHub Actions ``run`` scalar.
+
+    Parameters
+    ----------
+    command : str
+        Unquoted inline value or normalised block-scalar body.
+    starts_step : bool
+        Whether the ``run`` key starts a sequence item.
+    indent : int
+        Number of leading spaces on the key line. Protected commands must be
+        direct keys of a canonical security step, not nested lookalikes.
+
+    """
+
+    command: str
+    starts_step: bool
+    indent: int
 
 
 @dataclass(frozen=True)
@@ -352,10 +385,10 @@ def audit_lockfiles(lock_texts: dict[str, str]) -> tuple[str, ...]:
     return tuple(errors)
 
 
-def _workflow_run_values(workflow_text: str) -> tuple[str, ...]:
+def _workflow_runs(workflow_text: str) -> tuple[WorkflowRun, ...]:
     """Extract inline and block ``run`` scalars from a workflow."""
     lines = workflow_text.splitlines()
-    values: list[str] = []
+    runs: list[WorkflowRun] = []
     index = 0
     block_markers = frozenset({"|", "|-", "|+", ">", ">-", ">+"})
     while index < len(lines):
@@ -364,8 +397,15 @@ def _workflow_run_values(workflow_text: str) -> tuple[str, ...]:
             index += 1
             continue
         value = match.group("value").strip()
+        starts_step = match.group("sequence") is not None
         if value not in block_markers:
-            values.append(value)
+            runs.append(
+                WorkflowRun(
+                    command=value,
+                    starts_step=starts_step,
+                    indent=len(match.group("indent")),
+                )
+            )
             index += 1
             continue
         key_indent = len(match.group("indent"))
@@ -383,10 +423,89 @@ def _workflow_run_values(workflow_text: str) -> tuple[str, ...]:
             len(line) - len(line.lstrip()) for line in block_lines if line.strip()
         ]
         block_indent = min(non_empty_indents, default=key_indent + 2)
-        values.append(
-            "\n".join(line[block_indent:] if line.strip() else "" for line in block_lines)
+        runs.append(
+            WorkflowRun(
+                command="\n".join(
+                    line[block_indent:] if line.strip() else "" for line in block_lines
+                ),
+                starts_step=starts_step,
+                indent=key_indent,
+            )
         )
-    return tuple(values)
+    return tuple(runs)
+
+
+def _workflow_run_values(workflow_text: str) -> tuple[str, ...]:
+    """Return only command text from parsed workflow run scalars."""
+    return tuple(run.command for run in _workflow_runs(workflow_text))
+
+
+def _indented_yaml_block(
+    lines: Sequence[str], header_index: int, header_indent: int
+) -> tuple[str, ...]:
+    """Return the lines nested below one canonical YAML mapping key."""
+    block: list[str] = []
+    for line in lines[header_index + 1 :]:
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#"):
+            indent = len(line) - len(line.lstrip())
+            if indent <= header_indent:
+                break
+        block.append(line)
+    return tuple(block)
+
+
+def _security_job_text(workflow_text: str) -> str | None:
+    """Return the canonical ``jobs.security`` body or ``None`` on ambiguity."""
+    lines = workflow_text.splitlines()
+    jobs_headers = [index for index, line in enumerate(lines) if _JOBS_KEY_RE.fullmatch(line)]
+    if len(jobs_headers) != 1:
+        return None
+    jobs_block = _indented_yaml_block(lines, jobs_headers[0], 0)
+    security_headers = [
+        index for index, line in enumerate(jobs_block) if _SECURITY_JOB_KEY_RE.fullmatch(line)
+    ]
+    if len(security_headers) != 1:
+        return None
+    security_block = _indented_yaml_block(jobs_block, security_headers[0], 2)
+    return "\n".join(security_block)
+
+
+def _security_step_blocks(security_job_text: str) -> tuple[str, ...] | None:
+    """Return canonical step bodies, preserving indentation and duplicate keys."""
+    lines = security_job_text.splitlines()
+    steps_headers = [
+        index for index, line in enumerate(lines) if _SECURITY_STEPS_KEY_RE.fullmatch(line)
+    ]
+    if len(steps_headers) != 1:
+        return None
+    steps_block = _indented_yaml_block(lines, steps_headers[0], 4)
+    step_starts = [
+        index for index, line in enumerate(steps_block) if _SECURITY_STEP_ITEM_RE.match(line)
+    ]
+    if not step_starts:
+        return ()
+    return tuple(
+        "\n".join(steps_block[start:end])
+        for start, end in zip(step_starts, (*step_starts[1:], len(steps_block)), strict=True)
+    )
+
+
+def _protected_command_owns_step(
+    step_blocks: Sequence[str], expected_tokens: tuple[str, ...]
+) -> bool:
+    """Return whether one canonical step contains only the protected run key."""
+    matching_steps: list[tuple[WorkflowRun, ...]] = []
+    for step_block in step_blocks:
+        runs = _workflow_runs(step_block)
+        if any(_shell_tokens(run.command) == expected_tokens for run in runs):
+            matching_steps.append(runs)
+    if len(matching_steps) != 1 or len(matching_steps[0]) != 1:
+        return False
+    run = matching_steps[0][0]
+    direct_step_key = run.starts_step and run.indent == 6
+    direct_named_step_key = not run.starts_step and run.indent == 8
+    return direct_step_key or direct_named_step_key
 
 
 def _shell_tokens(command: str) -> tuple[str, ...]:
@@ -395,7 +514,7 @@ def _shell_tokens(command: str) -> tuple[str, ...]:
 
 
 def audit_ci_workflow(workflow_text: str) -> tuple[str, ...]:
-    """Validate the exact security-gate command and its policy precheck.
+    """Validate exact, unconditional, blocking security-job commands.
 
     Parameters
     ----------
@@ -420,13 +539,41 @@ def audit_ci_workflow(workflow_text: str) -> tuple[str, ...]:
             for index in range(len(tokens) - len(gate_tokens) + 1)
         )
     ]
-    if gate_runs != [gate_tokens]:
+    gate_command_valid = gate_runs == [gate_tokens]
+    if not gate_command_valid:
         errors.append("CI must run the waiver audit exactly once")
     commands = [tokens for tokens in tokenised_runs if "pip-audit" in tokens]
-    if commands != [EXPECTED_PIP_AUDIT_COMMAND]:
+    pip_audit_command_valid = commands == [EXPECTED_PIP_AUDIT_COMMAND]
+    if not pip_audit_command_valid:
         errors.append(
             f"CI pip-audit command must scan the full lock and ignore only {ADVISORY_ID}"
         )
+    if any(_TOP_LEVEL_DEFAULTS_RE.match(line) for line in workflow_text.splitlines()):
+        errors.append("CI must not override run defaults at workflow scope")
+
+    security_job_text = _security_job_text(workflow_text)
+    if security_job_text is None:
+        errors.append("CI must define exactly one canonical jobs.security mapping")
+        return tuple(errors)
+
+    step_blocks = _security_step_blocks(security_job_text)
+    if not step_blocks:
+        errors.append("jobs.security must define one canonical non-empty steps sequence")
+    else:
+        if gate_command_valid and not _protected_command_owns_step(step_blocks, gate_tokens):
+            errors.append("waiver audit must own a standalone jobs.security run step")
+        if pip_audit_command_valid and not _protected_command_owns_step(
+            step_blocks, EXPECTED_PIP_AUDIT_COMMAND
+        ):
+            errors.append("pip-audit must own a standalone jobs.security run step")
+
+    execution_controls: list[str] = []
+    for line in security_job_text.splitlines():
+        match = _SECURITY_EXECUTION_CONTROL_RE.match(line)
+        if match is not None and match.group("key") not in execution_controls:
+            execution_controls.append(match.group("key"))
+    for control in execution_controls:
+        errors.append(f"jobs.security must not define execution control: {control}")
     return tuple(errors)
 
 

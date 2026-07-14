@@ -518,13 +518,19 @@ conditions remain true:
 - every Python CI lock carries that version, its two source-verified hashes,
   and exactly the same two transitive owners;
 - this project still builds with Hatchling and has no setuptools import;
-- CI runs the policy audit and ignores only `PYSEC-2026-3447`; and
+- CI runs the policy audit and ignores only `PYSEC-2026-3447` as two distinct,
+  unconditional, blocking `jobs.security` steps; and
 - this operator boundary and its removal rule remain documented.
 
 The security job enforces strict typing, NumPy docstrings, and exact 100%
 statement/branch coverage on the policy tool before it executes both the live
 waiver audit and the complete dependency scan. A second ignored advisory or an
-upstream metadata change fails the policy gate.
+upstream metadata change fails the policy gate. The workflow audit also rejects
+job- or step-level `if`, `continue-on-error`, YAML merge keys, custom shells,
+and workflow/job run defaults on this boundary. Each protected command must
+own a canonical step with exactly one direct run key, preventing a later
+duplicate YAML key from replacing the policy audit while leaving a text-only
+command scan green.
 
 Remove the waiver as one dependency-lock change when neither Braket pin owner
 requires `setuptools<83.0.0`, whether the dependency disappears or its allowed

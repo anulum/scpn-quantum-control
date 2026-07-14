@@ -59,10 +59,11 @@ def _workflow(
     pip_audit_command: tuple[str, ...] = waiver.EXPECTED_PIP_AUDIT_COMMAND,
 ) -> str:
     return (
-        "security:\n"
-        "  steps:\n"
-        f"    - run: {gate_command}\n"
-        f"    - run: {_shlex_join(pip_audit_command)}\n"
+        "jobs:\n"
+        "  security:\n"
+        "    steps:\n"
+        f"      - run: {gate_command}\n"
+        f"      - run: {_shlex_join(pip_audit_command)}\n"
     )
 
 
@@ -273,22 +274,120 @@ def test_ci_workflow_audit_rejects_broader_or_unchecked_exceptions() -> None:
     )
 
     block_scalar = (
-        "security:\n"
-        "  steps:\n"
-        "    - run: |\n"
-        "        python tools/audit_dependency_security_waiver.py\n"
-        "    - run: >-\n"
-        f"        {_shlex_join(waiver.EXPECTED_PIP_AUDIT_COMMAND)}\n"
+        "jobs:\n"
+        "  security:\n"
+        "    steps:\n"
+        "      - run: |\n"
+        "          python tools/audit_dependency_security_waiver.py\n"
+        "      - run: >-\n"
+        f"          {_shlex_join(waiver.EXPECTED_PIP_AUDIT_COMMAND)}\n"
     )
     assert waiver.audit_ci_workflow(block_scalar) == ()
 
     hidden_second_exception = (
         _workflow()
-        + "    - run: |\n"
-        + "        pip-audit -r requirements-ci-py312-linux.txt --ignore-vuln OTHER\n"
+        + "      - run: |\n"
+        + "          pip-audit -r requirements-ci-py312-linux.txt --ignore-vuln OTHER\n"
     )
     assert waiver.audit_ci_workflow(hidden_second_exception) == (
         "CI pip-audit command must scan the full lock and ignore only PYSEC-2026-3447",
+    )
+
+
+def test_ci_workflow_audit_rejects_nonblocking_execution_controls() -> None:
+    """Conditions, error suppression, and shell overrides must fail closed."""
+    audit_condition = _workflow().replace(
+        f"      - run: {_shlex_join(waiver.EXPECTED_PIP_AUDIT_COMMAND)}\n",
+        f"      - if: false\n        run: {_shlex_join(waiver.EXPECTED_PIP_AUDIT_COMMAND)}\n",
+    )
+    assert waiver.audit_ci_workflow(audit_condition) == (
+        "jobs.security must not define execution control: if",
+    )
+
+    audit_nonblocking = _workflow().replace(
+        f"      - run: {_shlex_join(waiver.EXPECTED_PIP_AUDIT_COMMAND)}\n",
+        f"      - run: {_shlex_join(waiver.EXPECTED_PIP_AUDIT_COMMAND)}\n"
+        "        continue-on-error: true\n",
+    )
+    assert waiver.audit_ci_workflow(audit_nonblocking) == (
+        "jobs.security must not define execution control: continue-on-error",
+    )
+
+    job_controls = _workflow().replace(
+        "  security:\n",
+        "  security:\n"
+        "    if: false\n"
+        "    defaults:\n"
+        "      run:\n"
+        "        shell: bash {0} || true\n"
+        "    <<: *nonblocking\n",
+    )
+    assert waiver.audit_ci_workflow(job_controls) == (
+        "jobs.security must not define execution control: if",
+        "jobs.security must not define execution control: defaults",
+        "jobs.security must not define execution control: shell",
+        "jobs.security must not define execution control: <<",
+    )
+
+    workflow_defaults = "defaults:\n  run:\n    shell: bash {0} || true\n" + _workflow()
+    assert waiver.audit_ci_workflow(workflow_defaults) == (
+        "CI must not override run defaults at workflow scope",
+    )
+
+    quoted_workflow_defaults = '"defaults" : *nonblocking\n' + _workflow()
+    assert waiver.audit_ci_workflow(quoted_workflow_defaults) == (
+        "CI must not override run defaults at workflow scope",
+    )
+
+    quoted_condition = _workflow().replace(
+        "  security:\n",
+        "  security:\n    'if' : false\n",
+    )
+    assert waiver.audit_ci_workflow(quoted_condition) == (
+        "jobs.security must not define execution control: if",
+    )
+
+
+def test_ci_workflow_audit_rejects_ambiguous_or_replaced_steps() -> None:
+    """Canonical job placement and distinct run steps prevent YAML replacement."""
+    missing_security_job = _workflow().replace("  security:\n", "  lint:\n")
+    errors = waiver.audit_ci_workflow(missing_security_job)
+    assert errors[-1] == "CI must define exactly one canonical jobs.security mapping"
+
+    duplicate_jobs = _workflow() + "jobs:\n  security:\n    steps: []\n"
+    assert waiver.audit_ci_workflow(duplicate_jobs)[-1] == (
+        "CI must define exactly one canonical jobs.security mapping"
+    )
+
+    duplicate_pip_run_key = _workflow().replace(
+        f"      - run: {_shlex_join(waiver.EXPECTED_PIP_AUDIT_COMMAND)}\n",
+        f'      - run: {_shlex_join(waiver.EXPECTED_PIP_AUDIT_COMMAND)}\n        "run": true\n',
+    )
+    assert waiver.audit_ci_workflow(duplicate_pip_run_key) == (
+        "pip-audit must own a standalone jobs.security run step",
+    )
+
+    duplicate_gate_run_key = _workflow().replace(
+        f"      - run: {waiver.WAIVER_GATE_COMMAND}\n",
+        f"      - run: {waiver.WAIVER_GATE_COMMAND}\n        run: true\n",
+    )
+    assert waiver.audit_ci_workflow(duplicate_gate_run_key) == (
+        "waiver audit must own a standalone jobs.security run step",
+    )
+
+    missing_steps = _workflow().replace("    steps:\n", "    commands:\n")
+    assert waiver.audit_ci_workflow(missing_steps) == (
+        "jobs.security must define one canonical non-empty steps sequence",
+    )
+
+    duplicate_steps = _workflow().replace("    steps:\n", "    steps:\n    steps:\n")
+    assert waiver.audit_ci_workflow(duplicate_steps) == (
+        "jobs.security must define one canonical non-empty steps sequence",
+    )
+
+    empty_steps = _workflow().replace("      - run:", "        run:")
+    assert waiver.audit_ci_workflow(empty_steps) == (
+        "jobs.security must define one canonical non-empty steps sequence",
     )
 
 
