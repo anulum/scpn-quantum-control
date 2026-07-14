@@ -45,6 +45,7 @@
       "python_surfaces": [
         "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/differentiable_claim_ledger.py",
+        "src/scpn_quantum_control/differentiable_claim_rendering.py",
         "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
@@ -59,6 +60,7 @@
       "test_surfaces": [
         "tests/test_differentiable_api.py",
         "tests/test_differentiable_claim_ledger.py",
+        "tests/test_differentiable_claim_rendering.py",
         "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
@@ -211,7 +213,8 @@
         "src/scpn_quantum_control/phase/torch_bridge.py",
         "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
         "src/scpn_quantum_control/whole_program_frontend.py",
-        "src/scpn_quantum_control/differentiable_claim_ledger.py"
+        "src/scpn_quantum_control/differentiable_claim_ledger.py",
+        "src/scpn_quantum_control/differentiable_claim_rendering.py"
       ],
       "role": "Owns whole-program frontend evidence and bounded Rust Program AD replay.",
       "rust_surfaces": [
@@ -253,7 +256,8 @@
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_module_hardening_audit.py",
         "tests/test_whole_program_frontend.py",
-        "tests/test_whole_program_ad_contracts.py"
+        "tests/test_whole_program_ad_contracts.py",
+        "tests/test_differentiable_claim_rendering.py"
       ],
       "title": "Program AD core"
     },

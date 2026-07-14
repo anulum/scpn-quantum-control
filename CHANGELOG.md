@@ -5,6 +5,24 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-14 — Closed the P0 differentiable claim-ledger contract and its
+  focused local coverage gap. JSON loading now locks canonical identity and
+  metadata without string
+  coercion, preserves explicit empty benchmark lists, and rejects malformed or
+  duplicate row data. Promotion checks fail closed for empty or incomplete
+  artefact-status maps across evidence and benchmark IDs; public wording needs
+  every row promoted. Repository-surface checks reject unsafe and
+  symlink-escaping paths. Markdown rendering moved to a focused satellite,
+  escapes table/code controls, and reproduces all committed claim artefacts
+  byte-for-byte. The satellite is wired through the capability manifest,
+  Rust/Python inventory, architecture map, support-alignment evidence, and
+  external checksum bundle; the pinned remote-baseline debt register records
+  the new module as unmeasured until the next CI refresh. Provider, hardware,
+  Rust/polyglot compute, and benchmark claims are unchanged. The Studio claim
+  adapter now pairs an
+  externally reference-validated promoted row with the platform-required
+  `verified-at-source` freshness axis instead of emitting a contradictory stale
+  bundle.
 - 2026-07-14 — Closed the P0 differentiable architecture-map contract and
   coverage debt. Construction now rejects unknown layer identities, blank or
   duplicate routing entries, and malformed counts; validation locks canonical

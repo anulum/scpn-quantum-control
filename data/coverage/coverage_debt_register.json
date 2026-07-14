@@ -159,6 +159,20 @@
       "valid_lines": 217
     },
     {
+      "claim_ids": [
+        "public_claim_table",
+        "support_surface_alignment"
+      ],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/differentiable_claim_rendering.py",
+      "priority": "P0_claim_bearing",
+      "priority_reason": "Public claim ledger: public_claim_table, support_surface_alignment",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
       "claim_ids": [],
       "covered_lines": 2216,
       "line_percent": 80.12,
@@ -1976,7 +1990,7 @@
   ],
   "inputs": {
     "claim_ledger_path": "data/differentiable_phase_qnode/claim_ledger.json",
-    "claim_ledger_sha256": "0f7b87c88d6134c39ac582f7d0fb709ce9075da0e76c2c47b4e5e743c2f89b30",
+    "claim_ledger_sha256": "d6aaed9cff78809c95c6911f07e6252bcadc86cef8085553835d5ea14669f2c4",
     "justified_exclusions_path": "docs/release_coverage_exclusions.json",
     "justified_exclusions_sha256": "77150570865aae093c05ec52b209142b91b006b2d629a89438fd3b29b3efdf2b"
   },
@@ -1985,18 +1999,18 @@
   "source_inventory": {
     "baseline_report_file_count": 587,
     "baseline_rows_not_in_live_source": 0,
-    "file_count": 591,
+    "file_count": 592,
     "path": "src/scpn_quantum_control",
-    "sha256": "a29c4f4520eea917b587c0946259d9327e2bf35f1a668330056f54a7ebe48ca1"
+    "sha256": "d39f9b6ee4ae51636f21178a669a061b77a75c18bda749cb820160a10b8d7172"
   },
   "summary": {
-    "debt_file_count": 176,
+    "debt_file_count": 177,
     "fully_covered_file_count": 387,
     "justified_exclusion_file_count": 28,
     "known_missing_line_count": 6085,
     "measured_non_excluded_file_count": 558,
     "priority_counts": {
-      "P0_claim_bearing": 11,
+      "P0_claim_bearing": 12,
       "P1_runtime_hot_path": 2,
       "P2_unmeasured": 5,
       "P3_high_line_debt": 32,
@@ -2005,9 +2019,9 @@
     "status_counts": {
       "below_target": 171,
       "source_changed_since_baseline": 1,
-      "unmeasured_since_baseline": 4
+      "unmeasured_since_baseline": 5
     },
-    "unmeasured_debt_file_count": 5
+    "unmeasured_debt_file_count": 6
   },
   "target_line_percent": 100.0
 }

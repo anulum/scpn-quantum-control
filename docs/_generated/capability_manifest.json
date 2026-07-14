@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 558,
+    "python_model_source_modules": 559,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 974
+    "test_files": 975
   },
   "documentation": {
     "examples": [
@@ -4814,6 +4814,7 @@
       "src/scpn_quantum_control/differentiable_benchmark_report.py",
       "src/scpn_quantum_control/differentiable_canonical_api.py",
       "src/scpn_quantum_control/differentiable_claim_ledger.py",
+      "src/scpn_quantum_control/differentiable_claim_rendering.py",
       "src/scpn_quantum_control/differentiable_competitive_baselines.py",
       "src/scpn_quantum_control/differentiable_consistency.py",
       "src/scpn_quantum_control/differentiable_custom_derivatives.py",
@@ -6506,6 +6507,7 @@
       "tests/test_differentiable_canonical_modes.py",
       "tests/test_differentiable_catalyst_comparison.py",
       "tests/test_differentiable_claim_ledger.py",
+      "tests/test_differentiable_claim_rendering.py",
       "tests/test_differentiable_competitive_baselines.py",
       "tests/test_differentiable_consistency.py",
       "tests/test_differentiable_custom_derivatives.py",

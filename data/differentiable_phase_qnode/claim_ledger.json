@@ -143,7 +143,8 @@
         "diff-support-surface-alignment-audit-v1"
       ],
       "implementation_surface": [
-        "src/scpn_quantum_control/differentiable_claim_ledger.py"
+        "src/scpn_quantum_control/differentiable_claim_ledger.py",
+        "src/scpn_quantum_control/differentiable_claim_rendering.py"
       ],
       "known_gaps": [
         "The audit checks committed generated-manifest inventory and does not replace isolated benchmark artefacts.",
@@ -151,7 +152,8 @@
       ],
       "promotion_status": "bounded_candidate",
       "test_surface": [
-        "tests/test_differentiable_claim_ledger.py"
+        "tests/test_differentiable_claim_ledger.py",
+        "tests/test_differentiable_claim_rendering.py"
       ]
     },
     {
@@ -257,7 +259,8 @@
         "diff-public-claim-table-20260616"
       ],
       "implementation_surface": [
-        "src/scpn_quantum_control/differentiable_claim_ledger.py"
+        "src/scpn_quantum_control/differentiable_claim_ledger.py",
+        "src/scpn_quantum_control/differentiable_claim_rendering.py"
       ],
       "known_gaps": [
         "The table constrains wording but does not execute external validation or isolated benchmarks.",
@@ -265,7 +268,8 @@
       ],
       "promotion_status": "bounded_candidate",
       "test_surface": [
-        "tests/test_differentiable_claim_ledger.py"
+        "tests/test_differentiable_claim_ledger.py",
+        "tests/test_differentiable_claim_rendering.py"
       ]
     },
     {

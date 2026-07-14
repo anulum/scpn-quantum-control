@@ -16,18 +16,18 @@ SCPN Quantum Control — Differentiable external-validation artefact bundle
 
 | Artefact | Role | SHA-256 | Size bytes |
 |---|---|---|---:|
-| `data/differentiable_phase_qnode/claim_ledger.json` | Claim-ledger source of truth | `0f7b87c88d6134c39ac582f7d0fb709ce9075da0e76c2c47b4e5e743c2f89b30` | 25526 |
+| `data/differentiable_phase_qnode/claim_ledger.json` | Claim-ledger source of truth | `d6aaed9cff78809c95c6911f07e6252bcadc86cef8085553835d5ea14669f2c4` | 25778 |
 | `data/differentiable_phase_qnode/claim_ledger.md` | Reviewer claim-ledger summary | `ccbae9dec5f34bed8516563eee04eec079f66d9e73930012c5f5cf3040b6da3f` | 6859 |
 | `data/differentiable_phase_qnode/public_claim_table_20260616.md` | Public-safe claim wording table | `d6dd4738d6b5050e31425b3a40e1e56a8f946e5288370a2319925737ce112721` | 7131 |
-| `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json` | Differentiable support-surface alignment rerun artefact | `2dc45cafaa30fc7ea8f63923ef5225eb58b71f1a795973ddadf3f63e9cf7c19b` | 4639 |
-| `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md` | Differentiable support-surface alignment reviewer summary | `828137ab9e1ee0d485237b9f4aed01fb6c84673446105d47bdd138e64eb2b449` | 4942 |
+| `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json` | Differentiable support-surface alignment rerun artefact | `dfd96e8047d7ce28e5c10846f28734f91ffbddccc2ca7dd2d5ec9d8b65c81529` | 4757 |
+| `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md` | Differentiable support-surface alignment reviewer summary | `612a6f0f5d463228698df608a44d12ee28400cc2f602092e472c3b001843dd72` | 5058 |
 | `data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.json` | Differentiable baseline category scorecard artefact | `8739fd4383ba751facc2bdf53d02b390fdd178b527cf53cac00bd63d42aa34e6` | 31829 |
 | `data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md` | Differentiable baseline category scorecard reviewer summary | `e560e1ddc4e136aa0e2ef5a17c74d8f57c5634cccec3f60974006f53c0ed6ea4` | 9720 |
 | `data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.json` | Differentiable competitive-baseline freshness artefact | `be0f37ae8e9a0359fbd0f50da53764ea1d8795fa1218a8518eac728841194865` | 10009 |
 | `data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.md` | Differentiable competitive-baseline freshness reviewer summary | `94a2cf78ce1c4408fb74cf56dd246fc915a7af4b1215228e2341a9337699688d` | 3003 |
-| `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json` | Differentiable Rust/Python rustification surface inventory artefact | `c65b2332e74ca437614e37e2a9e457cca08f277edf7c79b8e6474a2f019ac4ec` | 31919 |
+| `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json` | Differentiable Rust/Python rustification surface inventory artefact | `fa6228aa68f6b6757d48d41c1ae2011e8e8d4ae6bf791a97bcc5a7c1dab3c47b` | 32171 |
 | `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md` | Differentiable Rust/Python rustification surface inventory reviewer summary | `d0f31309df39dc28dcda11af645fad77e184c09594e5a1767473e9f69750a647` | 3573 |
-| `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json` | Differentiable architecture and Rustification routing map artefact | `08d8c67723efa9d5cc972adb3990c9acdb0f83d085a6dcf23ac76c3cb8cf7677` | 22597 |
+| `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json` | Differentiable architecture and Rustification routing map artefact | `6906ca0efa111139ce99f6493c8e6c2f366aa3db3f0aa6b3967c65c4948d25d3` | 22849 |
 | `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md` | Differentiable architecture and Rustification routing map reviewer summary | `b411987fbbd70b1b4b537162a1afbafdc9e2cca4b186f2743f46f567c318165a` | 4015 |
 | `data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json` | Differentiable dependency and environment evidence map artefact | `d7b815674d64d00601ef42f1899bdb47de2047ad75f6527b6f10f13f0da0e793` | 4895 |
 | `data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md` | Differentiable dependency and environment evidence map reviewer summary | `3e980d9f729f75efa8b3c73e2d85421dd8b611f9896b86b313ab5af49eaf1448` | 1918 |

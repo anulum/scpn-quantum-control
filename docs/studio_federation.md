@@ -88,7 +88,7 @@ wire dictionaries to a Hub.
 
 | Family | Builder | Schema | Boundary |
 |---|---|---|---|
-| Differentiable claim ledger | `build_claim_ledger_bundles()` | `studio.evidence-replay.v1` | Current committed rows are curated `bounded-model` numerical-model evidence. `reference-validated` is only emitted when an external certificate marks a promoted row as validated. |
+| Differentiable claim ledger | `build_claim_ledger_bundles()` | `studio.evidence-replay.v1` | Current committed rows are curated `bounded-model` numerical-model evidence with `traceable-unchecked` freshness. `reference-validated` is only emitted when an external certificate marks a promoted row as validated, and that path carries the required `verified-at-source` freshness axis. |
 | Hardware result packs | `build_hardware_result_pack_bundles(...)` | `studio.hardware-result-pack.v1` | Packs are measured `bounded-support` hardware-unmitigated evidence with SHA-256 derivation edges for each committed artefact. |
 | Differentiable baseline scorecard | `build_scorecard_bundle()` | `studio.differentiation-evidence.v1` | Eleven external-baseline category rows ride in `cases[]` with verbatim statuses; the bundle is curated `bounded-model` and the emitter can never upgrade a category. A scorecard that fails its own validation is refused. |
 | Transform-algebra support matrix | `build_support_matrix_bundle()` | `studio.differentiation-evidence.v1` | Thirteen generated support rows ride in `cases[]` with verbatim statuses and measured residuals as case errors; blocked rows stay explicit fail-closed boundaries. The bundle is measured `bounded-model` numerical-model evidence, and an audit that did not pass is never federated. |

@@ -188,13 +188,29 @@ ledger, isolated CI benchmark artefact, and external comparison rows all pass.
 The ledger is committed at
 `data/differentiable_phase_qnode/claim_ledger.json` with a reviewer summary in
 `data/differentiable_phase_qnode/claim_ledger.md`.
+`load_differentiable_claim_ledger(...)` validates the canonical schema,
+artefact identity, licence metadata, non-empty unique claim identities, exact
+runtime field types, and non-blank unique surface/evidence collections. It does
+not coerce arbitrary JSON values into strings. A missing legacy
+`benchmark_artifact_ids` field falls back to the evidence IDs, while an
+explicit empty benchmark list stays empty so promotion validation can reject
+it. When an artefact-status mapping is supplied, even an empty mapping is
+authoritative: every promoted evidence and benchmark ID must map to `passed`.
 The public-safe wording table is generated from that ledger at
 `data/differentiable_phase_qnode/public_claim_table_20260616.md`. Use
 `render_public_claim_table(...)` and `validate_public_claim_table(...)` when a
 release note, README, package description, or reviewer response needs
-claim-boundary language. Every current row is a bounded candidate, so the table
-blocks hardware, provider, QPU, GPU, production-performance, and
-`isolated_affinity` claims until promoted evidence exists.
+claim-boundary language. The renderers live in the focused
+`differentiable_claim_rendering` satellite; table cells and code spans contain
+embedded line breaks, pipes, and backticks, and committed ledger, public-table,
+and support-alignment Markdown must reproduce byte-for-byte. Public promotional
+wording remains blocked unless every row is promoted, and checks are
+case-insensitive without a candidate-marker bypass. The claim rows carry the
+satellite source and test paths into the capability manifest, Rust/Python
+inventory, architecture map, support-alignment evidence, and external checksum
+bundle. Every current row is a bounded candidate, so the table blocks hardware,
+provider, QPU, GPU, production-performance, and `isolated_affinity` claims until
+promoted evidence exists.
 `run_differentiable_baseline_scorecard()` adds the category scorecard that keeps
 the promotion discussion tied to named external baselines: JAX transforms,
 PyTorch autograd/compile, PennyLane QNode/device/plugin breadth, Qiskit Runtime
@@ -282,8 +298,10 @@ candidate evidence.
 `validate_differentiable_support_surface_alignment()` checks that each ledger
 row still points to existing implementation, test, and documentation surfaces
 and that source/test/docs paths are present in the generated capability
-manifest. This is a consistency gate only; it does not promote hardware,
-provider, or performance claims. The committed rerun artefacts live at
+manifest. The manifest must be a contained top-level JSON object; absolute,
+parent-traversing, ambiguous, Windows-style, and symlink-escaping claim paths
+fail before dereference. This is a consistency gate only; it does not promote
+hardware, provider, or performance claims. The committed rerun artefacts live at
 `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json`
 and
 `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md`;

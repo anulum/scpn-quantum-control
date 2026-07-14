@@ -68,6 +68,7 @@ SCPN Quantum Control — Differentiable support-surface alignment
 | `src/scpn_quantum_control/differentiable_architecture_map.py` |
 | `src/scpn_quantum_control/differentiable_baseline_scorecard.py` |
 | `src/scpn_quantum_control/differentiable_claim_ledger.py` |
+| `src/scpn_quantum_control/differentiable_claim_rendering.py` |
 | `src/scpn_quantum_control/differentiable_dependency_environment_map.py` |
 | `src/scpn_quantum_control/differentiable_external_validation.py` |
 | `src/scpn_quantum_control/differentiable_framework_overlay.py` |
@@ -84,6 +85,7 @@ SCPN Quantum Control — Differentiable support-surface alignment
 | `tests/test_differentiable_benchmark_evidence.py` |
 | `tests/test_differentiable_benchmark_workflow.py` |
 | `tests/test_differentiable_claim_ledger.py` |
+| `tests/test_differentiable_claim_rendering.py` |
 | `tests/test_differentiable_dependency_environment_map.py` |
 | `tests/test_differentiable_external_comparisons.py` |
 | `tests/test_differentiable_external_validation.py` |

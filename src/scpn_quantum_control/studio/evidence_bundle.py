@@ -29,7 +29,7 @@ import platform
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from scpn_studio_platform.evidence import (
     AdmissionDecision,
@@ -276,7 +276,9 @@ def build_claim_ledger_bundle(
             blocked_on=row.known_gaps,
         ),
         substrate=substrate,
-        freshness=Freshness.TRACEABLE_UNCHECKED,
+        freshness=(
+            Freshness.VERIFIED_AT_SOURCE if reference_validated else Freshness.TRACEABLE_UNCHECKED
+        ),
         numeric_provenance=NumericProvenance(
             active_backend="differentiable-claim-ledger",
             reference_backend="committed-ledger-json",
@@ -464,9 +466,7 @@ def build_hardware_result_pack_bundles(
     """
     path = manifest_path or Path.cwd() / MANIFEST_RELATIVE_PATH
     manifest = load_manifest(path)
-    packs = manifest.get("packs", ())
-    if not isinstance(packs, Sequence) or isinstance(packs, str | bytes):
-        raise ValueError("hardware result-pack manifest must contain a pack sequence")
+    packs = cast(list[object], manifest["packs"])
     return tuple(
         build_hardware_result_pack_bundle(pack, activity_timestamp=activity_timestamp)
         for pack in packs

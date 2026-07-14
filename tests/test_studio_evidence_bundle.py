@@ -9,7 +9,9 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -19,6 +21,7 @@ from scpn_studio_platform.evidence import (  # noqa: E402
     AdmissionDecision,
     ClaimStatus,
     EvidenceKind,
+    Freshness,
     Substrate,
 )
 
@@ -28,6 +31,7 @@ from scpn_quantum_control.hardware_result_packs import (  # noqa: E402
     load_manifest,
 )
 from scpn_quantum_control.studio.evidence_bundle import (  # noqa: E402
+    EvidenceSource,
     build_claim_ledger_bundle,
     build_claim_ledger_bundles,
     build_hardware_result_pack_bundle,
@@ -74,6 +78,8 @@ def test_evidence_axes_declares_schema_b_kind_and_substrate_mapping() -> None:
         EvidenceKind.NOISE_LIMITED,
         Substrate.HARDWARE_UNMITIGATED,
     )
+    with pytest.raises(ValueError, match="unknown evidence source"):
+        evidence_axes(cast(EvidenceSource, "unknown"))
 
 
 def test_committed_claim_ledger_bundles_validate_through_platform() -> None:
@@ -107,6 +113,7 @@ def test_promoted_claim_can_emit_reference_validated_boundary() -> None:
     validation = validate_bundle(bundle)
 
     assert bundle.claim_boundary.status is ClaimStatus.REFERENCE_VALIDATED
+    assert bundle.freshness is Freshness.VERIFIED_AT_SOURCE
     assert validation.verdict.admitted
     assert validation.verdict.rejections == ()
 
@@ -155,6 +162,49 @@ def test_hardware_bundle_requires_pack_id() -> None:
     """Hardware bundle emission fails closed when a pack ID is missing."""
     with pytest.raises(ValueError, match="non-empty id"):
         build_hardware_result_pack_bundle({"artifacts": []})
+
+
+def test_hardware_bundle_rejects_artifact_shape_without_inventing_edges() -> None:
+    """Malformed artifact collections produce no fabricated cases or digests."""
+    scalar_artifacts = build_hardware_result_pack_bundle(
+        {"id": "scalar-artifacts", "artifacts": "invalid"}
+    )
+    mixed_artifacts = build_hardware_result_pack_bundle(
+        {
+            "id": "mixed-artifacts",
+            "artifacts": [
+                3,
+                {"bytes": True},
+                {"role": "text-size", "bytes": "3", "sha256": ""},
+            ],
+        }
+    )
+
+    assert scalar_artifacts.cases == ()
+    assert scalar_artifacts.derived_from == ()
+    assert len(mixed_artifacts.cases) == 2
+    assert {case.dimension for case in mixed_artifacts.cases} == {0}
+    assert mixed_artifacts.derived_from == ()
+
+
+def test_hardware_manifest_bundle_builder_filters_non_mapping_rows(tmp_path: Path) -> None:
+    """The manifest route ignores non-object rows after top-level shape validation."""
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "packs": [3, {"id": "valid-pack", "artifacts": []}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    bundles = build_hardware_result_pack_bundles(manifest_path=manifest_path)
+
+    assert len(bundles) == 1
+    assert bundles[0].entity.entity_id.endswith(":valid-pack")
+    assert len(build_hardware_result_pack_bundles()) == 5
 
 
 def test_validation_summary_is_json_ready() -> None:

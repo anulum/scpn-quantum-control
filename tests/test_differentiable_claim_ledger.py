@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import replace
 from pathlib import Path
 from typing import cast
@@ -16,8 +17,14 @@ from typing import cast
 import pytest
 
 from scpn_quantum_control.differentiable_claim_ledger import (
+    CLAIM_LEDGER_ARTIFACT_ID,
+    CLAIM_LEDGER_SCHEMA,
+    DEFAULT_LEDGER_PATH,
     DEFAULT_SUPPORT_SURFACE_ALIGNMENT_PATH,
+    SUPPORT_SURFACE_ALIGNMENT_ARTIFACT_ID,
+    ClaimLedger,
     ClaimLedgerRow,
+    ClaimLedgerValidation,
     DifferentiableSupportSurfaceAlignment,
     PromotionStatus,
     load_differentiable_claim_ledger,
@@ -30,6 +37,8 @@ from scpn_quantum_control.differentiable_claim_ledger import (
     validate_public_claim_table,
     validate_public_language_against_ledger,
 )
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _valid_claim_row(
@@ -56,10 +65,14 @@ def _valid_claim_row(
 
 
 def test_committed_claim_ledger_has_required_rows_and_artefact_ids() -> None:
+    """The committed ledger round-trips through its strict public schema."""
     ledger = load_differentiable_claim_ledger()
     validation = validate_claim_ledger(ledger)
 
     assert validation.passed
+    assert ledger.schema == CLAIM_LEDGER_SCHEMA
+    assert ledger.artifact_id == CLAIM_LEDGER_ARTIFACT_ID
+    assert ledger.to_dict() == json.loads(DEFAULT_LEDGER_PATH.read_text(encoding="utf-8"))
     claim_ids = {row.claim_id for row in ledger.rows}
     assert {
         "framework_overlay_parity",
@@ -201,7 +214,7 @@ def test_support_surface_alignment_from_dict_edges() -> None:
     """Support-surface alignment loader validates schema and list-like fields."""
     payload = {
         "schema": "scpn_qc_differentiable_support_surface_alignment_v1",
-        "artifact_id": "artifact",
+        "artifact_id": SUPPORT_SURFACE_ALIGNMENT_ARTIFACT_ID,
         "passed": True,
         "errors": [],
         "checked_claim_ids": ["claim"],
@@ -214,7 +227,7 @@ def test_support_surface_alignment_from_dict_edges() -> None:
     assert alignment.to_dict()["checked_claim_ids"] == ["claim"]
     with pytest.raises(ValueError, match="unknown support-surface alignment schema"):
         DifferentiableSupportSurfaceAlignment.from_dict({**payload, "schema": "bad.v1"})
-    with pytest.raises(ValueError, match="expected a list-like JSON value"):
+    with pytest.raises(ValueError, match="errors must be a list-like JSON value"):
         DifferentiableSupportSurfaceAlignment.from_dict({**payload, "errors": "bad"})
 
 
@@ -401,3 +414,298 @@ def test_support_surface_alignment_markdown_renders_errors() -> None:
 
     assert "## Errors" in markdown
     assert "bad path" in markdown
+
+
+def test_claim_row_construction_rejects_runtime_type_and_sequence_drift() -> None:
+    """Direct row construction rejects coercion, blanks, lists, and duplicates."""
+    row = _valid_claim_row()
+
+    with pytest.raises(ValueError, match="claim_id must be non-empty"):
+        replace(row, claim_id=cast(str, 7))
+    with pytest.raises(ValueError, match="claim_id must use lower snake or kebab case"):
+        replace(row, claim_id="Claim-ID")
+    with pytest.raises(ValueError, match="evidence_artifact_ids must be a list-like"):
+        replace(
+            row,
+            evidence_artifact_ids=cast(tuple[str, ...], ["artefact-1"]),
+        )
+    with pytest.raises(ValueError, match="known_gaps must contain non-empty string entries"):
+        replace(row, known_gaps=(" ",))
+    with pytest.raises(ValueError, match="test_surface must contain non-empty string entries"):
+        replace(row, test_surface=(cast(str, 3),))
+    with pytest.raises(ValueError, match="docs_surface must not contain duplicate entries"):
+        replace(row, docs_surface=("docs/a.md", "docs/a.md"))
+
+
+def test_claim_row_json_parser_preserves_explicit_empty_benchmark_ids() -> None:
+    """An explicit empty benchmark list never falls back to evidence IDs."""
+    payload = _valid_claim_row().to_dict()
+    payload["benchmark_artifact_ids"] = []
+
+    explicit_empty = ClaimLedgerRow.from_dict(payload)
+    del payload["benchmark_artifact_ids"]
+    legacy_fallback = ClaimLedgerRow.from_dict(payload)
+
+    assert explicit_empty.benchmark_artifact_ids == ()
+    assert legacy_fallback.benchmark_artifact_ids == explicit_empty.evidence_artifact_ids
+    payload["claim_id"] = 7
+    with pytest.raises(ValueError, match="claim_id must be non-empty"):
+        ClaimLedgerRow.from_dict(payload)
+    payload["claim_id"] = "claim"
+    payload["evidence_artifact_ids"] = "artefact-1"
+    with pytest.raises(ValueError, match="evidence_artifact_ids must be a list-like"):
+        ClaimLedgerRow.from_dict(payload)
+
+
+def test_claim_ledger_constructor_rejects_identity_row_and_uniqueness_drift() -> None:
+    """Ledger construction locks schema, artefact identity, rows, and claim IDs."""
+    row = _valid_claim_row()
+
+    with pytest.raises(ValueError, match="unknown claim-ledger schema"):
+        ClaimLedger(schema="bad.v1", artifact_id=CLAIM_LEDGER_ARTIFACT_ID, rows=(row,))
+    with pytest.raises(ValueError, match="unknown claim-ledger artifact_id"):
+        ClaimLedger(schema=CLAIM_LEDGER_SCHEMA, artifact_id="bad", rows=(row,))
+    with pytest.raises(ValueError, match="non-empty tuple"):
+        ClaimLedger(schema=CLAIM_LEDGER_SCHEMA, artifact_id=CLAIM_LEDGER_ARTIFACT_ID, rows=())
+    with pytest.raises(ValueError, match="non-empty tuple"):
+        ClaimLedger(
+            schema=CLAIM_LEDGER_SCHEMA,
+            artifact_id=CLAIM_LEDGER_ARTIFACT_ID,
+            rows=cast(tuple[ClaimLedgerRow, ...], [row]),
+        )
+    with pytest.raises(ValueError, match="ClaimLedgerRow values"):
+        ClaimLedger(
+            schema=CLAIM_LEDGER_SCHEMA,
+            artifact_id=CLAIM_LEDGER_ARTIFACT_ID,
+            rows=(cast(ClaimLedgerRow, object()),),
+        )
+    with pytest.raises(ValueError, match="duplicate claim_id"):
+        ClaimLedger(
+            schema=CLAIM_LEDGER_SCHEMA,
+            artifact_id=CLAIM_LEDGER_ARTIFACT_ID,
+            rows=(row, row),
+        )
+
+
+def test_claim_ledger_loader_rejects_malformed_top_level_and_row_shapes(
+    tmp_path: Path,
+) -> None:
+    """The file loader reports malformed JSON shapes through the public API."""
+    path = tmp_path / "claim-ledger.json"
+    committed = cast(
+        dict[str, object],
+        json.loads(DEFAULT_LEDGER_PATH.read_text(encoding="utf-8")),
+    )
+    missing_schema = dict(committed)
+    del missing_schema["schema"]
+    wrong_claims = dict(committed)
+    wrong_claims["claims"] = {}
+    scalar_row = dict(committed)
+    scalar_row["claims"] = [3]
+    empty_rows = dict(committed)
+    empty_rows["claims"] = []
+    stale_title = dict(committed)
+    stale_title["title"] = "stale"
+    malformed: tuple[tuple[object, str], ...] = (
+        ([], "claim ledger must be a JSON object"),
+        (missing_schema, "missing required field"),
+        (wrong_claims, "claims must be a JSON array"),
+        (scalar_row, "claim ledger row 0 must be a JSON object"),
+        (empty_rows, "non-empty tuple"),
+        (stale_title, "title does not match the canonical value"),
+    )
+
+    for payload, message in malformed:
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        with pytest.raises(ValueError, match=message):
+            load_differentiable_claim_ledger(path)
+
+
+def test_claim_validation_result_serialization_and_coherence() -> None:
+    """Validation results serialize deterministically and reject contradictions."""
+    passed = validate_claim_ledger([_valid_claim_row()])
+
+    assert passed.to_dict() == {"passed": True, "errors": []}
+    with pytest.raises(ValueError, match="passed must be a bool"):
+        ClaimLedgerValidation(passed=cast(bool, 1), errors=())
+    with pytest.raises(ValueError, match="true exactly when errors is empty"):
+        ClaimLedgerValidation(passed=True, errors=("error",))
+    with pytest.raises(ValueError, match="true exactly when errors is empty"):
+        ClaimLedgerValidation(passed=False, errors=())
+    with pytest.raises(ValueError, match="errors must not contain duplicate entries"):
+        ClaimLedgerValidation(passed=False, errors=("error", "error"))
+    with pytest.raises(ValueError, match="ClaimLedgerRow values"):
+        validate_claim_ledger(cast(list[ClaimLedgerRow], [object()]))
+
+
+def test_promoted_claim_status_map_fails_closed_when_empty_or_incomplete() -> None:
+    """Supplied artefact statuses cover evidence and benchmark IDs without truthiness gaps."""
+    row = _valid_claim_row("promoted", promotion_status="promoted")
+
+    empty = validate_claim_ledger([row], artifact_statuses={})
+    evidence_only = validate_claim_ledger(
+        [row],
+        artifact_statuses={"artefact-1": "passed"},
+    )
+    passed = validate_claim_ledger(
+        [row],
+        artifact_statuses={"artefact-1": "passed", "benchmark-1": "passed"},
+    )
+
+    assert not empty.passed
+    assert {"artefact-1", "benchmark-1"} <= {
+        error.split("artefact ", 1)[1].split(" is not passed", 1)[0] for error in empty.errors
+    }
+    assert not evidence_only.passed
+    assert any("benchmark-1" in error for error in evidence_only.errors)
+    assert passed.passed
+    assert validate_claim_ledger([]).errors == ("claim ledger must contain at least one row",)
+
+
+def test_public_language_requires_every_row_promoted_and_is_case_insensitive() -> None:
+    """One promoted row or a candidate marker cannot bypass banned public wording."""
+    promoted = _valid_claim_row("promoted", promotion_status="promoted")
+    candidate = _valid_claim_row("candidate")
+    text = "STATE-OF-THE-ART bounded_candidate production performance"
+
+    validation = validate_public_language_against_ledger(
+        (promoted, candidate),
+        (text, text),
+    )
+
+    assert not validation.passed
+    assert validation.errors == (
+        "public wording exceeds claim ledger: state-of-the-art",
+        "public wording exceeds claim ledger: production performance",
+    )
+
+
+def test_support_alignment_parser_rejects_boolean_identity_and_result_drift() -> None:
+    """Alignment evidence rejects truthy strings, stale IDs, and incoherent results."""
+    payload: dict[str, object] = {
+        "schema": "scpn_qc_differentiable_support_surface_alignment_v1",
+        "artifact_id": SUPPORT_SURFACE_ALIGNMENT_ARTIFACT_ID,
+        "passed": True,
+        "errors": [],
+        "checked_claim_ids": ["claim"],
+        "checked_paths": ["docs/differentiable_api.md"],
+        "claim_boundary": "support-surface alignment audit only",
+    }
+
+    with pytest.raises(ValueError, match="passed must be a bool"):
+        DifferentiableSupportSurfaceAlignment.from_dict({**payload, "passed": "false"})
+    with pytest.raises(ValueError, match="passed must be a bool"):
+        DifferentiableSupportSurfaceAlignment(
+            passed=cast(bool, 1),
+            errors=(),
+            checked_claim_ids=("claim",),
+            checked_paths=("docs/differentiable_api.md",),
+            claim_boundary="support-surface alignment audit only",
+        )
+    with pytest.raises(ValueError, match="unknown support-surface alignment artifact_id"):
+        DifferentiableSupportSurfaceAlignment.from_dict({**payload, "artifact_id": "stale"})
+    with pytest.raises(ValueError, match="true exactly when errors is empty"):
+        DifferentiableSupportSurfaceAlignment.from_dict({**payload, "passed": False, "errors": []})
+    with pytest.raises(ValueError, match="missing required field: artifact_id"):
+        without_artifact = dict(payload)
+        del without_artifact["artifact_id"]
+        DifferentiableSupportSurfaceAlignment.from_dict(without_artifact)
+
+
+def test_support_alignment_rejects_unsafe_and_symlink_escape_paths(tmp_path: Path) -> None:
+    """Alignment validation never dereferences unsafe or escaping claim surfaces."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    manifest = repo / "manifest.json"
+    manifest.write_text('{"paths": []}', encoding="utf-8")
+    base = _valid_claim_row("unsafe")
+
+    for unsafe in ("../outside.md", "/absolute.md", "docs\\windows.md", "docs//gap.md"):
+        alignment = validate_differentiable_support_surface_alignment(
+            rows=[replace(base, docs_surface=(unsafe,))],
+            repo_root=repo,
+            manifest_path=manifest,
+        )
+        assert any("not a safe repository-relative path" in error for error in alignment.errors)
+
+    external = tmp_path / "external"
+    external.mkdir()
+    (external / "surface.py").write_text("pass\n", encoding="utf-8")
+    (repo / "src").mkdir()
+    (repo / "src" / "link").symlink_to(external, target_is_directory=True)
+    alignment = validate_differentiable_support_surface_alignment(
+        rows=[replace(base, implementation_surface=("src/link/surface.py",))],
+        repo_root=repo,
+        manifest_path=manifest,
+    )
+
+    assert any("not a safe repository-relative path" in error for error in alignment.errors)
+
+
+def test_support_alignment_rejects_outside_and_scalar_manifests(tmp_path: Path) -> None:
+    """Capability manifests must be contained JSON objects, not external scalars."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    outside = tmp_path / "outside.json"
+    outside.write_text("{}", encoding="utf-8")
+
+    outside_result = validate_differentiable_support_surface_alignment(
+        rows=[_valid_claim_row()],
+        repo_root=repo,
+        manifest_path=outside,
+    )
+    assert any("manifest is outside repository" in error for error in outside_result.errors)
+
+    manifest = repo / "manifest.json"
+    manifest.write_text("[]", encoding="utf-8")
+    scalar_result = validate_differentiable_support_surface_alignment(
+        rows=[_valid_claim_row()],
+        repo_root=repo,
+        manifest_path=manifest,
+    )
+    assert any("manifest must be a JSON object" in error for error in scalar_result.errors)
+
+    manifest.write_text("{}", encoding="utf-8")
+    manifest.chmod(0)
+    try:
+        unreadable_result = validate_differentiable_support_surface_alignment(
+            rows=[_valid_claim_row()],
+            repo_root=repo,
+            manifest_path=manifest,
+        )
+    finally:
+        manifest.chmod(0o600)
+    assert any("manifest cannot be read" in error for error in unreadable_result.errors)
+
+
+def test_support_alignment_loader_rejects_non_object_json(tmp_path: Path) -> None:
+    """The alignment file loader requires a top-level JSON object."""
+    path = tmp_path / "alignment.json"
+    path.write_text("[]", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="support-surface alignment must be a JSON object"):
+        load_differentiable_support_surface_alignment(path)
+
+
+def test_public_claim_table_validation_rejects_duplicate_and_header_drift() -> None:
+    """The validator requires one canonical row and the complete generated table."""
+    row = _valid_claim_row()
+    canonical = render_public_claim_table((row,))
+    duplicated = canonical.replace(
+        "\n\nGlobal boundary:",
+        f"\n{canonical.splitlines()[17]}\n\nGlobal boundary:",
+    )
+
+    duplicate_validation = validate_public_claim_table((row,), duplicated)
+    header_validation = validate_public_claim_table(
+        (row,),
+        canonical.replace("# Differentiable Public Claim Table", "# Claims"),
+    )
+
+    assert not duplicate_validation.passed
+    assert any("does not exactly match ledger" in error for error in duplicate_validation.errors)
+    assert not header_validation.passed
+    assert any(
+        "differs from the canonical ledger rendering" in error
+        for error in header_validation.errors
+    )
