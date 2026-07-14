@@ -74,6 +74,13 @@ jobs:
         run: mypy --strict tools/check_differentiable_external_validation.py
       - name: Audit differentiable promotion language
         run: python tools/check_differentiable_promotion_language.py
+      - name: Audit generated differentiable support-matrix page
+        run: python tools/differentiable_support_matrix_page.py --check
+      - name: Type-check differentiable support-matrix page gate
+        run: >-
+          mypy --strict --explicit-package-bases
+          tools/differentiable_support_matrix_page.py
+          tests/test_differentiable_support_matrix_page.py
       - name: Ruff docstring ratchet for differentiable module hardening
         run: >-
           ruff check --isolated --select D,D413
@@ -97,6 +104,8 @@ jobs:
           tests/test_differentiable_transform_algebra.py
           tests/test_phase_tensorflow_maintenance.py
           tests/test_differentiable_hardening_gate.py
+          tools/differentiable_support_matrix_page.py
+          tests/test_differentiable_support_matrix_page.py
 
   test:
     needs: lint

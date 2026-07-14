@@ -72,6 +72,7 @@ nav:
       - Orchestrator Integration: orchestrator_integration.md
   - API Reference:
       - Differentiable API: differentiable_api.md
+      - Differentiable Support Matrix: differentiable_support_matrix.md
       - Differentiable External Validation Report: differentiable_external_validation_report.md
       - Stable Facades API: stable_facades_api.md
       - Stable Core API: stable_core_api.md

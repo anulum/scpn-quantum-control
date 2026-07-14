@@ -14,27 +14,29 @@ Gates (in order):
   4. diff-promo-lang  — differentiable promotion-language evidence gate
   5. diff-baselines  — differentiable competitive-baseline freshness gate
   6. diff-transform  — differentiable transform-algebra metamorphic gate
-  7. ruff D ratchet  — NumPy-style docstring ratchet for differentiable hardening
-  8. test-quality    — forbid coverage-bucket pytest modules
-  9. module-size     — tracked oversized-code responsibility inventory
-  10. module-size typing — strict typing for the inventory tool
-  11. licence-readiness — canonical cross-language source headers and licence boundaries
-  12. licence typing — strict typing for the licence-readiness audit
-  13. test typing    — additive strict-mypy cohort for repository tests
-  14. test typing tool — strict typing for the cohort-policy audit
-  15. coverage policy — preserve line gate and require branch telemetry
-  16. coverage policy tool — strict typing for the coverage-policy audit
-  17. coverage debt — current 100% recovery register and priority drift
-  18. coverage debt tool — strict typing for the debt-register audit
-  19. external-validation — environment and evidence-bundle manifest drift
-  20. external-validation tool — strict typing for the manifest gate
-  21. rustfmt        — canonical formatting across the Rust engine crate
-  22. version-sync   — version string consistency across 5 carrier files
-  23. rust-pyi       — Rust PyO3 exports match local typing contract
-  24. mypy           — type errors
-  25. mypy-strict-dp — strict typing ratchet for differentiable programming
-  26. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
-  27. bandit         — security scan
+  7. diff-support-page — generated registry/planner page + capability-manifest alignment
+  8. diff-support typing — strict typing for the page generator and focused tests
+  9. ruff D ratchet  — NumPy-style docstring ratchet for differentiable hardening
+  10. test-quality   — forbid coverage-bucket pytest modules
+  11. module-size    — tracked oversized-code responsibility inventory
+  12. module-size typing — strict typing for the inventory tool
+  13. licence-readiness — canonical cross-language source headers and licence boundaries
+  14. licence typing — strict typing for the licence-readiness audit
+  15. test typing    — additive strict-mypy cohort for repository tests
+  16. test typing tool — strict typing for the cohort-policy audit
+  17. coverage policy — preserve line gate and require branch telemetry
+  18. coverage policy tool — strict typing for the coverage-policy audit
+  19. coverage debt — current 100% recovery register and priority drift
+  20. coverage debt tool — strict typing for the debt-register audit
+  21. external-validation — environment and evidence-bundle manifest drift
+  22. external-validation tool — strict typing for the manifest gate
+  23. rustfmt        — canonical formatting across the Rust engine crate
+  24. version-sync   — version string consistency across 5 carrier files
+  25. rust-pyi       — Rust PyO3 exports match local typing contract
+  26. mypy           — type errors
+  27. mypy-strict-dp — strict typing ratchet for differentiable programming
+  28. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
+  29. bandit         — security scan
 
 Usage:
   python tools/preflight.py                # all gates (default)
@@ -78,6 +80,8 @@ DIFFERENTIABLE_DOCSTRING_RATCHET = [
     "tests/test_differentiable_transform_algebra.py",
     "tests/test_phase_tensorflow_maintenance.py",
     "tests/test_differentiable_hardening_gate.py",
+    "tools/differentiable_support_matrix_page.py",
+    "tests/test_differentiable_support_matrix_page.py",
 ]
 
 _PYTEST_BASE = [
@@ -122,6 +126,22 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     (
         "differentiable-transform-algebra",
         [_PY, "tools/check_differentiable_transform_algebra.py"],
+    ),
+    (
+        "differentiable-support-matrix-page",
+        [_PY, "tools/differentiable_support_matrix_page.py", "--check"],
+    ),
+    (
+        "mypy-strict-differentiable-support-matrix-page",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "--explicit-package-bases",
+            "tools/differentiable_support_matrix_page.py",
+            "tests/test_differentiable_support_matrix_page.py",
+        ],
     ),
     (
         "ruff D differentiable module-hardening ratchet",

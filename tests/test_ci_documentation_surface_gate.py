@@ -28,6 +28,18 @@ def test_ci_lint_job_gates_documentation_surface() -> None:
     assert "python tools/check_differentiable_promotion_language.py" in workflow
 
 
+def test_ci_lint_job_gates_generated_differentiable_support_matrix() -> None:
+    """CI must reject generated-page, manifest, typing, or docstring drift."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "Audit generated differentiable support-matrix page" in workflow
+    assert "python tools/differentiable_support_matrix_page.py --check" in workflow
+    assert "Type-check differentiable support-matrix page gate" in workflow
+    assert "mypy --strict --explicit-package-bases" in workflow
+    assert "tools/differentiable_support_matrix_page.py" in workflow
+    assert "tests/test_differentiable_support_matrix_page.py" in workflow
+
+
 def test_ci_lint_job_gates_additive_test_typing_policy() -> None:
     """CI must execute the registered strict-test cohort and type its audit."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
@@ -190,6 +202,8 @@ def test_ci_gates_differentiable_docstring_ratchet() -> None:
     assert "tests/test_differentiable_transform_algebra.py" in workflow
     assert "tests/test_phase_tensorflow_maintenance.py" in workflow
     assert "tests/test_differentiable_hardening_gate.py" in workflow
+    assert "tools/differentiable_support_matrix_page.py" in workflow
+    assert "tests/test_differentiable_support_matrix_page.py" in workflow
 
 
 def test_rust_audit_installer_retries_transient_crates_io_transport_errors() -> None:

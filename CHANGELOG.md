@@ -4,6 +4,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Added
+- 2026-07-14 — Added a deterministic public differentiable support matrix
+  generated from the executable Program AD registry and quantum-gradient
+  planner. The generator fails closed on planner audit failures and capability
+  manifest drift; CI and the local static gate enforce generated-page drift,
+  strict typing, and isolated NumPy docstrings. README and guide-level manual
+  support tables now link to the generated source of truth. Numerical kernels,
+  Rust/polyglot implementations, provider and hardware execution, and
+  benchmark claims are unchanged.
+
 ### Fixed
 - 2026-07-14 — Corrected the differentiable docstring ratchet so CI and the
   static gate bypass the repository-wide transitional `D` ignore, enforce the

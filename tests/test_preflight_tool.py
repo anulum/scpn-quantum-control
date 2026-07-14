@@ -124,6 +124,21 @@ def test_static_gates_include_external_validation_manifest_audit() -> None:
     assert strict_cmd[-1] == "tools/check_differentiable_external_validation.py"
 
 
+def test_static_gates_include_generated_differentiable_support_matrix() -> None:
+    """The local static gate must mirror page drift and strict typing checks."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+
+    assert gate_map["differentiable-support-matrix-page"][-2:] == [
+        "tools/differentiable_support_matrix_page.py",
+        "--check",
+    ]
+    strict_cmd = gate_map["mypy-strict-differentiable-support-matrix-page"]
+    assert "--strict" in strict_cmd
+    assert "--explicit-package-bases" in strict_cmd
+    assert "tools/differentiable_support_matrix_page.py" in strict_cmd
+    assert "tests/test_differentiable_support_matrix_page.py" in strict_cmd
+
+
 def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     """Differentiable docstring-clean modules must stay under Ruff D."""
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
@@ -153,6 +168,8 @@ def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     assert "tests/test_differentiable_external_validation.py" in docstring_cmd
     assert "tests/test_differentiable_module_hardening_audit.py" in docstring_cmd
     assert "tests/test_differentiable_hardening_gate.py" in docstring_cmd
+    assert "tools/differentiable_support_matrix_page.py" in docstring_cmd
+    assert "tests/test_differentiable_support_matrix_page.py" in docstring_cmd
 
 
 def test_ci_and_preflight_share_the_docstring_ratchet_cohort() -> None:
@@ -163,7 +180,7 @@ def test_ci_and_preflight_share_the_docstring_ratchet_cohort() -> None:
     ci_paths = [
         line.strip()
         for line in workflow[block_start:block_end].splitlines()
-        if line.strip().startswith(("src/", "tests/"))
+        if line.strip().startswith(("src/", "tests/", "tools/"))
     ]
 
     assert ci_paths == _preflight.DIFFERENTIABLE_DOCSTRING_RATCHET

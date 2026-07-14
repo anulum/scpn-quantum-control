@@ -8,12 +8,12 @@
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 835,
-    "public_documentation_pages": 269,
+    "public_documentation_pages": 270,
     "python_model_classes": 1003,
     "python_model_source_modules": 559,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 975
+    "test_files": 976
   },
   "documentation": {
     "examples": [
@@ -291,6 +291,7 @@
       "docs/differentiable_external_validation_report.md",
       "docs/differentiable_programming.md",
       "docs/differentiable_roadmap.md",
+      "docs/differentiable_support_matrix.md",
       "docs/differentiable_tutorials.md",
       "docs/dla_parity.md",
       "docs/dla_protected_scar_memory.md",
@@ -6559,6 +6560,7 @@
       "tests/test_differentiable_sparse_derivatives.py",
       "tests/test_differentiable_spsa.py",
       "tests/test_differentiable_stochastic_estimators.py",
+      "tests/test_differentiable_support_matrix_page.py",
       "tests/test_differentiable_transform_algebra.py",
       "tests/test_differentiable_transform_helpers.py",
       "tests/test_differentiable_transform_support_matrix_artifact.py",
