@@ -89,6 +89,15 @@ def test_payload_comes_from_live_registry_and_planner_surfaces() -> None:
     assert planner_payload["rows"] == [plan.to_dict() for plan in planner.plans]
 
 
+def test_rendered_page_routes_to_reviewer_evidence() -> None:
+    """The support source of truth must route readers to reproduction evidence."""
+    rendered = render_differentiable_support_matrix_page(
+        build_differentiable_support_matrix_payload()
+    )
+
+    assert "[Differentiable Reviewer Evidence](differentiable_reviewer_evidence.md)" in rendered
+
+
 def test_payload_rejects_a_failed_planner_audit_with_named_cells() -> None:
     """A planner invariant failure cannot be serialised as public support."""
     audit = run_gradient_support_matrix_audit()

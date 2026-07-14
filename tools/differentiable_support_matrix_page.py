@@ -81,7 +81,10 @@ _REQUIRED_TEST_FILES: Final[tuple[str, ...]] = (
     "tests/test_program_ad_registry.py",
     "tests/test_differentiable_support_matrix_page.py",
 )
-_REQUIRED_DOCUMENTATION_PAGES: Final[tuple[str, ...]] = ("docs/differentiable_support_matrix.md",)
+_REQUIRED_DOCUMENTATION_PAGES: Final[tuple[str, ...]] = (
+    "docs/differentiable_reviewer_evidence.md",
+    "docs/differentiable_support_matrix.md",
+)
 _SurfaceT = TypeVar("_SurfaceT")
 
 
@@ -370,6 +373,10 @@ def render_differentiable_support_matrix_page(payload: Mapping[str, object]) -> 
         GENERATED_BY,
         "python tools/differentiable_support_matrix_page.py --check",
         "```",
+        "",
+        "The generated [Differentiable Reviewer Evidence](differentiable_reviewer_evidence.md)",
+        "page maps the current support rows to scoped reproduction commands and explicit",
+        "public open-gap pointers.",
         "",
         "## Evidence boundary",
         "",

@@ -81,6 +81,14 @@ jobs:
           mypy --strict --explicit-package-bases
           tools/differentiable_support_matrix_page.py
           tests/test_differentiable_support_matrix_page.py
+      - name: Audit generated differentiable reviewer-evidence page
+        run: python tools/differentiable_reviewer_evidence_page.py --check
+      - name: Type-check differentiable reviewer-evidence page gate
+        run: >-
+          mypy --strict --explicit-package-bases
+          tools/differentiable_reviewer_evidence_catalog.py
+          tools/differentiable_reviewer_evidence_page.py
+          tests/test_differentiable_reviewer_evidence_page.py
       - name: Ruff docstring ratchet for differentiable module hardening
         run: >-
           ruff check --isolated --select D,D413
@@ -106,6 +114,9 @@ jobs:
           tests/test_differentiable_hardening_gate.py
           tools/differentiable_support_matrix_page.py
           tests/test_differentiable_support_matrix_page.py
+          tools/differentiable_reviewer_evidence_catalog.py
+          tools/differentiable_reviewer_evidence_page.py
+          tests/test_differentiable_reviewer_evidence_page.py
 
   test:
     needs: lint

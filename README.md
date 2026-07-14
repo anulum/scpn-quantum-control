@@ -130,8 +130,8 @@ claims only when the evidence exists.
 | Notebook files | 100 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 976 |
-| Public documentation pages | 270 |
+| Python test files | 977 |
+| Public documentation pages | 271 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -216,7 +216,10 @@ The executable Program AD registry and quantum-gradient planner inventory is
 generated rather than maintained in this README. The
 [Differentiable Support Matrix](docs/differentiable_support_matrix.md) lists
 every current registry row and every representative supported or fail-closed
-planner case. Broader workflow, evidence, promotion, provider, hardware, and
+planner case. The generated
+[Differentiable Reviewer Evidence](docs/differentiable_reviewer_evidence.md)
+page maps DP-015/030 concerns to scoped commands and explicit open-gap
+pointers. Broader workflow, evidence, promotion, provider, hardware, and
 benchmark boundaries remain documented in
 [Differentiable Programming](docs/differentiable_programming.md), the
 [Differentiable API](docs/differentiable_api.md),
@@ -335,6 +338,8 @@ Direct entry points:
   — current AD surface, support boundaries, and user routes
 - [Differentiable Support Matrix](docs/differentiable_support_matrix.md)
   — generated Program AD registry and quantum-gradient planner evidence
+- [Differentiable Reviewer Evidence](docs/differentiable_reviewer_evidence.md)
+  — generated DP-015/030 reproduction commands and open-gap pointers
 - [Quantum Gradients](docs/quantum_gradients.md)
   — parameter-shift, VQE gradients, verification tests, and planned backend
   gradient planner
@@ -864,6 +869,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Differentiable Tutorials](docs/differentiable_tutorials.md) — runnable gradient workflow with diagnostics, compiler report, and bounded QNN training
 - [Differentiable Programming](docs/differentiable_programming.md) — bounded AD surface, gradients, compiler kernels, and roadmap boundaries
 - [Differentiable Support Matrix](docs/differentiable_support_matrix.md) — generated registry and planner support evidence
+- [Differentiable Reviewer Evidence](docs/differentiable_reviewer_evidence.md) — generated criticism-to-command and open-gap evidence index
 - [Quantum Gradients](docs/quantum_gradients.md) — parameter-shift and gradient-evidence route for VQE and quantum-control objectives
 - [Differentiable API](docs/differentiable_api.md) — public differentiable namespace and support matrix
 - [Differentiable Roadmap](docs/differentiable_roadmap.md) — staged gradient, adapter, benchmark, verification, and control roadmap

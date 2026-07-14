@@ -5,6 +5,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-14 — Added a generated differentiable reviewer-evidence page that
+  maps all five DP-015 criticisms and the seven DP-030 evidence-package rows
+  to scoped runnable commands or stable public open-gap pointers. The gate
+  validates repository paths, changelog markers, capability-manifest surfaces,
+  support-matrix counts, and roadmap markers. Its inventory covers
+  finite-shot uncertainty records, provider callback boundaries,
+  natural-gradient PhaseVQE, batch parameter-shift, framework overlay
+  evidence, known-ground-state optimizer convergence certificates, and the
+  compiler promotion-batch boundary without promoting provider, hardware,
+  universal-framework, compiler, isolated-performance, or superiority claims.
 - 2026-07-14 — Added a deterministic public differentiable support matrix
   generated from the executable Program AD registry and quantum-gradient
   planner. The generator fails closed on planner audit failures and capability

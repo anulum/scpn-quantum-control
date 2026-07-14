@@ -27,6 +27,46 @@ This roadmap defines the staged work needed to turn differentiable programming i
 - Fault-tolerant path: logical encodings, resource estimation, and error-corrected oscillator simulation assumptions.
 - Visualization: phase portraits, order parameters, hardware bitstrings, shadow estimates, DLA/topological views, and feedback-control telemetry.
 
+## Open evidence work
+
+The generated reviewer-evidence page uses these stable public identifiers. A
+passing local command does not close a pointer; each item remains open until
+the named promotion evidence is committed and its claim-ledger row passes.
+
+### DIFF-OPEN-01 — Framework-native and accelerator promotion
+
+Broader native framework transforms, incompatible CUDA or other accelerator
+routes, cross-runtime checkpoints and exports, and persistent multi-platform
+execution require dedicated artefacts. Current local and compatibility rows do
+not promote those routes.
+
+### DIFF-OPEN-02 — Provider and hardware gradient evidence
+
+Live provider execution remains owner-approved and ticket-gated. Promotion
+requires backend and job identity, raw counts, calibration metadata, a
+statevector comparison, budget validation, and the corresponding claim-ledger
+evidence chain.
+
+### DIFF-OPEN-03 — Isolated benchmark promotion
+
+Performance claims require reserved-host `isolated_affinity` artefacts with
+observed CPU affinity, host/load metadata, fixed environments, comparison
+inputs, and validated benchmark classifications. Local and shared-host timing
+remains functional evidence only.
+
+### DIFF-OPEN-04 — Compiler AD promotion
+
+Broader Enzyme, MLIR, LLVM/JIT, Rust registry execution, and array-adjoint
+promotion requires native correctness evidence, crash/fallback policy where
+applicable, and isolated benchmark identifiers. Metadata and bounded replay do
+not close this item.
+
+### DIFF-OPEN-05 — Tutorial and notebook breadth
+
+Public notebooks beyond the executable examples remain open until they replay
+from a clean declared environment, record expected outputs, and preserve the
+same support labels and failure boundaries as the public API documentation.
+
 ## Release rule
 
 A differentiable feature becomes public-production only when the implementation, tests, docs, examples, support matrix, benchmark evidence, security checks, and failure-mode documentation agree. The formal claim ledger must name artefact IDs and benchmark IDs for promoted rows. Until then, the docs must label it as experimental, planned, unsupported, or bounded_candidate.

@@ -139,6 +139,22 @@ def test_static_gates_include_generated_differentiable_support_matrix() -> None:
     assert "tests/test_differentiable_support_matrix_page.py" in strict_cmd
 
 
+def test_static_gates_include_generated_differentiable_reviewer_evidence() -> None:
+    """The local static gate must enforce reviewer-page drift and strict typing."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+
+    assert gate_map["differentiable-reviewer-evidence-page"][-2:] == [
+        "tools/differentiable_reviewer_evidence_page.py",
+        "--check",
+    ]
+    strict_cmd = gate_map["mypy-strict-differentiable-reviewer-evidence-page"]
+    assert "--strict" in strict_cmd
+    assert "--explicit-package-bases" in strict_cmd
+    assert "tools/differentiable_reviewer_evidence_catalog.py" in strict_cmd
+    assert "tools/differentiable_reviewer_evidence_page.py" in strict_cmd
+    assert "tests/test_differentiable_reviewer_evidence_page.py" in strict_cmd
+
+
 def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     """Differentiable docstring-clean modules must stay under Ruff D."""
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
@@ -170,6 +186,9 @@ def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     assert "tests/test_differentiable_hardening_gate.py" in docstring_cmd
     assert "tools/differentiable_support_matrix_page.py" in docstring_cmd
     assert "tests/test_differentiable_support_matrix_page.py" in docstring_cmd
+    assert "tools/differentiable_reviewer_evidence_catalog.py" in docstring_cmd
+    assert "tools/differentiable_reviewer_evidence_page.py" in docstring_cmd
+    assert "tests/test_differentiable_reviewer_evidence_page.py" in docstring_cmd
 
 
 def test_ci_and_preflight_share_the_docstring_ratchet_cohort() -> None:

@@ -82,6 +82,9 @@ DIFFERENTIABLE_DOCSTRING_RATCHET = [
     "tests/test_differentiable_hardening_gate.py",
     "tools/differentiable_support_matrix_page.py",
     "tests/test_differentiable_support_matrix_page.py",
+    "tools/differentiable_reviewer_evidence_catalog.py",
+    "tools/differentiable_reviewer_evidence_page.py",
+    "tests/test_differentiable_reviewer_evidence_page.py",
 ]
 
 _PYTEST_BASE = [
@@ -141,6 +144,23 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "--explicit-package-bases",
             "tools/differentiable_support_matrix_page.py",
             "tests/test_differentiable_support_matrix_page.py",
+        ],
+    ),
+    (
+        "differentiable-reviewer-evidence-page",
+        [_PY, "tools/differentiable_reviewer_evidence_page.py", "--check"],
+    ),
+    (
+        "mypy-strict-differentiable-reviewer-evidence-page",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "--explicit-package-bases",
+            "tools/differentiable_reviewer_evidence_catalog.py",
+            "tools/differentiable_reviewer_evidence_page.py",
+            "tests/test_differentiable_reviewer_evidence_page.py",
         ],
     ),
     (

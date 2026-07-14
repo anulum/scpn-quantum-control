@@ -14,6 +14,10 @@ python tools/differentiable_support_matrix_page.py --write
 python tools/differentiable_support_matrix_page.py --check
 ```
 
+The generated [Differentiable Reviewer Evidence](differentiable_reviewer_evidence.md)
+page maps the current support rows to scoped reproduction commands and explicit
+public open-gap pointers.
+
 ## Evidence boundary
 
 Generated registry and planner evidence only. Complete registry rows identify declared Program AD metadata contracts; supported planner rows identify bounded local or host-bridge plans. Neither surface promotes provider, hardware, universal transform, compiler-execution, or performance claims.
@@ -185,7 +189,7 @@ The page check requires these tracked surfaces before it passes:
 - Package exports: `ProgramADRegistryDispatchCoverageReport`, `ProgramADRegistryDispatchCoverageRow`, `program_ad_registry_dispatch_coverage_report`
 - Source modules: `src/scpn_quantum_control/phase/gradient_support_matrix.py`, `src/scpn_quantum_control/program_ad_registry.py`
 - Focused tests: `tests/test_phase_gradient_support_matrix.py`, `tests/test_program_ad_registry.py`, `tests/test_differentiable_support_matrix_page.py`
-- Public page: `docs/differentiable_support_matrix.md`
+- Public page: `docs/differentiable_reviewer_evidence.md`, `docs/differentiable_support_matrix.md`
 
 The capability manifest is a static inventory, while the two matrices
 above are runtime-derived governance evidence. The cross-check proves
