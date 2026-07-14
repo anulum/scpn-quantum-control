@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-14 — Closed the P0 dependency-environment-map contract and coverage
+  debt through public profile, runner, validator, serializer, and renderer
+  routes. Every public object now documents its NumPy-style input and output
+  contract, while the differentiable guide records the validator's fail-closed
+  invariants. Dependency locks, environment classifications, provider and
+  hardware policy, polyglot kernels, and benchmark claims are unchanged.
 - 2026-07-14 — Closed the P0 claim-bearing coverage and contract debt for the
   unified differentiable API facade. Public dispatcher regressions now execute
   every numerical, compiler, benchmark, governance, diagnostic, and validation

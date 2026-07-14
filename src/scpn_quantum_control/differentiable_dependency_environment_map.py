@@ -54,7 +54,31 @@ REQUIRED_DEPENDENCY_ENVIRONMENT_PROFILE_IDS: tuple[
 
 @dataclass(frozen=True)
 class DifferentiableDependencyEnvironmentProfile:
-    """One differentiable dependency profile tied to lockfile evidence."""
+    """Describe one differentiable profile tied to lockfile evidence.
+
+    Parameters
+    ----------
+    profile_id : DifferentiableDependencyEnvironmentProfileId or str
+        Stable identifier for the runtime or verification profile.
+    title : str
+        Reviewer-facing profile title.
+    role : str
+        Purpose of the profile within differentiable validation.
+    lockfile_paths : tuple[str, ...]
+        Repository-relative lockfiles that define the environment.
+    evidence_paths : tuple[str, ...]
+        Repository-relative files reviewers must be able to inspect.
+    pinned_package_count : int
+        Total pinned package entries across the profile lockfiles.
+    checksum_count : int
+        Number of profile lockfiles carrying a non-empty checksum.
+    evidence_status : DifferentiableDependencyEnvironmentStatus
+        Whether the profile is locked or remains a hard gap.
+    blockers : tuple[str, ...]
+        Explicit reasons the profile cannot support promotion.
+    claim_boundary : str
+        Non-promotional interpretation attached to the evidence.
+    """
 
     profile_id: DifferentiableDependencyEnvironmentProfileId | str
     title: str
@@ -68,7 +92,14 @@ class DifferentiableDependencyEnvironmentProfile:
     claim_boundary: str
 
     def __post_init__(self) -> None:
-        """Validate profile fields before emitting dependency evidence."""
+        """Validate profile fields before emitting dependency evidence.
+
+        Raises
+        ------
+        ValueError
+            If a required text or path is empty, a count is negative, or the
+            evidence status is outside the locked/hard-gap contract.
+        """
         for field_name in ("profile_id", "title", "role", "evidence_status", "claim_boundary"):
             if not str(getattr(self, field_name)).strip():
                 raise ValueError(f"{field_name} must be non-empty")
@@ -85,11 +116,23 @@ class DifferentiableDependencyEnvironmentProfile:
 
     @property
     def environment_ready(self) -> bool:
-        """Return whether this dependency profile can support promotion."""
+        """Return whether this dependency profile can support promotion.
+
+        Returns
+        -------
+        bool
+            ``True`` only for a locked profile without blockers.
+        """
         return self.evidence_status == "locked" and not self.blockers
 
     def to_dict(self) -> dict[str, object]:
-        """Return a JSON-ready dependency environment profile."""
+        """Return a JSON-ready dependency environment profile.
+
+        Returns
+        -------
+        dict[str, object]
+            Profile fields with tuple values materialised as JSON-ready lists.
+        """
         return {
             "profile_id": self.profile_id,
             "title": self.title,
@@ -107,7 +150,25 @@ class DifferentiableDependencyEnvironmentProfile:
 
 @dataclass(frozen=True)
 class DifferentiableDependencyEnvironmentMap:
-    """Deterministic map of dependency profiles and environment evidence."""
+    """Aggregate deterministic dependency profiles and environment evidence.
+
+    Parameters
+    ----------
+    schema : str
+        Versioned schema identifier for the emitted map.
+    artifact_id : str
+        Stable identifier for the committed evidence artefact.
+    profiles : tuple[DifferentiableDependencyEnvironmentProfile, ...]
+        Ordered dependency profiles governed by the map.
+    environment_ready : bool
+        Whether every profile and the underlying lock permit promotion.
+    ready_profile_count : int
+        Number of profiles whose locked evidence has no blockers.
+    total_profile_count : int
+        Number of profiles represented in the map.
+    claim_boundary : str
+        Non-promotional interpretation attached to the map.
+    """
 
     schema: str
     artifact_id: str
@@ -118,7 +179,13 @@ class DifferentiableDependencyEnvironmentMap:
     claim_boundary: str
 
     def to_dict(self) -> dict[str, object]:
-        """Return a JSON-ready dependency environment map."""
+        """Return a JSON-ready dependency environment map.
+
+        Returns
+        -------
+        dict[str, object]
+            Map metadata and nested JSON-ready profile dictionaries.
+        """
         return {
             "schema": self.schema,
             "artifact_id": self.artifact_id,
@@ -132,7 +199,25 @@ class DifferentiableDependencyEnvironmentMap:
 
 @dataclass(frozen=True)
 class DifferentiableDependencyEnvironmentMapValidation:
-    """Validation result for a differentiable dependency environment map."""
+    """Record validation evidence for a dependency environment map.
+
+    Parameters
+    ----------
+    passed : bool
+        Whether every structural and filesystem invariant passed.
+    errors : tuple[str, ...]
+        Deterministic validation errors in discovery order.
+    checked_profile_ids : tuple[str, ...]
+        Profile identifiers encountered during validation.
+    checked_paths : tuple[str, ...]
+        Sorted repository-relative evidence paths checked.
+    checked_lockfile_count : int
+        Number of distinct lockfile paths in the environment lock.
+    checked_pinned_package_count : int
+        Aggregate pinned-package count in the environment lock.
+    claim_boundary : str
+        Non-promotional interpretation attached to validation evidence.
+    """
 
     passed: bool
     errors: tuple[str, ...]
@@ -143,7 +228,13 @@ class DifferentiableDependencyEnvironmentMapValidation:
     claim_boundary: str
 
     def to_dict(self) -> dict[str, object]:
-        """Return JSON-ready dependency-environment validation evidence."""
+        """Return JSON-ready dependency-environment validation evidence.
+
+        Returns
+        -------
+        dict[str, object]
+            Validation metadata with tuple values materialised as lists.
+        """
         return {
             "passed": self.passed,
             "errors": list(self.errors),
@@ -159,7 +250,19 @@ def run_differentiable_dependency_environment_map(
     *,
     environment_lock: ExternalValidationEnvironmentLock | None = None,
 ) -> DifferentiableDependencyEnvironmentMap:
-    """Build the dependency and environment map from committed lockfile evidence."""
+    """Build the dependency and environment map from lockfile evidence.
+
+    Parameters
+    ----------
+    environment_lock : ExternalValidationEnvironmentLock, optional
+        Prebuilt lock evidence. When omitted, the current repository lockfiles
+        are summarised through the external-validation environment builder.
+
+    Returns
+    -------
+    DifferentiableDependencyEnvironmentMap
+        Ordered profile evidence and aggregate readiness without promotion.
+    """
     loaded_lock = (
         build_external_validation_environment_lock()
         if environment_lock is None
@@ -184,7 +287,24 @@ def validate_differentiable_dependency_environment_map(
     environment_lock: ExternalValidationEnvironmentLock | None = None,
     repo_root: Path = REPO_ROOT,
 ) -> DifferentiableDependencyEnvironmentMapValidation:
-    """Validate dependency profiles, paths, checksums, and readiness invariants."""
+    """Validate profiles, paths, checksums, and readiness invariants.
+
+    Parameters
+    ----------
+    environment_map : DifferentiableDependencyEnvironmentMap
+        Candidate map whose schema, ordering, counts, paths, and blockers are
+        validated.
+    environment_lock : ExternalValidationEnvironmentLock, optional
+        Prebuilt environment lock. When omitted, lock evidence is rebuilt from
+        ``repo_root``.
+    repo_root : pathlib.Path, optional
+        Repository root used to resolve every cited evidence path.
+
+    Returns
+    -------
+    DifferentiableDependencyEnvironmentMapValidation
+        Fail-closed validation evidence containing every discovered error.
+    """
     loaded_lock = (
         build_external_validation_environment_lock(repo_root=repo_root)
         if environment_lock is None
@@ -260,7 +380,19 @@ def validate_differentiable_dependency_environment_map(
 def render_differentiable_dependency_environment_map_markdown(
     environment_map: DifferentiableDependencyEnvironmentMap,
 ) -> str:
-    """Render a reviewer-facing Markdown summary of the dependency map."""
+    """Render a reviewer-facing Markdown summary of the dependency map.
+
+    Parameters
+    ----------
+    environment_map : DifferentiableDependencyEnvironmentMap
+        Dependency map to render without changing its readiness classification.
+
+    Returns
+    -------
+    str
+        SPDX-prefixed Markdown with aggregate readiness, profile rows, and the
+        non-promotional claim boundary.
+    """
     lines = [
         "<!--",
         "SPDX-License-Identifier: AGPL-3.0-or-later",
@@ -306,6 +438,20 @@ def render_differentiable_dependency_environment_map_markdown(
 def _default_dependency_profiles(
     environment_lock: ExternalValidationEnvironmentLock,
 ) -> tuple[DifferentiableDependencyEnvironmentProfile, ...]:
+    """Build the required ordered profiles from an environment lock.
+
+    Parameters
+    ----------
+    environment_lock : ExternalValidationEnvironmentLock
+        Lockfile summaries keyed by the repository paths required by each
+        profile.
+
+    Returns
+    -------
+    tuple[DifferentiableDependencyEnvironmentProfile, ...]
+        Runtime, development, CI, framework-overlay, and Enzyme profiles in
+        canonical order.
+    """
     lockfiles = {lockfile.path: lockfile for lockfile in environment_lock.lockfiles}
     return (
         _profile(
@@ -381,6 +527,30 @@ def _profile(
     status: DifferentiableDependencyEnvironmentStatus,
     blockers: tuple[str, ...],
 ) -> DifferentiableDependencyEnvironmentProfile:
+    """Aggregate selected lockfiles into one validated profile.
+
+    Parameters
+    ----------
+    profile_id : DifferentiableDependencyEnvironmentProfileId
+        Canonical profile identifier.
+    title : str
+        Reviewer-facing profile title.
+    role : str
+        Purpose of the dependency environment.
+    paths : tuple[str, ...]
+        Ordered lockfile paths included in the profile.
+    lockfiles : dict[str, EnvironmentLockfileSummary]
+        Environment-lock summaries keyed by repository-relative path.
+    status : DifferentiableDependencyEnvironmentStatus
+        Locked or hard-gap evidence classification.
+    blockers : tuple[str, ...]
+        Explicit promotion blockers attached to the profile.
+
+    Returns
+    -------
+    DifferentiableDependencyEnvironmentProfile
+        Validated profile with aggregate pin and checksum counts.
+    """
     pinned_count = 0
     checksum_count = 0
     for path in paths:
@@ -403,6 +573,18 @@ def _profile(
 
 
 def _duplicates(values: Iterable[str]) -> tuple[str, ...]:
+    """Return sorted values that occur more than once.
+
+    Parameters
+    ----------
+    values : collections.abc.Iterable[str]
+        Profile identifiers to inspect in encounter order.
+
+    Returns
+    -------
+    tuple[str, ...]
+        Unique duplicate identifiers in lexical order.
+    """
     seen: set[str] = set()
     duplicates: set[str] = set()
     for value in values:
@@ -413,6 +595,18 @@ def _duplicates(values: Iterable[str]) -> tuple[str, ...]:
 
 
 def _markdown_cell(value: str) -> str:
+    """Escape one value for safe insertion into a Markdown table cell.
+
+    Parameters
+    ----------
+    value : str
+        Unescaped text that may contain newlines or table separators.
+
+    Returns
+    -------
+    str
+        Single-line text with vertical bars escaped.
+    """
     return value.replace("\n", " ").replace("|", "\\|")
 
 

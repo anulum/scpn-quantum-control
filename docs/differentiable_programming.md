@@ -349,6 +349,13 @@ profiles. The generated map is committed at
 `data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json`
 with a reviewer summary at
 `data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md`.
+Call `validate_differentiable_dependency_environment_map()` before consuming a
+map as evidence. It fails closed when the schema, canonical profile order,
+aggregate counts, readiness flags, lock membership, filesystem paths, pin
+counts, or blocker state disagree with the supplied environment lock. Supplying
+an `environment_lock` to either public function reuses already captured
+evidence without rebuilding or upgrading its classification; only the
+validator certifies its invariants.
 The Enzyme runner remains a hard-gap profile until configured native
 Enzyme/LLVM/MLIR runner artefacts pass; the map is dependency provenance only
 and does not promote framework parity, Enzyme parity, provider execution,
