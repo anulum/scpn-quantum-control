@@ -5,6 +5,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-14 — Closed the P0 Rust/Python inventory contract and coverage debt
+  through public row construction, injected ledgers, validation, serialization,
+  dispatch, exports, and rendering. Runtime records now reject unknown status
+  values and blank blockers, classification totals must match their rows, and
+  the formerly unreachable `not_run` benchmark guard now checks otherwise-ready
+  Rust candidates directly. The committed JSON inventory and dependent
+  external-validation checksums now follow the current Program-AD replay and
+  Qiskit Runtime module paths. Rust and polyglot implementations, provider and
+  hardware execution, and benchmark claims are unchanged.
 - 2026-07-14 — Closed the P0 dependency-environment-map contract and coverage
   debt through public profile, runner, validator, serializer, and renderer
   routes. Every public object now documents its NumPy-style input and output

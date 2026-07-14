@@ -238,6 +238,16 @@ provider/hardware evidence exists. The committed artefacts live at
 `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json`
 and
 `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md`.
+The module-specific test reproduces both files byte-for-byte from the public
+inventory serialization and Markdown renderer. The external-validation
+manifest gate separately verifies their committed SHA-256 digests and sizes.
+Call `validate_differentiable_rust_python_inventory()` before treating the map
+as governance evidence. It fails closed on unknown runtime status values,
+blank blockers, stale schema or aggregate counts, duplicate surface IDs,
+classification-count drift, unknown claim-ledger rows, absent evidence paths,
+unexplained provider/hardware blocks, and Rust-backed parity-complete candidates
+whose benchmark evidence remains `not_run`. This validation does not upgrade a
+row or promote Rust, polyglot, provider, hardware, or benchmark claims.
 The Rust Program AD inventory row includes a dedicated deterministic
 panic-boundary corpus that exercises malformed or unsupported IR through the
 public Rust forward and value+gradient replay APIs. That corpus is fail-closed

@@ -136,12 +136,12 @@
       ],
       "rust_parity_status": "partial",
       "rust_surface": [
-        "scpn_quantum_engine/src/program_ad_ir.rs",
-        "scpn_quantum_engine/src/program_ad_trapezoid_reduction.rs",
-        "scpn_quantum_engine/src/program_ad_interpolation_reduction.rs",
-        "scpn_quantum_engine/src/program_ad_signal_reduction.rs",
-        "scpn_quantum_engine/src/program_ad_stencil_reduction.rs",
-        "scpn_quantum_engine/src/program_ad_cumulative_reduction.rs",
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_ir.rs",
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_trapezoid_reduction.rs",
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_interpolation_reduction.rs",
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_signal_reduction.rs",
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_stencil_reduction.rs",
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_cumulative_reduction.rs",
         "scpn_quantum_engine/fuzz/fuzz_targets/program_ad_ir.rs",
         "scpn_quantum_engine/tests/program_ad_ir.rs",
         "scpn_quantum_engine/tests/program_ad_interpolation.rs",
@@ -457,12 +457,12 @@
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md"
       ],
       "docstring_status": "complete_for_inventory_surface",
-      "mypy_target": "src/scpn_quantum_control/phase/qiskit_bridge.py",
+      "mypy_target": "src/scpn_quantum_control/phase/qiskit_runtime.py",
       "next_hardening_rounds": [
         "Round 0 surface integrity and maintainability",
         "Round 5 Rustification readiness"
       ],
-      "owner_module": "src/scpn_quantum_control/phase/qiskit_bridge.py",
+      "owner_module": "src/scpn_quantum_control/phase/qiskit_runtime.py",
       "polyglot_status": "partial",
       "polyglot_surface": [
         "docs/quantum_gradients.md"
@@ -472,6 +472,9 @@
       ],
       "python_surface": [
         "src/scpn_quantum_control/phase/qiskit_bridge.py",
+        "src/scpn_quantum_control/phase/qiskit_bridge_contracts.py",
+        "src/scpn_quantum_control/phase/qiskit_gradients.py",
+        "src/scpn_quantum_control/phase/qiskit_runtime.py",
         "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py",
         "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
         "src/scpn_quantum_control/differentiable_api.py",
@@ -487,7 +490,9 @@
       "rustification_ready": false,
       "surface_id": "qiskit_runtime_provider_gradients",
       "test_surface": [
-        "tests/test_phase_qiskit_bridge.py",
+        "tests/test_phase_qiskit_bridge_contracts.py",
+        "tests/test_phase_qiskit_gradients.py",
+        "tests/test_phase_qiskit_runtime.py",
         "tests/test_phase_provider_hardware_gradient_audit.py",
         "tests/test_differentiable_api.py",
         "tests/test_differentiable_programming_benchmarks.py",

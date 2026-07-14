@@ -75,7 +75,31 @@ READY_BENCHMARK_STATUSES: frozenset[DifferentiableRustPythonInventoryBenchmarkSt
 
 @dataclass(frozen=True)
 class DifferentiableRustPythonInventoryRow:
-    """One classified differentiable surface in the Rust/Python inventory."""
+    """Describe one classified differentiable Rust/Python surface.
+
+    Parameters
+    ----------
+    surface_id, title, owner_module : str
+        Stable identity, reviewer title, and owning Python module.
+    public_api, python_surface, rust_surface, polyglot_surface : tuple[str, ...]
+        Public symbols and implementation paths for each language boundary.
+    test_surface, docs_surface, benchmark_surface, claim_ids : tuple[str, ...]
+        Verification, documentation, benchmark, and claim-ledger references.
+    mypy_target, docstring_status : str
+        Strict-typing target and documentation-completeness classification.
+    classification : DifferentiableRustPythonInventoryClassification
+        Role of the surface in the rustification plan.
+    benchmark_status : DifferentiableRustPythonInventoryBenchmarkStatus
+        Evidence class for benchmark readiness.
+    rust_parity_status : DifferentiableRustPythonInventoryRustParityStatus
+        Completeness of the Rust implementation boundary.
+    polyglot_status : DifferentiableRustPythonInventoryPolyglotStatus
+        Completeness of cross-language wiring.
+    blockers, next_hardening_rounds : tuple[str, ...]
+        Explicit gaps and the rounds that own their remediation.
+    claim_boundary : str
+        Non-promotional interpretation attached to the row.
+    """
 
     surface_id: str
     title: str
@@ -99,9 +123,28 @@ class DifferentiableRustPythonInventoryRow:
     claim_boundary: str
 
     def __post_init__(self) -> None:
-        """Validate one inventory row before it can enter governance artefacts."""
+        """Validate one row before it can enter governance artefacts.
+
+        Raises
+        ------
+        ValueError
+            If a classification/status is unknown, a required text/path field
+            is empty, or a supplied blocker is blank.
+        """
         if self.classification not in REQUIRED_INVENTORY_CLASSIFICATIONS:
             raise ValueError(f"unknown inventory classification: {self.classification}")
+        if self.benchmark_status not in {
+            "not_applicable",
+            "not_run",
+            "functional_non_isolated",
+            "isolated_required",
+            "blocked",
+        }:
+            raise ValueError(f"unknown inventory benchmark status: {self.benchmark_status}")
+        if self.rust_parity_status not in {"complete", "partial", "missing", "not_applicable"}:
+            raise ValueError(f"unknown inventory Rust parity status: {self.rust_parity_status}")
+        if self.polyglot_status not in {"complete", "partial", "missing", "not_applicable"}:
+            raise ValueError(f"unknown inventory polyglot status: {self.polyglot_status}")
         for field_name in (
             "surface_id",
             "title",
@@ -126,10 +169,19 @@ class DifferentiableRustPythonInventoryRow:
             value = getattr(self, field_name)
             if not value or any(not str(item).strip() for item in value):
                 raise ValueError(f"{field_name} must contain non-empty entries")
+        if any(not str(blocker).strip() for blocker in self.blockers):
+            raise ValueError("blockers must contain only non-empty entries")
 
     @property
     def rustification_ready(self) -> bool:
-        """Return whether this row can be used as a Rust promotion input."""
+        """Return whether this row can be a Rust promotion input.
+
+        Returns
+        -------
+        bool
+            ``True`` only for blocker-free Rust-backed rows with complete Rust
+            and polyglot parity plus an accepted benchmark classification.
+        """
         return (
             self.classification == "rust_backed"
             and self.rust_parity_status == "complete"
@@ -139,7 +191,13 @@ class DifferentiableRustPythonInventoryRow:
         )
 
     def to_dict(self) -> dict[str, object]:
-        """Return a JSON-ready inventory row."""
+        """Return a JSON-ready inventory row.
+
+        Returns
+        -------
+        dict[str, object]
+            Row fields with tuples materialised as JSON-ready lists.
+        """
         return {
             "surface_id": self.surface_id,
             "title": self.title,
@@ -167,7 +225,23 @@ class DifferentiableRustPythonInventoryRow:
 
 @dataclass(frozen=True)
 class DifferentiableRustPythonInventory:
-    """Deterministic differentiable Rust/Python surface inventory."""
+    """Aggregate deterministic differentiable Rust/Python surfaces.
+
+    Parameters
+    ----------
+    schema, artifact_id : str
+        Versioned schema and committed artefact identifiers.
+    rows : tuple[DifferentiableRustPythonInventoryRow, ...]
+        Ordered surface classifications.
+    rustification_ready : bool
+        Whether every row satisfies the promotion-input contract.
+    ready_surface_count, total_surface_count : int
+        Ready and total row counts.
+    classification_counts : collections.abc.Mapping[str, int]
+        Count of rows in every required classification.
+    claim_boundary : str
+        Non-promotional interpretation attached to the inventory.
+    """
 
     schema: str
     artifact_id: str
@@ -179,7 +253,13 @@ class DifferentiableRustPythonInventory:
     claim_boundary: str
 
     def to_dict(self) -> dict[str, object]:
-        """Return a JSON-ready inventory payload."""
+        """Return a JSON-ready inventory payload.
+
+        Returns
+        -------
+        dict[str, object]
+            Inventory metadata and nested JSON-ready rows.
+        """
         return {
             "schema": self.schema,
             "artifact_id": self.artifact_id,
@@ -194,7 +274,19 @@ class DifferentiableRustPythonInventory:
 
 @dataclass(frozen=True)
 class DifferentiableRustPythonInventoryValidation:
-    """Validation result for a Rust/Python surface inventory."""
+    """Record validation evidence for a Rust/Python inventory.
+
+    Parameters
+    ----------
+    passed : bool
+        Whether every structural, claim, path, and readiness check passed.
+    errors : tuple[str, ...]
+        Deterministic validation errors in discovery order.
+    checked_surface_ids, checked_claim_ids, checked_paths : tuple[str, ...]
+        Surface, claim-ledger, and repository-path evidence inspected.
+    claim_boundary : str
+        Non-promotional interpretation attached to validation evidence.
+    """
 
     passed: bool
     errors: tuple[str, ...]
@@ -204,7 +296,13 @@ class DifferentiableRustPythonInventoryValidation:
     claim_boundary: str
 
     def to_dict(self) -> dict[str, object]:
-        """Return JSON-ready inventory validation evidence."""
+        """Return JSON-ready inventory validation evidence.
+
+        Returns
+        -------
+        dict[str, object]
+            Validation fields with tuples materialised as lists.
+        """
         return {
             "passed": self.passed,
             "errors": list(self.errors),
@@ -220,7 +318,20 @@ def run_differentiable_rust_python_inventory(
     ledger: ClaimLedger | None = None,
     ledger_path: Path = DEFAULT_LEDGER_PATH,
 ) -> DifferentiableRustPythonInventory:
-    """Build the deterministic rustification inventory from committed surfaces."""
+    """Build the deterministic inventory from committed surfaces.
+
+    Parameters
+    ----------
+    ledger : ClaimLedger, optional
+        Preloaded claim ledger. When omitted, ``ledger_path`` is loaded.
+    ledger_path : pathlib.Path, optional
+        Claim-ledger JSON path used when ``ledger`` is absent.
+
+    Returns
+    -------
+    DifferentiableRustPythonInventory
+        Classified surfaces with aggregate rustification readiness.
+    """
     loaded_ledger = load_differentiable_claim_ledger(ledger_path) if ledger is None else ledger
     claim_rows = {row.claim_id: row for row in loaded_ledger.rows}
     rows = _default_inventory_rows(claim_rows)
@@ -249,7 +360,24 @@ def validate_differentiable_rust_python_inventory(
     ledger_path: Path = DEFAULT_LEDGER_PATH,
     repo_root: Path = REPO_ROOT,
 ) -> DifferentiableRustPythonInventoryValidation:
-    """Validate rustification inventory paths, claims, and readiness invariants."""
+    """Validate inventory paths, claims, and readiness invariants.
+
+    Parameters
+    ----------
+    inventory : DifferentiableRustPythonInventory
+        Candidate inventory to validate.
+    ledger : ClaimLedger, optional
+        Preloaded claim ledger. When omitted, ``ledger_path`` is loaded.
+    ledger_path : pathlib.Path, optional
+        Claim-ledger JSON path used when ``ledger`` is absent.
+    repo_root : pathlib.Path, optional
+        Repository root used to resolve every declared evidence path.
+
+    Returns
+    -------
+    DifferentiableRustPythonInventoryValidation
+        Fail-closed structural, claim, path, and readiness evidence.
+    """
     loaded_ledger = load_differentiable_claim_ledger(ledger_path) if ledger is None else ledger
     claim_rows = {row.claim_id: row for row in loaded_ledger.rows}
     errors: list[str] = []
@@ -266,13 +394,14 @@ def validate_differentiable_rust_python_inventory(
         errors.append("ready_surface_count does not match ready rows")
     if inventory.rustification_ready != (ready_count == len(inventory.rows)):
         errors.append("rustification_ready does not match ready row count")
-    missing_classifications = tuple(
-        classification
-        for classification in REQUIRED_INVENTORY_CLASSIFICATIONS
-        if classification not in inventory.classification_counts
-    )
-    for classification in missing_classifications:
-        errors.append(f"classification_counts missing {classification}")
+    expected_classification_counts = Counter(row.classification for row in inventory.rows)
+    for classification in REQUIRED_INVENTORY_CLASSIFICATIONS:
+        if classification not in inventory.classification_counts:
+            errors.append(f"classification_counts missing {classification}")
+        elif inventory.classification_counts[classification] != expected_classification_counts.get(
+            classification, 0
+        ):
+            errors.append(f"classification_counts does not match rows for {classification}")
 
     for surface_id in _duplicates(surface_ids):
         errors.append(f"duplicate inventory surface_id: {surface_id}")
@@ -301,7 +430,18 @@ def validate_differentiable_rust_python_inventory(
 def render_differentiable_rust_python_inventory_markdown(
     inventory: DifferentiableRustPythonInventory,
 ) -> str:
-    """Render a reviewer-facing Markdown summary of the Rust/Python inventory."""
+    """Render a reviewer-facing Markdown inventory summary.
+
+    Parameters
+    ----------
+    inventory : DifferentiableRustPythonInventory
+        Inventory to render without changing its classifications.
+
+    Returns
+    -------
+    str
+        SPDX-prefixed Markdown with readiness, row status, and blockers.
+    """
     lines = [
         "<!--",
         "SPDX-License-Identifier: AGPL-3.0-or-later",
@@ -348,6 +488,7 @@ def render_differentiable_rust_python_inventory_markdown(
 def _default_inventory_rows(
     claim_rows: Mapping[str, ClaimLedgerRow],
 ) -> tuple[DifferentiableRustPythonInventoryRow, ...]:
+    """Build canonical inventory rows and attach ledger surfaces."""
     rows = (
         _inventory_row(
             "unified_differentiable_api",
@@ -640,6 +781,7 @@ def _inventory_row(
     polyglot_status: DifferentiableRustPythonInventoryPolyglotStatus,
     blockers: tuple[str, ...],
 ) -> DifferentiableRustPythonInventoryRow:
+    """Construct one canonical row with standard governance metadata."""
     return DifferentiableRustPythonInventoryRow(
         surface_id=surface_id,
         title=title,
@@ -671,6 +813,7 @@ def _attach_ledger_surfaces(
     rows: tuple[DifferentiableRustPythonInventoryRow, ...],
     claim_rows: Mapping[str, ClaimLedgerRow],
 ) -> tuple[DifferentiableRustPythonInventoryRow, ...]:
+    """Attach unique claim-ledger paths and benchmark artefacts to rows."""
     attached: list[DifferentiableRustPythonInventoryRow] = []
     for row in rows:
         referenced = tuple(
@@ -734,6 +877,7 @@ def _validate_inventory_row(
     claim_rows: Mapping[str, ClaimLedgerRow],
     errors: list[str],
 ) -> None:
+    """Append claim and readiness errors for one inventory row."""
     for claim_id in row.claim_ids:
         if claim_id not in claim_rows:
             errors.append(f"{row.surface_id}: unknown claim-ledger row: {claim_id}")
@@ -743,13 +887,20 @@ def _validate_inventory_row(
         and row.blockers
     ):
         errors.append(f"{row.surface_id}: ready Rust-backed rows must not carry blockers")
-    if row.rustification_ready and row.benchmark_status == "not_run":
+    if (
+        row.classification == "rust_backed"
+        and row.rust_parity_status == "complete"
+        and row.polyglot_status in {"complete", "not_applicable"}
+        and not row.blockers
+        and row.benchmark_status == "not_run"
+    ):
         errors.append(f"{row.surface_id}: ready rows require benchmark classification evidence")
     if row.classification in {"provider_blocked", "hardware_blocked"} and not row.blockers:
         errors.append(f"{row.surface_id}: blocked provider/hardware rows must list blockers")
 
 
 def _row_paths(row: DifferentiableRustPythonInventoryRow) -> Iterable[str]:
+    """Yield every owner and evidence path declared by one row."""
     yield row.owner_module
     yield row.mypy_target
     yield from row.python_surface
@@ -760,6 +911,7 @@ def _row_paths(row: DifferentiableRustPythonInventoryRow) -> Iterable[str]:
 
 
 def _duplicates(values: Iterable[str]) -> tuple[str, ...]:
+    """Return sorted surface identifiers that occur more than once."""
     seen: set[str] = set()
     duplicates: set[str] = set()
     for value in values:
@@ -770,10 +922,12 @@ def _duplicates(values: Iterable[str]) -> tuple[str, ...]:
 
 
 def _unique_paths(paths: Iterable[str]) -> tuple[str, ...]:
+    """Return non-empty paths once in encounter order."""
     return tuple(dict.fromkeys(path for path in paths if path))
 
 
 def _markdown_cell(value: str) -> str:
+    """Escape newlines and separators for a Markdown table cell."""
     return value.replace("\n", " ").replace("|", "\\|")
 
 

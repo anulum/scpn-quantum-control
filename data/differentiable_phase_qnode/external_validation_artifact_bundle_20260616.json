@@ -60,8 +60,8 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
       "role": "Differentiable Rust/Python rustification surface inventory artefact",
-      "sha256": "89e3bcb562bed513d4282af0301badf65f6c81a664c615928d7f905e16c7409e",
-      "size_bytes": 31514
+      "sha256": "c65b2332e74ca437614e37e2a9e457cca08f277edf7c79b8e6474a2f019ac4ec",
+      "size_bytes": 31919
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
