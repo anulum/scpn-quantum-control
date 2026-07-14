@@ -98,6 +98,7 @@ class DifferentiableArchitectureMapLayer:
         Explicit gaps and the rounds that own their remediation.
     claim_boundary : str
         Non-promotional interpretation attached to the layer.
+
     """
 
     layer_id: DifferentiableArchitectureLayerId | str
@@ -125,6 +126,7 @@ class DifferentiableArchitectureMapLayer:
             If the layer identifier is unknown, required text or sequence
             fields are empty, blockers contain blank text, or a sequence
             contains duplicate entries.
+
         """
         for field_name in (
             "layer_id",
@@ -164,6 +166,7 @@ class DifferentiableArchitectureMapLayer:
         -------
         bool
             ``True`` only when no blocker is attached to the layer.
+
         """
         return not self.blockers
 
@@ -174,6 +177,7 @@ class DifferentiableArchitectureMapLayer:
         -------
         dict[str, object]
             Layer fields with tuples materialised as JSON-ready lists.
+
         """
         return {
             "layer_id": self.layer_id,
@@ -211,6 +215,7 @@ class DifferentiableArchitectureMap:
         Ready and total layer counts.
     claim_boundary : str
         Non-promotional interpretation attached to the map.
+
     """
 
     schema: str
@@ -232,6 +237,7 @@ class DifferentiableArchitectureMap:
             boolean, or counts are not non-negative integers. Cross-field and
             upstream invariants are checked by
             :func:`validate_differentiable_architecture_map`.
+
         """
         for field_name in ("schema", "artifact_id", "claim_boundary"):
             value = getattr(self, field_name)
@@ -262,6 +268,7 @@ class DifferentiableArchitectureMap:
         -------
         dict[str, object]
             Aggregate fields and serialised architecture layers.
+
         """
         return {
             "schema": self.schema,
@@ -292,6 +299,7 @@ class DifferentiableArchitectureMapValidation:
         Repository-relative evidence paths inspected by the validator.
     claim_boundary : str
         Non-promotional interpretation attached to the evidence.
+
     """
 
     passed: bool
@@ -309,6 +317,7 @@ class DifferentiableArchitectureMapValidation:
         -------
         dict[str, object]
             Validation fields with tuples materialised as lists.
+
         """
         return {
             "passed": self.passed,
@@ -347,6 +356,7 @@ def run_differentiable_architecture_map(
     ValueError
         If the supplied inventory omits a surface required by the canonical
         architecture routing specification.
+
     """
     loaded_inventory = (
         run_differentiable_rust_python_inventory() if inventory is None else inventory
@@ -395,6 +405,7 @@ def validate_differentiable_architecture_map(
     DifferentiableArchitectureMapValidation
         Fail-closed upstream, identity, routing, coverage, path, and readiness
         evidence.
+
     """
     loaded_inventory = (
         run_differentiable_rust_python_inventory() if inventory is None else inventory
@@ -517,6 +528,7 @@ def render_differentiable_architecture_map_markdown(
     -------
     str
         SPDX-prefixed Markdown with readiness, blockers, and hardening rounds.
+
     """
     lines = [
         "<!--",

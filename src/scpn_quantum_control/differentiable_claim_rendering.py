@@ -108,6 +108,7 @@ def render_claim_ledger_markdown(rows: Iterable[_ClaimRow]) -> str:
     -------
     str
         Deterministic Markdown with table-control characters escaped.
+
     """
     lines = [
         "<!--",
@@ -165,6 +166,7 @@ def render_differentiable_support_surface_alignment_markdown(
     -------
     str
         Deterministic Markdown with safe code spans and table cells.
+
     """
     lines = [
         "<!--",
@@ -213,6 +215,7 @@ def render_public_claim_table(rows: Iterable[_ClaimRow]) -> str:
     -------
     str
         Deterministic public Markdown derived only from ledger fields.
+
     """
     lines = [
         "<!--",

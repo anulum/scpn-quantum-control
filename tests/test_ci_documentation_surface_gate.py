@@ -170,16 +170,24 @@ def test_ci_gates_differentiable_docstring_ratchet() -> None:
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
 
     assert "Ruff docstring ratchet for differentiable module hardening" in workflow
-    assert "ruff check --select D" in workflow
+    assert "ruff check --isolated --select D,D413" in workflow
+    assert "--config 'lint.pydocstyle.convention = \"numpy\"'" in workflow
+    assert "src/scpn_quantum_control/differentiable_claim_ledger.py" in workflow
+    assert "src/scpn_quantum_control/differentiable_claim_rendering.py" in workflow
+    assert "src/scpn_quantum_control/differentiable_competitive_baselines.py" in workflow
     assert "src/scpn_quantum_control/differentiable_external_validation.py" in workflow
     assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in workflow
+    assert "src/scpn_quantum_control/differentiable_transform_algebra.py" in workflow
+    assert "src/scpn_quantum_control/studio/evidence_bundle.py" in workflow
     assert "src/scpn_quantum_control/phase/tensorflow_maintenance.py" in workflow
     assert "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py" in (
         workflow
     )
     assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in (workflow)
     assert "tests/test_differentiable_external_validation.py" in workflow
+    assert "tests/test_differentiable_competitive_baselines.py" in workflow
     assert "tests/test_differentiable_module_hardening_audit.py" in workflow
+    assert "tests/test_differentiable_transform_algebra.py" in workflow
     assert "tests/test_phase_tensorflow_maintenance.py" in workflow
     assert "tests/test_differentiable_hardening_gate.py" in workflow
 

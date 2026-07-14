@@ -86,6 +86,7 @@ class ClaimLedgerRow:
         Current promotion state.
     claim_boundary
         Exact wording that limits public use of the claim.
+
     """
 
     claim_id: str
@@ -107,6 +108,7 @@ class ClaimLedgerRow:
         ValueError
             If an identity, status, surface, artefact ID, gap, or boundary is
             malformed.
+
         """
         claim_id = _nonblank_string(self.claim_id, "claim_id")
         _nonblank_string(self.claim_text, "claim_text")
@@ -151,6 +153,7 @@ class ClaimLedgerRow:
         ------
         ValueError
             If a required field is missing or has the wrong type or value.
+
         """
         benchmark_ids = (
             _required_value(payload, "benchmark_artifact_ids", "claim row")
@@ -200,6 +203,7 @@ class ClaimLedgerRow:
         -------
         dict[str, object]
             Mapping that preserves the committed row schema.
+
         """
         return {
             "claim_id": self.claim_id,
@@ -227,6 +231,7 @@ class ClaimLedger:
         Stable ledger artefact identity.
     rows
         Non-empty ordered claim rows.
+
     """
 
     schema: str
@@ -240,6 +245,7 @@ class ClaimLedger:
         ------
         ValueError
             If the ledger identity or row collection is malformed.
+
         """
         if _nonblank_string(self.schema, "schema") != CLAIM_LEDGER_SCHEMA:
             raise ValueError(f"unknown claim-ledger schema: {self.schema}")
@@ -260,6 +266,7 @@ class ClaimLedger:
         -------
         Iterator[ClaimLedgerRow]
             Rows in committed order.
+
         """
         return iter(self.rows)
 
@@ -270,6 +277,7 @@ class ClaimLedger:
         -------
         dict[str, object]
             Mapping compatible with the committed ledger schema.
+
         """
         return {
             **_CLAIM_LEDGER_METADATA,
@@ -289,6 +297,7 @@ class ClaimLedgerValidation:
         Whether every checked invariant passed.
     errors
         Ordered validation errors; empty only for a passing result.
+
     """
 
     passed: bool
@@ -301,6 +310,7 @@ class ClaimLedgerValidation:
         ------
         ValueError
             If the Boolean, error tuple, or pass/error relationship is invalid.
+
         """
         if type(self.passed) is not bool:
             raise ValueError("passed must be a bool")
@@ -315,6 +325,7 @@ class ClaimLedgerValidation:
         -------
         dict[str, object]
             Serialized pass flag and ordered errors.
+
         """
         return {"passed": self.passed, "errors": list(self.errors)}
 
@@ -339,6 +350,7 @@ class DifferentiableSupportSurfaceAlignment:
         Alignment schema identity.
     artifact_id
         Stable alignment artefact identity.
+
     """
 
     passed: bool
@@ -357,6 +369,7 @@ class DifferentiableSupportSurfaceAlignment:
         ValueError
             If an identity, collection, Boolean, or pass/error relationship is
             malformed.
+
         """
         if type(self.passed) is not bool:
             raise ValueError("passed must be a bool")
@@ -399,6 +412,7 @@ class DifferentiableSupportSurfaceAlignment:
         ------
         ValueError
             If a required field is missing or malformed.
+
         """
         return cls(
             passed=_required_bool(payload, "passed", "support-surface alignment"),
@@ -434,6 +448,7 @@ class DifferentiableSupportSurfaceAlignment:
         -------
         dict[str, object]
             Mapping compatible with the committed alignment schema.
+
         """
         return {
             "schema": self.schema,
@@ -540,6 +555,7 @@ def load_differentiable_claim_ledger(path: Path = DEFAULT_LEDGER_PATH) -> ClaimL
         If the ledger is not valid JSON.
     ValueError
         If the decoded JSON violates the ledger contract.
+
     """
     decoded: object = json.loads(path.read_text(encoding="utf-8"))
     payload = _mapping(decoded, "claim ledger")
@@ -582,6 +598,7 @@ def load_differentiable_support_surface_alignment(
         If the artefact is not valid JSON.
     ValueError
         If the decoded JSON violates the alignment contract.
+
     """
     decoded: object = json.loads(path.read_text(encoding="utf-8"))
     payload = _mapping(decoded, "support-surface alignment")
@@ -608,6 +625,7 @@ def validate_claim_ledger(
     -------
     ClaimLedgerValidation
         Pass flag and deterministic errors.
+
     """
     rows = _claim_rows(rows_or_ledger)
     errors: list[str] = []
@@ -652,6 +670,7 @@ def validate_public_language_against_ledger(
     -------
     ClaimLedgerValidation
         Pass flag and one error per banned phrase occurrence.
+
     """
     rows = _claim_rows(rows_or_ledger)
     if rows and all(row.promotion_status == "promoted" for row in rows):
@@ -691,6 +710,7 @@ def validate_differentiable_support_surface_alignment(
     DifferentiableSupportSurfaceAlignment
         Deterministic alignment evidence. Unsafe, missing, or unregistered paths
         produce a failed result without being dereferenced outside the repository.
+
     """
     ledger = load_differentiable_claim_ledger(ledger_path) if rows is None else None
     claim_rows = ledger.rows if ledger is not None else _claim_rows(rows or ())
@@ -839,6 +859,7 @@ def validate_public_claim_table(
     -------
     ClaimLedgerValidation
         Pass flag and claim-specific drift errors.
+
     """
     rows = _claim_rows(rows_or_ledger)
     errors = list(validate_claim_ledger(rows).errors)

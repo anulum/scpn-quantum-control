@@ -90,6 +90,7 @@ class StudioBundleValidation:
         The in-memory platform bundle.
     verdict
         The platform federation verdict for ``bundle.to_dict()``.
+
     """
 
     bundle: EvidenceBundle
@@ -154,6 +155,7 @@ def _committed_artifact_edge(artifact_path: Path, *, label: str) -> DerivedEdge:
     ValueError
         If the artefact path does not exist — a requested derivation edge that
         cannot be content-addressed fails closed instead of being dropped.
+
     """
     if not artifact_path.exists():
         raise ValueError(f"{label} does not exist: {artifact_path.as_posix()}")
@@ -182,6 +184,7 @@ def evidence_axes(source: EvidenceSource) -> tuple[EvidenceKind, Substrate]:
     ------
     ValueError
         If ``source`` is not part of the declared QUANTUM mapping.
+
     """
     if source == "theory":
         return EvidenceKind.CURATED, Substrate.CLASSICAL_REFERENCE
@@ -252,6 +255,7 @@ def build_claim_ledger_bundle(
     EvidenceBundle
         The validated platform dataclass. Call :func:`validate_bundle` for the
         federation gate verdict.
+
     """
     row_payload = row.to_dict()
     digest = _digest_payload(row_payload)
@@ -322,6 +326,7 @@ def build_claim_ledger_bundles(
     -------
     tuple[EvidenceBundle, ...]
         One bundle per claim row.
+
     """
     ledger_rows = (
         load_differentiable_claim_ledger().rows
@@ -407,6 +412,7 @@ def build_hardware_result_pack_bundle(
     ------
     ValueError
         If the pack lacks an ``id``.
+
     """
     pack_id = str(pack.get("id", "")).strip()
     if not pack_id:
@@ -463,6 +469,7 @@ def build_hardware_result_pack_bundles(
     -------
     tuple[EvidenceBundle, ...]
         One bundle per manifest pack.
+
     """
     path = manifest_path or Path.cwd() / MANIFEST_RELATIVE_PATH
     manifest = load_manifest(path)
@@ -486,6 +493,7 @@ def validate_bundle(bundle: EvidenceBundle) -> StudioBundleValidation:
     -------
     StudioBundleValidation
         The bundle plus its federation verdict.
+
     """
     return StudioBundleValidation(
         bundle=bundle,
@@ -505,6 +513,7 @@ def validate_bundles(bundles: Iterable[EvidenceBundle]) -> tuple[StudioBundleVal
     -------
     tuple[StudioBundleValidation, ...]
         Validation summaries in input order.
+
     """
     return tuple(validate_bundle(bundle) for bundle in bundles)
 

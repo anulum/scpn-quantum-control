@@ -5,6 +5,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-14 — Corrected the differentiable docstring ratchet so CI and the
+  static gate bypass the repository-wide transitional `D` ignore, enforce the
+  NumPy convention plus explicit `D413`, and cover the claim ledger, extracted
+  renderer, and Studio evidence adapter. Repaired 60 missing section-closing
+  blank lines across those owners and the architecture and dependency maps.
+  Docstring-stripped executable ASTs are unchanged; generated artefacts,
+  polyglot implementations, provider and hardware execution, and benchmark
+  claims are unchanged.
 - 2026-07-14 — Closed the P0 differentiable claim-ledger contract and its
   focused local coverage gap. JSON loading now locks canonical identity and
   metadata without string

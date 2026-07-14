@@ -78,6 +78,7 @@ class DifferentiableDependencyEnvironmentProfile:
         Explicit reasons the profile cannot support promotion.
     claim_boundary : str
         Non-promotional interpretation attached to the evidence.
+
     """
 
     profile_id: DifferentiableDependencyEnvironmentProfileId | str
@@ -99,6 +100,7 @@ class DifferentiableDependencyEnvironmentProfile:
         ValueError
             If a required text or path is empty, a count is negative, or the
             evidence status is outside the locked/hard-gap contract.
+
         """
         for field_name in ("profile_id", "title", "role", "evidence_status", "claim_boundary"):
             if not str(getattr(self, field_name)).strip():
@@ -122,6 +124,7 @@ class DifferentiableDependencyEnvironmentProfile:
         -------
         bool
             ``True`` only for a locked profile without blockers.
+
         """
         return self.evidence_status == "locked" and not self.blockers
 
@@ -132,6 +135,7 @@ class DifferentiableDependencyEnvironmentProfile:
         -------
         dict[str, object]
             Profile fields with tuple values materialised as JSON-ready lists.
+
         """
         return {
             "profile_id": self.profile_id,
@@ -168,6 +172,7 @@ class DifferentiableDependencyEnvironmentMap:
         Number of profiles represented in the map.
     claim_boundary : str
         Non-promotional interpretation attached to the map.
+
     """
 
     schema: str
@@ -185,6 +190,7 @@ class DifferentiableDependencyEnvironmentMap:
         -------
         dict[str, object]
             Map metadata and nested JSON-ready profile dictionaries.
+
         """
         return {
             "schema": self.schema,
@@ -217,6 +223,7 @@ class DifferentiableDependencyEnvironmentMapValidation:
         Aggregate pinned-package count in the environment lock.
     claim_boundary : str
         Non-promotional interpretation attached to validation evidence.
+
     """
 
     passed: bool
@@ -234,6 +241,7 @@ class DifferentiableDependencyEnvironmentMapValidation:
         -------
         dict[str, object]
             Validation metadata with tuple values materialised as lists.
+
         """
         return {
             "passed": self.passed,
@@ -262,6 +270,7 @@ def run_differentiable_dependency_environment_map(
     -------
     DifferentiableDependencyEnvironmentMap
         Ordered profile evidence and aggregate readiness without promotion.
+
     """
     loaded_lock = (
         build_external_validation_environment_lock()
@@ -304,6 +313,7 @@ def validate_differentiable_dependency_environment_map(
     -------
     DifferentiableDependencyEnvironmentMapValidation
         Fail-closed validation evidence containing every discovered error.
+
     """
     loaded_lock = (
         build_external_validation_environment_lock(repo_root=repo_root)
@@ -392,6 +402,7 @@ def render_differentiable_dependency_environment_map_markdown(
     str
         SPDX-prefixed Markdown with aggregate readiness, profile rows, and the
         non-promotional claim boundary.
+
     """
     lines = [
         "<!--",
@@ -451,6 +462,7 @@ def _default_dependency_profiles(
     tuple[DifferentiableDependencyEnvironmentProfile, ...]
         Runtime, development, CI, framework-overlay, and Enzyme profiles in
         canonical order.
+
     """
     lockfiles = {lockfile.path: lockfile for lockfile in environment_lock.lockfiles}
     return (
@@ -550,6 +562,7 @@ def _profile(
     -------
     DifferentiableDependencyEnvironmentProfile
         Validated profile with aggregate pin and checksum counts.
+
     """
     pinned_count = 0
     checksum_count = 0
@@ -584,6 +597,7 @@ def _duplicates(values: Iterable[str]) -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Unique duplicate identifiers in lexical order.
+
     """
     seen: set[str] = set()
     duplicates: set[str] = set()
@@ -606,6 +620,7 @@ def _markdown_cell(value: str) -> str:
     -------
     str
         Single-line text with vertical bars escaped.
+
     """
     return value.replace("\n", " ").replace("|", "\\|")
 

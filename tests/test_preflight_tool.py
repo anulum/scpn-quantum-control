@@ -129,15 +129,21 @@ def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
     docstring_cmd = gate_map["ruff D differentiable module-hardening ratchet"]
 
+    assert "--isolated" in docstring_cmd
     assert "--select" in docstring_cmd
-    assert "D" in docstring_cmd
+    assert "D,D413" in docstring_cmd
+    assert "--config" in docstring_cmd
+    assert 'lint.pydocstyle.convention = "numpy"' in docstring_cmd
     assert "src/scpn_quantum_control/differentiable_architecture_map.py" in docstring_cmd
+    assert "src/scpn_quantum_control/differentiable_claim_ledger.py" in docstring_cmd
+    assert "src/scpn_quantum_control/differentiable_claim_rendering.py" in docstring_cmd
     assert "src/scpn_quantum_control/differentiable_dependency_environment_map.py" in (
         docstring_cmd
     )
     assert "src/scpn_quantum_control/differentiable_baseline_scorecard.py" in docstring_cmd
     assert "src/scpn_quantum_control/differentiable_external_validation.py" in (docstring_cmd)
     assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in (docstring_cmd)
+    assert "src/scpn_quantum_control/studio/evidence_bundle.py" in docstring_cmd
     assert "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py" in (
         docstring_cmd
     )
@@ -147,6 +153,20 @@ def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     assert "tests/test_differentiable_external_validation.py" in docstring_cmd
     assert "tests/test_differentiable_module_hardening_audit.py" in docstring_cmd
     assert "tests/test_differentiable_hardening_gate.py" in docstring_cmd
+
+
+def test_ci_and_preflight_share_the_docstring_ratchet_cohort() -> None:
+    """CI and the local static gate must enforce the same ordered file cohort."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    block_start = workflow.index("      - name: Ruff docstring ratchet")
+    block_end = workflow.index("\n\n  test:", block_start)
+    ci_paths = [
+        line.strip()
+        for line in workflow[block_start:block_end].splitlines()
+        if line.strip().startswith(("src/", "tests/"))
+    ]
+
+    assert ci_paths == _preflight.DIFFERENTIABLE_DOCSTRING_RATCHET
 
 
 def test_static_gates_include_differentiable_strict_mypy_ratchet() -> None:
