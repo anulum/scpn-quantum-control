@@ -71,8 +71,9 @@ class DecisionCriterion:
     best_classical_baselines
         Baseline labels that count as the best available classical path.
     exact_baselines
-        Baseline labels that are exact-diagonalisation only; beating these but
-        not the best-classical path yields a crossover-only label.
+        Baseline labels that are the exact reference only (dense statevector
+        propagation); beating these but not the best-classical path yields a
+        crossover-only label.
     """
 
     observable: str
@@ -403,10 +404,18 @@ def default_decisive_advantage_protocol() -> DecisiveAdvantageProtocol:
     The decision is the synchronisation order parameter ``R`` at ``n = 12``
     qubits — near the documented exact-Hilbert-space crossover (``n ≈ 11.6``) yet
     inside the accessible NISQ range — at a 1 % relative-accuracy target and a
-    matched wall-time budget. The best-classical path is the oscillator ODE, MPS
-    tensor network, and sparse eigensolver; the exact-only baseline is dense
-    diagonalisation. Per the repository physics the expected outcome is a
-    crossover or classical-wins label, not broad advantage.
+    matched wall-time budget.
+
+    Every decision baseline produces the same dynamical observable ``R`` at the
+    final evolution time, so the comparison is like-for-like: the best-classical
+    path is the classical oscillator ODE and the MPS tensor-network evolution;
+    the exact-only reference is the dense statevector propagation. Ground-state
+    eigensolvers are deliberately excluded — they answer the spectral-gap
+    question, not the dynamical order-parameter question a Trotterised QPU run
+    decides, and a sparse Krylov propagation earns its keep only above the dense
+    memory wall (``n ≳ 13``), which lies outside this single decision size.
+    Per the repository physics the expected outcome is a crossover or
+    classical-wins label, not broad advantage.
 
     Returns
     -------
@@ -433,20 +442,15 @@ def default_decisive_advantage_protocol() -> DecisiveAdvantageProtocol:
             claim_boundary="MPS bounds classical spoofability at the decision size.",
         ),
         ScalingBaseline(
-            kind="sparse_eigsh",
-            label="sparse_eigsh",
+            kind="dense_trotter_expm",
+            label="dense_statevector_evolution",
             required=True,
             max_qubits=target_size,
-            metrics=common_metrics + ("ground_energy",),
-            claim_boundary="Sparse eigensolver timing is not equivalent to full dynamics.",
-        ),
-        ScalingBaseline(
-            kind="dense_exact_diagonalisation",
-            label="dense_eigh",
-            required=True,
-            max_qubits=target_size,
-            metrics=common_metrics + ("ground_energy",),
-            claim_boundary="Dense exact diagonalisation is the exact-only reference at n=12.",
+            metrics=common_metrics + ("order_parameter_R", "ground_energy"),
+            claim_boundary=(
+                "Dense statevector propagation is the exact-only dynamical reference at "
+                "n=12; it produces the order parameter R, not merely a spectral quantity."
+            ),
         ),
         ScalingBaseline(
             kind="qpu_hardware",
@@ -472,7 +476,8 @@ def default_decisive_advantage_protocol() -> DecisiveAdvantageProtocol:
         falsification=(
             "If the best-classical path is at least as fast as the QPU at matched accuracy, "
             "any advantage framing is rejected.",
-            "If the QPU beats only exact diagonalisation, the label is crossover-only, not advantage.",
+            "If the QPU beats only the exact statevector reference, the label is "
+            "crossover-only, not advantage.",
         ),
         claim_boundary=(
             "This protocol decides one comparison at one size. A single decisive size does not "
@@ -500,8 +505,8 @@ def default_decisive_advantage_protocol() -> DecisiveAdvantageProtocol:
         target_size=target_size,
         accuracy_target=0.01,
         budget_wall_time_ms=60_000.0,
-        best_classical_baselines=("classical_ode", "mps_tensor_network", "sparse_eigsh"),
-        exact_baselines=("dense_eigh",),
+        best_classical_baselines=("classical_ode", "mps_tensor_network"),
+        exact_baselines=("dense_statevector_evolution",),
     )
     total_shots = 8192
     gate = SubmissionGate(max_circuit_depth=400, max_total_shots=total_shots)

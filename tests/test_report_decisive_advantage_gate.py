@@ -49,8 +49,7 @@ def _valid_rows() -> list[dict[str, Any]]:
     return [
         row("classical_ode", 100.0),
         row("mps_tensor_network", 110.0),
-        row("sparse_eigsh", 120.0),
-        row("dense_eigh", 90.0),
+        row("dense_statevector_evolution", 90.0),
         row("qpu_hardware", 5000.0),
     ]
 

@@ -206,6 +206,15 @@ the repository physics (classical exact/MPS/ODE win through the accessible NISQ
 range) the expected outcome of the default protocol is a crossover or
 classical-wins label.
 
+Every decision baseline produces the **same** dynamical observable — the
+synchronisation order parameter `R` at the final evolution time — so the
+comparison is like-for-like. The best-classical path is `classical_ode` and
+`mps_tensor_network`; the exact-only reference is `dense_statevector_evolution`.
+Ground-state eigensolvers are excluded: they answer the spectral-gap question,
+not the dynamical order-parameter question a Trotterised QPU run decides, and a
+sparse Krylov propagation earns its keep only above the dense memory wall
+(`n ≳ 13`), outside this single decision size.
+
 | Symbol | Purpose |
 |--------|---------|
 | `DecisionCriterion` | Observable, target size, accuracy target, matched budget, and the best-classical / exact baseline labels |
@@ -228,6 +237,54 @@ print(outcome.label)  # e.g. "classical_wins"
 
 The `scripts/report_decisive_advantage_gate.py` CLI emits the preregistration
 manifest (no `--rows`) or the decision (`--rows rows.json`).
+
+---
+
+### 2c. `decisive_run_harness` — Measured Classical-Baseline Harness
+
+Where `decisive_advantage_protocol` declares *which* comparison to decide, this
+module *runs* the classical side of it at the preregistered decision size and
+emits schema-valid rows that `evaluate_decision` can score. It never fabricates a
+quantum row: with no QPU credits the `qpu_hardware` column is absent, so the
+honest outcome of the default protocol is `inconclusive` — the gate stays closed.
+
+Each baseline reuses an existing solver and produces the dynamical `R`:
+`dense_statevector_evolution` reuses `classical_exact_evolution` (the exact
+reference, `reference_error` zero); `classical_ode` reuses `scipy_ode_baseline`;
+`mps_tensor_network` reuses `mps_tebd_baseline`, degrading to an explicit
+size-gated skip when the tensor-network extra is absent rather than fabricating a
+value.
+
+| Symbol | Purpose |
+|--------|---------|
+| `DecisiveRunConfig` | Deterministic run inputs (`t_max`, `dt`, `mps_bond_dim`, `include_mps`, `reserved_core`) |
+| `DecisiveRunArtifact` | Serialisable record: rows, delegated validation, fail-closed decision, provenance, host-isolation grade |
+| `run_decisive_benchmark(protocol=None, config=None, *, host_readiness=None)` | Run the classical baselines and assemble the artifact |
+| `dense_reference_row` / `ode_row` / `mps_row` | Per-baseline row builders (the reference returns its final `R`) |
+| `git_commit` / `command_line` / `dependency_versions` | Provenance stamps read from the live environment, never guessed |
+
+**Measurement grade.** Wall-clock timing is *measured*; `memory_bytes` is the
+documented analytic memory model shared with the other benchmark surfaces
+(statevector `2ⁿ·16 B`, MPS `n·2·χ²·16 B`, ODE `n_times·n·8 B`). The artifact
+records the host-isolation verdict from `capture_host_readiness`; on a shared
+host the timings are labelled `advisory_shared_host`, and because the decision is
+`inconclusive` without a QPU row, no advantage is ever claimed on advisory
+timings.
+
+```python
+from scpn_quantum_control.benchmarks.decisive_run_harness import (
+    DecisiveRunConfig,
+    run_decisive_benchmark,
+)
+
+artifact = run_decisive_benchmark(config=DecisiveRunConfig(t_max=1.0, dt=0.1))
+print(artifact.decision["label"])   # "inconclusive" — no QPU row present
+print(artifact.timing_grade)        # e.g. "advisory_shared_host"
+```
+
+The `scripts/run_decisive_advantage_benchmark.py` CLI emits the preregistration
+manifest (default) or runs the classical baselines and writes the artifact
+(`--run`, with `--no-mps`, `--t-max`, `--dt`, `--reserved-core` options).
 
 ---
 

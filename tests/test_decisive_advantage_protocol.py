@@ -61,12 +61,20 @@ def _rowset(
     exact_error: float | None = None,
     qpu_error: float = 0.005,
 ) -> list[dict[str, Any]]:
-    """Full required-baseline rowset (validates) plus an optional QPU row."""
+    """Full required-baseline rowset (validates) plus an optional QPU row.
+
+    Row order is ``[classical_ode, mps_tensor_network, dense_statevector_evolution]``
+    followed by the optional ``qpu_hardware`` row, so index-based tests can target
+    a best-classical row (0, 1), the exact reference (2), or the QPU row (3).
+    """
     rows = [
         _row("classical_ode", classical_wall, classical_error),
         _row("mps_tensor_network", classical_wall, classical_error),
-        _row("sparse_eigsh", classical_wall, classical_error),
-        _row("dense_eigh", exact_wall, classical_error if exact_error is None else exact_error),
+        _row(
+            "dense_statevector_evolution",
+            exact_wall,
+            classical_error if exact_error is None else exact_error,
+        ),
     ]
     if qpu_wall is not None:
         rows.append(_row("qpu_hardware", qpu_wall, qpu_error))
@@ -81,7 +89,7 @@ class TestDecisionCriterion:
             accuracy_target=0.01,
             budget_wall_time_ms=1000.0,
             best_classical_baselines=("classical_ode",),
-            exact_baselines=("dense_eigh",),
+            exact_baselines=("dense_statevector_evolution",),
         )
         assert criterion.to_dict()["target_size"] == 12
 
@@ -104,7 +112,7 @@ class TestDecisionCriterion:
             "accuracy_target": 0.01,
             "budget_wall_time_ms": 1000.0,
             "best_classical_baselines": ("classical_ode",),
-            "exact_baselines": ("dense_eigh",),
+            "exact_baselines": ("dense_statevector_evolution",),
         }
         base.update(kwargs)
         with pytest.raises(ValueError, match=match):
@@ -143,7 +151,7 @@ class TestProtocolConstruction:
             accuracy_target=0.01,
             budget_wall_time_ms=1000.0,
             best_classical_baselines=("classical_ode",),
-            exact_baselines=("dense_eigh",),
+            exact_baselines=("dense_statevector_evolution",),
         )
         with pytest.raises(ValueError, match="exactly the decision size"):
             DecisiveAdvantageProtocol(
@@ -180,7 +188,14 @@ class TestDefaultProtocol:
 
     def test_required_baselines_cover_classical_and_exact(self) -> None:
         required = set(PROTOCOL.protocol.required_baselines)
-        assert {"classical_ode", "mps_tensor_network", "sparse_eigsh", "dense_eigh"} <= required
+        assert {
+            "classical_ode",
+            "mps_tensor_network",
+            "dense_statevector_evolution",
+        } <= required
+        # Ground-state eigensolvers are excluded from the single-size decision.
+        assert "sparse_eigsh" not in required
+        assert "dense_eigh" not in required
 
 
 class TestDecisionMatrix:
@@ -241,18 +256,19 @@ class TestDecisionMatrix:
 
     def test_skipped_rows_do_not_count_as_timing(self) -> None:
         # A size-gated skip is a valid row but must not count as a fast classical
-        # timing: the fastest classical here is skipped, so the QPU still wins.
+        # timing: the MPS row is skipped with a deceptively small wall time, so it
+        # is excluded from qualification and the QPU still beats the ODE at 6000 ms.
         rows = _rowset(classical_wall=6000.0, exact_wall=6000.0, qpu_wall=100.0)
-        rows[2]["status"] = "skipped"
-        rows[2]["notes"] = ["size-gated skip"]
-        rows[2]["wall_time_ms"] = 1.0
+        rows[1]["status"] = "skipped"
+        rows[1]["notes"] = ["size-gated skip"]
+        rows[1]["wall_time_ms"] = 1.0
         assert evaluate_decision(PROTOCOL, rows).label == "qpu_decides_advantage"
 
     def test_row_without_reference_error_does_not_qualify(self) -> None:
         # An ok row lacking the accuracy metric cannot decide; here the QPU row
         # loses its reference_error, so no QPU row qualifies.
         rows = _rowset(classical_wall=6000.0, exact_wall=6000.0, qpu_wall=100.0)
-        del rows[4]["metric_payload"]["reference_error"]
+        del rows[3]["metric_payload"]["reference_error"]
         assert evaluate_decision(PROTOCOL, rows).label == "inconclusive"
 
 

@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 836,
     "public_documentation_pages": 272,
-    "python_model_classes": 1009,
-    "python_model_source_modules": 561,
+    "python_model_classes": 1011,
+    "python_model_source_modules": 562,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 996
+    "test_files": 998
   },
   "documentation": {
     "examples": [
@@ -474,7 +474,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 29
+        "python_modules": 30
       },
       {
         "package": "bridge",
@@ -1284,6 +1284,14 @@
       {
         "name": "DecisiveAdvantageProtocol",
         "path": "src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py"
+      },
+      {
+        "name": "DecisiveRunArtifact",
+        "path": "src/scpn_quantum_control/benchmarks/decisive_run_harness.py"
+      },
+      {
+        "name": "DecisiveRunConfig",
+        "path": "src/scpn_quantum_control/benchmarks/decisive_run_harness.py"
       },
       {
         "name": "DecodedXYCompileInput",
@@ -4742,6 +4750,7 @@
       "src/scpn_quantum_control/benchmarks/compiler_isolated_benchmark_evidence.py",
       "src/scpn_quantum_control/benchmarks/coupling_recovery_evidence.py",
       "src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py",
+      "src/scpn_quantum_control/benchmarks/decisive_run_harness.py",
       "src/scpn_quantum_control/benchmarks/differentiable_catalyst_comparison.py",
       "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
       "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
@@ -6525,6 +6534,7 @@
       "tests/test_dataset_catalog.py",
       "tests/test_dd.py",
       "tests/test_decisive_advantage_protocol.py",
+      "tests/test_decisive_run_harness.py",
       "tests/test_dense_budget.py",
       "tests/test_dependency_hygiene.py",
       "tests/test_dependency_security_closure.py",
@@ -7179,6 +7189,7 @@
       "tests/test_retrieve_phase3_large_system_ibm.py",
       "tests/test_rl_discovery_agent_branches.py",
       "tests/test_robustness_certificate.py",
+      "tests/test_run_decisive_advantage_benchmark.py",
       "tests/test_run_dla_parity_suite_cli.py",
       "tests/test_run_quantum_ssgf_descent.py",
       "tests/test_runner_guards.py",
