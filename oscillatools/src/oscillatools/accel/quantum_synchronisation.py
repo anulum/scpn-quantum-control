@@ -26,6 +26,13 @@ that symmetry and *phase-locks* the oscillator — the phase distribution develo
 Arnold tongue). In the large-amplitude limit the model reduces to the classical van der Pol oscillator
 and, after phase reduction, to the Adler / Kuramoto phase equation. The state is represented in a
 truncated Fock basis and evolved by trace-preserving RK4. It adds no compute kernel.
+
+**Provenance.** This capability was included as a Phase-8 frontier on a strategic, user-directed
+commitment (CEO directive, 2026-06-29), not on an evidence-backed gap analysis: a structured sweep of the
+external literature returned zero verified claims establishing quantum synchronisation as a required
+capability gap for this toolkit. The model above is literature-grounded (the cited van der Pol / Lindblad
+construction); the decision to prioritise it as a frontier is a strategic choice, and any paper or public
+write-up must present it as such — not as an evidence-backed gap.
 """
 
 from __future__ import annotations

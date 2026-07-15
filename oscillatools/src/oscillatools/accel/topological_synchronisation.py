@@ -33,6 +33,13 @@ topological Kuramoto flow on the edge phases ``\theta`` is
                           - \sigma_\uparrow\,B_2\sin(B_2^{\mathsf T}\theta),
 
 which drives the gradient and curl projections towards coherence. It adds no compute kernel.
+
+**Provenance.** This capability was included as a Phase-8 frontier on a strategic, user-directed
+commitment (CEO directive, 2026-06-29), not on an evidence-backed gap analysis: a structured sweep of the
+external literature returned zero verified claims establishing topological (Hodge-Laplacian)
+synchronisation as a required capability gap for this toolkit. The model above is literature-grounded (the
+cited Hodge-Laplacian simplicial construction); the decision to prioritise it as a frontier is a strategic
+choice, and any paper or public write-up must present it as such — not as an evidence-backed gap.
 """
 
 from __future__ import annotations
