@@ -130,6 +130,44 @@ HISTORICAL_EXEMPT_SHAS: frozenset[str] = frozenset(
         # Dependabot merges pass the trailer via `--body`. Waiver in
         # docs/internal/AUDIT_INDEX.md.
         "9bf247c",  # "build(deps): bump actions/cache from 4.2.4 to 6.1.0 (#117)"
+        # 2026-05-20: five roadmap/readiness-gate commits (S7–S11) were
+        # authored before the local authorship-trailer hook was armed on
+        # this workstation. They are already on protected `main`, which
+        # disallows the force-push that retroactive repair would require.
+        "cc15eb0",  # "Add S7 logical DLA parity roadmap gate"
+        "03c4aef",  # "Add S8 adaptive branching readiness gate"
+        "b9cb117",  # "Add S9 quantum thermodynamics readiness gate"
+        "261074d",  # "Add S10 analog-native readiness gate"
+        "c542990",  # "Add S11 quantum sensing readiness gate"
+        # 2026-05-25/26: ten Dependabot squash merges (#79–#86 plus Rust
+        # crate bumps) landed through the protected-branch UI without the
+        # trailer.
+        "adfd598",  # "Bump actions/stale 10.2.0 -> 10.3.0 (#84)"
+        "ce098dd",  # "Bump codecov/codecov-action 6.0.0 -> 6.0.1 (#79)"
+        "fda13e6",  # "Bump github/codeql-action 4.35.5 -> 4.36.0 (#83)"
+        "34af5fd",  # "Bump pip-audit 2.9.0 -> 2.10.0 (#80)"
+        "9d232e5",  # "Bump pydantic-settings 2.14.0 -> 2.14.1 (#82)"
+        "3f360a6",  # "Bump qiskit-ibm-runtime 0.46.1 -> 0.47.0 (#81)"
+        "6dfd700",  # "Bump reqwest 0.12.28 -> 0.13.3"
+        "093457e",  # "Bump ruff 0.15.12 -> 0.15.14 (#86)"
+        "cf5c069",  # "Bump serde_json 1.0.149 -> 1.0.150"
+        "908e340",  # "Bump mypy 1.20.1 -> 2.1.0 (#85)"
+        # 2026-06-15: seven build(deps) Dependabot squash merges without
+        # the trailer (protected-branch UI).
+        "b87216d",  # "build(deps): bump chrono to 0.4.45"
+        "9d4e6cf",  # "build(deps): bump codecov-action to 7.0.0"
+        "b233a8c",  # "build(deps): bump github/codeql-action to 4.36.2"
+        "c0c3fb6",  # "build(deps): bump requests to 2.34.2"
+        "2858406",  # "build(deps): bump sc-neurocore to 3.15.33"
+        "6c4c85a",  # "build(deps-dev): bump ruff to 0.15.16"
+        "001682c",  # "build(deps-dev): bump structlog to 26.1.0"
+        # 2026-07-07: `fix: repair ci gate drift` predates a trailer-hook
+        # re-arm; already on `main`, unamendable under a live co-agent.
+        "2fd17e6",  # "fix: repair ci gate drift"
+        # 2026-07-14: the setuptools 83.0.0 revert was created with
+        # `git revert --no-edit`, which does not carry the trailer;
+        # forward-fixed here rather than by rewriting pushed history.
+        "9af0b25",  # Revert "build(deps): bump setuptools 81.0.0 -> 83.0.0"
     }
 )
 
