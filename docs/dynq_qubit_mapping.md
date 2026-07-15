@@ -646,17 +646,33 @@ DynQ computes the partition once per calibration update (typically
 daily), then layout selection for any circuit width is $O(k)$ where
 $k$ is the number of regions.
 
-### 7.3 Future: Custom Transpiler Pass
+### 7.3 Custom Transpiler Pass
 
-A `DynQLayoutPass` subclassing `qiskit.transpiler.AnalysisPass` is
-planned but not yet implemented. It would:
+`DynQLayoutPass` subclasses `qiskit.transpiler.AnalysisPass` and integrates
+DynQ into a `PassManager` exactly like `TrivialLayout` or `SabreLayout`. It:
 
-1. Extract calibration data from `backend.target`
-2. Run `dynq_initial_layout`
-3. Store the result in `property_set["layout"]`
+1. Extracts calibration data from a `Target` (two-qubit gate errors and
+   `measure` readout errors), via `calibration_from_target`
+2. Runs `dynq_initial_layout`
+3. Stores the placement in `property_set["layout"]` (and the full
+   `QubitMappingResult` in `property_set["dynq_mapping_result"]`)
 
-Current usage requires manual extraction of calibration data and
-passing `initial_layout` to `transpile()`.
+The pass is fail-closed: a target with no two-qubit gate error data, or a
+circuit no execution region can host, raises `TranspilerError` rather than
+emitting a degraded layout.
+
+```python
+from qiskit.transpiler import PassManager
+from scpn_quantum_control.hardware import DynQLayoutPass
+
+# from a BackendV2, or pass a Target directly to DynQLayoutPass(target)
+pm = PassManager([DynQLayoutPass.from_backend(backend, seed=42)])
+pm.run(circuit)
+layout = pm.property_set["layout"]
+```
+
+Manual extraction (`dynq_initial_layout` + `transpile(initial_layout=...)`)
+remains available for callers that do not use a `PassManager`.
 
 ---
 

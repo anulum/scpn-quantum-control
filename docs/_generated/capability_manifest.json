@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 836,
     "public_documentation_pages": 272,
-    "python_model_classes": 1004,
-    "python_model_source_modules": 559,
+    "python_model_classes": 1005,
+    "python_model_source_modules": 560,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 993
+    "test_files": 994
   },
   "documentation": {
     "examples": [
@@ -539,7 +539,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 69
+        "python_modules": 70
       },
       {
         "package": "identity",
@@ -1540,6 +1540,10 @@
       {
         "name": "DualNumber",
         "path": "src/scpn_quantum_control/differentiable_scalar_kernels.py"
+      },
+      {
+        "name": "DynQLayoutPass",
+        "path": "src/scpn_quantum_control/hardware/dynq_layout_pass.py"
       },
       {
         "name": "DynamicCouplingConfig",
@@ -4887,6 +4891,7 @@
       "src/scpn_quantum_control/hardware/cirq_adapter.py",
       "src/scpn_quantum_control/hardware/classical.py",
       "src/scpn_quantum_control/hardware/cutting_runner.py",
+      "src/scpn_quantum_control/hardware/dynq_layout_pass.py",
       "src/scpn_quantum_control/hardware/experiment_control.py",
       "src/scpn_quantum_control/hardware/experiment_dynamics.py",
       "src/scpn_quantum_control/hardware/experiment_mitigation.py",
@@ -6593,6 +6598,7 @@
       "tests/test_dynamic_coupling.py",
       "tests/test_dynamical_lie_algebra.py",
       "tests/test_dynamical_lie_algebra_contracts.py",
+      "tests/test_dynq_layout_pass.py",
       "tests/test_e2e_contract_boundary_audit.py",
       "tests/test_eeg_benchmark.py",
       "tests/test_eeg_benchmark_branches.py",

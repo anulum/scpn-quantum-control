@@ -122,15 +122,15 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 0.10.0 |
 | Public API exports | 836 |
-| Python source modules | 559 |
-| Public Python classes | 1004 |
+| Python source modules | 560 |
+| Public Python classes | 1005 |
 | Domain package families | 31 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
 | Notebook files | 100 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 993 |
+| Python test files | 994 |
 | Public documentation pages | 272 |
 | GitHub Actions workflows | 24 |
 

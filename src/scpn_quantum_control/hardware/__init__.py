@@ -69,6 +69,7 @@ from .classical import (
     classical_exact_evolution,
     classical_kuramoto_reference,
 )
+from .dynq_layout_pass import DynQLayoutPass, calibration_from_target
 from .experiments import (
     ALL_EXPERIMENTS,
     ansatz_comparison_hw_experiment,
@@ -488,4 +489,6 @@ __all__ = [
     "detect_execution_regions",
     "dynq_initial_layout",
     "select_best_region",
+    "DynQLayoutPass",
+    "calibration_from_target",
 ]
