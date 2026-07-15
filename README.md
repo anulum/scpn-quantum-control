@@ -131,7 +131,7 @@ claims only when the evidence exists.
 | Example files | 37 |
 | Optional extras | 43 |
 | Python test files | 993 |
-| Public documentation pages | 271 |
+| Public documentation pages | 272 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
