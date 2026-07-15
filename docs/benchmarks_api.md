@@ -111,11 +111,33 @@ response, and null-model gates pass.
 See [Josephson K_nm Magnitude Study](josephson_knm_magnitude_study.md) for the
 generated artifact and regeneration command.
 
-### 2. `quantum_advantage` — Classical vs Quantum Scaling
+### 2. `quantum_advantage` — Two Classical Simulation Methods, Scaling Crossover
 
 Measures wall-clock time for exact classical simulation (exact
 diagonalisation + matrix exponential) against Trotter evolution on
 the statevector simulator.
+
+> **Estimate vs measurement, classical vs quantum — read this first.**
+> Despite the module and function names, **both** `classical_benchmark` and
+> `quantum_benchmark` are *classical-hardware measurements of two classical
+> simulation methods*: dense exact evolution versus statevector-Trotter
+> simulation. Neither is a quantum-processor timing, and the `estimate_crossover`
+> point is where one *classical* method overtakes the other — **not** a
+> quantum-advantage crossover. The `gpu_baseline` and `mps_baseline` timings are
+> *analytic estimates*, not simulations (they are labelled as such in the tables
+> below). The one surface that actually *decides* the advantage question at
+> matched budget — and stays fail-closed `inconclusive` without a QPU row — is
+> §2b `decisive_advantage_protocol` / §2c `decisive_run_harness`.
+>
+> **Why no broad advantage is expected here.** The Kuramoto-XY model sits at a
+> BKT-type critical point, where the half-chain entanglement grows only
+> logarithmically, `S ~ (c/3)·log n` with `c = 1`. An MPS therefore needs only a
+> bond dimension `χ ~ n^{1/3}` — always tractable — so the classical
+> tensor-network spoofer keeps pace across the accessible NISQ range and the
+> honest expected outcome is a crossover-only or classical-wins label, never
+> broad quantum advantage. (This mirrors `mps_baseline.quantum_advantage_n`,
+> which only predicts intractability under *volume-law* entanglement, `S ~ n/2`,
+> which this model does not exhibit.)
 
 #### `classical_benchmark(n, t_max=1.0, dt=0.1)`
 
@@ -150,15 +172,19 @@ commands fail closed to `unknown` without blocking benchmark execution.
 
 #### `estimate_crossover(results)`
 
-Fits exponential scaling `t = a * exp(b * n)` to both classical and quantum
-timings. The crossover is where the curves intersect:
+Fits exponential scaling `t = a * exp(b * n)` to both the dense-exact and the
+statevector-Trotter timings. The crossover is where the two *classical* curves
+intersect:
 
 ```
 n_cross = log(a_q / a_c) / (b_c - b_q)
 ```
 
-Returns `int | None`. Returns None if fewer than 3 data points or if
-quantum scaling is not slower than classical (unexpected).
+Returns `int | None`. Returns None if fewer than 3 data points or if the
+statevector-Trotter method is not asymptotically cheaper than dense exact
+evolution. This is a crossover *between two classical simulation methods* — it
+carries no quantum-advantage claim; the advantage question is decided only by
+§2b/§2c.
 
 #### `run_scaling_benchmark(sizes=None, t_max=1.0, dt=0.1)`
 
@@ -746,22 +772,29 @@ comparisons.
 
 ## Pipeline Performance
 
-Measured on ML350 Gen8 (128 GB RAM, Xeon E5-2620v2):
+Measured on ML350 Gen8 (128 GB RAM, Xeon E5-2620v2). The **Kind** column marks
+each figure as a *measured* classical-hardware timing or an *analytic estimate*,
+and names the method class. No row is a quantum-processor timing.
 
-| Operation | System | Wall Time |
-|-----------|--------|-----------|
-| `classical_benchmark` | 4 qubits | 8 ms |
-| `classical_benchmark` | 8 qubits | 120 ms |
-| `classical_benchmark` | 12 qubits | 8,500 ms |
-| `classical_benchmark` | 14 qubits | ~45,000 ms |
-| `quantum_benchmark` | 4 qubits | 15 ms |
-| `quantum_benchmark` | 8 qubits | 45 ms |
-| `quantum_benchmark` | 12 qubits | 350 ms |
-| `quantum_benchmark` | 16 qubits | 3,200 ms |
-| `gpu_baseline_comparison` | any n | 0.01 ms (pure estimate) |
-| `mps_baseline_comparison` | 8 qubits | 25 ms |
-| `appqsim_benchmark` | 4 qubits | 350 ms |
+| Operation | System | Wall Time | Kind |
+|-----------|--------|-----------|------|
+| `classical_benchmark` | 4 qubits | 8 ms | measured — dense exact evolution (classical) |
+| `classical_benchmark` | 8 qubits | 120 ms | measured — dense exact evolution (classical) |
+| `classical_benchmark` | 12 qubits | 8,500 ms | measured — dense exact evolution (classical) |
+| `classical_benchmark` | 14 qubits | ~45,000 ms | measured — dense exact evolution (classical) |
+| `quantum_benchmark` | 4 qubits | 15 ms | measured — statevector-Trotter *simulation* (classical) |
+| `quantum_benchmark` | 8 qubits | 45 ms | measured — statevector-Trotter *simulation* (classical) |
+| `quantum_benchmark` | 12 qubits | 350 ms | measured — statevector-Trotter *simulation* (classical) |
+| `quantum_benchmark` | 16 qubits | 3,200 ms | measured — statevector-Trotter *simulation* (classical) |
+| `gpu_baseline_comparison` | any n | 0.01 ms | analytic estimate (no simulation) |
+| `mps_baseline_comparison` | 8 qubits | 25 ms | measured — MPS tensor network (classical) |
+| `appqsim_benchmark` | 4 qubits | 350 ms | measured — application-metric suite (classical) |
 
-The classical benchmark hits a wall at n=14 (45 seconds). The quantum
-benchmark scales polynomially in 2^n, reaching 3.2 seconds at n=16.
-GPU and MPS baselines are pure estimates (no actual simulation).
+Dense exact evolution hits a memory/compute wall at n=14 (~45 s), because its
+cost is `O(2^{3n})` per step. The statevector-Trotter *simulation* is cheaper —
+its cost is `O(2^n · n_gates)`: **exponential in n** (the statevector dimension),
+polynomial in circuit depth — so it overtakes dense exact evolution at the
+`estimate_crossover` point. That crossover is **between two classical simulation
+methods**, not a quantum speed-up; a real quantum-advantage comparison at matched
+budget is decided only by §2b/§2c and, absent a QPU row, stays `inconclusive`.
+The GPU baseline is a pure analytic estimate (no simulation is run).
