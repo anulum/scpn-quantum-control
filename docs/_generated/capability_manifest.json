@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 836,
     "public_documentation_pages": 272,
-    "python_model_classes": 1011,
-    "python_model_source_modules": 562,
+    "python_model_classes": 1014,
+    "python_model_source_modules": 563,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 998
+    "test_files": 999
   },
   "documentation": {
     "examples": [
@@ -539,7 +539,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 70
+        "python_modules": 71
       },
       {
         "package": "identity",
@@ -1142,6 +1142,10 @@
         "path": "src/scpn_quantum_control/qec/control_qec.py"
       },
       {
+        "name": "CostWeights",
+        "path": "src/scpn_quantum_control/hardware/kuramoto_layout_cost.py"
+      },
+      {
         "name": "CouplingGradientVerificationResult",
         "path": "src/scpn_quantum_control/phase/coupling_learning.py"
       },
@@ -1316,6 +1320,10 @@
       {
         "name": "DensityMatrixInvariantCertificate",
         "path": "src/scpn_quantum_control/phase/open_system_objectives.py"
+      },
+      {
+        "name": "DepthProvider",
+        "path": "src/scpn_quantum_control/hardware/kuramoto_layout_cost.py"
       },
       {
         "name": "DifferentiabilityDiagnosticReport",
@@ -2344,6 +2352,10 @@
       {
         "name": "LayerStateArtifact",
         "path": "src/scpn_quantum_control/bridge/phase_artifact.py"
+      },
+      {
+        "name": "LayoutCost",
+        "path": "src/scpn_quantum_control/hardware/kuramoto_layout_cost.py"
       },
       {
         "name": "LeastSquaresCovarianceResult",
@@ -4953,6 +4965,7 @@
       "src/scpn_quantum_control/hardware/iqm_backend.py",
       "src/scpn_quantum_control/hardware/jax_accel.py",
       "src/scpn_quantum_control/hardware/job_dossier.py",
+      "src/scpn_quantum_control/hardware/kuramoto_layout_cost.py",
       "src/scpn_quantum_control/hardware/noise_model.py",
       "src/scpn_quantum_control/hardware/openpulse_control.py",
       "src/scpn_quantum_control/hardware/pennylane_adapter.py",
@@ -6777,6 +6790,7 @@
       "tests/test_kuramoto_external_competitors.py",
       "tests/test_kuramoto_handbook_workflow_example.py",
       "tests/test_kuramoto_input_hardening.py",
+      "tests/test_kuramoto_layout_cost.py",
       "tests/test_kuramoto_public_face_hygiene.py",
       "tests/test_kuramoto_relocation_shims.py",
       "tests/test_kuramoto_standalone_package_decision.py",

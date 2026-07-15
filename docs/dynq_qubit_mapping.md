@@ -674,6 +674,42 @@ layout = pm.property_set["layout"]
 Manual extraction (`dynq_initial_layout` + `transpile(initial_layout=...)`)
 remains available for callers that do not use a `PassManager`.
 
+### 7.4 Kuramoto-XY-aware Discrete Layout Cost Model
+
+`hardware/kuramoto_layout_cost.py` scores a candidate layout on a single
+objective so a discrete optimiser can compare placements:
+
+```
+C(layout, K, omega, coupling_map)
+    = w_depth · post-routing depth
+    + w_error · Trotter error bound
+    + w_infidelity · (1 − DynQ mean gate fidelity)
+```
+
+The cost is **continuous** in the couplings, frequencies, and fidelities, and
+**discrete** in the layout: only the post-routing depth depends on the integer
+layout, through the SWAP overhead the coupling map forces on the all-to-all XY
+interaction. Each term reuses an existing surface — `compile_xy_trotter` +
+Qiskit routing for the depth, `trotter_error_bound` for the error, and the
+`QubitMappingResult` region fidelity (`dynq_mean_gate_fidelity`).
+
+```python
+from qiskit.transpiler import CouplingMap
+from scpn_quantum_control.hardware import kuramoto_layout_cost, CostWeights
+
+cost = kuramoto_layout_cost(
+    (0, 1, 2, 3), K, omega, CouplingMap([[0, 1], [1, 2], [2, 3]]),
+    mean_gate_fidelity=0.99, weights=CostWeights(depth=1.0, trotter_error=50.0, infidelity=10.0),
+)
+print(cost.total, cost.routed_depth)
+```
+
+`routed_layout_depth` (the impure Qiskit-routing term) is injectable via the
+`depth_provider` argument, so the cost function stays pure and side-effect-free
+for the KT-3 optimiser loop, and tests can supply a deterministic depth model.
+The discrete optimiser and the benchmark against DynQ+SABRE are §8-forward work
+(KT-3).
+
 ---
 
 ## 8. Benchmarks

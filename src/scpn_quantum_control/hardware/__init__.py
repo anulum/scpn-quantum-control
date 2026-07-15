@@ -198,6 +198,13 @@ from .iqm_backend import (
     is_iqm_available,
 )
 from .job_dossier import HardwareJobDossier, build_s1_feedback_job_dossier
+from .kuramoto_layout_cost import (
+    CostWeights,
+    LayoutCost,
+    dynq_mean_gate_fidelity,
+    kuramoto_layout_cost,
+    routed_layout_depth,
+)
 from .noise_model import heron_r2_noise_model
 from .openpulse_control import (
     OpenPulseCalibrationWorkflow,
@@ -419,6 +426,11 @@ __all__ = [
     "snapshot_from_qiskit_backend",
     "HardwareJobDossier",
     "build_s1_feedback_job_dossier",
+    "CostWeights",
+    "LayoutCost",
+    "dynq_mean_gate_fidelity",
+    "kuramoto_layout_cost",
+    "routed_layout_depth",
     "S1_CONTROL_ARM",
     "S1_FEEDBACK_ARM",
     "S1FeedbackArmCircuit",
