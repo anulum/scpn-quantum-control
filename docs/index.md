@@ -100,7 +100,7 @@ spin Hamiltonian. Superconducting qubits are native simulators of this physics: 
 qubit is an oscillator on the Bloch sphere, and the XX+YY coupling between qubits
 reproduces the $\sin(\theta_j - \theta_i)$ interaction of the Kuramoto model.
 
-This package provides three things:
+This package provides five things:
 
 1. **A compiler** that takes any coupling matrix $K_{nm}$ and natural frequencies
    $\omega_i$ and produces executable Qiskit circuits for IBM hardware.
@@ -130,7 +130,7 @@ This package provides three things:
    Unsupported compiler and program-AD paths fail closed rather than silently
    fabricating gradients.
 
-6. **A documented quantum-gradient route** that starts from parameter-shift VQE
+5. **A documented quantum-gradient route** that starts from parameter-shift VQE
    and extends toward backend-aware gradient planning, gradient tapes,
    framework adapters, QNN/QGNN/QSNN workflows, analog oscillator mapping,
    open-system gradients, and benchmark evidence. Current capabilities and
@@ -265,24 +265,6 @@ for name, w in results.items():
 **Contact:** [protoscience@anulum.li](mailto:protoscience@anulum.li) |
 [GitHub Discussions](https://github.com/anulum/scpn-quantum-control/discussions) |
 [www.anulum.li](https://www.anulum.li)
-
-<p align="center">
-  <a href="https://www.anulum.li">
-    <img src="assets/anulum_logo_company.jpg" height="70" alt="ANULUM">
-  </a>
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://www.anulum.li">
-    <img src="assets/fortis_studio_logo.jpg" height="70" alt="Fortis Studio">
-  </a>
-  <br>
-  <em>Developed by <a href="https://www.anulum.li">ANULUM</a> / Fortis Studio</em>
-</p>
-
-**Contact:** [protoscience@anulum.li](mailto:protoscience@anulum.li) |
-[GitHub Discussions](https://github.com/anulum/scpn-quantum-control/discussions) |
-[www.anulum.li](https://www.anulum.li)
-
----
 
 <p align="center">
   <a href="https://www.anulum.li">
