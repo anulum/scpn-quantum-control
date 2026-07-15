@@ -71,6 +71,7 @@ nav:
       - Literature Survey 2024-2026: literature/literature_survey_2024_2026.md
       - Orchestrator Integration: orchestrator_integration.md
   - API Reference:
+      - Choosing a Gradient Path: choosing_a_gradient_path.md
       - Differentiable API: differentiable_api.md
       - Differentiable Support Matrix: differentiable_support_matrix.md
       - Differentiable Reviewer Evidence: differentiable_reviewer_evidence.md

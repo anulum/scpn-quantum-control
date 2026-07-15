@@ -1,5 +1,9 @@
 # Differentiable API
 
+> **New here?** Start with [Choosing a Gradient Path](choosing_a_gradient_path.md) —
+> a 60-second decision table from *what you are differentiating* to *which entry
+> point to call*. This page is the full reference behind that guide.
+
 This page maps the public differentiable-programming namespace and the related quantum-gradient entry points. It is an API guide, not a proof that every exported symbol is production-ready for every backend. Always pair an API call with the support matrix and tests for the target primitive, backend, shape, dtype, and transform.
 
 The API contract is deliberately fail-closed: a supported route should return a
