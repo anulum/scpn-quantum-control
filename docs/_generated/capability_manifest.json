@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 836,
     "public_documentation_pages": 272,
-    "python_model_classes": 1005,
-    "python_model_source_modules": 560,
+    "python_model_classes": 1009,
+    "python_model_source_modules": 561,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 994
+    "test_files": 996
   },
   "documentation": {
     "examples": [
@@ -474,7 +474,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 28
+        "python_modules": 29
       },
       {
         "package": "bridge",
@@ -1272,6 +1272,18 @@
       {
         "name": "DatasetIntegrityError",
         "path": "src/scpn_quantum_control/dla_parity/dataset.py"
+      },
+      {
+        "name": "DecisionCriterion",
+        "path": "src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py"
+      },
+      {
+        "name": "DecisionOutcome",
+        "path": "src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py"
+      },
+      {
+        "name": "DecisiveAdvantageProtocol",
+        "path": "src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py"
       },
       {
         "name": "DecodedXYCompileInput",
@@ -4226,6 +4238,10 @@
         "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
       {
+        "name": "SubmissionGate",
+        "path": "src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py"
+      },
+      {
         "name": "SurfaceCode",
         "path": "src/scpn_quantum_control/qec/control_qec.py"
       },
@@ -4725,6 +4741,7 @@
       "src/scpn_quantum_control/benchmarks/classical_baselines.py",
       "src/scpn_quantum_control/benchmarks/compiler_isolated_benchmark_evidence.py",
       "src/scpn_quantum_control/benchmarks/coupling_recovery_evidence.py",
+      "src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py",
       "src/scpn_quantum_control/benchmarks/differentiable_catalyst_comparison.py",
       "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
       "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
@@ -6507,6 +6524,7 @@
       "tests/test_cutting_runner.py",
       "tests/test_dataset_catalog.py",
       "tests/test_dd.py",
+      "tests/test_decisive_advantage_protocol.py",
       "tests/test_dense_budget.py",
       "tests/test_dependency_hygiene.py",
       "tests/test_dependency_security_closure.py",
@@ -7154,6 +7172,7 @@
       "tests/test_render_kuramoto_handbook.py",
       "tests/test_render_tier_benchmarks.py",
       "tests/test_rendered_docs_headers.py",
+      "tests/test_report_decisive_advantage_gate.py",
       "tests/test_report_s2_scaling_claim_boundary.py",
       "tests/test_reproducible_comparison.py",
       "tests/test_result_pack_seal.py",

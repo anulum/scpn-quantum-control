@@ -189,6 +189,48 @@ Warns if n > 23 (statevector memory > 128 MB).
 
 ---
 
+### 2b. `decisive_advantage_protocol` — Single-Decision Advantage Gate
+
+Where `advantage_protocol` collects the full S2 size-by-baseline matrix, this
+module narrows it to the one comparison the quantum-advantage gap contract
+requires to be *decided*: one observable, one system size, one accuracy target,
+at a matched wall-time budget. It is the design layer for a reproducible
+hardware benchmark — not an advantage claim.
+
+The decision rule is **fail-closed**. `evaluate_decision` returns
+`qpu_decides_advantage` only when a QPU row strictly beats a *present*
+best-classical row at the target size within accuracy and budget; every
+ambiguous or under-populated case degrades to
+`exact_hilbert_space_crossover_only`, `classical_wins`, or `inconclusive`. Per
+the repository physics (classical exact/MPS/ODE win through the accessible NISQ
+range) the expected outcome of the default protocol is a crossover or
+classical-wins label.
+
+| Symbol | Purpose |
+|--------|---------|
+| `DecisionCriterion` | Observable, target size, accuracy target, matched budget, and the best-classical / exact baseline labels |
+| `SubmissionGate` | Depth and shot ceilings a QPU submission must not exceed (`check` is fail-closed) |
+| `DecisiveAdvantageProtocol` | Single-size scaling protocol + criterion + gate + conservative QPU-time estimate; `validate_rows` delegates to `validate_scaling_rows` |
+| `DecisionOutcome` | The `DecisionLabel` and its justifications |
+| `default_decisive_advantage_protocol()` | The preregistered order-parameter `R` decision at `n = 12` (near the ~11.6 exact-Hilbert-space crossover), 1 % accuracy, matched 60 s budget |
+| `evaluate_decision(protocol, rows)` | Validate measured rows and return the fail-closed `DecisionOutcome` |
+
+```python
+from scpn_quantum_control.benchmarks.decisive_advantage_protocol import (
+    default_decisive_advantage_protocol,
+    evaluate_decision,
+)
+
+protocol = default_decisive_advantage_protocol()
+outcome = evaluate_decision(protocol, measured_rows)
+print(outcome.label)  # e.g. "classical_wins"
+```
+
+The `scripts/report_decisive_advantage_gate.py` CLI emits the preregistration
+manifest (no `--rows`) or the decision (`--rows rows.json`).
+
+---
+
 ### 3. `gpu_baseline` — GPU vs QPU Comparison
 
 Estimates GPU resources needed for statevector simulation and compares
