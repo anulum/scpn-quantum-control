@@ -97,6 +97,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             "run",
             "--manifest-path",
             str(REPO_ROOT / "scpn_quantum_engine" / "Cargo.toml"),
+            "--features",
+            "latency-runner",
             "--bin",
             "ibm_runtime_latency_runner",
             "--",
