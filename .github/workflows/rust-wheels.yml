@@ -19,15 +19,18 @@ permissions:
 jobs:
   build-wheels:
     strategy:
+      # One platform's failure must not cancel the others' wheels.
+      fail-fast: false
       matrix:
         include:
+          # Linux builds run inside the manylinux container where the host
+          # setup-python interpreter is invisible — name the container's
+          # CPython explicitly or maturin finds no interpreter at all.
           - os: ubuntu-latest
             target: x86_64
+            interpreter-args: "-i python3.12"
           - os: ubuntu-latest
             target: aarch64
-            # Cross build runs inside the manylinux container where the host
-            # setup-python interpreter is invisible — name the container's
-            # CPython explicitly or maturin finds no interpreter at all.
             interpreter-args: "-i python3.12"
           - os: windows-latest
             target: x64
