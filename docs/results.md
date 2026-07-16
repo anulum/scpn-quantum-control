@@ -25,7 +25,7 @@ theoretical, simulated, hardware-measured, mitigated, or noise-limited.
 |---|---------|---------------|--------|
 | 1 | DLA parity raw-count reproduction | Phase 1: 342 circuits, peak asymmetry +17.48% at depth 6; Phase 2 reduced A+G: 612 circuits, Fisher p=3.77e-20; Phase 2 B-C: mixed `n=6,8` scaling | `data/phase1_dla_parity/`, `data/phase2_dla_parity/`, `data/phase2_scaling_bc/`, `scripts/run_dla_parity_suite.py`, `scripts/analyse_phase2_dla_parity.py`, `scripts/analyse_phase2_scaling_bc.py` |
 | 2 | Bell inequality row | CHSH S = 2.165 ± 0.022 (7.5σ, pair q0–q1); S = 2.188 ± 0.021 (8.9σ, pair q2–q3) \[corrected 2026-07-16\] | Legacy `ibm_fez` artefact row |
-| 3 | QKD row | QBER 5.5% < BB84 threshold (11%) | Legacy `ibm_fez` artefact row |
+| 3 | QKD row | QBER 5.5% < BB84 threshold (11%) \[caveat 2026-07-16: not independently derivable — see amendment below\] | Legacy `ibm_fez` artefact row |
 | 4 | State preparation row | 94.6% (∣0⟩), 89.8% (∣1⟩) | Legacy `ibm_fez` artefact row |
 | 5 | ZNE row | Range 0.259–0.272 across folds 1–9 | Legacy `ibm_fez` artefact row |
 | 6 | Knm ansatz row | 2.36 bits vs TwoLocal 3.46 | Legacy `ibm_fez` artefact row |
@@ -48,7 +48,16 @@ theoretical, simulated, hardware-measured, mitigated, or noise-limited.
 > setting is anomalous on this run (E ≈ +0.29/+0.33 against ≈0.80–0.86 for
 > the other three settings), which the original analysis did not flag; a
 > re-run with readout mitigation is planned before this artefact's headline
-> numbers are used further.
+> numbers are used further
+> (`docs/campaigns/bell_rerun_mitigated_prereg_2026-07-16.md`).
+
+> **Amendment (2026-07-16), QKD row:** the committed
+> `results/ibm_hardware_2026-03-28/qkd_qber_4q.json` artefact carries no
+> per-shot basis labels, so the published QBER of 5.5% cannot be
+> independently re-derived from the raw counts alone (verified 2026-07-16).
+> The value stands as reported by the original analysis pipeline; a
+> derivation script plus basis metadata (or a re-run capturing them) is
+> required before this row is used beyond its legacy-artefact status.
 
 ---
 
