@@ -80,6 +80,14 @@ jobs:
           python -m pytest -q -p no:cacheprovider \
             tests/test_check_published_record_freeze.py
           python tools/check_published_record_freeze.py
+      - name: Enforce retired public claims (no silent revivals)
+        run: |
+          python -m mypy --strict --explicit-package-bases \
+            tools/check_retired_claims.py \
+            tests/test_check_retired_claims.py
+          python -m pytest -q -p no:cacheprovider \
+            tests/test_check_retired_claims.py
+          python tools/check_retired_claims.py
       - name: Audit tracked module-size policy
         run: python tools/audit_module_size_policy.py
       - name: Type-check module-size policy audit

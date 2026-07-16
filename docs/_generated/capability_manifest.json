@@ -8,12 +8,12 @@
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 836,
-    "public_documentation_pages": 274,
+    "public_documentation_pages": 277,
     "python_model_classes": 1037,
     "python_model_source_modules": 570,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1012
+    "test_files": 1013
   },
   "documentation": {
     "examples": [
@@ -187,6 +187,7 @@
       "docs/bridges_api.md",
       "docs/campaigns/README.md",
       "docs/campaigns/adaptive_fim_qpu_protocol_2026-05-06.md",
+      "docs/campaigns/bell_rerun_mitigated_prereg_2026-07-16.md",
       "docs/campaigns/benchmark_harness_phase1_2026-05-06.md",
       "docs/campaigns/benchmark_harness_registry_2026-05-06.md",
       "docs/campaigns/depth_optimal_native_decomposition_prereg_2026-05-06.md",
@@ -203,8 +204,10 @@
       "docs/campaigns/large_system_submission_extension_readiness_20260520T193909Z.md",
       "docs/campaigns/large_system_submission_extension_runbook_2026-05-20.md",
       "docs/campaigns/layer_selective_qubit_assignment_prereg_2026-05-06.md",
+      "docs/campaigns/max_width_kuramoto_xy_prereg_2026-07-16.md",
       "docs/campaigns/multicircuit_qec_prereg_2026-05-06.md",
       "docs/campaigns/next_validation_protocols_2026-05-05.md",
+      "docs/campaigns/onqpu_dynamic_feedback_prereg_2026-07-16.md",
       "docs/campaigns/phase2_no_qpu_crosschecks_2026-05-05.md",
       "docs/campaigns/phase3_entanglement_tomography_execution_package_2026-05-20.md",
       "docs/campaigns/phase3_entanglement_tomography_manifest_2026-05-20.md",
@@ -6586,6 +6589,7 @@
       "tests/test_check_commit_trailers.py",
       "tests/test_check_internal_todo_policy.py",
       "tests/test_check_published_record_freeze.py",
+      "tests/test_check_retired_claims.py",
       "tests/test_check_rust_pyi_exports.py",
       "tests/test_check_secrets.py",
       "tests/test_check_version_consistency.py",

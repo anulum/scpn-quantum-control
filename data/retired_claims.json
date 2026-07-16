@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "description": "Retired public claims that must not reappear on public claim surfaces without explicit retraction context. Scanned by tools/check_retired_claims.py (CI gate). Published records (preprint sources, published paper pages) are immutable by owner ruling 2026-07-16 and are exempt: their corrections travel via new Zenodo versions and live-surface amendments, never in-place edits.",
+  "exempt_paths": [
+    "docs/preprint.md",
+    "docs/paper_sync_witnesses.md",
+    "docs/paper_dla_parity.md",
+    "paper/"
+  ],
+  "claims": [
+    {
+      "id": "rust-5401x-speedup",
+      "pattern": "5[ ,]?401\\s*[×x]",
+      "retired": "2026-05-05",
+      "reason": "Cold-start artefact (un-warmed Qiskit first call); warmed declared-hardware baseline is 96.5x (L=4) / 33.7x (L=8) as a local regression guard, not a published claim. See docs/native_speedup_benchmark.md.",
+      "allow_context": [
+        "retired",
+        "retracted",
+        "obsolete",
+        "cold-start artefact",
+        "[Dd]o not claim",
+        "does not reproduce",
+        "\\[amended",
+        "\\[corrected"
+      ]
+    },
+    {
+      "id": "chsh-blanket-8sigma",
+      "pattern": "(\\{?>\\}?\\s?8\\s?(σ|\\\\sigma))|(>\\s?8\\s?sigma)",
+      "retired": "2026-07-16",
+      "reason": "The blanket '>8σ' CHSH statement misattached the significance: the committed counts give 7.54σ for the S=2.165 pair (q0–q1) and 8.94σ for the S=2.188 pair (q2–q3). State exact per-pair significances instead. See scripts/recompute_chsh_bell_test.py.",
+      "allow_context": [
+        "corrected 2026-07-16",
+        "previously stated",
+        "previously misattached",
+        "originally stated",
+        "\\[corrected",
+        "\\[amended"
+      ]
+    }
+  ]
+}

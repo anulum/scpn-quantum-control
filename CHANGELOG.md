@@ -4,7 +4,49 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Fixed
+- 2026-07-16 — Public-claim honesty corrections from the external
+  due-diligence review, executed as dated amendments (never silent edits):
+  the blanket CHSH significance headline is re-attributed per pair on every
+  live surface (7.54σ for S = 2.165, q0–q1; 8.94σ for S = 2.188, q2–q3)
+  with a committed pure-arithmetic recompute script; the retired 5 401× advertising line in
+  ROADMAP is replaced by the warmed declared-hardware baseline; the
+  anomalous second Bell analyser setting and the non-derivable QBER are
+  stated where those results are presented; and a public incident note
+  records the April 2026 count-integrity quarantine. The GitHub repository
+  description was replaced with evidence-governed wording (owner-approved).
+  Published preprint sources are untouched by all of this — see the guard
+  below.
+- 2026-07-16 — Structlog-style logging no longer crashes a minimal install:
+  the hardware runner's optional-extra fallback is a shared
+  kwarg-tolerant `logging.LoggerAdapter` (`structured_log_fallback.py`),
+  and a new minimal-install CI leg reproduces the extra-less install end
+  to end. Wheel builds of the Rust engine no longer compile any HTTP/TLS
+  stack (reqwest is optional behind the `latency-runner` cargo feature);
+  the manylinux wheel matrix names the container CPython explicitly and
+  no longer fail-fasts across platforms.
+
 ### Added
+- 2026-07-16 — Retired-claims guard (`tools/check_retired_claims.py` +
+  `data/retired_claims.json`): retired public claims (the 5 401× speedup,
+  the blanket CHSH significance statement) cannot reappear on public claim
+  surfaces without explicit retraction/amendment context; wired into the
+  CI lint job.
+- 2026-07-16 — Published-record freeze guard
+  (`tools/check_published_record_freeze.py` +
+  `data/published_record_freeze.json`): all published preprint and paper
+  sources are read-only by owner ruling — every tracked file under
+  `paper/submissions/` and the three published GitHub Pages papers is
+  SHA-256-pinned, and any modification, deletion, or addition is a
+  blocking CI finding. Corrections travel via live-surface amendments and
+  new Zenodo versions.
+- 2026-07-16 — Preregistrations for all three owner-approved IBM lanes
+  within the remaining Open-plan budget: maximum-width Kuramoto-XY sweep,
+  mitigated Bell re-run, and the on-QPU dynamic-circuit feedback demo
+  (`docs/campaigns/*_prereg_2026-07-16.md`); no submission without a
+  per-run owner GO.
+- 2026-07-16 — The core-notebook workflow is a blocking gate (promoted
+  after three consecutive genuinely green scheduled runs).
 - 2026-07-14 — Added a standard-library wheel-content release gate for the
   parent, oscillatools, and PyO3 distributions. It verifies filename,
   METADATA, WHEEL compatibility tags, required package and native-extension
@@ -1652,8 +1694,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [0.9.3] - 2026-03-28
 
 ### Added
-- Rust: `lanczos_b_coefficients` (27× vs numpy), `otoc_from_eigendecomp` (264× vs scipy), `build_xy_hamiltonian_dense` (5 401× vs Qiskit), `all_xy_expectations` (6.2× vs individual calls). 11 → 15 total.
-- IBM hardware campaign 20/20 experiments complete (22 jobs on `ibm_fez`, 176 000+ shots). CHSH S = 2.165 (>8σ), QBER 5.5 %, 16-qubit UPDE. ZNE stable fold 1–9.
+- Rust: `lanczos_b_coefficients` (27× vs numpy), `otoc_from_eigendecomp` (264× vs scipy), `build_xy_hamiltonian_dense` (5 401× vs Qiskit) \[retracted 2026-05-05, amendment marked 2026-07-16: the 5 401× figure was a cold-start artefact (un-warmed Qiskit first call); warmed declared-hardware baseline is 96.5× (L=4) / 33.7× (L=8) — see `docs/native_speedup_benchmark.md`\], `all_xy_expectations` (6.2× vs individual calls). 11 → 15 total.
+- IBM hardware campaign 20/20 experiments complete (22 jobs on `ibm_fez`, 176 000+ shots). CHSH S = 2.165 (>8σ) \[corrected 2026-07-16: σ was previously misattached to the lower pair — the committed counts give S = 2.165 ± 0.022 (7.5σ, pair q0–q1) and S = 2.188 ± 0.021 (8.9σ, pair q2–q3); see `scripts/recompute_chsh_bell_test.py`\], QBER 5.5 %, 16-qubit UPDE. ZNE stable fold 1–9.
 - 16 publication figures (simulation + hardware + MBL + BKT).
 - 3 publications on GitHub Pages (preprint, sync witnesses, DLA parity).
 - `knm_to_dense_matrix` Rust fast path (8 modules migrated).
