@@ -1778,7 +1778,12 @@ Cross-repo integrations wired:
 
 - Rust engine expanded 11→15 functions: `lanczos_b_coefficients`, `otoc_from_eigendecomp`,
   `build_xy_hamiltonian_dense`, `all_xy_expectations`
-- Measured benchmarks: 5401× Hamiltonian (n=4), 264× OTOC (n=4), 27× Lanczos (n=3) vs Python
+- Measured benchmarks: 264× OTOC (n=4), 27× Lanczos (n=3) vs Python; Rust
+  XY-Hamiltonian construction 96.5× (L=4) / 33.7× (L=8) against a warmed
+  Qiskit baseline \[amended 2026-07-16: the original "5401×" Hamiltonian
+  figure was a cold-start artefact and is retracted — see
+  `docs/native_speedup_benchmark.md`; the baseline is a local regression
+  guard, not a published performance claim\]
 - 8 modules migrated to Rust Hamiltonian path (`knm_to_dense_matrix`), zero `.to_matrix()` callers
 - **IBM hardware evidence ledgered for ibm_fez (Heron r2)**
   - legacy artifact-backed Bell, QKD, VQE, ZNE, Trotter, and UPDE rows retained
