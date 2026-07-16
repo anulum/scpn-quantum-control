@@ -43,7 +43,9 @@ rayon = "1.10"
 anyhow = "1"
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive"] }
-reqwest = { version = "0.13", default-features = false, features = ["blocking", "form", "json", "native-tls"] }
+# rustls instead of native-tls: the manylinux wheel containers ship no
+# OpenSSL headers, and the only consumer is the latency-runner bin.
+reqwest = { version = "0.13", default-features = false, features = ["blocking", "form", "json", "rustls"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 nalgebra = "0.35.0"
