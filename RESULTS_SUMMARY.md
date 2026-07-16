@@ -72,7 +72,11 @@ independently of coupling topology.
 ## IBM Hardware Results
 
 ### Campaign 1 (22 jobs)
-- CHSH S = 2.165 (> 8σ), QBER 5.5%, 16q UPDE pattern visible
+- CHSH S = 2.165 ± 0.022 (7.5σ, pair q0–q1) and S = 2.188 ± 0.021 (8.9σ, pair
+  q2–q3), QBER 5.5%, 16q UPDE pattern visible
+  \[corrected 2026-07-16: σ was previously misattached to the lower pair —
+  only the higher pair clears 8σ; recompute from committed counts with
+  `scripts/recompute_chsh_bell_test.py`\]
 
 ### Campaign 2 — Equal-Depth Fair Experiments (9 jobs)
 

@@ -15,6 +15,12 @@
 > reviewed. The March 29 DLA parity attempt is superseded by the April
 > `data/phase1_dla_parity/` raw-count dataset.
 
+> **2026-07-16 correction note:** the CHSH rows below originally stated
+> ">8σ" against S = 2.165. Recomputation from the committed counts
+> (`scripts/recompute_chsh_bell_test.py`) attributes 7.54σ to the S = 2.165
+> pair (q0–q1) and 8.94σ to the S = 2.188 pair (q2–q3); the rows are amended
+> in place with the correct per-pair significances.
+
 **Date:** 2026-03-30
 **Backend:** ibm_fez (Heron r2, 156 qubits)
 **Plan:** Open (10 min / 28-day cycle)
@@ -71,7 +77,7 @@ Submitted and retrieved during the March 28 session.
 | kuramoto_4osc_trotter_comparison | `kuramoto_4osc_trotter_comparison.json` | Order-1 vs order-2 |
 | vqe_8q_hardware | `vqe_8q_hardware.json` (13K) | 8q VQE optimisation |
 | sync_threshold | `sync_threshold.json` | Bifurcation R vs K |
-| bell_test_4q | `bell_test_4q.json` | **CHSH S = 2.165 (>8σ)** |
+| bell_test_4q | `bell_test_4q.json` | **CHSH S = 2.165 ± 0.022 (7.5σ, q0–q1); S = 2.188 ± 0.021 (8.9σ, q2–q3)** \[corrected 2026-07-16\] |
 | qkd_qber_4q | `qkd_qber_4q.json` | **QBER 5.5% (< BB84 11%)** |
 | ansatz_comparison | `ansatz_comparison.json` | Knm outperforms TwoLocal by 32% |
 | zne_higher_order | `zne_higher_order.json` | ZNE stable fold 1-9 |
@@ -80,7 +86,7 @@ Submitted and retrieved during the March 28 session.
 **Results:** `results/ibm_hardware_2026-03-28/` (13 JSON files)
 
 ### Headline results
-- **CHSH S = 2.165** (pair 0-1), **S = 2.188** (pair 2-3) — Bell inequality violated at >8σ
+- **CHSH S = 2.165 ± 0.022** (pair 0-1, 7.5σ), **S = 2.188 ± 0.021** (pair 2-3, 8.9σ) — Bell inequality violated; only the higher pair clears 8σ \[corrected 2026-07-16: σ was previously misattached to the lower pair\]
 - **QBER 5.5%** — below BB84 threshold of 11% → QKD viable
 - **State preparation fidelity 94.6%**
 - **ZNE <2% variation** across fold levels 1-9

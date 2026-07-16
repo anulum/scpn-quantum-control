@@ -13,7 +13,7 @@
     "python_model_source_modules": 569,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1009
+    "test_files": 1010
   },
   "documentation": {
     "examples": [
@@ -7293,6 +7293,7 @@
       "tests/test_realtime_latency_scenarios_branches.py",
       "tests/test_realtime_runtime.py",
       "tests/test_realtime_runtime_branches.py",
+      "tests/test_recompute_chsh_bell_test.py",
       "tests/test_regression_baselines.py",
       "tests/test_render_kuramoto_handbook.py",
       "tests/test_render_tier_benchmarks.py",

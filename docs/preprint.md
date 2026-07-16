@@ -192,9 +192,13 @@ All computed with Paper 27 heterogeneous frequencies.*
 (b) 8-qubit expectations show coupling pattern. (c) QKD QBER: 5.5%.
 (d) CHSH: $S = 2.165 > 2$.*
 
-Two independent Bell pairs yield $S_{01} = 2.165 \pm 0.02$ and
-$S_{23} = 2.188 \pm 0.02$, both violating the classical limit of 2
-at $>8\sigma$ significance.
+Two independent Bell pairs yield $S_{01} = 2.165 \pm 0.022$ and
+$S_{23} = 2.188 \pm 0.021$, violating the classical limit of 2 at
+$7.5\sigma$ and $8.9\sigma$ significance respectively.
+\[corrected 2026-07-16: both pairs were previously stated as $>8\sigma$;
+recomputation from the committed counts
+(`scripts/recompute_chsh_bell_test.py`) attributes $7.54\sigma$ to the
+lower pair and $8.94\sigma$ to the higher pair\]
 
 ### 4.2 QKD Viability
 

@@ -24,7 +24,7 @@ theoretical, simulated, hardware-measured, mitigated, or noise-limited.
 | # | Finding | Measured Value | Source |
 |---|---------|---------------|--------|
 | 1 | DLA parity raw-count reproduction | Phase 1: 342 circuits, peak asymmetry +17.48% at depth 6; Phase 2 reduced A+G: 612 circuits, Fisher p=3.77e-20; Phase 2 B-C: mixed `n=6,8` scaling | `data/phase1_dla_parity/`, `data/phase2_dla_parity/`, `data/phase2_scaling_bc/`, `scripts/run_dla_parity_suite.py`, `scripts/analyse_phase2_dla_parity.py`, `scripts/analyse_phase2_scaling_bc.py` |
-| 2 | Bell inequality row | CHSH S=2.165, S=2.188 (>8σ) | Legacy `ibm_fez` artefact row |
+| 2 | Bell inequality row | CHSH S = 2.165 ± 0.022 (7.5σ, pair q0–q1); S = 2.188 ± 0.021 (8.9σ, pair q2–q3) \[corrected 2026-07-16\] | Legacy `ibm_fez` artefact row |
 | 3 | QKD row | QBER 5.5% < BB84 threshold (11%) | Legacy `ibm_fez` artefact row |
 | 4 | State preparation row | 94.6% (∣0⟩), 89.8% (∣1⟩) | Legacy `ibm_fez` artefact row |
 | 5 | ZNE row | Range 0.259–0.272 across folds 1–9 | Legacy `ibm_fez` artefact row |
@@ -38,6 +38,17 @@ theoretical, simulated, hardware-measured, mitigated, or noise-limited.
 | 13 | Non-ergodic regime (not deep MBL) | Poisson level spacing + 25-33% sub-thermal eigenstate S | Level spacing + eigenstate scan |
 | 14 | **BKT universality preserved** | CFT c=1.04 (n=8), gap R²>0.96 | Kaggle computation (n=4-12) |
 | 15 | Exact-simulation crossover | n≈11.6, exact Hilbert-space only | Classical baselines plus hardware-budget estimates; not broad advantage |
+
+> **Amendment (2026-07-16), Bell row:** the repository previously stated the
+> CHSH violation as ">8σ" for both pairs. Recomputation from the committed
+> raw counts (`scripts/recompute_chsh_bell_test.py`, pure arithmetic on
+> `results/ibm_hardware_2026-03-28/bell_test_4q.json`) gives 7.54σ for the
+> S = 2.165 pair (q0–q1) and 8.94σ for the S = 2.188 pair (q2–q3); only the
+> higher pair clears 8σ. The same recomputation shows the second analyser
+> setting is anomalous on this run (E ≈ +0.29/+0.33 against ≈0.80–0.86 for
+> the other three settings), which the original analysis did not flag; a
+> re-run with readout mitigation is planned before this artefact's headline
+> numbers are used further.
 
 ---
 
@@ -295,7 +306,9 @@ broad quantum advantage or any frontier claim.
 
 - **(a)** Per-qubit readout errors: asymmetric 0→1 vs 1→0
 - **(b)** ZNE per-qubit stability across fold levels
-- **(c)** CHSH correlators with error bars (>8σ violation)
+- **(c)** CHSH correlators with error bars (7.5σ and 8.9σ violations for
+  pairs q0–q1 and q2–q3 respectively) \[corrected 2026-07-16: previously
+  stated as ">8σ" for both pairs\]
 
 ### Correlator, Trotter, 16-Qubit, VQE
 
