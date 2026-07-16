@@ -345,6 +345,22 @@ optimiser cost landscape. Measured results and the honest reading live in
 
 ---
 
+### 2e. `closed_loop_publication_run` — Reproducible Software-in-the-Loop Artifact
+
+Packages the software-in-the-loop closed-loop surfaces
+(`measure_closed_loop_latency_budget`, `build_closed_loop_publication_package`,
+the dynamic-circuit template builders) into one reproducible artifact with
+rigorously honest labels: the latency budget is a *software budget/telemetry
+surface, not a hardware measurement*; the OpenQASM 3 dynamic-circuit templates
+(mid-circuit measurement + `if_test` conditionals, with content digests) are
+*exportable but un-run*; the claim ledger keeps provider-prepared and live-QPU
+claims `blocked`. Provenance and the host-isolation timing grade follow the
+same pattern as the other run harnesses. The latency measurer and controller
+factory are injectable for tests. Details in `closed_loop_control.md`; the CLI
+is `scripts/run_closed_loop_publication.py`.
+
+---
+
 ### 3. `gpu_baseline` — GPU vs QPU Comparison
 
 Estimates GPU resources needed for statevector simulation and compares

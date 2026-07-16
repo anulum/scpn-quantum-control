@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 836,
     "public_documentation_pages": 272,
-    "python_model_classes": 1022,
-    "python_model_source_modules": 565,
+    "python_model_classes": 1027,
+    "python_model_source_modules": 566,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1002
+    "test_files": 1004
   },
   "documentation": {
     "examples": [
@@ -474,7 +474,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 31
+        "python_modules": 32
       },
       {
         "package": "bridge",
@@ -990,8 +990,16 @@
         "path": "src/scpn_quantum_control/control/closed_loop_analysis.py"
       },
       {
+        "name": "ClosedLoopPublicationArtifact",
+        "path": "src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py"
+      },
+      {
         "name": "ClosedLoopPublicationPackage",
         "path": "src/scpn_quantum_control/control/closed_loop_analysis.py"
+      },
+      {
+        "name": "ClosedLoopRunConfig",
+        "path": "src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py"
       },
       {
         "name": "CloudDeploymentSpec",
@@ -1140,6 +1148,10 @@
       {
         "name": "ControlQEC",
         "path": "src/scpn_quantum_control/qec/control_qec.py"
+      },
+      {
+        "name": "ControllerFactory",
+        "path": "src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py"
       },
       {
         "name": "CostWeights",
@@ -1814,6 +1826,10 @@
         "path": "src/scpn_quantum_control/hardware/feedback_loop.py"
       },
       {
+        "name": "FeedbackControllerLike",
+        "path": "src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py"
+      },
+      {
         "name": "FeedbackDryRunPayload",
         "path": "src/scpn_quantum_control/hardware/feedback_dryrun.py"
       },
@@ -2348,6 +2364,10 @@
       {
         "name": "LLVMJITClaimGate",
         "path": "src/scpn_quantum_control/compiler/mlir_llvm_jit_claim_gate.py"
+      },
+      {
+        "name": "LatencyMeasurer",
+        "path": "src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py"
       },
       {
         "name": "LayerStateArtifact",
@@ -4791,6 +4811,7 @@
       "src/scpn_quantum_control/benchmarks/advantage_protocol.py",
       "src/scpn_quantum_control/benchmarks/appqsim_protocol.py",
       "src/scpn_quantum_control/benchmarks/classical_baselines.py",
+      "src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py",
       "src/scpn_quantum_control/benchmarks/compiler_isolated_benchmark_evidence.py",
       "src/scpn_quantum_control/benchmarks/coupling_recovery_evidence.py",
       "src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py",
@@ -6535,6 +6556,7 @@
       "tests/test_classical_reference_regression.py",
       "tests/test_closed_loop_analysis.py",
       "tests/test_closed_loop_analysis_wall_clock.py",
+      "tests/test_closed_loop_publication_run.py",
       "tests/test_cloud_native.py",
       "tests/test_cloud_native_branches.py",
       "tests/test_commutator_bounds.py",
@@ -7239,6 +7261,7 @@
       "tests/test_retrieve_phase3_large_system_ibm.py",
       "tests/test_rl_discovery_agent_branches.py",
       "tests/test_robustness_certificate.py",
+      "tests/test_run_closed_loop_publication.py",
       "tests/test_run_decisive_advantage_benchmark.py",
       "tests/test_run_dla_parity_suite_cli.py",
       "tests/test_run_layout_method_comparison.py",

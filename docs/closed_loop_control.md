@@ -121,6 +121,38 @@ package.to_dict()
 package.to_markdown()
 ```
 
+## Reproducible publication artifact (RC-2)
+
+`benchmarks/closed_loop_publication_run.py` packages the surfaces above into
+one reproducible, honestly-labelled JSON artifact, and
+`scripts/run_closed_loop_publication.py` is its CLI:
+
+```bash
+PYTHONPATH=. python scripts/run_closed_loop_publication.py --n 4 --rounds 32
+```
+
+The artifact carries:
+
+- the **measured** software-in-the-loop latency report (per-round wall-clock
+  samples, budget verdict) — explicitly labelled *a software budget/telemetry
+  surface, not a hardware measurement*;
+- the publication scaffold with its fail-closed claim ledger (the
+  provider-prepared and live-QPU rows stay `blocked`);
+- the **dynamic-circuit templates** — the monitored feedback circuit (real
+  mid-circuit measurement + `if_test` conditional corrections) and its matched
+  open-loop control — exported as OpenQASM 3 with content digests, labelled
+  *exportable but un-run* (no provider job IDs, no counts, no calibration
+  snapshots);
+- provenance (git commit, command line, dependency versions) and the
+  host-isolation verdict from `capture_host_readiness`; on a shared host the
+  timing grade is `advisory_shared_host` and the notes say the wall-clock
+  samples are advisory only.
+
+The latency measurer and the controller factory are injectable
+(`LatencyMeasurer`, `ControllerFactory`, `FeedbackControllerLike`), so the
+assembly logic is fully testable without the statevector simulator. A
+committed example artifact lives under `data/closed_loop_publication/`.
+
 ## Claim boundary
 
 The evidence is software-in-the-loop only: the controlled output is the exact

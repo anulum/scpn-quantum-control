@@ -1,0 +1,217 @@
+{
+  "config": {
+    "budget": null,
+    "coupling": 0.6,
+    "dynamic_circuit_rounds": 3,
+    "n_oscillators": 4,
+    "n_rounds": 32,
+    "reserved_core": 0,
+    "seed": 0,
+    "target_r": 0.6,
+    "trotter_order": 1
+  },
+  "dynamic_circuit_templates": {
+    "claim_note": "dynamic-circuit templates are exportable but un-run: no provider job IDs, no raw counts, no calibration snapshots",
+    "monitored_feedback": {
+      "conditional_blocks": 3,
+      "depth": 47,
+      "format": "openqasm3",
+      "id": "monitored_feedback",
+      "n_qubits": 5,
+      "program": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\ngate rxx(p0) _gate_q_0, _gate_q_1 {\n  h _gate_q_0;\n  h _gate_q_1;\n  cx _gate_q_0, _gate_q_1;\n  rz(p0) _gate_q_1;\n  cx _gate_q_0, _gate_q_1;\n  h _gate_q_1;\n  h _gate_q_0;\n}\ngate sxdg _gate_q_0 {\n  s _gate_q_0;\n  h _gate_q_0;\n  s _gate_q_0;\n}\ngate ryy(p0) _gate_q_0, _gate_q_1 {\n  sxdg _gate_q_0;\n  sxdg _gate_q_1;\n  cx _gate_q_0, _gate_q_1;\n  rz(p0) _gate_q_1;\n  cx _gate_q_0, _gate_q_1;\n  sx _gate_q_0;\n  sx _gate_q_1;\n}\ngate PauliEvolution(_gate_p_0) _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.032) _gate_q_0, _gate_q_1;\n  ryy(-0.032) _gate_q_0, _gate_q_1;\n  rxx(-0.032) _gate_q_0, _gate_q_3;\n  ryy(-0.032) _gate_q_0, _gate_q_3;\n  rxx(-0.032) _gate_q_1, _gate_q_2;\n  ryy(-0.032) _gate_q_1, _gate_q_2;\n  rxx(-0.032) _gate_q_2, _gate_q_3;\n  ryy(-0.032) _gate_q_2, _gate_q_3;\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.032) _gate_q_0, _gate_q_1;\n  ryy(-0.032) _gate_q_0, _gate_q_1;\n  rxx(-0.032) _gate_q_0, _gate_q_3;\n  ryy(-0.032) _gate_q_0, _gate_q_3;\n  rxx(-0.032) _gate_q_1, _gate_q_2;\n  ryy(-0.032) _gate_q_1, _gate_q_2;\n  rxx(-0.032) _gate_q_2, _gate_q_3;\n  ryy(-0.032) _gate_q_2, _gate_q_3;\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.032) _gate_q_0, _gate_q_1;\n  ryy(-0.032) _gate_q_0, _gate_q_1;\n  rxx(-0.032) _gate_q_0, _gate_q_3;\n  ryy(-0.032) _gate_q_0, _gate_q_3;\n  rxx(-0.032) _gate_q_1, _gate_q_2;\n  ryy(-0.032) _gate_q_1, _gate_q_2;\n  rxx(-0.032) _gate_q_2, _gate_q_3;\n  ryy(-0.032) _gate_q_2, _gate_q_3;\n}\ngate PauliEvolution_0(_gate_p_0) _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.033024) _gate_q_0, _gate_q_1;\n  ryy(-0.033024) _gate_q_0, _gate_q_1;\n  rxx(-0.033024) _gate_q_0, _gate_q_3;\n  ryy(-0.033024) _gate_q_0, _gate_q_3;\n  rxx(-0.033024) _gate_q_1, _gate_q_2;\n  ryy(-0.033024) _gate_q_1, _gate_q_2;\n  rxx(-0.033024) _gate_q_2, _gate_q_3;\n  ryy(-0.033024) _gate_q_2, _gate_q_3;\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.033024) _gate_q_0, _gate_q_1;\n  ryy(-0.033024) _gate_q_0, _gate_q_1;\n  rxx(-0.033024) _gate_q_0, _gate_q_3;\n  ryy(-0.033024) _gate_q_0, _gate_q_3;\n  rxx(-0.033024) _gate_q_1, _gate_q_2;\n  ryy(-0.033024) _gate_q_1, _gate_q_2;\n  rxx(-0.033024) _gate_q_2, _gate_q_3;\n  ryy(-0.033024) _gate_q_2, _gate_q_3;\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.033024) _gate_q_0, _gate_q_1;\n  ryy(-0.033024) _gate_q_0, _gate_q_1;\n  rxx(-0.033024) _gate_q_0, _gate_q_3;\n  ryy(-0.033024) _gate_q_0, _gate_q_3;\n  rxx(-0.033024) _gate_q_1, _gate_q_2;\n  ryy(-0.033024) _gate_q_1, _gate_q_2;\n  rxx(-0.033024) _gate_q_2, _gate_q_3;\n  ryy(-0.033024) _gate_q_2, _gate_q_3;\n}\ngate PauliEvolution_1(_gate_p_0) _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.034048) _gate_q_0, _gate_q_1;\n  ryy(-0.034048) _gate_q_0, _gate_q_1;\n  rxx(-0.034048) _gate_q_0, _gate_q_3;\n  ryy(-0.034048) _gate_q_0, _gate_q_3;\n  rxx(-0.034048) _gate_q_1, _gate_q_2;\n  ryy(-0.034048) _gate_q_1, _gate_q_2;\n  rxx(-0.034048) _gate_q_2, _gate_q_3;\n  ryy(-0.034048) _gate_q_2, _gate_q_3;\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.034048) _gate_q_0, _gate_q_1;\n  ryy(-0.034048) _gate_q_0, _gate_q_1;\n  rxx(-0.034048) _gate_q_0, _gate_q_3;\n  ryy(-0.034048) _gate_q_0, _gate_q_3;\n  rxx(-0.034048) _gate_q_1, _gate_q_2;\n  ryy(-0.034048) _gate_q_1, _gate_q_2;\n  rxx(-0.034048) _gate_q_2, _gate_q_3;\n  ryy(-0.034048) _gate_q_2, _gate_q_3;\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.034048) _gate_q_0, _gate_q_1;\n  ryy(-0.034048) _gate_q_0, _gate_q_1;\n  rxx(-0.034048) _gate_q_0, _gate_q_3;\n  ryy(-0.034048) _gate_q_0, _gate_q_3;\n  rxx(-0.034048) _gate_q_1, _gate_q_2;\n  ryy(-0.034048) _gate_q_1, _gate_q_2;\n  rxx(-0.034048) _gate_q_2, _gate_q_3;\n  ryy(-0.034048) _gate_q_2, _gate_q_3;\n}\nbit[3] monitor_bit;\nbit[4] readout;\nqubit[4] sys;\nqubit[1] monitor;\nry(0.1257302210933933) sys[0];\nry(6.151080443888285) sys[1];\nry(0.6404226504432821) sys[2];\nry(0.10490011715303971) sys[3];\nPauliEvolution(0.08) sys[0], sys[1], sys[2], sys[3];\ncx sys[0], monitor[0];\nry(0.045) monitor[0];\ncx sys[0], monitor[0];\ncx sys[1], monitor[0];\nry(0.045) monitor[0];\ncx sys[1], monitor[0];\ncx sys[2], monitor[0];\nry(0.045) monitor[0];\ncx sys[2], monitor[0];\ncx sys[3], monitor[0];\nry(0.045) monitor[0];\ncx sys[3], monitor[0];\nmonitor_bit[0] = measure monitor[0];\nreset monitor[0];\nif (monitor_bit[0]) {\n  ry(-0.03) sys[0];\n  ry(-0.03) sys[1];\n  ry(-0.03) sys[2];\n  ry(-0.03) sys[3];\n}\nPauliEvolution_0(0.08) sys[0], sys[1], sys[2], sys[3];\ncx sys[0], monitor[0];\nry(0.045) monitor[0];\ncx sys[0], monitor[0];\ncx sys[1], monitor[0];\nry(0.045) monitor[0];\ncx sys[1], monitor[0];\ncx sys[2], monitor[0];\nry(0.045) monitor[0];\ncx sys[2], monitor[0];\ncx sys[3], monitor[0];\nry(0.045) monitor[0];\ncx sys[3], monitor[0];\nmonitor_bit[1] = measure monitor[0];\nreset monitor[0];\nif (monitor_bit[1]) {\n  ry(-0.03) sys[0];\n  ry(-0.03) sys[1];\n  ry(-0.03) sys[2];\n  ry(-0.03) sys[3];\n}\nPauliEvolution_1(0.08) sys[0], sys[1], sys[2], sys[3];\ncx sys[0], monitor[0];\nry(0.045) monitor[0];\ncx sys[0], monitor[0];\ncx sys[1], monitor[0];\nry(0.045) monitor[0];\ncx sys[1], monitor[0];\ncx sys[2], monitor[0];\nry(0.045) monitor[0];\ncx sys[2], monitor[0];\ncx sys[3], monitor[0];\nry(0.045) monitor[0];\ncx sys[3], monitor[0];\nmonitor_bit[2] = measure monitor[0];\nreset monitor[0];\nif (monitor_bit[2]) {\n  ry(-0.03) sys[0];\n  ry(-0.03) sys[1];\n  ry(-0.03) sys[2];\n  ry(-0.03) sys[3];\n}\nreadout[0] = measure sys[0];\nreadout[1] = measure sys[1];\nreadout[2] = measure sys[2];\nreadout[3] = measure sys[3];\n",
+      "sha256": "f1cc40571775f9db71b0b3cc12b709837f1fd9bc902c3854346e0843b3a37d2e"
+    },
+    "open_loop_control": {
+      "conditional_blocks": 0,
+      "depth": 44,
+      "format": "openqasm3",
+      "id": "open_loop_control",
+      "n_qubits": 5,
+      "program": "OPENQASM 3.0;\ninclude \"stdgates.inc\";\ngate rxx(p0) _gate_q_0, _gate_q_1 {\n  h _gate_q_0;\n  h _gate_q_1;\n  cx _gate_q_0, _gate_q_1;\n  rz(p0) _gate_q_1;\n  cx _gate_q_0, _gate_q_1;\n  h _gate_q_1;\n  h _gate_q_0;\n}\ngate sxdg _gate_q_0 {\n  s _gate_q_0;\n  h _gate_q_0;\n  s _gate_q_0;\n}\ngate ryy(p0) _gate_q_0, _gate_q_1 {\n  sxdg _gate_q_0;\n  sxdg _gate_q_1;\n  cx _gate_q_0, _gate_q_1;\n  rz(p0) _gate_q_1;\n  cx _gate_q_0, _gate_q_1;\n  sx _gate_q_0;\n  sx _gate_q_1;\n}\ngate PauliEvolution(_gate_p_0) _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.032) _gate_q_0, _gate_q_1;\n  ryy(-0.032) _gate_q_0, _gate_q_1;\n  rxx(-0.032) _gate_q_0, _gate_q_3;\n  ryy(-0.032) _gate_q_0, _gate_q_3;\n  rxx(-0.032) _gate_q_1, _gate_q_2;\n  ryy(-0.032) _gate_q_1, _gate_q_2;\n  rxx(-0.032) _gate_q_2, _gate_q_3;\n  ryy(-0.032) _gate_q_2, _gate_q_3;\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.032) _gate_q_0, _gate_q_1;\n  ryy(-0.032) _gate_q_0, _gate_q_1;\n  rxx(-0.032) _gate_q_0, _gate_q_3;\n  ryy(-0.032) _gate_q_0, _gate_q_3;\n  rxx(-0.032) _gate_q_1, _gate_q_2;\n  ryy(-0.032) _gate_q_1, _gate_q_2;\n  rxx(-0.032) _gate_q_2, _gate_q_3;\n  ryy(-0.032) _gate_q_2, _gate_q_3;\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.032) _gate_q_0, _gate_q_1;\n  ryy(-0.032) _gate_q_0, _gate_q_1;\n  rxx(-0.032) _gate_q_0, _gate_q_3;\n  ryy(-0.032) _gate_q_0, _gate_q_3;\n  rxx(-0.032) _gate_q_1, _gate_q_2;\n  ryy(-0.032) _gate_q_1, _gate_q_2;\n  rxx(-0.032) _gate_q_2, _gate_q_3;\n  ryy(-0.032) _gate_q_2, _gate_q_3;\n}\ngate PauliEvolution_0(_gate_p_0) _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.033024) _gate_q_0, _gate_q_1;\n  ryy(-0.033024) _gate_q_0, _gate_q_1;\n  rxx(-0.033024) _gate_q_0, _gate_q_3;\n  ryy(-0.033024) _gate_q_0, _gate_q_3;\n  rxx(-0.033024) _gate_q_1, _gate_q_2;\n  ryy(-0.033024) _gate_q_1, _gate_q_2;\n  rxx(-0.033024) _gate_q_2, _gate_q_3;\n  ryy(-0.033024) _gate_q_2, _gate_q_3;\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.033024) _gate_q_0, _gate_q_1;\n  ryy(-0.033024) _gate_q_0, _gate_q_1;\n  rxx(-0.033024) _gate_q_0, _gate_q_3;\n  ryy(-0.033024) _gate_q_0, _gate_q_3;\n  rxx(-0.033024) _gate_q_1, _gate_q_2;\n  ryy(-0.033024) _gate_q_1, _gate_q_2;\n  rxx(-0.033024) _gate_q_2, _gate_q_3;\n  ryy(-0.033024) _gate_q_2, _gate_q_3;\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.033024) _gate_q_0, _gate_q_1;\n  ryy(-0.033024) _gate_q_0, _gate_q_1;\n  rxx(-0.033024) _gate_q_0, _gate_q_3;\n  ryy(-0.033024) _gate_q_0, _gate_q_3;\n  rxx(-0.033024) _gate_q_1, _gate_q_2;\n  ryy(-0.033024) _gate_q_1, _gate_q_2;\n  rxx(-0.033024) _gate_q_2, _gate_q_3;\n  ryy(-0.033024) _gate_q_2, _gate_q_3;\n}\ngate PauliEvolution_1(_gate_p_0) _gate_q_0, _gate_q_1, _gate_q_2, _gate_q_3 {\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.034048) _gate_q_0, _gate_q_1;\n  ryy(-0.034048) _gate_q_0, _gate_q_1;\n  rxx(-0.034048) _gate_q_0, _gate_q_3;\n  ryy(-0.034048) _gate_q_0, _gate_q_3;\n  rxx(-0.034048) _gate_q_1, _gate_q_2;\n  ryy(-0.034048) _gate_q_1, _gate_q_2;\n  rxx(-0.034048) _gate_q_2, _gate_q_3;\n  ryy(-0.034048) _gate_q_2, _gate_q_3;\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.034048) _gate_q_0, _gate_q_1;\n  ryy(-0.034048) _gate_q_0, _gate_q_1;\n  rxx(-0.034048) _gate_q_0, _gate_q_3;\n  ryy(-0.034048) _gate_q_0, _gate_q_3;\n  rxx(-0.034048) _gate_q_1, _gate_q_2;\n  ryy(-0.034048) _gate_q_1, _gate_q_2;\n  rxx(-0.034048) _gate_q_2, _gate_q_3;\n  ryy(-0.034048) _gate_q_2, _gate_q_3;\n  rz(-0.006705611791647643) _gate_q_0;\n  rz(0.007045592708869434) _gate_q_1;\n  rz(-0.034155874690308376) _gate_q_2;\n  rz(-0.005594672914828784) _gate_q_3;\n  rxx(-0.034048) _gate_q_0, _gate_q_1;\n  ryy(-0.034048) _gate_q_0, _gate_q_1;\n  rxx(-0.034048) _gate_q_0, _gate_q_3;\n  ryy(-0.034048) _gate_q_0, _gate_q_3;\n  rxx(-0.034048) _gate_q_1, _gate_q_2;\n  ryy(-0.034048) _gate_q_1, _gate_q_2;\n  rxx(-0.034048) _gate_q_2, _gate_q_3;\n  ryy(-0.034048) _gate_q_2, _gate_q_3;\n}\nbit[3] monitor_bit;\nbit[4] readout;\nqubit[4] sys;\nqubit[1] monitor;\nry(0.1257302210933933) sys[0];\nry(6.151080443888285) sys[1];\nry(0.6404226504432821) sys[2];\nry(0.10490011715303971) sys[3];\nPauliEvolution(0.08) sys[0], sys[1], sys[2], sys[3];\ncx sys[0], monitor[0];\nry(0.045) monitor[0];\ncx sys[0], monitor[0];\ncx sys[1], monitor[0];\nry(0.045) monitor[0];\ncx sys[1], monitor[0];\ncx sys[2], monitor[0];\nry(0.045) monitor[0];\ncx sys[2], monitor[0];\ncx sys[3], monitor[0];\nry(0.045) monitor[0];\ncx sys[3], monitor[0];\nmonitor_bit[0] = measure monitor[0];\nreset monitor[0];\nPauliEvolution_0(0.08) sys[0], sys[1], sys[2], sys[3];\ncx sys[0], monitor[0];\nry(0.045) monitor[0];\ncx sys[0], monitor[0];\ncx sys[1], monitor[0];\nry(0.045) monitor[0];\ncx sys[1], monitor[0];\ncx sys[2], monitor[0];\nry(0.045) monitor[0];\ncx sys[2], monitor[0];\ncx sys[3], monitor[0];\nry(0.045) monitor[0];\ncx sys[3], monitor[0];\nmonitor_bit[1] = measure monitor[0];\nreset monitor[0];\nPauliEvolution_1(0.08) sys[0], sys[1], sys[2], sys[3];\ncx sys[0], monitor[0];\nry(0.045) monitor[0];\ncx sys[0], monitor[0];\ncx sys[1], monitor[0];\nry(0.045) monitor[0];\ncx sys[1], monitor[0];\ncx sys[2], monitor[0];\nry(0.045) monitor[0];\ncx sys[2], monitor[0];\ncx sys[3], monitor[0];\nry(0.045) monitor[0];\ncx sys[3], monitor[0];\nmonitor_bit[2] = measure monitor[0];\nreset monitor[0];\nreadout[0] = measure sys[0];\nreadout[1] = measure sys[1];\nreadout[2] = measure sys[2];\nreadout[3] = measure sys[3];\n",
+      "sha256": "409086eba4c596bed568da91157346e2f4d94d929e7dbf17721b6c67de6439ee"
+    }
+  },
+  "host": {
+    "blockers": [
+      "cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
+      "host load 44.30 exceeds the isolated threshold 1.00; quiesce concurrent jobs"
+    ],
+    "frequency_mhz": 3699.925,
+    "governor": "powersave",
+    "governor_is_stable": false,
+    "load_average": [
+      44.30078125,
+      43.939453125,
+      40.1435546875
+    ],
+    "load_is_low": false,
+    "ready": false,
+    "reserved_core": 0
+  },
+  "latency_report": {
+    "blockers": [
+      "max round latency 0.081012575s exceeds 0.050000000s"
+    ],
+    "budget": {
+      "max_round_latency_s": 0.05,
+      "max_total_latency_s": null,
+      "p95_round_latency_s": null,
+      "p99_round_latency_s": null
+    },
+    "claim_boundary": "software-in-the-loop closed-loop latency measurement; measures local controller/simulator wall-clock time only; not provider-prepared dynamic-circuit evidence and not live closed-loop QPU evidence",
+    "classification": "software_in_loop_latency",
+    "clock_source": "time.perf_counter_ns",
+    "execution": {
+      "authorised": true,
+      "mode": "simulation",
+      "reason": "hardware not requested; simulation-in-the-loop fallback"
+    },
+    "max_round_latency_s": 0.081012575,
+    "p95_round_latency_s": 0.058049865299999996,
+    "p99_round_latency_s": 0.07494195877000003,
+    "passes": false,
+    "response": {
+      "classification": "diverged",
+      "final_value": 0.2361775466443269,
+      "integral_absolute_error": 12.187154358336546,
+      "settling_round": null,
+      "steady_state_error": 0.43038823044916497,
+      "target": 0.6
+    },
+    "round_latencies_s": [
+      0.081012575,
+      0.019306887,
+      0.019016396,
+      0.033016715,
+      0.055284348,
+      0.023054645,
+      0.043019903,
+      0.018352347,
+      0.019108817,
+      0.027193928,
+      0.017375821,
+      0.033066611,
+      0.013836001,
+      0.011240972,
+      0.016621101,
+      0.029052156,
+      0.030380913,
+      0.043522692,
+      0.061429942,
+      0.03883283,
+      0.015520865,
+      0.0411309,
+      0.016735365,
+      0.036788524,
+      0.042703647,
+      0.024751477,
+      0.035950833,
+      0.034768794,
+      0.025892984,
+      0.023224957,
+      0.017621722,
+      0.029902654
+    ],
+    "samples": 32,
+    "total_latency_s": 0.978718322
+  },
+  "notes": [
+    "the latency budget is a software budget/telemetry surface measured on a local statevector simulator; it is not a hardware measurement and makes no hardware latency claim",
+    "dynamic-circuit templates are exportable but un-run: no provider job IDs, no raw counts, no calibration snapshots",
+    "wall-clock samples measured on a shared host: advisory only"
+  ],
+  "package": {
+    "artefact_map": [
+      {
+        "id": "software_latency_report",
+        "path": "generated_by_measure_closed_loop_latency_budget",
+        "required_for": "software-in-the-loop latency claim"
+      },
+      {
+        "id": "provider_dynamic_circuit_pack",
+        "path": "pending_live_ticket",
+        "required_for": "provider-prepared dynamic-circuit claim"
+      },
+      {
+        "id": "live_qpu_raw_counts",
+        "path": "pending_live_ticket",
+        "required_for": "true live closed-loop QPU claim"
+      }
+    ],
+    "benchmark_rows": [
+      {
+        "claim_boundary": "software-in-the-loop closed-loop latency measurement; measures local controller/simulator wall-clock time only; not provider-prepared dynamic-circuit evidence and not live closed-loop QPU evidence",
+        "classification": "software_in_loop_latency",
+        "id": "closed_loop_software_latency",
+        "max_round_latency_s": 0.081012575,
+        "p95_round_latency_s": 0.058049865299999996,
+        "p99_round_latency_s": 0.07494195877000003,
+        "passes": false,
+        "samples": 32,
+        "total_latency_s": 0.978718322
+      }
+    ],
+    "claim_boundary": "Publication scaffold only: separates software-in-the-loop simulation, provider-prepared dynamic-circuit readiness, and true live closed-loop QPU evidence; not live closed-loop QPU evidence until a live-ticket run adds provider job IDs, raw counts, calibration snapshots, and replay artefacts.",
+    "claim_ledger_rows": [
+      {
+        "claim_id": "closed_loop_software_latency",
+        "evidence": "software-in-the-loop latency report only",
+        "promotion_status": "unpromoted"
+      },
+      {
+        "claim_id": "closed_loop_provider_dynamic_circuit",
+        "evidence": "provider preparation artefacts pending",
+        "promotion_status": "blocked"
+      },
+      {
+        "claim_id": "closed_loop_live_qpu",
+        "evidence": "live hardware artefacts pending",
+        "promotion_status": "blocked"
+      }
+    ],
+    "evidence_classes": {
+      "live_closed_loop_qpu": {
+        "claim_boundary": "requires explicit live ticket, allow-listed backend, raw counts, calibration snapshot, job IDs, and replay harness",
+        "status": "blocked_without_live_ticket"
+      },
+      "provider_prepared_dynamic_circuit": {
+        "claim_boundary": "requires backend capability proof, transpiled dynamic circuit, provider preparation metadata, and no-submit policy approval",
+        "status": "placeholder"
+      },
+      "software_in_loop_simulation": {
+        "claim_boundary": "software-in-the-loop closed-loop latency measurement; measures local controller/simulator wall-clock time only; not provider-prepared dynamic-circuit evidence and not live closed-loop QPU evidence",
+        "status": "available"
+      }
+    },
+    "methods_sections": [
+      {
+        "id": "controller_contract",
+        "text": "Mid-circuit measurement feeds a classical update policy that adjusts the next-round coupling parameter under explicit policy gates."
+      },
+      {
+        "id": "latency_budget",
+        "text": "Software-in-the-loop latency records per-round wall-clock samples and fails closed on max, p95, p99, or total-budget breaches."
+      },
+      {
+        "id": "hardware_boundary",
+        "text": "Provider-prepared and live-QPU claims stay unpromoted until the hardware policy authorises a live ticket and artefacts exist."
+      }
+    ],
+    "title": "Closed-Loop Quantum Control Evidence Package"
+  },
+  "package_markdown": "# Closed-Loop Quantum Control Evidence Package\n\nPublication scaffold only: separates software-in-the-loop simulation, provider-prepared dynamic-circuit readiness, and true live closed-loop QPU evidence; not live closed-loop QPU evidence until a live-ticket run adds provider job IDs, raw counts, calibration snapshots, and replay artefacts.\n\n## Evidence Classes\n- `software_in_loop_simulation`: software-in-the-loop closed-loop latency measurement; measures local controller/simulator wall-clock time only; not provider-prepared dynamic-circuit evidence and not live closed-loop QPU evidence\n- `provider_prepared_dynamic_circuit`: requires backend capability proof, transpiled dynamic circuit, provider preparation metadata, and no-submit policy approval\n- `live_closed_loop_qpu`: requires explicit live ticket, allow-listed backend, raw counts, calibration snapshot, job IDs, and replay harness\n\n## Benchmark Rows\n- `software_in_loop_latency`: pass=False; max_round_latency_s=0.081012575; p95_round_latency_s=0.058049865\n\n## Claim Ledger Rows\n- `closed_loop_software_latency`: unpromoted \u2014 software-in-the-loop latency report only\n- `closed_loop_provider_dynamic_circuit`: blocked \u2014 provider preparation artefacts pending\n- `closed_loop_live_qpu`: blocked \u2014 live hardware artefacts pending",
+  "provenance": {
+    "command": "scripts/run_closed_loop_publication.py",
+    "dependencies": {
+      "numpy": "2.2.6",
+      "python": "3.12.13",
+      "qiskit": "2.4.1",
+      "quimb": "not installed",
+      "qutip": "5.2.3",
+      "scipy": "1.15.3"
+    },
+    "git_commit": "9aaa1fab5cf0e92ddd48681db4e14f275b41e4fc"
+  },
+  "schema_version": "1.0",
+  "timing_grade": "advisory_shared_host"
+}
