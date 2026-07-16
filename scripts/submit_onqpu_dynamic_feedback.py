@@ -408,12 +408,22 @@ def main(argv: Sequence[str] | None = None) -> int:
             circuit = arm_circuit(arm, n_rounds)
             labels.append(circuit.name)
             circuits.append(circuit)
-            logical_depths[circuit.name] = int(circuit.decompose().depth())
     zeros, ones = calibration_circuits()
     labels.extend([zeros.name, ones.name])
     circuits.extend([zeros, ones])
-    logical_depths[zeros.name] = int(zeros.depth())
-    logical_depths[ones.name] = int(ones.depth())
+    # The depth-ratio reference is the SAME circuit translated to the
+    # backend's own basis but WITHOUT coupling-map routing, so the ratio
+    # measures routing overhead alone. Comparing routed ECR-basis depth to
+    # the untranslated template depth would conflate basis translation
+    # (an inherent ×4-8 for this template) with the pathological routing
+    # blow-up the preregistration actually gates on.
+    unrouted = transpile(
+        circuits,
+        basis_gates=list(backend.target.operation_names),
+        optimization_level=0,
+    )
+    for label, circuit in zip(labels, unrouted, strict=True):
+        logical_depths[label] = int(circuit.depth())
 
     isa_circuits = transpile(
         circuits,

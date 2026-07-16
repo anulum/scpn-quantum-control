@@ -302,6 +302,9 @@ def mocked_hardware(monkeypatch: pytest.MonkeyPatch) -> None:
 
     fake_backend = types.SimpleNamespace(target=star_target())
     monkeypatch.setattr(readiness_module, "load_authenticated_backend", lambda *args: fake_backend)
+    # Intercept both transpile calls: the routed (backend=...) pass and the
+    # unrouted basis-translation reference pass return the circuits as-is,
+    # giving depth ratios of exactly 1.0.
     monkeypatch.setattr(script, "transpile", lambda circuits, **kwargs: circuits)
     runtime = types.ModuleType("qiskit_ibm_runtime")
     runtime.SamplerV2 = FakeSampler  # type: ignore[attr-defined]

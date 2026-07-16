@@ -1,0 +1,65 @@
+{
+  "schema": "scpn_onqpu_dynamic_feedback_readiness_v1",
+  "timestamp_utc": "20260716T234252Z",
+  "experiment_id": "onqpu_dynamic_feedback_2026-07-16",
+  "preregistration": "docs/campaigns/onqpu_dynamic_feedback_prereg_2026-07-16.md",
+  "backend": "ibm_fez",
+  "hardware_submission": false,
+  "status": "ready_for_submission",
+  "layout": {
+    "system_qubits": [
+      142,
+      136,
+      144
+    ],
+    "monitor_qubit": 143,
+    "edge_errors": [
+      0.0023074177658364003,
+      0.0016954321856700316,
+      0.0024233010667241706
+    ],
+    "readout_errors": [
+      0.004150390625,
+      0.005615234375,
+      0.00439453125,
+      0.006591796875
+    ]
+  },
+  "dynamic_operations_missing": [],
+  "logical_depths": {
+    "rc1_feedback_on_rounds2": 788,
+    "rc1_feedback_off_rounds2": 763,
+    "rc1_feedback_on_rounds3": 1179,
+    "rc1_feedback_off_rounds3": 1130,
+    "rc1_cal0": 1,
+    "rc1_cal1": 2
+  },
+  "transpiled_depths": {
+    "rc1_feedback_on_rounds2": 479,
+    "rc1_feedback_off_rounds2": 463,
+    "rc1_feedback_on_rounds3": 724,
+    "rc1_feedback_off_rounds3": 692,
+    "rc1_cal0": 1,
+    "rc1_cal1": 2
+  },
+  "depth_ratios": {
+    "rc1_feedback_on_rounds2": 0.6078680203045685,
+    "rc1_feedback_off_rounds2": 0.6068152031454783,
+    "rc1_feedback_on_rounds3": 0.6140797285835454,
+    "rc1_feedback_off_rounds3": 0.6123893805309735,
+    "rc1_cal0": 1.0,
+    "rc1_cal1": 1.0
+  },
+  "max_depth_ratio": 2.0,
+  "shots": 4096,
+  "calibration_shots": 8192,
+  "estimated_qpu_seconds": 15.400000000000002,
+  "max_qpu_seconds": 120.0,
+  "seed_transpiler": 20260716,
+  "claim_boundary": "on-QPU vendor-executed feedback evidence only; no external-FPGA control, no latency numbers from queue or backend wall time, no synchronisation-protection claim beyond the executed observable",
+  "reasons": [
+    "backend reports every required dynamic-circuit operation",
+    "every arm satisfies the transpiled-depth ratio ceiling",
+    "estimate within the approved QPU-second cap"
+  ]
+}
