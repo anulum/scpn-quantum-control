@@ -7,12 +7,11 @@
 # SCPN Quantum Control — Notebook CI
 #
 # Runs the 13 core tutorial notebooks (notebooks/01..13) through
-# `pytest-nbmake` so they stay executable. Non-blocking for now —
-# `continue-on-error: true` — because some notebooks pull large
-# backends (Qiskit Aer simulators up to 18 qubits) and may flake on
-# the default GitHub runner memory budget. Promotion to a blocking
-# gate happens after one full release cycle of green runs (same
-# staged-rollout as `test-extra-platforms` in `ci.yml`).
+# `pytest-nbmake` so they stay executable. BLOCKING since 2026-07-16:
+# promoted from `continue-on-error: true` after three consecutive
+# genuinely green scheduled execute jobs (the staged-rollout condition
+# this header always carried; external review KIMI-10 flagged the
+# non-blocking state as a silent-failure risk).
 #
 # The 34 FIM investigation notebooks (NB14-47) are NOT run here:
 # they produce per-notebook JSON in `results/` and are intended for
@@ -43,7 +42,6 @@ permissions:
 jobs:
   execute:
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
