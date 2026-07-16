@@ -34,6 +34,10 @@ from scpn_quantum_control.benchmarks.layout_method_comparison import (
     run_layout_method_comparison,
 )
 from scpn_quantum_control.hardware.kuramoto_layout_optimiser import LayoutSearchConfig
+from scpn_quantum_control.hardware.kuramoto_layout_relaxation import (
+    RESEARCH_LABEL,
+    SinkhornRelaxationConfig,
+)
 
 _N = 3
 _K = np.ones((_N, _N)) - np.eye(_N)
@@ -145,7 +149,7 @@ class TestSerialisation:
     def test_artifact_to_dict_and_table(self) -> None:
         artifact = _run_stubbed()
         payload = artifact.to_dict()
-        assert payload["schema_version"] == "1.0"
+        assert payload["schema_version"] == "1.1"
         assert len(payload["rows"]) == 3
         table = artifact.render_markdown_table()
         assert table.splitlines()[0].startswith("| Method ")
@@ -160,6 +164,7 @@ class TestLayoutComparisonConfig:
             ({"t": 0.0}, "t must be"),
             ({"t": float("nan")}, "t must be"),
             ({"reps": 0}, "reps"),
+            ({"candidate_region": "everywhere"}, "candidate_region"),
         ],
     )
     def test_invalid_configuration_rejected(self, kwargs: dict[str, Any], match: str) -> None:
@@ -176,10 +181,28 @@ class TestLayoutComparisonConfig:
         config = LayoutComparisonConfig(search=explicit)
         assert config.search_config() is explicit
 
+    def test_relaxation_config_derived_from_run_settings(self) -> None:
+        config = LayoutComparisonConfig(t=0.2, reps=3, order=2, seed=9)
+        derived = config.relaxation_config()
+        assert (derived.t, derived.reps, derived.order, derived.seed) == (0.2, 3, 2, 9)
+
+    def test_explicit_relaxation_config_wins(self) -> None:
+        explicit = SinkhornRelaxationConfig(n_anneal_steps=2, seed=1)
+        config = LayoutComparisonConfig(relaxation=explicit)
+        assert config.relaxation_config() is explicit
+
     def test_to_dict_includes_search(self) -> None:
         payload = LayoutComparisonConfig().to_dict()
         assert payload["search"]["n_restarts"] == 4
         assert payload["dynq_min_qubits"] == 3
+        assert payload["include_relaxation"] is False
+        assert payload["candidate_region"] == "dynq_region"
+        assert payload["relaxation"] is None
+
+    def test_to_dict_serialises_relaxation_when_included(self) -> None:
+        payload = LayoutComparisonConfig(include_relaxation=True, seed=5).to_dict()
+        assert payload["include_relaxation"] is True
+        assert payload["relaxation"]["seed"] == 5
 
 
 class TestProblemValidation:
@@ -427,6 +450,11 @@ class TestRunComparison:
             for index, row in enumerate(second.rows)
         ]
 
+    def test_relaxation_row_absent_by_default(self) -> None:
+        artifact = _run_stubbed()
+        assert "relaxation" not in artifact.provenance
+        assert all(row.method != "dynq+sinkhorn_relaxation" for row in artifact.rows)
+
     def test_live_host_captured_when_not_injected(self) -> None:
         artifact = run_layout_method_comparison(
             _GATE_ERRORS,
@@ -440,3 +468,60 @@ class TestRunComparison:
         )
         assert artifact.timing_grade in {"isolated_measured", "advisory_shared_host"}
         assert "ready" in artifact.host
+
+
+class TestRelaxationRow:
+    """The KT-4 research row: budget bind, labelling, and candidate regions."""
+
+    @staticmethod
+    def _small_relaxation(seed: int = 7) -> SinkhornRelaxationConfig:
+        return SinkhornRelaxationConfig(
+            n_anneal_steps=2, n_gradient_steps=3, n_sinkhorn_iterations=10, seed=seed
+        )
+
+    def _run_with_relaxation(self, **config_kwargs: Any) -> LayoutComparisonArtifact:
+        config_kwargs.setdefault("relaxation", self._small_relaxation())
+        return _run_stubbed(
+            config=LayoutComparisonConfig(seed=7, include_relaxation=True, **config_kwargs)
+        )
+
+    def test_research_row_appended_and_labelled(self) -> None:
+        artifact = self._run_with_relaxation()
+        assert [row.method for row in artifact.rows] == [
+            "dynq",
+            "dynq+kuramoto_opt",
+            "sabre",
+            "dynq+sinkhorn_relaxation",
+        ]
+        research_row = artifact.rows[-1]
+        assert RESEARCH_LABEL in research_row.notes
+        assert any("RESEARCH row (KT-4)" in note for note in artifact.notes)
+
+    def test_budget_bound_to_discrete_baseline(self) -> None:
+        artifact = self._run_with_relaxation()
+        optimiser = artifact.provenance["optimiser"]
+        relaxation = artifact.provenance["relaxation"]
+        assert relaxation["budget"] == optimiser["n_evaluations"]
+        assert relaxation["n_true_evaluations"] <= relaxation["budget"]
+        assert relaxation["research_label"] == RESEARCH_LABEL
+
+    def test_explicit_relaxation_budget_is_overridden(self) -> None:
+        artifact = self._run_with_relaxation(
+            relaxation=SinkhornRelaxationConfig(
+                n_anneal_steps=2,
+                n_gradient_steps=3,
+                n_sinkhorn_iterations=10,
+                max_true_cost_evaluations=999,
+                seed=7,
+            )
+        )
+        optimiser = artifact.provenance["optimiser"]
+        assert artifact.provenance["relaxation"]["budget"] == optimiser["n_evaluations"]
+
+    def test_full_device_region_widens_both_search_arms(self) -> None:
+        artifact = self._run_with_relaxation(candidate_region="full_device")
+        device = {qubit for edge in _GATE_ERRORS for qubit in edge}
+        _, opt_row, _, research_row = artifact.rows
+        assert set(opt_row.layout) <= device
+        assert set(research_row.layout) <= device
+        assert artifact.config["candidate_region"] == "full_device"

@@ -151,7 +151,7 @@ def _validate_search_inputs(
         indices, or the seed layout is not an injective placement of the right
         length drawn from the candidate set.
     """
-    n = K.shape[0]
+    n = int(K.shape[0])
     if len(set(physical_qubits)) != len(physical_qubits):
         raise ValueError("physical_qubits must not contain duplicates")
     if any(index < 0 for index in physical_qubits):

@@ -761,10 +761,10 @@ with Hungarian rounding after each temperature. Every rounded candidate is
 scored with the **true seeded §7.4 cost** under a preregistered evaluation
 budget — the surrogate never enters the comparison. The open question,
 verified literature, and comparison protocol are preregistered in
-`docs/internal/research_synthesis/2026-07-16T1345_kt4_sinkhorn_layout_relaxation_design.md`;
+[layout_relaxation_preregistration.md](layout_relaxation_preregistration.md);
 the honest outcome may be "modest or no gain", and nothing is promoted
-without KT-5. The preregistered seed-sweep benchmark row is the next
-increment of the research track.
+without KT-5. The preregistered seed-sweep experiment and its measured
+verdict are in §8.5.
 
 ---
 
@@ -844,6 +844,60 @@ written to `data/layout_method_comparison/`.
 
 ---
 
+### 8.5 KT-4 Preregistered Seed Sweep: Sinkhorn Relaxation vs Discrete Optimiser (Measured — No Gain)
+
+Measured by `scripts/run_layout_relaxation_experiment.py` under the protocol
+preregistered in
+[layout_relaxation_preregistration.md](layout_relaxation_preregistration.md)
+**before the optimiser existed**: same two-cluster topology as §8.4, seeds
+0..9 with both search arms in the DynQ region, plus one full-device instance
+(`m = 8 = 2n`, relocations dominate), the relaxation's true-cost budget bound
+per instance to the discrete optimiser's `n_evaluations`. Reproduce with:
+
+```bash
+PYTHONPATH=. python scripts/run_layout_relaxation_experiment.py
+```
+
+| Instance | Candidates | Budget | Baseline cost | Relaxation cost | Δ (relax − base) | Outcome |
+|---|---|---|---|---|---|---|
+| two_cluster_seed0 | dynq_region | 22 | 97.0068 | 100.0068 | +3.0 | loss |
+| two_cluster_seed1 | dynq_region | 20 | 97.0068 | 102.0068 | +5.0 | loss |
+| two_cluster_seed2 | dynq_region | 22 | 97.0068 | 98.0068 | +1.0 | loss |
+| two_cluster_seed3 | dynq_region | 21 | 96.0068 | 96.0068 | +0.0 | tie |
+| two_cluster_seed4 | dynq_region | 23 | 97.0068 | 98.0068 | +1.0 | loss |
+| two_cluster_seed5 | dynq_region | 21 | 97.0068 | 97.0068 | +0.0 | tie |
+| two_cluster_seed6 | dynq_region | 20 | 98.0068 | 98.0068 | +0.0 | tie |
+| two_cluster_seed7 | dynq_region | 22 | 98.0068 | 98.0068 | +0.0 | tie |
+| two_cluster_seed8 | dynq_region | 22 | 97.0068 | 101.0068 | +4.0 | loss |
+| two_cluster_seed9 | dynq_region | 21 | 97.0068 | 97.0068 | +0.0 | tie |
+| full_device_seed0 | full_device | 208 | 97.0068 | 112.0068 | +15.0 | loss |
+
+Aggregate: baseline mean ± std **97.098 ± 0.514**, relaxation mean ± std
+**99.734 ± 4.245**; wins/ties/losses **0/5/6**. Verdict:
+**no_gain — the preregistered null hypothesis stands.**
+
+Reading the result honestly:
+
+- **The relaxation never beat the discrete baseline.** At matched budget it
+  tied on 5 of 11 instances (typically when both converge to the DynQ-seeded
+  local optimum) and lost on 6, including by +15 cost on the full-device
+  instance where its larger relaxed space proposes rounded layouts the
+  hill climber would never visit — and they are worse, not better.
+- **The cost is the true seeded §7.4 cost** (routed-depth measurement plus
+  Trotter-error and infidelity models); the SWAP-distance surrogate that
+  drives the relaxation's gradient descent never enters the comparison.
+- **This is the preregistered outcome, not a rescue.** The falsification
+  criterion was fixed before the optimiser existed; per the design doc, the
+  research label stays, the discrete optimiser (§7.5) remains the production
+  recommendation, and no KT-5 promotion case exists on this evidence.
+- Same honest labels as §8.4: analytic models are not hardware measurements,
+  and selection wall-times on a shared host are advisory.
+
+The full artifact (per-instance outcomes, aggregate, provenance, notes) is
+written to `data/layout_relaxation_experiment/`.
+
+---
+
 ## 9. Test Coverage
 
 17 tests across 6 dimensions in `tests/test_qubit_mapper.py`:
@@ -913,9 +967,17 @@ The §7.4/§7.5/§8.4 surfaces carry their own dedicated test modules, each at
   structure, hill-climbing on controlled landscapes, determinism, memoisation,
   convergence flags;
 - `test_layout_method_comparison.py` — serialisation, problem validation, the
-  calibration-priced success model, real routing metrics, and the full
-  comparison run (stubbed and real-transpilation paths);
-- `test_run_layout_method_comparison.py` — CLI wiring for the §8.4 script.
+  calibration-priced success model, real routing metrics, the full comparison
+  run (stubbed and real-transpilation paths), and the KT-4 research row
+  (budget bind, labelling, candidate regions);
+- `test_run_layout_method_comparison.py` — CLI wiring for the §8.4 script;
+- `test_kuramoto_layout_relaxation.py` — Sinkhorn projection, graph
+  distances, surrogate gradient (finite-difference checked), and the
+  relaxed-then-rounded search;
+- `test_layout_relaxation_experiment.py` — the preregistered instance set,
+  fail-closed validation, budget extraction, every verdict branch, and the
+  aggregation arithmetic;
+- `test_run_layout_relaxation_experiment.py` — CLI wiring for the §8.5 script.
 
 ---
 

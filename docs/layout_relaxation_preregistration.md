@@ -1,12 +1,17 @@
 # KT-4 — Continuous-Relaxation Layout Search: Research Design (RESEARCH LABEL)
 
-**Status: RESEARCH — open falsifiable question. Not a promised feature. The
-honest expected outcome may be "modest or no gain" over the KT-3 discrete
-baseline. No claim promotion without KT-5 (isolated reserved-host benchmark,
-owner-gated).**
+**Status: RESEARCH — ANSWERED (2026-07-16). The preregistered experiment ran
+(§6): the null hypothesis stands — the relaxation shows no gain over the KT-3
+discrete baseline at matched true-cost budget. The research label stays; the
+discrete optimiser remains the production recommendation; no KT-5 promotion
+case exists on this evidence.**
 
 Date: 2026-07-16. Author seat: SCPN-QUANTUM-CONTROL/claude-7f6b.
-Plan lane: `docs/internal/strategy/2026-07-15T2223_frontier_hardware_programme_plan.md`, KT-4.
+
+> **Location note.** Originally committed (2026-07-16, commit `9f7407ff`)
+> under `docs/internal/research_synthesis/`; relocated here unchanged because
+> the repository policy keeps the `docs/internal` tree untracked. The commit
+> history carries the preregistration timestamp.
 
 ## 1. The open question (falsifiable)
 
@@ -93,6 +98,31 @@ art in these searches is evidence of absence in the searched venues only.
   with a `sinkhorn_relaxation` method row (same honest labels).
 - Tests to 100% line+branch (pure numpy — tracer-safe); strict mypy; docs
   `dynq_qubit_mapping.md` §7.6 + §8.5; the three src-file gates.
+
+*(Delivered as preregistered: the optimiser in
+`hardware/kuramoto_layout_relaxation.py`, the budget-matched research row in
+`benchmarks/layout_method_comparison.py`, and the sweep in
+`benchmarks/layout_relaxation_experiment.py` +
+`scripts/run_layout_relaxation_experiment.py`.)*
+
+## 6. Outcome (2026-07-16, measured)
+
+The preregistered protocol of §4 ran in full — seeds 0..9 on the two-cluster
+topology (both arms in the DynQ region) plus one full-device instance
+(`m = 8 = 2n`), the relaxation's true-cost budget bound per instance to the
+discrete baseline's `n_evaluations`:
+
+- **wins/ties/losses = 0/5/6**; baseline mean best cost 97.098 ± 0.514,
+  relaxation 99.734 ± 4.245 (population std).
+- **The null hypothesis stands: no gain.** The relaxation never produced a
+  lower true cost than the discrete optimiser; on the full-device instance it
+  lost by +15 despite a 208-evaluation budget.
+- Consequences (as preregistered): the research label stays, the discrete
+  optimiser (`dynq_qubit_mapping.md` §7.5) remains the production
+  recommendation, and no KT-5 promotion case exists on this evidence.
+
+Measured table and honest reading: `dynq_qubit_mapping.md` §8.5; artifact:
+`data/layout_relaxation_experiment/layout_relaxation_experiment_n4_seeds0-9.json`.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
 Seat: 7f6b

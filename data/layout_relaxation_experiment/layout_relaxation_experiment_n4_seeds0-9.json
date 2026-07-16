@@ -1,0 +1,419 @@
+{
+  "baseline_cost_std": 0.51425947722658,
+  "baseline_mean_cost": 97.09770909090909,
+  "config": {
+    "base": {
+      "candidate_region": "dynq_region",
+      "dynq_min_qubits": 3,
+      "dynq_resolution": 1.0,
+      "include_relaxation": false,
+      "optimization_level": 1,
+      "order": 1,
+      "relaxation": null,
+      "reps": 5,
+      "reserved_core": 0,
+      "search": {
+        "max_sweeps": 20,
+        "n_restarts": 4,
+        "order": 1,
+        "reps": 5,
+        "seed": 0,
+        "t": 0.1,
+        "weights": null
+      },
+      "seed": 0,
+      "t": 0.1
+    },
+    "instances": [
+      {
+        "candidate_region": "dynq_region",
+        "label": "two_cluster_seed0",
+        "seed": 0
+      },
+      {
+        "candidate_region": "dynq_region",
+        "label": "two_cluster_seed1",
+        "seed": 1
+      },
+      {
+        "candidate_region": "dynq_region",
+        "label": "two_cluster_seed2",
+        "seed": 2
+      },
+      {
+        "candidate_region": "dynq_region",
+        "label": "two_cluster_seed3",
+        "seed": 3
+      },
+      {
+        "candidate_region": "dynq_region",
+        "label": "two_cluster_seed4",
+        "seed": 4
+      },
+      {
+        "candidate_region": "dynq_region",
+        "label": "two_cluster_seed5",
+        "seed": 5
+      },
+      {
+        "candidate_region": "dynq_region",
+        "label": "two_cluster_seed6",
+        "seed": 6
+      },
+      {
+        "candidate_region": "dynq_region",
+        "label": "two_cluster_seed7",
+        "seed": 7
+      },
+      {
+        "candidate_region": "dynq_region",
+        "label": "two_cluster_seed8",
+        "seed": 8
+      },
+      {
+        "candidate_region": "dynq_region",
+        "label": "two_cluster_seed9",
+        "seed": 9
+      },
+      {
+        "candidate_region": "full_device",
+        "label": "full_device_seed0",
+        "seed": 0
+      }
+    ]
+  },
+  "host": {
+    "blockers": [
+      "cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
+      "host load 41.80 exceeds the isolated threshold 1.00; quiesce concurrent jobs"
+    ],
+    "frequency_mhz": 3800.0,
+    "governor": "powersave",
+    "governor_is_stable": false,
+    "load_average": [
+      41.80224609375,
+      34.86865234375,
+      32.82568359375
+    ],
+    "load_is_low": false,
+    "ready": false,
+    "reserved_core": 0
+  },
+  "losses": 6,
+  "notes": [
+    "RESEARCH (KT-4): relaxed-then-rounded layout search under a preregistered protocol; results are research observations, not a promoted capability",
+    "best true cost is the seeded KT-2 layout cost: a routed-depth measurement combined with Trotter-error and infidelity models, not a hardware measurement",
+    "the relaxation's true-cost budget is bound per instance to the discrete optimiser's n_evaluations (the preregistered budget match)",
+    "selection wall-times measured on a shared host: advisory only"
+  ],
+  "null_hypothesis_rejected": false,
+  "outcomes": [
+    {
+      "baseline_cost": 97.0068,
+      "baseline_depth": 97,
+      "baseline_layout": [
+        1,
+        0,
+        2,
+        3
+      ],
+      "baseline_success_probability": 0.8087150602833114,
+      "budget": 22,
+      "candidate_region": "dynq_region",
+      "cost_delta": 3.0,
+      "label": "two_cluster_seed0",
+      "relaxation_cost": 100.0068,
+      "relaxation_depth": 100,
+      "relaxation_layout": [
+        0,
+        3,
+        1,
+        2
+      ],
+      "relaxation_success_probability": 0.7926624727172025,
+      "relaxation_true_evaluations": 6,
+      "seed": 0
+    },
+    {
+      "baseline_cost": 97.0068,
+      "baseline_depth": 97,
+      "baseline_layout": [
+        2,
+        0,
+        1,
+        3
+      ],
+      "baseline_success_probability": 0.801447169606289,
+      "budget": 20,
+      "candidate_region": "dynq_region",
+      "cost_delta": 5.0,
+      "label": "two_cluster_seed1",
+      "relaxation_cost": 102.0068,
+      "relaxation_depth": 102,
+      "relaxation_layout": [
+        3,
+        2,
+        1,
+        0
+      ],
+      "relaxation_success_probability": 0.7942533653882652,
+      "relaxation_true_evaluations": 4,
+      "seed": 1
+    },
+    {
+      "baseline_cost": 97.0068,
+      "baseline_depth": 97,
+      "baseline_layout": [
+        1,
+        0,
+        2,
+        3
+      ],
+      "baseline_success_probability": 0.8087150602833114,
+      "budget": 22,
+      "candidate_region": "dynq_region",
+      "cost_delta": 1.0,
+      "label": "two_cluster_seed2",
+      "relaxation_cost": 98.0068,
+      "relaxation_depth": 98,
+      "relaxation_layout": [
+        1,
+        2,
+        0,
+        3
+      ],
+      "relaxation_success_probability": 0.8030573091695882,
+      "relaxation_true_evaluations": 4,
+      "seed": 2
+    },
+    {
+      "baseline_cost": 96.0068,
+      "baseline_depth": 96,
+      "baseline_layout": [
+        2,
+        1,
+        0,
+        3
+      ],
+      "baseline_success_probability": 0.8127748715820844,
+      "budget": 21,
+      "candidate_region": "dynq_region",
+      "cost_delta": 0.0,
+      "label": "two_cluster_seed3",
+      "relaxation_cost": 96.0068,
+      "relaxation_depth": 96,
+      "relaxation_layout": [
+        2,
+        1,
+        3,
+        0
+      ],
+      "relaxation_success_probability": 0.8062792008562092,
+      "relaxation_true_evaluations": 5,
+      "seed": 3
+    },
+    {
+      "baseline_cost": 97.0068,
+      "baseline_depth": 97,
+      "baseline_layout": [
+        1,
+        0,
+        2,
+        3
+      ],
+      "baseline_success_probability": 0.8030565012721653,
+      "budget": 23,
+      "candidate_region": "dynq_region",
+      "cost_delta": 1.0,
+      "label": "two_cluster_seed4",
+      "relaxation_cost": 98.0068,
+      "relaxation_depth": 98,
+      "relaxation_layout": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "relaxation_success_probability": 0.8030548854797585,
+      "relaxation_true_evaluations": 5,
+      "seed": 4
+    },
+    {
+      "baseline_cost": 97.0068,
+      "baseline_depth": 97,
+      "baseline_layout": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "baseline_success_probability": 0.801444750775987,
+      "budget": 21,
+      "candidate_region": "dynq_region",
+      "cost_delta": 0.0,
+      "label": "two_cluster_seed5",
+      "relaxation_cost": 97.0068,
+      "relaxation_depth": 97,
+      "relaxation_layout": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "relaxation_success_probability": 0.801444750775987,
+      "relaxation_true_evaluations": 6,
+      "seed": 5
+    },
+    {
+      "baseline_cost": 98.0068,
+      "baseline_depth": 98,
+      "baseline_layout": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "baseline_success_probability": 0.801444750775987,
+      "budget": 20,
+      "candidate_region": "dynq_region",
+      "cost_delta": 0.0,
+      "label": "two_cluster_seed6",
+      "relaxation_cost": 98.0068,
+      "relaxation_depth": 98,
+      "relaxation_layout": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "relaxation_success_probability": 0.801444750775987,
+      "relaxation_true_evaluations": 6,
+      "seed": 6
+    },
+    {
+      "baseline_cost": 98.0068,
+      "baseline_depth": 98,
+      "baseline_layout": [
+        2,
+        1,
+        0,
+        3
+      ],
+      "baseline_success_probability": 0.8062840547176926,
+      "budget": 22,
+      "candidate_region": "dynq_region",
+      "cost_delta": 0.0,
+      "label": "two_cluster_seed7",
+      "relaxation_cost": 98.0068,
+      "relaxation_depth": 98,
+      "relaxation_layout": [
+        2,
+        0,
+        1,
+        3
+      ],
+      "relaxation_success_probability": 0.796636095132993,
+      "relaxation_true_evaluations": 5,
+      "seed": 7
+    },
+    {
+      "baseline_cost": 97.0068,
+      "baseline_depth": 97,
+      "baseline_layout": [
+        1,
+        0,
+        2,
+        3
+      ],
+      "baseline_success_probability": 0.8014463633287104,
+      "budget": 22,
+      "candidate_region": "dynq_region",
+      "cost_delta": 4.0,
+      "label": "two_cluster_seed8",
+      "relaxation_cost": 101.0068,
+      "relaxation_depth": 101,
+      "relaxation_layout": [
+        3,
+        2,
+        0,
+        1
+      ],
+      "relaxation_success_probability": 0.7990508538578728,
+      "relaxation_true_evaluations": 4,
+      "seed": 8
+    },
+    {
+      "baseline_cost": 97.0068,
+      "baseline_depth": 97,
+      "baseline_layout": [
+        1,
+        0,
+        2,
+        3
+      ],
+      "baseline_success_probability": 0.8070935768609834,
+      "budget": 21,
+      "candidate_region": "dynq_region",
+      "cost_delta": 0.0,
+      "label": "two_cluster_seed9",
+      "relaxation_cost": 97.0068,
+      "relaxation_depth": 97,
+      "relaxation_layout": [
+        1,
+        3,
+        2,
+        0
+      ],
+      "relaxation_success_probability": 0.8014471696062891,
+      "relaxation_true_evaluations": 6,
+      "seed": 9
+    },
+    {
+      "baseline_cost": 97.0068,
+      "baseline_depth": 97,
+      "baseline_layout": [
+        1,
+        0,
+        2,
+        3
+      ],
+      "baseline_success_probability": 0.8087150602833114,
+      "budget": 208,
+      "candidate_region": "full_device",
+      "cost_delta": 15.0,
+      "label": "full_device_seed0",
+      "relaxation_cost": 112.0068,
+      "relaxation_depth": 112,
+      "relaxation_layout": [
+        3,
+        4,
+        1,
+        2
+      ],
+      "relaxation_success_probability": 0.16075713189011964,
+      "relaxation_true_evaluations": 5,
+      "seed": 0
+    }
+  ],
+  "preregistration": "docs/layout_relaxation_preregistration.md",
+  "provenance": {
+    "command": "scripts/run_layout_relaxation_experiment.py",
+    "dependencies": {
+      "numpy": "2.2.6",
+      "python": "3.12.13",
+      "qiskit": "2.4.1",
+      "quimb": "not installed",
+      "qutip": "5.2.3",
+      "scipy": "1.15.3"
+    },
+    "git_commit": "d9bda1226f8f20979e63c7a9c667b62f89612f2e"
+  },
+  "relaxation_cost_std": 4.2445881927013644,
+  "relaxation_mean_cost": 99.73407272727273,
+  "research_label": "RESEARCH (KT-4): relaxed-then-rounded layout search under a preregistered protocol; results are research observations, not a promoted capability",
+  "schema_version": "1.0",
+  "ties": 5,
+  "timing_grade": "advisory_shared_host",
+  "verdict": "no_gain: the relaxation does not beat the discrete baseline's mean best true cost at matched budget (the preregistered null hypothesis stands)",
+  "wins": 0
+}

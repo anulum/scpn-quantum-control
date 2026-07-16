@@ -343,6 +343,13 @@ optimiser cost landscape. Measured results and the honest reading live in
 `dynq_qubit_mapping.md` §8.4; the CLI is
 `scripts/run_layout_method_comparison.py`.
 
+With `LayoutComparisonConfig.include_relaxation` (off by default, so the
+promoted surface never silently carries a research arm) the artifact gains a
+research-labelled `dynq+sinkhorn_relaxation` row whose true-cost budget is
+bound to the discrete optimiser's `n_evaluations` on the same instance — the
+preregistered KT-4 budget match. `candidate_region` selects the search space
+of both arms: the DynQ region (default) or the full calibrated device.
+
 ---
 
 ### 2e. `closed_loop_publication_run` — Reproducible Software-in-the-Loop Artifact
@@ -375,6 +382,35 @@ Fail-closed: a missing compiler raises; compile/run failures are recorded as
 `passed=false` failure evidence. The co-simulation runner is injectable for
 tests. Details in `ultrascale_hls.md`; the CLI is
 `scripts/run_hls_cosimulation_evidence.py`.
+
+---
+
+### 2g. `layout_relaxation_experiment` — Preregistered KT-4 Seed Sweep (RESEARCH)
+
+Runs the comparison protocol preregistered in
+[layout_relaxation_preregistration.md](layout_relaxation_preregistration.md):
+on every preregistered instance (the two-cluster topology under seeds 0..9
+plus one full-device `m ≥ 2n` instance), the annealed Sinkhorn relaxation
+(`hardware/kuramoto_layout_relaxation.py`) competes against the KT-3 discrete
+optimiser at a matched budget of true seeded cost evaluations. The decision
+metric is the mean best true cost; the surrogate never enters the comparison,
+and the verdict is computed against the preregistered null hypothesis —
+"no gain" is a valid, publishable outcome (and is the measured outcome, see
+`dynq_qubit_mapping.md` §8.5).
+
+| Symbol | Purpose |
+|--------|---------|
+| `RelaxationExperimentInstance` | One preregistered instance (label, seed, candidate region) |
+| `preregistered_instances()` | The design-doc instance set: seeds 0..9 + one full-device instance |
+| `InstanceOutcome` | Decision-relevant numbers extracted from one comparison run |
+| `RelaxationExperimentArtifact` | Outcomes, mean±std, wins/ties/losses, null-hypothesis verdict |
+| `run_layout_relaxation_experiment(gate_errors, K, omega, ...)` | Full sweep; fails closed on pinned search configs or empty sweeps |
+
+The run fails closed when `base_config` pins an explicit search or relaxation
+configuration (the sweep must bind each instance's seed into both arms) and
+shares one host-readiness verdict across every instance. Providers are
+injectable as in §2d. The CLI is `scripts/run_layout_relaxation_experiment.py`;
+the artifact lands in `data/layout_relaxation_experiment/`.
 
 ---
 

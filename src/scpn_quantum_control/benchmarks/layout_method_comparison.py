@@ -15,8 +15,24 @@ calibration data:
   routed as-is;
 * ``dynq+kuramoto_opt`` — the KT-3 discrete optimiser
   (:func:`~scpn_quantum_control.hardware.kuramoto_layout_optimiser.optimise_kuramoto_layout`)
-  seeded by the DynQ layout and searching the DynQ region;
+  seeded by the DynQ layout and searching the candidate region;
 * ``sabre`` — Qiskit's SABRE layout + routing.
+
+With ``LayoutComparisonConfig.include_relaxation`` a fourth, **research** row
+is added:
+
+* ``dynq+sinkhorn_relaxation`` — the KT-4 annealed Sinkhorn relaxation
+  (:func:`~scpn_quantum_control.hardware.kuramoto_layout_relaxation.relax_kuramoto_layout`),
+  seeded by the DynQ layout, searching the same candidate region, and with
+  its true-cost evaluation budget **bound to the discrete optimiser's
+  ``n_evaluations`` on the same instance** — the preregistered budget match
+  of the KT-4 protocol. The row carries the research label; it is an
+  experiment observation, never a promoted capability.
+
+Both search arms share the candidate region selected by
+``LayoutComparisonConfig.candidate_region``: the DynQ selected region
+(default, the KT-3 baseline setting) or the full calibrated device (the
+preregistered ``m ≥ 2n`` setting where relocations dominate).
 
 Metrics and their honest labels
 -------------------------------
@@ -40,7 +56,7 @@ Metrics and their honest labels
 from __future__ import annotations
 
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from math import isfinite
 from typing import Any, Protocol
 
@@ -56,6 +72,11 @@ from ..hardware.kuramoto_layout_optimiser import (
     LayoutSearchConfig,
     optimise_kuramoto_layout,
 )
+from ..hardware.kuramoto_layout_relaxation import (
+    RESEARCH_LABEL,
+    SinkhornRelaxationConfig,
+    relax_kuramoto_layout,
+)
 from ..hardware.qubit_mapper import dynq_initial_layout
 from ..phase.xy_compiler import compile_xy_trotter
 from .decisive_run_harness import command_line, dependency_versions, git_commit
@@ -64,16 +85,24 @@ from .isolated_host_readiness import HostReadiness, capture_host_readiness
 FloatArray = NDArray[np.float64]
 GateErrors = dict[tuple[int, int], float]
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
 
 #: Transpilation basis shared by every compared method.
 _BASIS_GATES: tuple[str, ...] = ("cx", "rz", "rx", "ry")
+
+#: Candidate-region choices for the search arms.
+_CANDIDATE_REGIONS: tuple[str, ...] = ("dynq_region", "full_device")
 
 _PROXY_NOTE = (
     "estimated_success_probability and r_noisy_proxy are analytic models "
     "(per-edge calibration product, global depolarising), not hardware measurements"
 )
 _R_IDEAL_NOTE = "r_ideal is method-independent: every layout routes the same logical unitary"
+_RELAXATION_NOTE = (
+    "dynq+sinkhorn_relaxation is a RESEARCH row (KT-4): its true-cost budget is "
+    "bound to the discrete optimiser's n_evaluations on this instance (the "
+    "preregistered budget match); no gain over the discrete baseline is a valid outcome"
+)
 
 
 class RProvider(Protocol):
@@ -171,6 +200,19 @@ class LayoutComparisonConfig:
     search
         Optimiser search configuration; ``None`` derives one from ``t``,
         ``reps``, ``order``, and ``seed``.
+    include_relaxation
+        Add the ``dynq+sinkhorn_relaxation`` research row (KT-4). Off by
+        default so the promoted comparison surface never silently carries a
+        research arm.
+    candidate_region
+        Candidate set searched by both search arms: ``"dynq_region"`` (the
+        KT-3 baseline setting) or ``"full_device"`` (every calibrated qubit;
+        the preregistered ``m ≥ 2n`` setting).
+    relaxation
+        Relaxation configuration; ``None`` derives one from ``t``, ``reps``,
+        ``order``, and ``seed``. Its ``max_true_cost_evaluations`` is always
+        overridden by the run with the discrete optimiser's ``n_evaluations``
+        — the preregistered budget match.
     """
 
     t: float = 0.1
@@ -182,6 +224,9 @@ class LayoutComparisonConfig:
     dynq_resolution: float = 1.0
     dynq_min_qubits: int = 3
     search: LayoutSearchConfig | None = None
+    include_relaxation: bool = False
+    candidate_region: str = "dynq_region"
+    relaxation: SinkhornRelaxationConfig | None = None
 
     def __post_init__(self) -> None:
         """Validate the configuration.
@@ -189,18 +234,27 @@ class LayoutComparisonConfig:
         Raises
         ------
         ValueError
-            If ``t`` is not finite and positive or ``reps`` is not positive.
+            If ``t`` is not finite and positive, ``reps`` is not positive, or
+            ``candidate_region`` is not a known region choice.
         """
         if not isfinite(self.t) or self.t <= 0.0:
             raise ValueError("t must be finite and positive")
         if self.reps < 1:
             raise ValueError("reps must be a positive integer")
+        if self.candidate_region not in _CANDIDATE_REGIONS:
+            raise ValueError(f"candidate_region must be one of {_CANDIDATE_REGIONS}")
 
     def search_config(self) -> LayoutSearchConfig:
         """Return the optimiser configuration, deriving the default when unset."""
         if self.search is not None:
             return self.search
         return LayoutSearchConfig(seed=self.seed, t=self.t, reps=self.reps, order=self.order)
+
+    def relaxation_config(self) -> SinkhornRelaxationConfig:
+        """Return the relaxation configuration, deriving the default when unset."""
+        if self.relaxation is not None:
+            return self.relaxation
+        return SinkhornRelaxationConfig(seed=self.seed, t=self.t, reps=self.reps, order=self.order)
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serialisable mapping of the configuration."""
@@ -214,6 +268,9 @@ class LayoutComparisonConfig:
             "dynq_resolution": self.dynq_resolution,
             "dynq_min_qubits": self.dynq_min_qubits,
             "search": self.search_config().to_dict(),
+            "include_relaxation": self.include_relaxation,
+            "candidate_region": self.candidate_region,
+            "relaxation": self.relaxation_config().to_dict() if self.include_relaxation else None,
         }
 
 
@@ -450,6 +507,11 @@ def run_layout_method_comparison(
 ) -> LayoutComparisonArtifact:
     """Compare DynQ, DynQ+Kuramoto-optimiser, and SABRE on one problem.
 
+    With ``config.include_relaxation`` a fourth, research-labelled
+    ``dynq+sinkhorn_relaxation`` row is added, its true-cost budget bound to
+    the discrete optimiser's ``n_evaluations`` on this instance (the
+    preregistered KT-4 budget match).
+
     Parameters
     ----------
     gate_errors
@@ -507,7 +569,10 @@ def run_layout_method_comparison(
 
     fidelity = dynq_mean_gate_fidelity(mapping)
     dynq_layout = tuple(mapping.initial_layout)
-    region_qubits = tuple(sorted(mapping.selected_region.qubits))
+    if config.candidate_region == "dynq_region":
+        candidate_qubits = tuple(sorted(mapping.selected_region.qubits))
+    else:
+        candidate_qubits = tuple(sorted({qubit for edge in gate_errors for qubit in edge}))
     coupling_map = coupling_map_from_gate_errors(gate_errors)
 
     if depth_provider is routed_layout_depth:
@@ -542,13 +607,34 @@ def run_layout_method_comparison(
         K,
         omega,
         coupling_map,
-        region_qubits,
+        candidate_qubits,
         mean_gate_fidelity=fidelity,
         config=config.search_config(),
         initial_layout=dynq_layout,
         depth_provider=optimiser_depth_provider,
     )
     optimiser_time = time.perf_counter() - started
+
+    relaxation = None
+    relaxation_time = 0.0
+    if config.include_relaxation:
+        # Preregistered budget match: the relaxation may spend at most as many
+        # true-cost evaluations as the discrete baseline did on this instance.
+        relaxation_settings = replace(
+            config.relaxation_config(), max_true_cost_evaluations=search.n_evaluations
+        )
+        started = time.perf_counter()
+        relaxation = relax_kuramoto_layout(
+            K,
+            omega,
+            coupling_map,
+            candidate_qubits,
+            mean_gate_fidelity=fidelity,
+            config=relaxation_settings,
+            initial_layout=dynq_layout,
+            depth_provider=optimiser_depth_provider,
+        )
+        relaxation_time = time.perf_counter() - started
 
     started = time.perf_counter()
     sabre_metrics, sabre_layout = metrics_provider(
@@ -566,7 +652,12 @@ def run_layout_method_comparison(
 
     r_ideal = r_provider(K, omega, t=config.t, reps=config.reps)
 
-    def fixed_layout_row(method: str, layout: tuple[int, ...], seconds: float) -> MethodRow:
+    def fixed_layout_row(
+        method: str,
+        layout: tuple[int, ...],
+        seconds: float,
+        extra_notes: tuple[str, ...] = (),
+    ) -> MethodRow:
         metrics, used_layout = metrics_provider(
             K,
             omega,
@@ -578,32 +669,47 @@ def run_layout_method_comparison(
             optimization_level=config.optimization_level,
             seed=config.seed,
         )
-        return _method_row(method, used_layout, metrics, r_ideal, seconds)
+        return _method_row(method, used_layout, metrics, r_ideal, seconds, extra_notes)
 
-    rows = (
+    rows = [
         fixed_layout_row("dynq", dynq_layout, dynq_time),
         fixed_layout_row("dynq+kuramoto_opt", search.best_layout, dynq_time + optimiser_time),
         _method_row("sabre", sabre_layout, sabre_metrics, r_ideal, sabre_time),
-    )
+    ]
 
     readiness = host_readiness or capture_host_readiness(config.reserved_core)
     timing_grade = "isolated_measured" if readiness.ready else "advisory_shared_host"
     notes = [_PROXY_NOTE, _R_IDEAL_NOTE]
+    provenance: dict[str, Any] = {
+        "git_commit": git_commit(),
+        "command": command_line(),
+        "dependencies": dependency_versions(),
+        "optimiser": search.to_dict(),
+    }
+    if relaxation is not None:
+        rows.append(
+            fixed_layout_row(
+                "dynq+sinkhorn_relaxation",
+                relaxation.best_layout,
+                dynq_time + relaxation_time,
+                extra_notes=(RESEARCH_LABEL,),
+            )
+        )
+        notes.append(_RELAXATION_NOTE)
+        provenance["relaxation"] = {
+            **relaxation.to_dict(),
+            "budget": search.n_evaluations,
+        }
     if not readiness.ready:
         notes.append("selection wall-times measured on a shared host: advisory only")
 
     return LayoutComparisonArtifact(
-        rows=rows,
+        rows=tuple(rows),
         r_ideal=r_ideal,
         timing_grade=timing_grade,
         host=asdict(readiness),
         config=config.to_dict(),
-        provenance={
-            "git_commit": git_commit(),
-            "command": command_line(),
-            "dependencies": dependency_versions(),
-            "optimiser": search.to_dict(),
-        },
+        provenance=provenance,
         notes=tuple(notes),
     )
 
@@ -614,6 +720,7 @@ def _method_row(
     metrics: RoutedLayoutMetrics,
     r_ideal: float,
     selection_time_s: float,
+    extra_notes: tuple[str, ...] = (),
 ) -> MethodRow:
     """Assemble one comparison row from routed metrics and the R model."""
     return MethodRow(
@@ -625,5 +732,5 @@ def _method_row(
         r_ideal=r_ideal,
         r_noisy_proxy=metrics.estimated_success_probability * r_ideal,
         selection_time_s=selection_time_s,
-        notes=(_PROXY_NOTE,),
+        notes=(_PROXY_NOTE, *extra_notes),
     )

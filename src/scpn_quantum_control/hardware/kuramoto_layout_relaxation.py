@@ -9,7 +9,7 @@
 
 **Research label.** This module implements the KT-4 open question
 preregistered in
-``docs/internal/research_synthesis/2026-07-16T1345_kt4_sinkhorn_layout_relaxation_design.md``:
+``docs/layout_relaxation_preregistration.md``:
 does an annealed Sinkhorn relaxation over placement logits beat the KT-3
 discrete optimiser
 (:func:`~scpn_quantum_control.hardware.kuramoto_layout_optimiser.optimise_kuramoto_layout`)
@@ -211,9 +211,7 @@ def sinkhorn_normalise(logits: FloatArray, n_iterations: int) -> FloatArray:
 def _logsumexp_rows(matrix: FloatArray) -> FloatArray:
     """Return the row-wise log-sum-exp of ``matrix`` (stable)."""
     row_max = np.max(matrix, axis=1)
-    return cast(
-        FloatArray, row_max + np.log(np.sum(np.exp(matrix - row_max[:, None]), axis=1))
-    )
+    return cast(FloatArray, row_max + np.log(np.sum(np.exp(matrix - row_max[:, None]), axis=1)))
 
 
 def coupling_graph_distances(coupling_map: Any, physical_qubits: tuple[int, ...]) -> FloatArray:

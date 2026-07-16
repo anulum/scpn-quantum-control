@@ -8,12 +8,12 @@
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 836,
-    "public_documentation_pages": 272,
-    "python_model_classes": 1033,
-    "python_model_source_modules": 568,
+    "public_documentation_pages": 273,
+    "python_model_classes": 1036,
+    "python_model_source_modules": 569,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1007
+    "test_files": 1009
   },
   "documentation": {
     "examples": [
@@ -332,6 +332,7 @@
       "docs/kuramoto_variants.md",
       "docs/kuramoto_visualisation.md",
       "docs/language_policy.md",
+      "docs/layout_relaxation_preregistration.md",
       "docs/licensing_faq.md",
       "docs/lindblad.md",
       "docs/literature/README.md",
@@ -474,7 +475,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 33
+        "python_modules": 34
       },
       {
         "package": "bridge",
@@ -2276,6 +2277,10 @@
       {
         "name": "InitialState",
         "path": "src/scpn_quantum_control/analysis/entanglement_enhanced_sync.py"
+      },
+      {
+        "name": "InstanceOutcome",
+        "path": "src/scpn_quantum_control/benchmarks/layout_relaxation_experiment.py"
       },
       {
         "name": "IntegratedInformationPhi",
@@ -4098,6 +4103,14 @@
         "path": "src/scpn_quantum_control/phase/model_training_evidence.py"
       },
       {
+        "name": "RelaxationExperimentArtifact",
+        "path": "src/scpn_quantum_control/benchmarks/layout_relaxation_experiment.py"
+      },
+      {
+        "name": "RelaxationExperimentInstance",
+        "path": "src/scpn_quantum_control/benchmarks/layout_relaxation_experiment.py"
+      },
+      {
         "name": "RelaxationSearchResult",
         "path": "src/scpn_quantum_control/hardware/kuramoto_layout_relaxation.py"
       },
@@ -4857,6 +4870,7 @@
       "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py",
       "src/scpn_quantum_control/benchmarks/kuramoto_external_competitors.py",
       "src/scpn_quantum_control/benchmarks/layout_method_comparison.py",
+      "src/scpn_quantum_control/benchmarks/layout_relaxation_experiment.py",
       "src/scpn_quantum_control/benchmarks/mps_baseline.py",
       "src/scpn_quantum_control/benchmarks/open_system_objective_evidence.py",
       "src/scpn_quantum_control/benchmarks/quantum_advantage.py",
@@ -6886,6 +6900,7 @@
       "tests/test_layer_selective_comparator_matrix.py",
       "tests/test_layer_selective_readiness.py",
       "tests/test_layout_method_comparison.py",
+      "tests/test_layout_relaxation_experiment.py",
       "tests/test_lean_phase_import.py",
       "tests/test_lindblad.py",
       "tests/test_lindblad_branches.py",
@@ -7294,6 +7309,7 @@
       "tests/test_run_dla_parity_suite_cli.py",
       "tests/test_run_hls_cosimulation_evidence.py",
       "tests/test_run_layout_method_comparison.py",
+      "tests/test_run_layout_relaxation_experiment.py",
       "tests/test_run_quantum_ssgf_descent.py",
       "tests/test_runner_guards.py",
       "tests/test_rust_accel_import_resilience.py",
