@@ -18,14 +18,34 @@ import sys
 
 import pytest
 
-from scpn_quantum_control.hardware.runner import HardwareRunner, _get_structured_logger
+from scpn_quantum_control.hardware.runner import HardwareRunner
+from scpn_quantum_control.structured_log_fallback import (
+    KwargTolerantLoggerAdapter,
+)
+from scpn_quantum_control.structured_log_fallback import (
+    get_structured_logger as _get_structured_logger,
+)
 
 
-def test_structured_logger_falls_back_to_stdlib(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Without the optional logging extra the runner uses a stdlib logger."""
+def test_structured_logger_falls_back_to_kwarg_adapter(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Without the logging extra the runner logs through the kwarg adapter.
+
+    The adapter must accept the runner's structlog-style call sites — a bare
+    stdlib logger raised ``TypeError`` on the first logged event of a minimal
+    install (2026-07-16 external review finding).
+    """
     monkeypatch.setitem(sys.modules, "scpn_quantum_control.logging_setup", None)
     logger = _get_structured_logger("scpn.test")
-    assert isinstance(logger, logging.Logger)
+    assert isinstance(logger, KwargTolerantLoggerAdapter)
+    assert isinstance(logger.logger, logging.Logger)
+    # The exact call shapes of the runner's Aer-fallback warnings (lines
+    # formerly crashing without structlog) must not raise.
+    logger.warning(
+        "aer_unavailable_noise_model_ignored", reason="boom", fallback="basic_simulator"
+    )
+    logger.info("backend_connected", backend="basic_simulator", mode="simulator")
 
 
 def test_simulator_falls_back_to_basic_without_aer(monkeypatch: pytest.MonkeyPatch) -> None:

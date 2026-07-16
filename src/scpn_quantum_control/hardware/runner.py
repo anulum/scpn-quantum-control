@@ -30,38 +30,11 @@ from qiskit.quantum_info import SparsePauliOp
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
 from ..dense_budget import require_dense_allocation
+from ..structured_log_fallback import get_structured_logger as _get_structured_logger
 from .backends import QuantumBackendDescriptor, describe_backend
 
 if TYPE_CHECKING:
     from ..mitigation.zne import ZNEResult
-
-
-def _get_structured_logger(name: str) -> Any:
-    """Return a structured logger with an optional-dependency fallback.
-
-    Parameters
-    ----------
-    name : str
-        Name assigned to the returned logger.
-
-    Returns
-    -------
-    Any
-        Structlog-compatible logger when the logging extra is available;
-        otherwise, a standard-library logger.
-
-    Notes
-    -----
-    The fallback keeps the optional ``[logging]`` extra truly optional.
-
-    """
-    try:
-        from ..logging_setup import get_logger
-
-        return get_logger(name)
-    except Exception:
-        return logging.getLogger(name)
-
 
 _slog = _get_structured_logger(__name__)
 

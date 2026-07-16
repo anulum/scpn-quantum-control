@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 836,
     "public_documentation_pages": 273,
-    "python_model_classes": 1036,
-    "python_model_source_modules": 569,
+    "python_model_classes": 1037,
+    "python_model_source_modules": 570,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1010
+    "test_files": 1011
   },
   "documentation": {
     "examples": [
@@ -2377,6 +2377,10 @@
       {
         "name": "KuramotoVariantResult",
         "path": "src/scpn_quantum_control/phase/kuramoto_variants.py"
+      },
+      {
+        "name": "KwargTolerantLoggerAdapter",
+        "path": "src/scpn_quantum_control/structured_log_fallback.py"
       },
       {
         "name": "L16Result",
@@ -5281,6 +5285,7 @@
       "src/scpn_quantum_control/ssgf/quantum_spectral.py",
       "src/scpn_quantum_control/stable_core.py",
       "src/scpn_quantum_control/stable_core_preflight.py",
+      "src/scpn_quantum_control/structured_log_fallback.py",
       "src/scpn_quantum_control/studio/benchmark_databank_bundle.py",
       "src/scpn_quantum_control/studio/coupling_invariant.py",
       "src/scpn_quantum_control/studio/coverage_frontier.py",
@@ -7369,6 +7374,7 @@
       "tests/test_stress_scale.py",
       "tests/test_structured_ansatz.py",
       "tests/test_structured_ansatz_branches.py",
+      "tests/test_structured_log_fallback.py",
       "tests/test_studio_benchmark_databank_bundle.py",
       "tests/test_studio_coupling_invariant.py",
       "tests/test_studio_evidence_bundle.py",

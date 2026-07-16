@@ -2954,6 +2954,27 @@ Stdlib `logging.getLogger(...).info(...)` calls route through the
 same structlog processor chain — ISO-UTC timestamps, log-level tag,
 stack info, context-var merging.
 
+## structured_log_fallback — kwarg-tolerant fallback
+
+Installed with the core package (no extra). Library modules obtain their
+logger through this helper so structlog-style call sites stay valid when
+the `[logging]` extra is absent:
+
+```python
+from scpn_quantum_control.structured_log_fallback import get_structured_logger
+
+log = get_structured_logger(__name__)
+log.warning("aer_unavailable", reason="boom", fallback="basic_simulator")
+```
+
+With structlog installed this returns the `logging_setup` logger; without
+it, a `KwargTolerantLoggerAdapter` folds event kwargs into the message
+(`aer_unavailable fallback='basic_simulator' reason='boom'`) instead of
+raising `TypeError` from the stdlib logger — a minimal install previously
+crashed on the first logged event (fixed 2026-07-16). Native stdlib
+kwargs (`exc_info`, `stack_info`, `stacklevel`, `extra`) pass through
+unchanged.
+
 ## accel — multi-language dispatcher
 
 The `accel/` package exposes compute functions through a

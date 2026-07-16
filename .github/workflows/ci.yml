@@ -820,6 +820,41 @@ jobs:
           python -c "from scpn_quantum_control.hardware.backends import discover_backends; print(discover_backends())"
           python -c "from scpn_quantum_control.analysis import DLAParityWitness; print(DLAParityWitness.__name__)"
 
+  minimal-install:
+    # A default `pip install scpn-quantum-control` ships no optional extras —
+    # in particular no structlog. This leg reproduces that install and drives
+    # the structured-logging fallback end to end, so structlog-style call
+    # sites can never again crash a minimal install (2026-07-16 external
+    # review: TypeError on the runner's first logged event).
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install the package with no extras
+        run: |
+          pip install .
+          pip install pytest hypothesis
+      - name: Assert structlog is absent and the kwarg fallback is selected
+        run: |
+          if python -c "import structlog" 2>/dev/null; then
+            echo "structlog unexpectedly present — this leg must run without it"
+            exit 1
+          fi
+          python - <<'PY'
+          from scpn_quantum_control.hardware import runner
+          from scpn_quantum_control.structured_log_fallback import (
+              KwargTolerantLoggerAdapter,
+          )
+          assert isinstance(runner._slog, KwargTolerantLoggerAdapter), type(runner._slog)
+          runner._slog.info("backend_connected", backend="smoke", mode="simulator")
+          PY
+      - name: Run the fallback test surface on the minimal install
+        run: pytest -q tests/test_structured_log_fallback.py tests/test_hardware_runner_branches.py
+
   differentiable-parity:
     needs: lint
     runs-on: ubuntu-latest
