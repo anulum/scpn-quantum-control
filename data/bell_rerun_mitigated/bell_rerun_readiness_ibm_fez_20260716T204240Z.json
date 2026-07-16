@@ -1,0 +1,81 @@
+{
+  "schema": "scpn_bell_rerun_mitigated_readiness_v1",
+  "timestamp_utc": "20260716T204240Z",
+  "experiment_id": "bell_rerun_mitigated_2026-07-16",
+  "preregistration": "docs/campaigns/bell_rerun_mitigated_prereg_2026-07-16.md",
+  "backend": "ibm_fez",
+  "hardware_submission": false,
+  "status": "ready_for_submission",
+  "layout": {
+    "physical_qubits": [
+      74,
+      75,
+      22,
+      23
+    ],
+    "edge_errors": [
+      0.002494720583077009,
+      0.0017977451416209544
+    ],
+    "readout_errors": [
+      0.004638671875,
+      0.002685546875,
+      0.00439453125,
+      0.0048828125
+    ]
+  },
+  "setting_angles": [
+    [
+      0.0,
+      0.7853981633974483
+    ],
+    [
+      0.0,
+      2.356194490192345
+    ],
+    [
+      1.5707963267948966,
+      0.7853981633974483
+    ],
+    [
+      1.5707963267948966,
+      2.356194490192345
+    ]
+  ],
+  "shots": 4096,
+  "calibration_shots": 8192,
+  "n_circuits": 20,
+  "transpiled_depths": [
+    12,
+    12,
+    12,
+    12,
+    1,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+  ],
+  "max_depth": 60,
+  "readout_error_abort": 0.15,
+  "estimated_qpu_seconds": 22.0,
+  "max_qpu_seconds": 60.0,
+  "seed_transpiler": 20260716,
+  "mitigation_deviation_note": "full-basis 16-state readout calibration used instead of the preregistered per-qubit circuits: the committed module (mitigation/readout_matrix.py) makes the stronger exact correction with no tensored-independence assumption",
+  "reasons": [
+    "layout readout errors within the correctable abort threshold",
+    "transpiled depths within the ceiling",
+    "estimate within the approved QPU-second cap"
+  ]
+}

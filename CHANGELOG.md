@@ -27,6 +27,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   no longer fail-fasts across platforms.
 
 ### Added
+- 2026-07-16 — Maximum-width Kuramoto-XY campaign submitter (WIDTH-1,
+  `scripts/submit_max_width_kuramoto_xy.py`, 100% line+branch tested) with a
+  new error-aware 1-D chain selector
+  (`hardware/error_aware_chain.py`, 100% line+branch tested): greedy
+  bidirectional chain growth over the calibrated coupling graph, widths
+  32 → 64 → 104 → device-max with unreachable or over-threshold widths
+  recorded (never silently dropped), all-X/all-Y order-parameter settings,
+  per-qubit readout mitigation with fail-closed non-invertible calibration,
+  and an exact Aer matrix-product-state baseline of the identical
+  Trotterised circuits (pinned to the statevector reference at small
+  widths; the Trotter-ordering hazard of simulator-side re-synthesis is
+  documented and avoided). Submission requires `--submit --confirm-budget`
+  on a green readiness document.
 - 2026-07-16 — Approval-gated mitigated Bell re-run submitter
   (`scripts/submit_bell_rerun_mitigated.py`, 100% line+branch tested):
   executes the preregistered KIMI-9 campaign — two Bell pairs, four

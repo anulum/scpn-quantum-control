@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 836,
     "public_documentation_pages": 277,
-    "python_model_classes": 1037,
-    "python_model_source_modules": 570,
+    "python_model_classes": 1038,
+    "python_model_source_modules": 571,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1014
+    "test_files": 1016
   },
   "documentation": {
     "examples": [
@@ -544,7 +544,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 73
+        "python_modules": 74
       },
       {
         "package": "identity",
@@ -929,6 +929,10 @@
       {
         "name": "CatalystCompilerWorkflowComparison",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_catalyst_comparison.py"
+      },
+      {
+        "name": "ChainSelection",
+        "path": "src/scpn_quantum_control/hardware/error_aware_chain.py"
       },
       {
         "name": "CircuitCuttingPlan",
@@ -5031,6 +5035,7 @@
       "src/scpn_quantum_control/hardware/classical.py",
       "src/scpn_quantum_control/hardware/cutting_runner.py",
       "src/scpn_quantum_control/hardware/dynq_layout_pass.py",
+      "src/scpn_quantum_control/hardware/error_aware_chain.py",
       "src/scpn_quantum_control/hardware/experiment_control.py",
       "src/scpn_quantum_control/hardware/experiment_dynamics.py",
       "src/scpn_quantum_control/hardware/experiment_mitigation.py",
@@ -6762,6 +6767,7 @@
       "tests/test_entanglement_tomography_readiness.py",
       "tests/test_entropy_qrng.py",
       "tests/test_enzyme_toolchain_execution_evidence.py",
+      "tests/test_error_aware_chain.py",
       "tests/test_error_budget.py",
       "tests/test_example_workflows.py",
       "tests/test_exclusions_ledger_drift.py",
@@ -7411,6 +7417,7 @@
       "tests/test_sub_us_tracker.py",
       "tests/test_submit_bell_rerun_mitigated.py",
       "tests/test_submit_fim_replication_zne_ibm.py",
+      "tests/test_submit_max_width_kuramoto_xy.py",
       "tests/test_submit_phase3_large_system_ibm.py",
       "tests/test_submit_s1_ibm_feedback_pair.py",
       "tests/test_submit_s1_readout_zne_ibm.py",

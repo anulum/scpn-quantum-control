@@ -27,6 +27,7 @@ from scpn_quantum_control.hardware.feedback_capability_probe import (
 )
 from scpn_quantum_control.hardware.feedback_provider_metadata import snapshot_from_qiskit_backend
 from scpn_quantum_control.hardware.feedback_submission import (
+    FeedbackSubmissionPackage,
     build_s1_feedback_submission_package,
 )
 from scpn_quantum_control.hardware.provider_capability_discovery import (
@@ -84,7 +85,7 @@ def _controller() -> RealtimeSyncFeedbackController:
     )
 
 
-def _package():
+def _package() -> FeedbackSubmissionPackage:
     return build_s1_feedback_submission_package(
         _controller(),
         experiment_id="s1_dynamic_feedback_preregistration_2026-05-06",
@@ -113,7 +114,7 @@ def load_authenticated_backend(
     backend_name: str,
     instance: str | None,
     credentials_vault: Path | None = None,
-):
+) -> Any:
     """Load a Qiskit Runtime backend from saved auth or the local credentials vault."""
     try:
         from qiskit_ibm_runtime import QiskitRuntimeService

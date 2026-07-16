@@ -7,6 +7,8 @@
 # SCPN Quantum Control — Typos Configuration
 [default.extend-words]
 # Domain-specific allowlist
+aer = "aer"           # Qiskit Aer simulator
+Aer = "Aer"           # Qiskit Aer simulator
 knm = "knm"           # K_nm coupling matrix
 ket = "ket"           # Dirac ket notation
 bra = "bra"           # Dirac bra notation
