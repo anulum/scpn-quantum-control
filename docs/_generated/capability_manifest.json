@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 836,
     "public_documentation_pages": 272,
-    "python_model_classes": 1014,
-    "python_model_source_modules": 563,
+    "python_model_classes": 1022,
+    "python_model_source_modules": 565,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 999
+    "test_files": 1002
   },
   "documentation": {
     "examples": [
@@ -474,7 +474,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 30
+        "python_modules": 31
       },
       {
         "package": "bridge",
@@ -539,7 +539,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 71
+        "python_modules": 72
       },
       {
         "package": "identity",
@@ -2354,8 +2354,24 @@
         "path": "src/scpn_quantum_control/bridge/phase_artifact.py"
       },
       {
+        "name": "LayoutComparisonArtifact",
+        "path": "src/scpn_quantum_control/benchmarks/layout_method_comparison.py"
+      },
+      {
+        "name": "LayoutComparisonConfig",
+        "path": "src/scpn_quantum_control/benchmarks/layout_method_comparison.py"
+      },
+      {
         "name": "LayoutCost",
         "path": "src/scpn_quantum_control/hardware/kuramoto_layout_cost.py"
+      },
+      {
+        "name": "LayoutSearchConfig",
+        "path": "src/scpn_quantum_control/hardware/kuramoto_layout_optimiser.py"
+      },
+      {
+        "name": "LayoutSearchResult",
+        "path": "src/scpn_quantum_control/hardware/kuramoto_layout_optimiser.py"
       },
       {
         "name": "LeastSquaresCovarianceResult",
@@ -2468,6 +2484,14 @@
       {
         "name": "MagicScanResult",
         "path": "src/scpn_quantum_control/analysis/magic_nonstabilizerness.py"
+      },
+      {
+        "name": "MethodRow",
+        "path": "src/scpn_quantum_control/benchmarks/layout_method_comparison.py"
+      },
+      {
+        "name": "MetricsProvider",
+        "path": "src/scpn_quantum_control/benchmarks/layout_method_comparison.py"
       },
       {
         "name": "MitigateActionHandler",
@@ -3958,6 +3982,10 @@
         "path": "src/scpn_quantum_control/analysis/rl_pulse_optimizer.py"
       },
       {
+        "name": "RProvider",
+        "path": "src/scpn_quantum_control/benchmarks/layout_method_comparison.py"
+      },
+      {
         "name": "RabiCalibrationPoint",
         "path": "src/scpn_quantum_control/hardware/openpulse_control.py"
       },
@@ -4084,6 +4112,10 @@
       {
         "name": "RobustnessCertificate",
         "path": "src/scpn_quantum_control/identity/robustness.py"
+      },
+      {
+        "name": "RoutedLayoutMetrics",
+        "path": "src/scpn_quantum_control/benchmarks/layout_method_comparison.py"
       },
       {
         "name": "RustProgramADInterpreterResult",
@@ -4778,6 +4810,7 @@
       "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py",
       "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py",
       "src/scpn_quantum_control/benchmarks/kuramoto_external_competitors.py",
+      "src/scpn_quantum_control/benchmarks/layout_method_comparison.py",
       "src/scpn_quantum_control/benchmarks/mps_baseline.py",
       "src/scpn_quantum_control/benchmarks/open_system_objective_evidence.py",
       "src/scpn_quantum_control/benchmarks/quantum_advantage.py",
@@ -4966,6 +4999,7 @@
       "src/scpn_quantum_control/hardware/jax_accel.py",
       "src/scpn_quantum_control/hardware/job_dossier.py",
       "src/scpn_quantum_control/hardware/kuramoto_layout_cost.py",
+      "src/scpn_quantum_control/hardware/kuramoto_layout_optimiser.py",
       "src/scpn_quantum_control/hardware/noise_model.py",
       "src/scpn_quantum_control/hardware/openpulse_control.py",
       "src/scpn_quantum_control/hardware/pennylane_adapter.py",
@@ -6791,6 +6825,7 @@
       "tests/test_kuramoto_handbook_workflow_example.py",
       "tests/test_kuramoto_input_hardening.py",
       "tests/test_kuramoto_layout_cost.py",
+      "tests/test_kuramoto_layout_optimiser.py",
       "tests/test_kuramoto_public_face_hygiene.py",
       "tests/test_kuramoto_relocation_shims.py",
       "tests/test_kuramoto_standalone_package_decision.py",
@@ -6800,6 +6835,7 @@
       "tests/test_lattice_branches.py",
       "tests/test_layer_selective_comparator_matrix.py",
       "tests/test_layer_selective_readiness.py",
+      "tests/test_layout_method_comparison.py",
       "tests/test_lean_phase_import.py",
       "tests/test_lindblad.py",
       "tests/test_lindblad_branches.py",
@@ -7205,6 +7241,7 @@
       "tests/test_robustness_certificate.py",
       "tests/test_run_decisive_advantage_benchmark.py",
       "tests/test_run_dla_parity_suite_cli.py",
+      "tests/test_run_layout_method_comparison.py",
       "tests/test_run_quantum_ssgf_descent.py",
       "tests/test_runner_guards.py",
       "tests/test_rust_accel_import_resilience.py",

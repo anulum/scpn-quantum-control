@@ -314,6 +314,37 @@ manifest (default) or runs the classical baselines and writes the artifact
 
 ---
 
+### 2d. `layout_method_comparison` — DynQ vs Optimiser vs SABRE
+
+Compares three layout methods for the XY-Trotter circuit on one problem,
+coupling map, and calibration set: the DynQ layout as-is, the DynQ layout
+refined by the discrete Kuramoto optimiser
+(`hardware/kuramoto_layout_optimiser.py`), and Qiskit's SABRE. Routed depth and
+two-qubit gate counts are *measured* on the transpiled circuits (shared basis,
+seeded routing — reproducible); the success probability is an *analytic model*
+(product of `1 − gate_error` over every routed two-qubit gate priced at its
+calibrated edge), and `R proxy = p · R_ideal` degrades the method-independent
+ideal order parameter under a global depolarising model. Neither model is a
+hardware measurement, and the artifact says so in its notes.
+
+| Symbol | Purpose |
+|--------|---------|
+| `LayoutComparisonConfig` | Run inputs (`t`, `reps`, `order`, shared `seed`, DynQ and search settings) |
+| `LayoutComparisonArtifact` | Serialisable record: rows, `r_ideal`, host verdict, provenance, honest labels; renders the Markdown table |
+| `run_layout_method_comparison(gate_errors, K, omega, ...)` | Full comparison; fails closed when no DynQ region fits |
+| `routed_layout_metrics` | Measured depth/2Q-count + calibration-priced success model (injectable) |
+| `ideal_xy_order_parameter` | Exact statevector `R` of the compiled circuit (injectable) |
+| `coupling_map_from_gate_errors` | Symmetric `CouplingMap` over the calibrated edges |
+
+The providers (`r_provider`, `metrics_provider`, `depth_provider`) are
+injectable, so the assembly logic is fully testable without transpilation; the
+default depth provider is wrapped with the run seed for a reproducible
+optimiser cost landscape. Measured results and the honest reading live in
+`dynq_qubit_mapping.md` §8.4; the CLI is
+`scripts/run_layout_method_comparison.py`.
+
+---
+
 ### 3. `gpu_baseline` — GPU vs QPU Comparison
 
 Estimates GPU resources needed for statevector simulation and compares

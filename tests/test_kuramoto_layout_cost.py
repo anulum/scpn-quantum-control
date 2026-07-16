@@ -206,3 +206,14 @@ class TestRoutedDepthAdapter:
         )
         assert cost.routed_depth > 0
         assert cost.total > 0.0
+
+    def test_seeded_routing_is_reproducible(self) -> None:
+        coupling_map = CouplingMap([[0, 1], [1, 2], [2, 3]])
+        depths = [
+            routed_layout_depth(
+                (3, 1, 0, 2), _K, _OMEGA, coupling_map, t=0.1, reps=1, seed_transpiler=11
+            )
+            for _ in range(2)
+        ]
+        assert depths[0] == depths[1]
+        assert depths[0] > 0

@@ -1,0 +1,134 @@
+{
+  "config": {
+    "dynq_min_qubits": 3,
+    "dynq_resolution": 1.0,
+    "optimization_level": 1,
+    "order": 1,
+    "reps": 5,
+    "reserved_core": 0,
+    "search": {
+      "max_sweeps": 20,
+      "n_restarts": 4,
+      "order": 1,
+      "reps": 5,
+      "seed": 7,
+      "t": 0.1,
+      "weights": null
+    },
+    "seed": 7,
+    "t": 0.1
+  },
+  "host": {
+    "blockers": [
+      "cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
+      "host load 30.18 exceeds the isolated threshold 1.00; quiesce concurrent jobs"
+    ],
+    "frequency_mhz": 3800.038,
+    "governor": "powersave",
+    "governor_is_stable": false,
+    "load_average": [
+      30.1767578125,
+      24.31884765625,
+      17.142578125
+    ],
+    "load_is_low": false,
+    "ready": false,
+    "reserved_core": 0
+  },
+  "notes": [
+    "estimated_success_probability and r_noisy_proxy are analytic models (per-edge calibration product, global depolarising), not hardware measurements",
+    "r_ideal is method-independent: every layout routes the same logical unitary",
+    "selection wall-times measured on a shared host: advisory only"
+  ],
+  "provenance": {
+    "command": "scripts/run_layout_method_comparison.py",
+    "dependencies": {
+      "numpy": "2.2.6",
+      "python": "3.12.13",
+      "qiskit": "2.4.1",
+      "quimb": "not installed",
+      "qutip": "5.2.3",
+      "scipy": "1.15.3"
+    },
+    "git_commit": "c09018a0d7c9dfee870cab404a20bd1c97a8f54d",
+    "optimiser": {
+      "best_cost": {
+        "depth_term": 98.0,
+        "infidelity_term": 0.0028000000000000247,
+        "mean_gate_fidelity": 0.9972,
+        "routed_depth": 98,
+        "total": 98.0068,
+        "trotter_error": 0.004000000000000001,
+        "trotter_error_term": 0.004000000000000001
+      },
+      "best_layout": [
+        2,
+        1,
+        0,
+        3
+      ],
+      "converged": true,
+      "n_evaluations": 22,
+      "n_restarts": 4
+    }
+  },
+  "r_ideal": 0.931300625553986,
+  "rows": [
+    {
+      "estimated_success_probability": 0.7958490523098667,
+      "layout": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "method": "dynq",
+      "notes": [
+        "estimated_success_probability and r_noisy_proxy are analytic models (per-edge calibration product, global depolarising), not hardware measurements"
+      ],
+      "r_ideal": 0.931300625553986,
+      "r_noisy_proxy": 0.7411747202627258,
+      "routed_depth": 104,
+      "selection_time_s": 0.01882771891541779,
+      "two_qubit_gates": 81
+    },
+    {
+      "estimated_success_probability": 0.8062840547176926,
+      "layout": [
+        2,
+        1,
+        0,
+        3
+      ],
+      "method": "dynq+kuramoto_opt",
+      "notes": [
+        "estimated_success_probability and r_noisy_proxy are analytic models (per-edge calibration product, global depolarising), not hardware measurements"
+      ],
+      "r_ideal": 0.931300625553986,
+      "r_noisy_proxy": 0.7508928445327914,
+      "routed_depth": 98,
+      "selection_time_s": 8.245492301881313,
+      "two_qubit_gates": 78
+    },
+    {
+      "estimated_success_probability": 0.4027989561333291,
+      "layout": [
+        6,
+        5,
+        4,
+        7
+      ],
+      "method": "sabre",
+      "notes": [
+        "estimated_success_probability and r_noisy_proxy are analytic models (per-edge calibration product, global depolarising), not hardware measurements"
+      ],
+      "r_ideal": 0.931300625553986,
+      "r_noisy_proxy": 0.37512691981946195,
+      "routed_depth": 98,
+      "selection_time_s": 0.052398695959709585,
+      "two_qubit_gates": 78
+    }
+  ],
+  "schema_version": "1.0",
+  "timing_grade": "advisory_shared_host"
+}

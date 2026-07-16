@@ -205,6 +205,11 @@ from .kuramoto_layout_cost import (
     kuramoto_layout_cost,
     routed_layout_depth,
 )
+from .kuramoto_layout_optimiser import (
+    LayoutSearchConfig,
+    LayoutSearchResult,
+    optimise_kuramoto_layout,
+)
 from .noise_model import heron_r2_noise_model
 from .openpulse_control import (
     OpenPulseCalibrationWorkflow,
@@ -431,6 +436,9 @@ __all__ = [
     "dynq_mean_gate_fidelity",
     "kuramoto_layout_cost",
     "routed_layout_depth",
+    "LayoutSearchConfig",
+    "LayoutSearchResult",
+    "optimise_kuramoto_layout",
     "S1_CONTROL_ARM",
     "S1_FEEDBACK_ARM",
     "S1FeedbackArmCircuit",

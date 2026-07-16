@@ -706,9 +706,49 @@ print(cost.total, cost.routed_depth)
 
 `routed_layout_depth` (the impure Qiskit-routing term) is injectable via the
 `depth_provider` argument, so the cost function stays pure and side-effect-free
-for the KT-3 optimiser loop, and tests can supply a deterministic depth model.
-The discrete optimiser and the benchmark against DynQ+SABRE are §8-forward work
-(KT-3).
+for the optimiser loop, and tests can supply a deterministic depth model.
+Qiskit routing is stochastic when unseeded, so `routed_layout_depth` accepts a
+`seed_transpiler` argument; pass it whenever the depth feeds a reproducible
+cost landscape (the §7.5 optimiser and the §8.4 comparison both do).
+
+### 7.5 Discrete Layout Optimiser over the Kuramoto-XY Cost
+
+`hardware/kuramoto_layout_optimiser.py` minimises the §7.4 cost over injective
+placements of the `n` logical qubits onto a candidate physical-qubit set
+(typically the DynQ selected region). The search is multi-restart
+best-improvement hill climbing over two move types:
+
+- **swap** — exchange the physical qubits of two logical qubits;
+- **relocate** — move one logical qubit onto an unused candidate physical
+  qubit (available when the candidate set is larger than the circuit).
+
+The first restart is seeded by `initial_layout` (typically the DynQ layout),
+so the optimiser never returns a layout worse than its seed on the same cost;
+later restarts start from seeded random permutations, making the whole search
+deterministic for a fixed `LayoutSearchConfig`. Costs are memoised per layout
+tuple; `LayoutSearchResult.n_evaluations` counts *distinct* layouts scored,
+and `converged` reports whether every restart reached a local optimum rather
+than exhausting `max_sweeps`.
+
+```python
+from scpn_quantum_control.hardware import (
+    LayoutSearchConfig, dynq_mean_gate_fidelity, optimise_kuramoto_layout,
+)
+
+mapping = dynq_initial_layout(gate_errors, circuit_width=4, seed=7)
+result = optimise_kuramoto_layout(
+    K, omega, coupling_map,
+    physical_qubits=tuple(sorted(mapping.selected_region.qubits)),
+    mean_gate_fidelity=dynq_mean_gate_fidelity(mapping),
+    config=LayoutSearchConfig(seed=7),
+    initial_layout=tuple(mapping.initial_layout),
+)
+print(result.best_layout, result.best_cost.total, result.converged)
+```
+
+The benchmark against DynQ and SABRE lives in
+`benchmarks/layout_method_comparison.py` (path-import, like every benchmarks
+module) and is measured in §8.4.
 
 ---
 
@@ -744,6 +784,47 @@ On the two-cluster synthetic topology:
 
 DynQ achieves 75% lower average gate error and 17% lower circuit depth
 by avoiding the high-error bridge coupler entirely.
+
+### 8.4 Layout-Method Comparison: DynQ vs DynQ+Optimiser vs SABRE (Measured)
+
+Measured by `scripts/run_layout_method_comparison.py` on the synthetic
+two-cluster topology (8 qubits: a low-error cluster 0–3, a high-error bridge
+coupler (3, 4) with error 0.05, a noisier cluster 4–7), 4-qubit all-to-all XY
+problem, `t = 0.1`, `reps = 5`, shared seed 7. Reproduce with:
+
+```bash
+PYTHONPATH=. python scripts/run_layout_method_comparison.py
+```
+
+| Method | Layout | Routed depth | 2Q gates | Est. success prob. | R proxy | Selection time (s) |
+|---|---|---|---|---|---|---|
+| dynq | [0, 1, 2, 3] | 104 | 81 | 0.7958 | 0.7412 | 0.019 |
+| dynq+kuramoto_opt | [2, 1, 0, 3] | **98** | **78** | **0.8063** | **0.7509** | 8.245 |
+| sabre | [6, 5, 4, 7] | 98 | 78 | 0.4028 | 0.3751 | 0.052 |
+
+Reading the table honestly:
+
+- **Routed depth and 2Q gate counts are measured** on the transpiled circuits
+  (shared basis `cx/rz/rx/ry`, optimisation level 1, seeded routing — the run
+  is reproducible).
+- **Estimated success probability and R proxy are analytic models, not
+  hardware measurements**: the success probability is the product of
+  `1 − gate_error` over every routed two-qubit gate priced at its calibrated
+  edge, and `R proxy = p · R_ideal` under a global depolarising model, with
+  `R_ideal = 0.9313` method-independent (every layout routes the same logical
+  unitary).
+- **The optimiser beats plain DynQ on every metric** (depth 104 → 98, 2Q gates
+  81 → 78, success probability 0.796 → 0.806) and matches SABRE's depth while
+  keeping the low-error cluster: SABRE, being fidelity-blind, places the
+  circuit on the noisier cluster and pays for it in the success model
+  (0.403 vs 0.806).
+- **Selection wall-times are advisory**: measured on the shared development
+  workstation (host-isolation grade `advisory_shared_host`), and the optimiser
+  time includes its transpile-per-candidate search loop (22 distinct layouts
+  scored). None of these numbers is a hardware-execution claim.
+
+The full artifact (rows, host verdict, provenance, honest-labelling notes) is
+written to `data/layout_method_comparison/`.
 
 ---
 
@@ -804,6 +885,21 @@ by avoiding the high-error bridge coupler entirely.
 |------|-------------|-----------|
 | `test_dynq_community_detection` | DynQ in pipeline context | Regions detected |
 | `test_dynq_full_pipeline` | Full DynQ pipeline | Layout assigned |
+
+### 9.8 Layout Cost, Optimiser, and Comparison Suites
+
+The §7.4/§7.5/§8.4 surfaces carry their own dedicated test modules, each at
+100% line+branch coverage:
+
+- `test_kuramoto_layout_cost.py` — cost weights, validation, pure combinator,
+  routed-depth adapter (including seeded-routing reproducibility);
+- `test_kuramoto_layout_optimiser.py` — search-space validation, neighbourhood
+  structure, hill-climbing on controlled landscapes, determinism, memoisation,
+  convergence flags;
+- `test_layout_method_comparison.py` — serialisation, problem validation, the
+  calibration-priced success model, real routing metrics, and the full
+  comparison run (stubbed and real-transpilation paths);
+- `test_run_layout_method_comparison.py` — CLI wiring for the §8.4 script.
 
 ---
 

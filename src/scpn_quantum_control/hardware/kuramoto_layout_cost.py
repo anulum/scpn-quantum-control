@@ -175,6 +175,7 @@ def routed_layout_depth(
     reps: int,
     basis_gates: tuple[str, ...] = _DEFAULT_BASIS_GATES,
     optimization_level: int = 1,
+    seed_transpiler: int | None = None,
 ) -> int:
     """Return the post-routing depth of the XY-Trotter circuit under ``layout``.
 
@@ -200,6 +201,10 @@ def routed_layout_depth(
         Target basis for transpilation.
     optimization_level
         Qiskit optimisation level for routing.
+    seed_transpiler
+        Transpiler seed; Qiskit routing is stochastic when unseeded, so pass a
+        seed whenever the depth feeds a reproducible cost landscape (the KT-3
+        optimiser and the layout-method comparison do).
 
     Returns
     -------
@@ -215,6 +220,7 @@ def routed_layout_depth(
         initial_layout=list(layout),
         basis_gates=list(basis_gates),
         optimization_level=optimization_level,
+        seed_transpiler=seed_transpiler,
     )
     return int(routed.depth())
 
