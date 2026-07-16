@@ -1,0 +1,151 @@
+{
+  "schema": "scpn_onqpu_dynamic_feedback_raw_counts_v1",
+  "experiment_id": "onqpu_dynamic_feedback_2026-07-16",
+  "preregistration": "docs/campaigns/onqpu_dynamic_feedback_prereg_2026-07-16.md",
+  "backend": "ibm_fez",
+  "job_id": "d9cmpvaneu4c739m64fg",
+  "timestamp_utc": "20260716T234459Z",
+  "layout": {
+    "system_qubits": [
+      142,
+      136,
+      144
+    ],
+    "monitor_qubit": 143,
+    "edge_errors": [
+      0.0023074177658364003,
+      0.0016954321856700316,
+      0.0024233010667241706
+    ],
+    "readout_errors": [
+      0.004150390625,
+      0.005615234375,
+      0.00439453125,
+      0.006591796875
+    ]
+  },
+  "shots": 4096,
+  "calibration_shots": 8192,
+  "seed_transpiler": 20260716,
+  "results": [
+    {
+      "pub_index": 0,
+      "label": "rc1_feedback_on_rounds2",
+      "readout_counts": {
+        "000": 2525,
+        "001": 671,
+        "110": 84,
+        "100": 271,
+        "010": 248,
+        "011": 150,
+        "111": 41,
+        "101": 106
+      },
+      "monitor_counts": {
+        "00": 3618,
+        "01": 172,
+        "10": 279,
+        "11": 27
+      }
+    },
+    {
+      "pub_index": 1,
+      "label": "rc1_feedback_off_rounds2",
+      "readout_counts": {
+        "100": 319,
+        "000": 2288,
+        "010": 244,
+        "001": 897,
+        "110": 94,
+        "101": 67,
+        "011": 146,
+        "111": 41
+      },
+      "monitor_counts": {
+        "00": 3597,
+        "01": 208,
+        "10": 265,
+        "11": 26
+      }
+    },
+    {
+      "pub_index": 2,
+      "label": "rc1_feedback_on_rounds3",
+      "readout_counts": {
+        "000": 2114,
+        "110": 170,
+        "100": 382,
+        "010": 543,
+        "011": 169,
+        "111": 96,
+        "001": 468,
+        "101": 154
+      },
+      "monitor_counts": {
+        "000": 3539,
+        "100": 283,
+        "001": 123,
+        "010": 93,
+        "101": 13,
+        "110": 30,
+        "011": 9,
+        "111": 6
+      }
+    },
+    {
+      "pub_index": 3,
+      "label": "rc1_feedback_off_rounds3",
+      "readout_counts": {
+        "000": 1776,
+        "010": 346,
+        "001": 972,
+        "100": 346,
+        "011": 241,
+        "110": 152,
+        "111": 80,
+        "101": 183
+      },
+      "monitor_counts": {
+        "100": 286,
+        "000": 3383,
+        "010": 126,
+        "011": 28,
+        "001": 218,
+        "101": 28,
+        "110": 18,
+        "111": 9
+      }
+    },
+    {
+      "pub_index": 4,
+      "label": "rc1_cal0",
+      "counts": {
+        "0000": 8154,
+        "0010": 5,
+        "0100": 12,
+        "0001": 11,
+        "1000": 10
+      }
+    },
+    {
+      "pub_index": 5,
+      "label": "rc1_cal1",
+      "counts": {
+        "1111": 7905,
+        "0111": 102,
+        "1011": 46,
+        "1110": 64,
+        "1101": 72,
+        "0110": 2,
+        "0101": 1
+      }
+    }
+  ],
+  "approval": {
+    "approval_id": "onqpu_dynamic_feedback_2026-07-16",
+    "approver": "Miroslav Sotek",
+    "package_hash": "325d5d46cc4d81861f690417fb8672e147e1af9ddddbd10c84ffcdce1f39a9cd",
+    "max_qpu_seconds": 120.0,
+    "allowed_provider": "ibm_runtime"
+  }
+}

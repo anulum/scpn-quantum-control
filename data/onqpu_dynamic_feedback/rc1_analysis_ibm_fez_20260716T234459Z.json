@@ -1,0 +1,178 @@
+{
+  "schema": "scpn_onqpu_dynamic_feedback_analysis_v1",
+  "experiment_id": "onqpu_dynamic_feedback_2026-07-16",
+  "preregistration": "docs/campaigns/onqpu_dynamic_feedback_prereg_2026-07-16.md",
+  "round_settings": [
+    {
+      "n_rounds": 2,
+      "comparison": {
+        "tvd": 0.0693359375,
+        "tvd_sigma_multinomial_approximation": 0.00859661643763229,
+        "sigma_note": "independent-bin multinomial approximation",
+        "per_bin": [
+          {
+            "bitstring": "000",
+            "p_feedback_on": 0.616455078125,
+            "p_feedback_off": 0.55859375,
+            "delta": 0.057861328125,
+            "sigma": 0.01085915003408881,
+            "z_score": 5.328347793645264
+          },
+          {
+            "bitstring": "001",
+            "p_feedback_on": 0.163818359375,
+            "p_feedback_off": 0.218994140625,
+            "delta": -0.05517578125,
+            "sigma": 0.008671770994640966,
+            "z_score": -6.362688922954477
+          },
+          {
+            "bitstring": "010",
+            "p_feedback_on": 0.060546875,
+            "p_feedback_off": 0.0595703125,
+            "delta": 0.0009765625,
+            "sigma": 0.0052501544177529355,
+            "z_score": 0.1860064337722791
+          },
+          {
+            "bitstring": "011",
+            "p_feedback_on": 0.03662109375,
+            "p_feedback_off": 0.03564453125,
+            "delta": 0.0009765625,
+            "sigma": 0.004123756556329375,
+            "z_score": 0.23681380960792087
+          },
+          {
+            "bitstring": "100",
+            "p_feedback_on": 0.066162109375,
+            "p_feedback_off": 0.077880859375,
+            "delta": -0.01171875,
+            "sigma": 0.0057111483753830225,
+            "z_score": -2.05190781778876
+          },
+          {
+            "bitstring": "101",
+            "p_feedback_on": 0.02587890625,
+            "p_feedback_off": 0.016357421875,
+            "delta": 0.009521484375,
+            "sigma": 0.003175338514107828,
+            "z_score": 2.9985730128289148
+          },
+          {
+            "bitstring": "110",
+            "p_feedback_on": 0.0205078125,
+            "p_feedback_off": 0.02294921875,
+            "delta": -0.00244140625,
+            "sigma": 0.003221547412845312,
+            "z_score": -0.7578365105741898
+          },
+          {
+            "bitstring": "111",
+            "p_feedback_on": 0.010009765625,
+            "p_feedback_off": 0.010009765625,
+            "delta": 0.0,
+            "sigma": 0.002199694827148589,
+            "z_score": 0.0
+          }
+        ]
+      },
+      "monitor_trigger_rates": {
+        "feedback_on": [
+          0.048583984375,
+          0.07470703125
+        ],
+        "feedback_off": [
+          0.05712890625,
+          0.071044921875
+        ]
+      }
+    },
+    {
+      "n_rounds": 3,
+      "comparison": {
+        "tvd": 0.147705078125,
+        "tvd_sigma_multinomial_approximation": 0.009319848799352068,
+        "sigma_note": "independent-bin multinomial approximation",
+        "per_bin": [
+          {
+            "bitstring": "000",
+            "p_feedback_on": 0.51611328125,
+            "p_feedback_off": 0.43359375,
+            "delta": 0.08251953125,
+            "sigma": 0.010996832064781645,
+            "z_score": 7.503936657746761
+          },
+          {
+            "bitstring": "001",
+            "p_feedback_on": 0.1142578125,
+            "p_feedback_off": 0.2373046875,
+            "delta": -0.123046875,
+            "sigma": 0.00830030439914509,
+            "z_score": -14.824381020613353
+          },
+          {
+            "bitstring": "010",
+            "p_feedback_on": 0.132568359375,
+            "p_feedback_off": 0.08447265625,
+            "delta": 0.048095703125,
+            "sigma": 0.006852431281572575,
+            "z_score": 7.018779342499651
+          },
+          {
+            "bitstring": "011",
+            "p_feedback_on": 0.041259765625,
+            "p_feedback_off": 0.058837890625,
+            "delta": -0.017578125,
+            "sigma": 0.004814259789281629,
+            "z_score": -3.6512622437068276
+          },
+          {
+            "bitstring": "100",
+            "p_feedback_on": 0.09326171875,
+            "p_feedback_off": 0.08447265625,
+            "delta": 0.0087890625,
+            "sigma": 0.006287019217023359,
+            "z_score": 1.3979697208816955
+          },
+          {
+            "bitstring": "101",
+            "p_feedback_on": 0.03759765625,
+            "p_feedback_off": 0.044677734375,
+            "delta": -0.007080078125,
+            "sigma": 0.004387974815181591,
+            "z_score": -1.6135184050063878
+          },
+          {
+            "bitstring": "110",
+            "p_feedback_on": 0.04150390625,
+            "p_feedback_off": 0.037109375,
+            "delta": 0.00439453125,
+            "sigma": 0.004293709097987403,
+            "z_score": 1.0234813653444421
+          },
+          {
+            "bitstring": "111",
+            "p_feedback_on": 0.0234375,
+            "p_feedback_off": 0.01953125,
+            "delta": 0.00390625,
+            "sigma": 0.0032036190117213648,
+            "z_score": 1.2193241411378373
+          }
+        ]
+      },
+      "monitor_trigger_rates": {
+        "feedback_on": [
+          0.036865234375,
+          0.03369140625,
+          0.0810546875
+        ],
+        "feedback_off": [
+          0.069091796875,
+          0.044189453125,
+          0.083251953125
+        ]
+      }
+    }
+  ],
+  "claim_boundary": "on-QPU vendor-executed feedback evidence only; no external-FPGA control, no latency numbers from queue or backend wall time, no synchronisation-protection claim beyond the executed observable"
+}
