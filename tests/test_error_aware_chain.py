@@ -163,6 +163,87 @@ class TestSelectErrorAwareChain:
         assert select_error_aware_chain({}, {}, 2) is None
 
 
+def t_junction_graph() -> tuple[dict[tuple[int, int], float], dict[int, float]]:
+    """A greedy trap: a cheap dead-end branch off a 7-qubit line.
+
+    The cheapest edge (3, 7) seeds the greedy walk into the two-qubit spur
+    7-8, wasting qubit 3's line position; the longest simple path is the
+    plain line 0..6 (7 qubits), which only backtracking recovers.
+    """
+    gates = {
+        (0, 1): 0.01,
+        (1, 2): 0.01,
+        (2, 3): 0.01,
+        (3, 4): 0.01,
+        (4, 5): 0.01,
+        (5, 6): 0.01,
+        (3, 7): 0.0001,
+        (7, 8): 0.0001,
+    }
+    readouts = {index: 0.01 for index in range(9)}
+    return gates, readouts
+
+
+class TestBacktrackingSearch:
+    def test_greedy_alone_dead_ends_in_the_spur(self) -> None:
+        # Every greedy walk reaching qubit 3 takes the cheap spur and ends
+        # trapped at 8, so no seed recovers the full 7-qubit line.
+        gates, readouts = t_junction_graph()
+        greedy = longest_error_aware_chain(gates, readouts, seed_count=4)
+        assert greedy is not None
+        assert greedy.length < 7
+        assert 8 in greedy.qubits
+
+    def test_backtracking_recovers_the_full_line(self) -> None:
+        gates, readouts = t_junction_graph()
+        selection = longest_error_aware_chain(gates, readouts, seed_count=4, backtrack_steps=1000)
+        assert selection is not None
+        assert selection.length == 7
+        assert set(selection.qubits) == set(range(7))
+
+    def test_select_by_length_uses_the_backtracking_budget(self) -> None:
+        gates, readouts = t_junction_graph()
+        assert select_error_aware_chain(gates, readouts, 7, seed_count=4) is None
+        selection = select_error_aware_chain(
+            gates, readouts, 7, seed_count=4, backtrack_steps=1000
+        )
+        assert selection is not None
+        assert selection.length == 7
+
+    def test_exhausted_budget_still_returns_the_best_partial(self) -> None:
+        gates, readouts = t_junction_graph()
+        selection = longest_error_aware_chain(gates, readouts, seed_count=1, backtrack_steps=1)
+        assert selection is not None
+        assert selection.length >= 2
+
+    def test_negative_budget_fails_closed(self) -> None:
+        gates, readouts = t_junction_graph()
+        with pytest.raises(ValueError, match="backtrack_steps"):
+            longest_error_aware_chain(gates, readouts, backtrack_steps=-1)
+        with pytest.raises(ValueError, match="backtrack_steps"):
+            select_error_aware_chain(gates, readouts, 3, backtrack_steps=-1)
+
+    def test_deterministic_across_repeat_calls(self) -> None:
+        gates, readouts = t_junction_graph()
+        first = longest_error_aware_chain(gates, readouts, backtrack_steps=500)
+        second = longest_error_aware_chain(gates, readouts, backtrack_steps=500)
+        assert first is not None and second is not None
+        assert first.qubits == second.qubits
+
+    def test_heavy_hex_like_ring_with_spurs_reaches_full_coverage(self) -> None:
+        # A 12-ring with a pendant qubit on every even node: the longest
+        # simple path is 12 + 2 = 14 (walk the ring, ending on two pendants).
+        gates: dict[tuple[int, int], float] = {(i, (i + 1) % 12): 0.01 for i in range(12)}
+        for even in range(0, 12, 2):
+            gates[(even, 20 + even)] = 0.001
+        readouts = {q: 0.01 for q in list(range(12)) + [20 + e for e in range(0, 12, 2)]}
+        selection = longest_error_aware_chain(
+            gates, readouts, seed_count=4, backtrack_steps=50_000
+        )
+        assert selection is not None
+        assert selection.length >= 13
+
+
 class TestLongestErrorAwareChain:
     def test_line_yields_its_full_length(self) -> None:
         gates, readouts = line_graph(7)

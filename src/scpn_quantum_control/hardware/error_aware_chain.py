@@ -20,7 +20,12 @@ qubits — the same scoring convention as the DynQ calibration graph.
 Greedy bidirectional growth is a heuristic (maximum simple path is NP-hard);
 restarting from several seed edges and keeping the best chain makes it
 robust on heavy-hex topologies while staying deterministic for a given
-calibration snapshot.
+calibration snapshot. Greedy alone dead-ends well short of the device on
+heavy-hex (51 of 156 qubits on a real Heron r2 snapshot), so both entry
+points also take a ``backtrack_steps`` budget: a deterministic
+depth-first search with score-ordered children that backtracks out of
+dead ends until the budget is spent, which reaches near-device-spanning
+chains at a bounded, deterministic cost.
 """
 
 from __future__ import annotations
@@ -137,6 +142,52 @@ def _grow_chain(
     return chain
 
 
+def _dfs_longest(
+    seed: tuple[int, int],
+    adjacency: Mapping[int, Mapping[int, float]],
+    step_budget: int,
+    target_length: int | None,
+) -> list[int]:
+    """Deterministic DFS chain growth from ``seed`` with backtracking.
+
+    Children are explored in ascending edge-score order, so the first
+    completed chain follows the greedy path and backtracking then unwinds
+    dead ends. The search charges one step per extension attempt and stops
+    when the budget is spent, the target length is reached, or the space is
+    exhausted; the longest chain seen is returned.
+    """
+    chain = [seed[0], seed[1]]
+    visited = {seed[0], seed[1]}
+    best = list(chain)
+    steps_left = step_budget
+
+    def extend() -> bool:
+        nonlocal steps_left, best
+        if len(chain) > len(best):
+            best = list(chain)
+        if target_length is not None and len(chain) >= target_length:
+            return True
+        tail = chain[-1]
+        for _score, neighbour in sorted(
+            (score, neighbour)
+            for neighbour, score in adjacency[tail].items()
+            if neighbour not in visited
+        ):
+            if steps_left <= 0:
+                return False
+            steps_left -= 1
+            chain.append(neighbour)
+            visited.add(neighbour)
+            if extend():
+                return True
+            chain.pop()
+            visited.remove(neighbour)
+        return False
+
+    extend()
+    return best
+
+
 def _chain_selection(
     chain: list[int],
     gate_errors: Mapping[tuple[int, int], float],
@@ -180,17 +231,32 @@ def _seed_edges(
     return ranked[:seed_count]
 
 
+def _candidate_chains(
+    seed: tuple[int, int],
+    adjacency: Mapping[int, Mapping[int, float]],
+    target_length: int | None,
+    backtrack_steps: int,
+) -> list[list[int]]:
+    """Chains grown from one seed: greedy, plus both DFS orientations."""
+    chains = [_grow_chain(seed, adjacency, target_length)]
+    if backtrack_steps > 0:
+        chains.append(_dfs_longest(seed, adjacency, backtrack_steps, target_length))
+        chains.append(_dfs_longest((seed[1], seed[0]), adjacency, backtrack_steps, target_length))
+    return chains
+
+
 def select_error_aware_chain(
     gate_errors: Mapping[tuple[int, int], float],
     readout_errors: Mapping[int, float],
     length: int,
     *,
     seed_count: int = DEFAULT_SEED_COUNT,
+    backtrack_steps: int = 0,
 ) -> ChainSelection | None:
     """Select an ordered chain of ``length`` qubits minimising the error score.
 
-    Grows greedy chains from the ``seed_count`` lowest-error edges and returns
-    the reachable chain of exactly ``length`` qubits with the smallest total
+    Grows chains from the ``seed_count`` lowest-error edges and returns the
+    reachable chain of exactly ``length`` qubits with the smallest total
     score, or ``None`` when no seed reaches the requested length. The result
     is deterministic for a given calibration snapshot.
 
@@ -205,21 +271,26 @@ def select_error_aware_chain(
         Requested chain width; must be at least two.
     seed_count:
         Number of lowest-error seed edges to restart from.
+    backtrack_steps:
+        Extra depth-first backtracking budget per seed and orientation;
+        zero keeps the pure greedy behaviour.
     """
     if length < 2:
         raise ValueError("chain length must be at least 2")
     if seed_count < 1:
         raise ValueError("seed_count must be at least 1")
+    if backtrack_steps < 0:
+        raise ValueError("backtrack_steps must be non-negative")
     canonical = _canonical_gate_errors(gate_errors)
     adjacency = _calibrated_adjacency(canonical, readout_errors)
     best: ChainSelection | None = None
     for seed in _seed_edges(adjacency, canonical, readout_errors, seed_count):
-        chain = _grow_chain(seed, adjacency, length)
-        if len(chain) != length:
-            continue
-        selection = _chain_selection(chain, canonical, readout_errors)
-        if best is None or selection.total_score < best.total_score:
-            best = selection
+        for chain in _candidate_chains(seed, adjacency, length, backtrack_steps):
+            if len(chain) != length:
+                continue
+            selection = _chain_selection(chain, canonical, readout_errors)
+            if best is None or selection.total_score < best.total_score:
+                best = selection
     return best
 
 
@@ -228,24 +299,29 @@ def longest_error_aware_chain(
     readout_errors: Mapping[int, float],
     *,
     seed_count: int = DEFAULT_SEED_COUNT,
+    backtrack_steps: int = 0,
 ) -> ChainSelection | None:
     """Grow chains to exhaustion and return the longest one found.
 
     Ties in length resolve to the smaller total score. Returns ``None`` when
-    the calibrated coupling graph has no usable edge at all.
+    the calibrated coupling graph has no usable edge at all. A positive
+    ``backtrack_steps`` budget lets the search unwind greedy dead ends,
+    which materially lengthens the result on heavy-hex devices.
     """
     if seed_count < 1:
         raise ValueError("seed_count must be at least 1")
+    if backtrack_steps < 0:
+        raise ValueError("backtrack_steps must be non-negative")
     canonical = _canonical_gate_errors(gate_errors)
     adjacency = _calibrated_adjacency(canonical, readout_errors)
     best: ChainSelection | None = None
     for seed in _seed_edges(adjacency, canonical, readout_errors, seed_count):
-        chain = _grow_chain(seed, adjacency, None)
-        selection = _chain_selection(chain, canonical, readout_errors)
-        if (
-            best is None
-            or selection.length > best.length
-            or (selection.length == best.length and selection.total_score < best.total_score)
-        ):
-            best = selection
+        for chain in _candidate_chains(seed, adjacency, None, backtrack_steps):
+            selection = _chain_selection(chain, canonical, readout_errors)
+            if (
+                best is None
+                or selection.length > best.length
+                or (selection.length == best.length and selection.total_score < best.total_score)
+            ):
+                best = selection
     return best

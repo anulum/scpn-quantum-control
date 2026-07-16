@@ -95,6 +95,7 @@ DEFAULT_SHOTS = 4096
 DEFAULT_CAL_SHOTS = 8192
 DEFAULT_MAX_QPU_SECONDS = 120.0
 DEFAULT_MEDIAN_EDGE_ERROR_ABORT = 0.03
+DEFAULT_CHAIN_BACKTRACK_STEPS = 250_000
 ESTIMATED_SECONDS_PER_CIRCUIT = 1.1
 SEED_TRANSPILER = 20260716
 DATA_DIR = REPO_ROOT / "data" / "max_width_kuramoto_xy"
@@ -389,10 +390,13 @@ def plan_widths(
     target: Any,
     *,
     median_edge_error_abort: float,
+    backtrack_steps: int = 0,
 ) -> tuple[list[tuple[int, ChainSelection]], list[dict[str, Any]]]:
     """Resolve every preregistered width to a chain, recording skips honestly."""
     gate_errors, readout_errors = calibration_from_target(target)
-    longest = longest_error_aware_chain(gate_errors, readout_errors)
+    longest = longest_error_aware_chain(
+        gate_errors, readout_errors, backtrack_steps=backtrack_steps
+    )
     if longest is None:
         raise ValueError("target reports no usable calibrated chain at all")
     resolved: list[tuple[int, ChainSelection]] = []
@@ -414,7 +418,9 @@ def plan_widths(
                 }
             )
     for width in widths:
-        chain = select_error_aware_chain(gate_errors, readout_errors, width)
+        chain = select_error_aware_chain(
+            gate_errors, readout_errors, width, backtrack_steps=backtrack_steps
+        )
         if chain is None:
             skipped.append({"width": width, "reason": "no chain of this width is reachable"})
             continue
@@ -515,6 +521,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--median-edge-error-abort", type=float, default=DEFAULT_MEDIAN_EDGE_ERROR_ABORT
     )
+    parser.add_argument("--chain-backtrack-steps", type=int, default=DEFAULT_CHAIN_BACKTRACK_STEPS)
     parser.add_argument("--timeout-s", type=float, default=7200.0)
     parser.add_argument("--out-dir", type=Path, default=DATA_DIR)
     parser.add_argument("--skip-baseline", action="store_true")
@@ -540,7 +547,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     vault = args.credentials_vault or DEFAULT_CREDENTIALS_VAULT
     backend = load_authenticated_backend(args.backend, args.instance, vault)
     resolved, skipped = plan_widths(
-        backend.target, median_edge_error_abort=args.median_edge_error_abort
+        backend.target,
+        median_edge_error_abort=args.median_edge_error_abort,
+        backtrack_steps=args.chain_backtrack_steps,
     )
     plans = [build_width_plan(width, chain, backend) for width, chain in resolved]
 
