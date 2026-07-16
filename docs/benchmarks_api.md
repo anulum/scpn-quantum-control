@@ -361,6 +361,23 @@ is `scripts/run_closed_loop_publication.py`.
 
 ---
 
+### 2f. `hls_cosimulation_evidence` — Hash-Bound HLS Co-Simulation Evidence
+
+Compiles the generated Vivado/Vitis HLS pulse-player testbench under a host
+compiler (`g++`) against the packaged non-synthesis shim
+(`codegen/hls_host_shim`), executes it (bit-true `PASS <n>` verdict), and
+binds every input to the verdict with SHA-256 digests: header, testbench,
+XDC, shim headers, compile command, and compiler identity. The boundary is
+explicit — *codegen + software co-simulation only, no synthesis, no timing
+closure, no board execution* — and the handoff artifact names the
+SC-NEUROCORE consumer contract (`sc-neurocore.hdl_gen.hls_ingest.v1`).
+Fail-closed: a missing compiler raises; compile/run failures are recorded as
+`passed=false` failure evidence. The co-simulation runner is injectable for
+tests. Details in `ultrascale_hls.md`; the CLI is
+`scripts/run_hls_cosimulation_evidence.py`.
+
+---
+
 ### 3. `gpu_baseline` — GPU vs QPU Comparison
 
 Estimates GPU resources needed for statevector simulation and compares

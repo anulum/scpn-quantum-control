@@ -9,7 +9,7 @@
 
 Quantisation is checked against known fixed-point vectors and the Rust kernel;
 the rendered bundle is driven through a host-compiled bit-true AXI4-Stream
-co-simulation (via the non-synthesis shim in ``tests/hls_shim``). Vivado
+co-simulation (via the packaged non-synthesis shim in ``codegen/hls_host_shim``). Vivado
 synthesis is gated behind ``MIF_FPGA_VIVADO_CI`` for the self-hosted runner.
 """
 
@@ -19,13 +19,13 @@ import re
 import shutil
 import subprocess
 import sys
-from pathlib import Path
 
 import numpy as np
 import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from scpn_quantum_control.benchmarks.hls_cosimulation_evidence import HOST_SHIM_DIR as _SHIM_DIR
 from scpn_quantum_control.codegen import ultrascale_hls as hls
 from scpn_quantum_control.codegen.ultrascale_hls import (
     HLS_ARTIFACT_CLAIM_BOUNDARY,
@@ -40,7 +40,6 @@ from scpn_quantum_control.codegen.ultrascale_hls import (
 )
 from scpn_quantum_control.phase.pulse_shaping import build_hypergeometric_pulse
 
-_SHIM_DIR = Path(__file__).parent / "hls_shim"
 _GPP = shutil.which("g++")
 
 try:

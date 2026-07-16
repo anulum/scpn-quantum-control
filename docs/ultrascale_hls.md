@@ -93,12 +93,12 @@ must be paced or parallelised downstream.
 ## Co-simulation without Vivado
 
 The generated bundle uses the authentic AMD Xilinx HLS API surface (`ap_int`,
-`ap_axis`, `hls::stream`). A non-synthesis shim in `tests/hls_shim` backs that
+`ap_axis`, `hls::stream`). A packaged non-synthesis shim in `src/scpn_quantum_control/codegen/hls_host_shim` backs that
 API with host C++ so the testbench compiles and runs under `g++` for a bit-true
 software co-simulation:
 
 ```bash
-g++ -std=c++17 -Wno-unknown-pragmas -Itests/hls_shim -Ibuild/pulse_player \
+g++ -std=c++17 -Wno-unknown-pragmas -Isrc/scpn_quantum_control/codegen/hls_host_shim -Ibuild/pulse_player \
     build/pulse_player/pulse_axi_stream_tb.cpp -o /tmp/tb && /tmp/tb   # prints "PASS <n>"
 ```
 
@@ -106,6 +106,29 @@ Vivado/Vitis HLS supplies the real headers at synthesis time. The synthesis path
 (`csim_design` + `csynth_design` on the ZU3EG) is exercised by
 `tests/test_ultrascale_hls.py::test_vivado_hls_synthesis`, gated behind
 `MIF_FPGA_VIVADO_CI=1` for the self-hosted runner.
+
+## Co-simulation evidence artifact (RC-3)
+
+`benchmarks/hls_cosimulation_evidence.py` elevates the host-compiler
+co-simulation to a first-class, hash-bound evidence artifact, and
+`scripts/run_hls_cosimulation_evidence.py` is its CLI:
+
+```bash
+PYTHONPATH=. python scripts/run_hls_cosimulation_evidence.py --samples 256
+```
+
+The artifact records the bit-true `PASS <n>` verdict together with everything
+that produced it: SHA-256 content digests of the generated header, testbench,
+XDC, and each shim header; the exact compile command; the compiler identity;
+provenance (git commit, command, dependency versions); and the host-isolation
+timing grade. Its boundary is explicit — *codegen + software co-simulation
+only: no synthesis, no timing closure, no board execution*. A compile or run
+failure is recorded as `passed=false` with the captured output (failure
+evidence is still evidence), and a missing host compiler raises instead of
+fabricating a verdict. The handoff names the SC-NEUROCORE consumer contract
+(`sc-neurocore.hdl_gen.hls_ingest.v1`); the RTL path and the sub-50 ns latency
+work stay in SC-NEUROCORE. A committed example artifact lives under
+`data/hls_cosimulation/`.
 
 ## Acceleration
 

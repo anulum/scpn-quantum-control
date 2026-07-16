@@ -1,0 +1,109 @@
+{
+  "bundle_meta": {
+    "fifo_depth": 1024,
+    "n_samples": 256,
+    "sample_rate_hz": 250000000.0,
+    "target_sku": "zu3eg"
+  },
+  "config": {
+    "amplitude": 0.8,
+    "compiler": "g++",
+    "fifo_depth": 1024,
+    "fixed_point_frac_bits": 8,
+    "fixed_point_width": 16,
+    "n_samples": 256,
+    "reserved_core": 0,
+    "sample_rate_hz": 250000000.0,
+    "target_sku": "zu3eg"
+  },
+  "consumer_contract": "sc-neurocore.hdl_gen.hls_ingest.v1",
+  "evidence": {
+    "boundary": "software co-simulation under a host compiler with a non-synthesis shim; no synthesis, no timing closure, no board execution; the RTL path and sub-50 ns latency work are owned by SC-NEUROCORE (sc-neurocore.hdl_gen.hls_ingest.v1)",
+    "compile_command": [
+      "/usr/bin/g++",
+      "-std=c++17",
+      "-Wno-unknown-pragmas",
+      "-I/media/anulum/GOTM/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/src/scpn_quantum_control/codegen/hls_host_shim",
+      "-I/tmp/hls_cosim_kdqg72_9",
+      "/tmp/hls_cosim_kdqg72_9/pulse_axi_stream_tb.cpp",
+      "-o",
+      "/tmp/hls_cosim_kdqg72_9/pulse_tb"
+    ],
+    "compiler_path": "/usr/bin/g++",
+    "compiler_version": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "duration_s": 3.007594282971695,
+    "exit_code": 0,
+    "passed": true,
+    "samples_streamed": 256,
+    "sources": [
+      {
+        "name": "pulse_axi_stream.hpp",
+        "role": "hls_header",
+        "sha256": "c2b2dfbc46c72b78874bc196f1f415833b0644ef5041afac0a774b15a3375db5"
+      },
+      {
+        "name": "pulse_axi_stream_tb.cpp",
+        "role": "testbench",
+        "sha256": "8701aee73da4ac506bfaeac4f95cabbea6088b98c4a1c0700090334827ff42d4"
+      },
+      {
+        "name": "pulse_player.xdc",
+        "role": "constraints",
+        "sha256": "37ecbf6c07be044a0687dc9e03990b5c67e427027e126e5698fe17f1ec27746b"
+      },
+      {
+        "name": "ap_axi_sdata.h",
+        "role": "host_shim",
+        "sha256": "d0d8e8751d1fbaacc8cfb57524bd585eebce4fc7b74bab08d44d6634b0c49ab6"
+      },
+      {
+        "name": "ap_int.h",
+        "role": "host_shim",
+        "sha256": "71affaedf1db880d83213e184d8bf9fa70502c3a2227c258425a5e192388ae83"
+      },
+      {
+        "name": "hls_stream.h",
+        "role": "host_shim",
+        "sha256": "bd33ff1463cfda155bc64852b1ae2a36c43bb1897cef029a951baeebcb635f05"
+      }
+    ],
+    "stderr": "",
+    "stdout": "PASS 256\n"
+  },
+  "host": {
+    "blockers": [
+      "cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
+      "host load 49.55 exceeds the isolated threshold 1.00; quiesce concurrent jobs"
+    ],
+    "frequency_mhz": 3699.962,
+    "governor": "powersave",
+    "governor_is_stable": false,
+    "load_average": [
+      49.546875,
+      45.2080078125,
+      42.4345703125
+    ],
+    "load_is_low": false,
+    "ready": false,
+    "reserved_core": 0
+  },
+  "notes": [
+    "software co-simulation under a host compiler with a non-synthesis shim; no synthesis, no timing closure, no board execution; the RTL path and sub-50 ns latency work are owned by SC-NEUROCORE (sc-neurocore.hdl_gen.hls_ingest.v1)",
+    "the testbench verdict is bit-true against the quantised envelope, not a hardware timing or fidelity claim",
+    "co-simulation wall-clock measured on a shared host: advisory only"
+  ],
+  "provenance": {
+    "command": "scripts/run_hls_cosimulation_evidence.py",
+    "dependencies": {
+      "numpy": "2.2.6",
+      "python": "3.12.13",
+      "qiskit": "2.4.1",
+      "quimb": "not installed",
+      "qutip": "5.2.3",
+      "scipy": "1.15.3"
+    },
+    "git_commit": "0a445d940e9363fffdda2957f9bec0a691c61a04"
+  },
+  "schema_version": "1.0",
+  "timing_grade": "advisory_shared_host"
+}

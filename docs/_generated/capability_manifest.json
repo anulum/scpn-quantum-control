@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 836,
     "public_documentation_pages": 272,
-    "python_model_classes": 1027,
-    "python_model_source_modules": 566,
+    "python_model_classes": 1031,
+    "python_model_source_modules": 567,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1004
+    "test_files": 1006
   },
   "documentation": {
     "examples": [
@@ -474,7 +474,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 32
+        "python_modules": 33
       },
       {
         "package": "bridge",
@@ -1152,6 +1152,14 @@
       {
         "name": "ControllerFactory",
         "path": "src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py"
+      },
+      {
+        "name": "CosimulationEvidence",
+        "path": "src/scpn_quantum_control/benchmarks/hls_cosimulation_evidence.py"
+      },
+      {
+        "name": "CosimulationRunner",
+        "path": "src/scpn_quantum_control/benchmarks/hls_cosimulation_evidence.py"
       },
       {
         "name": "CostWeights",
@@ -2060,6 +2068,14 @@
       {
         "name": "HLSBundle",
         "path": "src/scpn_quantum_control/codegen/ultrascale_hls.py"
+      },
+      {
+        "name": "HLSCosimulationConfig",
+        "path": "src/scpn_quantum_control/benchmarks/hls_cosimulation_evidence.py"
+      },
+      {
+        "name": "HLSCosimulationHandoff",
+        "path": "src/scpn_quantum_control/benchmarks/hls_cosimulation_evidence.py"
       },
       {
         "name": "HVPResult",
@@ -4827,6 +4843,7 @@
       "src/scpn_quantum_control/benchmarks/differentiable_programming_contracts.py",
       "src/scpn_quantum_control/benchmarks/differentiable_programming_quantum.py",
       "src/scpn_quantum_control/benchmarks/gpu_baseline.py",
+      "src/scpn_quantum_control/benchmarks/hls_cosimulation_evidence.py",
       "src/scpn_quantum_control/benchmarks/isolated_host_readiness.py",
       "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py",
       "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py",
@@ -6801,6 +6818,7 @@
       "tests/test_hardware_runner_branches.py",
       "tests/test_hardware_runner_contracts.py",
       "tests/test_hardware_topological_optimizer.py",
+      "tests/test_hls_cosimulation_evidence.py",
       "tests/test_hybrid_digital_analog.py",
       "tests/test_hybrid_digital_analog_branches.py",
       "tests/test_hypothesis_properties.py",
@@ -7264,6 +7282,7 @@
       "tests/test_run_closed_loop_publication.py",
       "tests/test_run_decisive_advantage_benchmark.py",
       "tests/test_run_dla_parity_suite_cli.py",
+      "tests/test_run_hls_cosimulation_evidence.py",
       "tests/test_run_layout_method_comparison.py",
       "tests/test_run_quantum_ssgf_descent.py",
       "tests/test_runner_guards.py",
