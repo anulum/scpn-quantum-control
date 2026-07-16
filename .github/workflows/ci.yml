@@ -851,7 +851,11 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
       - name: Install the package with no extras
+        # oscillatools is a core dependency vendored in-repo and not yet on
+        # public PyPI — install the local tree first, exactly what a minimal
+        # source install requires today.
         run: |
+          pip install ./oscillatools
           pip install .
           pip install pytest hypothesis
       - name: Assert structlog is absent and the kwarg fallback is selected
