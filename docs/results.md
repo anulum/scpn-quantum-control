@@ -50,6 +50,26 @@ theoretical, simulated, hardware-measured, mitigated, or noise-limited.
 > re-run with readout mitigation is planned before this artefact's headline
 > numbers are used further
 > (`docs/campaigns/bell_rerun_mitigated_prereg_2026-07-16.md`).
+>
+> **Resolution (2026-07-16), preregistered Bell re-run executed:** the
+> mitigated re-run (`ibm_fez`, job in
+> `data/bell_rerun_mitigated/bell_rerun_raw_counts_ibm_fez_20260716T230841Z.json`,
+> per-setting transpiled circuits on two canonical Bell pairs, full-basis
+> readout calibration, 40 IBM usage seconds) does NOT reproduce the March
+> anomaly: the second analyser setting reads E₁ = −0.690 (pair q0–q1) and
+> E₁ = −0.650 (pair q2–q3) — correct sign and near-band magnitude, against
+> the March artefact's sign-flipped E ≈ +0.29/+0.33. Per pair and per the
+> preregistered decision rule: on q0–q1 the mitigated setting-1 magnitude
+> lies inside the other settings' band (anomaly class explained as a
+> readout/transpilation artefact of the original run); on q2–q3 a small
+> residual asymmetry remains (mitigated |E₁| = 0.667 against a 0.692–0.698
+> band) and is documented as a property of the executed setting. Re-run
+> values, stated per pair with exact σ: S = 2.6953 ± 0.0231 (q0–q1) and
+> S = 2.6807 ± 0.0232 (q2–q3) unmitigated; 2.7517 and 2.7510 with
+> full-basis readout mitigation. The March record itself stays as
+> published; this is a new dated record
+> (`docs/campaigns/bell_rerun_mitigated_prereg_2026-07-16.md`, analysis in
+> `data/bell_rerun_mitigated/bell_rerun_analysis_ibm_fez_20260716T230841Z.json`).
 
 > **Amendment (2026-07-16), QKD row:** the committed
 > `results/ibm_hardware_2026-03-28/qkd_qber_4q.json` artefact carries no

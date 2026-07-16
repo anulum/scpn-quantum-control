@@ -1,0 +1,88 @@
+{
+  "schema": "scpn_bell_rerun_mitigated_analysis_v1",
+  "experiment_id": "bell_rerun_mitigated_2026-07-16",
+  "preregistration": "docs/campaigns/bell_rerun_mitigated_prereg_2026-07-16.md",
+  "parent_artifact": "results/ibm_hardware_2026-03-28/bell_test_4q.json",
+  "conventions": "scripts/recompute_chsh_bell_test.py: little-endian pairs, S = E0 - E1 + E2 + E3, multinomial sigma",
+  "pairs": [
+    {
+      "pair": [
+        0,
+        1
+      ],
+      "unmitigated": {
+        "settings_e": [
+          0.65869140625,
+          -0.689453125,
+          0.68505859375,
+          0.662109375
+        ],
+        "s_value": 2.6953125,
+        "sigma": 0.023086358754757064,
+        "significance": 30.11789374782748
+      },
+      "mitigated": {
+        "label": "q0q1",
+        "settings_e": [
+          0.6728523829145262,
+          -0.7029781959413295,
+          0.6996561586068267,
+          0.6761888030521878
+        ],
+        "s_value": 2.7516755405148703,
+        "sigma_multinomial_approximation": 0.022676937156626602,
+        "sigma_note": "multinomial formula at the raw shot count; readout-inversion error not propagated"
+      },
+      "decision_rule": {
+        "abs_setting1_e": 0.7029781959413295,
+        "other_settings_abs_e_band": [
+          0.6728523829145262,
+          0.6996561586068267
+        ],
+        "sigma_setting1": 0.011112678130944015,
+        "within_2_sigma_of_band": true,
+        "preregistered_reading": "anomaly explained as a readout/transpilation artefact"
+      }
+    },
+    {
+      "pair": [
+        2,
+        3
+      ],
+      "unmitigated": {
+        "settings_e": [
+          0.6748046875,
+          -0.650390625,
+          0.67919921875,
+          0.67626953125
+        ],
+        "s_value": 2.6806640625,
+        "sigma": 0.02319130386479648,
+        "significance": 29.349969560496433
+      },
+      "mitigated": {
+        "label": "q2q3",
+        "settings_e": [
+          0.6924085136432158,
+          -0.666721400725502,
+          0.6975547342904856,
+          0.6943635692323479
+        ],
+        "s_value": 2.7510482178915514,
+        "sigma_multinomial_approximation": 0.022682256896959428,
+        "sigma_note": "multinomial formula at the raw shot count; readout-inversion error not propagated"
+      },
+      "decision_rule": {
+        "abs_setting1_e": 0.666721400725502,
+        "other_settings_abs_e_band": [
+          0.6924085136432158,
+          0.6975547342904856
+        ],
+        "sigma_setting1": 0.011645422394559636,
+        "within_2_sigma_of_band": false,
+        "preregistered_reading": "asymmetry persists; documented as a property of the executed setting"
+      }
+    }
+  ],
+  "claim_boundary": "New dated record; no loophole-free or device-independent claim, no QKD viability claim; the published March 2026 record stays as it is."
+}
