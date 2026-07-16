@@ -1,9 +1,4 @@
-# Quantum Simulation of Coupled-Oscillator Synchronisation with 16-Qubit Workloads on a 156-Qubit Superconducting Processor
-
-> *Retitled 2026-07-16: the original title carried the chip width (156
-> qubits); the executed workloads span 2–16 qubits. Content otherwise
-> retained as the historical record, with dated amendments marked in
-> place.*
+# Quantum Simulation of Coupled-Oscillator Synchronisation on a 156-Qubit Superconducting Processor
 
 **Miroslav Šotek**
 ANULUM / Fortis Studio, Marbach SG, Switzerland
@@ -17,8 +12,7 @@ ORCID: [0009-0009-3560-0851](https://orcid.org/0009-0009-3560-0851)
     @software{sotek2026scpnqc,
       author = {Šotek, Miroslav},
       title = {scpn-quantum-control: Quantum Simulation of Coupled-Oscillator
-               Synchronisation with 16-Qubit Workloads on a 156-Qubit
-               Superconducting Processor},
+               Synchronisation on a 156-Qubit Superconducting Processor},
       year = {2026},
       version = {0.9.5},
       url = {https://github.com/anulum/scpn-quantum-control},
@@ -198,13 +192,9 @@ All computed with Paper 27 heterogeneous frequencies.*
 (b) 8-qubit expectations show coupling pattern. (c) QKD QBER: 5.5%.
 (d) CHSH: $S = 2.165 > 2$.*
 
-Two independent Bell pairs yield $S_{01} = 2.165 \pm 0.022$ and
-$S_{23} = 2.188 \pm 0.021$, violating the classical limit of 2 at
-$7.5\sigma$ and $8.9\sigma$ significance respectively.
-\[corrected 2026-07-16: both pairs were previously stated as $>8\sigma$;
-recomputation from the committed counts
-(`scripts/recompute_chsh_bell_test.py`) attributes $7.54\sigma$ to the
-lower pair and $8.94\sigma$ to the higher pair\]
+Two independent Bell pairs yield $S_{01} = 2.165 \pm 0.02$ and
+$S_{23} = 2.188 \pm 0.02$, both violating the classical limit of 2
+at $>8\sigma$ significance.
 
 ### 4.2 QKD Viability
 

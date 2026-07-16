@@ -130,8 +130,8 @@ claims only when the evidence exists.
 | Notebook files | 100 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1011 |
-| Public documentation pages | 273 |
+| Python test files | 1012 |
+| Public documentation pages | 274 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -557,7 +557,9 @@ Hamiltonian construction only; the eigh bottleneck is LAPACK in all cases.
 
 ### Publications
 
-- [Preprint: Quantum Kuramoto-XY, 16-qubit workloads on a 156-qubit processor](https://anulum.github.io/scpn-quantum-control/preprint/)
+- [Preprint: Quantum Kuramoto-XY on 156-qubit processor](https://anulum.github.io/scpn-quantum-control/preprint/)
+  — published record (title states the chip width; executed workloads span
+  2–16 qubits, see the [results amendments](docs/results.md))
 - [Paper: Synchronisation Witness Operators](https://anulum.github.io/scpn-quantum-control/paper_sync_witnesses/) (novel NISQ-ready formalism)
 - [Paper: DLA Parity Theorem](https://anulum.github.io/scpn-quantum-control/paper_dla_parity/) (exact closed-form)
 
