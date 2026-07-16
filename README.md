@@ -330,6 +330,9 @@ Direct entry points:
   claim-bound
 - [Hardware Status Ledger](docs/hardware_status_ledger.md)
   — claim classes, campaign evidence paths, and publication hygiene rules
+- [Count-Integrity Incident Note, April 2026](docs/count_integrity_incident_2026-04.md)
+  — public record of the frontier-workflow placeholder/fake-count incident,
+  its quarantine scope, and the fail-closed controls now in place
 - [Hardware Result Packs](docs/hardware_result_packs.md)
   — offline manifest and integrity verifier for promoted IBM raw-count datasets
 - [Physics-First Kuramoto-XY](docs/physics_first_kuramoto_xy.md)

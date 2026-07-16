@@ -61,9 +61,11 @@ promoted, so an unchanged date here means no new promotion has occurred.
 ## Quarantined / Unpromoted IBM Artifacts
 
 The April 2026 internal incident trail records placeholder and fake-count
-handling in frontier IBM workflows. Therefore the files below must not be used
-as public proof until they are independently re-retrieved or reproduced from
-raw IBM counts and promoted here.
+handling in frontier IBM workflows; the public incident note is
+[Count-Integrity Incident, April 2026](count_integrity_incident_2026-04.md).
+Therefore the files below must not be used as public proof until they are
+independently re-retrieved or reproduced from raw IBM counts and promoted
+here.
 
 | Artifact family | Current status | Reason |
 |---|---|---|

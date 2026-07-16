@@ -152,6 +152,7 @@ nav:
       - "DLA-parity Validation": dla_parity.md
       - "Classical Irreproducibility": classical_irreproducibility.md
       - Hardware Status Ledger: hardware_status_ledger.md
+      - "Incident Note: Count Integrity (April 2026)": count_integrity_incident_2026-04.md
       - Hardware Result Packs: hardware_result_packs.md
       - Hardware Result-Pack Release Checklist: hardware_result_pack_release_checklist.md
       - Results Gallery: results.md
