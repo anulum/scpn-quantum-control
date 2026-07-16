@@ -19,6 +19,8 @@ nde = "nde"           # non-deterministic evolution
 dof = "dof"           # degrees of freedom
 upde = "upde"         # Unified Phase Dynamics Equation
 ssgf = "ssgf"         # Stochastic Synthesis of Geometric Fields
+Mena = "Mena"         # Gonzalo Mena, Gumbel-Sinkhorn author (arXiv:1802.08665)
+Teh = "Teh"           # Yee Whye Teh, Concrete-distribution author (arXiv:1611.00712)
 
 [files]
 extend-exclude = [
