@@ -27,6 +27,17 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   no longer fail-fasts across platforms.
 
 ### Added
+- 2026-07-16 — On-QPU dynamic-circuit feedback demo submitter (RC-1,
+  `scripts/submit_onqpu_dynamic_feedback.py`, 100% line+branch tested):
+  runs the committed monitored-feedback template against its matched
+  open-loop control at 2 and 3 rounds as vendor-executed dynamic circuits,
+  gated on capability discovery (required `if_else`/`measure`/`reset`
+  operations), an error-aware star layout, and a transpiled-depth ratio
+  ceiling; analysis reports feedback-on vs feedback-off total variation
+  distance with labelled multinomial error bars and per-round monitor
+  trigger rates. No latency claim is derivable from the outputs by
+  construction. Submission requires `--submit --confirm-budget` on a green
+  readiness document.
 - 2026-07-16 — Maximum-width Kuramoto-XY campaign submitter (WIDTH-1,
   `scripts/submit_max_width_kuramoto_xy.py`, 100% line+branch tested) with a
   new error-aware 1-D chain selector
