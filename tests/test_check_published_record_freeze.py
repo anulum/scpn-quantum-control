@@ -17,6 +17,8 @@ against the working tree.
 from __future__ import annotations
 
 import json
+import shutil
+import subprocess  # nosec B404
 from pathlib import Path
 
 import pytest
@@ -73,6 +75,26 @@ class TestManifestRoundTrip:
         (root / "docs" / "preprint.md").write_text("page\n", encoding="utf-8")
         records = freeze.build_manifest(root)
         assert set(records) == {"docs/preprint.md"}
+
+    def test_untracked_build_artifacts_are_not_frozen(self, tmp_path: Path) -> None:
+        """Inside a git checkout only tracked files enter the freeze."""
+        root = _make_repo(tmp_path)
+        subprocess.run(["git", "-C", str(root), "init", "-q"], check=True)
+        subprocess.run(["git", "-C", str(root), "add", "paper", "docs"], check=True)
+        (root / "paper" / "submissions" / "s1" / "build.pdf").write_text(
+            "local artifact\n", encoding="utf-8"
+        )
+        records = freeze.build_manifest(root)
+        assert "paper/submissions/s1/main.tex" in records
+        assert "paper/submissions/s1/build.pdf" not in records
+
+    def test_no_git_executable_falls_back_to_plain_walk(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(shutil, "which", lambda _name: None)
+        root = _make_repo(tmp_path)
+        records = freeze.build_manifest(root)
+        assert "paper/submissions/s1/main.tex" in records
 
 
 class TestDriftDetection:

@@ -35,6 +35,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shutil
+import subprocess  # nosec B404
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -60,8 +62,32 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _tracked_files(root: Path) -> set[str] | None:
+    """Return git-tracked relative paths, or None outside a git checkout.
+
+    Published records are the TRACKED sources; local build artifacts
+    (rendered PDFs, generated .bib files) inside the frozen trees are
+    ignored by git and must not enter the freeze — a CI checkout does not
+    have them, so pinning them reds the guard on files that were never
+    part of the record.
+    """
+    git_executable = shutil.which("git")
+    if git_executable is None:
+        return None
+    try:
+        result = subprocess.run(  # nosec B603
+            [git_executable, "-C", str(root), "ls-files", "-z"],
+            capture_output=True,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return {path for path in result.stdout.decode("utf-8").split("\0") if path}
+
+
 def frozen_paths(root: Path) -> list[Path]:
-    """Return every file that belongs to a published record, sorted."""
+    """Return every tracked file that belongs to a published record, sorted."""
+    tracked = _tracked_files(root)
     paths: list[Path] = []
     for tree in FROZEN_TREES:
         base = root / tree
@@ -71,6 +97,8 @@ def frozen_paths(root: Path) -> list[Path]:
         candidate = root / name
         if candidate.is_file():
             paths.append(candidate)
+    if tracked is not None:
+        paths = [p for p in paths if p.relative_to(root).as_posix() in tracked]
     return sorted(paths)
 
 
