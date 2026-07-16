@@ -27,6 +27,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   no longer fail-fasts across platforms.
 
 ### Added
+- 2026-07-16 — Approval-gated mitigated Bell re-run submitter
+  (`scripts/submit_bell_rerun_mitigated.py`, 100% line+branch tested):
+  executes the preregistered KIMI-9 campaign — two Bell pairs, four
+  per-setting CHSH circuits at the recompute-script conventions, full-basis
+  readout calibration, fail-closed count coercion, and hash-bound
+  readiness / raw-counts / analysis documents carrying the preregistered
+  decision rule. Submission requires `--submit --confirm-budget` on a
+  green readiness document; the QPU estimate is anchored to the measured
+  2026-05-05 per-circuit cost.
 - 2026-07-16 — Retired-claims guard (`tools/check_retired_claims.py` +
   `data/retired_claims.json`): retired public claims (the 5 401× speedup,
   the blanket CHSH significance statement) cannot reappear on public claim

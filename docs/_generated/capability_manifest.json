@@ -13,7 +13,7 @@
     "python_model_source_modules": 570,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1013
+    "test_files": 1014
   },
   "documentation": {
     "examples": [
@@ -7409,6 +7409,7 @@
       "tests/test_studio_support_matrix_bundle.py",
       "tests/test_studio_xy_compile_recompute_artifact.py",
       "tests/test_sub_us_tracker.py",
+      "tests/test_submit_bell_rerun_mitigated.py",
       "tests/test_submit_fim_replication_zne_ibm.py",
       "tests/test_submit_phase3_large_system_ibm.py",
       "tests/test_submit_s1_ibm_feedback_pair.py",
