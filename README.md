@@ -557,7 +557,7 @@ Hamiltonian construction only; the eigh bottleneck is LAPACK in all cases.
 
 ### Publications
 
-- [Preprint: Quantum Kuramoto-XY on 156-qubit processor](https://anulum.github.io/scpn-quantum-control/preprint/)
+- [Preprint: Quantum Kuramoto-XY, 16-qubit workloads on a 156-qubit processor](https://anulum.github.io/scpn-quantum-control/preprint/)
 - [Paper: Synchronisation Witness Operators](https://anulum.github.io/scpn-quantum-control/paper_sync_witnesses/) (novel NISQ-ready formalism)
 - [Paper: DLA Parity Theorem](https://anulum.github.io/scpn-quantum-control/paper_dla_parity/) (exact closed-form)
 

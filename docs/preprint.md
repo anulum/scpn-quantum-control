@@ -1,4 +1,9 @@
-# Quantum Simulation of Coupled-Oscillator Synchronisation on a 156-Qubit Superconducting Processor
+# Quantum Simulation of Coupled-Oscillator Synchronisation with 16-Qubit Workloads on a 156-Qubit Superconducting Processor
+
+> *Retitled 2026-07-16: the original title carried the chip width (156
+> qubits); the executed workloads span 2–16 qubits. Content otherwise
+> retained as the historical record, with dated amendments marked in
+> place.*
 
 **Miroslav Šotek**
 ANULUM / Fortis Studio, Marbach SG, Switzerland
@@ -12,7 +17,8 @@ ORCID: [0009-0009-3560-0851](https://orcid.org/0009-0009-3560-0851)
     @software{sotek2026scpnqc,
       author = {Šotek, Miroslav},
       title = {scpn-quantum-control: Quantum Simulation of Coupled-Oscillator
-               Synchronisation on a 156-Qubit Superconducting Processor},
+               Synchronisation with 16-Qubit Workloads on a 156-Qubit
+               Superconducting Processor},
       year = {2026},
       version = {0.9.5},
       url = {https://github.com/anulum/scpn-quantum-control},
