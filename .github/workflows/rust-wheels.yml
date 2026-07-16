@@ -25,6 +25,10 @@ jobs:
             target: x86_64
           - os: ubuntu-latest
             target: aarch64
+            # Cross build runs inside the manylinux container where the host
+            # setup-python interpreter is invisible — name the container's
+            # CPython explicitly or maturin finds no interpreter at all.
+            interpreter-args: "-i python3.12"
           - os: windows-latest
             target: x64
           - os: macos-latest
@@ -43,7 +47,7 @@ jobs:
         uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.51.0
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist -m scpn_quantum_engine/Cargo.toml
+          args: --release --out dist ${{ matrix.interpreter-args }} -m scpn_quantum_engine/Cargo.toml
           manylinux: auto
 
       - name: Audit built wheel contents
