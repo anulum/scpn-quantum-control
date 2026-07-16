@@ -750,6 +750,22 @@ The benchmark against DynQ and SABRE lives in
 `benchmarks/layout_method_comparison.py` (path-import, like every benchmarks
 module) and is measured in §8.4.
 
+### 7.6 Sinkhorn Continuous Relaxation (KT-4, RESEARCH)
+
+`hardware/kuramoto_layout_relaxation.py` carries a **research-labelled**
+alternative to the §7.5 discrete search: an annealed Sinkhorn relaxation over
+placement logits (Mena et al., arXiv:1802.08665) descending a differentiable
+SWAP-distance surrogate `S(P) = Σ K_ij (P D Pᵀ)_ij` (closed-form gradient
+`K P D`, straight-through to the logits per Jang et al., arXiv:1611.01144),
+with Hungarian rounding after each temperature. Every rounded candidate is
+scored with the **true seeded §7.4 cost** under a preregistered evaluation
+budget — the surrogate never enters the comparison. The open question,
+verified literature, and comparison protocol are preregistered in
+`docs/internal/research_synthesis/2026-07-16T1345_kt4_sinkhorn_layout_relaxation_design.md`;
+the honest outcome may be "modest or no gain", and nothing is promoted
+without KT-5. The preregistered seed-sweep benchmark row is the next
+increment of the research track.
+
 ---
 
 ## 8. Benchmarks

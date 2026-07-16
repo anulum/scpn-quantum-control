@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 836,
     "public_documentation_pages": 272,
-    "python_model_classes": 1031,
-    "python_model_source_modules": 567,
+    "python_model_classes": 1033,
+    "python_model_source_modules": 568,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1006
+    "test_files": 1007
   },
   "documentation": {
     "examples": [
@@ -539,7 +539,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 72
+        "python_modules": 73
       },
       {
         "package": "identity",
@@ -4098,6 +4098,10 @@
         "path": "src/scpn_quantum_control/phase/model_training_evidence.py"
       },
       {
+        "name": "RelaxationSearchResult",
+        "path": "src/scpn_quantum_control/hardware/kuramoto_layout_relaxation.py"
+      },
+      {
         "name": "RepetitionCodeUPDE",
         "path": "src/scpn_quantum_control/qec/fault_tolerant.py"
       },
@@ -4272,6 +4276,10 @@
       {
         "name": "SimulateActionHandler",
         "path": "src/scpn_quantum_control/studio/executive_simulate.py"
+      },
+      {
+        "name": "SinkhornRelaxationConfig",
+        "path": "src/scpn_quantum_control/hardware/kuramoto_layout_relaxation.py"
       },
       {
         "name": "SparseMatrixResult",
@@ -5038,6 +5046,7 @@
       "src/scpn_quantum_control/hardware/job_dossier.py",
       "src/scpn_quantum_control/hardware/kuramoto_layout_cost.py",
       "src/scpn_quantum_control/hardware/kuramoto_layout_optimiser.py",
+      "src/scpn_quantum_control/hardware/kuramoto_layout_relaxation.py",
       "src/scpn_quantum_control/hardware/noise_model.py",
       "src/scpn_quantum_control/hardware/openpulse_control.py",
       "src/scpn_quantum_control/hardware/pennylane_adapter.py",
@@ -6866,6 +6875,7 @@
       "tests/test_kuramoto_input_hardening.py",
       "tests/test_kuramoto_layout_cost.py",
       "tests/test_kuramoto_layout_optimiser.py",
+      "tests/test_kuramoto_layout_relaxation.py",
       "tests/test_kuramoto_public_face_hygiene.py",
       "tests/test_kuramoto_relocation_shims.py",
       "tests/test_kuramoto_standalone_package_decision.py",

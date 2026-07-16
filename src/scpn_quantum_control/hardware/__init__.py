@@ -210,6 +210,14 @@ from .kuramoto_layout_optimiser import (
     LayoutSearchResult,
     optimise_kuramoto_layout,
 )
+from .kuramoto_layout_relaxation import (
+    RelaxationSearchResult,
+    SinkhornRelaxationConfig,
+    coupling_graph_distances,
+    relax_kuramoto_layout,
+    sinkhorn_normalise,
+    swap_distance_surrogate,
+)
 from .noise_model import heron_r2_noise_model
 from .openpulse_control import (
     OpenPulseCalibrationWorkflow,
@@ -439,6 +447,12 @@ __all__ = [
     "LayoutSearchConfig",
     "LayoutSearchResult",
     "optimise_kuramoto_layout",
+    "RelaxationSearchResult",
+    "SinkhornRelaxationConfig",
+    "coupling_graph_distances",
+    "relax_kuramoto_layout",
+    "sinkhorn_normalise",
+    "swap_distance_surrogate",
     "S1_CONTROL_ARM",
     "S1_FEEDBACK_ARM",
     "S1FeedbackArmCircuit",
