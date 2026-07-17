@@ -585,6 +585,13 @@ Notebooks 14-47 form a systematic investigation of the FIM (Fisher Information
 Metric) strange loop mechanism. See [RESULTS_SUMMARY.md](https://github.com/anulum/scpn-quantum-control/blob/main/RESULTS_SUMMARY.md)
 for the full findings. All results are saved as JSON in `results/`.
 
+Since 2026-07-17 the exploratory notebooks NB15–47 execute weekly in the
+Notebook CI batch job (`execute-fim-batch`, four shards, schedule and manual
+dispatch only — never on pull requests); a failed scheduled shard opens a
+GitHub issue. NB14 and NB39 are excluded from all CI execution by design:
+they read `SCPN_IBM_TOKEN` and submit live hardware jobs, and quantum-second
+spend requires per-submit owner approval.
+
 | # | Notebook | Finding |
 |:-:|----------|---------|
 | 14 | DLA parity IBM hardware | Simulator: odd more robust. Hardware: circuit depth artefact |

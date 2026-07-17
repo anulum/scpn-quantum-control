@@ -27,6 +27,17 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   no longer fail-fasts across platforms.
 
 ### Added
+- 2026-07-17 — Weekly FIM notebook batch in Notebook CI (KIMI-10
+  remainder): the 32 exploratory investigation notebooks (NB15–47 minus
+  the live-hardware submitters) execute every Monday in four sharded
+  jobs (`execute-fim-batch`, schedule + manual dispatch only, never on
+  pull requests), so exploratory breakage surfaces instead of rotting
+  silently. NB14 and NB39 are excluded from all CI execution by design —
+  they read `SCPN_IBM_TOKEN` and submit live SamplerV2 jobs, and
+  quantum-second spend requires per-submit owner approval. The
+  issue-on-scheduled-failure step the workflow header always promised is
+  now actually implemented (first-party `gh issue create`, no
+  third-party action) for both the core and batch jobs.
 - 2026-07-17 — March 2026 campaign job identifiers are externally
   verifiable (KIMI-7): `scripts/build_march_job_id_commitments.py`
   publishes a nonce-blinded SHA-256 commitment for each of the 24 raw IBM

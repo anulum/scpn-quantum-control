@@ -13,14 +13,18 @@
 # this header always carried; external review KIMI-10 flagged the
 # non-blocking state as a silent-failure risk).
 #
-# The 34 FIM investigation notebooks (NB14-47) are NOT run here:
-# they produce per-notebook JSON in `results/` and are intended for
-# long-running exploratory analysis, not as publication gates. They
-# can be added per-batch once infrastructure is more mature.
+# The FIM investigation notebooks (NB15..47 except NB39) run in a
+# separate weekly batch job (`execute-fim-batch`, four shards,
+# schedule + dispatch only — never on pull requests) so exploratory
+# breakage is surfaced instead of rotting silently (KIMI-10 remainder).
+# NB14 and NB39 are excluded from all CI execution BY DESIGN: they read
+# `SCPN_IBM_TOKEN` and submit live SamplerV2 jobs, and quantum-second
+# spend requires per-submit owner approval — CI must never trigger it.
 #
-# Schedule: weekly Monday 06:00 UTC, plus on-demand dispatch. A
-# failed scheduled run opens an issue via
-# `peter-evans/create-issue-from-file`.
+# Schedule: core weekly Monday 06:00 UTC, FIM batch weekly Monday
+# 07:00 UTC, plus on-demand dispatch. A failed scheduled job opens an
+# issue via `gh issue create` (first-party token, no third-party
+# action).
 name: Notebook CI
 
 on:
@@ -33,6 +37,7 @@ on:
       - ".github/workflows/notebooks.yml"
   schedule:
     - cron: '0 6 * * 1'
+    - cron: '0 7 * * 1'
   workflow_dispatch:
 
 permissions:
@@ -41,6 +46,7 @@ permissions:
 
 jobs:
   execute:
+    if: github.event_name != 'schedule' || github.event.schedule == '0 6 * * 1'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -73,3 +79,92 @@ jobs:
             notebooks/11_surface_code_budget.ipynb \
             notebooks/12_trapped_ion_comparison.ipynb \
             notebooks/13_cross_repo_bridges.ipynb
+      - name: Open an issue on scheduled failure
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Scheduled Notebook CI failure: core tutorials (run ${GITHUB_RUN_ID})" \
+            --body "The weekly core tutorial notebook execution failed: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+  execute-fim-batch:
+    # Weekly exploratory batch (KIMI-10 remainder): NB15..47 except the
+    # live-hardware submitters NB14/NB39. Never runs on pull requests —
+    # exploratory runtimes must not gate merges; scheduled failures open
+    # an issue instead.
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '0 7 * * 1')
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: fim-a
+            notebooks: >-
+              notebooks/15_inverse_layer_optimisation.ipynb
+              notebooks/16_alpha_calibration_literature.ipynb
+              notebooks/17_hierarchical_n16_sync.ipynb
+              notebooks/18_clinical_tda_connectivity.ipynb
+              notebooks/19_directed_coupling_transfer_entropy.ipynb
+              notebooks/20_fim_phase_transition_order.ipynb
+              notebooks/21_scale_frustration_pathology.ipynb
+              notebooks/22_cross_frequency_observables.ipynb
+          - shard: fim-b
+            notebooks: >-
+              notebooks/23_geometric_curvature_knm.ipynb
+              notebooks/24_directed_knm_fim_n16.ipynb
+              notebooks/25_fim_scaling_law.ipynb
+              notebooks/26_phase_diagram_K_lambda.ipynb
+              notebooks/27_fim_stability_analysis.ipynb
+              notebooks/28_information_theoretic.ipynb
+              notebooks/29_multiscale_sync_dynamics.ipynb
+              notebooks/30_empirical_fim_estimation.ipynb
+          - shard: fim-c
+            notebooks: >-
+              notebooks/31_fim_mbl_interaction.ipynb
+              notebooks/32_chimera_states_fim.ipynb
+              notebooks/33_entropy_production.ipynb
+              notebooks/34_critical_slowing_down.ipynb
+              notebooks/35_anaesthesia_prediction.ipynb
+              notebooks/36_topology_universality.ipynb
+              notebooks/37_mean_field_self_consistent.ipynb
+              notebooks/38_fim_mbl_mechanism.ipynb
+          - shard: fim-d
+            notebooks: >-
+              notebooks/40_spo_cross_validation.ipynb
+              notebooks/41_stochastic_resonance_fim.ipynb
+              notebooks/42_delayed_fim.ipynb
+              notebooks/43_fim_critical_exponents.ipynb
+              notebooks/44_fim_modulated_learning.ipynb
+              notebooks/45_noise_as_purification.ipynb
+              notebooks/46_metabolic_scaling_prediction.ipynb
+              notebooks/47_winding_number_topological.ipynb
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install project + notebook dependencies
+        run: |
+          pip install --no-deps -e oscillatools/
+          pip install -e ".[dev,viz,ibm,tensor,mitigation,opensys,pennylane]"
+          pip install nbmake
+      - name: Execute FIM investigation notebooks (${{ matrix.shard }})
+        run: |
+          pytest \
+            --nbmake \
+            --nbmake-timeout=1800 \
+            --nbmake-kernel=python3 \
+            ${{ matrix.notebooks }}
+      - name: Open an issue on scheduled failure
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Scheduled Notebook CI failure: FIM batch ${{ matrix.shard }} (run ${GITHUB_RUN_ID})" \
+            --body "The weekly FIM notebook batch shard ${{ matrix.shard }} failed: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
