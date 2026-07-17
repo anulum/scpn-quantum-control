@@ -16,7 +16,7 @@ and raw-data path.
 
 | Area | Current public status | Canonical source |
 |---|---|---|
-| Package line | Version `0.10.0`, Python `>=3.11`, Qiskit `>=2.2,<3.0`. | `pyproject.toml`, `CHANGELOG.md` |
+| Package line | Version `1.0.0`, Python `>=3.11`, Qiskit `>=2.2,<3.0`. | `pyproject.toml`, `CHANGELOG.md` |
 | Generic compiler entry point | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` problems and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. | `docs/kuramoto_core_facade.md` |
 | Core-package licence boundary | Possible future lightweight core split is documented, but no permissive relicensing has occurred. | `docs/core_package_boundary.md` |
 | Baseline hardware campaign | `ibm_fez` Heron r2 baseline artefacts are retained as legacy QPU evidence. Quote only values that name a committed raw artefact or retrieval file; do not use this campaign as proof of broad advantage. | `results/ibm_hardware_2026-03-28/`, `results/march_2026/`, `results/IBM_HARDWARE_COMPLETE_AUDIT_2026-03-30.md` |

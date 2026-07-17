@@ -4,6 +4,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-17
+
+First stable release. Consolidates the post-0.10.0 control-surface,
+hardware-runner, analysis-stack, and differentiable-programming work
+(KIMI-7 through KIMI-12 and the KT/FA/RC campaign series) behind an
+explicit stable public-API commitment. Public claims are evidence-governed
+with dated amendments; published-record sources are frozen and corrections
+land on live surfaces or new Zenodo versions.
+
 ### Security
 - 2026-07-17 — Torch graph-artifact deserialisation is digest-gated
   (KIMI-12): `torch.load(..., weights_only=False)` in the AOTAutograd
