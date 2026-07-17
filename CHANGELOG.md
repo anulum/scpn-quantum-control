@@ -27,6 +27,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   no longer fail-fasts across platforms.
 
 ### Added
+- 2026-07-17 — March 2026 campaign job identifiers are externally
+  verifiable (KIMI-7): `scripts/build_march_job_id_commitments.py`
+  publishes a nonce-blinded SHA-256 commitment for each of the 24 raw IBM
+  job identifiers behind the March artefact labels (raw identifiers and
+  nonces stay in a private, git-ignored sidecar; a disclosed
+  `(raw id, nonce)` pair verifies against its commitment), and
+  `scripts/retrieve_march_flagship_receipts.py` records dated read-only
+  IBM retrieval receipts bound to those commitments — 24/24 jobs report
+  `DONE` on `ibm_fez`, creation dates 2026-03-18 to 2026-03-29, 160.0
+  IBM-reported usage seconds in total. Both outputs live in
+  `data/march_flagship_verifiability/` behind fail-closed leak checks
+  that refuse to write any payload containing a raw identifier, nonce,
+  or API token. Both scripts are 100% line+branch tested.
 - 2026-07-17 — `oscillatools 0.1.0` published to PyPI (tag
   `oscillatools-v0.1.0`, trusted publishing + Sigstore, verified at source
   by registry JSON and `pip download`): the declared

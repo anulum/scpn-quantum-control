@@ -309,6 +309,17 @@ must be cited with artefact paths from `results/ibm_hardware_2026-03-28/`,
 `results/march_2026/`, or the hardware ledger, and they are not evidence for
 broad quantum advantage or any frontier claim.
 
+> **Verifiability note (2026-07-17).** Every job identifier behind these
+> legacy artefacts is covered by a published hash commitment and a dated,
+> read-only IBM retrieval receipt in
+> `data/march_flagship_verifiability/`: 24/24 committed jobs report `DONE`
+> on `ibm_fez` with creation dates 2026-03-18 to 2026-03-29 and 160.0
+> IBM-reported usage seconds in total. Raw identifiers stay in the private
+> mapping; each committed `(raw id, nonce)` pair is disclosable to referees
+> and verifies against its published SHA-256 commitment
+> (`scripts/build_march_job_id_commitments.py`,
+> `scripts/retrieve_march_flagship_receipts.py`).
+
 ### Bell Test and QKD
 
 ![Hardware: CHSH + QBER](figures/publication/fig10_ibm_hardware.png)

@@ -13,7 +13,7 @@
     "python_model_source_modules": 571,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1017
+    "test_files": 1019
   },
   "documentation": {
     "examples": [
@@ -6586,6 +6586,7 @@
       "tests/test_bkt_universals.py",
       "tests/test_bridge_feedback_contracts.py",
       "tests/test_bridge_properties.py",
+      "tests/test_build_march_job_id_commitments.py",
       "tests/test_build_studio_wasm_bundle.py",
       "tests/test_campaign_parameter_generators.py",
       "tests/test_capability_manifest.py",
@@ -7319,6 +7320,7 @@
       "tests/test_report_s2_scaling_claim_boundary.py",
       "tests/test_reproducible_comparison.py",
       "tests/test_result_pack_seal.py",
+      "tests/test_retrieve_march_flagship_receipts.py",
       "tests/test_retrieve_phase3_large_system_ibm.py",
       "tests/test_rl_discovery_agent_branches.py",
       "tests/test_robustness_certificate.py",

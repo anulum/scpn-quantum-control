@@ -1,0 +1,226 @@
+{
+  "schema": "scpn.march_flagship_retrieval_receipts.v1",
+  "retrieved_at_utc": "2026-07-17T01:10:35Z",
+  "commitments_schema": "scpn.march_flagship_job_id_commitments.v1",
+  "commitments_sha256": "cdeba2530ce892377dd3d9902d6faf19e96cc92bdb781f67da7c2bc5721c5309",
+  "receipt_count": 24,
+  "ok_count": 24,
+  "receipts": [
+    {
+      "public_label": "ibm-run-21bd58f96c88e04b",
+      "commitment_sha256": "04ac8e6f42d812286a91494105c6c4b401bacf1dd8bb00a915eb6697bf0028b0",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-28T02:16:24.468553+01:00",
+      "usage_seconds": 7.0
+    },
+    {
+      "public_label": "ibm-run-245f36b7a6aa4b1d",
+      "commitment_sha256": "47df57caec643ac8065e75aab06020608ee0a2ffc40e65836c05976a7df1b2a5",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-18T13:15:39.735104+01:00",
+      "usage_seconds": 6.0
+    },
+    {
+      "public_label": "ibm-run-25c25a17c323afbd",
+      "commitment_sha256": "339822de34336f1417c893e9ee8e145683c28db0581b004e802f15576553a9ad",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-28T02:16:28.463882+01:00",
+      "usage_seconds": 5.0
+    },
+    {
+      "public_label": "ibm-run-2ddff7bbc36988b7",
+      "commitment_sha256": "0d6af73970c7b545357431ceef53ca80e0ed10ff31c9baf524f0e8fec06c4dac",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-18T13:14:33.762840+01:00",
+      "usage_seconds": 5.0
+    },
+    {
+      "public_label": "ibm-run-30ad4b2a6aa3293e",
+      "commitment_sha256": "2a548ff59c8b89baeee902ab661ae520cd20f9050d5ce45239a6788c931fb545",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-28T02:30:33.522943+01:00",
+      "usage_seconds": 4.0
+    },
+    {
+      "public_label": "ibm-run-3821495c7a7a1e0f",
+      "commitment_sha256": "ae10776a7f6ff71ec2c9f61c935f21ed27d35d37469551788610bb7b58d5d895",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-18T13:14:21.090013+01:00",
+      "usage_seconds": 5.0
+    },
+    {
+      "public_label": "ibm-run-3f4213ef27145b92",
+      "commitment_sha256": "1fe452b1a0818e79b9ffd01778b166705bbeb5be7b1565c20f9ac2cb8b7f4bdb",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-28T02:16:25.815814+01:00",
+      "usage_seconds": 6.0
+    },
+    {
+      "public_label": "ibm-run-5f238ed35d404e61",
+      "commitment_sha256": "4e85decab6a5725bb371bdf07a3561c0c261376df5c6cef4f1a31c7f5cb19fa7",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-18T13:15:09.324366+01:00",
+      "usage_seconds": 5.0
+    },
+    {
+      "public_label": "ibm-run-628a2e51545514d4",
+      "commitment_sha256": "27247a6a35909d3cb1473e87dbe88822a6110879f357579ee94b3f73642aef89",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-28T02:01:26.335031+01:00",
+      "usage_seconds": 8.0
+    },
+    {
+      "public_label": "ibm-run-76f89da60bcd2176",
+      "commitment_sha256": "3ea35c35988140ff29f7be7801d7452754f50a92ad0ecc3e932033b6605b6e2b",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-28T02:30:32.162164+01:00",
+      "usage_seconds": 5.0
+    },
+    {
+      "public_label": "ibm-run-8dc620c9d5cd90be",
+      "commitment_sha256": "f5449e5dc39fb12d5f604d3b8129bc1817f49d007219382db7bb13fb20ffd7dc",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-28T02:01:25.165333+01:00",
+      "usage_seconds": 5.0
+    },
+    {
+      "public_label": "ibm-run-9317279194d1c740",
+      "commitment_sha256": "d440cd3af08b6f16ad5944acdfb26a8c98bd7e5098c2c9c5886abec154c87d80",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-18T13:07:14.895520+01:00",
+      "usage_seconds": 2.0
+    },
+    {
+      "public_label": "ibm-run-93b07b15459915d2",
+      "commitment_sha256": "6d47ebcf8e3ce00aa8fe64ef03113b913e21a86a79746946c9cbc066f47b0741",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-18T13:10:10.918783+01:00",
+      "usage_seconds": 2.0
+    },
+    {
+      "public_label": "ibm-run-abd725f4a5d05f0c",
+      "commitment_sha256": "e23298a2cb8bac09ba0f8cdfe94abe28def5eb83ec19c7c4680a0061b4ab0371",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-28T01:48:20.487359+01:00",
+      "usage_seconds": 5.0
+    },
+    {
+      "public_label": "ibm-run-ae638f0fd47eeac5",
+      "commitment_sha256": "c7015e95e3494baf06b60598ae8b0e8d440aa514e7ccb468e6f219ba656fdfd7",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-28T01:48:18.348373+01:00",
+      "usage_seconds": 6.0
+    },
+    {
+      "public_label": "ibm-run-af44179a8a3124c0",
+      "commitment_sha256": "2fa84fa7770e47c37181141f25ea38d0f778dee02735e1fec1600c1910912069",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-28T01:48:19.358434+01:00",
+      "usage_seconds": 5.0
+    },
+    {
+      "public_label": "ibm-run-b6d84688f60da3ca",
+      "commitment_sha256": "2bcf018ed6d6d3da9935b82dd7c7eaf37ca13de8f1a57dbe8626f47b4d1e3baa",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-18T13:15:21.437058+01:00",
+      "usage_seconds": 5.0
+    },
+    {
+      "public_label": "ibm-run-d0ff68f141e586b2",
+      "commitment_sha256": "6f14e570389bc2e3939908c708e6fe10f015b8ccd675e606cbba78363201aede",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-29T12:22:08.109594+02:00",
+      "usage_seconds": 23.0
+    },
+    {
+      "public_label": "ibm-run-d3199dfdb0f37023",
+      "commitment_sha256": "7b23588c299a81ebb3bfc35386f9dae1882ad942b70381167247662b2cf74bef",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-28T02:16:27.214731+01:00",
+      "usage_seconds": 5.0
+    },
+    {
+      "public_label": "ibm-run-dba7b17d1f4089cd",
+      "commitment_sha256": "dd38386e48676758e8cabaf9d58060a5029f6af0b9a0ba3b97795c5f95c40f4e",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-18T13:14:57.305735+01:00",
+      "usage_seconds": 5.0
+    },
+    {
+      "public_label": "ibm-run-ddcd41b8f1ba121b",
+      "commitment_sha256": "fe32e9fc5c8a087f7c69e877cb13bee51b5408677b0021b0dbe977117f490b0f",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-28T02:01:23.758945+01:00",
+      "usage_seconds": 5.0
+    },
+    {
+      "public_label": "ibm-run-e013d50173ffe3c7",
+      "commitment_sha256": "f9345cf923f9cda9430953fd066ead2f82d45ce555e96ce61171e131136902bc",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-29T12:22:09.617085+02:00",
+      "usage_seconds": 23.0
+    },
+    {
+      "public_label": "ibm-run-ed48720009580850",
+      "commitment_sha256": "e4784611b0520f94a36e46dbad2b92ad1f97f7c1337f963e3a51f6fabcf490ba",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-18T13:15:41.771181+01:00",
+      "usage_seconds": 6.0
+    },
+    {
+      "public_label": "ibm-run-f8c476e1dc763a05",
+      "commitment_sha256": "570f44bd886a2d24a06f3813f731a88f9cd2694471b0a30d6cc9f87535b9dff6",
+      "retrieval": "ok",
+      "backend": "ibm_fez",
+      "status": "DONE",
+      "creation_date_utc": "2026-03-28T02:30:36.548991+01:00",
+      "usage_seconds": 7.0
+    }
+  ]
+}
