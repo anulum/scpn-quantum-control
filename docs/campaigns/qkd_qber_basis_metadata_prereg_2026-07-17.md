@@ -98,5 +98,5 @@ per the standing rules.
 
 ## Status
 
-- [ ] Owner GO with exact shot plan (per submission)
-- [ ] Executed / analysed / packed / ledgered
+- [x] Owner GO with exact shot plan — given 2026-07-17 (18 circuits, 4096/8192 shots, estimate 19.8 s, cap 60 s)
+- [x] Executed / analysed / packed / ledgered — 2026-07-17, job `d9cosfcjeosc73fgikgg`, 38 usage seconds; pack in `data/qkd_qber_basis_metadata/`, ledger row added

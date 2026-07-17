@@ -27,6 +27,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   no longer fail-fasts across platforms.
 
 ### Added
+- 2026-07-17 — Matched-basis QBER re-run EXECUTED under owner GO (KIMI-8
+  closure): `ibm_fez` job `d9cosfcjeosc73fgikgg`, 38 usage seconds,
+  hash-bound pack in `data/qkd_qber_basis_metadata/`. Matched-basis
+  mismatch 1.39%/2.71% (ZZ) and 1.68%/3.00% (XX) raw, 0.51%/1.09% and
+  0.74%/1.33% mitigated — below the committed March naive-sift band
+  (1.95–3.70%) and far below the published 5.5%/5.8%, whose
+  non-derivability caveat stands; the new dated record is the citable
+  matched-basis error rate. Ledger row and `docs/results.md` follow-up
+  note added; no QKD security, key-rate, or viability claim.
 - 2026-07-17 — Preregistered matched-basis QBER re-run submitter (KIMI-8,
   `scripts/submit_qkd_qber_basis_metadata.py`, 100% line+branch tested,
   execution owner-gated): re-measures the matched-basis mismatch rate of

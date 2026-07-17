@@ -78,6 +78,25 @@ theoretical, simulated, hardware-measured, mitigated, or noise-limited.
 > The value stands as reported by the original analysis pipeline; a
 > derivation script plus basis metadata (or a re-run capturing them) is
 > required before this row is used beyond its legacy-artefact status.
+>
+> **Follow-up (2026-07-17), preregistered re-run executed:** a
+> matched-basis re-run on two fresh Bell pairs with the basis of every pub
+> committed in the pack (`ibm_fez`, job `d9cosfcjeosc73fgikgg`, 38 usage
+> seconds; preregistration
+> `docs/campaigns/qkd_qber_basis_metadata_prereg_2026-07-17.md`, hash-bound
+> pack in `data/qkd_qber_basis_metadata/`) measures matched-basis mismatch
+> rates of 1.39%/2.71% (ZZ, pairs q0–q1/q2–q3) and 1.68%/3.00% (XX) raw,
+> falling to 0.51%/1.09% and 0.74%/1.33% with full-basis readout
+> mitigation (binomial σ 0.18–0.27%). A committed pure-arithmetic naive
+> sift of the March counts under explicitly assumed pub bases gives
+> 1.95–3.70%. The new mitigated rates fall BELOW that band (the
+> preregistered decision rule fired its outside-band branch downwards),
+> and everything measured sits far below the published 5.5%/5.8%. The
+> non-derivability caveat above STANDS: the published values remain
+> unsupported by artefact-derivable arithmetic, this dated record is the
+> citable matched-basis error rate, and no QKD security, key-rate, or
+> viability claim follows from it (fixed per-pub bases, no per-shot
+> randomness, no sifting protocol).
 
 ---
 

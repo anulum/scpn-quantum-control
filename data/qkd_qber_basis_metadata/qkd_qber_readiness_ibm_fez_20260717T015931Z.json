@@ -1,0 +1,96 @@
+{
+  "schema": "scpn_qkd_qber_basis_metadata_readiness_v1",
+  "timestamp_utc": "20260717T015931Z",
+  "experiment_id": "qkd_qber_basis_metadata_2026-07-17",
+  "preregistration": "docs/campaigns/qkd_qber_basis_metadata_prereg_2026-07-17.md",
+  "backend": "ibm_fez",
+  "hardware_submission": false,
+  "status": "ready_for_submission",
+  "layout": {
+    "physical_qubits": [
+      74,
+      75,
+      22,
+      23
+    ],
+    "edge_errors": [
+      0.002494720583077009,
+      0.0017977451416209544
+    ],
+    "readout_errors": [
+      0.004638671875,
+      0.002685546875,
+      0.00439453125,
+      0.0048828125
+    ]
+  },
+  "basis_metadata": [
+    {
+      "pub_index": 0,
+      "circuit_name": "qkd_qber_zz",
+      "alice_basis": "Z",
+      "bob_basis": "Z",
+      "pairs": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "per_shot_random_basis": false
+    },
+    {
+      "pub_index": 1,
+      "circuit_name": "qkd_qber_xx",
+      "alice_basis": "X",
+      "bob_basis": "X",
+      "pairs": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "per_shot_random_basis": false
+    }
+  ],
+  "shots": 4096,
+  "calibration_shots": 8192,
+  "n_circuits": 18,
+  "transpiled_depths": [
+    8,
+    11,
+    1,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2,
+    2
+  ],
+  "max_depth": 60,
+  "readout_error_abort": 0.15,
+  "estimated_qpu_seconds": 19.8,
+  "max_qpu_seconds": 60.0,
+  "seed_transpiler": 20260717,
+  "reasons": [
+    "layout readout errors within the correctable abort threshold",
+    "transpiled depths within the ceiling",
+    "estimate within the approved QPU-second cap"
+  ]
+}

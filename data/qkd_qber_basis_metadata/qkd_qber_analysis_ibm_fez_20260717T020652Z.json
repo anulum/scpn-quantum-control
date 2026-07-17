@@ -1,0 +1,160 @@
+{
+  "schema": "scpn_qkd_qber_basis_metadata_analysis_v1",
+  "experiment_id": "qkd_qber_basis_metadata_2026-07-17",
+  "preregistration": "docs/campaigns/qkd_qber_basis_metadata_prereg_2026-07-17.md",
+  "parent_artifact": "results/ibm_hardware_2026-03-28/qkd_qber_4q.json",
+  "basis_metadata": [
+    {
+      "pub_index": 0,
+      "circuit_name": "qkd_qber_zz",
+      "alice_basis": "Z",
+      "bob_basis": "Z",
+      "pairs": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "per_shot_random_basis": false
+    },
+    {
+      "pub_index": 1,
+      "circuit_name": "qkd_qber_xx",
+      "alice_basis": "X",
+      "bob_basis": "X",
+      "pairs": [
+        [
+          0,
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "per_shot_random_basis": false
+    }
+  ],
+  "measurements": [
+    {
+      "pub_index": 0,
+      "basis": "Z",
+      "pair": [
+        0,
+        1
+      ],
+      "mismatch_rate": 0.013916015625,
+      "sigma_binomial": 0.0018303512175591606,
+      "mitigated_mismatch_rate": 0.005146443374228611,
+      "mitigated_sigma_note": "binomial sigma at the raw shot count; readout-inversion error not propagated, quasi-probabilities unclipped"
+    },
+    {
+      "pub_index": 0,
+      "basis": "Z",
+      "pair": [
+        2,
+        3
+      ],
+      "mismatch_rate": 0.027099609375,
+      "sigma_binomial": 0.0025370891633010556,
+      "mitigated_mismatch_rate": 0.010866451258407475,
+      "mitigated_sigma_note": "binomial sigma at the raw shot count; readout-inversion error not propagated, quasi-probabilities unclipped"
+    },
+    {
+      "pub_index": 1,
+      "basis": "X",
+      "pair": [
+        0,
+        1
+      ],
+      "mismatch_rate": 0.016845703125,
+      "sigma_binomial": 0.0020108303809868444,
+      "mitigated_mismatch_rate": 0.007367814906289566,
+      "mitigated_sigma_note": "binomial sigma at the raw shot count; readout-inversion error not propagated, quasi-probabilities unclipped"
+    },
+    {
+      "pub_index": 1,
+      "basis": "X",
+      "pair": [
+        2,
+        3
+      ],
+      "mismatch_rate": 0.030029296875,
+      "sigma_binomial": 0.0026666862173647435,
+      "mitigated_mismatch_rate": 0.013302264912395239,
+      "mitigated_sigma_note": "binomial sigma at the raw shot count; readout-inversion error not propagated, quasi-probabilities unclipped"
+    }
+  ],
+  "march_naive_sift": {
+    "artifact": "results/ibm_hardware_2026-03-28/qkd_qber_4q.json",
+    "assumed_pub_bases": [
+      "Z",
+      "X"
+    ],
+    "assumption_note": "the committed artefact carries no basis metadata; these pub-to-basis assignments are an assumption stated for reproducibility, not a record",
+    "published_qber": {
+      "zz": 0.055,
+      "xx": 0.058
+    },
+    "entries": [
+      {
+        "pub_index": 0,
+        "assumed_basis": "Z",
+        "pair": [
+          0,
+          1
+        ],
+        "mismatch_rate": 0.0195,
+        "sigma_binomial": 0.0021863068174435172,
+        "shots": 4000
+      },
+      {
+        "pub_index": 0,
+        "assumed_basis": "Z",
+        "pair": [
+          2,
+          3
+        ],
+        "mismatch_rate": 0.037,
+        "sigma_binomial": 0.002984585398342624,
+        "shots": 4000
+      },
+      {
+        "pub_index": 1,
+        "assumed_basis": "X",
+        "pair": [
+          0,
+          1
+        ],
+        "mismatch_rate": 0.02675,
+        "sigma_binomial": 0.00255119763542537,
+        "shots": 4000
+      },
+      {
+        "pub_index": 1,
+        "assumed_basis": "X",
+        "pair": [
+          2,
+          3
+        ],
+        "mismatch_rate": 0.03225,
+        "sigma_binomial": 0.0027932927478157388,
+        "shots": 4000
+      }
+    ]
+  },
+  "decision_rule": {
+    "march_naive_sift_band": [
+      0.0195,
+      0.037
+    ],
+    "all_mitigated_rates_within_2_sigma_of_band": false,
+    "preregistered_reading": "new rates sit outside the March naive-sift band: the March analysis plausibly included unrecorded effects; the caveat stands and this dated record is the citable error rate"
+  },
+  "claim_boundary": "Matched-basis mismatch rate of the entangled source only: no QKD security, key-rate, or viability claim; the March record's non-derivability caveat stands regardless; the published March 2026 record stays as it is.",
+  "raw_counts_sha256": "3cbbcc630d053997ee335691994a246deb292afc9f67e0a76f7a219c25d445e1"
+}
