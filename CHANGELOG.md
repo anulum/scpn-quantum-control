@@ -27,6 +27,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   no longer fail-fasts across platforms.
 
 ### Added
+- 2026-07-17 — Committed tensor-network classical baselines for the
+  flagship workloads (KIMI-11, `scripts/tn_baseline_flagship_workloads.py`,
+  100% line+branch tested, pure classical): bounded-χ Aer MPS on the
+  identical logical Trotter bodies of the 16-qubit UPDE and 8-oscillator
+  Kuramoto workloads versus the exact statevector reference. UPDE-16
+  reproduces R to 6.3e-4 already at χ=2 and Kuramoto-8 converges at χ=4;
+  hash-bound sweep artefact in `data/tn_baseline_flagship/`. This is the
+  gPEPS-style-rebuttal defence: the repository has never claimed quantum
+  advantage for these workloads, and their classical simulability is now
+  stated with committed numbers instead of assertion.
 - 2026-07-17 — Matched-basis QBER re-run EXECUTED under owner GO (KIMI-8
   closure): `ibm_fez` job `d9cosfcjeosc73fgikgg`, 38 usage seconds,
   hash-bound pack in `data/qkd_qber_basis_metadata/`. Matched-basis

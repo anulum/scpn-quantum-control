@@ -1,0 +1,185 @@
+{
+  "schema": "scpn.tn_baseline_flagship_workloads.v1",
+  "generated_utc": "20260717T024000Z",
+  "basis_gates": [
+    "cx",
+    "rz",
+    "ry",
+    "rx",
+    "h",
+    "x",
+    "sdg",
+    "id"
+  ],
+  "claim_boundary": "Classical-simulability quantification only: the repository has never claimed quantum advantage for these workloads, and this artefact commits the concrete bounded-\u03c7 MPS numbers that pre-empt a gPEPS-style rebuttal. No statement about hardware quality or any other workload follows from it.",
+  "workloads": [
+    {
+      "workload": "kuramoto8",
+      "n_qubits": 8,
+      "evolution_time": 0.1,
+      "trotter_reps": 2,
+      "parent_artifact": "results/ibm_hardware_2026-03-28/kuramoto_8osc_zne.json",
+      "exact_reference": {
+        "x_expectations": [
+          0.9401490757266369,
+          0.4000659317571576,
+          0.7541347197565631,
+          0.9487150569426002,
+          0.6548184078045006,
+          -0.4874640191938147,
+          0.8501198743212381,
+          0.5890567720944324
+        ],
+        "y_expectations": [
+          -0.2244453629736492,
+          -0.3925648804095717,
+          -0.018691077746290745,
+          -0.28995913921439675,
+          0.012259135922137527,
+          0.2241528586874762,
+          -0.12436931339612141,
+          0.018924890328446905
+        ],
+        "order_parameter_r": 0.5896275051558127
+      },
+      "r_tolerance": 0.001,
+      "chi_sweep": [
+        {
+          "bond_dimension": 1,
+          "order_parameter_r": 0.7500000000000003,
+          "r_abs_error": 0.16037249484418759,
+          "max_component_abs_error": 0.5999340682428427,
+          "wall_time_ms": 56.93843401968479
+        },
+        {
+          "bond_dimension": 2,
+          "order_parameter_r": 0.5921586952324538,
+          "r_abs_error": 0.0025311900766410433,
+          "max_component_abs_error": 0.005214875803297436,
+          "wall_time_ms": 29.31867795996368
+        },
+        {
+          "bond_dimension": 4,
+          "order_parameter_r": 0.5897667164135968,
+          "r_abs_error": 0.0001392112577840443,
+          "max_component_abs_error": 0.0002934271846647407,
+          "wall_time_ms": 29.989799950271845
+        },
+        {
+          "bond_dimension": 8,
+          "order_parameter_r": 0.5896282729033179,
+          "r_abs_error": 7.677475051259819e-07,
+          "max_component_abs_error": 2.3033741838318633e-06,
+          "wall_time_ms": 36.92275506909937
+        },
+        {
+          "bond_dimension": 16,
+          "order_parameter_r": 0.5896275053395292,
+          "r_abs_error": 1.837164864681995e-10,
+          "max_component_abs_error": 1.011077443990871e-09,
+          "wall_time_ms": 48.89187298249453
+        },
+        {
+          "bond_dimension": 32,
+          "order_parameter_r": 0.5896275053395292,
+          "r_abs_error": 1.837164864681995e-10,
+          "max_component_abs_error": 1.011077443990871e-09,
+          "wall_time_ms": 47.4454170325771
+        }
+      ],
+      "converged_bond_dimension": 4
+    },
+    {
+      "workload": "upde16",
+      "n_qubits": 16,
+      "evolution_time": 0.05,
+      "trotter_reps": 1,
+      "parent_artifact": "results/ibm_hardware_2026-03-28/upde_16_dd.json",
+      "exact_reference": {
+        "x_expectations": [
+          0.9635147532444657,
+          0.48087196474271654,
+          0.7509896942241588,
+          0.9860810839495376,
+          0.6560601481592795,
+          -0.5665776698200633,
+          0.868465239845487,
+          0.5961382820536295,
+          0.7746071715319527,
+          0.9665611485009185,
+          0.4769579854083598,
+          -0.07929795792242146,
+          0.7970057193495983,
+          0.9773465995255873,
+          0.28364036633326306,
+          0.838388956808324
+        ],
+        "y_expectations": [
+          -0.11008278196880378,
+          -0.215204259501655,
+          0.002790823111702431,
+          -0.14616768359373808,
+          0.029921133709542514,
+          0.08823416212710157,
+          -0.03489397337192559,
+          0.07183304917901613,
+          -0.25251735120767194,
+          -0.19012411786347766,
+          0.09476993851650824,
+          -0.12356059686961021,
+          -0.0049053487785617,
+          -0.12271002346373418,
+          -0.190351451721074,
+          -0.04145300845089253
+        ],
+        "order_parameter_r": 0.6148466660668391
+      },
+      "r_tolerance": 0.001,
+      "chi_sweep": [
+        {
+          "bond_dimension": 1,
+          "order_parameter_r": 0.74999999999999,
+          "r_abs_error": 0.13515333393315088,
+          "max_component_abs_error": 0.9207020420775788,
+          "wall_time_ms": 60.94770203344524
+        },
+        {
+          "bond_dimension": 2,
+          "order_parameter_r": 0.6154759687190532,
+          "r_abs_error": 0.0006293026522140588,
+          "max_component_abs_error": 0.00150775473491227,
+          "wall_time_ms": 98.86185999494046
+        },
+        {
+          "bond_dimension": 4,
+          "order_parameter_r": 0.6150802730129173,
+          "r_abs_error": 0.00023360694607821308,
+          "max_component_abs_error": 0.000676131137200886,
+          "wall_time_ms": 83.24998198077083
+        },
+        {
+          "bond_dimension": 8,
+          "order_parameter_r": 0.6148537637006396,
+          "r_abs_error": 7.097633800468017e-06,
+          "max_component_abs_error": 1.7432007900608504e-05,
+          "wall_time_ms": 165.57114094030112
+        },
+        {
+          "bond_dimension": 16,
+          "order_parameter_r": 0.6148467579456788,
+          "r_abs_error": 9.187883964756338e-08,
+          "max_component_abs_error": 3.542410154100395e-07,
+          "wall_time_ms": 299.18995301704854
+        },
+        {
+          "bond_dimension": 32,
+          "order_parameter_r": 0.6148466673073906,
+          "r_abs_error": 1.2405514393520889e-09,
+          "max_component_abs_error": 1.4461840946999871e-08,
+          "wall_time_ms": 908.8893299922347
+        }
+      ],
+      "converged_bond_dimension": 2
+    }
+  ]
+}
