@@ -8,12 +8,12 @@
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 836,
-    "public_documentation_pages": 277,
+    "public_documentation_pages": 278,
     "python_model_classes": 1038,
     "python_model_source_modules": 571,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1019
+    "test_files": 1020
   },
   "documentation": {
     "examples": [
@@ -235,6 +235,7 @@
       "docs/campaigns/phase3_native_decomposition_readiness_2026-05-07.md",
       "docs/campaigns/phase3_state_layout_dla_manifest_2026-05-07.md",
       "docs/campaigns/phase3_vqs_alternative_readiness_2026-05-07.md",
+      "docs/campaigns/qkd_qber_basis_metadata_prereg_2026-07-17.md",
       "docs/campaigns/quantum_kuramoto_api_contract_2026-05-07.md",
       "docs/campaigns/quantum_kuramoto_boundary_review_2026-05-07.md",
       "docs/campaigns/readout_full_basis_calibration_prereg_2026-05-06.md",
@@ -7422,6 +7423,7 @@
       "tests/test_submit_max_width_kuramoto_xy.py",
       "tests/test_submit_onqpu_dynamic_feedback.py",
       "tests/test_submit_phase3_large_system_ibm.py",
+      "tests/test_submit_qkd_qber_basis_metadata.py",
       "tests/test_submit_s1_ibm_feedback_pair.py",
       "tests/test_submit_s1_readout_zne_ibm.py",
       "tests/test_submit_s1b_xy_observable_pair.py",

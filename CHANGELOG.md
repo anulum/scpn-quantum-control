@@ -27,6 +27,20 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   no longer fail-fasts across platforms.
 
 ### Added
+- 2026-07-17 — Preregistered matched-basis QBER re-run submitter (KIMI-8,
+  `scripts/submit_qkd_qber_basis_metadata.py`, 100% line+branch tested,
+  execution owner-gated): re-measures the matched-basis mismatch rate of
+  two Bell pairs with the basis of every pub committed in the pack — the
+  record the March artefact lacks — with full-basis readout mitigation on
+  and off and binomial σ at the raw shot count. The analysis also
+  recomputes the March artefact's naive matched-basis sift under
+  explicitly stated assumed bases (pure arithmetic on the committed
+  counts) next to the new values, and states the honesty boundary up
+  front: fixed per-pub bases, no per-shot randomness, no sifting protocol,
+  no QKD security or key-rate claim either way. Preregistration:
+  `docs/campaigns/qkd_qber_basis_metadata_prereg_2026-07-17.md`
+  (18 circuits ≈ 20 estimated QPU seconds, hard cap 60 s, per-submit
+  owner GO required).
 - 2026-07-17 — Weekly FIM notebook batch in Notebook CI (KIMI-10
   remainder): the 32 exploratory investigation notebooks (NB15–47 minus
   the live-hardware submitters) execute every Monday in four sharded
