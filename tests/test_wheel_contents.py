@@ -249,11 +249,11 @@ def test_real_wheel_repack_accepts_a_platform_extension(
         built_wheels.main,
         tmp_path,
         add_extension,
-        filename=("scpn_quantum_control-0.10.0-cp312-abi3-manylinux_2_17_x86_64.whl"),
+        filename=("scpn_quantum_control-1.0.0-cp312-abi3-manylinux_2_17_x86_64.whl"),
     )
     expectation = WheelExpectation(
         "scpn-quantum-control",
-        "0.10.0",
+        "1.0.0",
         ("scpn_quantum_control", "scpn"),
         ("scpn_quantum_control.native",),
     )

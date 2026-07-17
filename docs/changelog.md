@@ -10,6 +10,30 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md).
 
+## [1.0.0] - 2026-07-17
+
+First stable release. The version carriers move to `1.0.0` and the public
+API is placed under an explicit stable-contract commitment.
+
+### Security
+- Torch graph-artifact deserialisation is digest-gated (KIMI-12): the
+  AOTAutograd and dynamic-shape export replays reach
+  `torch.load(..., weights_only=False)` / `torch.export.load` only after the
+  on-disk artefact re-hashes to the SHA-256 recorded at save time, and the
+  serialisation-surface audit flags every ungated `weights_only=False`.
+
+### Added
+- Verifiability and evidence: March job-id commitments with IBM retrieval
+  receipts, committed tensor-network classical baselines for the flagship
+  workloads, and the preregistered matched-basis QBER re-run (KIMI-7/8/11).
+
+### Changed
+- Public claims are evidence-governed with dated amendments; published-record
+  sources are frozen behind a SHA-256 guard and corrections land on live
+  surfaces or new Zenodo versions, never in place. The first real FIM
+  notebook-batch execution fixed the kernel-cwd and external-dataset
+  exclusions in Notebook CI.
+
 ## [0.10.0] - 2026-06-26
 
 ### Added
