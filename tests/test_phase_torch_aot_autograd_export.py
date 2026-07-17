@@ -193,7 +193,7 @@ def test_torch_aot_autograd_export_helper_failures_are_targeted(
     with pytest.raises(RuntimeError, match="torch.save"):
         aot_export._torch_save(object(), object(), Path("unused.pt"))
     with pytest.raises(RuntimeError, match="torch.load"):
-        aot_export._torch_load_graph(object(), Path("unused.pt"))
+        aot_export._torch_load_graph(object(), Path("unused.pt"), expected_sha256="0" * 64)
     with pytest.raises(RuntimeError, match="must be a tuple"):
         aot_export._as_tuple("not-a-tuple", name="loaded AOTAutograd output")
 
@@ -341,3 +341,29 @@ def _empty_graph_record(kind: str) -> aot_export.PhaseTorchAOTAutogradGraphRecor
         graph_code_sha256="bad",
         operation_names=(),
     )
+
+
+def test_torch_save_returns_the_artifact_sha256(tmp_path: Path) -> None:
+    """The save helper returns the digest of the bytes it wrote."""
+    import hashlib
+
+    path = tmp_path / "artifact.pt"
+    digest = aot_export._torch_save(torch, torch.tensor([1.0, 2.0]), path)
+    assert digest == hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def test_torch_load_graph_verifies_the_digest_gate(tmp_path: Path) -> None:
+    """A matching digest loads; the gate never reaches torch.load otherwise."""
+    path = tmp_path / "artifact.pt"
+    digest = aot_export._torch_save(torch, torch.tensor([3.0]), path)
+    loaded = aot_export._torch_load_graph(torch, path, expected_sha256=digest)
+    assert float(loaded[0]) == 3.0
+
+
+def test_torch_load_graph_fails_closed_on_tampered_artifact(tmp_path: Path) -> None:
+    """Tampered bytes must raise before any deserialisation happens."""
+    path = tmp_path / "artifact.pt"
+    digest = aot_export._torch_save(torch, torch.tensor([4.0]), path)
+    path.write_bytes(path.read_bytes() + b"tamper")
+    with pytest.raises(RuntimeError, match="SHA-256 gate"):
+        aot_export._torch_load_graph(torch, path, expected_sha256=digest)

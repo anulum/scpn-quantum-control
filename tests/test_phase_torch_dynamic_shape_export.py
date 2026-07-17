@@ -25,6 +25,7 @@ from scpn_quantum_control.phase import (
 from scpn_quantum_control.phase.torch_dynamic_shape_export import (
     _dynamic_batch_dim,
     _exported_program_loss_for_case,
+    _load_exported_program,
 )
 
 torch = pytest.importorskip("torch")
@@ -235,3 +236,30 @@ def test_torch_dynamic_shape_export_defensive_helpers_fail_closed() -> None:
             exported_program=object(),
             case=default_torch_dynamic_shape_export_replay_cases()[0],
         )
+
+
+def test_load_exported_program_verifies_the_digest_gate(tmp_path: Path) -> None:
+    """A matching digest reaches torch.export.load; a mismatch never does."""
+    import hashlib
+
+    path = tmp_path / "program.pt2"
+    path.write_bytes(b"self-produced export bytes")
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+
+    class RecordingExportModule:
+        def __init__(self) -> None:
+            self.loaded: list[str] = []
+
+        def load(self, loaded_path: str) -> str:
+            self.loaded.append(loaded_path)
+            return "loaded-program"
+
+    export_module = RecordingExportModule()
+    loaded = _load_exported_program(export_module, path, expected_sha256=digest)
+    assert loaded == "loaded-program"
+    assert export_module.loaded == [str(path)]
+
+    path.write_bytes(b"tampered export bytes")
+    with pytest.raises(RuntimeError, match="SHA-256 gate"):
+        _load_exported_program(export_module, path, expected_sha256=digest)
+    assert export_module.loaded == [str(path)]

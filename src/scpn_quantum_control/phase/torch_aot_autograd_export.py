@@ -11,8 +11,10 @@
 This module promotes one narrow PyTorch training-compiler route: a bounded
 phase-QNN loss function is compiled with ``torch._functorch.aot_autograd``, its
 forward and backward FX ``GraphModule`` objects are captured, persisted with
-``torch.save(...)``, reloaded with ``torch.load(..., weights_only=False)``, and
-used to replay the local CPU loss and parameter gradient. The artifact is a
+``torch.save(...)``, reloaded with ``torch.load(..., weights_only=False)``
+behind a fail-closed SHA-256 gate (the artifact bytes must re-hash to the
+digest recorded at save time before any deserialisation happens), and used
+to replay the local CPU loss and parameter gradient. The artifact is a
 self-produced PyTorch FX pickle for local audit replay only. It is not a stable
 cross-runtime export format and does not promote CUDA, provider, hardware,
 dynamic-shape, isolated benchmark, or performance claims.
@@ -297,10 +299,14 @@ def run_torch_aot_autograd_export_audit(
     backward_graph = _require_captured_graph(captured_graphs, "backward")
     forward_path = resolved_dir / "aot_forward_graph.pt"
     backward_path = resolved_dir / "aot_backward_graph.pt"
-    _torch_save(torch_module, forward_graph, forward_path)
-    _torch_save(torch_module, backward_graph, backward_path)
-    loaded_forward_graph = _torch_load_graph(torch_module, forward_path)
-    loaded_backward_graph = _torch_load_graph(torch_module, backward_path)
+    forward_sha256 = _torch_save(torch_module, forward_graph, forward_path)
+    backward_sha256 = _torch_save(torch_module, backward_graph, backward_path)
+    loaded_forward_graph = _torch_load_graph(
+        torch_module, forward_path, expected_sha256=forward_sha256
+    )
+    loaded_backward_graph = _torch_load_graph(
+        torch_module, backward_path, expected_sha256=backward_sha256
+    )
     loaded_loss, loaded_gradient = _replay_loaded_aot_graphs(
         torch_module=torch_module,
         forward_graph=loaded_forward_graph,
@@ -395,19 +401,33 @@ def _require_captured_graph(graphs: Mapping[str, object], kind: str) -> object:
     return graph
 
 
-def _torch_save(torch_module: Any, graph_module: object, path: Path) -> None:
-    """Persist a self-produced PyTorch graph artifact."""
+def _torch_save(torch_module: Any, graph_module: object, path: Path) -> str:
+    """Persist a self-produced PyTorch graph artifact and return its SHA-256."""
     save = getattr(torch_module, "save", None)
     if not callable(save):
         raise RuntimeError("PyTorch module does not expose torch.save")
     save(graph_module, path)
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _torch_load_graph(torch_module: Any, path: Path) -> object:
-    """Load a self-produced PyTorch graph artifact."""
+def _torch_load_graph(torch_module: Any, path: Path, *, expected_sha256: str) -> object:
+    """Load a self-produced PyTorch graph artifact behind a digest gate.
+
+    FX ``GraphModule`` pickles require ``weights_only=False``, which
+    deserialises arbitrary pickle payloads; the call is therefore reached
+    only after the artifact bytes on disk re-hash to the digest recorded at
+    save time. A mismatch fails closed before any deserialisation.
+    """
     load = getattr(torch_module, "load", None)
     if not callable(load):
         raise RuntimeError("PyTorch module does not expose torch.load")
+    observed_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+    if observed_sha256 != expected_sha256:
+        raise RuntimeError(
+            f"AOTAutograd artifact {path} failed its SHA-256 gate before "
+            f"deserialisation: expected {expected_sha256}, observed "
+            f"{observed_sha256}"
+        )
     return load(path, weights_only=False)
 
 

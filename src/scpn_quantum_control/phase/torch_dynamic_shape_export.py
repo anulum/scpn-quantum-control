@@ -372,7 +372,10 @@ def run_torch_dynamic_shape_export_audit(
         },
     )
     export_module.save(exported_program, str(resolved_path))
-    loaded_program = export_module.load(str(resolved_path))
+    saved_sha256 = hashlib.sha256(resolved_path.read_bytes()).hexdigest()
+    loaded_program = _load_exported_program(
+        export_module, resolved_path, expected_sha256=saved_sha256
+    )
     export_bytes = resolved_path.read_bytes()
     graph_signature = str(getattr(exported_program, "graph_signature", ""))
     range_constraints = str(getattr(exported_program, "range_constraints", ""))
@@ -472,6 +475,23 @@ def _build_dynamic_bounded_qnn_module(
             )
 
     return _DynamicBoundedPhaseQNNModule()
+
+
+def _load_exported_program(export_module: Any, path: Path, *, expected_sha256: str) -> object:
+    """Load a self-produced ``torch.export`` artifact behind a digest gate.
+
+    ``torch.export.load`` deserialises a pickle-bearing archive; the call is
+    reached only after the artifact bytes on disk re-hash to the digest
+    recorded at save time. A mismatch fails closed before deserialisation.
+    """
+    observed_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+    if observed_sha256 != expected_sha256:
+        raise RuntimeError(
+            f"dynamic-shape export artifact {path} failed its SHA-256 gate "
+            f"before deserialisation: expected {expected_sha256}, observed "
+            f"{observed_sha256}"
+        )
+    return export_module.load(str(path))
 
 
 def _dynamic_batch_dim(

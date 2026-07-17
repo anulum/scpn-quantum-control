@@ -30,10 +30,16 @@ UNSAFE_CALLS = {
     "qiskit.qpy.load",
     "qpy.load",
 }
+WEIGHTS_ONLY_FALSE_SYMBOL = "load(weights_only=False)"
 APPROVED_WRAPPER_FUNCTIONS = {
     ("src/scpn_quantum_control/hardware/hal_qiskit.py", "_reviewed_qpy_load_circuits"): {
         "qiskit.qpy.load",
         "qpy.load",
+    },
+    # Digest-gated reviewed wrapper: the artifact bytes must re-hash to the
+    # SHA-256 recorded at save time before torch.load is reached (KIMI-12).
+    ("src/scpn_quantum_control/phase/torch_aot_autograd_export.py", "_torch_load_graph"): {
+        WEIGHTS_ONLY_FALSE_SYMBOL,
     },
 }
 DEFAULT_ROOTS = ("src", "scripts", "tools", "tests")
@@ -85,6 +91,18 @@ class _Visitor(ast.NodeVisitor):
                     "Unsafe deserialisation API requires an explicit reviewed wrapper.",
                 )
             )
+        if _has_weights_only_false(node) and not self._is_approved_wrapper_call(
+            WEIGHTS_ONLY_FALSE_SYMBOL
+        ):
+            self.findings.append(
+                (
+                    node.lineno,
+                    node.col_offset,
+                    WEIGHTS_ONLY_FALSE_SYMBOL,
+                    "weights_only=False deserialises arbitrary pickle payloads; "
+                    "only a digest-gated reviewed wrapper may call it.",
+                )
+            )
         if symbol in {"numpy.load", "np.load"} and _has_allow_pickle_true(node):
             self.findings.append(
                 (
@@ -120,6 +138,14 @@ def _call_name(node: ast.AST, aliases: dict[str, str]) -> str:
             parts[0] = aliases.get(parts[0], parts[0])
         return ".".join(parts)
     return ""
+
+
+def _has_weights_only_false(node: ast.Call) -> bool:
+    for keyword in node.keywords:
+        if keyword.arg != "weights_only":
+            continue
+        return isinstance(keyword.value, ast.Constant) and keyword.value.value is False
+    return False
 
 
 def _has_allow_pickle_true(node: ast.Call) -> bool:

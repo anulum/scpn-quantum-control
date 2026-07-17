@@ -4,6 +4,18 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Security
+- 2026-07-17 — Torch graph-artifact deserialisation is digest-gated
+  (KIMI-12): `torch.load(..., weights_only=False)` in the AOTAutograd
+  export replay (`phase/torch_aot_autograd_export.py`) and
+  `torch.export.load` in the dynamic-shape export replay
+  (`phase/torch_dynamic_shape_export.py`) are now reached only after the
+  artifact bytes on disk re-hash to the SHA-256 recorded at save time — a
+  tampered artifact fails closed before any pickle deserialisation. The
+  serialisation-surface audit (`tools/audit_serialization_surface.py`)
+  additionally flags every `weights_only=False` call outside the single
+  digest-gated reviewed wrapper, so the class cannot silently reappear.
+
 ### Fixed
 - 2026-07-17 — The first real execution of the FIM notebook batch (the
   workflow_dispatch mandated by the path-filter false-green rule: Notebook

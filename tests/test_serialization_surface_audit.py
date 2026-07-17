@@ -119,3 +119,38 @@ def test_serialization_audit_cli_returns_zero_on_safe_file(tmp_path: Path, capsy
 
     assert main(["--project-root", str(tmp_path), "--input", str(fixture)]) == 0
     assert "no unsafe" in capsys.readouterr().out
+
+
+def test_serialization_audit_flags_weights_only_false() -> None:
+    findings = scan_text(
+        Path("scripts/replay.py"),
+        "import torch\ntorch.load(path, weights_only=False)\n",
+    )
+
+    assert findings[0].symbol == "load(weights_only=False)"
+    assert "digest-gated" in findings[0].reason
+
+
+def test_serialization_audit_allows_digest_gated_torch_load_wrapper_only() -> None:
+    gated_findings = scan_text(
+        Path("src/scpn_quantum_control/phase/torch_aot_autograd_export.py"),
+        "def _torch_load_graph(torch_module, path, *, expected_sha256):\n"
+        "    return torch_module.load(path, weights_only=False)\n",
+    )
+    ungated_findings = scan_text(
+        Path("src/scpn_quantum_control/phase/torch_aot_autograd_export.py"),
+        "def _other_loader(torch_module, path):\n"
+        "    return torch_module.load(path, weights_only=False)\n",
+    )
+
+    assert gated_findings == ()
+    assert ungated_findings[0].symbol == "load(weights_only=False)"
+
+
+def test_serialization_audit_allows_weights_only_true_and_absent() -> None:
+    findings = scan_text(
+        Path("scripts/replay.py"),
+        "import torch\ntorch.load(path, weights_only=True)\njson.load(handle)\n",
+    )
+
+    assert findings == ()
