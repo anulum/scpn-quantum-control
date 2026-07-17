@@ -13,13 +13,18 @@
 # this header always carried; external review KIMI-10 flagged the
 # non-blocking state as a silent-failure risk).
 #
-# The FIM investigation notebooks (NB15..47 except NB39) run in a
-# separate weekly batch job (`execute-fim-batch`, four shards,
-# schedule + dispatch only — never on pull requests) so exploratory
-# breakage is surfaced instead of rotting silently (KIMI-10 remainder).
-# NB14 and NB39 are excluded from all CI execution BY DESIGN: they read
-# `SCPN_IBM_TOKEN` and submit live SamplerV2 jobs, and quantum-second
-# spend requires per-submit owner approval — CI must never trigger it.
+# The FIM investigation notebooks run in a separate weekly batch job
+# (`execute-fim-batch`, four shards, schedule + dispatch only — never
+# on pull requests) so exploratory breakage is surfaced instead of
+# rotting silently (KIMI-10 remainder). Excluded from all CI execution
+# BY DESIGN: NB14 and NB39 read `SCPN_IBM_TOKEN` and submit live
+# SamplerV2 jobs (quantum-second spend requires per-submit owner
+# approval — CI must never trigger it); NB15, NB19, NB22, and NB30 read
+# intentionally absent external clinical datasets
+# (`<external-dataset:...>` placeholders — not distributable with the
+# repository). The batch kernels run with the notebook directory as
+# cwd, so a `notebooks/results` symlink makes the committed relative
+# `results/...` artefact reads resolve.
 #
 # Schedule: core weekly Monday 06:00 UTC, FIM batch weekly Monday
 # 07:00 UTC, plus on-demand dispatch. A failed scheduled job opens an
@@ -103,14 +108,11 @@ jobs:
         include:
           - shard: fim-a
             notebooks: >-
-              notebooks/15_inverse_layer_optimisation.ipynb
               notebooks/16_alpha_calibration_literature.ipynb
               notebooks/17_hierarchical_n16_sync.ipynb
               notebooks/18_clinical_tda_connectivity.ipynb
-              notebooks/19_directed_coupling_transfer_entropy.ipynb
               notebooks/20_fim_phase_transition_order.ipynb
               notebooks/21_scale_frustration_pathology.ipynb
-              notebooks/22_cross_frequency_observables.ipynb
           - shard: fim-b
             notebooks: >-
               notebooks/23_geometric_curvature_knm.ipynb
@@ -120,7 +122,6 @@ jobs:
               notebooks/27_fim_stability_analysis.ipynb
               notebooks/28_information_theoretic.ipynb
               notebooks/29_multiscale_sync_dynamics.ipynb
-              notebooks/30_empirical_fim_estimation.ipynb
           - shard: fim-c
             notebooks: >-
               notebooks/31_fim_mbl_interaction.ipynb
@@ -152,6 +153,8 @@ jobs:
           pip install --no-deps -e oscillatools/
           pip install -e ".[dev,viz,ibm,tensor,mitigation,opensys,pennylane]"
           pip install nbmake
+      - name: Link committed results into the notebook kernel cwd
+        run: ln -sfn "$GITHUB_WORKSPACE/results" notebooks/results
       - name: Execute FIM investigation notebooks (${{ matrix.shard }})
         run: |
           pytest \

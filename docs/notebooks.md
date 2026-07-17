@@ -585,12 +585,15 @@ Notebooks 14-47 form a systematic investigation of the FIM (Fisher Information
 Metric) strange loop mechanism. See [RESULTS_SUMMARY.md](https://github.com/anulum/scpn-quantum-control/blob/main/RESULTS_SUMMARY.md)
 for the full findings. All results are saved as JSON in `results/`.
 
-Since 2026-07-17 the exploratory notebooks NB15–47 execute weekly in the
-Notebook CI batch job (`execute-fim-batch`, four shards, schedule and manual
+Since 2026-07-17 the exploratory notebooks execute weekly in the Notebook
+CI batch job (`execute-fim-batch`, four shards, schedule and manual
 dispatch only — never on pull requests); a failed scheduled shard opens a
-GitHub issue. NB14 and NB39 are excluded from all CI execution by design:
-they read `SCPN_IBM_TOKEN` and submit live hardware jobs, and quantum-second
-spend requires per-submit owner approval.
+GitHub issue. Excluded from all CI execution by design: NB14 and NB39 read
+`SCPN_IBM_TOKEN` and submit live hardware jobs (quantum-second spend
+requires per-submit owner approval), and NB15, NB19, NB22, and NB30 read
+intentionally absent external clinical datasets
+(`<external-dataset:...>` placeholders, not distributable with the
+repository) — they run only on a workstation that holds those datasets.
 
 | # | Notebook | Finding |
 |:-:|----------|---------|

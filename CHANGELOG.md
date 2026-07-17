@@ -5,6 +5,17 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-17 — The first real execution of the FIM notebook batch (the
+  workflow_dispatch mandated by the path-filter false-green rule: Notebook
+  CI has no push trigger, so the batch had never actually run) surfaced
+  two failure classes, both fixed at the workflow: nbmake kernels run with
+  the notebook directory as cwd, so the committed `results/*.json`
+  artefact reads need a `notebooks/results` symlink (19 of 24 committed
+  artefact-reading notebooks failed on this); and NB15, NB19, NB22, NB30
+  read intentionally absent external clinical datasets
+  (`<external-dataset:...>` placeholders) and are excluded from CI with
+  the reason documented next to the existing NB14/NB39 live-hardware
+  exclusion. Batch shards are now 5/7/8/8 notebooks.
 - 2026-07-16 — Public-claim honesty corrections from the external
   due-diligence review, executed as dated amendments (never silent edits):
   the blanket CHSH significance headline is re-attributed per pair on every
