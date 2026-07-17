@@ -27,6 +27,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   no longer fail-fasts across platforms.
 
 ### Added
+- 2026-07-17 — `oscillatools 0.1.0` published to PyPI (tag
+  `oscillatools-v0.1.0`, trusted publishing + Sigstore, verified at source
+  by registry JSON and `pip download`): the declared
+  `oscillatools>=0.1.0` dependency is now resolvable from PyPI for the
+  first time, closing the install blocker for the next
+  `scpn-quantum-control` release.
 - 2026-07-16 — On-QPU dynamic-circuit feedback demo submitter (RC-1,
   `scripts/submit_onqpu_dynamic_feedback.py`, 100% line+branch tested):
   runs the committed monitored-feedback template against its matched
