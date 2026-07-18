@@ -12,20 +12,20 @@
       "size_bytes": 19396
     },
     {
-      "line_count": 21,
+      "line_count": 34,
       "path": "requirements.txt",
       "pinned_package_count": 11,
       "role": "Runtime dependency lock input",
-      "sha256": "739228b5225dd2e52ac26aa66ae2d03783b3de0794460b059d8b825717d85f8c",
-      "size_bytes": 750
+      "sha256": "4b783078f7bfa5a3935b2a3c2b56a5c6d301ee641db6ea71a1df4ecec448b382",
+      "size_bytes": 1611
     },
     {
-      "line_count": 40,
+      "line_count": 46,
       "path": "requirements-dev.txt",
       "pinned_package_count": 28,
       "role": "Developer verification dependency lock input",
-      "sha256": "d5586f0157b889bf8037214df6d2d7500bd0c90ebf9ef05c8e36fe1cf281d231",
-      "size_bytes": 983
+      "sha256": "cfb1e26f808f740fbcaf3dbd54fdc33b497c88d852985929ccaf4ff27cfc3459",
+      "size_bytes": 1362
     },
     {
       "line_count": 351,

@@ -4,6 +4,12 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Pinned Development Dependencies
+#
+# Version-pinned but intentionally unhashed — see the "Why no --hash here"
+# note in requirements.txt. Development installs layer optional extras on top,
+# which pip's --require-hashes mode cannot accommodate; the hashed,
+# supply-chain-hardened requirement sets are requirements-publish.txt and
+# requirements-ci-*.txt (both generated with `pip-compile --generate-hashes`).
 -r requirements.txt
 pytest==9.1.1
 pytest-cov==7.1.0

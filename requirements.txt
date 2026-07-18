@@ -8,6 +8,19 @@
 # pyproject.toml is the canonical dependency source for package metadata.
 # This pip-compatible mirror is pinned for reproducible user installs and
 # supply-chain scanners that evaluate requirements files directly.
+#
+# Why no --hash here (intentional split):
+# This is a version-pinned *convenience mirror* meant to be combined with the
+# optional extras (providers, config, logging, braket, ...). pip's hash mode
+# (--require-hashes) demands that EVERY installed distribution — including every
+# transitive dependency of whichever extras you add — be hashed, and forbids
+# mixing in an unhashed extra; that is incompatible with a mirror whose whole
+# point is flexible composition. Hash-verified, supply-chain-hardened installs
+# are provided where they matter and are generated with `pip-compile
+# --generate-hashes`: requirements-publish.txt (the PyPI artifact build) and
+# requirements-ci-*.txt (CI + Docker). For a hash-checked runtime install,
+# install the published wheel/sdist (pip verifies PyPI hashes) or use the
+# hashed CI requirement matching your platform.
 qiskit==2.5.0
 qiskit-aer==0.17.2
 qiskit-qasm3-import==0.6.0
