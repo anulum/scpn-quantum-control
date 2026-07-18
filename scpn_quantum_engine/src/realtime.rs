@@ -53,7 +53,11 @@ fn linear_percentile(sorted: &[f64], q: f64) -> f64 {
 
 fn ascending_copy(values: &[f64]) -> Vec<f64> {
     let mut v = values.to_vec();
-    v.sort_by(|x, y| x.partial_cmp(y).expect("jitter values are finite"));
+    // `total_cmp` is a total order over every f64 (NaN sorts to the end)
+    // and never returns `None`, so this helper cannot panic even if a
+    // future caller forgets the `validate_finite` guard the public
+    // percentile entry point applies. Removes the AUD-12 NaN-panic risk.
+    v.sort_by(|x, y| x.total_cmp(y));
     v
 }
 
@@ -142,4 +146,31 @@ pub fn sub_us_tracker_summary(
     let sorted = ascending_copy(&jitters);
     let (p50, p95, p99, pmax) = percentile_quad(&sorted);
     Ok((p50, p95, p99, pmax, misses, n as i64))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ascending_copy_sorts_finite_ascending() {
+        assert_eq!(ascending_copy(&[3.0, 1.0, 2.0]), vec![1.0, 2.0, 3.0]);
+    }
+
+    #[test]
+    fn ascending_copy_does_not_panic_on_nan() {
+        // AUD-12: a NaN in the slice must not panic (total_cmp never
+        // returns None). NaN sorts to the end; the finite prefix is ordered.
+        let out = ascending_copy(&[2.0, f64::NAN, 1.0]);
+        assert_eq!(out.len(), 3);
+        assert_eq!(out[0], 1.0);
+        assert_eq!(out[1], 2.0);
+        assert!(out[2].is_nan());
+    }
+
+    #[test]
+    fn ascending_copy_orders_infinities() {
+        let out = ascending_copy(&[0.0, f64::INFINITY, f64::NEG_INFINITY]);
+        assert_eq!(out, vec![f64::NEG_INFINITY, 0.0, f64::INFINITY]);
+    }
 }
