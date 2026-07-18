@@ -395,7 +395,7 @@ class TestRunnerLogSave:
         assert path.exists()
         with open(path) as f:
             data = json.load(f)
-        assert len(data) == 2
+        assert len(data["results"]) == 2
 
     def test_save_result_custom_filename(self, tmp_path):
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))

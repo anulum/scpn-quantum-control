@@ -628,6 +628,18 @@ class HardwareRunner:
             )
             return isa
 
+    def _calibration_for_pack(self) -> dict[str, Any]:
+        """Best-effort calibration snapshot for embedding in a saved pack.
+
+        Mirrors provenance's fail-open contract: a save must never be
+        blocked by calibration capture. When the runner is not connected
+        (``connect()`` never called), returns an ``available: False``
+        record naming the reason rather than raising.
+        """
+        if self._backend is None:
+            return {"available": False, "reason": "not connected"}
+        return self.calibration_snapshot()
+
     def save_result(
         self, result: JobResult | list[JobResult], filename: str | None = None
     ) -> Path:
@@ -639,6 +651,11 @@ class HardwareRunner:
         use it to trace published numbers back to a specific commit;
         see the internal gap audit
         §C8 for the motivation.
+
+        A `calibration` block records the device state (backend name,
+        ``seed_transpiler``, median T1/T2 and readout error, calibration
+        date) the run was measured against, so every pack carries the
+        calibration snapshot needed to reproduce it (audit AUD-4b).
         """
         from .provenance import capture_provenance
 
@@ -647,10 +664,12 @@ class HardwareRunner:
             payload = {
                 "results": [r.to_dict() for r in result],
                 "provenance": capture_provenance(),
+                "calibration": self._calibration_for_pack(),
             }
         else:
             payload = result.to_dict()
             payload["provenance"] = capture_provenance()
+            payload["calibration"] = self._calibration_for_pack()
 
         if filename is None:
             ts = datetime.now().strftime("%Y%m%d_%H%M%S")

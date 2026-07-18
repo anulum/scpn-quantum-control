@@ -15,11 +15,12 @@ snapshot from a backend that exposes median calibration).
 
 from __future__ import annotations
 
+import json
 from types import SimpleNamespace
 
 import pytest
 
-from scpn_quantum_control.hardware.runner import HardwareRunner
+from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
 
 
 class TestSeedTranspiler:
@@ -93,3 +94,33 @@ class TestCalibrationSnapshot:
         runner = HardwareRunner(use_simulator=True)
         runner._backend = SimpleNamespace(name="stub", num_qubits=1, properties=lambda: None)
         assert runner.calibration_snapshot()["available"] is False
+
+
+class TestSaveResultEmbedsCalibration:
+    """AUD-4b: every saved pack carries a ``calibration`` snapshot block."""
+
+    def test_single_result_carries_calibration(self, tmp_path) -> None:
+        runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
+        runner.connect()
+        path = runner.save_result(
+            JobResult(job_id="j1", backend_name="aer", experiment_name="e", counts={"0": 1})
+        )
+        data = json.loads(path.read_text())
+        assert "calibration" in data
+        assert data["calibration"]["seed_transpiler"] == 20260718
+
+    def test_list_result_carries_calibration(self, tmp_path) -> None:
+        runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
+        runner.connect()
+        path = runner.save_result(
+            [JobResult(job_id="j1", backend_name="aer", experiment_name="e")],
+            filename="batch.json",
+        )
+        data = json.loads(path.read_text())
+        assert data["calibration"]["backend"] == runner.backend_name
+
+    def test_calibration_fail_open_when_not_connected(self, tmp_path) -> None:
+        runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
+        # No connect(): save must still succeed with a fail-open record.
+        record = runner._calibration_for_pack()
+        assert record == {"available": False, "reason": "not connected"}

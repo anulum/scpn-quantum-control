@@ -111,11 +111,14 @@ class TestSaveResult:
         path = runner.save_result(results, filename="batch.json")
         with open(path) as f:
             data = json.load(f)
-        # Batch results are wrapped in { results: [...], provenance: {...} }
-        # since the C8 provenance change (commit 819aded).
-        assert set(data.keys()) == {"results", "provenance"}
+        # Batch results are wrapped in { results, provenance, calibration }
+        # since the C8 provenance change (commit 819aded) and the AUD-4b
+        # calibration-snapshot wiring.
+        assert set(data.keys()) == {"results", "provenance", "calibration"}
         assert len(data["results"]) == 3
         assert "git" in data["provenance"]
+        # Runner never connected here → calibration is the fail-open record.
+        assert data["calibration"] == {"available": False, "reason": "not connected"}
 
     def test_auto_filename(self, tmp_path):
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path))
