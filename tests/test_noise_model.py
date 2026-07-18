@@ -53,10 +53,11 @@ class TestNoiseModelConstruction:
         assert isinstance(nm, NoiseModel)
 
     def test_default_params_match_constants(self):
-        assert T1_US == 300.0
-        assert T2_US == 200.0
-        assert CZ_ERROR_RATE == 0.005
-        assert READOUT_ERROR_RATE == 0.002
+        # ibm_fez 2026-03-29 median snapshot (retrieved read-only 2026-07-18)
+        assert T1_US == 146.7
+        assert T2_US == 109.3
+        assert CZ_ERROR_RATE == 0.00262
+        assert READOUT_ERROR_RATE == 0.01508
 
     def test_custom_params(self):
         nm = heron_r2_noise_model(t1_us=100.0, t2_us=80.0, cz_error=0.02)

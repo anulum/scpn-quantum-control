@@ -156,6 +156,7 @@ class HardwareRunner:
         results_dir: str = "results",
         noise_model: Any = None,
         max_dense_gib: float | None = None,
+        seed_transpiler: int = 20260718,
     ) -> None:
         """Configure runner. Call connect() before submitting jobs.
 
@@ -176,6 +177,7 @@ class HardwareRunner:
         self.optimization_level = optimization_level
         self.resilience_level = resilience_level
         self.use_fractional_gates = use_fractional_gates
+        self.seed_transpiler = seed_transpiler
         self.results_dir = Path(results_dir)
         try:
             self.results_dir.mkdir(parents=True, exist_ok=True)
@@ -221,6 +223,7 @@ class HardwareRunner:
         self._pm = generate_preset_pass_manager(
             backend=self._backend,
             optimization_level=self.optimization_level,
+            seed_transpiler=self.seed_transpiler,
         )
         _slog.info(
             "backend_connected",
@@ -264,6 +267,7 @@ class HardwareRunner:
         self._pm = generate_preset_pass_manager(
             optimization_level=self.optimization_level,
             basis_gates=basis,
+            seed_transpiler=self.seed_transpiler,
         )
         _slog.info(
             "backend_connected",
@@ -293,6 +297,41 @@ class HardwareRunner:
         if self._backend_descriptor is None:
             raise RuntimeError("call connect() first")
         return self._backend_descriptor
+
+    def calibration_snapshot(self) -> dict[str, Any]:
+        """Capture the connected backend's calibration for archival in a result pack.
+
+        Returns a JSON-serialisable snapshot (backend name, seed_transpiler,
+        median T1/T2 and readout error, and the calibration date) so every run's
+        result pack can carry the device state it was measured against, closing
+        the "no archived calibration snapshot" reproducibility gap. Returns a
+        ``{"available": False}`` record when the backend exposes no properties
+        (e.g. a local simulator).
+        """
+        if self._backend is None:
+            raise RuntimeError("call connect() first")
+        snapshot: dict[str, Any] = {
+            "backend": self.backend_name,
+            "seed_transpiler": self.seed_transpiler,
+        }
+        properties = getattr(self._backend, "properties", None)
+        props = properties() if callable(properties) else None
+        if props is None:
+            snapshot["available"] = False
+            return snapshot
+        n = getattr(self._backend, "num_qubits", 0)
+        t1 = [props.t1(q) for q in range(n) if props.t1(q)]
+        t2 = [props.t2(q) for q in range(n) if props.t2(q)]
+        readout = [props.readout_error(q) for q in range(n) if props.readout_error(q) is not None]
+        snapshot.update(
+            available=True,
+            last_update_date=str(getattr(props, "last_update_date", None)),
+            num_qubits=n,
+            t1_median_us=(float(np.median(t1)) * 1e6 if t1 else None),
+            t2_median_us=(float(np.median(t2)) * 1e6 if t2 else None),
+            readout_error_median=(float(np.median(readout)) if readout else None),
+        )
+        return snapshot
 
     def transpile(self, circuit: QuantumCircuit) -> QuantumCircuit:
         """Transpile circuit for target backend."""

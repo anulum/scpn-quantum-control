@@ -147,16 +147,17 @@ Results are serialised to JSON via `to_dict()` and saved to `results_dir`.
 
 ## Noise Model (`noise_model.py`)
 
-IBM Heron r2 calibration (ibm_fez, February 2026 median):
+IBM Heron r2 calibration (ibm_fez, 2026-03-29 median snapshot; source:
+`backend.properties(datetime=2026-03-29)`, retrieved read-only 2026-07-18):
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
-| T1 | 300 us | Longitudinal relaxation |
-| T2 | 200 us | Transverse relaxation |
-| CZ error | 0.5% | Two-qubit gate error rate |
-| Readout error | 0.2% | Measurement error rate |
-| Single-gate time | 0.06 us | SX/X/RZ duration |
-| Two-gate time | 0.66 us | CZ/ECR duration |
+| T1 | 146.7 us | Longitudinal relaxation |
+| T2 | 109.3 us | Transverse relaxation |
+| CZ error | 0.262% | Two-qubit gate error rate |
+| Readout error | 1.5% | Measurement error rate |
+| Single-gate time | 0.024 us | SX/X/RZ duration |
+| Two-gate time | 0.068 us | CZ/ECR duration |
 
 ### `heron_r2_noise_model(t1_us, t2_us, cz_error, readout_error)`
 
@@ -443,11 +444,11 @@ Randomised benchmarking and gate set tomography for hardware qualification.
 
 | Gate | Description | Duration |
 |------|-------------|----------|
-| CZ | Two-qubit entangling (native) | 0.66 us |
+| CZ | Two-qubit entangling (native) | 0.068 us |
 | RZ(theta) | Z rotation (virtual) | 0 us |
-| SX | sqrt(X) | 0.06 us |
-| X | Pauli-X | 0.06 us |
-| ID | Identity (delay) | 0.06 us |
+| SX | sqrt(X) | 0.024 us |
+| X | Pauli-X | 0.024 us |
+| ID | Identity (delay) | 0.024 us |
 
 Transpilation from Qiskit standard gates increases depth. Typical
 expansion: 1 CNOT → 2 SX + 1 CZ + RZ gates.

@@ -7,7 +7,11 @@
 # SCPN Quantum Control — Noise Model
 """Heron r2 noise model for realistic local simulation.
 
-Median calibration values from IBM ibm_fez (February 2026).
+Median calibration values from IBM ibm_fez, taken from the dated
+``backend.properties`` snapshot of 2026-03-29 (retrieved read-only 2026-07-18;
+0 QPU seconds). The earlier constants ("Feb 2026") were ~2x optimistic on
+T1/T2, ~2x pessimistic on CZ error, ~7.5x optimistic on readout, and ~10x too
+long on the two-qubit gate time; they are corrected here against source.
 """
 
 from __future__ import annotations
@@ -17,13 +21,14 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from qiskit_aer.noise import NoiseModel
 
-# ibm_fez Heron r2 median calibration (Feb 2026)
-T1_US = 300.0
-T2_US = 200.0
-CZ_ERROR_RATE = 0.005
-READOUT_ERROR_RATE = 0.002
-SINGLE_GATE_TIME_US = 0.06
-TWO_GATE_TIME_US = 0.66
+# ibm_fez Heron r2 median calibration (2026-03-29 snapshot; source:
+# backend.properties(datetime=2026-03-29), 156 qubits / 352 CZ pairs).
+T1_US = 146.7
+T2_US = 109.3
+CZ_ERROR_RATE = 0.00262
+READOUT_ERROR_RATE = 0.01508
+SINGLE_GATE_TIME_US = 0.024
+TWO_GATE_TIME_US = 0.068
 
 
 def heron_r2_noise_model(

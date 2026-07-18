@@ -19,7 +19,7 @@ def test_noise_model_module_import_does_not_require_aer(monkeypatch) -> None:
     module = importlib.import_module("scpn_quantum_control.hardware.noise_model")
     module = importlib.reload(module)
 
-    assert module.T1_US == 300.0
+    assert module.T1_US == 146.7
     assert callable(module.heron_r2_noise_model)
 
 
