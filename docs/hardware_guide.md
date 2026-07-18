@@ -428,6 +428,17 @@ Randomised benchmarking and gate set tomography for hardware qualification.
 | 250-400 | 25-40% | Qualitative trends only |
 | > 400 | > 40% | Do not trust individual values |
 
+> **On deep campaigns above this table (e.g. WIDTH-1 at transpiled depth
+> 538–2103).** This reference bounds the trust in **individual per-circuit
+> values**. The maximum-width Kuramoto-XY sweep deliberately runs far past depth
+> 400, and is consistent with — not a violation of — this rule: it reports a
+> **collective order parameter R(n)** against an exact MPS baseline (a noise
+> *characterisation*), never individual per-circuit values, and it carries an
+> explicit no-advantage boundary (shallow 1-D circuits are classically simulable
+> by construction). Read that campaign as "how the collective observable
+> degrades with depth", exactly the regime where this table says individual
+> values are untrustworthy. See `docs/campaigns/max_width_kuramoto_xy_prereg_2026-07-16.md`.
+
 ## Native Gate Set (Heron r2)
 
 | Gate | Description | Duration |

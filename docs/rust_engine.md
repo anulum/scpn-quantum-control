@@ -373,6 +373,17 @@ earlier "5401×" headline was a cold-start artefact (an un-warmed Qiskit
 first-call). The production `knm_to_dense_matrix` wrapper additionally casts
 float64 to complex128 (a downstream cost excluded from the kernel comparison).
 
+> **Caveat on the secondary micro-benchmarks below (OTOC / Lanczos / sparse /
+> popcount / order-parameter).** Unlike the four rows above, these are
+> **illustrative single-machine micro-benchmarks, not committed regression
+> guards** — treat the ratios as order-of-magnitude, not measured claims. Some
+> compare *different algorithms*, not just Rust vs Python: the OTOC "264×", for
+> instance, is a single Rust eigendecomposition against a 60-call `scipy.expm`
+> loop, so the ratio bundles an **algorithmic** advantage (reuse one
+> decomposition) with the language speedup and is not a like-for-like kernel
+> comparison. Only the `native_speedup.json` rows (96.5×/33.7×/3.35×/2.20×) are
+> warm-up-controlled, repeat-measured, and parity-checked.
+
 ### OTOC (30 time points)
 
 | System | Rust eigendecomp + rayon | scipy.expm loop (60 calls) | Speedup |
@@ -556,7 +567,7 @@ Which Python module calls which Rust function:
 
 ```
 bridge/knm_hamiltonian.py
-  └── build_xy_hamiltonian_dense()    → ~111× at L=4, parity by L=12
+  └── build_xy_hamiltonian_dense()    → 96.5× at L=4, parity by L=12
 
 bridge/sparse_hamiltonian.py
   └── build_sparse_xy_hamiltonian()   → 80× speedup
