@@ -770,3 +770,38 @@ Optional (for full test coverage):
 - `quimb >= 1.8` (MPS/DMRG tests — `importorskip`)
 - `sc-neurocore >= 3.14` (optional SNN bridge E2E tests — `skipif`)
 - `pennylane >= 0.40` (PennyLane adapter tests — `skipif`)
+
+### Extras required for a clean full collection
+
+A handful of modules import an optional-extra package at module scope rather
+than behind an `importorskip`/`skipif` guard, so `pytest --collect-only` on the
+base `[dev]` install alone raises collection errors for them (not skips). Install
+these three extras for a clean full collection:
+
+- `[config]` — `pydantic-settings` (+ `pydantic`). `scpn_quantum_control.config`
+  imports `pydantic`/`pydantic_settings` at module scope; any test that reaches
+  the typed configuration path needs it.
+- `[logging]` — `structlog`. The runtime carries a graceful no-`structlog`
+  fallback, but the tests that exercise the real structured-logging path import
+  `structlog` directly (e.g. `tests/test_logging_setup.py`).
+- `[braket]` — `amazon-braket-sdk`. `tests/test_hardware_hal_braket_adapters.py`
+  imports `braket.circuits` at module scope.
+
+One command covers all three (plus the runtime and dev tools):
+
+```bash
+pip install -e '.[dev,config,logging,braket]'
+```
+
+CI installs the full extra matrix, so this only bites a minimal local `[dev]`
+checkout. The alternative remediation — making these imports lazy — is tracked
+but deferred; documenting the extras is the supported path for now.
+
+### Single-process memory
+
+The whole suite in one process peaks above 4 GB (the 18-qubit `slow`-marked
+cases dominate; see the `slow` marker note above). On a memory-constrained
+machine, exclude the heavy lane with `-m 'not slow'`, or run in shards by path
+(`pytest tests/<subset>`), rather than running the entire suite single-process.
+`pytest-xdist` is not a declared dependency; install it separately if you want
+`-n auto` process sharding.
