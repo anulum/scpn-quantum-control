@@ -7,3 +7,9 @@
 # SCPN Quantum Control Studio — pnpm workspace configuration
 minimumReleaseAgeExclude:
   - '@module-federation/vite@1.16.13'
+# Force the transitive adm-zip (pulled in by
+# @module-federation/third-party-dts-extractor) off the < 0.6.0 range
+# vulnerable to GHSA-xcpc-8h2w-3j85 (crafted ZIP → 4 GB allocation).
+# Dependabot alert #77; patched in adm-zip 0.6.0.
+overrides:
+  'adm-zip@<0.6.0': '>=0.6.0'
