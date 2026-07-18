@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-18 — March flagship job-id full disclosure (KIMI audit, AUD-10): the 24
+  nonce-blinded March 2026 job-id commitments are now OPENED for everyone.
+  `data/march_flagship_verifiability/march_job_id_disclosure_2026-07-18.json` publishes
+  each `(raw IBM job id, nonce)` pair, and `scripts/disclose_ibm_job_ids.py` (100% covered,
+  with a CI referee test) re-verifies `SHA-256("<raw>:<nonce>") == commitment_sha256` for
+  all 24. The HMAC-blinding is retired for the flagship; the label salt and API token stay
+  private (they grant nothing once the identifiers are open).
 - 2026-07-18 — Recovered IBM v2 raw counts, full public disclosure (KIMI audit
   follow-through): the nine 2026-03-29 `ibm_fez` "fair experiment" jobs — previously
   committed aggregate-only and quarantined — were re-retrieved read-only from IBM

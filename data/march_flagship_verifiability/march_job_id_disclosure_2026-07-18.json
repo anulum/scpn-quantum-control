@@ -1,0 +1,479 @@
+{
+  "schema": "scpn.march_job_id_disclosure.v1",
+  "policy": "Full-disclosure (owner directive 2026-07-18). Each (raw_ibm_job_id, nonce) pair opens its published commitment: verify SHA-256(f'{raw_ibm_job_id}:{nonce}') == commitment_sha256. Raw job ids grant no access on their own; the HMAC label salt and the IBM API token are never disclosed.",
+  "opened_count": 24,
+  "all_verified": true,
+  "disclosures": [
+    {
+      "public_label": "ibm-run-21bd58f96c88e04b",
+      "raw_ibm_job_id": "d73inq5koquc73e1p5p0",
+      "nonce": "21826b8627da4bb7450ca7c3d2e8b597",
+      "commitment_sha256": "04ac8e6f42d812286a91494105c6c4b401bacf1dd8bb00a915eb6697bf0028b0",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-28/sync_threshold.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-245f36b7a6aa4b1d",
+      "raw_ibm_job_id": "d6t9eqush9gc73didba0",
+      "nonce": "f958c9f2b5d17c55e99211b5cada677a",
+      "commitment_sha256": "47df57caec643ac8065e75aab06020608ee0a2ffc40e65836c05976a7df1b2a5",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-18/ibm-run-245f36b7a6aa4b1d.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/campaign_manifest.json",
+          "json_pointer": "/5/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/job_ibm-run-245f36b7a6aa4b1d.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/retrieval_summary.json",
+          "json_pointer": "/jobs/7/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-25c25a17c323afbd",
+      "raw_ibm_job_id": "d73inr18qmgc73fl2f90",
+      "nonce": "084a84bd7ad68043aba874e61f74bb55",
+      "commitment_sha256": "339822de34336f1417c893e9ee8e145683c28db0581b004e802f15576553a9ad",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-28/ansatz_comparison.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-2ddff7bbc36988b7",
+      "raw_ibm_job_id": "d6t9eabbjfas73fpbmv0",
+      "nonce": "490ee7fed0017c9e7c9d9191a6a22d31",
+      "commitment_sha256": "0d6af73970c7b545357431ceef53ca80e0ed10ff31c9baf524f0e8fec06c4dac",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-18/ibm-run-2ddff7bbc36988b7.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/campaign_manifest.json",
+          "json_pointer": "/1/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/job_ibm-run-2ddff7bbc36988b7.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/retrieval_summary.json",
+          "json_pointer": "/jobs/3/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-30ad4b2a6aa3293e",
+      "raw_ibm_job_id": "d73iue8i3fts73ffr0l0",
+      "nonce": "ba07f883db77ba024dc2aa4054ea7ff7",
+      "commitment_sha256": "2a548ff59c8b89baeee902ab661ae520cd20f9050d5ce45239a6788c931fb545",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-28/upde_16_dd.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-3821495c7a7a1e0f",
+      "raw_ibm_job_id": "d6t9e7f90okc73et6jlg",
+      "nonce": "6aa5034e0a7cc0b7dfc5a0a284b2b8c7",
+      "commitment_sha256": "ae10776a7f6ff71ec2c9f61c935f21ed27d35d37469551788610bb7b58d5d895",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-18/ibm-run-3821495c7a7a1e0f.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/campaign_manifest.json",
+          "json_pointer": "/0/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/job_ibm-run-3821495c7a7a1e0f.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/retrieval_summary.json",
+          "json_pointer": "/jobs/2/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-3f4213ef27145b92",
+      "raw_ibm_job_id": "d73inqcvllmc73anjtt0",
+      "nonce": "d3c87ac790e9e11a9fde7ccc09972d95",
+      "commitment_sha256": "1fe452b1a0818e79b9ffd01778b166705bbeb5be7b1565c20f9ac2cb8b7f4bdb",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-28/decoherence_scaling.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-5f238ed35d404e61",
+      "raw_ibm_job_id": "d6t9ejfgtkcc73cmemv0",
+      "nonce": "08c354f395e3b94f16a9d6466e376167",
+      "commitment_sha256": "4e85decab6a5725bb371bdf07a3561c0c261376df5c6cef4f1a31c7f5cb19fa7",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-18/ibm-run-5f238ed35d404e61.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/campaign_manifest.json",
+          "json_pointer": "/3/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/job_ibm-run-5f238ed35d404e61.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/retrieval_summary.json",
+          "json_pointer": "/jobs/5/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-628a2e51545514d4",
+      "raw_ibm_job_id": "d73igpkvllmc73anjmd0",
+      "nonce": "61176498ecf316f01da9a99f796c7ec7",
+      "commitment_sha256": "27247a6a35909d3cb1473e87dbe88822a6110879f357579ee94b3f73642aef89",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-28/noise_baseline_mar28.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-76f89da60bcd2176",
+      "raw_ibm_job_id": "d73iue4vllmc73ank4og",
+      "nonce": "df23e9c4b9120a766aa5b1a422b00e5a",
+      "commitment_sha256": "3ea35c35988140ff29f7be7801d7452754f50a92ad0ecc3e932033b6605b6e2b",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-28/kuramoto_8osc_zne.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-8dc620c9d5cd90be",
+      "raw_ibm_job_id": "d73igpdkoquc73e1oud0",
+      "nonce": "82ea0d5b05e497e5d81557fabd19a78d",
+      "commitment_sha256": "f5449e5dc39fb12d5f604d3b8129bc1817f49d007219382db7bb13fb20ffd7dc",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-28/kuramoto_4osc_trotter_comparison.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-9317279194d1c740",
+      "raw_ibm_job_id": "d6t9asmsh9gc73did75g",
+      "nonce": "6ef02dbaccf50fdb929881c049d074ed",
+      "commitment_sha256": "d440cd3af08b6f16ad5944acdfb26a8c98bd7e5098c2c9c5886abec154c87d80",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-18/ibm-run-9317279194d1c740.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/job_ibm-run-9317279194d1c740.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/retrieval_summary.json",
+          "json_pointer": "/jobs/0/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-93b07b15459915d2",
+      "raw_ibm_job_id": "d6t9c8n90okc73et6ho0",
+      "nonce": "a7d84b851e7e5e9c65b9fa5bba9f1336",
+      "commitment_sha256": "6d47ebcf8e3ce00aa8fe64ef03113b913e21a86a79746946c9cbc066f47b0741",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-18/ibm-run-93b07b15459915d2.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/job_ibm-run-93b07b15459915d2.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/retrieval_summary.json",
+          "json_pointer": "/jobs/1/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-abd725f4a5d05f0c",
+      "raw_ibm_job_id": "d73ial5koquc73e1onp0",
+      "nonce": "f298c1689bb83f1ea4025344cfedcbe7",
+      "commitment_sha256": "e23298a2cb8bac09ba0f8cdfe94abe28def5eb83ec19c7c4680a0061b4ab0371",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-28/qkd_qber_4q.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-ae638f0fd47eeac5",
+      "raw_ibm_job_id": "d73iakh8qmgc73fl21f0",
+      "nonce": "96e5916fc77996fed820cab6cfd1c791",
+      "commitment_sha256": "c7015e95e3494baf06b60598ae8b0e8d440aa514e7ccb468e6f219ba656fdfd7",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-28/bell_test_4q.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-af44179a8a3124c0",
+      "raw_ibm_job_id": "d73iaksvllmc73anjfo0",
+      "nonce": "aa52030a2207c1ae8deff1f6e41ec139",
+      "commitment_sha256": "2fa84fa7770e47c37181141f25ea38d0f778dee02735e1fec1600c1910912069",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-28/correlator_4q.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-b6d84688f60da3ca",
+      "raw_ibm_job_id": "d6t9emf90okc73et6k50",
+      "nonce": "d84ea192fcfa95bdf944572fddbab2d5",
+      "commitment_sha256": "2bcf018ed6d6d3da9935b82dd7c7eaf37ca13de8f1a57dbe8626f47b4d1e3baa",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-18/ibm-run-b6d84688f60da3ca.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/campaign_manifest.json",
+          "json_pointer": "/4/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/job_ibm-run-b6d84688f60da3ca.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/retrieval_summary.json",
+          "json_pointer": "/jobs/6/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-d0ff68f141e586b2",
+      "raw_ibm_job_id": "d74fqk5koquc73e2ngjg",
+      "nonce": "87d5ec8e142c2c942fe0d746b74d8799",
+      "commitment_sha256": "6f14e570389bc2e3939908c708e6fe10f015b8ccd675e606cbba78363201aede",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-29/dla_parity_jobs.json",
+          "json_pointer": "/even_job_id",
+          "field": "even_job_id"
+        },
+        {
+          "path": "results/ibm_hardware_2026-03-29/dla_parity_results.json",
+          "json_pointer": "/even_job_id",
+          "field": "even_job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-d3199dfdb0f37023",
+      "raw_ibm_job_id": "d73inqp8qmgc73fl2f80",
+      "nonce": "b3a7c3294f05a9389d8828458695eda1",
+      "commitment_sha256": "7b23588c299a81ebb3bfc35386f9dae1882ad942b70381167247662b2cf74bef",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-28/vqe_8q_hardware.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-dba7b17d1f4089cd",
+      "raw_ibm_job_id": "d6t9egbbjfas73fpbn40",
+      "nonce": "5f5658f03fb088a60ab33230cb78f9b2",
+      "commitment_sha256": "dd38386e48676758e8cabaf9d58060a5029f6af0b9a0ba3b97795c5f95c40f4e",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-18/ibm-run-dba7b17d1f4089cd.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/campaign_manifest.json",
+          "json_pointer": "/2/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/job_ibm-run-dba7b17d1f4089cd.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/retrieval_summary.json",
+          "json_pointer": "/jobs/4/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-ddcd41b8f1ba121b",
+      "raw_ibm_job_id": "d73igop8qmgc73fl280g",
+      "nonce": "560e93c0515ba796ee01073608d65ec9",
+      "commitment_sha256": "fe32e9fc5c8a087f7c69e877cb13bee51b5408677b0021b0dbe977117f490b0f",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-28/kuramoto_4osc_zne.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-e013d50173ffe3c7",
+      "raw_ibm_job_id": "d74fqka3qcgc73fqhm9g",
+      "nonce": "063f2c24de820940ba18c6f4958eec6c",
+      "commitment_sha256": "f9345cf923f9cda9430953fd066ead2f82d45ce555e96ce61171e131136902bc",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-29/dla_parity_jobs.json",
+          "json_pointer": "/odd_job_id",
+          "field": "odd_job_id"
+        },
+        {
+          "path": "results/ibm_hardware_2026-03-29/dla_parity_results.json",
+          "json_pointer": "/odd_job_id",
+          "field": "odd_job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-ed48720009580850",
+      "raw_ibm_job_id": "d6t9erfgtkcc73cmen70",
+      "nonce": "8b11d9e9c9e6a66493b29fac6a051050",
+      "commitment_sha256": "e4784611b0520f94a36e46dbad2b92ad1f97f7c1337f963e3a51f6fabcf490ba",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-18/ibm-run-ed48720009580850.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/campaign_manifest.json",
+          "json_pointer": "/6/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/job_ibm-run-ed48720009580850.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        },
+        {
+          "path": "results/march_2026/retrieval_summary.json",
+          "json_pointer": "/jobs/8/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    },
+    {
+      "public_label": "ibm-run-f8c476e1dc763a05",
+      "raw_ibm_job_id": "d73iuf0i3fts73ffr0ng",
+      "nonce": "9860a6334195626b164d06d221859db9",
+      "commitment_sha256": "570f44bd886a2d24a06f3813f731a88f9cd2694471b0a30d6cc9f87535b9dff6",
+      "artefact_references": [
+        {
+          "path": "results/ibm_hardware_2026-03-28/zne_higher_order.json",
+          "json_pointer": "/job_id",
+          "field": "job_id"
+        }
+      ],
+      "verified": true
+    }
+  ]
+}
