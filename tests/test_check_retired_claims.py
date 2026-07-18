@@ -242,6 +242,35 @@ class TestCommittedRegister:
     ) -> None:
         assert not claims["chsh-blanket-8sigma"].pattern.search(text)
 
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "| 17 | **DUAL PROTECTION on IBM hardware** | IBM v2 | F_FIM > F_XY |",
+            "hardware-artefact dual protection on ibm_fez",
+            'the IBM v2 "dual protection on ibm_fez" hardware result',
+            "Dual Protection on IBM Heron r2 (F_FIM > F_XY)",
+            "digital dual protection on ibm_kingston",
+        ],
+    )
+    def test_dual_protection_pattern_catches_hardware_spellings(
+        self, claims: dict[str, guard.RetiredClaim], text: str
+    ) -> None:
+        assert claims["fim-dual-protection-hardware"].pattern.search(text)
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "| 11 | Dual protection: Lyapunov + spectral gap | NB40 | 5/6 confirmed |",
+            "FIM enhances MBL (dual protection)",
+            "the dual protection mechanism in the mean-field model",
+            "dual protection of the simulated spectral gap",
+        ],
+    )
+    def test_dual_protection_pattern_ignores_simulation_uses(
+        self, claims: dict[str, guard.RetiredClaim], text: str
+    ) -> None:
+        assert not claims["fim-dual-protection-hardware"].pattern.search(text)
+
 
 class TestCli:
     def _repo(self, tmp_path: Path, body: str) -> Path:

@@ -52,7 +52,7 @@ independently of coupling topology.
 | 14 | Delay-robust FIM with coupling | NB42 | R > 50% at any τ |
 | 15 | BKT universality (β → 0) | NB43 | NOT mean-field |
 | 16 | Critical slowing down τ = 330 | NB34 | BKT-consistent |
-| 17 | **DUAL PROTECTION on IBM hardware** | IBM v2 | F_FIM > F_XY, p < 10⁻⁶ |
+| 17 | ~~DUAL PROTECTION on IBM hardware~~ | IBM v2 | ~~F_FIM > F_XY, p < 10⁻⁶~~ \[retired 2026-07-18 — quarantined; falsified, see Campaign 2 note\] |
 | 18 | Metabolic scaling P ∝ N | NB46 | r = 0.983 vs biology |
 | 19 | Topological defects suppressed by FIM | NB47 | 8 → 0 defects |
 
@@ -79,6 +79,22 @@ independently of coupling topology.
   `scripts/recompute_chsh_bell_test.py`\]
 
 ### Campaign 2 — Equal-Depth Fair Experiments (9 jobs)
+
+> **\[Amended 2026-07-18 — data now RECOVERED and public; scientific claim
+> retired.\]** These "IBM v2" jobs were originally committed aggregate-only
+> (no raw counts, HMAC-blinded labels), so they were quarantined. They have now
+> been **re-retrieved read-only from IBM (0 QPU seconds)** and published in full:
+> raw counts + real IBM job identifiers + dated `ibm_fez` calibration in
+> `data/ibm_hardware_v2_recovered_2026-07-18/`. A committed reproducer
+> (`scripts/analyse_ibm_v2_recovered.py`) recomputes every row from the raw
+> counts — 8 of 9 to |Δ|<1e-4 (A_odd to ~3.7%, original mitigation not in-pack).
+> So the numbers below are **genuine, not fabricated**. What stays retired is the
+> *interpretation*: `F_FIM > F_XY` (all-zero survival) is a real observation but
+> is **not** evidence of a coherence-protection ("DUAL PROTECTION") mechanism —
+> the two circuits differ in depth/structure, and the protection hypothesis was
+> tested properly on the promoted `ibm_kingston` SCPN/FIM campaign and committed
+> as a **negative/falsification** result (digital `λ=4` increases leakage /
+> decreases retention — `docs/campaigns/scpn_fim_claim_boundary_2026-05-05.md`).
 
 | Experiment | Result | Significance |
 |------------|--------|:------------:|

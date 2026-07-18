@@ -3,9 +3,12 @@
 *100 tracked Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
 frontier research. Notebooks 01-13 cover core quantum simulation. Notebooks 14-47
 document the FIM (Fisher Information Metric) strange loop investigation campaign
-(2026-03-29) with 19 findings (6 negative) including hardware-artefact
-dual protection on ibm_fez. Notebook 48 is the Phase 5 Kuramoto handbook
-workflow companion. Notebook 49 is the differentiable first-path companion.*
+(2026-03-29) with 19 findings (6 negative). The IBM v2 "dual protection on ibm_fez"
+result is retired as a claim (its data is recovered and published in full,
+`data/ibm_hardware_v2_recovered_2026-07-18/`; falsified on the promoted ibm_kingston
+SCPN/FIM campaign — the observation is genuine, the protection interpretation is not).
+Notebook 48 is the Phase 5 Kuramoto handbook workflow companion. Notebook 49 is the
+differentiable first-path companion.*
 
 ---
 

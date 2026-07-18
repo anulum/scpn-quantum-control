@@ -1,0 +1,6 @@
+{
+  "schema": "scpn.ibm_v2_recovered_raw_counts.v1.manifest",
+  "files": {
+    "recovered_raw_counts.json": "251c9c547e3c2077d78166bd588c291b3bf6ff2420b9325cb1a3273bf53569f1"
+  }
+}

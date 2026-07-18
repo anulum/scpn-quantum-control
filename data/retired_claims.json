@@ -37,6 +37,24 @@
         "\\[corrected",
         "\\[amended"
       ]
+    },
+    {
+      "id": "fim-dual-protection-hardware",
+      "pattern": "(?i)dual protection.{0,25}(ibm hardware|ibm_fez|ibm_kingston|on ibm|ibm heron)",
+      "retired": "2026-07-18",
+      "reason": "The IBM v2 'DUAL PROTECTION on IBM hardware (F_FIM > F_XY, p < 10^-6)' finding is retired as a scientific claim, NOT as data. The underlying data has been recovered and published in full (data/ibm_hardware_v2_recovered_2026-07-18/: raw counts + real IBM job identifiers + calibration; committed reproducer scripts/analyse_ibm_v2_recovered.py recomputes 8/9 aggregates to |dmean|<1e-4). F_FIM > F_XY (all-zero survival) is a genuine hardware observation but is NOT evidence of a coherence-protection mechanism: the circuits differ in depth/structure, and the hypothesis was tested properly on the promoted ibm_kingston SCPN/FIM campaign and committed as a NEGATIVE/falsification result (docs/campaigns/scpn_fim_claim_boundary_2026-05-05.md, docs/hardware_status_ledger.md). Simulation/theory 'dual protection' findings (Lyapunov + spectral gap, NB40; FIM enhances MBL, NB31) are not hardware claims and are not retired.",
+      "allow_context": [
+        "retired",
+        "quarantin",
+        "falsif",
+        "superseded",
+        "not promoted",
+        "no coherence-protection",
+        "negative[/ ]",
+        "\\[retired",
+        "\\[corrected",
+        "\\[amended"
+      ]
     }
   ]
 }

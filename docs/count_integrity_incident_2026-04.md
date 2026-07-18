@@ -46,7 +46,7 @@ counts:
 
 | Artifact family | Status |
 |---|---|
-| `results/ibm_hardware_v2_2026-03-29/` | Unpromoted (aggregate-only, no raw-count retrieval trail) |
+| `results/ibm_hardware_v2_2026-03-29/` | **Recovered 2026-07-18** — re-retrieved read-only from IBM (0 QPU s); raw counts + real job IDs + calibration published in `data/ibm_hardware_v2_recovered_2026-07-18/`; data genuine (8/9 aggregates reproduce to \|Δ\|<1e-4), only the "dual protection" interpretation stays retired |
 | `results/ibm_hardware_2026-03-29/dla_parity_*.json` | Superseded (circuit-depth artefact; use `data/phase1_dla_parity/`) |
 | `results/ibm_runs/jobs.json` and frontier queue outputs | Quarantined (placeholder / fallback-count handling) |
 | Any "400 jobs", large-N frontier, multi-QPU, or live-loop claim | Not promoted |

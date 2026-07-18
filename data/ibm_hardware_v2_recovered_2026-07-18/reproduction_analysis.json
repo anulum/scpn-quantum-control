@@ -1,0 +1,84 @@
+{
+  "n_experiments": 9,
+  "n_reproduced_exactly": 8,
+  "rows": [
+    {
+      "experiment": "A_even",
+      "observable": "bitstring",
+      "recovered_mean": 0.918505859375,
+      "committed_mean": 0.9185,
+      "abs_delta": 5.8593749999724665e-06,
+      "reproduced": true
+    },
+    {
+      "experiment": "A_odd",
+      "observable": "odd_parity",
+      "recovered_mean": 0.889990234375,
+      "committed_mean": 0.8526,
+      "abs_delta": 0.037390234375,
+      "reproduced": false
+    },
+    {
+      "experiment": "C_xy",
+      "observable": "bitstring",
+      "recovered_mean": 0.84844970703125,
+      "committed_mean": 0.8484,
+      "abs_delta": 4.970703124995701e-05,
+      "reproduced": true
+    },
+    {
+      "experiment": "C_fim",
+      "observable": "bitstring",
+      "recovered_mean": 0.91583251953125,
+      "committed_mean": 0.9158,
+      "abs_delta": 3.251953125005258e-05,
+      "reproduced": true
+    },
+    {
+      "experiment": "B_M+4",
+      "observable": "bitstring",
+      "recovered_mean": 0.99364013671875,
+      "committed_mean": 0.9936,
+      "abs_delta": 4.0136718749916866e-05,
+      "reproduced": true
+    },
+    {
+      "experiment": "B_M+2",
+      "observable": "bitstring",
+      "recovered_mean": 1.220703125e-05,
+      "committed_mean": 0.0,
+      "abs_delta": 1.220703125e-05,
+      "reproduced": true
+    },
+    {
+      "experiment": "B_M0",
+      "observable": "bitstring",
+      "recovered_mean": 1.220703125e-05,
+      "committed_mean": 0.0,
+      "abs_delta": 1.220703125e-05,
+      "reproduced": true
+    },
+    {
+      "experiment": "B_M-2",
+      "observable": "bitstring",
+      "recovered_mean": 1.220703125e-05,
+      "committed_mean": 0.0,
+      "abs_delta": 1.220703125e-05,
+      "reproduced": true
+    },
+    {
+      "experiment": "B_M-4",
+      "observable": "bitstring",
+      "recovered_mean": 0.95948486328125,
+      "committed_mean": 0.9595,
+      "abs_delta": 1.5136718749975131e-05,
+      "reproduced": true
+    }
+  ],
+  "dual_protection_observation": {
+    "F_FIM": 0.91583251953125,
+    "F_XY": 0.84844970703125,
+    "F_FIM_gt_F_XY": true,
+    "claim_boundary": "Genuine hardware observation reproduced from public raw counts. NOT evidence of coherence protection: circuits differ in depth/structure; the protection hypothesis was falsified on the promoted ibm_kingston SCPN/FIM campaign."
+  }
+}

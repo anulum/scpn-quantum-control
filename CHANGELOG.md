@@ -4,6 +4,28 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Added
+- 2026-07-18 — Recovered IBM v2 raw counts, full public disclosure (KIMI audit
+  follow-through): the nine 2026-03-29 `ibm_fez` "fair experiment" jobs — previously
+  committed aggregate-only and quarantined — were re-retrieved read-only from IBM
+  (0 QPU seconds) and published in full in `data/ibm_hardware_v2_recovered_2026-07-18/`:
+  raw per-pub counts + **real IBM job identifiers** + the dated calibration snapshot.
+  New tooling `scripts/recover_ibm_v2_raw_counts.py` (retrieval, leak-closed against the
+  API token) and `scripts/analyse_ibm_v2_recovered.py` (referee reproducer) recompute
+  8/9 experiment aggregates from the raw counts to |Δmean|<1e-4 (A_odd to ~3.7%,
+  original mitigation not in-pack). The data is genuine, not fabricated.
+
+### Changed
+- 2026-07-18 — Public-claim honesty (KIMI due-diligence audit, AUD-1): the IBM v2
+  "DUAL PROTECTION on IBM hardware" finding is retired **as a scientific claim, not as
+  data**, and added to the retired-claims register (`data/retired_claims.json`, id
+  `fim-dual-protection-hardware`). `F_FIM=0.9158 > F_XY=0.8484` (all-zero survival) is a
+  genuine recovered observation but is NOT evidence of a coherence-protection mechanism;
+  that hypothesis was falsified by the promoted `ibm_kingston` SCPN/FIM negative result.
+  `RESULTS_SUMMARY.md` (finding #17 + Campaign 2 table), `docs/hardware_status_ledger.md`,
+  `docs/count_integrity_incident_2026-04.md` and `docs/notebooks.md` are updated to
+  reflect the recovery.
+
 ## [1.0.0] - 2026-07-17
 
 First stable release. Consolidates the post-0.10.0 control-surface,
