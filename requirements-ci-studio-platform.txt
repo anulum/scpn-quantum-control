@@ -7,6 +7,6 @@
 #
 # Python >=3.12 CI jobs that exercise Studio recompute surfaces install this
 # after their base CI lock with --no-deps; the base locks already pin cryptography.
-scpn-studio-platform==0.11.0 \
-    --hash=sha256:41fc8c0d96a0f66ce75841eeaec33d3e22ae56430d84776a9b97cd4b4d8a9054 \
-    --hash=sha256:b785cbf4480599a76dc61206fae63b63f513371e9ea40122b80d9123004f25bf
+scpn-studio-platform==0.11.2 \
+    --hash=sha256:566676c1457bc31de14d6e449430eecc9f69b387063302f66ac67c514ee0c863 \
+    --hash=sha256:ec438e71a16ce0b8689bef7de1284fcd8750871b3e2beb981c1aefeb44713cc6
