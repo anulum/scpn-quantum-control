@@ -1,0 +1,37 @@
+{
+  "campaign": "iqm_layout_transfer_square_lattice_prereg_2026-07-21",
+  "kind": "hardware_counts_analysis",
+  "backend": "garnet",
+  "job_ids": [
+    "019f8639-96be-77d1-8f70-109a70e6fb33",
+    "019f8639-980e-7c21-bb38-f26396a883e3"
+  ],
+  "blocks": [
+    {
+      "n": 8,
+      "exact_reference": 0.5000000000000028,
+      "readout_e01_max": 0.0224609375,
+      "readout_e10_max": 0.044921875,
+      "arms": [
+        {
+          "arm": "optimised",
+          "raw_order_parameter": 0.34765625,
+          "corrected_order_parameter": 0.352548219613715,
+          "corrected_error_vs_exact": 0.14745178038628776
+        },
+        {
+          "arm": "default",
+          "raw_order_parameter": 0.255615234375,
+          "corrected_order_parameter": 0.24672794775692483,
+          "corrected_error_vs_exact": 0.2532720522430779
+        },
+        {
+          "arm": "naive",
+          "raw_order_parameter": 0.212646484375,
+          "corrected_order_parameter": 0.20285069958471283,
+          "corrected_error_vs_exact": 0.29714930041529
+        }
+      ]
+    }
+  ]
+}

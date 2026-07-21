@@ -115,10 +115,13 @@ def _analyse_dryrun(args: argparse.Namespace) -> int:
     counts_payload = json.loads(Path(args.counts).read_text(encoding="utf-8"))
     counts = counts_payload["counts"]
 
+    backend = str(counts_payload.get("backend", "unknown"))
+    is_simulated = "fake" in backend.lower() or backend.endswith(":mock")
     report: dict[str, object] = {
         "campaign": plan["campaign"],
-        "kind": "fake_backend_dry_run",
-        "backend": counts_payload.get("backend", "unknown"),
+        "kind": "fake_backend_dry_run" if is_simulated else "hardware_counts_analysis",
+        "backend": backend,
+        "job_ids": counts_payload.get("job_ids", []),
         "blocks": [],
     }
     for block in plan["blocks"]:

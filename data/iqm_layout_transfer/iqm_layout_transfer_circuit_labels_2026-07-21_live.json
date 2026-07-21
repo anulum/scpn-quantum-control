@@ -1,0 +1,17 @@
+[
+  "main_n8_optimised",
+  "main_n8_default",
+  "main_n8_naive",
+  "readout_n8_zeros",
+  "readout_n8_ones",
+  "main_n12_optimised",
+  "main_n12_default",
+  "main_n12_naive",
+  "readout_n12_zeros",
+  "readout_n12_ones",
+  "main_n16_optimised",
+  "main_n16_default",
+  "main_n16_naive",
+  "readout_n16_zeros",
+  "readout_n16_ones"
+]
