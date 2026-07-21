@@ -8,12 +8,12 @@
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 836,
-    "public_documentation_pages": 278,
-    "python_model_classes": 1038,
-    "python_model_source_modules": 571,
+    "public_documentation_pages": 284,
+    "python_model_classes": 1045,
+    "python_model_source_modules": 587,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1021
+    "test_files": 1041
   },
   "documentation": {
     "examples": [
@@ -192,6 +192,7 @@
       "docs/campaigns/benchmark_harness_registry_2026-05-06.md",
       "docs/campaigns/depth_optimal_native_decomposition_prereg_2026-05-06.md",
       "docs/campaigns/dla_multidevice_replication_prereg_2026-05-06.md",
+      "docs/campaigns/dla_parity_exact_baseline_2026-07-21.md",
       "docs/campaigns/dla_state_layout_randomisation_prereg_2026-05-06.md",
       "docs/campaigns/entanglement_tomography_prereg_2026-05-06.md",
       "docs/campaigns/guess_symmetry_decay_prereg_2026-05-06.md",
@@ -199,6 +200,10 @@
       "docs/campaigns/ibm_phase2_preregistered_manifest_2026-05-05.md",
       "docs/campaigns/ibm_phase2_scaling_bc_manifest_2026-05-05.md",
       "docs/campaigns/ibm_popcount_control_manifest_2026-05-05.md",
+      "docs/campaigns/ibm_v2_recovery_2026-07-18.md",
+      "docs/campaigns/kyma_composition_probe_2026-07-18.md",
+      "docs/campaigns/kyma_v2_1_rigor_2026-07-21.md",
+      "docs/campaigns/kyma_v2_composition_probe_2026-07-21.md",
       "docs/campaigns/large_system_submission_extension_readiness_20260520T193857Z.md",
       "docs/campaigns/large_system_submission_extension_readiness_20260520T193903Z.md",
       "docs/campaigns/large_system_submission_extension_readiness_20260520T193909Z.md",
@@ -282,6 +287,7 @@
       "docs/campaigns/scpn_fim_repeated_followup_protocol_2026-05-05.md",
       "docs/campaigns/scpn_fim_submission_checklist_2026-05-06.md",
       "docs/campaigns/scpn_fim_validation_protocol_2026-05-05.md",
+      "docs/campaigns/two_colour_width2_schedule_2026-07-21.md",
       "docs/campaigns/validation_readiness_2026-05-05.md",
       "docs/campaigns/vqs_alternative_prereg_2026-05-06.md",
       "docs/changelog.md",
@@ -465,7 +471,7 @@
       {
         "package": "analysis",
         "path": "src/scpn_quantum_control/analysis",
-        "python_modules": 61
+        "python_modules": 63
       },
       {
         "package": "applications",
@@ -480,7 +486,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 34
+        "python_modules": 48
       },
       {
         "package": "bridge",
@@ -1706,6 +1712,10 @@
       {
         "name": "EstimatorProvenance",
         "path": "src/scpn_quantum_control/diff.py"
+      },
+      {
+        "name": "ExactBaselineRow",
+        "path": "src/scpn_quantum_control/analysis/dla_parity_exact_baseline.py"
       },
       {
         "name": "ExecutableCompilerADKernel",
@@ -3536,6 +3546,14 @@
         "path": "src/scpn_quantum_control/crypto/pqc_trigger.py"
       },
       {
+        "name": "ProbeConfig",
+        "path": "src/scpn_quantum_control/benchmarks/kyma/task.py"
+      },
+      {
+        "name": "ProbeConfigV2",
+        "path": "src/scpn_quantum_control/benchmarks/kyma_v2/task.py"
+      },
+      {
         "name": "Problem",
         "path": "src/scpn_quantum_control/stable_core.py"
       },
@@ -4272,6 +4290,14 @@
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
+        "name": "SeedResult",
+        "path": "src/scpn_quantum_control/benchmarks/kyma/probe.py"
+      },
+      {
+        "name": "SeedResultV2",
+        "path": "src/scpn_quantum_control/benchmarks/kyma_v2/probe.py"
+      },
+      {
         "name": "SelfConsistencyResult",
         "path": "src/scpn_quantum_control/analysis/hamiltonian_self_consistency.py"
       },
@@ -4592,6 +4618,14 @@
         "path": "src/scpn_quantum_control/differentiable_transform_support_matrix_artifact.py"
       },
       {
+        "name": "TrialBatch",
+        "path": "src/scpn_quantum_control/benchmarks/kyma/task.py"
+      },
+      {
+        "name": "TrialBatchV2",
+        "path": "src/scpn_quantum_control/benchmarks/kyma_v2/task.py"
+      },
+      {
         "name": "TrotterEvolutionConfig",
         "path": "src/scpn_quantum_control/phase/xy_kuramoto.py"
       },
@@ -4781,6 +4815,7 @@
       "src/scpn_quantum_control/analysis/bkt_analysis.py",
       "src/scpn_quantum_control/analysis/bkt_universals.py",
       "src/scpn_quantum_control/analysis/critical_concordance.py",
+      "src/scpn_quantum_control/analysis/dla_parity_exact_baseline.py",
       "src/scpn_quantum_control/analysis/dla_parity_theorem.py",
       "src/scpn_quantum_control/analysis/dla_parity_witness.py",
       "src/scpn_quantum_control/analysis/dla_truncated_tn.py",
@@ -4834,6 +4869,7 @@
       "src/scpn_quantum_control/analysis/tcbo_weighted_complex.py",
       "src/scpn_quantum_control/analysis/thermodynamic_witness.py",
       "src/scpn_quantum_control/analysis/translation_symmetry.py",
+      "src/scpn_quantum_control/analysis/two_colour_schedule.py",
       "src/scpn_quantum_control/analysis/vortex_binding.py",
       "src/scpn_quantum_control/analysis/witness_discovery.py",
       "src/scpn_quantum_control/analysis/xxz_phase_diagram.py",
@@ -4882,6 +4918,20 @@
       "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py",
       "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py",
       "src/scpn_quantum_control/benchmarks/kuramoto_external_competitors.py",
+      "src/scpn_quantum_control/benchmarks/kyma/dynamics.py",
+      "src/scpn_quantum_control/benchmarks/kyma/models.py",
+      "src/scpn_quantum_control/benchmarks/kyma/probe.py",
+      "src/scpn_quantum_control/benchmarks/kyma/task.py",
+      "src/scpn_quantum_control/benchmarks/kyma_v2/ablations.py",
+      "src/scpn_quantum_control/benchmarks/kyma_v2/baselines.py",
+      "src/scpn_quantum_control/benchmarks/kyma_v2/coupling.py",
+      "src/scpn_quantum_control/benchmarks/kyma_v2/design.py",
+      "src/scpn_quantum_control/benchmarks/kyma_v2/dynamics.py",
+      "src/scpn_quantum_control/benchmarks/kyma_v2/models.py",
+      "src/scpn_quantum_control/benchmarks/kyma_v2/probe.py",
+      "src/scpn_quantum_control/benchmarks/kyma_v2/rigor.py",
+      "src/scpn_quantum_control/benchmarks/kyma_v2/task.py",
+      "src/scpn_quantum_control/benchmarks/kyma_v2/teacher.py",
       "src/scpn_quantum_control/benchmarks/layout_method_comparison.py",
       "src/scpn_quantum_control/benchmarks/layout_relaxation_experiment.py",
       "src/scpn_quantum_control/benchmarks/mps_baseline.py",
@@ -6523,6 +6573,7 @@
       "tests/test_analog_kuramoto_helper_branches.py",
       "tests/test_analog_native_readiness.py",
       "tests/test_analog_native_readiness_branches.py",
+      "tests/test_analyse_ibm_v2_recovered.py",
       "tests/test_analyse_iqm_dla_parity.py",
       "tests/test_analyse_iqm_layout_campaign.py",
       "tests/test_analyse_iqm_layout_pinned_repeat.py",
@@ -6736,9 +6787,11 @@
       "tests/test_differentiable_transform_helpers.py",
       "tests/test_differentiable_transform_support_matrix_artifact.py",
       "tests/test_differentiable_vmap.py",
+      "tests/test_disclose_ibm_job_ids.py",
       "tests/test_disruption_classifier.py",
       "tests/test_dla_parity_baselines.py",
       "tests/test_dla_parity_dataset.py",
+      "tests/test_dla_parity_exact_baseline.py",
       "tests/test_dla_parity_init.py",
       "tests/test_dla_parity_reproduce.py",
       "tests/test_dla_parity_schema.py",
@@ -6858,6 +6911,7 @@
       "tests/test_hardware_result_packs.py",
       "tests/test_hardware_runner.py",
       "tests/test_hardware_runner_branches.py",
+      "tests/test_hardware_runner_calibration.py",
       "tests/test_hardware_runner_contracts.py",
       "tests/test_hardware_topological_optimizer.py",
       "tests/test_hls_cosimulation_evidence.py",
@@ -6913,6 +6967,20 @@
       "tests/test_kuramoto_relocation_shims.py",
       "tests/test_kuramoto_standalone_package_decision.py",
       "tests/test_kuramoto_variants.py",
+      "tests/test_kyma_dynamics.py",
+      "tests/test_kyma_models.py",
+      "tests/test_kyma_probe.py",
+      "tests/test_kyma_task.py",
+      "tests/test_kyma_v2_ablations.py",
+      "tests/test_kyma_v2_baselines.py",
+      "tests/test_kyma_v2_coupling.py",
+      "tests/test_kyma_v2_design.py",
+      "tests/test_kyma_v2_dynamics.py",
+      "tests/test_kyma_v2_models.py",
+      "tests/test_kyma_v2_probe.py",
+      "tests/test_kyma_v2_rigor.py",
+      "tests/test_kyma_v2_task.py",
+      "tests/test_kyma_v2_teacher.py",
       "tests/test_l16_director.py",
       "tests/test_larger_than_16_defaults.py",
       "tests/test_lattice_branches.py",
@@ -7313,6 +7381,7 @@
       "tests/test_realtime_runtime.py",
       "tests/test_realtime_runtime_branches.py",
       "tests/test_recompute_chsh_bell_test.py",
+      "tests/test_recover_ibm_v2_raw_counts.py",
       "tests/test_regression_baselines.py",
       "tests/test_render_kuramoto_handbook.py",
       "tests/test_render_tier_benchmarks.py",
@@ -7477,6 +7546,7 @@
       "tests/test_trapped_ion.py",
       "tests/test_trotter_error.py",
       "tests/test_trotter_upde.py",
+      "tests/test_two_colour_schedule.py",
       "tests/test_ultrascale_hls.py",
       "tests/test_ultrascale_hls_branch.py",
       "tests/test_universality.py",
