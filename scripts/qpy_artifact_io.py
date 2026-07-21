@@ -29,7 +29,7 @@ from pathlib import Path
 from typing import Any
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
-_ARTIFACT_ROOT = _REPO_ROOT / "data"
+_ARTIFACT_ROOT = (_REPO_ROOT / "data").resolve()
 
 
 def reviewed_qpy_load_circuits(path: str | Path) -> list[Any]:
