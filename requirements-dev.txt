@@ -34,7 +34,7 @@ qiskit-ibm-runtime==0.47.0
 # AWS Braket provider surface
 amazon-braket-sdk==1.121.0
 # Visualization
-matplotlib==3.11.0
+matplotlib==3.11.1
 # CI/runtime extras
 pydantic-settings==2.14.2
 structlog==26.1.0
