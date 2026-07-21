@@ -195,6 +195,12 @@ ignore = [
 "tests/test_kyma_task.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/test_kyma_models.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/test_kyma_probe.py" = ["E402", "I001"]  # importorskip(jax) before local import
+"tests/test_kyma_v2_dynamics.py" = ["E402", "I001"]  # importorskip(jax) before local import
+"tests/test_kyma_v2_coupling.py" = ["E402", "I001"]  # importorskip(jax) before local import
+"tests/test_kyma_v2_teacher.py" = ["E402", "I001"]  # importorskip(jax) before local import
+"tests/test_kyma_v2_design.py" = ["E402", "I001"]  # importorskip(jax) before local import
+"tests/test_kyma_v2_models.py" = ["E402", "I001"]  # importorskip(jax) before local import
+"tests/test_kyma_v2_probe.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/test_kuramoto_visualisation.py" = ["E402", "I001"]  # importorskip(matplotlib) before local import
 # Docstring (D) scope: the 2026-06-17 broadcast mandates NumPy docstrings on the
 # PUBLIC API. tests/ are not public API (design exemption); scripts/ and
@@ -438,9 +444,10 @@ omit = [
     "*/scpn_quantum_control/accel/jax_kuramoto.py",
     "*/scpn_quantum_control/accel/jax_kuramoto_delayed.py",
     "*/scpn_quantum_control/accel/jax_kuramoto_mpc.py",
-    # The KYMA toy-composition probe needs the optional [jax] extra, absent from the pinned CI
-    # lane; its importorskip(jax)-guarded tests run locally. Covered by tests/test_kyma_*.py.
+    # The KYMA toy-composition probe (v1 + v2) needs the optional [jax] extra, absent from the
+    # pinned CI lane; its importorskip(jax)-guarded tests run locally. Covered by tests/test_kyma_*.py.
     "*/scpn_quantum_control/benchmarks/kyma/*.py",
+    "*/scpn_quantum_control/benchmarks/kyma_v2/*.py",
     "*/scpn_quantum_control/mitigation/mitiq_integration.py",
     # Quantum-persistent-homology hardware loops are validated by the
     # topological optimizer and hardware-topology tests. Live QPU branches
@@ -463,9 +470,10 @@ omit = [
     "*/scpn_quantum_control/accel/jax_kuramoto.py",
     "*/scpn_quantum_control/accel/jax_kuramoto_delayed.py",
     "*/scpn_quantum_control/accel/jax_kuramoto_mpc.py",
-    # The KYMA toy-composition probe needs the optional [jax] extra, absent from the pinned CI
-    # lane; its importorskip(jax)-guarded tests run locally. Covered by tests/test_kyma_*.py.
+    # The KYMA toy-composition probe (v1 + v2) needs the optional [jax] extra, absent from the
+    # pinned CI lane; its importorskip(jax)-guarded tests run locally. Covered by tests/test_kyma_*.py.
     "*/scpn_quantum_control/benchmarks/kyma/*.py",
+    "*/scpn_quantum_control/benchmarks/kyma_v2/*.py",
     "*/scpn_quantum_control/mitigation/mitiq_integration.py",
     "*/scpn_quantum_control/analysis/quantum_persistent_homology.py",
     "*/scpn_quantum_control/forecasting/kuramoto_neural_operator.py",

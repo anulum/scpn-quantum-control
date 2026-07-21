@@ -1,0 +1,168 @@
+{
+  "probe": "kyma_v2_composition",
+  "pre_registration": "KYMA_V2_PROBE_PREREGISTRATION_7f6b_2026-07-21.md",
+  "baseline_v1": "KYMA_TOY_PROBE_PREREGISTRATION_7f6b_2026-07-18.md (commit 2f67de12)",
+  "started_utc": "2026-07-21T05:19:45",
+  "design": {
+    "design_seed": 0,
+    "g_sync": 0.5,
+    "steps": 40,
+    "dt": 0.1,
+    "k_bridge": 0.8,
+    "realisability_r1": 1.0,
+    "realisability_r2": 1.0,
+    "non_separability_rate": 0.4033333333333333,
+    "non_separability_by_k_bridge": {
+      "0.2": 0.2833333333333333,
+      "0.4": 0.3466666666666667,
+      "0.6": 0.3933333333333333,
+      "0.8": 0.4033333333333333,
+      "1.0": 0.41333333333333333,
+      "1.5": 0.42,
+      "2.0": 0.43666666666666665
+    },
+    "class_histogram": [
+      81,
+      72,
+      69,
+      78
+    ],
+    "max_class_fraction": 0.27,
+    "balanced": true,
+    "config": {
+      "dt": 0.1,
+      "steps": 40,
+      "n_bins": 4,
+      "k_ambient": 0.0,
+      "k_bridge": 0.8,
+      "g_sync": 0.5,
+      "trials_per_single": 12,
+      "trials_per_conjunction": 12,
+      "test_trials": 300,
+      "held_out": [
+        0,
+        5
+      ],
+      "init_scale": 3.141592653589793
+    }
+  },
+  "result": {
+    "config": {
+      "dt": 0.1,
+      "steps": 40,
+      "n_bins": 4,
+      "k_ambient": 0.0,
+      "k_bridge": 0.8,
+      "g_sync": 0.5,
+      "trials_per_single": 12,
+      "trials_per_conjunction": 12,
+      "test_trials": 300,
+      "held_out": [
+        0,
+        5
+      ],
+      "init_scale": 3.141592653589793
+    },
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "student_accuracy": {
+      "mean": 0.8006666666666666,
+      "sd": 0.03043389922803552
+    },
+    "mlp_accuracy": {
+      "mean": 0.36933333333333335,
+      "sd": 0.014666666666666661
+    },
+    "chance_accuracy": {
+      "mean": 0.242,
+      "sd": 0.020286832072937255
+    },
+    "margin_over_mlp_pp": 0.4313333333333333,
+    "thresholds": {
+      "pass_accuracy": 0.6,
+      "pass_margin_pp": 0.2
+    },
+    "verdict": "PASS",
+    "student_j_per_task": {
+      "mean": 4.637193448178005,
+      "sd": 4.462943059138134
+    },
+    "mlp_j_per_task": {
+      "mean": 0.0012672438612207771,
+      "sd": 0.00020825675748565
+    },
+    "energy_proxy_watts": 15.0,
+    "param_counts": {
+      "student": 336,
+      "mlp": 361,
+      "mlp_hidden": 7
+    },
+    "per_seed": [
+      {
+        "seed": 0,
+        "student_accuracy": 0.8,
+        "mlp_accuracy": 0.3566666666666667,
+        "chance_accuracy": 0.27,
+        "student_params": 336,
+        "mlp_params": 361,
+        "mlp_hidden": 7,
+        "student_j_per_task": 3.447744309785776,
+        "mlp_j_per_task": 0.0015383121091872454,
+        "steps": 40
+      },
+      {
+        "seed": 1,
+        "student_accuracy": 0.7466666666666667,
+        "mlp_accuracy": 0.37,
+        "chance_accuracy": 0.21333333333333335,
+        "student_params": 336,
+        "mlp_params": 361,
+        "mlp_hidden": 7,
+        "student_j_per_task": 2.0072300159954466,
+        "mlp_j_per_task": 0.001009081187658012,
+        "steps": 40
+      },
+      {
+        "seed": 2,
+        "student_accuracy": 0.8133333333333334,
+        "mlp_accuracy": 0.3566666666666667,
+        "chance_accuracy": 0.25666666666666665,
+        "student_params": 336,
+        "mlp_params": 361,
+        "mlp_hidden": 7,
+        "student_j_per_task": 2.032396098773461,
+        "mlp_j_per_task": 0.0012633284786716104,
+        "steps": 40
+      },
+      {
+        "seed": 3,
+        "student_accuracy": 0.84,
+        "mlp_accuracy": 0.36666666666666664,
+        "chance_accuracy": 0.22666666666666666,
+        "student_params": 336,
+        "mlp_params": 361,
+        "mlp_hidden": 7,
+        "student_j_per_task": 2.1996258044382557,
+        "mlp_j_per_task": 0.0010669520823284983,
+        "steps": 40
+      },
+      {
+        "seed": 4,
+        "student_accuracy": 0.8033333333333333,
+        "mlp_accuracy": 0.39666666666666667,
+        "chance_accuracy": 0.24333333333333335,
+        "student_params": 336,
+        "mlp_params": 361,
+        "mlp_hidden": 7,
+        "student_j_per_task": 13.498971011897083,
+        "mlp_j_per_task": 0.0014585454482585192,
+        "steps": 40
+      }
+    ]
+  }
+}
