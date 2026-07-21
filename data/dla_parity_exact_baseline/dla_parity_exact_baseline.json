@@ -1,0 +1,94 @@
+{
+  "ablation_note": "The promoted packs ran resilience_level=0 (no ZNE/DD) and the phase-2 readout mitigation self-reports full_confusion_matrix_available=false (approximation, not inversion). This exact baseline supplies the ideal leakage=0 reference such a ZNE/DD ablation needs; running the ablation on real hardware is a separate owner-gated QPU submission (AUD-5/7).",
+  "conclusion": "The exact noiseless XY-Trotter parity leakage is 0 at every measured depth (excitation-number conservation), while the hardware leakage grows monotonically with depth up to 42.2%. All observed leakage is therefore device noise, and the even/odd DLA-parity asymmetry sits within the noise floor rather than reflecting coherent parity-selective dynamics.",
+  "even_init": "0011",
+  "exact_leakage_all_zero": true,
+  "hardware_leakage_max": 0.4218831380208333,
+  "leakage_tolerance": 1e-09,
+  "n_qubits": 4,
+  "odd_init": "0001",
+  "per_depth": [
+    {
+      "depth": 2,
+      "exact_leakage_even": 0.0,
+      "exact_leakage_odd": 0.0,
+      "hardware_asymmetry_relative": 0.014900335504243052,
+      "hardware_leakage_even": 0.08369954427083333,
+      "hardware_leakage_odd": 0.082470703125
+    },
+    {
+      "depth": 4,
+      "exact_leakage_even": 0.0,
+      "exact_leakage_odd": 0.0,
+      "hardware_asymmetry_relative": 0.08651155941687519,
+      "hardware_leakage_even": 0.1200927734375,
+      "hardware_leakage_odd": 0.11053059895833334
+    },
+    {
+      "depth": 6,
+      "exact_leakage_even": 0.0,
+      "exact_leakage_odd": 0.0,
+      "hardware_asymmetry_relative": 0.04346860600677293,
+      "hardware_leakage_even": 0.15296223958333333,
+      "hardware_leakage_odd": 0.14659016927083332
+    },
+    {
+      "depth": 8,
+      "exact_leakage_even": 0.0,
+      "exact_leakage_odd": 0.0,
+      "hardware_asymmetry_relative": 0.02724073091943499,
+      "hardware_leakage_even": 0.173388671875,
+      "hardware_leakage_odd": 0.16879069010416667
+    },
+    {
+      "depth": 10,
+      "exact_leakage_even": 0.0,
+      "exact_leakage_odd": 0.0,
+      "hardware_asymmetry_relative": 0.04467965123845058,
+      "hardware_leakage_even": 0.19598795572916666,
+      "hardware_leakage_odd": 0.18760579427083332
+    },
+    {
+      "depth": 14,
+      "exact_leakage_even": 0.0,
+      "exact_leakage_odd": 0.0,
+      "hardware_asymmetry_relative": 0.04237408538751153,
+      "hardware_leakage_even": 0.23882649739583334,
+      "hardware_leakage_odd": 0.22911783854166667
+    },
+    {
+      "depth": 20,
+      "exact_leakage_even": 0.0,
+      "exact_leakage_odd": 0.0,
+      "hardware_asymmetry_relative": 0.030972423802612628,
+      "hardware_leakage_even": 0.2890380859375,
+      "hardware_leakage_odd": 0.2803548177083333
+    },
+    {
+      "depth": 30,
+      "exact_leakage_even": 0.0,
+      "exact_leakage_odd": 0.0,
+      "hardware_asymmetry_relative": 0.0009664568748085624,
+      "hardware_leakage_even": 0.3455729166666667,
+      "hardware_leakage_odd": 0.3452392578125
+    },
+    {
+      "depth": 40,
+      "exact_leakage_even": 0.0,
+      "exact_leakage_odd": 0.0,
+      "hardware_asymmetry_relative": 0.0009840664977701092,
+      "hardware_leakage_even": 0.3890625,
+      "hardware_leakage_odd": 0.3886800130208333
+    },
+    {
+      "depth": 50,
+      "exact_leakage_even": 0.0,
+      "exact_leakage_odd": 0.0,
+      "hardware_asymmetry_relative": -0.000848749059624639,
+      "hardware_leakage_even": 0.42152506510416665,
+      "hardware_leakage_odd": 0.4218831380208333
+    }
+  ],
+  "source_summary": "data/phase2_dla_parity/phase2_reduced_ag_summary_2026-05-05.json",
+  "t_step": 0.3
+}
