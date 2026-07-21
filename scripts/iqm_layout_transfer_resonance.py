@@ -61,6 +61,18 @@ def _load_adapter() -> ModuleType:
     return module
 
 
+def _load_qpy_wrapper() -> ModuleType:
+    """Standalone-load the reviewed QPY artefact loader."""
+    spec = importlib.util.spec_from_file_location(
+        "qpy_artifact_io", REPO_ROOT / "scripts" / "qpy_artifact_io.py"
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def _load_credentials() -> tuple[str, str]:
     """Read the Resonance URL and token from the vault (never printed)."""
     in_section = False
@@ -156,11 +168,10 @@ def _submit(args: argparse.Namespace) -> int:
         )
         return 2
 
-    from qiskit import qpy, transpile
+    from qiskit import transpile
 
     labels = json.loads(Path(args.labels).read_text(encoding="utf-8"))
-    with Path(args.circuits).open("rb") as stream:
-        circuits = qpy.load(stream)
+    circuits = _load_qpy_wrapper().reviewed_qpy_load_circuits(args.circuits)
     plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))
 
     wanted = [f"_n{args.only_n}_" in label for label in labels]

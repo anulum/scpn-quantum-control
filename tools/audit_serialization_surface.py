@@ -41,6 +41,15 @@ APPROVED_WRAPPER_FUNCTIONS = {
     ("src/scpn_quantum_control/phase/torch_aot_autograd_export.py", "_torch_load_graph"): {
         WEIGHTS_ONLY_FALSE_SYMBOL,
     },
+    # Path-restricted reviewed wrapper for the campaign scripts: refuses
+    # anything that is not a .qpy artefact inside the repository data/ tree
+    # (the QPY matrices written by the layout-transfer prepare step from
+    # committed code); standalone so the isolated .venv-iqm loads it by file
+    # path. Distinct-eye review required before this entry lands.
+    ("scripts/qpy_artifact_io.py", "reviewed_qpy_load_circuits"): {
+        "qiskit.qpy.load",
+        "qpy.load",
+    },
 }
 DEFAULT_ROOTS = ("src", "scripts", "tools", "tests")
 EXCLUDED_PARTS = {".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".venv", "__pycache__"}

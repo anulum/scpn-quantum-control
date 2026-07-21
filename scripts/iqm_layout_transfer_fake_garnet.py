@@ -73,12 +73,22 @@ def _dump_calibration(args: argparse.Namespace) -> int:
     return 0
 
 
+def _load_qpy_wrapper() -> ModuleType:
+    spec = importlib.util.spec_from_file_location(
+        "qpy_artifact_io", REPO_ROOT / "scripts" / "qpy_artifact_io.py"
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def _run(args: argparse.Namespace) -> int:
-    from qiskit import qpy, transpile
+    from qiskit import transpile
 
     labels = json.loads(Path(args.labels).read_text(encoding="utf-8"))
-    with Path(args.circuits).open("rb") as stream:
-        circuits = qpy.load(stream)
+    circuits = _load_qpy_wrapper().reviewed_qpy_load_circuits(args.circuits)
     if len(labels) != len(circuits):
         raise ValueError(f"{len(labels)} labels but {len(circuits)} circuits")
 
