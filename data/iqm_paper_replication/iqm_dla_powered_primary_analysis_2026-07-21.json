@@ -1,0 +1,167 @@
+{
+  "campaign": "iqm_dla_backend_sensitivity_powered_prereg_2026-07-21",
+  "kind": "primary_decision_rule",
+  "layout": [
+    2,
+    7,
+    12,
+    13
+  ],
+  "job_ids": [
+    "019f866c-9c99-7201-b019-7d843fc91c58",
+    "019f866c-9f20-7053-9343-a8ae219ee48d",
+    "019f8677-33b7-7181-9674-d40b4974f0f0",
+    "019f8677-7a0b-7492-a699-9f2683e36802",
+    "019f8677-ca9a-73d1-b124-766e36f114f0"
+  ],
+  "matrix_complete": true,
+  "missing_labels": [],
+  "primary_pooled": {
+    "shots_even": 12288,
+    "shots_odd": 12288,
+    "leak_even": 0.41943359375,
+    "leak_odd": 0.392822265625,
+    "relative_asymmetry": 0.06774394033561218,
+    "one_sided_z": 4.247313072995839,
+    "one_sided_p": 1.0817476987336142e-05,
+    "alpha": 0.05,
+    "rejects_h0": true
+  },
+  "per_depth": {
+    "4": {
+      "leak_even": 0.381103515625,
+      "leak_odd": 0.309814453125,
+      "relative_asymmetry": 0.23010244286840031,
+      "wilson95_even": [
+        0.3663484701594425,
+        0.39608136772990654
+      ],
+      "wilson95_odd": [
+        0.29583690734906914,
+        0.32414839802218937
+      ],
+      "one_sided_z": 6.784552394096943,
+      "one_sided_p": 5.822348534627613e-12,
+      "sign_matches_ibm_positive": true
+    },
+    "6": {
+      "leak_even": 0.419677734375,
+      "leak_odd": 0.387451171875,
+      "relative_asymmetry": 0.0831758034026465,
+      "wilson95_even": [
+        0.40464654059394795,
+        0.4348594484524501
+      ],
+      "wilson95_odd": [
+        0.37264399682160826,
+        0.4024692583467489
+      ],
+      "one_sided_z": 2.972629251699218,
+      "one_sided_p": 0.001476304319503102,
+      "sign_matches_ibm_positive": true
+    },
+    "10": {
+      "leak_even": 0.45751953125,
+      "leak_odd": 0.481201171875,
+      "relative_asymmetry": -0.049213597158802636,
+      "wilson95_even": [
+        0.4423095779055604,
+        0.4728090910733857
+      ],
+      "wilson95_odd": [
+        0.46592455376861946,
+        0.49651301813585663
+      ],
+      "one_sided_z": -2.1474532296826503,
+      "one_sided_p": 0.9841213915799172,
+      "sign_matches_ibm_positive": false
+    }
+  },
+  "per_repetition_drift": [
+    {
+      "depth": 4,
+      "repetition": 1,
+      "leak_even": 0.3916015625,
+      "leak_odd": 0.2978515625,
+      "relative_asymmetry": 0.31475409836065577
+    },
+    {
+      "depth": 4,
+      "repetition": 2,
+      "leak_even": 0.396484375,
+      "leak_odd": 0.31640625,
+      "relative_asymmetry": 0.25308641975308643
+    },
+    {
+      "depth": 4,
+      "repetition": 3,
+      "leak_even": 0.3837890625,
+      "leak_odd": 0.3193359375,
+      "relative_asymmetry": 0.2018348623853211
+    },
+    {
+      "depth": 4,
+      "repetition": 4,
+      "leak_even": 0.3525390625,
+      "leak_odd": 0.3056640625,
+      "relative_asymmetry": 0.15335463258785942
+    },
+    {
+      "depth": 6,
+      "repetition": 1,
+      "leak_even": 0.4375,
+      "leak_odd": 0.3759765625,
+      "relative_asymmetry": 0.16363636363636364
+    },
+    {
+      "depth": 6,
+      "repetition": 2,
+      "leak_even": 0.40625,
+      "leak_odd": 0.3818359375,
+      "relative_asymmetry": 0.0639386189258312
+    },
+    {
+      "depth": 6,
+      "repetition": 3,
+      "leak_even": 0.43359375,
+      "leak_odd": 0.396484375,
+      "relative_asymmetry": 0.09359605911330049
+    },
+    {
+      "depth": 6,
+      "repetition": 4,
+      "leak_even": 0.4013671875,
+      "leak_odd": 0.3955078125,
+      "relative_asymmetry": 0.014814814814814815
+    },
+    {
+      "depth": 10,
+      "repetition": 1,
+      "leak_even": 0.4560546875,
+      "leak_odd": 0.4521484375,
+      "relative_asymmetry": 0.008639308855291577
+    },
+    {
+      "depth": 10,
+      "repetition": 2,
+      "leak_even": 0.4658203125,
+      "leak_odd": 0.4833984375,
+      "relative_asymmetry": -0.03636363636363636
+    },
+    {
+      "depth": 10,
+      "repetition": 3,
+      "leak_even": 0.4560546875,
+      "leak_odd": 0.5126953125,
+      "relative_asymmetry": -0.11047619047619048
+    },
+    {
+      "depth": 10,
+      "repetition": 4,
+      "leak_even": 0.4521484375,
+      "leak_odd": 0.4765625,
+      "relative_asymmetry": -0.05122950819672131
+    }
+  ],
+  "interpretation_boundary": "device-noise statement only: exact statevector baseline fixes noiseless parity leakage at zero (AUD-6)"
+}

@@ -227,11 +227,10 @@ def submit(args: argparse.Namespace) -> int:
     helper = _load_helper()
     layout = PRIMARY_LAYOUT if args.layout == "primary" else FALLBACK_LAYOUT
     backend = _live_backend(args.quantum_computer)
-    rows = [
-        row
-        for row in build_powered_plan(layout=layout)
-        if row["repetition"] in (0, args.repetition)
-    ]
+    # Readout calibration states run ONCE (with repetition 1); later blocks are
+    # mains-only so the total matrix stays exactly the preregistered 28 circuits.
+    wanted = {args.repetition} | ({0} if args.repetition == 1 else set())
+    rows = [row for row in build_powered_plan(layout=layout) if row["repetition"] in wanted]
 
     prepared: dict[int, list[tuple[str, Any]]] = {MAIN_SHOTS: [], READOUT_SHOTS: []}
     depths: dict[str, int] = {}

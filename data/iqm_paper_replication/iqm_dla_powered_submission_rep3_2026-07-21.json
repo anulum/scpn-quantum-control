@@ -1,0 +1,35 @@
+{
+  "campaign": "iqm_dla_backend_sensitivity_powered_prereg_2026-07-21",
+  "quantum_computer": "garnet",
+  "date": "2026-07-21",
+  "repetition": 3,
+  "layout": [
+    2,
+    7,
+    12,
+    13
+  ],
+  "layout_choice": "primary",
+  "transpiled_depths": {
+    "main_d4_even_rep3": 69,
+    "main_d4_odd_rep3": 69,
+    "main_d6_even_rep3": 99,
+    "main_d6_odd_rep3": 99,
+    "main_d10_even_rep3": 159,
+    "main_d10_odd_rep3": 159
+  },
+  "jobs": [
+    {
+      "job_id": "019f8677-7a0b-7492-a699-9f2683e36802",
+      "shots": 1024,
+      "labels": [
+        "main_d4_even_rep3",
+        "main_d4_odd_rep3",
+        "main_d6_even_rep3",
+        "main_d6_odd_rep3",
+        "main_d10_even_rep3",
+        "main_d10_odd_rep3"
+      ]
+    }
+  ]
+}
