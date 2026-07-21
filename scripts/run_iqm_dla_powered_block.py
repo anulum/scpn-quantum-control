@@ -182,6 +182,145 @@ def dry_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _load_credentials() -> tuple[str, str]:
+    """Read the Resonance URL and token from the vault (never printed)."""
+    in_section = False
+    url = token = None
+    for raw in VAULT_PATH.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if line.startswith("## IQM Resonance"):
+            in_section = True
+            continue
+        if in_section and line.startswith("## "):
+            break
+        if not in_section:
+            continue
+        if line.lower().startswith("- url:"):
+            url = line.split(":", 1)[1].strip()
+        if line.lower().startswith("- token:"):
+            token = line.split(":", 1)[1].strip()
+    if not url or not token:
+        raise RuntimeError("missing IQM Resonance URL or token in vault")
+    return url, token
+
+
+def _live_backend(quantum_computer: str):  # type: ignore[no-untyped-def] — iqm types live only in .venv-iqm
+    """Return a live Resonance backend (token vault-only)."""
+    from iqm.qiskit_iqm.iqm_provider import IQMProvider
+
+    url, token = _load_credentials()
+    return IQMProvider(url, quantum_computer=quantum_computer, token=token).get_backend()
+
+
+def submit(args: argparse.Namespace) -> int:
+    """Submit ONE repetition block (owner-gated) with the envelope gate."""
+    if not args.i_have_owner_go:
+        print(
+            "REFUSED: QPU submission requires the per-submit owner GO "
+            "(--i-have-owner-go). See the preregistration submission boundary.",
+            file=sys.stderr,
+        )
+        return 2
+
+    from qiskit import transpile
+
+    helper = _load_helper()
+    layout = PRIMARY_LAYOUT if args.layout == "primary" else FALLBACK_LAYOUT
+    backend = _live_backend(args.quantum_computer)
+    rows = [
+        row
+        for row in build_powered_plan(layout=layout)
+        if row["repetition"] in (0, args.repetition)
+    ]
+
+    prepared: dict[int, list[tuple[str, Any]]] = {MAIN_SHOTS: [], READOUT_SHOTS: []}
+    depths: dict[str, int] = {}
+    for row in rows:
+        circuit = helper._build_circuit({"circuit_name": row["circuit_name"], "meta": row["meta"]})
+        circuit.name = row["circuit_name"]
+        isa = transpile(
+            circuit, backend=backend, initial_layout=list(layout), optimization_level=1
+        )
+        depth = int(isa.depth())
+        depths[row["label"]] = depth
+        if depth > DEPTH_ENVELOPE:
+            print(
+                f"DEPTH ENVELOPE VIOLATION at submit: {row['label']} {depth} > "
+                f"{DEPTH_ENVELOPE} — refusing to submit",
+                file=sys.stderr,
+            )
+            return 1
+        prepared[int(row["shots"])].append((row["label"], isa))
+
+    record: dict[str, Any] = {
+        "campaign": "iqm_dla_backend_sensitivity_powered_prereg_2026-07-21",
+        "quantum_computer": args.quantum_computer,
+        "date": args.date,
+        "repetition": args.repetition,
+        "layout": list(layout),
+        "layout_choice": args.layout,
+        "transpiled_depths": depths,
+        "jobs": [],
+    }
+    for shots, group in prepared.items():
+        if not group:
+            continue
+        job = backend.run([circuit for _, circuit in group], shots=shots)
+        job_id = job.job_id() if callable(job.job_id) else job.job_id
+        jobs = record["jobs"]
+        assert isinstance(jobs, list)
+        jobs.append(
+            {"job_id": str(job_id), "shots": shots, "labels": [label for label, _ in group]}
+        )
+        print(f"submitted {len(group)} circuits @ {shots} shots -> job {job_id}")
+
+    out_path = Path(args.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+    print(f"submission record: {out_path}")
+    return 0
+
+
+def retrieve(args: argparse.Namespace) -> int:
+    """Poll the submitted jobs and write the counts JSON."""
+    import time
+
+    record = json.loads(Path(args.record).read_text(encoding="utf-8"))
+    backend = _live_backend(record["quantum_computer"])
+
+    counts: dict[str, dict[str, int]] = {}
+    for entry in record["jobs"]:
+        job = backend.retrieve_job(entry["job_id"])
+        deadline = time.monotonic() + float(args.timeout_minutes) * 60.0
+        while not job.done():
+            if time.monotonic() > deadline:
+                print(f"job {entry['job_id']} not finished within timeout", file=sys.stderr)
+                return 3
+            print(f"job {entry['job_id']}: {job.status()} — waiting")
+            time.sleep(float(args.poll_seconds))
+        all_counts = job.result().get_counts()
+        if not isinstance(all_counts, list):
+            all_counts = [all_counts]
+        for label, circuit_counts in zip(entry["labels"], all_counts, strict=True):
+            counts[label] = {str(k): int(v) for k, v in circuit_counts.items()}
+            print(f"{label}: {sum(counts[label].values())} shots retrieved")
+
+    payload = {
+        "campaign": record["campaign"],
+        "backend": record["quantum_computer"],
+        "date": record["date"],
+        "repetition": record["repetition"],
+        "layout": record["layout"],
+        "job_ids": [entry["job_id"] for entry in record["jobs"]],
+        "counts": counts,
+    }
+    out_path = Path(args.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    print(f"counts: {out_path}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     """Parse the subcommand and run it, returning the process exit code."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -192,6 +331,26 @@ def main(argv: list[str] | None = None) -> int:
     dry.add_argument("--date", required=True, help="artefact date stamp (YYYY-MM-DD)")
     dry.add_argument("--out", required=True, help="output dry-run JSON")
     dry.set_defaults(func=dry_run)
+
+    sub_submit = sub.add_parser("submit", help="submit one repetition block (owner-gated)")
+    sub_submit.add_argument("--quantum-computer", default="garnet:mock")
+    sub_submit.add_argument("--layout", choices=("primary", "fallback"), default="primary")
+    sub_submit.add_argument("--repetition", type=int, default=1, choices=(1, 2, 3, 4))
+    sub_submit.add_argument("--date", required=True, help="artefact date stamp (YYYY-MM-DD)")
+    sub_submit.add_argument("--out", required=True, help="submission record JSON")
+    sub_submit.add_argument(
+        "--i-have-owner-go",
+        action="store_true",
+        help="assert the explicit per-submit owner GO exists for this block",
+    )
+    sub_submit.set_defaults(func=submit)
+
+    sub_retrieve = sub.add_parser("retrieve", help="poll jobs and write counts JSON")
+    sub_retrieve.add_argument("--record", required=True, help="submission record JSON")
+    sub_retrieve.add_argument("--out", required=True, help="output counts JSON")
+    sub_retrieve.add_argument("--poll-seconds", default=20.0, type=float)
+    sub_retrieve.add_argument("--timeout-minutes", default=60.0, type=float)
+    sub_retrieve.set_defaults(func=retrieve)
 
     args = parser.parse_args(argv)
     result = args.func(args)

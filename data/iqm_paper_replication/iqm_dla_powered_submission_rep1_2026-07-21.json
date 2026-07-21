@@ -1,0 +1,49 @@
+{
+  "campaign": "iqm_dla_backend_sensitivity_powered_prereg_2026-07-21",
+  "quantum_computer": "garnet",
+  "date": "2026-07-21",
+  "repetition": 1,
+  "layout": [
+    2,
+    7,
+    12,
+    13
+  ],
+  "layout_choice": "primary",
+  "transpiled_depths": {
+    "main_d4_even_rep1": 69,
+    "main_d4_odd_rep1": 69,
+    "main_d6_even_rep1": 99,
+    "main_d6_odd_rep1": 99,
+    "main_d10_even_rep1": 159,
+    "main_d10_odd_rep1": 159,
+    "readout_0011": 2,
+    "readout_0001": 2,
+    "readout_0000": 1,
+    "readout_1111": 2
+  },
+  "jobs": [
+    {
+      "job_id": "019f866c-9c99-7201-b019-7d843fc91c58",
+      "shots": 1024,
+      "labels": [
+        "main_d4_even_rep1",
+        "main_d4_odd_rep1",
+        "main_d6_even_rep1",
+        "main_d6_odd_rep1",
+        "main_d10_even_rep1",
+        "main_d10_odd_rep1"
+      ]
+    },
+    {
+      "job_id": "019f866c-9f20-7053-9343-a8ae219ee48d",
+      "shots": 2048,
+      "labels": [
+        "readout_0011",
+        "readout_0001",
+        "readout_0000",
+        "readout_1111"
+      ]
+    }
+  ]
+}
