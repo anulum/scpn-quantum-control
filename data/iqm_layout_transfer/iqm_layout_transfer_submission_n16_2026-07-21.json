@@ -1,0 +1,25 @@
+{
+  "campaign": "iqm_layout_transfer_square_lattice_prereg_2026-07-21",
+  "quantum_computer": "garnet",
+  "date": "2026-07-21",
+  "block": "n16",
+  "jobs": [
+    {
+      "job_id": "019f8643-650c-7010-806a-8fdbe76aa1fe",
+      "shots": 2048,
+      "labels": [
+        "main_n16_optimised",
+        "main_n16_default",
+        "main_n16_naive"
+      ]
+    },
+    {
+      "job_id": "019f8643-6712-7643-b897-59f76c0a305e",
+      "shots": 1024,
+      "labels": [
+        "readout_n16_zeros",
+        "readout_n16_ones"
+      ]
+    }
+  ]
+}

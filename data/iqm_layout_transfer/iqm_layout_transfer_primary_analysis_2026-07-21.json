@@ -1,0 +1,59 @@
+{
+  "campaign": "iqm_layout_transfer_square_lattice_prereg_2026-07-21",
+  "kind": "primary_decision_rule",
+  "backends": [
+    "garnet"
+  ],
+  "job_ids": [
+    "019f8639-96be-77d1-8f70-109a70e6fb33",
+    "019f8639-980e-7c21-bb38-f26396a883e3",
+    "019f8642-e162-7383-83e5-e60c15a57355",
+    "019f8642-e326-7cf0-97de-5e81ebf487d9",
+    "019f8643-650c-7010-806a-8fdbe76aa1fe",
+    "019f8643-6712-7643-b897-59f76c0a305e"
+  ],
+  "sizes_covered": [
+    8,
+    12,
+    16
+  ],
+  "matrix_complete": true,
+  "point_errors": {
+    "8": {
+      "optimised": 0.14745178038628776,
+      "default": 0.2532720522430779,
+      "naive": 0.29714930041529
+    },
+    "12": {
+      "optimised": 0.2087884117011431,
+      "default": 0.18460438183299127,
+      "naive": 0.4138405311917292
+    },
+    "16": {
+      "optimised": 0.2924171501779893,
+      "default": 0.3143724934201283,
+      "naive": 0.3378110741202097
+    }
+  },
+  "pooled_difference_default_minus_optimised": {
+    "point": 0.03453052841025911,
+    "bootstrap_ci90": [
+      0.026007751858742555,
+      0.043058138009004446
+    ]
+  },
+  "pooled_difference_naive_minus_default": {
+    "point": 0.09885065941034381,
+    "bootstrap_ci90": [
+      0.08980186895901394,
+      0.10793283216214236
+    ]
+  },
+  "wins_all_sizes_optimised_vs_default": false,
+  "wins_all_sizes_default_vs_naive": true,
+  "bootstrap": {
+    "resamples": 10000,
+    "seed": 20260721
+  },
+  "primary_rule_passes": false
+}
