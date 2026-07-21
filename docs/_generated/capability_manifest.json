@@ -13,7 +13,7 @@
     "python_model_source_modules": 589,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1043
+    "test_files": 1044
   },
   "documentation": {
     "examples": [
@@ -7359,6 +7359,7 @@
       "tests/test_qpu_data_artifact.py",
       "tests/test_qpu_data_artifact_branches.py",
       "tests/test_qpu_result_pack_bridge.py",
+      "tests/test_qpy_artifact_io.py",
       "tests/test_qrc_baseline.py",
       "tests/test_qrc_phase_detector.py",
       "tests/test_qrng_stream.py",
