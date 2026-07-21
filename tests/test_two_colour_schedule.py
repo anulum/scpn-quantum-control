@@ -15,6 +15,7 @@ from __future__ import annotations
 import pytest
 
 from scpn_quantum_control.analysis.two_colour_schedule import (
+    build_sequential_circuit,
     build_two_colour_circuit,
     depth_comparison,
     two_colour_edges,
@@ -66,3 +67,20 @@ def test_circuit_has_no_measurement() -> None:
     assert qc.num_clbits == 0
     assert "measure" not in {inst.operation.name for inst in qc.data}
     assert two_qubit_depth(qc) > 0
+
+
+def test_sequential_circuit_prepares_excited_qubits() -> None:
+    # An initial '1' bit prepares that qubit with an X gate in the serial baseline.
+    qc = build_sequential_circuit(4, "0110", depth=1)
+    x_qubits = {
+        qc.find_bit(inst.qubits[0]).index for inst in qc.data if inst.operation.name == "x"
+    }
+    assert x_qubits == {1, 2}
+
+
+def test_depth_zero_reduction_factor_is_infinite() -> None:
+    # With no Trotter steps both circuits have zero two-qubit depth → reduction is infinite.
+    result = depth_comparison(4, depth=0)
+    assert result["sequential_2q_depth"] == 0.0
+    assert result["two_colour_2q_depth"] == 0.0
+    assert result["reduction_factor"] == float("inf")
