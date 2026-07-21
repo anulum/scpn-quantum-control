@@ -243,8 +243,14 @@ IBM direction at preregistered power.
 
 The pooled IBM-direction asymmetry replicating on a second superconducting
 architecture — square-lattice Garnet after heavy-hex Heron r2 — is evidence
-that parity-sector-correlated decoherence in number-conserving circuits is a
-**backend-shared** phenomenon rather than an artefact of one device family.
+against the asymmetry being an artefact of one device family. To be precise
+about what the two devices share and what they do not: **shared** is the
+pooled even-over-odd sign of the parity-sector leakage asymmetry at
+statistical power; **divergent** is the depth dependence (flat on IBM,
+decaying and sign-reversing on Garnet), which may well reflect a different
+underlying mechanism. "Replication" here therefore binds only to the pooled
+directional effect, not to a claim that the two devices exhibit the same
+noise structure.
 
 The depth profile, however, is qualitatively different: IBM's reference
 asymmetry was approximately flat in depth (≈ +0.044 to +0.087), whereas
