@@ -23,6 +23,7 @@ semver==3.0.4 \
 tomli==2.4.1 \
     --hash=sha256:136443dbd7e1dee43c68ac2694fde36b2849865fa258d39bf822c10e8068eac5
     # via juliapkg
-tomlkit==0.15.0 \
-    --hash=sha256:4dbc8f0fc024412b57ced8757ac7461305126a648ff8c2c807fcb8e133a78738
+tomlkit==0.15.1 \
+    --hash=sha256:177a05aece5a8ca5266fd3c448abb47b8d352f09d477d3ca8332db4d89b24304 \
+    --hash=sha256:e25bbf38843005246210a12982776f27f99cb9be67160e14434d0c0d21ee1e97
     # via juliapkg
