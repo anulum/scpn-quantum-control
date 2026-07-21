@@ -30,7 +30,7 @@ def test_ambient_matrix_uniform_zero_diagonal() -> None:
 def test_readout_bridge_is_symmetric_and_sparse() -> None:
     mat = coupling.readout_bridge_matrix(0.5)
     assert np.array_equal(mat, mat.T)
-    partners = coupling._readout_bridge_partners()
+    partners = coupling.partners_for()
     assert len(partners) == 2
     for p in partners:
         assert mat[task.READOUT_OSCILLATOR, p] == 0.5
@@ -39,7 +39,7 @@ def test_readout_bridge_is_symmetric_and_sparse() -> None:
 
 
 def test_bridge_partners_span_both_held_out_relations() -> None:
-    partners = coupling._readout_bridge_partners()
+    partners = coupling.partners_for()
     r1_clusters = set(task.PAIRS[task.HELD_OUT_R1_PAIR])
     r2_clusters = set(task.PAIRS[task.HELD_OUT_R2_PAIR])
     clusters_of = [next(c for c, m in enumerate(task.CLUSTERS) if p in m) for p in partners]

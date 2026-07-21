@@ -27,7 +27,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from . import models, teacher
-from .coupling import base_coupling_matrix
+from .coupling import base_coupling_matrix, partners_for
 from .task import ProbeConfigV2, TrialBatchV2, build_trials
 
 # Frozen v2 pre-registration thresholds.
@@ -71,7 +71,11 @@ def _measure_j_per_task_student(
     one = TrialBatchV2(
         test.theta0[:1], test.code[:1], test.r1_pair[:1], test.r2_pair[:1], test.is_test[:1]
     )
-    base = jnp.asarray(base_coupling_matrix(config.k_ambient, config.k_bridge))
+    base = jnp.asarray(
+        base_coupling_matrix(
+            config.k_ambient, config.k_bridge, partners_for(config.held_out, config.bridge_mode)
+        )
+    )
     t0 = jnp.asarray(one.theta0)
     code = jnp.asarray(one.code)
 

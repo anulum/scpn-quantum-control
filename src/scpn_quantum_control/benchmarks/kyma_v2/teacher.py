@@ -34,7 +34,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from . import task
-from .coupling import assemble_coupling, base_coupling_matrix
+from .coupling import assemble_coupling, base_coupling_matrix, partners_for
 from .dynamics import integrate_kuramoto_batched, phase_label
 from .task import N_OSC, N_PAIRS, N_RELATIONS, READOUT_OSCILLATOR, ProbeConfigV2, TrialBatchV2
 
@@ -56,7 +56,8 @@ def teacher_final_phases(
 ) -> jnp.ndarray:
     """Integrate the teacher and return the ``(batch, N_OSC)`` achieved phases."""
     gates = jnp.asarray(teacher_gates(config.g_sync))
-    base = jnp.asarray(base_coupling_matrix(config.k_ambient, config.k_bridge))
+    partners = partners_for(config.held_out, config.bridge_mode)
+    base = jnp.asarray(base_coupling_matrix(config.k_ambient, config.k_bridge, partners))
     coupling = assemble_coupling(jnp.asarray(code), gates, base)
     omega = jnp.zeros((theta0.shape[0], N_OSC))
     return integrate_kuramoto_batched(

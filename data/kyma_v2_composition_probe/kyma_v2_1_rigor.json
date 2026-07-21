@@ -1,0 +1,227 @@
+{
+  "probe": "kyma_v2_1_supplementary_rigor",
+  "pre_registration": "KYMA_V2_1_SUPPLEMENTARY_RIGOR_PREREGISTRATION_7f6b_2026-07-21.md",
+  "started_utc": "2026-07-21T06:57:21",
+  "design_config": {
+    "g_sync": 0.5,
+    "steps": 40,
+    "k_bridge": 0.8
+  },
+  "ablations": {
+    "A1_no_gating": {
+      "shared_substrate": {
+        "mean": 0.33066666666666666,
+        "sd": 0.03951933422741048
+      },
+      "mlp": {
+        "mean": 0.36933333333333335,
+        "sd": 0.014666666666666661
+      },
+      "margin_pp": -0.03866666666666668,
+      "prediction": "shared <= 0.55 AND margin < 0.10",
+      "meets_prediction": true
+    },
+    "A2_separable_readout": {
+      "substrate": {
+        "mean": 0.8946666666666666,
+        "sd": 0.014391355429948582
+      },
+      "mlp": {
+        "mean": 0.38466666666666666,
+        "sd": 0.024729649321321864
+      },
+      "margin_pp": 0.51,
+      "prediction": "margin < 0.10",
+      "meets_prediction": false
+    }
+  },
+  "ablations_seconds": 5771.2,
+  "stronger_baselines": {
+    "substrate": {
+      "mean": 0.8006666666666666,
+      "sd": 0.03043389922803552
+    },
+    "over_param_mlp": {
+      "accuracy": {
+        "mean": 0.38733333333333336,
+        "sd": 0.027680719322702253
+      },
+      "hidden": 26,
+      "params": 1330,
+      "substrate_minus": 0.4133333333333333,
+      "prediction": "over < 0.55 AND substrate-over >= 0.20",
+      "meets_prediction": true
+    },
+    "deep_mlp": {
+      "accuracy": {
+        "mean": 0.41133333333333333,
+        "sd": 0.036246072584181825
+      },
+      "hidden": 24,
+      "params": 1828,
+      "substrate_minus": 0.3893333333333333
+    },
+    "gnn": {
+      "accuracy": {
+        "mean": 0.5066666666666667,
+        "sd": 0.09157874571463985
+      },
+      "hidden": 8,
+      "params": 548,
+      "substrate_minus": 0.29399999999999993,
+      "prediction": "substrate-gnn >= 0.15",
+      "meets_prediction": true
+    }
+  },
+  "stronger_baselines_seconds": 1902.6,
+  "mlp_convergence": {
+    "loss_trajectory": [
+      0.022853150963783264,
+      0.007342169526964426,
+      0.003930041566491127,
+      0.0025188373401761055,
+      0.0017421059310436249,
+      0.0013095421018078923,
+      0.0010252069914713502,
+      0.0008254378917627037,
+      0.0006772840861231089,
+      0.0005310984561219811
+    ],
+    "checkpoint_epochs": [
+      200,
+      400,
+      600,
+      800,
+      1000,
+      1200,
+      1400,
+      1600,
+      1800,
+      2000
+    ],
+    "final_train_loss": 0.0005310984561219811,
+    "train_accuracy": 1.0,
+    "plateaued": true,
+    "prediction": "plateaued AND train_accuracy >= 0.70",
+    "meets_prediction": true
+  },
+  "mlp_convergence_seconds": 5.3,
+  "leave_one_out": {
+    "per_split": [
+      {
+        "held_out": [
+          0,
+          5
+        ],
+        "k_bridge": 0.8,
+        "non_separability": 0.4033333333333333,
+        "substrate": {
+          "mean": 0.7866666666666667,
+          "sd": 0.02880329199292382
+        },
+        "mlp": {
+          "mean": 0.3611111111111111,
+          "sd": 0.0062853936105470775
+        },
+        "margin_pp": 0.42555555555555563
+      },
+      {
+        "held_out": [
+          1,
+          4
+        ],
+        "k_bridge": 0.6,
+        "non_separability": 0.4033333333333333,
+        "substrate": {
+          "mean": 0.8355555555555556,
+          "sd": 0.027532248207475293
+        },
+        "mlp": {
+          "mean": 0.38555555555555554,
+          "sd": 0.008314794192830984
+        },
+        "margin_pp": 0.45000000000000007
+      },
+      {
+        "held_out": [
+          2,
+          3
+        ],
+        "k_bridge": 2.0,
+        "non_separability": 0.4,
+        "substrate": {
+          "mean": 0.84,
+          "sd": 0.01905158688831362
+        },
+        "mlp": {
+          "mean": 0.37555555555555553,
+          "sd": 0.01498970840359116
+        },
+        "margin_pp": 0.46444444444444444
+      },
+      {
+        "held_out": [
+          3,
+          2
+        ],
+        "k_bridge": 0.8,
+        "non_separability": 0.42333333333333334,
+        "substrate": {
+          "mean": 0.8033333333333333,
+          "sd": 0.004714045207910321
+        },
+        "mlp": {
+          "mean": 0.4077777777777778,
+          "sd": 0.030102704853653472
+        },
+        "margin_pp": 0.39555555555555555
+      },
+      {
+        "held_out": [
+          4,
+          1
+        ],
+        "k_bridge": 1.5,
+        "non_separability": 0.42,
+        "substrate": {
+          "mean": 0.8377777777777778,
+          "sd": 0.004157397096415497
+        },
+        "mlp": {
+          "mean": 0.37333333333333335,
+          "sd": 0.028414915227876505
+        },
+        "margin_pp": 0.4644444444444445
+      },
+      {
+        "held_out": [
+          5,
+          0
+        ],
+        "k_bridge": 0.8,
+        "non_separability": 0.4,
+        "substrate": {
+          "mean": 0.7855555555555556,
+          "sd": 0.03130889511912304
+        },
+        "mlp": {
+          "mean": 0.38666666666666666,
+          "sd": 0.05436502143433363
+        },
+        "margin_pp": 0.3988888888888889
+      }
+    ],
+    "seeds_per_split": [
+      0,
+      1,
+      2
+    ],
+    "substrate_mean": 0.8148148148148149,
+    "mlp_mean": 0.38166666666666665,
+    "mean_margin_pp": 0.4331481481481482,
+    "substrate_wins": "6/6",
+    "prediction": "substrate_mean >= 0.70 AND mean_margin >= 0.20 AND wins >= 5/6",
+    "meets_prediction": true
+  },
+  "leave_one_out_seconds": 7264.7
+}

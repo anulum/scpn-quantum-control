@@ -19,12 +19,16 @@ claim, independent of training quality:
 2. **The target was a linear lookup from the code** — a parameter-matched MLP composed it at 100 %
    with no dynamics, so the `≥ pp-over-MLP` bar was structurally unreachable.
 
-The deeper reading (load-bearing for v2): **a param-matched MLP composes *any separable* target.**
-If the two relations evolve dynamically independently, the MLP learns each relation's state from its
-single-relation trials and the combining function from the *other* training conjunctions, then
-applies both to the held-out conjunction — perfect compositional generalisation with no dynamics.
-The only way a physical substrate can beat it is if the answer is a genuinely non-factorisable
-function of the two relations — they must *interact* before readout.
+The deeper reading (as originally framed): a param-matched MLP composes *any separable* target whose
+per-relation state it can also learn — if the MLP learns each relation's state from its
+single-relation trials and the combining function from the other training conjunctions, it composes
+with no dynamics. This motivated a `θ0`-dependent readout so the answer is not a code-lookup.
+
+> **Refined by the v2.1 ablations (see the Mechanism-correction note under "The two fixes").** The
+> ablations show the decisive property is not that the two relations must *interact* (a
+> single-relation readout also defeats the MLP), but that each relation's readout is a `θ0`-dependent
+> **achieved phase** — a hard nonlinear function of the data the MLP cannot approximate even for one
+> relation, while the substrate integrates it directly.
 
 ## The two fixes
 
@@ -33,9 +37,22 @@ function of the two relations — they must *interact* before readout.
   One substrate now realises in-phase on one pair *and* anti-phase on a disjoint pair simultaneously.
 * **Fix 2 — non-separable, data-dependent readout.** A **passive readout node** (no motif) is
   bridged to one oscillator of a held-out-R1 cluster and one held-out-R2 cluster; its final phase is
-  a non-factorisable, `θ0`-dependent function of *both* relations, quantised into a 4-way label
+  a `θ0`-dependent function of the relations' achieved states, quantised into a 4-way label
   (chance 25 %). The substrate composes because the physics composes; a param-matched MLP must
-  extrapolate a non-separable map to an unseen combination.
+  extrapolate to an unseen combination.
+
+> **Mechanism correction (from the v2.1 ablations, 2026-07-21).** The empirical result below is
+> reproduced and unchanged, but the mechanism is more precise than an early framing of this fix
+> suggested. The v2.1 ablation A2 (a *separable*, single-relation readout — bridge to the R1 cluster
+> only) leaves the substrate ahead of the MLP by **+51 pp**, so the MLP's failure is **not** primarily
+> about non-separability / "forcing the relations to interact". The load-bearing difficulty is that
+> the label is a **`θ0`-dependent achieved phase** — the circular-mean lock of a cluster's initial
+> phases, a hard nonlinear function of the data that a param-matched feedforward net (and, per v2.1
+> #2, an over-parameterised MLP and a code-conditioned GNN) cannot approximate, while the oscillator
+> substrate simply *integrates the dynamics*. The compositional-generalisation claim stands (the
+> substrate composes two learned motifs onto an unseen conjunction); what v2.1 sharpens is **why** the
+> baselines fail — dynamics-computation, of which composition is one instance. See
+> `docs/campaigns/kyma_v2_1_rigor_2026-07-21.md`.
 
 ## Mechanism-only design check (§5, teacher dynamics only — no model, no test-accuracy peeking)
 

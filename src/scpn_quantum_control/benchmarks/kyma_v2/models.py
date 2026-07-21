@@ -32,7 +32,7 @@ import jax.numpy as jnp
 import numpy as np
 from numpy.typing import NDArray
 
-from .coupling import assemble_coupling, base_coupling_matrix
+from .coupling import assemble_coupling, base_coupling_matrix, partners_for
 from .dynamics import integrate_kuramoto_batched, phase_label
 from .task import (
     N_OSC,
@@ -150,7 +150,8 @@ def train_student(
     theta0 = jnp.asarray(batch.theta0[tr])
     code = jnp.asarray(batch.code[tr])
     target = jnp.asarray(np.asarray(teacher_finals)[tr])
-    base = jnp.asarray(base_coupling_matrix(config.k_ambient, config.k_bridge))
+    partners = partners_for(config.held_out, config.bridge_mode)
+    base = jnp.asarray(base_coupling_matrix(config.k_ambient, config.k_bridge, partners))
     params = student_init(seed)
 
     @jax.jit  # type: ignore[untyped-decorator]  # jax.jit is untyped upstream
@@ -168,7 +169,8 @@ def student_predict(
     params: _Params, batch_slice: TrialBatchV2, config: ProbeConfigV2
 ) -> NDArray[np.int64]:
     """Predicted class per trial = quantised student readout phase."""
-    base = jnp.asarray(base_coupling_matrix(config.k_ambient, config.k_bridge))
+    partners = partners_for(config.held_out, config.bridge_mode)
+    base = jnp.asarray(base_coupling_matrix(config.k_ambient, config.k_bridge, partners))
     final = student_final_phases(
         params, jnp.asarray(batch_slice.theta0), jnp.asarray(batch_slice.code), base, config
     )

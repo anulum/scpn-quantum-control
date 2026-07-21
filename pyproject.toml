@@ -201,6 +201,9 @@ ignore = [
 "tests/test_kyma_v2_design.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/test_kyma_v2_models.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/test_kyma_v2_probe.py" = ["E402", "I001"]  # importorskip(jax) before local import
+"tests/test_kyma_v2_ablations.py" = ["E402", "I001"]  # importorskip(jax) before local import
+"tests/test_kyma_v2_baselines.py" = ["E402", "I001"]  # importorskip(jax) before local import
+"tests/test_kyma_v2_rigor.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/test_kuramoto_visualisation.py" = ["E402", "I001"]  # importorskip(matplotlib) before local import
 # Docstring (D) scope: the 2026-06-17 broadcast mandates NumPy docstrings on the
 # PUBLIC API. tests/ are not public API (design exemption); scripts/ and

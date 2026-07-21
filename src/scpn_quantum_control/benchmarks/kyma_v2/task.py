@@ -130,6 +130,9 @@ class ProbeConfigV2:
     test_trials: int = 300
     held_out: tuple[int, int] = (HELD_OUT_R1_PAIR, HELD_OUT_R2_PAIR)  # (R1 on AB, R2 on CD)
     init_scale: float = float(np.pi)
+    # Readout-bridge mode: "both" (one partner per relation, the frozen v2 default)
+    # or "r1_only" (the A2 separable-readout ablation — depends on one relation).
+    bridge_mode: str = "both"
 
     @property
     def horizon(self) -> float:

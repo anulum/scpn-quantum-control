@@ -49,32 +49,48 @@ def ambient_matrix(k_ambient: float) -> NDArray[np.float64]:
     return mat
 
 
-def _readout_bridge_partners() -> tuple[int, ...]:
-    """One representative oscillator from a cluster of each held-out relation's pair.
+def partners_for(
+    held_out: tuple[int, int] | None = None, bridge_mode: str = "both"
+) -> tuple[int, ...]:
+    """Readout-bridge partner oscillators for a held-out conjunction.
 
     The passive readout listens to a *single* oscillator of one held-out R1
     cluster and one held-out R2 cluster (never both clusters of an anti-phase
     pair), so it reads each relation's coherent branch phase without the
-    mean-field cancellation that makes an anti-phase pair invisible to a readout
-    coupled to both its clusters.
+    mean-field cancellation that makes an anti-phase pair invisible.
+
+    Args:
+        held_out: the ``(r1_pair, r2_pair)`` split; ``None`` → the frozen default.
+        bridge_mode: ``"both"`` (default, one partner per relation) or ``"r1_only"``
+            (the A2 ablation — bridge to the R1 cluster only, making the readout
+            depend on a single relation → separable).
     """
-    r1_cluster = PAIRS[HELD_OUT_R1_PAIR][0]  # a cluster of the held-out R1 pair
-    r2_cluster = PAIRS[HELD_OUT_R2_PAIR][0]  # a cluster of the held-out R2 pair
-    return (CLUSTERS[r1_cluster][0], CLUSTERS[r2_cluster][0])
+    r1_pair, r2_pair = (HELD_OUT_R1_PAIR, HELD_OUT_R2_PAIR) if held_out is None else held_out
+    r1_partner = CLUSTERS[PAIRS[r1_pair][0]][0]
+    r2_partner = CLUSTERS[PAIRS[r2_pair][0]][0]
+    if bridge_mode == "r1_only":
+        return (r1_partner,)
+    return (r1_partner, r2_partner)
 
 
-def readout_bridge_matrix(k_bridge: float) -> NDArray[np.float64]:
-    """Sparse symmetric bridge from the passive readout node to its two partners."""
+def readout_bridge_matrix(
+    k_bridge: float, partners: tuple[int, ...] | None = None
+) -> NDArray[np.float64]:
+    """Sparse symmetric bridge from the passive readout node to its partners."""
+    if partners is None:
+        partners = partners_for()
     mat = np.zeros((N_OSC, N_OSC), dtype=np.float64)
-    for partner in _readout_bridge_partners():
+    for partner in partners:
         mat[READOUT_OSCILLATOR, partner] = float(k_bridge)
         mat[partner, READOUT_OSCILLATOR] = float(k_bridge)
     return mat
 
 
-def base_coupling_matrix(k_ambient: float, k_bridge: float) -> NDArray[np.float64]:
+def base_coupling_matrix(
+    k_ambient: float, k_bridge: float, partners: tuple[int, ...] | None = None
+) -> NDArray[np.float64]:
     """Fixed base coupling = uniform ambient + readout bridge."""
-    return ambient_matrix(k_ambient) + readout_bridge_matrix(k_bridge)
+    return ambient_matrix(k_ambient) + readout_bridge_matrix(k_bridge, partners)
 
 
 def assemble_coupling(code: jax.Array, gates: jax.Array, base: jax.Array) -> jax.Array:
