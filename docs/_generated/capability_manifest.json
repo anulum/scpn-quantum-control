@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 836,
     "public_documentation_pages": 286,
-    "python_model_classes": 1045,
-    "python_model_source_modules": 587,
+    "python_model_classes": 1047,
+    "python_model_source_modules": 588,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1041
+    "test_files": 1042
   },
   "documentation": {
     "examples": [
@@ -553,7 +553,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 74
+        "python_modules": 75
       },
       {
         "package": "identity",
@@ -938,6 +938,10 @@
       {
         "name": "CatalystCompilerWorkflowComparison",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_catalyst_comparison.py"
+      },
+      {
+        "name": "ChainRegion",
+        "path": "src/scpn_quantum_control/hardware/iqm_lattice_calibration.py"
       },
       {
         "name": "ChainSelection",
@@ -2414,6 +2418,10 @@
       {
         "name": "LatencyMeasurer",
         "path": "src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py"
+      },
+      {
+        "name": "LatticeCalibration",
+        "path": "src/scpn_quantum_control/hardware/iqm_lattice_calibration.py"
       },
       {
         "name": "LayerStateArtifact",
@@ -5122,6 +5130,7 @@
       "src/scpn_quantum_control/hardware/hybrid_digital_analog.py",
       "src/scpn_quantum_control/hardware/ibm_latency_probe.py",
       "src/scpn_quantum_control/hardware/iqm_backend.py",
+      "src/scpn_quantum_control/hardware/iqm_lattice_calibration.py",
       "src/scpn_quantum_control/hardware/jax_accel.py",
       "src/scpn_quantum_control/hardware/job_dossier.py",
       "src/scpn_quantum_control/hardware/kuramoto_layout_cost.py",
@@ -6933,6 +6942,7 @@
       "tests/test_integration_pipeline.py",
       "tests/test_internal_corpus_markers.py",
       "tests/test_iqm_backend.py",
+      "tests/test_iqm_lattice_calibration.py",
       "tests/test_iqm_layout_pinned_dla.py",
       "tests/test_isolated_host_readiness.py",
       "tests/test_iter_benchmark.py",
