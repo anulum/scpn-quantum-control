@@ -1,0 +1,85 @@
+{
+  "campaign": "iqm_layout_transfer_square_lattice_prereg_2026-07-21",
+  "kind": "fake_backend_dry_run",
+  "backend": "IQMFakeGarnet",
+  "blocks": [
+    {
+      "n": 8,
+      "exact_reference": 0.5000000000000028,
+      "readout_e01_max": 0.033203125,
+      "readout_e10_max": 0.0380859375,
+      "arms": [
+        {
+          "arm": "optimised",
+          "raw_order_parameter": 0.3121337890625,
+          "corrected_order_parameter": 0.32105840240152733,
+          "corrected_error_vs_exact": 0.17894159759847544
+        },
+        {
+          "arm": "default",
+          "raw_order_parameter": 0.2861328125,
+          "corrected_order_parameter": 0.2975952497837354,
+          "corrected_error_vs_exact": 0.20240475021626736
+        },
+        {
+          "arm": "naive",
+          "raw_order_parameter": 0.2916259765625,
+          "corrected_order_parameter": 0.3007377274858356,
+          "corrected_error_vs_exact": 0.19926227251416717
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "exact_reference": 0.5000000000000052,
+      "readout_e01_max": 0.0322265625,
+      "readout_e10_max": 0.0322265625,
+      "arms": [
+        {
+          "arm": "optimised",
+          "raw_order_parameter": 0.27978515625,
+          "corrected_order_parameter": 0.2926127171009538,
+          "corrected_error_vs_exact": 0.2073872828990514
+        },
+        {
+          "arm": "default",
+          "raw_order_parameter": 0.2936197916666667,
+          "corrected_order_parameter": 0.304484605146333,
+          "corrected_error_vs_exact": 0.1955153948536722
+        },
+        {
+          "arm": "naive",
+          "raw_order_parameter": 0.2694498697916667,
+          "corrected_order_parameter": 0.28261857112441985,
+          "corrected_error_vs_exact": 0.21738142887558537
+        }
+      ]
+    },
+    {
+      "n": 16,
+      "exact_reference": 0.5000000000000079,
+      "readout_e01_max": 0.0390625,
+      "readout_e10_max": 0.0400390625,
+      "arms": [
+        {
+          "arm": "optimised",
+          "raw_order_parameter": 0.290771484375,
+          "corrected_order_parameter": 0.30084172043132734,
+          "corrected_error_vs_exact": 0.19915827956868054
+        },
+        {
+          "arm": "default",
+          "raw_order_parameter": 0.28729248046875,
+          "corrected_order_parameter": 0.29877273697538204,
+          "corrected_error_vs_exact": 0.20122726302462585
+        },
+        {
+          "arm": "naive",
+          "raw_order_parameter": 0.26654052734375,
+          "corrected_order_parameter": 0.2783018677048161,
+          "corrected_error_vs_exact": 0.2216981322951918
+        }
+      ]
+    }
+  ]
+}

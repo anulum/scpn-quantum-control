@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 836,
     "public_documentation_pages": 286,
-    "python_model_classes": 1047,
-    "python_model_source_modules": 588,
+    "python_model_classes": 1051,
+    "python_model_source_modules": 589,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1042
+    "test_files": 1043
   },
   "documentation": {
     "examples": [
@@ -488,7 +488,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 48
+        "python_modules": 49
       },
       {
         "package": "bridge",
@@ -790,6 +790,10 @@
       {
         "name": "ArcaneNeuronBridge",
         "path": "src/scpn_quantum_control/bridge/snn_adapter.py"
+      },
+      {
+        "name": "ArmPlan",
+        "path": "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_benchmark.py"
       },
       {
         "name": "ArmijoLineSearchResult",
@@ -1362,6 +1366,10 @@
       {
         "name": "DensityMatrixInvariantCertificate",
         "path": "src/scpn_quantum_control/phase/open_system_objectives.py"
+      },
+      {
+        "name": "DepthParityResult",
+        "path": "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_benchmark.py"
       },
       {
         "name": "DepthProvider",
@@ -2446,6 +2454,10 @@
       {
         "name": "LayoutSearchResult",
         "path": "src/scpn_quantum_control/hardware/kuramoto_layout_optimiser.py"
+      },
+      {
+        "name": "LayoutTransferPlan",
+        "path": "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_benchmark.py"
       },
       {
         "name": "LeastSquaresCovarianceResult",
@@ -4344,6 +4356,10 @@
         "path": "src/scpn_quantum_control/hardware/kuramoto_layout_relaxation.py"
       },
       {
+        "name": "SizeBlockPlan",
+        "path": "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_benchmark.py"
+      },
+      {
         "name": "SparseMatrixResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
@@ -4924,6 +4940,7 @@
       "src/scpn_quantum_control/benchmarks/differentiable_programming_quantum.py",
       "src/scpn_quantum_control/benchmarks/gpu_baseline.py",
       "src/scpn_quantum_control/benchmarks/hls_cosimulation_evidence.py",
+      "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_benchmark.py",
       "src/scpn_quantum_control/benchmarks/isolated_host_readiness.py",
       "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py",
       "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py",
@@ -6944,6 +6961,7 @@
       "tests/test_iqm_backend.py",
       "tests/test_iqm_lattice_calibration.py",
       "tests/test_iqm_layout_pinned_dla.py",
+      "tests/test_iqm_layout_transfer_benchmark.py",
       "tests/test_isolated_host_readiness.py",
       "tests/test_iter_benchmark.py",
       "tests/test_iter_benchmark_branches.py",

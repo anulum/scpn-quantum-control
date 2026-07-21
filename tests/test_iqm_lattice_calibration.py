@@ -132,6 +132,34 @@ class TestExtraction:
             lattice_calibration_from_backend(backend)
 
 
+class TestSerialisation:
+    def test_round_trip_preserves_snapshot(self) -> None:
+        import json
+
+        cal = _calibration()
+        payload = json.loads(json.dumps(cal.to_dict()))
+        rebuilt = LatticeCalibration.from_dict(payload)
+        assert rebuilt == cal
+
+    def test_from_dict_rejects_missing_key(self) -> None:
+        payload = _calibration().to_dict()
+        del payload["edges"]
+        with pytest.raises(ValueError, match="malformed lattice-calibration payload"):
+            LatticeCalibration.from_dict(payload)
+
+    def test_from_dict_rejects_non_pair_edge(self) -> None:
+        payload = _calibration().to_dict()
+        payload["edges"][0] = [0, 1, 2]
+        with pytest.raises(ValueError, match="malformed lattice-calibration payload"):
+            LatticeCalibration.from_dict(payload)
+
+    def test_from_dict_rejects_fidelity_edge_mismatch(self) -> None:
+        payload = _calibration().to_dict()
+        del payload["edge_fidelity"]["0-1"]
+        with pytest.raises(ValueError, match="edge_fidelity keys must match edges"):
+            LatticeCalibration.from_dict(payload)
+
+
 class TestChainEnumeration:
     def test_ring_has_four_canonical_three_chains(self) -> None:
         regions, truncated = enumerate_chain_regions(_calibration(), 3)

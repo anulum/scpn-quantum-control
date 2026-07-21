@@ -123,6 +123,28 @@ resulting output.
 - raw job identifiers public; access token never committed;
 - campaign manifest `docs/campaigns/iqm_layout_transfer_manifest_<date>.md`.
 
+## Amendment 1 — naive-arm definition (pre-submission, 2026-07-21)
+
+**Status: applied before any QPU submission; no hardware data existed when
+this amendment was made.** The harness readiness gate itself forced it: on
+the real Garnet topology (IQMFakeGarnet dry run, committed harness code) the
+originally preregistered naive arm — "linear chain along consecutive
+physical indices", i.e. `(0, …, n−1)` — is **not a connected path**, so
+routing inserts SWAPs and the transpiled two-qubit depth explodes to
+75/110/83 layers versus 40 for the other two arms (`n = 8, 12, 16`). That
+violates the frozen depth-parity validity gate (within 10 %) at every size,
+which by this document's own rule blocks submission: the comparison would
+measure SWAP overhead, not placement quality.
+
+Amended naive arm: the **lexicographically smallest connected simple chain**
+of length `n` on the lattice — deterministic, computed from the coupling
+graph alone (calibration-blind), no fidelity input. This preserves the arm's
+role (topology-only baseline against the calibration-aware optimiser) while
+keeping all three arms SWAP-free, so the depth-parity gate can hold and any
+fidelity difference is attributable to *which* qubits and edges are used.
+The original definition and the fake-backend depth evidence are retained
+above and in `data/iqm_layout_transfer/` for full transparency.
+
 ## Submission Boundary
 
 This preregistration is complete once committed. QPU execution remains

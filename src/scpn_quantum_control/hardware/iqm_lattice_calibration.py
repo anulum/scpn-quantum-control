@@ -21,6 +21,7 @@ without the optional extra and a live backend plugs in unchanged.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from math import isfinite
 from typing import Any
@@ -57,6 +58,43 @@ class LatticeCalibration:
         out = [b for a, b in self.edges if a == qubit]
         out += [a for a, b in self.edges if b == qubit]
         return tuple(sorted(out))
+
+    def to_dict(self) -> dict[str, Any]:
+        """JSON-serialisable snapshot (edge keys become ``"lo-hi"`` strings)."""
+        return {
+            "num_qubits": self.num_qubits,
+            "edges": [list(edge) for edge in self.edges],
+            "edge_fidelity": {f"{a}-{b}": value for (a, b), value in self.edge_fidelity.items()},
+            "readout_error": {str(q): value for q, value in self.readout_error.items()},
+        }
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, Any]) -> LatticeCalibration:
+        """Rebuild a snapshot written by :meth:`to_dict` (fails closed)."""
+        try:
+            edges: list[tuple[int, int]] = []
+            for raw_edge in payload["edges"]:
+                a, b = raw_edge
+                edges.append((int(a), int(b)))
+            edge_fidelity: dict[tuple[int, int], float] = {}
+            for key, value in payload["edge_fidelity"].items():
+                lo, hi = key.split("-")
+                edge_fidelity[(int(lo), int(hi))] = float(value)
+            calibration = cls(
+                num_qubits=int(payload["num_qubits"]),
+                edges=tuple(edges),
+                edge_fidelity=edge_fidelity,
+                readout_error={
+                    int(q): float(value) for q, value in payload["readout_error"].items()
+                },
+            )
+        except (KeyError, TypeError, ValueError, AttributeError) as error:
+            raise ValueError(f"malformed lattice-calibration payload: {error}") from error
+        if set(calibration.edge_fidelity) != set(calibration.edges):
+            raise ValueError(
+                "malformed lattice-calibration payload: edge_fidelity keys must match edges"
+            )
+        return calibration
 
 
 @dataclass(frozen=True)

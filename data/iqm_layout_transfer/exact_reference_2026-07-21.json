@@ -1,0 +1,24 @@
+{
+  "campaign": "iqm_layout_transfer_square_lattice_prereg_2026-07-21",
+  "observable": "absolute mean Z-magnetisation (counts-supported proxy)",
+  "blocks": [
+    {
+      "n": 8,
+      "depth": 5,
+      "initial_state": "10001000",
+      "exact_order_parameter": 0.5000000000000028
+    },
+    {
+      "n": 12,
+      "depth": 5,
+      "initial_state": "100010001000",
+      "exact_order_parameter": 0.5000000000000052
+    },
+    {
+      "n": 16,
+      "depth": 5,
+      "initial_state": "1000100010001000",
+      "exact_order_parameter": 0.5000000000000079
+    }
+  ]
+}
