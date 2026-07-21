@@ -86,6 +86,16 @@
       "path": "src/scpn_quantum_control/forecasting/neural_operator_advantage.py",
       "reason": "The advantage study orchestrates the torch surrogate end-to-end; its test skips without the optional torch extra, so its lines are excluded from the CPU-only line gate.",
       "exercised_by": "tests/test_neural_operator_advantage.py under the optional [torch] extra; the host-independent arithmetic lives in neural_operator_cost_model.py, which is NOT omitted and is covered to 100%."
+    },
+    {
+      "path_glob": "src/scpn_quantum_control/benchmarks/kyma/*.py",
+      "reason": "The KYMA toy compositional-generalisation probe (v1) is a differentiable-Kuramoto experiment that needs the optional [jax] extra, absent from the pinned CPU-only CI lane. Its importorskip(jax)-guarded tests run locally; the pytest --cov tracer also crashes on jax modules, so it is omitted from the CI coverage gate.",
+      "exercised_by": "local [jax] extra; tests/test_kyma_*.py run without --cov (the coverage tracer errors on jax). Tracked gap: not CI-covered, validated locally before land."
+    },
+    {
+      "path_glob": "src/scpn_quantum_control/benchmarks/kyma_v2/*.py",
+      "reason": "The KYMA v2/v2.1 corrected-design compositional-generalisation probe is a differentiable-Kuramoto experiment that needs the optional [jax] extra, absent from the pinned CPU-only CI lane. Its importorskip(jax)-guarded tests run locally; the pytest --cov tracer also crashes on jax modules, so it is omitted from the CI coverage gate.",
+      "exercised_by": "local [jax] extra; tests/test_kyma_v2_*.py (66 tests) run without --cov (the coverage tracer errors on jax). Tracked gap: not CI-covered, validated locally before land."
     }
   ]
 }
