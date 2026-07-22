@@ -631,6 +631,68 @@ def test_artifact_entry_summary_rejects_missing_file(tmp_path: Path) -> None:
     assert str(exc_info.value) == f"external-validation artefact is missing: {missing}"
 
 
+def test_external_validation_summaries_reject_repository_escape(tmp_path: Path) -> None:
+    """Absolute, traversing, and escaping symlink evidence cannot be summarized."""
+    outside = tmp_path.parent / "outside-external-evidence.txt"
+    outside.write_text("untrusted\n", encoding="utf-8")
+    symlink = tmp_path / "escaped-link.txt"
+    symlink.symlink_to(outside)
+
+    with pytest.raises(ValueError, match="environment lockfile escapes repository"):
+        summarize_environment_lockfile(outside, repo_root=tmp_path, role="outside")
+    with pytest.raises(ValueError, match="external-validation artefact escapes repository"):
+        summarize_artifact_entry(
+            Path("../outside-external-evidence.txt"),
+            repo_root=tmp_path,
+            role="outside",
+        )
+    with pytest.raises(ValueError, match="external-validation artefact escapes repository"):
+        summarize_artifact_entry(symlink, repo_root=tmp_path, role="symlink")
+
+
+def test_external_validation_manifests_report_unsafe_paths(tmp_path: Path) -> None:
+    """Manifest validation converts repository escape into explicit findings."""
+    lockfile = EnvironmentLockfileSummary(
+        path="../outside-lock.txt",
+        role="outside",
+        sha256="0" * 64,
+        size_bytes=1,
+        line_count=1,
+        pinned_package_count=0,
+    )
+    manifest = ExternalValidationEnvironmentLock(
+        artifact_id="environment",
+        schema=EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_SCHEMA,
+        python_version="3.12.0",
+        platform="test",
+        lockfiles=(lockfile,),
+        classification="functional_non_isolated",
+        claim_boundary="no isolated_affinity benchmark claims",
+    )
+    assert validate_external_validation_environment_lock(
+        manifest,
+        repo_root=tmp_path,
+    ).errors == ("unsafe lockfile path: ../outside-lock.txt",)
+
+    entry = ExternalValidationArtifactEntry(
+        path="../outside-evidence.json",
+        role="outside",
+        sha256="0" * 64,
+        size_bytes=1,
+    )
+    bundle = ExternalValidationArtifactBundle(
+        artifact_id="bundle",
+        schema="scpn_qc_differentiable_external_validation_artifact_bundle_v1",
+        entries=(entry,),
+        classification="functional_non_isolated",
+        claim_boundary="no isolated_affinity benchmark claims",
+    )
+    assert validate_external_validation_artifact_bundle(
+        bundle,
+        repo_root=tmp_path,
+    ).errors == ("unsafe artefact path: ../outside-evidence.json",)
+
+
 def test_artifact_bundle_markdown_lists_claim_boundary() -> None:
     """Artefact bundle Markdown must expose the claim boundary."""
     markdown = render_external_validation_artifact_bundle_markdown(

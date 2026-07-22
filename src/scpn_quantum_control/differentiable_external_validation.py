@@ -394,12 +394,14 @@ def summarize_environment_lockfile(
     role: str,
 ) -> EnvironmentLockfileSummary:
     """Summarize one repository-relative lockfile with a SHA-256 digest."""
-    resolved = path if path.is_absolute() else repo_root / path
-    if not resolved.exists():
-        raise FileNotFoundError(f"environment lockfile is missing: {path}")
+    resolved = _contained_evidence_file(
+        path,
+        repo_root=repo_root,
+        context="environment lockfile",
+    )
     data = resolved.read_bytes()
     text = data.decode("utf-8")
-    rel_path = resolved.relative_to(repo_root).as_posix()
+    rel_path = resolved.relative_to(repo_root.resolve()).as_posix()
     pinned_count = sum(
         1 for line in text.splitlines() if PINNED_REQUIREMENT_PATTERN.match(line.strip())
     )
@@ -420,12 +422,14 @@ def summarize_artifact_entry(
     role: str,
 ) -> ExternalValidationArtifactEntry:
     """Summarize one external-validation artefact with a SHA-256 digest."""
-    resolved = path if path.is_absolute() else repo_root / path
-    if not resolved.exists():
-        raise FileNotFoundError(f"external-validation artefact is missing: {path}")
+    resolved = _contained_evidence_file(
+        path,
+        repo_root=repo_root,
+        context="external-validation artefact",
+    )
     data = resolved.read_bytes()
     return ExternalValidationArtifactEntry(
-        path=resolved.relative_to(repo_root).as_posix(),
+        path=resolved.relative_to(repo_root.resolve()).as_posix(),
         role=role,
         sha256=hashlib.sha256(data).hexdigest(),
         size_bytes=len(data),
@@ -554,11 +558,18 @@ def validate_external_validation_environment_lock(
         errors.append("environment lock manifest claim boundary is not explicit enough")
     for lockfile in candidate.lockfiles:
         checked_paths.append(lockfile.path)
-        resolved = repo_root / lockfile.path
-        if not resolved.exists():
+        try:
+            current = summarize_environment_lockfile(
+                Path(lockfile.path),
+                repo_root=repo_root,
+                role=lockfile.role,
+            )
+        except ValueError:
+            errors.append(f"unsafe lockfile path: {lockfile.path}")
+            continue
+        except FileNotFoundError:
             errors.append(f"missing lockfile: {lockfile.path}")
             continue
-        current = summarize_environment_lockfile(resolved, repo_root=repo_root, role=lockfile.role)
         if current.sha256 != lockfile.sha256:
             errors.append(f"sha256 mismatch: {lockfile.path}")
         if current.size_bytes != lockfile.size_bytes:
@@ -592,11 +603,18 @@ def validate_external_validation_artifact_bundle(
         errors.append("artifact bundle claim boundary is not explicit enough")
     for entry in candidate.entries:
         checked_paths.append(entry.path)
-        resolved = repo_root / entry.path
-        if not resolved.exists():
+        try:
+            current = summarize_artifact_entry(
+                Path(entry.path),
+                repo_root=repo_root,
+                role=entry.role,
+            )
+        except ValueError:
+            errors.append(f"unsafe artefact path: {entry.path}")
+            continue
+        except FileNotFoundError:
             errors.append(f"missing artefact: {entry.path}")
             continue
-        current = summarize_artifact_entry(resolved, repo_root=repo_root, role=entry.role)
         if current.sha256 != entry.sha256:
             errors.append(f"sha256 mismatch: {entry.path}")
         if current.size_bytes != entry.size_bytes:
@@ -675,6 +693,19 @@ def _require_nonblank(value: object, field_name: str) -> None:
     """Require an exact non-blank string."""
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{field_name} must be a non-empty string")
+
+
+def _contained_evidence_file(path: Path, *, repo_root: Path, context: str) -> Path:
+    """Resolve a regular evidence file without permitting repository escape."""
+    resolved_root = repo_root.resolve()
+    candidate = (path if path.is_absolute() else resolved_root / path).resolve()
+    try:
+        candidate.relative_to(resolved_root)
+    except ValueError as exc:
+        raise ValueError(f"{context} escapes repository: {path}") from exc
+    if not candidate.is_file():
+        raise FileNotFoundError(f"{context} is missing: {path}")
+    return candidate
 
 
 def _require_sha256(value: object, field_name: str) -> None:
