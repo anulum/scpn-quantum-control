@@ -66,6 +66,20 @@ CAMPAIGNS: dict[str, dict[str, Any]] = {
         "repetitions": 8,
         "batch_all": True,
     },
+    # Window-variability (FU-W): every window submits the full 36-circuit
+    # matrix in one pass (mains one job + a per-window readout job); the
+    # WINDOW is the independent unit and `--window` stamps the artefacts.
+    "window-variability": {
+        "campaign_id": "iqm_dla_window_variability_prereg_2026-07-22",
+        "depths": (4, 8, 10, 12),
+        "envelope": {
+            4: int(69 * 1.25),
+            8: int(129 * 1.25),
+            10: int(159 * 1.25),
+            12: int(189 * 1.25),
+        },
+        "batch_all": True,
+    },
 }
 
 
@@ -309,6 +323,7 @@ def submit(args: argparse.Namespace) -> int:
         "quantum_computer": args.quantum_computer,
         "date": args.date,
         "repetition": args.repetition,
+        "window": args.window,
         "layout": list(layout),
         "layout_choice": args.layout,
         "transpiled_depths": depths,
@@ -362,6 +377,7 @@ def retrieve(args: argparse.Namespace) -> int:
         "backend": record["quantum_computer"],
         "date": record["date"],
         "repetition": record["repetition"],
+        "window": record.get("window", 0),
         "layout": record["layout"],
         "job_ids": [entry["job_id"] for entry in record["jobs"]],
         "counts": counts,
@@ -390,6 +406,12 @@ def main(argv: list[str] | None = None) -> int:
     sub_submit.add_argument("--quantum-computer", default="garnet:mock")
     sub_submit.add_argument("--layout", choices=("primary", "fallback"), default="primary")
     sub_submit.add_argument("--repetition", type=int, default=1, choices=(1, 2, 3, 4))
+    sub_submit.add_argument(
+        "--window",
+        type=int,
+        default=0,
+        help="window index for the window-variability campaign (stamped into the record)",
+    )
     sub_submit.add_argument("--date", required=True, help="artefact date stamp (YYYY-MM-DD)")
     sub_submit.add_argument("--out", required=True, help="submission record JSON")
     sub_submit.add_argument(
