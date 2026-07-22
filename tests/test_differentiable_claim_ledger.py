@@ -273,6 +273,10 @@ def test_public_claim_table_is_generated_from_committed_ledger() -> None:
     assert "`external_validation_environment_lock`" in markdown
     assert "bounded-candidate" in markdown
     assert "No hardware, provider, QPU, GPU, production-performance" in markdown
+    for row in ledger:
+        assert row.claim_text in markdown
+        assert row.claim_boundary in markdown
+        assert all(gap in markdown for gap in row.known_gaps)
 
 
 def test_public_claim_table_validator_rejects_missing_rows() -> None:
@@ -298,6 +302,10 @@ def test_public_claim_table_handles_promoted_and_hard_gap_rows() -> None:
     assert "`promoted`" in markdown
     assert "`blocked`" in markdown
     assert "exact promoted boundary" in markdown
+    assert "Hard-gap statement (not promoted)" in markdown
+    assert hard_gap.claim_text in markdown
+    assert hard_gap.claim_boundary in markdown
+    assert all(gap in markdown for gap in hard_gap.known_gaps)
     assert validate_public_claim_table(rows, markdown).passed
 
     invalid = validate_public_claim_table(

@@ -218,7 +218,10 @@ The public-safe wording table is generated from that ledger at
 `data/differentiable_phase_qnode/public_claim_table_20260616.md`. Use
 `render_public_claim_table(...)` and `validate_public_claim_table(...)` when a
 release note, README, package description, or reviewer response needs
-claim-boundary language. The renderers live in the focused
+claim-boundary language. Every public row preserves its ledger claim text,
+exact claim boundary, and known gaps; non-promoted rows are labelled as
+candidate, hard-gap, or blocked statements rather than flattened into generic
+wording, and unknown promotion states fail closed. The renderers live in the focused
 `differentiable_claim_rendering` satellite; table cells and code spans contain
 embedded line breaks, pipes, and backticks, and committed ledger, public-table,
 and support-alignment Markdown must reproduce byte-for-byte. Public promotional

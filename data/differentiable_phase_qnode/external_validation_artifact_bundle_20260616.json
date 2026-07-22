@@ -18,8 +18,8 @@
     {
       "path": "data/differentiable_phase_qnode/public_claim_table_20260616.md",
       "role": "Public-safe claim wording table",
-      "sha256": "d6dd4738d6b5050e31425b3a40e1e56a8f946e5288370a2319925737ce112721",
-      "size_bytes": 7131
+      "sha256": "537512d5c20c893d63cd044e51772c0c638b9ae579b9561ddb12c7fb0c0434b1",
+      "size_bytes": 15308
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json",

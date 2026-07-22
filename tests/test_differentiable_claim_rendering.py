@@ -10,6 +10,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
+from typing import cast
+
+import pytest
 
 from scpn_quantum_control.differentiable_claim_ledger import (
     ClaimLedgerRow,
@@ -113,8 +117,29 @@ def test_public_table_renders_every_status_and_escapes_promoted_content() -> Non
     assert "`` `artefact`\\|id ``" in promoted_line
     assert markdown.count("| `blocked` |") == 2
     assert "| `bounded-candidate` |" in markdown
-    assert "Artefacts: ; benchmark IDs: ." in markdown
+    assert "Candidate statement (not promoted): bounded claim" in markdown
+    assert "Hard-gap statement (not promoted): bounded claim" in markdown
+    assert "Blocked statement (not promoted): bounded claim" in markdown
+    assert "Claim boundary: bounded claim boundary" in markdown
+    assert "Open gaps: external evidence pending" in markdown
+    assert "Artefacts: none; benchmark IDs: none." in markdown
     assert "Global boundary:" in render_public_claim_table(())
+
+
+def test_public_table_rejects_unknown_status_instead_of_downgrading_it() -> None:
+    """Unknown internal states cannot silently appear as bounded candidates."""
+    row = SimpleNamespace(
+        claim_id="unknown_status",
+        claim_text="bounded claim",
+        evidence_artifact_ids=("artefact-1",),
+        benchmark_artifact_ids=("benchmark-1",),
+        known_gaps=("external evidence pending",),
+        promotion_status=cast(PromotionStatus, "unknown"),
+        claim_boundary="bounded claim boundary",
+    )
+
+    with pytest.raises(ValueError, match="unknown promotion status: 'unknown'"):
+        render_public_claim_table((row,))
 
 
 def test_alignment_renderer_contains_code_spans_and_error_cells() -> None:

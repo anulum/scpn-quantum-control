@@ -18,7 +18,7 @@ SCPN Quantum Control — Differentiable external-validation artefact bundle
 |---|---|---|---:|
 | `data/differentiable_phase_qnode/claim_ledger.json` | Claim-ledger source of truth | `d6aaed9cff78809c95c6911f07e6252bcadc86cef8085553835d5ea14669f2c4` | 25778 |
 | `data/differentiable_phase_qnode/claim_ledger.md` | Reviewer claim-ledger summary | `ccbae9dec5f34bed8516563eee04eec079f66d9e73930012c5f5cf3040b6da3f` | 6859 |
-| `data/differentiable_phase_qnode/public_claim_table_20260616.md` | Public-safe claim wording table | `d6dd4738d6b5050e31425b3a40e1e56a8f946e5288370a2319925737ce112721` | 7131 |
+| `data/differentiable_phase_qnode/public_claim_table_20260616.md` | Public-safe claim wording table | `537512d5c20c893d63cd044e51772c0c638b9ae579b9561ddb12c7fb0c0434b1` | 15308 |
 | `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json` | Differentiable support-surface alignment rerun artefact | `dfd96e8047d7ce28e5c10846f28734f91ffbddccc2ca7dd2d5ec9d8b65c81529` | 4757 |
 | `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md` | Differentiable support-surface alignment reviewer summary | `612a6f0f5d463228698df608a44d12ee28400cc2f602092e472c3b001843dd72` | 5058 |
 | `data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.json` | Differentiable baseline category scorecard artefact | `8739fd4383ba751facc2bdf53d02b390fdd178b527cf53cac00bd63d42aa34e6` | 31829 |

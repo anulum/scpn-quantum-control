@@ -863,7 +863,19 @@ def validate_public_claim_table(
     """
     rows = _claim_rows(rows_or_ledger)
     errors = list(validate_claim_ledger(rows).errors)
-    public_language = validate_public_language_against_ledger(rows, (markdown,))
+    # Claim boundaries and gap descriptions are themselves allowed to name
+    # the capabilities that remain explicitly unclaimed (for example
+    # ``production performance``).  Inspect only the rendered public wording
+    # and surrounding table text so those safety statements cannot trigger the
+    # promotional-language detector as false positives.
+    safe_boundary_text = markdown
+    for row in rows:
+        for safe_text in (row.claim_boundary, *row.known_gaps):
+            safe_boundary_text = safe_boundary_text.replace(safe_text, "")
+    public_language = validate_public_language_against_ledger(
+        rows,
+        (safe_boundary_text,),
+    )
     errors.extend(public_language.errors)
     canonical = render_public_claim_table(rows)
     canonical_lines = canonical.splitlines()

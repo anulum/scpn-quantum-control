@@ -251,32 +251,43 @@ def _public_status(row: _ClaimRow) -> str:
     """Map an internal promotion status to the public table vocabulary."""
     if row.promotion_status == "promoted":
         return "promoted"
+    if row.promotion_status == "bounded_candidate":
+        return "bounded-candidate"
     if row.promotion_status in {"hard_gap", "blocked"}:
         return "blocked"
-    return "bounded-candidate"
+    raise ValueError(f"unknown promotion status: {row.promotion_status!r}")
 
 
 def _public_safe_wording(row: _ClaimRow) -> str:
     """Return public-safe wording for a row's current promotion status."""
     if row.promotion_status == "promoted":
         return f"{row.claim_text} Claim boundary: {row.claim_boundary}"
-    return (
-        "Evidence-backed candidate surface for the bounded differentiable lane; "
-        "use the listed artefacts and claim boundary when discussing scope."
-    )
+    status_label = {
+        "bounded_candidate": "Candidate statement (not promoted)",
+        "hard_gap": "Hard-gap statement (not promoted)",
+        "blocked": "Blocked statement (not promoted)",
+    }.get(row.promotion_status)
+    if status_label is None:
+        raise ValueError(f"unknown promotion status: {row.promotion_status!r}")
+    return f"{status_label}: {row.claim_text} Claim boundary: {row.claim_boundary}"
 
 
 def _public_blocked_wording(row: _ClaimRow) -> str:
     """Return the boundary that blocks overclaiming for a row."""
     if row.promotion_status == "promoted":
         return "Do not extend beyond the exact claim boundary without a new ledger row."
-    return NON_PROMOTIONAL_BOUNDARY
+    gaps = "; ".join(row.known_gaps) or "none recorded"
+    return f"{NON_PROMOTIONAL_BOUNDARY} Open gaps: {gaps}"
 
 
 def _public_evidence_wording(row: _ClaimRow) -> str:
     """Render evidence identities as safe Markdown code spans."""
-    artefacts = ", ".join(_markdown_code(artifact) for artifact in row.evidence_artifact_ids)
-    benchmarks = ", ".join(_markdown_code(artifact) for artifact in row.benchmark_artifact_ids)
+    artefacts = (
+        ", ".join(_markdown_code(artifact) for artifact in row.evidence_artifact_ids) or "none"
+    )
+    benchmarks = (
+        ", ".join(_markdown_code(artifact) for artifact in row.benchmark_artifact_ids) or "none"
+    )
     return f"Artefacts: {artefacts}; benchmark IDs: {benchmarks}."
 
 
