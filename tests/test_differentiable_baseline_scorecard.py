@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from pathlib import Path
-from typing import cast, get_args
+from typing import Any, cast, get_args
 
 import pytest
 
@@ -97,6 +97,40 @@ def test_differentiable_baseline_scorecard_row_rejects_inconsistent_blockers() -
         replace(row, status="at_baseline")
     with pytest.raises(ValueError, match="behind-baseline scorecard rows must list blockers"):
         replace(row, blockers=())
+    with pytest.raises(ValueError, match="claim_ids must contain unique values"):
+        replace(row, claim_ids=(row.claim_ids[0], row.claim_ids[0]))
+    with pytest.raises(ValueError, match="blockers must contain unique values"):
+        replace(row, blockers=(row.blockers[0], row.blockers[0]))
+    with pytest.raises(ValueError, match="claim_boundary is not canonical"):
+        replace(row, claim_boundary="not a promotion")
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    (
+        ({"schema": " "}, "schema must be non-empty"),
+        ({"artifact_id": 1}, "artifact_id must be non-empty"),
+        ({"rows": []}, "rows must be a non-empty row tuple"),
+        ({"rows": ()}, "rows must be a non-empty row tuple"),
+        ({"rows": ("row",)}, "rows must be a non-empty row tuple"),
+        ({"promotion_ready": 1}, "promotion_ready must be boolean"),
+        ({"ready_category_count": True}, "must be a non-negative integer"),
+        ({"total_category_count": -1}, "must be a non-negative integer"),
+        ({"claim_boundary": "candidate"}, "claim_boundary is not canonical"),
+    ),
+)
+def test_differentiable_baseline_scorecard_rejects_structural_drift(
+    changes: dict[str, object],
+    message: str,
+) -> None:
+    """Scorecard construction must reject coercion and malformed row containers."""
+    scorecard = run_differentiable_baseline_scorecard()
+
+    with pytest.raises(ValueError, match=message):
+        replace(scorecard, **changes)
+
+    with pytest.raises(ValueError, match="categories must contain unique values"):
+        replace(scorecard, rows=(scorecard.rows[0], scorecard.rows[0]))
 
 
 def test_differentiable_baseline_scorecard_validation_rejects_unpromoted_ready_rows() -> None:
@@ -169,6 +203,43 @@ def test_differentiable_baseline_scorecard_validation_reports_metadata_errors(
     assert any("promotion_ready" in error for error in validation.errors)
     assert any("unknown claim-ledger row: missing_claim" in error for error in validation.errors)
     assert any("docs/missing_scorecard_path.md" in error for error in validation.errors)
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    (
+        ({"passed": 1}, "passed must be boolean"),
+        ({"passed": False}, "passed must be true exactly when errors are empty"),
+        ({"errors": ["error"]}, "errors must contain non-empty entries"),
+        ({"errors": ("",)}, "errors must contain non-empty entries"),
+        ({"checked_categories": ["jax_native_transforms"]}, "must contain non-empty entries"),
+        (
+            {"checked_categories": ("jax_native_transforms", "jax_native_transforms")},
+            "checked_categories must contain unique values",
+        ),
+        ({"checked_categories": ("unknown",)}, "contains unknown category"),
+        ({"checked_claim_ids": ("",)}, "checked_claim_ids must contain non-empty entries"),
+        (
+            {"checked_claim_ids": ("claim", "claim")},
+            "checked_claim_ids must contain unique values",
+        ),
+        ({"checked_paths": ("",)}, "checked_paths must contain non-empty entries"),
+        ({"checked_paths": ("path", "path")}, "checked_paths must contain unique values"),
+        ({"claim_boundary": "validated"}, "claim_boundary is not canonical"),
+    ),
+)
+def test_differentiable_baseline_scorecard_validation_result_rejects_drift(
+    changes: dict[str, object],
+    message: str,
+) -> None:
+    """Validation result construction must preserve exact checked evidence."""
+    validation = validate_differentiable_baseline_scorecard(
+        run_differentiable_baseline_scorecard()
+    )
+    assert validation.passed
+
+    with pytest.raises(ValueError, match=message):
+        replace(validation, **changes)
 
 
 def test_differentiable_baseline_scorecard_rejects_external_evidence_paths(
@@ -375,6 +446,86 @@ def test_differentiable_promotion_language_allows_bounded_candidate_wording() ->
     assert audit.passed
     assert audit.errors == ()
     assert audit.checked_promotional_categories == ()
+
+
+def test_differentiable_promotion_language_reports_missing_referenced_row() -> None:
+    """An incomplete scorecard must return a finding instead of raising on explicit wording."""
+    scorecard = run_differentiable_baseline_scorecard()
+    incomplete = replace(scorecard, rows=scorecard.rows[1:])
+
+    audit = audit_differentiable_promotion_language(
+        public_texts={"README.md": "The JAX native transforms are world-leading."},
+        scorecard=incomplete,
+    )
+
+    assert not audit.passed
+    assert any(
+        "scorecard row is missing: jax_native_transforms" in error for error in audit.errors
+    )
+
+
+@pytest.mark.parametrize(
+    "public_texts",
+    (
+        {"": "bounded_candidate"},
+        {"README.md": 1},
+        cast(Any, []),
+    ),
+)
+def test_differentiable_promotion_language_rejects_malformed_injected_texts(
+    public_texts: object,
+) -> None:
+    """Injected public-text evidence must use exact non-empty string mappings."""
+    with pytest.raises(
+        ValueError, match="public_texts must map non-empty string paths to strings"
+    ):
+        audit_differentiable_promotion_language(public_texts=cast(Any, public_texts))
+
+
+def test_differentiable_promotion_language_rejects_non_string_configured_path(
+    tmp_path: Path,
+) -> None:
+    """Configured scan paths must fail closed when their runtime type is not a string."""
+    audit = audit_differentiable_promotion_language(
+        public_paths=cast(Any, (7,)),
+        repo_root=tmp_path,
+    )
+
+    assert not audit.passed
+    assert "unsafe public promotion path: 7" in audit.errors
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    (
+        ({"passed": 1}, "passed must be boolean"),
+        ({"passed": False}, "passed must be true exactly when errors are empty"),
+        ({"errors": ["error"]}, "errors must contain non-empty entries"),
+        ({"checked_paths": ["README.md"]}, "checked_paths must contain non-empty entries"),
+        ({"checked_paths": ("README.md", "README.md")}, "must contain unique values"),
+        ({"checked_promotional_categories": ("",)}, "must contain non-empty entries"),
+        (
+            {"checked_promotional_categories": ("jax_native_transforms",) * 2},
+            "must contain unique values",
+        ),
+        ({"checked_promotional_categories": ("unknown",)}, "contains unknown category"),
+        ({"checked_claim_ids": ("",)}, "checked_claim_ids must contain non-empty entries"),
+        ({"checked_claim_ids": ("claim", "claim")}, "must contain unique values"),
+        ({"claim_boundary": "audited"}, "claim_boundary is not canonical"),
+    ),
+)
+def test_differentiable_promotion_language_result_rejects_drift(
+    changes: dict[str, object],
+    message: str,
+) -> None:
+    """Promotion-audit results must preserve typed, unique, fail-closed evidence."""
+    audit = audit_differentiable_promotion_language(
+        public_texts={"README.md": "The route remains bounded_candidate."}
+    )
+    assert audit.passed
+
+    with pytest.raises(ValueError, match=message):
+        replace(audit, **changes)
 
 
 def test_differentiable_baseline_scorecard_markdown_and_facade_dispatch() -> None:

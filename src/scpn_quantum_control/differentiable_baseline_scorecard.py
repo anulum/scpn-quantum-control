@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
+from itertools import chain
 from pathlib import Path
 from typing import Literal
 
@@ -48,6 +49,16 @@ DIFFERENTIABLE_BASELINE_SCORECARD_CLAIM_BOUNDARY = (
     "Differentiable baseline scorecard governance only; the lane remains "
     "a promotion candidate until category rows have promoted claim-ledger evidence, "
     "isolated benchmark artefacts, and external baseline comparisons."
+)
+SCORECARD_VALIDATION_CLAIM_BOUNDARY = (
+    "Baseline scorecard validation only; validates category coverage and "
+    "claim-ledger consistency without promoting performance, provider, "
+    "hardware, QPU, GPU, or isolated_affinity claims"
+)
+PROMOTION_LANGUAGE_AUDIT_CLAIM_BOUNDARY = (
+    "public promotion-language audit only; rejects unbounded "
+    "category-leadership, exceedance, production-performance, or promotion-ready "
+    "wording unless the referenced scorecard rows and claim-ledger rows are promoted"
 )
 REQUIRED_BASELINE_CATEGORIES: tuple[DifferentiableBaselineCategory, ...] = (
     "jax_native_transforms",
@@ -154,9 +165,7 @@ class DifferentiableBaselineScorecardRow:
             "current_evidence",
             "claim_boundary",
         ):
-            value = getattr(self, field_name)
-            if not isinstance(value, str) or not value.strip():
-                raise ValueError(f"{field_name} must be non-empty")
+            _require_nonblank(getattr(self, field_name), field_name)
         for field_name in (
             "claim_ids",
             "implementation_surface",
@@ -166,20 +175,16 @@ class DifferentiableBaselineScorecardRow:
             "next_hardening_rounds",
         ):
             value = getattr(self, field_name)
-            if (
-                not isinstance(value, tuple)
-                or not value
-                or any(not isinstance(item, str) or not item.strip() for item in value)
-            ):
-                raise ValueError(f"{field_name} must contain non-empty entries")
-        if not isinstance(self.blockers, tuple) or any(
-            not isinstance(item, str) or not item.strip() for item in self.blockers
-        ):
-            raise ValueError("blockers must contain non-empty entries")
+            _require_string_tuple(value, field_name, allow_empty=False)
+            _require_unique_strings(value, field_name)
+        _require_string_tuple(self.blockers, "blockers", allow_empty=True)
+        _require_unique_strings(self.blockers, "blockers")
         if self.status in READY_STATUSES and self.blockers:
             raise ValueError("ready scorecard rows must not carry blockers")
         if self.status == "behind_baseline" and not self.blockers:
             raise ValueError("behind-baseline scorecard rows must list blockers")
+        if self.claim_boundary != DIFFERENTIABLE_BASELINE_SCORECARD_CLAIM_BOUNDARY:
+            raise ValueError("scorecard row claim_boundary is not canonical")
 
     @property
     def ready_for_promotion(self) -> bool:
@@ -217,6 +222,24 @@ class DifferentiableBaselineScorecard:
     total_category_count: int
     claim_boundary: str
 
+    def __post_init__(self) -> None:
+        """Validate scorecard structure without pre-empting semantic validation."""
+        _require_nonblank(self.schema, "scorecard schema")
+        _require_nonblank(self.artifact_id, "scorecard artifact_id")
+        if (
+            not isinstance(self.rows, tuple)
+            or not self.rows
+            or any(not isinstance(row, DifferentiableBaselineScorecardRow) for row in self.rows)
+        ):
+            raise ValueError("scorecard rows must be a non-empty row tuple")
+        _require_unique_strings(tuple(row.category for row in self.rows), "scorecard categories")
+        if type(self.promotion_ready) is not bool:
+            raise ValueError("scorecard promotion_ready must be boolean")
+        _require_nonnegative_int(self.ready_category_count, "scorecard ready_category_count")
+        _require_nonnegative_int(self.total_category_count, "scorecard total_category_count")
+        if self.claim_boundary != DIFFERENTIABLE_BASELINE_SCORECARD_CLAIM_BOUNDARY:
+            raise ValueError("scorecard claim_boundary is not canonical")
+
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready scorecard payload."""
         return {
@@ -241,6 +264,22 @@ class DifferentiableBaselineScorecardValidation:
     checked_paths: tuple[str, ...]
     claim_boundary: str
 
+    def __post_init__(self) -> None:
+        """Validate scorecard-result evidence and pass/error coherence."""
+        _require_boolean_result(self.passed, self.errors, "scorecard validation")
+        _require_string_tuple(self.checked_categories, "checked_categories", allow_empty=True)
+        _require_string_tuple(self.checked_claim_ids, "checked_claim_ids", allow_empty=True)
+        _require_string_tuple(self.checked_paths, "checked_paths", allow_empty=True)
+        _require_unique_strings(self.checked_categories, "checked_categories")
+        _require_unique_strings(self.checked_claim_ids, "checked_claim_ids")
+        _require_unique_strings(self.checked_paths, "checked_paths")
+        if any(
+            category not in REQUIRED_BASELINE_CATEGORIES for category in self.checked_categories
+        ):
+            raise ValueError("scorecard validation contains unknown category")
+        if self.claim_boundary != SCORECARD_VALIDATION_CLAIM_BOUNDARY:
+            raise ValueError("scorecard validation claim_boundary is not canonical")
+
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready validation evidence."""
         return {
@@ -263,6 +302,30 @@ class DifferentiablePromotionLanguageAudit:
     checked_promotional_categories: tuple[DifferentiableBaselineCategory, ...]
     checked_claim_ids: tuple[str, ...]
     claim_boundary: str
+
+    def __post_init__(self) -> None:
+        """Validate public-language audit evidence and pass/error coherence."""
+        _require_boolean_result(self.passed, self.errors, "promotion language audit")
+        _require_string_tuple(self.checked_paths, "checked_paths", allow_empty=True)
+        _require_string_tuple(
+            self.checked_promotional_categories,
+            "checked_promotional_categories",
+            allow_empty=True,
+        )
+        _require_string_tuple(self.checked_claim_ids, "checked_claim_ids", allow_empty=True)
+        _require_unique_strings(self.checked_paths, "checked_paths")
+        _require_unique_strings(
+            self.checked_promotional_categories,
+            "checked_promotional_categories",
+        )
+        _require_unique_strings(self.checked_claim_ids, "checked_claim_ids")
+        if any(
+            category not in REQUIRED_BASELINE_CATEGORIES
+            for category in self.checked_promotional_categories
+        ):
+            raise ValueError("promotion language audit contains unknown category")
+        if self.claim_boundary != PROMOTION_LANGUAGE_AUDIT_CLAIM_BOUNDARY:
+            raise ValueError("promotion language audit claim_boundary is not canonical")
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready public-language audit evidence."""
@@ -353,11 +416,7 @@ def validate_differentiable_baseline_scorecard(
         checked_categories=categories,
         checked_claim_ids=tuple(sorted(checked_claim_ids)),
         checked_paths=tuple(sorted(checked_paths)),
-        claim_boundary=(
-            "Baseline scorecard validation only; validates category coverage and "
-            "claim-ledger consistency without promoting performance, provider, "
-            "hardware, QPU, GPU, or isolated_affinity claims"
-        ),
+        claim_boundary=SCORECARD_VALIDATION_CLAIM_BOUNDARY,
     )
 
 
@@ -389,7 +448,7 @@ def audit_differentiable_promotion_language(
             repo_root=repo_root,
         )
     else:
-        texts = dict(public_texts)
+        texts = _validated_public_texts(public_texts)
         public_path_errors = ()
     scorecard_validation = validate_differentiable_baseline_scorecard(
         loaded_scorecard,
@@ -416,8 +475,11 @@ def audit_differentiable_promotion_language(
             if not categories:
                 categories = tuple(row.category for row in loaded_scorecard.rows)
             for category in categories:
-                row = rows_by_category[category]
                 checked_categories.add(category)
+                row = rows_by_category.get(category)
+                if row is None:
+                    errors.append(f"{path}:{line_number}: scorecard row is missing: {category}")
+                    continue
                 checked_claim_ids.update(row.claim_ids)
                 missing_promoted_claims = tuple(
                     claim_id for claim_id in row.claim_ids if claim_id not in promoted_claim_ids
@@ -437,12 +499,7 @@ def audit_differentiable_promotion_language(
         checked_paths=tuple(sorted(texts)),
         checked_promotional_categories=tuple(sorted(checked_categories)),
         checked_claim_ids=tuple(sorted(checked_claim_ids)),
-        claim_boundary=(
-            "public promotion-language audit only; rejects unbounded "
-            "category-leadership, exceedance, production-performance, or promotion-ready "
-            "wording unless the referenced scorecard rows and claim-ledger rows "
-            "are promoted"
-        ),
+        claim_boundary=PROMOTION_LANGUAGE_AUDIT_CLAIM_BOUNDARY,
     )
 
 
@@ -717,18 +774,28 @@ def _attach_surfaces(
         implementation_surface=_unique_paths(
             path for row in referenced_rows for path in row.implementation_surface
         ),
-        test_surface=_unique_paths(path for row in referenced_rows for path in row.test_surface)
-        + ("tests/test_differentiable_baseline_scorecard.py",),
-        docs_surface=_unique_paths(path for row in referenced_rows for path in row.docs_surface)
-        + (
-            "docs/differentiable_api.md",
-            "docs/differentiable_programming.md",
-            "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md",
+        test_surface=_unique_paths(
+            chain(
+                (path for row in referenced_rows for path in row.test_surface),
+                ("tests/test_differentiable_baseline_scorecard.py",),
+            )
+        ),
+        docs_surface=_unique_paths(
+            chain(
+                (path for row in referenced_rows for path in row.docs_surface),
+                (
+                    "docs/differentiable_api.md",
+                    "docs/differentiable_programming.md",
+                    "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md",
+                ),
+            )
         ),
         benchmark_artifact_ids=_unique_paths(
-            artifact for row in referenced_rows for artifact in row.benchmark_artifact_ids
-        )
-        + (DIFFERENTIABLE_BASELINE_SCORECARD_ARTIFACT_ID,),
+            chain(
+                (artifact for row in referenced_rows for artifact in row.benchmark_artifact_ids),
+                (DIFFERENTIABLE_BASELINE_SCORECARD_ARTIFACT_ID,),
+            )
+        ),
         blockers=spec.blockers,
         next_hardening_rounds=spec.next_hardening_rounds,
         claim_boundary=DIFFERENTIABLE_BASELINE_SCORECARD_CLAIM_BOUNDARY,
@@ -795,7 +862,8 @@ def _load_public_promotion_texts(
     resolved_root = repo_root.resolve()
     for relative_path in public_paths:
         if (
-            not relative_path
+            not isinstance(relative_path, str)
+            or not relative_path
             or relative_path != relative_path.strip()
             or Path(relative_path).is_absolute()
             or "\\" in relative_path
@@ -816,6 +884,53 @@ def _load_public_promotion_texts(
         except OSError as exc:
             errors.append(f"public promotion path cannot be read: {relative_path}: {exc}")
     return texts, tuple(errors)
+
+
+def _validated_public_texts(public_texts: Mapping[str, str]) -> dict[str, str]:
+    """Copy injected public text only after exact runtime validation."""
+    if not isinstance(public_texts, Mapping) or any(
+        not isinstance(path, str) or not path.strip() or not isinstance(text, str)
+        for path, text in public_texts.items()
+    ):
+        raise ValueError("public_texts must map non-empty string paths to strings")
+    return dict(public_texts)
+
+
+def _require_nonblank(value: object, field_name: str) -> None:
+    """Require an exact non-blank string without coercion."""
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field_name} must be non-empty")
+
+
+def _require_string_tuple(value: object, field_name: str, *, allow_empty: bool) -> None:
+    """Require an exact tuple of non-blank strings."""
+    if (
+        not isinstance(value, tuple)
+        or (not allow_empty and not value)
+        or any(not isinstance(item, str) or not item.strip() for item in value)
+    ):
+        raise ValueError(f"{field_name} must contain non-empty entries")
+
+
+def _require_unique_strings(values: tuple[str, ...], field_name: str) -> None:
+    """Reject duplicate evidence identities."""
+    if len(set(values)) != len(values):
+        raise ValueError(f"{field_name} must contain unique values")
+
+
+def _require_nonnegative_int(value: object, field_name: str) -> None:
+    """Require an exact non-negative integer, excluding booleans."""
+    if type(value) is not int or value < 0:
+        raise ValueError(f"{field_name} must be a non-negative integer")
+
+
+def _require_boolean_result(passed: object, errors: object, field_name: str) -> None:
+    """Require exact boolean state coherent with an error tuple."""
+    if type(passed) is not bool:
+        raise ValueError(f"{field_name} passed must be boolean")
+    _require_string_tuple(errors, f"{field_name} errors", allow_empty=True)
+    if passed == bool(errors):
+        raise ValueError(f"{field_name} passed must be true exactly when errors are empty")
 
 
 def _promotional_phrases(line: str) -> tuple[str, ...]:

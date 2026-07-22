@@ -308,13 +308,6 @@ class CompetitiveBaselinePromotionGate:
             raise ValueError("baseline_validation must be CompetitiveBaselineValidation")
         if not isinstance(self.language_audit, DifferentiablePromotionLanguageAudit):
             raise ValueError("language_audit must be DifferentiablePromotionLanguageAudit")
-        if type(self.language_audit.passed) is not bool:
-            raise ValueError("promotion language audit passed must be boolean")
-        _require_string_tuple(self.language_audit.errors, "promotion language audit errors")
-        if self.language_audit.passed == bool(self.language_audit.errors):
-            raise ValueError(
-                "promotion language audit passed must be true exactly when errors are empty"
-            )
         _require_string_tuple(self.checked_paths, "baseline promotion checked_paths")
         _require_string_tuple(self.checked_categories, "baseline promotion checked_categories")
         _require_unique_strings(self.checked_paths, "baseline promotion checked_paths")

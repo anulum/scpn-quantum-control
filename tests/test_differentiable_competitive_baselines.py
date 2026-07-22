@@ -385,18 +385,6 @@ def test_competitive_baseline_promotion_rejects_incoherent_components() -> None:
     with pytest.raises(ValueError, match="passed must equal component results"):
         replace(audit, baseline_validation=failed_validation)
 
-    malformed_language_audit = replace(audit.language_audit, passed=cast(Any, 1))
-    with pytest.raises(ValueError, match="language audit passed must be boolean"):
-        replace(audit, language_audit=malformed_language_audit)
-
-    incoherent_language_audit = replace(audit.language_audit, passed=False)
-    with pytest.raises(ValueError, match="true exactly when errors are empty"):
-        replace(audit, language_audit=incoherent_language_audit)
-
-    malformed_language_errors = replace(audit.language_audit, errors=cast(Any, ["error"]))
-    with pytest.raises(ValueError, match="language audit errors must contain non-empty strings"):
-        replace(audit, language_audit=malformed_language_errors)
-
 
 def test_competitive_baseline_loader_rejects_schema_smuggling(tmp_path: Path) -> None:
     """The JSON boundary must reject duplicate, missing, and unknown object members."""
