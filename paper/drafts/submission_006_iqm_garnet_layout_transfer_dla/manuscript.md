@@ -56,9 +56,15 @@ z = 4.25, one-sided p = 1.1 × 10⁻⁵). The IBM-direction asymmetry replicates
 a second superconducting architecture at preregistered power. The depth
 profile, however, differs sharply from IBM's: +0.230 at depth 4, +0.083 at
 depth 6, and −0.049 (sign reversed) at depth 10, versus IBM's flat ≈ +0.044
-profile — the asymmetry on Garnet decays with circuit depth and crosses zero
-between depths 6 and 10. This depth structure was not preregistered as an
-endpoint and is reported as secondary, hypothesis-generating evidence.
+profile — the asymmetry on Garnet decays with circuit depth. This depth
+structure was not preregistered as an endpoint and is reported as
+secondary, hypothesis-generating evidence. A separately preregistered
+depth-profile follow-up (depths 8 and 12, executed under the same
+calibration set) fails to establish the decay ordering at its committed
+power (one-sided p = 0.064, a bounded null), while its joint profile
+suggests the depth-10 sign reversal was an execution-window fluctuation
+and that sector equilibration compresses the asymmetry at depth
+(Section 5).
 
 Both experiments are fully reproducible from the public repository: committed
 circuit files, calibration snapshots, raw counts, job identifiers, and frozen
@@ -262,13 +268,41 @@ therefore the cleanest signature. Localising the zero crossing and testing
 the equilibration explanation requires depths between 6 and 10 and beyond —
 preregistered as a follow-up (Section 5) and **not** claimed here.
 
-## 5. Follow-up preregistration
+## 5. Preregistered depth-profile follow-up (executed)
 
 A depth-profile campaign (depths 8 and 12, same layout, states, builders,
-and shot discipline) is preregistered separately
-(`docs/campaigns/iqm_dla_depth_profile_prereg_2026-07-22.md`) to localise the
-zero crossing observed above. It is committed before execution; its data are
-not part of this manuscript's claims.
+and shot discipline; 20 circuits, 24,576 shots) was preregistered separately
+(`docs/campaigns/iqm_dla_depth_profile_prereg_2026-07-22.md`) — frozen
+before any of its data existed — and executed on 2026-07-22 under the same
+calibration set as Experiment 2 (jobs `019f8772-6338…`, `019f8772-665d…`,
+`019f87eb-30b1…`, `019f87eb-f2f8…`, `019f87ec-81b0…`).
+
+**Its frozen primary (decay ordering) fails to reject the null:**
+Δ₈ = +0.0369 exceeds Δ₁₂ = +0.0132 in the hypothesised direction, but the
+one-sided test gives z = 1.52, p = 0.064 > 0.05, so the decay ordering is
+not established at the committed power and we report the bounded null with
+the same prominence as any positive result.
+
+Secondary, descriptive structure across the joint profile (depths 4/6/10
+from Experiment 2's execution window, 8/12 from this one — a cross-window
+comparison frozen into the preregistration, mitigated by the shared
+calibration set):
+
+| depth | relative asymmetry | mean total leakage | sign |
+|-------|--------------------|--------------------|------|
+| 4 | +0.230 | 0.345 | + |
+| 6 | +0.083 | 0.404 | + |
+| 8 | +0.087 | 0.442 | + |
+| 10 | −0.049 | 0.469 | − |
+| 12 | +0.027 | 0.489 | + |
+
+Two hypothesis-generating observations, claimed as nothing more: the mean
+total leakage rises monotonically toward 0.5, consistent with sector
+equilibration compressing the asymmetry at depth; and the sign pattern
+(+, +, +, −, +) places the depth-10 negative between positive neighbours,
+suggesting that point reflects an execution-window fluctuation rather than
+a systematic zero crossing. Establishing either reading would require a
+further powered, preregistered design.
 
 ## 6. Reproducibility
 
