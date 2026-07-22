@@ -62,9 +62,13 @@ secondary, hypothesis-generating evidence. A separately preregistered
 depth-profile follow-up (depths 8 and 12, executed under the same
 calibration set) fails to establish the decay ordering at its committed
 power (one-sided p = 0.064, a bounded null), while its joint profile
-suggests the depth-10 sign reversal was an execution-window fluctuation
-and that sector equilibration compresses the asymmetry at depth
-(Section 5).
+suggests sector equilibration compresses the asymmetry at depth. A third
+preregistered campaign, powered at the observed effect size, then found
+the depth-10 negative sign **does not replicate** — the fresh-window
+depth-10 asymmetry is positive and the two windows differ significantly
+(p ≈ 0.006) — leaving every depth positive in fresh windows and shifting
+the open question from a zero crossing to the window-to-window
+variability of the asymmetry (Section 5).
 
 Both experiments are fully reproducible from the public repository: committed
 circuit files, calibration snapshots, raw counts, job identifiers, and frozen
@@ -296,13 +300,26 @@ calibration set):
 | 10 | −0.049 | 0.469 | − |
 | 12 | +0.027 | 0.489 | + |
 
-Two hypothesis-generating observations, claimed as nothing more: the mean
-total leakage rises monotonically toward 0.5, consistent with sector
-equilibration compressing the asymmetry at depth; and the sign pattern
-(+, +, +, −, +) places the depth-10 negative between positive neighbours,
-suggesting that point reflects an execution-window fluctuation rather than
-a systematic zero crossing. Establishing either reading would require a
-further powered, preregistered design.
+Two hypothesis-generating observations arose: the mean total leakage rises
+monotonically toward 0.5, consistent with sector equilibration compressing
+the asymmetry at depth; and the sign pattern (+, +, +, −, +) places the
+depth-10 negative between positive neighbours, suggesting a window
+fluctuation rather than a systematic zero crossing.
+
+**A third preregistered campaign tested the second reading directly**
+(`docs/campaigns/iqm_dla_d10_retest_prereg_2026-07-22.md`, frozen before
+its data; 8,192 shots per arm — 90 % power at the observed −0.0237 effect,
+which the depth-profile arms could not resolve; jobs `019f8809-42d7…`,
+`019f8809-448d…`). **The depth-10 negative sign does not replicate:** in
+the fresh window the depth-10 asymmetry is positive (leak_even 0.4611 >
+leak_odd 0.4478; +0.030 relative), the one-sided test for the negative
+sign gives p = 0.956, and the preregistered cross-window secondary finds
+the two windows' depth-10 asymmetries genuinely differ (z = 2.74,
+two-sided p ≈ 0.006). Per the frozen wording this strengthens — without
+proving — the window-fluctuation reading; with the fresh-window point
+positive, every depth in the joint profile carries a positive sign, and
+the surviving open question is the size of the window-to-window
+variability of the asymmetry at fixed depth, not a zero crossing.
 
 ## 6. Reproducibility
 
