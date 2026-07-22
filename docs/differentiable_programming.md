@@ -401,14 +401,24 @@ provider, GPU, QPU, production-performance, or `isolated_affinity` benchmark
 claims.
 `run_differentiable_dependency_environment_map()` groups that lock evidence into
 runtime, development, CI Python matrix, CPU framework overlay, and Enzyme runner
-profiles. The generated map is committed at
+profiles. Its version-2 evidence inventory additionally binds Python 3.9 and
+3.11-3.13 declarations, the Rust crate lock, JAX, PyTorch, TensorFlow,
+PennyLane, Qiskit, Catalyst, Enzyme, LLVM, and MLIR versions to exact source
+SHA-256 digests. The optional GPU overlay is intentionally
+`declared_unlocked`: its package constraints exist, but no exact GPU lock or
+compatible modern-GPU execution artefact exists. The same inventory classifies
+local CPU, JarvisLabs cloud, provider-only, hardware-ticket-only, GTX 1060, and
+ML350 isolated routes. Only local CPU is locked; every deferred route carries
+its explicit blocker. The generated map is committed at
 `data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json`
 with a reviewer summary at
 `data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md`.
 Call `validate_differentiable_dependency_environment_map()` before consuming a
 map as evidence. It fails closed when the schema, canonical profile order,
-aggregate counts, readiness flags, lock membership, filesystem paths, pin
-counts, or blocker state disagree with the supplied environment lock. Supplying
+canonical evidence order or classification, aggregate counts, readiness flags,
+lock membership, filesystem containment, source SHA-256, version-pin citation,
+pin counts, or blocker state disagree with the supplied environment lock.
+Supplying
 an `environment_lock` to either public function reuses already captured
 evidence without rebuilding or upgrading its classification; only the
 validator certifies its invariants.

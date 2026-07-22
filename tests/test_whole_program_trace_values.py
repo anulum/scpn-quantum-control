@@ -817,6 +817,13 @@ _MALFORMED_ARRAY_FUNCTION_CASES: tuple[ArrayFunctionFailure, ...] = (
         "kind must be a NumPy sort kind",
     ),
     (
+        "sort-kind-non-string",
+        np.sort,
+        lambda array: (array,),
+        lambda _array: {"kind": []},
+        "kind must be a NumPy sort kind",
+    ),
+    (
         "argsort-arity",
         np.argsort,
         lambda _array: (),
@@ -849,6 +856,13 @@ _MALFORMED_ARRAY_FUNCTION_CASES: tuple[ArrayFunctionFailure, ...] = (
         np.argsort,
         lambda array: (array,),
         lambda _array: {"kind": "invalid"},
+        "kind must be a NumPy sort kind",
+    ),
+    (
+        "argsort-kind-non-string",
+        np.argsort,
+        lambda array: (array,),
+        lambda _array: {"kind": []},
         "kind must be a NumPy sort kind",
     ),
     (

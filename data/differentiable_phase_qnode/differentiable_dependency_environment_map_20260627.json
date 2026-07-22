@@ -2,6 +2,369 @@
   "artifact_id": "diff-dependency-environment-map-20260627",
   "claim_boundary": "Differentiable dependency and environment evidence map only; no dependency or benchmark promotion, framework parity promotion, provider execution, hardware execution, GPU execution, Enzyme promotion, or isolated benchmark claim is implied.",
   "environment_ready": false,
+  "evidence_records": [
+    {
+      "blockers": [],
+      "category": "toolchain",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "locked_versions",
+      "environment_ready": true,
+      "evidence_id": "python_versions",
+      "evidence_paths": [
+        "pyproject.toml",
+        "requirements-ci-py311-linux.txt",
+        "requirements-ci-py312-linux.txt",
+        "requirements-ci-py313-linux.txt",
+        "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json"
+      ],
+      "evidence_sha256": [
+        "99dc56a39d6ddf7c8bf18380018730ec3a0903aa034bedfb30c3043b2caad31a",
+        "4c7d06efcf6956c6aec2e0f305cf063503993561d7c54c0f0d7d722a3dc3e522",
+        "62a83c5e005282fa7e2a71d81779771dfbdd28a59835b35e71f02deb98318562",
+        "af1cdfe5833ef159f73dbd352ca9e151606ad51d7624b83147e373883ebc9786",
+        "7d8a5d3450a7e4f3cf75588b23275d9535276e974bfb3c610eba4165a5d877cb"
+      ],
+      "evidence_status": "locked",
+      "title": "Python versions",
+      "version_pins": [
+        "python==3.11",
+        "python==3.12",
+        "python==3.13",
+        "enzyme-runner-python==3.9"
+      ]
+    },
+    {
+      "blockers": [],
+      "category": "toolchain",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "locked_versions",
+      "environment_ready": true,
+      "evidence_id": "rust_crates",
+      "evidence_paths": [
+        "scpn_quantum_engine/Cargo.lock"
+      ],
+      "evidence_sha256": [
+        "93d63908f60d37313e780a66d161d4687d1cb5c90a3929cba1cb8f3e9914653e"
+      ],
+      "evidence_status": "locked",
+      "title": "Rust crate lock",
+      "version_pins": [
+        "anyhow==1.0.104",
+        "chrono==0.4.45",
+        "clap==4.6.3",
+        "criterion==0.5.1",
+        "scpn-quantum-engine==0.2.0",
+        "pyo3==0.29.0",
+        "ndarray==0.16.1",
+        "numpy==0.29.0",
+        "nalgebra==0.35.0",
+        "num-complex==0.4.6",
+        "rand==0.10.2",
+        "rayon==1.11.0",
+        "reqwest==0.13.4",
+        "scpn-quantum-program-ad-replay==0.1.0",
+        "serde==1.0.229",
+        "serde_json==1.0.151"
+      ]
+    },
+    {
+      "blockers": [],
+      "category": "toolchain",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "locked_versions",
+      "environment_ready": true,
+      "evidence_id": "jax_cpu",
+      "evidence_paths": [
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/framework_overlay_freeze.txt"
+      ],
+      "evidence_sha256": [
+        "11a15a483d2f8f602b8d052dc1cf0824d37a86a47853a66b1cda1ed93caa56c6"
+      ],
+      "evidence_status": "locked",
+      "title": "JAX CPU overlay",
+      "version_pins": [
+        "jax==0.10.1",
+        "jaxlib==0.10.1"
+      ]
+    },
+    {
+      "blockers": [],
+      "category": "toolchain",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "locked_versions",
+      "environment_ready": true,
+      "evidence_id": "pytorch_cpu",
+      "evidence_paths": [
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/framework_overlay_freeze.txt"
+      ],
+      "evidence_sha256": [
+        "11a15a483d2f8f602b8d052dc1cf0824d37a86a47853a66b1cda1ed93caa56c6"
+      ],
+      "evidence_status": "locked",
+      "title": "PyTorch CPU overlay",
+      "version_pins": [
+        "torch==2.12.0+cpu"
+      ]
+    },
+    {
+      "blockers": [],
+      "category": "toolchain",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "locked_versions",
+      "environment_ready": true,
+      "evidence_id": "tensorflow_cpu",
+      "evidence_paths": [
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/framework_overlay_freeze.txt"
+      ],
+      "evidence_sha256": [
+        "11a15a483d2f8f602b8d052dc1cf0824d37a86a47853a66b1cda1ed93caa56c6"
+      ],
+      "evidence_status": "locked",
+      "title": "TensorFlow CPU overlay",
+      "version_pins": [
+        "tensorflow_cpu==2.21.0"
+      ]
+    },
+    {
+      "blockers": [],
+      "category": "toolchain",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "locked_versions",
+      "environment_ready": true,
+      "evidence_id": "pennylane_cpu",
+      "evidence_paths": [
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/framework_overlay_freeze.txt"
+      ],
+      "evidence_sha256": [
+        "11a15a483d2f8f602b8d052dc1cf0824d37a86a47853a66b1cda1ed93caa56c6"
+      ],
+      "evidence_status": "locked",
+      "title": "PennyLane CPU overlay",
+      "version_pins": [
+        "pennylane==0.45.0",
+        "pennylane_lightning==0.45.0"
+      ]
+    },
+    {
+      "blockers": [],
+      "category": "toolchain",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "locked_versions",
+      "environment_ready": true,
+      "evidence_id": "qiskit",
+      "evidence_paths": [
+        "requirements.txt",
+        "requirements-dev.txt"
+      ],
+      "evidence_sha256": [
+        "4b783078f7bfa5a3935b2a3c2b56a5c6d301ee641db6ea71a1df4ecec448b382",
+        "5b1da8f77b2d3fb4e3c0e0e01cad213dd22b8c12420bbb59e506933cf0d42da7"
+      ],
+      "evidence_status": "locked",
+      "title": "Qiskit runtime and provider tooling",
+      "version_pins": [
+        "qiskit==2.5.0",
+        "qiskit-aer==0.17.2",
+        "qiskit-qasm3-import==0.6.0",
+        "qiskit-ibm-runtime==0.47.0"
+      ]
+    },
+    {
+      "blockers": [],
+      "category": "toolchain",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "locked_versions",
+      "environment_ready": true,
+      "evidence_id": "catalyst",
+      "evidence_paths": [
+        "data/differentiable_phase_qnode/ml350_full_framework_catalyst_baseline_20260705/diff-qnode-external-comparison.json"
+      ],
+      "evidence_sha256": [
+        "2cda90e760db603e7f3968e49d3960fbf5ff51a618d3a4e39d961faaf09e76ae"
+      ],
+      "evidence_status": "locked",
+      "title": "Catalyst bounded ML350 tooling",
+      "version_pins": [
+        "pennylane-catalyst==0.15.0",
+        "catalyst==0.15.0"
+      ]
+    },
+    {
+      "blockers": [],
+      "category": "toolchain",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "locked_versions",
+      "environment_ready": true,
+      "evidence_id": "enzyme_llvm_mlir",
+      "evidence_paths": [
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/enzyme_py39_freeze.txt",
+        "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json"
+      ],
+      "evidence_sha256": [
+        "2770738675e8ac3fbf3edd5f8b004a3c0d2621fd3324b77aa3a238437b947d32",
+        "785ca4d59f6a26ddbfb6e11039d19a8dd8f9560dcfb8251664e3ca78ca39c985"
+      ],
+      "evidence_status": "locked",
+      "title": "Enzyme, LLVM, and MLIR tooling",
+      "version_pins": [
+        "enzyme-ad==0.0.6",
+        "Enzyme LLVM plugin 0.0.79",
+        "LLVM==18.1.3",
+        "MLIR==18.1.3"
+      ]
+    },
+    {
+      "blockers": [
+        "The optional CUDA requirements are constrained but have no exact GPU lock or compatible modern-GPU execution artefact."
+      ],
+      "category": "toolchain",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "declared_unlocked",
+      "environment_ready": false,
+      "evidence_id": "gpu_overlay",
+      "evidence_paths": [
+        "pyproject.toml",
+        "src/scpn_quantum_control/phase/jax_maturity.py",
+        "src/scpn_quantum_control/phase/torch_maturity.py"
+      ],
+      "evidence_sha256": [
+        "99dc56a39d6ddf7c8bf18380018730ec3a0903aa034bedfb30c3043b2caad31a",
+        "8c32c988ed2a1acdf5b7ad9d37dcd258167abc130bca6f3fb2cdc4e898cb97b5",
+        "f335a8ccd0bce75945caf8e243846f796cc26d68bbb8c01d296722db3da62e21"
+      ],
+      "evidence_status": "hard_gap",
+      "title": "Optional GPU overlay",
+      "version_pins": [
+        "cupy-cuda12x>=13.0",
+        "jax[cuda12]>=0.4.30",
+        "torch>=2.2,<3.0"
+      ]
+    },
+    {
+      "blockers": [],
+      "category": "execution_route",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "locally_runnable",
+      "environment_ready": true,
+      "evidence_id": "local_cpu",
+      "evidence_paths": [
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json"
+      ],
+      "evidence_sha256": [
+        "9b0ba07249cc9fd7315c185b424ed1377aeb1f68b006b73e158ffefe23e46ea8"
+      ],
+      "evidence_status": "locked",
+      "title": "Local CPU execution",
+      "version_pins": []
+    },
+    {
+      "blockers": [
+        "JarvisLabs is a dispatch plan only until returned CUDA, XLA, pmap, device, and isolated-benchmark artefacts validate."
+      ],
+      "category": "execution_route",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "cloud_only",
+      "environment_ready": false,
+      "evidence_id": "jarvislabs_cloud",
+      "evidence_paths": [
+        "src/scpn_quantum_control/phase/jax_maturity.py",
+        "src/scpn_quantum_control/phase/torch_maturity.py",
+        "docs/quantum_gradients.md"
+      ],
+      "evidence_sha256": [
+        "8c32c988ed2a1acdf5b7ad9d37dcd258167abc130bca6f3fb2cdc4e898cb97b5",
+        "f335a8ccd0bce75945caf8e243846f796cc26d68bbb8c01d296722db3da62e21",
+        "80a506bffa8d8b455cd86008769b4659c6cd67186e18a6310fa6bf390e59919c"
+      ],
+      "evidence_status": "hard_gap",
+      "title": "JarvisLabs cloud execution",
+      "version_pins": []
+    },
+    {
+      "blockers": [
+        "Provider execution requires an approved provider workflow and captured provider artefacts."
+      ],
+      "category": "execution_route",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "provider_only",
+      "environment_ready": false,
+      "evidence_id": "provider_execution",
+      "evidence_paths": [
+        "src/scpn_quantum_control/phase/qiskit_runtime.py",
+        "docs/differentiable_api.md"
+      ],
+      "evidence_sha256": [
+        "877f6203165da422a4995d1877d72bd58178271b39389ead8598b5aa5dd76b06",
+        "f41ace17c8b7ad681add3977d2da5330f70b448afb96ccc7ee7198622dd0e672"
+      ],
+      "evidence_status": "hard_gap",
+      "title": "Provider execution",
+      "version_pins": []
+    },
+    {
+      "blockers": [
+        "Live hardware execution requires an owner-approved ticket, job metadata, raw counts, calibration, and replay evidence."
+      ],
+      "category": "execution_route",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "hardware_ticket_only",
+      "environment_ready": false,
+      "evidence_id": "hardware_ticket",
+      "evidence_paths": [
+        "src/scpn_quantum_control/phase/qiskit_runtime.py",
+        "docs/differentiable_api.md"
+      ],
+      "evidence_sha256": [
+        "877f6203165da422a4995d1877d72bd58178271b39389ead8598b5aa5dd76b06",
+        "f41ace17c8b7ad681add3977d2da5330f70b448afb96ccc7ee7198622dd0e672"
+      ],
+      "evidence_status": "hard_gap",
+      "title": "Ticketed hardware execution",
+      "version_pins": []
+    },
+    {
+      "blockers": [
+        "The GTX 1060 is explicitly incompatible with the modern CUDA and multi-device promotion route."
+      ],
+      "category": "execution_route",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "unsupported_local_hardware",
+      "environment_ready": false,
+      "evidence_id": "gtx1060_workstation",
+      "evidence_paths": [
+        "src/scpn_quantum_control/phase/jax_maturity.py",
+        "docs/differentiable_api.md"
+      ],
+      "evidence_sha256": [
+        "8c32c988ed2a1acdf5b7ad9d37dcd258167abc130bca6f3fb2cdc4e898cb97b5",
+        "f41ace17c8b7ad681add3977d2da5330f70b448afb96ccc7ee7198622dd0e672"
+      ],
+      "evidence_status": "hard_gap",
+      "title": "GTX 1060 workstation",
+      "version_pins": []
+    },
+    {
+      "blockers": [
+        "ML350 bounded CPU evidence exists, but promotion-grade isolated reruns remain blocked on the host-readiness and RAM gate."
+      ],
+      "category": "execution_route",
+      "claim_boundary": "Version-pin and execution-route evidence only; locked rows prove cited dependency provenance or bounded local execution, while hard-gap rows remain non-promotional until their named artefacts exist.",
+      "classification": "isolated_host_only",
+      "environment_ready": false,
+      "evidence_id": "ml350_isolated",
+      "evidence_paths": [
+        "docs/differentiable_reviewer_evidence.md",
+        "data/differentiable_phase_qnode/ml350_full_framework_catalyst_baseline_20260705/phase_qnode_affinity_validation_isolated_required.json"
+      ],
+      "evidence_sha256": [
+        "612baf246572d484d889afb92d07d985990569a74713676e501b3ed1aa927c09",
+        "5f7e7a344dd6a1bf2cabb4775d645c2c3603ead0c3afa862031011ec67314072"
+      ],
+      "evidence_status": "hard_gap",
+      "title": "ML350 isolated execution",
+      "version_pins": []
+    }
+  ],
   "profiles": [
     {
       "blockers": [],
@@ -32,7 +395,7 @@
       "lockfile_paths": [
         "requirements-dev.txt"
       ],
-      "pinned_package_count": 27,
+      "pinned_package_count": 28,
       "profile_id": "development_verification",
       "role": "Developer verification lock input for local quality gates.",
       "title": "Development verification"
@@ -55,7 +418,7 @@
         "requirements-ci-py312-linux.txt",
         "requirements-ci-py313-linux.txt"
       ],
-      "pinned_package_count": 484,
+      "pinned_package_count": 491,
       "profile_id": "ci_python_matrix",
       "role": "Cross-platform smoke and Linux Python 3.11/3.12/3.13 CI locks.",
       "title": "CI Python matrix"
@@ -97,7 +460,9 @@
       "title": "Python 3.9 Enzyme runner"
     }
   ],
+  "ready_evidence_count": 10,
   "ready_profile_count": 4,
-  "schema": "scpn_qc_differentiable_dependency_environment_map_v1",
+  "schema": "scpn_qc_differentiable_dependency_environment_map_v2",
+  "total_evidence_count": 16,
   "total_profile_count": 5
 }

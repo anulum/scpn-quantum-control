@@ -309,6 +309,7 @@ jobs:
           src/scpn_quantum_control/differentiable_claim_ledger.py
           src/scpn_quantum_control/differentiable_claim_rendering.py
           src/scpn_quantum_control/differentiable_competitive_baselines.py
+          src/scpn_quantum_control/differentiable_dependency_environment_evidence.py
           src/scpn_quantum_control/differentiable_dependency_environment_map.py
           src/scpn_quantum_control/differentiable_baseline_scorecard.py
           src/scpn_quantum_control/differentiable_external_validation.py
@@ -690,6 +691,7 @@ jobs:
           src/scpn_quantum_control/differentiable.py
           src/scpn_quantum_control/differentiable_claim_ledger.py
           src/scpn_quantum_control/differentiable_architecture_map.py
+          src/scpn_quantum_control/differentiable_dependency_environment_evidence.py
           src/scpn_quantum_control/differentiable_dependency_environment_map.py
           src/scpn_quantum_control/differentiable_baseline_scorecard.py
           src/scpn_quantum_control/differentiable_api.py

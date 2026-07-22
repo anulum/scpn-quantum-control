@@ -9,12 +9,18 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
 from .differentiable_claim_ledger import REPO_ROOT
+from .differentiable_dependency_environment_evidence import (
+    REQUIRED_DEPENDENCY_ENVIRONMENT_EVIDENCE_CLASSIFICATIONS,
+    REQUIRED_DEPENDENCY_ENVIRONMENT_EVIDENCE_IDS,
+    DifferentiableDependencyEnvironmentEvidence,
+    build_differentiable_dependency_environment_evidence,
+)
 from .differentiable_external_validation import (
     EnvironmentLockfileSummary,
     ExternalValidationEnvironmentLock,
@@ -32,7 +38,7 @@ DifferentiableDependencyEnvironmentProfileId = Literal[
 DifferentiableDependencyEnvironmentStatus = Literal["locked", "hard_gap"]
 
 DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_SCHEMA = (
-    "scpn_qc_differentiable_dependency_environment_map_v1"
+    "scpn_qc_differentiable_dependency_environment_map_v2"
 )
 DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_ARTIFACT_ID = "diff-dependency-environment-map-20260627"
 DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_CLAIM_BOUNDARY = (
@@ -40,6 +46,12 @@ DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_CLAIM_BOUNDARY = (
     "or benchmark promotion, framework parity promotion, provider execution, "
     "hardware execution, GPU execution, Enzyme promotion, or isolated benchmark "
     "claim is implied."
+)
+DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_VALIDATION_CLAIM_BOUNDARY = (
+    "Dependency-environment validation only; validates lockfile paths, "
+    "checksums, pinned-package counts, and hard-gap blockers without "
+    "promoting framework, Enzyme, provider, hardware, GPU, or isolated "
+    "benchmark claims."
 )
 REQUIRED_DEPENDENCY_ENVIRONMENT_PROFILE_IDS: tuple[
     DifferentiableDependencyEnvironmentProfileId, ...
@@ -102,19 +114,23 @@ class DifferentiableDependencyEnvironmentProfile:
             evidence status is outside the locked/hard-gap contract.
 
         """
-        for field_name in ("profile_id", "title", "role", "evidence_status", "claim_boundary"):
-            if not str(getattr(self, field_name)).strip():
-                raise ValueError(f"{field_name} must be non-empty")
-        for field_name in ("lockfile_paths", "evidence_paths"):
-            value = getattr(self, field_name)
-            if not value or any(not str(item).strip() for item in value):
-                raise ValueError(f"{field_name} must contain non-empty entries")
-        if self.pinned_package_count < 0:
-            raise ValueError("pinned_package_count must be non-negative")
-        if self.checksum_count < 0:
-            raise ValueError("checksum_count must be non-negative")
+        for field_name in ("profile_id", "title", "role"):
+            _require_nonblank_text(getattr(self, field_name), field_name)
+        _require_string_tuple(self.lockfile_paths, "lockfile_paths", require_nonempty=True)
+        _require_string_tuple(self.evidence_paths, "evidence_paths", require_nonempty=True)
+        _require_nonnegative_int(self.pinned_package_count, "pinned_package_count")
+        _require_nonnegative_int(self.checksum_count, "checksum_count")
+        _require_string_tuple(self.blockers, "blockers", require_nonempty=False)
         if self.evidence_status not in {"locked", "hard_gap"}:
             raise ValueError("evidence_status must be locked or hard_gap")
+        if self.evidence_status == "locked" and self.blockers:
+            raise ValueError("locked profiles must not carry blockers")
+        if self.evidence_status == "hard_gap" and not self.blockers:
+            raise ValueError("hard_gap profiles must list blockers")
+        if self.checksum_count > len(self.lockfile_paths):
+            raise ValueError("checksum_count must not exceed lockfile count")
+        if self.claim_boundary != DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_CLAIM_BOUNDARY:
+            raise ValueError("claim_boundary must match the canonical dependency boundary")
 
     @property
     def environment_ready(self) -> bool:
@@ -170,6 +186,12 @@ class DifferentiableDependencyEnvironmentMap:
         Number of profiles whose locked evidence has no blockers.
     total_profile_count : int
         Number of profiles represented in the map.
+    evidence_records : tuple[DifferentiableDependencyEnvironmentEvidence, ...]
+        Ordered version-pin and execution-route evidence inventory.
+    ready_evidence_count : int
+        Number of evidence rows whose cited sources are locked.
+    total_evidence_count : int
+        Number of evidence rows represented in the map.
     claim_boundary : str
         Non-promotional interpretation attached to the map.
 
@@ -181,7 +203,43 @@ class DifferentiableDependencyEnvironmentMap:
     environment_ready: bool
     ready_profile_count: int
     total_profile_count: int
+    evidence_records: tuple[DifferentiableDependencyEnvironmentEvidence, ...]
+    ready_evidence_count: int
+    total_evidence_count: int
     claim_boundary: str
+
+    def __post_init__(self) -> None:
+        """Reject malformed aggregate evidence before validation or rendering."""
+        _require_nonblank_text(self.schema, "schema")
+        _require_nonblank_text(self.artifact_id, "artifact_id")
+        if type(self.profiles) is not tuple or not self.profiles:
+            raise ValueError("profiles must be a non-empty tuple")
+        if any(
+            not isinstance(profile, DifferentiableDependencyEnvironmentProfile)
+            for profile in self.profiles
+        ):
+            raise ValueError("profiles must contain dependency environment profiles")
+        profile_ids = tuple(profile.profile_id for profile in self.profiles)
+        if len(profile_ids) != len(set(profile_ids)):
+            raise ValueError("profiles must contain unique profile_id values")
+        if type(self.environment_ready) is not bool:
+            raise ValueError("environment_ready must be a bool")
+        _require_nonnegative_int(self.ready_profile_count, "ready_profile_count")
+        _require_nonnegative_int(self.total_profile_count, "total_profile_count")
+        if type(self.evidence_records) is not tuple or not self.evidence_records:
+            raise ValueError("evidence_records must be a non-empty tuple")
+        if any(
+            not isinstance(record, DifferentiableDependencyEnvironmentEvidence)
+            for record in self.evidence_records
+        ):
+            raise ValueError("evidence_records must contain dependency environment evidence")
+        evidence_ids = tuple(record.evidence_id for record in self.evidence_records)
+        if len(evidence_ids) != len(set(evidence_ids)):
+            raise ValueError("evidence_records must contain unique evidence_id values")
+        _require_nonnegative_int(self.ready_evidence_count, "ready_evidence_count")
+        _require_nonnegative_int(self.total_evidence_count, "total_evidence_count")
+        if self.claim_boundary != DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_CLAIM_BOUNDARY:
+            raise ValueError("claim_boundary must match the canonical dependency boundary")
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready dependency environment map.
@@ -198,8 +256,11 @@ class DifferentiableDependencyEnvironmentMap:
             "environment_ready": self.environment_ready,
             "ready_profile_count": self.ready_profile_count,
             "total_profile_count": self.total_profile_count,
+            "ready_evidence_count": self.ready_evidence_count,
+            "total_evidence_count": self.total_evidence_count,
             "claim_boundary": self.claim_boundary,
             "profiles": [profile.to_dict() for profile in self.profiles],
+            "evidence_records": [record.to_dict() for record in self.evidence_records],
         }
 
 
@@ -215,6 +276,8 @@ class DifferentiableDependencyEnvironmentMapValidation:
         Deterministic validation errors in discovery order.
     checked_profile_ids : tuple[str, ...]
         Profile identifiers encountered during validation.
+    checked_evidence_ids : tuple[str, ...]
+        Toolchain and execution-route identifiers encountered during validation.
     checked_paths : tuple[str, ...]
         Sorted repository-relative evidence paths checked.
     checked_lockfile_count : int
@@ -229,10 +292,42 @@ class DifferentiableDependencyEnvironmentMapValidation:
     passed: bool
     errors: tuple[str, ...]
     checked_profile_ids: tuple[str, ...]
+    checked_evidence_ids: tuple[str, ...]
     checked_paths: tuple[str, ...]
     checked_lockfile_count: int
     checked_pinned_package_count: int
     claim_boundary: str
+
+    def __post_init__(self) -> None:
+        """Reject malformed or internally contradictory validation evidence."""
+        if type(self.passed) is not bool:
+            raise ValueError("passed must be a bool")
+        _require_string_tuple(
+            self.errors,
+            "errors",
+            require_nonempty=False,
+            require_unique=False,
+        )
+        _require_string_tuple(
+            self.checked_profile_ids,
+            "checked_profile_ids",
+            require_nonempty=True,
+        )
+        _require_string_tuple(
+            self.checked_evidence_ids,
+            "checked_evidence_ids",
+            require_nonempty=True,
+        )
+        _require_string_tuple(self.checked_paths, "checked_paths", require_nonempty=True)
+        _require_nonnegative_int(self.checked_lockfile_count, "checked_lockfile_count")
+        _require_nonnegative_int(
+            self.checked_pinned_package_count,
+            "checked_pinned_package_count",
+        )
+        if self.passed == bool(self.errors):
+            raise ValueError("passed must be true exactly when errors is empty")
+        if self.claim_boundary != DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_VALIDATION_CLAIM_BOUNDARY:
+            raise ValueError("claim_boundary must match the canonical validation boundary")
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready dependency-environment validation evidence.
@@ -247,6 +342,7 @@ class DifferentiableDependencyEnvironmentMapValidation:
             "passed": self.passed,
             "errors": list(self.errors),
             "checked_profile_ids": list(self.checked_profile_ids),
+            "checked_evidence_ids": list(self.checked_evidence_ids),
             "checked_paths": list(self.checked_paths),
             "checked_lockfile_count": self.checked_lockfile_count,
             "checked_pinned_package_count": self.checked_pinned_package_count,
@@ -278,14 +374,23 @@ def run_differentiable_dependency_environment_map(
         else environment_lock
     )
     profiles = _default_dependency_profiles(loaded_lock)
+    evidence_records = build_differentiable_dependency_environment_evidence()
     ready_count = sum(1 for profile in profiles if profile.environment_ready)
+    ready_evidence_count = sum(1 for record in evidence_records if record.environment_ready)
     return DifferentiableDependencyEnvironmentMap(
         schema=DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_SCHEMA,
         artifact_id=DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_ARTIFACT_ID,
         profiles=profiles,
-        environment_ready=ready_count == len(profiles) and loaded_lock.classification == "locked",
+        environment_ready=(
+            ready_count == len(profiles)
+            and ready_evidence_count == len(evidence_records)
+            and loaded_lock.classification == "locked"
+        ),
         ready_profile_count=ready_count,
         total_profile_count=len(profiles),
+        evidence_records=evidence_records,
+        ready_evidence_count=ready_evidence_count,
+        total_evidence_count=len(evidence_records),
         claim_boundary=DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_CLAIM_BOUNDARY,
     )
 
@@ -325,21 +430,32 @@ def validate_differentiable_dependency_environment_map(
         repo_root=repo_root,
     )
     errors = [f"environment-lock validation failed: {error}" for error in lock_validation.errors]
-    lockfile_paths = {lockfile.path for lockfile in loaded_lock.lockfiles}
-    profile_ids = tuple(str(profile.profile_id) for profile in environment_map.profiles)
+    lockfiles = {lockfile.path: lockfile for lockfile in loaded_lock.lockfiles}
+    lockfile_paths = set(lockfiles)
+    profile_ids = tuple(profile.profile_id for profile in environment_map.profiles)
+    evidence_ids = tuple(record.evidence_id for record in environment_map.evidence_records)
     checked_paths: set[str] = {
         "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md"
     }
 
     if environment_map.schema != DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_SCHEMA:
         errors.append(f"unexpected dependency-environment-map schema: {environment_map.schema}")
+    if environment_map.artifact_id != DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_ARTIFACT_ID:
+        errors.append(
+            f"unexpected dependency-environment-map artifact_id: {environment_map.artifact_id}"
+        )
     if environment_map.total_profile_count != len(environment_map.profiles):
         errors.append("total_profile_count does not match profile count")
     ready_count = sum(1 for profile in environment_map.profiles if profile.environment_ready)
     if environment_map.ready_profile_count != ready_count:
         errors.append("ready_profile_count does not match ready profiles")
+    ready_evidence_count = sum(
+        1 for record in environment_map.evidence_records if record.environment_ready
+    )
     expected_ready = (
-        ready_count == len(environment_map.profiles) and loaded_lock.classification == "locked"
+        ready_count == len(environment_map.profiles)
+        and ready_evidence_count == len(environment_map.evidence_records)
+        and loaded_lock.classification == "locked"
     )
     if environment_map.environment_ready != expected_ready:
         errors.append("environment_ready does not match profile and lock readiness")
@@ -348,42 +464,87 @@ def validate_differentiable_dependency_environment_map(
             "dependency environment profile IDs must match "
             "REQUIRED_DEPENDENCY_ENVIRONMENT_PROFILE_IDS exactly"
         )
-    for profile_id in _duplicates(profile_ids):
-        errors.append(f"duplicate dependency environment profile_id: {profile_id}")
-
+    if environment_map.ready_evidence_count != ready_evidence_count:
+        errors.append("ready_evidence_count does not match ready evidence records")
+    if environment_map.total_evidence_count != len(environment_map.evidence_records):
+        errors.append("total_evidence_count does not match evidence record count")
+    if evidence_ids != tuple(REQUIRED_DEPENDENCY_ENVIRONMENT_EVIDENCE_IDS):
+        errors.append(
+            "dependency environment evidence IDs must match "
+            "REQUIRED_DEPENDENCY_ENVIRONMENT_EVIDENCE_IDS exactly"
+        )
     for profile in environment_map.profiles:
         if profile.evidence_status == "locked" and profile.pinned_package_count < 1:
             errors.append(f"{profile.profile_id}: locked profiles must record pinned packages")
-        if environment_map.environment_ready and profile.blockers:
+        profile_lockfiles = [
+            lockfiles[path] for path in profile.lockfile_paths if path in lockfiles
+        ]
+        expected_pinned_count = sum(
+            lockfile.pinned_package_count for lockfile in profile_lockfiles
+        )
+        if profile.pinned_package_count != expected_pinned_count:
             errors.append(
-                f"{profile.profile_id}: ready environment profiles must not carry blockers"
+                f"{profile.profile_id}: pinned_package_count does not match lockfile evidence"
             )
+        if profile.checksum_count != len(profile_lockfiles):
+            errors.append(f"{profile.profile_id}: checksum_count does not match lockfile evidence")
         for path in (*profile.lockfile_paths, *profile.evidence_paths):
             checked_paths.add(path)
             if path not in lockfile_paths:
                 errors.append(f"{profile.profile_id}: path is not in environment lock: {path}")
-            if not (repo_root / path).exists():
+            if not _is_contained_regular_file(repo_root, path):
+                if not _is_contained_repo_path(repo_root, path):
+                    errors.append(f"{profile.profile_id}: evidence path is unsafe: {path}")
+                    continue
                 errors.append(f"{profile.profile_id}: evidence path does not exist: {path}")
 
+    for record in environment_map.evidence_records:
+        expected_classification = REQUIRED_DEPENDENCY_ENVIRONMENT_EVIDENCE_CLASSIFICATIONS.get(
+            record.evidence_id
+        )
+        if record.classification != expected_classification:
+            errors.append(f"{record.evidence_id}: unexpected evidence classification")
+        source_texts: list[str] = []
+        for path, expected_sha256 in zip(
+            record.evidence_paths,
+            record.evidence_sha256,
+            strict=True,
+        ):
+            checked_paths.add(path)
+            if not _is_contained_regular_file(repo_root, path):
+                if not _is_contained_repo_path(repo_root, path):
+                    errors.append(f"{record.evidence_id}: evidence path is unsafe: {path}")
+                    continue
+                errors.append(f"{record.evidence_id}: evidence path does not exist: {path}")
+                continue
+            evidence_path = repo_root.resolve() / path
+            payload = evidence_path.read_bytes()
+            if hashlib.sha256(payload).hexdigest() != expected_sha256:
+                errors.append(f"{record.evidence_id}: evidence SHA-256 mismatch: {path}")
+            source_texts.append(payload.decode("utf-8", errors="replace"))
+        combined_sources = "\n".join(source_texts)
+        for version_pin in record.version_pins:
+            if not _version_pin_is_cited(version_pin, combined_sources):
+                errors.append(f"{record.evidence_id}: uncited version pin: {version_pin}")
+
     for path in tuple(checked_paths):
-        if path.endswith(".md") and not (repo_root / path).exists():
+        if path.endswith(".md") and not _is_contained_regular_file(repo_root, path):
+            if not _is_contained_repo_path(repo_root, path):
+                errors.append(f"dependency environment evidence path is unsafe: {path}")
+                continue
             errors.append(f"dependency environment evidence path does not exist: {path}")
 
     return DifferentiableDependencyEnvironmentMapValidation(
         passed=not errors,
         errors=tuple(errors),
         checked_profile_ids=profile_ids,
+        checked_evidence_ids=evidence_ids,
         checked_paths=tuple(sorted(checked_paths)),
         checked_lockfile_count=len(lockfile_paths),
         checked_pinned_package_count=sum(
             lockfile.pinned_package_count for lockfile in loaded_lock.lockfiles
         ),
-        claim_boundary=(
-            "Dependency-environment validation only; validates lockfile paths, "
-            "checksums, pinned-package counts, and hard-gap blockers without "
-            "promoting framework, Enzyme, provider, hardware, GPU, or isolated "
-            "benchmark claims."
-        ),
+        claim_boundary=DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_VALIDATION_CLAIM_BOUNDARY,
     )
 
 
@@ -421,6 +582,7 @@ def render_differentiable_dependency_environment_map_markdown(
         f"- Artifact ID: `{environment_map.artifact_id}`",
         f"- Environment ready: `{environment_map.environment_ready}`",
         f"- Ready profiles: `{environment_map.ready_profile_count}/{environment_map.total_profile_count}`",
+        f"- Ready evidence rows: `{environment_map.ready_evidence_count}/{environment_map.total_evidence_count}`",
         f"- Claim boundary: {environment_map.claim_boundary}",
         "",
         "| Profile | Status | Lockfiles | Pinned packages | Blockers |",
@@ -434,6 +596,24 @@ def render_differentiable_dependency_environment_map_markdown(
                 lockfiles=_markdown_cell("<br>".join(profile.lockfile_paths)),
                 pinned=profile.pinned_package_count,
                 blockers=_markdown_cell("<br>".join(profile.blockers) or "none"),
+            )
+        )
+    lines.append("")
+    lines.extend(
+        (
+            "| Evidence | Category | Classification | Status | Versions/constraints | Blockers |",
+            "|---|---|---|---|---|---|",
+        )
+    )
+    for record in environment_map.evidence_records:
+        lines.append(
+            "| `{evidence}` | `{category}` | `{classification}` | `{status}` | {pins} | {blockers} |".format(
+                evidence=record.evidence_id,
+                category=record.category,
+                classification=record.classification,
+                status=record.evidence_status,
+                pins=_markdown_cell("<br>".join(record.version_pins) or "n/a"),
+                blockers=_markdown_cell("<br>".join(record.blockers) or "none"),
             )
         )
     lines.append("")
@@ -565,12 +745,9 @@ def _profile(
 
     """
     pinned_count = 0
-    checksum_count = 0
     for path in paths:
         lockfile = lockfiles[path]
         pinned_count += lockfile.pinned_package_count
-        if lockfile.sha256:
-            checksum_count += 1
     return DifferentiableDependencyEnvironmentProfile(
         profile_id=profile_id,
         title=title,
@@ -578,34 +755,86 @@ def _profile(
         lockfile_paths=paths,
         evidence_paths=paths,
         pinned_package_count=pinned_count,
-        checksum_count=checksum_count,
+        checksum_count=len(paths),
         evidence_status=status,
         blockers=blockers,
         claim_boundary=DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_CLAIM_BOUNDARY,
     )
 
 
-def _duplicates(values: Iterable[str]) -> tuple[str, ...]:
-    """Return sorted values that occur more than once.
+def _require_nonblank_text(value: object, field_name: str) -> None:
+    """Require an exact non-blank string without coercing caller input."""
+    if type(value) is not str or not value.strip():
+        raise ValueError(f"{field_name} must be a non-empty string")
 
-    Parameters
-    ----------
-    values : collections.abc.Iterable[str]
-        Profile identifiers to inspect in encounter order.
 
-    Returns
-    -------
-    tuple[str, ...]
-        Unique duplicate identifiers in lexical order.
+def _require_string_tuple(
+    value: object,
+    field_name: str,
+    *,
+    require_nonempty: bool,
+    require_unique: bool = True,
+) -> None:
+    """Require a tuple of unique, non-blank strings."""
+    if type(value) is not tuple:
+        raise ValueError(f"{field_name} must be a tuple")
+    if require_nonempty and not value:
+        raise ValueError(f"{field_name} must be non-empty")
+    if any(type(item) is not str or not item.strip() for item in value):
+        raise ValueError(f"{field_name} must contain non-empty strings")
+    if require_unique and len(value) != len(set(value)):
+        raise ValueError(f"{field_name} must contain unique entries")
 
-    """
-    seen: set[str] = set()
-    duplicates: set[str] = set()
-    for value in values:
-        if value in seen:
-            duplicates.add(value)
-        seen.add(value)
-    return tuple(sorted(duplicates))
+
+def _require_nonnegative_int(value: object, field_name: str) -> None:
+    """Require an exact non-negative integer, excluding booleans."""
+    if type(value) is not int or value < 0:
+        raise ValueError(f"{field_name} must be a non-negative integer")
+
+
+def _is_safe_repo_relative_path(path: str) -> bool:
+    """Return whether a path is canonical, relative, and lexically contained."""
+    candidate = Path(path)
+    return (
+        path == path.strip()
+        and "\\" not in path
+        and not candidate.is_absolute()
+        and candidate.as_posix() == path
+        and ".." not in candidate.parts
+    )
+
+
+def _is_contained_regular_file(repo_root: Path, path: str) -> bool:
+    """Return whether a safe path resolves to a regular file inside the root."""
+    if not _is_contained_repo_path(repo_root, path):
+        return False
+    resolved_root = repo_root.resolve()
+    resolved_path = (resolved_root / path).resolve()
+    return resolved_path.is_file()
+
+
+def _is_contained_repo_path(repo_root: Path, path: str) -> bool:
+    """Return whether a canonical path resolves inside the repository root."""
+    if not _is_safe_repo_relative_path(path):
+        return False
+    resolved_root = repo_root.resolve()
+    return (resolved_root / path).resolve().is_relative_to(resolved_root)
+
+
+def _version_pin_is_cited(version_pin: str, source_text: str) -> bool:
+    """Return whether cited sources contain one declared version or constraint."""
+    if version_pin in source_text:
+        return True
+    if "==" not in version_pin:
+        return False
+    package, version = version_pin.split("==", maxsplit=1)
+    lowered_source = source_text.lower().replace("-", " ").replace("_", " ")
+    package_tokens = package.lower().replace("-", " ").replace("_", " ").split()
+    return (
+        bool(version)
+        and version in source_text
+        and all(token in lowered_source for token in package_tokens)
+    )
 
 
 def _markdown_cell(value: str) -> str:
@@ -629,6 +858,7 @@ __all__ = [
     "DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_ARTIFACT_ID",
     "DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_CLAIM_BOUNDARY",
     "DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_MAP_SCHEMA",
+    "DIFFERENTIABLE_DEPENDENCY_ENVIRONMENT_VALIDATION_CLAIM_BOUNDARY",
     "REQUIRED_DEPENDENCY_ENVIRONMENT_PROFILE_IDS",
     "DifferentiableDependencyEnvironmentMap",
     "DifferentiableDependencyEnvironmentMapValidation",

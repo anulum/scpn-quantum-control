@@ -630,6 +630,13 @@ from .differentiable_competitive_baselines import (
     run_competitive_baseline_refresh,
     validate_competitive_baseline_refresh,
 )
+from .differentiable_dependency_environment_evidence import (
+    DifferentiableDependencyEnvironmentEvidence,
+    DifferentiableDependencyEnvironmentEvidenceCategory,
+    DifferentiableDependencyEnvironmentEvidenceId,
+    DifferentiableDependencyEnvironmentEvidenceStatus,
+    build_differentiable_dependency_environment_evidence,
+)
 from .differentiable_dependency_environment_map import (
     DifferentiableDependencyEnvironmentMap,
     DifferentiableDependencyEnvironmentMapValidation,
@@ -1614,12 +1621,17 @@ __all__ = [
     "validate_differentiable_isolated_benchmark_plan",
     "DifferentiableDependencyEnvironmentMap",
     "DifferentiableDependencyEnvironmentMapValidation",
+    "DifferentiableDependencyEnvironmentEvidence",
+    "DifferentiableDependencyEnvironmentEvidenceCategory",
+    "DifferentiableDependencyEnvironmentEvidenceId",
+    "DifferentiableDependencyEnvironmentEvidenceStatus",
     "DifferentiableDependencyEnvironmentProfile",
     "DifferentiableDependencyEnvironmentProfileId",
     "DifferentiableDependencyEnvironmentStatus",
     "render_differentiable_dependency_environment_map_markdown",
     "run_differentiable_dependency_environment_map",
     "validate_differentiable_dependency_environment_map",
+    "build_differentiable_dependency_environment_evidence",
     "DifferentiableRustPythonInventory",
     "DifferentiableRustPythonInventoryBenchmarkStatus",
     "DifferentiableRustPythonInventoryClassification",

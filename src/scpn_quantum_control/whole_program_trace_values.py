@@ -32,7 +32,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Iterator, Mapping, Sequence
-from typing import Any, Literal, NoReturn, cast
+from typing import Any, Literal, NoReturn, TypeGuard, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -152,6 +152,16 @@ ScalarObjective = Callable[[NDArray[np.float64]], float | int | np.floating[Any]
 _TraceSortKind = Literal["quicksort", "mergesort", "heapsort", "stable"]
 _TraceScalarBinaryOp = Literal["add", "sub", "mul", "div", "pow"]
 _TraceStackConvenience = Literal["hstack", "vstack", "column_stack", "dstack"]
+
+
+def _is_trace_sort_kind(value: object) -> TypeGuard[_TraceSortKind]:
+    """Return whether a value names one supported NumPy sorting algorithm."""
+    return isinstance(value, str) and value in {
+        "quicksort",
+        "mergesort",
+        "heapsort",
+        "stable",
+    }
 
 
 def _required_trace_jvp(rule: CustomDerivativeRule, operation: str) -> CustomJVPRule:
@@ -1471,15 +1481,19 @@ class TraceADArray:
                 )
             if kwargs.get("order") is not None:
                 raise ValueError("program AD np.sort does not support structured-array order")
-            kind = kwargs.get("kind")
-            if kind not in {None, "quicksort", "mergesort", "heapsort", "stable"}:
+            raw_sort_kind = kwargs.get("kind")
+            if raw_sort_kind is None:
+                sort_kind = None
+            elif _is_trace_sort_kind(raw_sort_kind):
+                sort_kind = raw_sort_kind
+            else:
                 raise ValueError("program AD np.sort kind must be a NumPy sort kind")
             sort_axis = kwargs.get("axis", -1)
-            _require_program_ad_selection_contract("sort", (args[0], sort_axis, kind))
+            _require_program_ad_selection_contract("sort", (args[0], sort_axis, sort_kind))
             return _trace_sort(
                 _coerce_trace_array(args[0], self.context),
                 axis=sort_axis,
-                kind=kind,
+                kind=sort_kind,
             )
         if func is np.argsort:
             if len(args) != 1:
@@ -1494,7 +1508,7 @@ class TraceADArray:
             if kwargs.get("stable") is not None:
                 raise ValueError("program AD np.argsort does not support stable keyword")
             kind = kwargs.get("kind")
-            if kind not in {None, "quicksort", "mergesort", "heapsort", "stable"}:
+            if kind is not None and not _is_trace_sort_kind(kind):
                 raise ValueError("program AD np.argsort kind must be a NumPy sort kind")
             axis = kwargs.get("axis", -1)
             _raise_index_selection_boundary("argsort", (args[0], axis, kind))

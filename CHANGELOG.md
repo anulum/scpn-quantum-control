@@ -23,6 +23,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   original mitigation not in-pack). The data is genuine, not fabricated.
 
 ### Changed
+- 2026-07-22 — The differentiable dependency/environment map is now a
+  version-2 fail-closed inventory: Python and Rust locks, every named framework
+  and compiler toolchain, and local/cloud/provider/hardware/GTX 1060/ML350
+  execution routes carry canonical classifications and source SHA-256 evidence.
+  The optional GPU overlay remains explicitly unlocked until an exact lock and
+  compatible modern-GPU artefact exist; no GPU or hardware claim is promoted.
 - 2026-07-18 — Public-claim honesty (KIMI due-diligence audit, AUD-1): the IBM v2
   "DUAL PROTECTION on IBM hardware" finding is retired **as a scientific claim, not as
   data**, and added to the retired-claims register (`data/retired_claims.json`, id

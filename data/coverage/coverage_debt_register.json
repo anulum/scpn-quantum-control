@@ -199,6 +199,105 @@
       "covered_lines": null,
       "line_percent": null,
       "missing_lines": null,
+      "path": "src/scpn_quantum_control/analysis/dla_parity_exact_baseline.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/analysis/two_colour_schedule.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/benchmarks/decisive_run_harness.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/benchmarks/hls_cosimulation_evidence.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_benchmark.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/benchmarks/layout_method_comparison.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/benchmarks/layout_relaxation_experiment.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
       "path": "src/scpn_quantum_control/compiler/mlir.py",
       "priority": "P2_unmeasured",
       "priority_reason": "No current executable-line baseline; refresh from remote CI.",
@@ -244,6 +343,94 @@
       "line_percent": null,
       "missing_lines": null,
       "path": "src/scpn_quantum_control/compiler/mlir_workload_compilation.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/differentiable_dependency_environment_evidence.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/hardware/dynq_layout_pass.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/hardware/error_aware_chain.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/hardware/iqm_lattice_calibration.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/hardware/kuramoto_layout_cost.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/hardware/kuramoto_layout_optimiser.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/hardware/kuramoto_layout_relaxation.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
+      "path": "src/scpn_quantum_control/structured_log_fallback.py",
       "priority": "P2_unmeasured",
       "priority_reason": "No current executable-line baseline; refresh from remote CI.",
       "status": "unmeasured_since_baseline",
@@ -340,13 +527,13 @@
     {
       "claim_ids": [],
       "covered_lines": 80,
-      "line_percent": 37.04,
-      "missing_lines": 136,
+      "line_percent": 37.74,
+      "missing_lines": 132,
       "path": "src/scpn_quantum_control/phase/torch_aot_autograd_export.py",
       "priority": "P3_high_line_debt",
       "priority_reason": "At least 50 executable lines are uncovered.",
       "status": "below_target",
-      "valid_lines": 216
+      "valid_lines": 212
     },
     {
       "claim_ids": [],
@@ -372,17 +559,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 93,
-      "line_percent": 43.66,
-      "missing_lines": 120,
-      "path": "src/scpn_quantum_control/phase/torch_dynamic_shape_export.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 213
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 31,
       "line_percent": 20.53,
       "missing_lines": 120,
@@ -391,6 +567,17 @@
       "priority_reason": "At least 50 executable lines are uncovered.",
       "status": "below_target",
       "valid_lines": 151
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": 92,
+      "line_percent": 44.440000000000005,
+      "missing_lines": 115,
+      "path": "src/scpn_quantum_control/phase/torch_dynamic_shape_export.py",
+      "priority": "P3_high_line_debt",
+      "priority_reason": "At least 50 executable lines are uncovered.",
+      "status": "below_target",
+      "valid_lines": 207
     },
     {
       "claim_ids": [],
@@ -1999,29 +2186,29 @@
   "source_inventory": {
     "baseline_report_file_count": 587,
     "baseline_rows_not_in_live_source": 0,
-    "file_count": 624,
+    "file_count": 625,
     "path": "src/scpn_quantum_control",
-    "sha256": "161e9ed31c13a70e85db2f74125b8dc226eff9f9989109d7237327cfcee1f419"
+    "sha256": "84848af0eefc69b8a8b85eddef754e9007175a148825c2d39096becde1f2a2fc"
   },
   "summary": {
-    "debt_file_count": 177,
+    "debt_file_count": 194,
     "fully_covered_file_count": 387,
-    "justified_exclusion_file_count": 28,
-    "known_missing_line_count": 6094,
+    "justified_exclusion_file_count": 44,
+    "known_missing_line_count": 6085,
     "measured_non_excluded_file_count": 558,
     "priority_counts": {
       "P0_claim_bearing": 12,
       "P1_runtime_hot_path": 2,
-      "P2_unmeasured": 5,
+      "P2_unmeasured": 22,
       "P3_high_line_debt": 32,
       "P4_standard": 126
     },
     "status_counts": {
       "below_target": 171,
       "source_changed_since_baseline": 1,
-      "unmeasured_since_baseline": 5
+      "unmeasured_since_baseline": 22
     },
-    "unmeasured_debt_file_count": 6
+    "unmeasured_debt_file_count": 23
   },
   "target_line_percent": 100.0
 }

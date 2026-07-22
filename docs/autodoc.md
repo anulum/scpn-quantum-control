@@ -239,6 +239,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [DifferentiableDependencyEnvironmentMap, DifferentiableDependencyEnvironmentProfile, DifferentiableDependencyEnvironmentMapValidation, render_differentiable_dependency_environment_map_markdown, run_differentiable_dependency_environment_map, validate_differentiable_dependency_environment_map]
 
+::: scpn_quantum_control.differentiable_dependency_environment_evidence
+    options:
+      members: [DifferentiableDependencyEnvironmentEvidence, build_differentiable_dependency_environment_evidence]
+
 ::: scpn_quantum_control.differentiable_competitive_baselines
     options:
       members: [CompetitiveBaselinePromotionGate, CompetitiveBaselineRefresh, CompetitiveBaselineRow, CompetitiveBaselineValidation, audit_competitive_baseline_promotion_gate, load_competitive_baseline_refresh, render_competitive_baseline_refresh_markdown, run_competitive_baseline_refresh, validate_competitive_baseline_refresh]

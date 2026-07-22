@@ -103,7 +103,7 @@
     },
     {
       "path": "src/scpn_quantum_control/__init__.py",
-      "lines": 1773,
+      "lines": 1785,
       "kind": "facade",
       "disposition": "facade",
       "responsibility": "Package-root compatibility facade and lazy public export registry.",
@@ -184,7 +184,7 @@
     },
     {
       "path": "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
-      "lines": 1021,
+      "lines": 1026,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Static registry and filesystem audit for differentiable module ownership, coverage, typing, docs, and wiring status.",
@@ -337,7 +337,7 @@
     },
     {
       "path": "src/scpn_quantum_control/whole_program_trace_values.py",
-      "lines": 4562,
+      "lines": 4576,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Operator-intercepted forward-AD TraceADScalar and TraceADArray value/protocol runtime over registry-gated NumPy dispatch.",

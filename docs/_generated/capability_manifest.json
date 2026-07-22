@@ -7,13 +7,13 @@
     "model_documentation_pages": null,
     "notebook_files": 100,
     "optional_extras": 43,
-    "public_api_exports": 836,
+    "public_api_exports": 841,
     "public_documentation_pages": 290,
-    "python_model_classes": 1051,
-    "python_model_source_modules": 589,
+    "python_model_classes": 1052,
+    "python_model_source_modules": 590,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1044
+    "test_files": 1045
   },
   "documentation": {
     "examples": [
@@ -1442,6 +1442,10 @@
       {
         "name": "DifferentiableDashboardStatus",
         "path": "src/scpn_quantum_control/differentiable_api_contracts.py"
+      },
+      {
+        "name": "DifferentiableDependencyEnvironmentEvidence",
+        "path": "src/scpn_quantum_control/differentiable_dependency_environment_evidence.py"
       },
       {
         "name": "DifferentiableDependencyEnvironmentMap",
@@ -5055,6 +5059,7 @@
       "src/scpn_quantum_control/differentiable_consistency.py",
       "src/scpn_quantum_control/differentiable_custom_derivatives.py",
       "src/scpn_quantum_control/differentiable_dashboard.py",
+      "src/scpn_quantum_control/differentiable_dependency_environment_evidence.py",
       "src/scpn_quantum_control/differentiable_dependency_environment_map.py",
       "src/scpn_quantum_control/differentiable_exact_modes.py",
       "src/scpn_quantum_control/differentiable_external_validation.py",
@@ -5730,6 +5735,10 @@
     "DifferentiableDashboardCapabilityRow",
     "DifferentiableDashboardCapabilityState",
     "DifferentiableDashboardStatus",
+    "DifferentiableDependencyEnvironmentEvidence",
+    "DifferentiableDependencyEnvironmentEvidenceCategory",
+    "DifferentiableDependencyEnvironmentEvidenceId",
+    "DifferentiableDependencyEnvironmentEvidenceStatus",
     "DifferentiableDependencyEnvironmentMap",
     "DifferentiableDependencyEnvironmentMapValidation",
     "DifferentiableDependencyEnvironmentProfile",
@@ -6044,6 +6053,7 @@
     "build_correlation_distance_matrix",
     "build_coupling_distance_matrix",
     "build_differentiable_benchmark_report",
+    "build_differentiable_dependency_environment_evidence",
     "build_enzyme_mlir_benchmark_attachment",
     "build_enzyme_mlir_compiler_ad_breadth_artifact",
     "build_enzyme_mlir_compiler_ad_breadth_evidence",
@@ -6766,6 +6776,7 @@
       "tests/test_differentiable_consistency.py",
       "tests/test_differentiable_custom_derivatives.py",
       "tests/test_differentiable_dashboard.py",
+      "tests/test_differentiable_dependency_environment_evidence.py",
       "tests/test_differentiable_dependency_environment_map.py",
       "tests/test_differentiable_exact_modes.py",
       "tests/test_differentiable_external_comparison_framework_edges.py",
