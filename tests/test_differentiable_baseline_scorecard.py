@@ -232,7 +232,7 @@ def test_differentiable_promotion_language_allows_ready_promoted_category() -> N
 def test_differentiable_promotion_language_loads_existing_public_paths(
     tmp_path: Path,
 ) -> None:
-    """The audit loads existing configured public paths and skips missing paths."""
+    """The audit loads existing configured paths and fails on missing paths."""
     docs = tmp_path / "docs"
     docs.mkdir()
     present = docs / "page.md"
@@ -245,6 +245,60 @@ def test_differentiable_promotion_language_loads_existing_public_paths(
 
     assert not audit.passed
     assert audit.checked_paths == ("docs/page.md",)
+    assert any(
+        "public promotion path is missing or not a file: docs/missing.md" in error
+        for error in audit.errors
+    )
+
+
+def test_differentiable_promotion_language_rejects_paths_outside_repository(
+    tmp_path: Path,
+) -> None:
+    """Configured claim scans cannot traverse or use absolute public paths."""
+    outside = tmp_path.parent / "outside-claim.md"
+    outside.write_text("The route is world-leading.\n", encoding="utf-8")
+
+    audit = audit_differentiable_promotion_language(
+        public_paths=("../outside-claim.md", str(outside)),
+        repo_root=tmp_path,
+    )
+
+    assert not audit.passed
+    assert audit.checked_paths == ()
+    assert any("escapes repository: ../outside-claim.md" in error for error in audit.errors)
+    assert any("unsafe public promotion path:" in error for error in audit.errors)
+
+
+def test_differentiable_promotion_language_reports_unreadable_public_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An unreadable configured public surface fails closed with its path."""
+    public_path = tmp_path / "public.md"
+    public_path.write_text("bounded_candidate\n", encoding="utf-8")
+    ledger = load_differentiable_claim_ledger()
+
+    def fail_read_text(
+        path: Path,
+        encoding: str | None = None,
+        errors: str | None = None,
+    ) -> str:
+        del path, encoding, errors
+        raise OSError("permission denied")
+
+    monkeypatch.setattr(Path, "read_text", fail_read_text)
+    audit = audit_differentiable_promotion_language(
+        public_paths=("public.md",),
+        repo_root=tmp_path,
+        ledger=ledger,
+    )
+
+    assert not audit.passed
+    assert audit.checked_paths == ()
+    assert any(
+        "public promotion path cannot be read: public.md: permission denied" in error
+        for error in audit.errors
+    )
 
 
 def test_differentiable_promotion_language_allows_bounded_candidate_wording() -> None:

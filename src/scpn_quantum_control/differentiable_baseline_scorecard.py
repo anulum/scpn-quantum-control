@@ -371,11 +371,14 @@ def audit_differentiable_promotion_language(
         if scorecard is None
         else scorecard
     )
-    texts = (
-        _load_public_promotion_texts(public_paths=public_paths, repo_root=repo_root)
-        if public_texts is None
-        else dict(public_texts)
-    )
+    if public_texts is None:
+        texts, public_path_errors = _load_public_promotion_texts(
+            public_paths=public_paths,
+            repo_root=repo_root,
+        )
+    else:
+        texts = dict(public_texts)
+        public_path_errors = ()
     scorecard_validation = validate_differentiable_baseline_scorecard(
         loaded_scorecard,
         ledger=loaded_ledger,
@@ -384,6 +387,7 @@ def audit_differentiable_promotion_language(
     errors: list[str] = [
         f"scorecard validation failed: {error}" for error in scorecard_validation.errors
     ]
+    errors.extend(public_path_errors)
     promoted_claim_ids = {
         row.claim_id for row in loaded_ledger.rows if row.promotion_status == "promoted"
     }
@@ -754,13 +758,34 @@ def _load_public_promotion_texts(
     *,
     public_paths: Iterable[str],
     repo_root: Path,
-) -> dict[str, str]:
+) -> tuple[dict[str, str], tuple[str, ...]]:
+    """Load configured public files without escaping or weakening the audit scope."""
     texts: dict[str, str] = {}
+    errors: list[str] = []
+    resolved_root = repo_root.resolve()
     for relative_path in public_paths:
-        path = repo_root / relative_path
-        if path.exists():
+        if (
+            not relative_path
+            or relative_path != relative_path.strip()
+            or Path(relative_path).is_absolute()
+            or "\\" in relative_path
+        ):
+            errors.append(f"unsafe public promotion path: {relative_path!r}")
+            continue
+        path = (repo_root / relative_path).resolve()
+        try:
+            path.relative_to(resolved_root)
+        except ValueError:
+            errors.append(f"public promotion path escapes repository: {relative_path}")
+            continue
+        if not path.is_file():
+            errors.append(f"public promotion path is missing or not a file: {relative_path}")
+            continue
+        try:
             texts[relative_path] = path.read_text(encoding="utf-8")
-    return texts
+        except OSError as exc:
+            errors.append(f"public promotion path cannot be read: {relative_path}: {exc}")
+    return texts, tuple(errors)
 
 
 def _promotional_phrases(line: str) -> tuple[str, ...]:
