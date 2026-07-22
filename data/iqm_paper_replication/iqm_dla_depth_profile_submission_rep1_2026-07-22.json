@@ -1,0 +1,45 @@
+{
+  "campaign": "iqm_dla_depth_profile_prereg_2026-07-22",
+  "quantum_computer": "garnet",
+  "date": "2026-07-22",
+  "repetition": 1,
+  "layout": [
+    2,
+    7,
+    12,
+    13
+  ],
+  "layout_choice": "primary",
+  "transpiled_depths": {
+    "main_d8_even_rep1": 129,
+    "main_d8_odd_rep1": 129,
+    "main_d12_even_rep1": 189,
+    "main_d12_odd_rep1": 189,
+    "readout_0011": 2,
+    "readout_0001": 2,
+    "readout_0000": 1,
+    "readout_1111": 2
+  },
+  "jobs": [
+    {
+      "job_id": "019f8772-6338-7d13-a2b5-8d0fb07cc8e4",
+      "shots": 1024,
+      "labels": [
+        "main_d8_even_rep1",
+        "main_d8_odd_rep1",
+        "main_d12_even_rep1",
+        "main_d12_odd_rep1"
+      ]
+    },
+    {
+      "job_id": "019f8772-665d-7581-97c0-56be20e48b01",
+      "shots": 2048,
+      "labels": [
+        "readout_0011",
+        "readout_0001",
+        "readout_0000",
+        "readout_1111"
+      ]
+    }
+  ]
+}
