@@ -12,7 +12,9 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from dataclasses import replace
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -77,6 +79,63 @@ def test_framework_overlay_manifest_round_trips_and_reports_missing_state(tmp_pa
     assert ready.ready
     assert ready.status == "ready"
     assert ready.pythonpath == str(overlay)
+
+
+def test_framework_overlay_manifest_rejects_coercive_json(tmp_path: Path) -> None:
+    """The claim manifest loader preserves schema and exact runtime types."""
+    manifest = build_framework_overlay_manifest(overlay_path=tmp_path / "overlay")
+    path = tmp_path / "manifest.json"
+
+    path.write_text("[]", encoding="utf-8")
+    with pytest.raises(ValueError, match="must be a JSON object"):
+        FrameworkOverlayManifest.from_json(path)
+
+    payload = manifest.to_dict()
+    path.write_text(json.dumps({**payload, "schema": "old"}), encoding="utf-8")
+    with pytest.raises(ValueError, match="schema is unknown"):
+        FrameworkOverlayManifest.from_json(path)
+
+    path.write_text(json.dumps({**payload, "claim_boundary": "vague"}), encoding="utf-8")
+    with pytest.raises(ValueError, match="claim boundary is not canonical"):
+        FrameworkOverlayManifest.from_json(path)
+
+    path.write_text(json.dumps({**payload, "overlay_path": 7}), encoding="utf-8")
+    with pytest.raises(ValueError, match="overlay_path must be a non-empty string"):
+        FrameworkOverlayManifest.from_json(path)
+
+    path.write_text(json.dumps({**payload, "cpu_wheels": ["jax[cpu]", 7]}), encoding="utf-8")
+    with pytest.raises(ValueError, match="cpu_wheels must contain non-empty strings"):
+        FrameworkOverlayManifest.from_json(path)
+
+    path.write_text(json.dumps({**payload, "wheel_sources": []}), encoding="utf-8")
+    with pytest.raises(ValueError, match="wheel_sources must map non-empty strings"):
+        FrameworkOverlayManifest.from_json(path)
+
+
+def test_framework_overlay_manifest_rejects_ambiguous_contract_fields(tmp_path: Path) -> None:
+    """Direct construction cannot weaken CPU profile identity or provenance."""
+    manifest = build_framework_overlay_manifest(overlay_path=tmp_path / "overlay")
+
+    with pytest.raises(ValueError, match="overlay_path must be a Path"):
+        replace(manifest, overlay_path=cast(Path, "bad"))
+    with pytest.raises(ValueError, match="python_version must be a non-empty string"):
+        replace(manifest, python_version=cast(str, 7))
+    with pytest.raises(ValueError, match="install_command must contain non-empty strings"):
+        replace(manifest, install_command=())
+    with pytest.raises(ValueError, match="cpu_wheels must contain non-empty strings"):
+        replace(manifest, cpu_wheels=cast(tuple[str, ...], ["jax[cpu]"]))
+    with pytest.raises(ValueError, match="cpu_wheels must match"):
+        replace(manifest, cpu_wheels=("jax[cpu]",))
+    with pytest.raises(ValueError, match="wheel_sources must map non-empty strings"):
+        replace(manifest, wheel_sources={"": "source"})
+    with pytest.raises(ValueError, match="wheel_sources must cover"):
+        replace(manifest, wheel_sources={"jax[cpu]": "PyPI"})
+    with pytest.raises(ValueError, match="package_versions must map non-empty strings"):
+        replace(manifest, package_versions={"jax": ""})
+    with pytest.raises(ValueError, match="pythonpath must match overlay_path"):
+        replace(manifest, pythonpath=str(tmp_path / "other"))
+    with pytest.raises(ValueError, match="artifact_id must match"):
+        replace(manifest, artifact_id="other")
 
 
 def test_framework_overlay_install_records_versions_without_hidden_state(

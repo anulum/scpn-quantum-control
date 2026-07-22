@@ -28,6 +28,11 @@ CPU_FRAMEWORK_WHEELS: tuple[str, ...] = (
 CPU_FRAMEWORK_PACKAGE_ROOTS: tuple[str, ...] = ("jax", "torch", "tensorflow", "pennylane")
 PYTORCH_CPU_INDEX_URL = "https://download.pytorch.org/whl/cpu"
 FRAMEWORK_OVERLAY_SCHEMA = "scpn_qc_framework_overlay_manifest_v2"
+FRAMEWORK_OVERLAY_ARTIFACT_ID = "diff-qnode-framework-overlay-profile-v1"
+FRAMEWORK_OVERLAY_CLAIM_BOUNDARY = (
+    "CPU-only optional framework parity overlay; no CUDA, provider, QPU, "
+    "or performance promotion claim."
+)
 
 DEFAULT_OVERLAY_BASENAME = "scpn-qc-framework-site-py312"
 
@@ -45,7 +50,49 @@ class FrameworkOverlayManifest:
     wheel_sources: dict[str, str]
     package_versions: dict[str, str]
     verification_status: str
-    artifact_id: str = "diff-qnode-framework-overlay-profile-v1"
+    artifact_id: str = FRAMEWORK_OVERLAY_ARTIFACT_ID
+
+    def __post_init__(self) -> None:
+        """Validate the CPU-only manifest identity without coercion."""
+        if not isinstance(self.overlay_path, Path):
+            raise ValueError("overlay_path must be a Path")
+        _validated_overlay_install_path(self.overlay_path)
+        for field_name in (
+            "python_version",
+            "pythonpath",
+            "platform",
+            "verification_status",
+            "artifact_id",
+        ):
+            value = getattr(self, field_name)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{field_name} must be a non-empty string")
+        for field_name in ("cpu_wheels", "install_command"):
+            value = getattr(self, field_name)
+            if (
+                not isinstance(value, tuple)
+                or not value
+                or any(not isinstance(item, str) or not item.strip() for item in value)
+            ):
+                raise ValueError(f"{field_name} must contain non-empty strings")
+        if self.cpu_wheels != CPU_FRAMEWORK_WHEELS:
+            raise ValueError("cpu_wheels must match the canonical CPU framework profile")
+        for field_name in ("wheel_sources", "package_versions"):
+            value = getattr(self, field_name)
+            if not isinstance(value, dict) or any(
+                not isinstance(key, str)
+                or not key.strip()
+                or not isinstance(item, str)
+                or not item.strip()
+                for key, item in value.items()
+            ):
+                raise ValueError(f"{field_name} must map non-empty strings to non-empty strings")
+        if set(self.wheel_sources) != set(CPU_FRAMEWORK_WHEELS):
+            raise ValueError("wheel_sources must cover the canonical CPU framework profile")
+        if self.pythonpath != str(self.overlay_path):
+            raise ValueError("pythonpath must match overlay_path exactly")
+        if self.artifact_id != FRAMEWORK_OVERLAY_ARTIFACT_ID:
+            raise ValueError("artifact_id must match the canonical framework overlay identity")
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready manifest payload."""
@@ -61,31 +108,30 @@ class FrameworkOverlayManifest:
             "wheel_sources": self.wheel_sources,
             "package_versions": self.package_versions,
             "verification_status": self.verification_status,
-            "claim_boundary": (
-                "CPU-only optional framework parity overlay; no CUDA, provider, QPU, "
-                "or performance promotion claim."
-            ),
+            "claim_boundary": FRAMEWORK_OVERLAY_CLAIM_BOUNDARY,
         }
 
     @classmethod
     def from_json(cls, path: Path) -> FrameworkOverlayManifest:
         """Load a manifest from disk."""
-        payload = json.loads(path.read_text(encoding="utf-8"))
+        payload: object = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError("framework overlay manifest must be a JSON object")
+        if payload.get("schema") != FRAMEWORK_OVERLAY_SCHEMA:
+            raise ValueError("framework overlay manifest schema is unknown")
+        if payload.get("claim_boundary") != FRAMEWORK_OVERLAY_CLAIM_BOUNDARY:
+            raise ValueError("framework overlay manifest claim boundary is not canonical")
         return cls(
-            overlay_path=Path(str(payload["overlay_path"])),
-            python_version=str(payload["python_version"]),
-            cpu_wheels=tuple(str(item) for item in payload["cpu_wheels"]),
-            install_command=tuple(str(item) for item in payload["install_command"]),
-            pythonpath=str(payload["pythonpath"]),
-            platform=str(payload.get("platform", "")),
-            wheel_sources={
-                str(key): str(value) for key, value in payload.get("wheel_sources", {}).items()
-            },
-            package_versions={
-                str(key): str(value) for key, value in payload.get("package_versions", {}).items()
-            },
-            verification_status=str(payload.get("verification_status", "not_verified")),
-            artifact_id=str(payload.get("artifact_id", "diff-qnode-framework-overlay-profile-v1")),
+            overlay_path=Path(_manifest_string(payload, "overlay_path")),
+            python_version=_manifest_string(payload, "python_version"),
+            cpu_wheels=_manifest_strings(payload, "cpu_wheels"),
+            install_command=_manifest_strings(payload, "install_command"),
+            pythonpath=_manifest_string(payload, "pythonpath"),
+            platform=_manifest_string(payload, "platform"),
+            wheel_sources=_manifest_string_map(payload, "wheel_sources"),
+            package_versions=_manifest_string_map(payload, "package_versions", allow_empty=True),
+            verification_status=_manifest_string(payload, "verification_status"),
+            artifact_id=_manifest_string(payload, "artifact_id"),
         )
 
 
@@ -276,6 +322,51 @@ def _metadata_version(metadata_path: Path) -> str:
     return "unknown"
 
 
+def _manifest_string(payload: dict[object, object], field_name: str) -> str:
+    """Read one required exact non-empty manifest string."""
+    value = payload.get(field_name)
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"framework overlay {field_name} must be a non-empty string")
+    return value
+
+
+def _manifest_strings(payload: dict[object, object], field_name: str) -> tuple[str, ...]:
+    """Read one required JSON array of non-empty strings."""
+    value = payload.get(field_name)
+    if (
+        not isinstance(value, list)
+        or not value
+        or any(not isinstance(item, str) or not item.strip() for item in value)
+    ):
+        raise ValueError(f"framework overlay {field_name} must contain non-empty strings")
+    return tuple(value)
+
+
+def _manifest_string_map(
+    payload: dict[object, object],
+    field_name: str,
+    *,
+    allow_empty: bool = False,
+) -> dict[str, str]:
+    """Read one required JSON object mapping non-empty strings."""
+    value = payload.get(field_name)
+    if (
+        not isinstance(value, dict)
+        or (not allow_empty and not value)
+        or any(
+            not isinstance(key, str)
+            or not key.strip()
+            or not isinstance(item, str)
+            or not item.strip()
+            for key, item in value.items()
+        )
+    ):
+        raise ValueError(
+            f"framework overlay {field_name} must map non-empty strings to non-empty strings"
+        )
+    return value
+
+
 def framework_overlay_pythonpath(manifest_path: Path) -> str:
     """Return the exact PYTHONPATH from an existing overlay manifest."""
     if not manifest_path.exists():
@@ -314,6 +405,9 @@ def main(argv: list[str] | None = None) -> int:
 __all__ = [
     "CPU_FRAMEWORK_WHEELS",
     "DEFAULT_OVERLAY_BASENAME",
+    "FRAMEWORK_OVERLAY_ARTIFACT_ID",
+    "FRAMEWORK_OVERLAY_CLAIM_BOUNDARY",
+    "FRAMEWORK_OVERLAY_SCHEMA",
     "FrameworkOverlayManifest",
     "FrameworkOverlayVerification",
     "PYTORCH_CPU_INDEX_URL",
