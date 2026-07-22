@@ -22,6 +22,15 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_SCHEMA = (
     "scpn_qc_differentiable_external_validation_environment_lock_v1"
 )
+EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_ARTIFACT_ID = (
+    "diff-external-validation-environment-lock-20260616"
+)
+EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_SCHEMA = (
+    "scpn_qc_differentiable_external_validation_artifact_bundle_v1"
+)
+EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_ARTIFACT_ID = (
+    "diff-external-validation-artifact-bundle-20260616"
+)
 DEFAULT_EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_PATH = (
     REPO_ROOT
     / "data"
@@ -439,7 +448,7 @@ def summarize_artifact_entry(
 def build_external_validation_environment_lock(
     *,
     repo_root: Path = REPO_ROOT,
-    artifact_id: str = "diff-external-validation-environment-lock-20260616",
+    artifact_id: str = EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_ARTIFACT_ID,
     inputs: tuple[tuple[str, str], ...] = DEFAULT_ENVIRONMENT_LOCK_INPUTS,
 ) -> ExternalValidationEnvironmentLock:
     """Build the exact environment-lock manifest for the differentiable package."""
@@ -465,7 +474,7 @@ def build_external_validation_environment_lock(
 def build_external_validation_artifact_bundle(
     *,
     repo_root: Path = REPO_ROOT,
-    artifact_id: str = "diff-external-validation-artifact-bundle-20260616",
+    artifact_id: str = EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_ARTIFACT_ID,
     inputs: tuple[tuple[str, str], ...] = DEFAULT_ARTIFACT_BUNDLE_INPUTS,
 ) -> ExternalValidationArtifactBundle:
     """Build the reproducible external-validation artefact bundle manifest."""
@@ -475,7 +484,7 @@ def build_external_validation_artifact_bundle(
     )
     return ExternalValidationArtifactBundle(
         artifact_id=artifact_id,
-        schema="scpn_qc_differentiable_external_validation_artifact_bundle_v1",
+        schema=EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_SCHEMA,
         entries=entries,
         classification="functional_non_isolated",
         claim_boundary=(
@@ -552,10 +561,17 @@ def validate_external_validation_environment_lock(
     checked_paths: list[str] = []
     if candidate.schema != EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_SCHEMA:
         errors.append(f"unexpected schema: {candidate.schema}")
+    if candidate.artifact_id != EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_ARTIFACT_ID:
+        errors.append(f"unexpected artifact_id: {candidate.artifact_id}")
     if candidate.classification != "functional_non_isolated":
         errors.append("environment lock manifest must remain functional_non_isolated")
     if "isolated_affinity benchmark claims" not in candidate.claim_boundary:
         errors.append("environment lock manifest claim boundary is not explicit enough")
+    expected_lockfiles = tuple(path for path, _role in DEFAULT_ENVIRONMENT_LOCK_INPUTS)
+    if tuple(lockfile.path for lockfile in candidate.lockfiles) != expected_lockfiles:
+        errors.append(
+            "environment lockfile inventory does not match DEFAULT_ENVIRONMENT_LOCK_INPUTS"
+        )
     for lockfile in candidate.lockfiles:
         checked_paths.append(lockfile.path)
         try:
@@ -595,12 +611,17 @@ def validate_external_validation_artifact_bundle(
     candidate = bundle or load_external_validation_artifact_bundle(path)
     errors: list[str] = []
     checked_paths: list[str] = []
-    if candidate.schema != "scpn_qc_differentiable_external_validation_artifact_bundle_v1":
+    if candidate.schema != EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_SCHEMA:
         errors.append(f"unexpected schema: {candidate.schema}")
+    if candidate.artifact_id != EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_ARTIFACT_ID:
+        errors.append(f"unexpected artifact_id: {candidate.artifact_id}")
     if candidate.classification != "functional_non_isolated":
         errors.append("artifact bundle must remain functional_non_isolated")
     if "isolated_affinity benchmark claims" not in candidate.claim_boundary:
         errors.append("artifact bundle claim boundary is not explicit enough")
+    expected_entries = tuple(path for path, _role in DEFAULT_ARTIFACT_BUNDLE_INPUTS)
+    if tuple(entry.path for entry in candidate.entries) != expected_entries:
+        errors.append("artifact bundle inventory does not match DEFAULT_ARTIFACT_BUNDLE_INPUTS")
     for entry in candidate.entries:
         checked_paths.append(entry.path)
         try:
@@ -786,6 +807,9 @@ __all__ = [
     "DEFAULT_ARTIFACT_BUNDLE_INPUTS",
     "DEFAULT_EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_PATH",
     "DEFAULT_EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_PATH",
+    "EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_ARTIFACT_ID",
+    "EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_SCHEMA",
+    "EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_ARTIFACT_ID",
     "EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_SCHEMA",
     "EnvironmentLockfileSummary",
     "ExternalValidationArtifactBundle",

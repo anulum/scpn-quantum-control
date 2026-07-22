@@ -328,24 +328,16 @@ def test_dependency_environment_validation_rejects_duplicate_profile_ids() -> No
     assert any("profile IDs must match" in error for error in validation.errors)
 
 
-def test_dependency_environment_map_counts_only_present_checksums() -> None:
-    """Injected lock evidence must not count an absent checksum as verified."""
+def test_dependency_environment_map_rejects_absent_checksum_at_source() -> None:
+    """Injected lock evidence cannot omit a checksum before map construction."""
     environment_lock = build_external_validation_environment_lock()
     target_path = "requirements-ci-cross-platform-smoke.txt"
-    assert any(lockfile.path == target_path for lockfile in environment_lock.lockfiles)
-    lockfiles = tuple(
-        replace(lockfile, sha256="") if lockfile.path == target_path else lockfile
-        for lockfile in environment_lock.lockfiles
-    )
-    injected_lock = replace(environment_lock, lockfiles=lockfiles)
-
-    environment_map = run_differentiable_dependency_environment_map(environment_lock=injected_lock)
-    ci_profile = next(
-        profile for profile in environment_map.profiles if profile.profile_id == "ci_python_matrix"
+    target = next(
+        lockfile for lockfile in environment_lock.lockfiles if lockfile.path == target_path
     )
 
-    assert ci_profile.checksum_count == len(ci_profile.lockfile_paths) - 1
-    assert ci_profile.pinned_package_count > 0
+    with pytest.raises(ValueError, match="lockfile sha256 must be a lowercase SHA-256 digest"):
+        replace(target, sha256="")
 
 
 def test_dependency_environment_markdown_escapes_profile_cells() -> None:

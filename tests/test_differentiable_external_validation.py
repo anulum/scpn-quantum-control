@@ -17,6 +17,9 @@ from typing import cast
 import pytest
 
 from scpn_quantum_control.differentiable_external_validation import (
+    EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_ARTIFACT_ID,
+    EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_SCHEMA,
+    EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_ARTIFACT_ID,
     EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_SCHEMA,
     EnvironmentLockfileSummary,
     ExternalValidationArtifactBundle,
@@ -137,8 +140,10 @@ def test_environment_lock_validation_rejects_contract_drift(tmp_path: Path) -> N
     assert validation.to_dict()["passed"] is False
     assert validation.errors == (
         "unexpected schema: wrong",
+        "unexpected artifact_id: candidate",
         "environment lock manifest must remain functional_non_isolated",
         "environment lock manifest claim boundary is not explicit enough",
+        "environment lockfile inventory does not match DEFAULT_ENVIRONMENT_LOCK_INPUTS",
         "size mismatch: requirements.txt",
         "line-count mismatch: requirements.txt",
         "pinned-package-count mismatch: requirements.txt",
@@ -614,8 +619,10 @@ def test_artifact_bundle_validation_rejects_contract_drift(tmp_path: Path) -> No
 
     assert validation.errors == (
         "unexpected schema: wrong",
+        "unexpected artifact_id: candidate",
         "artifact bundle must remain functional_non_isolated",
         "artifact bundle claim boundary is not explicit enough",
+        "artifact bundle inventory does not match DEFAULT_ARTIFACT_BUNDLE_INPUTS",
         "size mismatch: evidence.json",
         "missing artefact: missing.json",
     )
@@ -661,7 +668,7 @@ def test_external_validation_manifests_report_unsafe_paths(tmp_path: Path) -> No
         pinned_package_count=0,
     )
     manifest = ExternalValidationEnvironmentLock(
-        artifact_id="environment",
+        artifact_id=EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_ARTIFACT_ID,
         schema=EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_SCHEMA,
         python_version="3.12.0",
         platform="test",
@@ -672,7 +679,10 @@ def test_external_validation_manifests_report_unsafe_paths(tmp_path: Path) -> No
     assert validate_external_validation_environment_lock(
         manifest,
         repo_root=tmp_path,
-    ).errors == ("unsafe lockfile path: ../outside-lock.txt",)
+    ).errors == (
+        "environment lockfile inventory does not match DEFAULT_ENVIRONMENT_LOCK_INPUTS",
+        "unsafe lockfile path: ../outside-lock.txt",
+    )
 
     entry = ExternalValidationArtifactEntry(
         path="../outside-evidence.json",
@@ -681,8 +691,8 @@ def test_external_validation_manifests_report_unsafe_paths(tmp_path: Path) -> No
         size_bytes=1,
     )
     bundle = ExternalValidationArtifactBundle(
-        artifact_id="bundle",
-        schema="scpn_qc_differentiable_external_validation_artifact_bundle_v1",
+        artifact_id=EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_ARTIFACT_ID,
+        schema=EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_SCHEMA,
         entries=(entry,),
         classification="functional_non_isolated",
         claim_boundary="no isolated_affinity benchmark claims",
@@ -690,7 +700,10 @@ def test_external_validation_manifests_report_unsafe_paths(tmp_path: Path) -> No
     assert validate_external_validation_artifact_bundle(
         bundle,
         repo_root=tmp_path,
-    ).errors == ("unsafe artefact path: ../outside-evidence.json",)
+    ).errors == (
+        "artifact bundle inventory does not match DEFAULT_ARTIFACT_BUNDLE_INPUTS",
+        "unsafe artefact path: ../outside-evidence.json",
+    )
 
 
 def test_artifact_bundle_markdown_lists_claim_boundary() -> None:
