@@ -527,13 +527,13 @@
     {
       "claim_ids": [],
       "covered_lines": 80,
-      "line_percent": 37.74,
-      "missing_lines": 132,
+      "line_percent": 37.04,
+      "missing_lines": 136,
       "path": "src/scpn_quantum_control/phase/torch_aot_autograd_export.py",
       "priority": "P3_high_line_debt",
       "priority_reason": "At least 50 executable lines are uncovered.",
       "status": "below_target",
-      "valid_lines": 212
+      "valid_lines": 216
     },
     {
       "claim_ids": [],
@@ -559,6 +559,17 @@
     },
     {
       "claim_ids": [],
+      "covered_lines": 93,
+      "line_percent": 43.66,
+      "missing_lines": 120,
+      "path": "src/scpn_quantum_control/phase/torch_dynamic_shape_export.py",
+      "priority": "P3_high_line_debt",
+      "priority_reason": "At least 50 executable lines are uncovered.",
+      "status": "below_target",
+      "valid_lines": 213
+    },
+    {
+      "claim_ids": [],
       "covered_lines": 31,
       "line_percent": 20.53,
       "missing_lines": 120,
@@ -567,17 +578,6 @@
       "priority_reason": "At least 50 executable lines are uncovered.",
       "status": "below_target",
       "valid_lines": 151
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 92,
-      "line_percent": 44.440000000000005,
-      "missing_lines": 115,
-      "path": "src/scpn_quantum_control/phase/torch_dynamic_shape_export.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 207
     },
     {
       "claim_ids": [],
@@ -2194,7 +2194,7 @@
     "debt_file_count": 194,
     "fully_covered_file_count": 387,
     "justified_exclusion_file_count": 44,
-    "known_missing_line_count": 6085,
+    "known_missing_line_count": 6094,
     "measured_non_excluded_file_count": 558,
     "priority_counts": {
       "P0_claim_bearing": 12,
