@@ -37,14 +37,27 @@ VAULT_PATH = Path("~/.config/scpn-quantum-control/credentials.md").expanduser()
 
 PRIMARY_LAYOUT = (2, 7, 12, 13)
 FALLBACK_LAYOUT = (9, 4, 3, 8)
-DEPTHS = (4, 6, 10)
 SECTORS = {"even": "0011", "odd": "0001"}
 READOUT_STATES = ("0011", "0001", "0000", "1111")
 REPETITIONS = 4
 MAIN_SHOTS = 1024
 READOUT_SHOTS = 2048
-#: May 13 d10 transpiled depth envelope plus the preregistered 25 % margin.
-DEPTH_ENVELOPE = int(159 * 1.25)
+#: Per-campaign frozen depths and per-depth transpiled-depth envelopes. The
+#: powered block uses the May 13 d10 reference (159) + 25 % for every depth;
+#: the depth-profile follow-up freezes the interpolated ladder (~15 layers
+#: per Trotter step: d8 -> 129, d12 -> 189) + 25 % per its preregistration.
+CAMPAIGNS: dict[str, dict[str, Any]] = {
+    "powered": {
+        "campaign_id": "iqm_dla_backend_sensitivity_powered_prereg_2026-07-21",
+        "depths": (4, 6, 10),
+        "envelope": {4: int(159 * 1.25), 6: int(159 * 1.25), 10: int(159 * 1.25)},
+    },
+    "depth-profile": {
+        "campaign_id": "iqm_dla_depth_profile_prereg_2026-07-22",
+        "depths": (8, 12),
+        "envelope": {8: int(129 * 1.25), 12: int(189 * 1.25)},
+    },
+}
 
 
 def _load_helper() -> Any:
@@ -57,11 +70,13 @@ def _load_helper() -> Any:
     return module
 
 
-def build_powered_plan(*, layout: tuple[int, int, int, int]) -> list[dict[str, Any]]:
-    """Full preregistered matrix: 24 main rows (4 reps) + 4 readout rows."""
+def build_powered_plan(
+    *, layout: tuple[int, int, int, int], depths: tuple[int, ...] = (4, 6, 10)
+) -> list[dict[str, Any]]:
+    """Preregistered matrix for ``depths``: 4 reps of mains + 4 readout rows."""
     rows: list[dict[str, Any]] = []
     for repetition in range(1, REPETITIONS + 1):
-        for depth in DEPTHS:
+        for depth in depths:
             for sector, initial in SECTORS.items():
                 rows.append(
                     {
@@ -117,9 +132,10 @@ def dry_run(args: argparse.Namespace) -> int:
     from qiskit import transpile
 
     helper = _load_helper()
+    campaign = CAMPAIGNS[args.campaign]
     layout = PRIMARY_LAYOUT if args.layout == "primary" else FALLBACK_LAYOUT
     backend = _fake_backend()
-    rows = build_powered_plan(layout=layout)
+    rows = build_powered_plan(layout=layout, depths=campaign["depths"])
 
     # Repetitions reuse the identical circuit; build/transpile each unique one once.
     unique: dict[str, Any] = {}
@@ -137,8 +153,13 @@ def dry_run(args: argparse.Namespace) -> int:
             unique[name] = isa
         isa = unique[name]
         depth = int(isa.depth())
-        if depth > DEPTH_ENVELOPE:
-            envelope_violations.append(f"{row['label']} depth {depth} > {DEPTH_ENVELOPE}")
+        bound = (
+            int(campaign["envelope"][int(row["meta"].get("depth", 0))])
+            if row["kind"] == "dla_parity"
+            else max(campaign["envelope"].values())
+        )
+        if depth > bound:
+            envelope_violations.append(f"{row['label']} depth {depth} > {bound}")
         records.append(
             {
                 "label": row["label"],
@@ -152,13 +173,13 @@ def dry_run(args: argparse.Namespace) -> int:
         counts[row["label"]] = {str(k): int(v) for k, v in result.get_counts().items()}
 
     payload = {
-        "campaign": "iqm_dla_backend_sensitivity_powered_prereg_2026-07-21",
+        "campaign": campaign["campaign_id"],
         "kind": "fake_backend_dry_run",
         "backend": "IQMFakeGarnet",
         "date": args.date,
         "layout": list(layout),
         "layout_choice": args.layout,
-        "depth_envelope": DEPTH_ENVELOPE,
+        "depth_envelope": {str(k): int(v) for k, v in campaign["envelope"].items()},
         "envelope_violations": envelope_violations,
         "circuit_count": len(rows),
         "shot_count": sum(row["shots"] for row in rows),
@@ -174,7 +195,7 @@ def dry_run(args: argparse.Namespace) -> int:
     print(f"shots: {payload['shot_count']}")
     depths = {r["circuit_name"]: r["transpiled_depth"] for r in records}
     for name, depth in sorted(depths.items()):
-        print(f"  {name}: transpiled depth {depth} (envelope {DEPTH_ENVELOPE})")
+        print(f"  {name}: transpiled depth {depth} (envelopes {campaign['envelope']})")
     if envelope_violations:
         print(f"DEPTH ENVELOPE VIOLATIONS: {envelope_violations}", file=sys.stderr)
         return 1
@@ -225,12 +246,17 @@ def submit(args: argparse.Namespace) -> int:
     from qiskit import transpile
 
     helper = _load_helper()
+    campaign = CAMPAIGNS[args.campaign]
     layout = PRIMARY_LAYOUT if args.layout == "primary" else FALLBACK_LAYOUT
     backend = _live_backend(args.quantum_computer)
     # Readout calibration states run ONCE (with repetition 1); later blocks are
-    # mains-only so the total matrix stays exactly the preregistered 28 circuits.
+    # mains-only so the total matrix stays exactly the preregistered count.
     wanted = {args.repetition} | ({0} if args.repetition == 1 else set())
-    rows = [row for row in build_powered_plan(layout=layout) if row["repetition"] in wanted]
+    rows = [
+        row
+        for row in build_powered_plan(layout=layout, depths=campaign["depths"])
+        if row["repetition"] in wanted
+    ]
 
     prepared: dict[int, list[tuple[str, Any]]] = {MAIN_SHOTS: [], READOUT_SHOTS: []}
     depths: dict[str, int] = {}
@@ -242,17 +268,22 @@ def submit(args: argparse.Namespace) -> int:
         )
         depth = int(isa.depth())
         depths[row["label"]] = depth
-        if depth > DEPTH_ENVELOPE:
+        bound = (
+            int(campaign["envelope"][int(row["meta"].get("depth", 0))])
+            if row["kind"] == "dla_parity"
+            else max(campaign["envelope"].values())
+        )
+        if depth > bound:
             print(
                 f"DEPTH ENVELOPE VIOLATION at submit: {row['label']} {depth} > "
-                f"{DEPTH_ENVELOPE} — refusing to submit",
+                f"{bound} — refusing to submit",
                 file=sys.stderr,
             )
             return 1
         prepared[int(row["shots"])].append((row["label"], isa))
 
     record: dict[str, Any] = {
-        "campaign": "iqm_dla_backend_sensitivity_powered_prereg_2026-07-21",
+        "campaign": campaign["campaign_id"],
         "quantum_computer": args.quantum_computer,
         "date": args.date,
         "repetition": args.repetition,
@@ -326,12 +357,14 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
 
     dry = sub.add_parser("dry-run", help="IQMFakeGarnet full-matrix readiness dry run")
+    dry.add_argument("--campaign", choices=tuple(CAMPAIGNS), default="powered")
     dry.add_argument("--layout", choices=("primary", "fallback"), default="primary")
     dry.add_argument("--date", required=True, help="artefact date stamp (YYYY-MM-DD)")
     dry.add_argument("--out", required=True, help="output dry-run JSON")
     dry.set_defaults(func=dry_run)
 
     sub_submit = sub.add_parser("submit", help="submit one repetition block (owner-gated)")
+    sub_submit.add_argument("--campaign", choices=tuple(CAMPAIGNS), default="powered")
     sub_submit.add_argument("--quantum-computer", default="garnet:mock")
     sub_submit.add_argument("--layout", choices=("primary", "fallback"), default="primary")
     sub_submit.add_argument("--repetition", type=int, default=1, choices=(1, 2, 3, 4))
