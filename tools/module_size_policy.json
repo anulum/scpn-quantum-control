@@ -175,7 +175,7 @@
     },
     {
       "path": "src/scpn_quantum_control/differentiable_finite_difference.py",
-      "lines": 1862,
+      "lines": 1899,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Finite-difference and complex-step diagnostic gradient, Jacobian, JVP, VJP, Hessian, HVP, value, and batch transform family.",
