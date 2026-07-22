@@ -154,7 +154,8 @@ class DifferentiableBaselineScorecardRow:
             "current_evidence",
             "claim_boundary",
         ):
-            if not str(getattr(self, field_name)).strip():
+            value = getattr(self, field_name)
+            if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"{field_name} must be non-empty")
         for field_name in (
             "claim_ids",
@@ -165,8 +166,16 @@ class DifferentiableBaselineScorecardRow:
             "next_hardening_rounds",
         ):
             value = getattr(self, field_name)
-            if not value or any(not str(item).strip() for item in value):
+            if (
+                not isinstance(value, tuple)
+                or not value
+                or any(not isinstance(item, str) or not item.strip() for item in value)
+            ):
                 raise ValueError(f"{field_name} must contain non-empty entries")
+        if not isinstance(self.blockers, tuple) or any(
+            not isinstance(item, str) or not item.strip() for item in self.blockers
+        ):
+            raise ValueError("blockers must contain non-empty entries")
         if self.status in READY_STATUSES and self.blockers:
             raise ValueError("ready scorecard rows must not carry blockers")
         if self.status == "behind_baseline" and not self.blockers:

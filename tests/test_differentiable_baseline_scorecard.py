@@ -77,8 +77,16 @@ def test_differentiable_baseline_scorecard_row_rejects_invalid_fields() -> None:
         replace(row, status=cast(DifferentiableBaselineStatus, "done"))
     with pytest.raises(ValueError, match="baseline must be non-empty"):
         replace(row, baseline=" ")
+    with pytest.raises(ValueError, match="baseline must be non-empty"):
+        replace(row, baseline=cast(str, 1))
     with pytest.raises(ValueError, match="claim_ids must contain non-empty entries"):
         replace(row, claim_ids=())
+    with pytest.raises(ValueError, match="claim_ids must contain non-empty entries"):
+        replace(row, claim_ids=cast(tuple[str, ...], ["claim"]))
+    with pytest.raises(ValueError, match="claim_ids must contain non-empty entries"):
+        replace(row, claim_ids=(cast(str, 1),))
+    with pytest.raises(ValueError, match="blockers must contain non-empty entries"):
+        replace(row, blockers=(cast(str, 1),))
 
 
 def test_differentiable_baseline_scorecard_row_rejects_inconsistent_blockers() -> None:
