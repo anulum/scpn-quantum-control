@@ -298,6 +298,7 @@ def test_docker_reproduction_image_builds_credential_free_git_index() -> None:
     assert "&& chown sqc:sqc /app /app/.git" in dockerfile
     assert "COPY .gitignore .gitignore" in dockerfile
     assert "credential-free synthetic Git index" in dockerfile
+    assert "COPY scpn_quantum_engine/Cargo.lock scpn_quantum_engine/Cargo.lock" in dockerfile
     assert dockerignore.splitlines()[0] == ".git"
     assert "**/target/" in dockerignore.splitlines()
     assert "**/__pycache__/" in dockerignore.splitlines()
