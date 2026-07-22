@@ -10,7 +10,9 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -639,3 +641,153 @@ def test_artifact_bundle_markdown_lists_claim_boundary() -> None:
     assert "functional_non_isolated" in markdown
     assert "claim_ledger.json" in markdown
     assert "isolated_affinity benchmark claims" in markdown
+
+
+def test_external_validation_loaders_reject_coercive_json_types(tmp_path: Path) -> None:
+    """Manifest loaders cannot convert numeric or string-shaped evidence fields."""
+    environment_path = tmp_path / "environment.json"
+    environment_payload = {
+        "artifact_id": 7,
+        "schema": EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_SCHEMA,
+        "python_version": "3.12.0",
+        "platform": "test",
+        "lockfiles": [],
+        "classification": "functional_non_isolated",
+        "claim_boundary": "no isolated_affinity benchmark claims",
+    }
+    environment_path.write_text(json.dumps(environment_payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="artifact_id must be a non-empty string"):
+        load_external_validation_environment_lock(environment_path)
+
+    bundle_path = tmp_path / "bundle.json"
+    bundle_payload = {
+        "artifact_id": "bundle",
+        "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1",
+        "entries": [
+            {
+                "path": "evidence.json",
+                "role": "evidence",
+                "sha256": "0" * 64,
+                "size_bytes": "1",
+            }
+        ],
+        "classification": "functional_non_isolated",
+        "claim_boundary": "no isolated_affinity benchmark claims",
+    }
+    bundle_path.write_text(json.dumps(bundle_payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="size_bytes must be a non-negative integer"):
+        load_external_validation_artifact_bundle(bundle_path)
+
+
+def test_external_validation_models_reject_duplicate_and_malformed_evidence() -> None:
+    """Manifest identities remain unique and metadata retains exact runtime types."""
+    summary = EnvironmentLockfileSummary(
+        path="requirements.txt",
+        role="runtime",
+        sha256="0" * 64,
+        size_bytes=1,
+        line_count=1,
+        pinned_package_count=1,
+    )
+    manifest = ExternalValidationEnvironmentLock(
+        artifact_id="environment",
+        schema=EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_SCHEMA,
+        python_version="3.12.0",
+        platform="test",
+        lockfiles=(summary,),
+        classification="functional_non_isolated",
+        claim_boundary="no isolated_affinity benchmark claims",
+    )
+    with pytest.raises(ValueError, match="lockfiles must have unique paths"):
+        replace(manifest, lockfiles=(summary, summary))
+    with pytest.raises(ValueError, match="size_bytes must be a non-negative integer"):
+        replace(summary, size_bytes=cast(int, True))
+    with pytest.raises(ValueError, match="size_bytes must be a non-negative integer"):
+        replace(summary, size_bytes=-1)
+    with pytest.raises(ValueError, match="sha256 must be a lowercase SHA-256 digest"):
+        replace(summary, sha256="not-a-digest")
+    with pytest.raises(ValueError, match="sha256 must be a lowercase SHA-256 digest"):
+        replace(summary, sha256=cast(str, 1))
+    with pytest.raises(ValueError, match="lockfiles must be a tuple"):
+        replace(manifest, lockfiles=(cast(EnvironmentLockfileSummary, "bad"),))
+
+    entry = ExternalValidationArtifactEntry(
+        path="evidence.json",
+        role="evidence",
+        sha256="0" * 64,
+        size_bytes=1,
+    )
+    bundle = ExternalValidationArtifactBundle(
+        artifact_id="bundle",
+        schema="scpn_qc_differentiable_external_validation_artifact_bundle_v1",
+        entries=(entry,),
+        classification="functional_non_isolated",
+        claim_boundary="no isolated_affinity benchmark claims",
+    )
+    with pytest.raises(ValueError, match="entries must have unique paths"):
+        replace(bundle, entries=(entry, entry))
+    with pytest.raises(ValueError, match="entries must be a tuple"):
+        replace(bundle, entries=cast(tuple[ExternalValidationArtifactEntry, ...], [entry]))
+    with pytest.raises(ValueError, match="artifact_id must be a non-empty string"):
+        replace(bundle, artifact_id=cast(str, 1))
+
+
+def test_external_validation_result_requires_pass_error_coherence() -> None:
+    """A passing validation cannot carry findings or omit its checked-path tuple."""
+    with pytest.raises(ValueError, match="true exactly when errors are empty"):
+        ExternalValidationEnvironmentLockValidation(
+            passed=True,
+            errors=("drift",),
+            checked_paths=(),
+        )
+    with pytest.raises(ValueError, match="passed must be boolean"):
+        ExternalValidationEnvironmentLockValidation(
+            passed=cast(bool, 1),
+            errors=(),
+            checked_paths=(),
+        )
+    with pytest.raises(ValueError, match="checked_paths must contain"):
+        ExternalValidationEnvironmentLockValidation(
+            passed=True,
+            errors=(),
+            checked_paths=cast(tuple[str, ...], ["evidence.json"]),
+        )
+    with pytest.raises(ValueError, match="errors must contain"):
+        ExternalValidationEnvironmentLockValidation(
+            passed=False,
+            errors=("",),
+            checked_paths=(),
+        )
+
+
+def test_external_validation_loaders_reject_malformed_json_shapes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Manifest roots and evidence collections must retain exact JSON shapes."""
+    path = tmp_path / "manifest.json"
+    path.write_text("[]", encoding="utf-8")
+    with pytest.raises(ValueError, match="must be a JSON object"):
+        load_external_validation_artifact_bundle(path)
+
+    base = {
+        "artifact_id": "environment",
+        "schema": EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_SCHEMA,
+        "python_version": "3.12.0",
+        "platform": "test",
+        "classification": "functional_non_isolated",
+        "claim_boundary": "no isolated_affinity benchmark claims",
+    }
+    path.write_text(json.dumps({**base, "lockfiles": {}}), encoding="utf-8")
+    with pytest.raises(ValueError, match="lockfiles must be a list"):
+        load_external_validation_environment_lock(path)
+
+    path.write_text(json.dumps({**base, "lockfiles": ["bad"]}), encoding="utf-8")
+    with pytest.raises(ValueError, match=r"lockfiles\[0\] must be an object"):
+        load_external_validation_environment_lock(path)
+
+    monkeypatch.setattr(json, "loads", lambda text: {1: "bad"})
+    with pytest.raises(ValueError, match="string keys"):
+        load_external_validation_environment_lock(path)

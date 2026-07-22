@@ -232,6 +232,14 @@ class EnvironmentLockfileSummary:
     line_count: int
     pinned_package_count: int
 
+    def __post_init__(self) -> None:
+        """Validate immutable lockfile evidence without type coercion."""
+        _require_nonblank(self.path, "lockfile path")
+        _require_nonblank(self.role, "lockfile role")
+        _require_sha256(self.sha256, "lockfile sha256")
+        for field_name in ("size_bytes", "line_count", "pinned_package_count"):
+            _require_nonnegative_int(getattr(self, field_name), f"lockfile {field_name}")
+
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready lockfile summary."""
         return {
@@ -256,6 +264,27 @@ class ExternalValidationEnvironmentLock:
     classification: str
     claim_boundary: str
 
+    def __post_init__(self) -> None:
+        """Validate environment-manifest identity and unique lockfile paths."""
+        for field_name in (
+            "artifact_id",
+            "schema",
+            "python_version",
+            "platform",
+            "classification",
+            "claim_boundary",
+        ):
+            _require_nonblank(getattr(self, field_name), f"environment manifest {field_name}")
+        _require_typed_tuple(
+            self.lockfiles,
+            EnvironmentLockfileSummary,
+            "environment manifest lockfiles",
+        )
+        _require_unique_paths(
+            tuple(lockfile.path for lockfile in self.lockfiles),
+            "environment manifest lockfiles",
+        )
+
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready external-validation environment manifest."""
         return {
@@ -277,6 +306,17 @@ class ExternalValidationEnvironmentLockValidation:
     errors: tuple[str, ...]
     checked_paths: tuple[str, ...]
 
+    def __post_init__(self) -> None:
+        """Validate pass/error coherence and checked-path metadata."""
+        if type(self.passed) is not bool:
+            raise ValueError("external-validation passed must be boolean")
+        _require_string_tuple(self.errors, "external-validation errors")
+        _require_string_tuple(self.checked_paths, "external-validation checked_paths")
+        if self.passed == bool(self.errors):
+            raise ValueError(
+                "external-validation passed must be true exactly when errors are empty"
+            )
+
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready validation metadata."""
         return {
@@ -294,6 +334,13 @@ class ExternalValidationArtifactEntry:
     role: str
     sha256: str
     size_bytes: int
+
+    def __post_init__(self) -> None:
+        """Validate immutable artefact evidence without type coercion."""
+        _require_nonblank(self.path, "artefact path")
+        _require_nonblank(self.role, "artefact role")
+        _require_sha256(self.sha256, "artefact sha256")
+        _require_nonnegative_int(self.size_bytes, "artefact size_bytes")
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready artefact entry."""
@@ -314,6 +361,20 @@ class ExternalValidationArtifactBundle:
     entries: tuple[ExternalValidationArtifactEntry, ...]
     classification: str
     claim_boundary: str
+
+    def __post_init__(self) -> None:
+        """Validate bundle identity and unique artefact paths."""
+        for field_name in ("artifact_id", "schema", "classification", "claim_boundary"):
+            _require_nonblank(getattr(self, field_name), f"artifact bundle {field_name}")
+        _require_typed_tuple(
+            self.entries,
+            ExternalValidationArtifactEntry,
+            "artifact bundle entries",
+        )
+        _require_unique_paths(
+            tuple(entry.path for entry in self.entries),
+            "artifact bundle entries",
+        )
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready artefact-bundle manifest."""
@@ -425,25 +486,30 @@ def load_external_validation_environment_lock(
     path: Path = DEFAULT_EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_PATH,
 ) -> ExternalValidationEnvironmentLock:
     """Load a committed external-validation environment manifest."""
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload = _json_object(path, "environment manifest")
+    lockfiles = _object_list(payload, "lockfiles", "environment manifest")
     return ExternalValidationEnvironmentLock(
-        artifact_id=str(payload["artifact_id"]),
-        schema=str(payload["schema"]),
-        python_version=str(payload["python_version"]),
-        platform=str(payload["platform"]),
+        artifact_id=_string_field(payload, "artifact_id", "environment manifest"),
+        schema=_string_field(payload, "schema", "environment manifest"),
+        python_version=_string_field(payload, "python_version", "environment manifest"),
+        platform=_string_field(payload, "platform", "environment manifest"),
         lockfiles=tuple(
             EnvironmentLockfileSummary(
-                path=str(lockfile["path"]),
-                role=str(lockfile["role"]),
-                sha256=str(lockfile["sha256"]),
-                size_bytes=int(lockfile["size_bytes"]),
-                line_count=int(lockfile["line_count"]),
-                pinned_package_count=int(lockfile["pinned_package_count"]),
+                path=_string_field(lockfile, "path", "environment lockfile"),
+                role=_string_field(lockfile, "role", "environment lockfile"),
+                sha256=_string_field(lockfile, "sha256", "environment lockfile"),
+                size_bytes=_integer_field(lockfile, "size_bytes", "environment lockfile"),
+                line_count=_integer_field(lockfile, "line_count", "environment lockfile"),
+                pinned_package_count=_integer_field(
+                    lockfile,
+                    "pinned_package_count",
+                    "environment lockfile",
+                ),
             )
-            for lockfile in payload["lockfiles"]
+            for lockfile in lockfiles
         ),
-        classification=str(payload["classification"]),
-        claim_boundary=str(payload["claim_boundary"]),
+        classification=_string_field(payload, "classification", "environment manifest"),
+        claim_boundary=_string_field(payload, "claim_boundary", "environment manifest"),
     )
 
 
@@ -451,21 +517,22 @@ def load_external_validation_artifact_bundle(
     path: Path = DEFAULT_EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_PATH,
 ) -> ExternalValidationArtifactBundle:
     """Load a committed external-validation artefact-bundle manifest."""
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload = _json_object(path, "artifact bundle")
+    entries = _object_list(payload, "entries", "artifact bundle")
     return ExternalValidationArtifactBundle(
-        artifact_id=str(payload["artifact_id"]),
-        schema=str(payload["schema"]),
+        artifact_id=_string_field(payload, "artifact_id", "artifact bundle"),
+        schema=_string_field(payload, "schema", "artifact bundle"),
         entries=tuple(
             ExternalValidationArtifactEntry(
-                path=str(entry["path"]),
-                role=str(entry["role"]),
-                sha256=str(entry["sha256"]),
-                size_bytes=int(entry["size_bytes"]),
+                path=_string_field(entry, "path", "artifact bundle entry"),
+                role=_string_field(entry, "role", "artifact bundle entry"),
+                sha256=_string_field(entry, "sha256", "artifact bundle entry"),
+                size_bytes=_integer_field(entry, "size_bytes", "artifact bundle entry"),
             )
-            for entry in payload["entries"]
+            for entry in entries
         ),
-        classification=str(payload["classification"]),
-        claim_boundary=str(payload["claim_boundary"]),
+        classification=_string_field(payload, "classification", "artifact bundle"),
+        claim_boundary=_string_field(payload, "claim_boundary", "artifact bundle"),
     )
 
 
@@ -602,6 +669,85 @@ def render_external_validation_artifact_bundle_markdown(
     for entry in bundle.entries:
         lines.append(f"| `{entry.path}` | {entry.role} | `{entry.sha256}` | {entry.size_bytes} |")
     return "\n".join(lines)
+
+
+def _require_nonblank(value: object, field_name: str) -> None:
+    """Require an exact non-blank string."""
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field_name} must be a non-empty string")
+
+
+def _require_sha256(value: object, field_name: str) -> None:
+    """Require one lowercase SHA-256 hexadecimal digest."""
+    if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None:
+        raise ValueError(f"{field_name} must be a lowercase SHA-256 digest")
+
+
+def _require_nonnegative_int(value: object, field_name: str) -> None:
+    """Require an exact non-negative integer, excluding booleans."""
+    if type(value) is not int or value < 0:
+        raise ValueError(f"{field_name} must be a non-negative integer")
+
+
+def _require_typed_tuple(value: object, item_type: type[object], field_name: str) -> None:
+    """Require an exact tuple containing only the requested runtime type."""
+    if not isinstance(value, tuple) or any(not isinstance(item, item_type) for item in value):
+        raise ValueError(f"{field_name} must be a tuple of {item_type.__name__}")
+
+
+def _require_string_tuple(value: object, field_name: str) -> None:
+    """Require an exact tuple containing non-blank strings."""
+    if not isinstance(value, tuple) or any(
+        not isinstance(item, str) or not item.strip() for item in value
+    ):
+        raise ValueError(f"{field_name} must contain non-empty strings")
+
+
+def _require_unique_paths(paths: tuple[str, ...], field_name: str) -> None:
+    """Reject ambiguous duplicate evidence identities."""
+    if len(set(paths)) != len(paths):
+        raise ValueError(f"{field_name} must have unique paths")
+
+
+def _json_object(path: Path, context: str) -> dict[str, object]:
+    """Load one JSON object without accepting scalar or list roots."""
+    payload: object = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict) or any(not isinstance(key, str) for key in payload):
+        raise ValueError(f"{context} must be a JSON object with string keys")
+    return payload
+
+
+def _object_list(
+    payload: dict[str, object],
+    key: str,
+    context: str,
+) -> tuple[dict[str, object], ...]:
+    """Read a required list of JSON objects with string keys."""
+    value = payload.get(key)
+    if not isinstance(value, list):
+        raise ValueError(f"{context} {key} must be a list")
+    rows: list[dict[str, object]] = []
+    for index, row in enumerate(value):
+        if not isinstance(row, dict) or any(not isinstance(item, str) for item in row):
+            raise ValueError(f"{context} {key}[{index}] must be an object with string keys")
+        rows.append(row)
+    return tuple(rows)
+
+
+def _string_field(payload: dict[str, object], key: str, context: str) -> str:
+    """Read one required exact non-blank string field."""
+    value = payload.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{context} {key} must be a non-empty string")
+    return value
+
+
+def _integer_field(payload: dict[str, object], key: str, context: str) -> int:
+    """Read one required exact non-negative integer field."""
+    value = payload.get(key)
+    if type(value) is not int or value < 0:
+        raise ValueError(f"{context} {key} must be a non-negative integer")
+    return value
 
 
 __all__ = [
