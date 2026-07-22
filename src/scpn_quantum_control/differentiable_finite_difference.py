@@ -70,6 +70,7 @@ def finite_difference_gradient(
     ValueError
         If parameters, objective values, or the finite-difference step violate
         the diagnostic contract.
+
     """
     result = value_and_finite_difference_grad(
         objective,
@@ -112,6 +113,7 @@ def complex_step_gradient(
     ValueError
         If the step is invalid, the objective is not scalar, or the base value
         has a non-zero imaginary component.
+
     """
     result = value_and_complex_step_grad(
         objective,
@@ -153,6 +155,7 @@ def batch_complex_step_gradient(
     ValueError
         If no objectives are provided or a delegated complex-step evaluation
         fails validation.
+
     """
     if not objectives:
         raise ValueError("objectives must contain at least one scalar objective")
@@ -199,6 +202,7 @@ def batch_value_and_complex_step_grad(
     ValueError
         If no objectives are provided or a delegated complex-step evaluation
         fails validation.
+
     """
     if not objectives:
         raise ValueError("objectives must contain at least one scalar objective")
@@ -247,6 +251,7 @@ def value_and_jacobian(
     ValueError
         If ``method`` is unsupported or the vector objective violates the
         finite-difference contract.
+
     """
     if method != "finite_difference":
         raise ValueError("Jacobian method must be finite_difference")
@@ -292,6 +297,7 @@ def jacobian(
     ValueError
         If ``method`` is unsupported or the delegated Jacobian evaluation fails
         validation.
+
     """
     return value_and_jacobian(
         objective,
@@ -343,6 +349,7 @@ def value_and_jacfwd(
     ``jacobian``. The separate name establishes transform algebra semantics for
     callers and tests while leaving room for a future true forward-mode Jacobian
     implementation behind the same contract.
+
     """
     return value_and_jacobian(
         objective,
@@ -387,6 +394,7 @@ def jacfwd(
     ValueError
         If ``method`` is unsupported or the delegated Jacobian evaluation fails
         validation.
+
     """
     return value_and_jacfwd(
         objective,
@@ -437,6 +445,7 @@ def value_and_jacrev(
     Until a true reverse-over-vector backend exists, this is an explicit alias to
     the finite-difference Jacobian contract. It preserves API and composition
     semantics without overclaiming reverse compiler AD.
+
     """
     return value_and_jacobian(
         objective,
@@ -481,6 +490,7 @@ def jacrev(
     ValueError
         If ``method`` is unsupported or the delegated Jacobian evaluation fails
         validation.
+
     """
     return value_and_jacrev(
         objective,
@@ -525,6 +535,7 @@ def value_and_hessian(
     ValueError
         If ``method`` is unsupported or the delegated Hessian evaluation fails
         validation.
+
     """
     if method != "finite_difference":
         raise ValueError("Hessian method must be finite_difference")
@@ -570,6 +581,7 @@ def hessian(
     ValueError
         If ``method`` is unsupported or the delegated Hessian evaluation fails
         validation.
+
     """
     return value_and_hessian(
         objective,
@@ -611,6 +623,7 @@ def batch_value_and_finite_difference_grad(
     ValueError
         If no objectives are provided or a delegated gradient evaluation fails
         validation.
+
     """
     if not objectives:
         raise ValueError("objectives must contain at least one scalar objective")
@@ -657,6 +670,7 @@ def value_and_complex_step_grad(
     ValueError
         If the step is invalid, parameters are malformed, the objective is not
         scalar, or the base value has a non-zero imaginary component.
+
     """
     step_value = _as_real_scalar("complex-step step", step)
     if step_value <= 0.0:
@@ -723,6 +737,7 @@ def value_and_finite_difference_grad(
     ValueError
         If the step, parameters, or objective result violate the scalar
         diagnostic contract.
+
     """
     step_value = _as_real_scalar("finite difference step", step)
     if step_value <= 0.0:
@@ -788,6 +803,7 @@ def finite_difference_jacobian(
     ValueError
         If parameters, objective values, output shape, or the step violate the
         vector diagnostic contract.
+
     """
     return value_and_finite_difference_jacobian(
         objective,
@@ -828,6 +844,7 @@ def value_and_finite_difference_jacobian(
     ValueError
         If the objective output is non-vector, non-finite, or shape-unstable, or
         if parameter and step validation fails.
+
     """
     step_value = _as_real_scalar("finite difference step", step)
     if step_value <= 0.0:
@@ -898,6 +915,7 @@ def finite_difference_jvp(
     ValueError
         If the tangent, objective output, parameters, or step violate the JVP
         contract.
+
     """
     return value_and_finite_difference_jvp(
         objective,
@@ -946,6 +964,7 @@ def value_and_jvp(
     ValueError
         If ``method`` is unsupported or the delegated JVP evaluation fails
         validation.
+
     """
     if method != "finite_difference":
         raise ValueError("JVP method must be finite_difference")
@@ -996,6 +1015,7 @@ def jvp(
     ValueError
         If ``method`` is unsupported or the delegated JVP evaluation fails
         validation.
+
     """
     return value_and_jvp(
         objective,
@@ -1041,6 +1061,7 @@ def value_and_finite_difference_jvp(
     ValueError
         If tangent length, objective shape stability, parameter validation, or
         step validation fails.
+
     """
     step_value = _as_real_scalar("finite difference step", step)
     if step_value <= 0.0:
@@ -1111,6 +1132,7 @@ def batch_finite_difference_jvp(
     ------
     ValueError
         If the tangent batch is malformed or a delegated JVP evaluation fails.
+
     """
     results = batch_value_and_finite_difference_jvp(
         objective,
@@ -1154,6 +1176,7 @@ def batch_value_and_finite_difference_jvp(
     ------
     ValueError
         If the tangent batch is malformed or a delegated JVP evaluation fails.
+
     """
     parameter_values = _as_parameter_array(values)
     tangent_batch = _as_batch_parameter_array("JVP tangents", tangents, parameter_values.size)
@@ -1192,6 +1215,7 @@ def vector_jacobian_product(
     ValueError
         If ``jacobian`` is not a ``JacobianResult`` or the cotangent shape does
         not match the Jacobian value.
+
     """
     if not isinstance(jacobian, JacobianResult):
         raise ValueError("vector_jacobian_product requires a JacobianResult")
@@ -1248,6 +1272,7 @@ def finite_difference_vjp(
     ValueError
         If Jacobian construction fails validation or the cotangent shape is
         incompatible.
+
     """
     jacobian = value_and_finite_difference_jacobian(
         objective,
@@ -1292,6 +1317,7 @@ def value_and_finite_difference_vjp(
     ValueError
         If Jacobian construction fails validation or the cotangent shape is
         incompatible.
+
     """
     jacobian = value_and_finite_difference_jacobian(
         objective,
@@ -1340,6 +1366,7 @@ def value_and_vjp(
     ValueError
         If ``method`` is unsupported or the delegated VJP evaluation fails
         validation.
+
     """
     if method != "finite_difference":
         raise ValueError("VJP method must be finite_difference")
@@ -1389,6 +1416,7 @@ def vjp(
     ValueError
         If ``method`` is unsupported or the delegated VJP evaluation fails
         validation.
+
     """
     return value_and_vjp(
         objective,
@@ -1424,6 +1452,7 @@ def batch_vector_jacobian_product(
     ValueError
         If ``jacobian`` is not a ``JacobianResult`` or the cotangent batch is
         malformed.
+
     """
     if not isinstance(jacobian, JacobianResult):
         raise ValueError("batch_vector_jacobian_product requires a JacobianResult")
@@ -1464,6 +1493,7 @@ def batch_finite_difference_vjp(
     ValueError
         If Jacobian construction fails validation or the cotangent batch is
         malformed.
+
     """
     results = batch_value_and_finite_difference_vjp(
         objective,
@@ -1508,6 +1538,7 @@ def batch_value_and_finite_difference_vjp(
     ValueError
         If Jacobian construction fails validation or the cotangent batch is
         malformed.
+
     """
     jacobian = value_and_finite_difference_jacobian(
         objective,
@@ -1548,6 +1579,7 @@ def finite_difference_hessian(
     ValueError
         If parameter validation, scalar objective validation, or step validation
         fails.
+
     """
     return value_and_finite_difference_hessian(
         objective,
@@ -1588,6 +1620,7 @@ def value_and_finite_difference_hessian(
     ValueError
         If parameter validation, scalar objective validation, or step validation
         fails.
+
     """
     step_value = _as_real_scalar("finite difference step", step)
     if step_value <= 0.0:
@@ -1681,6 +1714,7 @@ def finite_difference_hvp(
     ValueError
         If the tangent, parameters, scalar objective result, or step violate the
         HVP contract.
+
     """
     return value_and_finite_difference_hvp(
         objective,
@@ -1725,6 +1759,7 @@ def value_and_finite_difference_hvp(
     ValueError
         If tangent length, parameter validation, scalar objective validation, or
         step validation fails.
+
     """
     step_value = _as_real_scalar("finite difference step", step)
     if step_value <= 0.0:
@@ -1804,6 +1839,7 @@ def batch_finite_difference_hvp(
     ------
     ValueError
         If the tangent batch is malformed or a delegated HVP evaluation fails.
+
     """
     results = batch_value_and_finite_difference_hvp(
         objective,
@@ -1847,6 +1883,7 @@ def batch_value_and_finite_difference_hvp(
     ------
     ValueError
         If the tangent batch is malformed or a delegated HVP evaluation fails.
+
     """
     parameter_values = _as_parameter_array(values)
     tangent_batch = _as_batch_parameter_array("HVP tangents", tangents, parameter_values.size)
