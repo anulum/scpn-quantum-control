@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Literal, cast
+from urllib.parse import urlsplit
 
 from .differentiable_baseline_scorecard import (
     DEFAULT_PUBLIC_PROMOTION_LANGUAGE_PATHS,
@@ -67,6 +68,26 @@ REQUIRED_BASELINE_IDS: tuple[CompetitiveBaselineId, ...] = (
 SOURCE_KINDS: frozenset[CompetitiveBaselineSourceKind] = frozenset(
     {"official_docs", "official_project_docs", "official_repository"}
 )
+BASELINE_ROW_CLASSIFICATION = "baseline_refresh_evidence"
+BASELINE_ROW_CLAIM_BOUNDARY = (
+    "Official baseline source only; this row records comparison coverage and "
+    "does not promote SCPN differentiable claims."
+)
+BASELINE_REFRESH_CLAIM_BOUNDARY = (
+    "Competitive baseline freshness evidence only; it does not promote "
+    "category-leadership, provider, hardware, GPU, QPU, "
+    "production-performance, or isolated_affinity claims."
+)
+BASELINE_VALIDATION_CLAIM_BOUNDARY = (
+    "Competitive baseline validation only; freshness and official-source "
+    "coverage do not promote category-leadership, provider, hardware, GPU, QPU, "
+    "performance, or isolated_affinity claims."
+)
+BASELINE_PROMOTION_GATE_CLAIM_BOUNDARY = (
+    "Combined competitive-baseline and public-language gate only; it "
+    "keeps promotional wording blocked unless fresh baseline, "
+    "ready scorecard, and promoted claim-ledger evidence all agree."
+)
 
 
 @dataclass(frozen=True)
@@ -92,10 +113,10 @@ class CompetitiveBaselineRow:
             raise ValueError(f"unknown competitive baseline: {self.baseline_id}")
         if self.source_kind not in SOURCE_KINDS:
             raise ValueError(f"unknown baseline source kind: {self.source_kind}")
-        if not self.source_url.startswith("https://"):
-            raise ValueError("competitive baseline source_url must be an HTTPS URL")
-        if self.max_age_days <= 0:
-            raise ValueError("competitive baseline max_age_days must be positive")
+        _require_https_url(self.source_url, "competitive baseline source_url")
+        _require_date(self.checked_on, "competitive baseline checked_on")
+        _require_date(self.refresh_due_on, "competitive baseline refresh_due_on")
+        _require_positive_int(self.max_age_days, "competitive baseline max_age_days")
         if self.refresh_due_on != self.checked_on + timedelta(days=self.max_age_days):
             raise ValueError("competitive baseline refresh_due_on must match max_age_days")
         for field_name in (
@@ -104,16 +125,15 @@ class CompetitiveBaselineRow:
             "source_url",
             "claim_boundary",
         ):
-            if not str(getattr(self, field_name)).strip():
-                raise ValueError(f"{field_name} must be non-empty")
+            _require_nonblank(getattr(self, field_name), field_name)
         for field_name in (
             "scorecard_categories",
             "required_capabilities",
             "hardening_implications",
         ):
             value = getattr(self, field_name)
-            if not value or any(not str(item).strip() for item in value):
-                raise ValueError(f"{field_name} must contain non-empty entries")
+            _require_nonempty_string_tuple(value, field_name)
+            _require_unique_strings(value, field_name)
         unknown_categories = tuple(
             category
             for category in self.scorecard_categories
@@ -124,14 +144,17 @@ class CompetitiveBaselineRow:
                 "competitive baseline row references unknown baseline categories: "
                 + ", ".join(unknown_categories)
             )
+        if self.claim_boundary != BASELINE_ROW_CLAIM_BOUNDARY:
+            raise ValueError("competitive baseline row claim_boundary is not canonical")
 
     @property
     def classification(self) -> str:
         """Return the evidence classification for this baseline source."""
-        return "baseline_refresh_evidence"
+        return BASELINE_ROW_CLASSIFICATION
 
     def age_days(self, *, as_of: date) -> int:
         """Return the age of this row in whole days at ``as_of``."""
+        _require_date(as_of, "competitive baseline as_of")
         return (as_of - self.checked_on).days
 
     def is_fresh(self, *, as_of: date) -> bool:
@@ -169,6 +192,37 @@ class CompetitiveBaselineRefresh:
     rows: tuple[CompetitiveBaselineRow, ...]
     claim_boundary: str
 
+    def __post_init__(self) -> None:
+        """Validate bundle identity and internally coherent row metadata."""
+        if self.schema != DIFFERENTIABLE_COMPETITIVE_BASELINE_SCHEMA:
+            raise ValueError("competitive baseline refresh schema is not canonical")
+        if self.artifact_id != DIFFERENTIABLE_COMPETITIVE_BASELINE_ARTIFACT_ID:
+            raise ValueError("competitive baseline refresh artifact_id is not canonical")
+        _require_date(self.generated_on, "competitive baseline generated_on")
+        _require_positive_int(self.max_age_days, "competitive baseline bundle max_age_days")
+        if self.max_age_days != MAX_BASELINE_AGE_DAYS:
+            raise ValueError("competitive baseline bundle max_age_days is not canonical")
+        if (
+            not isinstance(self.rows, tuple)
+            or not self.rows
+            or any(not isinstance(row, CompetitiveBaselineRow) for row in self.rows)
+        ):
+            raise ValueError("competitive baseline rows must be a non-empty row tuple")
+        _require_unique_strings(
+            tuple(row.baseline_id for row in self.rows),
+            "competitive baseline row identities",
+        )
+        row_positions = tuple(REQUIRED_BASELINE_IDS.index(row.baseline_id) for row in self.rows)
+        if row_positions != tuple(sorted(row_positions)):
+            raise ValueError("competitive baseline rows must preserve canonical order")
+        for row in self.rows:
+            if row.checked_on != self.generated_on:
+                raise ValueError("competitive baseline row checked_on must match generated_on")
+            if row.max_age_days != self.max_age_days:
+                raise ValueError("competitive baseline row max_age_days must match bundle")
+        if self.claim_boundary != BASELINE_REFRESH_CLAIM_BOUNDARY:
+            raise ValueError("competitive baseline refresh claim_boundary is not canonical")
+
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready refresh payload."""
         return {
@@ -192,6 +246,33 @@ class CompetitiveBaselineValidation:
     checked_urls: tuple[str, ...]
     as_of: date
     claim_boundary: str
+
+    def __post_init__(self) -> None:
+        """Validate result coherence and checked-evidence metadata."""
+        if type(self.passed) is not bool:
+            raise ValueError("competitive baseline validation passed must be boolean")
+        _require_string_tuple(self.errors, "competitive baseline validation errors")
+        _require_string_tuple(self.checked_baselines, "baseline validation checked_baselines")
+        _require_string_tuple(self.checked_categories, "baseline validation checked_categories")
+        _require_string_tuple(self.checked_urls, "baseline validation checked_urls")
+        _require_unique_strings(self.checked_baselines, "baseline validation checked_baselines")
+        _require_unique_strings(self.checked_categories, "baseline validation checked_categories")
+        _require_unique_strings(self.checked_urls, "baseline validation checked_urls")
+        if any(identifier not in REQUIRED_BASELINE_IDS for identifier in self.checked_baselines):
+            raise ValueError("competitive baseline validation contains unknown baseline identity")
+        if any(
+            category not in REQUIRED_BASELINE_CATEGORIES for category in self.checked_categories
+        ):
+            raise ValueError("competitive baseline validation contains unknown category")
+        for url in self.checked_urls:
+            _require_https_url(url, "competitive baseline validation checked_url")
+        _require_date(self.as_of, "competitive baseline validation as_of")
+        if self.passed == bool(self.errors):
+            raise ValueError(
+                "competitive baseline validation passed must be true exactly when errors are empty"
+            )
+        if self.claim_boundary != BASELINE_VALIDATION_CLAIM_BOUNDARY:
+            raise ValueError("competitive baseline validation claim_boundary is not canonical")
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready validation metadata."""
@@ -218,6 +299,50 @@ class CompetitiveBaselinePromotionGate:
     checked_categories: tuple[DifferentiableBaselineCategory, ...]
     claim_boundary: str
 
+    def __post_init__(self) -> None:
+        """Validate combined-gate coherence and component identities."""
+        if type(self.passed) is not bool:
+            raise ValueError("competitive baseline promotion gate passed must be boolean")
+        _require_string_tuple(self.errors, "competitive baseline promotion gate errors")
+        if not isinstance(self.baseline_validation, CompetitiveBaselineValidation):
+            raise ValueError("baseline_validation must be CompetitiveBaselineValidation")
+        if not isinstance(self.language_audit, DifferentiablePromotionLanguageAudit):
+            raise ValueError("language_audit must be DifferentiablePromotionLanguageAudit")
+        if type(self.language_audit.passed) is not bool:
+            raise ValueError("promotion language audit passed must be boolean")
+        _require_string_tuple(self.language_audit.errors, "promotion language audit errors")
+        if self.language_audit.passed == bool(self.language_audit.errors):
+            raise ValueError(
+                "promotion language audit passed must be true exactly when errors are empty"
+            )
+        _require_string_tuple(self.checked_paths, "baseline promotion checked_paths")
+        _require_string_tuple(self.checked_categories, "baseline promotion checked_categories")
+        _require_unique_strings(self.checked_paths, "baseline promotion checked_paths")
+        _require_unique_strings(self.checked_categories, "baseline promotion checked_categories")
+        if any(
+            category not in REQUIRED_BASELINE_CATEGORIES for category in self.checked_categories
+        ):
+            raise ValueError("competitive baseline promotion contains unknown category")
+        expected_categories = tuple(
+            sorted(
+                set(self.baseline_validation.checked_categories)
+                | set(self.language_audit.checked_promotional_categories)
+            )
+        )
+        if self.checked_categories != expected_categories:
+            raise ValueError("competitive baseline promotion checked_categories are inconsistent")
+        if self.checked_paths != self.language_audit.checked_paths:
+            raise ValueError("competitive baseline promotion checked_paths are inconsistent")
+        if self.passed == bool(self.errors):
+            raise ValueError(
+                "competitive baseline promotion gate passed must be true exactly when errors are empty"
+            )
+        expected_passed = self.baseline_validation.passed and self.language_audit.passed
+        if self.passed != expected_passed:
+            raise ValueError("competitive baseline promotion passed must equal component results")
+        if self.claim_boundary != BASELINE_PROMOTION_GATE_CLAIM_BOUNDARY:
+            raise ValueError("competitive baseline promotion gate claim_boundary is not canonical")
+
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready combined gate metadata."""
         return {
@@ -243,11 +368,7 @@ def run_competitive_baseline_refresh(
         generated_on=generated_on,
         max_age_days=MAX_BASELINE_AGE_DAYS,
         rows=rows,
-        claim_boundary=(
-            "Competitive baseline freshness evidence only; it does not promote "
-            "category-leadership, provider, hardware, GPU, QPU, "
-            "production-performance, or isolated_affinity claims."
-        ),
+        claim_boundary=BASELINE_REFRESH_CLAIM_BOUNDARY,
     )
 
 
@@ -255,8 +376,18 @@ def load_competitive_baseline_refresh(
     path: Path = DEFAULT_COMPETITIVE_BASELINE_REFRESH_PATH,
 ) -> CompetitiveBaselineRefresh:
     """Load a committed competitive-baseline refresh artifact."""
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(
+        path.read_text(encoding="utf-8"),
+        object_pairs_hook=_reject_duplicate_json_keys,
+    )
     mapping = _expect_mapping(payload, field_name="competitive baseline refresh")
+    _require_exact_keys(
+        mapping,
+        frozenset(
+            {"schema", "artifact_id", "generated_on", "max_age_days", "rows", "claim_boundary"}
+        ),
+        "competitive baseline refresh",
+    )
     rows = tuple(
         _row_from_mapping(_expect_mapping(row, field_name="competitive baseline row"))
         for row in _sequence(mapping, "rows")
@@ -280,6 +411,7 @@ def validate_competitive_baseline_refresh(
     """Validate baseline freshness, source provenance, and category coverage."""
     candidate = load_competitive_baseline_refresh(path) if refresh is None else refresh
     check_date = date.today() if as_of is None else as_of
+    _require_date(check_date, "competitive baseline validation as_of")
     errors: list[str] = []
     baseline_ids = tuple(row.baseline_id for row in candidate.rows)
     categories = tuple(
@@ -287,32 +419,18 @@ def validate_competitive_baseline_refresh(
     )
     urls = tuple(row.source_url for row in candidate.rows)
 
-    if candidate.schema != DIFFERENTIABLE_COMPETITIVE_BASELINE_SCHEMA:
-        errors.append(f"unexpected competitive baseline schema: {candidate.schema}")
-    if candidate.artifact_id != DIFFERENTIABLE_COMPETITIVE_BASELINE_ARTIFACT_ID:
-        errors.append(f"unexpected competitive baseline artifact_id: {candidate.artifact_id}")
-    if candidate.max_age_days != MAX_BASELINE_AGE_DAYS:
-        errors.append("competitive baseline bundle max_age_days changed")
     if tuple(sorted(baseline_ids)) != tuple(sorted(REQUIRED_BASELINE_IDS)):
         missing = tuple(
             identifier for identifier in REQUIRED_BASELINE_IDS if identifier not in baseline_ids
         )
-        duplicate = _duplicates(baseline_ids)
-        if missing:
-            errors.append("missing competitive baseline rows: " + ", ".join(missing))
-        if duplicate:
-            errors.append("duplicate competitive baseline rows: " + ", ".join(duplicate))
+        errors.append("missing competitive baseline rows: " + ", ".join(missing))
     missing_categories = tuple(
         category for category in REQUIRED_BASELINE_CATEGORIES if category not in categories
     )
     if missing_categories:
         errors.append("missing baseline category coverage: " + ", ".join(missing_categories))
-    if "does not promote" not in candidate.claim_boundary:
-        errors.append("competitive baseline claim boundary must remain non-promotional")
 
     for row in candidate.rows:
-        if row.max_age_days != candidate.max_age_days:
-            errors.append(f"{row.baseline_id}: max_age_days does not match bundle")
         if row.checked_on > check_date:
             errors.append(f"{row.baseline_id}: checked_on is in the future")
         if not row.is_fresh(as_of=check_date):
@@ -322,13 +440,6 @@ def validate_competitive_baseline_refresh(
                 f"refresh_due_on={row.refresh_due_on.isoformat()}, "
                 f"as_of={check_date.isoformat()})"
             )
-        if row.classification != "baseline_refresh_evidence":
-            errors.append(f"{row.baseline_id}: unexpected classification")
-        if row.source_kind not in SOURCE_KINDS:
-            errors.append(f"{row.baseline_id}: unsupported source_kind={row.source_kind}")
-        if not row.source_url.startswith("https://"):
-            errors.append(f"{row.baseline_id}: source_url must use HTTPS")
-
     return CompetitiveBaselineValidation(
         passed=not errors,
         errors=tuple(errors),
@@ -336,11 +447,7 @@ def validate_competitive_baseline_refresh(
         checked_categories=categories,
         checked_urls=urls,
         as_of=check_date,
-        claim_boundary=(
-            "Competitive baseline validation only; freshness and official-source "
-            "coverage do not promote category-leadership, provider, hardware, GPU, QPU, "
-            "performance, or isolated_affinity claims."
-        ),
+        claim_boundary=BASELINE_VALIDATION_CLAIM_BOUNDARY,
     )
 
 
@@ -394,11 +501,7 @@ def audit_competitive_baseline_promotion_gate(
         language_audit=language_audit,
         checked_paths=language_audit.checked_paths,
         checked_categories=checked_categories,
-        claim_boundary=(
-            "Combined competitive-baseline and public-language gate only; it "
-            "keeps promotional wording blocked unless fresh baseline, "
-            "ready scorecard, and promoted claim-ledger evidence all agree."
-        ),
+        claim_boundary=BASELINE_PROMOTION_GATE_CLAIM_BOUNDARY,
     )
 
 
@@ -454,10 +557,7 @@ def render_competitive_baseline_refresh_markdown(
 
 def _default_baseline_rows(*, generated_on: date) -> tuple[CompetitiveBaselineRow, ...]:
     due = generated_on + timedelta(days=MAX_BASELINE_AGE_DAYS)
-    boundary = (
-        "Official baseline source only; this row records comparison coverage and "
-        "does not promote SCPN differentiable claims."
-    )
+    boundary = BASELINE_ROW_CLAIM_BOUNDARY
     return (
         CompetitiveBaselineRow(
             baseline_id="jax",
@@ -669,6 +769,29 @@ def _default_baseline_rows(*, generated_on: date) -> tuple[CompetitiveBaselineRo
 
 
 def _row_from_mapping(payload: Mapping[str, object]) -> CompetitiveBaselineRow:
+    _require_exact_keys(
+        payload,
+        frozenset(
+            {
+                "baseline_id",
+                "display_name",
+                "upstream_version",
+                "source_url",
+                "source_kind",
+                "checked_on",
+                "refresh_due_on",
+                "max_age_days",
+                "classification",
+                "scorecard_categories",
+                "required_capabilities",
+                "hardening_implications",
+                "claim_boundary",
+            }
+        ),
+        "competitive baseline row",
+    )
+    if _string(payload, "classification") != BASELINE_ROW_CLASSIFICATION:
+        raise ValueError("competitive baseline row classification is not canonical")
     baseline_id = _literal_baseline_id(_string(payload, "baseline_id"))
     source_kind = _literal_source_kind(_string(payload, "source_kind"))
     categories = tuple(
@@ -717,7 +840,7 @@ def _expect_mapping(value: object, *, field_name: str) -> Mapping[str, object]:
 
 def _sequence(payload: Mapping[str, object], field_name: str) -> tuple[object, ...]:
     value = payload.get(field_name)
-    if not isinstance(value, list | tuple):
+    if not isinstance(value, list):
         raise ValueError(f"{field_name} must be a JSON array")
     return tuple(value)
 
@@ -743,7 +866,7 @@ def _strings(payload: Mapping[str, object], field_name: str) -> tuple[str, ...]:
 
 def _int(payload: Mapping[str, object], field_name: str) -> int:
     value = payload.get(field_name)
-    if not isinstance(value, int):
+    if type(value) is not int:
         raise ValueError(f"{field_name} must be an integer")
     return value
 
@@ -756,14 +879,90 @@ def _date(payload: Mapping[str, object], field_name: str) -> date:
         raise ValueError(f"{field_name} must be an ISO date") from exc
 
 
-def _duplicates(values: Iterable[str]) -> tuple[str, ...]:
-    seen: set[str] = set()
-    duplicates: list[str] = []
-    for value in values:
-        if value in seen and value not in duplicates:
-            duplicates.append(value)
-        seen.add(value)
-    return tuple(duplicates)
+def _reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    """Build one JSON object while rejecting duplicate member names."""
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON object key: {key}")
+        result[key] = value
+    return result
+
+
+def _require_exact_keys(
+    payload: Mapping[str, object],
+    expected: frozenset[str],
+    field_name: str,
+) -> None:
+    """Reject missing or unrecognised claim-evidence fields."""
+    actual = frozenset(payload)
+    if actual != expected:
+        missing = ", ".join(sorted(expected - actual)) or "none"
+        unexpected = ", ".join(sorted(actual - expected)) or "none"
+        raise ValueError(
+            f"{field_name} fields do not match schema "
+            f"(missing: {missing}; unexpected: {unexpected})"
+        )
+
+
+def _require_nonblank(value: object, field_name: str) -> None:
+    """Require an exact non-blank string without coercion."""
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field_name} must be a non-empty string")
+
+
+def _require_string_tuple(value: object, field_name: str) -> None:
+    """Require an exact tuple containing only non-blank strings."""
+    if not isinstance(value, tuple) or any(
+        not isinstance(item, str) or not item.strip() for item in value
+    ):
+        raise ValueError(f"{field_name} must contain non-empty strings")
+
+
+def _require_nonempty_string_tuple(value: object, field_name: str) -> None:
+    """Require a non-empty exact tuple containing only non-blank strings."""
+    _require_string_tuple(value, field_name)
+    if not value:
+        raise ValueError(f"{field_name} must contain at least one value")
+
+
+def _require_unique_strings(values: tuple[str, ...], field_name: str) -> None:
+    """Reject duplicate evidence identities within one tuple."""
+    if len(set(values)) != len(values):
+        raise ValueError(f"{field_name} must contain unique values")
+
+
+def _require_date(value: object, field_name: str) -> None:
+    """Require an exact date, excluding datetime subclasses and coercion."""
+    if type(value) is not date:
+        raise ValueError(f"{field_name} must be a date")
+
+
+def _require_positive_int(value: object, field_name: str) -> None:
+    """Require an exact positive integer, excluding booleans."""
+    if type(value) is not int or value <= 0:
+        raise ValueError(f"{field_name} must be a positive integer")
+
+
+def _require_https_url(value: object, field_name: str) -> None:
+    """Require an absolute credential-free HTTPS URL."""
+    _require_nonblank(value, field_name)
+    url = cast(str, value)
+    parsed = urlsplit(url)
+    message = f"{field_name} must be an absolute credential-free HTTPS URL"
+    try:
+        port = parsed.port
+    except ValueError as exc:
+        raise ValueError(message) from exc
+    if (
+        parsed.scheme != "https"
+        or parsed.hostname is None
+        or parsed.username is not None
+        or parsed.password is not None
+        or port == 0
+        or any(character.isspace() for character in url)
+    ):
+        raise ValueError(message)
 
 
 def _markdown_cell(value: str) -> str:
