@@ -57,6 +57,15 @@ CAMPAIGNS: dict[str, dict[str, Any]] = {
         "depths": (8, 12),
         "envelope": {8: int(129 * 1.25), 12: int(189 * 1.25)},
     },
+    # d10 sign-replication: 8 execution-order repetitions batched into ONE
+    # main job + one readout job (frozen batching disclosure in the prereg).
+    "d10-retest": {
+        "campaign_id": "iqm_dla_d10_retest_prereg_2026-07-22",
+        "depths": (10,),
+        "envelope": {10: int(159 * 1.25)},
+        "repetitions": 8,
+        "batch_all": True,
+    },
 }
 
 
@@ -71,11 +80,14 @@ def _load_helper() -> Any:
 
 
 def build_powered_plan(
-    *, layout: tuple[int, int, int, int], depths: tuple[int, ...] = (4, 6, 10)
+    *,
+    layout: tuple[int, int, int, int],
+    depths: tuple[int, ...] = (4, 6, 10),
+    repetitions: int = REPETITIONS,
 ) -> list[dict[str, Any]]:
-    """Preregistered matrix for ``depths``: 4 reps of mains + 4 readout rows."""
+    """Preregistered matrix for ``depths``: mains per repetition + 4 readout rows."""
     rows: list[dict[str, Any]] = []
-    for repetition in range(1, REPETITIONS + 1):
+    for repetition in range(1, repetitions + 1):
         for depth in depths:
             for sector, initial in SECTORS.items():
                 rows.append(
@@ -135,7 +147,11 @@ def dry_run(args: argparse.Namespace) -> int:
     campaign = CAMPAIGNS[args.campaign]
     layout = PRIMARY_LAYOUT if args.layout == "primary" else FALLBACK_LAYOUT
     backend = _fake_backend()
-    rows = build_powered_plan(layout=layout, depths=campaign["depths"])
+    rows = build_powered_plan(
+        layout=layout,
+        depths=campaign["depths"],
+        repetitions=int(campaign.get("repetitions", REPETITIONS)),
+    )
 
     # Repetitions reuse the identical circuit; build/transpile each unique one once.
     unique: dict[str, Any] = {}
@@ -249,14 +265,20 @@ def submit(args: argparse.Namespace) -> int:
     campaign = CAMPAIGNS[args.campaign]
     layout = PRIMARY_LAYOUT if args.layout == "primary" else FALLBACK_LAYOUT
     backend = _live_backend(args.quantum_computer)
-    # Readout calibration states run ONCE (with repetition 1); later blocks are
-    # mains-only so the total matrix stays exactly the preregistered count.
-    wanted = {args.repetition} | ({0} if args.repetition == 1 else set())
-    rows = [
-        row
-        for row in build_powered_plan(layout=layout, depths=campaign["depths"])
-        if row["repetition"] in wanted
-    ]
+    all_rows = build_powered_plan(
+        layout=layout,
+        depths=campaign["depths"],
+        repetitions=int(campaign.get("repetitions", REPETITIONS)),
+    )
+    if campaign.get("batch_all"):
+        # Frozen batching disclosure: the whole matrix goes in one pass —
+        # mains batch into one job, readout states into a second.
+        rows = all_rows
+    else:
+        # Readout calibration states run ONCE (with repetition 1); later
+        # blocks are mains-only so the matrix stays the preregistered count.
+        wanted = {args.repetition} | ({0} if args.repetition == 1 else set())
+        rows = [row for row in all_rows if row["repetition"] in wanted]
 
     prepared: dict[int, list[tuple[str, Any]]] = {MAIN_SHOTS: [], READOUT_SHOTS: []}
     depths: dict[str, int] = {}

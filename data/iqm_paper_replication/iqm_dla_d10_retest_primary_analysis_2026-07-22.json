@@ -1,0 +1,102 @@
+{
+  "campaign": "iqm_dla_d10_retest_prereg_2026-07-22",
+  "kind": "primary_decision_rule",
+  "job_ids": [
+    "019f8809-42d7-7b53-8284-fda06fcc9e7b",
+    "019f8809-448d-7fe0-9eff-3c255477655a"
+  ],
+  "layout": [
+    2,
+    7,
+    12,
+    13
+  ],
+  "matrix_complete": true,
+  "missing_labels": [],
+  "primary_sign_replication": {
+    "shots_even": 8192,
+    "shots_odd": 8192,
+    "leak_even": 0.4610595703125,
+    "leak_odd": 0.44775390625,
+    "difference_even_minus_odd": 0.0133056640625,
+    "relative_asymmetry": 0.0297164667393675,
+    "one_sided_z_for_negative": -1.7102501922095519,
+    "one_sided_p_for_negative": 0.956390191082925,
+    "alpha": 0.05,
+    "negative_sign_replicates": false
+  },
+  "s1_two_sided": {
+    "two_sided_p": 0.08721961783415001,
+    "wilson95_even": [
+      0.4502858492544852,
+      0.4718697947747976
+    ],
+    "wilson95_odd": [
+      0.437012789004063,
+      0.45854399985027255
+    ]
+  },
+  "s2_cross_window": {
+    "difference_this_window": 0.0133056640625,
+    "difference_prior_window": -0.023681640625,
+    "cross_window_z": 2.741227324604355,
+    "cross_window_two_sided_p": 0.006121014258049876,
+    "caveat": "prior window = 2026-07-21 powered block, same calibration set"
+  },
+  "s3_total_leakage": {
+    "total_leakage_this_window": 0.45440673828125,
+    "total_leakage_prior_window": 0.4693603515625
+  },
+  "per_repetition_drift": [
+    {
+      "repetition": 1,
+      "leak_even": 0.470703125,
+      "leak_odd": 0.46484375,
+      "difference": 0.005859375
+    },
+    {
+      "repetition": 2,
+      "leak_even": 0.4677734375,
+      "leak_odd": 0.4541015625,
+      "difference": 0.013671875
+    },
+    {
+      "repetition": 3,
+      "leak_even": 0.455078125,
+      "leak_odd": 0.462890625,
+      "difference": -0.0078125
+    },
+    {
+      "repetition": 4,
+      "leak_even": 0.45703125,
+      "leak_odd": 0.4150390625,
+      "difference": 0.0419921875
+    },
+    {
+      "repetition": 5,
+      "leak_even": 0.4541015625,
+      "leak_odd": 0.4404296875,
+      "difference": 0.013671875
+    },
+    {
+      "repetition": 6,
+      "leak_even": 0.451171875,
+      "leak_odd": 0.4345703125,
+      "difference": 0.0166015625
+    },
+    {
+      "repetition": 7,
+      "leak_even": 0.4716796875,
+      "leak_odd": 0.462890625,
+      "difference": 0.0087890625
+    },
+    {
+      "repetition": 8,
+      "leak_even": 0.4609375,
+      "leak_odd": 0.447265625,
+      "difference": 0.013671875
+    }
+  ],
+  "batching_disclosure": "8 repetitions are execution-order replicates inside one batched job (frozen in the preregistration); cross-window independence comes from the 2026-07-21 arms",
+  "interpretation_boundary": "device-noise statement only: exact statevector baseline fixes noiseless parity leakage at zero (AUD-6)"
+}

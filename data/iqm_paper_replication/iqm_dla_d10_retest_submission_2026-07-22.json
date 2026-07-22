@@ -1,0 +1,69 @@
+{
+  "campaign": "iqm_dla_d10_retest_prereg_2026-07-22",
+  "quantum_computer": "garnet",
+  "date": "2026-07-22",
+  "repetition": 1,
+  "layout": [
+    2,
+    7,
+    12,
+    13
+  ],
+  "layout_choice": "primary",
+  "transpiled_depths": {
+    "main_d10_even_rep1": 159,
+    "main_d10_odd_rep1": 159,
+    "main_d10_even_rep2": 159,
+    "main_d10_odd_rep2": 159,
+    "main_d10_even_rep3": 159,
+    "main_d10_odd_rep3": 159,
+    "main_d10_even_rep4": 159,
+    "main_d10_odd_rep4": 159,
+    "main_d10_even_rep5": 159,
+    "main_d10_odd_rep5": 159,
+    "main_d10_even_rep6": 159,
+    "main_d10_odd_rep6": 159,
+    "main_d10_even_rep7": 159,
+    "main_d10_odd_rep7": 159,
+    "main_d10_even_rep8": 159,
+    "main_d10_odd_rep8": 159,
+    "readout_0011": 2,
+    "readout_0001": 2,
+    "readout_0000": 1,
+    "readout_1111": 2
+  },
+  "jobs": [
+    {
+      "job_id": "019f8809-42d7-7b53-8284-fda06fcc9e7b",
+      "shots": 1024,
+      "labels": [
+        "main_d10_even_rep1",
+        "main_d10_odd_rep1",
+        "main_d10_even_rep2",
+        "main_d10_odd_rep2",
+        "main_d10_even_rep3",
+        "main_d10_odd_rep3",
+        "main_d10_even_rep4",
+        "main_d10_odd_rep4",
+        "main_d10_even_rep5",
+        "main_d10_odd_rep5",
+        "main_d10_even_rep6",
+        "main_d10_odd_rep6",
+        "main_d10_even_rep7",
+        "main_d10_odd_rep7",
+        "main_d10_even_rep8",
+        "main_d10_odd_rep8"
+      ]
+    },
+    {
+      "job_id": "019f8809-448d-7fe0-9eff-3c255477655a",
+      "shots": 2048,
+      "labels": [
+        "readout_0011",
+        "readout_0001",
+        "readout_0000",
+        "readout_1111"
+      ]
+    }
+  ]
+}
