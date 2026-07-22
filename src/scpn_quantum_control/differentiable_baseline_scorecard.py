@@ -332,7 +332,10 @@ def validate_differentiable_baseline_scorecard(
         _validate_scorecard_row(row, claim_rows=claim_rows, errors=errors)
         for path in _row_paths(row):
             checked_paths.add(path)
-            if not (repo_root / path).exists():
+            candidate = _contained_scorecard_path(repo_root, path)
+            if candidate is None:
+                errors.append(f"{row.category}: evidence path is unsafe: {path}")
+            elif not candidate.is_file():
                 errors.append(f"{row.category}: evidence path does not exist: {path}")
 
     return DifferentiableBaselineScorecardValidation(
@@ -744,6 +747,24 @@ def _row_paths(row: DifferentiableBaselineScorecardRow) -> Iterable[str]:
     yield from row.implementation_surface
     yield from row.test_surface
     yield from row.docs_surface
+
+
+def _contained_scorecard_path(repo_root: Path, relative_path: str) -> Path | None:
+    """Resolve a strict repository-contained evidence path without dereferencing escape."""
+    if (
+        not relative_path
+        or relative_path != relative_path.strip()
+        or Path(relative_path).is_absolute()
+        or "\\" in relative_path
+    ):
+        return None
+    resolved_root = repo_root.resolve()
+    candidate = (repo_root / relative_path).resolve()
+    try:
+        candidate.relative_to(resolved_root)
+    except ValueError:
+        return None
+    return candidate
 
 
 def _unique_paths(paths: Iterable[str]) -> tuple[str, ...]:

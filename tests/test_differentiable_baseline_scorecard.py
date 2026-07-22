@@ -163,6 +163,58 @@ def test_differentiable_baseline_scorecard_validation_reports_metadata_errors(
     assert any("docs/missing_scorecard_path.md" in error for error in validation.errors)
 
 
+def test_differentiable_baseline_scorecard_rejects_external_evidence_paths(
+    tmp_path: Path,
+) -> None:
+    """Claim evidence must be a repository-contained regular file."""
+    scorecard = run_differentiable_baseline_scorecard()
+    outside = tmp_path.parent / "outside-scorecard-evidence.md"
+    outside.write_text("untrusted evidence\n", encoding="utf-8")
+    escaped = replace(
+        scorecard.rows[0],
+        docs_surface=(
+            "../outside-scorecard-evidence.md",
+            str(outside),
+            r"docs\outside-scorecard-evidence.md",
+        ),
+    )
+    candidate = replace(scorecard, rows=(escaped, *scorecard.rows[1:]))
+
+    validation = validate_differentiable_baseline_scorecard(
+        candidate,
+        repo_root=tmp_path,
+    )
+
+    assert not validation.passed
+    assert any(
+        "evidence path is unsafe: ../outside-scorecard-evidence.md" in error
+        for error in validation.errors
+    )
+    assert any(f"evidence path is unsafe: {outside}" in error for error in validation.errors)
+    assert any(
+        r"evidence path is unsafe: docs\outside-scorecard-evidence.md" in error
+        for error in validation.errors
+    )
+
+
+def test_differentiable_baseline_scorecard_rejects_directory_evidence(
+    tmp_path: Path,
+) -> None:
+    """Existing directories cannot masquerade as scorecard evidence files."""
+    scorecard = run_differentiable_baseline_scorecard()
+    (tmp_path / "docs").mkdir()
+    directory_row = replace(scorecard.rows[0], docs_surface=("docs",))
+    candidate = replace(scorecard, rows=(directory_row, *scorecard.rows[1:]))
+
+    validation = validate_differentiable_baseline_scorecard(
+        candidate,
+        repo_root=tmp_path,
+    )
+
+    assert not validation.passed
+    assert any("evidence path does not exist: docs" in error for error in validation.errors)
+
+
 def test_differentiable_promotion_language_rejects_unbacked_public_claims() -> None:
     """Public promotional wording must fail until scorecard and ledger rows are promoted."""
     audit = audit_differentiable_promotion_language(
