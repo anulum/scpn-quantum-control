@@ -1,0 +1,174 @@
+{
+  "campaign": "iqm_dla_depth_profile_prereg_2026-07-22",
+  "kind": "primary_decision_rule",
+  "job_ids": [
+    "019f8772-6338-7d13-a2b5-8d0fb07cc8e4",
+    "019f8772-665d-7581-97c0-56be20e48b01",
+    "019f87eb-30b1-71f3-9c7d-1286fd6fdcf5",
+    "019f87eb-f2f8-7c63-9cdf-f0980006d1b2",
+    "019f87ec-81b0-7b80-b010-f321d5f4c6b6"
+  ],
+  "prior_window_job_ids": [
+    "019f866c-9c99-7201-b019-7d843fc91c58",
+    "019f866c-9f20-7053-9343-a8ae219ee48d",
+    "019f8677-33b7-7181-9674-d40b4974f0f0",
+    "019f8677-7a0b-7492-a699-9f2683e36802",
+    "019f8677-ca9a-73d1-b124-766e36f114f0"
+  ],
+  "matrix_complete": true,
+  "missing_labels": [],
+  "primary_decay_ordering": {
+    "delta_8": 0.036865234375,
+    "delta_12": 0.01318359375,
+    "one_sided_z": 1.5215896968025142,
+    "one_sided_p": 0.06405596039178019,
+    "alpha": 0.05,
+    "rejects_null": false
+  },
+  "joint_profile_with_cross_window_caveat": {
+    "caveat": "depths 4/6/10 come from the 2026-07-21 powered block (prior execution window, same calibration set 246a4930); depths 8/12 from this campaign \u2014 cross-window comparison per the frozen preregistration wording",
+    "profile": [
+      {
+        "depth": 4,
+        "window": "prior window",
+        "source": "powered_block_2026-07-21",
+        "leak_even": 0.381103515625,
+        "leak_odd": 0.309814453125,
+        "relative_asymmetry": 0.23010244286840031,
+        "wilson95_even": [
+          0.3663484701594425,
+          0.39608136772990654
+        ],
+        "wilson95_odd": [
+          0.29583690734906914,
+          0.32414839802218937
+        ],
+        "sign_positive": true,
+        "total_leakage": 0.345458984375
+      },
+      {
+        "depth": 6,
+        "window": "prior window",
+        "source": "powered_block_2026-07-21",
+        "leak_even": 0.419677734375,
+        "leak_odd": 0.387451171875,
+        "relative_asymmetry": 0.0831758034026465,
+        "wilson95_even": [
+          0.40464654059394795,
+          0.4348594484524501
+        ],
+        "wilson95_odd": [
+          0.37264399682160826,
+          0.4024692583467489
+        ],
+        "sign_positive": true,
+        "total_leakage": 0.403564453125
+      },
+      {
+        "depth": 8,
+        "window": "this campaign",
+        "source": "depth_profile_2026-07-22",
+        "leak_even": 0.4599609375,
+        "leak_odd": 0.423095703125,
+        "relative_asymmetry": 0.08713214079630698,
+        "wilson95_even": [
+          0.4447425144866585,
+          0.47525439190729063
+        ],
+        "wilson95_odd": [
+          0.408044665595842,
+          0.4382908558315603
+        ],
+        "sign_positive": true,
+        "total_leakage": 0.4415283203125
+      },
+      {
+        "depth": 10,
+        "window": "prior window",
+        "source": "powered_block_2026-07-21",
+        "leak_even": 0.45751953125,
+        "leak_odd": 0.481201171875,
+        "relative_asymmetry": -0.049213597158802636,
+        "wilson95_even": [
+          0.4423095779055604,
+          0.4728090910733857
+        ],
+        "wilson95_odd": [
+          0.46592455376861946,
+          0.49651301813585663
+        ],
+        "sign_positive": false,
+        "total_leakage": 0.4693603515625
+      },
+      {
+        "depth": 12,
+        "window": "this campaign",
+        "source": "depth_profile_2026-07-22",
+        "leak_even": 0.49609375,
+        "leak_odd": 0.48291015625,
+        "relative_asymmetry": 0.027300303336703743,
+        "wilson95_even": [
+          0.4807928333637309,
+          0.5114019867722641
+        ],
+        "wilson95_odd": [
+          0.467630059998326,
+          0.49822227809665226
+        ],
+        "sign_positive": true,
+        "total_leakage": 0.489501953125
+      }
+    ]
+  },
+  "per_repetition_drift": [
+    {
+      "depth": 8,
+      "repetition": 1,
+      "leak_even": 0.4833984375,
+      "leak_odd": 0.4375
+    },
+    {
+      "depth": 8,
+      "repetition": 2,
+      "leak_even": 0.482421875,
+      "leak_odd": 0.4150390625
+    },
+    {
+      "depth": 8,
+      "repetition": 3,
+      "leak_even": 0.4365234375,
+      "leak_odd": 0.4140625
+    },
+    {
+      "depth": 8,
+      "repetition": 4,
+      "leak_even": 0.4375,
+      "leak_odd": 0.42578125
+    },
+    {
+      "depth": 12,
+      "repetition": 1,
+      "leak_even": 0.5048828125,
+      "leak_odd": 0.498046875
+    },
+    {
+      "depth": 12,
+      "repetition": 2,
+      "leak_even": 0.5009765625,
+      "leak_odd": 0.4716796875
+    },
+    {
+      "depth": 12,
+      "repetition": 3,
+      "leak_even": 0.4775390625,
+      "leak_odd": 0.478515625
+    },
+    {
+      "depth": 12,
+      "repetition": 4,
+      "leak_even": 0.5009765625,
+      "leak_odd": 0.4833984375
+    }
+  ],
+  "interpretation_boundary": "device-noise statement only: exact statevector baseline fixes noiseless parity leakage at zero (AUD-6)"
+}

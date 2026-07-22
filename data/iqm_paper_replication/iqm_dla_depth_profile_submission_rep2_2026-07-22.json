@@ -1,0 +1,31 @@
+{
+  "campaign": "iqm_dla_depth_profile_prereg_2026-07-22",
+  "quantum_computer": "garnet",
+  "date": "2026-07-22",
+  "repetition": 2,
+  "layout": [
+    2,
+    7,
+    12,
+    13
+  ],
+  "layout_choice": "primary",
+  "transpiled_depths": {
+    "main_d8_even_rep2": 129,
+    "main_d8_odd_rep2": 129,
+    "main_d12_even_rep2": 189,
+    "main_d12_odd_rep2": 189
+  },
+  "jobs": [
+    {
+      "job_id": "019f87eb-30b1-71f3-9c7d-1286fd6fdcf5",
+      "shots": 1024,
+      "labels": [
+        "main_d8_even_rep2",
+        "main_d8_odd_rep2",
+        "main_d12_even_rep2",
+        "main_d12_odd_rep2"
+      ]
+    }
+  ]
+}
