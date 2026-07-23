@@ -59,6 +59,7 @@ RUN pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.t
 COPY tests/ tests/
 COPY tools/ tools/
 COPY .github/workflows/ .github/workflows/
+COPY .github/dependabot.yml .github/dependabot.yml
 # The static Rust-inventory, dependency-evidence, and kernel-execution audits
 # read the engine crate manifest, its locked dependency graph, and every
 # in-tree pyo3-featured member crate the ST-12 program-AD replay extraction
