@@ -16,6 +16,8 @@ Gate = tuple[str, list[str]]
 STUDIO_PROGRAM_AD_QUALITY_RATCHET = [
     "src/scpn_quantum_control/studio/program_ad_replay_artifact.py",
     "tests/test_studio_program_ad_replay_artifact.py",
+    "src/scpn_quantum_control/studio/executive.py",
+    "tests/test_studio_executive.py",
     "tools/program_ad_quality_gates.py",
     "tests/test_studio_program_ad_quality_gate.py",
 ]
@@ -23,8 +25,12 @@ STUDIO_PROGRAM_AD_QUALITY_RATCHET = [
 
 STUDIO_PROGRAM_AD_COVERAGE_COHORT = [
     "tests/test_studio_program_ad_replay_artifact.py",
+    "tests/test_studio_executive.py",
 ]
-"""Python tests that own exact artifact-emitter coverage."""
+"""Python tests that own exact replay-artifact and executive coverage."""
+
+STUDIO_PROGRAM_AD_COVERAGE_INCLUDE = "*/program_ad_replay_artifact.py,*/executive.py"
+"""Exact source-owner patterns enforced against the isolated coverage data."""
 
 STUDIO_PROGRAM_AD_BROWSER_TESTS = [
     "src/panel/programAd.test.ts",
@@ -125,7 +131,7 @@ def build_python_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={STUDIO_PROGRAM_AD_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/program_ad_replay_artifact.py",
+                f"--include={STUDIO_PROGRAM_AD_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -233,6 +239,7 @@ __all__ = [
     "STUDIO_PROGRAM_AD_BROWSER_TESTS",
     "STUDIO_PROGRAM_AD_COVERAGE_COHORT",
     "STUDIO_PROGRAM_AD_COVERAGE_DATA_FILE",
+    "STUDIO_PROGRAM_AD_COVERAGE_INCLUDE",
     "STUDIO_PROGRAM_AD_QUALITY_RATCHET",
     "STUDIO_PROGRAM_AD_REQUIRE_NATIVE_ENV",
     "build_browser_coverage_gate",

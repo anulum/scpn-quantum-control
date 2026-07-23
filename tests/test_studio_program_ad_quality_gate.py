@@ -112,7 +112,7 @@ def test_default_preflight_has_exact_studio_program_ad_coverage() -> None:
     assert "--rcfile=/dev/null" in report_cmd
     assert "--precision=2" in report_cmd
     assert "--fail-under=100" in report_cmd
-    assert "--include=*/program_ad_replay_artifact.py" in report_cmd
+    assert f"--include={program_ad_quality_gates.STUDIO_PROGRAM_AD_COVERAGE_INCLUDE}" in report_cmd
     assert f"--data-file={data_file}" in report_cmd
 
 
@@ -135,7 +135,7 @@ def test_ci_and_preflight_share_studio_program_ad_cohorts() -> None:
     )
     assert ci_coverage_paths == _preflight.STUDIO_PROGRAM_AD_COVERAGE_COHORT
     assert "Enforce Studio Program-AD exact coverage" in workflow
-    assert "--include=*/program_ad_replay_artifact.py" in workflow
+    assert "--include=*/program_ad_replay_artifact.py,*/executive.py" in workflow
     assert "needs['studio-program-ad-quality'].result" in workflow
     coverage_job = workflow[
         workflow.index("  studio-program-ad-quality:") : workflow.index(

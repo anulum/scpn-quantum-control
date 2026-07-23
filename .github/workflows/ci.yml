@@ -179,6 +179,8 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/studio/program_ad_replay_artifact.py
           tests/test_studio_program_ad_replay_artifact.py
+          src/scpn_quantum_control/studio/executive.py
+          tests/test_studio_executive.py
           tools/program_ad_quality_gates.py
           tests/test_studio_program_ad_quality_gate.py
       - name: Ruff NumPy docstrings for Studio Program-AD replay quality cohort
@@ -187,6 +189,8 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio/program_ad_replay_artifact.py
           tests/test_studio_program_ad_replay_artifact.py
+          src/scpn_quantum_control/studio/executive.py
+          tests/test_studio_executive.py
           tools/program_ad_quality_gates.py
           tests/test_studio_program_ad_quality_gate.py
       - name: Type-check MLIR leaf quality cohort
@@ -474,6 +478,7 @@ jobs:
           --branch
           -m pytest -q
           tests/test_studio_program_ad_replay_artifact.py
+          tests/test_studio_executive.py
       - name: Enforce Studio Program-AD exact coverage
         run: >-
           python -m coverage report
@@ -481,7 +486,7 @@ jobs:
           --data-file=.coverage.studio-program-ad
           --precision=2
           --fail-under=100
-          --include=*/program_ad_replay_artifact.py
+          --include=*/program_ad_replay_artifact.py,*/executive.py
 
   whole-program-trace-value-quality:
     needs: lint

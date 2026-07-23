@@ -75,6 +75,7 @@ class VerbContract:
     produces : tuple of str
         The ``studio.*.v1`` evidence-schema families this verb feeds the
         informative federation layer.
+
     """
 
     verb: str
@@ -113,6 +114,7 @@ def resolve_verb_contract(verb: str) -> VerbContract:
     ------
     KeyError
         If no verb with that name is declared on the federation contract.
+
     """
     for declared in QUANTUM_VERBS:
         if declared.name == verb:
@@ -149,6 +151,7 @@ class ExecutiveRequest:
         contract's backend set.
     approved : bool, optional
         Explicit approval for a gated (live-hardware or certified) verb.
+
     """
 
     verb: str
@@ -158,6 +161,7 @@ class ExecutiveRequest:
     approved: bool = False
 
     def __post_init__(self) -> None:
+        """Reject malformed or ambiguous executive requests."""
         if not self.verb:
             raise ValueError("verb must be non-empty")
         if not self.action_id:
@@ -200,6 +204,7 @@ class ExecutionPlan:
         Human-readable ordered steps the execution will take.
     parameters : Mapping
         Normalised, validated parameters the execution consumes.
+
     """
 
     verb: str
@@ -211,6 +216,7 @@ class ExecutionPlan:
     parameters: Mapping[str, Any]
 
     def __post_init__(self) -> None:
+        """Enforce plan consistency with the resolved verb contract."""
         if self.verb != self.contract.verb:
             raise ValueError("plan verb must match its contract verb")
         if not self.backend:
@@ -254,6 +260,7 @@ class ExecutionResult:
         Verb-specific, JSON-serialisable result payload.
     error : str or None, optional
         Failure or gating reason when ``status`` is not ``"succeeded"``.
+
     """
 
     status: ActionStatus
@@ -261,6 +268,7 @@ class ExecutionResult:
     error: str | None = None
 
     def __post_init__(self) -> None:
+        """Enforce the status, output, and error coupling contract."""
         if self.status not in ("succeeded", "failed", "gated"):
             raise ValueError("status must be succeeded, failed, or gated")
         if not isinstance(self.outputs, Mapping):
@@ -296,6 +304,7 @@ class GeneratedScript:
         The full script source.
     digest : str
         Content digest (``sha256:...``) over the source.
+
     """
 
     language: ScriptLanguage
@@ -305,6 +314,7 @@ class GeneratedScript:
     digest: str
 
     def __post_init__(self) -> None:
+        """Validate the reproduction script and its content digest."""
         if self.language != "python":
             raise ValueError("language must be python")
         if not self.filename.endswith(".py"):
@@ -348,6 +358,7 @@ def build_generated_script(
     -------
     GeneratedScript
         The sealed script with its digest attached.
+
     """
     return GeneratedScript(
         language=language,
@@ -375,6 +386,7 @@ class ExecutiveRecord:
         before a script could be written).
     digest : str
         Content digest over ``request``, ``plan``, ``result``, and ``script``.
+
     """
 
     request: ExecutiveRequest
@@ -384,6 +396,7 @@ class ExecutiveRecord:
     digest: str
 
     def __post_init__(self) -> None:
+        """Validate the sealed record and its script/status coupling."""
         expected = _digest(
             {
                 "request": self.request.to_dict(),
@@ -448,6 +461,7 @@ class ActionHandler(ABC):
         -------
         ExecutionPlan
             The resolved plan.
+
         """
 
     @abstractmethod
@@ -463,6 +477,7 @@ class ActionHandler(ABC):
         -------
         ExecutionResult
             The execution outcome.
+
         """
 
     @abstractmethod
@@ -480,6 +495,7 @@ class ActionHandler(ABC):
         -------
         GeneratedScript
             The reproduction script.
+
         """
 
 
@@ -502,6 +518,7 @@ class ActionRegistry:
         ValueError
             If the verb is unknown to the federation contract or already
             registered.
+
         """
         try:
             resolve_verb_contract(handler.verb)
@@ -530,6 +547,7 @@ class ActionRegistry:
         ------
         KeyError
             If no handler is registered for the verb.
+
         """
         if verb not in self._handlers:
             raise KeyError(f"no executive handler registered for verb {verb!r}")
@@ -554,6 +572,7 @@ def preview_action(request: ExecutiveRequest, *, registry: ActionRegistry) -> Ex
     -------
     ExecutionPlan
         The inspectable plan.
+
     """
     handler = registry.resolve(request.verb)
     contract = resolve_verb_contract(request.verb)
@@ -578,6 +597,7 @@ def run_action(request: ExecutiveRequest, *, registry: ActionRegistry) -> Execut
     -------
     ExecutiveRecord
         The sealed executive record.
+
     """
     handler = registry.resolve(request.verb)
     contract = resolve_verb_contract(request.verb)
