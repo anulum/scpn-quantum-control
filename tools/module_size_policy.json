@@ -247,7 +247,7 @@
     },
     {
       "path": "src/scpn_quantum_control/program_ad_alias_contracts.py",
-      "lines": 1558,
+      "lines": 1573,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Immutable Program-AD alias-set, lattice, unknown-edge, and provenance contract graph.",
@@ -400,7 +400,7 @@
     },
     {
       "path": "tests/test_program_ad_alias_contracts.py",
-      "lines": 1638,
+      "lines": 1945,
       "kind": "test",
       "disposition": "cohesive",
       "responsibility": "Program-AD alias/lattice/provenance contract docs, identity, and exhaustive validation-path tests.",

@@ -183,6 +183,7 @@ def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     assert "src/scpn_quantum_control/differentiable_external_validation.py" in (docstring_cmd)
     assert "src/scpn_quantum_control/differentiable_finite_difference.py" in docstring_cmd
     assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in (docstring_cmd)
+    assert "src/scpn_quantum_control/program_ad_alias_contracts.py" in docstring_cmd
     assert "src/scpn_quantum_control/program_ad_registry.py" in docstring_cmd
     assert "src/scpn_quantum_control/studio/evidence_bundle.py" in docstring_cmd
     assert "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py" in (
@@ -194,6 +195,7 @@ def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     assert "tests/test_differentiable_external_validation.py" in docstring_cmd
     assert "tests/test_differentiable_finite_difference.py" in docstring_cmd
     assert "tests/test_differentiable_module_hardening_audit.py" in docstring_cmd
+    assert "tests/test_program_ad_alias_contracts.py" in docstring_cmd
     assert "tests/test_program_ad_registry.py" in docstring_cmd
     assert "tests/test_differentiable_hardening_gate.py" in docstring_cmd
     assert "tools/differentiable_support_matrix_page.py" in docstring_cmd
@@ -472,6 +474,12 @@ def test_default_preflight_has_exact_whole_program_trace_value_coverage() -> Non
     assert "--fail-under=100" in report_cmd
     assert "--include=*/whole_program_trace_values.py" in report_cmd
     assert f"--data-file={data_file}" in report_cmd
+    alias_report_cmd = gate_map["program AD alias-contract exact coverage threshold"]
+    assert alias_report_cmd[:4] == [_preflight._PY, "-m", "coverage", "report"]
+    assert "--precision=2" in alias_report_cmd
+    assert "--fail-under=100" in alias_report_cmd
+    assert "--include=*/program_ad_alias_contracts.py" in alias_report_cmd
+    assert f"--data-file={data_file}" in alias_report_cmd
 
 
 def test_ci_and_preflight_share_whole_program_trace_value_cohorts() -> None:
@@ -502,6 +510,8 @@ def test_ci_and_preflight_share_whole_program_trace_value_cohorts() -> None:
     assert ci_coverage_paths == _preflight.WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT
     assert "Enforce whole-program trace-value exact coverage" in workflow
     assert "--include=*/whole_program_trace_values.py" in workflow
+    assert "Enforce Program-AD alias-contract exact coverage" in workflow
+    assert "--include=*/program_ad_alias_contracts.py" in workflow
     assert "--fail-under=100" in workflow
     assert "needs['whole-program-trace-value-quality'].result" in workflow
 
@@ -895,6 +905,7 @@ def test_main_uses_coverage_pytest_by_default(
         "phase-jax-qnode exact coverage threshold",
         "whole-program trace-value focused coverage",
         "whole-program trace-value exact coverage threshold",
+        "program AD alias-contract exact coverage threshold",
         "studio Program-AD exact browser coverage",
         "pytest + coverage",
         "bandit",

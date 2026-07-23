@@ -62,6 +62,7 @@ class ProgramADAliasSet:
     ValueError
         Raised when metadata is negative, unsorted, or contains empty member
         labels.
+
     """
 
     index: int
@@ -90,6 +91,7 @@ class ProgramADAliasSet:
         dict[str, object]
             Mapping with deterministic list-valued members, versions, and
             mutation-version fields.
+
         """
         return {
             "index": self.index,
@@ -121,6 +123,7 @@ class ProgramADAliasEffectAnalysis:
     ValueError
         Raised when records have the wrong type, mutation effects are
         negative or unsorted, or the claim boundary is empty.
+
     """
 
     alias_sets: tuple[ProgramADAliasSet, ...]
@@ -153,6 +156,7 @@ class ProgramADAliasEffectAnalysis:
         dict[str, object]
             Mapping containing serialised alias sets, mutation effects, raw
             alias-edge rows, unknown-aliasing state, and claim boundary.
+
         """
         return {
             "alias_sets": [alias_set.as_dict() for alias_set in self.alias_sets],
@@ -193,6 +197,7 @@ class ProgramADStaticAliasLatticeComponent:
     ValueError
         Raised when component metadata is negative, empty, duplicated, or not
         deterministically sorted.
+
     """
 
     index: int
@@ -234,6 +239,7 @@ class ProgramADStaticAliasLatticeComponent:
         dict[str, object]
             Mapping with deterministic list-valued members, edge kinds, and
             version fields.
+
         """
         return {
             "index": self.index,
@@ -264,6 +270,7 @@ class ProgramADUnknownAliasEdge:
     ValueError
         Raised when labels are empty, the edge kind is already supported, or
         the version is negative.
+
     """
 
     source: str
@@ -291,6 +298,7 @@ class ProgramADUnknownAliasEdge:
         -------
         dict[str, object]
             Mapping with source, target, unsupported kind, and version.
+
         """
         return {
             "source": self.source,
@@ -324,6 +332,7 @@ class ProgramADViewAliasProvenance:
     ValueError
         Raised when labels are malformed, counters are negative, or the target
         marker does not match the parsed operation fields.
+
     """
 
     source: str
@@ -361,6 +370,7 @@ class ProgramADViewAliasProvenance:
         dict[str, object]
             Mapping with the source, target marker, parsed operation fields,
             and Program AD version.
+
         """
         return {
             "source": self.source,
@@ -394,6 +404,7 @@ class ProgramADListAliasProvenance:
     ValueError
         Raised when list markers, target markers, target kinds, or versions do
         not match the supported static-list alias contract.
+
     """
 
     source: str
@@ -435,6 +446,7 @@ class ProgramADListAliasProvenance:
         dict[str, object]
             Mapping with source and target markers, parsed list name, target
             kind, and Program AD version.
+
         """
         return {
             "source": self.source,
@@ -469,6 +481,7 @@ class ProgramADLoopCarriedStateProvenance:
     ValueError
         Raised when loop markers are malformed, labels do not match the
         supported entry/backedge contract, or the version is negative.
+
     """
 
     source: str
@@ -519,6 +532,7 @@ class ProgramADLoopCarriedStateProvenance:
         dict[str, object]
             Mapping with source and target loop markers, parsed state labels,
             and Program AD version.
+
         """
         return {
             "source": self.source,
@@ -555,6 +569,7 @@ class ProgramADControlPathAliasProvenance:
     ValueError
         Raised when control-path markers are malformed, branch metadata is
         unsupported, or the version is negative.
+
     """
 
     source: str
@@ -610,6 +625,7 @@ class ProgramADControlPathAliasProvenance:
         dict[str, object]
             Mapping with source and target markers, parsed branch metadata, and
             Program AD version.
+
         """
         return {
             "source": self.source,
@@ -650,6 +666,7 @@ class ProgramADRebindingAliasProvenance:
     ValueError
         Raised when rebinding markers mix local and expression metadata, labels
         are malformed, or the version is negative.
+
     """
 
     source: str
@@ -725,6 +742,7 @@ class ProgramADRebindingAliasProvenance:
         dict[str, object]
             Mapping with rebinding source, target, parsed metadata, and Program
             AD version.
+
         """
         return {
             "source": self.source,
@@ -807,6 +825,7 @@ class ProgramADStaticAliasLatticeReport:
         Raised when report fields are unsorted, inconsistent with their
         blocker reasons, contain malformed provenance rows, or claim
         completeness while blockers remain.
+
     """
 
     components: tuple[ProgramADStaticAliasLatticeComponent, ...]
@@ -1415,11 +1434,6 @@ class ProgramADStaticAliasLatticeReport:
                 "complete program AD static alias lattice cannot carry "
                 "unsupported_python_semantics"
             )
-        if self.complete and self.unsupported_object_attribute_roots:
-            raise ValueError(
-                "complete program AD static alias lattice cannot carry "
-                "unsupported_object_attribute_roots"
-            )
         if self.mutation_effects and mutation_blocker not in self.blocker_reasons:
             raise ValueError(
                 "program AD static alias lattice mutation_effects require a blocker reason"
@@ -1471,6 +1485,7 @@ class ProgramADStaticAliasLatticeReport:
         dict[str, object]
             Mapping that serialises components, blockers, typed provenance,
             unsupported semantics, completeness, and claim boundary.
+
         """
         return {
             "components": [component.as_dict() for component in self.components],

@@ -122,6 +122,21 @@ DOCSTRING_SECTION_TARGETS: tuple[tuple[str, object, tuple[str, ...]], ...] = (
 )
 
 
+def _alias_lattice_report(**overrides: object) -> ProgramADStaticAliasLatticeReport:
+    values: dict[str, object] = {
+        "components": (),
+        "mutation_effects": (),
+        "non_executed_phi_nodes": (),
+        "non_executed_control_alias_edges": (),
+        "unknown_alias_edge_kinds": (),
+        "blocker_reasons": (),
+        "complete": False,
+        "claim_boundary": "static_alias_lattice_over_emitted_program_ad_ir",
+    }
+    values.update(overrides)
+    return ProgramADStaticAliasLatticeReport(**cast(Any, values))
+
+
 def test_program_ad_alias_public_docstrings_define_contract_sections() -> None:
     """Alias-analysis public exports should document construction and failure contracts."""
     for qualified_name, target, required_sections in DOCSTRING_SECTION_TARGETS:
@@ -1636,3 +1651,295 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             complete=False,
             claim_boundary="",
         )
+
+
+def test_program_ad_alias_provenance_rejects_every_malformed_marker_shape() -> None:
+    """Typed provenance should fail closed for every supported marker component."""
+    with pytest.raises(ValueError, match="must match operation"):
+        ProgramADViewAliasProvenance("%a", "view:getitem:9[0]", "getitem", 8, 0, 0)
+
+    for kwargs, match in (
+        (
+            dict(
+                source="list:",
+                target="name:alias",
+                list_name="scratch",
+                target_kind="local_name",
+                version=0,
+            ),
+            "include a list name",
+        ),
+        (
+            dict(
+                source="list:scratch",
+                target="name:",
+                list_name="scratch",
+                target_kind="local_name",
+                version=0,
+            ),
+            "must name a local",
+        ),
+        (
+            dict(
+                source="list:scratch",
+                target="name:alias",
+                list_name="scratch",
+                target_kind="indexed_mutation_source",
+                version=0,
+            ),
+            "mutation target",
+        ),
+    ):
+        with pytest.raises(ValueError, match=match):
+            ProgramADListAliasProvenance(**cast(Any, kwargs))
+
+    with pytest.raises(ValueError, match="source must match state_name"):
+        ProgramADLoopCarriedStateProvenance(
+            "loop:other:entry", "loop:carry:backedge", "carry", "entry", "backedge", 0
+        )
+
+    for kwargs, match in (
+        (
+            dict(
+                source="control:if:4:body",
+                target="control:",
+                branch_line=4,
+                branch_arm="body",
+                target_label="target",
+                version=0,
+            ),
+            "include a label",
+        ),
+        (
+            dict(
+                source="control:if:4:body",
+                target="control:target",
+                branch_line=4,
+                branch_arm="body",
+                target_label="",
+                version=0,
+            ),
+            "target_label",
+        ),
+    ):
+        with pytest.raises(ValueError, match=match):
+            ProgramADControlPathAliasProvenance(**cast(Any, kwargs))
+
+    local_defaults: dict[str, object] = dict(
+        source="name:seed",
+        target="name:result",
+        binding_kind="local",
+        source_name="seed",
+        expression_line=None,
+        expression_label=None,
+        target_name="result",
+        version=0,
+    )
+    expression_defaults: dict[str, object] = dict(
+        source="expr:4:seed+1",
+        target="name:result",
+        binding_kind="expression",
+        source_name=None,
+        expression_line=4,
+        expression_label="seed+1",
+        target_name="result",
+        version=0,
+    )
+    rebinding_cases: tuple[tuple[dict[str, object], str], ...] = (
+        ({**local_defaults, "target": "result"}, "target must be a local name"),
+        ({**local_defaults, "target": "name:"}, "target must name a local"),
+        ({**local_defaults, "target_name": ""}, "target_name must be non-empty"),
+        ({**local_defaults, "source": "name:"}, "source must name a local"),
+        ({**local_defaults, "source_name": ""}, "source_name must be non-empty"),
+        ({**local_defaults, "source_name": "other"}, "source_name must match source"),
+        ({**local_defaults, "expression_line": 4}, "cannot carry expression metadata"),
+        ({**expression_defaults, "expression_line": 0}, "expression_line must be positive"),
+        ({**expression_defaults, "expression_label": ""}, "expression_label must be non-empty"),
+    )
+    for kwargs, match in rebinding_cases:
+        with pytest.raises(ValueError, match=match):
+            ProgramADRebindingAliasProvenance(**cast(Any, kwargs))
+
+
+def test_program_ad_alias_lattice_rejects_all_cross_field_inconsistencies() -> None:
+    """The lattice report should reject malformed ordering, provenance, and blockers."""
+    control_a = ProgramADControlPathAliasProvenance(
+        "control:if:4:body", "control:name:a", 4, "body", "name:a", 0
+    )
+    control_b = ProgramADControlPathAliasProvenance(
+        "control:if:5:body", "control:name:b", 5, "body", "name:b", 0
+    )
+    list_a = ProgramADListAliasProvenance("list:a", "name:a", "a", "local_name", 0)
+    list_b = ProgramADListAliasProvenance("list:b", "name:b", "b", "local_name", 0)
+    loop_a = ProgramADLoopCarriedStateProvenance(
+        "loop:a:entry", "loop:a:backedge", "a", "entry", "backedge", 0
+    )
+    loop_b = ProgramADLoopCarriedStateProvenance(
+        "loop:b:entry", "loop:b:backedge", "b", "entry", "backedge", 0
+    )
+    rebinding_a = ProgramADRebindingAliasProvenance(
+        "name:a", "name:c", "local", "a", None, None, "c", 0
+    )
+    rebinding_b = ProgramADRebindingAliasProvenance(
+        "name:b", "name:d", "local", "b", None, None, "d", 0
+    )
+
+    invalid_reports = (
+        (dict(control_path_alias_provenance=cast(Any, (object(),))), "control_path_alias"),
+        (
+            dict(control_path_alias_provenance=(control_b, control_a)),
+            "control_path_alias_provenance must be sorted unique",
+        ),
+        (
+            dict(
+                control_path_alias_provenance=(control_a,),
+                non_executed_control_alias_edges=("wrong->edge",),
+            ),
+            "must match non_executed_control_alias_edges",
+        ),
+        (dict(malformed_control_path_alias_edges=("",)), "must contain non-empty strings"),
+        (dict(malformed_control_path_alias_edges=("z", "a")), "must be sorted and unique"),
+        (dict(malformed_view_alias_edges=("z", "a")), "must be sorted and unique"),
+        (dict(list_alias_provenance=(list_b, list_a)), "list_alias_provenance must be sorted"),
+        (dict(malformed_list_alias_edges=("z", "a")), "must be sorted and unique"),
+        (
+            dict(loop_carried_state_provenance=(loop_b, loop_a)),
+            "loop_carried_state_provenance must be sorted",
+        ),
+        (
+            dict(malformed_loop_carried_state_edges=("z", "a")),
+            "must be sorted and unique",
+        ),
+        (
+            dict(rebinding_alias_provenance=(rebinding_b, rebinding_a)),
+            "rebinding_alias_provenance must be sorted",
+        ),
+        (
+            dict(malformed_rebinding_alias_edges=("z", "a")),
+            "must be sorted and unique",
+        ),
+        (dict(unsupported_object_attribute_roots=("z", "a")), "must be sorted and unique"),
+        (dict(unsupported_object_attribute_roots=("captured",)), "must match"),
+    )
+    for overrides, match in invalid_reports:
+        with pytest.raises(ValueError, match=match):
+            _alias_lattice_report(**overrides)
+
+    control_component = ProgramADStaticAliasLatticeComponent(
+        0, ("control:if:4:body", "control:name:a"), ("control_path_alias",), (0,), ()
+    )
+    loop_component = ProgramADStaticAliasLatticeComponent(
+        0, ("loop:a:backedge", "loop:a:entry"), ("loop_carried_state",), (0,), ()
+    )
+    component_cases = (
+        (dict(components=(control_component,)), "control-path alias components require"),
+        (
+            dict(
+                control_path_alias_provenance=(control_a,),
+                non_executed_control_alias_edges=("control:if:4:body->control:name:a",),
+            ),
+            "control-path alias provenance requires",
+        ),
+        (dict(components=(loop_component,)), "loop-carried state components require"),
+        (
+            dict(loop_carried_state_provenance=(loop_a,)),
+            "loop-carried state provenance requires",
+        ),
+    )
+    for overrides, match in component_cases:
+        with pytest.raises(ValueError, match=match):
+            _alias_lattice_report(**overrides)
+
+    unknown = ProgramADUnknownAliasEdge("runtime:a", "%0", "runtime_unknown_alias", 0)
+    complete_cases = (
+        (
+            dict(
+                components=(control_component,),
+                non_executed_control_alias_edges=("control:if:4:body->control:name:a",),
+                control_path_alias_provenance=(control_a,),
+                complete=True,
+            ),
+            "cannot carry control-path aliases",
+        ),
+        (
+            dict(malformed_control_path_alias_edges=("bad",), complete=True),
+            "cannot carry malformed control-path",
+        ),
+        (
+            dict(
+                unknown_alias_edge_kinds=("runtime_unknown_alias",),
+                unknown_alias_edges=(unknown,),
+                complete=True,
+            ),
+            "cannot carry unknown_alias_edges",
+        ),
+        (
+            dict(malformed_view_alias_edges=("bad",), complete=True),
+            "cannot carry malformed view-alias",
+        ),
+        (
+            dict(malformed_rebinding_alias_edges=("bad",), complete=True),
+            "cannot carry malformed rebinding-alias",
+        ),
+    )
+    for overrides, match in complete_cases:
+        with pytest.raises(ValueError, match=match):
+            _alias_lattice_report(**overrides)
+
+    blocker_cases = (
+        (
+            dict(non_executed_control_alias_edges=("a->b",)),
+            "control-path aliases require a blocker",
+        ),
+        (
+            dict(blocker_reasons=("control_path_aliases_require_branch_semantics",)),
+            "control-path blocker requires",
+        ),
+        (
+            dict(malformed_control_path_alias_edges=("bad",)),
+            "malformed control-path alias edges require",
+        ),
+        (
+            dict(blocker_reasons=("control_path_alias_provenance_requires_parseable_targets",)),
+            "malformed control-path alias blocker requires",
+        ),
+        (
+            dict(blocker_reasons=("view_alias_provenance_requires_parseable_targets",)),
+            "malformed view-alias blocker requires",
+        ),
+        (
+            dict(blocker_reasons=("list_alias_provenance_requires_parseable_targets",)),
+            "malformed list-alias blocker requires",
+        ),
+        (
+            dict(blocker_reasons=("loop_carried_state_provenance_requires_parseable_targets",)),
+            "malformed loop-carried state blocker requires",
+        ),
+        (
+            dict(blocker_reasons=("rebinding_alias_provenance_requires_parseable_targets",)),
+            "malformed rebinding-alias blocker requires",
+        ),
+    )
+    for overrides, match in blocker_cases:
+        with pytest.raises(ValueError, match=match):
+            _alias_lattice_report(**overrides)
+
+    diagnostic = WholeProgramUnsupportedSemanticDiagnostic(
+        semantic="object_attribute",
+        detail="captured",
+        line_number=1,
+        absolute_line_number=1,
+        region_ids=("root",),
+        bytecode_offsets=(0,),
+    )
+    report = _alias_lattice_report(
+        unsupported_python_semantics=("object_attribute",),
+        unsupported_semantic_diagnostics=(diagnostic,),
+        unsupported_object_attribute_roots=("captured",),
+        unsupported_object_attribute_details=("captured",),
+        blocker_reasons=(
+            "object_attributes_require_static_object_model",
+            "unsupported_python_semantics_require_frontend_lowering",
+        ),
+    )
+    assert report.unsupported_object_attribute_roots == ("captured",)
