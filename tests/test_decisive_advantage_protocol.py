@@ -82,7 +82,10 @@ def _rowset(
 
 
 class TestDecisionCriterion:
+    """Verify criterion invariants and JSON-ready serialisation."""
+
     def test_valid_criterion_serialises(self) -> None:
+        """A valid criterion preserves its decision size in the payload."""
         criterion = DecisionCriterion(
             observable="order_parameter_R",
             target_size=12,
@@ -106,6 +109,7 @@ class TestDecisionCriterion:
         ],
     )
     def test_invalid_criterion_raises(self, kwargs: dict[str, Any], match: str) -> None:
+        """Each empty, non-positive, or non-finite field fails closed."""
         base = {
             "observable": "R",
             "target_size": 12,
@@ -120,17 +124,22 @@ class TestDecisionCriterion:
 
 
 class TestSubmissionGate:
+    """Verify preregistered circuit-depth and shot ceilings."""
+
     def test_within_ceilings_passes(self) -> None:
+        """Values exactly at both ceilings pass without reasons."""
         gate = SubmissionGate(max_circuit_depth=400, max_total_shots=8192)
         assert gate.check(400, 8192) == (True, ())
 
     def test_both_breaches_reported(self) -> None:
+        """Simultaneous depth and shot breaches report both reasons."""
         gate = SubmissionGate(max_circuit_depth=400, max_total_shots=8192)
         passed, reasons = gate.check(401, 9000)
         assert passed is False
         assert len(reasons) == 2
 
     def test_serialisation(self) -> None:
+        """The submission gate serialises both ceilings exactly."""
         gate = SubmissionGate(max_circuit_depth=400, max_total_shots=8192)
         assert gate.to_dict() == {"max_circuit_depth": 400, "max_total_shots": 8192}
 
@@ -139,12 +148,16 @@ class TestSubmissionGate:
         [(0, 10, "max_circuit_depth"), (10, 0, "max_total_shots")],
     )
     def test_invalid_gate_raises(self, depth: int, shots: int, match: str) -> None:
+        """A non-positive depth or shot ceiling is rejected."""
         with pytest.raises(ValueError, match=match):
             SubmissionGate(max_circuit_depth=depth, max_total_shots=shots)
 
 
 class TestProtocolConstruction:
+    """Verify decisive-protocol cross-field construction contracts."""
+
     def test_size_absent_from_protocol_raises(self) -> None:
+        """The underlying protocol must contain only the decision size."""
         criterion = DecisionCriterion(
             observable="R",
             target_size=99,  # not in the default protocol's sizes
@@ -163,6 +176,7 @@ class TestProtocolConstruction:
 
     @pytest.mark.parametrize("estimate", [0.0, -1.0, float("nan")])
     def test_bad_estimate_raises(self, estimate: float) -> None:
+        """Non-positive and non-finite QPU time estimates fail closed."""
         with pytest.raises(ValueError, match="qpu_time_estimate_s"):
             DecisiveAdvantageProtocol(
                 protocol=PROTOCOL.protocol,
@@ -172,21 +186,27 @@ class TestProtocolConstruction:
             )
 
     def test_serialisation_roundtrip_keys(self) -> None:
+        """The protocol payload exposes every top-level contract component."""
         payload = PROTOCOL.to_dict()
         assert set(payload) == {"protocol", "criterion", "gate", "qpu_time_estimate_s"}
 
     def test_validate_rows_delegates(self) -> None:
+        """Row validation delegates a schema-valid complete rowset."""
         rows = _rowset(classical_wall=100.0, exact_wall=90.0, qpu_wall=200.0)
         assert PROTOCOL.validate_rows(rows).valid is True
 
 
 class TestDefaultProtocol:
+    """Verify the preregistered default decision point and baselines."""
+
     def test_identity_and_estimate(self) -> None:
+        """The default targets order parameter R at one positive-time size."""
         assert PROTOCOL.protocol.sizes == (12,)
         assert PROTOCOL.qpu_time_estimate_s > 0.0
         assert PROTOCOL.criterion.observable == "order_parameter_R"
 
     def test_required_baselines_cover_classical_and_exact(self) -> None:
+        """Required rows include matched dynamics but exclude eigensolvers."""
         required = set(PROTOCOL.protocol.required_baselines)
         assert {
             "classical_ode",
@@ -199,23 +219,30 @@ class TestDefaultProtocol:
 
 
 class TestDecisionMatrix:
+    """Verify every fail-closed advantage-decision outcome."""
+
     def test_qpu_beats_best_classical_is_advantage(self) -> None:
+        """A qualifying QPU row strictly faster than classical earns advantage."""
         rows = _rowset(classical_wall=6000.0, exact_wall=6000.0, qpu_wall=100.0)
         assert evaluate_decision(PROTOCOL, rows).label == "qpu_decides_advantage"
 
     def test_classical_faster_but_qpu_beats_exact_is_crossover(self) -> None:
+        """Beating exact but not best-classical yields crossover only."""
         rows = _rowset(classical_wall=100.0, exact_wall=5000.0, qpu_wall=200.0)
         assert evaluate_decision(PROTOCOL, rows).label == "exact_hilbert_space_crossover_only"
 
     def test_classical_fastest_is_classical_wins(self) -> None:
+        """A best-classical row no slower than the QPU yields classical wins."""
         rows = _rowset(classical_wall=100.0, exact_wall=90.0, qpu_wall=5000.0)
         assert evaluate_decision(PROTOCOL, rows).label == "classical_wins"
 
     def test_no_qpu_row_is_inconclusive(self) -> None:
+        """A complete classical rowset without QPU evidence is inconclusive."""
         rows = _rowset(classical_wall=100.0, exact_wall=90.0, qpu_wall=None)
         assert evaluate_decision(PROTOCOL, rows).label == "inconclusive"
 
     def test_invalid_rows_are_inconclusive(self) -> None:
+        """Schema-invalid evidence cannot decide an advantage claim."""
         rows = _rowset(classical_wall=100.0, exact_wall=90.0, qpu_wall=200.0)
         rows[0]["git_commit"] = ""  # break schema validity
         outcome = evaluate_decision(PROTOCOL, rows)
@@ -223,11 +250,13 @@ class TestDecisionMatrix:
         assert any("validation" in reason for reason in outcome.reasons)
 
     def test_accuracy_filter_excludes_inaccurate_qpu(self) -> None:
+        """A fast QPU row above the error target cannot qualify."""
         # QPU is fast but its reference_error exceeds the accuracy target → excluded.
         rows = _rowset(classical_wall=6000.0, exact_wall=6000.0, qpu_wall=100.0, qpu_error=0.5)
         assert evaluate_decision(PROTOCOL, rows).label == "inconclusive"
 
     def test_only_exact_qualifies_is_crossover(self) -> None:
+        """A QPU win against the sole exact reference remains crossover only."""
         # Best-classical rows present for validity but inaccurate → excluded; only
         # the exact row and the QPU row qualify.
         rows = _rowset(
@@ -240,6 +269,7 @@ class TestDecisionMatrix:
         assert evaluate_decision(PROTOCOL, rows).label == "exact_hilbert_space_crossover_only"
 
     def test_no_qualifying_reference_is_inconclusive(self) -> None:
+        """A QPU row alone cannot establish a comparative result."""
         # Every classical and exact row is inaccurate → only the QPU row qualifies.
         rows = _rowset(
             classical_wall=100.0,
@@ -250,11 +280,13 @@ class TestDecisionMatrix:
         assert evaluate_decision(PROTOCOL, rows).label == "inconclusive"
 
     def test_budget_filter_excludes_over_budget_qpu(self) -> None:
+        """A QPU row beyond the wall-time budget cannot qualify."""
         over = PROTOCOL.criterion.budget_wall_time_ms + 1.0
         rows = _rowset(classical_wall=100.0, exact_wall=90.0, qpu_wall=over)
         assert evaluate_decision(PROTOCOL, rows).label == "inconclusive"
 
     def test_skipped_rows_do_not_count_as_timing(self) -> None:
+        """A skipped classical row cannot masquerade as a fast timing."""
         # A size-gated skip is a valid row but must not count as a fast classical
         # timing: the MPS row is skipped with a deceptively small wall time, so it
         # is excluded from qualification and the QPU still beats the ODE at 6000 ms.
@@ -265,6 +297,7 @@ class TestDecisionMatrix:
         assert evaluate_decision(PROTOCOL, rows).label == "qpu_decides_advantage"
 
     def test_row_without_reference_error_does_not_qualify(self) -> None:
+        """A QPU row lacking its accuracy metric cannot qualify."""
         # An ok row lacking the accuracy metric cannot decide; here the QPU row
         # loses its reference_error, so no QPU row qualifies.
         rows = _rowset(classical_wall=6000.0, exact_wall=6000.0, qpu_wall=100.0)
@@ -273,6 +306,9 @@ class TestDecisionMatrix:
 
 
 class TestDecisionOutcome:
+    """Verify decision-outcome evidence serialisation."""
+
     def test_outcome_serialises(self) -> None:
+        """The outcome payload preserves its label and ordered reasons."""
         outcome = DecisionOutcome("classical_wins", ("reason",))
         assert outcome.to_dict() == {"label": "classical_wins", "reasons": ["reason"]}

@@ -205,6 +205,50 @@ def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     assert "tests/test_differentiable_reviewer_evidence_page.py" in docstring_cmd
 
 
+def test_static_gates_include_decisive_advantage_quality_ratchets() -> None:
+    """The decisive benchmark source and owner test must stay typed and documented."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+    strict_cmd = gate_map["mypy-strict-decisive-advantage-quality"]
+    docstring_cmd = gate_map["ruff D decisive-advantage quality ratchet"]
+    cohort = _preflight.DECISIVE_ADVANTAGE_QUALITY_RATCHET
+
+    assert "--strict" in strict_cmd
+    assert "--explicit-package-bases" in strict_cmd
+    assert strict_cmd[-len(cohort) :] == cohort
+    assert "--isolated" in docstring_cmd
+    assert "D,D413" in docstring_cmd
+    assert 'lint.pydocstyle.convention = "numpy"' in docstring_cmd
+    assert docstring_cmd[-len(cohort) :] == cohort
+
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    for step_name in (
+        "Type-check decisive-advantage quality cohort",
+        "Ruff NumPy docstrings for decisive-advantage quality cohort",
+    ):
+        block_start = workflow.index(f"      - name: {step_name}")
+        block_end = workflow.index("\n      - name:", block_start + 1)
+        ci_paths = [
+            line.strip()
+            for line in workflow[block_start:block_end].splitlines()
+            if line.strip().startswith(("src/", "tests/", "tools/"))
+        ]
+        assert ci_paths == cohort
+    assert "needs['decisive-advantage-quality'].result" in workflow
+
+
+def test_decisive_advantage_coverage_gate_is_exact_and_focused() -> None:
+    """The decisive benchmark must retain exact statement and branch coverage."""
+    focused_name, focused_cmd = _preflight.DECISIVE_ADVANTAGE_COVERAGE_GATES[0]
+    threshold_name, threshold_cmd = _preflight.DECISIVE_ADVANTAGE_COVERAGE_GATES[1]
+
+    assert focused_name == "decisive-advantage focused coverage"
+    assert "--branch" in focused_cmd
+    assert focused_cmd[-1:] == _preflight.DECISIVE_ADVANTAGE_COVERAGE_COHORT
+    assert threshold_name == "decisive-advantage exact coverage threshold"
+    assert "--fail-under=100" in threshold_cmd
+    assert "--include=*/decisive_advantage_protocol.py" in threshold_cmd
+
+
 def test_static_gates_include_realtime_runtime_quality_ratchets() -> None:
     """Realtime runtime source and focused tests must stay typed and documented."""
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
@@ -528,7 +572,7 @@ def test_ci_and_preflight_share_the_docstring_ratchet_cohort() -> None:
     """CI and the local static gate must enforce the same ordered file cohort."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
     block_start = workflow.index("      - name: Ruff docstring ratchet")
-    block_end = workflow.index("\n\n  mlir-leaf-quality:", block_start)
+    block_end = workflow.index("\n\n  decisive-advantage-quality:", block_start)
     ci_paths = [
         line.strip()
         for line in workflow[block_start:block_end].splitlines()
@@ -901,6 +945,8 @@ def test_main_uses_coverage_pytest_by_default(
         "studio Program-AD Rust kernel tests",
         "studio Program-AD WASM release build",
         "studio Program-AD browser strict typecheck",
+        "decisive-advantage focused coverage",
+        "decisive-advantage exact coverage threshold",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",

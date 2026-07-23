@@ -26,6 +26,7 @@ References
 Quantum-advantage gap contract (``docs/internal/audits/contracts/
 quantum_advantage_gap_contract_2026-04-30.md``): the promotion gate stays closed
 until a task-matched benchmark decides one comparison at matched budget.
+
 """
 
 from __future__ import annotations
@@ -74,6 +75,7 @@ class DecisionCriterion:
         Baseline labels that are the exact reference only (dense statevector
         propagation); beating these but not the best-classical path yields a
         crossover-only label.
+
     """
 
     observable: str
@@ -90,6 +92,7 @@ class DecisionCriterion:
         ------
         ValueError
             If any field is empty, non-positive, or non-finite.
+
         """
         if not self.observable:
             raise ValueError("observable must be non-empty")
@@ -111,6 +114,7 @@ class DecisionCriterion:
         -------
         dict
             JSON-ready mapping of every field.
+
         """
         return {
             "observable": self.observable,
@@ -133,6 +137,7 @@ class SubmissionGate:
         circuits noise-limited rather than decisive.
     max_total_shots
         Total-shot ceiling across the submitted circuits.
+
     """
 
     max_circuit_depth: int
@@ -145,6 +150,7 @@ class SubmissionGate:
         ------
         ValueError
             If either ceiling is not a positive integer.
+
         """
         if self.max_circuit_depth < 1:
             raise ValueError("max_circuit_depth must be positive")
@@ -166,6 +172,7 @@ class SubmissionGate:
         tuple of (bool, tuple of str)
             ``(passed, reasons)`` where ``passed`` is ``True`` only when both
             ceilings hold; ``reasons`` lists every breached ceiling.
+
         """
         reasons: list[str] = []
         if circuit_depth > self.max_circuit_depth:
@@ -183,6 +190,7 @@ class SubmissionGate:
         -------
         dict
             JSON-ready mapping of both ceilings.
+
         """
         return {
             "max_circuit_depth": self.max_circuit_depth,
@@ -200,6 +208,7 @@ class DecisionOutcome:
         The decision label (see :data:`DecisionLabel`).
     reasons
         Human-readable justifications for the label.
+
     """
 
     label: DecisionLabel
@@ -212,6 +221,7 @@ class DecisionOutcome:
         -------
         dict
             JSON-ready mapping of the label and reasons.
+
         """
         return {"label": self.label, "reasons": list(self.reasons)}
 
@@ -231,6 +241,7 @@ class DecisiveAdvantageProtocol:
         Depth and shot ceilings for the QPU submission.
     qpu_time_estimate_s
         Conservative estimated QPU wall-clock, in seconds, for the submission.
+
     """
 
     protocol: ScalingProtocol
@@ -246,6 +257,7 @@ class DecisiveAdvantageProtocol:
         ValueError
             If the underlying protocol is not single-size at the decision size,
             or the QPU time estimate is not finite and positive.
+
         """
         if self.protocol.sizes != (self.criterion.target_size,):
             raise ValueError(
@@ -267,6 +279,7 @@ class DecisiveAdvantageProtocol:
         -------
         ScalingRowValidation
             The delegated validation result.
+
         """
         return validate_scaling_rows(self.protocol, rows)
 
@@ -277,6 +290,7 @@ class DecisiveAdvantageProtocol:
         -------
         dict
             JSON-ready mapping of the protocol, criterion, gate, and estimate.
+
         """
         return {
             "protocol": self.protocol.to_dict(),
@@ -341,6 +355,7 @@ def evaluate_decision(
         only when a QPU row strictly beats a present best-classical row at the
         target size within accuracy and budget; every ambiguous case degrades to
         a weaker label.
+
     """
     validation = protocol.validate_rows(rows)
     if not validation.valid:
@@ -421,6 +436,7 @@ def default_decisive_advantage_protocol() -> DecisiveAdvantageProtocol:
     -------
     DecisiveAdvantageProtocol
         A fully populated, serialisable decisive protocol.
+
     """
     target_size = 12
     common_metrics = ("wall_time_ms", "memory_bytes", "status", "notes", "reference_error")

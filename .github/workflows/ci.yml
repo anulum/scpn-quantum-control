@@ -349,6 +349,49 @@ jobs:
           tools/differentiable_reviewer_evidence_page.py
           tests/test_differentiable_reviewer_evidence_page.py
 
+  decisive-advantage-quality:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check decisive-advantage quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py
+          tests/test_decisive_advantage_protocol.py
+          tools/decisive_advantage_quality_gates.py
+      - name: Ruff NumPy docstrings for decisive-advantage quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py
+          tests/test_decisive_advantage_protocol.py
+          tools/decisive_advantage_quality_gates.py
+      - name: Run decisive-advantage focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.decisive-advantage-quality
+          --branch
+          -m pytest -q
+          tests/test_decisive_advantage_protocol.py
+      - name: Enforce decisive-advantage exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.decisive-advantage-quality
+          --precision=2
+          --fail-under=100
+          --include=*/decisive_advantage_protocol.py
+
   mlir-leaf-quality:
     needs: lint
     runs-on: ubuntu-latest
@@ -1276,13 +1319,14 @@ jobs:
           EOF
 
   ci-gate:
-    needs: [lint, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
+    needs: [lint, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: Check all jobs passed
         run: |
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
+             [[ "${{ needs['decisive-advantage-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['mlir-leaf-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['phase-qnode-affinity-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['studio-program-ad-quality'].result }}" != "success" ]] || \

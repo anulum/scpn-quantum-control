@@ -42,12 +42,14 @@ from shutil import which
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from tools import decisive_advantage_quality_gates as _decisive_advantage_quality_gates
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import program_ad_quality_gates as _program_ad_quality_gates
 else:
     _repo_root = str(Path(__file__).resolve().parents[1])
     if _repo_root not in sys.path:
         sys.path.insert(0, _repo_root)
+    _decisive_advantage_quality_gates = import_module("tools.decisive_advantage_quality_gates")
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
     _program_ad_quality_gates = import_module("tools.program_ad_quality_gates")
 
@@ -105,6 +107,13 @@ DIFFERENTIABLE_DOCSTRING_RATCHET = [
     "tools/differentiable_reviewer_evidence_page.py",
     "tests/test_differentiable_reviewer_evidence_page.py",
 ]
+
+DECISIVE_ADVANTAGE_QUALITY_RATCHET = (
+    _decisive_advantage_quality_gates.DECISIVE_ADVANTAGE_QUALITY_RATCHET
+)
+DECISIVE_ADVANTAGE_COVERAGE_COHORT = (
+    _decisive_advantage_quality_gates.DECISIVE_ADVANTAGE_COVERAGE_COHORT
+)
 
 REALTIME_RUNTIME_QUALITY_RATCHET = [
     "src/scpn_quantum_control/control/realtime_runtime.py",
@@ -350,6 +359,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             *DIFFERENTIABLE_DOCSTRING_RATCHET,
         ],
     ),
+    *_decisive_advantage_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -693,6 +703,8 @@ MLIR_LEAF_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     ),
 ]
 
+DECISIVE_ADVANTAGE_COVERAGE_GATES = _decisive_advantage_quality_gates.build_coverage_gates(_PY)
+
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
         "phase-qnode affinity focused coverage",
@@ -942,6 +954,7 @@ def main() -> int:
             gates.append(STUDIO_PROGRAM_AD_BROWSER_TEST_GATE)
             gates.append(("pytest", _PYTEST_BASE))
         else:
+            gates.extend(DECISIVE_ADVANTAGE_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)
