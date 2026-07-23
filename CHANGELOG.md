@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — qpu_compute product surface (BL-95):
+  `scpn_quantum_control.qpu_compute_product` productises typed compute plan
+  kinds (dry-run simulator default, would-live refuse, ticketed prep),
+  `dry_run_compute_plan` validation without provider submission, and
+  secret-free audit composed with BL-47 hardware-safe posture. Docs:
+  `docs/qpu_compute_product.md`. Completes tier-A P0 integrity spine.
 - 2026-07-23 — Compile & dense resource budget gate (BL-94):
   `scpn_quantum_control.resource_budget_gate` productises fail-closed budgets
   for sparse Pauli/compile construction and dense Hilbert allocations.
