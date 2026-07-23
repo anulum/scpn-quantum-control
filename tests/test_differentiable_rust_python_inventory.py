@@ -37,6 +37,31 @@ from scpn_quantum_control.differentiable_rust_python_inventory import (
     run_differentiable_rust_python_inventory,
     validate_differentiable_rust_python_inventory,
 )
+from tools import differentiable_rust_python_inventory_quality_gates as inventory_quality_gates
+
+
+def test_inventory_quality_gate_spec_is_exact_and_focused() -> None:
+    """The owner gate must mirror strict static and exact branch checks."""
+    static_gates = dict(inventory_quality_gates.build_static_quality_gates("python"))
+    cohort = inventory_quality_gates.DIFFERENTIABLE_RUST_PYTHON_INVENTORY_QUALITY_RATCHET
+
+    assert (
+        static_gates["mypy-strict-differentiable-rust-python-inventory-quality"][-len(cohort) :]
+        == cohort
+    )
+    assert (
+        static_gates["ruff D differentiable-rust-python-inventory quality ratchet"][-len(cohort) :]
+        == cohort
+    )
+
+    coverage_gates = inventory_quality_gates.build_coverage_gates("python")
+    assert "--branch" in coverage_gates[0][1]
+    assert (
+        coverage_gates[0][1][-1:]
+        == inventory_quality_gates.DIFFERENTIABLE_RUST_PYTHON_INVENTORY_COVERAGE_COHORT
+    )
+    assert "--fail-under=100" in coverage_gates[1][1]
+    assert "--include=*/differentiable_rust_python_inventory.py" in coverage_gates[1][1]
 
 
 def _row_record(

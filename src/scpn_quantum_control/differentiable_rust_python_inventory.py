@@ -99,6 +99,7 @@ class DifferentiableRustPythonInventoryRow:
         Explicit gaps and the rounds that own their remediation.
     claim_boundary : str
         Non-promotional interpretation attached to the row.
+
     """
 
     surface_id: str
@@ -130,6 +131,7 @@ class DifferentiableRustPythonInventoryRow:
         ValueError
             If a classification/status is unknown, a required text/path field
             is empty, or a supplied blocker is blank.
+
         """
         if self.classification not in REQUIRED_INVENTORY_CLASSIFICATIONS:
             raise ValueError(f"unknown inventory classification: {self.classification}")
@@ -181,6 +183,7 @@ class DifferentiableRustPythonInventoryRow:
         bool
             ``True`` only for blocker-free Rust-backed rows with complete Rust
             and polyglot parity plus an accepted benchmark classification.
+
         """
         return (
             self.classification == "rust_backed"
@@ -197,6 +200,7 @@ class DifferentiableRustPythonInventoryRow:
         -------
         dict[str, object]
             Row fields with tuples materialised as JSON-ready lists.
+
         """
         return {
             "surface_id": self.surface_id,
@@ -241,6 +245,7 @@ class DifferentiableRustPythonInventory:
         Count of rows in every required classification.
     claim_boundary : str
         Non-promotional interpretation attached to the inventory.
+
     """
 
     schema: str
@@ -259,6 +264,7 @@ class DifferentiableRustPythonInventory:
         -------
         dict[str, object]
             Inventory metadata and nested JSON-ready rows.
+
         """
         return {
             "schema": self.schema,
@@ -286,6 +292,7 @@ class DifferentiableRustPythonInventoryValidation:
         Surface, claim-ledger, and repository-path evidence inspected.
     claim_boundary : str
         Non-promotional interpretation attached to validation evidence.
+
     """
 
     passed: bool
@@ -302,6 +309,7 @@ class DifferentiableRustPythonInventoryValidation:
         -------
         dict[str, object]
             Validation fields with tuples materialised as lists.
+
         """
         return {
             "passed": self.passed,
@@ -331,6 +339,7 @@ def run_differentiable_rust_python_inventory(
     -------
     DifferentiableRustPythonInventory
         Classified surfaces with aggregate rustification readiness.
+
     """
     loaded_ledger = load_differentiable_claim_ledger(ledger_path) if ledger is None else ledger
     claim_rows = {row.claim_id: row for row in loaded_ledger.rows}
@@ -377,6 +386,7 @@ def validate_differentiable_rust_python_inventory(
     -------
     DifferentiableRustPythonInventoryValidation
         Fail-closed structural, claim, path, and readiness evidence.
+
     """
     loaded_ledger = load_differentiable_claim_ledger(ledger_path) if ledger is None else ledger
     claim_rows = {row.claim_id: row for row in loaded_ledger.rows}
@@ -441,6 +451,7 @@ def render_differentiable_rust_python_inventory_markdown(
     -------
     str
         SPDX-prefixed Markdown with readiness, row status, and blockers.
+
     """
     lines = [
         "<!--",

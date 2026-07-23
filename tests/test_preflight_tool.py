@@ -954,6 +954,8 @@ def test_main_uses_coverage_pytest_by_default(
         "decisive-advantage exact coverage threshold",
         "differentiable-scalar-kernels focused coverage",
         "differentiable-scalar-kernels exact coverage threshold",
+        "differentiable-rust-python-inventory focused coverage",
+        "differentiable-rust-python-inventory exact coverage threshold",
         "program-ad-array-indexing focused coverage",
         "program-ad-array-indexing exact coverage threshold",
         "MLIR leaf focused coverage",

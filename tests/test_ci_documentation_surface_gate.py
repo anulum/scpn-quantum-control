@@ -119,6 +119,14 @@ def test_ci_gates_program_ad_array_indexing_exact_quality() -> None:
     assert "Enforce differentiable scalar-kernel exact coverage" in workflow
     assert "--data-file=.coverage.scalar-kernels-quality" in workflow
     assert "--include=*/differentiable_scalar_kernels.py" in workflow
+    assert "Type-check differentiable Rust/Python inventory quality cohort" in workflow
+    assert (
+        "Ruff NumPy docstrings for differentiable Rust/Python inventory quality cohort" in workflow
+    )
+    assert "Run differentiable Rust/Python inventory focused coverage" in workflow
+    assert "Enforce differentiable Rust/Python inventory exact coverage" in workflow
+    assert "--data-file=.coverage.rust-python-inventory-quality" in workflow
+    assert "--include=*/differentiable_rust_python_inventory.py" in workflow
 
 
 def test_trace_value_autodoc_exposes_both_public_value_types() -> None:
