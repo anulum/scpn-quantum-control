@@ -5,6 +5,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-23 — Continuous competitive baseline watch (BL-61):
+  `scpn_quantum_control.competitive_baseline_watch` productises a versioned
+  watch catalogue over the committed competitive-baseline refresh inventory
+  (nine competitors). Inventory query, pin/version honesty
+  (`pinned_snapshot` vs unpinned), `probe_refresh` (never invent-green current),
+  and `probe_feed` toward BL-52 (pointer/pending) and BL-56 (always blocked
+  without scorecard evidence) are fail-closed on blank/unknown ids. Docs:
+  `docs/competitive_baseline_watch.md`. Does not scrape vendors or invent pins.
 - 2026-07-23 — Public API stability programme (BL-97):
   `scpn_quantum_control.public_api_stability` productises a **narrow**
   public-vs-internal catalogue (`semver_stable` for `stable_core` + curated
