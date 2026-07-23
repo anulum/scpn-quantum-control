@@ -5,6 +5,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-23 — Public API stability programme (BL-97):
+  `scpn_quantum_control.public_api_stability` productises a **narrow**
+  public-vs-internal catalogue (`semver_stable` for `stable_core` + curated
+  CLI entry points; experimental workbench and private paths are **not**
+  guaranteed-stable). Inventory query, `classify_api_path`, `probe_deprecation`,
+  `deprecated_public` decorator, and `validate_breaking_change` (refuse public
+  removal without a deprecation record) are fail-closed on blank/unknown ids.
+  Version-compatibility / migration note links `DEPRECATIONS.md` Kuramoto→
+  oscillatools staging. Docs: `docs/public_api_stability.md`. Does **not**
+  freeze the full ~717/1900 workbench export surface (see internal v1 gate).
 - 2026-07-18 — March flagship job-id full disclosure (KIMI audit, AUD-10): the 24
   nonce-blinded March 2026 job-id commitments are now OPENED for everyone.
   `data/march_flagship_verifiability/march_job_id_disclosure_2026-07-18.json` publishes
