@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-23 — Hardware-safe gradient execution product (BL-47):
+  `scpn_quantum_control.hardware_safe_execution` productises Axis-5 safety with
+  a **no-submit default** policy catalogue, shot budgets, honest cost-model
+  status, `dry_run_execution_plan`, `enforce_execution_request` (refuses
+  would-submit and over-budget), and secret-free `build_audit_record`. Never
+  submits QPU jobs or invents hardware results. Docs:
+  `docs/hardware_safe_execution.md`.
 - 2026-07-23 — Continuous competitive baseline watch (BL-61):
   `scpn_quantum_control.competitive_baseline_watch` productises a versioned
   watch catalogue over the committed competitive-baseline refresh inventory
