@@ -10,6 +10,8 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from importlib import import_module
 from typing import cast
 
 import numpy as np
@@ -47,8 +49,43 @@ from scpn_quantum_control.differentiable_transform_algebra import (
     assert_transform_algebra_audit_passes,
     run_transform_algebra_audit,
 )
+from tools import differentiable_api_quality_gates as api_quality_gates
 
 FloatArray = NDArray[np.float64]
+_API_MODULE = import_module("scpn_quantum_control.differentiable_api")
+
+
+def test_api_quality_gate_spec_is_exact_and_focused() -> None:
+    """The API owner gate must mirror strict static and exact branch checks."""
+    static_gates = dict(api_quality_gates.build_static_quality_gates("python"))
+    cohort = api_quality_gates.DIFFERENTIABLE_API_QUALITY_RATCHET
+
+    assert static_gates["mypy-strict-differentiable-api-quality"][-len(cohort) :] == cohort
+    assert static_gates["ruff D differentiable-api quality ratchet"][-len(cohort) :] == cohort
+
+    coverage_gates = api_quality_gates.build_coverage_gates("python")
+    focused_command = coverage_gates[0][1]
+    assert "--branch" in focused_command
+    assert api_quality_gates.DIFFERENTIABLE_API_COVERAGE_SELECTOR in focused_command
+    assert "--fail-under=100" in coverage_gates[1][1]
+    assert "--include=*/differentiable_api.py" in coverage_gates[1][1]
+
+
+@dataclass(frozen=True)
+class _ReportRouteStub:
+    """Typed non-executing report payload for dispatcher coverage."""
+
+    payload: dict[str, object]
+    claim_boundary: str = "bounded local report stub"
+    supported: bool = True
+    method: str = "stub_report"
+    promotion_ready: bool = True
+    rustification_ready: bool = True
+    environment_ready: bool = True
+
+    def to_dict(self) -> dict[str, object]:
+        """Return the exact payload consumed by report wrappers."""
+        return self.payload
 
 
 def _scalar_objective(values: FloatArray) -> float:
@@ -64,6 +101,7 @@ def _periodic_objective(values: FloatArray) -> float:
 
 
 def test_unified_differentiable_value_and_gradient_share_schema() -> None:
+    """Value and gradient routes must share bounded result envelopes."""
     values = np.array([2.0, -1.0], dtype=float)
 
     value = differentiable_value(_scalar_objective, values, method="finite_difference")
@@ -85,6 +123,7 @@ def test_unified_differentiable_value_and_gradient_share_schema() -> None:
 
 
 def test_unified_differentiable_jacobian_and_hessian_routes_are_explicit() -> None:
+    """Jacobian and Hessian routes must expose explicit matrix payloads."""
     values = np.array([2.0, -1.0], dtype=float)
 
     jacobian = differentiable_jacobian(_vector_objective, values)
@@ -110,6 +149,7 @@ def test_unified_differentiable_jacobian_and_hessian_routes_are_explicit() -> No
 
 
 def test_unified_dispatcher_routes_numeric_operations_and_defaults() -> None:
+    """Dispatcher defaults must match explicit finite-difference selections."""
     values = np.array([0.3, -0.2], dtype=float)
 
     value_default = differentiable_api(
@@ -182,6 +222,7 @@ def test_unified_dispatcher_routes_numeric_operations_and_defaults() -> None:
 
 
 def test_unified_differentiable_support_report_fails_closed_for_unsupported_route() -> None:
+    """Unsupported support routes must fail closed with bounded evidence."""
     report = differentiable_support_report(
         gate="unregistered_gate",
         observable="pauli_expectation",
@@ -196,6 +237,7 @@ def test_unified_differentiable_support_report_fails_closed_for_unsupported_rout
 
 
 def test_explain_differentiability_reports_reasons_and_matrices() -> None:
+    """Diagnostics must expose reasons, alternatives, and support matrices."""
     report = explain_differentiability(
         gate="unregistered_gate",
         observable="pauli_expectation",
@@ -229,6 +271,7 @@ def test_explain_differentiability_reports_reasons_and_matrices() -> None:
 
 
 def test_unified_differentiable_compile_report_filters_registered_primitives() -> None:
+    """Compile reports must filter primitives and reject invalid selections."""
     report = differentiable_compile_report(
         primitive_identities=("scpn.program_ad.array:getitem@1",)
     )
@@ -254,6 +297,7 @@ def test_unified_differentiable_compile_report_filters_registered_primitives() -
 
 
 def test_unified_differentiable_transform_algebra_report_is_bounded() -> None:
+    """Transform reports must retain bounded metamorphic evidence."""
     report = differentiable_transform_algebra_report()
     dispatched = differentiable_api("transform_algebra_report")
 
@@ -277,6 +321,7 @@ def test_unified_differentiable_transform_algebra_report_is_bounded() -> None:
 
 
 def test_unified_differentiable_qfi_fss_report_is_bounded() -> None:
+    """QFI FSS reports must retain model and non-hardware boundaries."""
     report = differentiable_qfi_fss_report(
         system_sizes=[2, 3],
         k_range=np.linspace(0.5, 3.0, 6),
@@ -299,12 +344,14 @@ def test_unified_differentiable_qfi_fss_report_is_bounded() -> None:
 
 
 def test_unified_differentiable_qfi_fss_report_uses_default_fss_sizes() -> None:
+    """QFI FSS reports must use the canonical default system sizes."""
     report = differentiable_qfi_fss_report(k_range=np.linspace(0.5, 3.0, 6))
 
     assert report.payload["system_sizes"] == list(DEFAULT_FSS_SYSTEM_SIZES)
 
 
 def test_unified_differentiable_benchmark_report_is_non_performance_evidence() -> None:
+    """Benchmark reports must remain non-performance conformance evidence."""
     _require_torch_backend()
 
     report = differentiable_api("benchmark_report")
@@ -319,6 +366,7 @@ def test_unified_differentiable_benchmark_report_is_non_performance_evidence() -
 
 
 def test_unified_differentiable_dispatcher_and_root_exports() -> None:
+    """Dispatcher and package-root exports must preserve public identity."""
     values = np.array([2.0, -1.0], dtype=float)
     calls = {"count": 0}
 
@@ -399,3 +447,63 @@ def test_unified_differentiable_dispatcher_and_root_exports() -> None:
         differentiable_api("gradient", objective=_scalar_objective)
     with pytest.raises(ValueError, match="unsupported unified differentiable operation"):
         differentiable_api(cast(UnifiedDifferentiableOperation, "unsupported"))
+
+
+def test_report_dispatch_routes_cover_wrappers_without_external_execution(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Report dispatch must cover every local wrapper without external work."""
+    route_specs: tuple[tuple[UnifiedDifferentiableOperation, str, bool, str], ...] = (
+        ("benchmark_report", "build_differentiable_benchmark_report", True, "stub_report"),
+        (
+            "baseline_scorecard",
+            "run_differentiable_baseline_scorecard",
+            True,
+            "differentiable_baseline_scorecard",
+        ),
+        (
+            "competitive_baseline_refresh",
+            "run_competitive_baseline_refresh",
+            False,
+            "differentiable_competitive_baselines",
+        ),
+        (
+            "rust_python_inventory",
+            "run_differentiable_rust_python_inventory",
+            True,
+            "differentiable_rust_python_inventory",
+        ),
+        (
+            "architecture_rustification_map",
+            "run_differentiable_architecture_map",
+            True,
+            "differentiable_architecture_map",
+        ),
+        (
+            "dependency_environment_map",
+            "run_differentiable_dependency_environment_map",
+            True,
+            "differentiable_dependency_environment_map",
+        ),
+        (
+            "isolated_benchmark_plan",
+            "run_differentiable_isolated_benchmark_plan",
+            True,
+            "differentiable_isolated_benchmark_plan",
+        ),
+    )
+
+    for operation, builder_name, expected_supported, expected_method in route_specs:
+        stub = _ReportRouteStub(payload={"route": operation})
+
+        def _factory(bound_stub: _ReportRouteStub = stub) -> _ReportRouteStub:
+            return bound_stub
+
+        monkeypatch.setattr(_API_MODULE, builder_name, _factory)
+        result = differentiable_api(operation)
+
+        assert result.operation == operation
+        assert result.supported is expected_supported
+        assert result.method == expected_method
+        assert result.payload == {"route": operation}
+        assert result.claim_boundary == stub.claim_boundary

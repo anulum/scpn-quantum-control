@@ -318,6 +318,23 @@ jobs:
           src/scpn_quantum_control/differentiable_rust_python_inventory.py
           tests/test_differentiable_rust_python_inventory.py
           tools/differentiable_rust_python_inventory_quality_gates.py
+      - name: Type-check unified differentiable API quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_api.py
+          tests/test_differentiable_api.py
+          tests/test_differentiable_api_contracts.py
+          tools/differentiable_api_quality_gates.py
+          tools/differentiable_quality_gates.py
+      - name: Ruff NumPy docstrings for unified differentiable API quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_api.py
+          tests/test_differentiable_api.py
+          tests/test_differentiable_api_contracts.py
+          tools/differentiable_api_quality_gates.py
+          tools/differentiable_quality_gates.py
       - name: Type-check Program-AD array-indexing quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -625,6 +642,24 @@ jobs:
           --precision=2
           --fail-under=100
           --include=*/differentiable_rust_python_inventory.py
+      - name: Run unified differentiable API focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.differentiable-api-quality
+          --branch
+          -m pytest -q
+          tests/test_differentiable_api.py
+          tests/test_differentiable_api_contracts.py
+          -k 'not unified_differentiable_benchmark_report_is_non_performance_evidence'
+      - name: Enforce unified differentiable API exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.differentiable-api-quality
+          --precision=2
+          --fail-under=100
+          --include=*/differentiable_api.py
       - name: Run Program-AD array-indexing focused coverage
         run: >-
           python -m coverage run

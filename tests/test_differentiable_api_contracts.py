@@ -76,6 +76,7 @@ def _diagnostic_report() -> DifferentiabilityDiagnosticReport:
 
 
 def test_differentiable_dashboard_status_validates_rows() -> None:
+    """Dashboard status contracts must reject ambiguous row evidence."""
     row = DifferentiableDashboardCapabilityRow(
         surface="demo",
         state="unsupported",
@@ -271,7 +272,6 @@ def test_diagnostic_report_validates_blocked_evidence_and_serializes() -> None:
 
 def test_differentiable_api_contracts_are_exact_facade_aliases() -> None:
     """The facade should re-export the exact dependency-free contract objects."""
-
     assert FacadeUnifiedDifferentiableAPIResult is UnifiedDifferentiableAPIResult
     assert FacadeDifferentiabilityDiagnosticReport is DifferentiabilityDiagnosticReport
     assert FacadeDifferentiableDashboardCapabilityRow is DifferentiableDashboardCapabilityRow

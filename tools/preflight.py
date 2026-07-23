@@ -43,8 +43,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from tools import decisive_advantage_quality_gates as _decisive_advantage_quality_gates
-    from tools import differentiable_rust_python_inventory_quality_gates as _inventory_gates
-    from tools import differentiable_scalar_kernels_quality_gates as _scalar_quality_gates
+    from tools import differentiable_quality_gates as _differentiable_quality_gates
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import program_ad_array_indexing_quality_gates as _array_indexing_quality_gates
     from tools import program_ad_quality_gates as _program_ad_quality_gates
@@ -53,8 +52,7 @@ else:
     if _repo_root not in sys.path:
         sys.path.insert(0, _repo_root)
     _decisive_advantage_quality_gates = import_module("tools.decisive_advantage_quality_gates")
-    _inventory_gates = import_module("tools.differentiable_rust_python_inventory_quality_gates")
-    _scalar_quality_gates = import_module("tools.differentiable_scalar_kernels_quality_gates")
+    _differentiable_quality_gates = import_module("tools.differentiable_quality_gates")
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
     _array_indexing_quality_gates = import_module("tools.program_ad_array_indexing_quality_gates")
     _program_ad_quality_gates = import_module("tools.program_ad_quality_gates")
@@ -360,8 +358,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     *_decisive_advantage_quality_gates.build_static_quality_gates(_PY),
-    *_scalar_quality_gates.build_static_quality_gates(_PY),
-    *_inventory_gates.build_static_quality_gates(_PY),
+    *_differentiable_quality_gates.build_static_quality_gates(_PY),
     *_array_indexing_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
@@ -707,8 +704,7 @@ MLIR_LEAF_COVERAGE_GATES: list[tuple[str, list[str]]] = [
 ]
 
 DECISIVE_ADVANTAGE_COVERAGE_GATES = _decisive_advantage_quality_gates.build_coverage_gates(_PY)
-DIFFERENTIABLE_SCALAR_KERNELS_COVERAGE_GATES = _scalar_quality_gates.build_coverage_gates(_PY)
-RUST_PYTHON_INVENTORY_COVERAGE_GATES = _inventory_gates.build_coverage_gates(_PY)
+DIFFERENTIABLE_QUALITY_COVERAGE_GATES = _differentiable_quality_gates.build_coverage_gates(_PY)
 PROGRAM_AD_ARRAY_INDEXING_COVERAGE_GATES = _array_indexing_quality_gates.build_coverage_gates(_PY)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
@@ -961,8 +957,7 @@ def main() -> int:
             gates.append(("pytest", _PYTEST_BASE))
         else:
             gates.extend(DECISIVE_ADVANTAGE_COVERAGE_GATES)
-            gates.extend(DIFFERENTIABLE_SCALAR_KERNELS_COVERAGE_GATES)
-            gates.extend(RUST_PYTHON_INVENTORY_COVERAGE_GATES)
+            gates.extend(DIFFERENTIABLE_QUALITY_COVERAGE_GATES)
             gates.extend(PROGRAM_AD_ARRAY_INDEXING_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)

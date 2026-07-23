@@ -88,6 +88,7 @@ def differentiable_value(
     -------
     UnifiedDifferentiableAPIResult
         Supported ``value`` envelope with evaluation provenance.
+
     """
     result = value_and_grad(objective, values, method=method, step=step)
     return UnifiedDifferentiableAPIResult(
@@ -130,6 +131,7 @@ def differentiable_gradient(
     -------
     UnifiedDifferentiableAPIResult
         Supported ``gradient`` envelope with a copied ``float64`` gradient.
+
     """
     result = value_and_grad(objective, values, method=method, step=step)
     return UnifiedDifferentiableAPIResult(
@@ -172,6 +174,7 @@ def differentiable_jacobian(
     -------
     UnifiedDifferentiableAPIResult
         Supported ``jacobian`` envelope with objective and evaluation data.
+
     """
     result = value_and_jacobian(objective, values, method=method, step=step)
     return UnifiedDifferentiableAPIResult(
@@ -215,6 +218,7 @@ def differentiable_hessian(
     -------
     UnifiedDifferentiableAPIResult
         Supported ``hessian`` envelope with evaluation provenance.
+
     """
     result = value_and_hessian(objective, values, method=method, step=step)
     return UnifiedDifferentiableAPIResult(
@@ -269,6 +273,7 @@ def differentiable_support_report(
     ------
     ValueError
         If a planning dimension or shot budget is invalid.
+
     """
     plan = plan_gradient_support(
         gate=gate,
@@ -330,6 +335,7 @@ def explain_differentiability(
     ------
     ValueError
         If a planning dimension or shot budget is invalid.
+
     """
     plan = plan_gradient_support(
         gate=gate,
@@ -416,6 +422,7 @@ def differentiable_compile_report(
     ------
     ValueError
         If the subset is empty, unknown, or otherwise invalid.
+
     """
     plan = build_compiler_ad_transform_plan(registry, transform=transform)
     selected = _selected_primitive_keys(primitive_identities)
@@ -606,6 +613,7 @@ def differentiable_qfi_fss_report(
         Supported ``qfi_fss_report`` result whose payload contains serialized
         finite-size-scaling evidence and whose claim boundary prevents hardware,
         performance, or thermodynamic-limit promotion.
+
     """
     scan_range = None if k_range is None else np.asarray(k_range, dtype=np.float64)
     result = finite_size_scaling(
@@ -645,6 +653,7 @@ def differentiable_frontend_report(
     -------
     UnifiedDifferentiableAPIResult
         Static frontend envelope with source and bytecode provenance.
+
     """
     report = compile_whole_program_frontend(objective)
     return UnifiedDifferentiableAPIResult(
@@ -710,6 +719,7 @@ def differentiable_api(
     ------
     ValueError
         If the operation is unknown or a required route input is absent.
+
     """
     if operation == "value":
         return differentiable_value(
