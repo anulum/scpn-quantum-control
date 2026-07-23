@@ -5,6 +5,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Whole-program AD product surface (BL-91):
+  `scpn_quantum_control.whole_program_ad_product` productises versioned
+  frontend→IR→adjoint/replay journeys, layered architecture map, fail-closed
+  unknown ids, unsupported-frontend→BL-53 refuse, and refuse invent-green for
+  hardware, polyglot certs (BL-49 residual), and edge/WASM (BL-74 residual).
+  Ambient `whole_program_*`/`program_ad_*` remains experimental_workbench under
+  BL-97 honesty. Docs: `docs/whole_program_ad_product.md`. Second P1 A-product
+  after BL-90.
 - 2026-07-24 — Phase-QNode product surface (BL-90):
   `scpn_quantum_control.phase_qnode_product` productises versioned Phase-QNode
   user journeys (build→differentiate→dry-run and related), support badges,
