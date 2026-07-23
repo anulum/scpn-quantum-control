@@ -568,6 +568,71 @@ def test_decision_more_invariants() -> None:
         )
 
 
+def test_certificate_object_rejects_unknown_schema() -> None:
+    """Construction fail-closed for unknown schema (object path)."""
+    good = build_sample_certificate("scalar_interpreter_replay")
+    with pytest.raises(ValueError, match="unknown certificate schema"):
+        PolyglotParityCertificate(
+            family_id=good.family_id,
+            schema="evil.v0",
+            sample_id=good.sample_id,
+            input_digest=good.input_digest,
+            python_reference_digest=good.python_reference_digest,
+            rust_digest=good.rust_digest,
+            max_abs_error=0.0,
+            supported=True,
+            blocked_reasons=(),
+        )
+    with pytest.raises(ValueError, match="unknown certificate schema"):
+        PolyglotParityCertificate(
+            family_id=good.family_id,
+            schema="ghost.v0",
+            sample_id=good.sample_id,
+            input_digest=good.input_digest,
+            python_reference_digest=good.python_reference_digest,
+            rust_digest=good.rust_digest,
+            max_abs_error=0.0,
+            supported=True,
+            blocked_reasons=(),
+        )
+
+
+def test_verify_object_path_unknown_schema_fail_closed() -> None:
+    """verify_certificate must fail closed when object schema is mutated/wrong.
+
+    Reproduces skeptic gap: build_sample then re-wrap with schema='evil.v0'
+    must not return passed=True even if digests match.
+    """
+    good = build_sample_certificate("scalar_interpreter_replay")
+    # Bypass __post_init__ to simulate a tampered/deserialised object that
+    # reached verify with a wrong schema (defense-in-depth path).
+    evil = PolyglotParityCertificate(
+        family_id=good.family_id,
+        schema=POLYGLOT_PARITY_CERTIFICATE_SCHEMA,
+        sample_id=good.sample_id,
+        input_digest=good.input_digest,
+        python_reference_digest=good.python_reference_digest,
+        rust_digest=good.rust_digest,
+        max_abs_error=0.0,
+        supported=True,
+        blocked_reasons=(),
+    )
+    object.__setattr__(evil, "schema", "evil.v0")
+    decision = verify_certificate(evil)
+    assert decision.passed is False
+    assert decision.outcome == "failed"
+    assert any("schema" in item.lower() for item in decision.blockers)
+    assert "evil.v0" in decision.reason
+
+    # Mapping path still refuses unknown schema (already covered; re-assert).
+    mapping = good.to_dict()
+    mapping["schema"] = "ghost.v0"
+    with pytest.raises(ValueError, match="unknown certificate schema"):
+        certificate_from_dict(mapping)
+    with pytest.raises(ValueError, match="unknown certificate schema"):
+        verify_certificate(mapping)
+
+
 def test_verify_input_and_error_paths() -> None:
     cert = build_sample_certificate("scalar_interpreter_replay")
     bad_input = PolyglotParityCertificate(

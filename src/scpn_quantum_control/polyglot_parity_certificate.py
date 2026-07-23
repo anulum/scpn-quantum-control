@@ -166,6 +166,11 @@ class PolyglotParityCertificate:
             raise ValueError("family_id must be non-empty")
         if not self.schema or not self.schema.strip():
             raise ValueError("schema must be non-empty")
+        if self.schema.strip() != POLYGLOT_PARITY_CERTIFICATE_SCHEMA:
+            raise ValueError(
+                f"unknown certificate schema {self.schema!r}; refuse invent-green "
+                f"(expected {POLYGLOT_PARITY_CERTIFICATE_SCHEMA!r})"
+            )
         if not self.sample_id or not self.sample_id.strip():
             raise ValueError("sample_id must be non-empty")
         for name, digest in (
@@ -702,6 +707,20 @@ def verify_certificate(
         if isinstance(certificate, PolyglotParityCertificate)
         else certificate_from_dict(certificate)
     )
+    # Fail closed on unknown schema for object path as well as mapping path.
+    if not cert.schema or cert.schema.strip() != POLYGLOT_PARITY_CERTIFICATE_SCHEMA:
+        return CertificateVerifyDecision(
+            family_id=cert.family_id if cert.family_id.strip() else "unknown",
+            sample_id=cert.sample_id if cert.sample_id.strip() else "unknown",
+            outcome="failed",
+            passed=False,
+            reason=(
+                f"unknown certificate schema {cert.schema!r}; refuse invent-green "
+                f"(expected {POLYGLOT_PARITY_CERTIFICATE_SCHEMA!r})"
+            ),
+            blockers=(f"unknown certificate schema {cert.schema!r}",),
+            observed_max_abs_error=cert.max_abs_error,
+        )
     family = get_parity_family(cert.family_id)
 
     if expect_supported is not None and cert.supported is not expect_supported:
