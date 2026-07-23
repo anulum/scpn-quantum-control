@@ -83,8 +83,22 @@ def _documentation() -> str:
             waiver.ADVISORY_ID,
             f"setuptools=={waiver.SETUPTOOLS_VERSION}",
             waiver.BUILD_BACKEND,
+            waiver.DEPENDABOT_CONFIG_PATH,
             "Remove the waiver when both pin owners permit the fixed version.",
         )
+    )
+
+
+def _dependabot_config(*, rule: str = "      - dependency-name: setuptools\n") -> str:
+    return (
+        "version: 2\n"
+        "updates:\n"
+        "  - package-ecosystem: pip\n"
+        '    directory: "/"\n'
+        "    schedule:\n"
+        "      interval: weekly\n"
+        "    ignore:\n"
+        f"{rule}"
     )
 
 
@@ -101,6 +115,7 @@ def _write_replay_repository(root: Path) -> None:
     for path, text in _lock_mapping().items():
         (root / path).write_text(text, encoding="utf-8")
     (root / ".github" / "workflows" / "ci.yml").write_text(_workflow(), encoding="utf-8")
+    (root / ".github" / "dependabot.yml").write_text(_dependabot_config(), encoding="utf-8")
     (root / "docs" / "test_infrastructure.md").write_text(_documentation(), encoding="utf-8")
     (root / "src" / "runtime.py").write_text("import pathlib\n", encoding="utf-8")
 
@@ -270,6 +285,65 @@ def test_distribution_audit_rejects_changed_or_invalid_braket_metadata() -> None
     assert any("invalid Requires-Dist metadata" in error for error in errors)
     assert any("no longer hard-pins" in error for error in errors)
     assert any("found 0" in error for error in errors)
+
+
+def test_dependabot_config_audit_requires_one_unconditional_ignore() -> None:
+    """Dependabot must not retry an upstream-blocked setuptools update."""
+    assert waiver.audit_dependabot_config(_dependabot_config()) == ()
+
+    invalid_configs = (
+        _dependabot_config(rule="      - dependency-name: wheel\n"),
+        _dependabot_config(rule=""),
+        _dependabot_config(
+            rule=("      - dependency-name: setuptools\n        versions: ['>=83.0.0']\n")
+        ),
+        _dependabot_config(
+            rule=("      - dependency-name: setuptools\n      - dependency-name: setuptools\n")
+        ),
+        _dependabot_config().replace("updates:\n", "updates:\nupdates:\n"),
+        _dependabot_config().replace("dependency-name", '"dependency-\\u006eame"'),
+        "",
+        _dependabot_config().replace("package-ecosystem", "ecosystem"),
+        _dependabot_config()
+        + (
+            "  - package-ecosystem: pip\n"
+            '    directory: "/"\n'
+            "    ignore:\n"
+            "      - dependency-name: setuptools\n"
+        ),
+        _dependabot_config().replace("    ignore:\n      - dependency-name: setuptools\n", ""),
+        "not: [valid\n",
+    )
+    for config in invalid_configs:
+        errors = waiver.audit_dependabot_config(config)
+        assert len(errors) == 1
+        assert errors[0].startswith("Dependabot waiver configuration is invalid:") or (
+            errors[0] == "Dependabot configuration contains an escaped mapping key"
+        )
+
+
+def test_dependabot_yaml_node_contracts_fail_closed() -> None:
+    """Malformed composed node graphs must not bypass the waiver rule."""
+
+    class Node:
+        def __init__(self, kind: object = "scalar", value: object = "value") -> None:
+            self.id = kind
+            self.value = value
+
+    with pytest.raises(ValueError, match="no string id"):
+        waiver._yaml_kind(Node(kind=None))
+    with pytest.raises(ValueError, match="expected a scalar"):
+        waiver._yaml_scalar(Node(kind="sequence", value=[]))
+    with pytest.raises(ValueError, match="no string value"):
+        waiver._yaml_scalar(Node(value=1))
+    with pytest.raises(ValueError, match="sequence has invalid children"):
+        waiver._yaml_sequence(Node(kind="sequence", value=()))
+    with pytest.raises(ValueError, match="expected a mapping"):
+        waiver._yaml_mapping(Node(kind="scalar"))
+    with pytest.raises(ValueError, match="mapping has invalid entries"):
+        waiver._yaml_mapping(Node(kind="mapping", value=()))
+    with pytest.raises(ValueError, match="mapping has an invalid entry"):
+        waiver._yaml_mapping(Node(kind="mapping", value=[Node()]))
 
 
 def test_installed_distribution_loader_reports_missing_packages() -> None:
@@ -606,7 +680,7 @@ def test_operator_documentation_audit_requires_every_stable_marker() -> None:
 
     errors = waiver.audit_operator_documentation("temporary exception\n")
 
-    assert len(errors) == 5
+    assert len(errors) == 6
     assert errors[0].endswith(waiver.WAIVER_DOC_HEADING)
     assert errors[-1].endswith("Remove the waiver")
 
@@ -621,6 +695,7 @@ def test_repository_and_cli_report_missing_surfaces_without_traceback(
     assert not result.passed
     assert any("cannot read pyproject.toml" in error for error in result.errors)
     assert any("cannot read CI workflow" in error for error in result.errors)
+    assert any("cannot read Dependabot configuration" in error for error in result.errors)
     assert any("cannot read operator documentation" in error for error in result.errors)
 
     status = waiver.main(["--repo-root", str(tmp_path)])

@@ -637,6 +637,9 @@ conditions remain true:
 - every Python CI lock carries that version, its two source-verified hashes,
   and exactly the same two transitive owners;
 - this project still builds with Hatchling and has no setuptools import;
+- the root pip entry in `.github/dependabot.yml` carries exactly one
+  unconditional `setuptools` ignore, preventing an updater from repeatedly
+  attempting the dependency-inconsistent 83.0.0 lock;
 - CI runs the policy audit and ignores only `PYSEC-2026-3447` as two distinct,
   unconditional, blocking `jobs.security` steps; and
 - this operator boundary and its removal rule remain documented.
@@ -666,7 +669,8 @@ must use their canonical unescaped spellings.
 
 Remove the waiver as one dependency-lock change when neither Braket pin owner
 requires `setuptools<83.0.0`, whether the dependency disappears or its allowed
-range admits a fixed release: regenerate all three hashed CI locks, refresh
+range admits a fixed release: remove the Dependabot ignore, regenerate all
+three hashed CI locks, refresh
 the dependent external-validation manifests, remove the single
 `--ignore-vuln` argument and this temporary policy gate, then require an
 exception-free `pip-audit` result. Do not broaden or prolong the exception to

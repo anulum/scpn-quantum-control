@@ -17,6 +17,10 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    # Temporary: both Braket pin owners require setuptools==81.0.0. The
+    # fail-closed waiver audit requires removal when upstream admits >=83.0.0.
+    ignore:
+      - dependency-name: setuptools
   - package-ecosystem: pip
     directory: "/oscillatools"
     schedule:

@@ -64,6 +64,8 @@ EXPECTED_PIP_AUDIT_COMMAND = (
 )
 WAIVER_GATE_COMMAND = "python tools/audit_dependency_security_waiver.py"
 WAIVER_DOC_HEADING = "### Braket-constrained setuptools advisory waiver"
+DEPENDABOT_CONFIG_PATH = ".github/dependabot.yml"
+DEPENDABOT_WAIVER_DEPENDENCY = "setuptools"
 _RUN_KEY_RE = re.compile(
     r"^(?P<indent>\s*)(?P<sequence>-\s+)?(?P<quote>['\"]?)run(?P=quote):\s*"
     r"(?P<value>.*)$"
@@ -86,6 +88,13 @@ class _YamlMappingKeyAuditModule(Protocol):
         """Inspect mapping-key spelling in one YAML document."""
 
 
+class _YamlComposer(Protocol):
+    """Minimal typed PyYAML compose surface used for duplicate-safe validation."""
+
+    def compose(self, stream: str) -> object | None:
+        """Compose one YAML document without collapsing duplicate keys."""
+
+
 def _load_yaml_mapping_key_audit() -> _YamlMappingKeyAuditModule:
     """Load the semantic helper in package and direct-script contexts."""
     try:
@@ -98,6 +107,115 @@ def _load_yaml_mapping_key_audit() -> _YamlMappingKeyAuditModule:
 
 
 _YAML_KEY_AUDIT = _load_yaml_mapping_key_audit()
+
+
+def _yaml_attribute(node: object, name: str) -> object:
+    """Return one dynamically provided PyYAML node attribute."""
+    return cast(object, getattr(node, name, None))
+
+
+def _yaml_kind(node: object) -> str:
+    """Return the validated kind of one composed YAML node."""
+    kind = _yaml_attribute(node, "id")
+    if not isinstance(kind, str):
+        raise ValueError("composed YAML node has no string id")
+    return kind
+
+
+def _yaml_scalar(node: object) -> str:
+    """Return one scalar node value or fail closed on another node kind."""
+    if _yaml_kind(node) != "scalar":
+        raise ValueError("expected a scalar YAML node")
+    value = _yaml_attribute(node, "value")
+    if not isinstance(value, str):
+        raise ValueError("composed YAML scalar has no string value")
+    return value
+
+
+def _yaml_sequence(node: object) -> list[object]:
+    """Return duplicate-preserving sequence children."""
+    if _yaml_kind(node) != "sequence":
+        raise ValueError("expected a sequence YAML node")
+    value = _yaml_attribute(node, "value")
+    if not isinstance(value, list):
+        raise ValueError("composed YAML sequence has invalid children")
+    return cast(list[object], value)
+
+
+def _yaml_mapping(node: object) -> list[tuple[object, object]]:
+    """Return duplicate-preserving mapping entries."""
+    if _yaml_kind(node) != "mapping":
+        raise ValueError("expected a mapping YAML node")
+    value = _yaml_attribute(node, "value")
+    if not isinstance(value, list):
+        raise ValueError("composed YAML mapping has invalid entries")
+    entries: list[tuple[object, object]] = []
+    for entry in cast(list[object], value):
+        if not isinstance(entry, tuple) or len(entry) != 2:
+            raise ValueError("composed YAML mapping has an invalid entry")
+        entries.append((entry[0], entry[1]))
+    return entries
+
+
+def _yaml_values(node: object, key: str) -> list[object]:
+    """Return every value for a scalar mapping key, retaining duplicates."""
+    return [value for candidate, value in _yaml_mapping(node) if _yaml_scalar(candidate) == key]
+
+
+def audit_dependabot_config(config_text: str) -> tuple[str, ...]:
+    """Require Dependabot to honor the active upstream-constrained waiver.
+
+    Parameters
+    ----------
+    config_text:
+        Complete ``.github/dependabot.yml`` source.
+
+    Returns
+    -------
+    tuple[str, ...]
+        Missing, duplicated, malformed, or weakened waiver conditions.
+
+    """
+    try:
+        if _YAML_KEY_AUDIT.has_escaped_double_quoted_mapping_key(config_text):
+            return ("Dependabot configuration contains an escaped mapping key",)
+        composer = cast(_YamlComposer, importlib.import_module("yaml"))
+        root = composer.compose(config_text)
+        if root is None:
+            raise ValueError("document is empty")
+        update_nodes = _yaml_values(root, "updates")
+        if len(update_nodes) != 1:
+            raise ValueError("expected exactly one updates mapping")
+
+        root_pip_updates: list[object] = []
+        for update in _yaml_sequence(update_nodes[0]):
+            ecosystems = _yaml_values(update, "package-ecosystem")
+            directories = _yaml_values(update, "directory")
+            if len(ecosystems) != 1 or len(directories) != 1:
+                continue
+            if _yaml_scalar(ecosystems[0]) == "pip" and _yaml_scalar(directories[0]) == "/":
+                root_pip_updates.append(update)
+        if len(root_pip_updates) != 1:
+            raise ValueError("expected exactly one root pip update entry")
+
+        ignore_nodes = _yaml_values(root_pip_updates[0], "ignore")
+        if len(ignore_nodes) != 1:
+            raise ValueError("root pip update must define exactly one ignore sequence")
+        setuptools_rules: list[object] = []
+        for rule in _yaml_sequence(ignore_nodes[0]):
+            dependencies = _yaml_values(rule, "dependency-name")
+            if len(dependencies) == 1 and _yaml_scalar(dependencies[0]) == (
+                DEPENDABOT_WAIVER_DEPENDENCY
+            ):
+                setuptools_rules.append(rule)
+        if len(setuptools_rules) != 1:
+            raise ValueError("expected exactly one setuptools ignore rule")
+        rule_keys = [_yaml_scalar(key) for key, _value in _yaml_mapping(setuptools_rules[0])]
+        if rule_keys != ["dependency-name"]:
+            raise ValueError("setuptools ignore must be unconditional and dependency-wide")
+    except (ImportError, ValueError) as exc:
+        return (f"Dependabot waiver configuration is invalid: {exc}",)
+    return ()
 
 
 @dataclass(frozen=True)
@@ -673,6 +791,7 @@ def audit_operator_documentation(documentation_text: str) -> tuple[str, ...]:
         ADVISORY_ID,
         f"setuptools=={SETUPTOOLS_VERSION}",
         BUILD_BACKEND,
+        DEPENDABOT_CONFIG_PATH,
         "Remove the waiver",
     )
     missing = tuple(marker for marker in required_markers if marker not in documentation_text)
@@ -721,6 +840,12 @@ def audit_repository(
         errors.extend(audit_ci_workflow(workflow_text))
     except OSError as exc:
         errors.append(f"cannot read CI workflow: {exc}")
+
+    try:
+        dependabot_text = (repo_root / DEPENDABOT_CONFIG_PATH).read_text(encoding="utf-8")
+        errors.extend(audit_dependabot_config(dependabot_text))
+    except OSError as exc:
+        errors.append(f"cannot read Dependabot configuration: {exc}")
 
     try:
         documentation_text = (repo_root / "docs" / "test_infrastructure.md").read_text(
