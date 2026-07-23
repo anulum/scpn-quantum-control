@@ -66,6 +66,7 @@ WAIVER_GATE_COMMAND = "python tools/audit_dependency_security_waiver.py"
 WAIVER_DOC_HEADING = "### Braket-constrained setuptools advisory waiver"
 DEPENDABOT_CONFIG_PATH = ".github/dependabot.yml"
 DEPENDABOT_WAIVER_DEPENDENCY = "setuptools"
+DEPENDABOT_SECURITY_UPDATES_MARKER = "Dependabot security updates are disabled"
 _RUN_KEY_RE = re.compile(
     r"^(?P<indent>\s*)(?P<sequence>-\s+)?(?P<quote>['\"]?)run(?P=quote):\s*"
     r"(?P<value>.*)$"
@@ -792,6 +793,7 @@ def audit_operator_documentation(documentation_text: str) -> tuple[str, ...]:
         f"setuptools=={SETUPTOOLS_VERSION}",
         BUILD_BACKEND,
         DEPENDABOT_CONFIG_PATH,
+        DEPENDABOT_SECURITY_UPDATES_MARKER,
         "Remove the waiver",
     )
     missing = tuple(marker for marker in required_markers if marker not in documentation_text)

@@ -639,7 +639,13 @@ conditions remain true:
 - this project still builds with Hatchling and has no setuptools import;
 - the root pip entry in `.github/dependabot.yml` carries exactly one
   unconditional `setuptools` ignore, preventing an updater from repeatedly
-  attempting the dependency-inconsistent 83.0.0 lock;
+  attempting the dependency-inconsistent 83.0.0 lock during scheduled version
+  updates;
+- Dependabot security updates are disabled at repository level while this
+  waiver is active, because GitHub treats an otherwise correct
+  `all_versions_ignored` security-update result as a failed dynamic run;
+- Dependabot alerts remain enabled and open, so the three lock-specific views
+  of `GHSA-h35f-9h28-mq5c` stay visible until the dependency can be repaired;
 - CI runs the policy audit and ignores only `PYSEC-2026-3447` as two distinct,
   unconditional, blocking `jobs.security` steps; and
 - this operator boundary and its removal rule remain documented.
@@ -670,7 +676,8 @@ must use their canonical unescaped spellings.
 Remove the waiver as one dependency-lock change when neither Braket pin owner
 requires `setuptools<83.0.0`, whether the dependency disappears or its allowed
 range admits a fixed release: remove the Dependabot ignore, regenerate all
-three hashed CI locks, refresh
+three hashed CI locks, re-enable repository-level Dependabot security updates,
+refresh
 the dependent external-validation manifests, remove the single
 `--ignore-vuln` argument and this temporary policy gate, then require an
 exception-free `pip-audit` result. Do not broaden or prolong the exception to

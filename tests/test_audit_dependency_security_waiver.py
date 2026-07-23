@@ -84,6 +84,7 @@ def _documentation() -> str:
             f"setuptools=={waiver.SETUPTOOLS_VERSION}",
             waiver.BUILD_BACKEND,
             waiver.DEPENDABOT_CONFIG_PATH,
+            waiver.DEPENDABOT_SECURITY_UPDATES_MARKER,
             "Remove the waiver when both pin owners permit the fixed version.",
         )
     )
@@ -680,7 +681,7 @@ def test_operator_documentation_audit_requires_every_stable_marker() -> None:
 
     errors = waiver.audit_operator_documentation("temporary exception\n")
 
-    assert len(errors) == 6
+    assert len(errors) == 7
     assert errors[0].endswith(waiver.WAIVER_DOC_HEADING)
     assert errors[-1].endswith("Remove the waiver")
 
