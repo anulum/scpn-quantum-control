@@ -480,6 +480,12 @@ def test_default_preflight_has_exact_whole_program_trace_value_coverage() -> Non
     assert "--fail-under=100" in alias_report_cmd
     assert "--include=*/program_ad_alias_contracts.py" in alias_report_cmd
     assert f"--data-file={data_file}" in alias_report_cmd
+    shape_report_cmd = gate_map["program AD shape-transform exact coverage threshold"]
+    assert shape_report_cmd[:4] == [_preflight._PY, "-m", "coverage", "report"]
+    assert "--precision=2" in shape_report_cmd
+    assert "--fail-under=100" in shape_report_cmd
+    assert "--include=*/program_ad_shape_transforms.py" in shape_report_cmd
+    assert f"--data-file={data_file}" in shape_report_cmd
 
 
 def test_ci_and_preflight_share_whole_program_trace_value_cohorts() -> None:
@@ -512,6 +518,8 @@ def test_ci_and_preflight_share_whole_program_trace_value_cohorts() -> None:
     assert "--include=*/whole_program_trace_values.py" in workflow
     assert "Enforce Program-AD alias-contract exact coverage" in workflow
     assert "--include=*/program_ad_alias_contracts.py" in workflow
+    assert "Enforce Program-AD shape-transform exact coverage" in workflow
+    assert "--include=*/program_ad_shape_transforms.py" in workflow
     assert "--fail-under=100" in workflow
     assert "needs['whole-program-trace-value-quality'].result" in workflow
 
@@ -906,6 +914,7 @@ def test_main_uses_coverage_pytest_by_default(
         "whole-program trace-value focused coverage",
         "whole-program trace-value exact coverage threshold",
         "program AD alias-contract exact coverage threshold",
+        "program AD shape-transform exact coverage threshold",
         "studio Program-AD exact browser coverage",
         "pytest + coverage",
         "bandit",

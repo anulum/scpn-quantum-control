@@ -427,7 +427,7 @@
     },
     {
       "path": "tests/test_program_ad_shape_transforms.py",
-      "lines": 1556,
+      "lines": 1683,
       "kind": "test",
       "disposition": "cohesive",
       "responsibility": "Static Program-AD shape-transform rules, normalization, registry policy, direct adjoints, and failure-boundary tests.",

@@ -318,6 +318,7 @@ jobs:
           src/scpn_quantum_control/differentiable_transform_algebra.py
           src/scpn_quantum_control/program_ad_alias_contracts.py
           src/scpn_quantum_control/program_ad_registry.py
+          src/scpn_quantum_control/program_ad_shape_transforms.py
           src/scpn_quantum_control/studio/evidence_bundle.py
           src/scpn_quantum_control/phase/tensorflow_maintenance.py
           src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py
@@ -329,6 +330,7 @@ jobs:
           tests/test_differentiable_transform_algebra.py
           tests/test_program_ad_alias_contracts.py
           tests/test_program_ad_registry.py
+          tests/test_program_ad_shape_transforms.py
           tests/test_phase_tensorflow_maintenance.py
           tests/test_differentiable_hardening_gate.py
           tools/differentiable_support_matrix_page.py
@@ -575,6 +577,14 @@ jobs:
           --precision=2
           --fail-under=100
           --include=*/program_ad_alias_contracts.py
+      - name: Enforce Program-AD shape-transform exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.whole-program-trace-values
+          --precision=2
+          --fail-under=100
+          --include=*/program_ad_shape_transforms.py
 
   test:
     needs: lint

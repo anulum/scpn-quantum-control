@@ -12,11 +12,13 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Callable
+from dataclasses import replace
 from typing import Any, cast
 
 import numpy as np
 import pytest
 
+from scpn_quantum_control import program_ad_shape_transforms as shape_transforms
 from scpn_quantum_control.differentiable import (
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
     Parameter,
@@ -1554,3 +1556,128 @@ def test_program_ad_axis_permutations_fail_closed_invalid_axes() -> None:
             lambda values: np.sum(np.moveaxis(np.reshape(values, (2, 2, 1)), (0, 0), (1, 2))),
             np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
         )
+
+
+def test_program_ad_shape_registry_helpers_fail_closed_for_every_runtime_contract() -> None:
+    """Shape and static-argument rules should reject every invalid dispatch arity."""
+    for _name, shape_rule in shape_transforms._PROGRAM_AD_SHAPE_SHAPE_RULES.items():
+        with pytest.raises(ValueError, match="requires"):
+            shape_rule(())
+    for _name, static_rule in shape_transforms._PROGRAM_AD_SHAPE_STATIC_ARGUMENT_RULES.items():
+        with pytest.raises(ValueError, match="requires"):
+            static_rule(())
+    with pytest.raises(ValueError, match="requires an array operand"):
+        shape_transforms._program_ad_shape_dtype_rule(())
+
+
+def test_program_ad_shape_registry_helpers_cover_static_shape_edges() -> None:
+    """Registry helpers should normalise valid edges and reject malformed static shapes."""
+    reshape_shape = shape_transforms._PROGRAM_AD_SHAPE_SHAPE_RULES["reshape"]
+    transpose_shape = shape_transforms._PROGRAM_AD_SHAPE_SHAPE_RULES["transpose"]
+    flipud_shape = shape_transforms._PROGRAM_AD_SHAPE_SHAPE_RULES["flipud"]
+    vector = np.arange(6.0, dtype=np.float64)
+    matrix = vector.reshape(2, 3)
+
+    assert reshape_shape((vector, 6)) == (6,)
+    with pytest.raises(ValueError, match="dimensions must be static integers"):
+        reshape_shape((vector, (True, 6)))
+    with pytest.raises(ValueError, match="static integer or shape tuple"):
+        reshape_shape((vector, object()))
+    with pytest.raises(ValueError, match="cannot infer dimension from zero product"):
+        reshape_shape((np.empty((0,), dtype=np.float64), (-1, 0)))
+    with pytest.raises(ValueError, match="must preserve size"):
+        reshape_shape((vector, (4,)))
+
+    assert transpose_shape((vector,)) == vector.shape
+    with pytest.raises(ValueError, match="static axis sequence"):
+        transpose_shape((matrix, object()))
+    with pytest.raises(ValueError, match="match array rank"):
+        transpose_shape((matrix, (0,)))
+    with pytest.raises(ValueError, match="must be a permutation"):
+        transpose_shape((matrix, (0, 0)))
+    with pytest.raises(ValueError, match="at least rank-1"):
+        flipud_shape((np.array(1.0, dtype=np.float64),))
+
+
+def test_program_ad_shape_batching_rule_covers_static_and_mapped_paths() -> None:
+    """Shape batching should reject dynamic metadata and preserve mapped axis order."""
+    batching_rule = shape_transforms._program_ad_shape_batching_rule
+    matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
+
+    with pytest.raises(ValueError, match="axes must match argument count"):
+        batching_rule(np.negative, (matrix,), (), 0)
+    with pytest.raises(ValueError, match="requires an array operand"):
+        batching_rule(np.negative, (), (), 0)
+    assert batching_rule(np.negative, (matrix,), (None,), 0) is not None
+    with pytest.raises(ValueError, match="static non-array arguments only"):
+        batching_rule(np.multiply, (matrix, 2.0), (0, 0), 0)
+
+    mapped = batching_rule(np.multiply, (matrix, 2.0), (0, None), 1)
+    _assert_allclose(mapped, (matrix * 2.0).T, rtol=0.0, atol=0.0)
+
+
+def test_program_ad_shape_contract_validation_rejects_corrupted_registry_rows() -> None:
+    """Dispatch validation should reject every missing or malformed registry facet."""
+    original = primitive_contract_for("scpn.program_ad.shape:reshape")
+    validate = shape_transforms._validate_program_ad_shape_contract_dispatch
+    args = (np.arange(6.0, dtype=np.float64), (2, 3))
+
+    direct_cases = (
+        (replace(original, static_argument_rule=None), "missing static argument rule"),
+        (replace(original, shape_rule=None), "missing shape rule"),
+        (replace(original, dtype_rule=None), "missing dtype rule"),
+        (
+            replace(original, static_argument_rule=cast(Any, lambda _args: [])),
+            "static rule must return a tuple",
+        ),
+        (
+            replace(original, shape_rule=cast(Any, lambda _args: (-1,))),
+            "shape rule must return non-negative integer dimensions",
+        ),
+        (
+            replace(original, dtype_rule=cast(Any, lambda _args: "")),
+            "dtype rule must return a dtype name",
+        ),
+    )
+    for contract, match in direct_cases:
+        with pytest.raises(ValueError, match=match):
+            validate(contract, args)
+
+    with pytest.raises(ValueError, match="no program AD shape primitive identity"):
+        _require_program_ad_shape_contract("missing")
+
+    try:
+        bad_policy = replace(original, nondifferentiable_policy="wrong")
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(bad_policy), overwrite=True
+        )
+        with pytest.raises(ValueError, match="invalid program AD shape primitive policy"):
+            _require_program_ad_shape_contract("reshape")
+
+        bad_effect = replace(original, effect="stateful")
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(bad_effect), overwrite=True
+        )
+        with pytest.raises(ValueError, match="invalid program AD shape primitive effect"):
+            _require_program_ad_shape_contract("reshape")
+
+        incomplete = replace(
+            original,
+            batching_rule=None,
+            lowering_metadata={},
+            shape_rule=None,
+            dtype_rule=None,
+            static_argument_rule=None,
+        )
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(incomplete), overwrite=True
+        )
+        with pytest.raises(ValueError, match="missing batching_rule, lowering_metadata, mlir_op"):
+            _require_program_ad_shape_contract("reshape")
+    finally:
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(original), overwrite=True
+        )
+
+    assert _require_program_ad_shape_contract("reshape") == original
+    _register_program_ad_shape_primitive_contracts()
