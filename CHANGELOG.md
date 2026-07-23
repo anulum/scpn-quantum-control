@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Phase-QNode product surface (BL-90):
+  `scpn_quantum_control.phase_qnode_product` productises versioned Phase-QNode
+  user journeys (build→differentiate→dry-run and related), support badges,
+  public module map, fail-closed unknown journey ids, and refuse invent-green
+  hardware requests. Ambient `phase/qnode_*` remains experimental_workbench
+  under BL-97 honesty. Docs: `docs/phase_qnode_product.md`. First P1 A-product
+  item after completed P0 integrity spine.
 - 2026-07-24 — qpu_compute product surface (BL-95):
   `scpn_quantum_control.qpu_compute_product` productises typed compute plan
   kinds (dry-run simulator default, would-live refuse, ticketed prep),
