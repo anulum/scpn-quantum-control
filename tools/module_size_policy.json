@@ -319,7 +319,7 @@
     },
     {
       "path": "src/scpn_quantum_control/program_ad_shape_transforms.py",
-      "lines": 2015,
+      "lines": 2035,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Static Program-AD reshape, axis, rank, repeat, tile, roll, rotation, and flip derivative rule family.",

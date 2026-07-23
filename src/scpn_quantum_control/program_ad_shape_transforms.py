@@ -80,6 +80,7 @@ def _program_ad_shape_derivative_rule(name: str) -> CustomDerivativeRule:
     CustomDerivativeRule
         Rule whose direct value/JVP callables fail closed because runtime
         execution must pass through operator-intercepted Program AD traces.
+
     """
     return CustomDerivativeRule(
         name=f"program_ad_shape_{name}_trace_contract",
@@ -153,6 +154,7 @@ def program_ad_shape_reshape_derivative_rule(
         If either shape has a negative dimension, if the element counts differ,
         or if the returned callables receive values, tangents, or cotangents
         with the wrong flattened length.
+
     """
     source = _program_ad_shape_normalise_static_shape("reshape", source_shape)
     target = _program_ad_shape_normalise_static_shape("reshape", target_shape)
@@ -216,6 +218,7 @@ def program_ad_shape_ravel_derivative_rule(source_shape: Sequence[int]) -> Custo
         If the source shape has a negative dimension or if the returned
         callables receive values, tangents, or cotangents with the wrong
         flattened length.
+
     """
     source = _program_ad_shape_normalise_static_shape("ravel", source_shape)
     source_size = _program_ad_shape_static_size(source)
@@ -277,6 +280,7 @@ def program_ad_shape_transpose_derivative_rule(
         If the source shape has a negative dimension, if ``axes`` is not a
         complete permutation, or if the returned callables receive vectors with
         incompatible flattened length.
+
     """
     source = _program_ad_shape_normalise_static_shape("transpose", source_shape)
     normalised_axes = _program_ad_shape_normalise_static_axes(source, axes)
@@ -364,6 +368,7 @@ def program_ad_shape_expand_dims_derivative_rule(
         If the source shape has a negative dimension, if any axis is invalid,
         or if the returned callables receive vectors with incompatible
         flattened length.
+
     """
     source = _program_ad_shape_normalise_static_shape("expand_dims", source_shape)
     axes = _program_ad_shape_normalise_expand_dims_axes(source, axis)
@@ -454,6 +459,7 @@ def program_ad_shape_squeeze_derivative_rule(
         If the source shape has a negative dimension, if a selected axis is not
         length one, or if the returned callables receive vectors with
         incompatible flattened length.
+
     """
     source = _program_ad_shape_normalise_static_shape("squeeze", source_shape)
     axes = _program_ad_shape_normalise_squeeze_axes(source, axis)
@@ -531,6 +537,7 @@ def program_ad_shape_swapaxes_derivative_rule(
         If the source shape has a negative dimension, if either axis is outside
         the source rank, or if the returned callables receive vectors with
         incompatible flattened length.
+
     """
     source = _program_ad_shape_normalise_static_shape("swapaxes", source_shape)
     first = _normalise_axis_permutation_axis("swapaxes", axis1, rank=len(source))
@@ -633,6 +640,7 @@ def program_ad_shape_moveaxis_derivative_rule(
         If the source shape has a negative dimension, if source and destination
         axis counts differ, if an axis is invalid, or if the returned callables
         receive vectors with incompatible flattened length.
+
     """
     source_shape_tuple = _program_ad_shape_normalise_static_shape("moveaxis", source_shape)
     source_axes, destination_axes, order = _program_ad_shape_normalise_moveaxis_axes(
@@ -728,6 +736,7 @@ def program_ad_shape_roll_derivative_rule(
         If the source shape has a negative dimension, if shift/axis metadata is
         not static and compatible, or if the returned callables receive vectors
         with incompatible flattened length.
+
     """
     source = _program_ad_shape_normalise_static_shape("roll", source_shape)
     normalised_shift, normalised_axis = _program_ad_shape_normalise_roll_signature(
@@ -820,6 +829,7 @@ def program_ad_shape_flip_derivative_rule(
         If the source shape has a negative dimension, if an axis is outside the
         source rank, or if the returned callables receive vectors with
         incompatible flattened length.
+
     """
     source = _program_ad_shape_normalise_static_shape("flip", source_shape)
     normalised_axis = _program_ad_shape_normalise_flip_axis(source, axis)
@@ -888,6 +898,7 @@ def program_ad_shape_flipud_derivative_rule(source_shape: Sequence[int]) -> Cust
         If the source shape has a negative dimension, if the rank is zero, or
         if the returned callables receive vectors with incompatible flattened
         length.
+
     """
     source = _program_ad_shape_normalise_static_shape("flipud", source_shape)
     if len(source) < 1:
@@ -920,6 +931,7 @@ def program_ad_shape_fliplr_derivative_rule(source_shape: Sequence[int]) -> Cust
         If the source shape has a negative dimension, if the rank is below two,
         or if the returned callables receive vectors with incompatible
         flattened length.
+
     """
     source = _program_ad_shape_normalise_static_shape("fliplr", source_shape)
     if len(source) < 2:
@@ -973,6 +985,7 @@ def program_ad_shape_rot90_derivative_rule(
         If the source shape has a negative dimension, if ``k`` or ``axes`` is
         not static and valid, or if the returned callables receive vectors with
         incompatible flattened length.
+
     """
     source = _program_ad_shape_normalise_static_shape("rot90", source_shape)
     k_value = _normalise_rot90_k(k)
@@ -1074,6 +1087,7 @@ def program_ad_shape_repeat_derivative_rule(
         If the source shape has a negative dimension, if repeat metadata is
         invalid for the selected axis, or if the returned callables receive
         vectors with incompatible flattened length.
+
     """
     source = _program_ad_shape_normalise_static_shape("repeat", source_shape)
     repeat_counts, axis_index, target = _program_ad_shape_normalise_repeat_signature(
@@ -1171,6 +1185,7 @@ def program_ad_shape_tile_derivative_rule(
         If the source shape has a negative dimension, if tile metadata is
         invalid, or if the returned callables receive vectors with incompatible
         flattened length.
+
     """
     source = _program_ad_shape_normalise_static_shape("tile", source_shape)
     reps_tuple, _, target = _program_ad_shape_normalise_tile_signature(source, reps)
@@ -1302,6 +1317,7 @@ def program_ad_shape_atleast_1d_derivative_rule(
         If the source shape has a negative dimension or if the returned
         callables receive values, tangents, or cotangents with the wrong
         flattened length.
+
     """
     return _program_ad_shape_atleast_derivative_rule(source_shape, 1)
 
@@ -1327,6 +1343,7 @@ def program_ad_shape_atleast_2d_derivative_rule(
         If the source shape has a negative dimension or if the returned
         callables receive values, tangents, or cotangents with the wrong
         flattened length.
+
     """
     return _program_ad_shape_atleast_derivative_rule(source_shape, 2)
 
@@ -1352,6 +1369,7 @@ def program_ad_shape_atleast_3d_derivative_rule(
         If the source shape has a negative dimension or if the returned
         callables receive values, tangents, or cotangents with the wrong
         flattened length.
+
     """
     return _program_ad_shape_atleast_derivative_rule(source_shape, 3)
 
@@ -1874,6 +1892,7 @@ def _register_program_ad_shape_primitive_contracts() -> None:
     None
         Registration is applied to the default custom derivative registry. An
         already registered shape primitive is left unchanged.
+
     """
     for name, identity in _PROGRAM_AD_SHAPE_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
@@ -1953,6 +1972,7 @@ def _require_program_ad_shape_contract(
         If ``name`` is unknown, if the registered contract is incomplete or has
         the wrong policy/effect metadata, or if concrete ``args`` fail dispatch
         validation.
+
     """
     identity: PrimitiveIdentity | None = _PROGRAM_AD_SHAPE_IDENTITIES.get(name)
     if identity is None:
