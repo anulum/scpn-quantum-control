@@ -39,13 +39,33 @@ from scpn_quantum_control.differentiable import (
     update_levenberg_marquardt_damping,
     value_and_finite_difference_jacobian,
 )
+from tools import differentiable_levenberg_marquardt_quality_gates as lm_quality_gates
 
 FloatArray = NDArray[np.float64]
 
 
+def test_levenberg_marquardt_quality_gate_spec_is_exact_and_focused() -> None:
+    """The LM owner gate must mirror strict static and branch checks."""
+    static_gates = dict(lm_quality_gates.build_static_quality_gates("python"))
+    cohort = lm_quality_gates.LEVENBERG_MARQUARDT_QUALITY_RATCHET
+
+    assert (
+        static_gates["mypy-strict-differentiable-levenberg-marquardt-quality"][-len(cohort) :]
+        == cohort
+    )
+    assert (
+        static_gates["ruff D differentiable-levenberg-marquardt quality ratchet"][-len(cohort) :]
+        == cohort
+    )
+
+    coverage_gates = lm_quality_gates.build_coverage_gates("python")
+    assert "--branch" in coverage_gates[0][1]
+    assert "--fail-under=100" in coverage_gates[1][1]
+    assert "--include=*/differentiable_levenberg_marquardt.py" in coverage_gates[1][1]
+
+
 def _assert_allclose(actual: object, expected: object, *, atol: float | None = None) -> None:
     """Assert numerical closeness through NumPy's dynamically typed test helper."""
-
     assert_allclose = cast(Any, np.testing.assert_allclose)
     if atol is None:
         assert_allclose(actual, expected)
@@ -55,7 +75,6 @@ def _assert_allclose(actual: object, expected: object, *, atol: float | None = N
 
 def test_facade_and_package_root_reuse_extracted_lm_helpers() -> None:
     """Facade and package-root exports should reuse the extracted LM module."""
-
     assert (
         differentiable_module.LevenbergMarquardtOptimizer is lm_module.LevenbergMarquardtOptimizer
     )
@@ -88,7 +107,6 @@ def test_facade_and_package_root_reuse_extracted_lm_helpers() -> None:
 
 def test_huber_residual_weights_feed_gauss_newton_metric() -> None:
     """Robust weights should plug directly into Gauss-Newton residual solves."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0] - 1.0, 10.0 * (values[1] - 1.0)]),
         [3.0, 2.0],
@@ -104,7 +122,6 @@ def test_huber_residual_weights_feed_gauss_newton_metric() -> None:
 
 def test_gauss_newton_gradient_rejects_invalid_inputs() -> None:
     """Gauss-Newton diagnostics require a validated JacobianResult and weights."""
-
     invalid_jacobian = cast(Any, np.eye(2))
     with pytest.raises(ValueError, match="JacobianResult"):
         gauss_newton_gradient(invalid_jacobian)
@@ -121,7 +138,6 @@ def test_gauss_newton_gradient_rejects_invalid_inputs() -> None:
 
 def test_custom_gauss_newton_gradient_uses_exact_custom_jacobian() -> None:
     """Exact custom residual Jacobians should feed Gauss-Newton directly."""
-
     rule = CustomDerivativeRule(
         name="scaled_residual",
         value_fn=lambda values: np.array([2.0 * values[0] - 1.0, values[1] + 3.0]),
@@ -173,7 +189,6 @@ def test_soft_l1_residual_weights_feed_levenberg_marquardt_trial() -> None:
 
 def test_levenberg_marquardt_step_builds_bounded_candidate() -> None:
     """Levenberg-Marquardt should expose a bounded residual descent candidate."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0] - 1.0, 2.0 * (values[1] + 0.5)]),
         [3.0, 1.5],
@@ -195,7 +210,6 @@ def test_levenberg_marquardt_step_builds_bounded_candidate() -> None:
 
 def test_levenberg_marquardt_step_caps_trainable_norm_and_projects_bounds() -> None:
     """LM candidates must respect update caps, bounds, and frozen parameters."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0] - 1.0, values[1] - 2.0]),
         [3.0, 5.0],
@@ -216,7 +230,6 @@ def test_levenberg_marquardt_step_caps_trainable_norm_and_projects_bounds() -> N
 
 def test_custom_levenberg_marquardt_step_uses_exact_custom_jacobian() -> None:
     """Exact custom residual Jacobians should feed bounded LM candidates."""
-
     rule = CustomDerivativeRule(
         name="identity_residual",
         value_fn=lambda values: np.array([values[0], 2.0 * values[1]]),
@@ -243,7 +256,6 @@ def test_custom_levenberg_marquardt_step_uses_exact_custom_jacobian() -> None:
 
 def test_levenberg_marquardt_step_rejects_invalid_controls() -> None:
     """LM controls must be finite, dimensionally consistent, and physical."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0], values[1]]),
         [1.0, 2.0],
@@ -314,7 +326,6 @@ def test_evaluate_levenberg_marquardt_step_rejects_poor_candidate() -> None:
 
 def test_evaluate_levenberg_marquardt_step_rejects_invalid_controls() -> None:
     """LM acceptance diagnostics must fail closed on invalid policy inputs."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0], values[1]]),
         [1.0, 2.0],
@@ -372,7 +383,6 @@ def test_update_levenberg_marquardt_damping_decreases_high_quality_acceptance() 
 
 def test_update_levenberg_marquardt_damping_keeps_marginal_acceptance() -> None:
     """Accepted but marginal LM trials should keep damping unchanged."""
-
     step_result = LevenbergMarquardtStep(
         gauss_newton=gauss_newton_gradient(
             value_and_finite_difference_jacobian(lambda values: np.array([values[0]]), [1.0]),
@@ -399,7 +409,6 @@ def test_update_levenberg_marquardt_damping_keeps_marginal_acceptance() -> None:
 
 def test_update_levenberg_marquardt_damping_increases_rejected_trial() -> None:
     """Rejected LM trials should increase damping for a smaller retry step."""
-
     step_result = LevenbergMarquardtStep(
         gauss_newton=gauss_newton_gradient(
             value_and_finite_difference_jacobian(lambda values: np.array([values[0]]), [1.0]),
@@ -430,7 +439,6 @@ def test_update_levenberg_marquardt_damping_increases_rejected_trial() -> None:
 
 def test_update_levenberg_marquardt_damping_rejects_invalid_policy() -> None:
     """Damping policy factors and bounds must fail closed."""
-
     step_result = LevenbergMarquardtStep(
         gauss_newton=gauss_newton_gradient(
             value_and_finite_difference_jacobian(lambda values: np.array([values[0]]), [1.0]),
@@ -490,7 +498,6 @@ def test_levenberg_marquardt_optimizer_converges_for_residual_map() -> None:
 
 def test_levenberg_marquardt_optimizer_converges_for_initial_residual() -> None:
     """A residual already below tolerance should return without LM trials."""
-
     optimizer = LevenbergMarquardtOptimizer(residual_tolerance=1.0e-6)
     result = optimizer.minimize(lambda values: np.array([values[0]]), [0.0])
 
@@ -502,7 +509,6 @@ def test_levenberg_marquardt_optimizer_converges_for_initial_residual() -> None:
 
 def test_levenberg_marquardt_optimizer_converges_for_step_tolerance() -> None:
     """Accepted tiny LM steps should stop at the step-tolerance gate."""
-
     optimizer = LevenbergMarquardtOptimizer(
         damping=1.0,
         residual_tolerance=0.0,
@@ -517,7 +523,6 @@ def test_levenberg_marquardt_optimizer_converges_for_step_tolerance() -> None:
 
 def test_levenberg_marquardt_optimizer_converges_for_value_tolerance() -> None:
     """Accepted low-improvement LM trials should stop at the value gate."""
-
     optimizer = LevenbergMarquardtOptimizer(
         damping=1.0e6,
         residual_tolerance=0.0,
@@ -599,7 +604,6 @@ def test_levenberg_marquardt_optimizer_respects_bounds_and_weights() -> None:
 
 def test_levenberg_marquardt_optimizer_rejects_invalid_controls() -> None:
     """Full LM optimization controls and IRLS weights must fail closed."""
-
     with pytest.raises(ValueError, match="damping"):
         LevenbergMarquardtOptimizer(damping=-0.1)
     with pytest.raises(ValueError, match="max_steps"):

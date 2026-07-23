@@ -335,6 +335,23 @@ jobs:
           tests/test_differentiable_api_contracts.py
           tools/differentiable_api_quality_gates.py
           tools/differentiable_quality_gates.py
+      - name: Type-check differentiable Levenberg-Marquardt quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_levenberg_marquardt.py
+          tests/test_differentiable_levenberg_marquardt.py
+          tests/test_differentiable_custom_derivatives.py
+          tools/differentiable_levenberg_marquardt_quality_gates.py
+          tools/differentiable_quality_gates.py
+      - name: Ruff NumPy docstrings for differentiable Levenberg-Marquardt quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_levenberg_marquardt.py
+          tests/test_differentiable_levenberg_marquardt.py
+          tests/test_differentiable_custom_derivatives.py
+          tools/differentiable_levenberg_marquardt_quality_gates.py
+          tools/differentiable_quality_gates.py
       - name: Type-check Program-AD array-indexing quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -660,6 +677,23 @@ jobs:
           --precision=2
           --fail-under=100
           --include=*/differentiable_api.py
+      - name: Run differentiable Levenberg-Marquardt focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.levenberg-marquardt-quality
+          --branch
+          -m pytest -q
+          tests/test_differentiable_levenberg_marquardt.py
+          tests/test_differentiable_custom_derivatives.py
+      - name: Enforce differentiable Levenberg-Marquardt exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.levenberg-marquardt-quality
+          --precision=2
+          --fail-under=100
+          --include=*/differentiable_levenberg_marquardt.py
       - name: Run Program-AD array-indexing focused coverage
         run: >-
           python -m coverage run

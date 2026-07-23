@@ -133,6 +133,14 @@ def test_ci_gates_program_ad_array_indexing_exact_quality() -> None:
     assert "Enforce unified differentiable API exact coverage" in workflow
     assert "--data-file=.coverage.differentiable-api-quality" in workflow
     assert "--include=*/differentiable_api.py" in workflow
+    assert "Type-check differentiable Levenberg-Marquardt quality cohort" in workflow
+    assert (
+        "Ruff NumPy docstrings for differentiable Levenberg-Marquardt quality cohort" in workflow
+    )
+    assert "Run differentiable Levenberg-Marquardt focused coverage" in workflow
+    assert "Enforce differentiable Levenberg-Marquardt exact coverage" in workflow
+    assert "--data-file=.coverage.levenberg-marquardt-quality" in workflow
+    assert "--include=*/differentiable_levenberg_marquardt.py" in workflow
 
 
 def test_trace_value_autodoc_exposes_both_public_value_types() -> None:

@@ -45,13 +45,11 @@ from scpn_quantum_control.differentiable import (
 
 def _assert_allclose(actual: object, expected: object) -> None:
     """Assert NumPy-close equality while preserving strict test typing."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected)
 
 
 def test_facade_and_package_root_reuse_extracted_custom_derivative_helpers() -> None:
     """Facade and package-root exports should point at extracted custom helpers."""
-
     helper_names = (
         "batch_custom_jacobian",
         "batch_custom_jvp",
@@ -75,7 +73,6 @@ def test_facade_and_package_root_reuse_extracted_custom_derivative_helpers() -> 
 
 def test_custom_derivative_rule_evaluates_exact_jvp_and_vjp() -> None:
     """Custom rules should expose exact primitive derivatives with provenance."""
-
     rule = CustomDerivativeRule(
         name="quadratic_coupler",
         value_fn=lambda values: np.array([values[0] * values[1], values[0] ** 2]),
@@ -114,7 +111,6 @@ def test_custom_derivative_rule_evaluates_exact_jvp_and_vjp() -> None:
 
 def test_custom_derivative_rule_accepts_explicit_parameter_metadata() -> None:
     """Explicit parameters should override rule-local metadata for exact transforms."""
-
     rule = CustomDerivativeRule(
         name="identity_pair",
         value_fn=lambda values: values,
@@ -135,7 +131,6 @@ def test_custom_derivative_rule_accepts_explicit_parameter_metadata() -> None:
 
 def test_custom_derivative_rule_rejects_invalid_contracts() -> None:
     """Custom derivative rules must fail closed on bad exact-rule contracts."""
-
     with pytest.raises(ValueError, match="requires a JVP or VJP"):
         CustomDerivativeRule(name="bad", value_fn=lambda values: values)
     with pytest.raises(ValueError, match="lengths must match"):
@@ -189,7 +184,6 @@ def test_custom_derivative_rule_rejects_invalid_contracts() -> None:
 
 def test_custom_derivative_rule_rejects_corrupted_parameter_metadata() -> None:
     """Exact transforms should still fail closed if frozen rule metadata is corrupted."""
-
     bad_names = CustomDerivativeRule(
         name="bad_names",
         value_fn=lambda values: values,
@@ -212,7 +206,6 @@ def test_custom_derivative_rule_rejects_corrupted_parameter_metadata() -> None:
 
 def test_custom_jacobian_materializes_exact_jvp_columns() -> None:
     """Custom JVP rules should materialise exact dense Jacobian columns."""
-
     rule = CustomDerivativeRule(
         name="quadratic_vector",
         value_fn=lambda values: np.array([values[0] * values[1], values[0] ** 2]),
@@ -241,7 +234,6 @@ def test_custom_jacobian_materializes_exact_jvp_columns() -> None:
 
 def test_custom_jacobian_materializes_exact_vjp_rows() -> None:
     """VJP-only rules should materialise exact dense Jacobian rows."""
-
     rule = CustomDerivativeRule(
         name="linear_readout",
         value_fn=lambda values: np.array([values[0] + 2.0 * values[1], -values[0]]),
@@ -259,7 +251,6 @@ def test_custom_jacobian_materializes_exact_vjp_rows() -> None:
 
 def test_custom_jacobian_rejects_invalid_exact_rule_shapes() -> None:
     """Custom Jacobian materialisation must reject malformed exact derivatives."""
-
     invalid_rule = cast(CustomDerivativeRule, object())
     with pytest.raises(ValueError, match="CustomDerivativeRule"):
         value_and_custom_jacobian(invalid_rule, [1.0])
@@ -292,7 +283,6 @@ def test_custom_jacobian_rejects_invalid_exact_rule_shapes() -> None:
 
 def test_batched_custom_jvp_and_vjp_apply_exact_rules() -> None:
     """Batched custom transforms should preserve exact rule outputs and metadata."""
-
     rule = CustomDerivativeRule(
         name="affine_pair",
         value_fn=lambda values: np.array([values[0] + values[1], values[0] - values[1]]),
@@ -339,7 +329,6 @@ def test_batched_custom_jvp_and_vjp_apply_exact_rules() -> None:
 
 def test_batched_custom_jacobian_materializes_parameter_batches() -> None:
     """Custom Jacobians should batch over parameter rows for benchmark workflows."""
-
     rule = CustomDerivativeRule(
         name="quadratic_vector",
         value_fn=lambda values: np.array([values[0] * values[1], values[0] ** 2]),
@@ -373,7 +362,6 @@ def test_batched_custom_jacobian_materializes_parameter_batches() -> None:
 
 def test_custom_gauss_newton_gradient_uses_exact_custom_jacobian() -> None:
     """Exact custom residual Jacobians should feed Gauss-Newton directly."""
-
     rule = CustomDerivativeRule(
         name="scaled_residual",
         value_fn=lambda values: np.array([2.0 * values[0] - 1.0, values[1] + 3.0]),
@@ -401,7 +389,6 @@ def test_custom_gauss_newton_gradient_uses_exact_custom_jacobian() -> None:
 
 def test_custom_levenberg_marquardt_step_uses_exact_custom_jacobian() -> None:
     """Exact custom residual Jacobians should feed bounded LM candidates."""
-
     rule = CustomDerivativeRule(
         name="identity_residual",
         value_fn=lambda values: np.array([values[0], 2.0 * values[1]]),

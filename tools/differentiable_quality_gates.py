@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 from tools import differentiable_api_quality_gates as _api_gates
+from tools import differentiable_levenberg_marquardt_quality_gates as _lm_gates
 from tools import differentiable_rust_python_inventory_quality_gates as _inventory_gates
 from tools import differentiable_scalar_kernels_quality_gates as _scalar_gates
 
@@ -27,13 +28,14 @@ def build_static_quality_gates(python: str) -> list[Gate]:
     Returns
     -------
     list[Gate]
-        Scalar-kernel, Rust/Python inventory, and unified-API static gates.
+        Scalar-kernel, Rust/Python inventory, unified-API, and LM static gates.
 
     """
     return [
         *_scalar_gates.build_static_quality_gates(python),
         *_inventory_gates.build_static_quality_gates(python),
         *_api_gates.build_static_quality_gates(python),
+        *_lm_gates.build_static_quality_gates(python),
     ]
 
 
@@ -48,13 +50,14 @@ def build_coverage_gates(python: str) -> list[Gate]:
     Returns
     -------
     list[Gate]
-        Scalar-kernel, Rust/Python inventory, and unified-API coverage gates.
+        Scalar-kernel, Rust/Python inventory, unified-API, and LM coverage gates.
 
     """
     return [
         *_scalar_gates.build_coverage_gates(python),
         *_inventory_gates.build_coverage_gates(python),
         *_api_gates.build_coverage_gates(python),
+        *_lm_gates.build_coverage_gates(python),
     ]
 
 
