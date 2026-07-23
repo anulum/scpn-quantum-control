@@ -55,6 +55,7 @@ class CustomDerivativeRule:
     ValueError
         If the name is empty, if callables are malformed, if neither JVP nor VJP
         is provided, or if parameter metadata is inconsistent.
+
     """
 
     name: str
@@ -106,6 +107,7 @@ class PrimitiveIdentity:
     ValueError
         If any identity token is empty, contains whitespace, or contains ``:``
         or ``@``.
+
     """
 
     namespace: str
@@ -129,6 +131,7 @@ class PrimitiveIdentity:
         -------
         str
             Canonical ``namespace:name@version`` key.
+
         """
         return f"{self.namespace}:{self.name}@{self.version}"
 
@@ -153,6 +156,7 @@ class PrimitiveIdentity:
         ValueError
             If the input is not a primitive identity or non-empty key string, or
             if the key does not contain a namespace/name separator.
+
         """
         if isinstance(identity, PrimitiveIdentity):
             return identity
@@ -219,6 +223,7 @@ class PrimitiveTransformRule:
     ValueError
         If identity or derivative metadata has the wrong type, optional rules
         are non-callable, or string/metadata fields are empty.
+
     """
 
     identity: PrimitiveIdentity
@@ -292,6 +297,7 @@ class PrimitiveContract:
     ValueError
         If contract fields have invalid types, optional rules are non-callable,
         or lowering/policy/effect metadata is empty.
+
     """
 
     identity: PrimitiveIdentity
@@ -346,6 +352,7 @@ class PrimitiveContract:
         PrimitiveContract
             Immutable contract view with lowering metadata copied through the
             contract constructor.
+
         """
         return PrimitiveContract(
             identity=transform.identity,
@@ -416,6 +423,7 @@ class ProgramADRegistryDispatchCoverageRow:
     ValueError
         If required strings are empty, if boolean state is malformed, or if a
         complete row also carries blockers.
+
     """
 
     family: str
@@ -463,6 +471,7 @@ class ProgramADRegistryDispatchCoverageRow:
         -------
         dict[str, object]
             Stable serialisable row payload for dashboards and evidence files.
+
         """
         return {
             "family": self.family,
@@ -506,6 +515,7 @@ class ProgramADRegistryDispatchCoverageReport:
     ValueError
         If rows are empty, counts disagree, family counts are invalid, or the
         claim boundary is empty.
+
     """
 
     rows: tuple[ProgramADRegistryDispatchCoverageRow, ...]
@@ -547,6 +557,7 @@ class ProgramADRegistryDispatchCoverageReport:
         -------
         bool
             ``True`` when every declared primitive row is complete.
+
         """
         return self.covered_primitives == self.total_primitives
 
@@ -558,6 +569,7 @@ class ProgramADRegistryDispatchCoverageReport:
         -------
         tuple[str, ...]
             Canonical identity keys for incomplete registry-dispatch rows.
+
         """
         return tuple(row.identity for row in self.rows if not row.complete)
 
@@ -569,6 +581,7 @@ class ProgramADRegistryDispatchCoverageReport:
         dict[str, object]
             Stable serialisable report payload for dashboards and evidence
             artefacts.
+
         """
         return {
             "supported": self.supported,
@@ -593,6 +606,7 @@ class CustomDerivativeRegistry:
     ------
     ValueError
         If any initial rule cannot be registered under its identity.
+
     """
 
     def __init__(self, rules: dict[PrimitiveIdentity, CustomDerivativeRule] | None = None) -> None:
@@ -630,6 +644,7 @@ class CustomDerivativeRegistry:
         ValueError
             If ``identity`` is malformed, if ``rule`` has the wrong type, or if
             an existing conflicting rule is present and overwrite is disabled.
+
         """
         primitive_identity = PrimitiveIdentity.parse(identity)
         if not isinstance(rule, CustomDerivativeRule):
@@ -685,6 +700,7 @@ class CustomDerivativeRegistry:
         -------
         Callable[[CustomDerivativeRule], CustomDerivativeRule]
             Decorator that registers and returns the supplied rule.
+
         """
 
         def register_rule(rule: CustomDerivativeRule) -> CustomDerivativeRule:
@@ -717,6 +733,7 @@ class CustomDerivativeRegistry:
         ValueError
             If ``transform`` has the wrong type or conflicts with an existing
             binding while overwrite is disabled.
+
         """
         if not isinstance(transform, PrimitiveTransformRule):
             raise ValueError("transform must be a PrimitiveTransformRule")
@@ -758,6 +775,7 @@ class CustomDerivativeRegistry:
             If ``identity`` is malformed, if ``batching_rule`` is non-callable,
             if no derivative rule exists, or if a batching rule already exists
             while overwrite is disabled.
+
         """
         primitive_identity = PrimitiveIdentity.parse(identity)
         if not callable(batching_rule):
@@ -812,6 +830,7 @@ class CustomDerivativeRegistry:
             If ``identity`` is malformed, if ``lowering_rule`` is non-callable,
             if no derivative rule exists, or if a lowering rule already exists
             while overwrite is disabled.
+
         """
         primitive_identity = PrimitiveIdentity.parse(identity)
         if not callable(lowering_rule):
@@ -964,6 +983,7 @@ class CustomDerivativeRegistry:
         ------
         ValueError
             If no contract exists or if any complete-contract facet is missing.
+
         """
         primitive_identity = PrimitiveIdentity.parse(identity)
         contract = self.require_contract(primitive_identity)
@@ -1020,6 +1040,7 @@ class CustomDerivativeRegistry:
         ------
         ValueError
             If ``identity`` is malformed or no derivative rule is registered.
+
         """
         primitive_identity = PrimitiveIdentity.parse(identity)
         rule = self._rules.get(primitive_identity)
@@ -1044,6 +1065,7 @@ class CustomDerivativeRegistry:
         ------
         ValueError
             If ``identity`` is malformed or no derivative rule is registered.
+
         """
         primitive_identity = PrimitiveIdentity.parse(identity)
         try:
@@ -1308,6 +1330,7 @@ def register_custom_derivative_rule(
     ValueError
         If identity/rule validation fails or if a conflicting rule exists and
         overwrite is disabled.
+
     """
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.register(identity, rule, overwrite=overwrite)
@@ -1340,6 +1363,7 @@ def register_primitive_transform_rule(
     ValueError
         If transform validation fails or if a conflicting transform exists and
         overwrite is disabled.
+
     """
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.register_transform(transform, overwrite=overwrite)
@@ -1375,6 +1399,7 @@ def register_primitive_batching_rule(
     ValueError
         If identity/rule validation fails, if no derivative rule exists, or if a
         batching rule already exists and overwrite is disabled.
+
     """
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.register_batching_rule(identity, batching_rule, overwrite=overwrite)
@@ -1410,6 +1435,7 @@ def register_primitive_lowering_rule(
     ValueError
         If identity/rule validation fails, if no derivative rule exists, or if a
         lowering rule already exists and overwrite is disabled.
+
     """
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.register_lowering_rule(identity, lowering_rule, overwrite=overwrite)
@@ -1438,6 +1464,7 @@ def primitive_shape_rule_for(
     ------
     ValueError
         If ``identity`` is malformed or no shape rule is registered.
+
     """
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.require_shape_rule(identity)
@@ -1466,6 +1493,7 @@ def primitive_dtype_rule_for(
     ------
     ValueError
         If ``identity`` is malformed or no dtype rule is registered.
+
     """
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.require_dtype_rule(identity)
@@ -1494,6 +1522,7 @@ def primitive_static_argument_rule_for(
     ------
     ValueError
         If ``identity`` is malformed or no static-argument rule is registered.
+
     """
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.require_static_argument_rule(identity)
@@ -1522,6 +1551,7 @@ def primitive_nondifferentiable_policy_for(
     ------
     ValueError
         If ``identity`` is malformed or no declared policy is registered.
+
     """
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.require_nondifferentiable_policy(identity)
@@ -1550,6 +1580,7 @@ def primitive_effect_for(
     ------
     ValueError
         If ``identity`` is malformed or no effect classification is registered.
+
     """
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.require_effect(identity)
@@ -1578,6 +1609,7 @@ def primitive_contract_for(
     ------
     ValueError
         If ``identity`` is malformed or no primitive contract is registered.
+
     """
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.require_contract(identity)
@@ -1607,6 +1639,7 @@ def primitive_complete_contract_for(
     ------
     ValueError
         If no contract exists or if any complete-contract facet is missing.
+
     """
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.require_complete_contract(identity)
@@ -1688,6 +1721,7 @@ def program_ad_registry_dispatch_coverage_report(
     ProgramADRegistryDispatchCoverageReport
         Claim-bounded coverage report over declared Program AD primitive
         registry facets.
+
     """
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     rows: list[ProgramADRegistryDispatchCoverageRow] = []
@@ -1735,6 +1769,7 @@ def custom_derivative_rule_for(
     ------
     ValueError
         If ``identity`` is malformed or no derivative rule is registered.
+
     """
     target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
     return target.require(identity)

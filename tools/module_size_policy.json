@@ -301,7 +301,7 @@
     },
     {
       "path": "src/scpn_quantum_control/program_ad_registry.py",
-      "lines": 1771,
+      "lines": 1806,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Primitive identity, rule, transform, registration, dispatch-report, and coverage lifecycle for Program AD.",

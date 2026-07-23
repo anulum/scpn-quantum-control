@@ -183,6 +183,7 @@ def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     assert "src/scpn_quantum_control/differentiable_external_validation.py" in (docstring_cmd)
     assert "src/scpn_quantum_control/differentiable_finite_difference.py" in docstring_cmd
     assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in (docstring_cmd)
+    assert "src/scpn_quantum_control/program_ad_registry.py" in docstring_cmd
     assert "src/scpn_quantum_control/studio/evidence_bundle.py" in docstring_cmd
     assert "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py" in (
         docstring_cmd
@@ -193,6 +194,7 @@ def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     assert "tests/test_differentiable_external_validation.py" in docstring_cmd
     assert "tests/test_differentiable_finite_difference.py" in docstring_cmd
     assert "tests/test_differentiable_module_hardening_audit.py" in docstring_cmd
+    assert "tests/test_program_ad_registry.py" in docstring_cmd
     assert "tests/test_differentiable_hardening_gate.py" in docstring_cmd
     assert "tools/differentiable_support_matrix_page.py" in docstring_cmd
     assert "tests/test_differentiable_support_matrix_page.py" in docstring_cmd
