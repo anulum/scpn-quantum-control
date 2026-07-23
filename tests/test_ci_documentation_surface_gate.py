@@ -141,6 +141,12 @@ def test_ci_gates_program_ad_array_indexing_exact_quality() -> None:
     assert "Enforce differentiable Levenberg-Marquardt exact coverage" in workflow
     assert "--data-file=.coverage.levenberg-marquardt-quality" in workflow
     assert "--include=*/differentiable_levenberg_marquardt.py" in workflow
+    assert "Type-check differentiable natural-gradient quality cohort" in workflow
+    assert "Ruff NumPy docstrings for differentiable natural-gradient quality cohort" in workflow
+    assert "Run differentiable natural-gradient focused coverage" in workflow
+    assert "Enforce differentiable natural-gradient exact coverage" in workflow
+    assert "--data-file=.coverage.natural-gradient-quality" in workflow
+    assert "--include=*/differentiable_natural_gradient.py" in workflow
 
 
 def test_trace_value_autodoc_exposes_both_public_value_types() -> None:

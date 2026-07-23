@@ -82,6 +82,7 @@ def armijo_backtracking_line_search(
     -------
     ArmijoLineSearchResult
         Accepted candidate or fail-closed rejection metadata.
+
     """
     if not isinstance(gradient_result, GradientResult):
         raise ValueError("line search requires a GradientResult")
@@ -186,6 +187,7 @@ def weighted_gradient_sum(
     -------
     WeightedGradientResult
         Weighted scalar value, gradient, component provenance, and metadata.
+
     """
     component_tuple = tuple(components)
     if not component_tuple:
@@ -252,6 +254,7 @@ def natural_gradient(
     -------
     NaturalGradientResult
         Preconditioned gradient with frozen parameter entries zeroed.
+
     """
     metric_arr = _as_real_numeric_array("natural-gradient metric", metric)
     if metric_arr.ndim != 2 or metric_arr.shape != (
@@ -318,6 +321,7 @@ class NaturalGradientOptimizer:
         Positive reciprocal-condition threshold for metric solves.
     max_step_norm
         Optional positive L2 cap for trainable natural-gradient steps.
+
     """
 
     learning_rate: float = 0.01
@@ -399,6 +403,7 @@ class NaturalGradientOptimizer:
         NaturalGradientOptimizationResult
             Final values, gradient and natural-gradient records, histories,
             convergence state, and best-observed iterate.
+
         """
         if gradient_method not in {"parameter_shift", "finite_difference"}:
             raise ValueError("gradient_method must be 'parameter_shift' or 'finite_difference'")

@@ -352,6 +352,23 @@ jobs:
           tests/test_differentiable_custom_derivatives.py
           tools/differentiable_levenberg_marquardt_quality_gates.py
           tools/differentiable_quality_gates.py
+      - name: Type-check differentiable natural-gradient quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_natural_gradient.py
+          tests/test_differentiable_natural_gradient.py
+          tests/test_differentiable_natural_gradient_line_search.py
+          tools/differentiable_natural_gradient_quality_gates.py
+          tools/differentiable_quality_gates.py
+      - name: Ruff NumPy docstrings for differentiable natural-gradient quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_natural_gradient.py
+          tests/test_differentiable_natural_gradient.py
+          tests/test_differentiable_natural_gradient_line_search.py
+          tools/differentiable_natural_gradient_quality_gates.py
+          tools/differentiable_quality_gates.py
       - name: Type-check Program-AD array-indexing quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -694,6 +711,23 @@ jobs:
           --precision=2
           --fail-under=100
           --include=*/differentiable_levenberg_marquardt.py
+      - name: Run differentiable natural-gradient focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.natural-gradient-quality
+          --branch
+          -m pytest -q
+          tests/test_differentiable_natural_gradient.py
+          tests/test_differentiable_natural_gradient_line_search.py
+      - name: Enforce differentiable natural-gradient exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.natural-gradient-quality
+          --precision=2
+          --fail-under=100
+          --include=*/differentiable_natural_gradient.py
       - name: Run Program-AD array-indexing focused coverage
         run: >-
           python -m coverage run

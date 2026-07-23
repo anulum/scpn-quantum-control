@@ -36,13 +36,11 @@ def _assert_allclose(
     atol: float = 0.0,
 ) -> None:
     """Assert NumPy-close equality while preserving strict test typing."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_facade_and_package_root_reuse_extracted_natural_gradient_optimizer() -> None:
     """Facade and package-root exports should reuse the extracted optimizer."""
-
     assert (
         differentiable_module.NaturalGradientOptimizer
         is natural_gradient_module.NaturalGradientOptimizer
@@ -52,7 +50,6 @@ def test_facade_and_package_root_reuse_extracted_natural_gradient_optimizer() ->
 
 def test_natural_gradient_optimizer_converges_with_explicit_metric() -> None:
     """Natural-gradient optimization should compose gradients, metrics, and bounds."""
-
     optimizer = NaturalGradientOptimizer(learning_rate=0.5, damping=0.0, max_step_norm=1.0)
     result = optimizer.minimize(
         lambda values: float(0.5 * (4.0 * values[0] ** 2 + values[1] ** 2)),
@@ -74,7 +71,6 @@ def test_natural_gradient_optimizer_converges_with_explicit_metric() -> None:
 
 def test_natural_gradient_optimizer_respects_frozen_parameters() -> None:
     """Frozen parameters should not move even when the metric includes them."""
-
     optimizer = NaturalGradientOptimizer(learning_rate=0.5)
     result = optimizer.minimize(
         lambda values: values[0] ** 2 + values[1] ** 2,
@@ -93,7 +89,6 @@ def test_natural_gradient_optimizer_respects_frozen_parameters() -> None:
 
 def test_natural_gradient_optimizer_uses_parameter_shift_backend() -> None:
     """The optimizer should dispatch through parameter-shift gradients on request."""
-
     optimizer = NaturalGradientOptimizer(learning_rate=0.1)
     result = optimizer.minimize(
         lambda values: math.sin(float(values[0])),
@@ -110,7 +105,6 @@ def test_natural_gradient_optimizer_uses_parameter_shift_backend() -> None:
 
 def test_natural_gradient_optimizer_reports_max_steps_without_update() -> None:
     """A zero-step optimizer run should report a bounded max-steps result."""
-
     optimizer = NaturalGradientOptimizer(learning_rate=0.1)
     result = optimizer.minimize(
         lambda values: float(values[0] ** 2),
@@ -129,7 +123,6 @@ def test_natural_gradient_optimizer_reports_max_steps_without_update() -> None:
 
 def test_natural_gradient_optimizer_reports_step_tolerance() -> None:
     """A zero learning-rate update should stop at the step-tolerance gate."""
-
     optimizer = NaturalGradientOptimizer(learning_rate=0.0)
     result = optimizer.minimize(
         lambda values: float(values[0] ** 2),
@@ -148,7 +141,6 @@ def test_natural_gradient_optimizer_reports_step_tolerance() -> None:
 
 def test_natural_gradient_optimizer_reports_value_tolerance() -> None:
     """A small accepted update should stop at the value-tolerance gate."""
-
     optimizer = NaturalGradientOptimizer(learning_rate=1.0e-8)
     result = optimizer.minimize(
         lambda values: float(values[0]),
@@ -213,7 +205,6 @@ def test_natural_gradient_optimizer_preserves_existing_best_on_equal_value(
 
 def test_natural_gradient_optimizer_rejects_invalid_controls() -> None:
     """Natural-gradient optimizer controls and metric callback must fail closed."""
-
     with pytest.raises(ValueError, match="learning_rate"):
         NaturalGradientOptimizer(learning_rate=-1.0)
     with pytest.raises(ValueError, match="damping"):

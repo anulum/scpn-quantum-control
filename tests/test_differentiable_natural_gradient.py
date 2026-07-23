@@ -35,6 +35,25 @@ from scpn_quantum_control.differentiable_natural_gradient import (
     natural_gradient,
     weighted_gradient_sum,
 )
+from tools import differentiable_natural_gradient_quality_gates as natural_quality_gates
+
+
+def test_natural_gradient_quality_gate_spec_is_exact_and_focused() -> None:
+    """The natural-gradient owner gate must mirror strict branch checks."""
+    static_gates = dict(natural_quality_gates.build_static_quality_gates("python"))
+    cohort = natural_quality_gates.NATURAL_GRADIENT_QUALITY_RATCHET
+    assert (
+        static_gates["mypy-strict-differentiable-natural-gradient-quality"][-len(cohort) :]
+        == cohort
+    )
+    assert (
+        static_gates["ruff D differentiable-natural-gradient quality ratchet"][-len(cohort) :]
+        == cohort
+    )
+    coverage_gates = natural_quality_gates.build_coverage_gates("python")
+    assert "--branch" in coverage_gates[0][1]
+    assert "--fail-under=100" in coverage_gates[1][1]
+    assert "--include=*/differentiable_natural_gradient.py" in coverage_gates[1][1]
 
 
 def _assert_allclose(
@@ -45,7 +64,6 @@ def _assert_allclose(
     atol: float = 0.0,
 ) -> None:
     """Assert NumPy-close equality while preserving strict test typing."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
@@ -56,7 +74,6 @@ def _gradient_result(
     parameter_names: tuple[str, ...] | None = None,
 ) -> GradientResult:
     """Build a validated gradient result for natural-gradient unit tests."""
-
     names = parameter_names or tuple(f"theta_{index}" for index in range(gradient.size))
     mask = trainable or tuple(True for _ in range(gradient.size))
     return GradientResult(
@@ -73,7 +90,6 @@ def _gradient_result(
 
 def test_facade_and_package_root_reuse_extracted_natural_gradient_helpers() -> None:
     """Facade and package-root exports should point at the extracted helpers."""
-
     assert differentiable.armijo_backtracking_line_search is armijo_backtracking_line_search
     assert differentiable.natural_gradient is natural_gradient
     assert differentiable.weighted_gradient_sum is weighted_gradient_sum
@@ -84,7 +100,6 @@ def test_facade_and_package_root_reuse_extracted_natural_gradient_helpers() -> N
 
 def test_natural_gradient_solves_trainable_metric_system() -> None:
     """Natural gradient should precondition only trainable parameters."""
-
     gradient = _gradient_result(
         np.array([2.0, 4.0, 0.0]),
         parameter_names=("x", "y", "frozen"),
@@ -99,7 +114,6 @@ def test_natural_gradient_solves_trainable_metric_system() -> None:
 
 def test_natural_gradient_damping_repairs_semidefinite_metric() -> None:
     """Damping should make semidefinite trainable metrics solvable."""
-
     gradient = _gradient_result(np.array([2.0]), parameter_names=("x",), trainable=(True,))
     result = natural_gradient(gradient, np.array([[0.0]]), damping=0.5)
 
@@ -108,7 +122,6 @@ def test_natural_gradient_damping_repairs_semidefinite_metric() -> None:
 
 def test_natural_gradient_handles_fully_frozen_gradient() -> None:
     """A fully frozen gradient should return a zero natural-gradient direction."""
-
     gradient = _gradient_result(
         np.array([0.0, 0.0]),
         parameter_names=("x", "y"),
@@ -122,7 +135,6 @@ def test_natural_gradient_handles_fully_frozen_gradient() -> None:
 
 def test_natural_gradient_rejects_invalid_metric() -> None:
     """Natural-gradient metrics must be finite, symmetric, and well conditioned."""
-
     gradient = _gradient_result(np.array([1.0, 2.0]), parameter_names=("x", "y"))
 
     with pytest.raises(ValueError, match="shape"):
@@ -143,7 +155,6 @@ def test_natural_gradient_rejects_invalid_metric() -> None:
 
 def test_armijo_backtracking_line_search_accepts_sufficient_decrease() -> None:
     """Armijo search should accept a descent step with explicit provenance."""
-
     gradient = value_and_finite_difference_grad(lambda values: float(values[0] ** 2), [2.0])
     result = armijo_backtracking_line_search(
         lambda values: float(values[0] ** 2),
@@ -165,7 +176,6 @@ def test_armijo_backtracking_line_search_accepts_sufficient_decrease() -> None:
 
 def test_armijo_backtracking_line_search_respects_bounds_and_frozen_parameters() -> None:
     """Line search should project bounds and remove frozen direction components."""
-
     gradient = value_and_finite_difference_grad(
         lambda values: values[0] ** 2 + values[1] ** 2,
         [2.0, 10.0],
@@ -186,7 +196,6 @@ def test_armijo_backtracking_line_search_respects_bounds_and_frozen_parameters()
 
 def test_armijo_backtracking_line_search_rejects_invalid_controls() -> None:
     """Line-search controls and directions must fail closed."""
-
     gradient = value_and_finite_difference_grad(lambda values: float(values[0] ** 2), [2.0])
     invalid_gradient = cast(GradientResult, gradient.gradient)
     with pytest.raises(ValueError, match="GradientResult"):
@@ -224,7 +233,6 @@ def test_armijo_backtracking_line_search_rejects_invalid_controls() -> None:
 
 def test_armijo_backtracking_line_search_rejects_non_descent_and_max_steps() -> None:
     """Line search should report both non-descent and exhausted-trial rejections."""
-
     gradient = value_and_finite_difference_grad(lambda values: float(values[0] ** 2), [2.0])
     non_descent = armijo_backtracking_line_search(
         lambda values: float(values[0] ** 2),
@@ -254,7 +262,6 @@ def test_armijo_backtracking_line_search_rejects_non_descent_and_max_steps() -> 
 
 def test_weighted_gradient_sum_preserves_component_provenance() -> None:
     """Weighted multi-objective aggregation should keep component metadata."""
-
     components = batch_value_and_parameter_shift_grad(
         [
             lambda values: math.sin(values[0]),
@@ -278,7 +285,6 @@ def test_weighted_gradient_sum_preserves_component_provenance() -> None:
 
 def test_weighted_gradient_sum_rejects_invalid_components() -> None:
     """Weighted aggregation must fail closed on malformed component contracts."""
-
     first = value_and_parameter_shift_grad(
         lambda values: math.sin(values[0]),
         [0.1],
