@@ -113,6 +113,12 @@ def test_ci_gates_program_ad_array_indexing_exact_quality() -> None:
     assert "--include=*/program_ad_array_indexing.py" in workflow
     assert "tests/test_program_ad_array_indexing_quality.py" in workflow
     assert "--fail-under=100" in workflow
+    assert "Type-check differentiable scalar-kernel quality cohort" in workflow
+    assert "Ruff NumPy docstrings for differentiable scalar-kernel quality cohort" in workflow
+    assert "Run differentiable scalar-kernel focused coverage" in workflow
+    assert "Enforce differentiable scalar-kernel exact coverage" in workflow
+    assert "--data-file=.coverage.scalar-kernels-quality" in workflow
+    assert "--include=*/differentiable_scalar_kernels.py" in workflow
 
 
 def test_trace_value_autodoc_exposes_both_public_value_types() -> None:

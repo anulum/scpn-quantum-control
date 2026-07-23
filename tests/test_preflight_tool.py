@@ -210,8 +210,7 @@ def test_static_gates_include_decisive_advantage_quality_ratchets() -> None:
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
     strict_cmd = gate_map["mypy-strict-decisive-advantage-quality"]
     docstring_cmd = gate_map["ruff D decisive-advantage quality ratchet"]
-    cohort = _preflight.DECISIVE_ADVANTAGE_QUALITY_RATCHET
-
+    cohort = _preflight._decisive_advantage_quality_gates.DECISIVE_ADVANTAGE_QUALITY_RATCHET
     assert "--strict" in strict_cmd
     assert "--explicit-package-bases" in strict_cmd
     assert strict_cmd[-len(cohort) :] == cohort
@@ -219,7 +218,6 @@ def test_static_gates_include_decisive_advantage_quality_ratchets() -> None:
     assert "D,D413" in docstring_cmd
     assert 'lint.pydocstyle.convention = "numpy"' in docstring_cmd
     assert docstring_cmd[-len(cohort) :] == cohort
-
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
     for step_name in (
         "Type-check decisive-advantage quality cohort",
@@ -240,10 +238,11 @@ def test_decisive_advantage_coverage_gate_is_exact_and_focused() -> None:
     """The decisive benchmark must retain exact statement and branch coverage."""
     focused_name, focused_cmd = _preflight.DECISIVE_ADVANTAGE_COVERAGE_GATES[0]
     threshold_name, threshold_cmd = _preflight.DECISIVE_ADVANTAGE_COVERAGE_GATES[1]
-
     assert focused_name == "decisive-advantage focused coverage"
     assert "--branch" in focused_cmd
-    assert focused_cmd[-1:] == _preflight.DECISIVE_ADVANTAGE_COVERAGE_COHORT
+    assert focused_cmd[-1:] == (
+        _preflight._decisive_advantage_quality_gates.DECISIVE_ADVANTAGE_COVERAGE_COHORT
+    )
     assert threshold_name == "decisive-advantage exact coverage threshold"
     assert "--fail-under=100" in threshold_cmd
     assert "--include=*/decisive_advantage_protocol.py" in threshold_cmd
@@ -253,6 +252,8 @@ def test_decisive_advantage_coverage_gate_is_exact_and_focused() -> None:
     assert "--branch" in array_gates[0][1]
     assert "--fail-under=100" in array_gates[1][1]
     assert "--include=*/program_ad_array_indexing.py" in array_gates[1][1]
+    assert "mypy-strict-differentiable-scalar-kernels-quality" in gate_names
+    assert "ruff D differentiable-scalar-kernels quality ratchet" in gate_names
 
 
 def test_static_gates_include_realtime_runtime_quality_ratchets() -> None:
@@ -260,7 +261,6 @@ def test_static_gates_include_realtime_runtime_quality_ratchets() -> None:
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
     strict_cmd = gate_map["mypy-strict-realtime-runtime"]
     docstring_cmd = gate_map["ruff D realtime-runtime quality ratchet"]
-
     assert "--strict" in strict_cmd
     assert "--explicit-package-bases" in strict_cmd
     assert strict_cmd[-3:] == _preflight.REALTIME_RUNTIME_QUALITY_RATCHET
@@ -944,7 +944,6 @@ def test_main_uses_coverage_pytest_by_default(
         return True
 
     monkeypatch.setattr(_preflight, "run_gate", fake_run_gate)
-
     assert _preflight.main() == 0
     assert calls == [
         "lint",
@@ -953,6 +952,8 @@ def test_main_uses_coverage_pytest_by_default(
         "studio Program-AD browser strict typecheck",
         "decisive-advantage focused coverage",
         "decisive-advantage exact coverage threshold",
+        "differentiable-scalar-kernels focused coverage",
+        "differentiable-scalar-kernels exact coverage threshold",
         "program-ad-array-indexing focused coverage",
         "program-ad-array-indexing exact coverage threshold",
         "MLIR leaf focused coverage",

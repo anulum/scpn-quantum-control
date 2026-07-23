@@ -34,6 +34,7 @@ class DualNumber:
         Validated real primal scalar.
     tangent
         Validated real tangent scalar for the active derivative lane.
+
     """
 
     primal: float
@@ -62,6 +63,7 @@ class DualNumber:
         ------
         ValueError
             If ``value`` is not a finite real scalar or dual value.
+
         """
         if isinstance(value, DualNumber):
             return value
@@ -154,6 +156,7 @@ def dual_sin(value: object) -> DualNumber:
     ------
     ValueError
         If ``value`` cannot be represented as a real scalar dual value.
+
     """
     arg = DualNumber.coerce(value)
     return DualNumber(float(np.sin(arg.primal)), float(np.cos(arg.primal)) * arg.tangent)
@@ -176,6 +179,7 @@ def dual_cos(value: object) -> DualNumber:
     ------
     ValueError
         If ``value`` cannot be represented as a real scalar dual value.
+
     """
     arg = DualNumber.coerce(value)
     return DualNumber(float(np.cos(arg.primal)), -float(np.sin(arg.primal)) * arg.tangent)
@@ -198,6 +202,7 @@ def dual_exp(value: object) -> DualNumber:
     ------
     ValueError
         If ``value`` cannot be represented as a real scalar dual value.
+
     """
     arg = DualNumber.coerce(value)
     primal = float(np.exp(arg.primal))
@@ -221,6 +226,7 @@ def dual_log(value: object) -> DualNumber:
     ------
     ValueError
         If ``value`` is not real or its primal is not strictly positive.
+
     """
     arg = DualNumber.coerce(value)
     if arg.primal <= 0.0:
@@ -246,6 +252,7 @@ class ReverseNode:
         Tuple of upstream nodes and pullback coefficients.
     adjoint
         Reverse accumulation slot seeded by a downstream traversal.
+
     """
 
     __slots__ = ("adjoint", "parents", "primal")
@@ -277,6 +284,7 @@ class ReverseNode:
         ------
         ValueError
             If ``value`` is not a finite real scalar or reverse node.
+
         """
         if isinstance(value, ReverseNode):
             return value
@@ -367,6 +375,7 @@ def reverse_sin(value: object) -> ReverseNode:
     ------
     ValueError
         If ``value`` cannot be represented as a real scalar reverse node.
+
     """
     arg = ReverseNode.coerce(value)
     return ReverseNode(float(np.sin(arg.primal)), ((arg, float(np.cos(arg.primal))),))
@@ -389,6 +398,7 @@ def reverse_cos(value: object) -> ReverseNode:
     ------
     ValueError
         If ``value`` cannot be represented as a real scalar reverse node.
+
     """
     arg = ReverseNode.coerce(value)
     return ReverseNode(float(np.cos(arg.primal)), ((arg, -float(np.sin(arg.primal))),))
@@ -411,6 +421,7 @@ def reverse_exp(value: object) -> ReverseNode:
     ------
     ValueError
         If ``value`` cannot be represented as a real scalar reverse node.
+
     """
     arg = ReverseNode.coerce(value)
     primal = float(np.exp(arg.primal))
@@ -434,6 +445,7 @@ def reverse_log(value: object) -> ReverseNode:
     ------
     ValueError
         If ``value`` is not real or its primal is not strictly positive.
+
     """
     arg = ReverseNode.coerce(value)
     if arg.primal <= 0.0:

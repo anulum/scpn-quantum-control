@@ -37,13 +37,11 @@ from scpn_quantum_control.differentiable_transform_helpers import (
 
 def _assert_allclose(actual: object, expected: object, *, atol: float = 0.0) -> None:
     """Assert NumPy closeness across helper payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, atol=atol)
 
 
 def test_facade_reuses_extracted_transform_helpers() -> None:
     """The differentiable facade should expose the extracted helper objects."""
-
     facade_symbols = vars(differentiable)
     assert facade_symbols["_as_scalar"] is _as_scalar
     assert facade_symbols["_as_vector_output"] is _as_vector_output
@@ -52,7 +50,6 @@ def test_facade_reuses_extracted_transform_helpers() -> None:
 
 def test_scalar_helpers_accept_and_reject_scalar_objectives() -> None:
     """Scalar coercion helpers should fail closed on non-scalar or non-finite values."""
-
     assert _as_scalar(np.array(1.5, dtype=np.float64)) == pytest.approx(1.5)
     assert _as_forward_mode_scalar(DualNumber(2.0, 3.0)).tangent == pytest.approx(3.0)
     assert _as_forward_mode_scalar(2.5).primal == pytest.approx(2.5)
@@ -131,7 +128,6 @@ def test_complex_step_scalar_preserves_item_conversion_errors(
 
 def test_reverse_topological_order_deduplicates_shared_parents() -> None:
     """Reverse-mode tape traversal should visit shared parents once before children."""
-
     lhs = ReverseNode(2.0)
     rhs = ReverseNode(3.0)
     product = lhs * rhs
@@ -148,7 +144,6 @@ def test_reverse_topological_order_deduplicates_shared_parents() -> None:
 
 def test_vector_output_and_parameter_metadata_contracts() -> None:
     """Vector output and parameter metadata helpers should validate static shape."""
-
     _assert_allclose(_as_vector_output([1.0, 2.0]), [1.0, 2.0])
     default_parameters = _normalise_parameters(np.array([1.0, 2.0], dtype=np.float64), None)
     assert tuple(parameter.name for parameter in default_parameters) == ("theta_0", "theta_1")
@@ -171,7 +166,6 @@ def test_vector_output_and_parameter_metadata_contracts() -> None:
 
 def test_bounds_projection_and_gradient_clipping_contracts() -> None:
     """Bounds and gradient-norm helpers should preserve trainable masks."""
-
     values = np.array([-2.0, 2.0, 5.0], dtype=np.float64)
     bounds = _normalise_bounds(
         values,
@@ -217,7 +211,6 @@ def test_bounds_projection_and_gradient_clipping_contracts() -> None:
 
 def test_clip_gradient_leaves_small_trainable_norm_unchanged() -> None:
     """Gradient clipping should be a no-op below the configured norm cap."""
-
     gradient: NDArray[np.float64] = np.array([0.3, 0.4], dtype=np.float64)
     clipped = _clip_gradient(
         gradient,
