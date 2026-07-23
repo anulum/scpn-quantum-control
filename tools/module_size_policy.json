@@ -130,7 +130,7 @@
     },
     {
       "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
-      "lines": 1278,
+      "lines": 1290,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Immutable Enzyme/MLIR evidence schema, maturity aggregation, rendering, and artifact writing lifecycle.",

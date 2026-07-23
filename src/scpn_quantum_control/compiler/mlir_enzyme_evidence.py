@@ -62,6 +62,7 @@ class EnzymeMLIRCompilerADBreadthArtifactFiles:
         Path to the persisted JSON payload.
     markdown_path:
         Path to the rendered Markdown summary for reviewer inspection.
+
     """
 
     artifact_id: str
@@ -87,6 +88,7 @@ class EnzymeMLIRToolchainStatus:
         Named hard-gap class for unavailable commands.
     setup_instructions:
         Reproduction or installation guidance for unavailable commands.
+
     """
 
     command: str
@@ -151,6 +153,7 @@ class EnzymeNativeExecutionEvidence:
     claim_boundary:
         Claim boundary that prevents runtime evidence from becoming a provider,
         hardware, or arbitrary-program AD claim.
+
     """
 
     artifact_id: str
@@ -229,6 +232,7 @@ class MLIRLLVMCorrectnessEvidence:
         Toolchain version metadata captured with the correctness run.
     claim_boundary:
         Claim boundary for the MLIR/LLVM correctness evidence.
+
     """
 
     artifact_id: str
@@ -284,6 +288,7 @@ class EnzymeMLIRBenchmarkAttachment:
     claim_boundary:
         Explicit statement preventing local or partial benchmark evidence from
         becoming a provider, QPU, hardware, or arbitrary performance claim.
+
     """
 
     validation: PhaseQNodeAffinityArtifactValidation
@@ -307,8 +312,6 @@ class EnzymeMLIRBenchmarkAttachment:
                 if part
             )
             raise ValueError(f"required_breadth_cases must match Enzyme/MLIR cases: {details}")
-        if any(not case for case in cases):
-            raise ValueError("required_breadth_cases must contain non-empty entries")
         object.__setattr__(self, "required_breadth_cases", cases)
         claim_boundary = self.claim_boundary.strip()
         if not claim_boundary:
@@ -379,6 +382,7 @@ class EnzymeMLIRCompilerADBreadthCaseEvidence:
     claim_boundary:
         Boundary preventing a case row from becoming a provider, hardware, or
         performance claim.
+
     """
 
     case_id: str
@@ -483,6 +487,7 @@ class EnzymeMLIRCompilerADBreadthArtifact:
         Matching benchmark attachment for the same compiler-AD evidence chain.
     claim_boundary:
         Boundary stored in JSON and Markdown outputs.
+
     """
 
     artifact_id: str
@@ -506,7 +511,6 @@ class EnzymeMLIRCompilerADBreadthArtifact:
             set(case_ids)
         ):
             missing = sorted(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES.difference(case_ids))
-            extra = sorted(set(case_ids).difference(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES))
             duplicates = sorted(
                 case_id for case_id in set(case_ids) if case_ids.count(case_id) > 1
             )
@@ -514,7 +518,6 @@ class EnzymeMLIRCompilerADBreadthArtifact:
                 part
                 for part in (
                     f"missing={missing}" if missing else "",
-                    f"extra={extra}" if extra else "",
                     f"duplicates={duplicates}" if duplicates else "",
                 )
                 if part
@@ -580,6 +583,7 @@ class EnzymeMLIRCompilerADBreadthArtifact:
         ValueError
             If any breadth case failed, the transform modes are incomplete, or
             the attached isolated benchmark evidence is not promotion-ready.
+
         """
         if not self.promotion_ready:
             raise ValueError("compiler AD breadth artifact must be promotion-ready")
@@ -645,6 +649,7 @@ class EnzymeMLIRCompilerADBreadthEvidence:
         Captured runtime for the breadth evidence runner.
     claim_boundary:
         Explicit claim boundary retained in serialized evidence.
+
     """
 
     artifact_id: str
@@ -764,6 +769,7 @@ class EnzymeMLIRMaturityAuditResult:
         Raw breadth artefact used to derive the promotion evidence.
     claim_boundary:
         Boundary retained in serialized maturity-audit payloads.
+
     """
 
     scpn_mlir_runtime_verified: bool
@@ -973,6 +979,7 @@ def build_enzyme_mlir_benchmark_attachment(
     ------
     ValueError
         If the validation type, breadth cases, or claim boundary are malformed.
+
     """
     return EnzymeMLIRBenchmarkAttachment(
         validation=validation,
@@ -1007,6 +1014,7 @@ def build_enzyme_mlir_compiler_ad_breadth_artifact(
     -------
     EnzymeMLIRCompilerADBreadthArtifact
         Validated raw breadth artefact.
+
     """
     return EnzymeMLIRCompilerADBreadthArtifact(
         artifact_id=artifact_id,
@@ -1067,6 +1075,7 @@ def build_enzyme_mlir_compiler_ad_breadth_gap_artifact(
     ValueError
         If observed rows are duplicated or any default hard-gap metadata is
         malformed.
+
     """
     observed_by_case: dict[str, EnzymeMLIRCompilerADBreadthCaseEvidence] = {}
     for case in observed_cases:
@@ -1152,6 +1161,7 @@ def build_enzyme_mlir_compiler_ad_breadth_evidence(
     ValueError
         If case coverage, transform modes, languages, benchmark linkage,
         errors, runtime, or claim boundary are malformed.
+
     """
     return EnzymeMLIRCompilerADBreadthEvidence(
         artifact_id=artifact_id,
@@ -1181,6 +1191,7 @@ def render_enzyme_mlir_compiler_ad_breadth_artifact_markdown(
     -------
     str
         Markdown summary suitable for committed evidence bundles.
+
     """
     failed = artifact.failed_case_ids or ("none",)
     passed = artifact.passed_case_ids or ("none",)
@@ -1246,6 +1257,7 @@ def write_enzyme_mlir_compiler_ad_breadth_artifact(
     -------
     EnzymeMLIRCompilerADBreadthArtifactFiles
         Paths to the JSON and Markdown evidence files.
+
     """
     output_dir.mkdir(parents=True, exist_ok=True)
     stem = _enzyme_mlir_breadth_artifact_stem(artifact.artifact_id)
