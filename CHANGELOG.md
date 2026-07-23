@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-23 — Compile & dense resource budget gate (BL-94):
+  `scpn_quantum_control.resource_budget_gate` productises fail-closed budgets
+  for sparse Pauli/compile construction and dense Hilbert allocations.
+  Catalogue dimensions, `estimate_resource_budget` / `check_resource_budget` /
+  `enforce_resource_budget` compose existing `compile_budget` and
+  `dense_budget` formulas with explicit GiB caps; exceed-budget raises
+  `ResourceBudgetExceededError`. Docs: `docs/resource_budget_gate.md`.
 - 2026-07-23 — Hardware-safe gradient execution product (BL-47):
   `scpn_quantum_control.hardware_safe_execution` productises Axis-5 safety with
   a **no-submit default** policy catalogue, shot budgets, honest cost-model
