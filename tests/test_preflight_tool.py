@@ -247,6 +247,12 @@ def test_decisive_advantage_coverage_gate_is_exact_and_focused() -> None:
     assert threshold_name == "decisive-advantage exact coverage threshold"
     assert "--fail-under=100" in threshold_cmd
     assert "--include=*/decisive_advantage_protocol.py" in threshold_cmd
+    gate_names = {name for name, _cmd in _preflight.STATIC_GATES}
+    assert "mypy-strict-program-ad-array-indexing-quality" in gate_names
+    array_gates = _preflight.PROGRAM_AD_ARRAY_INDEXING_COVERAGE_GATES
+    assert "--branch" in array_gates[0][1]
+    assert "--fail-under=100" in array_gates[1][1]
+    assert "--include=*/program_ad_array_indexing.py" in array_gates[1][1]
 
 
 def test_static_gates_include_realtime_runtime_quality_ratchets() -> None:
@@ -947,6 +953,8 @@ def test_main_uses_coverage_pytest_by_default(
         "studio Program-AD browser strict typecheck",
         "decisive-advantage focused coverage",
         "decisive-advantage exact coverage threshold",
+        "program-ad-array-indexing focused coverage",
+        "program-ad-array-indexing exact coverage threshold",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",

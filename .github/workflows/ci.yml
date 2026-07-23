@@ -290,6 +290,19 @@ jobs:
           tests/test_phase_jax_qnode_statevector_edges.py
           tools/phase_jax_qnode_quality_gates.py
           tests/test_phase_jax_qnode_quality_gate.py
+      - name: Type-check Program-AD array-indexing quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/program_ad_array_indexing.py
+          tests/test_program_ad_array_indexing_quality.py
+          tools/program_ad_array_indexing_quality_gates.py
+      - name: Ruff NumPy docstrings for Program-AD array-indexing quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/program_ad_array_indexing.py
+          tests/test_program_ad_array_indexing_quality.py
+          tools/program_ad_array_indexing_quality_gates.py
       - name: Type-check whole-program trace-value quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -551,6 +564,25 @@ jobs:
           cache: 'pip'
       - name: Install dependencies
         run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Run Program-AD array-indexing focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.program-ad-array-indexing
+          --branch
+          -m pytest -q
+          tests/test_program_ad_array_indexing_registry.py
+          tests/test_program_ad_structural_finite_difference_gradient_check.py
+          tests/test_program_ad_fail_closed_boundaries.py
+          tests/test_program_ad_array_indexing_quality.py
+      - name: Enforce Program-AD array-indexing exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.program-ad-array-indexing
+          --precision=2
+          --fail-under=100
+          --include=*/program_ad_array_indexing.py
       - name: Run whole-program trace-value focused coverage
         run: >-
           python -m coverage run
@@ -563,6 +595,7 @@ jobs:
           tests/test_program_ad_alias_contracts.py
           tests/test_program_ad_alias_effects.py
           tests/test_program_ad_array_indexing_registry.py
+          tests/test_program_ad_array_indexing_quality.py
           tests/test_program_ad_binary_elementwise_registry.py
           tests/test_program_ad_broadcast_assembly.py
           tests/test_program_ad_cumulative_primitives.py

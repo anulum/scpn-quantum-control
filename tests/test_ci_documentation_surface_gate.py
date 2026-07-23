@@ -101,6 +101,20 @@ def test_ci_gates_whole_program_trace_value_quality_and_exact_coverage() -> None
     assert "needs['whole-program-trace-value-quality'].result" in workflow
 
 
+def test_ci_gates_program_ad_array_indexing_exact_quality() -> None:
+    """CI must retain array-indexing typing, docs, and exact branch coverage."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "Type-check Program-AD array-indexing quality cohort" in workflow
+    assert "Ruff NumPy docstrings for Program-AD array-indexing quality cohort" in workflow
+    assert "Run Program-AD array-indexing focused coverage" in workflow
+    assert "Enforce Program-AD array-indexing exact coverage" in workflow
+    assert "--data-file=.coverage.program-ad-array-indexing" in workflow
+    assert "--include=*/program_ad_array_indexing.py" in workflow
+    assert "tests/test_program_ad_array_indexing_quality.py" in workflow
+    assert "--fail-under=100" in workflow
+
+
 def test_trace_value_autodoc_exposes_both_public_value_types() -> None:
     """Direct trace-value autodoc must retain both operator-intercepted types."""
     autodoc = Path("docs/autodoc.md").read_text(encoding="utf-8")

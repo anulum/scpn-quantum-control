@@ -77,6 +77,7 @@ def _program_ad_array_derivative_rule(name: str) -> CustomDerivativeRule:
     CustomDerivativeRule
         Placeholder value and JVP callbacks that reject direct execution until
         trace dispatch supplies the primitive operands.
+
     """
     return CustomDerivativeRule(
         name=f"program_ad_array_{name}_trace_contract",
@@ -107,6 +108,7 @@ def _program_ad_array_normalise_static_shape(
     ------
     ValueError
         Raised when any static dimension is negative.
+
     """
     shape = tuple(int(dimension) for dimension in source_shape)
     if any(dimension < 0 for dimension in shape):
@@ -128,6 +130,7 @@ def _program_ad_array_static_size(source_shape: tuple[int, ...]) -> int:
     -------
     int
         Product of the static dimensions, with scalars represented as size one.
+
     """
     size = 1
     for dimension in source_shape:
@@ -148,6 +151,7 @@ def _program_ad_array_signature(source_shape: tuple[int, ...]) -> str:
     str
         ``"scalar"`` for rank-zero inputs, otherwise dimensions joined by
         ``"x"``.
+
     """
     return "scalar" if not source_shape else "x".join(str(dimension) for dimension in source_shape)
 
@@ -647,6 +651,7 @@ def program_ad_array_getitem_derivative_rule(
     ValueError
         Raised when the source shape is negative, the index is not a supported
         static selector, or the selected coordinates are out of bounds.
+
     """
     source = _program_ad_array_normalise_static_shape("getitem", source_shape)
     flat_indices = _program_ad_array_getitem_flat_indices(source, index)
@@ -714,6 +719,7 @@ def program_ad_array_take_derivative_rule(
     ValueError
         Raised when the source shape, indices, axis, or mode cannot define a
         static in-bounds ``np.take`` gather.
+
     """
     mode_name = _program_ad_array_take_mode(mode, context="direct rule")
     source = _program_ad_array_normalise_static_shape("take", source_shape)
@@ -787,6 +793,7 @@ def program_ad_array_take_along_axis_derivative_rule(
     ValueError
         Raised when the source shape, indices, or axis cannot define a static
         shape-compatible ``np.take_along_axis`` gather.
+
     """
     source = _program_ad_array_normalise_static_shape("take_along_axis", source_shape)
     if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
@@ -860,6 +867,7 @@ def program_ad_array_delete_derivative_rule(
     ValueError
         Raised when the source shape, deletion selector, or axis cannot define
         a static in-bounds ``np.delete`` gather.
+
     """
     source = _program_ad_array_normalise_static_shape("delete", source_shape)
     flat_indices = _program_ad_array_delete_flat_indices(source, obj, axis)
@@ -929,6 +937,7 @@ def program_ad_array_pad_derivative_rule(
     ValueError
         Raised when the source shape, pad width, or constant values cannot
         define a finite static constant-padding layout.
+
     """
     source = _program_ad_array_normalise_static_shape("pad", source_shape)
     flat_indices, flat_constants, _ = _program_ad_array_pad_layout(
@@ -1008,6 +1017,7 @@ def program_ad_array_insert_derivative_rule(
     ValueError
         Raised when the source shape, insertion selector, insertion constants,
         or axis cannot define a finite static insertion layout.
+
     """
     source = _program_ad_array_normalise_static_shape("insert", source_shape)
     flat_indices, flat_constants, _ = _program_ad_array_insert_layout(
@@ -1146,6 +1156,7 @@ def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
     ValueError
         Raised when a structural trace array does not expose a static tuple
         shape.
+
     """
     if _is_program_ad_trace_array(value):
         return _program_ad_trace_array_shape(value)
@@ -1583,6 +1594,7 @@ def _register_program_ad_array_primitive_contracts() -> None:
     None
         Registration mutates the default custom-derivative registry in place
         and leaves existing contracts untouched.
+
     """
     for name, identity in _PROGRAM_AD_ARRAY_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
@@ -1661,6 +1673,7 @@ def _require_program_ad_array_contract(
         Raised when the primitive name is unknown, the registry contract is
         incomplete, the metadata policy is not fail-closed, or supplied
         arguments violate the contract dispatch helpers.
+
     """
     identity: PrimitiveIdentity | None = _PROGRAM_AD_ARRAY_IDENTITIES.get(name)
     if identity is None:

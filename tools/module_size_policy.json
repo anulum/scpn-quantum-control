@@ -256,7 +256,7 @@
     },
     {
       "path": "src/scpn_quantum_control/program_ad_array_indexing.py",
-      "lines": 1717,
+      "lines": 1730,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Static array-indexing derivative rules and registry dispatch contracts.",

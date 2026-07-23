@@ -44,6 +44,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from tools import decisive_advantage_quality_gates as _decisive_advantage_quality_gates
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
+    from tools import program_ad_array_indexing_quality_gates as _array_indexing_quality_gates
     from tools import program_ad_quality_gates as _program_ad_quality_gates
 else:
     _repo_root = str(Path(__file__).resolve().parents[1])
@@ -51,6 +52,7 @@ else:
         sys.path.insert(0, _repo_root)
     _decisive_advantage_quality_gates = import_module("tools.decisive_advantage_quality_gates")
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
+    _array_indexing_quality_gates = import_module("tools.program_ad_array_indexing_quality_gates")
     _program_ad_quality_gates = import_module("tools.program_ad_quality_gates")
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -203,6 +205,7 @@ WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT = [
     "tests/test_program_ad_alias_contracts.py",
     "tests/test_program_ad_alias_effects.py",
     "tests/test_program_ad_array_indexing_registry.py",
+    "tests/test_program_ad_array_indexing_quality.py",
     "tests/test_program_ad_binary_elementwise_registry.py",
     "tests/test_program_ad_broadcast_assembly.py",
     "tests/test_program_ad_cumulative_primitives.py",
@@ -360,6 +363,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     *_decisive_advantage_quality_gates.build_static_quality_gates(_PY),
+    *_array_indexing_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -704,6 +708,7 @@ MLIR_LEAF_COVERAGE_GATES: list[tuple[str, list[str]]] = [
 ]
 
 DECISIVE_ADVANTAGE_COVERAGE_GATES = _decisive_advantage_quality_gates.build_coverage_gates(_PY)
+PROGRAM_AD_ARRAY_INDEXING_COVERAGE_GATES = _array_indexing_quality_gates.build_coverage_gates(_PY)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -955,6 +960,7 @@ def main() -> int:
             gates.append(("pytest", _PYTEST_BASE))
         else:
             gates.extend(DECISIVE_ADVANTAGE_COVERAGE_GATES)
+            gates.extend(PROGRAM_AD_ARRAY_INDEXING_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)
