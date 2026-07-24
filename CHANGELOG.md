@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Custom / registered derivatives product (BL-92):
+  `scpn_quantum_control.custom_derivatives_product` productises the safe
+  extension registration contract, public register/query helpers with
+  fail-closed blank/unknown/duplicate paths, and a documented scaled-linear
+  example rule over ambient CustomDerivativeRegistry. Docs:
+  `docs/custom_derivatives_product.md`. Sixth P1 A-product after
+  BL-90/91/81/49/96.
 - 2026-07-24 — Rust Program AD fuzz assurance product (BL-96):
   `scpn_quantum_control.program_ad_fuzz_assurance` productises ambient
   `scpn_quantum_engine/fuzz` target catalogue, time-boxed CI-optional policy
