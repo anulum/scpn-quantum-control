@@ -544,3 +544,26 @@ def test_integrity_bad_pin_and_refresh_class() -> None:
     ]
     with pytest.raises(ValueError, match="blank or invalid"):
         assert_competitive_baseline_watch_integrity(bad_refresh)
+
+
+def test_from_baseline_row_fresh_refresh_fallthrough(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Pinned row with non-due/non-pending refresh state falls through without extra blockers."""
+    from scpn_quantum_control.differentiable_competitive_baselines import (
+        run_competitive_baseline_refresh,
+    )
+
+    refresh = run_competitive_baseline_refresh()
+    row = next(r for r in refresh.rows if r.upstream_version and r.upstream_version.strip())
+    monkeypatch.setattr(
+        competitive_baseline_watch,
+        "_classify_refresh_state",
+        lambda _row, *, as_of: "fresh",
+    )
+    record = competitive_baseline_watch._from_baseline_row(row, as_of=row.checked_on)
+    assert record.pin_status == "pinned_snapshot"
+    assert record.refresh_state == "fresh"
+    # Default watch blockers remain; no due/pending-specific insert.
+    assert all("past freshness window" not in b for b in record.blockers)
+    assert all("continuous re-pin pending" not in b for b in record.blockers)
