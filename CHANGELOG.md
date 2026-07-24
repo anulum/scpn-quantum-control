@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Quantum Sync Challenge oracle product (BL-32):
+  `scpn_quantum_control.quantum_sync_challenge_oracle_product` productises
+  problem families F1–F4 + hardware schema row, metrics/baselines catalogue,
+  anti-cheat instance digests, ambient sync-witness suite probe; refuse
+  invent-green advantage, unvalidated leaderboard ranks, hardware auto-exec.
+  Docs: `docs/quantum_sync_challenge_oracle_product.md`. Seventeenth P1
+  A-product after BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66.
 - 2026-07-24 — QIR / CUDA-Q compiler boundary product (BL-66):
   `scpn_quantum_control.compiler_boundary_product` productises external-compiler
   boundary register (QIR, CUDA-Q, Catalyst, MLIR/Enzyme, future TN) with status
