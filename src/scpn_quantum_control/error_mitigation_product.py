@@ -36,7 +36,36 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Final, Literal
 
-from .studio.executive_mitigate import MITIGATE_CLAIM_BOUNDARY
+# Product-local mirror of
+# :data:`scpn_quantum_control.studio.executive_mitigate.MITIGATE_CLAIM_BOUNDARY`.
+# The ambient Studio package ``__init__`` pulls optional ``scpn_studio_platform``
+# (Python ≥3.12 CI extra only). This façade must import on the base matrix
+# (3.11 without the Studio extra); the ambient constant is preferred when the
+# package is available so compose stays honest.
+_STUDIO_MITIGATE_CLAIM_BOUNDARY_MIRROR: Final[str] = (
+    "polynomial zero-noise extrapolation of the given measured expectation "
+    "values with delta-method uncertainty propagation; it does not run "
+    "circuits, amplify noise, model the device noise physics, or validate "
+    "that the supplied expectations came from a real experiment"
+)
+
+
+def _studio_mitigate_claim_boundary_text() -> str:
+    """Return the Studio mitigate claim boundary without hard Studio import.
+
+    Prefers the ambient constant when ``scpn_studio_platform`` (and the Studio
+    package) is importable; otherwise uses the product-local mirror so the
+    taxonomy façade loads on base CI.
+    """
+    try:
+        from .studio.executive_mitigate import MITIGATE_CLAIM_BOUNDARY as ambient
+    except ImportError:
+        return _STUDIO_MITIGATE_CLAIM_BOUNDARY_MIRROR
+    text = str(ambient).strip()
+    if not text:
+        raise ValueError("Studio MITIGATE_CLAIM_BOUNDARY must be non-empty")
+    return text
+
 
 DifferentiabilityClass = Literal[
     "analytic_fd",
@@ -924,10 +953,9 @@ def materialise_readout_probe(
 
 def studio_mitigate_claim_boundary() -> str:
     """Return ambient Studio executive_mitigate claim boundary (S59.7 compose)."""
-    boundary = MITIGATE_CLAIM_BOUNDARY
-    if not boundary or not str(boundary).strip():
+    text = _studio_mitigate_claim_boundary_text()
+    if not text or not text.strip():
         raise ValueError("Studio MITIGATE_CLAIM_BOUNDARY must be non-empty")
-    text = str(boundary).strip()
     if "does not run" not in text and "does not" not in text:
         raise ValueError("Studio mitigate claim boundary missing honesty fragment")
     return text
@@ -958,7 +986,7 @@ def map_error_mitigation_public_surfaces() -> tuple[dict[str, object], ...]:
             "surface_id": "studio_executive_mitigate",
             "module_path": "scpn_quantum_control.studio.executive_mitigate",
             "role": "studio_bl62_compose",
-            "claim_boundary": MITIGATE_CLAIM_BOUNDARY,
+            "claim_boundary": _studio_mitigate_claim_boundary_text(),
         },
     )
 

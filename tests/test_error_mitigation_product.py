@@ -787,7 +787,7 @@ def test_readout_probe_rejects_non_finite_ambient_sum(monkeypatch: pytest.Monkey
 def test_studio_mitigate_claim_boundary_rejects_blank(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(mit_product, "MITIGATE_CLAIM_BOUNDARY", "")
+    monkeypatch.setattr(mit_product, "_studio_mitigate_claim_boundary_text", lambda: "")
     with pytest.raises(ValueError, match="non-empty"):
         studio_mitigate_claim_boundary()
 
@@ -797,11 +797,23 @@ def test_studio_mitigate_claim_boundary_rejects_missing_honesty(
 ) -> None:
     monkeypatch.setattr(
         mit_product,
-        "MITIGATE_CLAIM_BOUNDARY",
-        "promotional claim without honesty",
+        "_studio_mitigate_claim_boundary_text",
+        lambda: "promotional claim without honesty",
     )
     with pytest.raises(ValueError, match="honesty"):
         studio_mitigate_claim_boundary()
+
+
+def test_studio_mitigate_claim_boundary_mirror_matches_ambient_when_importable() -> None:
+    """When Studio package loads, ambient constant and product mirror stay lockstep."""
+    try:
+        from scpn_quantum_control.studio.executive_mitigate import (
+            MITIGATE_CLAIM_BOUNDARY as ambient,
+        )
+    except ImportError:
+        pytest.skip("scpn_studio_platform / Studio package not installed on this matrix cell")
+    assert ambient == mit_product._STUDIO_MITIGATE_CLAIM_BOUNDARY_MIRROR
+    assert studio_mitigate_claim_boundary() == ambient
 
 
 def test_taxonomy_map_rejects_blank_mitigator_id(monkeypatch: pytest.MonkeyPatch) -> None:

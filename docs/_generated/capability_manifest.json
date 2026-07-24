@@ -5,15 +5,15 @@
     "example_files": 37,
     "github_workflows": 24,
     "model_documentation_pages": null,
-    "notebook_files": 100,
+    "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 290,
-    "python_model_classes": 1052,
-    "python_model_source_modules": 590,
+    "public_documentation_pages": 328,
+    "python_model_classes": 1183,
+    "python_model_source_modules": 628,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1047
+    "test_files": 1085
   },
   "documentation": {
     "examples": [
@@ -155,7 +155,13 @@
       "notebooks/colab/kaggle_topological_resilience_disease.ipynb",
       "notebooks/colab/kaggle_universal_correlations.ipynb",
       "notebooks/colab/kaggle_upde_tuning.ipynb",
-      "notebooks/colab/kaggle_water_coupling.ipynb"
+      "notebooks/colab/kaggle_water_coupling.ipynb",
+      "notebooks/differentiable/01_parameter_shift_kuramoto_xy.ipynb",
+      "notebooks/differentiable/02_gradient_tape_simulator.ipynb",
+      "notebooks/differentiable/03_jax_batched_quantum_gradients.ipynb",
+      "notebooks/differentiable/04_pytorch_quantum_layer.ipynb",
+      "notebooks/differentiable/05_fail_closed_boundaries.ipynb",
+      "notebooks/differentiable/06_witnesses_challenge_fixture.ipynb"
     ],
     "public_pages": [
       "docs/ARCHITECTURE_DECISIONS.md",
@@ -167,7 +173,10 @@
       "docs/THREAT_MODEL.md",
       "docs/actions_history_dashboard.md",
       "docs/adaptive_branching.md",
+      "docs/adjoint_replay_product.md",
       "docs/adopters.md",
+      "docs/advanced_witnesses_product.md",
+      "docs/advantage_language_protocol.md",
       "docs/analog_backends.md",
       "docs/analog_native_readiness.md",
       "docs/analysis_api.md",
@@ -176,6 +185,7 @@
       "docs/architecture.md",
       "docs/architecture_map.md",
       "docs/artifact_storage.md",
+      "docs/attested_result_pack.md",
       "docs/autodoc.md",
       "docs/backend_selector.md",
       "docs/backends.md",
@@ -185,6 +195,7 @@
       "docs/benchmark_harness.md",
       "docs/benchmarks_api.md",
       "docs/bridges_api.md",
+      "docs/campaign_harness_product.md",
       "docs/campaigns/README.md",
       "docs/campaigns/adaptive_fim_qpu_protocol_2026-05-06.md",
       "docs/campaigns/bell_rerun_mitigated_prereg_2026-07-16.md",
@@ -301,9 +312,14 @@
       "docs/classical_baselines.md",
       "docs/classical_irreproducibility.md",
       "docs/closed_loop_control.md",
+      "docs/cloud_native_deployment_product.md",
+      "docs/competitive_baseline_watch.md",
+      "docs/compiler_boundary_product.md",
       "docs/control_scope.md",
+      "docs/control_stack_compose_product.md",
       "docs/core_package_boundary.md",
       "docs/count_integrity_incident_2026-04.md",
+      "docs/custom_derivatives_product.md",
       "docs/datasets.md",
       "docs/differentiable_api.md",
       "docs/differentiable_external_validation_report.md",
@@ -321,16 +337,21 @@
       "docs/entropy_qrng.md",
       "docs/equations.md",
       "docs/error_mitigation.md",
+      "docs/error_mitigation_product.md",
       "docs/examples_gallery.md",
       "docs/execution_surface_policy.md",
       "docs/falsification.md",
       "docs/frc_pulsed_qaoa.md",
       "docs/free_energy_principle.md",
+      "docs/geometric_control_product.md",
+      "docs/governed_route_matrix.md",
       "docs/gpu.md",
       "docs/hardware_guide.md",
       "docs/hardware_result_pack_release_checklist.md",
       "docs/hardware_result_packs.md",
+      "docs/hardware_safe_execution.md",
       "docs/hardware_status_ledger.md",
+      "docs/hermetic_reproduction_kit.md",
       "docs/hybrid_digital_analog.md",
       "docs/identity_api.md",
       "docs/index.md",
@@ -348,6 +369,7 @@
       "docs/kuramoto_standalone_package_decision.md",
       "docs/kuramoto_variants.md",
       "docs/kuramoto_visualisation.md",
+      "docs/kyma_mechanism_benchmark_product.md",
       "docs/language_policy.md",
       "docs/layout_relaxation_preregistration.md",
       "docs/licensing_faq.md",
@@ -355,10 +377,13 @@
       "docs/literature/README.md",
       "docs/literature/literature_survey_2024_2026.md",
       "docs/logical_dla_parity.md",
+      "docs/metamorphic_ad_verification.md",
       "docs/methodology.md",
       "docs/methods_benchmark_dashboard.md",
+      "docs/migration_guides_product.md",
       "docs/mitigation_api.md",
       "docs/ml_dsa_pqc.md",
+      "docs/multi_hal_federation_product.md",
       "docs/multi_platform.md",
       "docs/multiscale_qec.md",
       "docs/mutation_testing.md",
@@ -366,21 +391,28 @@
       "docs/neural_operator_advantage.md",
       "docs/neural_quantum_states.md",
       "docs/new_modules.md",
+      "docs/notebook_programme_product.md",
       "docs/notebooks.md",
       "docs/nv_magnetometry_20T.md",
       "docs/onboarding.md",
       "docs/open_system_hardware.md",
+      "docs/open_system_mcwf_product.md",
       "docs/orchestrator_integration.md",
       "docs/p_h1_open_guard.md",
       "docs/paper_dla_parity.md",
       "docs/paper_sync_witnesses.md",
+      "docs/pgbo_qgt_product.md",
       "docs/phase_api.md",
+      "docs/phase_qnode_product.md",
       "docs/physics_first_kuramoto_xy.md",
       "docs/pipeline_performance.md",
       "docs/pipeline_runtime_contract.md",
+      "docs/polyglot_parity_certificate.md",
       "docs/preprint.md",
       "docs/preregistration.md",
+      "docs/program_ad_fuzz_assurance.md",
       "docs/psi_field_lattice.md",
+      "docs/public_api_stability.md",
       "docs/publication/README.md",
       "docs/publication/arxiv_source_packaging_readiness_2026-05-06.md",
       "docs/publication/combined_submission_checklist_2026-05-06.md",
@@ -400,6 +432,7 @@
       "docs/publication/scipy_2026_cfp_readiness_2026-05-06.md",
       "docs/publication/software_heritage_swhid_2026-05-06.md",
       "docs/qec_decoder_boundary.md",
+      "docs/qpu_compute_product.md",
       "docs/qpu_compute_unit.md",
       "docs/qpu_data_artifact.md",
       "docs/qpu_provider_readiness.md",
@@ -409,6 +442,7 @@
       "docs/quantum_graph_neural_network.md",
       "docs/quantum_reservoir.md",
       "docs/quantum_sensing.md",
+      "docs/quantum_sync_challenge_oracle_product.md",
       "docs/quantum_thermo.md",
       "docs/quickstart.md",
       "docs/real_data_sync_forecasting.md",
@@ -416,17 +450,22 @@
       "docs/realtime_runtime.md",
       "docs/release_readiness.md",
       "docs/research_gems.md",
+      "docs/resource_budget_gate.md",
       "docs/results.md",
       "docs/rust_engine.md",
+      "docs/scorecard_acceptance_engine.md",
       "docs/sparse.md",
       "docs/stable_core_api.md",
       "docs/stable_core_backend_capability_matrix.md",
       "docs/stable_core_contract_fixtures.md",
       "docs/stable_core_preflight_fixtures.md",
+      "docs/stable_core_product.md",
       "docs/stable_facades_api.md",
       "docs/status_normalisation_policy.md",
+      "docs/stochastic_estimators_product.md",
       "docs/strategic_roadmap.md",
       "docs/studio_executive.md",
+      "docs/studio_executive_product.md",
       "docs/studio_federation.md",
       "docs/symmetry.md",
       "docs/symmetry_decay_guess.md",
@@ -438,14 +477,19 @@
       "docs/tensor_networks.md",
       "docs/test_infrastructure.md",
       "docs/theory.md",
+      "docs/thermo_readiness_product.md",
       "docs/tier_benchmarks.md",
       "docs/tn_mps_baseline_design.md",
       "docs/tn_mps_crossover_stage1.md",
       "docs/triage.md",
       "docs/tutorials.md",
       "docs/ultrascale_hls.md",
+      "docs/unsuitable_scenario_registry.md",
       "docs/variational.md",
+      "docs/visualisation_dashboard_product.md",
+      "docs/whole_program_ad_product.md",
       "docs/wirtinger_calculus.md",
+      "docs/wirtinger_implicit_product.md",
       "docs/witness_discovery.md",
       "docs/xy_compiler.md"
     ]
@@ -656,6 +700,10 @@
         "path": "src/scpn_quantum_control/studio/executive.py"
       },
       {
+        "name": "AdapterPortRow",
+        "path": "src/scpn_quantum_control/control_stack_compose_product.py"
+      },
+      {
         "name": "AdaptiveBranchDecision",
         "path": "src/scpn_quantum_control/control/adaptive_branching.py"
       },
@@ -682,6 +730,18 @@
       {
         "name": "AdiabaticResult",
         "path": "src/scpn_quantum_control/phase/adiabatic_preparation.py"
+      },
+      {
+        "name": "AdjointReplaySurfaceRow",
+        "path": "src/scpn_quantum_control/adjoint_replay_product.py"
+      },
+      {
+        "name": "AdvantageLanguageProbeResult",
+        "path": "src/scpn_quantum_control/advantage_language_protocol.py"
+      },
+      {
+        "name": "AdvantageProtocolRecord",
+        "path": "src/scpn_quantum_control/advantage_language_protocol.py"
       },
       {
         "name": "AdvantageResult",
@@ -812,6 +872,18 @@
         "path": "src/scpn_quantum_control/hardware/async_runner.py"
       },
       {
+        "name": "AttestationVerdict",
+        "path": "src/scpn_quantum_control/attested_result_pack.py"
+      },
+      {
+        "name": "AttestedEnvelope",
+        "path": "src/scpn_quantum_control/attested_result_pack.py"
+      },
+      {
+        "name": "AuditRecord",
+        "path": "src/scpn_quantum_control/hardware_safe_execution.py"
+      },
+      {
         "name": "AutoSolveResult",
         "path": "src/scpn_quantum_control/phase/backend_selector.py"
       },
@@ -870,6 +942,10 @@
       {
         "name": "BarrenPlateauTrainabilityReport",
         "path": "src/scpn_quantum_control/phase/trainability.py"
+      },
+      {
+        "name": "BaselineCatalogueRow",
+        "path": "src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py"
       },
       {
         "name": "BenchmarkActionHandler",
@@ -932,6 +1008,14 @@
         "path": "src/scpn_quantum_control/hardware/hal_braket.py"
       },
       {
+        "name": "BreakingChangeDecision",
+        "path": "src/scpn_quantum_control/public_api_stability.py"
+      },
+      {
+        "name": "BudgetDimension",
+        "path": "src/scpn_quantum_control/resource_budget_gate.py"
+      },
+      {
         "name": "CFTResult",
         "path": "src/scpn_quantum_control/gauge/cft_analysis.py"
       },
@@ -944,8 +1028,16 @@
         "path": "src/scpn_quantum_control/thermodynamics/readiness.py"
       },
       {
+        "name": "CampaignHarnessRow",
+        "path": "src/scpn_quantum_control/campaign_harness_product.py"
+      },
+      {
         "name": "CatalystCompilerWorkflowComparison",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_catalyst_comparison.py"
+      },
+      {
+        "name": "CertificateVerifyDecision",
+        "path": "src/scpn_quantum_control/polyglot_parity_certificate.py"
       },
       {
         "name": "ChainRegion",
@@ -954,6 +1046,10 @@
       {
         "name": "ChainSelection",
         "path": "src/scpn_quantum_control/hardware/error_aware_chain.py"
+      },
+      {
+        "name": "CheckpointPolicy",
+        "path": "src/scpn_quantum_control/adjoint_replay_product.py"
       },
       {
         "name": "CircuitCuttingPlan",
@@ -1064,6 +1160,10 @@
         "path": "src/scpn_quantum_control/differentiable_competitive_baselines.py"
       },
       {
+        "name": "CompetitiveWatchRecord",
+        "path": "src/scpn_quantum_control/competitive_baseline_watch.py"
+      },
+      {
         "name": "CompetitorRow",
         "path": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py"
       },
@@ -1092,6 +1192,10 @@
         "path": "src/scpn_quantum_control/compiler/alias_activity_evidence.py"
       },
       {
+        "name": "CompilerBoundaryRow",
+        "path": "src/scpn_quantum_control/compiler_boundary_product.py"
+      },
+      {
         "name": "CompilerIsolatedBenchmarkEvidence",
         "path": "src/scpn_quantum_control/benchmarks/compiler_isolated_benchmark_evidence.py"
       },
@@ -1106,6 +1210,10 @@
       {
         "name": "CompilerPromotionBatchEvidenceFile",
         "path": "src/scpn_quantum_control/compiler/promotion_batch.py"
+      },
+      {
+        "name": "ComplexContractDecision",
+        "path": "src/scpn_quantum_control/wirtinger_implicit_product.py"
       },
       {
         "name": "ComposedObjectiveAuditSuiteResult",
@@ -1142,6 +1250,18 @@
       {
         "name": "CompoundMitigationResult",
         "path": "src/scpn_quantum_control/mitigation/compound_mitigation.py"
+      },
+      {
+        "name": "ComputePlanDecision",
+        "path": "src/scpn_quantum_control/qpu_compute_product.py"
+      },
+      {
+        "name": "ComputePlanKind",
+        "path": "src/scpn_quantum_control/qpu_compute_product.py"
+      },
+      {
+        "name": "ComputePlanRecord",
+        "path": "src/scpn_quantum_control/qpu_compute_product.py"
       },
       {
         "name": "ConcordanceResult",
@@ -1252,8 +1372,16 @@
         "path": "src/scpn_quantum_control/applications/cross_domain.py"
       },
       {
+        "name": "CurriculumNotebookRow",
+        "path": "src/scpn_quantum_control/notebook_programme_product.py"
+      },
+      {
         "name": "CustomDerivativeCheckResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
+      },
+      {
+        "name": "CustomDerivativeContractRow",
+        "path": "src/scpn_quantum_control/custom_derivatives_product.py"
       },
       {
         "name": "CustomDerivativeRegistry",
@@ -1370,6 +1498,14 @@
       {
         "name": "DensityMatrixInvariantCertificate",
         "path": "src/scpn_quantum_control/phase/open_system_objectives.py"
+      },
+      {
+        "name": "DeploymentPatternRow",
+        "path": "src/scpn_quantum_control/cloud_native_deployment_product.py"
+      },
+      {
+        "name": "DeprecationProbe",
+        "path": "src/scpn_quantum_control/public_api_stability.py"
       },
       {
         "name": "DepthParityResult",
@@ -1600,6 +1736,10 @@
         "path": "src/scpn_quantum_control/studio/executive_differentiate.py"
       },
       {
+        "name": "DigestCheckResult",
+        "path": "src/scpn_quantum_control/hermetic_reproduction_kit.py"
+      },
+      {
         "name": "DisruptionBenchmark",
         "path": "src/scpn_quantum_control/control/q_disruption_iter.py"
       },
@@ -1622,6 +1762,10 @@
       {
         "name": "DlaParityRun",
         "path": "src/scpn_quantum_control/dla_parity/schema.py"
+      },
+      {
+        "name": "DryRunPlan",
+        "path": "src/scpn_quantum_control/hardware_safe_execution.py"
       },
       {
         "name": "DualNumber",
@@ -1654,6 +1798,10 @@
       {
         "name": "ENAQTResult",
         "path": "src/scpn_quantum_control/analysis/enaqt.py"
+      },
+      {
+        "name": "EnforceDecision",
+        "path": "src/scpn_quantum_control/hardware_safe_execution.py"
       },
       {
         "name": "EntanglementResult",
@@ -1732,6 +1880,10 @@
         "path": "src/scpn_quantum_control/qec/error_budget.py"
       },
       {
+        "name": "EstimatorDryRunDecision",
+        "path": "src/scpn_quantum_control/stochastic_estimators_product.py"
+      },
+      {
         "name": "EstimatorProvenance",
         "path": "src/scpn_quantum_control/diff.py"
       },
@@ -1764,6 +1916,10 @@
         "path": "src/scpn_quantum_control/studio/executive.py"
       },
       {
+        "name": "ExecutionPolicy",
+        "path": "src/scpn_quantum_control/hardware_safe_execution.py"
+      },
+      {
         "name": "ExecutionRegion",
         "path": "src/scpn_quantum_control/hardware/qubit_mapper.py"
       },
@@ -1794,6 +1950,10 @@
       {
         "name": "ExecutiveRequest",
         "path": "src/scpn_quantum_control/studio/executive.py"
+      },
+      {
+        "name": "ExecutiveVerbRow",
+        "path": "src/scpn_quantum_control/studio_executive_product.py"
       },
       {
         "name": "Experiment",
@@ -1860,6 +2020,10 @@
         "path": "src/scpn_quantum_control/analysis/finite_size_scaling.py"
       },
       {
+        "name": "FeedProbeResult",
+        "path": "src/scpn_quantum_control/competitive_baseline_watch.py"
+      },
+      {
         "name": "FeedbackBudgetEstimate",
         "path": "src/scpn_quantum_control/hardware/feedback_submission.py"
       },
@@ -1924,6 +2088,10 @@
         "path": "src/scpn_quantum_control/hardware/feedback_submission.py"
       },
       {
+        "name": "FepInventoryRow",
+        "path": "src/scpn_quantum_control/thermo_readiness_product.py"
+      },
+      {
         "name": "FiniteShotGradientAuditResult",
         "path": "src/scpn_quantum_control/phase/differentiable_audit_contracts.py"
       },
@@ -1976,8 +2144,24 @@
         "path": "src/scpn_quantum_control/fep/variational_free_energy.py"
       },
       {
+        "name": "FrozenDesignConstants",
+        "path": "src/scpn_quantum_control/kyma_mechanism_benchmark_product.py"
+      },
+      {
         "name": "FusionCoreFRCCalibration",
         "path": "src/scpn_quantum_control/bridge/fusion_core_frc.py"
+      },
+      {
+        "name": "FuzzPolicy",
+        "path": "src/scpn_quantum_control/program_ad_fuzz_assurance.py"
+      },
+      {
+        "name": "FuzzProbeDecision",
+        "path": "src/scpn_quantum_control/program_ad_fuzz_assurance.py"
+      },
+      {
+        "name": "FuzzTarget",
+        "path": "src/scpn_quantum_control/program_ad_fuzz_assurance.py"
       },
       {
         "name": "GPUBaselineResult",
@@ -2014,6 +2198,18 @@
       {
         "name": "GenericParameterShiftEvaluationPlan",
         "path": "src/scpn_quantum_control/phase/param_shift.py"
+      },
+      {
+        "name": "GeometryBoundaryRow",
+        "path": "src/scpn_quantum_control/geometric_control_product.py"
+      },
+      {
+        "name": "GeometryCapabilityRow",
+        "path": "src/scpn_quantum_control/geometric_control_product.py"
+      },
+      {
+        "name": "GovernedRouteRecord",
+        "path": "src/scpn_quantum_control/governed_route_matrix.py"
       },
       {
         "name": "GradientCheckResult",
@@ -2124,6 +2320,10 @@
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
+        "name": "HalCapabilityRecord",
+        "path": "src/scpn_quantum_control/multi_hal_federation_product.py"
+      },
+      {
         "name": "HamiltonianLearningResult",
         "path": "src/scpn_quantum_control/analysis/hamiltonian_learning.py"
       },
@@ -2222,6 +2422,10 @@
       {
         "name": "HeldOutFidelity",
         "path": "src/scpn_quantum_control/forecasting/neural_operator_advantage.py"
+      },
+      {
+        "name": "HermeticKitEntry",
+        "path": "src/scpn_quantum_control/hermetic_reproduction_kit.py"
       },
       {
         "name": "HessianResult",
@@ -2376,6 +2580,10 @@
         "path": "src/scpn_quantum_control/applications/josephson_magnitude_study.py"
       },
       {
+        "name": "KitDigestSpec",
+        "path": "src/scpn_quantum_control/hermetic_reproduction_kit.py"
+      },
+      {
         "name": "KnmGraph",
         "path": "src/scpn_quantum_control/phase/qgnn.py"
       },
@@ -2422,6 +2630,10 @@
       {
         "name": "KwargTolerantLoggerAdapter",
         "path": "src/scpn_quantum_control/structured_log_fallback.py"
+      },
+      {
+        "name": "KymaSuiteRow",
+        "path": "src/scpn_quantum_control/kyma_mechanism_benchmark_product.py"
       },
       {
         "name": "L16Result",
@@ -2580,16 +2792,148 @@
         "path": "src/scpn_quantum_control/analysis/magic_nonstabilizerness.py"
       },
       {
+        "name": "MaterialisedAdjointReplayProbe",
+        "path": "src/scpn_quantum_control/adjoint_replay_product.py"
+      },
+      {
+        "name": "MaterialisedCampaignProbe",
+        "path": "src/scpn_quantum_control/campaign_harness_product.py"
+      },
+      {
+        "name": "MaterialisedClosedLoopTelemetryProbe",
+        "path": "src/scpn_quantum_control/control_stack_compose_product.py"
+      },
+      {
+        "name": "MaterialisedCompilerBoundaryProbe",
+        "path": "src/scpn_quantum_control/compiler_boundary_product.py"
+      },
+      {
+        "name": "MaterialisedCoverageFrontierProbe",
+        "path": "src/scpn_quantum_control/studio_executive_product.py"
+      },
+      {
+        "name": "MaterialisedCurriculumProbe",
+        "path": "src/scpn_quantum_control/notebook_programme_product.py"
+      },
+      {
+        "name": "MaterialisedDeployDryRunProbe",
+        "path": "src/scpn_quantum_control/cloud_native_deployment_product.py"
+      },
+      {
+        "name": "MaterialisedFederationDryRunProbe",
+        "path": "src/scpn_quantum_control/multi_hal_federation_product.py"
+      },
+      {
+        "name": "MaterialisedImplicitProbe",
+        "path": "src/scpn_quantum_control/wirtinger_implicit_product.py"
+      },
+      {
+        "name": "MaterialisedKSweepProbe",
+        "path": "src/scpn_quantum_control/thermo_readiness_product.py"
+      },
+      {
+        "name": "MaterialisedKrylovProbe",
+        "path": "src/scpn_quantum_control/advanced_witnesses_product.py"
+      },
+      {
+        "name": "MaterialisedMcwfEnsembleProbe",
+        "path": "src/scpn_quantum_control/open_system_mcwf_product.py"
+      },
+      {
+        "name": "MaterialisedMechanismCertificateProbe",
+        "path": "src/scpn_quantum_control/kyma_mechanism_benchmark_product.py"
+      },
+      {
+        "name": "MaterialisedMetricDiagnosticsProbe",
+        "path": "src/scpn_quantum_control/geometric_control_product.py"
+      },
+      {
+        "name": "MaterialisedOracleProbe",
+        "path": "src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py"
+      },
+      {
+        "name": "MaterialisedOtocProbe",
+        "path": "src/scpn_quantum_control/advanced_witnesses_product.py"
+      },
+      {
+        "name": "MaterialisedPennyLaneRoundTrip",
+        "path": "src/scpn_quantum_control/migration_guides_product.py"
+      },
+      {
+        "name": "MaterialisedPgboTensorProbe",
+        "path": "src/scpn_quantum_control/pgbo_qgt_product.py"
+      },
+      {
+        "name": "MaterialisedQiskitLocalGradient",
+        "path": "src/scpn_quantum_control/migration_guides_product.py"
+      },
+      {
+        "name": "MaterialisedQngDirectionProbe",
+        "path": "src/scpn_quantum_control/geometric_control_product.py"
+      },
+      {
+        "name": "MaterialisedReadoutProbe",
+        "path": "src/scpn_quantum_control/error_mitigation_product.py"
+      },
+      {
+        "name": "MaterialisedReproducibilityProbe",
+        "path": "src/scpn_quantum_control/open_system_mcwf_product.py"
+      },
+      {
+        "name": "MaterialisedSPSAProbe",
+        "path": "src/scpn_quantum_control/stochastic_estimators_product.py"
+      },
+      {
+        "name": "MaterialisedShadowProbe",
+        "path": "src/scpn_quantum_control/advanced_witnesses_product.py"
+      },
+      {
+        "name": "MaterialisedStaticReportProbe",
+        "path": "src/scpn_quantum_control/visualisation_dashboard_product.py"
+      },
+      {
+        "name": "MaterialisedWirtingerProbe",
+        "path": "src/scpn_quantum_control/wirtinger_implicit_product.py"
+      },
+      {
+        "name": "MaterialisedZneProbe",
+        "path": "src/scpn_quantum_control/error_mitigation_product.py"
+      },
+      {
+        "name": "MetamorphicCheckResult",
+        "path": "src/scpn_quantum_control/metamorphic_ad_verification.py"
+      },
+      {
+        "name": "MetamorphicLawRecord",
+        "path": "src/scpn_quantum_control/metamorphic_ad_verification.py"
+      },
+      {
         "name": "MethodRow",
         "path": "src/scpn_quantum_control/benchmarks/layout_method_comparison.py"
+      },
+      {
+        "name": "MetricCatalogueRow",
+        "path": "src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py"
       },
       {
         "name": "MetricsProvider",
         "path": "src/scpn_quantum_control/benchmarks/layout_method_comparison.py"
       },
       {
+        "name": "MigrationConceptRow",
+        "path": "src/scpn_quantum_control/migration_guides_product.py"
+      },
+      {
         "name": "MitigateActionHandler",
         "path": "src/scpn_quantum_control/studio/executive_mitigate.py"
+      },
+      {
+        "name": "MitigationBoundaryRow",
+        "path": "src/scpn_quantum_control/error_mitigation_product.py"
+      },
+      {
+        "name": "MitigatorTaxonomyRow",
+        "path": "src/scpn_quantum_control/error_mitigation_product.py"
       },
       {
         "name": "MonitoredKuramotoSpec",
@@ -2676,6 +3020,10 @@
         "path": "src/scpn_quantum_control/entropy/nist_sp800_22.py"
       },
       {
+        "name": "NoAdvantageCertificate",
+        "path": "src/scpn_quantum_control/advantage_language_protocol.py"
+      },
+      {
         "name": "OQCHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_oqc.py"
       },
@@ -2736,6 +3084,10 @@
         "path": "src/scpn_quantum_control/hardware/openpulse_control.py"
       },
       {
+        "name": "OpenSystemBoundaryRow",
+        "path": "src/scpn_quantum_control/open_system_mcwf_product.py"
+      },
+      {
         "name": "OpenSystemObjectiveBoundaryRow",
         "path": "src/scpn_quantum_control/phase/open_system_objectives.py"
       },
@@ -2750,6 +3102,10 @@
       {
         "name": "OpenSystemObjectiveSuiteResult",
         "path": "src/scpn_quantum_control/phase/open_system_objectives.py"
+      },
+      {
+        "name": "OpenSystemSurfaceRow",
+        "path": "src/scpn_quantum_control/open_system_mcwf_product.py"
       },
       {
         "name": "OptimizationResult",
@@ -2770,6 +3126,10 @@
       {
         "name": "OuterCycleResult",
         "path": "src/scpn_quantum_control/ssgf/quantum_outer_cycle.py"
+      },
+      {
+        "name": "OwnershipRow",
+        "path": "src/scpn_quantum_control/control_stack_compose_product.py"
       },
       {
         "name": "PECResult",
@@ -2956,8 +3316,88 @@
         "path": "src/scpn_quantum_control/phase/gradient_descent.py"
       },
       {
+        "name": "ParityFamily",
+        "path": "src/scpn_quantum_control/polyglot_parity_certificate.py"
+      },
+      {
         "name": "PasqalPulserHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_pasqal.py"
+      },
+      {
+        "name": "PathClassification",
+        "path": "src/scpn_quantum_control/public_api_stability.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/adjoint_replay_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/advanced_witnesses_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/campaign_harness_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/cloud_native_deployment_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/compiler_boundary_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/control_stack_compose_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/error_mitigation_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/geometric_control_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/kyma_mechanism_benchmark_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/migration_guides_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/multi_hal_federation_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/notebook_programme_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/open_system_mcwf_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/pgbo_qgt_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/studio_executive_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/thermo_readiness_product.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/visualisation_dashboard_product.py"
       },
       {
         "name": "PauliCovarianceObservable",
@@ -3206,6 +3646,14 @@
       {
         "name": "PhaseQNodeGradientResult",
         "path": "src/scpn_quantum_control/phase/qnode_circuit_contracts.py"
+      },
+      {
+        "name": "PhaseQNodeJourney",
+        "path": "src/scpn_quantum_control/phase_qnode_product.py"
+      },
+      {
+        "name": "PhaseQNodeJourneyDecision",
+        "path": "src/scpn_quantum_control/phase_qnode_product.py"
       },
       {
         "name": "PhaseQNodeMLIRRuntimeExecutable",
@@ -3540,6 +3988,10 @@
         "path": "src/scpn_quantum_control/hardware/plugin_registry.py"
       },
       {
+        "name": "PolyglotParityCertificate",
+        "path": "src/scpn_quantum_control/polyglot_parity_certificate.py"
+      },
+      {
         "name": "PowerGridApplicationPlugin",
         "path": "src/scpn_quantum_control/applications/app_plugins.py"
       },
@@ -3586,6 +4038,10 @@
       {
         "name": "Problem",
         "path": "src/scpn_quantum_control/stable_core.py"
+      },
+      {
+        "name": "ProblemFamilyRow",
+        "path": "src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py"
       },
       {
         "name": "ProgramADAdjointResult",
@@ -3688,6 +4144,10 @@
         "path": "src/scpn_quantum_control/topology_control/optimizers.py"
       },
       {
+        "name": "PromoteDecision",
+        "path": "src/scpn_quantum_control/scorecard_acceptance_engine.py"
+      },
+      {
         "name": "ProportionalMetricObserver",
         "path": "src/scpn_quantum_control/hardware/feedback_loop.py"
       },
@@ -3758,6 +4218,10 @@
       {
         "name": "ProviderQNodeTransformResult",
         "path": "src/scpn_quantum_control/phase/qnode_provider_transforms.py"
+      },
+      {
+        "name": "PublicApiSymbolRecord",
+        "path": "src/scpn_quantum_control/public_api_stability.py"
       },
       {
         "name": "PublicKey",
@@ -3882,6 +4346,14 @@
       {
         "name": "QbraidRuntimeHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_qbraid.py"
+      },
+      {
+        "name": "QgtBoundaryRow",
+        "path": "src/scpn_quantum_control/pgbo_qgt_product.py"
+      },
+      {
+        "name": "QgtCapabilityRow",
+        "path": "src/scpn_quantum_control/pgbo_qgt_product.py"
       },
       {
         "name": "QiskitAerHALAdapter",
@@ -4096,6 +4568,10 @@
         "path": "src/scpn_quantum_control/hardware/openpulse_control.py"
       },
       {
+        "name": "ReadinessCapabilityRow",
+        "path": "src/scpn_quantum_control/thermo_readiness_product.py"
+      },
+      {
         "name": "ReadoutConfusionMatrix",
         "path": "src/scpn_quantum_control/mitigation/readout_matrix.py"
       },
@@ -4156,12 +4632,20 @@
         "path": "src/scpn_quantum_control/studio/reference_validation.py"
       },
       {
+        "name": "RefreshProbeResult",
+        "path": "src/scpn_quantum_control/competitive_baseline_watch.py"
+      },
+      {
         "name": "RegisteredDifferentiableTrainingSuiteAuditResult",
         "path": "src/scpn_quantum_control/phase/model_training_evidence.py"
       },
       {
         "name": "RegisteredDifferentiableTrainingSuiteRecord",
         "path": "src/scpn_quantum_control/phase/model_training_evidence.py"
+      },
+      {
+        "name": "RegistrationResult",
+        "path": "src/scpn_quantum_control/custom_derivatives_product.py"
       },
       {
         "name": "RelaxationExperimentArtifact",
@@ -4204,6 +4688,18 @@
         "path": "src/scpn_quantum_control/hardware/aggregators.py"
       },
       {
+        "name": "ResourceBudgetDecision",
+        "path": "src/scpn_quantum_control/resource_budget_gate.py"
+      },
+      {
+        "name": "ResourceBudgetEstimate",
+        "path": "src/scpn_quantum_control/resource_budget_gate.py"
+      },
+      {
+        "name": "ResourceBudgetExceededError",
+        "path": "src/scpn_quantum_control/resource_budget_gate.py"
+      },
+      {
         "name": "ResponseClass",
         "path": "src/scpn_quantum_control/control/closed_loop_analysis.py"
       },
@@ -4216,6 +4712,10 @@
         "path": "src/scpn_quantum_control/differentiable_scalar_kernels.py"
       },
       {
+        "name": "ReversibilityReport",
+        "path": "src/scpn_quantum_control/adjoint_replay_product.py"
+      },
+      {
         "name": "RigettiQCSHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_rigetti.py"
       },
@@ -4226,6 +4726,14 @@
       {
         "name": "RobustnessCertificate",
         "path": "src/scpn_quantum_control/identity/robustness.py"
+      },
+      {
+        "name": "RouteCapability",
+        "path": "src/scpn_quantum_control/governed_route_matrix.py"
+      },
+      {
+        "name": "RouteExplanation",
+        "path": "src/scpn_quantum_control/governed_route_matrix.py"
       },
       {
         "name": "RoutedLayoutMetrics",
@@ -4312,12 +4820,24 @@
         "path": "src/scpn_quantum_control/benchmarks/advantage_protocol.py"
       },
       {
+        "name": "ScenarioProbeResult",
+        "path": "src/scpn_quantum_control/unsuitable_scenario_registry.py"
+      },
+      {
         "name": "ScoreFunctionGradientResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "ScoreFunctionSampleRecord",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
+      },
+      {
+        "name": "ScorecardCategoryRecord",
+        "path": "src/scpn_quantum_control/scorecard_acceptance_engine.py"
+      },
+      {
+        "name": "SecretsScanResult",
+        "path": "src/scpn_quantum_control/visualisation_dashboard_product.py"
       },
       {
         "name": "SeedResult",
@@ -4384,12 +4904,24 @@
         "path": "src/scpn_quantum_control/analysis/fim_hamiltonian.py"
       },
       {
+        "name": "StableCoreContractRow",
+        "path": "src/scpn_quantum_control/stable_core_product.py"
+      },
+      {
         "name": "StableCorePreflightResult",
         "path": "src/scpn_quantum_control/stable_core_preflight.py"
       },
       {
+        "name": "StableCoreRoundTripResult",
+        "path": "src/scpn_quantum_control/stable_core_product.py"
+      },
+      {
         "name": "StatisticalSummary",
         "path": "src/scpn_quantum_control/dla_parity/schema.py"
+      },
+      {
+        "name": "StochasticEstimatorRow",
+        "path": "src/scpn_quantum_control/stochastic_estimators_product.py"
       },
       {
         "name": "StochasticGradientConfidenceInterval",
@@ -4568,6 +5100,10 @@
         "path": "src/scpn_quantum_control/analysis/thermodynamic_witness.py"
       },
       {
+        "name": "ThreatModelRow",
+        "path": "src/scpn_quantum_control/cloud_native_deployment_product.py"
+      },
+      {
         "name": "TopologicalCouplingOptimizer",
         "path": "src/scpn_quantum_control/control/topological_optimizer.py"
       },
@@ -4696,6 +5232,10 @@
         "path": "src/scpn_quantum_control/gauge/universality.py"
       },
       {
+        "name": "UnsuitableScenarioRecord",
+        "path": "src/scpn_quantum_control/unsuitable_scenario_registry.py"
+      },
+      {
         "name": "VJPResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
@@ -4724,6 +5264,10 @@
         "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
       {
+        "name": "VisualisationPanelRow",
+        "path": "src/scpn_quantum_control/visualisation_dashboard_product.py"
+      },
+      {
         "name": "VortexBindingResult",
         "path": "src/scpn_quantum_control/analysis/vortex_binding.py"
       },
@@ -4738,6 +5282,14 @@
       {
         "name": "WeightedGradientResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
+      },
+      {
+        "name": "WholeProgramADJourney",
+        "path": "src/scpn_quantum_control/whole_program_ad_product.py"
+      },
+      {
+        "name": "WholeProgramADJourneyDecision",
+        "path": "src/scpn_quantum_control/whole_program_ad_product.py"
       },
       {
         "name": "WholeProgramADNativeLoweringReport",
@@ -4800,12 +5352,24 @@
         "path": "src/scpn_quantum_control/wirtinger_calculus.py"
       },
       {
+        "name": "WirtingerImplicitSurfaceRow",
+        "path": "src/scpn_quantum_control/wirtinger_implicit_product.py"
+      },
+      {
         "name": "WirtingerOptimisationResult",
         "path": "src/scpn_quantum_control/wirtinger_calculus.py"
       },
       {
+        "name": "WitnessBoundaryRow",
+        "path": "src/scpn_quantum_control/advanced_witnesses_product.py"
+      },
+      {
         "name": "WitnessCandidate",
         "path": "src/scpn_quantum_control/analysis/witness_discovery.py"
+      },
+      {
+        "name": "WitnessCapabilityRow",
+        "path": "src/scpn_quantum_control/advanced_witnesses_product.py"
       },
       {
         "name": "WitnessDiscoveryEvaluation",
@@ -4818,6 +5382,10 @@
       {
         "name": "WitnessDiscoverySpec",
         "path": "src/scpn_quantum_control/analysis/witness_discovery.py"
+      },
+      {
+        "name": "WitnessEstimate",
+        "path": "src/scpn_quantum_control/advanced_witnesses_product.py"
       },
       {
         "name": "WitnessResult",
@@ -4844,6 +5412,9 @@
       "src/scpn_quantum_control/_constants.py",
       "src/scpn_quantum_control/_paths.py",
       "src/scpn_quantum_control/_rust_accel.py",
+      "src/scpn_quantum_control/adjoint_replay_product.py",
+      "src/scpn_quantum_control/advanced_witnesses_product.py",
+      "src/scpn_quantum_control/advantage_language_protocol.py",
       "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py",
       "src/scpn_quantum_control/analysis/berry_phase.py",
       "src/scpn_quantum_control/analysis/bkt_analysis.py",
@@ -4922,6 +5493,7 @@
       "src/scpn_quantum_control/applications/quantum_evs.py",
       "src/scpn_quantum_control/applications/quantum_kernel.py",
       "src/scpn_quantum_control/applications/quantum_reservoir.py",
+      "src/scpn_quantum_control/attested_result_pack.py",
       "src/scpn_quantum_control/backend_dispatch.py",
       "src/scpn_quantum_control/bench_cli.py",
       "src/scpn_quantum_control/benchmark_harness/registry.py",
@@ -4992,7 +5564,10 @@
       "src/scpn_quantum_control/bridge/spn_to_qcircuit.py",
       "src/scpn_quantum_control/bridge/ssgf_adapter.py",
       "src/scpn_quantum_control/bridge/ssgf_w_adapter.py",
+      "src/scpn_quantum_control/campaign_harness_product.py",
+      "src/scpn_quantum_control/cloud_native_deployment_product.py",
       "src/scpn_quantum_control/codegen/ultrascale_hls.py",
+      "src/scpn_quantum_control/competitive_baseline_watch.py",
       "src/scpn_quantum_control/compile_budget.py",
       "src/scpn_quantum_control/compiler/alias_activity_evidence.py",
       "src/scpn_quantum_control/compiler/mlir.py",
@@ -5015,6 +5590,7 @@
       "src/scpn_quantum_control/compiler/mlir_whole_program_native.py",
       "src/scpn_quantum_control/compiler/mlir_workload_compilation.py",
       "src/scpn_quantum_control/compiler/promotion_batch.py",
+      "src/scpn_quantum_control/compiler_boundary_product.py",
       "src/scpn_quantum_control/config.py",
       "src/scpn_quantum_control/control/adaptive_branching.py",
       "src/scpn_quantum_control/control/closed_loop_analysis.py",
@@ -5030,6 +5606,7 @@
       "src/scpn_quantum_control/control/structured_ansatz.py",
       "src/scpn_quantum_control/control/topological_optimizer.py",
       "src/scpn_quantum_control/control/vqls_gs.py",
+      "src/scpn_quantum_control/control_stack_compose_product.py",
       "src/scpn_quantum_control/cosimulation/knm_partition.py",
       "src/scpn_quantum_control/cosimulation/quantum_classical.py",
       "src/scpn_quantum_control/crypto/entanglement_qkd.py",
@@ -5041,6 +5618,7 @@
       "src/scpn_quantum_control/crypto/percolation.py",
       "src/scpn_quantum_control/crypto/pqc_trigger.py",
       "src/scpn_quantum_control/crypto/topology_auth.py",
+      "src/scpn_quantum_control/custom_derivatives_product.py",
       "src/scpn_quantum_control/dense_budget.py",
       "src/scpn_quantum_control/deployment/cloud_native.py",
       "src/scpn_quantum_control/diff.py",
@@ -5095,6 +5673,7 @@
       "src/scpn_quantum_control/entropy/nist_sp800_22.py",
       "src/scpn_quantum_control/entropy/qrng_stream.py",
       "src/scpn_quantum_control/entropy/quantum_source.py",
+      "src/scpn_quantum_control/error_mitigation_product.py",
       "src/scpn_quantum_control/execution_surface.py",
       "src/scpn_quantum_control/fep/predictive_coding.py",
       "src/scpn_quantum_control/fep/variational_free_energy.py",
@@ -5108,6 +5687,8 @@
       "src/scpn_quantum_control/gauge/universality.py",
       "src/scpn_quantum_control/gauge/vortex_detector.py",
       "src/scpn_quantum_control/gauge/wilson_loop.py",
+      "src/scpn_quantum_control/geometric_control_product.py",
+      "src/scpn_quantum_control/governed_route_matrix.py",
       "src/scpn_quantum_control/gradient_plan_explanation_artifact.py",
       "src/scpn_quantum_control/hardware/_count_integrity.py",
       "src/scpn_quantum_control/hardware/_experiment_helpers.py",
@@ -5186,6 +5767,8 @@
       "src/scpn_quantum_control/hardware/trapped_ion.py",
       "src/scpn_quantum_control/hardware_result_pack_evidence.py",
       "src/scpn_quantum_control/hardware_result_packs.py",
+      "src/scpn_quantum_control/hardware_safe_execution.py",
+      "src/scpn_quantum_control/hermetic_reproduction_kit.py",
       "src/scpn_quantum_control/identity/binding_spec.py",
       "src/scpn_quantum_control/identity/coherence_budget.py",
       "src/scpn_quantum_control/identity/entanglement_witness.py",
@@ -5194,8 +5777,11 @@
       "src/scpn_quantum_control/identity/robustness.py",
       "src/scpn_quantum_control/kuramoto.py",
       "src/scpn_quantum_control/kuramoto_core.py",
+      "src/scpn_quantum_control/kyma_mechanism_benchmark_product.py",
       "src/scpn_quantum_control/l16/quantum_director.py",
       "src/scpn_quantum_control/logging_setup.py",
+      "src/scpn_quantum_control/metamorphic_ad_verification.py",
+      "src/scpn_quantum_control/migration_guides_product.py",
       "src/scpn_quantum_control/mitigation/compound_mitigation.py",
       "src/scpn_quantum_control/mitigation/cpdr.py",
       "src/scpn_quantum_control/mitigation/dd.py",
@@ -5209,7 +5795,11 @@
       "src/scpn_quantum_control/mitigation/symmetry_verification.py",
       "src/scpn_quantum_control/mitigation/zne.py",
       "src/scpn_quantum_control/mitigation/zne_uncertainty.py",
+      "src/scpn_quantum_control/multi_hal_federation_product.py",
+      "src/scpn_quantum_control/notebook_programme_product.py",
+      "src/scpn_quantum_control/open_system_mcwf_product.py",
       "src/scpn_quantum_control/pgbo/quantum_bridge.py",
+      "src/scpn_quantum_control/pgbo_qgt_product.py",
       "src/scpn_quantum_control/phase/adapt_vqe.py",
       "src/scpn_quantum_control/phase/adiabatic_preparation.py",
       "src/scpn_quantum_control/phase/ancilla_lindblad.py",
@@ -5326,6 +5916,8 @@
       "src/scpn_quantum_control/phase/varqite.py",
       "src/scpn_quantum_control/phase/xy_compiler.py",
       "src/scpn_quantum_control/phase/xy_kuramoto.py",
+      "src/scpn_quantum_control/phase_qnode_product.py",
+      "src/scpn_quantum_control/polyglot_parity_certificate.py",
       "src/scpn_quantum_control/program_ad_adjoint.py",
       "src/scpn_quantum_control/program_ad_adjoint_generation.py",
       "src/scpn_quantum_control/program_ad_alias_analysis.py",
@@ -5336,6 +5928,7 @@
       "src/scpn_quantum_control/program_ad_cumulative_primitives.py",
       "src/scpn_quantum_control/program_ad_effect_ir.py",
       "src/scpn_quantum_control/program_ad_elementwise_primitives.py",
+      "src/scpn_quantum_control/program_ad_fuzz_assurance.py",
       "src/scpn_quantum_control/program_ad_interpolation_primitives.py",
       "src/scpn_quantum_control/program_ad_linalg_primitives.py",
       "src/scpn_quantum_control/program_ad_product_primitives.py",
@@ -5352,6 +5945,7 @@
       "src/scpn_quantum_control/psi_field/lattice.py",
       "src/scpn_quantum_control/psi_field/observables.py",
       "src/scpn_quantum_control/psi_field/scpn_mapping.py",
+      "src/scpn_quantum_control/public_api_stability.py",
       "src/scpn_quantum_control/qec/biological_cli.py",
       "src/scpn_quantum_control/qec/biological_diagnostics.py",
       "src/scpn_quantum_control/qec/biological_pipeline.py",
@@ -5366,6 +5960,7 @@
       "src/scpn_quantum_control/qec/surface_code_upde.py",
       "src/scpn_quantum_control/qec/syndrome_flow.py",
       "src/scpn_quantum_control/qpu_compute.py",
+      "src/scpn_quantum_control/qpu_compute_product.py",
       "src/scpn_quantum_control/qpu_compute_runtime.py",
       "src/scpn_quantum_control/qpu_compute_types.py",
       "src/scpn_quantum_control/qsnn/dynamic_coupling.py",
@@ -5375,6 +5970,9 @@
       "src/scpn_quantum_control/qsnn/qsynapse.py",
       "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py",
       "src/scpn_quantum_control/qsnn/training.py",
+      "src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py",
+      "src/scpn_quantum_control/resource_budget_gate.py",
+      "src/scpn_quantum_control/scorecard_acceptance_engine.py",
       "src/scpn_quantum_control/sensing/nv_magnetometry_20T.py",
       "src/scpn_quantum_control/ssgf/quantum_costs.py",
       "src/scpn_quantum_control/ssgf/quantum_gradient.py",
@@ -5382,6 +5980,8 @@
       "src/scpn_quantum_control/ssgf/quantum_spectral.py",
       "src/scpn_quantum_control/stable_core.py",
       "src/scpn_quantum_control/stable_core_preflight.py",
+      "src/scpn_quantum_control/stable_core_product.py",
+      "src/scpn_quantum_control/stochastic_estimators_product.py",
       "src/scpn_quantum_control/structured_log_fallback.py",
       "src/scpn_quantum_control/studio/benchmark_databank_bundle.py",
       "src/scpn_quantum_control/studio/coupling_invariant.py",
@@ -5413,7 +6013,9 @@
       "src/scpn_quantum_control/studio/support_matrix_bundle.py",
       "src/scpn_quantum_control/studio/verbs.py",
       "src/scpn_quantum_control/studio/xy_compile_recompute_artifact.py",
+      "src/scpn_quantum_control/studio_executive_product.py",
       "src/scpn_quantum_control/tcbo/quantum_observer.py",
+      "src/scpn_quantum_control/thermo_readiness_product.py",
       "src/scpn_quantum_control/thermodynamics/readiness.py",
       "src/scpn_quantum_control/topology_control/artefacts.py",
       "src/scpn_quantum_control/topology_control/complexes.py",
@@ -5422,7 +6024,10 @@
       "src/scpn_quantum_control/topology_control/objectives.py",
       "src/scpn_quantum_control/topology_control/optimizers.py",
       "src/scpn_quantum_control/topology_control/qsnn_integration.py",
+      "src/scpn_quantum_control/unsuitable_scenario_registry.py",
+      "src/scpn_quantum_control/visualisation_dashboard_product.py",
       "src/scpn_quantum_control/whole_program_ad_api.py",
+      "src/scpn_quantum_control/whole_program_ad_product.py",
       "src/scpn_quantum_control/whole_program_ad_result.py",
       "src/scpn_quantum_control/whole_program_frontend.py",
       "src/scpn_quantum_control/whole_program_frontend_contracts.py",
@@ -5430,7 +6035,8 @@
       "src/scpn_quantum_control/whole_program_trace_predicates.py",
       "src/scpn_quantum_control/whole_program_trace_runtime.py",
       "src/scpn_quantum_control/whole_program_trace_values.py",
-      "src/scpn_quantum_control/wirtinger_calculus.py"
+      "src/scpn_quantum_control/wirtinger_calculus.py",
+      "src/scpn_quantum_control/wirtinger_implicit_product.py"
     ],
     "rust_pyo3_wrappers": [
       "all_xy_expectations",
@@ -6608,6 +7214,9 @@
       "tests/test_adaptive_branching_branches.py",
       "tests/test_adaptive_fim_feedback.py",
       "tests/test_adiabatic_preparation.py",
+      "tests/test_adjoint_replay_product.py",
+      "tests/test_advanced_witnesses_product.py",
+      "tests/test_advantage_language_protocol.py",
       "tests/test_advantage_protocol.py",
       "tests/test_advantage_protocol_guards.py",
       "tests/test_aggregators_branches.py",
@@ -6635,6 +7244,7 @@
       "tests/test_appqsim.py",
       "tests/test_appqsim_protocol.py",
       "tests/test_async_runner.py",
+      "tests/test_attested_result_pack.py",
       "tests/test_audit_ci_build_environment.py",
       "tests/test_audit_coverage_debt.py",
       "tests/test_audit_coverage_gaps.py",
@@ -6682,6 +7292,7 @@
       "tests/test_bridge_properties.py",
       "tests/test_build_march_job_id_commitments.py",
       "tests/test_build_studio_wasm_bundle.py",
+      "tests/test_campaign_harness_product.py",
       "tests/test_campaign_parameter_generators.py",
       "tests/test_capability_manifest.py",
       "tests/test_cft_analysis.py",
@@ -6710,10 +7321,13 @@
       "tests/test_closed_loop_publication_run.py",
       "tests/test_cloud_native.py",
       "tests/test_cloud_native_branches.py",
+      "tests/test_cloud_native_deployment_product.py",
       "tests/test_commutator_bounds.py",
       "tests/test_compare_eeg_plv_cohorts.py",
+      "tests/test_competitive_baseline_watch.py",
       "tests/test_compile_budget.py",
       "tests/test_compiler_alias_activity_evidence.py",
+      "tests/test_compiler_boundary_product.py",
       "tests/test_compiler_isolated_benchmark_evidence.py",
       "tests/test_compiler_promotion_batch.py",
       "tests/test_compound_mitigation.py",
@@ -6725,6 +7339,7 @@
       "tests/test_control_plasma_knm.py",
       "tests/test_control_plasma_knm_mock.py",
       "tests/test_control_qec.py",
+      "tests/test_control_stack_compose_product.py",
       "tests/test_control_structured_ansatz.py",
       "tests/test_cosimulation.py",
       "tests/test_cosimulation_branches.py",
@@ -6750,6 +7365,7 @@
       "tests/test_crypto_percolation.py",
       "tests/test_crypto_properties.py",
       "tests/test_crypto_topology_auth.py",
+      "tests/test_custom_derivatives_product.py",
       "tests/test_cutting_runner.py",
       "tests/test_dataset_catalog.py",
       "tests/test_dd.py",
@@ -6867,6 +7483,7 @@
       "tests/test_enzyme_toolchain_execution_evidence.py",
       "tests/test_error_aware_chain.py",
       "tests/test_error_budget.py",
+      "tests/test_error_mitigation_product.py",
       "tests/test_example_workflows.py",
       "tests/test_exclusions_ledger_drift.py",
       "tests/test_execution_surface_branches.py",
@@ -6912,7 +7529,9 @@
       "tests/test_fusion_core_frc.py",
       "tests/test_gauge_lattice_crosscheck.py",
       "tests/test_gauge_topology_contracts.py",
+      "tests/test_geometric_control_product.py",
       "tests/test_github_actions_history_audit.py",
+      "tests/test_governed_route_matrix.py",
       "tests/test_gpu_accel.py",
       "tests/test_gpu_accel_branch.py",
       "tests/test_gpu_baseline.py",
@@ -6956,7 +7575,9 @@
       "tests/test_hardware_runner_branches.py",
       "tests/test_hardware_runner_calibration.py",
       "tests/test_hardware_runner_contracts.py",
+      "tests/test_hardware_safe_execution.py",
       "tests/test_hardware_topological_optimizer.py",
+      "tests/test_hermetic_reproduction_kit.py",
       "tests/test_hls_cosimulation_evidence.py",
       "tests/test_hybrid_digital_analog.py",
       "tests/test_hybrid_digital_analog_branches.py",
@@ -7013,6 +7634,7 @@
       "tests/test_kuramoto_standalone_package_decision.py",
       "tests/test_kuramoto_variants.py",
       "tests/test_kyma_dynamics.py",
+      "tests/test_kyma_mechanism_benchmark_product.py",
       "tests/test_kyma_models.py",
       "tests/test_kyma_probe.py",
       "tests/test_kyma_task.py",
@@ -7050,6 +7672,8 @@
       "tests/test_magic_nonstabilizerness.py",
       "tests/test_magnetisation_sectors.py",
       "tests/test_magnetisation_sectors_empty_guard.py",
+      "tests/test_metamorphic_ad_verification.py",
+      "tests/test_migration_guides_product.py",
       "tests/test_mitiq_integration.py",
       "tests/test_ml_dsa_branches.py",
       "tests/test_ml_dsa_pqc.py",
@@ -7078,6 +7702,7 @@
       "tests/test_monte_carlo_xy.py",
       "tests/test_mps_baseline.py",
       "tests/test_mps_evolution.py",
+      "tests/test_multi_hal_federation_product.py",
       "tests/test_multicircuit_qec_readiness.py",
       "tests/test_multiplatform_export_workflow.py",
       "tests/test_multiscale_qec.py",
@@ -7090,11 +7715,13 @@
       "tests/test_new_module_properties.py",
       "tests/test_nist_sp800_22_guards.py",
       "tests/test_noise_model.py",
+      "tests/test_notebook_programme_product.py",
       "tests/test_notebook_workflows.py",
       "tests/test_nqs_ansatz.py",
       "tests/test_nv_magnetometry.py",
       "tests/test_nv_magnetometry_high_field.py",
       "tests/test_observables.py",
+      "tests/test_open_system_mcwf_product.py",
       "tests/test_open_system_objective_evidence.py",
       "tests/test_open_system_workflow.py",
       "tests/test_openpulse_control.py",
@@ -7125,6 +7752,7 @@
       "tests/test_persistent_homology.py",
       "tests/test_persistent_homology_branches.py",
       "tests/test_pgbo_bridge.py",
+      "tests/test_pgbo_qgt_product.py",
       "tests/test_phase1_dla_parity_reproduces.py",
       "tests/test_phase3_entanglement_paper_assets.py",
       "tests/test_phase3_entanglement_tomography_analysis.py",
@@ -7215,6 +7843,7 @@
       "tests/test_phase_qnode_circuit_support_integration.py",
       "tests/test_phase_qnode_compiler_lowering.py",
       "tests/test_phase_qnode_framework_parity.py",
+      "tests/test_phase_qnode_product.py",
       "tests/test_phase_qnode_provider_transforms.py",
       "tests/test_phase_qnode_rust_parity.py",
       "tests/test_phase_qnode_tape.py",
@@ -7259,6 +7888,7 @@
       "tests/test_physics_invariants.py",
       "tests/test_pipeline_wiring_performance.py",
       "tests/test_plugin_registry.py",
+      "tests/test_polyglot_parity_certificate.py",
       "tests/test_power_grid.py",
       "tests/test_power_grid_branches.py",
       "tests/test_power_grid_measured_couplings.py",
@@ -7285,6 +7915,7 @@
       "tests/test_program_ad_fail_closed_boundaries.py",
       "tests/test_program_ad_finite_difference_gradient_check.py",
       "tests/test_program_ad_finite_difference_stencils.py",
+      "tests/test_program_ad_fuzz_assurance.py",
       "tests/test_program_ad_interpolation.py",
       "tests/test_program_ad_interpolation_primitives_docstrings.py",
       "tests/test_program_ad_like_constructors.py",
@@ -7340,6 +7971,7 @@
       "tests/test_provider_isolated_smoke_workflow.py",
       "tests/test_psi_field.py",
       "tests/test_public_api.py",
+      "tests/test_public_api_stability.py",
       "tests/test_public_claim_docs.py",
       "tests/test_pulse_feasibility.py",
       "tests/test_pulse_feasibility_branches.py",
@@ -7370,6 +8002,7 @@
       "tests/test_qpetri_superposition.py",
       "tests/test_qpu_compute.py",
       "tests/test_qpu_compute_cli_branch.py",
+      "tests/test_qpu_compute_product.py",
       "tests/test_qpu_compute_runtime_branches.py",
       "tests/test_qpu_compute_types_guards.py",
       "tests/test_qpu_data_artifact.py",
@@ -7413,6 +8046,7 @@
       "tests/test_quantum_sensing_readiness.py",
       "tests/test_quantum_speed_limit.py",
       "tests/test_quantum_speed_limit_validation.py",
+      "tests/test_quantum_sync_challenge_oracle_product.py",
       "tests/test_quantum_thermo_readiness.py",
       "tests/test_quantum_thermo_readiness_branches.py",
       "tests/test_qubit_mapper.py",
@@ -7437,6 +8071,7 @@
       "tests/test_report_decisive_advantage_gate.py",
       "tests/test_report_s2_scaling_claim_boundary.py",
       "tests/test_reproducible_comparison.py",
+      "tests/test_resource_budget_gate.py",
       "tests/test_result_pack_seal.py",
       "tests/test_retrieve_march_flagship_receipts.py",
       "tests/test_retrieve_phase3_large_system_ibm.py",
@@ -7471,6 +8106,7 @@
       "tests/test_s4_neutral_atom_preregistration.py",
       "tests/test_s4_provider_preregistration.py",
       "tests/test_sc_to_quantum.py",
+      "tests/test_scorecard_acceptance_engine.py",
       "tests/test_scpn_upde_edge.py",
       "tests/test_sensing_branches.py",
       "tests/test_sensing_readiness_contracts.py",
@@ -7499,8 +8135,10 @@
       "tests/test_stable_core_preflight.py",
       "tests/test_stable_core_preflight_branches.py",
       "tests/test_stable_core_preflight_fixtures_gate.py",
+      "tests/test_stable_core_product.py",
       "tests/test_stable_core_release_gate.py",
       "tests/test_stable_core_validation_edges.py",
+      "tests/test_stochastic_estimators_product.py",
       "tests/test_stochastic_gradient_failure_policy.py",
       "tests/test_stochastic_gradient_rust_parity.py",
       "tests/test_stress_scale.py",
@@ -7518,6 +8156,7 @@
       "tests/test_studio_executive_differentiate.py",
       "tests/test_studio_executive_execute.py",
       "tests/test_studio_executive_mitigate.py",
+      "tests/test_studio_executive_product.py",
       "tests/test_studio_executive_replay.py",
       "tests/test_studio_executive_simulate.py",
       "tests/test_studio_executive_validate.py",
@@ -7573,6 +8212,7 @@
       "tests/test_tcbo_weighted_complex_validation.py",
       "tests/test_tensor_jump.py",
       "tests/test_tensor_jump_contracts.py",
+      "tests/test_thermo_readiness_product.py",
       "tests/test_thermodynamic_witness.py",
       "tests/test_tier_benchmark_regression_gate.py",
       "tests/test_tn_baseline_flagship_workloads.py",
@@ -7598,9 +8238,11 @@
       "tests/test_ultrascale_hls.py",
       "tests/test_ultrascale_hls_branch.py",
       "tests/test_universality.py",
+      "tests/test_unsuitable_scenario_registry.py",
       "tests/test_variational_metric.py",
       "tests/test_variational_workflow.py",
       "tests/test_varqite.py",
+      "tests/test_visualisation_dashboard_product.py",
       "tests/test_vortex_binding.py",
       "tests/test_vortex_detector.py",
       "tests/test_vqe_methods_evidence_scripts.py",
@@ -7613,6 +8255,7 @@
       "tests/test_whole_program_ad_contracts.py",
       "tests/test_whole_program_ad_finite_difference_gradient_check.py",
       "tests/test_whole_program_ad_numpy_structural.py",
+      "tests/test_whole_program_ad_product.py",
       "tests/test_whole_program_ad_runtime.py",
       "tests/test_whole_program_frontend.py",
       "tests/test_whole_program_frontend_contracts.py",
@@ -7627,6 +8270,7 @@
       "tests/test_whole_program_trace_values.py",
       "tests/test_wilson_loop.py",
       "tests/test_wirtinger_calculus.py",
+      "tests/test_wirtinger_implicit_product.py",
       "tests/test_witness_discovery.py",
       "tests/test_witness_discovery_engine_fallback.py",
       "tests/test_xxz_hamiltonian.py",

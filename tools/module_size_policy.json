@@ -211,7 +211,7 @@
     },
     {
       "path": "src/scpn_quantum_control/error_mitigation_product.py",
-      "lines": 1110,
+      "lines": 1138,
       "kind": "facade",
       "disposition": "facade",
       "responsibility": "Fail-closed differentiable error-mitigation taxonomy product (BL-59).",
