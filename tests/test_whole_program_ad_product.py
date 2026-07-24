@@ -474,3 +474,73 @@ def test_architecture_map_unknown_layer(monkeypatch: pytest.MonkeyPatch) -> None
     # the fixed order does not include custom_extra as a primary order key,
     # but the unknown-layer branch should still accept it without crash.
     assert isinstance(layers, tuple)
+
+
+def test_architecture_map_skips_duplicate_module_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Second journey with the same module_path does not re-append the path."""
+    from scpn_quantum_control import whole_program_ad_product as mod
+
+    first = WholeProgramADJourney(
+        journey_id="dup_path_a",
+        title="t",
+        summary="s",
+        module_path="scpn_quantum_control.shared_mod",
+        support_badge="local_dry_run",
+        steps=("a",),
+        architecture_layer="frontend",
+    )
+    second = WholeProgramADJourney(
+        journey_id="dup_path_b",
+        title="t2",
+        summary="s2",
+        module_path="scpn_quantum_control.shared_mod",
+        support_badge="local_dry_run",
+        steps=("a",),
+        architecture_layer="frontend",
+    )
+    monkeypatch.setattr(mod, "_CANONICAL_JOURNEYS", (first, second))
+    layers = mod.map_whole_program_ad_architecture_layers()
+    frontend = next(row for row in layers if row["layer"] == "frontend")
+    paths = cast(list[str], frontend["module_paths"])
+    assert paths.count("scpn_quantum_control.shared_mod") == 1
+
+
+def test_architecture_map_skips_empty_ir_layer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Empty IR ownership list omits the IR layer row entirely."""
+    from scpn_quantum_control import whole_program_ad_product as mod
+
+    frontend_only = WholeProgramADJourney(
+        journey_id="frontend_only",
+        title="t",
+        summary="s",
+        module_path="scpn_quantum_control.frontend_only",
+        support_badge="local_dry_run",
+        steps=("a",),
+        architecture_layer="frontend",
+    )
+    monkeypatch.setattr(mod, "_CANONICAL_JOURNEYS", (frontend_only,))
+    monkeypatch.setattr(mod, "_IR_LAYER_OWNERSHIP_MODULES", ())
+    layers = mod.map_whole_program_ad_architecture_layers()
+    assert all(row["layer"] != "ir" for row in layers)
+
+
+def test_integrity_rejects_allows_hardware_true_on_non_default_journey() -> None:
+    """Non-default journeys must also set allows_hardware=False (invent-green refuse)."""
+    registry = build_whole_program_ad_product_registry()
+    journeys = cast(list[dict[str, object]], list(registry["journeys"]))
+    hw = dict(registry)
+    hw_journeys = [dict(row) for row in journeys]
+    # Prefer a non-default journey so the generic invent-green check fires.
+    target = next(
+        i
+        for i, row in enumerate(hw_journeys)
+        if row.get("journey_id") != "frontend_compile_dry_run"
+    )
+    hw_journeys[target]["allows_hardware"] = True
+    hw["journeys"] = hw_journeys
+    with pytest.raises(ValueError, match="invent-green hardware"):
+        assert_whole_program_ad_product_integrity(hw)

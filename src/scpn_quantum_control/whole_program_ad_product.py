@@ -354,6 +354,13 @@ _CANONICAL_JOURNEYS: Final[tuple[WholeProgramADJourney, ...]] = (
     ),
 )
 
+_IR_LAYER_OWNERSHIP_MODULES: Final[tuple[str, ...]] = (
+    "scpn_quantum_control.whole_program_ad_result",
+    "scpn_quantum_control.program_ad_effect_ir",
+    "scpn_quantum_control.program_ad_registry",
+)
+"""Ambient IR modules always attributed to the architecture IR layer."""
+
 
 def _catalogue_map() -> dict[str, WholeProgramADJourney]:
     """Return journey_id → journey map; refuse blanks/duplicates."""
@@ -584,13 +591,7 @@ def map_whole_program_ad_architecture_layers() -> tuple[dict[str, object], ...]:
     order = ("frontend", "ir", "adjoint", "product", "residual")
     layer_modules: dict[str, list[str]] = {name: [] for name in order}
     # Explicit IR layer ownership (not every journey is IR-primary).
-    layer_modules["ir"].extend(
-        [
-            "scpn_quantum_control.whole_program_ad_result",
-            "scpn_quantum_control.program_ad_effect_ir",
-            "scpn_quantum_control.program_ad_registry",
-        ]
-    )
+    layer_modules["ir"].extend(_IR_LAYER_OWNERSHIP_MODULES)
     for journey in _CANONICAL_JOURNEYS:
         layer = journey.architecture_layer
         if layer not in layer_modules:
