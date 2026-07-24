@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Adjoint reversible simulator replay product (BL-39):
+  `scpn_quantum_control.adjoint_replay_product` productises reverse-mode
+  Program AD adjoint generation and executable step replay, checkpoint-policy
+  contracts, reversibility predicates, and refuse invent-green mid-circuit
+  measurement, Catalyst parity, and hardware adjoint. Docs:
+  `docs/adjoint_replay_product.md`. Ninth P1 A-product after
+  BL-90/91/81/49/96/92/93/64.
 - 2026-07-24 — Wirtinger + implicit differentiation product (BL-64):
   `scpn_quantum_control.wirtinger_implicit_product` productises the Wirtinger
   partials / holomorphic / CR real-objective gradient catalogue, implicit
