@@ -263,6 +263,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("product direct rules", "product registry dispatch boundaries"),
         ),
         _record(
+            "src/scpn_quantum_control/program_ad_fuzz_assurance.py",
+            ("tests/test_program_ad_fuzz_assurance.py",),
+            (
+                "program-AD fuzz catalogue fail-closed rows",
+                "assurance probe integrity boundaries",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/program_ad_adjoint.py",
             ("tests/test_program_adjoint_replay.py",),
             (
@@ -317,6 +325,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/whole_program_frontend.py",
             ("tests/test_whole_program_frontend.py",),
             ("source/bytecode introspection", "unsupported Python-semantics hard gaps"),
+        ),
+        _record(
+            "src/scpn_quantum_control/whole_program_ad_product.py",
+            ("tests/test_whole_program_ad_product.py",),
+            (
+                "whole-program AD product catalogue",
+                "fail-closed invent-green route boundaries",
+            ),
         ),
         _record(
             "src/scpn_quantum_control/differentiable_api_contracts.py",

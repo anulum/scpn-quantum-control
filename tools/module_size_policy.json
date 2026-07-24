@@ -193,7 +193,7 @@
     },
     {
       "path": "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
-      "lines": 1026,
+      "lines": 1042,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Static registry and filesystem audit for differentiable module ownership, coverage, typing, docs, and wiring status.",
