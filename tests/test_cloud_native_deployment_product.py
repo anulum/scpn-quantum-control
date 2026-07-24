@@ -573,3 +573,20 @@ def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(deploy_product, "_PATTERNS", (good, good))
     with pytest.raises(RuntimeError, match="duplicate pattern_id"):
         deploy_product._pattern_map()
+
+
+def test_iter_deployment_patterns_without_kind_filter() -> None:
+    """Unfiltered pattern iter returns the full catalogue (kind is None branch)."""
+    all_rows = iter_deployment_patterns()
+    assert len(all_rows) == len(list_deployment_pattern_ids())
+    assert {row.pattern_id for row in all_rows} == set(list_deployment_pattern_ids())
+
+
+def test_deploy_dry_run_accepts_non_secret_env() -> None:
+    """Safe env keys pass the secret pre-check (loop continue branch)."""
+    probe = materialise_deploy_dry_run_probe(
+        "batch_worker",
+        env={"LOG_LEVEL": "info", "WORKER_NAME": "demo"},
+    )
+    assert probe.pattern_id == "batch_worker"
+    assert probe.invent_green_live_cluster is False
