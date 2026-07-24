@@ -129,38 +129,7 @@ def test_mechanism_certificate_probe() -> None:
     with pytest.raises(ValueError, match="seed"):
         materialise_mechanism_certificate_probe(seed=-1)
 
-    try:
-        probe = materialise_demo_mechanism_certificate_probe()
-    except RuntimeError:
-        # pytest-cov can reload NumPy and break JAX ambient import; prove real path
-        # in an isolated interpreter (same as dual SMOKE_OK harness).
-        import subprocess
-        import sys
-        from pathlib import Path
-
-        root = Path(__file__).resolve().parents[1]
-        proc = subprocess.run(
-            [
-                sys.executable,
-                "-c",
-                "from scpn_quantum_control.kyma_mechanism_benchmark_product import "
-                "materialise_demo_mechanism_certificate_probe; "
-                "p = materialise_demo_mechanism_certificate_probe(); "
-                "assert p.suite_id == 'kyma_v2'; "
-                "assert p.meets_realise_target is True; "
-                "assert p.invent_green_advantage is False; "
-                "assert p.design_from_student_held_out is False; "
-                "print('PROBE_OK')",
-            ],
-            cwd=str(root),
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        assert proc.returncode == 0, proc.stderr
-        assert "PROBE_OK" in proc.stdout
-        return
-
+    probe = materialise_demo_mechanism_certificate_probe()
     assert probe.suite_id == "kyma_v2"
     assert probe.protocol_id == KYMA_V2_PROTOCOL_ID
     assert probe.invent_green_advantage is False
@@ -173,6 +142,12 @@ def test_mechanism_certificate_probe() -> None:
     assert len(probe.design_constants_digest) == 64
     payload = probe.to_dict()
     assert payload["invent_green_advantage"] is False
+    # Ambient teacher path labels itself; product-local fallback is honest when
+    # JAX is absent from the base matrix.
+    assert (
+        "ambient_kyma_v2" in probe.demo_label
+        or "product_local_frozen_design_demo" in probe.demo_label
+    )
 
     again = materialise_mechanism_certificate_probe(seed=0)
     assert again.r1_realisability == probe.r1_realisability
