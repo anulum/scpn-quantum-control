@@ -224,13 +224,14 @@ class FepInventoryRow:
             raise ValueError(f"unknown FEP inventory status: {self.status!r}")
         if not self.bl84_pointer or not self.bl84_pointer.strip():
             raise ValueError("bl84_pointer must be non-empty")
+        # Specific research_only refusal first so both messages remain reachable.
+        if self.status == "research_only" and self.product_hook_proven:
+            raise ValueError("research_only rows cannot set product_hook_proven")
         if self.product_hook_proven:
             raise ValueError(
                 "product_hook_proven must be False on product surface "
                 "(S100.3 residual; no invent-green FEP promotion)"
             )
-        if self.status == "research_only" and self.product_hook_proven:
-            raise ValueError("research_only rows cannot set product_hook_proven")
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this row."""

@@ -47,7 +47,7 @@ from scpn_quantum_control.thermodynamics.readiness import (
 )
 
 
-def test_list_and_filters() -> None:
+def test_list_capability_ids_includes_k_sweep_and_entropy() -> None:
     ids = list_readiness_capability_ids()
     assert "k_sweep_protocol" in ids
     assert "entropy_production" in ids
@@ -55,15 +55,37 @@ def test_list_and_filters() -> None:
     assert "heat_dissipation" in ids
     assert "claim_boundary_gate" in ids
     assert len(ids) == 5
+
+
+def test_list_fep_module_ids_is_research_inventory() -> None:
     fep_ids = list_fep_module_ids()
     assert "predictive_coding" in fep_ids
     assert "variational_free_energy" in fep_ids
     assert len(fep_ids) == 2
+
+
+def test_iter_readiness_capabilities_unfiltered_returns_all() -> None:
+    rows = iter_readiness_capabilities()
+    assert len(rows) == len(list_readiness_capability_ids())
+    assert {row.capability_id for row in rows} == set(list_readiness_capability_ids())
+
+
+def test_iter_readiness_capabilities_filters_by_kind() -> None:
     sweeps = iter_readiness_capabilities(kind="k_sweep_protocol")
     assert len(sweeps) == 1
     assert sweeps[0].capability_id == "k_sweep_protocol"
+
+
+def test_iter_fep_inventory_unfiltered_returns_all() -> None:
+    rows = iter_fep_inventory()
+    assert len(rows) == len(list_fep_module_ids())
+    assert {row.module_id for row in rows} == set(list_fep_module_ids())
+
+
+def test_iter_fep_inventory_filters_by_status() -> None:
     research = iter_fep_inventory(status="research_only")
     assert len(research) == 2
+    assert all(row.status == "research_only" for row in research)
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
@@ -313,100 +335,106 @@ def test_integrity_rejects_drift_and_policy() -> None:
         assert_thermo_readiness_product_integrity(bad_boundary)
 
 
-def test_dataclass_invariants() -> None:
+def _valid_capability_row(**overrides: Any) -> ReadinessCapabilityRow:
+    kwargs: dict[str, Any] = {
+        "capability_id": "x",
+        "kind": "k_sweep_protocol",
+        "title": "t",
+        "summary": "s",
+        "ambient_symbol": "x",
+    }
+    kwargs.update(overrides)
+    return ReadinessCapabilityRow(**kwargs)
+
+
+def _valid_probe(**overrides: Any) -> MaterialisedKSweepProbe:
+    kwargs: dict[str, Any] = {
+        "capability_id": "k_sweep_protocol",
+        "schema": "s",
+        "peak_k": 0.8,
+        "row_count": 5,
+        "hardware_submission_allowed": False,
+        "thermodynamic_peak_claim_allowed": False,
+        "ambient_claim_boundary": AMBIENT_CLAIM_BOUNDARY,
+        "falsifier": "f",
+        "probe_digest": "a" * 64,
+        "demo_label": "d",
+    }
+    kwargs.update(overrides)
+    return MaterialisedKSweepProbe(**kwargs)
+
+
+def test_capability_row_rejects_blank_capability_id() -> None:
     with pytest.raises(ValueError, match="capability_id"):
-        ReadinessCapabilityRow(
-            capability_id="",
-            kind="k_sweep_protocol",
-            title="t",
-            summary="s",
-            ambient_symbol="x",
-        )
+        _valid_capability_row(capability_id="")
+
+
+def test_capability_row_rejects_unknown_kind() -> None:
     with pytest.raises(ValueError, match="unknown capability kind"):
-        ReadinessCapabilityRow(
-            capability_id="x",
-            kind=cast(Any, "not_a_kind"),
-            title="t",
-            summary="s",
-            ambient_symbol="x",
-        )
+        _valid_capability_row(kind=cast(Any, "not_a_kind"))
+
+
+def test_capability_row_rejects_blank_title() -> None:
     with pytest.raises(ValueError, match="title"):
-        ReadinessCapabilityRow(
-            capability_id="x",
-            kind="k_sweep_protocol",
-            title="",
-            summary="s",
-            ambient_symbol="x",
-        )
+        _valid_capability_row(title="")
+
+
+def test_capability_row_rejects_blank_summary() -> None:
     with pytest.raises(ValueError, match="summary"):
-        ReadinessCapabilityRow(
-            capability_id="x",
-            kind="k_sweep_protocol",
-            title="t",
-            summary="  ",
-            ambient_symbol="x",
-        )
+        _valid_capability_row(summary="  ")
+
+
+def test_capability_row_rejects_blank_ambient_symbol() -> None:
     with pytest.raises(ValueError, match="ambient_symbol"):
-        ReadinessCapabilityRow(
-            capability_id="x",
-            kind="k_sweep_protocol",
-            title="t",
-            summary="s",
-            ambient_symbol="",
-        )
+        _valid_capability_row(ambient_symbol="")
+
+
+def test_capability_row_rejects_hardware_submission_allowed() -> None:
     with pytest.raises(ValueError, match="hardware_submission_allowed"):
-        ReadinessCapabilityRow(
-            capability_id="x",
-            kind="k_sweep_protocol",
-            title="t",
-            summary="s",
-            ambient_symbol="x",
-            hardware_submission_allowed=True,
-        )
+        _valid_capability_row(hardware_submission_allowed=True)
+
+
+def test_capability_row_rejects_thermodynamic_peak_claim_allowed() -> None:
     with pytest.raises(ValueError, match="thermodynamic_peak_claim_allowed"):
-        ReadinessCapabilityRow(
-            capability_id="x",
-            kind="k_sweep_protocol",
-            title="t",
-            summary="s",
-            ambient_symbol="x",
-            thermodynamic_peak_claim_allowed=True,
-        )
+        _valid_capability_row(thermodynamic_peak_claim_allowed=True)
+
+
+def test_capability_row_rejects_unknown_support_posture() -> None:
     with pytest.raises(ValueError, match="support_posture"):
-        ReadinessCapabilityRow(
-            capability_id="x",
-            kind="k_sweep_protocol",
-            title="t",
-            summary="s",
-            ambient_symbol="x",
-            support_posture=cast(Any, "bogus"),
-        )
+        _valid_capability_row(support_posture=cast(Any, "bogus"))
+
+
+def test_capability_row_rejects_blank_as_of() -> None:
     with pytest.raises(ValueError, match="as_of"):
-        ReadinessCapabilityRow(
-            capability_id="x",
-            kind="k_sweep_protocol",
-            title="t",
-            summary="s",
-            ambient_symbol="x",
-            as_of="",
-        )
-    ok_cap = ReadinessCapabilityRow(
-        capability_id="x",
-        kind="k_sweep_protocol",
-        title="t",
-        summary="s",
-        ambient_symbol="x",
-    )
+        _valid_capability_row(as_of="")
+
+
+def test_capability_row_to_dict_preserves_capability_id() -> None:
+    ok_cap = _valid_capability_row()
     assert ok_cap.to_dict()["capability_id"] == "x"
 
+
+def test_fep_row_rejects_blank_module_id() -> None:
     with pytest.raises(ValueError, match="module_id"):
         FepInventoryRow(module_id="", module_path="m", title="t", summary="s")
+
+
+def test_fep_row_rejects_blank_module_path() -> None:
     with pytest.raises(ValueError, match="module_path"):
         FepInventoryRow(module_id="x", module_path="", title="t", summary="s")
+
+
+def test_fep_row_rejects_blank_title() -> None:
     with pytest.raises(ValueError, match="title"):
         FepInventoryRow(module_id="x", module_path="m", title="", summary="s")
+
+
+def test_fep_row_rejects_blank_summary() -> None:
     with pytest.raises(ValueError, match="summary"):
         FepInventoryRow(module_id="x", module_path="m", title="t", summary="")
+
+
+def test_fep_row_rejects_unknown_status() -> None:
     with pytest.raises(ValueError, match="status"):
         FepInventoryRow(
             module_id="x",
@@ -415,6 +443,9 @@ def test_dataclass_invariants() -> None:
             summary="s",
             status=cast(Any, "bogus"),
         )
+
+
+def test_fep_row_rejects_blank_bl84_pointer() -> None:
     with pytest.raises(ValueError, match="bl84_pointer"):
         FepInventoryRow(
             module_id="x",
@@ -423,17 +454,38 @@ def test_dataclass_invariants() -> None:
             summary="s",
             bl84_pointer="",
         )
-    with pytest.raises(ValueError, match="product_hook_proven"):
+
+
+def test_fep_row_rejects_research_only_product_hook_proven() -> None:
+    with pytest.raises(ValueError, match="research_only rows cannot set product_hook_proven"):
         FepInventoryRow(
             module_id="x",
             module_path="m",
             title="t",
             summary="s",
+            status="research_only",
             product_hook_proven=True,
         )
+
+
+def test_fep_row_rejects_product_hook_proven_on_open_status() -> None:
+    with pytest.raises(ValueError, match="product_hook_proven must be False on product surface"):
+        FepInventoryRow(
+            module_id="x",
+            module_path="m",
+            title="t",
+            summary="s",
+            status="product_hook_open",
+            product_hook_proven=True,
+        )
+
+
+def test_fep_row_to_dict_defaults_research_only() -> None:
     ok_fep = FepInventoryRow(module_id="x", module_path="m", title="t", summary="s")
     assert ok_fep.to_dict()["status"] == "research_only"
 
+
+def test_path_decision_rejects_unknown_outcome() -> None:
     with pytest.raises(ValueError, match="outcome"):
         PathEligibilityDecision(
             outcome=cast(Any, "maybe"),
@@ -441,6 +493,9 @@ def test_dataclass_invariants() -> None:
             reason="r",
             blockers=(),
         )
+
+
+def test_path_decision_rejects_blank_reason() -> None:
     with pytest.raises(ValueError, match="reason"):
         PathEligibilityDecision(
             outcome="allowed",
@@ -448,6 +503,9 @@ def test_dataclass_invariants() -> None:
             reason="",
             blockers=(),
         )
+
+
+def test_path_decision_rejects_allowed_with_refused_outcome() -> None:
     with pytest.raises(ValueError, match="outcome=allowed"):
         PathEligibilityDecision(
             outcome="refused",
@@ -455,6 +513,9 @@ def test_dataclass_invariants() -> None:
             reason="r",
             blockers=(),
         )
+
+
+def test_path_decision_rejects_refused_flag_with_allowed_outcome() -> None:
     with pytest.raises(ValueError, match="outcome=refused"):
         PathEligibilityDecision(
             outcome="allowed",
@@ -462,6 +523,9 @@ def test_dataclass_invariants() -> None:
             reason="r",
             blockers=("b",),
         )
+
+
+def test_path_decision_rejects_blockers_on_allowed_path() -> None:
     with pytest.raises(ValueError, match="cannot list blockers"):
         PathEligibilityDecision(
             outcome="allowed",
@@ -469,6 +533,9 @@ def test_dataclass_invariants() -> None:
             reason="r",
             blockers=("b",),
         )
+
+
+def test_path_decision_rejects_empty_blockers_when_refused() -> None:
     with pytest.raises(ValueError, match="blockers"):
         PathEligibilityDecision(
             outcome="refused",
@@ -476,6 +543,9 @@ def test_dataclass_invariants() -> None:
             reason="no",
             blockers=(),
         )
+
+
+def test_path_decision_rejects_blank_blocker_entries() -> None:
     with pytest.raises(ValueError, match="blockers entries"):
         PathEligibilityDecision(
             outcome="refused",
@@ -483,6 +553,9 @@ def test_dataclass_invariants() -> None:
             reason="no",
             blockers=("",),
         )
+
+
+def test_path_decision_to_dict_reports_allowed() -> None:
     ok_dec = PathEligibilityDecision(
         outcome="allowed",
         allowed=True,
@@ -491,167 +564,70 @@ def test_dataclass_invariants() -> None:
     )
     assert ok_dec.to_dict()["allowed"] is True
 
+
+def test_probe_rejects_blank_capability_id() -> None:
     with pytest.raises(ValueError, match="capability_id"):
-        MaterialisedKSweepProbe(
-            capability_id="",
-            schema="s",
-            peak_k=0.8,
-            row_count=5,
-            hardware_submission_allowed=False,
-            thermodynamic_peak_claim_allowed=False,
-            ambient_claim_boundary=AMBIENT_CLAIM_BOUNDARY,
-            falsifier="f",
-            probe_digest="a" * 64,
-            demo_label="d",
-        )
+        _valid_probe(capability_id="")
+
+
+def test_probe_rejects_blank_schema() -> None:
     with pytest.raises(ValueError, match="schema"):
-        MaterialisedKSweepProbe(
-            capability_id="k_sweep_protocol",
-            schema="",
-            peak_k=0.8,
-            row_count=5,
-            hardware_submission_allowed=False,
-            thermodynamic_peak_claim_allowed=False,
-            ambient_claim_boundary=AMBIENT_CLAIM_BOUNDARY,
-            falsifier="f",
-            probe_digest="a" * 64,
-            demo_label="d",
-        )
+        _valid_probe(schema="")
+
+
+def test_probe_rejects_row_count_below_three() -> None:
     with pytest.raises(ValueError, match="row_count"):
-        MaterialisedKSweepProbe(
-            capability_id="k_sweep_protocol",
-            schema="s",
-            peak_k=0.8,
-            row_count=2,
-            hardware_submission_allowed=False,
-            thermodynamic_peak_claim_allowed=False,
-            ambient_claim_boundary=AMBIENT_CLAIM_BOUNDARY,
-            falsifier="f",
-            probe_digest="a" * 64,
-            demo_label="d",
-        )
+        _valid_probe(row_count=2)
+
+
+def test_probe_rejects_hardware_submission_allowed() -> None:
     with pytest.raises(ValueError, match="hardware_submission_allowed"):
-        MaterialisedKSweepProbe(
-            capability_id="k_sweep_protocol",
-            schema="s",
-            peak_k=0.8,
-            row_count=5,
-            hardware_submission_allowed=True,
-            thermodynamic_peak_claim_allowed=False,
-            ambient_claim_boundary=AMBIENT_CLAIM_BOUNDARY,
-            falsifier="f",
-            probe_digest="a" * 64,
-            demo_label="d",
-        )
+        _valid_probe(hardware_submission_allowed=True)
+
+
+def test_probe_rejects_thermodynamic_peak_claim_allowed() -> None:
     with pytest.raises(ValueError, match="thermodynamic_peak_claim_allowed"):
-        MaterialisedKSweepProbe(
-            capability_id="k_sweep_protocol",
-            schema="s",
-            peak_k=0.8,
-            row_count=5,
-            hardware_submission_allowed=False,
-            thermodynamic_peak_claim_allowed=True,
-            ambient_claim_boundary=AMBIENT_CLAIM_BOUNDARY,
-            falsifier="f",
-            probe_digest="a" * 64,
-            demo_label="d",
-        )
+        _valid_probe(thermodynamic_peak_claim_allowed=True)
+
+
+def test_probe_rejects_blank_ambient_claim_boundary() -> None:
     with pytest.raises(ValueError, match="ambient_claim_boundary"):
-        MaterialisedKSweepProbe(
-            capability_id="k_sweep_protocol",
-            schema="s",
-            peak_k=0.8,
-            row_count=5,
-            hardware_submission_allowed=False,
-            thermodynamic_peak_claim_allowed=False,
-            ambient_claim_boundary="",
-            falsifier="f",
-            probe_digest="a" * 64,
-            demo_label="d",
-        )
+        _valid_probe(ambient_claim_boundary="")
+
+
+def test_probe_rejects_promotional_ambient_claim_boundary() -> None:
     with pytest.raises(ValueError, match="no-thermodynamic-peak|ambient_claim_boundary"):
-        MaterialisedKSweepProbe(
-            capability_id="k_sweep_protocol",
-            schema="s",
-            peak_k=0.8,
-            row_count=5,
-            hardware_submission_allowed=False,
-            thermodynamic_peak_claim_allowed=False,
-            ambient_claim_boundary="peak claim allowed",
-            falsifier="f",
-            probe_digest="a" * 64,
-            demo_label="d",
-        )
+        _valid_probe(ambient_claim_boundary="peak claim allowed")
+
+
+def test_probe_rejects_blank_falsifier() -> None:
     with pytest.raises(ValueError, match="falsifier"):
-        MaterialisedKSweepProbe(
-            capability_id="k_sweep_protocol",
-            schema="s",
-            peak_k=0.8,
-            row_count=5,
-            hardware_submission_allowed=False,
-            thermodynamic_peak_claim_allowed=False,
-            ambient_claim_boundary=AMBIENT_CLAIM_BOUNDARY,
-            falsifier="",
-            probe_digest="a" * 64,
-            demo_label="d",
-        )
+        _valid_probe(falsifier="")
+
+
+def test_probe_rejects_blank_probe_digest() -> None:
     with pytest.raises(ValueError, match="probe_digest"):
-        MaterialisedKSweepProbe(
-            capability_id="k_sweep_protocol",
-            schema="s",
-            peak_k=0.8,
-            row_count=5,
-            hardware_submission_allowed=False,
-            thermodynamic_peak_claim_allowed=False,
-            ambient_claim_boundary=AMBIENT_CLAIM_BOUNDARY,
-            falsifier="f",
-            probe_digest="",
-            demo_label="d",
-        )
+        _valid_probe(probe_digest="")
+
+
+def test_probe_rejects_non_hex_length_digest() -> None:
     with pytest.raises(ValueError, match="64-char"):
-        MaterialisedKSweepProbe(
-            capability_id="k_sweep_protocol",
-            schema="s",
-            peak_k=0.8,
-            row_count=5,
-            hardware_submission_allowed=False,
-            thermodynamic_peak_claim_allowed=False,
-            ambient_claim_boundary=AMBIENT_CLAIM_BOUNDARY,
-            falsifier="f",
-            probe_digest="abc",
-            demo_label="d",
-        )
+        _valid_probe(probe_digest="abc")
+
+
+def test_probe_rejects_blank_demo_label() -> None:
     with pytest.raises(ValueError, match="demo_label"):
-        MaterialisedKSweepProbe(
-            capability_id="k_sweep_protocol",
-            schema="s",
-            peak_k=0.8,
-            row_count=5,
-            hardware_submission_allowed=False,
-            thermodynamic_peak_claim_allowed=False,
-            ambient_claim_boundary=AMBIENT_CLAIM_BOUNDARY,
-            falsifier="f",
-            probe_digest="a" * 64,
-            demo_label="",
-        )
-    ok_probe = MaterialisedKSweepProbe(
-        capability_id="k_sweep_protocol",
-        schema="s",
-        peak_k=0.8,
-        row_count=5,
-        hardware_submission_allowed=False,
-        thermodynamic_peak_claim_allowed=False,
-        ambient_claim_boundary=AMBIENT_CLAIM_BOUNDARY,
-        falsifier="f",
-        probe_digest="a" * 64,
-        demo_label="d",
-    )
+        _valid_probe(demo_label="")
+
+
+def test_probe_to_dict_preserves_row_count() -> None:
+    ok_probe = _valid_probe()
     assert ok_probe.to_dict()["row_count"] == 5
 
 
-def test_ambient_probe_monkeypatch_honesty(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Refuse when ambient invent-green flags appear (fail-closed)."""
-
+def test_materialise_k_sweep_refuses_ambient_hardware_flag(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     class _BadSweep:
         schema = "bad"
         k_values = (0.4, 0.6, 0.8)
@@ -665,6 +641,10 @@ def test_ambient_probe_monkeypatch_honesty(monkeypatch: pytest.MonkeyPatch) -> N
     with pytest.raises(ValueError, match="hardware"):
         materialise_k_sweep_probe("k_sweep_protocol")
 
+
+def test_materialise_k_sweep_refuses_empty_ambient_result(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     class _EmptySweep:
         schema = "s"
         k_values = ()
@@ -678,6 +658,10 @@ def test_ambient_probe_monkeypatch_honesty(monkeypatch: pytest.MonkeyPatch) -> N
     with pytest.raises(ValueError, match="empty"):
         materialise_k_sweep_probe("k_sweep_protocol")
 
+
+def test_quantum_payload_probe_refuses_wrong_schema(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     def _bad_payload() -> dict[str, Any]:
         return {
             "schema": "wrong",
@@ -691,6 +675,10 @@ def test_ambient_probe_monkeypatch_honesty(monkeypatch: pytest.MonkeyPatch) -> N
     with pytest.raises(ValueError, match="schema"):
         materialise_quantum_thermo_payload_probe()
 
+
+def test_quantum_payload_probe_refuses_peak_claim(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     def _peak_payload() -> dict[str, Any]:
         return {
             "schema": QUANTUM_THERMO_SCHEMA,
@@ -704,6 +692,10 @@ def test_ambient_probe_monkeypatch_honesty(monkeypatch: pytest.MonkeyPatch) -> N
     with pytest.raises(ValueError, match="thermodynamic_peak_claim_allowed"):
         materialise_quantum_thermo_payload_probe()
 
+
+def test_quantum_payload_probe_refuses_hardware_submission(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     def _hw_payload() -> dict[str, Any]:
         return {
             "schema": QUANTUM_THERMO_SCHEMA,
@@ -717,6 +709,10 @@ def test_ambient_probe_monkeypatch_honesty(monkeypatch: pytest.MonkeyPatch) -> N
     with pytest.raises(ValueError, match="hardware_submission_allowed"):
         materialise_quantum_thermo_payload_probe()
 
+
+def test_quantum_payload_probe_refuses_qpu_submission(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     def _qpu_payload() -> dict[str, Any]:
         return {
             "schema": QUANTUM_THERMO_SCHEMA,
@@ -730,6 +726,10 @@ def test_ambient_probe_monkeypatch_honesty(monkeypatch: pytest.MonkeyPatch) -> N
     with pytest.raises(ValueError, match="no_qpu_submission"):
         materialise_quantum_thermo_payload_probe()
 
+
+def test_quantum_payload_probe_refuses_promotional_boundary(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     def _boundary_payload() -> dict[str, Any]:
         return {
             "schema": QUANTUM_THERMO_SCHEMA,
@@ -744,10 +744,17 @@ def test_ambient_probe_monkeypatch_honesty(monkeypatch: pytest.MonkeyPatch) -> N
         materialise_quantum_thermo_payload_probe()
 
 
-def test_verify_ambient_boundary_monkeypatch(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_verify_ambient_boundary_rejects_blank(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(thermo_product, "AMBIENT_CLAIM_BOUNDARY", "")
     with pytest.raises(ValueError, match="non-empty"):
         verify_ambient_claim_boundary()
+
+
+def test_verify_ambient_boundary_rejects_missing_peak_clause(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(
         thermo_product,
         "AMBIENT_CLAIM_BOUNDARY",
@@ -755,6 +762,11 @@ def test_verify_ambient_boundary_monkeypatch(monkeypatch: pytest.MonkeyPatch) ->
     )
     with pytest.raises(ValueError, match="peak"):
         verify_ambient_claim_boundary()
+
+
+def test_verify_ambient_boundary_rejects_missing_hardware_clause(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(
         thermo_product,
         "AMBIENT_CLAIM_BOUNDARY",
@@ -764,14 +776,17 @@ def test_verify_ambient_boundary_monkeypatch(monkeypatch: pytest.MonkeyPatch) ->
         verify_ambient_claim_boundary()
 
 
-def test_integrity_more_edge_cases() -> None:
+def test_integrity_rejects_non_mapping_capability_row() -> None:
     registry = build_thermo_readiness_product_registry()
-    caps = cast(list[dict[str, object]], registry["capabilities"])
     not_map = dict(registry)
     not_map["capabilities"] = cast(list[dict[str, object]], ["not-a-mapping"])
     with pytest.raises(ValueError, match="mapping"):
         assert_thermo_readiness_product_integrity(not_map)
 
+
+def test_integrity_rejects_blank_capability_id() -> None:
+    registry = build_thermo_readiness_product_registry()
+    caps = cast(list[dict[str, object]], registry["capabilities"])
     blank_id = dict(registry)
     blank_caps = [dict(row) for row in caps]
     blank_caps[0]["capability_id"] = "  "
@@ -779,6 +794,10 @@ def test_integrity_more_edge_cases() -> None:
     with pytest.raises(ValueError, match="blank"):
         assert_thermo_readiness_product_integrity(blank_id)
 
+
+def test_integrity_rejects_duplicate_capability_id() -> None:
+    registry = build_thermo_readiness_product_registry()
+    caps = cast(list[dict[str, object]], registry["capabilities"])
     dup = dict(registry)
     dup_caps = [dict(row) for row in caps]
     dup_caps[1] = dict(dup_caps[0])
@@ -786,14 +805,21 @@ def test_integrity_more_edge_cases() -> None:
     with pytest.raises(ValueError, match="duplicate capability_id"):
         assert_thermo_readiness_product_integrity(dup)
 
+
+def test_integrity_rejects_missing_k_sweep_protocol() -> None:
+    registry = build_thermo_readiness_product_registry()
+    caps = cast(list[dict[str, object]], registry["capabilities"])
     no_ksweep = dict(registry)
     no_k_caps = [dict(row) for row in caps if row["capability_id"] != "k_sweep_protocol"]
-    # keep count consistent so we hit missing k_sweep rather than count mismatch first
     no_ksweep["capabilities"] = no_k_caps
     no_ksweep["capability_count"] = len(no_k_caps)
     with pytest.raises(ValueError, match="k_sweep_protocol|drift"):
         assert_thermo_readiness_product_integrity(no_ksweep)
 
+
+def test_integrity_rejects_capability_peak_claim_flag() -> None:
+    registry = build_thermo_readiness_product_registry()
+    caps = cast(list[dict[str, object]], registry["capabilities"])
     peak_cap = dict(registry)
     peak_caps = [dict(row) for row in caps]
     peak_caps[0]["thermodynamic_peak_claim_allowed"] = True
@@ -801,6 +827,10 @@ def test_integrity_more_edge_cases() -> None:
     with pytest.raises(ValueError, match="thermodynamic_peak_claim_allowed"):
         assert_thermo_readiness_product_integrity(peak_cap)
 
+
+def test_integrity_rejects_blank_ambient_symbol() -> None:
+    registry = build_thermo_readiness_product_registry()
+    caps = cast(list[dict[str, object]], registry["capabilities"])
     no_symbol = dict(registry)
     sym_caps = [dict(row) for row in caps]
     sym_caps[0]["ambient_symbol"] = ""
@@ -808,12 +838,18 @@ def test_integrity_more_edge_cases() -> None:
     with pytest.raises(ValueError, match="ambient_symbol"):
         assert_thermo_readiness_product_integrity(no_symbol)
 
-    fep_rows = cast(list[dict[str, object]], registry["fep_inventory"])
+
+def test_integrity_rejects_non_mapping_fep_row() -> None:
+    registry = build_thermo_readiness_product_registry()
     fep_not_map = dict(registry)
     fep_not_map["fep_inventory"] = cast(list[dict[str, object]], [123])
     with pytest.raises(ValueError, match="mapping"):
         assert_thermo_readiness_product_integrity(fep_not_map)
 
+
+def test_integrity_rejects_blank_fep_module_id() -> None:
+    registry = build_thermo_readiness_product_registry()
+    fep_rows = cast(list[dict[str, object]], registry["fep_inventory"])
     blank_fep = dict(registry)
     blank_fep_rows = [dict(row) for row in fep_rows]
     blank_fep_rows[0]["module_id"] = ""
@@ -821,6 +857,10 @@ def test_integrity_more_edge_cases() -> None:
     with pytest.raises(ValueError, match="module_id"):
         assert_thermo_readiness_product_integrity(blank_fep)
 
+
+def test_integrity_rejects_duplicate_fep_module_id() -> None:
+    registry = build_thermo_readiness_product_registry()
+    fep_rows = cast(list[dict[str, object]], registry["fep_inventory"])
     dup_fep = dict(registry)
     dup_fep_rows = [dict(row) for row in fep_rows]
     dup_fep_rows[1] = dict(dup_fep_rows[0])
@@ -828,27 +868,90 @@ def test_integrity_more_edge_cases() -> None:
     with pytest.raises(ValueError, match="duplicate module_id"):
         assert_thermo_readiness_product_integrity(dup_fep)
 
+
+def test_integrity_rejects_fep_set_drift() -> None:
+    registry = build_thermo_readiness_product_registry()
+    fep_rows = cast(list[dict[str, object]], registry["fep_inventory"])
+    drifted = dict(registry)
+    reduced = [dict(row) for row in fep_rows if row["module_id"] != "predictive_coding"]
+    drifted["fep_inventory"] = reduced
+    drifted["fep_inventory_count"] = len(reduced)
+    with pytest.raises(ValueError, match="registry FEP set drift"):
+        assert_thermo_readiness_product_integrity(drifted)
+
+
+def test_integrity_rejects_capability_count_mismatch() -> None:
+    registry = build_thermo_readiness_product_registry()
     count_mismatch = dict(registry)
     count_mismatch["capability_count"] = 99
     with pytest.raises(ValueError, match="capability_count"):
         assert_thermo_readiness_product_integrity(count_mismatch)
 
+
+def test_integrity_rejects_fep_inventory_count_mismatch() -> None:
+    registry = build_thermo_readiness_product_registry()
     fep_count = dict(registry)
     fep_count["fep_inventory_count"] = 99
     with pytest.raises(ValueError, match="fep_inventory_count"):
         assert_thermo_readiness_product_integrity(fep_count)
 
-    # finite digest edges
+
+def test_request_digest_rejects_non_finite_k_value() -> None:
     with pytest.raises(ValueError, match="finite"):
         compute_k_sweep_request_digest(
             k_values=(0.4, float("nan"), 0.8),
             transition_k=0.4,
         )
+
+
+def test_request_digest_rejects_non_finite_transition_k() -> None:
     with pytest.raises(ValueError, match="finite"):
         compute_k_sweep_request_digest(
             k_values=(0.4, 0.6, 0.8),
             transition_k=float("inf"),
         )
+
+
+def test_capability_map_rejects_blank_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    blank = _valid_capability_row(capability_id="tmp")
+    object.__setattr__(blank, "capability_id", "  ")
+    monkeypatch.setattr(thermo_product, "_CAPABILITIES", (blank,))
+    with pytest.raises(RuntimeError, match="blank capability_id"):
+        thermo_product._capability_map()
+
+
+def test_capability_map_rejects_duplicate_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    row = get_readiness_capability("k_sweep_protocol")
+    monkeypatch.setattr(thermo_product, "_CAPABILITIES", (row, row))
+    with pytest.raises(RuntimeError, match="duplicate capability_id"):
+        thermo_product._capability_map()
+
+
+def test_capability_map_rejects_empty_catalogue(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(thermo_product, "_CAPABILITIES", ())
+    with pytest.raises(RuntimeError, match="non-empty"):
+        thermo_product._capability_map()
+
+
+def test_fep_map_rejects_blank_module_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    blank = FepInventoryRow(module_id="tmp", module_path="m", title="t", summary="s")
+    object.__setattr__(blank, "module_id", "  ")
+    monkeypatch.setattr(thermo_product, "_FEP_INVENTORY", (blank,))
+    with pytest.raises(RuntimeError, match="blank module_id"):
+        thermo_product._fep_map()
+
+
+def test_fep_map_rejects_duplicate_module_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    row = get_fep_inventory_row("predictive_coding")
+    monkeypatch.setattr(thermo_product, "_FEP_INVENTORY", (row, row))
+    with pytest.raises(RuntimeError, match="duplicate module_id"):
+        thermo_product._fep_map()
+
+
+def test_fep_map_rejects_empty_inventory(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(thermo_product, "_FEP_INVENTORY", ())
+    with pytest.raises(RuntimeError, match="non-empty"):
+        thermo_product._fep_map()
 
 
 def test_module_exports_stable() -> None:
