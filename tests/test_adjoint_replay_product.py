@@ -479,3 +479,113 @@ def test_surface_row_and_probe_validation() -> None:
     ok_payload = build_checkpoint_policy(schedule="binomial").to_dict()
     assert ok_payload["schedule"] == "binomial"
     assert decide_adjoint_replay_path().to_dict()["allowed"] is True
+
+
+def test_reversibility_report_to_dict() -> None:
+    """ReversibilityReport.to_dict exposes the public contract fields."""
+    report = assess_reversibility(has_supported_unitary_ir=True)
+    payload = report.to_dict()
+    assert payload["reversible"] is True
+    assert payload["blockers"] == []
+    assert "supported_ops" in payload
+    assert payload["reason"]
+    assert payload["claim_boundary"] == ADJOINT_REPLAY_CLAIM_BOUNDARY
+
+
+def test_catalogue_map_rejects_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``_catalogue_map`` refuses an empty canonical catalogue."""
+    monkeypatch.setattr(adjoint_replay_product, "_CANONICAL_SURFACES", ())
+    with pytest.raises(RuntimeError, match="catalogue must be non-empty"):
+        adjoint_replay_product._catalogue_map()
+
+
+def test_catalogue_map_rejects_blank_surface_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``_catalogue_map`` refuses a blank surface_id after construction."""
+    from dataclasses import replace
+
+    # Fresh row so live catalogue objects are never mutated.
+    blank = replace(get_adjoint_replay_surface("reverse_adjoint_grad"))
+    object.__setattr__(blank, "surface_id", "  ")
+    monkeypatch.setattr(adjoint_replay_product, "_CANONICAL_SURFACES", (blank,))
+    with pytest.raises(RuntimeError, match="blank surface_id"):
+        adjoint_replay_product._catalogue_map()
+
+
+def test_catalogue_map_rejects_duplicate_surface_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """``_catalogue_map`` refuses duplicate surface identifiers."""
+    from dataclasses import replace
+
+    good = replace(get_adjoint_replay_surface("reverse_adjoint_grad"))
+    monkeypatch.setattr(adjoint_replay_product, "_CANONICAL_SURFACES", (good, good))
+    with pytest.raises(RuntimeError, match="duplicate surface_id"):
+        adjoint_replay_product._catalogue_map()
+
+
+def test_materialise_refuses_when_path_blocked(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Materialised demo fails closed when path eligibility refuses."""
+
+    def _refuse(**_kwargs: Any) -> PathEligibilityDecision:
+        return PathEligibilityDecision(
+            outcome="refused",
+            allowed=False,
+            reason="forced refuse",
+            blockers=("forced",),
+        )
+
+    monkeypatch.setattr(adjoint_replay_product, "decide_adjoint_replay_path", _refuse)
+    with pytest.raises(ValueError, match="demo path refused"):
+        materialise_demo_adjoint_replay_probe()
+
+
+def test_materialise_refuses_missing_adjoint_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Materialised demo fails closed when whole-program adjoint metadata is absent."""
+    from dataclasses import replace
+
+    from scpn_quantum_control.differentiable import whole_program_value_and_grad
+
+    real = whole_program_value_and_grad
+
+    def _no_adjoint(objective: Any, values: Any, **kwargs: Any) -> Any:
+        result = real(objective, values, **kwargs)
+        return replace(result, adjoint_result=None)
+
+    monkeypatch.setattr(
+        "scpn_quantum_control.differentiable.whole_program_value_and_grad",
+        _no_adjoint,
+    )
+    with pytest.raises(ValueError, match="missing adjoint metadata"):
+        materialise_demo_adjoint_replay_probe()
+
+
+def test_materialise_refuses_unsupported_adjoint(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Materialised demo fails closed when ambient adjoint generation is unsupported."""
+    from dataclasses import replace
+
+    from scpn_quantum_control.differentiable import whole_program_value_and_grad
+
+    real = whole_program_value_and_grad
+
+    def _unsupported(objective: Any, values: Any, **kwargs: Any) -> Any:
+        result = real(objective, values, **kwargs)
+        assert result.adjoint_result is not None
+        return replace(
+            result,
+            adjoint_result=replace(
+                result.adjoint_result,
+                supported=False,
+                unsupported_ops=("fake_op",),
+            ),
+        )
+
+    monkeypatch.setattr(
+        "scpn_quantum_control.differentiable.whole_program_value_and_grad",
+        _unsupported,
+    )
+    with pytest.raises(ValueError, match="unsupported for demo objective"):
+        materialise_demo_adjoint_replay_probe()
