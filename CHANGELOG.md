@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — PennyLane + Qiskit migration guides product (BL-41):
+  `scpn_quantum_control.migration_guides_product` productises concept-map
+  rows, materialised local PL→Phase-QNode round-trip and Qiskit Statevector
+  parameter-shift demos, and refuse invent-green live Runtime / full feature
+  parity. Docs: `docs/migration_guides_product.md`. Tenth P1 A-product after
+  BL-90/91/81/49/96/92/93/64/39.
 - 2026-07-24 — Adjoint reversible simulator replay product (BL-39):
   `scpn_quantum_control.adjoint_replay_product` productises reverse-mode
   Program AD adjoint generation and executable step replay, checkpoint-policy
