@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Rust Program AD fuzz assurance product (BL-96):
+  `scpn_quantum_control.program_ad_fuzz_assurance` productises ambient
+  `scpn_quantum_engine/fuzz` target catalogue, time-boxed CI-optional policy
+  (continuous default false; invent-green forbidden), and dry-run probe helpers
+  that refuse continuous multi-hour cargo-fuzz claims without executing
+  cargo-fuzz. Docs: `docs/program_ad_fuzz_assurance.md`. Fifth P1 A-product
+  after BL-90/91/81/49.
 - 2026-07-24 — Bit-exact polyglot parity certificates (BL-49):
   `scpn_quantum_control.polyglot_parity_certificate` productises versioned
   certificate schema, family catalogue (scalar→spectral bounds), sample
