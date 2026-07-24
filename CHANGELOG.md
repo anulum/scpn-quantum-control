@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Stochastic estimators & policies product (BL-93):
+  `scpn_quantum_control.stochastic_estimators_product` productises the finite-shot
+  estimator catalogue (SPSA, score-function, parameter-shift shot allocation),
+  confidence-policy contracts composing BL-47 honesty, dry-run refuse invent-green
+  hardware shots, and a materialised local SPSA demo probe. Docs:
+  `docs/stochastic_estimators_product.md`. Seventh P1 A-product after
+  BL-90/91/81/49/96/92.
 - 2026-07-24 — Custom / registered derivatives product (BL-92):
   `scpn_quantum_control.custom_derivatives_product` productises the safe
   extension registration contract, public register/query helpers with
