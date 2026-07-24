@@ -5,6 +5,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Advanced witnesses product (BL-44):
+  `scpn_quantum_control.advanced_witnesses_product` productises Krylov/OTOC/
+  classical-shadow catalogue with `WitnessEstimate` provenance and small-system
+  probes over ambient `analysis/krylov_complexity`, `otoc`, `shadow_tomography`
+  (BL-18 order-parameter compose); refuse invent-green OTOC advantage /
+  topology certification / live QPU / unrestricted shadows. Docs:
+  `docs/advanced_witnesses_product.md`. Twenty-sixth P1 A-product after
+  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73/99/101/100/51/59/50/71.
 - 2026-07-24 — PGBO quantum geometric tensor product (BL-71):
   `scpn_quantum_control.pgbo_qgt_product` productises QGT/Fubini–Study/Berry
   curvature catalogue and small-system `compute_pgbo_tensor` probes with
