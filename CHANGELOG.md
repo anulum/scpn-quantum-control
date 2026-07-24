@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Studio executive + coverage frontier product (BL-62):
+  `scpn_quantum_control.studio_executive_product` productises executive verb
+  catalogue with BL-52 route pointers, fail-closed unsupported-route and
+  invent-green full-coverage refuses, and honesty×answer-rate coverage-frontier
+  probes. Docs: `docs/studio_executive_product.md`. Thirteenth P1 A-product after
+  BL-90/91/81/49/96/92/93/64/39/41/40/34.
 - 2026-07-24 — Fixture-driven visualisation dashboard product (BL-34):
   `scpn_quantum_control.visualisation_dashboard_product` productises static
   panel catalogue rows, secrets/token export scanning, materialised
