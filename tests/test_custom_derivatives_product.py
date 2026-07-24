@@ -417,3 +417,48 @@ def test_parse_identity_none_and_probe_mismatch_value(monkeypatch: pytest.Monkey
 def test_parse_identity_object() -> None:
     ident = PrimitiveIdentity(namespace="a", name="b", version="2")
     assert parse_product_identity(ident).key == "a:b@2"
+
+
+def test_iter_contracts_without_kind_filter() -> None:
+    """Unfiltered iter returns the full catalogue (kind is None branch)."""
+    all_rows = iter_custom_derivative_contracts()
+    assert len(all_rows) == len(list_custom_derivative_contract_ids())
+    assert {row.contract_id for row in all_rows} == set(list_custom_derivative_contract_ids())
+
+
+def test_example_rule_vjp_is_linear_scale() -> None:
+    """Example scaled-linear VJP is the same linear map as the forward/JVP."""
+    scale = 2.5
+    rule = build_example_scaled_linear_rule(scale=scale)
+    assert rule.vjp_rule is not None
+    cotangent = np.array([0.5, -1.0], dtype=np.float64)
+    # Position is unused for this linear map; pass a non-matching shape to prove it.
+    out = np.asarray(rule.vjp_rule(np.array([9.0, 9.0]), cotangent), dtype=np.float64)
+    np.testing.assert_allclose(out, scale * cotangent)
+
+
+def test_probe_refuses_jvp_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Round-trip probe fails closed when ambient JVP disagrees with scale * tangent."""
+    from scpn_quantum_control.differentiable_result_contracts import JVPResult
+
+    def broken_jvp(rule: Any, values: Any, tangent: Any) -> Any:
+        arr = np.asarray(values, dtype=np.float64)
+        t = np.asarray(tangent, dtype=np.float64)
+        # Correct value (scale * values with scale=2) but wrong JVP.
+        return JVPResult(
+            value=2.0 * arr,
+            jvp=np.zeros_like(t),
+            tangent=t,
+            method="custom",
+            step=0.0,
+            evaluations=1,
+            parameter_names=tuple(f"p{i}" for i in range(arr.size)),
+            trainable=tuple(True for _ in range(arr.size)),
+        )
+
+    monkeypatch.setattr(
+        "scpn_quantum_control.differentiable_custom_derivatives.value_and_custom_jvp",
+        broken_jvp,
+    )
+    with pytest.raises(ValueError, match="JVP does not match"):
+        custom_derivatives_product.probe_example_rule_round_trip(scale=2.0)
