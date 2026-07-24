@@ -854,6 +854,148 @@ def test_subprocess_and_integrity_edges(monkeypatch: pytest.MonkeyPatch) -> None
         import_sim_noise_model(cast(Any, "not-a-map"))
 
 
+def test_iter_surfaces_without_kind_returns_full_catalogue() -> None:
+    """Unfiltered surface iter covers the kind is None branch."""
+    rows = iter_open_system_surfaces()
+    assert len(rows) == len(list_open_system_surface_ids())
+    assert {row.surface_id for row in rows} == set(list_open_system_surface_ids())
+
+
+def test_iter_boundaries_without_kind_returns_full_catalogue() -> None:
+    """Unfiltered boundary iter covers the kind is None branch."""
+    rows = iter_open_system_boundaries()
+    assert len(rows) == len(list_open_system_boundary_ids())
+    assert {row.boundary_id for row in rows} == set(list_open_system_boundary_ids())
+
+
+def test_surface_map_refuses_blank_surface_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Catalogue map refuses a blank surface_id after construction."""
+    blank = OpenSystemSurfaceRow(
+        surface_id="tmp",
+        kind="mcwf_ensemble",
+        title="t",
+        summary="s",
+        ambient_module="m",
+        ambient_symbol="x",
+    )
+    object.__setattr__(blank, "surface_id", "  ")
+    monkeypatch.setattr(mcwf_product, "_SURFACES", (blank,))
+    with pytest.raises(RuntimeError, match="blank surface_id"):
+        mcwf_product._surface_map()
+
+
+def test_surface_map_refuses_duplicate_surface_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Catalogue map refuses duplicate surface identifiers."""
+    row = OpenSystemSurfaceRow(
+        surface_id="dup",
+        kind="mcwf_ensemble",
+        title="t",
+        summary="s",
+        ambient_module="m",
+        ambient_symbol="x",
+    )
+    monkeypatch.setattr(mcwf_product, "_SURFACES", (row, row))
+    with pytest.raises(RuntimeError, match="duplicate surface_id"):
+        mcwf_product._surface_map()
+
+
+def test_surface_map_refuses_empty_catalogue(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Catalogue map refuses an empty surface catalogue."""
+    monkeypatch.setattr(mcwf_product, "_SURFACES", ())
+    with pytest.raises(RuntimeError, match="must be non-empty"):
+        mcwf_product._surface_map()
+
+
+def test_ambient_mcwf_subprocess_called_process_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """CalledProcessError from ambient MCWF subprocess is fail-closed."""
+
+    def boom(*_a: object, **_k: object) -> object:
+        raise mcwf_product.subprocess.CalledProcessError(1, "x", stderr="mcwf boom")
+
+    monkeypatch.setattr(mcwf_product.subprocess, "run", boom)
+    with pytest.raises(ValueError, match="ambient MCWF subprocess failed"):
+        materialise_mcwf_ensemble_probe("mcwf_ensemble", n_trajectories=1)
+
+
+def test_ambient_mcwf_subprocess_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """TimeoutExpired from ambient MCWF subprocess is fail-closed."""
+
+    def timeout(*_a: object, **_k: object) -> object:
+        raise mcwf_product.subprocess.TimeoutExpired(cmd="x", timeout=1)
+
+    monkeypatch.setattr(mcwf_product.subprocess, "run", timeout)
+    with pytest.raises(ValueError, match="timed out"):
+        materialise_mcwf_ensemble_probe("mcwf_ensemble", n_trajectories=1)
+
+
+def test_ambient_mcwf_subprocess_non_json(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Non-JSON stdout from ambient MCWF subprocess is fail-closed."""
+
+    class _Out:
+        stdout = "not-json\n"
+
+    monkeypatch.setattr(mcwf_product.subprocess, "run", lambda *_a, **_k: _Out())
+    with pytest.raises(ValueError, match="non-JSON"):
+        materialise_mcwf_ensemble_probe("mcwf_ensemble", n_trajectories=1)
+
+
+def test_ambient_mcwf_subprocess_non_object_json(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """JSON array (not object) payload from ambient MCWF is fail-closed."""
+
+    class _Out:
+        stdout = "[1, 2, 3]\n"
+
+    monkeypatch.setattr(mcwf_product.subprocess, "run", lambda *_a, **_k: _Out())
+    with pytest.raises(ValueError, match="must be an object"):
+        materialise_mcwf_ensemble_probe("mcwf_ensemble", n_trajectories=1)
+
+
+def test_reproducibility_probe_refuses_when_path_blocked(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Reproducibility materialisation fails closed when path eligibility refuses."""
+    blocked = PathEligibilityDecision(
+        outcome="refused",
+        allowed=False,
+        reason="open-system path refused under product honesty gates",
+        blockers=("forced refusal for coverage",),
+    )
+    monkeypatch.setattr(
+        mcwf_product,
+        "decide_open_system_path",
+        lambda *_a, **_k: blocked,
+    )
+    with pytest.raises(ValueError, match="reproducibility probe refused"):
+        materialise_reproducibility_probe()
+
+
+def test_integrity_rejects_boundary_set_drift() -> None:
+    """Extra boundary rows produce boundary set-drift refuse."""
+    registry = build_open_system_mcwf_product_registry()
+    bounds = cast(list[dict[str, object]], registry["boundaries"])
+    broken = dict(registry)
+    ghost = dict(bounds[0])
+    ghost["boundary_id"] = "ghost_boundary"
+    broken["boundaries"] = bounds + [ghost]
+    broken["boundary_count"] = len(cast(list[object], broken["boundaries"]))
+    with pytest.raises(ValueError, match="boundary set drift"):
+        assert_open_system_mcwf_product_integrity(broken)
+
+
 def test_module_exports_stable() -> None:
     assert "assert_open_system_mcwf_product_integrity" in mcwf_product.__all__
     assert "materialise_demo_mcwf_ensemble_probe" in mcwf_product.__all__
