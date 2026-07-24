@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Thermodynamics readiness product (BL-100):
+  `scpn_quantum_control.thermo_readiness_product` productises S9 claim-bounded
+  readiness over ambient `thermodynamics.readiness` (K-sweep probe,
+  machine-checked CLAIM_BOUNDARY) and inventories FEP modules as research-only
+  (BL-84 / tier C); refuse invent-green peak claim, hardware submit, and FEP
+  product promotion. Docs: `docs/thermo_readiness_product.md`. Twenty-first P1
+  A-product after BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73/99/101.
 - 2026-07-24 — Cloud-native deployment boundary product (BL-101):
   `scpn_quantum_control.cloud_native_deployment_product` productises batch/
   worker deploy patterns and threat-model rows over ambient
