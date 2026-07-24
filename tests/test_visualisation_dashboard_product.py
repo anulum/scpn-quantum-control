@@ -389,3 +389,163 @@ def test_probe_refused_when_path_blocked(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.setattr(visualisation_dashboard_product, "decide_visualisation_path", _refuse)
     with pytest.raises(ValueError, match="refused"):
         materialise_demo_static_report_probe()
+
+
+def test_secrets_scan_result_to_dict() -> None:
+    """SecretsScanResult.to_dict must expose clean flag, findings, and claim boundary."""
+    dirty = SecretsScanResult(clean=False, findings=("api_key pattern",))
+    payload = dirty.to_dict()
+    assert payload["clean"] is False
+    assert payload["findings"] == ["api_key pattern"]
+    assert payload["claim_boundary"] == VISUALISATION_DASHBOARD_CLAIM_BOUNDARY
+
+    clean = SecretsScanResult(clean=True, findings=())
+    assert clean.to_dict()["findings"] == []
+
+
+def test_materialised_probe_rejects_blank_panel_id_entry() -> None:
+    """MaterialisedStaticReportProbe must refuse blank entries in panel_ids."""
+    with pytest.raises(ValueError, match="panel_ids entries must be non-empty"):
+        MaterialisedStaticReportProbe(
+            panel_ids=("order_parameter_energy_loss", "  "),
+            series_point_count=1,
+            gradient_norm_count=1,
+            fixture_digest_sha256="a" * 64,
+            live_qpu=False,
+            secrets_clean=True,
+            demo_label="d",
+        )
+
+
+def test_iter_visualisation_panels_by_kind() -> None:
+    """kind filter must select only matching panel families."""
+    grads = iter_visualisation_panels(kind="gradient_norm")
+    assert grads
+    assert all(row.kind == "gradient_norm" for row in grads)
+    assert {row.panel_id for row in grads} == {"gradient_norm"}
+
+
+def test_catalogue_map_rejects_blank_panel_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """_catalogue_map must raise when a catalogue row has a blank panel_id."""
+    good = get_visualisation_panel("gradient_norm")
+    blank = VisualisationPanelRow(
+        panel_id="tmp",
+        kind="gradient_norm",
+        title="t",
+        summary="s",
+        module_path="m",
+        symbol_name="fn",
+        support_posture="catalogue_only",
+    )
+    object.__setattr__(blank, "panel_id", "  ")
+    monkeypatch.setattr(visualisation_dashboard_product, "_CANONICAL_PANELS", (blank,))
+    with pytest.raises(RuntimeError, match="blank panel_id"):
+        visualisation_dashboard_product._catalogue_map()
+    # restore path not required — monkeypatch undoes; sanity on good id
+    assert good.panel_id == "gradient_norm"
+
+
+def test_catalogue_map_rejects_duplicate_panel_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """_catalogue_map must raise on duplicate panel_id values."""
+    row = get_visualisation_panel("gradient_norm")
+    monkeypatch.setattr(visualisation_dashboard_product, "_CANONICAL_PANELS", (row, row))
+    with pytest.raises(RuntimeError, match="duplicate panel_id"):
+        visualisation_dashboard_product._catalogue_map()
+
+
+def test_catalogue_map_rejects_empty_catalogue(monkeypatch: pytest.MonkeyPatch) -> None:
+    """_catalogue_map must refuse an empty panel catalogue."""
+    monkeypatch.setattr(visualisation_dashboard_product, "_CANONICAL_PANELS", ())
+    with pytest.raises(RuntimeError, match="non-empty"):
+        visualisation_dashboard_product._catalogue_map()
+
+
+def test_catalogue_map_accepts_valid_row(monkeypatch: pytest.MonkeyPatch) -> None:
+    """_catalogue_map must index a valid single-row catalogue by panel_id."""
+    good = get_visualisation_panel("gradient_norm")
+    monkeypatch.setattr(visualisation_dashboard_product, "_CANONICAL_PANELS", (good,))
+    mapped = visualisation_dashboard_product._catalogue_map()
+    assert mapped[good.panel_id].panel_id == good.panel_id
+
+
+def test_materialise_rejects_non_list_series(monkeypatch: pytest.MonkeyPatch) -> None:
+    """materialise_demo_static_report_probe refuses non-list series fields."""
+
+    def _bad_fixture() -> dict[str, object]:
+        return {
+            "schema": "visualisation_demo_fixture.v1",
+            "order_parameter": "not-a-list",
+            "energy_loss": [1.0],
+            "gradient_norms": [0.1],
+            "live_qpu": False,
+        }
+
+    monkeypatch.setattr(visualisation_dashboard_product, "_demo_fixture_payload", _bad_fixture)
+    with pytest.raises(ValueError, match="must be lists"):
+        materialise_demo_static_report_probe()
+
+
+def test_materialise_rejects_mismatched_order_energy_lengths(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """materialise_demo_static_report_probe refuses unequal order/energy series."""
+
+    def _bad_fixture() -> dict[str, object]:
+        return {
+            "schema": "visualisation_demo_fixture.v1",
+            "order_parameter": [0.1, 0.2],
+            "energy_loss": [1.0],
+            "gradient_norms": [0.1],
+            "live_qpu": False,
+        }
+
+    monkeypatch.setattr(visualisation_dashboard_product, "_demo_fixture_payload", _bad_fixture)
+    with pytest.raises(ValueError, match="non-empty equal length"):
+        materialise_demo_static_report_probe()
+
+
+def test_materialise_rejects_empty_order_series(monkeypatch: pytest.MonkeyPatch) -> None:
+    """materialise_demo_static_report_probe refuses empty equal-length order/energy."""
+
+    def _bad_fixture() -> dict[str, object]:
+        return {
+            "schema": "visualisation_demo_fixture.v1",
+            "order_parameter": [],
+            "energy_loss": [],
+            "gradient_norms": [0.1],
+            "live_qpu": False,
+        }
+
+    monkeypatch.setattr(visualisation_dashboard_product, "_demo_fixture_payload", _bad_fixture)
+    with pytest.raises(ValueError, match="non-empty equal length"):
+        materialise_demo_static_report_probe()
+
+
+def test_materialise_rejects_empty_gradient_norms(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """materialise_demo_static_report_probe refuses empty gradient_norms."""
+
+    def _bad_fixture() -> dict[str, object]:
+        return {
+            "schema": "visualisation_demo_fixture.v1",
+            "order_parameter": [0.1],
+            "energy_loss": [1.0],
+            "gradient_norms": [],
+            "live_qpu": False,
+        }
+
+    monkeypatch.setattr(visualisation_dashboard_product, "_demo_fixture_payload", _bad_fixture)
+    with pytest.raises(ValueError, match="gradient_norms must be non-empty"):
+        materialise_demo_static_report_probe()
+
+
+def test_materialise_rejects_dirty_secrets_scan(monkeypatch: pytest.MonkeyPatch) -> None:
+    """materialise_demo_static_report_probe fails closed when secrets scan is dirty."""
+
+    def _dirty(_text: str) -> SecretsScanResult:
+        return SecretsScanResult(clean=False, findings=("token pattern",))
+
+    monkeypatch.setattr(visualisation_dashboard_product, "scan_export_for_secrets", _dirty)
+    with pytest.raises(ValueError, match="failed secrets scan"):
+        materialise_demo_static_report_probe()
