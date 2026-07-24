@@ -301,44 +301,88 @@ def _row(
     )
 
 
-def _build_canonical_verbs() -> tuple[ExecutiveVerbRow, ...]:
-    """Build verb catalogue from ambient federation contracts when available."""
-    from .studio.executive import resolve_verb_contract
-    from .studio.verbs import QUANTUM_VERBS
+_ROUTE_MAP: Final[dict[str, str]] = {
+    "compile": "governed_route:studio.compile.kuramoto_xy",
+    "simulate": "governed_route:studio.simulate.quantum_evolution",
+    "analyse": "governed_route:studio.analyse.sync_witness",
+    "validate": "governed_route:studio.validate.physics_parity",
+    "benchmark": "governed_route:studio.benchmark.databank",
+    "replay": "governed_route:studio.replay.evidence",
+    "differentiate": "governed_route:studio.differentiate.program_ad",
+    "mitigate": "governed_route:studio.mitigate.readout_zne",
+    "execute": "governed_route:studio.execute.qpu_hal_gated",
+}
+_TITLES: Final[dict[str, str]] = {
+    "compile": "Compile phase networks",
+    "simulate": "Simulate quantum evolution",
+    "analyse": "Analyse synchronisation / DLA",
+    "validate": "Validate physics / parity",
+    "benchmark": "Benchmark databank",
+    "replay": "Replay evidence packs",
+    "differentiate": "Differentiate programmes",
+    "mitigate": "Mitigate readout / noise",
+    "execute": "Execute on QPU (approval-gated)",
+}
+_SUMMARIES: Final[dict[str, str]] = {
+    "compile": "Compile K_nm/omega networks into XY/XXZ Hamiltonians and circuits.",
+    "simulate": "Evolve state on simulator backends (no live QPU).",
+    "analyse": "Sync analysis, DLA parity, coupling invariants.",
+    "validate": "Physics validation and readiness checks.",
+    "benchmark": "Native/speedup databank measurements.",
+    "replay": "Evidence-pack replay without re-submission.",
+    "differentiate": "Value-and-grad / adjoint over compiled phase programmes.",
+    "mitigate": "ZNE/PEC/readout mitigation with uncertainty.",
+    "execute": "Live hardware via approval-gated provider HAL (certified).",
+}
+# Product-local fallback when Studio platform extra is absent (Python 3.11 CI).
+# execute is the only live-hardware verb; backends mirror ambient contracts.
+_FALLBACK_VERB_SPECS: Final[
+    tuple[tuple[str, SupportPosture, bool, bool, tuple[str, ...]], ...]
+] = (
+    ("compile", "local_research", False, False, ("numpy", "jax", "torch")),
+    ("simulate", "local_research", False, False, ("numpy", "jax", "torch", "qiskit")),
+    ("analyse", "local_research", False, False, ("numpy",)),
+    ("validate", "local_research", False, False, ("numpy",)),
+    ("benchmark", "local_research", False, False, ("numpy",)),
+    ("replay", "local_research", False, False, ("numpy",)),
+    ("differentiate", "local_research", False, False, ("numpy", "jax", "torch")),
+    ("mitigate", "local_research", False, False, ("numpy",)),
+    ("execute", "live_hardware_gated", True, True, ("qiskit", "braket", "iqm")),
+)
 
-    route_map: dict[str, str] = {
-        "compile": "governed_route:studio.compile.kuramoto_xy",
-        "simulate": "governed_route:studio.simulate.quantum_evolution",
-        "analyse": "governed_route:studio.analyse.sync_witness",
-        "validate": "governed_route:studio.validate.physics_parity",
-        "benchmark": "governed_route:studio.benchmark.databank",
-        "replay": "governed_route:studio.replay.evidence",
-        "differentiate": "governed_route:studio.differentiate.program_ad",
-        "mitigate": "governed_route:studio.mitigate.readout_zne",
-        "execute": "governed_route:studio.execute.qpu_hal_gated",
-    }
-    titles: dict[str, str] = {
-        "compile": "Compile phase networks",
-        "simulate": "Simulate quantum evolution",
-        "analyse": "Analyse synchronisation / DLA",
-        "validate": "Validate physics / parity",
-        "benchmark": "Benchmark databank",
-        "replay": "Replay evidence packs",
-        "differentiate": "Differentiate programmes",
-        "mitigate": "Mitigate readout / noise",
-        "execute": "Execute on QPU (approval-gated)",
-    }
-    summaries: dict[str, str] = {
-        "compile": "Compile K_nm/omega networks into XY/XXZ Hamiltonians and circuits.",
-        "simulate": "Evolve state on simulator backends (no live QPU).",
-        "analyse": "Sync analysis, DLA parity, coupling invariants.",
-        "validate": "Physics validation and readiness checks.",
-        "benchmark": "Native/speedup databank measurements.",
-        "replay": "Evidence-pack replay without re-submission.",
-        "differentiate": "Value-and-grad / adjoint over compiled phase programmes.",
-        "mitigate": "ZNE/PEC/readout mitigation with uncertainty.",
-        "execute": "Live hardware via approval-gated provider HAL (certified).",
-    }
+
+def _build_fallback_canonical_verbs() -> tuple[ExecutiveVerbRow, ...]:
+    """Build verb catalogue without importing the optional Studio platform."""
+    rows: list[ExecutiveVerbRow] = []
+    for name, posture, requires_approval, live, backends in _FALLBACK_VERB_SPECS:
+        rows.append(
+            _row(
+                name,
+                title=_TITLES.get(name, name),
+                summary=_SUMMARIES.get(name, f"Studio verb {name}"),
+                bl52_route_pointer=_ROUTE_MAP.get(name, f"governed_route:studio.{name}"),
+                support_posture=posture,
+                requires_approval=requires_approval,
+                allows_live_hardware=live,
+                backends=backends,
+            )
+        )
+    if not rows:
+        raise RuntimeError("studio executive catalogue must be non-empty")
+    return tuple(rows)
+
+
+def _build_canonical_verbs() -> tuple[ExecutiveVerbRow, ...]:
+    """Build verb catalogue from ambient federation contracts when available.
+
+    Falls back to the product-local catalogue when ``scpn_studio_platform`` is
+    not installed (base Python 3.11 CI matrix; Studio extra is ≥3.12 only).
+    """
+    try:
+        from .studio.executive import resolve_verb_contract
+        from .studio.verbs import QUANTUM_VERBS
+    except ImportError:
+        return _build_fallback_canonical_verbs()
 
     rows: list[ExecutiveVerbRow] = []
     for declared in QUANTUM_VERBS:
@@ -348,9 +392,9 @@ def _build_canonical_verbs() -> tuple[ExecutiveVerbRow, ...]:
         rows.append(
             _row(
                 name,
-                title=titles.get(name, name),
-                summary=summaries.get(name, f"Studio verb {name}"),
-                bl52_route_pointer=route_map.get(name, f"governed_route:studio.{name}"),
+                title=_TITLES.get(name, name),
+                summary=_SUMMARIES.get(name, f"Studio verb {name}"),
+                bl52_route_pointer=_ROUTE_MAP.get(name, f"governed_route:studio.{name}"),
                 support_posture=("live_hardware_gated" if live else "local_research"),
                 requires_approval=bool(contract.requires_approval),
                 allows_live_hardware=live,
