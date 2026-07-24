@@ -342,3 +342,65 @@ def test_catalogue_map_guards(monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(RuntimeError, match="duplicate"):
         monkeypatch.setattr(mod, "_CANONICAL_JOURNEYS", (good, good))
         mod._catalogue_map()
+
+
+def test_iter_phase_qnode_journeys_without_filter_returns_full_catalogue() -> None:
+    """Unfiltered journey iter returns every catalogue row."""
+    rows = iter_phase_qnode_journeys()
+    assert len(rows) == len(list_phase_qnode_journey_ids())
+    assert {row.journey_id for row in rows} == set(list_phase_qnode_journey_ids())
+
+
+def test_dry_run_provider_boundary_allowed_without_hardware() -> None:
+    """provider_boundary dry-run is allowed when no hardware is requested."""
+    decision = dry_run_phase_qnode_journey("provider_transform_boundary")
+    assert decision.allowed is True
+    assert decision.outcome == "allowed_dry_run"
+    assert decision.support_badge == "provider_boundary"
+    assert decision.steps_completed
+    assert decision.blockers == ()
+
+
+def test_public_surface_map_skips_duplicate_module_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Duplicate module_path across journeys appears once in the public map."""
+    first = PhaseQNodeJourney(
+        journey_id="dup_a",
+        title="t",
+        summary="s",
+        module_path="scpn_quantum_control.phase.shared_mod",
+        support_badge="local_dry_run",
+        steps=("a",),
+    )
+    second = PhaseQNodeJourney(
+        journey_id="dup_b",
+        title="t2",
+        summary="s2",
+        module_path="scpn_quantum_control.phase.shared_mod",
+        support_badge="local_dry_run",
+        steps=("b",),
+    )
+    monkeypatch.setattr(phase_qnode_product, "_CANONICAL_JOURNEYS", (first, second))
+    surfaces = map_phase_qnode_public_surfaces()
+    paths = [row["module_path"] for row in surfaces]
+    assert paths.count("scpn_quantum_control.phase.shared_mod") == 1
+    shared = next(
+        row for row in surfaces if row["module_path"] == "scpn_quantum_control.phase.shared_mod"
+    )
+    assert set(cast(list[str], shared["journey_ids"])) == {"dup_a", "dup_b"}
+
+
+def test_integrity_rejects_journey_set_drift() -> None:
+    """Registry journey_id set must match the live catalogue exactly."""
+    good = build_phase_qnode_product_registry()
+    raw = good["journeys"]
+    assert isinstance(raw, list)
+    journeys = [dict(cast(dict[str, object], row)) for row in raw]
+    drifted = dict(good)
+    ghost = dict(journeys[0])
+    ghost["journey_id"] = "ghost_extra_journey"
+    drifted["journeys"] = journeys + [ghost]
+    drifted["journey_count"] = len(journeys) + 1
+    with pytest.raises(ValueError, match="drift"):
+        assert_phase_qnode_product_integrity(drifted)
