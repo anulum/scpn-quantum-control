@@ -46,6 +46,12 @@ before treating JAX, PyTorch, TensorFlow, or PennyLane comparison rows as
 reproducible. Notebook curves are exploratory until the underlying gradient
 certificates, support-matrix plans, external comparison rows, benchmark
 classifications, and claim-ledger artefact IDs are committed.
+Differentiable-lane **core-six curriculum** (BL-40 product):
+`notebooks/differentiable/` with catalogue
+`scpn_quantum_control.notebook_programme_product` — see
+[Notebook programme product](notebook_programme_product.md).
+All curriculum rows set `hardware_execution: false`.
+
 Use `49_differentiable_first_path.ipynb` for the no-credential
 `scpn_quantum_control.diff` and `scpn.diff` first-path API before moving into
 framework-specific notebooks.
