@@ -495,3 +495,10 @@ def test_iter_unknown_posture_and_catalogue_guards(
     )
     with pytest.raises(RuntimeError, match="catalogue must be non-empty"):
         studio_executive_product._build_canonical_verbs()
+
+
+def test_iter_executive_verbs_without_posture_filter() -> None:
+    """Unfiltered verb iter returns the full catalogue (support_posture is None)."""
+    all_rows = iter_executive_verbs()
+    assert len(all_rows) == len(list_executive_verb_ids())
+    assert {row.verb_id for row in all_rows} == set(list_executive_verb_ids())
