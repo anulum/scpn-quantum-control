@@ -620,3 +620,34 @@ def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(oracle_product, "_FAMILIES", (good, good))
     with pytest.raises(RuntimeError, match="duplicate family_id"):
         oracle_product._family_map()
+
+
+def test_iter_problem_families_without_filter_returns_full_catalogue() -> None:
+    """Unfiltered family iter returns every catalogue row."""
+    rows = iter_problem_families()
+    assert len(rows) == len(list_problem_family_ids())
+    assert {row.family_id for row in rows} == set(list_problem_family_ids())
+
+
+def test_materialise_oracle_probe_rejects_empty_witness_records(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Empty ambient witness suite is refused with RuntimeError."""
+    from types import SimpleNamespace
+
+    monkeypatch.setattr(
+        oracle_product,
+        "run_sync_witness_suite",
+        lambda: SimpleNamespace(records=()),
+    )
+    with pytest.raises(RuntimeError, match="no records"):
+        materialise_oracle_probe("F1_all_to_all_kuramoto")
+
+
+def test_integrity_rejects_non_mapping_baseline_row() -> None:
+    """Baseline catalogue rows must be mappings."""
+    registry = build_quantum_sync_challenge_oracle_product_registry()
+    broken = dict(registry)
+    broken["baselines"] = [cast(Any, "nope")]
+    with pytest.raises(ValueError, match="baseline row 0 must be a mapping"):
+        assert_quantum_sync_challenge_oracle_product_integrity(broken)
