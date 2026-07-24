@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Geometric quantum control product (BL-50):
+  `scpn_quantum_control.geometric_control_product` productises QFI/McLachlan/QNG
+  taxonomy, metric spectrum diagnostics, and regularised natural-gradient
+  direction probes over ambient `variational_metric` + `natural_gradient`
+  (BL-13 compose); refuse invent-green advantage at criticality / live QPU.
+  Docs: `docs/geometric_control_product.md`. Twenty-fourth P1 A-product after
+  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73/99/101/100/51/59.
 - 2026-07-24 — Differentiable error-mitigation taxonomy product (BL-59):
   `scpn_quantum_control.error_mitigation_product` productises mitigator
   differentiability taxonomy (ZNE/PEC/readout/symmetry/DD/CPDR/mitiq/Studio)
