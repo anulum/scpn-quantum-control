@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Compose existing control/* stack product (BL-67):
+  `scpn_quantum_control.control_stack_compose_product` productises ownership map
+  and typed adapter ports over ambient control/* (realtime feedback, closed-loop
+  ExecutionPolicy telemetry, hardware feedback dry-run); refuse evaluate without
+  policy, invent-green PCS, and realtime_runtime rewrites. Docs:
+  `docs/control_stack_compose_product.md`. Fourteenth P1 A-product after
+  BL-90/91/81/49/96/92/93/64/39/41/40/34/62.
 - 2026-07-24 — Studio executive + coverage frontier product (BL-62):
   `scpn_quantum_control.studio_executive_product` productises executive verb
   catalogue with BL-52 route pointers, fail-closed unsupported-route and
