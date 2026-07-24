@@ -20,7 +20,7 @@ hypothesis==6.156.6
 ruff==0.15.21
 mypy==2.3.0
 bandit==1.9.4
-pre-commit==4.5.1
+pre-commit==4.6.1
 build==1.5.1
 hatchling==1.31.0
 types-defusedxml==0.7.0.20260504
