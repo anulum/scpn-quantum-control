@@ -641,6 +641,84 @@ def test_row_decision_probe_validation() -> None:
         )
 
 
+def test_iter_suites_without_kind_filter() -> None:
+    """Unfiltered suite iter returns both catalogue rows (kind is None branch)."""
+    all_rows = iter_kyma_suites()
+    assert len(all_rows) == len(list_kyma_suite_ids())
+    assert {row.suite_id for row in all_rows} == set(list_kyma_suite_ids())
+
+
+def test_mechanism_certificate_probe_to_dict() -> None:
+    """MaterialisedMechanismCertificateProbe.to_dict exposes the public fields."""
+    probe = MaterialisedMechanismCertificateProbe(
+        suite_id="kyma_v2",
+        protocol_id=KYMA_V2_PROTOCOL_ID,
+        design_constants_digest="a" * 64,
+        r1_realisability=1.0,
+        r2_realisability=1.0,
+        non_separability_rate=0.5,
+        meets_realise_target=True,
+        meets_non_sep_target=True,
+        invent_green_advantage=False,
+        design_from_student_held_out=False,
+        demo_label="unit",
+    )
+    payload = probe.to_dict()
+    assert payload["suite_id"] == "kyma_v2"
+    assert payload["protocol_id"] == KYMA_V2_PROTOCOL_ID
+    assert payload["invent_green_advantage"] is False
+    assert payload["demo_label"] == "unit"
+    assert payload["claim_boundary"] == KYMA_MECHANISM_BENCHMARK_CLAIM_BOUNDARY
+
+
+def test_assert_mirrored_constants_match_ambient_ok(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Ambient parity path succeeds when design mirrors product constants."""
+    import sys
+    import types
+
+    fake_design = types.ModuleType("scpn_quantum_control.benchmarks.kyma_v2.design")
+    fake_design.G_SYNC_GRID = kyma_product._G_SYNC_GRID
+    fake_design.STEPS_GRID = kyma_product._STEPS_GRID
+    fake_design.K_BRIDGE_GRID = kyma_product._K_BRIDGE_GRID
+    fake_design.REALISE_FRACTION = kyma_product._REALISE_FRACTION
+    fake_design.NON_SEP_TARGET = kyma_product._NON_SEP_TARGET
+    fake_design.BALANCE_MAX_CLASS_FRACTION = kyma_product._BALANCE_MAX_CLASS_FRACTION
+    monkeypatch.setitem(
+        sys.modules,
+        "scpn_quantum_control.benchmarks.kyma_v2.design",
+        fake_design,
+    )
+    # Direct call exercises the match path under pytest-cov (no JAX import needed).
+    kyma_product._assert_mirrored_constants_match_ambient()
+    frozen = load_frozen_design_constants(verify_ambient=True)
+    assert len(frozen.content_digest) == 64
+
+
+def test_assert_mirrored_constants_detects_drift(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Ambient parity path fails closed when a mirrored constant drifts."""
+    import sys
+    import types
+
+    fake_design = types.ModuleType("scpn_quantum_control.benchmarks.kyma_v2.design")
+    fake_design.G_SYNC_GRID = (9.9,)  # deliberate drift
+    fake_design.STEPS_GRID = kyma_product._STEPS_GRID
+    fake_design.K_BRIDGE_GRID = kyma_product._K_BRIDGE_GRID
+    fake_design.REALISE_FRACTION = kyma_product._REALISE_FRACTION
+    fake_design.NON_SEP_TARGET = kyma_product._NON_SEP_TARGET
+    fake_design.BALANCE_MAX_CLASS_FRACTION = kyma_product._BALANCE_MAX_CLASS_FRACTION
+    monkeypatch.setitem(
+        sys.modules,
+        "scpn_quantum_control.benchmarks.kyma_v2.design",
+        fake_design,
+    )
+    with pytest.raises(RuntimeError, match="design constant drift.*G_SYNC_GRID"):
+        kyma_product._assert_mirrored_constants_match_ambient()
+
+
 def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(kyma_product, "_SUITES", ())
     with pytest.raises(RuntimeError, match="catalogue must be non-empty"):
