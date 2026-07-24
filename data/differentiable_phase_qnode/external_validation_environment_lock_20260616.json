@@ -77,6 +77,6 @@
     }
   ],
   "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
-  "python_version": "3.12.13",
+  "python_version": "3.12.3",
   "schema": "scpn_qc_differentiable_external_validation_environment_lock_v1"
 }
