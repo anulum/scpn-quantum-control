@@ -371,7 +371,18 @@ def _digest_payload(payload: Mapping[str, object]) -> str:
 
 
 def _assert_mirrored_constants_match_ambient() -> None:
-    """Fail closed if product mirrors drift from ambient design module."""
+    """Fail closed if product mirrors drift from ambient design module.
+
+    Raises
+    ------
+    ImportError
+        When the ambient KYMA design import path is unavailable (for example
+        JAX is not installed on the base CI matrix). Callers that opt into
+        ambient verification must treat this as a soft skip, not a product
+        defect.
+    RuntimeError
+        When ambient constants load but disagree with product mirrors.
+    """
     from .benchmarks.kyma_v2 import design as ambient_design
 
     checks: tuple[tuple[str, object, object], ...] = (

@@ -73,9 +73,12 @@ def test_frozen_design_constants() -> None:
     assert frozen.k_bridge_grid
     payload = frozen.to_dict()
     assert payload["content_digest"] == frozen.content_digest
-    # Ambient parity when JAX import path is healthy (subprocess under cov-reload)
+    # Ambient parity only when the optional JAX ambient path is importable.
+    # Base CI matrix does not install JAX; framework overlay jobs do.
     try:
         load_frozen_design_constants(verify_ambient=True)
+    except ImportError:
+        pytest.importorskip("jax")
     except Exception:
         import subprocess
         import sys
@@ -96,6 +99,11 @@ def test_frozen_design_constants() -> None:
             text=True,
             check=False,
         )
+        if proc.returncode != 0 and (
+            "No module named 'jax'" in (proc.stderr or "")
+            or 'No module named "jax"' in (proc.stderr or "")
+        ):
+            pytest.importorskip("jax")
         assert proc.returncode == 0, proc.stderr
         assert "AMBIENT_OK" in proc.stdout
 
