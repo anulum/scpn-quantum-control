@@ -489,6 +489,14 @@ def test_iter_unknown_posture_and_catalogue_guards(
     with pytest.raises(RuntimeError, match="duplicate verb_id"):
         studio_executive_product._catalogue_map()
 
+    # Ambient empty-catalogue path requires the Studio platform import graph.
+    # Base Python 3.11 CI omits scpn_studio_platform; product-local fallback still
+    # returns a non-empty catalogue, so skip ambient-only emptiness coverage.
+    try:
+        import scpn_studio_platform  # noqa: F401
+    except ImportError:
+        pytest.skip("scpn_studio_platform not installed on this matrix cell")
+
     monkeypatch.setattr(
         "scpn_quantum_control.studio.verbs.QUANTUM_VERBS",
         (),
