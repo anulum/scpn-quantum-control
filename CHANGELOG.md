@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Differentiable error-mitigation taxonomy product (BL-59):
+  `scpn_quantum_control.error_mitigation_product` productises mitigator
+  differentiability taxonomy (ZNE/PEC/readout/symmetry/DD/CPDR/mitiq/Studio)
+  with local ZNE + readout probes over ambient `mitigation/*`; refuse
+  invent-green ideal-gradient restore, live QPU mitigation, mitiq hard-dep.
+  Docs: `docs/error_mitigation_product.md`. Twenty-third P1 A-product after
+  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73/99/101/100/51.
 - 2026-07-24 — Open-system MCWF completeness product (BL-51):
   `scpn_quantum_control.open_system_mcwf_product` productises Lindblad/MCWF
   surfaces, seeded ensemble variance certificates, and sim noise-model I/O over
