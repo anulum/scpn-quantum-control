@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Campaign harness productisation (BL-99):
+  `scpn_quantum_control.campaign_harness_product` productises reusable AppQSim,
+  IQM layout-transfer, closed-loop publication, and ambient benchmark_harness
+  registry templates with prereg digests and BL-47 no-submit dry-run probes;
+  refuse invent-green live submit and unattested claims. Docs:
+  `docs/campaign_harness_product.md`. Nineteenth P1 A-product after
+  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73.
 - 2026-07-24 — KYMA / KYMA v2 mechanism benchmark product (BL-73):
   `scpn_quantum_control.kyma_mechanism_benchmark_product` productises prereg
   suite catalogue, frozen design-constant digests (teacher dynamics only),
