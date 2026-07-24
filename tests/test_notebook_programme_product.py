@@ -364,3 +364,55 @@ def test_missing_paths_counted(tmp_path: Path) -> None:
     probe = materialise_curriculum_probe(repo_root=tmp_path)
     assert probe.missing_path_count == 6
     assert resolve_curriculum_directory(tmp_path).name == "differentiable"
+
+
+def test_iter_curriculum_without_runtime_filter() -> None:
+    """Unfiltered curriculum iter returns the full catalogue."""
+    all_rows = iter_curriculum_notebooks()
+    assert len(all_rows) == len(list_curriculum_notebook_ids())
+    assert {row.notebook_id for row in all_rows} == set(list_curriculum_notebook_ids())
+
+
+def test_resolve_curriculum_directory_default_repo_root() -> None:
+    """Default repo_root resolves to notebooks/differentiable under package parents."""
+    resolved = resolve_curriculum_directory()
+    assert resolved.name == "differentiable"
+    assert resolved.parent.name == "notebooks"
+    # Package lives under src/scpn_quantum_control; parents[2] is the repo root.
+    assert resolved.parent.parent == _REPO_ROOT.resolve()
+
+
+def test_catalogue_map_rejects_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``_catalogue_map`` refuses an empty curriculum catalogue."""
+    monkeypatch.setattr(notebook_programme_product, "_CANONICAL_CURRICULUM", ())
+    with pytest.raises(RuntimeError, match="catalogue must be non-empty"):
+        notebook_programme_product._catalogue_map()
+
+
+def test_catalogue_map_rejects_blank_notebook_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """``_catalogue_map`` refuses a blank notebook_id after construction."""
+    from dataclasses import replace
+
+    blank = replace(get_curriculum_notebook(list_curriculum_notebook_ids()[0]))
+    object.__setattr__(blank, "notebook_id", "  ")
+    monkeypatch.setattr(notebook_programme_product, "_CANONICAL_CURRICULUM", (blank,))
+    with pytest.raises(RuntimeError, match="blank notebook_id"):
+        notebook_programme_product._catalogue_map()
+
+
+def test_catalogue_map_rejects_duplicate_notebook_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """``_catalogue_map`` refuses duplicate notebook identifiers."""
+    from dataclasses import replace
+
+    good = replace(get_curriculum_notebook(list_curriculum_notebook_ids()[0]))
+    monkeypatch.setattr(
+        notebook_programme_product,
+        "_CANONICAL_CURRICULUM",
+        (good, good),
+    )
+    with pytest.raises(RuntimeError, match="duplicate notebook_id"):
+        notebook_programme_product._catalogue_map()
