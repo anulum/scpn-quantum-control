@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Open-system MCWF completeness product (BL-51):
+  `scpn_quantum_control.open_system_mcwf_product` productises Lindblad/MCWF
+  surfaces, seeded ensemble variance certificates, and sim noise-model I/O over
+  ambient `phase.tensor_jump` + `open_system_objectives`; refuse invent-green
+  hardware noise fidelity, adjoint Lindblad, non-Markovian process-tensor AD.
+  Docs: `docs/open_system_mcwf_product.md`. Twenty-second P1 A-product after
+  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73/99/101/100.
 - 2026-07-24 — Thermodynamics readiness product (BL-100):
   `scpn_quantum_control.thermo_readiness_product` productises S9 claim-bounded
   readiness over ambient `thermodynamics.readiness` (K-sweep probe,
