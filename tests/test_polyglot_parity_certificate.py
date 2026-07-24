@@ -664,3 +664,31 @@ def test_verify_input_and_error_paths() -> None:
     d2 = verify_certificate(bad_py)
     assert d2.passed is False
     assert any("python_reference" in item for item in d2.blockers)
+
+
+def test_iter_parity_families_without_filter_returns_full_catalogue() -> None:
+    """Unfiltered family iter returns every catalogue row."""
+    rows = iter_parity_families()
+    assert len(rows) == len(list_parity_family_ids())
+    assert {row.family_id for row in rows} == set(list_parity_family_ids())
+
+
+def test_verify_rejects_nonzero_error_and_unsupported_on_bitexact_family() -> None:
+    """sample_bitexact family with non-zero error and supported=False fails closed."""
+    cert = build_sample_certificate("scalar_interpreter_replay")
+    bad = PolyglotParityCertificate(
+        family_id=cert.family_id,
+        schema=cert.schema,
+        sample_id=cert.sample_id,
+        input_digest=cert.input_digest,
+        python_reference_digest=cert.python_reference_digest,
+        rust_digest=cert.rust_digest,
+        max_abs_error=1e-6,
+        supported=False,
+        blocked_reasons=("forced unsupported for verify path",),
+    )
+    decision = verify_certificate(bad)
+    assert decision.passed is False
+    assert decision.outcome == "failed"
+    assert any("max_abs_error" in item for item in decision.blockers)
+    assert any("must be supported" in item for item in decision.blockers)
