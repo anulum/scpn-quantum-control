@@ -414,3 +414,74 @@ def test_probe_and_decision_validation() -> None:
         )
     with pytest.raises(ValueError, match="cross_scale"):
         materialise_demo_implicit_stationary_probe(cross_scale=float("nan"))
+
+
+def test_complex_contract_decision_to_dict() -> None:
+    """ComplexContractDecision.to_dict exposes the public refuse/allow contract."""
+    refused = decide_complex_objective_contract(has_wirtinger_contract=False)
+    payload = refused.to_dict()
+    assert payload["allowed"] is False
+    assert payload["has_wirtinger_contract"] is False
+    assert payload["blockers"]
+    assert payload["bl53_id"] == BL53_COMPLEX_WITHOUT_WIRTINGER
+    assert payload["bl46_id"] == BL46_COMPLEX_WITHOUT_WIRTINGER_LAW
+    assert payload["claim_boundary"] == WIRTINGER_IMPLICIT_CLAIM_BOUNDARY
+
+
+def test_catalogue_map_rejects_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``_catalogue_map`` refuses an empty surface catalogue."""
+    monkeypatch.setattr(wirtinger_implicit_product, "_CANONICAL_SURFACES", ())
+    with pytest.raises(RuntimeError, match="catalogue must be non-empty"):
+        wirtinger_implicit_product._catalogue_map()
+
+
+def test_catalogue_map_rejects_blank_surface_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """``_catalogue_map`` refuses a blank surface_id after construction."""
+    from dataclasses import replace
+
+    blank = replace(get_wirtinger_implicit_surface("wirtinger_partials"))
+    object.__setattr__(blank, "surface_id", "  ")
+    monkeypatch.setattr(wirtinger_implicit_product, "_CANONICAL_SURFACES", (blank,))
+    with pytest.raises(RuntimeError, match="blank surface_id"):
+        wirtinger_implicit_product._catalogue_map()
+
+
+def test_catalogue_map_rejects_duplicate_surface_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """``_catalogue_map`` refuses duplicate surface identifiers."""
+    from dataclasses import replace
+
+    good = replace(get_wirtinger_implicit_surface("wirtinger_partials"))
+    monkeypatch.setattr(
+        wirtinger_implicit_product,
+        "_CANONICAL_SURFACES",
+        (good, good),
+    )
+    with pytest.raises(RuntimeError, match="duplicate surface_id"):
+        wirtinger_implicit_product._catalogue_map()
+
+
+def test_materialise_implicit_refuses_empty_sensitivity(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Materialised implicit probe fails closed on empty ambient sensitivity."""
+    from types import SimpleNamespace
+
+    import numpy as np
+
+    def _empty(*_args: Any, **_kwargs: Any) -> Any:
+        return SimpleNamespace(
+            sensitivity=np.asarray([], dtype=np.float64),
+            method="implicit_stationary_sensitivity",
+            condition_number=1.0,
+        )
+
+    monkeypatch.setattr(
+        "scpn_quantum_control.differentiable_implicit_sensitivity.implicit_stationary_sensitivity",
+        _empty,
+    )
+    with pytest.raises(ValueError, match="empty sensitivity"):
+        materialise_demo_implicit_stationary_probe()
