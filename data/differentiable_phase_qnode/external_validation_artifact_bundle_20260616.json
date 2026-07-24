@@ -1,7 +1,8 @@
 {
+  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1",
   "artifact_id": "diff-external-validation-artifact-bundle-20260616",
-  "claim_boundary": "Reproducible artefact-bundle manifest only; it records committed evidence file checksums and does not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.",
   "classification": "functional_non_isolated",
+  "claim_boundary": "Reproducible artefact-bundle manifest only; it records committed evidence file checksums and does not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.",
   "entries": [
     {
       "path": "data/differentiable_phase_qnode/claim_ledger.json",
@@ -84,7 +85,7 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
       "role": "Differentiable dependency and environment evidence map artefact",
-      "sha256": "c0a0c2aed7626eea977d8827ee79de77d28a07b637316f13442afe62e5881229",
+      "sha256": "007ebcad84abb9ddf297c1ceb69d6780c1fdd97475e19ad3660b358e3af3bb78",
       "size_bytes": 20488
     },
     {
@@ -156,7 +157,7 @@
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
       "role": "Exact environment-lock manifest",
-      "sha256": "1d38d32a98f9c820cb1de5ba9fddc01ac6120642c6586aa6514008dc03965236",
+      "sha256": "cab32aaa9b36d81ce2f905b68dbe354a0a562c684966ff495e38a70e16c47495",
       "size_bytes": 3227
     },
     {
@@ -255,6 +256,5 @@
       "sha256": "16bc50f32fc5bb7fbca2bb4282dfcc4c3ac9198d33afa920220938c593b30b68",
       "size_bytes": 424
     }
-  ],
-  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1"
+  ]
 }

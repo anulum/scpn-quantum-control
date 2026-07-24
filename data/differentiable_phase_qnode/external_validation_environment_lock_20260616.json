@@ -1,82 +1,82 @@
 {
+  "schema": "scpn_qc_differentiable_external_validation_environment_lock_v1",
   "artifact_id": "diff-external-validation-environment-lock-20260616",
-  "claim_boundary": "Exact environment lockfile manifest for reviewer reproduction only; it does not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.",
+  "python_version": "3.12.3",
+  "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
   "classification": "functional_non_isolated",
+  "claim_boundary": "Exact environment lockfile manifest for reviewer reproduction only; it does not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.",
   "lockfiles": [
     {
-      "line_count": 496,
       "path": "pyproject.toml",
-      "pinned_package_count": 0,
       "role": "Package metadata and bounded dependency ranges",
       "sha256": "99dc56a39d6ddf7c8bf18380018730ec3a0903aa034bedfb30c3043b2caad31a",
-      "size_bytes": 21183
+      "size_bytes": 21183,
+      "line_count": 496,
+      "pinned_package_count": 0
     },
     {
-      "line_count": 34,
       "path": "requirements.txt",
-      "pinned_package_count": 11,
       "role": "Runtime dependency lock input",
       "sha256": "4b783078f7bfa5a3935b2a3c2b56a5c6d301ee641db6ea71a1df4ecec448b382",
-      "size_bytes": 1611
+      "size_bytes": 1611,
+      "line_count": 34,
+      "pinned_package_count": 11
     },
     {
-      "line_count": 46,
       "path": "requirements-dev.txt",
-      "pinned_package_count": 28,
       "role": "Developer verification dependency lock input",
       "sha256": "5b1da8f77b2d3fb4e3c0e0e01cad213dd22b8c12420bbb59e506933cf0d42da7",
-      "size_bytes": 1362
+      "size_bytes": 1362,
+      "line_count": 46,
+      "pinned_package_count": 28
     },
     {
-      "line_count": 351,
       "path": "requirements-ci-cross-platform-smoke.txt",
-      "pinned_package_count": 17,
       "role": "Cross-platform smoke CI lockfile",
       "sha256": "7dbb41967d1fa074b90e1b6c6801f5c92f09b2edea7aeb6467192764a12758f0",
-      "size_bytes": 27183
+      "size_bytes": 27183,
+      "line_count": 351,
+      "pinned_package_count": 17
     },
     {
-      "line_count": 3019,
       "path": "requirements-ci-py311-linux.txt",
-      "pinned_package_count": 158,
       "role": "Python 3.11 Linux CI lockfile",
       "sha256": "4c7d06efcf6956c6aec2e0f305cf063503993561d7c54c0f0d7d722a3dc3e522",
-      "size_bytes": 223046
+      "size_bytes": 223046,
+      "line_count": 3019,
+      "pinned_package_count": 158
     },
     {
-      "line_count": 2974,
       "path": "requirements-ci-py312-linux.txt",
-      "pinned_package_count": 158,
       "role": "Python 3.12 Linux CI lockfile",
       "sha256": "62a83c5e005282fa7e2a71d81779771dfbdd28a59835b35e71f02deb98318562",
-      "size_bytes": 219221
+      "size_bytes": 219221,
+      "line_count": 2974,
+      "pinned_package_count": 158
     },
     {
-      "line_count": 3015,
       "path": "requirements-ci-py313-linux.txt",
-      "pinned_package_count": 158,
       "role": "Python 3.13 Linux CI lockfile",
       "sha256": "af1cdfe5833ef159f73dbd352ca9e151606ad51d7624b83147e373883ebc9786",
-      "size_bytes": 222971
+      "size_bytes": 222971,
+      "line_count": 3015,
+      "pinned_package_count": 158
     },
     {
-      "line_count": 54,
       "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/framework_overlay_freeze.txt",
-      "pinned_package_count": 54,
       "role": "CPU framework overlay freeze used for JAX, PyTorch, TensorFlow, and PennyLane rows",
       "sha256": "11a15a483d2f8f602b8d052dc1cf0824d37a86a47853a66b1cda1ed93caa56c6",
-      "size_bytes": 916
+      "size_bytes": 916,
+      "line_count": 54,
+      "pinned_package_count": 54
     },
     {
-      "line_count": 10,
       "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/enzyme_py39_freeze.txt",
-      "pinned_package_count": 10,
       "role": "Python 3.9 Enzyme/JAX runner freeze used for installed-toolchain hard-gap evidence",
       "sha256": "2770738675e8ac3fbf3edd5f8b004a3c0d2621fd3324b77aa3a238437b947d32",
-      "size_bytes": 160
+      "size_bytes": 160,
+      "line_count": 10,
+      "pinned_package_count": 10
     }
-  ],
-  "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
-  "python_version": "3.12.3",
-  "schema": "scpn_qc_differentiable_external_validation_environment_lock_v1"
+  ]
 }
