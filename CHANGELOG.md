@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — Fixture-driven visualisation dashboard product (BL-34):
+  `scpn_quantum_control.visualisation_dashboard_product` productises static
+  panel catalogue rows, secrets/token export scanning, materialised
+  order-parameter/energy and gradient-norm fixture probes, and refuse
+  invent-green live QPU streaming or always-on SaaS. Docs:
+  `docs/visualisation_dashboard_product.md`. Twelfth P1 A-product after
+  BL-90/91/81/49/96/92/93/64/39/41/40.
 - 2026-07-24 — Differentiable notebook programme product (BL-40):
   `scpn_quantum_control.notebook_programme_product` productises the core-six
   onboarding curriculum under `notebooks/differentiable/` with versioned
