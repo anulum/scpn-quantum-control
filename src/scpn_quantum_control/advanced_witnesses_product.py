@@ -903,12 +903,17 @@ def materialise_krylov_probe(
     t_max: float = 1.0,
     n_times: int = 8,
     max_lanczos: int = 12,
+    invent_green_live_qpu: bool = False,
+    invent_green_topology_cert: bool = False,
 ) -> MaterialisedKrylovProbe:
     """Materialise a bounded Krylov complexity probe over ambient APIs.
 
     Builds a small Kuramoto-XY Hamiltonian, runs ambient
     :func:`krylov_complexity` with a Z⊗I… seed operator, and packages a
     :class:`WitnessEstimate` for the peak complexity.
+
+    Invent-green flags are forwarded to :func:`decide_witness_path` and refuse
+    before any ambient work (fail-closed product policy).
     """
     _require_qubit_cap(n_qubits, label="krylov_probe")
     if n_times < 2:
@@ -917,7 +922,12 @@ def materialise_krylov_probe(
         raise ValueError("max_lanczos must be >= 2")
     if t_max <= 0.0 or not math.isfinite(t_max):
         raise ValueError("t_max must be a positive finite float")
-    decision = decide_witness_path("krylov", n_qubits=n_qubits)
+    decision = decide_witness_path(
+        "krylov",
+        n_qubits=n_qubits,
+        invent_green_live_qpu=invent_green_live_qpu,
+        invent_green_topology_cert=invent_green_topology_cert,
+    )
     if not decision.allowed:
         raise ValueError(decision.reason)
 
@@ -980,14 +990,25 @@ def materialise_otoc_probe(
     coupling: float = 0.5,
     t_max: float = 0.5,
     n_times: int = 6,
+    invent_green_otoc_advantage: bool = False,
+    invent_green_live_qpu: bool = False,
 ) -> MaterialisedOtocProbe:
-    """Materialise a bounded OTOC probe over ambient :func:`compute_otoc`."""
+    """Materialise a bounded OTOC probe over ambient :func:`compute_otoc`.
+
+    Invent-green flags are forwarded to :func:`decide_witness_path` and refuse
+    before any ambient work (no silent advantage or live-QPU materialisation).
+    """
     _require_qubit_cap(n_qubits, label="otoc_probe")
     if n_times < 2:
         raise ValueError("n_times must be >= 2")
     if t_max <= 0.0 or not math.isfinite(t_max):
         raise ValueError("t_max must be a positive finite float")
-    decision = decide_witness_path("otoc", n_qubits=n_qubits)
+    decision = decide_witness_path(
+        "otoc",
+        n_qubits=n_qubits,
+        invent_green_otoc_advantage=invent_green_otoc_advantage,
+        invent_green_live_qpu=invent_green_live_qpu,
+    )
     if not decision.allowed:
         raise ValueError(decision.reason)
 
@@ -1046,11 +1067,16 @@ def materialise_shadow_probe(
     n_shots: int = 80,
     seed: int = 7,
     observables: Mapping[str, str] | None = None,
+    invent_green_live_qpu: bool = False,
+    unrestricted_shadow: bool = False,
 ) -> MaterialisedShadowProbe:
     """Materialise a bounded classical-shadow probe over ambient APIs.
 
     Under-sampled runs (``n_shots < MIN_SHADOW_SHOTS``) still return a probe
     but mark ``support_status="under_sampled"`` (fail-closed honesty, S44.4 H3).
+
+    Invent-green / unrestricted flags are forwarded to :func:`decide_witness_path`
+    and refuse before ambient shadow work.
     """
     _require_qubit_cap(n_qubits, label="shadow_probe")
     if n_shots < 1:
@@ -1059,7 +1085,12 @@ def materialise_shadow_probe(
         raise ValueError(
             f"n_shots={n_shots} exceeds product cap MAX_DEMO_SHADOW_SHOTS={MAX_DEMO_SHADOW_SHOTS}"
         )
-    decision = decide_witness_path("shadow", n_qubits=n_qubits)
+    decision = decide_witness_path(
+        "shadow",
+        n_qubits=n_qubits,
+        invent_green_live_qpu=invent_green_live_qpu,
+        unrestricted_shadow=unrestricted_shadow,
+    )
     if not decision.allowed:
         raise ValueError(decision.reason)
 
@@ -1147,6 +1178,8 @@ def materialise_bl18_order_parameter_compose(
     phases: Sequence[float] | None = None,
     *,
     harmonic: int = 1,
+    invent_green_topology_cert: bool = False,
+    invent_green_live_qpu: bool = False,
 ) -> WitnessEstimate:
     """Compose BL-18 harmonic order parameter into a :class:`WitnessEstimate`.
 
@@ -1156,10 +1189,19 @@ def materialise_bl18_order_parameter_compose(
         Phase samples; default is a tightly synchronised cloud.
     harmonic
         Harmonic index for the ambient order-parameter estimator.
+    invent_green_topology_cert
+        When True, refuse invent-green topology certification (BL-18 is a
+        synthetic diagnostic, not a cert).
+    invent_green_live_qpu
+        When True, refuse live-QPU invent-green on this compose path.
     """
     if harmonic < 1:
         raise ValueError("harmonic must be >= 1")
-    decision = decide_witness_path("bl18_compose")
+    decision = decide_witness_path(
+        "bl18_compose",
+        invent_green_topology_cert=invent_green_topology_cert,
+        invent_green_live_qpu=invent_green_live_qpu,
+    )
     if not decision.allowed:
         raise ValueError(decision.reason)
     if phases is None:
