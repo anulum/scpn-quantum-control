@@ -441,3 +441,19 @@ def test_row_to_dict() -> None:
     payload = row.to_dict()
     assert payload["kind"] == "confidence_policy"
     assert payload["allows_hardware_shots"] is False
+
+
+def test_materialise_demo_spsa_probe_rejects_empty_gradient(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Empty ambient SPSA gradient is refused (fail closed)."""
+    from types import SimpleNamespace
+
+    import scpn_quantum_control.differentiable_stochastic_estimators as ambient
+
+    def empty_gradient(*args: object, **kwargs: object) -> SimpleNamespace:
+        return SimpleNamespace(gradient=())
+
+    monkeypatch.setattr(ambient, "spsa_gradient_estimate", empty_gradient)
+    with pytest.raises(ValueError, match="SPSA probe returned empty gradient"):
+        materialise_demo_spsa_probe()
