@@ -9,14 +9,19 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
 
 import scpn_quantum_control.multi_hal_federation_product as multi_hal_federation_product
+from scpn_quantum_control.hardware.backends import list_hal_backend_descriptors
+from scpn_quantum_control.hardware.hal import built_in_backend_profiles
 from scpn_quantum_control.multi_hal_federation_product import (
     MULTI_HAL_FEDERATION_CLAIM_BOUNDARY,
     MULTI_HAL_FEDERATION_PRODUCT_SCHEMA,
+    FederationRouteMode,
     HalCapabilityRecord,
     MaterialisedFederationDryRunProbe,
     PathEligibilityDecision,
@@ -443,12 +448,15 @@ def test_row_decision_probe_validation() -> None:
         )
 
 
-def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Defensive catalogue RuntimeError paths."""
+def test_catalogue_map_rejects_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``_catalogue_map`` refuses an empty canonical catalogue."""
     monkeypatch.setattr(multi_hal_federation_product, "_CANONICAL_HALS", ())
     with pytest.raises(RuntimeError, match="federation catalogue must be non-empty"):
         multi_hal_federation_product._catalogue_map()
 
+
+def test_catalogue_map_rejects_blank_backend_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``_catalogue_map`` refuses a blank backend_id after construction."""
     blank = HalCapabilityRecord(
         backend_id="tmp",
         provider="p",
@@ -470,6 +478,9 @@ def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(RuntimeError, match="blank backend_id"):
         multi_hal_federation_product._catalogue_map()
 
+
+def test_catalogue_map_rejects_duplicate_backend_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``_catalogue_map`` refuses duplicate backend ids."""
     good = HalCapabilityRecord(
         backend_id="dup",
         provider="p",
@@ -489,3 +500,138 @@ def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(multi_hal_federation_product, "_CANONICAL_HALS", (good, good))
     with pytest.raises(RuntimeError, match="duplicate backend_id"):
         multi_hal_federation_product._catalogue_map()
+
+
+def test_profile_by_id_rejects_blank_backend_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``_profile_by_id`` refuses ambient profiles with blank backend_id."""
+    monkeypatch.setattr(
+        multi_hal_federation_product,
+        "built_in_backend_profiles",
+        lambda: (SimpleNamespace(backend_id="  "),),
+    )
+    with pytest.raises(RuntimeError, match="ambient backend profile has blank backend_id"):
+        multi_hal_federation_product._profile_by_id()
+
+
+def test_profile_by_id_rejects_duplicate_backend_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``_profile_by_id`` refuses duplicate ambient profile backend ids."""
+    profile = built_in_backend_profiles()[0]
+    monkeypatch.setattr(
+        multi_hal_federation_product,
+        "built_in_backend_profiles",
+        lambda: (profile, profile),
+    )
+    with pytest.raises(RuntimeError, match="duplicate ambient backend profile"):
+        multi_hal_federation_product._profile_by_id()
+
+
+def test_profile_by_id_rejects_empty_inventory(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``_profile_by_id`` refuses an empty ambient profile inventory."""
+    monkeypatch.setattr(multi_hal_federation_product, "built_in_backend_profiles", lambda: ())
+    with pytest.raises(RuntimeError, match="ambient backend profiles must be non-empty"):
+        multi_hal_federation_product._profile_by_id()
+
+
+def test_build_catalogue_rejects_blank_descriptor_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``_build_hal_capability_catalogue`` refuses blank ambient descriptor names."""
+    blank = replace(list_hal_backend_descriptors()[0], name="  ")
+    monkeypatch.setattr(
+        multi_hal_federation_product,
+        "list_hal_backend_descriptors",
+        lambda: (blank,),
+    )
+    monkeypatch.setattr(
+        multi_hal_federation_product,
+        "built_in_backend_profiles",
+        lambda: (built_in_backend_profiles()[0],),
+    )
+    with pytest.raises(RuntimeError, match="ambient HAL descriptor has blank name"):
+        multi_hal_federation_product._build_hal_capability_catalogue()
+
+
+def test_build_catalogue_rejects_duplicate_descriptor(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``_build_hal_capability_catalogue`` refuses duplicate ambient descriptor names."""
+    descriptor = list_hal_backend_descriptors()[0]
+    monkeypatch.setattr(
+        multi_hal_federation_product,
+        "list_hal_backend_descriptors",
+        lambda: (descriptor, descriptor),
+    )
+    monkeypatch.setattr(
+        multi_hal_federation_product,
+        "built_in_backend_profiles",
+        lambda: built_in_backend_profiles(),
+    )
+    with pytest.raises(RuntimeError, match="duplicate ambient HAL descriptor"):
+        multi_hal_federation_product._build_hal_capability_catalogue()
+
+
+def test_build_catalogue_metadata_only_ir_when_no_formats(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Empty profile IR and empty descriptor workloads fall back to metadata_only."""
+    orphan = replace(
+        list_hal_backend_descriptors()[0],
+        name="orphan_no_ir_backend",
+        workloads=(),
+    )
+    # Profile inventory deliberately omits the orphan so profile is None.
+    monkeypatch.setattr(
+        multi_hal_federation_product,
+        "list_hal_backend_descriptors",
+        lambda: (orphan,),
+    )
+    monkeypatch.setattr(
+        multi_hal_federation_product,
+        "built_in_backend_profiles",
+        lambda: built_in_backend_profiles(),
+    )
+    catalogue = multi_hal_federation_product._build_hal_capability_catalogue()
+    assert len(catalogue) == 1
+    assert catalogue[0].backend_id == "orphan_no_ir_backend"
+    assert catalogue[0].ir_formats == ("metadata_only",)
+
+
+def test_build_catalogue_rejects_empty_descriptor_inventory(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """``_build_hal_capability_catalogue`` refuses zero ambient descriptors."""
+    monkeypatch.setattr(
+        multi_hal_federation_product,
+        "list_hal_backend_descriptors",
+        lambda: (),
+    )
+    monkeypatch.setattr(
+        multi_hal_federation_product,
+        "built_in_backend_profiles",
+        lambda: built_in_backend_profiles(),
+    )
+    with pytest.raises(RuntimeError, match="multi-HAL federation catalogue must be non-empty"):
+        multi_hal_federation_product._build_hal_capability_catalogue()
+
+
+def test_decide_federation_route_unknown_mode_refused() -> None:
+    """Unknown federation mode is refused with an explicit blocker."""
+    backend_id = list_hal_backend_ids()[0]
+    decision = decide_federation_route(
+        backend_id,
+        mode=cast(FederationRouteMode, "not_a_mode"),
+    )
+    assert decision.allowed is False
+    assert decision.outcome == "refused"
+    assert any("unknown federation mode" in blocker for blocker in decision.blockers)
+
+
+def test_decide_federation_route_would_live_cannot_submit() -> None:
+    """would_live on a can_submit=False backend records the cannot-submit blocker."""
+    no_submit_rows = [row for row in iter_hal_capabilities() if not row.can_submit]
+    assert no_submit_rows, "ambient catalogue must include a can_submit=False HAL"
+    backend_id = no_submit_rows[0].backend_id
+    decision = decide_federation_route(
+        backend_id,
+        mode="would_live",
+        owner_ticket_present=True,
+    )
+    assert decision.allowed is False
+    assert any("cannot submit" in blocker for blocker in decision.blockers)
+    assert any("would_live auto-submit refused" in blocker for blocker in decision.blockers)
