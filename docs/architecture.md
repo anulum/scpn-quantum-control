@@ -78,8 +78,8 @@ operand-class compilation, whole-program lowering/emission, and Enzyme evidence.
 cross-language rescan found four residual `compiler/mlir.py` implementation clusters; the
 2026-07-13 extraction below closes them behind the stable facade.
 
-After all five reopened refactors, the exhaustive scan contains 47 oversized tracked code files:
-all 47 have an approved cohesive, facade, test-owner, or entry-point decision, and 0 remain open.
+After all five reopened refactors, the exhaustive scan contains 58 oversized tracked code files:
+all 58 have an approved cohesive, facade, test-owner, or entry-point decision, and 0 remain open.
 The strict module-size certification is therefore green. This is a structural ownership claim over
 tracked code files above 1,000 physical lines, not a substitute for runtime or scientific validation.
 
