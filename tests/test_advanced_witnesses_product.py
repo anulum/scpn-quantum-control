@@ -178,7 +178,7 @@ def test_materialise_krylov_probe_real_ambient() -> None:
     p2 = materialise_demo_krylov_probe()
     assert isinstance(p1, MaterialisedKrylovProbe)
     assert p1.digest == p2.digest
-    assert p1.n_lanczos >= 1
+    assert p1.n_lanczos >= 0
     assert p1.n_times >= 2
     assert math.isfinite(p1.peak_complexity)
     assert p1.estimate.estimator_id == "krylov_peak"
@@ -188,6 +188,20 @@ def test_materialise_krylov_probe_real_ambient() -> None:
     assert len(p1.digest) == 64
     d = p1.to_dict()
     assert d["peak_complexity"] == p1.peak_complexity
+
+
+def test_materialise_krylov_single_qubit_trivial_basis() -> None:
+    """n_qubits=1 is inside product cap; ambient may return n_lanczos=0 (commuting).
+
+    Must not crash MaterialisedKrylovProbe — zero Lanczos steps with finite peak
+    is a supported trivial diagnostic, not a construction error.
+    """
+    p = materialise_krylov_probe(n_qubits=1, coupling=0.0, t_max=1.0, n_times=6, max_lanczos=8)
+    assert p.estimate.n_qubits == 1
+    assert p.n_lanczos >= 0
+    assert math.isfinite(p.peak_complexity)
+    assert p.estimate.support_status == "supported"
+    assert p.invent_green_live_qpu is False
 
 
 def test_materialise_krylov_cap_and_validation() -> None:
@@ -719,10 +733,19 @@ def test_more_dataclass_and_integrity_edges() -> None:
         MaterialisedKrylovProbe(
             estimate=est,
             peak_complexity=1.0,
-            n_lanczos=0,
+            n_lanczos=-1,
             n_times=4,
             digest=digest,
         )
+    # n_lanczos==0 is allowed (trivial ambient basis)
+    ok_zero = MaterialisedKrylovProbe(
+        estimate=est,
+        peak_complexity=0.0,
+        n_lanczos=0,
+        n_times=4,
+        digest=digest,
+    )
+    assert ok_zero.n_lanczos == 0
     with pytest.raises(ValueError, match="n_times"):
         MaterialisedOtocProbe(
             estimate=est,

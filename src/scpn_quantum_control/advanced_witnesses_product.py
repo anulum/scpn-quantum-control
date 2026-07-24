@@ -387,9 +387,15 @@ class MaterialisedKrylovProbe:
     claim_boundary: str = ADVANCED_WITNESSES_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
-        """Validate Krylov probe invariants."""
-        if self.n_lanczos < 1:
-            raise ValueError("n_lanczos must be >= 1")
+        """Validate Krylov probe invariants.
+
+        ``n_lanczos`` may be zero when the ambient Lanczos basis terminates
+        immediately (e.g. single-qubit seed operator commuting with a
+        diagonal Hamiltonian): that is a supported finite peak of 0, not a
+        construction error.
+        """
+        if self.n_lanczos < 0:
+            raise ValueError("n_lanczos must be non-negative")
         if self.n_times < 1:
             raise ValueError("n_times must be >= 1")
         if not math.isfinite(self.peak_complexity):
@@ -930,6 +936,12 @@ def materialise_krylov_probe(
         max_lanczos=max_lanczos,
     )
     peak = float(result.peak_complexity)
+    if not math.isfinite(peak):
+        raise ValueError("ambient krylov_complexity returned non-finite peak_complexity")
+    # n_lanczos may be 0 on trivial commuting single-qubit cases; still supported.
+    n_lanczos = int(result.n_lanczos)
+    if n_lanczos < 0:
+        raise ValueError(f"ambient krylov_complexity returned invalid n_lanczos={n_lanczos}")
     estimate = WitnessEstimate(
         estimator_id="krylov_peak",
         mean=peak,
@@ -943,7 +955,7 @@ def materialise_krylov_probe(
         {
             "estimator": "krylov_peak",
             "peak": peak,
-            "n_lanczos": int(result.n_lanczos),
+            "n_lanczos": n_lanczos,
             "n_times": int(result.times.size),
             "n_qubits": n_qubits,
         }
@@ -951,7 +963,7 @@ def materialise_krylov_probe(
     return MaterialisedKrylovProbe(
         estimate=estimate,
         peak_complexity=peak,
-        n_lanczos=int(result.n_lanczos),
+        n_lanczos=n_lanczos,
         n_times=int(result.times.size),
         digest=digest,
     )
