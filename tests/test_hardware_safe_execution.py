@@ -736,3 +736,104 @@ def test_more_policy_and_integrity_edges() -> None:
         live_execution_ticket="t",
     )
     assert refused.allowed is False
+
+
+def test_iter_policies_without_no_submit_filter() -> None:
+    """Unfiltered policy iter returns the full catalogue."""
+    all_rows = iter_execution_policies()
+    assert len(all_rows) == len(list_execution_policy_ids())
+    assert {row.policy_id for row in all_rows} == set(list_execution_policy_ids())
+
+
+def test_rate_table_negative_cost_defensive_branch() -> None:
+    """Rate-table branch rejects a negative cost even when earlier <0 is skipped.
+
+    Uses a comparable that answers False to the first ``< 0`` probe and True to
+    the rate-table-specific probe, so the defensive rate_table check is exercised.
+    """
+
+    class _FlipCost:
+        def __init__(self) -> None:
+            self._n = 0
+
+        def __lt__(self, other: object) -> bool:
+            del other
+            self._n += 1
+            return self._n > 1
+
+        def __float__(self) -> float:
+            return -1.0
+
+    with pytest.raises(ValueError, match="rate_table requires non-negative"):
+        ExecutionPolicy(
+            policy_id="x",
+            summary="s",
+            no_submit=True,
+            owner_allow_submit=False,
+            max_shots_per_evaluation=10,
+            max_total_shots=100,
+            max_params=4,
+            max_shift_terms=2,
+            cost_model_status="rate_table",
+            cost_usd_per_shot=cast(Any, _FlipCost()),
+        )
+
+
+def test_enforce_dry_run_refused_when_plan_over_budget() -> None:
+    """Dry-run enforce path surfaces refused plan blockers."""
+    decision = enforce_execution_request(
+        "ci_dry_run_only",
+        mode="dry_run",
+        n_params=1,
+        shots_per_evaluation=10_000_000,
+    )
+    assert decision.allowed is False
+    assert decision.outcome == "refused"
+    assert decision.blockers
+    assert "enforce refused dry_run" in decision.reason
+
+
+def test_ticketed_prep_fallback_blockers_when_plan_silent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Ticketed_prep refuses with fallback blockers when plan is silent-refused."""
+    from types import SimpleNamespace
+
+    def _silent_plan(*_args: Any, **_kwargs: Any) -> Any:
+        return SimpleNamespace(
+            outcome="refused",
+            blockers=(),
+            shots_per_evaluation=64,
+            estimated_total_shots=0,
+            reason="silent refuse",
+        )
+
+    monkeypatch.setattr(
+        hardware_safe_execution,
+        "dry_run_execution_plan",
+        _silent_plan,
+    )
+    decision = enforce_execution_request(
+        "owner_ticketed_prep",
+        mode="ticketed_prep",
+        n_params=1,
+        shots_per_evaluation=64,
+        live_execution_ticket="ticket-demo-001",
+    )
+    assert decision.allowed is False
+    assert decision.outcome == "refused"
+    assert "ticketed_prep requirements not met" in decision.blockers
+
+
+def test_integrity_rejects_policy_set_drift() -> None:
+    """Integrity fails closed when registry policy ids drift from the catalogue."""
+    registry = build_hardware_safe_execution_registry()
+    raw = cast(list[dict[str, object]], list(registry["policies"]))
+    drifted = dict(registry)
+    rows = [dict(row) for row in raw]
+    # Drop one non-default policy so seen != expected without blank invalid fields.
+    rows = [row for row in rows if row.get("policy_id") != "ci_dry_run_only"]
+    drifted["policies"] = rows
+    drifted["policy_count"] = len(rows)
+    with pytest.raises(ValueError, match="policy set drift"):
+        assert_hardware_safe_execution_integrity(drifted)
