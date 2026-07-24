@@ -411,3 +411,56 @@ def test_catalogue_map_guards(monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(RuntimeError, match="duplicate"):
         monkeypatch.setattr(mod, "_CANONICAL_DIMENSIONS", (good, good))
         mod._catalogue_map()
+
+
+def test_iter_budget_dimensions_without_filter_returns_full_catalogue() -> None:
+    """Unfiltered dimension iter returns every catalogue row."""
+    rows = iter_budget_dimensions()
+    assert len(rows) == len(list_budget_dimension_ids())
+    assert {row.budget_id for row in rows} == set(list_budget_dimension_ids())
+
+
+def test_estimate_rejects_n_qubits_below_one() -> None:
+    """ResourceBudgetEstimate refuses n_qubits < 1."""
+    with pytest.raises(ValueError, match="n_qubits must be >= 1"):
+        ResourceBudgetEstimate(
+            budget_id="x",
+            family="compile_pauli",
+            n_qubits=0,
+            bytes_required=1,
+            budget_bytes=2,
+            gib_required=0.0,
+            budget_gib=0.0,
+            within_budget=True,
+            detail={},
+        )
+
+
+def test_decision_rejects_blank_budget_id() -> None:
+    """ResourceBudgetDecision refuses blank budget_id."""
+    with pytest.raises(ValueError, match="budget_id must be non-empty"):
+        ResourceBudgetDecision(
+            budget_id="  ",
+            outcome="allowed",
+            allowed=True,
+            n_qubits=1,
+            bytes_required=1,
+            budget_bytes=2,
+            reason="r",
+            blockers=(),
+        )
+
+
+def test_integrity_rejects_budget_set_drift() -> None:
+    """Registry budget_id set must match the live catalogue exactly."""
+    good = build_resource_budget_registry()
+    raw = good["dimensions"]
+    assert isinstance(raw, list)
+    dimensions = [dict(cast(dict[str, object], row)) for row in raw]
+    drifted = dict(good)
+    ghost = dict(dimensions[0])
+    ghost["budget_id"] = "ghost_extra_budget"
+    drifted["dimensions"] = dimensions + [ghost]
+    drifted["dimension_count"] = len(dimensions) + 1
+    with pytest.raises(ValueError, match="drift"):
+        assert_resource_budget_integrity(drifted)
