@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
 
 import scpn_quantum_control.scorecard_acceptance_engine as scorecard_acceptance_engine
@@ -414,3 +416,21 @@ def test_to_dict_round_trips() -> None:
         target_status="exceeds_baseline",
     )
     assert decision.to_dict()["allowed"] is False
+
+
+def test_integrity_accepts_promoted_rows_with_evidence() -> None:
+    """Integrity accepts at_baseline / exceeds_baseline rows that carry evidence_ids."""
+    registry = build_scorecard_acceptance_registry()
+    raw = list(registry["categories"])
+    rows = [dict(cast(dict[str, object], row)) for row in raw]
+    # Promote two rows with evidence so the evidence-present branch is covered.
+    rows[0]["status"] = "at_baseline"
+    rows[0]["blockers"] = []
+    rows[0]["evidence_ids"] = ["ledger:at_baseline_demo"]
+    rows[1]["status"] = "exceeds_baseline"
+    rows[1]["blockers"] = []
+    rows[1]["evidence_ids"] = ["ledger:exceeds_demo"]
+    promoted = dict(registry)
+    promoted["categories"] = rows
+    validated = assert_scorecard_acceptance_integrity(promoted)
+    assert validated["blank_entry_count"] == 0
