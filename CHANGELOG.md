@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-24 — KYMA / KYMA v2 mechanism benchmark product (BL-73):
+  `scpn_quantum_control.kyma_mechanism_benchmark_product` productises prereg
+  suite catalogue, frozen design-constant digests (teacher dynamics only),
+  realisability/non-separability certificate probes; refuse post-hoc retune and
+  invent-green advantage without protocol id. Docs:
+  `docs/kyma_mechanism_benchmark_product.md`. Eighteenth P1 A-product after
+  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32.
 - 2026-07-24 — Quantum Sync Challenge oracle product (BL-32):
   `scpn_quantum_control.quantum_sync_challenge_oracle_product` productises
   problem families F1–F4 + hardware schema row, metrics/baselines catalogue,
