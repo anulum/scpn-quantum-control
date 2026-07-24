@@ -648,3 +648,54 @@ def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(campaign_product, "_HARNESSES", (good, good))
     with pytest.raises(RuntimeError, match="duplicate harness_id"):
         campaign_product._harness_map()
+
+
+def test_materialised_campaign_probe_to_dict() -> None:
+    """Serialise a valid MaterialisedCampaignProbe to a JSON-ready mapping."""
+    probe = MaterialisedCampaignProbe(
+        harness_id="appqsim_protocol",
+        probe_kind="appqsim_dry_run",
+        config_digest="a" * 64,
+        primary_metric="order_parameter_error",
+        primary_value=0.01,
+        no_submit=True,
+        invent_green_live_submit=False,
+        attestation_slot_present=False,
+        hermetic_kit_slot_present=False,
+        demo_label="unit",
+    )
+    payload = probe.to_dict()
+    assert payload["harness_id"] == "appqsim_protocol"
+    assert payload["primary_value"] == 0.01
+    assert payload["no_submit"] is True
+    assert payload["invent_green_live_submit"] is False
+
+
+def test_decide_campaign_path_rejects_unknown_mode() -> None:
+    """Unknown campaign mode is refused with an explicit blocker."""
+    decision = decide_campaign_path(
+        "appqsim_protocol",
+        mode=cast(Any, "not_a_mode"),
+    )
+    assert decision.allowed is False
+    assert any("unknown campaign mode" in b for b in decision.blockers)
+
+
+def test_closed_loop_probe_tolerates_non_mapping_latency(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Non-mapping latency_report yields zero max_round_latency primary value."""
+    from types import SimpleNamespace
+
+    monkeypatch.setattr(
+        campaign_product,
+        "run_closed_loop_publication",
+        lambda config: SimpleNamespace(
+            latency_report="not-a-mapping",
+            schema_version="1.0",
+            timing_grade="advisory_shared_host",
+        ),
+    )
+    probe = materialise_closed_loop_probe(n_oscillators=3, n_rounds=2, seed=0)
+    assert probe.primary_metric == "max_round_latency_s"
+    assert probe.primary_value == 0.0
