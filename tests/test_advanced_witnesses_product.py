@@ -992,3 +992,187 @@ def test_remaining_validation_and_integrity_branches(
     # Custom phases compose
     est2 = materialise_bl18_order_parameter_compose([0.0, 0.0, 0.0], harmonic=1)
     assert est2.mean == pytest.approx(1.0, abs=1e-9)
+
+
+def test_close_coverage_to_100_error_and_integrity_paths(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Drive every remaining fail-closed / integrity branch to 100% product cov.
+
+    Seat rules: target 100% on new modules; 95% is a gate floor, not the aim.
+    These paths are real shipped refuse/error surfaces (not trivia).
+    """
+    import scpn_quantum_control.advanced_witnesses_product as mod
+    from scpn_quantum_control.advanced_witnesses_product import (
+        PathEligibilityDecision,
+    )
+
+    refused = PathEligibilityDecision(
+        path_id="refused",
+        outcome="refused",
+        reason="policy refused for coverage",
+        invent_green_refused=True,
+    )
+
+    def refuse_all(path_id: str, **_k: object) -> PathEligibilityDecision:
+        return PathEligibilityDecision(
+            path_id=path_id,
+            outcome="refused",
+            reason=f"refused {path_id}",
+            invent_green_refused=False,
+        )
+
+    # materialise_* decision.allowed is False → raise decision.reason
+    monkeypatch.setattr(mod, "decide_witness_path", refuse_all)
+    with pytest.raises(ValueError, match="refused krylov"):
+        materialise_krylov_probe(n_qubits=2)
+    with pytest.raises(ValueError, match="refused otoc"):
+        materialise_otoc_probe(n_qubits=2)
+    with pytest.raises(ValueError, match="refused shadow"):
+        materialise_shadow_probe(n_qubits=2, n_shots=20)
+    with pytest.raises(ValueError, match="refused bl18"):
+        materialise_bl18_order_parameter_compose()
+    monkeypatch.undo()
+
+    # Re-import clean decide after undo may not restore; re-bind real function
+    monkeypatch.setattr(
+        mod,
+        "decide_witness_path",
+        decide_witness_path,
+    )
+
+    # Ambient Krylov non-finite peak + negative n_lanczos
+    class FakeKrylov:
+        def __init__(self, peak: float, n_lanczos: int) -> None:
+            self.peak_complexity = peak
+            self.n_lanczos = n_lanczos
+            self.times = __import__("numpy").linspace(0.0, 1.0, 4)
+
+    def fake_krylov_nan(*_a: object, **_k: object) -> FakeKrylov:
+        return FakeKrylov(float("nan"), 2)
+
+    monkeypatch.setattr(mod, "krylov_complexity", fake_krylov_nan)
+    with pytest.raises(ValueError, match="non-finite peak"):
+        materialise_krylov_probe(n_qubits=2)
+    monkeypatch.setattr(
+        mod,
+        "krylov_complexity",
+        lambda *_a, **_k: FakeKrylov(0.0, -3),
+    )
+    with pytest.raises(ValueError, match="invalid n_lanczos"):
+        materialise_krylov_probe(n_qubits=2)
+    monkeypatch.setattr(
+        mod,
+        "krylov_complexity",
+        __import__(
+            "scpn_quantum_control.analysis.krylov_complexity", fromlist=["krylov_complexity"]
+        ).krylov_complexity,
+    )
+
+    # Shadow payload: non-object JSON list (line 594), negative finite bound,
+    # invalid n_qubits / n_shots types, multi-observable valid labels (for-loop OK path)
+    def list_payload(*_a: object, **_k: object) -> object:
+        class Fake:
+            stdout = "[1, 2, 3]\n"
+
+        return Fake()
+
+    monkeypatch.setattr(mod.subprocess, "run", list_payload)
+    with pytest.raises(ValueError, match="must be an object"):
+        materialise_shadow_probe(n_qubits=2, n_shots=20, seed=1)
+
+    def neg_bound(**_k: object) -> dict[str, object]:
+        return {
+            "estimated_observables": {"zi": 0.0, "zz": 0.0},
+            "shadow_norm_bound": -0.5,
+            "n_qubits": 2,
+            "n_shots": 20,
+        }
+
+    monkeypatch.setattr(mod, "_run_ambient_shadow_json", neg_bound)
+    with pytest.raises(ValueError, match="shadow_norm_bound"):
+        materialise_shadow_probe(n_qubits=2, n_shots=20, seed=1)
+
+    def bad_nq(**_k: object) -> dict[str, object]:
+        return {
+            "estimated_observables": {"z": 0.0},
+            "shadow_norm_bound": 0.1,
+            "n_qubits": "two",
+            "n_shots": 20,
+        }
+
+    monkeypatch.setattr(mod, "_run_ambient_shadow_json", bad_nq)
+    with pytest.raises(ValueError, match="n_qubits"):
+        materialise_shadow_probe(n_qubits=2, n_shots=20, seed=1)
+
+    def bad_ns(**_k: object) -> dict[str, object]:
+        return {
+            "estimated_observables": {"z": 0.0},
+            "shadow_norm_bound": 0.1,
+            "n_qubits": 2,
+            "n_shots": "twenty",
+        }
+
+    monkeypatch.setattr(mod, "_run_ambient_shadow_json", bad_ns)
+    with pytest.raises(ValueError, match="n_shots"):
+        materialise_shadow_probe(n_qubits=2, n_shots=20, seed=1)
+
+    # Restore real ambient shadow helper and exercise multi-label custom observables
+    monkeypatch.undo()
+    monkeypatch.setattr(mod, "decide_witness_path", decide_witness_path)
+    p_multi = materialise_shadow_probe(
+        n_qubits=2,
+        n_shots=40,
+        seed=5,
+        observables={"zi": "ZI", "iz": "IZ"},
+    )
+    assert "zi" in p_multi.observables or "iz" in p_multi.observables
+    assert p_multi.estimate.support_status == "supported"
+
+    # Integrity: capability set drift (extra id), boundary set drift, glossary not mapping
+    base = build_advanced_witnesses_product_registry()
+    extra = dict(base)
+    caps = [dict(c) for c in base["capabilities"]]  # type: ignore[index]
+    caps.append(
+        {
+            "capability_id": "extra_not_in_catalogue",
+            "kind": "ambient_inventory",
+            "title": "x",
+            "summary": "s",
+            "ambient_module": "m",
+            "ambient_symbol": "s",
+            "hardware_submit_allowed": False,
+            "support_posture": "metadata_only",
+            "as_of": "2026-07-24",
+            "claim_boundary": ADVANCED_WITNESSES_CLAIM_BOUNDARY,
+        }
+    )
+    extra["capabilities"] = caps
+    extra["capability_count"] = len(caps)
+    with pytest.raises(ValueError, match="drift|extra"):
+        assert_advanced_witnesses_product_integrity(extra)
+
+    b_extra = dict(base)
+    bounds = [dict(b) for b in base["boundaries"]]  # type: ignore[index]
+    bounds.append(
+        {
+            "boundary_id": "extra_boundary",
+            "kind": "otoc_advantage_claim",
+            "title": "t",
+            "summary": "s",
+            "fail_closed": True,
+            "claim_boundary": ADVANCED_WITNESSES_CLAIM_BOUNDARY,
+        }
+    )
+    b_extra["boundaries"] = bounds
+    b_extra["boundary_count"] = len(bounds)
+    with pytest.raises(ValueError, match="boundary set drift|extra"):
+        assert_advanced_witnesses_product_integrity(b_extra)
+
+    gloss_list = dict(base)
+    gloss_list["glossary"] = ["not", "a", "mapping"]
+    with pytest.raises(ValueError, match="glossary"):
+        assert_advanced_witnesses_product_integrity(gloss_list)
+
+    # Silence unused
+    assert refused.allowed is False
