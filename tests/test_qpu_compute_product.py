@@ -483,3 +483,59 @@ def test_audit_would_live_and_ticketed() -> None:
     )
     audit_t = audit_compute_plan_decision(ticketed)
     assert "bl47_audit" in audit_t
+
+
+def test_iter_plan_kinds_without_mode_returns_full_catalogue() -> None:
+    """Unfiltered plan-kind iter returns every catalogue row."""
+    rows = iter_plan_kinds()
+    assert len(rows) == len(list_plan_kind_ids())
+    assert {row.plan_kind_id for row in rows} == set(list_plan_kind_ids())
+
+
+def test_dry_run_appends_unsupported_kernel_blocker(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Defensive kernel check after construct refuses unknown kernels."""
+    real_construct = qpu_compute_product.construct_compute_plan
+
+    def poisoned_construct(*args: Any, **kwargs: Any) -> Any:
+        plan = real_construct(*args, **kwargs)
+        object.__setattr__(plan, "kernel", "not_a_supported_kernel")
+        return plan
+
+    monkeypatch.setattr(qpu_compute_product, "construct_compute_plan", poisoned_construct)
+    decision = dry_run_compute_plan("dry_run_simulator")
+    assert decision.allowed is False
+    assert any("unsupported kernel" in item for item in decision.blockers)
+
+
+def test_audit_skips_bl47_when_policy_id_blank() -> None:
+    """Blank bl47_policy_id omits nested BL-47 audit payload."""
+    decision = ComputePlanDecision(
+        plan_kind_id="dry_run_simulator",
+        outcome="allowed_plan",
+        allowed=True,
+        mode="dry_run",
+        reason="unit",
+        blockers=(),
+        audit_id="qcp:unit",
+        bl47_policy_id="",
+    )
+    audit = audit_compute_plan_decision(decision)
+    assert "bl47_audit" not in audit
+    assert audit["bl47_policy_id"] == ""
+
+
+def test_integrity_rejects_plan_kind_set_drift() -> None:
+    """Registry plan_kind_id set must match the live catalogue exactly."""
+    good = build_qpu_compute_product_registry()
+    raw = good["plan_kinds"]
+    assert isinstance(raw, list)
+    kinds = [dict(cast(dict[str, object], row)) for row in raw]
+    drifted = dict(good)
+    ghost = dict(kinds[0])
+    ghost["plan_kind_id"] = "ghost_extra_kind"
+    drifted["plan_kinds"] = kinds + [ghost]
+    drifted["plan_kind_count"] = len(kinds) + 1
+    with pytest.raises(ValueError, match="drift"):
+        assert_qpu_compute_product_integrity(drifted)
