@@ -718,3 +718,22 @@ def test_round_trip_detects_field_loss(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(mod, "deserialise_experiment", broken_exp)
     with pytest.raises(ValueError, match="round-trip lost or altered"):
         mod.round_trip_experiment(experiment)
+
+
+def test_iter_stable_core_contracts_without_kind_returns_full_catalogue() -> None:
+    """Unfiltered iter returns every catalogue row (covers kind is None branch)."""
+    rows = iter_stable_core_contracts()
+    assert len(rows) == len(list_stable_core_contract_ids())
+    assert {row.contract_id for row in rows} == set(list_stable_core_contract_ids())
+
+
+def test_problem_from_dict_rejects_empty_omega() -> None:
+    """Empty omega sequence is refused with a clear ValueError."""
+    with pytest.raises(ValueError, match="omega must be a non-empty sequence"):
+        problem_from_dict(
+            {
+                "problem_id": "p",
+                "coupling_matrix": [[0.0]],
+                "omega": [],
+            }
+        )
