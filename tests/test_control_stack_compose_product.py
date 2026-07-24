@@ -532,3 +532,26 @@ def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(control_stack_compose_product, "_PORTS", (port, port))
     with pytest.raises(RuntimeError, match="duplicate port_id"):
         control_stack_compose_product._port_map()
+
+
+def test_iter_ownership_rows_without_filter_returns_full_catalogue() -> None:
+    """Unfiltered ownership iter returns every catalogue row."""
+    rows = iter_ownership_rows()
+    assert len(rows) == len(list_ownership_module_ids())
+    assert {row.module_id for row in rows} == set(list_ownership_module_ids())
+
+
+def test_port_map_rejects_blank_port_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Blank adapter port_id is refused at catalogue build."""
+    blank = AdapterPortRow(
+        port_id="realtime_feedback",
+        title="t",
+        ambient_modules=("pkg.x",),
+        bl47_pointer="p",
+        support_posture="local_research",
+        requires_execution_policy=True,
+    )
+    object.__setattr__(blank, "port_id", "  ")
+    monkeypatch.setattr(control_stack_compose_product, "_PORTS", (blank,))
+    with pytest.raises(RuntimeError, match="blank port_id"):
+        control_stack_compose_product._port_map()
