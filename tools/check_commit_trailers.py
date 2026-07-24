@@ -56,7 +56,31 @@ LEGACY_COAUTHOR_TRAILER_RE = re.compile(
 )
 SEAT_TRAILER_RE = re.compile(r"^Seat:\s+([A-Za-z0-9][A-Za-z0-9_-]{0,63})\s*$")
 SEAT_TRAILER_PREFIX_RE = re.compile(r"^\s*Seat:")
-FORBIDDEN_SEAT_PREFIXES = ("claude-", "codex-")
+# Fleet BROADCAST 2026-07-07: Seat IDs are vendor-neutral bare suffixes only.
+# Prefix forms (claude-fcb0, grok-a7f3, …) and bare vendor tokens (grok, claude)
+# are forbidden — commit messages are public surfaces.
+FORBIDDEN_SEAT_PREFIXES = (
+    "claude-",
+    "codex-",
+    "gemini-",
+    "grok-",
+    "kimi-",
+    "openai-",
+    "anthropic-",
+    "xai-",
+)
+FORBIDDEN_SEAT_IDS = frozenset(
+    {
+        "claude",
+        "codex",
+        "gemini",
+        "grok",
+        "kimi",
+        "openai",
+        "anthropic",
+        "xai",
+    }
+)
 
 # Banned tokens per `feedback_no_internal_quality_labels` and
 # `feedback_anti_slop_policy`. Case-insensitive whole-word match.
@@ -200,6 +224,8 @@ def _seat_trailer_violations(msg: str) -> list[str]:
     seat_id = match.group(1).lower()
     if any(seat_id.startswith(prefix) for prefix in FORBIDDEN_SEAT_PREFIXES):
         violations.append("vendor-prefixed `Seat:` trailer is forbidden")
+    elif seat_id in FORBIDDEN_SEAT_IDS:
+        violations.append("vendor-token `Seat:` trailer is forbidden")
 
     authorship_indices = [
         index for index, line in enumerate(lines) if line.strip() == REQUIRED_AUTHORSHIP_LINE

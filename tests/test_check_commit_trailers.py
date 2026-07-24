@@ -162,7 +162,23 @@ def test_commit_message_hook_rejects_duplicate_seat_trailers(
     assert "expected exactly one `Seat: <seat-id>` trailer" in capsys.readouterr().err
 
 
-@pytest.mark.parametrize("seat", ["Seat:", "Seat: codex-14753", "Seat: claude-rf01"])
+@pytest.mark.parametrize(
+    "seat",
+    [
+        "Seat:",
+        "Seat: codex-14753",
+        "Seat: claude-rf01",
+        "Seat: grok-a7f3",
+        "Seat: gemini-9d2f",
+        "Seat: kimi-3dcd",
+        "Seat: openai-x",
+        "Seat: anthropic-y",
+        "Seat: xai-z",
+        "Seat: grok",
+        "Seat: claude",
+        "Seat: codex",
+    ],
+)
 def test_commit_message_hook_rejects_malformed_or_vendor_prefixed_seat(
     tmp_path: Path, capsys: pytest.CaptureFixture[str], seat: str
 ) -> None:
@@ -185,7 +201,28 @@ def test_commit_message_hook_rejects_malformed_or_vendor_prefixed_seat(
     assert (
         "invalid `Seat: <seat-id>` trailer" in err
         or "vendor-prefixed `Seat:` trailer is forbidden" in err
+        or "vendor-token `Seat:` trailer is forbidden" in err
     )
+
+
+def test_commit_message_hook_accepts_bare_seat_id(
+    tmp_path: Path,
+) -> None:
+    """Bare seat suffixes (fleet form) must pass the commit-msg hook."""
+    path = _message_file(
+        tmp_path,
+        "\n".join(
+            [
+                "Add release audit coverage",
+                "",
+                "Seat: a7f3",
+                "",
+                REQUIRED_AUTHORSHIP_LINE,
+            ]
+        ),
+    )
+
+    assert _check_commit_trailers.main(["check_commit_trailers.py", str(path)]) == 0
 
 
 def test_commit_message_hook_rejects_non_adjacent_seat_trailer(
