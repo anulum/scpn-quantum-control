@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import builtins
 from typing import Any, cast
 
 import pytest
@@ -192,6 +193,57 @@ def test_materialise_certificate_stub_ambient(monkeypatch: pytest.MonkeyPatch) -
     assert probe.invent_green_advantage is False
 
 
+def test_materialise_certificate_import_failures_fail_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Cover base-matrix fallback without depending on local JAX presence."""
+    real_import = builtins.__import__
+
+    def raise_on_design(
+        exc: Exception,
+    ) -> Any:
+        def guarded_import(
+            name: str,
+            globals: dict[str, object] | None = None,
+            locals: dict[str, object] | None = None,
+            fromlist: tuple[str, ...] = (),
+            level: int = 0,
+        ) -> Any:
+            if name == "benchmarks.kyma_v2.design" and level == 1:
+                raise exc
+            return real_import(name, globals, locals, fromlist, level)
+
+        return guarded_import
+
+    with monkeypatch.context() as context:
+        context.setattr(builtins, "__import__", raise_on_design(RuntimeError("boom")))
+        with pytest.raises(RuntimeError, match="import failed: RuntimeError: boom"):
+            materialise_mechanism_certificate_probe()
+
+    missing_unrelated = ModuleNotFoundError("No module named 'optax'")
+    missing_unrelated.name = "optax"
+    with monkeypatch.context() as context:
+        context.setattr(builtins, "__import__", raise_on_design(missing_unrelated))
+        with pytest.raises(RuntimeError, match="import failed.*optax"):
+            materialise_mechanism_certificate_probe()
+
+    missing_jax = ModuleNotFoundError("No module named 'jax'")
+    missing_jax.name = "jax"
+    with monkeypatch.context() as context:
+        context.setattr(builtins, "__import__", raise_on_design(missing_jax))
+        with pytest.raises(RuntimeError, match="unavailable for custom config"):
+            materialise_mechanism_certificate_probe(config=object())
+
+    missing_transitive_jax = ModuleNotFoundError("JAX transitive import unavailable")
+    missing_transitive_jax.name = "optax"
+    with monkeypatch.context() as context:
+        context.setattr(builtins, "__import__", raise_on_design(missing_transitive_jax))
+        probe = materialise_mechanism_certificate_probe(seed=3)
+    assert probe.demo_label.endswith("seed_3")
+    assert probe.meets_realise_target is True
+    assert probe.meets_non_sep_target is True
+
+
 def test_public_surfaces_and_registry() -> None:
     surfaces = map_kyma_mechanism_benchmark_public_surfaces()
     assert surfaces
@@ -210,7 +262,7 @@ def test_public_surfaces_and_registry() -> None:
 
 def test_integrity_rejects_drift_and_policy() -> None:
     registry = build_kyma_mechanism_benchmark_product_registry()
-    suites = cast(list[dict[str, object]], list(registry["suites"]))
+    suites = cast(list[dict[str, object]], registry["suites"])
 
     broken = dict(registry)
     broken["suites"] = suites + [
@@ -259,7 +311,7 @@ def test_integrity_rejects_drift_and_policy() -> None:
 
 def test_integrity_rejects_blank_invalid() -> None:
     registry = build_kyma_mechanism_benchmark_product_registry()
-    suites = cast(list[dict[str, object]], list(registry["suites"]))
+    suites = cast(list[dict[str, object]], registry["suites"])
 
     non_map = dict(registry)
     non_map["suites"] = [cast(Any, "nope")]
@@ -662,12 +714,12 @@ def test_assert_mirrored_constants_match_ambient_ok(
     import types
 
     fake_design = types.ModuleType("scpn_quantum_control.benchmarks.kyma_v2.design")
-    fake_design.G_SYNC_GRID = kyma_product._G_SYNC_GRID
-    fake_design.STEPS_GRID = kyma_product._STEPS_GRID
-    fake_design.K_BRIDGE_GRID = kyma_product._K_BRIDGE_GRID
-    fake_design.REALISE_FRACTION = kyma_product._REALISE_FRACTION
-    fake_design.NON_SEP_TARGET = kyma_product._NON_SEP_TARGET
-    fake_design.BALANCE_MAX_CLASS_FRACTION = kyma_product._BALANCE_MAX_CLASS_FRACTION
+    fake_design.__dict__["G_SYNC_GRID"] = kyma_product._G_SYNC_GRID
+    fake_design.__dict__["STEPS_GRID"] = kyma_product._STEPS_GRID
+    fake_design.__dict__["K_BRIDGE_GRID"] = kyma_product._K_BRIDGE_GRID
+    fake_design.__dict__["REALISE_FRACTION"] = kyma_product._REALISE_FRACTION
+    fake_design.__dict__["NON_SEP_TARGET"] = kyma_product._NON_SEP_TARGET
+    fake_design.__dict__["BALANCE_MAX_CLASS_FRACTION"] = kyma_product._BALANCE_MAX_CLASS_FRACTION
     monkeypatch.setitem(
         sys.modules,
         "scpn_quantum_control.benchmarks.kyma_v2.design",
@@ -687,12 +739,12 @@ def test_assert_mirrored_constants_detects_drift(
     import types
 
     fake_design = types.ModuleType("scpn_quantum_control.benchmarks.kyma_v2.design")
-    fake_design.G_SYNC_GRID = (9.9,)  # deliberate drift
-    fake_design.STEPS_GRID = kyma_product._STEPS_GRID
-    fake_design.K_BRIDGE_GRID = kyma_product._K_BRIDGE_GRID
-    fake_design.REALISE_FRACTION = kyma_product._REALISE_FRACTION
-    fake_design.NON_SEP_TARGET = kyma_product._NON_SEP_TARGET
-    fake_design.BALANCE_MAX_CLASS_FRACTION = kyma_product._BALANCE_MAX_CLASS_FRACTION
+    fake_design.__dict__["G_SYNC_GRID"] = (9.9,)  # deliberate drift
+    fake_design.__dict__["STEPS_GRID"] = kyma_product._STEPS_GRID
+    fake_design.__dict__["K_BRIDGE_GRID"] = kyma_product._K_BRIDGE_GRID
+    fake_design.__dict__["REALISE_FRACTION"] = kyma_product._REALISE_FRACTION
+    fake_design.__dict__["NON_SEP_TARGET"] = kyma_product._NON_SEP_TARGET
+    fake_design.__dict__["BALANCE_MAX_CLASS_FRACTION"] = kyma_product._BALANCE_MAX_CLASS_FRACTION
     monkeypatch.setitem(
         sys.modules,
         "scpn_quantum_control.benchmarks.kyma_v2.design",

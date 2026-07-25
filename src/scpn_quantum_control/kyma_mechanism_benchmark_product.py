@@ -26,6 +26,7 @@ Does **not** re-train full student/MLP suites, invent hermetic kit export
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -383,7 +384,10 @@ def _assert_mirrored_constants_match_ambient() -> None:
     RuntimeError
         When ambient constants load but disagree with product mirrors.
     """
-    from .benchmarks.kyma_v2 import design as ambient_design
+    ambient_design = importlib.import_module(
+        ".benchmarks.kyma_v2.design",
+        package=__package__,
+    )
 
     checks: tuple[tuple[str, object, object], ...] = (
         ("G_SYNC_GRID", tuple(ambient_design.G_SYNC_GRID), _G_SYNC_GRID),
