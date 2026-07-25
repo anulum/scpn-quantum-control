@@ -1,5 +1,10 @@
 # Changelog
 
+- 2026-07-25 — Identity / robustness control observers (BL-69):
+  `scpn_quantum_control.identity_observer_product` adapts real robustness,
+  coherence-budget, and optional CHSH metrics into explicit BL-33/67 safety
+  decisions. Threshold violations hold; missing or invalid requested witnesses
+  abort; identity-key and universal-identity claims remain out of scope.
 - 2026-07-25 — Active sensing / experimental design product (BL-68):
   `scpn_quantum_control.active_sensing_product` composes synthetic Gaussian
   information-gain ranking with BL-47 shot-budget enforcement, the real S3

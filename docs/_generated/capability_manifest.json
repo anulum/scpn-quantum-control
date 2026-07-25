@@ -8,12 +8,12 @@
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 329,
-    "python_model_classes": 1196,
-    "python_model_source_modules": 630,
+    "public_documentation_pages": 330,
+    "python_model_classes": 1200,
+    "python_model_source_modules": 631,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1087
+    "test_files": 1088
   },
   "documentation": {
     "examples": [
@@ -355,6 +355,7 @@
       "docs/hermetic_reproduction_kit.md",
       "docs/hybrid_digital_analog.md",
       "docs/identity_api.md",
+      "docs/identity_observer_product.md",
       "docs/index.md",
       "docs/installation.md",
       "docs/isolated_benchmark_runner.md",
@@ -2527,6 +2528,22 @@
       {
         "name": "IdentityAttractor",
         "path": "src/scpn_quantum_control/identity/ground_state.py"
+      },
+      {
+        "name": "IdentityMetricInventoryRow",
+        "path": "src/scpn_quantum_control/identity_observer_product.py"
+      },
+      {
+        "name": "IdentityObserverRecord",
+        "path": "src/scpn_quantum_control/identity_observer_product.py"
+      },
+      {
+        "name": "IdentityObserverThresholds",
+        "path": "src/scpn_quantum_control/identity_observer_product.py"
+      },
+      {
+        "name": "IdentitySafetyDecision",
+        "path": "src/scpn_quantum_control/identity_observer_product.py"
       },
       {
         "name": "ImplicitSensitivityResult",
@@ -5830,6 +5847,7 @@
       "src/scpn_quantum_control/identity/ground_state.py",
       "src/scpn_quantum_control/identity/identity_key.py",
       "src/scpn_quantum_control/identity/robustness.py",
+      "src/scpn_quantum_control/identity_observer_product.py",
       "src/scpn_quantum_control/kuramoto.py",
       "src/scpn_quantum_control/kuramoto_core.py",
       "src/scpn_quantum_control/kyma_mechanism_benchmark_product.py",
@@ -7647,6 +7665,7 @@
       "tests/test_identity_entanglement.py",
       "tests/test_identity_ground_state.py",
       "tests/test_identity_key.py",
+      "tests/test_identity_observer_product.py",
       "tests/test_identity_pipeline_contracts.py",
       "tests/test_integration.py",
       "tests/test_integration_pipeline.py",

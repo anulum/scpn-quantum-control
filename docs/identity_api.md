@@ -11,6 +11,11 @@ E_1 - E_0 quantifies how robust the identity is against perturbation.
 If the gap is large, the identity survives noise, decoherence, and
 adversarial manipulation. If the gap collapses, the identity is lost.
 
+For control-loop use, consume these metrics through the fail-closed
+[`identity_observer_product`](identity_observer_product.md). That adapter uses
+explicit caller thresholds and refuses over-interpretation; the underlying
+identity package does not itself authorise a control action.
+
 6 modules, 12 public symbols, 1 canonical binding specification.
 
 ## Architecture
