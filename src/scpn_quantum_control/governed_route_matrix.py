@@ -266,6 +266,26 @@ _CANONICAL_ROUTES: Final[tuple[GovernedRouteRecord, ...]] = (
         ),
     ),
     _route(
+        "transform:ssgf.latent_finite_difference",
+        "transform",
+        "supported",
+        "Central finite difference on the bounded SSGF softplus latent geometry map.",
+        evidence=("bl70_cost_certificate", "bl70_metamorphic_certificate"),
+        rejected=("transform:ssgf.latent_parameter_shift",),
+    ),
+    _route(
+        "transform:ssgf.latent_parameter_shift",
+        "transform",
+        "permanent_boundary",
+        "Circuit parameter-shift applied directly to the SSGF latent z vector.",
+        evidence=("bl70_nonlinear_latent_map_boundary", "bl53_anti_silent_wrong"),
+        closure_reason=(
+            "z enters Hamiltonian coefficients through the nonlinear softplus W(z) map; "
+            "a circuit-angle parameter-shift is not directly dC/dz, so the supported "
+            "bounded route remains central finite difference"
+        ),
+    ),
+    _route(
         "adapter:jax.value_and_grad_local",
         "adapter",
         "supported",

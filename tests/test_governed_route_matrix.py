@@ -9,7 +9,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import replace
+from typing import cast
 
 import pytest
 
@@ -50,6 +52,16 @@ def test_get_governed_route_supported_and_boundary() -> None:
     assert "vmap" in boundary.closure_reason.lower() or "batch" in boundary.closure_reason.lower()
 
 
+def test_ssgf_latent_gradient_routes_are_explicit() -> None:
+    supported = get_governed_route("transform:ssgf.latent_finite_difference")
+    boundary = get_governed_route("transform:ssgf.latent_parameter_shift")
+
+    assert supported.closure_status == "supported"
+    assert boundary.closure_status == "permanent_boundary"
+    assert supported.rejected_alternatives == (boundary.route_id,)
+    assert "softplus" in boundary.closure_reason
+
+
 def test_get_governed_route_rejects_blank_and_unknown() -> None:
     with pytest.raises(ValueError, match="non-empty"):
         get_governed_route("  ")
@@ -75,15 +87,19 @@ def test_iter_governed_routes_filters() -> None:
 
 def test_build_matrix_has_zero_blanks_and_schema() -> None:
     matrix = build_governed_route_matrix()
+    routes = cast(list[dict[str, object]], matrix["routes"])
     assert matrix["schema"] == GOVERNED_ROUTE_MATRIX_SCHEMA
     assert matrix["blank_cell_count"] == 0
-    assert matrix["route_count"] == len(matrix["routes"])  # type: ignore[arg-type]
-    assert int(matrix["supported_count"]) + int(matrix["permanent_boundary_count"]) + int(
-        matrix["implementation_path_count"]
-    ) == int(matrix["route_count"])
+    assert matrix["route_count"] == len(routes)
+    assert (
+        cast(int, matrix["supported_count"])
+        + cast(int, matrix["permanent_boundary_count"])
+        + cast(int, matrix["implementation_path_count"])
+        == matrix["route_count"]
+    )
     validated = assert_no_blank_matrix_cells(matrix)
     assert validated["blank_cell_count"] == 0
-    for row in matrix["routes"]:  # type: ignore[union-attr]
+    for row in routes:
         assert row["closure_status"] in {
             "supported",
             "permanent_boundary",
@@ -131,7 +147,8 @@ def test_explain_route_supported_transform_with_rejected_alternatives() -> None:
     assert explanation.rejected
     assert any(row.closure_status != "supported" for row in explanation.rejected)
     payload = explanation.to_dict()
-    assert payload["selected"]["route_id"] == "transform:native.grad_vmap"
+    selected = cast(Mapping[str, object], payload["selected"])
+    assert selected["route_id"] == "transform:native.grad_vmap"
     assert payload["claim_boundary"] == GOVERNED_ROUTE_MATRIX_CLAIM_BOUNDARY
 
 

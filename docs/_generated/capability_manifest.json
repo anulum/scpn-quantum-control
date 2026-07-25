@@ -8,12 +8,12 @@
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 330,
-    "python_model_classes": 1200,
-    "python_model_source_modules": 631,
+    "public_documentation_pages": 331,
+    "python_model_classes": 1206,
+    "python_model_source_modules": 632,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1088
+    "test_files": 1089
   },
   "documentation": {
     "examples": [
@@ -457,6 +457,7 @@
       "docs/rust_engine.md",
       "docs/scorecard_acceptance_engine.md",
       "docs/sparse.md",
+      "docs/ssgf_geometry_gradient_product.md",
       "docs/stable_core_api.md",
       "docs/stable_core_backend_capability_matrix.md",
       "docs/stable_core_contract_fixtures.md",
@@ -2226,6 +2227,10 @@
         "path": "src/scpn_quantum_control/geometric_control_product.py"
       },
       {
+        "name": "GeometryGradientCertificate",
+        "path": "src/scpn_quantum_control/ssgf_geometry_gradient_product.py"
+      },
+      {
         "name": "GovernedRouteRecord",
         "path": "src/scpn_quantum_control/governed_route_matrix.py"
       },
@@ -2244,6 +2249,10 @@
       {
         "name": "GradientResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
+      },
+      {
+        "name": "GradientRouteDecision",
+        "path": "src/scpn_quantum_control/ssgf_geometry_gradient_product.py"
       },
       {
         "name": "GradientSupportCapability",
@@ -3164,6 +3173,10 @@
       {
         "name": "OrchestratorFeedback",
         "path": "src/scpn_quantum_control/bridge/orchestrator_feedback.py"
+      },
+      {
+        "name": "OuterCycleEvidence",
+        "path": "src/scpn_quantum_control/ssgf_geometry_gradient_product.py"
       },
       {
         "name": "OuterCycleResult",
@@ -4482,6 +4495,10 @@
         "path": "src/scpn_quantum_control/hardware/backends.py"
       },
       {
+        "name": "QuantumCostCertificate",
+        "path": "src/scpn_quantum_control/ssgf_geometry_gradient_product.py"
+      },
+      {
         "name": "QuantumCosts",
         "path": "src/scpn_quantum_control/ssgf/quantum_costs.py"
       },
@@ -4972,6 +4989,14 @@
       {
         "name": "SpectrumSummary",
         "path": "src/scpn_quantum_control/analysis/fim_hamiltonian.py"
+      },
+      {
+        "name": "SsgfGeometryObserverRecord",
+        "path": "src/scpn_quantum_control/ssgf_geometry_gradient_product.py"
+      },
+      {
+        "name": "SsgfPublicSurfaceRow",
+        "path": "src/scpn_quantum_control/ssgf_geometry_gradient_product.py"
       },
       {
         "name": "StableCoreContractRow",
@@ -6051,6 +6076,7 @@
       "src/scpn_quantum_control/ssgf/quantum_gradient.py",
       "src/scpn_quantum_control/ssgf/quantum_outer_cycle.py",
       "src/scpn_quantum_control/ssgf/quantum_spectral.py",
+      "src/scpn_quantum_control/ssgf_geometry_gradient_product.py",
       "src/scpn_quantum_control/stable_core.py",
       "src/scpn_quantum_control/stable_core_preflight.py",
       "src/scpn_quantum_control/stable_core_product.py",
@@ -8201,6 +8227,7 @@
       "tests/test_spn_to_qcircuit.py",
       "tests/test_ssgf_16osc.py",
       "tests/test_ssgf_adapter.py",
+      "tests/test_ssgf_geometry_gradient_product.py",
       "tests/test_ssgf_quantum_gradient.py",
       "tests/test_ssgf_quantum_spectral_branches.py",
       "tests/test_ssgf_spectral.py",
