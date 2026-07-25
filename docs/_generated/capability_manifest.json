@@ -8,12 +8,12 @@
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 332,
-    "python_model_classes": 1209,
-    "python_model_source_modules": 633,
+    "public_documentation_pages": 333,
+    "python_model_classes": 1213,
+    "python_model_source_modules": 634,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1090
+    "test_files": 1091
   },
   "documentation": {
     "examples": [
@@ -310,6 +310,7 @@
       "docs/campaigns/vqs_alternative_prereg_2026-05-06.md",
       "docs/changelog.md",
       "docs/choosing_a_gradient_path.md",
+      "docs/circuit_cutting_product.md",
       "docs/classical_baselines.md",
       "docs/classical_irreproducibility.md",
       "docs/closed_loop_control.md",
@@ -1416,8 +1417,20 @@
         "path": "src/scpn_quantum_control/program_ad_registry.py"
       },
       {
+        "name": "CuttingPathDecision",
+        "path": "src/scpn_quantum_control/circuit_cutting_product.py"
+      },
+      {
+        "name": "CuttingResourceCertificate",
+        "path": "src/scpn_quantum_control/circuit_cutting_product.py"
+      },
+      {
         "name": "CuttingRunResult",
         "path": "src/scpn_quantum_control/hardware/cutting_runner.py"
+      },
+      {
+        "name": "CuttingSurfaceRow",
+        "path": "src/scpn_quantum_control/circuit_cutting_product.py"
       },
       {
         "name": "CycleSample",
@@ -5144,6 +5157,10 @@
         "path": "src/scpn_quantum_control/qec/syndrome_flow.py"
       },
       {
+        "name": "SyntheticReconstructionCertificate",
+        "path": "src/scpn_quantum_control/circuit_cutting_product.py"
+      },
+      {
         "name": "TCBOResult",
         "path": "src/scpn_quantum_control/tcbo/quantum_observer.py"
       },
@@ -5674,6 +5691,7 @@
       "src/scpn_quantum_control/bridge/ssgf_adapter.py",
       "src/scpn_quantum_control/bridge/ssgf_w_adapter.py",
       "src/scpn_quantum_control/campaign_harness_product.py",
+      "src/scpn_quantum_control/circuit_cutting_product.py",
       "src/scpn_quantum_control/cloud_native_deployment_product.py",
       "src/scpn_quantum_control/codegen/ultrascale_hls.py",
       "src/scpn_quantum_control/competitive_baseline_watch.py",
@@ -7420,6 +7438,7 @@
       "tests/test_check_version_consistency.py",
       "tests/test_ci_documentation_surface_gate.py",
       "tests/test_circuit_cutting.py",
+      "tests/test_circuit_cutting_product.py",
       "tests/test_circuit_depth.py",
       "tests/test_circuit_export.py",
       "tests/test_circuit_export_contracts.py",
