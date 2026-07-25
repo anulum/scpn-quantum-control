@@ -8,12 +8,12 @@
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 328,
-    "python_model_classes": 1191,
-    "python_model_source_modules": 629,
+    "public_documentation_pages": 329,
+    "python_model_classes": 1196,
+    "python_model_source_modules": 630,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1086
+    "test_files": 1087
   },
   "documentation": {
     "examples": [
@@ -172,6 +172,7 @@
       "docs/REPRODUCIBILITY.md",
       "docs/THREAT_MODEL.md",
       "docs/actions_history_dashboard.md",
+      "docs/active_sensing_product.md",
       "docs/adaptive_branching.md",
       "docs/adjoint_replay_product.md",
       "docs/adopters.md",
@@ -698,6 +699,14 @@
       {
         "name": "ActionRegistry",
         "path": "src/scpn_quantum_control/studio/executive.py"
+      },
+      {
+        "name": "ActiveSensingObserverRecord",
+        "path": "src/scpn_quantum_control/active_sensing_product.py"
+      },
+      {
+        "name": "ActiveSensingPlan",
+        "path": "src/scpn_quantum_control/active_sensing_product.py"
       },
       {
         "name": "AdapterPortRow",
@@ -2526,6 +2535,14 @@
       {
         "name": "InfitonField",
         "path": "src/scpn_quantum_control/psi_field/infoton.py"
+      },
+      {
+        "name": "InformationGainCandidate",
+        "path": "src/scpn_quantum_control/active_sensing_product.py"
+      },
+      {
+        "name": "InformationGainScore",
+        "path": "src/scpn_quantum_control/active_sensing_product.py"
       },
       {
         "name": "InitialState",
@@ -4892,6 +4909,10 @@
         "path": "src/scpn_quantum_control/analysis/sensing.py"
       },
       {
+        "name": "SensingInventoryRow",
+        "path": "src/scpn_quantum_control/active_sensing_product.py"
+      },
+      {
         "name": "ShadowResult",
         "path": "src/scpn_quantum_control/analysis/shadow_tomography.py"
       },
@@ -5444,6 +5465,7 @@
       "src/scpn_quantum_control/_constants.py",
       "src/scpn_quantum_control/_paths.py",
       "src/scpn_quantum_control/_rust_accel.py",
+      "src/scpn_quantum_control/active_sensing_product.py",
       "src/scpn_quantum_control/adjoint_replay_product.py",
       "src/scpn_quantum_control/advanced_witnesses_product.py",
       "src/scpn_quantum_control/advantage_language_protocol.py",
@@ -7241,6 +7263,7 @@
       "tests/_program_ad_rust_bridge_test_fixtures.py",
       "tests/conftest.py",
       "tests/test_accelerator_detection_boundaries.py",
+      "tests/test_active_sensing_product.py",
       "tests/test_adapt_vqe.py",
       "tests/test_adapt_vqe_branch_contracts.py",
       "tests/test_adaptive_branching.py",

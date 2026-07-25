@@ -1,0 +1,325 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — Active sensing / experimental design product (BL-68)
+"""Policy-bounded active sensing over existing sensing and S3 surfaces.
+
+This module ranks synthetic scalar observations by Gaussian expected
+information gain, applies the BL-47 no-submit shot budget before scoring, runs
+the existing S3 design protocol as evidence, and emits a BL-33 observer record.
+It never submits hardware work or promotes the research-only NV 20 T surface.
+"""
+
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass
+from typing import Final, Literal
+
+import numpy as np
+from numpy.typing import NDArray
+
+from .benchmarks.s3_design_protocol import (
+    S3DesignRow,
+    default_s3_design_protocol,
+    score_s3_candidates,
+)
+from .hardware_safe_execution import DryRunPlan, dry_run_execution_plan
+
+ACTIVE_SENSING_PRODUCT_SCHEMA: Final[str] = "active_sensing_product.v1"
+ACTIVE_SENSING_CLAIM_BOUNDARY: Final[str] = (
+    "synthetic local information-gain planning under BL-47 no-submit shot budgets; "
+    "S3 evidence is analytic/simulator-only; no adaptive QPU loop, sensing advantage, "
+    "or NV 20 T hardware-calibration claim"
+)
+PlanOutcome = Literal["allowed_plan", "refused"]
+
+
+@dataclass(frozen=True, slots=True)
+class SensingInventoryRow:
+    """One existing sensing surface and its BL-68 ownership posture."""
+
+    surface_id: str
+    module_path: str
+    role: str
+    posture: str
+    hardware_execution: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class InformationGainCandidate:
+    """Synthetic scalar observation considered by active sensing.
+
+    Parameters
+    ----------
+    observable_id
+        Stable observation identifier.
+    prior_variance
+        Current scalar posterior variance before measurement.
+    sensitivity
+        Local derivative of the observation mean with respect to the target.
+    noise_variance
+        Per-shot observation-noise variance.
+    channel
+        BL-33 observer-channel label.
+    """
+
+    observable_id: str
+    prior_variance: float
+    sensitivity: float
+    noise_variance: float
+    channel: str = "gradient_observer"
+
+    def __post_init__(self) -> None:
+        """Validate finite scalar observation parameters."""
+        if not self.observable_id.strip() or not self.channel.strip():
+            raise ValueError("observable_id and channel must be non-empty")
+        values = (self.prior_variance, self.sensitivity, self.noise_variance)
+        if not all(np.isfinite(value) for value in values):
+            raise ValueError("candidate parameters must be finite")
+        if self.prior_variance <= 0.0 or self.noise_variance <= 0.0:
+            raise ValueError("prior_variance and noise_variance must be positive")
+
+
+@dataclass(frozen=True, slots=True)
+class InformationGainScore:
+    """Expected posterior reduction for one synthetic scalar observation."""
+
+    observable_id: str
+    channel: str
+    shots: int
+    signal_to_noise: float
+    expected_information_gain_nats: float
+    posterior_variance: float
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready score mapping."""
+        return asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
+class ActiveSensingObserverRecord:
+    """BL-33 observer-channel record for the selected measurement."""
+
+    observer_id: str
+    channel: str
+    selected_observable_id: str
+    expected_information_gain_nats: float
+    posterior_variance: float
+    shots: int
+    shot_policy_id: str
+    s3_protocol_id: str
+    hardware_execution: bool = False
+    claim_boundary: str = ACTIVE_SENSING_CLAIM_BOUNDARY
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready BL-33 telemetry mapping."""
+        return asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
+class ActiveSensingPlan:
+    """Complete policy, ranking, S3 evidence, and observer decision."""
+
+    outcome: PlanOutcome
+    allowed: bool
+    reason: str
+    blockers: tuple[str, ...]
+    budget: DryRunPlan
+    scores: tuple[InformationGainScore, ...]
+    selected: InformationGainScore | None
+    s3_evidence: tuple[S3DesignRow, ...]
+    observer: ActiveSensingObserverRecord | None
+    schema: str = ACTIVE_SENSING_PRODUCT_SCHEMA
+    claim_boundary: str = ACTIVE_SENSING_CLAIM_BOUNDARY
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready product payload."""
+        return {
+            "schema": self.schema,
+            "outcome": self.outcome,
+            "allowed": self.allowed,
+            "reason": self.reason,
+            "blockers": list(self.blockers),
+            "budget": self.budget.to_dict(),
+            "scores": [score.to_dict() for score in self.scores],
+            "selected": None if self.selected is None else self.selected.to_dict(),
+            "s3_evidence": [row.to_dict() for row in self.s3_evidence],
+            "observer": None if self.observer is None else self.observer.to_dict(),
+            "hardware_execution": False,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+_INVENTORY: Final[tuple[SensingInventoryRow, ...]] = (
+    SensingInventoryRow(
+        "s11_sensing",
+        "scpn_quantum_control.analysis.sensing",
+        "QFI and sync-order readiness source",
+        "local_research",
+    ),
+    SensingInventoryRow(
+        "s3_design_protocol",
+        "scpn_quantum_control.benchmarks.s3_design_protocol",
+        "analytic candidate evidence harness",
+        "no_qpu",
+    ),
+    SensingInventoryRow(
+        "shot_budget",
+        "scpn_quantum_control.hardware_safe_execution",
+        "BL-47 no-submit budget authority",
+        "policy_only",
+    ),
+    SensingInventoryRow(
+        "nv_20t",
+        "scpn_quantum_control.sensing.nv_magnetometry_20T",
+        "research-only hardware-blocked path",
+        "hardware_blocked",
+    ),
+    SensingInventoryRow(
+        "bl33_observer",
+        "scpn_quantum_control.active_sensing_product.ActiveSensingObserverRecord",
+        "ports-over-adapters observer telemetry",
+        "adapter_only",
+    ),
+)
+
+
+def sensing_surface_inventory() -> tuple[SensingInventoryRow, ...]:
+    """Return the frozen BL-68 ownership inventory."""
+    return _INVENTORY
+
+
+def score_expected_information_gain(
+    candidate: InformationGainCandidate,
+    *,
+    shots: int,
+) -> InformationGainScore:
+    """Score one scalar Gaussian measurement in natural-log information units.
+
+    The conjugate Gaussian update gives
+    ``I = 0.5 log(1 + shots * variance * sensitivity² / noise_variance)``.
+    This is a synthetic local-design score, not empirical hardware evidence.
+    """
+    if shots <= 0:
+        raise ValueError("shots must be positive")
+    signal_to_noise = (
+        float(shots)
+        * candidate.prior_variance
+        * candidate.sensitivity**2
+        / candidate.noise_variance
+    )
+    information_gain = 0.5 * float(np.log1p(signal_to_noise))
+    posterior_variance = candidate.prior_variance / (1.0 + signal_to_noise)
+    return InformationGainScore(
+        observable_id=candidate.observable_id,
+        channel=candidate.channel,
+        shots=shots,
+        signal_to_noise=signal_to_noise,
+        expected_information_gain_nats=information_gain,
+        posterior_variance=posterior_variance,
+    )
+
+
+def plan_active_sensing(
+    candidates: tuple[InformationGainCandidate, ...],
+    k_matrix: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    *,
+    policy_id: str,
+    shots_per_observable: int,
+    request_hardware: bool = False,
+) -> ActiveSensingPlan:
+    """Build a complete BL-68 plan through BL-47 and the real S3 harness.
+
+    Budget enforcement occurs before information scoring or S3 circuit/pulse
+    construction. Hardware-adaptive requests are always refused on this surface.
+    """
+    if not candidates:
+        raise ValueError("candidates must be non-empty")
+    labels = [candidate.observable_id for candidate in candidates]
+    if len(set(labels)) != len(labels):
+        raise ValueError("candidate observable_id values must be unique")
+    budget = dry_run_execution_plan(
+        policy_id,
+        n_params=len(candidates),
+        shots_per_evaluation=shots_per_observable,
+        shift_terms=1,
+        would_submit=request_hardware,
+    )
+    blockers = list(budget.blockers)
+    if request_hardware:
+        blockers.append("adaptive hardware sensing is owner-ticketed and unavailable on BL-68")
+    if blockers:
+        return ActiveSensingPlan(
+            outcome="refused",
+            allowed=False,
+            reason="active sensing refused before evaluation",
+            blockers=tuple(dict.fromkeys(blockers)),
+            budget=budget,
+            scores=(),
+            selected=None,
+            s3_evidence=(),
+            observer=None,
+        )
+
+    scores = tuple(
+        sorted(
+            (
+                score_expected_information_gain(candidate, shots=shots_per_observable)
+                for candidate in candidates
+            ),
+            key=lambda row: (-row.expected_information_gain_nats, row.observable_id),
+        )
+    )
+    selected = scores[0]
+    protocol = default_s3_design_protocol()
+    s3_rows = score_s3_candidates(protocol, k_matrix, omega)
+    observer = ActiveSensingObserverRecord(
+        observer_id=f"bl68:{policy_id}:{selected.observable_id}",
+        channel=selected.channel,
+        selected_observable_id=selected.observable_id,
+        expected_information_gain_nats=selected.expected_information_gain_nats,
+        posterior_variance=selected.posterior_variance,
+        shots=selected.shots,
+        shot_policy_id=policy_id,
+        s3_protocol_id=protocol.protocol_id,
+    )
+    return ActiveSensingPlan(
+        outcome="allowed_plan",
+        allowed=True,
+        reason="local synthetic active-sensing plan allowed; no hardware submission occurred",
+        blockers=(),
+        budget=budget,
+        scores=scores,
+        selected=selected,
+        s3_evidence=s3_rows,
+        observer=observer,
+    )
+
+
+def demo_information_gain_candidates() -> tuple[InformationGainCandidate, ...]:
+    """Return deterministic synthetic candidates for docs and integration tests."""
+    return (
+        InformationGainCandidate("sync_order", 0.40, 1.20, 0.30),
+        InformationGainCandidate("spectral_gap", 0.25, 0.85, 0.20),
+        InformationGainCandidate("qfi_peak", 0.55, 1.40, 0.45),
+    )
+
+
+__all__ = [
+    "ACTIVE_SENSING_CLAIM_BOUNDARY",
+    "ACTIVE_SENSING_PRODUCT_SCHEMA",
+    "ActiveSensingObserverRecord",
+    "ActiveSensingPlan",
+    "InformationGainCandidate",
+    "InformationGainScore",
+    "PlanOutcome",
+    "SensingInventoryRow",
+    "demo_information_gain_candidates",
+    "plan_active_sensing",
+    "score_expected_information_gain",
+    "sensing_surface_inventory",
+]

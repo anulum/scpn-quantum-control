@@ -1,0 +1,220 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — BL-68 active sensing product tests
+"""Production-surface tests for BL-68 active sensing composition."""
+
+from __future__ import annotations
+
+from typing import Any
+
+import numpy as np
+import pytest
+from numpy.typing import NDArray
+
+from scpn_quantum_control.active_sensing_product import (
+    ACTIVE_SENSING_PRODUCT_SCHEMA,
+    InformationGainCandidate,
+    demo_information_gain_candidates,
+    plan_active_sensing,
+    score_expected_information_gain,
+    sensing_surface_inventory,
+)
+
+
+def _problem() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    k_matrix = np.array(
+        [[0.0, 0.4, 0.2], [0.4, 0.0, 0.3], [0.2, 0.3, 0.0]],
+        dtype=np.float64,
+    )
+    omega = np.array([-0.1, 0.0, 0.1], dtype=np.float64)
+    return k_matrix, omega
+
+
+def test_inventory_preserves_ownership_and_hardware_boundary() -> None:
+    rows = sensing_surface_inventory()
+
+    assert {row.surface_id for row in rows} == {
+        "s11_sensing",
+        "s3_design_protocol",
+        "shot_budget",
+        "nv_20t",
+        "bl33_observer",
+    }
+    assert all(row.hardware_execution is False for row in rows)
+    assert next(row for row in rows if row.surface_id == "nv_20t").posture == "hardware_blocked"
+
+
+def test_information_gain_uses_gaussian_posterior_update() -> None:
+    candidate = InformationGainCandidate("phase", 2.0, 0.5, 0.25)
+    score = score_expected_information_gain(candidate, shots=4)
+
+    assert score.signal_to_noise == pytest.approx(8.0)
+    assert score.expected_information_gain_nats == pytest.approx(0.5 * np.log(9.0))
+    assert score.posterior_variance == pytest.approx(2.0 / 9.0)
+    assert score.to_dict()["observable_id"] == "phase"
+
+
+@pytest.mark.parametrize(
+    "candidate",
+    [
+        InformationGainCandidate("ok", 1.0, 0.0, 1.0),
+    ],
+)
+def test_information_gain_rejects_nonpositive_shots(candidate: InformationGainCandidate) -> None:
+    with pytest.raises(ValueError, match="shots must be positive"):
+        score_expected_information_gain(candidate, shots=0)
+
+
+@pytest.mark.parametrize(
+    "kwargs, message",
+    [
+        (
+            {
+                "observable_id": "",
+                "prior_variance": 1.0,
+                "sensitivity": 1.0,
+                "noise_variance": 1.0,
+            },
+            "non-empty",
+        ),
+        (
+            {
+                "observable_id": "x",
+                "prior_variance": np.inf,
+                "sensitivity": 1.0,
+                "noise_variance": 1.0,
+            },
+            "finite",
+        ),
+        (
+            {
+                "observable_id": "x",
+                "prior_variance": 0.0,
+                "sensitivity": 1.0,
+                "noise_variance": 1.0,
+            },
+            "positive",
+        ),
+        (
+            {
+                "observable_id": "x",
+                "prior_variance": 1.0,
+                "sensitivity": 1.0,
+                "noise_variance": 0.0,
+            },
+            "positive",
+        ),
+        (
+            {
+                "observable_id": "x",
+                "prior_variance": 1.0,
+                "sensitivity": 1.0,
+                "noise_variance": 1.0,
+                "channel": "",
+            },
+            "non-empty",
+        ),
+    ],
+)
+def test_candidate_validation(kwargs: dict[str, Any], message: str) -> None:
+    with pytest.raises(ValueError, match=message):
+        InformationGainCandidate(**kwargs)
+
+
+def test_plan_runs_real_budget_and_s3_surfaces() -> None:
+    k_matrix, omega = _problem()
+    plan = plan_active_sensing(
+        demo_information_gain_candidates(),
+        k_matrix,
+        omega,
+        policy_id="ci_dry_run_only",
+        shots_per_observable=128,
+    )
+
+    assert plan.allowed is True
+    assert plan.outcome == "allowed_plan"
+    assert plan.budget.estimated_total_shots == 768
+    assert plan.selected is plan.scores[0]
+    assert plan.selected is not None
+    assert plan.observer is not None
+    assert plan.observer.selected_observable_id == plan.selected.observable_id
+    assert plan.observer.hardware_execution is False
+    assert {row.family for row in plan.s3_evidence} == {"ansatz", "pulse"}
+    payload = plan.to_dict()
+    assert payload["schema"] == ACTIVE_SENSING_PRODUCT_SCHEMA
+    assert payload["hardware_execution"] is False
+    assert payload["selected"] is not None
+    assert payload["observer"] is not None
+
+
+def test_budget_refusal_prevents_information_and_s3_evaluation() -> None:
+    k_matrix, omega = _problem()
+    plan = plan_active_sensing(
+        demo_information_gain_candidates(),
+        k_matrix,
+        omega,
+        policy_id="ci_dry_run_only",
+        shots_per_observable=4096,
+    )
+
+    assert plan.allowed is False
+    assert plan.scores == ()
+    assert plan.s3_evidence == ()
+    assert plan.selected is None
+    assert plan.observer is None
+    payload = plan.to_dict()
+    assert payload["selected"] is None
+    assert payload["observer"] is None
+
+
+def test_hardware_adaptive_path_is_fail_closed() -> None:
+    k_matrix, omega = _problem()
+    plan = plan_active_sensing(
+        demo_information_gain_candidates(),
+        k_matrix,
+        omega,
+        policy_id="default_no_submit",
+        shots_per_observable=64,
+        request_hardware=True,
+    )
+
+    assert plan.allowed is False
+    assert any("adaptive hardware sensing" in blocker for blocker in plan.blockers)
+    assert plan.s3_evidence == ()
+
+
+def test_plan_rejects_empty_or_duplicate_candidates() -> None:
+    k_matrix, omega = _problem()
+    with pytest.raises(ValueError, match="candidates must be non-empty"):
+        plan_active_sensing(
+            (),
+            k_matrix,
+            omega,
+            policy_id="ci_dry_run_only",
+            shots_per_observable=64,
+        )
+    duplicate = InformationGainCandidate("same", 1.0, 1.0, 1.0)
+    with pytest.raises(ValueError, match="must be unique"):
+        plan_active_sensing(
+            (duplicate, duplicate),
+            k_matrix,
+            omega,
+            policy_id="ci_dry_run_only",
+            shots_per_observable=64,
+        )
+
+
+def test_allowed_plan_propagates_real_s3_input_validation() -> None:
+    _, omega = _problem()
+    with pytest.raises(ValueError, match="square"):
+        plan_active_sensing(
+            demo_information_gain_candidates(),
+            np.ones((2, 3), dtype=np.float64),
+            omega,
+            policy_id="ci_dry_run_only",
+            shots_per_observable=64,
+        )

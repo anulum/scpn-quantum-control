@@ -1,5 +1,10 @@
 # Changelog
 
+- 2026-07-25 — Active sensing / experimental design product (BL-68):
+  `scpn_quantum_control.active_sensing_product` composes synthetic Gaussian
+  information-gain ranking with BL-47 shot-budget enforcement, the real S3
+  ansatz/pulse evidence harness, and BL-33 observer telemetry. Hardware-adaptive
+  requests fail before evaluation; NV 20 T remains research-only.
 - 2026-07-25 — Complete compose-existing-control-stack adapters (BL-67):
   `scpn_quantum_control.control_stack_runtime_adapters` now runs ambient realtime
   feedback, abstract QAOA-MPC, and quantum/classical partition paths only after a
