@@ -13,3 +13,6 @@ minimumReleaseAgeExclude:
 # Dependabot alert #77; patched in adm-zip 0.6.0.
 overrides:
   'adm-zip@<0.6.0': '>=0.6.0'
+  # Dependabot alert #81; GHSA-r28c-9q8g-f849 (path traversal via sourceMappingURL).
+  # Patched in postcss 8.5.18. Verified: npm view postcss@8.5.18 version.
+  'postcss@<=8.5.17': '8.5.18'
