@@ -8,12 +8,12 @@
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 333,
-    "python_model_classes": 1213,
-    "python_model_source_modules": 634,
+    "public_documentation_pages": 334,
+    "python_model_classes": 1218,
+    "python_model_source_modules": 635,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1091
+    "test_files": 1092
   },
   "documentation": {
     "examples": [
@@ -392,6 +392,7 @@
       "docs/mutation_testing.md",
       "docs/native_speedup_benchmark.md",
       "docs/neural_operator_advantage.md",
+      "docs/neural_operator_baseline_product.md",
       "docs/neural_quantum_states.md",
       "docs/new_modules.md",
       "docs/notebook_programme_product.md",
@@ -877,6 +878,10 @@
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
+        "name": "ArtifactVerification",
+        "path": "src/scpn_quantum_control/neural_operator_baseline_product.py"
+      },
+      {
         "name": "AsyncHardwareRunner",
         "path": "src/scpn_quantum_control/hardware/async_runner.py"
       },
@@ -959,6 +964,10 @@
       {
         "name": "BaselineCatalogueRow",
         "path": "src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py"
+      },
+      {
+        "name": "BaselineSurfaceRow",
+        "path": "src/scpn_quantum_control/neural_operator_baseline_product.py"
       },
       {
         "name": "BenchmarkActionHandler",
@@ -1487,6 +1496,10 @@
       {
         "name": "DWaveLeapHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_dwave.py"
+      },
+      {
+        "name": "DatasetAdmission",
+        "path": "src/scpn_quantum_control/neural_operator_baseline_product.py"
       },
       {
         "name": "DatasetIntegrityError",
@@ -2609,6 +2622,10 @@
         "path": "src/scpn_quantum_control/analysis/integrated_information_phi.py"
       },
       {
+        "name": "IntegrationDisposition",
+        "path": "src/scpn_quantum_control/neural_operator_baseline_product.py"
+      },
+      {
         "name": "IonQCloudHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_ionq.py"
       },
@@ -3087,6 +3104,10 @@
       {
         "name": "NeuralOperatorAdvantage",
         "path": "src/scpn_quantum_control/forecasting/neural_operator_advantage.py"
+      },
+      {
+        "name": "NeuralOperatorBaselineProduct",
+        "path": "src/scpn_quantum_control/neural_operator_baseline_product.py"
       },
       {
         "name": "NeuromorphicStepResult",
@@ -5925,6 +5946,7 @@
       "src/scpn_quantum_control/mitigation/zne.py",
       "src/scpn_quantum_control/mitigation/zne_uncertainty.py",
       "src/scpn_quantum_control/multi_hal_federation_product.py",
+      "src/scpn_quantum_control/neural_operator_baseline_product.py",
       "src/scpn_quantum_control/notebook_programme_product.py",
       "src/scpn_quantum_control/open_system_mcwf_product.py",
       "src/scpn_quantum_control/pgbo/quantum_bridge.py",
@@ -7846,6 +7868,7 @@
       "tests/test_native_whole_program_linalg_factorisation.py",
       "tests/test_negative_inputs.py",
       "tests/test_neural_operator_advantage.py",
+      "tests/test_neural_operator_baseline_product.py",
       "tests/test_neural_operator_cost_model.py",
       "tests/test_new_module_properties.py",
       "tests/test_nist_sp800_22_guards.py",

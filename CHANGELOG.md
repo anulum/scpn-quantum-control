@@ -28,6 +28,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-26 — Neural-operator forecast baseline product (BL-78):
+  `scpn_quantum_control.neural_operator_baseline_product` verifies the existing
+  committed evidence and cost arithmetic, separates training/inference labels,
+  binds BL-65's default no-advantage certificate, and refuses unclassified or
+  unsafe-path datasets. BL-32 registration and BL-37 multimodal wiring remain
+  explicit fail-closed residuals. Docs: `docs/neural_operator_baseline_product.md`.
 - 2026-07-25 — Circuit-cutting large-sync product (BL-76):
   `scpn_quantum_control.circuit_cutting_product` freezes the ambient planner
   and partition-local simulator, adds synthetic reconstruction-error
