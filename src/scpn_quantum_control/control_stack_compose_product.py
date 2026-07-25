@@ -18,10 +18,12 @@ modules so BL-33 co-design does **not** reinvent a second control stack:
 * materialised closed-loop telemetry probe via ambient
   :func:`~scpn_quantum_control.control.closed_loop_analysis.evaluate_closed_loop_policy`
   (simulation-only by default; invent-green live hardware refused without ticket);
+* executable policy-gated realtime, QAOA-MPC, and quantum/classical partition
+  adapters in :mod:`scpn_quantum_control.control_stack_runtime_adapters`;
 * refuse invent-green PCS integration and rewrite claims of ``realtime_runtime``.
 
-Does **not** rewrite ``realtime_runtime``, invent PCS, or complete BL-58 pulse /
-full cosim partition (S67.3–S67.4 residual).
+Does **not** rewrite ``realtime_runtime`` or invent PCS. Pulse execution remains
+an explicit fail-closed hand-off to optional BL-58 rather than a BL-67 residual.
 """
 
 from __future__ import annotations
@@ -77,8 +79,8 @@ CONTROL_STACK_COMPOSE_CLAIM_BOUNDARY: Final[str] = (
     "ownership map over ambient control/realtime_feedback, closed_loop_analysis, "
     "realtime_runtime, qaoa_mpc, adaptive_branching, cosimulation, and hardware "
     "feedback_* ports; refuse evaluate without ClosedLoopExecutionPolicy; refuse "
-    "invent-green PCS integration and second-stack rewrites; residual S67.3 pulse "
-    "and S67.4 full cosim partition remain open"
+    "invent-green PCS integration and second-stack rewrites; QAOA-MPC and "
+    "cosimulation adapters are local-only; pulse execution fails closed to BL-58"
 )
 """Shared claim boundary for control-stack compose product payloads."""
 
@@ -416,7 +418,7 @@ def _build_ownership_catalogue() -> tuple[OwnershipRow, ...]:
             module_path="scpn_quantum_control.control.qaoa_mpc",
             owner_kind="control_qaoa_mpc",
             title="QAOA-MPC schedule control",
-            summary="Optional pulsed path; BL-58 residual for full pulse compose.",
+            summary="Abstract QAOA-MPC adapter; pulse execution fails closed to BL-58.",
             adapter_port="qaoa_mpc_optional",
             support_posture="local_research",
             rewrites_forbidden=True,
@@ -436,7 +438,7 @@ def _build_ownership_catalogue() -> tuple[OwnershipRow, ...]:
             module_path="scpn_quantum_control.cosimulation.quantum_classical",
             owner_kind="cosimulation",
             title="Quantum-classical cosimulation partition",
-            summary="Knm partition bridge port; full S67.4 residual open.",
+            summary="Executable local Knm partition bridge with mapped telemetry.",
             adapter_port="cosimulation_partition",
             support_posture="local_research",
             rewrites_forbidden=True,
@@ -859,7 +861,8 @@ def build_control_stack_compose_product_registry() -> dict[str, object]:
         "policy_note": (
             "Compose adapters over ambient control/* only; no second stack; "
             "ClosedLoopExecutionPolicy required before evaluate/run; "
-            "PCS invent-green forbidden; S67.3 pulse and S67.4 full cosim residual."
+            "PCS invent-green forbidden; local QAOA-MPC and cosimulation adapters "
+            "are executable; pulse execution fails closed to BL-58."
         ),
     }
 

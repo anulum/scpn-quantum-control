@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-07-25 — Complete compose-existing-control-stack adapters (BL-67):
+  `scpn_quantum_control.control_stack_runtime_adapters` now runs ambient realtime
+  feedback, abstract QAOA-MPC, and quantum/classical partition paths only after a
+  concrete `ClosedLoopExecutionPolicy` authorises local simulation. Pulse
+  execution fails closed to optional BL-58; hardware submission and PCS claims
+  remain refused. The BL-33 architecture is amended to ports over BL-67 adapters.
+
 Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]

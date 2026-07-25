@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 328,
-    "python_model_classes": 1183,
-    "python_model_source_modules": 628,
+    "python_model_classes": 1191,
+    "python_model_source_modules": 629,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1085
+    "test_files": 1086
   },
   "documentation": {
     "examples": [
@@ -1306,6 +1306,14 @@
       {
         "name": "CosimulationEvidence",
         "path": "src/scpn_quantum_control/benchmarks/hls_cosimulation_evidence.py"
+      },
+      {
+        "name": "CosimulationPartitionAdapterResult",
+        "path": "src/scpn_quantum_control/control_stack_runtime_adapters.py"
+      },
+      {
+        "name": "CosimulationPartitionTelemetry",
+        "path": "src/scpn_quantum_control/control_stack_runtime_adapters.py"
       },
       {
         "name": "CosimulationRunner",
@@ -3988,6 +3996,10 @@
         "path": "src/scpn_quantum_control/hardware/plugin_registry.py"
       },
       {
+        "name": "PolicyGatedAdapterError",
+        "path": "src/scpn_quantum_control/control_stack_runtime_adapters.py"
+      },
+      {
         "name": "PolyglotParityCertificate",
         "path": "src/scpn_quantum_control/polyglot_parity_certificate.py"
       },
@@ -4228,6 +4240,10 @@
         "path": "src/scpn_quantum_control/crypto/pqc_trigger.py"
       },
       {
+        "name": "PulseComposeBoundaryDecision",
+        "path": "src/scpn_quantum_control/control_stack_runtime_adapters.py"
+      },
+      {
         "name": "PulseFeasibilityDecision",
         "path": "src/scpn_quantum_control/hardware/pulse_feasibility.py"
       },
@@ -4342,6 +4358,14 @@
       {
         "name": "QSVTResourceEstimate",
         "path": "src/scpn_quantum_control/phase/qsvt_evolution.py"
+      },
+      {
+        "name": "QaoaMpcAdapterResult",
+        "path": "src/scpn_quantum_control/control_stack_runtime_adapters.py"
+      },
+      {
+        "name": "QaoaMpcPort",
+        "path": "src/scpn_quantum_control/control_stack_runtime_adapters.py"
       },
       {
         "name": "QbraidRuntimeHALAdapter",
@@ -4584,8 +4608,16 @@
         "path": "src/scpn_quantum_control/hardware/feedback_loop.py"
       },
       {
+        "name": "RealtimeFeedbackAdapterResult",
+        "path": "src/scpn_quantum_control/control_stack_runtime_adapters.py"
+      },
+      {
         "name": "RealtimeFeedbackConfig",
         "path": "src/scpn_quantum_control/control/realtime_feedback.py"
+      },
+      {
+        "name": "RealtimeFeedbackPort",
+        "path": "src/scpn_quantum_control/control_stack_runtime_adapters.py"
       },
       {
         "name": "RealtimeLatencyScenario",
@@ -5607,6 +5639,7 @@
       "src/scpn_quantum_control/control/topological_optimizer.py",
       "src/scpn_quantum_control/control/vqls_gs.py",
       "src/scpn_quantum_control/control_stack_compose_product.py",
+      "src/scpn_quantum_control/control_stack_runtime_adapters.py",
       "src/scpn_quantum_control/cosimulation/knm_partition.py",
       "src/scpn_quantum_control/cosimulation/quantum_classical.py",
       "src/scpn_quantum_control/crypto/entanglement_qkd.py",
@@ -7340,6 +7373,7 @@
       "tests/test_control_plasma_knm_mock.py",
       "tests/test_control_qec.py",
       "tests/test_control_stack_compose_product.py",
+      "tests/test_control_stack_runtime_adapters.py",
       "tests/test_control_structured_ansatz.py",
       "tests/test_cosimulation.py",
       "tests/test_cosimulation_branches.py",
