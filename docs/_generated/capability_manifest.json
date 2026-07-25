@@ -8,12 +8,12 @@
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 334,
-    "python_model_classes": 1218,
-    "python_model_source_modules": 635,
+    "public_documentation_pages": 335,
+    "python_model_classes": 1225,
+    "python_model_source_modules": 636,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1092
+    "test_files": 1093
   },
   "documentation": {
     "examples": [
@@ -343,6 +343,7 @@
       "docs/examples_gallery.md",
       "docs/execution_surface_policy.md",
       "docs/falsification.md",
+      "docs/fault_tolerant_resource_product.md",
       "docs/frc_pulsed_qaoa.md",
       "docs/free_energy_principle.md",
       "docs/geometric_control_product.md",
@@ -2078,6 +2079,14 @@
         "path": "src/scpn_quantum_control/analysis/finite_size_scaling.py"
       },
       {
+        "name": "FaultTolerantResourceBoundaryError",
+        "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
+      },
+      {
+        "name": "FaultTolerantResourceProduct",
+        "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
+      },
+      {
         "name": "FeedProbeResult",
         "path": "src/scpn_quantum_control/competitive_baseline_watch.py"
       },
@@ -2188,6 +2197,10 @@
       {
         "name": "ForecastModelRun",
         "path": "src/scpn_quantum_control/forecasting/real_data_sync.py"
+      },
+      {
+        "name": "FormulaReference",
+        "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
       },
       {
         "name": "FrameworkOverlayManifest",
@@ -4766,6 +4779,10 @@
         "path": "src/scpn_quantum_control/competitive_baseline_watch.py"
       },
       {
+        "name": "RegimeComparisonRow",
+        "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
+      },
+      {
         "name": "RegisteredDifferentiableTrainingSuiteAuditResult",
         "path": "src/scpn_quantum_control/phase/model_training_evidence.py"
       },
@@ -4828,6 +4845,10 @@
       {
         "name": "ResourceBudgetExceededError",
         "path": "src/scpn_quantum_control/resource_budget_gate.py"
+      },
+      {
+        "name": "ResourceEstimate",
+        "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
       },
       {
         "name": "ResponseClass",
@@ -4994,6 +5015,10 @@
         "path": "src/scpn_quantum_control/active_sensing_product.py"
       },
       {
+        "name": "SensitivityPoint",
+        "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
+      },
+      {
         "name": "ShadowResult",
         "path": "src/scpn_quantum_control/analysis/shadow_tomography.py"
       },
@@ -5136,6 +5161,10 @@
       {
         "name": "SyncOrderParameter",
         "path": "src/scpn_quantum_control/analysis/sync_order_parameter.py"
+      },
+      {
+        "name": "SyncProblemResourceRequest",
+        "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
       },
       {
         "name": "SyncTrajectory",
@@ -5824,6 +5853,7 @@
       "src/scpn_quantum_control/entropy/quantum_source.py",
       "src/scpn_quantum_control/error_mitigation_product.py",
       "src/scpn_quantum_control/execution_surface.py",
+      "src/scpn_quantum_control/fault_tolerant_resource_product.py",
       "src/scpn_quantum_control/fep/predictive_coding.py",
       "src/scpn_quantum_control/fep/variational_free_energy.py",
       "src/scpn_quantum_control/forecasting/kuramoto_neural_operator.py",
@@ -7658,6 +7688,7 @@
       "tests/test_export_ultrascale_hls_artifact.py",
       "tests/test_fast_classical.py",
       "tests/test_fault_tolerant.py",
+      "tests/test_fault_tolerant_resource_product.py",
       "tests/test_feedback_capability_probe.py",
       "tests/test_feedback_capability_probe_branch.py",
       "tests/test_feedback_dryrun.py",

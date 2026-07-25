@@ -28,6 +28,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-26 — Fault-tolerant synchronisation resource product (BL-36):
+  `scpn_quantum_control.fault_tolerant_resource_product` composes existing QEC
+  formulas into a digest-bound conservative distance/qubit/T-count/sensitivity
+  report with verified primary-source pins and explicit NISQ, repetition,
+  surface-scaffold, analog, simulator, and FT-planning boundaries. It does not
+  claim available fault-tolerant hardware or execution. Docs:
+  `docs/fault_tolerant_resource_product.md`.
 - 2026-07-26 — Neural-operator forecast baseline product (BL-78):
   `scpn_quantum_control.neural_operator_baseline_product` verifies the existing
   committed evidence and cost arithmetic, separates training/inference labels,
