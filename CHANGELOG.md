@@ -28,6 +28,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-25 — Polyglot edge Program-AD product (BL-74):
+  `scpn_quantum_control.polyglot_edge_ad_product` governs the real bounded
+  native Rust replay and committed rational browser-WASM replay, composes the
+  BL-49 value+gradient certificate subset, and routes through the existing
+  BL-62 `replay` / `differentiate` verbs. Arbitrary WASM programmes, silent
+  host fallback, and Julia Program AD fail closed; the existing Julia optional
+  tier remains honestly classified as Kuramoto-only. Docs:
+  `docs/polyglot_edge_ad_product.md`.
 - 2026-07-24 — Advanced witnesses product (BL-44):
   `scpn_quantum_control.advanced_witnesses_product` productises Krylov/OTOC/
   classical-shadow catalogue with `WitnessEstimate` provenance and small-system

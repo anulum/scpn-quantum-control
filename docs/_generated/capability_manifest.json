@@ -8,12 +8,12 @@
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 331,
-    "python_model_classes": 1206,
-    "python_model_source_modules": 632,
+    "public_documentation_pages": 332,
+    "python_model_classes": 1209,
+    "python_model_source_modules": 633,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1089
+    "test_files": 1090
   },
   "documentation": {
     "examples": [
@@ -409,6 +409,7 @@
       "docs/physics_first_kuramoto_xy.md",
       "docs/pipeline_performance.md",
       "docs/pipeline_runtime_contract.md",
+      "docs/polyglot_edge_ad_product.md",
       "docs/polyglot_parity_certificate.md",
       "docs/preprint.md",
       "docs/preregistration.md",
@@ -1151,6 +1152,10 @@
         "path": "src/scpn_quantum_control/cosimulation/quantum_classical.py"
       },
       {
+        "name": "CommittedWasmReplayCertificate",
+        "path": "src/scpn_quantum_control/polyglot_edge_ad_product.py"
+      },
+      {
         "name": "ComparisonMethodRow",
         "path": "src/scpn_quantum_control/benchmarks/reproducible_comparison.py"
       },
@@ -1817,6 +1822,14 @@
       {
         "name": "ENAQTResult",
         "path": "src/scpn_quantum_control/analysis/enaqt.py"
+      },
+      {
+        "name": "EdgeADPathDecision",
+        "path": "src/scpn_quantum_control/polyglot_edge_ad_product.py"
+      },
+      {
+        "name": "EdgeADRuntimeRow",
+        "path": "src/scpn_quantum_control/polyglot_edge_ad_product.py"
       },
       {
         "name": "EnforceDecision",
@@ -6015,6 +6028,7 @@
       "src/scpn_quantum_control/phase/xy_compiler.py",
       "src/scpn_quantum_control/phase/xy_kuramoto.py",
       "src/scpn_quantum_control/phase_qnode_product.py",
+      "src/scpn_quantum_control/polyglot_edge_ad_product.py",
       "src/scpn_quantum_control/polyglot_parity_certificate.py",
       "src/scpn_quantum_control/program_ad_adjoint.py",
       "src/scpn_quantum_control/program_ad_adjoint_generation.py",
@@ -7990,6 +8004,7 @@
       "tests/test_physics_invariants.py",
       "tests/test_pipeline_wiring_performance.py",
       "tests/test_plugin_registry.py",
+      "tests/test_polyglot_edge_ad_product.py",
       "tests/test_polyglot_parity_certificate.py",
       "tests/test_power_grid.py",
       "tests/test_power_grid_branches.py",
