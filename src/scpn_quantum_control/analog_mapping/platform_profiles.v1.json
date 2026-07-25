@@ -1,0 +1,125 @@
+{
+  "schema": "analog_platform_profiles.v1",
+  "profiles": [
+    {
+      "profile_id": "scpn_circuit_qed_design_v1",
+      "display_name": "SCPN circuit-QED compiler design model",
+      "platform_family": "circuit_qed_design_model",
+      "posture": "internal_compiler_model",
+      "supported_topologies": ["ring", "all_to_all", "sparse"],
+      "max_nodes": 64,
+      "coupling_abs_min": 0.0,
+      "coupling_abs_max": null,
+      "supports_signed_couplings": true,
+      "supports_local_detuning": true,
+      "supported_measurements": ["phase_proxy"],
+      "control_model": "exchange-coupler design terms in declared units",
+      "compiler_platform": "circuit_qed",
+      "arbitrary_pairwise_control_verified": true,
+      "source_url": "https://github.com/anulum/scpn-quantum-control/blob/main/docs/analog_native_readiness.md",
+      "verified_at_source_utc": "2026-07-25T23:25:53Z",
+      "ledger_ref": "docs/qpu_provider_readiness.md",
+      "limitations": [
+        "internal mathematical compiler model only",
+        "no calibrated device coupler map",
+        "phase_proxy is not a provider measurement contract"
+      ]
+    },
+    {
+      "profile_id": "pulser_analogdevice_sketch_2026_07",
+      "display_name": "Pulser AnalogDevice capability sketch",
+      "platform_family": "neutral_atom_rydberg",
+      "posture": "capability_sketch",
+      "supported_topologies": ["ring", "all_to_all", "sparse"],
+      "max_nodes": 80,
+      "coupling_abs_min": 0.0,
+      "coupling_abs_max": null,
+      "supports_signed_couplings": false,
+      "supports_local_detuning": false,
+      "supported_measurements": ["population", "z_basis"],
+      "control_model": "global Rydberg channel with geometry-determined Ising interactions",
+      "compiler_platform": null,
+      "arbitrary_pairwise_control_verified": false,
+      "source_url": "https://pulser.readthedocs.io/en/stable/hardware.html",
+      "verified_at_source_utc": "2026-07-25T23:25:53Z",
+      "ledger_ref": "docs/qpu_provider_readiness.md#pasqal-and-quera",
+      "limitations": [
+        "capability sketch only; not a device ticket or calibration",
+        "global Rydberg control does not establish arbitrary signed pairwise Kuramoto couplings",
+        "register geometry and channel constraints require provider validation"
+      ]
+    },
+    {
+      "profile_id": "ionq_native_gate_sketch_2026_07",
+      "display_name": "IonQ native-gate capability sketch",
+      "platform_family": "trapped_ion_gate_model",
+      "posture": "unsupported",
+      "supported_topologies": ["all_to_all"],
+      "max_nodes": null,
+      "coupling_abs_min": 0.0,
+      "coupling_abs_max": null,
+      "supports_signed_couplings": false,
+      "supports_local_detuning": false,
+      "supported_measurements": ["z_basis"],
+      "control_model": "GPI, GPI2, MS, or ZZ native gate circuits depending on backend",
+      "compiler_platform": null,
+      "arbitrary_pairwise_control_verified": false,
+      "source_url": "https://docs.ionq.com/api-reference/v0.3/native-gates-api",
+      "verified_at_source_utc": "2026-07-25T23:25:53Z",
+      "ledger_ref": "docs/qpu_provider_readiness.md#ionq-cloud",
+      "limitations": [
+        "documented interface is gate-model rather than continuous-time Kuramoto control",
+        "backend-specific native gates cannot be promoted to analog oscillator support",
+        "no account-visible target or hardware ticket was inspected"
+      ]
+    },
+    {
+      "profile_id": "iqm_native_gate_sketch_2026_07",
+      "display_name": "IQM native-gate capability sketch",
+      "platform_family": "superconducting_gate_model",
+      "posture": "unsupported",
+      "supported_topologies": ["ring", "sparse"],
+      "max_nodes": null,
+      "coupling_abs_min": 0.0,
+      "coupling_abs_max": null,
+      "supports_signed_couplings": false,
+      "supports_local_detuning": false,
+      "supported_measurements": ["z_basis"],
+      "control_model": "device-native gate set and architecture-specific routing",
+      "compiler_platform": null,
+      "arbitrary_pairwise_control_verified": false,
+      "source_url": "https://docs.meetiqm.com/iqm-client/user_guide_cirq.html",
+      "verified_at_source_utc": "2026-07-25T23:25:53Z",
+      "ledger_ref": "docs/qpu_provider_readiness.md#iqm",
+      "limitations": [
+        "documented client path decomposes and routes quantum circuits",
+        "native gate metadata does not establish continuous-time Kuramoto control",
+        "no dynamic architecture or calibration set was queried"
+      ]
+    },
+    {
+      "profile_id": "ibm_fractional_gate_sketch_2026_07",
+      "display_name": "IBM post-Pulse capability sketch",
+      "platform_family": "superconducting_gate_model",
+      "posture": "unsupported",
+      "supported_topologies": ["ring", "sparse"],
+      "max_nodes": null,
+      "coupling_abs_min": 0.0,
+      "coupling_abs_max": null,
+      "supports_signed_couplings": false,
+      "supports_local_detuning": false,
+      "supported_measurements": ["z_basis"],
+      "control_model": "fractional gate circuits; Qiskit Pulse removed",
+      "compiler_platform": null,
+      "arbitrary_pairwise_control_verified": false,
+      "source_url": "https://docs.quantum.ibm.com/migration-guides/qiskit-2.0",
+      "verified_at_source_utc": "2026-07-25T23:25:53Z",
+      "ledger_ref": "docs/qpu_provider_readiness.md#ibm-quantum",
+      "limitations": [
+        "IBM QPUs no longer offer pulse-level access through Qiskit Pulse",
+        "fractional gates do not establish arbitrary continuous-time exchange control",
+        "the legacy ibm_pulse design export is not an executable current-provider route"
+      ]
+    }
+  ]
+}

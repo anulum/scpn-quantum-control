@@ -1,19 +1,19 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 31,
+    "domain_package_families": 32,
     "example_files": 37,
     "github_workflows": 24,
     "model_documentation_pages": null,
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 335,
-    "python_model_classes": 1225,
-    "python_model_source_modules": 636,
+    "public_documentation_pages": 336,
+    "python_model_classes": 1234,
+    "python_model_source_modules": 642,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1093
+    "test_files": 1094
   },
   "documentation": {
     "examples": [
@@ -179,6 +179,7 @@
       "docs/advanced_witnesses_product.md",
       "docs/advantage_language_protocol.md",
       "docs/analog_backends.md",
+      "docs/analog_mapping_feasibility.md",
       "docs/analog_native_readiness.md",
       "docs/analysis_api.md",
       "docs/api.md",
@@ -526,6 +527,11 @@
     "documentation_pages": [],
     "domain_package_counts": [
       {
+        "package": "analog_mapping",
+        "path": "src/scpn_quantum_control/analog_mapping",
+        "python_modules": 6
+      },
+      {
         "package": "analysis",
         "path": "src/scpn_quantum_control/analysis",
         "python_modules": 63
@@ -783,6 +789,10 @@
         "path": "src/scpn_quantum_control/hardware/analog_kuramoto.py"
       },
       {
+        "name": "AnalogDigitalComparison",
+        "path": "src/scpn_quantum_control/analog_mapping/compare.py"
+      },
+      {
         "name": "AnalogDriveTerm",
         "path": "src/scpn_quantum_control/hardware/analog_kuramoto.py"
       },
@@ -807,12 +817,20 @@
         "path": "src/scpn_quantum_control/hardware/analog_kuramoto.py"
       },
       {
+        "name": "AnalogMappingEvidenceBundle",
+        "path": "src/scpn_quantum_control/analog_mapping/evidence.py"
+      },
+      {
         "name": "AnalogNativePrimitiveComparison",
         "path": "src/scpn_quantum_control/hardware/analog_native_readiness.py"
       },
       {
         "name": "AnalogNativeReadinessConfig",
         "path": "src/scpn_quantum_control/hardware/analog_native_readiness.py"
+      },
+      {
+        "name": "AnalogPlatformProfile",
+        "path": "src/scpn_quantum_control/analog_mapping/contracts.py"
       },
       {
         "name": "AnalogProviderReadinessRow",
@@ -1049,6 +1067,14 @@
       {
         "name": "CalibratedWorkIdentity",
         "path": "src/scpn_quantum_control/thermodynamics/readiness.py"
+      },
+      {
+        "name": "CalibrationEvaluation",
+        "path": "src/scpn_quantum_control/analog_mapping/calibrate.py"
+      },
+      {
+        "name": "CalibrationSensitivity",
+        "path": "src/scpn_quantum_control/analog_mapping/calibrate.py"
       },
       {
         "name": "CampaignHarnessRow",
@@ -2087,6 +2113,14 @@
         "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
       },
       {
+        "name": "FeasibilityDiagnostic",
+        "path": "src/scpn_quantum_control/analog_mapping/contracts.py"
+      },
+      {
+        "name": "FeasibilityReport",
+        "path": "src/scpn_quantum_control/analog_mapping/contracts.py"
+      },
+      {
         "name": "FeedProbeResult",
         "path": "src/scpn_quantum_control/competitive_baseline_watch.py"
       },
@@ -2897,6 +2931,14 @@
       {
         "name": "MagicScanResult",
         "path": "src/scpn_quantum_control/analysis/magic_nonstabilizerness.py"
+      },
+      {
+        "name": "MappingRequest",
+        "path": "src/scpn_quantum_control/analog_mapping/contracts.py"
+      },
+      {
+        "name": "MappingResult",
+        "path": "src/scpn_quantum_control/analog_mapping/contracts.py"
       },
       {
         "name": "MaterialisedAdjointReplayProbe",
@@ -5591,6 +5633,12 @@
       "src/scpn_quantum_control/adjoint_replay_product.py",
       "src/scpn_quantum_control/advanced_witnesses_product.py",
       "src/scpn_quantum_control/advantage_language_protocol.py",
+      "src/scpn_quantum_control/analog_mapping/calibrate.py",
+      "src/scpn_quantum_control/analog_mapping/compare.py",
+      "src/scpn_quantum_control/analog_mapping/contracts.py",
+      "src/scpn_quantum_control/analog_mapping/evidence.py",
+      "src/scpn_quantum_control/analog_mapping/feasibility.py",
+      "src/scpn_quantum_control/analog_mapping/platforms.py",
       "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py",
       "src/scpn_quantum_control/analysis/berry_phase.py",
       "src/scpn_quantum_control/analysis/bkt_analysis.py",
@@ -7406,6 +7454,7 @@
       "tests/test_aggregators_branches.py",
       "tests/test_analog_kuramoto.py",
       "tests/test_analog_kuramoto_helper_branches.py",
+      "tests/test_analog_mapping_feasibility.py",
       "tests/test_analog_native_readiness.py",
       "tests/test_analog_native_readiness_branches.py",
       "tests/test_analyse_ibm_v2_recovered.py",

@@ -305,7 +305,7 @@ comparison:
 | Circuit transpilation and optimisation | Owns the optimiser (e.g. Qiskit transpiler levels, PennyLane passes) | Hands the circuit to the provider-native compiler and records transpiled depth and two-qubit-gate budget; owns no optimiser | Thinner — deferred by choice |
 | Provider-native error mitigation | Built-in primitives (e.g. Qiskit Runtime resilience: ZNE, PEC, measurement twirling, dynamical decoupling) | Independent mitigation in `analysis/` (ZNE, symmetry-sector), not wired as a provider primitive | Thinner on provider-native; carries its own auditable mitigation |
 | Dynamic circuits and mid-circuit measurement | First-class | Capability-flagged and validated, not exercised end to end | Thinner |
-| Pulse-level control | Provider-specific (e.g. IBM OpenPulse) | No-submit OpenPulse readiness surface (feasibility only); no live pulse lane | Thinner — declared, not measured |
+| Pulse-level control | Provider-specific and access-dependent; IBM QPUs ceased pulse-level access and Qiskit 2 removed `qiskit.pulse` | Legacy no-submit pulse-design schemas plus BL-35 source-dated capability sketches; no current live pulse lane | Thinner — design-only, not an executable provider route |
 | Session, batching, job orchestration | Sessions and task batching | Single-submit through approval gates; no session wrapper | Thinner |
 | Result provenance and attestation | Raw results; no signed evidence | Attestation-verifiable `studio.qpu-result-pack.v1`, count integrity, honest claim status, `declared`→`measured` discipline | Deeper |
 | Approval, budget, and spend governance | None built in | Cloud profiles require an explicit approval token; budget guards | Deeper |
@@ -361,7 +361,8 @@ sources:
 
 - IBM Quantum hardware and QPU information:
   <https://www.ibm.com/quantum/hardware>,
-  <https://docs.quantum.ibm.com/guides/qpu-information>
+  <https://docs.quantum.ibm.com/guides/qpu-information>,
+  <https://docs.quantum.ibm.com/migration-guides/qiskit-2.0>
 - Amazon Braket hardware providers and devices:
   <https://aws.amazon.com/braket/hardware-providers/>,
   <https://docs.aws.amazon.com/braket/latest/developerguide/braket-devices.html>
@@ -370,13 +371,16 @@ sources:
   <https://learn.microsoft.com/en-us/azure/quantum/qc-target-list>
 - IonQ Cloud documentation:
   <https://docs.ionq.com/>,
-  <https://www.ionq.com/quantum-cloud>
+  <https://www.ionq.com/quantum-cloud>,
+  <https://docs.ionq.com/api-reference/v0.3/native-gates-api>
 - Quantinuum Systems documentation:
   <https://docs.quantinuum.com/h-series/>
 - IQM Qiskit integration and fake backends:
-  <https://docs.iqm.tech/iqm-client/user_guide_qiskit.html>,
-  <https://docs.iqm.tech/iqm-client/api/iqm.qiskit_iqm.fake_backends.html>
+  <https://docs.meetiqm.com/iqm-client/user_guide_cirq.html>,
+  <https://docs.meetiqm.com/iqm-client/api/iqm.qiskit_iqm.fake_backends.html>
 - Pasqal Cloud documentation:
   <https://docs.pasqal.com/cloud/>
+- Pulser neutral-atom hardware specifications:
+  <https://pulser.readthedocs.io/en/stable/hardware.html>
 - D-Wave Leap:
   <https://www.dwavequantum.com/quantum-cloud-services/>
