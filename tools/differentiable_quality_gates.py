@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from tools import adjoint_replay_product_quality_gates as _adjoint_replay_gates
 from tools import differentiable_api_quality_gates as _api_gates
 from tools import differentiable_levenberg_marquardt_quality_gates as _lm_gates
 from tools import differentiable_natural_gradient_quality_gates as _natural_gradient_gates
@@ -33,6 +34,7 @@ def build_static_quality_gates(python: str) -> list[Gate]:
 
     """
     return [
+        *_adjoint_replay_gates.build_static_quality_gates(python),
         *_scalar_gates.build_static_quality_gates(python),
         *_inventory_gates.build_static_quality_gates(python),
         *_api_gates.build_static_quality_gates(python),
@@ -56,6 +58,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
 
     """
     return [
+        *_adjoint_replay_gates.build_coverage_gates(python),
         *_scalar_gates.build_coverage_gates(python),
         *_inventory_gates.build_coverage_gates(python),
         *_api_gates.build_coverage_gates(python),

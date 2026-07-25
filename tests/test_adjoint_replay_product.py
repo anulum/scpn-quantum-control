@@ -33,9 +33,23 @@ from scpn_quantum_control.adjoint_replay_product import (
     map_adjoint_replay_public_surfaces,
     materialise_demo_adjoint_replay_probe,
 )
+from tools import adjoint_replay_product_quality_gates as adjoint_quality_gates
+
+
+def test_adjoint_replay_quality_gate_spec_is_exact_and_focused() -> None:
+    """The replay-product owner gate mirrors strict static and branch checks."""
+    static_gates = dict(adjoint_quality_gates.build_static_quality_gates("python"))
+    cohort = adjoint_quality_gates.ADJOINT_REPLAY_PRODUCT_QUALITY_RATCHET
+    assert static_gates["mypy-strict-adjoint-replay-product-quality"][-len(cohort) :] == cohort
+    assert static_gates["ruff D adjoint-replay-product quality ratchet"][-len(cohort) :] == cohort
+    coverage_gates = adjoint_quality_gates.build_coverage_gates("python")
+    assert "--branch" in coverage_gates[0][1]
+    assert "--fail-under=100" in coverage_gates[1][1]
+    assert "--include=*/adjoint_replay_product.py" in coverage_gates[1][1]
 
 
 def test_list_surfaces_and_filters() -> None:
+    """Surface discovery and filtering preserve canonical catalogue order."""
     ids = list_adjoint_replay_surface_ids()
     assert "reverse_adjoint_grad" in ids
     assert "executable_adjoint_replay" in ids
@@ -50,6 +64,7 @@ def test_list_surfaces_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Known lookup returns a claim-bound row and unknown identifiers fail closed."""
     row = get_adjoint_replay_surface("reverse_adjoint_grad")
     assert row.claim_boundary == ADJOINT_REPLAY_CLAIM_BOUNDARY
     assert row.allows_catalyst_parity is False
@@ -61,6 +76,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_checkpoint_policy_and_reversibility() -> None:
+    """Checkpoint schedules and reversibility reports enforce boundary invariants."""
     policy = build_checkpoint_policy(schedule="every_k", interval_k=2, max_checkpoints=4)
     assert isinstance(policy, CheckpointPolicy)
     assert policy.interval_k == 2
@@ -82,6 +98,7 @@ def test_checkpoint_policy_and_reversibility() -> None:
 
 
 def test_path_eligibility_refuse_and_allow() -> None:
+    """Eligibility distinguishes allowed replay from Catalyst and hardware refusals."""
     allowed = decide_adjoint_replay_path(has_supported_unitary_ir=True)
     assert allowed.allowed is True
     assert allowed.outcome == "allowed"
@@ -100,6 +117,7 @@ def test_path_eligibility_refuse_and_allow() -> None:
 
 
 def test_materialise_demo_adjoint_replay_probe() -> None:
+    """The quadratic replay agrees with the ambient adjoint gradient."""
     probe = materialise_demo_adjoint_replay_probe()
     assert probe.demo_label == "quadratic_sum_of_squares"
     assert probe.supported is True
@@ -116,6 +134,7 @@ def test_materialise_demo_adjoint_replay_probe() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Public mapping and integrity validation share one canonical catalogue."""
     surfaces = map_adjoint_replay_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -132,8 +151,9 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift_and_invent_green() -> None:
+    """Integrity rejects catalogue drift and unsupported claim promotion."""
     registry = build_adjoint_replay_product_registry()
-    surfaces = cast(list[dict[str, object]], list(registry["surfaces"]))
+    surfaces = cast(list[dict[str, object]], registry["surfaces"])
 
     broken = dict(registry)
     broken["surfaces"] = surfaces + [
@@ -179,8 +199,9 @@ def test_integrity_rejects_drift_and_invent_green() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Integrity rejects malformed rows and cross-field count drift."""
     registry = build_adjoint_replay_product_registry()
-    surfaces = cast(list[dict[str, object]], list(registry["surfaces"]))
+    surfaces = cast(list[dict[str, object]], registry["surfaces"])
 
     non_map = dict(registry)
     non_map["surfaces"] = [cast(Any, "nope")]
@@ -246,12 +267,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """The module exports replay discovery and execution entry points."""
     assert "materialise_demo_adjoint_replay_probe" in adjoint_replay_product.__all__
     assert "decide_adjoint_replay_path" in adjoint_replay_product.__all__
     assert "list_adjoint_replay_surface_ids" in adjoint_replay_product.__all__
 
 
 def test_surface_row_and_probe_validation() -> None:
+    """Public records and builders reject malformed product boundaries."""
     base: dict[str, Any] = {
         "surface_id": "x",
         "kind": "reverse_adjoint_grad",

@@ -147,6 +147,12 @@ def test_ci_gates_program_ad_array_indexing_exact_quality() -> None:
     assert "Enforce differentiable natural-gradient exact coverage" in workflow
     assert "--data-file=.coverage.natural-gradient-quality" in workflow
     assert "--include=*/differentiable_natural_gradient.py" in workflow
+    assert "Type-check adjoint replay product quality cohort" in workflow
+    assert "Ruff NumPy docstrings for adjoint replay product quality cohort" in workflow
+    assert "Run adjoint replay product focused coverage" in workflow
+    assert "Enforce adjoint replay product exact coverage" in workflow
+    assert "--data-file=.coverage.adjoint-replay-product-quality" in workflow
+    assert "--include=*/adjoint_replay_product.py" in workflow
 
 
 def test_trace_value_autodoc_exposes_both_public_value_types() -> None:

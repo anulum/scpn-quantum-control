@@ -108,6 +108,7 @@ class AdjointReplaySurfaceRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     surface_id: str
@@ -193,6 +194,7 @@ class CheckpointPolicy:
         Positive max checkpoint count for ``fixed_budget`` / binomial cap.
     recompute_allowed
         Whether recompute segments between checkpoints are allowed.
+
     """
 
     schedule: CheckpointSchedule
@@ -235,6 +237,7 @@ class ReversibilityReport:
         Non-empty when not reversible.
     reason
         Human-readable reason.
+
     """
 
     reversible: bool
@@ -281,6 +284,7 @@ class PathEligibilityDecision:
         Human-readable reason.
     blockers
         Non-empty when refused.
+
     """
 
     outcome: PathDecisionOutcome
@@ -339,6 +343,7 @@ class MaterialisedAdjointReplayProbe:
         Whether ambient adjoint generation reported support.
     demo_label
         Which demo was materialised.
+
     """
 
     values: tuple[float, ...]
@@ -510,6 +515,7 @@ def list_adjoint_replay_surface_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered surface identifiers.
+
     """
     return tuple(row.surface_id for row in _CANONICAL_SURFACES)
 
@@ -531,6 +537,7 @@ def get_adjoint_replay_surface(surface_id: str) -> AdjointReplaySurfaceRow:
     ------
     ValueError
         If ``surface_id`` is blank or unknown (fail closed).
+
     """
     if not surface_id or not str(surface_id).strip():
         raise ValueError("surface_id must be a non-empty string")
@@ -562,6 +569,7 @@ def iter_adjoint_replay_surfaces(
     -------
     tuple[AdjointReplaySurfaceRow, ...]
         Matching rows.
+
     """
     rows: Sequence[AdjointReplaySurfaceRow] = _CANONICAL_SURFACES
     if kind is not None:
@@ -595,6 +603,7 @@ def build_checkpoint_policy(
     -------
     CheckpointPolicy
         Validated policy object.
+
     """
     return CheckpointPolicy(
         schedule=schedule,
@@ -625,6 +634,7 @@ def assess_reversibility(
     -------
     ReversibilityReport
         Reversible report or refuse with blockers.
+
     """
     blockers: list[str] = []
     if has_mid_circuit_measurement:
@@ -686,6 +696,7 @@ def decide_adjoint_replay_path(
     -------
     PathEligibilityDecision
         Allowed or refused decision with blockers.
+
     """
     blockers: list[str] = []
     report = assess_reversibility(
@@ -747,6 +758,7 @@ def materialise_demo_adjoint_replay_probe(
     ------
     ValueError
         If ambient adjoint generation/replay fails or path is refused.
+
     """
     from .differentiable import whole_program_value_and_grad
     from .program_ad_adjoint import (
@@ -801,6 +813,7 @@ def map_adjoint_replay_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     seen: set[str] = set()
     rows: list[dict[str, object]] = []
@@ -832,6 +845,7 @@ def build_adjoint_replay_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with surfaces (no blanks).
+
     """
     surfaces = [row.to_dict() for row in _CANONICAL_SURFACES]
     return {
@@ -870,6 +884,7 @@ def assert_adjoint_replay_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-green flags appear.
+
     """
     registry = dict(payload) if payload is not None else build_adjoint_replay_product_registry()
     surfaces = registry.get("surfaces")
