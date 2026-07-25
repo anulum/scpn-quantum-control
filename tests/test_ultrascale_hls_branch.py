@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import sys
+from types import ModuleType
 
 import pytest
 
@@ -19,5 +20,12 @@ from scpn_quantum_control.codegen.ultrascale_hls import _python_quantise, quanti
 def test_quantise_falls_back_to_python(monkeypatch: pytest.MonkeyPatch) -> None:
     """Without the native engine the quantiser uses the Python implementation."""
     monkeypatch.setitem(sys.modules, "scpn_quantum_engine", None)
+    values = [0.5, -0.25, 0.125]
+    assert quantise_q_format(values, 4, 8) == _python_quantise(values, 4, 8)
+
+
+def test_quantise_falls_back_when_engine_lacks_kernel(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A partial native-engine install cannot bypass the Python reference."""
+    monkeypatch.setitem(sys.modules, "scpn_quantum_engine", ModuleType("scpn_quantum_engine"))
     values = [0.5, -0.25, 0.125]
     assert quantise_q_format(values, 4, 8) == _python_quantise(values, 4, 8)

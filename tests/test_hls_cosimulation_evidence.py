@@ -187,6 +187,9 @@ class TestHandoffAssembly:
         )
         assert any("no synthesis, no timing closure, no board" in note for note in artifact.notes)
         assert any("not a hardware timing or fidelity claim" in note for note in artifact.notes)
+        assert any(
+            "does not prove downstream ingest is implemented" in note for note in artifact.notes
+        )
         assert artifact.evidence["passed"] is False  # failure evidence preserved
 
     def test_isolated_host_grades_timings(self) -> None:

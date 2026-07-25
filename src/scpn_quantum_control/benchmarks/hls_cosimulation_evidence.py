@@ -22,8 +22,9 @@ evidence artifact:
 * the artifact states its boundary explicitly: this is *codegen + software
   co-simulation only* — **no synthesis, no timing closure, no board
   execution**. The RTL path and the sub-50 ns latency work are owned by
-  SC-NEUROCORE, which ingests the emitted directory through the
-  ``sc-neurocore.hdl_gen.hls_ingest.v1`` file-system contract.
+  SC-NEUROCORE, whose designated file-system contract is
+  ``sc-neurocore.hdl_gen.hls_ingest.v1``. Naming that contract does not prove
+  the downstream ingest implementation is present.
 
 Fail-closed: a missing host compiler raises (no fabricated evidence); a
 compile or run failure is recorded as ``passed=False`` with the captured
@@ -58,7 +59,8 @@ SC_NEUROCORE_CONTRACT = "sc-neurocore.hdl_gen.hls_ingest.v1"
 _BOUNDARY_NOTE = (
     "software co-simulation under a host compiler with a non-synthesis shim; "
     "no synthesis, no timing closure, no board execution; the RTL path and "
-    f"sub-50 ns latency work are owned by SC-NEUROCORE ({SC_NEUROCORE_CONTRACT})"
+    f"sub-50 ns latency work are owned by SC-NEUROCORE ({SC_NEUROCORE_CONTRACT}); "
+    "this producer evidence does not prove downstream ingest is implemented"
 )
 
 

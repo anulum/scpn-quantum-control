@@ -5,9 +5,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 `scpn_quantum_control.codegen.ultrascale_hls` converts a quantum control pulse
 waveform — the output of `phase/pulse_shaping.py` — into a manifest-bound
 Vivado/Vitis HLS source artifact for AMD Xilinx Zynq UltraScale+ devices. The
-artifact is a decoupled handoff for SC-NEUROCORE `hdl_gen.hls_ingest`; this
-module emits source plus `manifest.json` and does **not** invoke Vivado, prove
-timing closure, define board pin placement, or execute FPGA hardware.
+artifact is a decoupled producer handoff for the designated SC-NEUROCORE
+`hdl_gen.hls_ingest` boundary. This module emits source plus `manifest.json`;
+it does **not** prove that downstream ingest is implemented, invoke Vivado,
+prove timing closure, define board pin placement, or execute FPGA hardware.
 
 The target devices are shared with SC-NEUROCORE NEU-C.1: `zu3eg`
 (`xczu3eg-sbva484-1-e`) and `zu9eg` (`xczu9eg-ffvb1156-2-e`).
@@ -44,6 +45,22 @@ The manifest schema is
 
 `verify_hls_artifact_manifest` validates schema identity and file integrity for
 that artifact directory.
+
+## Status and ownership matrix
+
+| Boundary | Current support | Evidence and owner |
+|---|---|---|
+| Pulse-to-HLS producer | Supported source-generation surface | This repository emits and verifies the versioned header, testbench, XDC, and manifest. |
+| Host C++ co-simulation | Supported software evidence | This repository compiles the generated testbench against the packaged non-synthesis shim and records a hash-bound bit-true verdict. |
+| Vivado/Vitis synthesis check | Toolchain-gated validation path | This repository defines an opt-in `csim_design` + `csynth_design` test. Ordinary local/CI evidence does not imply that the gated toolchain ran. |
+| SC-NEUROCORE ingest | Contract designated; integration open | The producer names `sc-neurocore.hdl_gen.hls_ingest.v1`. A valid manifest is not proof of an accepted downstream consumer. |
+| Timing closure, bitstream, and board execution | Unsupported by this repository | SC-NEUROCORE owns the RTL/PPA/board path; no timing, bitstream, or physical-FPGA claim is made here. |
+
+These labels separate a supported software producer from toolchain and
+hardware boundaries. Fault-tolerant *quantum* resource estimates are a
+different scale regime; see
+[Multiscale Quantum Error Correction](multiscale_qec.md). Neither that resource
+model nor this HLS producer is evidence for the other.
 
 `pulse_to_vivado_hls` remains the lower-level generator: it quantises the
 envelope to a signed Q-format ROM and renders three artefacts into an
@@ -102,10 +119,11 @@ g++ -std=c++17 -Wno-unknown-pragmas -Isrc/scpn_quantum_control/codegen/hls_host_
     build/pulse_player/pulse_axi_stream_tb.cpp -o /tmp/tb && /tmp/tb   # prints "PASS <n>"
 ```
 
-Vivado/Vitis HLS supplies the real headers at synthesis time. The synthesis path
-(`csim_design` + `csynth_design` on the ZU3EG) is exercised by
+Vivado/Vitis HLS supplies the real headers at synthesis time. The repository
+defines a synthesis path (`csim_design` + `csynth_design` on the ZU3EG) in
 `tests/test_ultrascale_hls.py::test_vivado_hls_synthesis`, gated behind
-`MIF_FPGA_VIVADO_CI=1` for the self-hosted runner.
+`MIF_FPGA_VIVADO_CI=1` for a self-hosted runner. An ordinary test pass does not
+assert that this opt-in path ran.
 
 ## Co-simulation evidence artifact (RC-3)
 
@@ -126,7 +144,8 @@ only: no synthesis, no timing closure, no board execution*. A compile or run
 failure is recorded as `passed=false` with the captured output (failure
 evidence is still evidence), and a missing host compiler raises instead of
 fabricating a verdict. The handoff names the SC-NEUROCORE consumer contract
-(`sc-neurocore.hdl_gen.hls_ingest.v1`); the RTL path and the sub-50 ns latency
+(`sc-neurocore.hdl_gen.hls_ingest.v1`); that identifier is a designated
+boundary, not proof of a live consumer. The RTL path and any sub-50 ns latency
 work stay in SC-NEUROCORE. A committed example artifact lives under
 `data/hls_cosimulation/`.
 
@@ -146,6 +165,8 @@ target.
 
 ## Consumers
 
-SC-NEUROCORE consumes the emitted directory through
+The emitted directory targets the designated SC-NEUROCORE contract
 `sc-neurocore.hdl_gen.hls_ingest.v1`. The handoff is file-system and manifest
-based; it does not require SC-NEUROCORE to import this Python package.
+based, so a future consumer does not need to import this Python package.
+Downstream acceptance must be established in SC-NEUROCORE; producer evidence
+alone does not establish it.

@@ -216,6 +216,7 @@ def test_emit_versioned_hls_artifact_manifest(tmp_path):
     assert payload["schema_version"] == HLS_ARTIFACT_SCHEMA_VERSION
     assert payload["consumer_contract_version"] == HLS_CONSUMER_CONTRACT_VERSION
     assert payload["claim_boundary"] == HLS_ARTIFACT_CLAIM_BOUNDARY
+    assert "does not prove downstream ingest is implemented" in payload["claim_boundary"]
     assert payload["target"] == {"sku": "zu9eg", "part": "xczu9eg-ffvb1156-2-e"}
     assert payload["pulse"]["sample_count"] == 24
     assert payload["fixed_point"] == {"width": 14, "frac_bits": 5, "int_bits": 8}

@@ -15,9 +15,10 @@ into a ROM, and replayed one sample per cycle with ``TLAST`` on the final
 sample. The Q-format quantisation dispatches to a bit-true Rust kernel and falls
 back to the pure-Python reference below.
 
-The versioned artifact directory is consumed by SC-NEUROCORE through a
-manifest-bound file-system contract; this module emits the source and does not
-invoke Vivado.
+The versioned artifact directory is intended for SC-NEUROCORE through a
+manifest-bound file-system contract. This module emits and verifies the
+producer artifact; it does not prove that a downstream ingest implementation
+is present, and it does not invoke Vivado.
 """
 
 from __future__ import annotations
@@ -41,7 +42,7 @@ HLS_CONSUMER_CONTRACT_VERSION = "sc-neurocore.hdl_gen.hls_ingest.v1"
 HLS_ARTIFACT_CLAIM_BOUNDARY = (
     "Manifest-bound Vivado/Vitis HLS source bundle for downstream review and ingest only; "
     "this does not run synthesis, prove timing closure, define board pin placement, or "
-    "execute FPGA hardware."
+    "execute FPGA hardware, and it does not prove downstream ingest is implemented."
 )
 
 # AMD Xilinx Zynq UltraScale+ parts, verified against SC-NEUROCORE NEU-C.1
