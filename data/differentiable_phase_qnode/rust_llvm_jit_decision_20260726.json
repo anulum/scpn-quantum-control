@@ -1,0 +1,168 @@
+{
+  "artifact_id": "bl38-rust-llvm-jit-decision-20260726",
+  "claim_boundary": "BL-38 decision evidence only: functional parity and non-isolated descriptive timings for the existing bounded Rust Program-AD replay and Python-owned llvmlite JIT. No Rust LLVM/JIT implementation, isolated performance, provider, hardware, GPU, or public performance claim.",
+  "criteria": {
+    "bl49_family_expansion": false,
+    "dual_compiler_maintenance_burden": true,
+    "isolated_performance_evidence": false,
+    "max_observed_error": 3.552713678800501e-15,
+    "parity_passed": true,
+    "parity_tolerance": 1e-09,
+    "performance_claim_made": false,
+    "product_role_proven": false,
+    "rust_llvm_dependency_present": false
+  },
+  "decision": "NO-GO",
+  "environment": {
+    "cpu_count": 12,
+    "implementation": "CPython",
+    "llvmlite": "0.47.0",
+    "machine": "x86_64",
+    "numpy": "2.2.6",
+    "platform": "Linux-7.0.0-28-generic-x86_64-with-glibc2.39",
+    "python": "3.12.13",
+    "scpn_quantum_engine": "0.2.0"
+  },
+  "follow_up_boundary": "Reopen only if a named user-facing path is blocked on Rust-owned native execution and a preregistered isolated spike can test >=2x benefit without weakening parity, rollback, fallback, or BL-49 coverage.",
+  "inventory": [
+    {
+      "python_mlir_llvmlite": "native_jit_value_jvp_vjp_gradient",
+      "rust_jit_product_gap": false,
+      "rust_program_ad": "bounded_value_and_gradient_replay",
+      "surface": "branchless_scalar"
+    },
+    {
+      "python_mlir_llvmlite": "bounded_native_jit",
+      "rust_jit_product_gap": false,
+      "rust_program_ad": "bounded_value_and_gradient_replay",
+      "surface": "static_dense_det_inverse_solve_trace"
+    },
+    {
+      "python_mlir_llvmlite": "native_jit_fail_closed",
+      "rust_jit_product_gap": false,
+      "rust_program_ad": "bounded_replay",
+      "surface": "executed_branch_metadata"
+    },
+    {
+      "python_mlir_llvmlite": "partial_or_interpreted_fallback",
+      "rust_jit_product_gap": false,
+      "rust_program_ad": "bounded_replay",
+      "surface": "static_array_reduction_signal_interpolation_stencil_cumulative"
+    },
+    {
+      "python_mlir_llvmlite": "fail_closed_or_interpreted",
+      "rust_jit_product_gap": false,
+      "rust_program_ad": "fail_closed",
+      "surface": "dynamic_axes_indexing_and_dynamic_metadata"
+    }
+  ],
+  "kernels": [
+    {
+      "case_id": "scalar_poly_3",
+      "effect_count": 6,
+      "family": "scalar",
+      "native_compile_seconds": 0.9966275680017134,
+      "native_gradient_error": 0.0,
+      "native_jit_median_ns": 95258,
+      "native_jit_supported": true,
+      "native_value_error": 0.0,
+      "parameter_count": 3,
+      "rust_gradient_error": 0.0,
+      "rust_replay_median_ns": 94402,
+      "rust_replay_supported": true,
+      "rust_replay_to_native_jit_ratio": 0.9910138780994772,
+      "rust_value_error": 0.0
+    },
+    {
+      "case_id": "scalar_mixed_4",
+      "effect_count": 13,
+      "family": "scalar",
+      "native_compile_seconds": 0.07749417100058054,
+      "native_gradient_error": 0.0,
+      "native_jit_median_ns": 73501,
+      "native_jit_supported": true,
+      "native_value_error": 0.0,
+      "parameter_count": 4,
+      "rust_gradient_error": 0.0,
+      "rust_replay_median_ns": 137871,
+      "rust_replay_supported": true,
+      "rust_replay_to_native_jit_ratio": 1.8757703976816642,
+      "rust_value_error": 0.0
+    },
+    {
+      "case_id": "determinant_2x2",
+      "effect_count": 5,
+      "family": "determinant",
+      "native_compile_seconds": 0.061067989001458045,
+      "native_gradient_error": 8.881784197001252e-16,
+      "native_jit_median_ns": 99780,
+      "native_jit_supported": true,
+      "native_value_error": 3.552713678800501e-15,
+      "parameter_count": 4,
+      "rust_gradient_error": 8.881784197001252e-16,
+      "rust_replay_median_ns": 115548,
+      "rust_replay_supported": true,
+      "rust_replay_to_native_jit_ratio": 1.1580276608538784,
+      "rust_value_error": 3.552713678800501e-15
+    },
+    {
+      "case_id": "inverse_sum_2x2",
+      "effect_count": 11,
+      "family": "inverse",
+      "native_compile_seconds": 0.4528954950001207,
+      "native_gradient_error": 3.469446951953614e-18,
+      "native_jit_median_ns": 6826672,
+      "native_jit_supported": true,
+      "native_value_error": 0.0,
+      "parameter_count": 4,
+      "rust_gradient_error": 0.0,
+      "rust_replay_median_ns": 133405,
+      "rust_replay_supported": true,
+      "rust_replay_to_native_jit_ratio": 0.019541732779896265,
+      "rust_value_error": 0.0
+    },
+    {
+      "case_id": "solve_sum_2x2",
+      "effect_count": 9,
+      "family": "solve",
+      "native_compile_seconds": 0.08187448500029859,
+      "native_gradient_error": 0.0,
+      "native_jit_median_ns": 6988595,
+      "native_jit_supported": true,
+      "native_value_error": 0.0,
+      "parameter_count": 6,
+      "rust_gradient_error": 0.0,
+      "rust_replay_median_ns": 116264,
+      "rust_replay_supported": true,
+      "rust_replay_to_native_jit_ratio": 0.016636248058443794,
+      "rust_value_error": 0.0
+    },
+    {
+      "case_id": "trace_3x3",
+      "effect_count": 10,
+      "family": "trace",
+      "native_compile_seconds": 0.03814351599794463,
+      "native_gradient_error": 0.0,
+      "native_jit_median_ns": 70329,
+      "native_jit_supported": true,
+      "native_value_error": 0.0,
+      "parameter_count": 9,
+      "rust_gradient_error": 0.0,
+      "rust_replay_median_ns": 108936,
+      "rust_replay_supported": true,
+      "rust_replay_to_native_jit_ratio": 1.5489485134155185,
+      "rust_value_error": 0.0
+    }
+  ],
+  "rationale": "No user-facing path is blocked on a Rust-owned JIT: existing Rust replay already covers the bounded parity role, while the pinned Python/llvmlite path already owns native JIT execution. A second LLVM owner would add compiler and supply-chain burden without expanding BL-49 certifiable families.",
+  "schema": "rust_llvm_jit_decision.v1",
+  "sha256": "7c5e04f31b82761b0366ea57e620b4fb9ad53bab552b62551bb9050369f0f6ab",
+  "stamp": "20260726",
+  "timing_protocol": {
+    "interpretation": "descriptive_only_no_performance_claim",
+    "isolated": false,
+    "repetitions_per_round": 500,
+    "rounds": 7,
+    "warmups": 20
+  }
+}
