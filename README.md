@@ -122,16 +122,16 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.0.0 |
 | Public API exports | 841 |
-| Python source modules | 642 |
-| Public Python classes | 1234 |
+| Python source modules | 643 |
+| Public Python classes | 1238 |
 | Domain package families | 32 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
 | Notebook files | 106 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1094 |
-| Public documentation pages | 336 |
+| Python test files | 1095 |
+| Public documentation pages | 337 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -876,6 +876,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Differentiable Support Matrix](docs/differentiable_support_matrix.md) — generated registry and planner support evidence
 - [Differentiable Reviewer Evidence](docs/differentiable_reviewer_evidence.md) — generated criticism-to-command and open-gap evidence index
 - [Quantum Gradients](docs/quantum_gradients.md) — parameter-shift and gradient-evidence route for VQE and quantum-control objectives
+- [JAX NQS Baseline](docs/jax_nqs_baseline.md) — bounded exact-reference RBM evidence with environment provenance and no performance or hardware claim
 - [Differentiable API](docs/differentiable_api.md) — public differentiable namespace and support matrix
 - [Differentiable Roadmap](docs/differentiable_roadmap.md) — staged gradient, adapter, benchmark, verification, and control roadmap
 - [Tutorials](docs/tutorials.md) — 4-level learning path, 14 tutorials

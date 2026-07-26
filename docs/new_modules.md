@@ -479,7 +479,8 @@ ground energy match, ARPACK feasible at n=8, dense fallback, sparsity stats)
 ### `phase/jax_nqs.py` — JAX-Accelerated RBM Wavefunction
 
 Replaces the numpy finite-difference gradients in `nqs_ansatz.py` with JAX
-`jit` + `grad` for automatic differentiation. ~100× faster gradient computation.
+`jit` + `grad` for automatic differentiation. This exact-enumeration research
+path has no committed isolated speed benchmark and no NumPy fallback.
 
 Inspired by NetKet (Vicentini et al., SoftwareX 2022).
 
@@ -502,6 +503,10 @@ print(f"Parameters: {result['n_params']}")
 | `jax_vmc_ground_state(K, omega, ...)` | `{energy, energy_history, params, n_params}` |
 
 **Tests:** Requires JAX installation — included in batch 3 test file as conditional.
+
+For validated `2 <= N <= 6` exact-reference evidence, environment provenance,
+and the no-advantage boundary, use
+[`jax_nqs_baseline_product`](jax_nqs_baseline.md).
 
 ---
 

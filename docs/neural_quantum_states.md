@@ -6,11 +6,12 @@ wavefunctions:
 1. **RBM ansatz** (`phase/nqs_ansatz.py`) — Restricted Boltzmann Machine
    with numpy, exact mode for $n \leq 12$
 2. **JAX-accelerated NQS** (`phase/jax_nqs.py`) — same RBM with JAX
-   auto-differentiation, ~100× faster gradients
+   automatic differentiation and JIT compilation
 
 **Caveat:** These are pedagogical/research implementations for the
-Kuramoto-XY system. For production NQS at scale, use
-[NetKet](https://www.netket.org/) (Vicentini et al., 2022).
+Kuramoto-XY system. Larger or sampled studies require a dedicated framework
+such as [NetKet](https://www.netket.org/) (Vicentini et al., 2022); this
+repository does not certify external-framework parity or deployment readiness.
 
 ---
 
@@ -35,19 +36,17 @@ The energy expectation is:
 $$E = \frac{\sum_\sigma |\psi(\sigma)|^2 \langle\sigma|H|\sigma'\rangle \psi(\sigma')/\psi(\sigma)}{\sum_\sigma |\psi(\sigma)|^2}$$
 
 For small systems ($n \leq 12$), we evaluate the sum over all $2^n$
-configurations exactly. The gradient is computed via the parameter-shift
-rule (numpy) or automatic differentiation (JAX).
+configurations exactly. The gradient is computed by central finite differences
+(NumPy) or automatic differentiation (JAX).
 
 ### Why RBM?
 
-Carleo & Troyer (Science, 2017) showed that RBMs can represent ground
-states of 1D and 2D spin models with accuracy competitive with DMRG.
-The universal approximation theorem guarantees that sufficiently wide
-RBMs can represent any quantum state.
-
-In practice, convergence depends on the problem. For the XY model with
-moderate coupling, RBMs with $n_h = 2n$ typically converge within
-100–500 iterations.
+Carleo & Troyer (Science, 2017) introduced an RBM variational representation
+and reported strong results for selected 1D and 2D spin models. That result does
+not guarantee accuracy or convergence for an arbitrary Hamiltonian, network
+width, optimiser, or real-valued parameterisation. This repository therefore
+compares only bounded small-system runs with exact diagonalisation and reports
+the observed gap.
 
 ---
 
@@ -152,7 +151,9 @@ The numpy VMC uses finite-difference gradients: $2 \times n_\text{params}$
 function evaluations per iteration. JAX replaces this with automatic
 differentiation via `jax.grad` — a single forward + backward pass.
 
-Measured speedup: ~100× for gradient computation at $n=8$.
+No performance claim is attached to this route. JIT compilation has an upfront
+cost, backend and precision affect results, and the repository has no committed
+isolated NumPy-versus-JAX benchmark artefact for this runner.
 
 ### API Reference
 
@@ -194,6 +195,9 @@ The JAX path uses the same exact-enumeration Hilbert-space boundary as the
 NumPy RBM path; `max_dense_gib` gates the dense Hamiltonian and configuration
 workspace before transferring arrays to JAX.
 
+There is no automatic NumPy fallback. If JAX is unavailable, the public JAX
+functions raise `ImportError`.
+
 **Returns:**
 
 ```python
@@ -204,6 +208,32 @@ workspace before transferring arrays to JAX.
     "n_params": int,
 }
 ```
+
+### BL-103 exact-reference baseline
+
+Use the claim-bounded product for a validated `2 <= N <= 6` run with exact
+diagonalisation, variational-gap diagnostics, JAX environment provenance, a
+canonical evidence digest, and the default no-advantage certificate:
+
+```python
+from scpn_quantum_control.jax_nqs_baseline_product import (
+    JAXNQSBaselineSpec,
+    run_jax_nqs_baseline,
+)
+
+spec = JAXNQSBaselineSpec.from_arrays(
+    K,
+    omega,
+    n_hidden=2 * len(omega),
+    n_iterations=200,
+    seed=42,
+)
+evidence = run_jax_nqs_baseline(spec)
+print(evidence.comparison.relative_error)
+print(evidence.evidence_sha256)
+```
+
+See [JAX NQS baseline product](jax_nqs_baseline.md) for the complete contract.
 
 ### Example
 
@@ -270,8 +300,8 @@ print(f"JAX VMC:   {jax_energy:.6f}")
 | Other ansätze | No | No | Many (RNN, GCN, etc.) | VQE circuits |
 | Gradient method | Finite difference | Auto-diff (JAX) | Auto-diff (JAX) | Auto-diff |
 | MCMC sampling | No ($n \leq 12$) | No ($n \leq 12$) | Yes | N/A |
-| Max system size | 12 | 12 | 1000+ | Circuit-limited |
-| GPU | No | Yes (JAX) | Yes (JAX) | Yes |
+| Local API cap | 12 (exponential) | 12 (exponential) | Framework-dependent | Circuit-dependent |
+| Accelerator route | No | Optional JAX backend; no speed claim | JAX-dependent | Framework-dependent |
 | Hamiltonian | XY (built-in) | XY (built-in) | Any | Any |
 
 ---
@@ -282,13 +312,14 @@ print(f"JAX VMC:   {jax_energy:.6f}")
    artificial neural networks." *Science* **355**, 602 (2017).
 2. Vicentini, F. *et al.* "NetKet 3: Machine learning toolbox for
    many-body quantum systems." *SoftwareX* **17**, 100933 (2022).
-3. Bradbury, J. *et al.* "JAX: composable transformations of Python+NumPy
-   programs." (2018). http://github.com/google/jax
+3. JAX authors. [Automatic differentiation](https://docs.jax.dev/en/latest/automatic-differentiation.html),
+   [JIT compilation](https://docs.jax.dev/en/latest/jit-compilation.html), and
+   [default dtypes / X64](https://docs.jax.dev/en/latest/default_dtypes.html).
 
 ---
 
 ## See Also
 
-- [Variational Methods](variational.md) — parameter-shift gradient rule
+- [Variational Methods](variational.md) — circuit parameter-shift methods
 - [GPU Batch VQE](gpu.md) — parallel parameter scanning
 - [Tensor Networks](tensor_networks.md) — MPS/DMRG alternative

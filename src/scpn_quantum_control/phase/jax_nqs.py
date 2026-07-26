@@ -5,17 +5,16 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — JAX-Accelerated Neural Quantum State
-"""JAX-based RBM wavefunction with automatic differentiation.
+"""JAX-based exact-enumeration RBM wavefunction with automatic differentiation.
 
-Replaces the numpy finite-difference gradients in nqs_ansatz.py with
-JAX jit+grad for ~100× speedup. Inspired by NetKet (Vicentini et al. 2022).
-
-Requires: pip install jax jaxlib
-Falls back to numpy NQS if JAX not available.
+This optional research path replaces the NumPy implementation's central finite
+differences with JAX ``jit`` and ``grad``. It has no committed isolated speed
+benchmark and fails closed with ``ImportError`` when JAX is unavailable.
 """
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 import numpy as np
@@ -86,20 +85,39 @@ def jax_vmc_ground_state(
     *,
     max_dense_gib: float | None = None,
 ) -> dict[str, Any]:
-    """VMC ground state search with JAX auto-differentiation.
-
-    ~100× faster than numpy finite-difference version in nqs_ansatz.py.
-    """
+    """Exact-enumeration ground-state search with JAX auto-differentiation."""
     if not _JAX_AVAILABLE:
         raise ImportError("JAX not installed: pip install jax jaxlib")
 
     from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 
-    n = K.shape[0]
+    coupling = np.asarray(K, dtype=float)
+    frequencies = np.asarray(omega, dtype=float)
+    if coupling.ndim != 2 or coupling.shape[0] != coupling.shape[1]:
+        raise ValueError("K must be a square rank-2 coupling matrix")
+    n = coupling.shape[0]
+    if n < 1:
+        raise ValueError("JAX NQS requires at least one visible spin")
     if n > 12:
         raise ValueError(f"Exact JAX NQS for n<=12 (got {n})")
+    if frequencies.ndim != 1 or frequencies.shape != (n,):
+        raise ValueError("omega must be a rank-1 vector matching K")
+    if not np.all(np.isfinite(coupling)) or not np.all(np.isfinite(frequencies)):
+        raise ValueError("K and omega must contain only finite values")
+    if not np.allclose(coupling, coupling.T, rtol=0.0, atol=1e-12):
+        raise ValueError("K must be symmetric")
+    if n_hidden is not None and (
+        not isinstance(n_hidden, int) or isinstance(n_hidden, bool) or n_hidden <= 0
+    ):
+        raise ValueError("n_hidden must be a positive integer when supplied")
+    if not math.isfinite(learning_rate) or learning_rate <= 0.0:
+        raise ValueError("learning_rate must be finite and positive")
+    if not isinstance(n_iterations, int) or isinstance(n_iterations, bool) or n_iterations <= 0:
+        raise ValueError("n_iterations must be a positive integer")
+    if not isinstance(seed, int) or isinstance(seed, bool) or seed < 0:
+        raise ValueError("seed must be a non-negative integer")
 
-    n_hid = n_hidden or 2 * n
+    n_hid = 2 * n if n_hidden is None else n_hidden
     require_dense_allocation(
         n,
         dtype=np.complex128,
@@ -116,7 +134,14 @@ def jax_vmc_ground_state(
         max_gib=max_dense_gib,
         label="JAX NQS dense exact-enumeration workspace",
     )
-    H = jnp.array(knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib), dtype=jnp.float32)
+    hamiltonian = knm_to_dense_matrix(coupling, frequencies, max_dense_gib=max_dense_gib)
+    if not np.all(np.isfinite(hamiltonian)):
+        raise ValueError("JAX NQS Hamiltonian must contain only finite values")
+    if not np.allclose(hamiltonian, hamiltonian.conj().T, rtol=0.0, atol=1e-12):
+        raise ValueError("JAX NQS Hamiltonian must be Hermitian")
+    if not np.allclose(hamiltonian.imag, 0.0, rtol=0.0, atol=1e-12):
+        raise ValueError("JAX NQS supports only Hamiltonians with negligible imaginary entries")
+    H = jnp.array(hamiltonian.real, dtype=jnp.float32)
 
     key = jax.random.PRNGKey(seed)
     k1, k2, k3 = jax.random.split(key, 3)

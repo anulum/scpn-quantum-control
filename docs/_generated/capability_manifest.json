@@ -8,12 +8,12 @@
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 336,
-    "python_model_classes": 1234,
-    "python_model_source_modules": 642,
+    "public_documentation_pages": 337,
+    "python_model_classes": 1238,
+    "python_model_source_modules": 643,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1094
+    "test_files": 1095
   },
   "documentation": {
     "examples": [
@@ -362,6 +362,7 @@
       "docs/index.md",
       "docs/installation.md",
       "docs/isolated_benchmark_runner.md",
+      "docs/jax_nqs_baseline.md",
       "docs/josephson_knm_magnitude_study.md",
       "docs/kuramoto_competitive_benchmark.md",
       "docs/kuramoto_competitive_evidence.md",
@@ -2683,6 +2684,22 @@
       {
         "name": "IsolatedProviderSmokeLane",
         "path": "src/scpn_quantum_control/hardware/provider_smoke.py"
+      },
+      {
+        "name": "JAXNQSBaselineProduct",
+        "path": "src/scpn_quantum_control/jax_nqs_baseline_product.py"
+      },
+      {
+        "name": "JAXNQSBaselineSpec",
+        "path": "src/scpn_quantum_control/jax_nqs_baseline_product.py"
+      },
+      {
+        "name": "JAXNQSComparison",
+        "path": "src/scpn_quantum_control/jax_nqs_baseline_product.py"
+      },
+      {
+        "name": "JAXNQSEnvironment",
+        "path": "src/scpn_quantum_control/jax_nqs_baseline_product.py"
       },
       {
         "name": "JITExplanation",
@@ -6003,6 +6020,7 @@
       "src/scpn_quantum_control/identity/identity_key.py",
       "src/scpn_quantum_control/identity/robustness.py",
       "src/scpn_quantum_control/identity_observer_product.py",
+      "src/scpn_quantum_control/jax_nqs_baseline_product.py",
       "src/scpn_quantum_control/kuramoto.py",
       "src/scpn_quantum_control/kuramoto_core.py",
       "src/scpn_quantum_control/kyma_mechanism_benchmark_product.py",
@@ -7841,6 +7859,7 @@
       "tests/test_jax_accel_branch.py",
       "tests/test_jax_accel_contracts.py",
       "tests/test_jax_nqs.py",
+      "tests/test_jax_nqs_baseline_product.py",
       "tests/test_job_dossier.py",
       "tests/test_job_dossier_branches.py",
       "tests/test_josephson_array.py",

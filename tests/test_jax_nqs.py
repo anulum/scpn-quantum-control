@@ -62,7 +62,7 @@ class TestJaxRBMEnergy:
         omega = OMEGA_N_16[:n]
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 
-        H = jnp.array(knm_to_dense_matrix(K, omega), dtype=jnp.float32)
+        H = jnp.array(knm_to_dense_matrix(K, omega).real, dtype=jnp.float32)
 
         key = jax.random.PRNGKey(42)
         k1, k2, k3 = jax.random.split(key, 3)
@@ -84,7 +84,7 @@ class TestJaxRBMEnergy:
         omega = OMEGA_N_16[:n]
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 
-        H = jnp.array(knm_to_dense_matrix(K, omega), dtype=jnp.float32)
+        H = jnp.array(knm_to_dense_matrix(K, omega).real, dtype=jnp.float32)
 
         key = jax.random.PRNGKey(0)
         k1, k2, k3 = jax.random.split(key, 3)
@@ -107,7 +107,7 @@ class TestJaxRBMEnergy:
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 
         H_np = knm_to_dense_matrix(K, omega)
-        H = jnp.array(H_np, dtype=jnp.float32)
+        H = jnp.array(H_np.real, dtype=jnp.float32)
         eigvals = np.linalg.eigvalsh(H_np)
 
         key = jax.random.PRNGKey(7)
@@ -159,6 +159,104 @@ class TestJaxVMCGroundState:
         jax_vmc_ground_state(K, omega, n_iterations=1, seed=42, max_dense_gib=0.25)
 
         assert seen_budgets == [0.25]
+
+    @pytest.mark.parametrize(
+        ("K", "omega", "kwargs", "message"),
+        (
+            (np.zeros(2), np.zeros(2), {}, "square rank-2"),
+            (np.zeros((2, 3)), np.zeros(2), {}, "square rank-2"),
+            (np.zeros((0, 0)), np.zeros(0), {}, "at least one"),
+            (np.zeros((13, 13)), np.zeros(13), {}, "n<=12"),
+            (np.zeros((2, 2)), np.zeros((2, 1)), {}, "rank-1"),
+            (np.zeros((2, 2)), np.zeros(1), {}, "matching K"),
+            (
+                np.array(((0.0, np.nan), (np.nan, 0.0))),
+                np.zeros(2),
+                {},
+                "finite",
+            ),
+            (np.zeros((2, 2)), np.array((0.0, np.inf)), {}, "finite"),
+            (np.array(((0.0, 1.0), (0.5, 0.0))), np.zeros(2), {}, "symmetric"),
+            (np.zeros((2, 2)), np.zeros(2), {"n_hidden": 0}, "n_hidden"),
+            (np.zeros((2, 2)), np.zeros(2), {"n_hidden": 2.5}, "n_hidden"),
+            (
+                np.zeros((2, 2)),
+                np.zeros(2),
+                {"learning_rate": 0.0},
+                "learning_rate",
+            ),
+            (
+                np.zeros((2, 2)),
+                np.zeros(2),
+                {"learning_rate": np.inf},
+                "learning_rate",
+            ),
+            (
+                np.zeros((2, 2)),
+                np.zeros(2),
+                {"n_iterations": 0},
+                "n_iterations",
+            ),
+            (
+                np.zeros((2, 2)),
+                np.zeros(2),
+                {"n_iterations": 1.5},
+                "n_iterations",
+            ),
+            (np.zeros((2, 2)), np.zeros(2), {"seed": -1}, "seed"),
+            (np.zeros((2, 2)), np.zeros(2), {"seed": 1.5}, "seed"),
+        ),
+    )
+    def test_rejects_invalid_public_inputs(self, K, omega, kwargs, message):
+        with pytest.raises(ValueError, match=message):
+            jax_vmc_ground_state(K, omega, **kwargs)
+
+    def test_zero_hidden_width_does_not_silently_select_default(self):
+        K = build_knm_paper27(L=2)
+        omega = OMEGA_N_16[:2]
+        with pytest.raises(ValueError, match="n_hidden"):
+            jax_vmc_ground_state(K, omega, n_hidden=0, n_iterations=1)
+
+    @pytest.mark.parametrize(
+        ("hamiltonian", "message"),
+        (
+            (np.full((4, 4), np.nan, dtype=complex), "finite"),
+            (
+                np.array(
+                    (
+                        (0.0, 1.0, 0.0, 0.0),
+                        (0.0, 0.0, 0.0, 0.0),
+                        (0.0, 0.0, 0.0, 0.0),
+                        (0.0, 0.0, 0.0, 0.0),
+                    ),
+                    dtype=complex,
+                ),
+                "Hermitian",
+            ),
+            (
+                np.array(
+                    (
+                        (0.0, 1.0j, 0.0, 0.0),
+                        (-1.0j, 0.0, 0.0, 0.0),
+                        (0.0, 0.0, 0.0, 0.0),
+                        (0.0, 0.0, 0.0, 0.0),
+                    ),
+                    dtype=complex,
+                ),
+                "imaginary",
+            ),
+        ),
+    )
+    def test_rejects_invalid_bridge_hamiltonian(self, monkeypatch, hamiltonian, message):
+        import scpn_quantum_control.bridge.knm_hamiltonian as bridge_module
+
+        monkeypatch.setattr(
+            bridge_module,
+            "knm_to_dense_matrix",
+            lambda *args, **kwargs: hamiltonian,
+        )
+        with pytest.raises(ValueError, match=message):
+            jax_vmc_ground_state(np.zeros((2, 2)), np.zeros(2), n_iterations=1)
 
     def test_returns_dict(self):
         K = build_knm_paper27(L=2)
