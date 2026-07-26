@@ -8,12 +8,12 @@
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 337,
-    "python_model_classes": 1238,
-    "python_model_source_modules": 643,
+    "public_documentation_pages": 339,
+    "python_model_classes": 1239,
+    "python_model_source_modules": 644,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1095
+    "test_files": 1099
   },
   "documentation": {
     "examples": [
@@ -219,6 +219,8 @@
       "docs/campaigns/iqm_dla_depth_profile_prereg_2026-07-22.md",
       "docs/campaigns/iqm_dla_window_variability_prereg_2026-07-22.md",
       "docs/campaigns/iqm_layout_transfer_per_size_prereg_2026-07-22.md",
+      "docs/campaigns/iqm_layout_transfer_per_size_readiness_2026-07-26.md",
+      "docs/campaigns/iqm_layout_transfer_per_size_result_2026-07-26.md",
       "docs/campaigns/iqm_layout_transfer_square_lattice_prereg_2026-07-21.md",
       "docs/campaigns/kyma_composition_probe_2026-07-18.md",
       "docs/campaigns/kyma_v2_1_rigor_2026-07-21.md",
@@ -550,7 +552,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 49
+        "python_modules": 50
       },
       {
         "package": "bridge",
@@ -3650,6 +3652,10 @@
         "path": "src/scpn_quantum_control/hardware/pennylane_adapter.py"
       },
       {
+        "name": "PerSizeLayoutTransferPlan",
+        "path": "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_per_size.py"
+      },
+      {
         "name": "PercolationScanResult",
         "path": "src/scpn_quantum_control/analysis/entanglement_percolation.py"
       },
@@ -5762,6 +5768,7 @@
       "src/scpn_quantum_control/benchmarks/gpu_baseline.py",
       "src/scpn_quantum_control/benchmarks/hls_cosimulation_evidence.py",
       "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_benchmark.py",
+      "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_per_size.py",
       "src/scpn_quantum_control/benchmarks/isolated_host_readiness.py",
       "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py",
       "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py",
@@ -7853,6 +7860,8 @@
       "tests/test_iqm_lattice_calibration.py",
       "tests/test_iqm_layout_pinned_dla.py",
       "tests/test_iqm_layout_transfer_benchmark.py",
+      "tests/test_iqm_layout_transfer_per_size.py",
+      "tests/test_iqm_layout_transfer_resonance.py",
       "tests/test_isolated_host_readiness.py",
       "tests/test_iter_benchmark.py",
       "tests/test_iter_benchmark_branches.py",
@@ -8347,6 +8356,7 @@
       "tests/test_rust_ffi_safety_audit.py",
       "tests/test_rust_ffi_validation.py",
       "tests/test_rust_kernel_execution_audit.py",
+      "tests/test_rust_llvm_jit_decision.py",
       "tests/test_rust_new_functions.py",
       "tests/test_rust_parity.py",
       "tests/test_rust_path_benchmarks.py",
@@ -8421,6 +8431,7 @@
       "tests/test_studio_executive_validate.py",
       "tests/test_studio_kuramoto_reference.py",
       "tests/test_studio_kuramoto_scenario_artifact.py",
+      "tests/test_studio_lazy_import.py",
       "tests/test_studio_manifest.py",
       "tests/test_studio_program_ad_quality_gate.py",
       "tests/test_studio_program_ad_replay_artifact.py",
