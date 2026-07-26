@@ -1,23 +1,4 @@
 {
-  "threshold_lines": 1000,
-  "extensions": [
-    ".c",
-    ".cc",
-    ".cpp",
-    ".go",
-    ".h",
-    ".hpp",
-    ".jl",
-    ".js",
-    ".jsx",
-    ".py",
-    ".pyi",
-    ".rs",
-    ".sv",
-    ".ts",
-    ".tsx",
-    ".v"
-  ],
   "open_refactor_limit": 0,
   "files": [
     {

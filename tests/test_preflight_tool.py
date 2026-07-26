@@ -54,7 +54,7 @@ def test_static_gates_include_documentation_surface_gate() -> None:
 
 
 def test_static_gates_include_module_size_policy_and_typing() -> None:
-    """Preflight must keep the oversized-code registry current and typed."""
+    """Preflight must keep the module-responsibility registry current and typed."""
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
 
     assert "tools/audit_module_size_policy.py" in gate_map["module-size-policy"]

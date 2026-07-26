@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — module-size policy audit tests
-"""Tests for the tracked oversized-code responsibility audit."""
+# SCPN Quantum Control — module-responsibility policy audit tests
+"""Tests for the tracked module-responsibility audit."""
 
 from __future__ import annotations
 
@@ -34,8 +34,6 @@ _audit = _load_tool()
 
 def _policy_payload(*files: dict[str, object], open_refactor_limit: int = 0) -> object:
     return {
-        "threshold_lines": 3,
-        "extensions": [".py", ".rs"],
         "open_refactor_limit": open_refactor_limit,
         "files": list(files),
     }
@@ -75,19 +73,17 @@ def test_count_physical_lines_handles_empty_and_unterminated_files(tmp_path: Pat
     assert _audit.count_physical_lines(unterminated) == 2
 
 
-def test_build_inventory_filters_suffix_and_threshold(tmp_path: Path) -> None:
-    (tmp_path / "large.py").write_text("1\n2\n3\n4\n", encoding="utf-8")
-    (tmp_path / "small.py").write_text("1\n2\n3\n", encoding="utf-8")
-    (tmp_path / "large.md").write_text("1\n2\n3\n4\n", encoding="utf-8")
+def test_reviewed_inventory_ignores_unregistered_files_and_reports_loc(tmp_path: Path) -> None:
+    (tmp_path / "reviewed.py").write_text("1\n2\n3\n4\n", encoding="utf-8")
+    (tmp_path / "unreviewed.py").write_text("1\n2\n3\n4\n5\n", encoding="utf-8")
 
-    inventory = _audit.build_inventory(
+    inventory = _audit.build_reviewed_inventory(
         tmp_path,
-        ("large.md", "large.py", "missing.rs", "small.py"),
-        3,
-        frozenset({".py", ".rs"}),
+        ("missing.rs", "reviewed.py", "unreviewed.py"),
+        frozenset({"missing.rs", "reviewed.py"}),
     )
 
-    assert inventory == (("large.py", 4),)
+    assert inventory == (("reviewed.py", 4),)
 
 
 def test_parse_policy_rejects_duplicate_and_unsorted_paths() -> None:
@@ -95,6 +91,17 @@ def test_parse_policy_rejects_duplicate_and_unsorted_paths() -> None:
         _audit.parse_policy(_policy_payload(_entry(), _entry()))
     with pytest.raises(ValueError, match="sorted by path"):
         _audit.parse_policy(_policy_payload(_entry("src/z.py"), _entry("src/a.py")))
+
+
+def test_parse_policy_rejects_loc_gate_configuration() -> None:
+    payload = {
+        "threshold_lines": 1000,
+        "extensions": [".py"],
+        "open_refactor_limit": 0,
+        "files": [_entry()],
+    }
+    with pytest.raises(ValueError, match="LOC-gating configuration is forbidden"):
+        _audit.parse_policy(payload)
 
 
 @pytest.mark.parametrize(
@@ -122,7 +129,7 @@ def test_parse_policy_requires_a_target_for_open_refactors() -> None:
         _audit.parse_policy(_policy_payload(row, open_refactor_limit=1))
 
 
-def test_audit_policy_reports_missing_stale_line_and_ratchet_drift() -> None:
+def test_audit_policy_does_not_gate_unregistered_or_line_count_drift() -> None:
     policy = _audit.parse_policy(_policy_payload(_entry(), open_refactor_limit=1))
 
     result = _audit.audit_policy(
@@ -130,11 +137,7 @@ def test_audit_policy_reports_missing_stale_line_and_ratchet_drift() -> None:
         policy,
     )
 
-    assert result.errors == (
-        "unreviewed oversized file: src/new.rs (8 lines)",
-        "line-count drift: src/example.py records 4, observed 5",
-        "open-refactor ratchet drift: registry expects 1, observed 0",
-    )
+    assert result.errors == ("open-refactor ratchet drift: registry expects 1, observed 0",)
 
 
 def test_audit_policy_reports_stale_registry_rows() -> None:
@@ -142,7 +145,7 @@ def test_audit_policy_reports_stale_registry_rows() -> None:
 
     result = _audit.audit_policy((), policy)
 
-    assert result.errors == ("stale oversized-file registry row: src/example.py",)
+    assert result.errors == ("reviewed module is no longer a tracked file: src/example.py",)
 
 
 def test_open_refactors_pass_inventory_gate_but_fail_strict_mode() -> None:
@@ -168,10 +171,10 @@ def test_main_reports_registry_errors_without_traceback(
     status = _audit.main(["--repo-root", str(tmp_path), "--registry", str(registry)])
 
     assert status == 2
-    assert "module-size policy audit failed" in capsys.readouterr().out
+    assert "module responsibility policy audit failed" in capsys.readouterr().out
 
 
-def test_live_registry_matches_every_tracked_oversized_code_file() -> None:
+def test_live_registry_validates_reviewed_module_responsibilities() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     registry = repo_root / "tools" / "module_size_policy.json"
 
@@ -183,13 +186,13 @@ def test_live_registry_matches_every_tracked_oversized_code_file() -> None:
     assert result.inventory
 
 
-def test_architecture_quotes_the_live_inventory_and_open_count() -> None:
+def test_architecture_quotes_the_reviewed_inventory_and_open_count() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     registry = repo_root / "tools" / "module_size_policy.json"
     result = _audit.audit_repository(repo_root, registry)
     architecture = (repo_root / "docs" / "architecture.md").read_text(encoding="utf-8")
 
-    assert f"contains {len(result.inventory)} oversized tracked code files" in architecture
+    assert f"contains {len(result.inventory)} reviewed module decisions" in architecture
     assert f"and {len(result.open_refactors)} remain open" in architecture
 
 

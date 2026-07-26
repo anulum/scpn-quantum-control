@@ -47,41 +47,44 @@ no comparison benchmark artifact is invalidated. Focused native Rust tests, a
 release WASM build, real-WASM browser/component tests, and exact Python plus
 TypeScript owner coverage are the applicable cross-language evidence.
 
-## Module size and single-responsibility policy
+## Module responsibility policy
 
 Module boundaries in this codebase are governed by **single responsibility, not line
 count**. A file is split when it holds two or more *independent* responsibility clusters;
 a file whose definitions form a single connected, mutually-coupled dependency cluster is
 kept whole, because splitting it would introduce artificial seams or import cycles without
-improving cohesion. Line-count thresholds are treated as a prompt to ask "is this still one
-thing?", not as an automatic limit.
+improving cohesion. Physical line count is non-gating telemetry: there is no LOC admission,
+failure, split, or exception threshold.
 
-The exhaustive policy is machine-readable in `tools/module_size_policy.json`. It covers every
-Git-tracked Python, Rust, Julia, JavaScript/TypeScript, Go, C/C++, Verilog, and SystemVerilog file
-above 1,000 physical lines, including tests and entry points. Every row records the exact current
-size, file kind, disposition, single responsibility (or current mixed responsibilities), direct
-dependency boundary, and the condition that re-opens review. `tools/audit_module_size_policy.py`
-rejects missing rows, stale rows, line-count drift, malformed decisions, and growth in the explicit
-refactor-debt ratchet. The local no-test preflight and CI run that inventory gate. The stricter
-command below is the certification check; it remains red while any reviewed refactor is open:
+The reviewed policy is machine-readable in `tools/module_size_policy.json`. Every row records
+the file kind, disposition, single responsibility (or current mixed responsibilities), direct
+dependency boundary, and the condition that re-opens review; its stored line count is historical
+telemetry only. `tools/audit_module_size_policy.py` rejects missing reviewed files, malformed
+decisions, and growth in the explicit refactor-debt ratchet. It deliberately does not discover,
+reject, or force-split modules from their LOC. The local no-test preflight and CI run that
+responsibility gate. The stricter command below remains red while any reviewed refactor is open:
 
 ```bash
 python tools/audit_module_size_policy.py --strict
 ```
 
-The test is structural. Each module's internal call graph (top-level definition to
-referenced top-level definition) is decomposed into connected components; a second pass
-removes the most-referenced shared symbols to confirm the remaining definitions are still
-one cluster rather than independent groups joined by a single shared helper. The initial
-`compiler` decomposition applied this test to records, executable kernels, native primitives,
-operand-class compilation, whole-program lowering/emission, and Enzyme evidence. The later
-cross-language rescan found four residual `compiler/mlir.py` implementation clusters; the
-2026-07-13 extraction below closes them behind the stable facade.
+Responsibility review is structural. Reviewers use internal call graphs, public API ownership,
+state lifecycles, dependency direction, and change cadence to distinguish one cohesive cluster
+from independent groups joined by a shared helper. Those signals are evidence, not a universal
+language-independent classifier, so CI does not invent a godfile verdict from a heuristic score.
+It fails only on explicit mixed-responsibility/refactor decisions, invalid responsibility records,
+or lost reviewed owners. The separate test-quality audit can reject precisely enumerated bucket
+test names without conflating a long, module-specific contract test with a bucket.
 
-After all five reopened refactors, the exhaustive scan contains 58 oversized tracked code files:
-all 58 have an approved cohesive, facade, test-owner, or entry-point decision, and 0 remain open.
-The strict module-size certification is therefore green. This is a structural ownership claim over
-tracked code files above 1,000 physical lines, not a substitute for runtime or scientific validation.
+The initial `compiler` decomposition applied the structural review to records, executable kernels,
+native primitives, operand-class compilation, whole-program lowering/emission, and Enzyme
+evidence. The later cross-language rescan found four residual `compiler/mlir.py` implementation
+clusters; the 2026-07-13 extraction below closes them behind the stable facade.
+
+After all five reopened refactors, the register contains 58 reviewed module decisions: all 58
+have an approved cohesive, facade, test-owner, or entry-point decision, and 0 remain open.
+The strict responsibility certification is therefore green. This is an architectural ownership
+claim, not a LOC limit and not a substitute for runtime or scientific validation.
 
 The retained modules described next are intentionally kept at their current size because each is
 a single connected responsibility cluster or an explicit compatibility boundary. They are

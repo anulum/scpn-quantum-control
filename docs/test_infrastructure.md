@@ -50,7 +50,7 @@ mechanical annotations with intentional invalid-input tests and hide ownership.
 
 `tools/test_typing_policy.json` is the machine-readable policy. Its initial
 16-file `repository_policy` cohort covers coverage, coverage debt, licence, release,
-generated-surface, commit, secret, TODO, version, branch, module-size,
+generated-surface, commit, secret, TODO, version, branch, module-responsibility,
 CI/pre-push, local preflight, and built-wheel publication gate tests.
 `tools/audit_test_typing_policy.py`
 validates that every enforced path is tracked and runs strict mypy over the

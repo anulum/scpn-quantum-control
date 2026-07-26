@@ -4,12 +4,13 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tracked module-size responsibility audit
-"""Validate the tracked oversized-code inventory and its architecture decisions.
+# SCPN Quantum Control — tracked module-responsibility audit
+"""Validate reviewed module responsibilities and architecture decisions.
 
-The audit treats line count as a review trigger, not a defect. Every tracked
-code file above the configured threshold must have one registry row naming its
-responsibility, dependency boundary, disposition, and reassessment trigger.
+Module boundaries are governed by cohesive purpose and dependency ownership,
+never by a physical line-count limit. The registry names reviewed surfaces and
+records their responsibility, dependency boundary, disposition, and
+reassessment trigger. Physical lines are reported only as non-gating telemetry.
 The default gate permits only the explicitly recorded refactor debt. ``--strict``
 additionally requires that no refactor-required rows remain.
 """
@@ -49,10 +50,8 @@ class PolicyEntry:
 
 @dataclass(frozen=True)
 class ModuleSizePolicy:
-    """Parsed module-size policy registry."""
+    """Parsed module-responsibility policy registry."""
 
-    threshold_lines: int
-    extensions: frozenset[str]
     open_refactor_limit: int
     entries: tuple[PolicyEntry, ...]
 
@@ -86,23 +85,20 @@ def tracked_paths(repo_root: Path) -> tuple[str, ...]:
     return tuple(sorted(path.decode("utf-8") for path in result.stdout.split(b"\0") if path))
 
 
-def build_inventory(
+def build_reviewed_inventory(
     repo_root: Path,
     paths: tuple[str, ...],
-    threshold_lines: int,
-    extensions: frozenset[str],
+    reviewed_paths: frozenset[str],
 ) -> tuple[tuple[str, int], ...]:
-    """Return tracked code files whose physical size exceeds the threshold."""
+    """Return line-count telemetry for explicitly reviewed tracked modules."""
     inventory: list[tuple[str, int]] = []
     for relative in paths:
-        if Path(relative).suffix not in extensions:
+        if relative not in reviewed_paths:
             continue
         absolute = repo_root / relative
         if not absolute.is_file():
             continue
-        lines = count_physical_lines(absolute)
-        if lines > threshold_lines:
-            inventory.append((relative, lines))
+        inventory.append((relative, count_physical_lines(absolute)))
     return tuple(sorted(inventory))
 
 
@@ -132,7 +128,7 @@ def _integer(mapping: dict[str, object], key: str, context: str) -> int:
     return value
 
 
-def _parse_entry(value: object, index: int, threshold_lines: int) -> PolicyEntry:
+def _parse_entry(value: object, index: int) -> PolicyEntry:
     context = f"files[{index}]"
     row = _mapping(value, context)
     path = _text(row, "path", context)
@@ -140,8 +136,8 @@ def _parse_entry(value: object, index: int, threshold_lines: int) -> PolicyEntry
     if path_value.is_absolute() or ".." in path_value.parts:
         raise ValueError(f"{context}.path must be repository-relative")
     lines = _integer(row, "lines", context)
-    if lines <= threshold_lines:
-        raise ValueError(f"{context}.lines must exceed threshold_lines")
+    if lines <= 0:
+        raise ValueError(f"{context}.lines must be positive telemetry")
     kind_value = _text(row, "kind", context)
     if kind_value not in _FILE_KINDS:
         raise ValueError(f"{context}.kind is unsupported: {kind_value}")
@@ -179,26 +175,19 @@ def _parse_entry(value: object, index: int, threshold_lines: int) -> PolicyEntry
 
 
 def parse_policy(payload: object) -> ModuleSizePolicy:
-    """Parse and validate a decoded module-size policy document."""
+    """Parse and validate a decoded module-responsibility policy document."""
     root = _mapping(payload, "registry")
-    threshold_lines = _integer(root, "threshold_lines", "registry")
-    if threshold_lines <= 0:
-        raise ValueError("registry.threshold_lines must be positive")
+    forbidden_loc_keys = sorted(root.keys() & {"threshold_lines", "extensions"})
+    if forbidden_loc_keys:
+        raise ValueError(
+            "LOC-gating configuration is forbidden; module boundaries follow responsibility: "
+            f"{forbidden_loc_keys}"
+        )
     open_refactor_limit = _integer(root, "open_refactor_limit", "registry")
     if open_refactor_limit < 0:
         raise ValueError("registry.open_refactor_limit must be non-negative")
-    extension_values = _sequence(root.get("extensions"), "registry.extensions")
-    extensions: set[str] = set()
-    for index, value in enumerate(extension_values):
-        if not isinstance(value, str) or not value.startswith(".") or len(value) < 2:
-            raise ValueError(f"registry.extensions[{index}] must be a dotted suffix")
-        extensions.add(value)
-    if not extensions:
-        raise ValueError("registry.extensions must not be empty")
     entry_values = _sequence(root.get("files"), "registry.files")
-    entries = tuple(
-        _parse_entry(value, index, threshold_lines) for index, value in enumerate(entry_values)
-    )
+    entries = tuple(_parse_entry(value, index) for index, value in enumerate(entry_values))
     paths = [entry.path for entry in entries]
     duplicates = sorted({path for path in paths if paths.count(path) > 1})
     if duplicates:
@@ -206,33 +195,24 @@ def parse_policy(payload: object) -> ModuleSizePolicy:
     if paths != sorted(paths):
         raise ValueError("registry.files must be sorted by path")
     return ModuleSizePolicy(
-        threshold_lines=threshold_lines,
-        extensions=frozenset(extensions),
         open_refactor_limit=open_refactor_limit,
         entries=entries,
     )
 
 
 def load_policy(path: Path) -> ModuleSizePolicy:
-    """Load a UTF-8 JSON module-size policy registry."""
+    """Load a UTF-8 JSON module-responsibility policy registry."""
     payload = cast(object, json.loads(path.read_text(encoding="utf-8")))
     return parse_policy(payload)
 
 
 def audit_policy(inventory: tuple[tuple[str, int], ...], policy: ModuleSizePolicy) -> AuditResult:
-    """Compare a live oversized-file inventory with its reviewed policy."""
+    """Validate reviewed-path custody without turning LOC into a gate."""
     actual = dict(inventory)
     registered = {entry.path: entry for entry in policy.entries}
     errors: list[str] = []
-    for path in sorted(actual.keys() - registered.keys()):
-        errors.append(f"unreviewed oversized file: {path} ({actual[path]} lines)")
     for path in sorted(registered.keys() - actual.keys()):
-        errors.append(f"stale oversized-file registry row: {path}")
-    for path in sorted(actual.keys() & registered.keys()):
-        expected = registered[path].lines
-        observed = actual[path]
-        if expected != observed:
-            errors.append(f"line-count drift: {path} records {expected}, observed {observed}")
+        errors.append(f"reviewed module is no longer a tracked file: {path}")
     open_refactors = tuple(
         entry for entry in policy.entries if entry.disposition == "refactor_required"
     )
@@ -250,13 +230,12 @@ def audit_policy(inventory: tuple[tuple[str, int], ...], policy: ModuleSizePolic
 
 
 def audit_repository(repo_root: Path, registry_path: Path) -> AuditResult:
-    """Load policy, derive tracked inventory, and return their comparison."""
+    """Load policy and return responsibility checks plus LOC telemetry."""
     policy = load_policy(registry_path)
-    inventory = build_inventory(
+    inventory = build_reviewed_inventory(
         repo_root,
         tracked_paths(repo_root),
-        policy.threshold_lines,
-        policy.extensions,
+        frozenset(entry.path for entry in policy.entries),
     )
     return audit_policy(inventory, policy)
 
@@ -264,12 +243,13 @@ def audit_repository(repo_root: Path, registry_path: Path) -> AuditResult:
 def format_result(result: AuditResult) -> str:
     """Render a compact human-readable audit result."""
     if result.errors:
-        return "module-size policy audit failed:\n" + "\n".join(
+        return "module responsibility policy audit failed:\n" + "\n".join(
             f"- {error}" for error in result.errors
         )
     lines = [
-        "module-size policy inventory current: "
-        f"{len(result.inventory)} file(s), {len(result.open_refactors)} open refactor(s)"
+        "module responsibility policy current: "
+        f"{len(result.inventory)} reviewed file(s), "
+        f"{len(result.open_refactors)} open refactor(s); LOC is telemetry only"
     ]
     lines.extend(
         f"- OPEN {entry.path}: {entry.refactor_target}" for entry in result.open_refactors
@@ -291,7 +271,7 @@ def _json_result(result: AuditResult, strict: bool) -> str:
         {
             "status": "fail" if result_exit_code(result, strict) else "pass",
             "strict": strict,
-            "oversized_files": len(result.inventory),
+            "reviewed_files": len(result.inventory),
             "open_refactors": [entry.path for entry in result.open_refactors],
             "errors": list(result.errors),
         },
@@ -314,7 +294,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Run the tracked module-size responsibility audit."""
+    """Run the tracked module-responsibility audit."""
     args = _parser().parse_args(argv)
     try:
         result = audit_repository(args.repo_root.resolve(), args.registry.resolve())
@@ -322,7 +302,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.json:
             print(json.dumps({"errors": [str(exc)], "status": "error"}, indent=2, sort_keys=True))
         else:
-            print(f"module-size policy audit failed:\n- {exc}")
+            print(f"module responsibility policy audit failed:\n- {exc}")
         return 2
     print(_json_result(result, args.strict) if args.json else format_result(result))
     return result_exit_code(result, args.strict)
