@@ -8,12 +8,12 @@
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 339,
+    "public_documentation_pages": 340,
     "python_model_classes": 1239,
     "python_model_source_modules": 644,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1100
+    "test_files": 1101
   },
   "documentation": {
     "examples": [
@@ -217,6 +217,7 @@
       "docs/campaigns/iqm_dla_backend_sensitivity_powered_prereg_2026-07-21.md",
       "docs/campaigns/iqm_dla_d10_retest_prereg_2026-07-22.md",
       "docs/campaigns/iqm_dla_depth_profile_prereg_2026-07-22.md",
+      "docs/campaigns/iqm_dla_submission_journal_runbook_2026-07-26.md",
       "docs/campaigns/iqm_dla_window_variability_prereg_2026-07-22.md",
       "docs/campaigns/iqm_layout_transfer_per_size_prereg_2026-07-22.md",
       "docs/campaigns/iqm_layout_transfer_per_size_readiness_2026-07-26.md",
@@ -8349,6 +8350,7 @@
       "tests/test_run_decisive_advantage_benchmark.py",
       "tests/test_run_dla_parity_suite_cli.py",
       "tests/test_run_hls_cosimulation_evidence.py",
+      "tests/test_run_iqm_dla_powered_block.py",
       "tests/test_run_layout_method_comparison.py",
       "tests/test_run_layout_relaxation_experiment.py",
       "tests/test_run_quantum_ssgf_descent.py",
