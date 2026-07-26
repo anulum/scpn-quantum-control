@@ -41,6 +41,7 @@ def _prepare(args: argparse.Namespace) -> int:
 
     plan_payload = plan.to_dict()
     plan_payload["calibration_source"] = calibration_payload.get("source", "unknown")
+    plan_payload["calibration_set_id"] = calibration_payload.get("calibration_set_id")
     plan_path = out_dir / f"iqm_layout_transfer_per_size_{args.date}_plan.json"
     plan_path.write_text(json.dumps(plan_payload, indent=2) + "\n", encoding="utf-8")
 
@@ -139,7 +140,8 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
     result = args.func(args)
-    assert isinstance(result, int)
+    if not isinstance(result, int):
+        raise TypeError("subcommand must return an integer process exit code")
     return result
 
 

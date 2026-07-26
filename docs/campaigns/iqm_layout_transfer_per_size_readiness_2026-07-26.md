@@ -63,6 +63,29 @@ default-versus-naive CI95, and raw/corrected sensitivity.
 
 ## Remaining live gates
 
-After this local sequence is green, `garnet:mock`, same-day live calibration,
-explicit owner GO, and the provider submission remain separate gates. No
-credential or provider access is needed for the local readiness package.
+After this local sequence is green, prepare the final matrix from the same-day
+live calibration snapshot and exercise the exact live submission surface first
+against `garnet:mock`:
+
+```bash
+.venv-iqm/bin/python scripts/iqm_layout_transfer_resonance.py dump-calibration \
+  --quantum-computer garnet --date YYYY-MM-DD \
+  --out data/iqm_layout_transfer_per_size/live_calibration_YYYY-MM-DD.json
+.venv/bin/python scripts/iqm_layout_transfer_per_size_harness.py prepare \
+  --calibration data/iqm_layout_transfer_per_size/live_calibration_YYYY-MM-DD.json \
+  --date YYYY-MM-DD --out-dir data/iqm_layout_transfer_per_size
+.venv-iqm/bin/python scripts/iqm_layout_transfer_resonance.py submit \
+  --quantum-computer garnet:mock --all-sizes \
+  --circuits data/iqm_layout_transfer_per_size/iqm_layout_transfer_per_size_circuits_YYYY-MM-DD.qpy \
+  --labels data/iqm_layout_transfer_per_size/iqm_layout_transfer_per_size_labels_YYYY-MM-DD.json \
+  --plan data/iqm_layout_transfer_per_size/iqm_layout_transfer_per_size_YYYY-MM-DD_plan.json \
+  --date YYYY-MM-DD --out data/iqm_layout_transfer_per_size/mock_submission_YYYY-MM-DD.json \
+  --i-have-owner-go
+```
+
+The `--all-sizes` route is restricted to the frozen FU-3 campaign, requires
+exactly 36 mains plus six readouts, rechecks depth parity after provider
+transpilation, and submits the frozen single-pass split as two jobs. Replace
+only `garnet:mock` with `garnet` after the mock record, same-day calibration,
+and explicit owner GO are all present. No credential or provider access is
+needed for the provider-free local sequence above this section.
