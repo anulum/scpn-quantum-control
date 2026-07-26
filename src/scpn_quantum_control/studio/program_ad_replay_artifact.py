@@ -235,6 +235,16 @@ def _engine_value_and_gradient(ir: str) -> _EngineReplayResult:
     return _parse_engine_replay_result(raw)
 
 
+def _rational_reference_value_and_gradient() -> _EngineReplayResult:
+    """Return the exact analytic result for the frozen rational program."""
+    x, y = _PROGRAM_INPUTS
+    return _EngineReplayResult(
+        value=x * x + 2.0 * y,
+        gradient=(2.0 * x, 2.0),
+        parameter_targets=("%0", "%1"),
+    )
+
+
 def _parse_engine_replay_result(raw: str) -> _EngineReplayResult:
     """Parse and validate the untrusted JSON boundary returned by the engine."""
     result = _decode_json_object(raw, context="Rust engine replay response")
@@ -257,24 +267,9 @@ def _parse_engine_replay_result(raw: str) -> _EngineReplayResult:
     )
 
 
-def build_program_ad_replay_artifact() -> dict[str, object]:
-    """Build the committed program-AD replay unit payload.
-
-    Returns
-    -------
-    dict[str, object]
-        JSON-ready v2 payload with a cryptographic binding to the exact replay
-        bytes consumed by the browser WASM kernel.
-
-    Raises
-    ------
-    ValueError
-        If the canonical program or the engine response violates the bounded,
-        finite replay contract.
-
-    """
+def _build_program_ad_replay_payload(result: _EngineReplayResult) -> dict[str, object]:
+    """Build the canonical payload from an already verified replay result."""
     ir = _canonical_ir()
-    result = _engine_value_and_gradient(ir)
     input_bytes = encode_replay_input(ir, _PROGRAM_INPUTS)
     return {
         "schema": PROGRAM_AD_REPLAY_SCHEMA,
@@ -295,6 +290,26 @@ def build_program_ad_replay_artifact() -> dict[str, object]:
     }
 
 
+def build_program_ad_replay_artifact() -> dict[str, object]:
+    """Build the committed program-AD replay unit payload with the native engine.
+
+    Returns
+    -------
+    dict[str, object]
+        JSON-ready v2 payload with a cryptographic binding to the exact replay
+        bytes consumed by the browser WASM kernel.
+
+    Raises
+    ------
+    ValueError
+        If the canonical program or the engine response violates the bounded,
+        finite replay contract.
+
+    """
+    result = _engine_value_and_gradient(_canonical_ir())
+    return _build_program_ad_replay_payload(result)
+
+
 def inspect_program_ad_replay_artifact(payload: object) -> ProgramADReplayArtifactValidation:
     """Inspect a payload against a fresh, engine-verified build.
 
@@ -311,13 +326,15 @@ def inspect_program_ad_replay_artifact(payload: object) -> ProgramADReplayArtifa
     Raises
     ------
     ValueError
-        If the fresh engine-backed reference cannot be built.
+        If the fresh reference cannot be built.
 
     Notes
     -----
-    The rational program makes the value and gradient byte-exact. The input
-    digest additionally binds the browser verdict to the exact packed IR and
-    inputs, so changing the program and claim together cannot produce a match.
+    The native engine is the primary reference. Aggregate environments that do
+    not build the extension use the exact analytic result of the frozen rational
+    program. The input digest additionally binds the browser verdict to the exact
+    packed IR and inputs, so changing the program and claim together cannot
+    produce a match.
 
     """
     if not isinstance(payload, dict) or any(not isinstance(key, str) for key in payload):
@@ -326,7 +343,12 @@ def inspect_program_ad_replay_artifact(payload: object) -> ProgramADReplayArtifa
             errors=("artefact payload must be a JSON object with string keys",),
         )
     committed = cast(dict[str, object], payload)
-    reference = build_program_ad_replay_artifact()
+    try:
+        reference = build_program_ad_replay_artifact()
+    except ModuleNotFoundError as exc:
+        if exc.name != "scpn_quantum_engine":
+            raise
+        reference = _build_program_ad_replay_payload(_rational_reference_value_and_gradient())
     errors: list[str] = []
     committed_keys = set(committed)
     reference_keys = set(reference)

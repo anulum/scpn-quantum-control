@@ -189,6 +189,44 @@ def test_committed_artifact_is_current() -> None:
     assert artifact.validate_program_ad_replay_artifact(_committed_payload())
 
 
+def test_inspection_uses_exact_rational_fallback_without_native_engine(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Aggregate validation remains exact when the native extension is absent."""
+
+    def _missing_native_engine(ir: str) -> artifact._EngineReplayResult:
+        del ir
+        raise ModuleNotFoundError(
+            "scpn_quantum_engine native extension is not built",
+            name="scpn_quantum_engine",
+        )
+
+    monkeypatch.setattr(artifact, "_engine_value_and_gradient", _missing_native_engine)
+    validation = artifact.inspect_program_ad_replay_artifact(_committed_payload())
+    assert validation.passed
+    assert validation.errors == ()
+
+    tampered = _committed_payload()
+    _object_field(tampered, "expected")["value"] = 20.0
+    rejected = artifact.inspect_program_ad_replay_artifact(tampered)
+    assert not rejected.passed
+    assert rejected.errors == ("field 'expected' does not match the regenerated artefact",)
+
+
+def test_inspection_does_not_hide_unrelated_import_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Only absence of the exact native extension activates the fallback."""
+
+    def _missing_other_dependency(ir: str) -> artifact._EngineReplayResult:
+        del ir
+        raise ModuleNotFoundError("missing transitive dependency", name="other_dependency")
+
+    monkeypatch.setattr(artifact, "_engine_value_and_gradient", _missing_other_dependency)
+    with pytest.raises(ModuleNotFoundError, match="missing transitive dependency"):
+        artifact.inspect_program_ad_replay_artifact(_committed_payload())
+
+
 def test_validation_reports_tampered_missing_and_extra_fields() -> None:
     """Drift diagnostics identify mutations, missing fields, and extra fields."""
     tampered = _committed_payload()
