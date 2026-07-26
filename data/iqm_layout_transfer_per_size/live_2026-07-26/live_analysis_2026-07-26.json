@@ -1,0 +1,149 @@
+{
+  "campaign": "iqm_layout_transfer_per_size_prereg_2026-07-22",
+  "kind": "frozen_per_size_decision_rule",
+  "matrix_complete": true,
+  "primary_all_sizes_holm_significant": true,
+  "per_size": {
+    "8": {
+      "corrected_errors": {
+        "optimised": 0.19600348968647202,
+        "default": 0.2146829339654972,
+        "naive": 0.47345302394938327
+      },
+      "raw_errors": {
+        "optimised": 0.19351196289062778,
+        "default": 0.20993041992187778,
+        "naive": 0.4062805175781278
+      },
+      "primary_default_minus_optimised": {
+        "point": 0.01867944427902518,
+        "bootstrap_ci95": [
+          0.007550991018282934,
+          0.02967833232205444
+        ],
+        "two_sided_p": 0.0011998800119988001,
+        "holm_adjusted_p": 0.0011998800119988001,
+        "rejects_zero": true,
+        "direction": "optimiser_advantage"
+      },
+      "s4_default_minus_naive": {
+        "point": -0.25877008998388606,
+        "bootstrap_ci95": [
+          -0.2777071106593026,
+          -0.23872437667569482
+        ]
+      },
+      "s5_raw_default_minus_optimised": {
+        "point": 0.01641845703125,
+        "bootstrap_ci95": [
+          0.00689697265625,
+          0.025970458984375
+        ]
+      }
+    },
+    "12": {
+      "corrected_errors": {
+        "optimised": 0.35496467002498333,
+        "default": 0.26768478556785535,
+        "naive": 0.4730953458210149
+      },
+      "raw_errors": {
+        "optimised": 0.2805175781250052,
+        "default": 0.25791422526042185,
+        "naive": 0.3913574218750052
+      },
+      "primary_default_minus_optimised": {
+        "point": -0.08727988445712798,
+        "bootstrap_ci95": [
+          -0.10090068942011922,
+          -0.07458732344686618
+        ],
+        "two_sided_p": 0.00019998000199980003,
+        "holm_adjusted_p": 0.0005999400059994001,
+        "rejects_zero": true,
+        "direction": "optimiser_disadvantage"
+      },
+      "s4_default_minus_naive": {
+        "point": -0.20541056025315957,
+        "bootstrap_ci95": [
+          -0.219322459208531,
+          -0.1926307824891309
+        ]
+      },
+      "s5_raw_default_minus_optimised": {
+        "point": -0.02260335286458337,
+        "bootstrap_ci95": [
+          -0.03070068359375,
+          -0.01442464192708337
+        ]
+      }
+    },
+    "16": {
+      "corrected_errors": {
+        "optimised": 0.3373679375172704,
+        "default": 0.3870121138642357,
+        "naive": 0.4163546139597045
+      },
+      "raw_errors": {
+        "optimised": 0.2779541015625079,
+        "default": 0.3217315673828204,
+        "naive": 0.3495941162109454
+      },
+      "primary_default_minus_optimised": {
+        "point": 0.049644176346965274,
+        "bootstrap_ci95": [
+          0.04109064462034082,
+          0.05822707418890059
+        ],
+        "two_sided_p": 0.00019998000199980003,
+        "holm_adjusted_p": 0.0005999400059994001,
+        "rejects_zero": true,
+        "direction": "optimiser_advantage"
+      },
+      "s4_default_minus_naive": {
+        "point": -0.02934250009546885,
+        "bootstrap_ci95": [
+          -0.0379752733235285,
+          -0.02061487353059763
+        ]
+      },
+      "s5_raw_default_minus_optimised": {
+        "point": 0.0437774658203125,
+        "bootstrap_ci95": [
+          0.0365142822265625,
+          0.05102577209472656
+        ]
+      }
+    }
+  },
+  "s2_pooled_default_minus_optimised": {
+    "point": -0.006318754610379174,
+    "bootstrap_ci90": [
+      -0.01187269463181303,
+      -0.0009910288583429717
+    ]
+  },
+  "s3_cochran_q": {
+    "analysable": true,
+    "cochran_q": 292.42974317121934,
+    "degrees_of_freedom": 2,
+    "p_value": 3.1600073893856145e-64,
+    "rejects_homogeneity": true,
+    "bootstrap_variances": {
+      "8": 3.2089020590127026e-05,
+      "12": 4.5751193740106196e-05,
+      "16": 1.9047561089559986e-05
+    }
+  },
+  "bootstrap": {
+    "resamples": 10000,
+    "seed": 20260722
+  },
+  "interpretation_boundary": "FU-3 resolves sampled per-size layout effects on one IQM Garnet calibration window only; no quantum-advantage or cross-device claim",
+  "backend": "garnet",
+  "evidence_kind": "hardware_counts_analysis",
+  "job_ids": [
+    "019f9c79-1d4b-79e3-a590-aa180819d930",
+    "019f9c79-21e0-7eb2-86e1-69c47fd82715"
+  ]
+}
