@@ -296,15 +296,17 @@ underlying mechanism. "Replication" here therefore binds only to the pooled
 directional effect, not to a claim that the two devices exhibit the same
 noise structure.
 
-The depth profile, however, is qualitatively different: IBM's reference
-asymmetry was approximately flat in depth (≈ +0.044 to +0.087), whereas
-Garnet's decays monotonically from +0.230 at depth 4 and crosses zero between
-depths 6 and 10. At depth 10 both sectors leak close to half the shots
-(0.46–0.48), approaching sector equilibration, which plausibly compresses any
-asymmetry; the d4 asymmetry (largest, at the lowest total leakage) is
-therefore the cleanest signature. Localising the zero crossing and testing
-the equilibration explanation requires depths between 6 and 10 and beyond —
-preregistered as a follow-up (Section 5) and **not** claimed here.
+The initial secondary profile was qualitatively different from IBM's:
+IBM's reference asymmetry was approximately flat in depth (≈ +0.044 to
++0.087), while the first Garnet window fell from +0.230 at depth 4 to
+−0.049 at depth 10. That isolated negative point initially motivated a
+zero-crossing hypothesis, but it was not a preregistered endpoint. The
+preregistered follow-ups in Section 5 do not support that hypothesis: the
+depth-8 versus depth-12 ordering is a bounded null (p = 0.064), a powered
+fresh-window depth-10 retest is positive, and the two depth-10 windows differ
+significantly (p ≈ 0.006). The surviving bounded interpretation is therefore
+window-to-window variability of device-noise asymmetry, not a depth-localised
+zero crossing. No zero-crossing or equilibration-mechanism claim is made.
 
 ## 5. Preregistered depth-profile follow-up (executed)
 
