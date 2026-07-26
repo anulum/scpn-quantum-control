@@ -9,10 +9,19 @@
 
 from __future__ import annotations
 
-from typing import cast
+from typing import Any, cast
 
+import numpy as np
 import pytest
 
+import tools.rust_llvm_jit_decision as decision_module
+from scpn_quantum_control.differentiable import (
+    whole_program_value_and_grad as original_whole_program_value_and_grad,
+)
+from scpn_quantum_control.program_ad_rust_bridge import (
+    RustProgramADValueAndGradientResult,
+)
+from scpn_quantum_control.whole_program_ad_result import WholeProgramADResult
 from tools.rust_llvm_jit_decision import (
     SCHEMA,
     capture_decision_evidence,
@@ -20,6 +29,62 @@ from tools.rust_llvm_jit_decision import (
     inventory_matrix,
     validate_decision_evidence,
 )
+
+
+def _native_rust_replay_available() -> bool:
+    """Return whether the optional extension exposes the required replay API."""
+    try:
+        import scpn_quantum_engine as engine
+    except ModuleNotFoundError:
+        return False
+    return callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+
+
+def _install_reference_replay_contract(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Install a deterministic test-only aggregate replay contract.
+
+    The production decision harness remains fail-closed. This seam lets the
+    deliberately engine-free reproduction image validate evidence assembly,
+    native-JIT parity, and schema invariants against the canonical Python
+    trace result without claiming that Rust executed there.
+    """
+    traced_results: dict[int, WholeProgramADResult] = {}
+
+    def trace_and_remember(*args: Any, **kwargs: Any) -> WholeProgramADResult:
+        traced = original_whole_program_value_and_grad(*args, **kwargs)
+        program_ir = traced.program_ir
+        if program_ir is not None:
+            traced_results[id(program_ir)] = traced
+        return traced
+
+    def replay_reference(
+        program_ir: object,
+        _inputs: object,
+    ) -> RustProgramADValueAndGradientResult:
+        traced = traced_results.get(id(program_ir))
+        if traced is None:
+            raise AssertionError("test replay contract did not observe the Program AD trace")
+        if traced.program_ir is None:
+            raise AssertionError("test replay contract observed an empty Program AD trace")
+        gradient = np.asarray(traced.gradient, dtype=np.float64)
+        effect_count = len(traced.program_ir.effects)
+        return RustProgramADValueAndGradientResult(
+            supported=True,
+            value=float(traced.value),
+            gradient=gradient,
+            parameter_targets=tuple(f"input[{index}]" for index in range(gradient.size)),
+            effect_count=effect_count,
+            supported_effect_count=effect_count,
+            blocked_reasons=(),
+            claim_boundary="test-only canonical Python aggregate replay contract",
+        )
+
+    monkeypatch.setattr(decision_module, "whole_program_value_and_grad", trace_and_remember)
+    monkeypatch.setattr(
+        decision_module,
+        "value_and_grad_program_ad_effect_ir_with_rust",
+        replay_reference,
+    )
 
 
 def test_kernel_set_is_frozen_bounded_and_unique() -> None:
@@ -60,8 +125,10 @@ def test_validation_fails_closed_for_unearned_go() -> None:
         validate_decision_evidence(payload)
 
 
-def test_capture_produces_valid_no_go_evidence() -> None:
-    """The live installed engines must agree on every frozen comparison row."""
+def test_capture_produces_valid_no_go_evidence(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Installed engines, or the engine-free image contract, must agree."""
+    if not _native_rust_replay_available():
+        _install_reference_replay_contract(monkeypatch)
     payload = capture_decision_evidence(
         stamp="test",
         rounds=3,
@@ -82,3 +149,47 @@ def test_capture_produces_valid_no_go_evidence() -> None:
     assert all(row["native_jit_supported"] is True for row in kernels)
     assert isinstance(payload["sha256"], str)
     assert len(payload["sha256"]) == 64
+
+
+def test_engine_free_image_validates_aggregate_capture_contract(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The reproduction image must exercise capture without native Rust."""
+    _install_reference_replay_contract(monkeypatch)
+    payload = capture_decision_evidence(
+        stamp="test-engine-free-contract",
+        rounds=3,
+        repetitions=1,
+        warmups=0,
+        isolated=False,
+    )
+    validate_decision_evidence(payload)
+    assert payload["decision"] == "NO-GO"
+
+
+def test_capture_remains_fail_closed_for_unsupported_rust_replay(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The production harness must never promote an unsupported Rust replay."""
+    monkeypatch.setattr(
+        decision_module,
+        "value_and_grad_program_ad_effect_ir_with_rust",
+        lambda *_args, **_kwargs: RustProgramADValueAndGradientResult(
+            supported=False,
+            value=None,
+            gradient=np.array([], dtype=np.float64),
+            parameter_targets=(),
+            effect_count=0,
+            supported_effect_count=0,
+            blocked_reasons=("native replay unavailable",),
+            claim_boundary="test-only unsupported replay contract",
+        ),
+    )
+    with pytest.raises(ValueError, match="Rust replay blocked"):
+        capture_decision_evidence(
+            stamp="test-fail-closed",
+            rounds=3,
+            repetitions=1,
+            warmups=0,
+            isolated=False,
+        )
