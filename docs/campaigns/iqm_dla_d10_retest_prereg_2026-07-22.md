@@ -109,5 +109,5 @@ Blocked regardless of outcome: quantum advantage; coherence protection;
 coherent-dynamics parity claims; extrapolation beyond the sampled device,
 calibration window, layout, and depth; any modification of frozen
 submissions under `paper/submissions/`. Results extend the
-`submission_006` draft (or its successor) only. IQM and IQM Resonance are
+`submission_007` draft (or its successor) only. IQM and IQM Resonance are
 credited in every resulting output.

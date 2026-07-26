@@ -154,7 +154,7 @@ coherent-dynamics parity claims; any causal attribution of drift to a
 specific hardware mechanism (S4 is descriptive); extrapolation beyond the
 sampled device, layouts, and depths; any modification of frozen
 submissions under `paper/submissions/` (results extend the NEW manuscript
-`submission_006` or its successor only). IQM and IQM Resonance are
+`submission_007` or its successor only). IQM and IQM Resonance are
 credited in every resulting output.
 
 ## Submission Boundary

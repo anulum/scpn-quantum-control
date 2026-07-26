@@ -14,9 +14,10 @@ Miroslav Šotek (ORCID 0009-0009-3560-0851), with Anulum Fortis & Arcane Sapienc
 (protoscience@anulum.li)
 
 All quantum-hardware results in this work were obtained on IQM Garnet through
-**IQM Resonance**; we thank IQM for extended Resonance access. Circuits ran on
-20 qubits of the square-lattice Garnet device on 2026-07-21, within a single
-calibration window (calibration set `246a4930-54e3-4cd9-a2d1-fcc0919675f5`).
+**IQM Resonance**; we thank IQM for extended Resonance access. The two core
+experiments ran on 20 qubits of the square-lattice device on 2026-07-21
+(calibration set `246a4930-54e3-4cd9-a2d1-fcc0919675f5`); explicitly identified
+follow-ups used fresh windows and their own recorded calibration sets.
 
 ## Abstract
 
@@ -40,6 +41,11 @@ and report the preregistered bounded result: the calibration-aware advantage
 on this device is real in aggregate but not uniform across sizes, while
 placement per se matters unambiguously (the topological baseline is worse than
 automatic placement at every size; pooled +0.099, CI90 [+0.090, +0.108]).
+A separately preregistered, four-repetition powered follow-up confirms that
+all three per-size differences are nonzero, but also confirms the n = 12
+reversal: default-minus-optimised corrected error is +0.0187 at n = 8,
+−0.0873 at n = 12, and +0.0496 at n = 16 (all Holm-adjusted p ≤ 0.0012),
+with decisive cross-size heterogeneity (Q = 292.43, p = 3.16 × 10⁻⁶⁴).
 
 **Experiment 2 (parity-sector noise asymmetry).** A published IBM Heron r2
 result found that hardware parity-sector leakage in number-conserving
@@ -206,8 +212,36 @@ We report exactly the preregistered bounded conclusion:
   calibration-blind topological baseline is worse than automatic placement at
   every size, by three times the optimiser's pooled margin.
 
-A transfer claim would require a design powered for per-size conclusions and
-uniformity; that is future work requiring a fresh preregistration.
+A transfer claim therefore required a fresh design powered for per-size
+conclusions and uniformity. That preregistered follow-up has now executed.
+
+### 3.4 Powered per-size follow-up (FU-3)
+
+FU-3 was frozen on 2026-07-22 before its hardware data existed
+(`docs/campaigns/iqm_layout_transfer_per_size_prereg_2026-07-22.md`). It
+repeated every arm four times at each size (8,192 main shots per arm/size),
+added a fresh all-zero/all-one readout pair per size, and submitted the whole
+42-circuit, 79,872-shot matrix in one pass on 2026-07-26 under calibration set
+`c2097be4-1e23-49bc-adaa-8e8c01df6223`. Provider transpilation preserved an
+identical two-qubit depth of 40 for every main circuit.
+
+The frozen corrected `default − optimised` endpoint was significant at all
+three sizes after Holm correction, but not in one direction:
+
+| n | default − optimised | bootstrap CI95 | Holm p | direction |
+|---|--------------------:|----------------|-------:|-----------|
+| 8 | +0.01868 | [+0.00755, +0.02968] | 0.001200 | optimiser advantage |
+| 12 | **−0.08728** | [−0.10090, −0.07459] | 0.000600 | **optimiser disadvantage** |
+| 16 | +0.04964 | [+0.04109, +0.05823] | 0.000600 | optimiser advantage |
+
+The powered design therefore confirms, rather than resolves away, the n = 12
+reversal. Cochran's heterogeneity statistic rejects a common effect across
+sizes (Q = 292.43 on 2 df, p = 3.16 × 10⁻⁶⁴). Raw-count sensitivity preserves
+all three directions. The pooled difference is slightly negative (−0.00632,
+CI90 [−0.01187, −0.00099]) because the n = 12 disadvantage dominates; it must
+not be used to erase the per-size result. This is a size-dependent layout
+effect in one Garnet calibration window, not a quantum-advantage,
+backend-universal, or calibration-aware-superiority claim.
 
 ## 4. Experiment 2 — parity-sector noise asymmetry at preregistered power
 
@@ -331,7 +365,7 @@ repository (github.com/anulum/scpn-quantum-control):
 - exact circuit payloads (QPY) and circuit-label manifests;
 - submission records with raw IQM job identifiers (publishable; the access
   token is never committed);
-- raw measurement counts for all 43 hardware circuits;
+- raw measurement counts for every reported hardware circuit;
 - frozen analysis scripts (fixed bootstrap seeds) whose committed artefacts
   contain every number quoted here;
 - the harness modules with 100 % test coverage, hermetic against synthetic
@@ -344,9 +378,11 @@ sizes — that is what makes the exact references possible). No
 coherence-protection claim. No coherent-dynamics claim for the parity
 asymmetry (noiseless leakage is exactly zero). No layout-transfer claim
 (the frozen rule failed). No extrapolation beyond the sampled device,
-calibration window, chain lengths, depths, and schedules. Results are
-statements about IQM Garnet on 2026-07-21 under calibration set
-`246a4930-54e3-4cd9-a2d1-fcc0919675f5`.
+calibration windows, chain lengths, depths, and schedules. The core results
+are statements about IQM Garnet on 2026-07-21 under calibration set
+`246a4930-54e3-4cd9-a2d1-fcc0919675f5`; FU-3 is separately bounded to its
+2026-07-26 window under calibration set
+`c2097be4-1e23-49bc-adaa-8e8c01df6223`.
 
 ## Acknowledgements
 

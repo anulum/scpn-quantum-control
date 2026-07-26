@@ -123,7 +123,7 @@ layout transfer is uniform or size-modulated.
 Blocked regardless of outcome: quantum advantage; coherence protection;
 claims about non-sampled sizes, devices, or calibration windows; any
 modification of frozen submissions under `paper/submissions/` (results
-extend the NEW manuscript `submission_006` or its successor only). IQM
+extend the NEW manuscript `submission_007` or its successor only). IQM
 and IQM Resonance are credited in every resulting output.
 
 ## Submission Boundary
