@@ -13,6 +13,21 @@ import subprocess
 import sys
 from textwrap import dedent
 
+import pytest
+
+import scpn_quantum_control.studio as studio
+
+
+def test_lazy_public_export_resolution_is_covered_in_process() -> None:
+    """Lazy export lookup, discovery, and rejection must remain deterministic."""
+    schema = studio.__getattr__("REFERENCE_VALIDATION_SCHEMA")
+    assert schema == "studio.reference-validation-certifications.v1"
+    assert studio.__dict__["REFERENCE_VALIDATION_SCHEMA"] == schema
+    assert "REFERENCE_VALIDATION_SCHEMA" in studio.__dir__()
+
+    with pytest.raises(AttributeError, match="has no attribute 'missing_export'"):
+        studio.__getattr__("missing_export")
+
 
 def test_core_studio_submodule_imports_without_studio_platform() -> None:
     """A core replay module must not import the optional Studio platform."""
