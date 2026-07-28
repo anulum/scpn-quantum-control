@@ -1,0 +1,42 @@
+{
+  "claim_boundary": "deterministic local simulator orchestration over existing phase and control surfaces; no live QPU, provider submission, operational plasma control, realtime hardware, stability guarantee, or quantum-advantage claim",
+  "classification": "functional_non_isolated",
+  "command": [
+    "python",
+    "scripts/run_codesign_loop_evidence.py"
+  ],
+  "elapsed_ms": [
+    1.857937,
+    0.717618,
+    0.592012,
+    0.630938,
+    0.788159,
+    0.598894,
+    0.74322,
+    0.799491,
+    0.756067,
+    0.599107,
+    0.572111,
+    0.793891,
+    0.853946,
+    1.688942,
+    1.300191,
+    0.96219,
+    1.054911,
+    0.707716,
+    0.746148,
+    0.759637
+  ],
+  "hardware_execution": false,
+  "isolated": false,
+  "iterations": 20,
+  "median_elapsed_ms": 0.757852,
+  "platform": "Linux-7.0.0-28-generic-x86_64-with-glibc2.39",
+  "provider_execution": false,
+  "python_version": "3.12.13",
+  "replay_verified": true,
+  "schema": "quantum_classical_codesign.evidence.v1",
+  "steps_per_iteration": 2,
+  "throughput_steps_per_second": 2282.6977332697375,
+  "trace_digest": "731a2c87e8fd73a507be09f3d254c59d012a2f57a19996c2262a441f18425835"
+}

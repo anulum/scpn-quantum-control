@@ -21,6 +21,25 @@ under `accel/` now ships as the standalone `oscillatools` distribution;
 This split is why the same repository can support both reproducible research
 workflows and integration-oriented development.
 
+## Quantum-classical co-design composition
+
+`scpn_quantum_control.codesign` is a thin composition layer, not a new physics
+or realtime-control stack. Its dependency direction is one-way: immutable
+contracts feed a local phase-objective evaluator, estimator and controller;
+latency and safety policies decide whether the proposal is applied to the next
+simulator state; replay serialises the complete decision. The package consumes
+BL-67 `RealtimeFeedbackPort`, `QaoaMpcPort`, and policy-gated co-simulation
+adapters, plus BL-68/69/70 observer records. It does not import a partner
+repository or move plant-model ownership into this codebase.
+
+The evaluator reuses the existing synchronisation objective and exact analytic
+gradient, attaches the existing BL-09 capability explanation, and can compose
+one explicit BL-16 bounded open-system case. A `ClosedLoopExecutionPolicy` is
+required, but hardware execution remains refused even when that policy carries
+a ticket. Logical timestamps make replay deterministic; measured workstation
+timings live only in a separately labelled `functional_non_isolated` evidence
+artefact. See [Quantum-Classical Co-Design Loop](quantum_classical_codesign_loop.md).
+
 ## Studio Program-AD replay trust chain
 
 The Studio ST-12 card is an end-to-end verification chain, not a JavaScript

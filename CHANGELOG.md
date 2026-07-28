@@ -1,5 +1,11 @@
 # Changelog
 
+- 2026-07-28 — Quantum-classical co-design loop (BL-33):
+  `scpn_quantum_control.codesign` composes exact phase objectives, BL-09
+  planner explanations, optional BL-16 evidence, BL-67 runtime ports, and
+  BL-68/69/70 observers behind deterministic latency and safety policies.
+  Digest-bound replay and functional non-isolated evidence are included;
+  hardware, provider submission, and operational plasma control remain refused.
 - 2026-07-25 — SSGF quantum-in-the-loop geometry gradient (BL-70):
   `scpn_quantum_control.ssgf_geometry_gradient_product` freezes the ambient
   SSGF surface, cross-certifies `C=1-R`, checks finite-difference refinement and
@@ -28,6 +34,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-28 — BL-33 simulator-first quantum-classical co-design package,
+  versioned replay format, policy-gated control/observer adapters, public guide,
+  and measured functional non-isolated evidence artefact.
 - 2026-07-26 — Fault-tolerant synchronisation resource product (BL-36):
   `scpn_quantum_control.fault_tolerant_resource_product` composes existing QEC
   formulas into a digest-bound conservative distance/qubit/T-count/sensitivity

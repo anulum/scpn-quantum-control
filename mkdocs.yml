@@ -73,6 +73,7 @@ nav:
   - API Reference:
       - Choosing a Gradient Path: choosing_a_gradient_path.md
       - Differentiable API: differentiable_api.md
+      - Quantum-Classical Co-Design Loop: quantum_classical_codesign_loop.md
       - Differentiable Support Matrix: differentiable_support_matrix.md
       - Differentiable Reviewer Evidence: differentiable_reviewer_evidence.md
       - Differentiable External Validation Report: differentiable_external_validation_report.md

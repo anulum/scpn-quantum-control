@@ -1,19 +1,19 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 32,
+    "domain_package_families": 33,
     "example_files": 37,
     "github_workflows": 24,
     "model_documentation_pages": null,
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 340,
-    "python_model_classes": 1239,
-    "python_model_source_modules": 644,
+    "public_documentation_pages": 341,
+    "python_model_classes": 1266,
+    "python_model_source_modules": 651,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1101
+    "test_files": 1108
   },
   "documentation": {
     "examples": [
@@ -448,6 +448,7 @@
       "docs/qpu_data_artifact.md",
       "docs/qpu_provider_readiness.md",
       "docs/qpu_system_capability_dossier.md",
+      "docs/quantum_classical_codesign_loop.md",
       "docs/quantum_classical_cosimulation.md",
       "docs/quantum_gradients.md",
       "docs/quantum_graph_neural_network.md",
@@ -564,6 +565,11 @@
         "package": "codegen",
         "path": "src/scpn_quantum_control/codegen",
         "python_modules": 1
+      },
+      {
+        "package": "codesign",
+        "path": "src/scpn_quantum_control/codesign",
+        "python_modules": 7
       },
       {
         "package": "compiler",
@@ -946,6 +952,10 @@
       },
       {
         "name": "BackendCapabilities",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
+        "name": "BackendCapabilities",
         "path": "src/scpn_quantum_control/hardware/hal.py"
       },
       {
@@ -1189,6 +1199,14 @@
         "path": "src/scpn_quantum_control/deployment/cloud_native.py"
       },
       {
+        "name": "CoDesignLoop",
+        "path": "src/scpn_quantum_control/codesign/loop.py"
+      },
+      {
+        "name": "CoDesignMode",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
         "name": "CoSimulationResult",
         "path": "src/scpn_quantum_control/cosimulation/quantum_classical.py"
       },
@@ -1349,6 +1367,10 @@
         "path": "src/scpn_quantum_control/phase/contraction_optimiser.py"
       },
       {
+        "name": "ControlAdapterEvidence",
+        "path": "src/scpn_quantum_control/codesign/adapters.py"
+      },
+      {
         "name": "ControlPerformance",
         "path": "src/scpn_quantum_control/control/closed_loop_analysis.py"
       },
@@ -1359,6 +1381,14 @@
       {
         "name": "ControllerFactory",
         "path": "src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py"
+      },
+      {
+        "name": "ControllerPort",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
+        "name": "ControllerProposal",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
       },
       {
         "name": "CosimulationEvidence",
@@ -2049,6 +2079,10 @@
         "path": "src/scpn_quantum_control/stable_core.py"
       },
       {
+        "name": "ExponentialOrderEstimator",
+        "path": "src/scpn_quantum_control/codesign/components.py"
+      },
+      {
         "name": "ExternalComparisonArtifact",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_external_contracts.py"
       },
@@ -2257,6 +2291,10 @@
         "path": "src/scpn_quantum_control/kyma_mechanism_benchmark_product.py"
       },
       {
+        "name": "FunctionalEvidence",
+        "path": "src/scpn_quantum_control/codesign/evidence.py"
+      },
+      {
         "name": "FusionCoreFRCCalibration",
         "path": "src/scpn_quantum_control/bridge/fusion_core_frc.py"
       },
@@ -2333,8 +2371,16 @@
         "path": "src/scpn_quantum_control/differentiable_stochastic_policy.py"
       },
       {
+        "name": "GradientFeedbackController",
+        "path": "src/scpn_quantum_control/codesign/components.py"
+      },
+      {
         "name": "GradientPlanExplanationArtifactValidation",
         "path": "src/scpn_quantum_control/gradient_plan_explanation_artifact.py"
+      },
+      {
+        "name": "GradientPlanRecord",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
       },
       {
         "name": "GradientResult",
@@ -2805,8 +2851,16 @@
         "path": "src/scpn_quantum_control/compiler/mlir_llvm_jit_claim_gate.py"
       },
       {
+        "name": "LatencyDecision",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
         "name": "LatencyMeasurer",
         "path": "src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py"
+      },
+      {
+        "name": "LatencyPolicy",
+        "path": "src/scpn_quantum_control/codesign/policies.py"
       },
       {
         "name": "LatticeCalibration",
@@ -2891,6 +2945,14 @@
       {
         "name": "LogicalSyncWitness",
         "path": "src/scpn_quantum_control/analysis/logical_sync_witness.py"
+      },
+      {
+        "name": "LoopStepInput",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
+        "name": "LoopStepOutput",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
       },
       {
         "name": "LoschmidtResult",
@@ -3237,6 +3299,10 @@
         "path": "src/scpn_quantum_control/benchmark_harness/synchronisation_runner.py"
       },
       {
+        "name": "ObserverInputs",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
         "name": "OpenPulseCalibrationWorkflow",
         "path": "src/scpn_quantum_control/hardware/openpulse_control.py"
       },
@@ -3263,6 +3329,10 @@
       {
         "name": "OpenSystemObjectiveBoundaryRow",
         "path": "src/scpn_quantum_control/phase/open_system_objectives.py"
+      },
+      {
+        "name": "OpenSystemObjectiveConfig",
+        "path": "src/scpn_quantum_control/codesign/components.py"
       },
       {
         "name": "OpenSystemObjectiveEvidenceArtifact",
@@ -3765,6 +3835,10 @@
         "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
+        "name": "PhaseObjectiveSimulator",
+        "path": "src/scpn_quantum_control/codesign/components.py"
+      },
+      {
         "name": "PhaseOrchestratorAdapter",
         "path": "src/scpn_quantum_control/bridge/orchestrator_adapter.py"
       },
@@ -4159,6 +4233,10 @@
       {
         "name": "PlasmaApplicationPlugin",
         "path": "src/scpn_quantum_control/applications/app_plugins.py"
+      },
+      {
+        "name": "PlasmaObjectiveTemplate",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
       },
       {
         "name": "PlatformReadiness",
@@ -4641,6 +4719,14 @@
         "path": "src/scpn_quantum_control/applications/quantum_evs.py"
       },
       {
+        "name": "QuantumEvaluation",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
+        "name": "QuantumEvaluationPort",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
         "name": "QuantumFisherInformation",
         "path": "src/scpn_quantum_control/analysis/quantum_fisher_information.py"
       },
@@ -4881,6 +4967,10 @@
         "path": "src/scpn_quantum_control/studio/executive_replay.py"
       },
       {
+        "name": "ReplayTrace",
+        "path": "src/scpn_quantum_control/codesign/replay.py"
+      },
+      {
         "name": "ReproducibleKuramotoComparison",
         "path": "src/scpn_quantum_control/benchmarks/reproducible_comparison.py"
       },
@@ -5025,6 +5115,18 @@
         "path": "src/scpn_quantum_control/bridge/ssgf_adapter.py"
       },
       {
+        "name": "SafetyAction",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
+        "name": "SafetyDecision",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
+        "name": "SafetyEnvelope",
+        "path": "src/scpn_quantum_control/codesign/policies.py"
+      },
+      {
         "name": "ScalingBaseline",
         "path": "src/scpn_quantum_control/benchmarks/advantage_protocol.py"
       },
@@ -5147,6 +5249,18 @@
       {
         "name": "StableCoreRoundTripResult",
         "path": "src/scpn_quantum_control/stable_core_product.py"
+      },
+      {
+        "name": "StaleGradientAction",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
+        "name": "StateEstimate",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
+        "name": "StateEstimatorPort",
+        "path": "src/scpn_quantum_control/codesign/contracts.py"
       },
       {
         "name": "StatisticalSummary",
@@ -5817,6 +5931,13 @@
       "src/scpn_quantum_control/circuit_cutting_product.py",
       "src/scpn_quantum_control/cloud_native_deployment_product.py",
       "src/scpn_quantum_control/codegen/ultrascale_hls.py",
+      "src/scpn_quantum_control/codesign/adapters.py",
+      "src/scpn_quantum_control/codesign/components.py",
+      "src/scpn_quantum_control/codesign/contracts.py",
+      "src/scpn_quantum_control/codesign/evidence.py",
+      "src/scpn_quantum_control/codesign/loop.py",
+      "src/scpn_quantum_control/codesign/policies.py",
+      "src/scpn_quantum_control/codesign/replay.py",
       "src/scpn_quantum_control/competitive_baseline_watch.py",
       "src/scpn_quantum_control/compile_budget.py",
       "src/scpn_quantum_control/compiler/alias_activity_evidence.py",
@@ -7582,6 +7703,13 @@
       "tests/test_cloud_native.py",
       "tests/test_cloud_native_branches.py",
       "tests/test_cloud_native_deployment_product.py",
+      "tests/test_codesign_adapters.py",
+      "tests/test_codesign_contracts.py",
+      "tests/test_codesign_evaluation.py",
+      "tests/test_codesign_evidence.py",
+      "tests/test_codesign_loop.py",
+      "tests/test_codesign_policies.py",
+      "tests/test_codesign_replay.py",
       "tests/test_commutator_bounds.py",
       "tests/test_compare_eeg_plv_cohorts.py",
       "tests/test_competitive_baseline_watch.py",
