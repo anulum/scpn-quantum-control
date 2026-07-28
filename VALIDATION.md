@@ -89,6 +89,31 @@ repository evidence runner. The end-to-end tests use actual local simulator,
 QAOA-MPC, realtime-feedback, and co-simulation surfaces; no provider job or QPU
 execution occurs.
 
+### QNN, QGNN, and QSNN Convergence Tests
+
+The BL-42 focused lane validates immutable task and evidence contracts, exact
+certificate arithmetic, deterministic replay, one real convergence task for
+each QNN/QGNN/QSNN family, all framework-status cells, digest drift, atomic
+evidence writing, and the repository CLI. Installed QNN adapters execute real
+JAX and PyTorch gradient agreement; unavailable TensorFlow is recorded
+explicitly and becomes a failing gate when required. The lane requires 100%
+statement and branch coverage over `scpn_quantum_control.ml_examples`.
+
+```bash
+PYTHONPATH=src:oscillatools/src python -m coverage run --branch -m pytest -q \
+  tests/test_ml_convergence_contracts.py \
+  tests/test_ml_convergence_qnn.py \
+  tests/test_ml_convergence_qgnn.py \
+  tests/test_ml_convergence_qsnn.py \
+  tests/test_ml_convergence_evidence.py
+python -m coverage report --fail-under=100 \
+  --include='*/scpn_quantum_control/ml_examples/*.py'
+```
+
+This validation is local and synthetic. It does not execute a provider, QPU,
+or neuromorphic device and does not test temporal-coding or production-scale
+convergence.
+
 ## Physics Verification Gates
 
 ### 1. Quantum-Classical Parity

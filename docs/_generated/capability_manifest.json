@@ -1,19 +1,19 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 33,
+    "domain_package_families": 34,
     "example_files": 37,
     "github_workflows": 24,
     "model_documentation_pages": null,
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 341,
-    "python_model_classes": 1266,
-    "python_model_source_modules": 651,
+    "public_documentation_pages": 342,
+    "python_model_classes": 1272,
+    "python_model_source_modules": 657,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1108
+    "test_files": 1113
   },
   "documentation": {
     "examples": [
@@ -391,6 +391,7 @@
       "docs/methods_benchmark_dashboard.md",
       "docs/migration_guides_product.md",
       "docs/mitigation_api.md",
+      "docs/ml_convergence_examples.md",
       "docs/ml_dsa_pqc.md",
       "docs/multi_hal_federation_product.md",
       "docs/multi_platform.md",
@@ -640,6 +641,11 @@
         "package": "mitigation",
         "path": "src/scpn_quantum_control/mitigation",
         "python_modules": 13
+      },
+      {
+        "package": "ml_examples",
+        "path": "src/scpn_quantum_control/ml_examples",
+        "python_modules": 6
       },
       {
         "package": "pgbo",
@@ -1389,6 +1395,18 @@
       {
         "name": "ControllerProposal",
         "path": "src/scpn_quantum_control/codesign/contracts.py"
+      },
+      {
+        "name": "ConvergenceCertificate",
+        "path": "src/scpn_quantum_control/ml_examples/contracts.py"
+      },
+      {
+        "name": "ConvergenceExampleSpec",
+        "path": "src/scpn_quantum_control/ml_examples/contracts.py"
+      },
+      {
+        "name": "ConvergenceSuiteEvidence",
+        "path": "src/scpn_quantum_control/ml_examples/contracts.py"
       },
       {
         "name": "CosimulationEvidence",
@@ -2275,12 +2293,20 @@
         "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py"
       },
       {
+        "name": "FrameworkEvidenceRow",
+        "path": "src/scpn_quantum_control/ml_examples/contracts.py"
+      },
+      {
         "name": "FrameworkOverlayManifest",
         "path": "src/scpn_quantum_control/differentiable_framework_overlay.py"
       },
       {
         "name": "FrameworkOverlayVerification",
         "path": "src/scpn_quantum_control/differentiable_framework_overlay.py"
+      },
+      {
+        "name": "FrameworkStatus",
+        "path": "src/scpn_quantum_control/ml_examples/contracts.py"
       },
       {
         "name": "FreeEnergyResult",
@@ -3165,6 +3191,10 @@
       {
         "name": "MitigatorTaxonomyRow",
         "path": "src/scpn_quantum_control/error_mitigation_product.py"
+      },
+      {
+        "name": "ModelFamily",
+        "path": "src/scpn_quantum_control/ml_examples/contracts.py"
       },
       {
         "name": "MonitoredKuramotoSpec",
@@ -6170,6 +6200,12 @@
       "src/scpn_quantum_control/mitigation/symmetry_verification.py",
       "src/scpn_quantum_control/mitigation/zne.py",
       "src/scpn_quantum_control/mitigation/zne_uncertainty.py",
+      "src/scpn_quantum_control/ml_examples/contracts.py",
+      "src/scpn_quantum_control/ml_examples/evidence.py",
+      "src/scpn_quantum_control/ml_examples/qgnn_convergence.py",
+      "src/scpn_quantum_control/ml_examples/qnn_convergence.py",
+      "src/scpn_quantum_control/ml_examples/qsnn_convergence.py",
+      "src/scpn_quantum_control/ml_examples/suite.py",
       "src/scpn_quantum_control/multi_hal_federation_product.py",
       "src/scpn_quantum_control/neural_operator_baseline_product.py",
       "src/scpn_quantum_control/notebook_programme_product.py",
@@ -8069,6 +8105,11 @@
       "tests/test_metamorphic_ad_verification.py",
       "tests/test_migration_guides_product.py",
       "tests/test_mitiq_integration.py",
+      "tests/test_ml_convergence_contracts.py",
+      "tests/test_ml_convergence_evidence.py",
+      "tests/test_ml_convergence_qgnn.py",
+      "tests/test_ml_convergence_qnn.py",
+      "tests/test_ml_convergence_qsnn.py",
       "tests/test_ml_dsa_branches.py",
       "tests/test_ml_dsa_pqc.py",
       "tests/test_ml_dsa_seal.py",

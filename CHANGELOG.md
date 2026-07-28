@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-07-28 — QNN/QGNN/QSNN convergence examples (BL-42):
+  `scpn_quantum_control.ml_examples` composes the existing phase-QNN, QGNN,
+  and QSNN trainers into three frozen deterministic convergence certificates,
+  a complete framework-status matrix, and digest-bound JSON/Markdown evidence.
+  JAX and PyTorch QNN agreement ran locally; TensorFlow was explicitly
+  unavailable. Provider, QPU, neuromorphic-hardware, arbitrary-architecture,
+  generalisation, SOTA, and production-convergence claims remain excluded.
 - 2026-07-28 — Quantum-classical co-design loop (BL-33):
   `scpn_quantum_control.codesign` composes exact phase objectives, BL-09
   planner explanations, optional BL-16 evidence, BL-67 runtime ports, and
@@ -34,6 +41,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-28 — BL-42 QNN/QGNN/QSNN local convergence suite, complete
+  framework-status matrix, public guide, evidence CLI, and canonical committed
+  evidence artefacts.
 - 2026-07-28 — BL-33 simulator-first quantum-classical co-design package,
   versioned replay format, policy-gated control/observer adapters, public guide,
   and measured functional non-isolated evidence artefact.

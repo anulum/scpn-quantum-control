@@ -40,6 +40,23 @@ a ticket. Logical timestamps make replay deterministic; measured workstation
 timings live only in a separately labelled `functional_non_isolated` evidence
 artefact. See [Quantum-Classical Co-Design Loop](quantum_classical_codesign_loop.md).
 
+## ML convergence evidence composition
+
+`scpn_quantum_control.ml_examples` is a thin evidence layer over three existing
+owners: `phase.qnn_training`, `phase.qgnn`, and `qsnn.training`. Immutable task,
+certificate, framework-row, and suite contracts feed one-way family-specific
+runners; `suite.py` composes those results; `evidence.py` validates and writes
+the canonical digest-bound JSON/Markdown pair. No trainer imports the evidence
+package, so the dependency direction remains acyclic.
+
+Only the bounded QNN path has native JAX, PyTorch, and TensorFlow adapters. The
+matrix executes installed adapters and records missing, inapplicable, and
+unsupported routes explicitly. QGNN and QSNN do not gain synthetic framework
+adapters through this layer. The package owns orchestration and evidence, not a
+numerical hot path; the actual message passing, Phase-QNode evaluation, dense
+quantum layer, and parameter-shift work remain with their established owners.
+See [QNN, QGNN, and QSNN convergence examples](ml_convergence_examples.md).
+
 ## Studio Program-AD replay trust chain
 
 The Studio ST-12 card is an end-to-end verification chain, not a JavaScript

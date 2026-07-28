@@ -122,16 +122,16 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.0.0 |
 | Public API exports | 841 |
-| Python source modules | 651 |
-| Public Python classes | 1266 |
-| Domain package families | 33 |
+| Python source modules | 657 |
+| Public Python classes | 1272 |
+| Domain package families | 34 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
 | Notebook files | 106 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1108 |
-| Public documentation pages | 341 |
+| Python test files | 1113 |
+| Public documentation pages | 342 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -223,6 +223,7 @@ pointers. Broader workflow, evidence, promotion, provider, hardware, and
 benchmark boundaries remain documented in
 [Differentiable Programming](docs/differentiable_programming.md), the
 [Differentiable API](docs/differentiable_api.md),
+[QNN, QGNN, and QSNN Convergence Examples](docs/ml_convergence_examples.md),
 [Quantum-Classical Co-Design Loop](docs/quantum_classical_codesign_loop.md),
 [Quantum Gradients](docs/quantum_gradients.md), the
 [claim ledger](data/differentiable_phase_qnode/claim_ledger.md), and the
@@ -879,6 +880,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Quantum Gradients](docs/quantum_gradients.md) — parameter-shift and gradient-evidence route for VQE and quantum-control objectives
 - [JAX NQS Baseline](docs/jax_nqs_baseline.md) — bounded exact-reference RBM evidence with environment provenance and no performance or hardware claim
 - [Differentiable API](docs/differentiable_api.md) — public differentiable namespace and support matrix
+- [QNN, QGNN, and QSNN Convergence Examples](docs/ml_convergence_examples.md) — frozen local training tasks, framework rows, and digest-bound evidence
 - [Differentiable Roadmap](docs/differentiable_roadmap.md) — staged gradient, adapter, benchmark, verification, and control roadmap
 - [Tutorials](docs/tutorials.md) — 4-level learning path, 14 tutorials
 - [Stable Facades API](docs/stable_facades_api.md) — first-path public API for notebooks, tutorials, and integrations
