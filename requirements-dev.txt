@@ -16,8 +16,8 @@ pytest-cov==7.1.0
 pytest-mock==3.15.1
 pytest-asyncio==1.4.0
 pytest-benchmark==5.2.3
-hypothesis==6.156.6
-ruff==0.15.21
+hypothesis==6.161.6
+ruff==0.16.0
 mypy==2.3.0
 bandit==1.9.4
 pre-commit==4.5.1
@@ -32,7 +32,7 @@ mkdocstrings[python]==1.0.4
 # IBM hardware
 qiskit-ibm-runtime==0.47.0
 # AWS Braket provider surface
-amazon-braket-sdk==1.121.0
+amazon-braket-sdk==1.124.1
 # Visualization
 matplotlib==3.11.1
 # CI/runtime extras

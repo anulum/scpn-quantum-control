@@ -33,7 +33,7 @@ SCPN Quantum Control — Differentiable Dependency and Environment Evidence Map
 | `pytorch_cpu` | `toolchain` | `locked_versions` | `locked` | torch==2.12.0+cpu | none |
 | `tensorflow_cpu` | `toolchain` | `locked_versions` | `locked` | tensorflow_cpu==2.21.0 | none |
 | `pennylane_cpu` | `toolchain` | `locked_versions` | `locked` | pennylane==0.45.0<br>pennylane_lightning==0.45.0 | none |
-| `qiskit` | `toolchain` | `locked_versions` | `locked` | qiskit==2.5.0<br>qiskit-aer==0.17.2<br>qiskit-qasm3-import==0.6.0<br>qiskit-ibm-runtime==0.47.0 | none |
+| `qiskit` | `toolchain` | `locked_versions` | `locked` | qiskit==2.5.1<br>qiskit-aer==0.17.2<br>qiskit-qasm3-import==0.6.0<br>qiskit-ibm-runtime==0.47.0 | none |
 | `catalyst` | `toolchain` | `locked_versions` | `locked` | pennylane-catalyst==0.15.0<br>catalyst==0.15.0 | none |
 | `enzyme_llvm_mlir` | `toolchain` | `locked_versions` | `locked` | enzyme-ad==0.0.6<br>Enzyme LLVM plugin 0.0.79<br>LLVM==18.1.3<br>MLIR==18.1.3 | none |
 | `gpu_overlay` | `toolchain` | `declared_unlocked` | `hard_gap` | cupy-cuda12x>=13.0<br>jax[cuda12]>=0.4.30<br>torch>=2.2,<3.0 | The optional CUDA requirements are constrained but have no exact GPU lock or compatible modern-GPU execution artefact. |
