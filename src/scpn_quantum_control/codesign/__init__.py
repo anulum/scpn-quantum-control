@@ -9,6 +9,7 @@
 
 from .adapters import (
     ControlAdapterEvidence,
+    adaptive_fim_proposal_port,
     consume_cosimulation_port,
     consume_qaoa_mpc_port,
     consume_realtime_feedback_port,
@@ -84,6 +85,7 @@ __all__ = [
     "StaleGradientAction",
     "StateEstimate",
     "build_demo_loop",
+    "adaptive_fim_proposal_port",
     "consume_cosimulation_port",
     "consume_qaoa_mpc_port",
     "consume_realtime_feedback_port",

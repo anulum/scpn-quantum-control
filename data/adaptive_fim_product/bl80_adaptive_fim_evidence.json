@@ -1,0 +1,422 @@
+{
+  "budget_refusal": {
+    "allowed": false,
+    "blockers": [
+      "shots_per_evaluation 4096 exceeds policy maximum 256",
+      "estimated_total_shots 24576 exceeds policy max_total_shots 4096"
+    ],
+    "budget": {
+      "blockers": [
+        "shots_per_evaluation 4096 exceeds policy maximum 256",
+        "estimated_total_shots 24576 exceeds policy max_total_shots 4096"
+      ],
+      "claim_boundary": "hardware-safe execution product only; no-submit is the default; dry-run plans estimate shots/cost status without provider submission; enforce refuses would-submit and over-budget without owner-gated allow; this surface never executes QPU jobs or invents hardware results",
+      "cost_model_status": "blocked",
+      "estimated_cost_usd": null,
+      "estimated_total_shots": 24576,
+      "evaluations": 6,
+      "n_params": 3,
+      "outcome": "refused",
+      "policy_id": "ci_dry_run_only",
+      "reason": "dry-run plan refused: shots_per_evaluation 4096 exceeds policy maximum 256; estimated_total_shots 24576 exceeds policy max_total_shots 4096",
+      "shift_terms": 1,
+      "shots_per_evaluation": 4096,
+      "would_submit": false
+    },
+    "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+    "closed_loop_validated": false,
+    "hardware_execution": false,
+    "observers": [],
+    "outcome": "refused",
+    "provider_submission": false,
+    "reason": "adaptive FIM plan refused before schedule generation",
+    "schema": "adaptive_fim_feedback.v2",
+    "steps": []
+  },
+  "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+  "closed_loop_validated": false,
+  "content_digest": "f2201cce5697eab46c6217f5874b5268f521418f2a4dff393cd16122d961c23e",
+  "decision_policy": {
+    "config": {
+      "confidence_z": 1.959963984540054,
+      "deadband": 0.0,
+      "lambda_max": 8.0,
+      "lambda_min": 0.0,
+      "max_delta_per_batch": 0.5,
+      "min_shots": 256,
+      "mode": "leakage_suppression",
+      "step_gain": 4.0,
+      "target_leakage": 0.05
+    },
+    "increase_action_available": false,
+    "method": "two_sided_wilson_interval_harmful_direction_gate"
+  },
+  "fim_protection_claimed": false,
+  "functional_passed": true,
+  "hardware_execution": false,
+  "hardware_refusal": {
+    "allowed": false,
+    "blockers": [
+      "policy no_submit=True refuses would-submit path",
+      "would-submit requires owner_allow_submit gate",
+      "adaptive FIM hardware execution is unavailable on BL-80"
+    ],
+    "budget": {
+      "blockers": [
+        "policy no_submit=True refuses would-submit path",
+        "would-submit requires owner_allow_submit gate"
+      ],
+      "claim_boundary": "hardware-safe execution product only; no-submit is the default; dry-run plans estimate shots/cost status without provider submission; enforce refuses would-submit and over-budget without owner-gated allow; this surface never executes QPU jobs or invents hardware results",
+      "cost_model_status": "unavailable",
+      "estimated_cost_usd": null,
+      "estimated_total_shots": 768,
+      "evaluations": 6,
+      "n_params": 3,
+      "outcome": "refused",
+      "policy_id": "default_no_submit",
+      "reason": "dry-run plan refused: policy no_submit=True refuses would-submit path; would-submit requires owner_allow_submit gate",
+      "shift_terms": 1,
+      "shots_per_evaluation": 128,
+      "would_submit": true
+    },
+    "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+    "closed_loop_validated": false,
+    "hardware_execution": false,
+    "observers": [],
+    "outcome": "refused",
+    "provider_submission": false,
+    "reason": "adaptive FIM plan refused before schedule generation",
+    "schema": "adaptive_fim_feedback.v2",
+    "steps": []
+  },
+  "historical_offline_replay": {
+    "closed_loop_efficacy_tested": false,
+    "deterministic_replay": true,
+    "steps": [
+      {
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "clipped": false,
+        "count_qualified": true,
+        "decision": "decrease",
+        "error_signal": 0.04059605443531859,
+        "index": 0,
+        "interval": {
+          "confidence_z": 1.959963984540054,
+          "estimate": 0.10302734375,
+          "events": 211,
+          "lower": 0.0905960544353186,
+          "shots": 2048,
+          "upper": 0.11694505795912954
+        },
+        "lambda_in": 4.0,
+        "lambda_out": 3.837615782258726,
+        "rationale": "leakage Wilson lower bound exceeds target plus deadband",
+        "schema": "adaptive_fim_feedback.v2",
+        "witness": {
+          "artifact_id": "fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387:circuit-0",
+          "count_bound": true,
+          "depth": 2,
+          "leakage": 0.10302734375,
+          "leakage_events": 211,
+          "retention": 0.703125,
+          "retention_events": 1440,
+          "shots": 2048,
+          "source": "hardware_replay"
+        }
+      },
+      {
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "clipped": false,
+        "count_qualified": true,
+        "decision": "decrease",
+        "error_signal": 0.1258936050440227,
+        "index": 1,
+        "interval": {
+          "confidence_z": 1.959963984540054,
+          "estimate": 0.1923828125,
+          "events": 394,
+          "lower": 0.1758936050440227,
+          "shots": 2048,
+          "upper": 0.21002386212510685
+        },
+        "lambda_in": 3.837615782258726,
+        "lambda_out": 3.337615782258726,
+        "rationale": "leakage Wilson lower bound exceeds target plus deadband",
+        "schema": "adaptive_fim_feedback.v2",
+        "witness": {
+          "artifact_id": "fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387:circuit-3",
+          "count_bound": true,
+          "depth": 2,
+          "leakage": 0.1923828125,
+          "leakage_events": 394,
+          "retention": 0.8076171875,
+          "retention_events": 1654,
+          "shots": 2048,
+          "source": "hardware_replay"
+        }
+      },
+      {
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "clipped": false,
+        "count_qualified": true,
+        "decision": "decrease",
+        "error_signal": 0.047042966448277254,
+        "index": 2,
+        "interval": {
+          "confidence_z": 1.959963984540054,
+          "estimate": 0.10986328125,
+          "events": 225,
+          "lower": 0.09704296644827726,
+          "shots": 2048,
+          "upper": 0.12414442445352356
+        },
+        "lambda_in": 3.337615782258726,
+        "lambda_out": 3.149443916465617,
+        "rationale": "leakage Wilson lower bound exceeds target plus deadband",
+        "schema": "adaptive_fim_feedback.v2",
+        "witness": {
+          "artifact_id": "fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387:circuit-7",
+          "count_bound": true,
+          "depth": 2,
+          "leakage": 0.10986328125,
+          "leakage_events": 225,
+          "retention": 0.89013671875,
+          "retention_events": 1823,
+          "shots": 2048,
+          "source": "hardware_replay"
+        }
+      }
+    ],
+    "witnesses": [
+      {
+        "artifact_id": "fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387:circuit-0",
+        "count_bound": true,
+        "depth": 2,
+        "leakage": 0.10302734375,
+        "leakage_events": 211,
+        "retention": 0.703125,
+        "retention_events": 1440,
+        "shots": 2048,
+        "source": "hardware_replay"
+      },
+      {
+        "artifact_id": "fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387:circuit-3",
+        "count_bound": true,
+        "depth": 2,
+        "leakage": 0.1923828125,
+        "leakage_events": 394,
+        "retention": 0.8076171875,
+        "retention_events": 1654,
+        "shots": 2048,
+        "source": "hardware_replay"
+      },
+      {
+        "artifact_id": "fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387:circuit-7",
+        "count_bound": true,
+        "depth": 2,
+        "leakage": 0.10986328125,
+        "leakage_events": 225,
+        "retention": 0.89013671875,
+        "retention_events": 1823,
+        "shots": 2048,
+        "source": "hardware_replay"
+      }
+    ]
+  },
+  "historical_source": {
+    "circuit_indices": [
+      0,
+      3,
+      7
+    ],
+    "job_id": "ibm-run-cf4835290f607387",
+    "path": "data/scpn_fim_hamiltonian/fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387.json",
+    "sha256": "13948b12223dbc64f659cb26de393bd9894dba37c2a3787ce15d3b6aad4089d2",
+    "use": "offline_proposal_replay_only"
+  },
+  "literature": [
+    {
+      "arxiv": "1111.0935",
+      "authors": "C. Ferrie, C. E. Granade, and D. G. Cory",
+      "doi": "10.1063/1.3703632",
+      "scope": "later experiments are selected from prior outcomes in a bounded model",
+      "title": "Adaptive Hamiltonian Estimation Using Bayesian Experimental Design",
+      "year": "2011"
+    },
+    {
+      "arxiv": "1806.02427",
+      "authors": "I. Hincks, T. Alexander, M. Kononenko, B. Soloway, and D. G. Cory",
+      "doi": "",
+      "scope": "online designs are compared with fixed sweeps at matched data volume",
+      "title": "Hamiltonian Learning with Online Bayesian Experiment Design in Practice",
+      "year": "2018"
+    },
+    {
+      "arxiv": "",
+      "authors": "L. D. Brown, T. T. Cai, and A. DasGupta",
+      "doi": "10.1214/ss/1009213286",
+      "scope": "Wilson and Jeffreys intervals avoid known Wald-interval pathologies",
+      "title": "Interval Estimation for a Binomial Proportion",
+      "year": "2001"
+    }
+  ],
+  "optimal_policy_claimed": false,
+  "provider_submission": false,
+  "quantum_advantage_claimed": false,
+  "schema": "adaptive_fim_evidence.v1",
+  "synthetic_calibration": {
+    "allowed": true,
+    "blockers": [],
+    "budget": {
+      "blockers": [],
+      "claim_boundary": "hardware-safe execution product only; no-submit is the default; dry-run plans estimate shots/cost status without provider submission; enforce refuses would-submit and over-budget without owner-gated allow; this surface never executes QPU jobs or invents hardware results",
+      "cost_model_status": "blocked",
+      "estimated_cost_usd": null,
+      "estimated_total_shots": 768,
+      "evaluations": 6,
+      "n_params": 3,
+      "outcome": "allowed_plan",
+      "policy_id": "ci_dry_run_only",
+      "reason": "dry-run plan allowed under policy; no provider submission occurred (cost_model_status=blocked)",
+      "shift_terms": 1,
+      "shots_per_evaluation": 128,
+      "would_submit": false
+    },
+    "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+    "closed_loop_validated": false,
+    "hardware_execution": false,
+    "observers": [
+      {
+        "action": "decrease",
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "hardware_execution": false,
+        "interval_lower": 0.09213577125424062,
+        "interval_upper": 0.14794081953359148,
+        "lambda_in": 4.0,
+        "lambda_out": 3.8314569149830375,
+        "observer_id": "bl80:ci_dry_run_only:0",
+        "shot_policy_id": "ci_dry_run_only",
+        "shots": 512,
+        "source": "synthetic"
+      },
+      {
+        "action": "hold",
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "hardware_execution": false,
+        "interval_lower": 0.033289430544156826,
+        "interval_upper": 0.07108655145578816,
+        "lambda_in": 3.8314569149830375,
+        "lambda_out": 3.8314569149830375,
+        "observer_id": "bl80:ci_dry_run_only:1",
+        "shot_policy_id": "ci_dry_run_only",
+        "shots": 512,
+        "source": "synthetic"
+      },
+      {
+        "action": "hold",
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "hardware_execution": false,
+        "interval_lower": null,
+        "interval_upper": null,
+        "lambda_in": 3.8314569149830375,
+        "lambda_out": 3.8314569149830375,
+        "observer_id": "bl80:ci_dry_run_only:2",
+        "shot_policy_id": "ci_dry_run_only",
+        "shots": 32,
+        "source": "synthetic"
+      }
+    ],
+    "outcome": "allowed_plan",
+    "provider_submission": false,
+    "reason": "offline next-batch proposals allowed under BL-47 dry-run budget; no provider submission or controller application occurred",
+    "schema": "adaptive_fim_feedback.v2",
+    "steps": [
+      {
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "clipped": false,
+        "count_qualified": true,
+        "decision": "decrease",
+        "error_signal": 0.04213577125424062,
+        "index": 0,
+        "interval": {
+          "confidence_z": 1.959963984540054,
+          "estimate": 0.1171875,
+          "events": 60,
+          "lower": 0.09213577125424062,
+          "shots": 512,
+          "upper": 0.14794081953359148
+        },
+        "lambda_in": 4.0,
+        "lambda_out": 3.8314569149830375,
+        "rationale": "leakage Wilson lower bound exceeds target plus deadband",
+        "schema": "adaptive_fim_feedback.v2",
+        "witness": {
+          "artifact_id": "bl80.synthetic.high_leakage",
+          "count_bound": true,
+          "depth": 2,
+          "leakage": 0.1171875,
+          "leakage_events": 60,
+          "retention": 0.78125,
+          "retention_events": 400,
+          "shots": 512,
+          "source": "synthetic"
+        }
+      },
+      {
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "clipped": false,
+        "count_qualified": true,
+        "decision": "hold",
+        "error_signal": -0.016710569455843177,
+        "index": 1,
+        "interval": {
+          "confidence_z": 1.959963984540054,
+          "estimate": 0.048828125,
+          "events": 25,
+          "lower": 0.033289430544156826,
+          "shots": 512,
+          "upper": 0.07108655145578816
+        },
+        "lambda_in": 3.8314569149830375,
+        "lambda_out": 3.8314569149830375,
+        "rationale": "hold: harmful-direction interval does not clear the decision boundary",
+        "schema": "adaptive_fim_feedback.v2",
+        "witness": {
+          "artifact_id": "bl80.synthetic.boundary_hold",
+          "count_bound": true,
+          "depth": 2,
+          "leakage": 0.048828125,
+          "leakage_events": 25,
+          "retention": 0.83984375,
+          "retention_events": 430,
+          "shots": 512,
+          "source": "synthetic"
+        }
+      },
+      {
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "clipped": false,
+        "count_qualified": false,
+        "decision": "hold",
+        "error_signal": 0.0,
+        "index": 2,
+        "interval": null,
+        "lambda_in": 3.8314569149830375,
+        "lambda_out": 3.8314569149830375,
+        "rationale": "hold: shots 32 below min_shots 256; uncertainty gate not qualified",
+        "schema": "adaptive_fim_feedback.v2",
+        "witness": {
+          "artifact_id": "bl80.synthetic.underpowered_hold",
+          "count_bound": true,
+          "depth": 2,
+          "leakage": 0.09375,
+          "leakage_events": 3,
+          "retention": 0.78125,
+          "retention_events": 25,
+          "shots": 32,
+          "source": "synthetic"
+        }
+      }
+    ]
+  }
+}

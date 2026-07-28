@@ -8,11 +8,21 @@
 """Quantum analysis toolkit for the Kuramoto-XY system."""
 
 from .adaptive_fim_feedback import (
+    ADAPTIVE_FIM_CLAIM_BOUNDARY,
+    ADAPTIVE_FIM_SCHEMA,
     AdaptiveFIMConfig,
+    AdaptiveFIMObserverRecord,
+    AdaptiveFIMPlan,
     AdaptiveFIMStep,
+    BinomialInterval,
     FIMWitness,
+    adaptive_count_aware_schedule,
     adaptive_lambda_schedule,
+    observer_record_from_step,
+    plan_adaptive_fim_schedule,
+    propose_count_aware_lambda,
     propose_next_lambda,
+    wilson_score_interval,
 )
 from .berry_phase import BerryPhaseResult, berry_phase_scan
 from .bkt_analysis import (
@@ -267,11 +277,21 @@ __all__ = [
     "sector_coupling_rows",
     "sector_spectrum_rows",
     "summarise_spectrum",
+    "ADAPTIVE_FIM_CLAIM_BOUNDARY",
+    "ADAPTIVE_FIM_SCHEMA",
     "AdaptiveFIMConfig",
+    "AdaptiveFIMObserverRecord",
+    "AdaptiveFIMPlan",
     "AdaptiveFIMStep",
+    "BinomialInterval",
     "FIMWitness",
+    "adaptive_count_aware_schedule",
     "adaptive_lambda_schedule",
+    "observer_record_from_step",
+    "plan_adaptive_fim_schedule",
+    "propose_count_aware_lambda",
     "propose_next_lambda",
+    "wilson_score_interval",
     "SelfConsistencyResult",
     "self_consistency_from_exact",
     "KrylovResult",

@@ -273,7 +273,7 @@ class SafetyDecision:
 
 @dataclass(frozen=True, slots=True)
 class ObserverInputs:
-    """Optional immutable telemetry from completed BL-68/69/70/85 products."""
+    """Optional immutable telemetry from completed observer products."""
 
     active_sensing_id: str | None = None
     identity_action: str | None = None
@@ -281,6 +281,9 @@ class ObserverInputs:
     geometry_gradient_norm: float | None = None
     l16_action: str | None = None
     l16_reason: str | None = None
+    adaptive_fim_id: str | None = None
+    adaptive_fim_action: str | None = None
+    adaptive_fim_lambda_out: float | None = None
 
     def __post_init__(self) -> None:
         """Validate optional observer values without promoting their claims."""
@@ -292,6 +295,23 @@ class ObserverInputs:
             raise ValueError("l16_reason requires an l16_action")
         if self.l16_reason is not None and not self.l16_reason.strip():
             raise ValueError("l16_reason must be non-empty when provided")
+        if self.adaptive_fim_action not in {None, "decrease", "hold"}:
+            raise ValueError("adaptive_fim_action must be decrease, hold, or None")
+        fim_values = (
+            self.adaptive_fim_id,
+            self.adaptive_fim_action,
+            self.adaptive_fim_lambda_out,
+        )
+        if any(value is not None for value in fim_values) and any(
+            value is None for value in fim_values
+        ):
+            raise ValueError("adaptive FIM observer fields must be supplied together")
+        if self.adaptive_fim_id is not None and not self.adaptive_fim_id.strip():
+            raise ValueError("adaptive_fim_id must be non-empty when provided")
+        if self.adaptive_fim_lambda_out is not None:
+            value = _finite("adaptive_fim_lambda_out", self.adaptive_fim_lambda_out)
+            if value < 0.0:
+                raise ValueError("adaptive_fim_lambda_out must be non-negative")
         if self.geometry_gradient_norm is not None:
             value = _finite("geometry_gradient_norm", self.geometry_gradient_norm)
             if value < 0.0:
@@ -303,6 +323,10 @@ class ObserverInputs:
         if self.l16_action is None:
             payload.pop("l16_action")
             payload.pop("l16_reason")
+        if self.adaptive_fim_id is None:
+            payload.pop("adaptive_fim_id")
+            payload.pop("adaptive_fim_action")
+            payload.pop("adaptive_fim_lambda_out")
         return payload
 
 

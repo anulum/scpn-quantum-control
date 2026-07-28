@@ -8,12 +8,12 @@
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 345,
-    "python_model_classes": 1279,
-    "python_model_source_modules": 662,
+    "public_documentation_pages": 346,
+    "python_model_classes": 1282,
+    "python_model_source_modules": 663,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1116
+    "test_files": 1117
   },
   "documentation": {
     "examples": [
@@ -174,6 +174,7 @@
       "docs/actions_history_dashboard.md",
       "docs/active_sensing_product.md",
       "docs/adaptive_branching.md",
+      "docs/adaptive_fim_feedback.md",
       "docs/adjoint_replay_product.md",
       "docs/adopters.md",
       "docs/advanced_witnesses_product.md",
@@ -543,7 +544,7 @@
       {
         "package": "analysis",
         "path": "src/scpn_quantum_control/analysis",
-        "python_modules": 65
+        "python_modules": 66
       },
       {
         "package": "applications",
@@ -757,6 +758,14 @@
       },
       {
         "name": "AdaptiveFIMConfig",
+        "path": "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py"
+      },
+      {
+        "name": "AdaptiveFIMObserverRecord",
+        "path": "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py"
+      },
+      {
+        "name": "AdaptiveFIMPlan",
         "path": "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py"
       },
       {
@@ -1030,6 +1039,10 @@
       {
         "name": "BerryPhaseResult",
         "path": "src/scpn_quantum_control/analysis/berry_phase.py"
+      },
+      {
+        "name": "BinomialInterval",
+        "path": "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py"
       },
       {
         "name": "BiologicalMWPMDecoder",
@@ -5838,6 +5851,7 @@
       "src/scpn_quantum_control/analog_mapping/evidence.py",
       "src/scpn_quantum_control/analog_mapping/feasibility.py",
       "src/scpn_quantum_control/analog_mapping/platforms.py",
+      "src/scpn_quantum_control/analysis/adaptive_fim_evidence.py",
       "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py",
       "src/scpn_quantum_control/analysis/berry_phase.py",
       "src/scpn_quantum_control/analysis/bkt_analysis.py",
@@ -7663,6 +7677,7 @@
       "tests/test_adapt_vqe_branch_contracts.py",
       "tests/test_adaptive_branching.py",
       "tests/test_adaptive_branching_branches.py",
+      "tests/test_adaptive_fim_evidence.py",
       "tests/test_adaptive_fim_feedback.py",
       "tests/test_adiabatic_preparation.py",
       "tests/test_adjoint_replay_product.py",

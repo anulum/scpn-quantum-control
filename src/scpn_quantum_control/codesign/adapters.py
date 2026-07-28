@@ -15,6 +15,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from ..active_sensing_product import ActiveSensingObserverRecord
+from ..analysis.adaptive_fim_feedback import AdaptiveFIMObserverRecord, AdaptiveFIMStep
 from ..control.closed_loop_analysis import ClosedLoopExecutionPolicy
 from ..control_stack_runtime_adapters import (
     QaoaMpcPort,
@@ -25,7 +26,12 @@ from ..control_stack_runtime_adapters import (
 )
 from ..identity_observer_product import IdentitySafetyDecision
 from ..ssgf_geometry_gradient_product import SsgfGeometryObserverRecord
-from .contracts import CODESIGN_CLAIM_BOUNDARY, CODESIGN_SCHEMA, ObserverInputs
+from .contracts import (
+    CODESIGN_CLAIM_BOUNDARY,
+    CODESIGN_SCHEMA,
+    ControllerProposal,
+    ObserverInputs,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,13 +56,30 @@ def observer_inputs_from_products(
     active_sensing: ActiveSensingObserverRecord | None = None,
     identity: IdentitySafetyDecision | None = None,
     geometry: SsgfGeometryObserverRecord | None = None,
+    adaptive_fim: AdaptiveFIMObserverRecord | None = None,
 ) -> ObserverInputs:
-    """Map completed BL-68/69/70 products into bounded BL-33 telemetry."""
+    """Map completed observer products into bounded BL-33 telemetry."""
     return ObserverInputs(
         active_sensing_id=(None if active_sensing is None else active_sensing.observer_id),
         identity_action=None if identity is None else identity.action,
         identity_reason=None if identity is None else identity.reason,
         geometry_gradient_norm=(None if geometry is None else geometry.gradient_norm),
+        adaptive_fim_id=(None if adaptive_fim is None else adaptive_fim.observer_id),
+        adaptive_fim_action=(None if adaptive_fim is None else adaptive_fim.action),
+        adaptive_fim_lambda_out=(None if adaptive_fim is None else adaptive_fim.lambda_out),
+    )
+
+
+def adaptive_fim_proposal_port(step: AdaptiveFIMStep) -> ControllerProposal:
+    """Map one BL-80 scalar proposal to the unapplied BL-33 controller port.
+
+    The adapter does not pass a safety envelope or apply the proposal. A hold is
+    represented by a zero update; ``gain_scale=1`` avoids inventing a BL-33 gain.
+    """
+    return ControllerProposal(
+        parameters=(step.lambda_out,),
+        update=(step.lambda_out - step.lambda_in,),
+        gain_scale=1.0,
     )
 
 
@@ -133,6 +156,7 @@ def consume_cosimulation_port(
 
 __all__ = [
     "ControlAdapterEvidence",
+    "adaptive_fim_proposal_port",
     "consume_cosimulation_port",
     "consume_qaoa_mpc_port",
     "consume_realtime_feedback_port",

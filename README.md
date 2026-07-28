@@ -122,16 +122,16 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.0.0 |
 | Public API exports | 841 |
-| Python source modules | 662 |
-| Public Python classes | 1279 |
+| Python source modules | 663 |
+| Public Python classes | 1282 |
 | Domain package families | 34 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
 | Notebook files | 106 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1116 |
-| Public documentation pages | 345 |
+| Python test files | 1117 |
+| Public documentation pages | 346 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -225,6 +225,7 @@ benchmark boundaries remain documented in
 [Differentiable API](docs/differentiable_api.md),
 [QNN, QGNN, and QSNN Convergence Examples](docs/ml_convergence_examples.md),
 [Quantum-Classical Co-Design Loop](docs/quantum_classical_codesign_loop.md),
+[Adaptive FIM Next-Experiment Proposals](docs/adaptive_fim_feedback.md),
 [Quantum Gradients](docs/quantum_gradients.md), the
 [claim ledger](data/differentiable_phase_qnode/claim_ledger.md), and the
 [Differentiable Roadmap](docs/differentiable_roadmap.md).

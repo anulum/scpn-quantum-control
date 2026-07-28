@@ -54,7 +54,12 @@ The package consumes, rather than duplicates, the BL-67 ports:
 - `consume_realtime_feedback_port(...)` uses `RealtimeFeedbackPort`;
 - `consume_qaoa_mpc_port(...)` uses `QaoaMpcPort`;
 - `consume_cosimulation_port(...)` uses the policy-gated existing partition;
-- `observer_inputs_from_products(...)` maps BL-68, BL-69, and BL-70 records.
+- `observer_inputs_from_products(...)` maps BL-68, BL-69, BL-70, and BL-80
+  records. BL-80 contributes only decrease/hold telemetry after BL-47 approves
+  its complete dry-run shot plan.
+- `adaptive_fim_proposal_port(...)` maps one BL-80 step to an unapplied scalar
+  `ControllerProposal`; the co-design safety envelope must still decide whether
+  any later simulator action is allowed.
 
 This is the versioned FUSION/CONTROL bolt-on contract. A partner repository may
 implement the typed port or translate its plant telemetry into

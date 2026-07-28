@@ -17,6 +17,7 @@ The differentiable-programming surface has its own public guide and API map:
 - [Differentiable Programming](differentiable_programming.md)
 - [Quantum Gradients](quantum_gradients.md)
 - [Differentiable API](differentiable_api.md)
+- [Adaptive FIM next-experiment proposals](adaptive_fim_feedback.md)
 - [Differentiable Roadmap](differentiable_roadmap.md)
 
 Use these pages when you need gradient-bearing optimisation, parameter-shift

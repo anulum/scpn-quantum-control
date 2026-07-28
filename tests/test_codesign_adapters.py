@@ -12,12 +12,20 @@ from __future__ import annotations
 import numpy as np
 
 from scpn_quantum_control.active_sensing_product import ActiveSensingObserverRecord
+from scpn_quantum_control.analysis.adaptive_fim_feedback import (
+    AdaptiveFIMConfig,
+    FIMWitness,
+    observer_record_from_step,
+    propose_count_aware_lambda,
+)
 from scpn_quantum_control.codesign.adapters import (
+    adaptive_fim_proposal_port,
     consume_cosimulation_port,
     consume_qaoa_mpc_port,
     consume_realtime_feedback_port,
     observer_inputs_from_products,
 )
+from scpn_quantum_control.codesign.contracts import ObserverInputs
 from scpn_quantum_control.control.closed_loop_analysis import ClosedLoopExecutionPolicy
 from scpn_quantum_control.control.qaoa_mpc import QAOA_MPC
 from scpn_quantum_control.control.realtime_feedback import RealtimeSyncFeedbackController
@@ -145,3 +153,56 @@ def test_observer_adapter_maps_bl68_bl69_and_bl70_records() -> None:
         "identity_reason": None,
         "geometry_gradient_norm": None,
     }
+
+
+def test_adaptive_fim_observer_and_proposer_ports_remain_unapplied() -> None:
+    """Map BL-80 telemetry and scalar proposal without applying a controller."""
+    witness = FIMWitness.from_counts(
+        leakage_events=100,
+        retention_events=800,
+        shots=1024,
+        source="synthetic",
+    )
+    step = propose_count_aware_lambda(
+        4.0,
+        witness,
+        AdaptiveFIMConfig(target_leakage=0.05, step_gain=4.0),
+    )
+    observer = observer_record_from_step(step, policy_id="ci_dry_run_only")
+
+    mapped = observer_inputs_from_products(adaptive_fim=observer)
+    proposal = adaptive_fim_proposal_port(step)
+
+    assert mapped.adaptive_fim_id == "bl80:ci_dry_run_only:0"
+    assert mapped.adaptive_fim_action == "decrease"
+    assert mapped.adaptive_fim_lambda_out == step.lambda_out
+    assert mapped.to_dict()["adaptive_fim_action"] == "decrease"
+    assert proposal.parameters == (step.lambda_out,)
+    assert proposal.update == (step.lambda_out - step.lambda_in,)
+    assert proposal.gain_scale == 1.0
+
+
+def test_adaptive_fim_observer_fields_fail_closed() -> None:
+    """Reject partial, invalid, blank, non-finite, and negative BL-80 telemetry."""
+    with np.testing.assert_raises_regex(ValueError, "adaptive_fim_action"):
+        ObserverInputs(adaptive_fim_action="increase")
+    with np.testing.assert_raises_regex(ValueError, "supplied together"):
+        ObserverInputs(adaptive_fim_id="id")
+    with np.testing.assert_raises_regex(ValueError, "non-empty"):
+        ObserverInputs(
+            adaptive_fim_id="",
+            adaptive_fim_action="hold",
+            adaptive_fim_lambda_out=1.0,
+        )
+    with np.testing.assert_raises_regex(ValueError, "finite"):
+        ObserverInputs(
+            adaptive_fim_id="id",
+            adaptive_fim_action="hold",
+            adaptive_fim_lambda_out=float("nan"),
+        )
+    with np.testing.assert_raises_regex(ValueError, "non-negative"):
+        ObserverInputs(
+            adaptive_fim_id="id",
+            adaptive_fim_action="hold",
+            adaptive_fim_lambda_out=-1.0,
+        )

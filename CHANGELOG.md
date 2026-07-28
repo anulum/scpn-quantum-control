@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-07-29 — Adaptive FIM next-experiment proposals (BL-80): upgraded the
+  point-estimate lambda rule with count-bound Wilson intervals, minimum-shot and
+  bounded-delta gates, complete BL-47 paired-arm dry-run approval, BL-33
+  observer/unapplied-proposal ports, synthetic calibration controls, and
+  digest-bound offline replay of committed repeated-FIM counts. Hardware,
+  closed-loop efficacy, FIM protection, optimal-policy, and advantage claims
+  remain refused.
 - 2026-07-28 — Bounded entangled initial-state coherence study (BL-79):
   replaced the `atan2(0, 0) -> R=1` phase proxy with visibility-aware local
   phase order, added a separate transverse-exchange-coherence diagnostic,
@@ -60,6 +67,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-29 — BL-80 uncertainty-aware adaptive FIM proposal API, BL-47/BL-33
+  composition, primary-source boundary, evidence CLI, public guide, and
+  deterministic JSON/Markdown calibration and custody-replay artefacts.
 - 2026-07-28 — BL-79 visibility-aware phase/coherence observables,
   dephased-control comparison API, BL-65 research-observation certificate,
   evidence CLI, public scientific-boundary guide, and committed deterministic
