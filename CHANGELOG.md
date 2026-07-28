@@ -329,6 +329,9 @@ land on live surfaces or new Zenodo versions.
   digest-gated reviewed wrapper, so the class cannot silently reappear.
 
 ### Fixed
+- 2026-07-28 — Recorded immutable GitHub merge `2ff0114` in the exact
+  commit-authorship debt set. Its empty follow-up attestation preserves
+  provenance but does not replace the scheduled auditor's per-commit check.
 - 2026-07-17 — The first real execution of the FIM notebook batch (the
   workflow_dispatch mandated by the path-filter false-green rule: Notebook
   CI has no push trigger, so the batch had never actually run) surfaced

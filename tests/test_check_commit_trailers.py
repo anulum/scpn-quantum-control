@@ -384,6 +384,11 @@ def test_ci_audit_reports_exempt_and_failing_commits(
     assert f"{failing_sha[:7]}: missing `{REQUIRED_AUTHORSHIP_LINE}` authorship line" in out
 
 
+def test_pr_183_immutable_merge_is_explicitly_exempt() -> None:
+    """The protected PR merge remains an explicit, auditable exception."""
+    assert "2ff0114" in _check_commit_trailers.HISTORICAL_EXEMPT_SHAS
+
+
 def test_main_dispatches_audit_ranges(monkeypatch: pytest.MonkeyPatch) -> None:
     """The CLI dispatcher passes the requested audit range through."""
     seen: list[str] = []
