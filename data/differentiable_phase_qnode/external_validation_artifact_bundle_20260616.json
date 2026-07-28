@@ -1,8 +1,7 @@
 {
-  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1",
   "artifact_id": "diff-external-validation-artifact-bundle-20260616",
-  "classification": "functional_non_isolated",
   "claim_boundary": "Reproducible artefact-bundle manifest only; it records committed evidence file checksums and does not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.",
+  "classification": "functional_non_isolated",
   "entries": [
     {
       "path": "data/differentiable_phase_qnode/claim_ledger.json",
@@ -85,13 +84,13 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
       "role": "Differentiable dependency and environment evidence map artefact",
-      "sha256": "6761d963e1ecbddd8cb82853c54c10441b4a0bb9c43c2b17d467fa83f32b985f",
+      "sha256": "5d55f2a21c9f5fb383562e9c173ba51e94057953c3c23f02090fe44bbc164ef8",
       "size_bytes": 20488
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md",
       "role": "Differentiable dependency and environment evidence map reviewer summary",
-      "sha256": "42f6a35cdb8acaca0e82d6c1a2ea0896c6c8f89d77d25125a504967e966cb439",
+      "sha256": "bae35d4ae010aa9f819f9b4d1f310ced790a8dd3fb30e4ce781fe3541d1336ee",
       "size_bytes": 4763
     },
     {
@@ -157,14 +156,14 @@
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
       "role": "Exact environment-lock manifest",
-      "sha256": "cab32aaa9b36d81ce2f905b68dbe354a0a562c684966ff495e38a70e16c47495",
-      "size_bytes": 3227
+      "sha256": "8d7adde5ea4fbc0fc25e345d48966e6f756d2a9d02e2d96bb2d65aa2101b4fd6",
+      "size_bytes": 3226
     },
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md",
       "role": "Environment-lock reviewer summary",
-      "sha256": "060cf09cdb03d7c22568e6574cb65b75f7b799dd8e7e684dd0b80b7544af3341",
-      "size_bytes": 2374
+      "sha256": "ad71183d82c6121fa43dc2df827d3bb88869d7145cc921fece04c8de90e4cb76",
+      "size_bytes": 2373
     },
     {
       "path": "data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json",
@@ -256,5 +255,6 @@
       "sha256": "16bc50f32fc5bb7fbca2bb4282dfcc4c3ac9198d33afa920220938c593b30b68",
       "size_bytes": 424
     }
-  ]
+  ],
+  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1"
 }

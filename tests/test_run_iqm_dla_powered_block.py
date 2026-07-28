@@ -676,6 +676,24 @@ class TestSubmissionJournal:
 
 
 class TestJournalValidation:
+    def test_journal_lock_uses_linked_worktree_common_dir(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        common_dir = tmp_path / "main.git"
+        worktree_admin = common_dir / "worktrees" / "candidate"
+        worktree_admin.mkdir(parents=True)
+        (worktree_admin / "commondir").write_text("../..\n", encoding="utf-8")
+        worktree_root = tmp_path / "candidate"
+        worktree_root.mkdir()
+        (worktree_root / ".git").write_text(f"gitdir: {worktree_admin}\n", encoding="utf-8")
+        monkeypatch.setattr(script, "REPO_ROOT", worktree_root)
+
+        journal = tmp_path / "submission.json"
+        with script._journal_lock(journal):
+            lock_root = common_dir / "scpn-qpu-journal-locks"
+            assert lock_root.is_dir()
+            assert len(list(lock_root.glob("*.lock"))) == 1
+
     def test_journal_status_covers_all_state_classes(self) -> None:
         assert script._journal_status([{"state": "prepared"}]) == "prepared"
         assert (
