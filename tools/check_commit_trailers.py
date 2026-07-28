@@ -192,6 +192,10 @@ HISTORICAL_EXEMPT_SHAS: frozenset[str] = frozenset(
         # `git revert --no-edit`, which does not carry the trailer;
         # forward-fixed here rather than by rewriting pushed history.
         "9af0b25",  # Revert "build(deps): bump setuptools 81.0.0 -> 83.0.0"
+        # 2026-07-28: GitHub created the protected-main merge for PR #183
+        # without the required authorship line. The later empty attestation
+        # records provenance but cannot satisfy this per-commit audit.
+        "2ff0114",  # "fix(ci): reconcile link and dependency drift (#183)"
     }
 )
 
