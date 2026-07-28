@@ -273,17 +273,25 @@ class SafetyDecision:
 
 @dataclass(frozen=True, slots=True)
 class ObserverInputs:
-    """Optional immutable telemetry from completed BL-68/69/70 products."""
+    """Optional immutable telemetry from completed BL-68/69/70/85 products."""
 
     active_sensing_id: str | None = None
     identity_action: str | None = None
     identity_reason: str | None = None
     geometry_gradient_norm: float | None = None
+    l16_action: str | None = None
+    l16_reason: str | None = None
 
     def __post_init__(self) -> None:
         """Validate optional observer values without promoting their claims."""
         if self.identity_action not in {None, "continue", "hold", "abort"}:
             raise ValueError("identity_action must be continue, hold, abort, or None")
+        if self.l16_action not in {None, "continue", "adjust", "halt"}:
+            raise ValueError("l16_action must be continue, adjust, halt, or None")
+        if self.l16_action is None and self.l16_reason is not None:
+            raise ValueError("l16_reason requires an l16_action")
+        if self.l16_reason is not None and not self.l16_reason.strip():
+            raise ValueError("l16_reason must be non-empty when provided")
         if self.geometry_gradient_norm is not None:
             value = _finite("geometry_gradient_norm", self.geometry_gradient_norm)
             if value < 0.0:
@@ -291,7 +299,11 @@ class ObserverInputs:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready observer mapping."""
-        return asdict(self)
+        payload = asdict(self)
+        if self.l16_action is None:
+            payload.pop("l16_action")
+            payload.pop("l16_reason")
+        return payload
 
 
 @dataclass(frozen=True, slots=True)

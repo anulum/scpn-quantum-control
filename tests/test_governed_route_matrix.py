@@ -62,6 +62,17 @@ def test_ssgf_latent_gradient_routes_are_explicit() -> None:
     assert "softplus" in boundary.closure_reason
 
 
+def test_l16_indicator_and_hardware_routes_are_explicit() -> None:
+    """Support bounded local indicators and permanently refuse autonomous actuation."""
+    supported = get_governed_route("adapter:l16.local_indicator")
+    boundary = get_governed_route("adapter:l16.autonomous_hardware_control")
+
+    assert supported.closure_status == "supported"
+    assert supported.rejected_alternatives == (boundary.route_id,)
+    assert boundary.closure_status == "permanent_boundary"
+    assert "not a Lyapunov" in boundary.closure_reason
+
+
 def test_get_governed_route_rejects_blank_and_unknown() -> None:
     with pytest.raises(ValueError, match="non-empty"):
         get_governed_route("  ")

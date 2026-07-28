@@ -140,6 +140,18 @@ def test_loop_step_input_rejects_invalid_values(kwargs: dict[str, object], messa
             "identity_action",
         ),
         (
+            lambda: ObserverInputs(l16_action="clamp"),
+            "l16_action",
+        ),
+        (
+            lambda: ObserverInputs(l16_reason="orphaned"),
+            "requires an l16_action",
+        ),
+        (
+            lambda: ObserverInputs(l16_action="continue", l16_reason=" "),
+            "l16_reason",
+        ),
+        (
             lambda: ObserverInputs(geometry_gradient_norm=-1.0),
             "geometry_gradient_norm",
         ),
@@ -168,6 +180,22 @@ def test_evaluation_validation_and_optional_serialisation() -> None:
         replace(evaluation, backend_status="")
     with pytest.raises(ValueError, match="objective_terms"):
         replace(evaluation, objective_terms=())
+
+
+def test_l16_observer_serialisation_preserves_legacy_payloads() -> None:
+    """Expose BL-85 fields only when the bounded L16 observer is present."""
+    legacy = ObserverInputs(active_sensing_id="candidate-1").to_dict()
+    l16 = ObserverInputs(
+        geometry_gradient_norm=0.2,
+        l16_action="adjust",
+        l16_reason="conservative hold",
+    ).to_dict()
+
+    assert "l16_action" not in legacy
+    assert "l16_reason" not in legacy
+    assert l16["l16_action"] == "adjust"
+    assert l16["l16_reason"] == "conservative hold"
+    assert l16["geometry_gradient_norm"] == 0.2
 
 
 def test_plasma_templates_are_permanently_non_operational() -> None:

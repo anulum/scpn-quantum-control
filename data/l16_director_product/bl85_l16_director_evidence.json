@@ -1,0 +1,102 @@
+{
+  "action_diversity": false,
+  "certificates": [
+    {
+      "claim_boundary": "bounded exact-simulator L16 indicator and heuristic safety-routing evidence; no classical or quantum Lyapunov-exponent proof, PCS certificate, causal diagnosis, stability guarantee, autonomous actuation, provider, QPU, or production-control claim",
+      "codesign_action": "allow",
+      "deterministic_replay": true,
+      "energy_variance": 0.0,
+      "fidelity_susceptibility": 0.0,
+      "hardware_execution": false,
+      "heuristic_action": "continue",
+      "heuristic_score": 1.0,
+      "informative_indicators": [],
+      "loschmidt_echo": 0.9999999999999998,
+      "order_parameter": 1.0,
+      "passed": true,
+      "policy_authorised": true,
+      "route_id": "adapter:l16.local_indicator",
+      "scenario": {
+        "coupling_scale": 1.0,
+        "evolution_time": 0.5,
+        "frequency_scale": 1.0,
+        "oscillators": 4,
+        "scenario_id": "paper27_baseline"
+      }
+    },
+    {
+      "claim_boundary": "bounded exact-simulator L16 indicator and heuristic safety-routing evidence; no classical or quantum Lyapunov-exponent proof, PCS certificate, causal diagnosis, stability guarantee, autonomous actuation, provider, QPU, or production-control claim",
+      "codesign_action": "allow",
+      "deterministic_replay": true,
+      "energy_variance": 5.551115123125783e-17,
+      "fidelity_susceptibility": 14.189882742208226,
+      "hardware_execution": false,
+      "heuristic_action": "continue",
+      "heuristic_score": 0.7664583232301934,
+      "informative_indicators": [
+        "fidelity_susceptibility"
+      ],
+      "loschmidt_echo": 0.9999999999999996,
+      "order_parameter": 1.0,
+      "passed": true,
+      "policy_authorised": true,
+      "route_id": "adapter:l16.local_indicator",
+      "scenario": {
+        "coupling_scale": 0.3,
+        "evolution_time": 0.5,
+        "frequency_scale": 0.1,
+        "oscillators": 3,
+        "scenario_id": "susceptibility_probe"
+      }
+    },
+    {
+      "claim_boundary": "bounded exact-simulator L16 indicator and heuristic safety-routing evidence; no classical or quantum Lyapunov-exponent proof, PCS certificate, causal diagnosis, stability guarantee, autonomous actuation, provider, QPU, or production-control claim",
+      "codesign_action": "allow",
+      "deterministic_replay": true,
+      "energy_variance": 0.0,
+      "fidelity_susceptibility": 0.0,
+      "hardware_execution": false,
+      "heuristic_action": "continue",
+      "heuristic_score": 1.0,
+      "informative_indicators": [],
+      "loschmidt_echo": 0.9999999999999998,
+      "order_parameter": 1.0,
+      "passed": true,
+      "policy_authorised": true,
+      "route_id": "adapter:l16.local_indicator",
+      "scenario": {
+        "coupling_scale": 0.01,
+        "evolution_time": 0.5,
+        "frequency_scale": 1.0,
+        "oscillators": 3,
+        "scenario_id": "weak_coupling_probe"
+      }
+    }
+  ],
+  "claim_boundary": "bounded exact-simulator L16 indicator and heuristic safety-routing evidence; no classical or quantum Lyapunov-exponent proof, PCS certificate, causal diagnosis, stability guarantee, autonomous actuation, provider, QPU, or production-control claim",
+  "content_digest": "891e44634fa049a2cdcb41fc76fcdf68b52758d84e078ea4ef0a82ee5b819ae9",
+  "functional_passed": true,
+  "hardware_execution": false,
+  "promotion_blockers": [
+    "weighted composite is a heuristic policy, not a Lyapunov or PCS certificate",
+    "no provider, QPU, plant, or realtime-hardware execution",
+    "no closed-loop stability theorem or causal diagnosis",
+    "frozen real scenarios did not establish action diversity",
+    "at least one scenario has fewer than two nontrivial raw indicators"
+  ],
+  "promotion_ready": false,
+  "provider_execution": false,
+  "routes": [
+    {
+      "closure_reason": "",
+      "closure_status": "supported",
+      "route_id": "adapter:l16.local_indicator"
+    },
+    {
+      "closure_reason": "weighted indicator composite is not a Lyapunov, PCS, or stability certificate; owner-ticketed hardware and partner control validation cannot be inferred",
+      "closure_status": "permanent_boundary",
+      "route_id": "adapter:l16.autonomous_hardware_control"
+    }
+  ],
+  "schema": "l16_director_product.v1"
+}

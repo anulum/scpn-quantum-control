@@ -1,5 +1,10 @@
 # Changelog
 
+- 2026-07-28 — Bounded L16 director (BL-85): three frozen exact-simulator
+  scenarios, deterministic replay, BL-33 `continue/adjust/halt` safety mapping,
+  BL-67 policy gating, BL-52 local/permanent-boundary routes, and digest-bound
+  evidence. The legacy weighted score remains a heuristic; Lyapunov, PCS,
+  stability, causal, autonomous-actuation, provider, and QPU claims are refused.
 - 2026-07-28 — QNN/QGNN/QSNN convergence examples (BL-42):
   `scpn_quantum_control.ml_examples` composes the existing phase-QNN, QGNN,
   and QSNN trainers into three frozen deterministic convergence certificates,
@@ -41,6 +46,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-28 — BL-85 bounded L16 indicator suite, conservative co-design
+  interlock, governed routes, public guide, evidence CLI, and committed
+  functional evidence with promotion blockers.
 - 2026-07-28 — BL-42 QNN/QGNN/QSNN local convergence suite, complete
   framework-status matrix, public guide, evidence CLI, and canonical committed
   evidence artefacts.

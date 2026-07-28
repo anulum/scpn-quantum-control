@@ -140,6 +140,54 @@ def test_safety_envelope_holds_or_aborts_before_application() -> None:
     assert "requested hold" in identity_hold.reason
 
 
+def test_l16_interlock_is_conservative_and_identity_has_precedence() -> None:
+    """Map adjust/halt to hold/abort while retaining the identity interlock."""
+    evaluation = _evaluation()
+    latency = LatencyPolicy(5.0).assess(evaluation, apply_at_ms=11.0)
+    adjust = _envelope().decide(
+        (0.0, 0.0),
+        evaluation,
+        _proposal(),
+        latency,
+        ObserverInputs(l16_action="adjust", l16_reason="bounded heuristic"),
+    )
+    halt = _envelope().decide(
+        (0.0, 0.0),
+        evaluation,
+        _proposal(),
+        latency,
+        ObserverInputs(l16_action="halt"),
+    )
+    identity = _envelope().decide(
+        (0.0, 0.0),
+        evaluation,
+        _proposal(),
+        latency,
+        ObserverInputs(
+            identity_action="hold",
+            identity_reason="identity first",
+            l16_action="halt",
+            l16_reason="lower-priority abort",
+        ),
+    )
+    continued = _envelope().decide(
+        (0.0, 0.0),
+        evaluation,
+        _proposal(),
+        latency,
+        ObserverInputs(l16_action="continue", l16_reason="bounded continue"),
+    )
+
+    assert adjust.action is SafetyAction.HOLD
+    assert adjust.blockers == ("l16_director",)
+    assert halt.action is SafetyAction.ABORT
+    assert "requested halt" in halt.reason
+    assert identity.action is SafetyAction.HOLD
+    assert identity.reason == "identity first"
+    assert identity.blockers == ("identity_observer",)
+    assert continued.action is SafetyAction.ALLOW
+
+
 def test_safety_envelope_rejects_gradient_and_dimension_failures() -> None:
     """Abort excessive gradients and inconsistent dimensions."""
     latency = LatencyPolicy(5.0).assess(_evaluation(), apply_at_ms=11.0)

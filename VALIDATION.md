@@ -89,6 +89,16 @@ repository evidence runner. The end-to-end tests use actual local simulator,
 QAOA-MPC, realtime-feedback, and co-simulation surfaces; no provider job or QPU
 execution occurs.
 
+### Bounded L16 Director Tests
+
+BL-85 runs three frozen small-system scenarios through the real exact-simulator
+indicator path, verifies deterministic replay, and tests the BL-33 mappings
+`continue -> allow`, `adjust -> hold`, and `halt -> abort`. BL-67 policy tests
+refuse both incomplete and otherwise ticketed hardware modes. Contract,
+evidence-validation, route-matrix, CLI, and atomic-write tests provide 100%
+line and branch coverage over the new director modules and touched BL-33/52
+surfaces. No provider, QPU, plant, or realtime-hardware execution occurs.
+
 ### QNN, QGNN, and QSNN Convergence Tests
 
 The BL-42 focused lane validates immutable task and evidence contracts, exact

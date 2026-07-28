@@ -5,14 +5,16 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Quantum Director
-"""Quantum L16 Director: Lyapunov monitoring for cybernetic closure.
+"""Quantum L16 indicator bundle for heuristic cybernetic routing.
 
 The L16 layer in the SCPN framework provides cybernetic closure by
 monitoring system stability via Lyapunov exponents. The quantum L16
 extracts stability indicators from the quantum-evolved state:
 
     1. Loschmidt echo: L(t) = |<ψ(0)|ψ(t)>|² — state return probability.
-       Decay rate = quantum Lyapunov exponent bound.
+       This implementation evolves the exact ground state under the same
+       Hamiltonian, so the value is an invariance check rather than a measured
+       classical or quantum Lyapunov exponent.
 
     2. Fidelity susceptibility: χ_F = -∂²F/∂ε² at ε=0
        where F = |<ψ(K)|ψ(K+ε)>|². Peaks at quantum phase transitions.
@@ -23,10 +25,15 @@ extracts stability indicators from the quantum-evolved state:
     4. Order parameter rate: dR/dt estimated from consecutive snapshots.
        Positive = approaching synchronisation. Negative = destabilising.
 
-The L16 director uses these to decide:
+The legacy weighted heuristic labels each exact local snapshot:
     - Continue evolution (stable)
     - Adjust coupling (drifting)
-    - Halt and reset (unstable)
+    - Halt and reset (low composite score)
+
+The labels are inputs to a separate safety policy. They are not a stability
+theorem, PCS certificate, causal diagnosis, autonomous plant command, or
+provider/QPU result. The bounded BL-85 product and evidence surface lives in
+``scpn_quantum_control.l16.director_product``.
 """
 
 from __future__ import annotations
@@ -44,7 +51,7 @@ from ..hardware.gpu_accel import expm
 
 @dataclass
 class L16Result:
-    """L16 Lyapunov monitoring result."""
+    """Legacy L16 indicators and heuristic action label."""
 
     loschmidt_echo: float  # |<ψ(0)|ψ(t)>|²
     energy_variance: float  # <H²> - <H>²
@@ -132,9 +139,11 @@ def compute_l16_lyapunov(
     omega: NDArray[np.float64],
     t: float = 0.5,
 ) -> L16Result:
-    """Full L16 Lyapunov monitoring assessment.
+    """Compute the legacy L16 indicator bundle and weighted heuristic.
 
-    Combines all four indicators into a stability score and action decision.
+    The returned ``stability_score`` name is retained for compatibility. It is
+    an uncalibrated weighted composite, not a Lyapunov exponent or stability
+    guarantee. Use the BL-85 product for policy gating and claim boundaries.
     """
     n = K.shape[0]
 
@@ -152,7 +161,7 @@ def compute_l16_lyapunov(
     state_dict = quantum_to_ssgf_state(sv, n)
     r_global = state_dict["R_global"]
 
-    # Stability score: high echo + low variance + moderate susceptibility + high R
+    # Compatibility-preserved weighted heuristic; not a stability certificate.
     score = (
         0.25 * le + 0.25 * max(1.0 - ev, 0.0) + 0.25 * min(1.0, 1.0 / (1.0 + fs)) + 0.25 * r_global
     )

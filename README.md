@@ -122,16 +122,16 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.0.0 |
 | Public API exports | 841 |
-| Python source modules | 657 |
-| Public Python classes | 1272 |
+| Python source modules | 660 |
+| Public Python classes | 1277 |
 | Domain package families | 34 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
 | Notebook files | 106 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1113 |
-| Public documentation pages | 342 |
+| Python test files | 1114 |
+| Public documentation pages | 343 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -724,7 +724,7 @@ graph TD
 | `benchmark_harness` | 4 | Reproducible benchmark harness entry points |
 | `tcbo` | 1 | TCBO quantum observer |
 | `pgbo` | 1 | PGBO quantum bridge |
-| `l16` | 1 | Layer 16 quantum director |
+| `l16` | 4 | Layer 16 bounded indicator director |
 
 ## Data Flow
 
@@ -827,7 +827,7 @@ scpn_quantum_control/
 ├── ssgf/            4 modules — SSGF quantum integration
 ├── tcbo/            1 module  — TCBO quantum observer
 ├── pgbo/            1 module  — PGBO quantum bridge
-├── l16/             1 module  — Layer 16 quantum director
+├── l16/             4 modules — Layer 16 bounded indicators, safety mapping, and evidence
 └── scpn_quantum_engine/  Rust crate (PyO3 0.29, 177 exported PyO3 bindings)
 ```
 

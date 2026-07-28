@@ -343,6 +343,25 @@ _CANONICAL_ROUTES: Final[tuple[GovernedRouteRecord, ...]] = (
         ),
     ),
     _route(
+        "adapter:l16.local_indicator",
+        "adapter",
+        "supported",
+        "Bounded local exact-simulator L16 indicator evaluation and heuristic safety routing.",
+        evidence=("bl85_functional_evidence", "bl85_codesign_interlock"),
+        rejected=("adapter:l16.autonomous_hardware_control",),
+    ),
+    _route(
+        "adapter:l16.autonomous_hardware_control",
+        "adapter",
+        "permanent_boundary",
+        "Autonomous hardware or plant actuation from the L16 weighted heuristic.",
+        evidence=("bl85_claim_boundary", "bl33_safety_policy", "bl67_execution_policy"),
+        closure_reason=(
+            "weighted indicator composite is not a Lyapunov, PCS, or stability certificate; "
+            "owner-ticketed hardware and partner control validation cannot be inferred"
+        ),
+    ),
+    _route(
         "compiler:mlir_enzyme.bounded_kernels",
         "compiler",
         "supported",

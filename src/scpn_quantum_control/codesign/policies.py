@@ -188,16 +188,25 @@ def _observer_interlock(
     current: NDArray[np.float64],
     observers: ObserverInputs,
 ) -> SafetyDecision | None:
-    if observers.identity_action not in {"hold", "abort"}:
-        return None
-    action = SafetyAction.HOLD if observers.identity_action == "hold" else SafetyAction.ABORT
-    reason = observers.identity_reason or f"identity observer requested {action.value}"
-    return SafetyDecision(
-        action=action,
-        reason=reason,
-        applied_parameters=tuple(float(value) for value in current),
-        blockers=("identity_observer",),
-    )
+    if observers.identity_action in {"hold", "abort"}:
+        action = SafetyAction.HOLD if observers.identity_action == "hold" else SafetyAction.ABORT
+        reason = observers.identity_reason or f"identity observer requested {action.value}"
+        return SafetyDecision(
+            action=action,
+            reason=reason,
+            applied_parameters=tuple(float(value) for value in current),
+            blockers=("identity_observer",),
+        )
+    if observers.l16_action in {"adjust", "halt"}:
+        action = SafetyAction.HOLD if observers.l16_action == "adjust" else SafetyAction.ABORT
+        reason = observers.l16_reason or f"L16 heuristic requested {observers.l16_action}"
+        return SafetyDecision(
+            action=action,
+            reason=reason,
+            applied_parameters=tuple(float(value) for value in current),
+            blockers=("l16_director",),
+        )
+    return None
 
 
 def _finite_vector(name: str, values: tuple[float, ...]) -> NDArray[np.float64]:

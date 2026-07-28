@@ -419,7 +419,7 @@ graph TD
     fep["fep/ (2)\nFree Energy Principle"]
     tcbo["tcbo/ (1)\nTCBO observer"]
     pgbo["pgbo/ (1)\nPGBO bridge"]
-    l16["l16/ (1)\nLayer 16 director"]
+    l16["l16/ (4)\nLayer 16 bounded director"]
 
     bridge --> phase
     bridge --> analysis
@@ -700,8 +700,11 @@ tcbo/                                      ← TCBO quantum observer
 pgbo/                                      ← PGBO quantum bridge
 └── quantum_bridge.py                          Quantum geometric tensor, Berry curvature
 
-l16/                                       ← Layer 16 quantum director
-└── quantum_director.py                        Loschmidt echo, stability score
+l16/                                       ← Layer 16 bounded director
+├── quantum_director.py                        Legacy indicators + heuristic score
+├── director_contracts.py                      Frozen BL-85 evidence contracts
+├── director_product.py                        Policy-gated suite + BL-33 safety mapping
+└── director_evidence.py                       Digest-bound JSON/Markdown evidence
 
 scpn_quantum_engine/                       ← Rust crate (PyO3 0.29, rayon parallel)
 └── src/lib.rs                                 177 PyO3 bindings across 81 source files, including: kuramoto_euler, kuramoto_trajectory,

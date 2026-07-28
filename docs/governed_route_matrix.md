@@ -78,7 +78,7 @@ Route identifiers use `family:ecosystem.or.surface` keys:
 | Family | Examples |
 |---|---|
 | `transform` | `transform:native.grad_vmap`, `transform:unsupported.complex_objective` |
-| `adapter` | `adapter:jax.value_and_grad_local`, `adapter:torch.func_local`, `adapter:pennylane.local_default_qubit` |
+| `adapter` | `adapter:jax.value_and_grad_local`, `adapter:torch.func_local`, `adapter:pennylane.local_default_qubit`, `adapter:l16.local_indicator` |
 | `compiler` | `compiler:mlir_enzyme.bounded_kernels`, `compiler:catalyst.qjit_vmap` |
 | `rust` | `rust:program_ad.static_registry_replay`, `rust:program_ad.dynamic_axes` |
 | `provider` | `provider:hardware.gradient_live` |
@@ -90,6 +90,14 @@ BL-70 adds two explicit SSGF latent-geometry transform cells:
   simulation of the complete nonlinear `z -> softplus(W) -> H -> C` path.
 - `transform:ssgf.latent_parameter_shift` is a permanent boundary. A circuit
   parameter-shift is not directly `dC/dz` through the nonlinear latent map.
+
+BL-85 adds two explicit L16 director adapter cells:
+
+- `adapter:l16.local_indicator` supports bounded local exact-simulator
+  indicator evaluation and heuristic BL-33 safety routing.
+- `adapter:l16.autonomous_hardware_control` is a permanent boundary. The
+  weighted composite is not a Lyapunov, PCS, or stability certificate and
+  cannot authorise hardware or plant actuation.
 
 ## Competitor boundary fixtures
 

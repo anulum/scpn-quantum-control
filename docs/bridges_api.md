@@ -297,7 +297,11 @@ Dataclass with fields: `action`, `r_global`, `stability_score`, `l16_action`,
 #### `compute_orchestrator_feedback(K, omega, r_advance=0.8, r_hold=0.5)`
 
 Computes quantum-informed feedback using `compute_l16_lyapunov` from the
-L16 quantum director module.
+L16 quantum director module. The returned `stability_score` and `l16_action`
+are legacy heuristic values. They are not a Lyapunov exponent, PCS/stability
+certificate, causal diagnosis, or autonomous-actuation authority. Use the
+[bounded L16 director](l16_director_product.md) for BL-33 safety mapping and
+digest-bound functional evidence.
 
 Decision logic:
 
