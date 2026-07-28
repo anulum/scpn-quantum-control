@@ -1,0 +1,265 @@
+{
+  "bounded_claim_ready": true,
+  "claim_boundary": "bounded deterministic single-excitation Lindblad transport evidence for the frozen finite networks and scan grids only; no universal optimum, biological tuning, Kuramoto synchronisation, BKT, consciousness, quantum advantage, hardware fidelity, or physical noise-setpoint claim",
+  "content_digest": "98e29c17270963160af4b09fd969836e2ba82612224f7549cbe8a59f707a1969",
+  "functional_passed": true,
+  "hardware_execution": false,
+  "intermediate_scenario_count": 1,
+  "literature": [
+    {
+      "arxiv": "0807.4902",
+      "authors": "M. B. Plenio and S. F. Huelga",
+      "doi": "10.1088/1367-2630/10/11/113019",
+      "scope": "local dephasing can enhance excitation transport in selected dissipative networks",
+      "title": "Dephasing-assisted transport: quantum networks and biomolecules",
+      "year": "2008"
+    },
+    {
+      "arxiv": "0805.2741",
+      "authors": "M. Mohseni, P. Rebentrost, S. Lloyd, and A. Aspuru-Guzik",
+      "doi": "10.1063/1.3002335",
+      "scope": "environment-assisted excitation-transfer efficiency in an FMO model",
+      "title": "Environment-assisted quantum walks in photosynthetic energy transfer",
+      "year": "2008"
+    }
+  ],
+  "model": {
+    "basis": "single_excitation_plus_sink_and_loss",
+    "dephasing": "local_markovian_lindblad_projectors",
+    "hamiltonian": "diag(omega)+K",
+    "observable": "finite_horizon_sink_population"
+  },
+  "negative_control_count": 2,
+  "provider_execution": false,
+  "scenarios": [
+    {
+      "classification_matches": true,
+      "deterministic_replay": true,
+      "passed": true,
+      "result": {
+        "coherent_efficiency": 0.0522738642488,
+        "efficiency_values": [
+          0.0522738642488,
+          0.053241708744,
+          0.0551924072225,
+          0.0621272559813,
+          0.0819977495739,
+          0.137893112234,
+          0.176564980145,
+          0.0824060397461,
+          0.0114666136933
+        ],
+        "enhancement": 3.37769136991,
+        "gamma_values": [
+          0.0,
+          0.01,
+          0.03,
+          0.1,
+          0.3,
+          1.0,
+          3.0,
+          10.0,
+          30.0
+        ],
+        "has_intermediate_optimum": true,
+        "high_noise_efficiency": 0.0114666136933,
+        "loss_rate": 0.05,
+        "optimal_efficiency": 0.176564980145,
+        "optimal_gamma": 3.0,
+        "sink_rate": 1.0,
+        "source_site": 0,
+        "t_evolve": 10.0,
+        "target_site": 3
+      },
+      "scenario": {
+        "edges": [
+          [
+            0,
+            1,
+            1.0
+          ],
+          [
+            1,
+            2,
+            1.0
+          ],
+          [
+            2,
+            3,
+            1.0
+          ]
+        ],
+        "expected_intermediate_optimum": true,
+        "gamma_values": [
+          0.0,
+          0.01,
+          0.03,
+          0.1,
+          0.3,
+          1.0,
+          3.0,
+          10.0,
+          30.0
+        ],
+        "scenario_id": "disordered_chain_intermediate",
+        "site_energies": [
+          0.0,
+          3.0,
+          -2.0,
+          1.0
+        ],
+        "source_site": 0,
+        "t_evolve": 10.0,
+        "target_site": 3
+      }
+    },
+    {
+      "classification_matches": true,
+      "deterministic_replay": true,
+      "passed": true,
+      "result": {
+        "coherent_efficiency": 0.819542095124,
+        "efficiency_values": [
+          0.819542095124,
+          0.818899620612,
+          0.817587070952,
+          0.812743038208,
+          0.797466608982,
+          0.738257811378,
+          0.576585977657,
+          0.269883827442,
+          0.0714404983436
+        ],
+        "enhancement": 1.0,
+        "gamma_values": [
+          0.0,
+          0.01,
+          0.03,
+          0.1,
+          0.3,
+          1.0,
+          3.0,
+          10.0,
+          30.0
+        ],
+        "has_intermediate_optimum": false,
+        "high_noise_efficiency": 0.0714404983436,
+        "loss_rate": 0.05,
+        "optimal_efficiency": 0.819542095124,
+        "optimal_gamma": 0.0,
+        "sink_rate": 1.0,
+        "source_site": 0,
+        "t_evolve": 10.0,
+        "target_site": 2
+      },
+      "scenario": {
+        "edges": [
+          [
+            0,
+            1,
+            1.0
+          ],
+          [
+            1,
+            2,
+            1.0
+          ]
+        ],
+        "expected_intermediate_optimum": false,
+        "gamma_values": [
+          0.0,
+          0.01,
+          0.03,
+          0.1,
+          0.3,
+          1.0,
+          3.0,
+          10.0,
+          30.0
+        ],
+        "scenario_id": "uniform_chain_coherent_control",
+        "site_energies": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "source_site": 0,
+        "t_evolve": 10.0,
+        "target_site": 2
+      }
+    },
+    {
+      "classification_matches": true,
+      "deterministic_replay": true,
+      "passed": true,
+      "result": {
+        "coherent_efficiency": 0.0,
+        "efficiency_values": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "enhancement": 0.0,
+        "gamma_values": [
+          0.0,
+          0.01,
+          0.03,
+          0.1,
+          0.3,
+          1.0,
+          3.0,
+          10.0,
+          30.0
+        ],
+        "has_intermediate_optimum": false,
+        "high_noise_efficiency": 0.0,
+        "loss_rate": 0.05,
+        "optimal_efficiency": 0.0,
+        "optimal_gamma": 0.0,
+        "sink_rate": 1.0,
+        "source_site": 0,
+        "t_evolve": 10.0,
+        "target_site": 2
+      },
+      "scenario": {
+        "edges": [
+          [
+            0,
+            1,
+            1.0
+          ]
+        ],
+        "expected_intermediate_optimum": false,
+        "gamma_values": [
+          0.0,
+          0.01,
+          0.03,
+          0.1,
+          0.3,
+          1.0,
+          3.0,
+          10.0,
+          30.0
+        ],
+        "scenario_id": "disconnected_target_control",
+        "site_energies": [
+          0.0,
+          1.0,
+          2.0
+        ],
+        "source_site": 0,
+        "t_evolve": 10.0,
+        "target_site": 2
+      }
+    }
+  ],
+  "schema": "enaqt_transport_evidence.v1",
+  "setpoint_policy_available": false,
+  "universal_optimum_claimed": false
+}

@@ -587,7 +587,8 @@ analysis/                                  ← 60 modules: probes of the sync tr
 ├── koopman.py                                 Koopman linearisation (BQP argument)
 ├── monte_carlo_xy.py                          Classical XY MC (Rust-accelerated)
 ├── vortex_binding.py                          Kosterlitz RG flow
-└── enaqt.py                                   Environment-assisted quantum transport
+├── enaqt.py                                   Site-basis Lindblad transport scan
+└── enaqt_evidence.py                          BL-87 replay + digest-bound evidence
 
 phase/                                     ← 92 modules: time evolution + variational
 ├── xy_kuramoto.py                             Trotterised XY solver

@@ -8,12 +8,12 @@
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 343,
-    "python_model_classes": 1277,
-    "python_model_source_modules": 660,
+    "public_documentation_pages": 344,
+    "python_model_classes": 1278,
+    "python_model_source_modules": 661,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1114
+    "test_files": 1115
   },
   "documentation": {
     "examples": [
@@ -340,6 +340,7 @@
       "docs/dynq_qubit_mapping.md",
       "docs/e2e_contract_boundaries.md",
       "docs/e2e_testing.md",
+      "docs/enaqt_optimal_noise.md",
       "docs/entropy_qrng.md",
       "docs/equations.md",
       "docs/error_mitigation.md",
@@ -541,7 +542,7 @@
       {
         "package": "analysis",
         "path": "src/scpn_quantum_control/analysis",
-        "python_modules": 63
+        "python_modules": 64
       },
       {
         "package": "applications",
@@ -1928,6 +1929,10 @@
       {
         "name": "ENAQTResult",
         "path": "src/scpn_quantum_control/analysis/enaqt.py"
+      },
+      {
+        "name": "ENAQTScenario",
+        "path": "src/scpn_quantum_control/analysis/enaqt_evidence.py"
       },
       {
         "name": "EdgeADPathDecision",
@@ -5839,6 +5844,7 @@
       "src/scpn_quantum_control/analysis/dla_truncated_tn.py",
       "src/scpn_quantum_control/analysis/dynamical_lie_algebra.py",
       "src/scpn_quantum_control/analysis/enaqt.py",
+      "src/scpn_quantum_control/analysis/enaqt_evidence.py",
       "src/scpn_quantum_control/analysis/entanglement_enhanced_sync.py",
       "src/scpn_quantum_control/analysis/entanglement_entropy.py",
       "src/scpn_quantum_control/analysis/entanglement_percolation.py",
@@ -7921,6 +7927,7 @@
       "tests/test_eeg_classification.py",
       "tests/test_eeg_classification_validation.py",
       "tests/test_enaqt.py",
+      "tests/test_enaqt_evidence.py",
       "tests/test_enforce_main_branch_policy.py",
       "tests/test_entanglement_enhanced_sync.py",
       "tests/test_entanglement_entropy.py",

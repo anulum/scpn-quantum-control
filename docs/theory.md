@@ -263,11 +263,14 @@ coupling preserves or destroys. The CHSH violation ($S = 2.165$) demonstrates th
 the quantum correlations survive Heron r2 noise — the same noise budget that
 biological systems operate under at room temperature.
 
-The NAQT (noise-assisted quantum transport) mechanism, validated in photosynthetic
-complexes (Plenio & Huelga, 2008; Mohseni et al., 2008), shows that biology
-**tunes noise to maximise quantum transport** — from $\sim 70\%$ to $\sim 99\%$
-efficiency. The SCPN's stochastic computing architecture (sc-neurocore) is the
-computational implementation of this biological principle.
+ENAQT theory shows that local dephasing can improve excitation-transfer
+efficiency in selected dissipative networks (Plenio & Huelga, 2008; Mohseni et
+al., 2008). This is a model- and parameter-dependent transport result. It does
+not establish that biological systems universally tune noise, that SCPN or
+sc-neurocore implements the FMO mechanism, or that an ENAQT optimum corresponds
+to Kuramoto synchronisation, BKT physics, or consciousness. The bounded local
+implementation and its negative controls are documented in
+[ENAQT Optimal-Noise Scan](enaqt_optimal_noise.md).
 
 ---
 
@@ -286,10 +289,10 @@ computational implementation of this biological principle.
    Biophysical J. 78, 707.
 7. Levin, M. (2014). Molecular bioelectricity: what voltage-gated channels teach us.
    Phys. Biol. 11, 056004.
-8. Plenio, M. & Huelga, S. (2008). Dephasing-assisted transport: quantum and classical.
-   New J. Phys. 10, 113019.
+8. Plenio, M. & Huelga, S. (2008). Dephasing-assisted transport: quantum networks
+   and biomolecules. New J. Phys. 10, 113019. doi:10.1088/1367-2630/10/11/113019.
 9. Mohseni, M. et al. (2008). Environment-assisted quantum walks in photosynthetic
-   energy transfer. J. Chem. Phys. 129, 174106.
+   energy transfer. J. Chem. Phys. 129, 174106. doi:10.1063/1.3002335.
 
 ---
 

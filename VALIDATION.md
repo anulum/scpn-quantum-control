@@ -99,6 +99,19 @@ evidence-validation, route-matrix, CLI, and atomic-write tests provide 100%
 line and branch coverage over the new director modules and touched BL-33/52
 surfaces. No provider, QPU, plant, or realtime-hardware execution occurs.
 
+### ENAQT Transport Tests
+
+BL-87 validates a trace-preserving single-excitation Lindblad generator,
+source-to-target sink efficiency, exact zero- and high-noise endpoints,
+intermediate-optimum classification, deterministic evidence replay, memory
+budgets, compatibility aliases, and malformed-input rejection. The frozen
+suite contains one disordered-chain intermediate optimum plus coherent-chain
+and disconnected-target negative controls. The focused lane requires 100%
+statement and branch coverage over `analysis/enaqt.py` and
+`analysis/enaqt_evidence.py`. It does not execute hardware or validate a
+universal, biological, synchronisation, BKT, consciousness, advantage, or
+physical noise-setpoint claim.
+
 ### QNN, QGNN, and QSNN Convergence Tests
 
 The BL-42 focused lane validates immutable task and evidence contracts, exact

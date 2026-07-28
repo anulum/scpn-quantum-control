@@ -786,16 +786,19 @@ from scpn_quantum_control.analysis.hamiltonian_self_consistency import (
 
 ### `enaqt` — Environment-Assisted Quantum Transport
 
-Noise-enhanced transport optimisation — the Goldilocks zone where decoherence
-*improves* energy transfer (relevant to FMO photosynthetic complex benchmarks).
+`enaqt_scan(...)` evolves a single excitation over the site Hamiltonian
+`diag(omega) + K`, with local dephasing, an irreversible target sink, and an
+optional competing loss channel. It maximises finite-horizon sink population,
+not a Kuramoto phase proxy. The result records explicit efficiency fields, the
+exact zero-dephasing endpoint, the largest-scanned-gamma endpoint, and a strict
+intermediate-optimum classification. Legacy `*_r` fields remain read-only
+aliases only.
 
-`enaqt_scan(K, omega, gamma_range=None, t_evolve=1.0, n_steps=50, *, max_dense_gib=None)`
-returns `ENAQTResult` with the optimal dephasing rate, coherent endpoint,
-large-noise endpoint, and enhancement ratio. The implementation is a dense
-small-system Lindblad diagnostic; each time step applies the Lindblad-generator
-exponential action via `scipy.sparse.linalg.expm_multiply` rather than an
-explicit-Euler density update. `max_dense_gib` gates the Hamiltonian, density
-matrix, and work buffers before allocation.
+The trace-preserving Lindblad generator is applied through
+`scipy.sparse.linalg.expm_multiply`; `max_dense_gib` gates the site-basis
+density workspace before Hamiltonian allocation. See
+[ENAQT Optimal-Noise Scan](enaqt_optimal_noise.md) for equations, evidence,
+primary citations, negative controls, and the no-setpoint boundary.
 
 ### `entanglement_enhanced_sync` — Entangled Initial-State Synchronization
 

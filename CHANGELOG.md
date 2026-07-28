@@ -1,5 +1,11 @@
 # Changelog
 
+- 2026-07-28 — Bounded ENAQT optimal-noise evidence (BL-87): replaced the
+  degenerate phase proxy with finite-horizon target-sink population in a
+  trace-preserving single-excitation Lindblad model. One disordered-chain
+  interior optimum and two negative controls replay deterministically. The
+  forbidden ENAQT--BKT--consciousness leap is removed; universal, biological,
+  synchronisation, hardware, advantage, and noise-setpoint claims are refused.
 - 2026-07-28 — Bounded L16 director (BL-85): three frozen exact-simulator
   scenarios, deterministic replay, BL-33 `continue/adjust/halt` safety mapping,
   BL-67 policy gating, BL-52 local/permanent-boundary routes, and digest-bound
@@ -46,6 +52,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-28 — BL-87 site-basis ENAQT scanner, explicit transfer-efficiency
+  contract, two negative controls, primary-source boundary, evidence CLI,
+  public guide, and digest-bound local evidence artefacts.
 - 2026-07-28 — BL-85 bounded L16 indicator suite, conservative co-design
   interlock, governed routes, public guide, evidence CLI, and committed
   functional evidence with promotion blockers.
