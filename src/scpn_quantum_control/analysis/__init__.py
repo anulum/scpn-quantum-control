@@ -32,7 +32,19 @@ from .dla_parity_witness import DLAParityWitness
 from .dla_truncated_tn import dla_truncated_tn
 from .dynamical_lie_algebra import DLAResult, compute_dla
 from .enaqt import ENAQTResult, enaqt_scan
-from .entanglement_enhanced_sync import entanglement_advantage
+from .entanglement_enhanced_sync import (
+    InitialState,
+    InitialStateControlComparison,
+    SyncTrajectory,
+    compare_all_initial_states,
+    compare_initial_states_with_dephased_controls,
+    entanglement_advantage,
+    local_phase_observables,
+    mean_single_qubit_linear_entropy,
+    prepare_initial_state,
+    simulate_sync_trajectory,
+    transverse_exchange_coherence,
+)
 from .entanglement_entropy import entanglement_vs_coupling
 from .entanglement_percolation import PercolationScanResult, percolation_scan
 from .entanglement_spectrum import (
@@ -226,7 +238,17 @@ __all__ = [
     "compute_critical_concordance",
     "DLAParityTheoremResult",
     "verify_z2_parity",
+    "InitialState",
+    "InitialStateControlComparison",
+    "SyncTrajectory",
+    "compare_all_initial_states",
+    "compare_initial_states_with_dephased_controls",
     "entanglement_advantage",
+    "local_phase_observables",
+    "mean_single_qubit_linear_entropy",
+    "prepare_initial_state",
+    "simulate_sync_trajectory",
+    "transverse_exchange_coherence",
     "entanglement_vs_coupling",
     "PercolationScanResult",
     "percolation_scan",

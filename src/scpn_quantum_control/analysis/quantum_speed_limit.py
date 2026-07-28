@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Quantum Speed Limit
-"""Quantum speed limit for the synchronization phase transition.
+"""Quantum speed limits for a bounded local-phase-order threshold.
 
 The Mandelstam-Tamm bound gives the minimum time to evolve from
 an initial state |ψ_0⟩ to a target state |ψ_T⟩:
@@ -20,16 +20,10 @@ The Margolus-Levitin bound gives an alternative:
 
 where E_0 is the ground state energy.
 
-For the BKT synchronization transition, the correlation length
-diverges as ξ ~ exp(b/√(K-K_c)), an essential singularity. This
-should produce qualitatively different QSL scaling near K_c compared
-to second-order transitions (where ξ ~ |K-K_c|^{-ν} gives power-law
-QSL divergence).
-
-Nobody has computed QSL at a BKT transition. The prediction:
-τ_sync diverges LOGARITHMICALLY at K_c (from the essential singularity),
-not as a power law. This is a qualitative signature of BKT physics
-in the quantum speed limit.
+The threshold time is a finite closed-system simulation diagnostic. It is not
+a measured synchronization time, a critical exponent, or evidence of BKT
+scaling. Local phase order is interpreted only when transverse visibility is
+non-zero.
 
 References
 ----------
@@ -46,6 +40,7 @@ from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
+from qiskit.quantum_info import Statevector
 from scipy.linalg import expm
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
@@ -93,10 +88,11 @@ def compute_qsl(
     *,
     max_dense_gib: float | None = None,
 ) -> QSLResult:
-    """Compute quantum speed limits for reaching synchronization.
+    """Compute speed limits for crossing a local-phase-order threshold.
 
-    Evolves |0...0⟩ under H_XY and finds the first time R > R_threshold.
-    Computes both Mandelstam-Tamm and Margolus-Levitin bounds.
+    Evolves the same frequency-encoded product state used by the BL-79
+    initial-state study. The returned threshold time is a bounded numerical
+    diagnostic, not a spontaneous-synchronisation or BKT certificate.
     """
     _validate_qsl_parameters(t_target, dt, R_threshold)
     n = K.shape[0]
@@ -118,9 +114,10 @@ def compute_qsl(
     H_raw = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
     H_mat = H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
 
-    # Initial state: |0...0⟩
-    psi_0 = np.zeros(2**n, dtype=complex)
-    psi_0[0] = 1.0
+    from .entanglement_enhanced_sync import InitialState, prepare_initial_state
+
+    initial_circuit = prepare_initial_state(n, InitialState.PRODUCT, omega)
+    psi_0 = np.asarray(Statevector.from_instruction(initial_circuit), dtype=np.complex128)
 
     # Ground state energy
     exact = classical_exact_diag(n, K=K, omega=omega)
@@ -159,7 +156,7 @@ def compute_qsl(
     overlap = float(np.abs(psi_0.conj() @ psi_target))
 
     # Mandelstam-Tamm bound
-    if overlap > 1.0 - 1e-15:
+    if delta_E <= 1e-12 or overlap > 1.0 - 1e-12:
         tau_MT = 0.0
     else:
         tau_MT = np.arccos(min(overlap, 1.0)) / max(delta_E, 1e-15)
@@ -199,14 +196,11 @@ def qsl_vs_coupling(
     *,
     max_dense_gib: float | None = None,
 ) -> dict[str, Any]:
-    """Scan QSL across coupling strengths to reveal BKT singularity.
+    """Scan bounded speed-limit diagnostics across coupling strengths.
 
-    At K_c, the QSL should show anomalous behaviour:
-    - Second-order QPT: τ ~ |K-K_c|^{-zν} (power law divergence)
-    - BKT: τ ~ exp(b/√(K-K_c)) (essential singularity → log divergence)
-
-    The signature of BKT in the QSL is qualitatively different from
-    standard QPTs.
+    The finite grid does not estimate a critical point or distinguish BKT from
+    power-law scaling. Any such inference requires a separately preregistered
+    finite-size/scaling study.
     """
     if K_base_range is None:
         K_base_range = np.linspace(0.01, 3.0, n_K_values, dtype=np.float64)
@@ -235,7 +229,12 @@ def qsl_vs_coupling(
         from .entanglement_enhanced_sync import InitialState, simulate_sync_trajectory
 
         traj = simulate_sync_trajectory(
-            K_scaled, omega, InitialState.PRODUCT, t_max=t_target, n_steps=20
+            K_scaled,
+            omega,
+            InitialState.PRODUCT,
+            t_max=t_target,
+            n_steps=20,
+            max_dense_gib=max_dense_gib,
         )
         R_final_vals.append(traj.final_R)
 

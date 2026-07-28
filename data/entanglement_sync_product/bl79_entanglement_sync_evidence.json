@@ -1,0 +1,192 @@
+{
+  "claim_boundary": "bounded deterministic closed-system statevector study for one frozen four-qubit Kuramoto-XY Hamiltonian and finite time grid; exchange coherence is a custom diagnostic, not a spontaneous-synchronisation certificate; dephased-control differences do not establish an entanglement-specific cause, lower critical coupling, universal enhancement, quantum advantage, hardware fidelity, or control authority",
+  "classification": {
+    "all_rows_refuse_entanglement_specific_attribution": true,
+    "bell_coherence_effect_detected": true,
+    "bell_is_entangled": true,
+    "ghz_is_entangled": true,
+    "ghz_negative_control_passed": true,
+    "product_is_separable": true,
+    "separable_coherence_control_effect_detected": true,
+    "w_coherence_effect_detected": true,
+    "w_is_entangled": true
+  },
+  "comparisons": {
+    "bell_pairs": {
+      "attribution_status": "coherence_effect_not_entanglement_specific",
+      "control_final_exchange_coherence": 0.12480338932,
+      "control_final_local_phase_order": 0.0,
+      "control_final_phase_defined": false,
+      "control_mean_exchange_coherence": 0.0910960775913,
+      "delta_final_exchange_coherence": 0.132228449813,
+      "delta_mean_exchange_coherence": 0.0410195954932,
+      "entanglement_specific_effect_supported": false,
+      "final_exchange_coherence": 0.257031839132,
+      "final_local_phase_order": 0.0,
+      "final_phase_defined": false,
+      "initial_mean_single_qubit_linear_entropy": 1.0,
+      "initial_state": "bell_pairs",
+      "language_status": "research_observation",
+      "mean_exchange_coherence": 0.132115673085,
+      "no_advantage_certificate": {
+        "certificate_id": "no_advantage:bl79_initial_state_comparison:protocol:bl79.initial_state_observation",
+        "claim_boundary": "advantage-language governance only; default is no-advantage / research observation; decisive or advantage wording requires an explicit protocol identity and never invents green quantum-advantage marketing claims",
+        "language_status": "no_advantage_default",
+        "protocol_id": "protocol:bl79.initial_state_observation",
+        "statement": "No quantum-advantage marketing claim is authorised under this certificate. Default language status is no-advantage / research observation. Bound protocol='protocol:bl79.initial_state_observation'."
+      }
+    },
+    "ghz": {
+      "attribution_status": "coherence_effect_not_entanglement_specific",
+      "control_final_exchange_coherence": 0.0,
+      "control_final_local_phase_order": 0.0,
+      "control_final_phase_defined": false,
+      "control_mean_exchange_coherence": 0.0,
+      "delta_final_exchange_coherence": 0.0,
+      "delta_mean_exchange_coherence": 0.0,
+      "entanglement_specific_effect_supported": false,
+      "final_exchange_coherence": 0.0,
+      "final_local_phase_order": 0.0,
+      "final_phase_defined": false,
+      "initial_mean_single_qubit_linear_entropy": 1.0,
+      "initial_state": "ghz",
+      "language_status": "research_observation",
+      "mean_exchange_coherence": 0.0,
+      "no_advantage_certificate": {
+        "certificate_id": "no_advantage:bl79_initial_state_comparison:protocol:bl79.initial_state_observation",
+        "claim_boundary": "advantage-language governance only; default is no-advantage / research observation; decisive or advantage wording requires an explicit protocol identity and never invents green quantum-advantage marketing claims",
+        "language_status": "no_advantage_default",
+        "protocol_id": "protocol:bl79.initial_state_observation",
+        "statement": "No quantum-advantage marketing claim is authorised under this certificate. Default language status is no-advantage / research observation. Bound protocol='protocol:bl79.initial_state_observation'."
+      }
+    },
+    "product": {
+      "attribution_status": "coherence_effect_not_entanglement_specific",
+      "control_final_exchange_coherence": 0.139081403441,
+      "control_final_local_phase_order": 0.0,
+      "control_final_phase_defined": false,
+      "control_mean_exchange_coherence": 0.154436519859,
+      "delta_final_exchange_coherence": 0.0934128992312,
+      "delta_mean_exchange_coherence": 0.265045126908,
+      "entanglement_specific_effect_supported": false,
+      "final_exchange_coherence": 0.232494302672,
+      "final_local_phase_order": 0.316601915704,
+      "final_phase_defined": true,
+      "initial_mean_single_qubit_linear_entropy": 0.0,
+      "initial_state": "product",
+      "language_status": "research_observation",
+      "mean_exchange_coherence": 0.419481646767,
+      "no_advantage_certificate": {
+        "certificate_id": "no_advantage:bl79_initial_state_comparison:protocol:bl79.initial_state_observation",
+        "claim_boundary": "advantage-language governance only; default is no-advantage / research observation; decisive or advantage wording requires an explicit protocol identity and never invents green quantum-advantage marketing claims",
+        "language_status": "no_advantage_default",
+        "protocol_id": "protocol:bl79.initial_state_observation",
+        "statement": "No quantum-advantage marketing claim is authorised under this certificate. Default language status is no-advantage / research observation. Bound protocol='protocol:bl79.initial_state_observation'."
+      }
+    },
+    "w_state": {
+      "attribution_status": "coherence_effect_not_entanglement_specific",
+      "control_final_exchange_coherence": 1.49058623624e-16,
+      "control_final_local_phase_order": 0.0,
+      "control_final_phase_defined": false,
+      "control_mean_exchange_coherence": 1.03712727256e-16,
+      "delta_final_exchange_coherence": 0.244901946686,
+      "delta_mean_exchange_coherence": 0.366405311833,
+      "entanglement_specific_effect_supported": false,
+      "final_exchange_coherence": 0.244901946686,
+      "final_local_phase_order": 0.0,
+      "final_phase_defined": false,
+      "initial_mean_single_qubit_linear_entropy": 0.75,
+      "initial_state": "w_state",
+      "language_status": "research_observation",
+      "mean_exchange_coherence": 0.366405311833,
+      "no_advantage_certificate": {
+        "certificate_id": "no_advantage:bl79_initial_state_comparison:protocol:bl79.initial_state_observation",
+        "claim_boundary": "advantage-language governance only; default is no-advantage / research observation; decisive or advantage wording requires an explicit protocol identity and never invents green quantum-advantage marketing claims",
+        "language_status": "no_advantage_default",
+        "protocol_id": "protocol:bl79.initial_state_observation",
+        "statement": "No quantum-advantage marketing claim is authorised under this certificate. Default language status is no-advantage / research observation. Bound protocol='protocol:bl79.initial_state_observation'."
+      }
+    }
+  },
+  "content_digest": "8edcf229addc96e6807bd3f4ff1090e0f323e9ddca3e17b708446257f20872cf",
+  "critical_coupling_claimed": false,
+  "deterministic_replay": true,
+  "entanglement_specific_effect_supported": false,
+  "functional_passed": true,
+  "hardware_execution": false,
+  "literature": [
+    {
+      "arxiv": "1511.04309",
+      "authors": "L. J. Fiderer, M. Kus, and D. Braun",
+      "doi": "10.1103/PhysRevA.94.032336",
+      "scope": "qubit phase synchronisation is basis-relative and requires a defined local phase",
+      "title": "Quantum-phase synchronization",
+      "year": "2016"
+    },
+    {
+      "arxiv": "1610.05060",
+      "authors": "F. Galve, G. L. Giorgi, and R. Zambrini",
+      "scope": "quantum synchronisation indicators are model-dependent and can disagree or fail",
+      "title": "Quantum correlations and synchronization measures",
+      "year": "2017"
+    },
+    {
+      "arxiv": "1806.09878",
+      "authors": "A. Roulet and C. Bruder",
+      "doi": "10.1103/PhysRevLett.121.063601",
+      "scope": "entanglement and phase locking are related in a driven-dissipative spin-1 model, not automatically in this closed qubit model",
+      "title": "Quantum Synchronization and Entanglement Generation",
+      "year": "2018"
+    }
+  ],
+  "population_matched_controls": true,
+  "provider_execution": false,
+  "quantum_advantage_claimed": false,
+  "scenario": {
+    "control": "computational_basis_dephasing_with_identical_populations",
+    "coupling": [
+      [
+        0.45,
+        0.302,
+        0.24696523624231187,
+        0.18295634688326962
+      ],
+      [
+        0.302,
+        0.45,
+        0.201,
+        0.24696523624231187
+      ],
+      [
+        0.24696523624231187,
+        0.201,
+        0.45,
+        0.252
+      ],
+      [
+        0.18295634688326962,
+        0.24696523624231187,
+        0.252,
+        0.45
+      ]
+    ],
+    "evolution": "exact_closed_unitary_Kuramoto_XY",
+    "n_steps": 20,
+    "observables": [
+      "visibility_aware_local_phase_order",
+      "mean_pairwise_transverse_exchange_coherence"
+    ],
+    "omega": [
+      1.329,
+      2.61,
+      0.844,
+      1.52
+    ],
+    "scenario_id": "paper27_four_qubit_initial_state_controls",
+    "t_max": 2.0
+  },
+  "schema": "entanglement_initial_state_evidence.v1",
+  "separable_attribution_control_present": true,
+  "state_family_count": 4
+}

@@ -23,6 +23,19 @@ from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestComputeQSL:
+    def test_stationary_product_state_has_zero_speed_limit_branches(self):
+        """A stationary zero-energy product state has zero MT and ML bounds."""
+        result = compute_qsl(
+            np.zeros((1, 1)),
+            np.zeros(1),
+            t_target=0.2,
+            dt=0.1,
+            R_threshold=1.0,
+        )
+        assert result.delta_E == pytest.approx(0.0)
+        assert result.tau_MT == 0.0
+        assert result.tau_ML == 0.0
+
     def test_returns_result(self):
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]

@@ -50,11 +50,14 @@
     },
     {
       "activation_criterion": "Promote owner slices of at most 40 files after strict typing, focused runtime tests, and claim-boundary review pass together.",
-      "files": [],
+      "files": [
+        "tests/test_entanglement_enhanced_sync.py",
+        "tests/test_entanglement_sync_evidence.py"
+      ],
       "id": "claim_release_contracts",
       "order": 1,
       "selection": "Claim-bearing evidence, provenance, release, status-ledger, and publication-boundary tests.",
-      "status": "planned"
+      "status": "enforced"
     },
     {
       "activation_criterion": "Promote adapter-owner slices after intentional invalid-input calls use narrow suppressions and no live provider access is introduced.",

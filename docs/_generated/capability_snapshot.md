@@ -7,16 +7,16 @@
 |---|---:|
 | Package version | 1.0.0 |
 | Public API exports | 841 |
-| Python source modules | 661 |
-| Public Python classes | 1278 |
+| Python source modules | 662 |
+| Public Python classes | 1279 |
 | Domain package families | 34 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
 | Notebook files | 106 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1115 |
-| Public documentation pages | 344 |
+| Python test files | 1116 |
+| Public documentation pages | 345 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.

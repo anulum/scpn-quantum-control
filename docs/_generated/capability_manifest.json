@@ -8,12 +8,12 @@
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 344,
-    "python_model_classes": 1278,
-    "python_model_source_modules": 661,
+    "public_documentation_pages": 345,
+    "python_model_classes": 1279,
+    "python_model_source_modules": 662,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1115
+    "test_files": 1116
   },
   "documentation": {
     "examples": [
@@ -341,6 +341,7 @@
       "docs/e2e_contract_boundaries.md",
       "docs/e2e_testing.md",
       "docs/enaqt_optimal_noise.md",
+      "docs/entanglement_initial_state_study.md",
       "docs/entropy_qrng.md",
       "docs/equations.md",
       "docs/error_mitigation.md",
@@ -542,7 +543,7 @@
       {
         "package": "analysis",
         "path": "src/scpn_quantum_control/analysis",
-        "python_modules": 64
+        "python_modules": 65
       },
       {
         "package": "applications",
@@ -2740,6 +2741,10 @@
       },
       {
         "name": "InitialState",
+        "path": "src/scpn_quantum_control/analysis/entanglement_enhanced_sync.py"
+      },
+      {
+        "name": "InitialStateControlComparison",
         "path": "src/scpn_quantum_control/analysis/entanglement_enhanced_sync.py"
       },
       {
@@ -5849,6 +5854,7 @@
       "src/scpn_quantum_control/analysis/entanglement_entropy.py",
       "src/scpn_quantum_control/analysis/entanglement_percolation.py",
       "src/scpn_quantum_control/analysis/entanglement_spectrum.py",
+      "src/scpn_quantum_control/analysis/entanglement_sync_evidence.py",
       "src/scpn_quantum_control/analysis/fim_hamiltonian.py",
       "src/scpn_quantum_control/analysis/finite_size_scaling.py",
       "src/scpn_quantum_control/analysis/graph_topology_scan.py",
@@ -7934,6 +7940,7 @@
       "tests/test_entanglement_percolation.py",
       "tests/test_entanglement_spectrum.py",
       "tests/test_entanglement_spectrum_branches.py",
+      "tests/test_entanglement_sync_evidence.py",
       "tests/test_entanglement_tomography_readiness.py",
       "tests/test_entropy_qrng.py",
       "tests/test_enzyme_toolchain_execution_evidence.py",

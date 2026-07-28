@@ -399,7 +399,7 @@ def test_live_registry_validates_all_enforced_paths() -> None:
     policy = _audit.load_policy(repo_root / "tools" / "test_typing_policy.json")
     tracked = set(_audit.tracked_test_paths(repo_root))
 
-    assert len(policy.enforced_paths) == 16
+    assert len(policy.enforced_paths) == 18
     assert _audit.audit_policy(policy, tuple(sorted(tracked))) == ()
 
 
@@ -409,7 +409,7 @@ def test_test_infrastructure_documents_live_policy_baseline() -> None:
     policy = _audit.load_policy(repo_root / "tools" / "test_typing_policy.json")
     documentation = (repo_root / "docs" / "test_infrastructure.md").read_text(encoding="utf-8")
 
-    assert f"{len(policy.enforced_paths)}-file `repository_policy` cohort" in documentation
+    assert f"{len(policy.enforced_paths)}-file enforced cohort set" in documentation
     assert f"{policy.baseline.errors:,} errors" in documentation
     assert f"{policy.baseline.files_with_errors} of" in documentation
     assert f"{policy.baseline.tracked_python_files} tracked Python test files" in documentation

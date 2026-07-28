@@ -547,10 +547,13 @@ from scpn_quantum_control.analysis.shadow_tomography import (
 )
 ```
 
-### `quantum_speed_limit` — QSL for BKT Synchronization
+### `quantum_speed_limit` — Bounded State-Evolution Speed Limits
 
-Mandelstam-Tamm and Margolus-Levitin speed limits: minimum time to evolve between
-states across the synchronization transition.
+`compute_qsl(...)` evaluates Mandelstam-Tamm and Margolus-Levitin bounds from
+the frequency-encoded product state and records the first simulated crossing
+of a visibility-aware local-phase-order threshold. The threshold time is a
+finite closed-system diagnostic, not a measured synchronisation time, critical
+exponent, or BKT certificate.
 
 ```python
 from scpn_quantum_control.analysis.quantum_speed_limit import (
@@ -559,8 +562,10 @@ from scpn_quantum_control.analysis.quantum_speed_limit import (
 )
 ```
 
-`qsl_vs_coupling(K, omega, t_target=1.0, K_base_range=None, n_K=15)` → `QSLResult`
-with: `K_base`, `mt_limits` (Mandelstam-Tamm), `ml_limits` (Margolus-Levitin).
+`qsl_vs_coupling(K, omega, K_base_range=None, n_K_values=15, t_target=5.0,
+R_threshold=0.5, *, max_dense_gib=None)` returns finite-grid `K_base`,
+`tau_MT`, `tau_ML`, `tau_actual`, `delta_E`, and `R_final` lists. The scan does
+not fit a critical point or distinguish BKT from power-law scaling.
 
 ---
 
@@ -800,14 +805,22 @@ density workspace before Hamiltonian allocation. See
 [ENAQT Optimal-Noise Scan](enaqt_optimal_noise.md) for equations, evidence,
 primary citations, negative controls, and the no-setpoint boundary.
 
-### `entanglement_enhanced_sync` — Entangled Initial-State Synchronization
+### `entanglement_enhanced_sync` — Entangled Initial-State Coherence Study
 
 `simulate_sync_trajectory(K, omega, state_type, t_max=2.0, n_steps=20, *, max_dense_gib=None)`
 evolves product, Bell-pair, GHZ, or W initial states under the dense exact
-Kuramoto-XY Hamiltonian and records the order-parameter trajectory. The dense
-matrix exponential and statevector workspaces are budgeted before Hamiltonian
-construction.
+Kuramoto-XY Hamiltonian. It records a visibility-aware local phase order and a
+separate pairwise transverse-exchange-coherence score. When local transverse
+visibility vanishes, `phase_defined` is false and the compatibility `R` value
+is zero; the historical false `atan2(0, 0) -> R=1` mapping is removed.
 
 `compare_all_initial_states(K, omega, t_max=2.0, n_steps=20, *, max_dense_gib=None)`
-forwards the same dense budget to every initial-state trajectory before
-`entanglement_advantage(...)` compares final $R$ and convergence speed.
+uses one budgeted exact propagator for all pure states.
+`compare_initial_states_with_dephased_controls(...)` adds population-matched
+computational-basis-dephased controls and retains the separable product row as
+an attribution control. `entanglement_advantage(...)` is a compatibility name
+that now returns descriptive differences with a BL-65 no-advantage
+certificate; it does not report speedup or an entanglement-specific effect.
+
+See [Entangled initial-state coherence study](entanglement_initial_state_study.md)
+for equations, committed evidence, primary-source scope, and limitations.

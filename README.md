@@ -122,16 +122,16 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.0.0 |
 | Public API exports | 841 |
-| Python source modules | 661 |
-| Public Python classes | 1278 |
+| Python source modules | 662 |
+| Public Python classes | 1279 |
 | Domain package families | 34 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
 | Notebook files | 106 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1115 |
-| Public documentation pages | 344 |
+| Python test files | 1116 |
+| Public documentation pages | 345 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -879,6 +879,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Differentiable Reviewer Evidence](docs/differentiable_reviewer_evidence.md) — generated criticism-to-command and open-gap evidence index
 - [Quantum Gradients](docs/quantum_gradients.md) — parameter-shift and gradient-evidence route for VQE and quantum-control objectives
 - [JAX NQS Baseline](docs/jax_nqs_baseline.md) — bounded exact-reference RBM evidence with environment provenance and no performance or hardware claim
+- [Entangled Initial-State Coherence Study](docs/entanglement_initial_state_study.md) — visibility-aware phase order, dephased controls, deterministic evidence, and no entanglement-specific or shifted-critical-coupling claim
 - [Differentiable API](docs/differentiable_api.md) — public differentiable namespace and support matrix
 - [QNN, QGNN, and QSNN Convergence Examples](docs/ml_convergence_examples.md) — frozen local training tasks, framework rows, and digest-bound evidence
 - [Differentiable Roadmap](docs/differentiable_roadmap.md) — staged gradient, adapter, benchmark, verification, and control roadmap

@@ -77,6 +77,7 @@ nav:
       - Quantum-Classical Co-Design Loop: quantum_classical_codesign_loop.md
       - Bounded L16 Director: l16_director_product.md
       - ENAQT Optimal-Noise Scan: enaqt_optimal_noise.md
+      - Entangled Initial-State Coherence Study: entanglement_initial_state_study.md
       - Differentiable Support Matrix: differentiable_support_matrix.md
       - Governed Route Matrix: governed_route_matrix.md
       - Differentiable Reviewer Evidence: differentiable_reviewer_evidence.md

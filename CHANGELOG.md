@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-07-28 — Bounded entangled initial-state coherence study (BL-79):
+  replaced the `atan2(0, 0) -> R=1` phase proxy with visibility-aware local
+  phase order, added a separate transverse-exchange-coherence diagnostic,
+  population-matched dephased controls, a separable attribution control, and
+  digest-bound deterministic evidence. Bell/W differences and the GHZ
+  negative control pass, but the product control also differs; therefore
+  entanglement-specific, shifted-critical-coupling, spontaneous-synchronisation,
+  advantage, provider, and hardware claims are refused.
 - 2026-07-28 — Bounded ENAQT optimal-noise evidence (BL-87): replaced the
   degenerate phase proxy with finite-horizon target-sink population in a
   trace-preserving single-excitation Lindblad model. One disordered-chain
@@ -52,6 +60,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-28 — BL-79 visibility-aware phase/coherence observables,
+  dephased-control comparison API, BL-65 research-observation certificate,
+  evidence CLI, public scientific-boundary guide, and committed deterministic
+  JSON/Markdown evidence.
 - 2026-07-28 — BL-87 site-basis ENAQT scanner, explicit transfer-efficiency
   contract, two negative controls, primary-source boundary, evidence CLI,
   public guide, and digest-bound local evidence artefacts.

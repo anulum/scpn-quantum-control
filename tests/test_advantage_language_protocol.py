@@ -48,6 +48,11 @@ def test_get_default_and_decisive_protocols() -> None:
     assert decisive.reason
     assert any("decisive_advantage_protocol" in m for m in decisive.evidence_modules)
 
+    bl79 = get_advantage_protocol("protocol:bl79.initial_state_observation")
+    assert bl79.language_status == "research_observation"
+    assert "entanglement-specific" in bl79.reason
+    assert any("entanglement_enhanced_sync" in module for module in bl79.evidence_modules)
+
 
 def test_get_rejects_blank_and_unknown() -> None:
     with pytest.raises(ValueError, match="non-empty"):
@@ -84,6 +89,13 @@ def test_issue_no_advantage_certificate_default() -> None:
     assert "no_advantage" in cert.certificate_id
     payload = cert.to_dict()
     assert payload["claim_boundary"] == ADVANTAGE_LANGUAGE_CLAIM_BOUNDARY
+
+    bl79 = issue_no_advantage_certificate(
+        context="bl79 initial-state study",
+        protocol_id="protocol:bl79.initial_state_observation",
+    )
+    assert bl79.protocol_id == "protocol:bl79.initial_state_observation"
+    assert bl79.language_status == "no_advantage_default"
 
 
 def test_issue_certificate_rejects_blank_and_refuse_protocol() -> None:
@@ -239,7 +251,7 @@ def test_record_and_certificate_validation() -> None:
     with pytest.raises(ValueError, match="language_status must be"):
         NoAdvantageCertificate(
             certificate_id="c",
-            language_status="research_observation",  # type: ignore[arg-type]
+            language_status="research_observation",
             statement="s",
         )
     with pytest.raises(ValueError, match="statement"):

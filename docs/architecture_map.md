@@ -129,6 +129,10 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
   ENAQT uses finite-horizon sink population in a single-excitation site model; its
   intermediate optimum is scenario-specific transport evidence, not Kuramoto R, BKT,
   consciousness, biological calibration, or a hardware noise-setpoint policy.
+  `entanglement_enhanced_sync` reports local phase order only with non-zero transverse
+  visibility and keeps pairwise exchange coherence separate. Its dephased controls
+  support a bounded initial-coherence observation, not an entanglement-specific,
+  shifted-critical-coupling, spontaneous-synchronisation, or advantage claim.
   `shadow_tomography`
   is an O(4ⁿ) faithful simulation, **not** the measurement-efficient algorithm; several guarded
   probes fail-closed and refuse synthetic output.

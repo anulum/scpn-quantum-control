@@ -1912,10 +1912,10 @@ the three applied targets.
 
 ### Motivation
 
-Quantum metrology achieves Heisenberg-limited sensing by using
-entangled probe states. The synchronisation transition itself
-generates entanglement — a finding already in the repo's
-`analysis/qfi_criticality.py` + `entanglement_sync.py`. Deploying
+Quantum metrology can use entangled probe states. This repository contains
+bounded QFI and initial-state coherence studies, but it has not established
+that a synchronisation transition generates a metrologically useful resource.
+Deploying
 multiple synchronised oscillator subsets as a quantum sensor array,
 with DLA-parity-protected readout, converts the sync transition
 from a physics demo into a distributed sensing primitive for

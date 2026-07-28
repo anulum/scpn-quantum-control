@@ -273,6 +273,20 @@ _CANONICAL_PROTOCOLS: Final[tuple[AdvantageProtocolRecord, ...]] = (
         ),
     ),
     _protocol(
+        "protocol:bl79.initial_state_observation",
+        "research_observation",
+        "BL-79 initial-state coherence comparison with population-matched controls.",
+        evidence_modules=(
+            "scpn_quantum_control.analysis.entanglement_enhanced_sync",
+            "scpn_quantum_control.analysis.entanglement_sync_evidence",
+        ),
+        reason=(
+            "State-family and dephased-control differences are bounded simulation "
+            "observations; they do not establish an entanglement-specific mechanism "
+            "or quantum advantage"
+        ),
+    ),
+    _protocol(
         "protocol:ungoverned.advantage_language",
         "refuse_advantage_language",
         "Catch-all refuse path for ungoverned advantage marketing language.",
