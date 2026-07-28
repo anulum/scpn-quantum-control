@@ -328,7 +328,22 @@ def _atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
 @contextmanager
 def _journal_lock(path: Path) -> Iterator[None]:
     """Serialise writers for one journal without adding artefacts beside it."""
-    lock_root = REPO_ROOT / ".git" / "scpn-qpu-journal-locks"
+    git_path = REPO_ROOT / ".git"
+    if git_path.is_file():
+        prefix = "gitdir: "
+        marker = git_path.read_text(encoding="utf-8").strip()
+        if not marker.startswith(prefix):
+            raise RuntimeError(f"invalid linked-worktree marker: {git_path}")
+        git_path = (REPO_ROOT / marker[len(prefix) :]).resolve()
+        common_dir_marker = git_path / "commondir"
+        if common_dir_marker.is_file():
+            common_dir = common_dir_marker.read_text(encoding="utf-8").strip()
+            if not common_dir:
+                raise RuntimeError(f"empty linked-worktree common-dir marker: {common_dir_marker}")
+            git_path = (git_path / common_dir).resolve()
+    if not git_path.is_dir():
+        raise RuntimeError(f"Git metadata directory is unavailable: {git_path}")
+    lock_root = git_path / "scpn-qpu-journal-locks"
     lock_root.mkdir(parents=True, exist_ok=True)
     key = hashlib.sha256(str(path.resolve()).encode("utf-8")).hexdigest()
     lock_path = lock_root / f"{key}.lock"

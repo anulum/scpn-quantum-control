@@ -21,7 +21,7 @@
 # requirements-ci-*.txt (CI + Docker). For a hash-checked runtime install,
 # install the published wheel/sdist (pip verifies PyPI hashes) or use the
 # hashed CI requirement matching your platform.
-qiskit==2.5.0
+qiskit==2.5.1
 qiskit-aer==0.17.2
 qiskit-qasm3-import==0.6.0
 symengine==0.14.1
