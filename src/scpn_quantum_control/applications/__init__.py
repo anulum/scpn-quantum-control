@@ -42,13 +42,24 @@ from .power_grid import PowerGridBenchmarkResult, power_grid_benchmark
 from .qrc_baseline import (
     ClassicalESNReadoutResult,
     QRCBaselineComparison,
+    QRCHoldoutComparison,
     classical_esn_feature_matrix,
     classical_esn_ridge_regression,
     compare_quantum_reservoir_to_esn,
+    compare_quantum_reservoir_to_esn_holdout,
 )
 from .quantum_evs import QuantumEVSResult, quantum_evs_enhance
 from .quantum_kernel import QuantumKernelResult, compute_kernel_matrix
 from .quantum_reservoir import ReservoirResult, reservoir_features
+from .quantum_reservoir_product import (
+    QRC_PRODUCT_CLAIM_BOUNDARY,
+    ReservoirLinearObjective,
+    ReservoirTaskKind,
+    ReservoirTrainingCertificate,
+    SyntheticReservoirDataset,
+    certify_reservoir_training,
+    generate_synthetic_reservoir_task,
+)
 
 __all__ = [
     "ApplicationBenchmarkDescriptor",
@@ -61,6 +72,7 @@ __all__ = [
     "compile_application_problem",
     "CrossDomainResult",
     "compare_quantum_reservoir_to_esn",
+    "compare_quantum_reservoir_to_esn_holdout",
     "discover_application_plugins",
     "EEGBenchmarkResult",
     "eeg_benchmark",
@@ -90,8 +102,16 @@ __all__ = [
     "QuantumKernelResult",
     "compute_kernel_matrix",
     "QRCBaselineComparison",
+    "QRCHoldoutComparison",
+    "QRC_PRODUCT_CLAIM_BOUNDARY",
     "render_josephson_knm_magnitude_study_markdown",
     "ReservoirResult",
+    "ReservoirLinearObjective",
+    "ReservoirTaskKind",
+    "ReservoirTrainingCertificate",
+    "SyntheticReservoirDataset",
+    "certify_reservoir_training",
+    "generate_synthetic_reservoir_task",
     "reservoir_features",
     "run_application_benchmark_suite",
     "run_cross_domain_validation",

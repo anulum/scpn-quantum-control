@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-07-29 — Quantum reservoir and differentiable surrogate product (BL-45):
+  hardened exact-statevector allocation/input boundaries; added disjoint
+  synthetic QRC versus matched-feature ESN certificates, Gaussian-RBF value and
+  analytic-gradient fidelity gates, exact local validation of an unapplied
+  BL-33 proposal, and digest-bound deterministic evidence. The classification
+  row favours QRC while the forecast row strongly favours ESN; no general,
+  hardware, provider, control, optimisation-advantage, or deployment claim is
+  made.
 - 2026-07-29 — Adaptive FIM next-experiment proposals (BL-80): upgraded the
   point-estimate lambda rule with count-bound Wilson intervals, minimum-shot and
   bounded-delta gates, complete BL-47 paired-arm dry-run approval, BL-33
@@ -67,6 +75,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-29 — BL-45 held-out QRC/ESN certificate suite, differentiable
+  Gaussian-RBF surrogate and disjoint exact-simulator fidelity gates,
+  exact-validated unapplied BL-33 proposal, public guide, evidence CLI, and
+  deterministic JSON/Markdown artefacts.
 - 2026-07-29 — BL-80 uncertainty-aware adaptive FIM proposal API, BL-47/BL-33
   composition, primary-source boundary, evidence CLI, public guide, and
   deterministic JSON/Markdown calibration and custody-replay artefacts.

@@ -2163,9 +2163,9 @@ EEG state classification pipeline using Phase Locking Value (PLV) matrices and S
 ### `quantum_reservoir`
 
 ```python
-reservoir_features(x, K, omega=None, t=1.0, max_weight=2) -> ReservoirResult
-reservoir_feature_matrix(X, K, omega=None, t=1.0, max_weight=2) -> np.ndarray
-reservoir_ridge_regression(X_train, y_train, K, omega=None, alpha=1.0, max_weight=2)
+reservoir_features(x, K, omega=None, t=1.0, max_weight=2, max_dense_gib=None) -> ReservoirResult
+reservoir_feature_matrix(X, K, omega=None, t=1.0, max_weight=2, max_dense_gib=None) -> np.ndarray
+reservoir_ridge_regression(X_train, y_train, K, omega=None, alpha=1.0, max_weight=2, t=1.0, max_dense_gib=None)
 ```
 
 Small-system Kuramoto-XY QRC feature map with ridge readout. See
@@ -2178,11 +2178,31 @@ boundary.
 classical_esn_feature_matrix(X, reservoir_size, spectral_radius=0.9, input_scale=0.5, leak_rate=1.0, seed=0) -> np.ndarray
 classical_esn_ridge_regression(X_train, y_train, reservoir_size, alpha=1.0, ...) -> ClassicalESNReadoutResult
 compare_quantum_reservoir_to_esn(X_train, y_train, K, omega=None, alpha=1.0, max_weight=1, ...) -> QRCBaselineComparison
+compare_quantum_reservoir_to_esn_holdout(X_train, y_train, X_validation, y_validation, K, ...) -> QRCHoldoutComparison
 ```
 
 Deterministic classical ESN baseline and matched-feature QRC comparison. The
-comparison reports bounded training-set MSE only; it is not a hardware
-advantage claim.
+legacy comparison reports training-set MSE; the holdout API fits on training
+rows and reports disjoint validation metrics without assuming either system
+must win.
+
+### `quantum_reservoir_product` and `surrogates`
+
+```python
+generate_synthetic_reservoir_task(task_kind, n_train, n_validation, seed) -> SyntheticReservoirDataset
+certify_reservoir_training(dataset, K, ...) -> ReservoirTrainingCertificate
+ReservoirLinearObjective(K, feature_labels, feature_weights, ...)
+fit_gaussian_rbf_surrogate(inputs, targets, config=None) -> GaussianRBFSurrogate
+certify_surrogate_fidelity(model, validation_inputs, exact_targets, thresholds=...) -> SurrogateFidelityCertificate
+certify_surrogate_gradient(model, validation_inputs, exact_objective, ...) -> SurrogateGradientCertificate
+propose_and_validate_surrogate_step(model, current_parameters, exact_objective, fidelity, ...) -> ExactValidatedSurrogateProposal
+```
+
+BL-45 held-out synthetic certificates, differentiable Gaussian-RBF classical
+surrogate, train/validation leakage rejection, and exact local validation of an
+unapplied BL-33 proposal. See [Quantum Reservoir Computing and Classical
+Surrogates](quantum_reservoir.md). No hardware, provider, generalisation,
+closed-loop, or advantage claim is implied.
 
 ## mitigation
 

@@ -35,7 +35,7 @@ Ref: Fujii & Nakajima, Phys. Rev. Applied 8, 024030 (2017).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from itertools import product
+from itertools import combinations, product
 
 import numpy as np
 from numpy.typing import NDArray
@@ -45,13 +45,14 @@ from qiskit.quantum_info import SparsePauliOp, Statevector
 from qiskit.synthesis import LieTrotter
 
 from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+from ..dense_budget import require_dense_allocation
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class ReservoirResult:
-    """Quantum reservoir computation result."""
+    """Exact-statevector quantum-reservoir feature result."""
 
-    features: NDArray[np.float64]  # (n_features,) Pauli expectation values
+    features: NDArray[np.float64]
     n_qubits: int
     n_features: int
     feature_labels: list[str]
@@ -102,6 +103,14 @@ def _validated_max_weight(max_weight: int, n: int) -> int:
     return max_weight
 
 
+def _validated_evolution_time(t: float) -> float:
+    """Return a finite non-negative reservoir evolution time."""
+    value = float(t)
+    if not np.isfinite(value) or value < 0.0:
+        raise ValueError("t must be finite and non-negative.")
+    return value
+
+
 def _validated_feature_matrix(X: NDArray[np.float64]) -> NDArray[np.float64]:
     """Return a finite non-empty 2-D feature matrix."""
     X_array = np.asarray(X, dtype=float)
@@ -117,15 +126,17 @@ def _validated_feature_matrix(X: NDArray[np.float64]) -> NDArray[np.float64]:
 
 
 def _pauli_feature_set(n: int, max_weight: int = 2) -> list[str]:
-    """Generate Pauli feature labels up to given weight."""
+    """Generate Pauli labels without enumerating the full ``4**n`` space."""
     max_weight = _validated_max_weight(max_weight, n)
     labels: list[str] = []
-    paulis = ["I", "X", "Y", "Z"]
-    for combo in product(paulis, repeat=n):
-        weight = sum(1 for p in combo if p != "I")
-        if 0 < weight <= max_weight:
-            labels.append("".join(combo))
-    return labels
+    for weight in range(1, max_weight + 1):
+        for positions in combinations(range(n), weight):
+            for operators in product(("X", "Y", "Z"), repeat=weight):
+                label = ["I"] * n
+                for position, operator in zip(positions, operators, strict=True):
+                    label[position] = operator
+                labels.append("".join(label))
+    return sorted(labels)
 
 
 def reservoir_features(
@@ -134,32 +145,58 @@ def reservoir_features(
     omega: NDArray[np.float64] | None = None,
     t: float = 1.0,
     max_weight: int = 2,
+    *,
+    max_dense_gib: float | None = None,
 ) -> ReservoirResult:
     """Compute quantum reservoir features for input x.
 
-    Args:
-        x: input feature vector (length n_qubits or less)
-        K: coupling matrix (n × n)
-        omega: natural frequencies
-        t: reservoir evolution time
-        max_weight: maximum Pauli weight for features
+    Parameters
+    ----------
+    x:
+        Input feature vector with at most one value per qubit.
+    K:
+        Finite square coupling matrix.
+    omega:
+        Optional natural-frequency vector.
+    t:
+        Non-negative reservoir evolution time.
+    max_weight:
+        Maximum Pauli-string weight included in the feature map.
+    max_dense_gib:
+        Optional exact-statevector allocation ceiling.
+
+    Returns
+    -------
+    ReservoirResult
+        Pauli expectation features and their labels.
     """
     K = _validated_coupling_matrix(K)
     n = K.shape[0]
     x = _validated_feature_vector(x)
     omega = _validated_omega(omega, n)
     max_weight = _validated_max_weight(max_weight, n)
+    evolution_time = _validated_evolution_time(t)
+    if x.size > n:
+        raise ValueError("x must not contain more features than K has qubits.")
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=1,
+        object_count=3,
+        max_gib=max_dense_gib,
+        label="QRC exact-statevector workspace",
+    )
 
     H = knm_to_hamiltonian(K, omega)
 
     # Encode input
     qc = QuantumCircuit(n)
-    for i in range(min(len(x), n)):
+    for i in range(len(x)):
         qc.ry(float(x[i]) * np.pi, i)
 
     # Reservoir evolution
     synth = LieTrotter(reps=2)
-    evo = PauliEvolutionGate(H, time=t, synthesis=synth)
+    evo = PauliEvolutionGate(H, time=evolution_time, synthesis=synth)
     qc.append(evo, range(n))
 
     sv = Statevector.from_instruction(qc)
@@ -185,33 +222,61 @@ def reservoir_feature_matrix(
     omega: NDArray[np.float64] | None = None,
     t: float = 1.0,
     max_weight: int = 2,
+    *,
+    max_dense_gib: float | None = None,
 ) -> NDArray[np.float64]:
     """Compute reservoir features for multiple inputs.
 
-    Args:
-        X: (n_samples, n_input_features) matrix
-        K: coupling matrix
-        omega: natural frequencies
-        t: reservoir evolution time
-        max_weight: Pauli weight limit
+    Parameters
+    ----------
+    X:
+        Input matrix with shape ``(n_samples, n_input_features)``.
+    K:
+        Finite square coupling matrix.
+    omega:
+        Optional natural-frequency vector.
+    t:
+        Non-negative reservoir evolution time.
+    max_weight:
+        Maximum Pauli-string weight.
+    max_dense_gib:
+        Optional exact-statevector allocation ceiling.
 
     Returns
     -------
-        (n_samples, n_reservoir_features) feature matrix
+    numpy.ndarray
+        Feature matrix with shape ``(n_samples, n_reservoir_features)``.
     """
     X = _validated_feature_matrix(X)
     K = _validated_coupling_matrix(K)
     omega = _validated_omega(omega, K.shape[0])
     max_weight = _validated_max_weight(max_weight, K.shape[0])
+    evolution_time = _validated_evolution_time(t)
+    if X.shape[1] > K.shape[0]:
+        raise ValueError("X must not have more feature columns than K has qubits.")
     n_samples = X.shape[0]
-    first = reservoir_features(X[0], K, omega, t, max_weight)
+    first = reservoir_features(
+        X[0],
+        K,
+        omega,
+        evolution_time,
+        max_weight,
+        max_dense_gib=max_dense_gib,
+    )
     n_feat = first.n_features
 
     F = np.zeros((n_samples, n_feat))
     F[0] = first.features
 
     for i in range(1, n_samples):
-        r = reservoir_features(X[i], K, omega, t, max_weight)
+        r = reservoir_features(
+            X[i],
+            K,
+            omega,
+            evolution_time,
+            max_weight,
+            max_dense_gib=max_dense_gib,
+        )
         F[i] = r.features
 
     result: NDArray[np.float64] = F
@@ -225,10 +290,16 @@ def reservoir_ridge_regression(
     omega: NDArray[np.float64] | None = None,
     alpha: float = 1.0,
     max_weight: int = 2,
+    t: float = 1.0,
+    *,
+    max_dense_gib: float | None = None,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    """Train quantum reservoir with ridge regression readout.
+    """Fit a ridge readout on exact-statevector reservoir features.
 
-    Returns (weights, predictions_on_train).
+    Returns
+    -------
+    tuple[numpy.ndarray, numpy.ndarray]
+        Readout weights and training predictions.
     """
     X_train = _validated_feature_matrix(X_train)
     y_array = np.asarray(y_train, dtype=float)
@@ -239,7 +310,14 @@ def reservoir_ridge_regression(
     if not np.isfinite(alpha) or alpha <= 0.0:
         raise ValueError("alpha must be finite and positive.")
 
-    F = reservoir_feature_matrix(X_train, K, omega, max_weight=max_weight)
+    F = reservoir_feature_matrix(
+        X_train,
+        K,
+        omega,
+        t,
+        max_weight,
+        max_dense_gib=max_dense_gib,
+    )
     # Ridge: W = (F^T F + αI)^{-1} F^T y
     n_feat = F.shape[1]
     W = np.linalg.solve(F.T @ F + alpha * np.eye(n_feat), F.T @ y_array)

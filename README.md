@@ -122,15 +122,15 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.0.0 |
 | Public API exports | 841 |
-| Python source modules | 663 |
-| Public Python classes | 1282 |
-| Domain package families | 34 |
+| Python source modules | 669 |
+| Public Python classes | 1295 |
+| Domain package families | 35 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
 | Notebook files | 106 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1117 |
+| Python test files | 1123 |
 | Public documentation pages | 346 |
 | GitHub Actions workflows | 24 |
 
@@ -671,7 +671,7 @@ graph TD
     subgraph "Applications"
         control["control/ (11)\nQAOA-MPC, residual VQLS-GS proxy\nPetri nets, ITER"]
         qsnn["qsnn/ (7)\nQuantum spiking\nneural networks"]
-        apps["applications/ (15)\nFMO, power grid\nJosephson, EEG, ITER"]
+        apps["applications/ (16)\nFMO, power grid\nJosephson, EEG, ITER"]
     end
 
     subgraph "Hardware & QEC"
@@ -706,7 +706,7 @@ graph TD
 | `analysis` | 61 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
 | `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
 | `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
-| `applications` | 15 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, QRC+ESN baseline |
+| `applications` | 16 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, QRC+ESN baseline |
 | `bridge` | 13 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
 | `control` | 11 | QAOA-MPC, residual-certified VQLS Grad-Shafranov proxy, Petri nets, ITER disruption, topological optimiser |
 | `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z2 parity, CPDR, symmetry verification, GUESS, compound |

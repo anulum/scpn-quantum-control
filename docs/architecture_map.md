@@ -190,9 +190,12 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
   `topology_correlation` only as a compatibility alias. They are honestly gated
   (`publication_safe=False`, `source_mode`).
 - **Real quantum-compute apps** (*functional, exact statevector*): `quantum_kernel` (Havlíček
-  QSVM), `quantum_reservoir` plus `qrc_baseline` (Fujii–Nakajima QRC with matched classical
-  ESN comparator), `eeg_classification` (structured-ansatz VQE), `q_disruption`
-  (PQC + parameter-shift).
+  QSVM), `quantum_reservoir` plus `qrc_baseline` and `quantum_reservoir_product`
+  (Fujii–Nakajima QRC with disjoint held-out, matched-feature ESN certificates),
+  `eeg_classification` (structured-ansatz VQE), `q_disruption` (PQC + parameter-shift).
+  `surrogates/` adds a differentiable Gaussian-RBF classical proxy whose held-out
+  values and analytic gradients are gated against exact local statevector queries;
+  its BL-33 proposal remains unapplied.
 
 ### 4.8 Control — `control/`
 - QAOA-MPC, residual VQLS-GS proxy, Petri-net supervisor, ITER disruption, realtime/closed-loop.

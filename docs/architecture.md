@@ -381,7 +381,7 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 663 (excluding package initialisers) |
+| Python modules | 669 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 81 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% line gate; branch telemetry required and currently observational) |
@@ -410,7 +410,7 @@ graph TD
     mitigation["mitigation/ (13)\nError mitigation"]
     qec["qec/ (13)\nError correction"]
     gauge["gauge/ (6)\nGauge theory"]
-    apps["applications/ (15)\nBenchmarks"]
+    apps["applications/ (16)\nBenchmarks"]
     crypto["crypto/ (9)\nQKD + PQC"]
     benchmarks["benchmarks/ (36)\nPerformance"]
     ssgf["ssgf/ (4)\nGeometry"]
@@ -656,10 +656,18 @@ applications/                              ← Physical system benchmarks
 ├── iter_benchmark.py                          8 MHD mode coupling
 ├── cross_domain.py                            5-system benchmark summary
 ├── quantum_kernel.py                          K_nm-informed classification
-├── qrc_baseline.py                            Matched classical ESN baseline
-├── quantum_reservoir.py                       Pauli feature extraction
+├── qrc_baseline.py                            Train/held-out matched classical ESN baseline
+├── quantum_reservoir.py                       Budgeted exact Pauli feature extraction
+├── quantum_reservoir_product.py               Synthetic held-out QRC/ESN certificates
 ├── disruption_classifier.py                   Plasma stability classification
 └── quantum_evs.py                             Quantum-enhanced EVS for CCW
+
+surrogates/                                ← Differentiable classical quantum-objective proxies
+├── models.py                                  Gaussian-RBF values + analytic input gradients
+├── train.py                                   Deterministic regularised fitting + row digests
+├── fidelity.py                                Disjoint value/gradient exact-simulator gates
+├── hybrid.py                                  Unapplied BL-33 proposal + exact validation
+└── report.py                                  Digest-bound BL-45 JSON/Markdown evidence
 
 benchmarks/                                ← 23 modules: performance baselines
 ├── quantum_advantage.py                       Classical vs quantum scaling

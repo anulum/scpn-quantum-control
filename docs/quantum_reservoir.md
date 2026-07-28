@@ -1,66 +1,137 @@
-# Quantum Reservoir Computing
+# Quantum Reservoir Computing and Classical Surrogates
 
-This page defines the named quantum reservoir computing (QRC) surface in this
-repository and its classical baseline boundary.
+This page defines the bounded BL-45 quantum reservoir computing (QRC), matched
+classical baseline, and differentiable classical-surrogate surfaces.
 
 ## Production Surfaces
 
-The QRC surface is split across two bounded modules:
+The QRC surface preserves the existing reservoir and adds certificate layers:
 
 - `scpn_quantum_control.applications.quantum_reservoir` maps classical inputs
   through Kuramoto-XY Hamiltonian evolution and Pauli expectation features, then
-  fits a ridge readout.
+  fits a ridge readout. Exact-statevector allocation is budget checked, oversized
+  input vectors are refused, and Pauli labels are generated without enumerating
+  the full `4**n` string space.
+- `scpn_quantum_control.applications.qrc_baseline` compares QRC with a
+  deterministic ESN at equal feature count. The held-out comparison continues
+  ESN state from training into validation instead of resetting it.
+- `scpn_quantum_control.applications.quantum_reservoir_product` creates disjoint
+  synthetic forecast/classification certificates and weighted exact Pauli-feature
+  objectives.
+- `scpn_quantum_control.surrogates` fits a Gaussian radial-basis surrogate,
+  exposes its analytic input gradient, rejects train/validation leakage, and
+  certifies held-out values and gradients against the exact local objective.
 - `scpn_quantum_control.analysis.qrc_phase_detector` uses exact dense
   ground-state Pauli features as a small-system phase-detector reference.
 
-QWC-4.3 adds the named comparison surface:
+## Held-out QRC / ESN certificates
 
 ```python
 import numpy as np
 
-from scpn_quantum_control.applications import compare_quantum_reservoir_to_esn
-from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+from scpn_quantum_control.applications import (
+    ReservoirTaskKind,
+    certify_reservoir_training,
+    generate_synthetic_reservoir_task,
+)
 
-rng = np.random.default_rng(42)
-X_train = rng.uniform(size=(10, 3))
-y_train = np.sin(2.0 * X_train[:, 0]) + 0.25 * X_train[:, 1]
-K = build_knm_paper27(L=3)
+K = np.array([[0.0, 0.65], [0.65, 0.0]])
+dataset = generate_synthetic_reservoir_task(
+    ReservoirTaskKind.CLASSIFICATION,
+    n_train=18,
+    n_validation=8,
+    seed=4139971,
+)
 
-comparison = compare_quantum_reservoir_to_esn(
-    X_train,
-    y_train,
+certificate = certify_reservoir_training(
+    dataset,
     K,
-    alpha=0.5,
+    omega=np.array([0.15, -0.1]),
+    alpha=0.1,
     max_weight=1,
-    seed=5,
+    t=0.8,
+    seed=4139971,
 )
 ```
 
-By default the classical echo-state network (ESN) uses the same number of
-features as the QRC feature map. Callers can set `reservoir_size` explicitly
-when they need a deliberately unmatched-capacity comparison.
+The committed deterministic evidence uses 18 training and 8 validation rows
+for each synthetic task. Both systems have six readout features:
+
+| Synthetic task | QRC validation MSE | ESN validation MSE | Lower MSE |
+|---|---:|---:|---|
+| Nonlinear classification | 0.0696474284 | 0.0913905636 | QRC |
+| One-step forecast | 0.890831726 | 0.0195529047 | ESN |
+
+The result is intentionally mixed. It establishes two working held-out
+certificate paths, not a general performance result. The forecast row is also a
+direct negative control against presenting QRC as the default winner.
 
 ## Classical Baseline
 
-`classical_esn_feature_matrix` implements a deterministic ESN reference:
+`classical_esn_feature_matrix` implements a deterministic ESN reference with:
 
 - seeded input and recurrent weights;
 - recurrent matrix rescaled to the requested spectral radius;
 - leaky state update;
 - ridge readout through `classical_esn_ridge_regression`.
 
-The ESN exists to keep QRC claims honest. A QRC result is not promoted by this
-repository unless it is compared against the classical baseline at a stated
-feature count and task.
+Callers can request a deliberately unmatched `reservoir_size`, but BL-45
+evidence requires equal feature count and reports the capacity match explicitly.
 
-## Functional Evidence
+## Differentiable classical surrogate
 
-Local non-isolated smoke evidence on 2026-07-08, run on the workstation while
-other repository work was active:
+The BL-45 surrogate is a regularised Gaussian radial-basis model. Fitting stores
+SHA-256 identities for every training row and the target vector. Certification
+rejects any validation row that overlaps the training set.
 
-| Operation | System | Time | Output |
-|-----------|--------|------|--------|
-| `compare_quantum_reservoir_to_esn(10 samples)` | 3 qubits, 9/9 matched features | 48.5 ms | QRC MSE=0.018606, ESN MSE=0.037680 |
+On the frozen two-parameter weighted-Pauli objective, 25 training points and 16
+disjoint validation points produced:
+
+| Gate | Frozen threshold | Observed | Result |
+|---|---:|---:|---|
+| Held-out RMSE | <= 0.01 | 0.000422869640 | pass |
+| Held-out maximum absolute error | <= 0.025 | 0.000791764885 | pass |
+| Held-out R-squared | >= 0.98 | 0.999994691 | pass |
+| Analytic-gradient maximum error | <= 0.02 | 0.000893768362 | pass |
+
+The gradient reference uses central differences of the exact local statevector
+objective at four disjoint points. It is not an analytic quantum gradient or a
+hardware-gradient result.
+
+## Exact-validated BL-33 proposal
+
+`propose_and_validate_surrogate_step(...)` converts the surrogate gradient into
+a norm-bounded, unapplied `ControllerProposal`, then evaluates both current and
+candidate parameters through the caller's exact local objective. The frozen
+evidence candidate improved the exact objective from `0.0123150159` to
+`-0.0490886919`. The acceptance flag records that exact local observation only;
+the function does not emit a BL-33 safety decision or apply an update.
+
+Regenerate and byte-check the evidence with:
+
+```bash
+PYTHONPATH=src python scripts/run_quantum_reservoir_surrogate_evidence.py
+PYTHONPATH=src python scripts/run_quantum_reservoir_surrogate_evidence.py --check
+```
+
+Committed custody:
+
+- `data/quantum_reservoir_surrogates/bl45_evidence.json`
+- `data/quantum_reservoir_surrogates/bl45_evidence.md`
+- content digest `8b555933e6ec7f9b2ee3c885379ef87af11e1002ce4a2d119fa83f26507de41c`
+
+## Scientific basis
+
+- [Fujii and Nakajima (2017)](https://doi.org/10.1103/PhysRevApplied.8.024030)
+  motivates fixed quantum dynamics with a trained classical readout.
+- [Schreiber, Eisert, and Meyer (2023)](https://doi.org/10.1103/PhysRevLett.131.100803)
+  defines classical surrogates through bounded reproduction of quantum-model
+  input-output relations and treats them as a natural honesty baseline.
+- [O'Leary et al. (2025)](https://doi.org/10.1038/s42005-025-02423-4)
+  motivates radial-basis proposals followed by a true quantum-objective query.
+
+These papers motivate the architecture. They do not validate this repository's
+specific fidelity thresholds, tasks, or proposal policy.
 
 This is functional evidence for wiring and bounded task behaviour. It is not an
 isolated-core production benchmark.
@@ -72,9 +143,12 @@ isolated-core production benchmark.
   simulator.
 - The ESN baseline is a deterministic NumPy reference comparator, not an
   accelerated service path.
-- No hardware-QRC advantage claim is made here.
-- No broad time-series benchmark claim is made until a preregistered benchmark
-  beats the ESN baseline at matched task and feature count.
+- BL-37 multimodal schemas are not implemented, so the adapter remains an
+  explicit blocked dependency; no clinical, grid, or plasma data is admitted.
+- The BL-40 notebook is a blocked stretch dependency and is not represented as
+  complete.
+- No hardware QRC, provider execution, unseen-domain generalisation, closed-loop
+  control, optimisation advantage, publication, or deployment claim is made.
 
 ## Related Surfaces
 

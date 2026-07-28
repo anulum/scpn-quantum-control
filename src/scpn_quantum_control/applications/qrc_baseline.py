@@ -42,6 +42,25 @@ class QRCBaselineComparison:
     mse_delta: float
 
 
+@dataclass(frozen=True)
+class QRCHoldoutComparison:
+    """Disjoint-train/validation QRC and matched-feature ESN comparison."""
+
+    quantum_train_predictions: NDArray[np.float64]
+    quantum_validation_predictions: NDArray[np.float64]
+    esn_train_predictions: NDArray[np.float64]
+    esn_validation_predictions: NDArray[np.float64]
+    quantum_train_mse: float
+    quantum_validation_mse: float
+    esn_train_mse: float
+    esn_validation_mse: float
+    n_train: int
+    n_validation: int
+    n_quantum_features: int
+    n_esn_features: int
+    validation_mse_delta: float
+
+
 def _validated_training_matrix(X: NDArray[np.float64]) -> NDArray[np.float64]:
     """Return a finite non-empty two-dimensional training matrix."""
     x_array = np.asarray(X, dtype=np.float64)
@@ -149,9 +168,11 @@ def classical_esn_feature_matrix(
     rng = np.random.default_rng(seed)
     w_input = rng.uniform(-scale, scale, size=(n_reservoir, x_array.shape[1] + 1))
     w_recurrent = rng.standard_normal(size=(n_reservoir, n_reservoir))
-    raw_radius = float(np.max(np.abs(np.linalg.eigvals(w_recurrent))))
-    if raw_radius > 0.0:
-        w_recurrent = (w_recurrent / raw_radius) * radius
+    raw_radius = _validated_positive_float(
+        float(np.max(np.abs(np.linalg.eigvals(w_recurrent)))),
+        name="sampled spectral radius",
+    )
+    w_recurrent = (w_recurrent / raw_radius) * radius
 
     state = np.zeros(n_reservoir, dtype=np.float64)
     features = np.zeros((x_array.shape[0], n_reservoir), dtype=np.float64)
@@ -303,10 +324,137 @@ def compare_quantum_reservoir_to_esn(
     )
 
 
+def compare_quantum_reservoir_to_esn_holdout(
+    X_train: NDArray[np.float64],
+    y_train: NDArray[np.float64],
+    X_validation: NDArray[np.float64],
+    y_validation: NDArray[np.float64],
+    K: NDArray[np.float64],
+    *,
+    omega: NDArray[np.float64] | None = None,
+    alpha: float = 1.0,
+    max_weight: int = 1,
+    t: float = 1.0,
+    reservoir_size: int | None = None,
+    spectral_radius: float = 0.9,
+    input_scale: float = 0.5,
+    leak_rate: float = 1.0,
+    seed: int = 0,
+    max_dense_gib: float | None = None,
+) -> QRCHoldoutComparison:
+    """Compare QRC and ESN readouts on disjoint held-out samples.
+
+    The QRC feature map is row-local. The classical ESN state is generated on
+    the concatenated train/validation sequence and split afterwards, so its
+    validation state continues from training rather than silently resetting.
+    The result reports both systems without assuming either must win.
+
+    Parameters
+    ----------
+    X_train, X_validation:
+        Disjoint training and validation input matrices with equal width.
+    y_train, y_validation:
+        Scalar targets matching their respective input rows.
+    K:
+        Kuramoto-XY coupling matrix for the exact QRC feature map.
+    omega:
+        Optional natural-frequency vector.
+    alpha:
+        Shared ridge regularisation strength.
+    max_weight:
+        Maximum QRC Pauli-string weight.
+    t:
+        Non-negative QRC evolution time.
+    reservoir_size:
+        ESN feature count; defaults to the QRC feature count.
+    spectral_radius, input_scale, leak_rate, seed:
+        Deterministic ESN configuration.
+    max_dense_gib:
+        Optional per-QRC-statevector allocation ceiling.
+
+    Returns
+    -------
+    QRCHoldoutComparison
+        Train and validation predictions and MSE values for both systems.
+    """
+    x_train = _validated_training_matrix(X_train)
+    x_validation = _validated_training_matrix(X_validation)
+    if x_train.shape[1] != x_validation.shape[1]:
+        raise ValueError("training and validation inputs must have equal feature width.")
+    y_train_array = _validated_targets(y_train, x_train.shape[0])
+    y_validation_array = _validated_targets(y_validation, x_validation.shape[0])
+
+    quantum_train = reservoir_feature_matrix(
+        x_train,
+        K,
+        omega=omega,
+        t=t,
+        max_weight=max_weight,
+        max_dense_gib=max_dense_gib,
+    )
+    quantum_validation = reservoir_feature_matrix(
+        x_validation,
+        K,
+        omega=omega,
+        t=t,
+        max_weight=max_weight,
+        max_dense_gib=max_dense_gib,
+    )
+    quantum_weights, quantum_train_predictions, quantum_train_mse = _ridge_readout(
+        quantum_train,
+        y_train_array,
+        alpha,
+    )
+    quantum_validation_predictions = np.asarray(
+        quantum_validation @ quantum_weights,
+        dtype=np.float64,
+    )
+    quantum_validation_mse = float(
+        np.mean((quantum_validation_predictions - y_validation_array) ** 2)
+    )
+
+    esn_size = quantum_train.shape[1] if reservoir_size is None else reservoir_size
+    combined_inputs = np.vstack((x_train, x_validation))
+    combined_esn = classical_esn_feature_matrix(
+        combined_inputs,
+        reservoir_size=esn_size,
+        spectral_radius=spectral_radius,
+        input_scale=input_scale,
+        leak_rate=leak_rate,
+        seed=seed,
+    )
+    esn_train = combined_esn[: x_train.shape[0]]
+    esn_validation = combined_esn[x_train.shape[0] :]
+    esn_weights, esn_train_predictions, esn_train_mse = _ridge_readout(
+        esn_train,
+        y_train_array,
+        alpha,
+    )
+    esn_validation_predictions = np.asarray(esn_validation @ esn_weights, dtype=np.float64)
+    esn_validation_mse = float(np.mean((esn_validation_predictions - y_validation_array) ** 2))
+    return QRCHoldoutComparison(
+        quantum_train_predictions=quantum_train_predictions,
+        quantum_validation_predictions=quantum_validation_predictions,
+        esn_train_predictions=esn_train_predictions,
+        esn_validation_predictions=esn_validation_predictions,
+        quantum_train_mse=quantum_train_mse,
+        quantum_validation_mse=quantum_validation_mse,
+        esn_train_mse=esn_train_mse,
+        esn_validation_mse=esn_validation_mse,
+        n_train=int(x_train.shape[0]),
+        n_validation=int(x_validation.shape[0]),
+        n_quantum_features=int(quantum_train.shape[1]),
+        n_esn_features=int(esn_train.shape[1]),
+        validation_mse_delta=quantum_validation_mse - esn_validation_mse,
+    )
+
+
 __all__ = [
     "ClassicalESNReadoutResult",
     "QRCBaselineComparison",
+    "QRCHoldoutComparison",
     "classical_esn_feature_matrix",
     "classical_esn_ridge_regression",
     "compare_quantum_reservoir_to_esn",
+    "compare_quantum_reservoir_to_esn_holdout",
 ]

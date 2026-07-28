@@ -1,0 +1,208 @@
+{
+  "claim_boundary": "Synthetic local exact-statevector and classical-reference evidence only. No hardware QRC, provider execution, unseen-domain generalisation, closed-loop control, optimisation advantage, publication, or deployment claim.",
+  "content_digest": "8b555933e6ec7f9b2ee3c885379ef87af11e1002ce4a2d119fa83f26507de41c",
+  "exact_validated_proposal": {
+    "accepted_by_exact_objective": true,
+    "applied": false,
+    "claim_boundary": "Local Gaussian-RBF interpolation with an analytic input gradient only; not exact quantum differentiation, hardware execution, generalisation, closed-loop control, or quantum-advantage evidence. The BL-33 ControllerProposal remains unapplied; exact local validation is an acceptance observation, not a safety decision or actuator command.",
+    "exact_candidate": -0.04908869194389082,
+    "exact_current": 0.012315015865132159,
+    "exact_observed_improvement": 0.06140370780902298,
+    "hardware_execution": false,
+    "proposal": {
+      "gain_scale": 1.0,
+      "parameters": [
+        0.31472190459760824,
+        0.7231395166040092
+      ],
+      "update": [
+        -0.025278095402391763,
+        0.043139516604009144
+      ]
+    },
+    "reason": "exact_local_improvement",
+    "surrogate_candidate": -0.049014726207749035,
+    "surrogate_current": 0.012212055333220895,
+    "surrogate_predicted_improvement": 0.06122678154096993
+  },
+  "gradient_fidelity": {
+    "claim_boundary": "Local Gaussian-RBF interpolation with an analytic input gradient only; not exact quantum differentiation, hardware execution, generalisation, closed-loop control, or quantum-advantage evidence.",
+    "exact_gradient_digest": "44bea73757166e95326398a6a541228ad6c3941d0b1528fe565bfd19ff72b142",
+    "finite_difference_step": 1e-05,
+    "hardware_execution": false,
+    "max_absolute_error": 0.0008937683620553402,
+    "max_allowed_error": 0.02,
+    "n_parameters": 2,
+    "n_points": 4,
+    "passed": true,
+    "rmse": 0.0005252905663465953,
+    "simulator": "local_exact_statevector_central_difference",
+    "surrogate_gradient_digest": "6ee534a678cd1246b7c95a5db67a38f9a9f508df0e4fe0e581c6945cf979d724",
+    "training_overlap_count": 0,
+    "validation_input_digest": "e1ac0b8de86394efadae128a9f7d791586e0c4848eb4befb764623983eb87248"
+  },
+  "primary_sources": [
+    {
+      "doi": "10.1103/PhysRevApplied.8.024030",
+      "role": "fixed quantum reservoir and trained classical readout"
+    },
+    {
+      "doi": "10.1103/PhysRevLett.131.100803",
+      "role": "classical-surrogate fidelity and honesty benchmark"
+    },
+    {
+      "doi": "10.1038/s42005-025-02423-4",
+      "role": "RBF proposal followed by true quantum-objective query"
+    }
+  ],
+  "reservoir_certificates": [
+    {
+      "claim_boundary": "Deterministic synthetic tasks and local exact-statevector features only; not hardware QRC, unseen-domain generalisation, deployment, or quantum advantage.",
+      "domain_tag": "synthetic",
+      "esn_train_mse": 0.05557439592226559,
+      "esn_validation_mse": 0.0913905635630877,
+      "hardware_execution": false,
+      "lower_validation_mse": "qrc",
+      "matched_feature_count": true,
+      "n_esn_features": 6,
+      "n_quantum_features": 6,
+      "n_train": 18,
+      "n_validation": 8,
+      "quantum_train_mse": 0.041553355280025205,
+      "quantum_validation_mse": 0.06964742843507954,
+      "simulator": "local_exact_statevector",
+      "task_id": "synthetic_nonlinear_classification_v1",
+      "task_kind": "classification",
+      "training_input_digest": "63781413ca846760e4b77265347a97f2e45df87a584b3f9c552276a229c635cb",
+      "training_target_digest": "b198b742eaf18800c102c52ceebe48910ffd82d1faf6f4c2266faadf9b06c153",
+      "validation_input_digest": "2f58d3b056563899f2642eab5fc086a6e1c46e9125f8c73ed292a4a780a1cc74",
+      "validation_mse_delta": -0.021743135128008156,
+      "validation_target_digest": "4a074763f5b90a3eb1cdaf91780a3e28583c8cef96120677c532fe1bb70a3844"
+    },
+    {
+      "claim_boundary": "Deterministic synthetic tasks and local exact-statevector features only; not hardware QRC, unseen-domain generalisation, deployment, or quantum advantage.",
+      "domain_tag": "synthetic",
+      "esn_train_mse": 0.028688532625205748,
+      "esn_validation_mse": 0.01955290466974387,
+      "hardware_execution": false,
+      "lower_validation_mse": "esn",
+      "matched_feature_count": true,
+      "n_esn_features": 6,
+      "n_quantum_features": 6,
+      "n_train": 18,
+      "n_validation": 8,
+      "quantum_train_mse": 0.010494634558503498,
+      "quantum_validation_mse": 0.890831726069241,
+      "simulator": "local_exact_statevector",
+      "task_id": "synthetic_one_step_forecast_v1",
+      "task_kind": "forecast",
+      "training_input_digest": "787288c6325b72a815b6c97859b6c51cbc3985727971a8ba2750a8ea644e7d41",
+      "training_target_digest": "36a811331cc43093abf5763e3b9964063edec3ef9150fa6d6675aeae7a4686ef",
+      "validation_input_digest": "cba6b56fee15fd964a97b0744bcaf31993b6c53c5e64b2dfbab06643bb548706",
+      "validation_mse_delta": 0.8712788213994971,
+      "validation_target_digest": "330e4918fcd2273518e7156b207e564c4a7bac6ca638884b3848a24e29cb863b"
+    }
+  ],
+  "schema": "scpn.quantum_reservoir_surrogates.v1",
+  "support_rows": [
+    {
+      "boundary": "Small-system exact statevector only.",
+      "evidence": "Two disjoint synthetic task certificates.",
+      "status": "local_exact_supported",
+      "surface": "qrc_heldout_certificates"
+    },
+    {
+      "boundary": "No winner or advantage assumption.",
+      "evidence": "QRC and ESN use equal readout feature counts.",
+      "status": "bounded_supported",
+      "surface": "matched_esn_comparator"
+    },
+    {
+      "boundary": "One frozen two-parameter simulator objective.",
+      "evidence": "Disjoint held-out values pass frozen thresholds.",
+      "status": "local_exact_supported",
+      "surface": "gaussian_rbf_value_fidelity"
+    },
+    {
+      "boundary": "Finite-difference reference, not hardware gradients.",
+      "evidence": "Analytic RBF gradients match exact central differences.",
+      "status": "local_exact_supported",
+      "surface": "analytic_rbf_gradient_fidelity"
+    },
+    {
+      "boundary": "ControllerProposal remains unapplied.",
+      "evidence": "Surrogate proposal followed by exact local objective query.",
+      "status": "bounded_supported",
+      "surface": "bl33_exact_validated_proposal"
+    },
+    {
+      "boundary": "No invented domain adapter or operational data.",
+      "evidence": "BL-37 multimodal schema is not implemented.",
+      "status": "blocked_dependency",
+      "surface": "bl37_multimodal_adapter"
+    },
+    {
+      "boundary": "No notebook is represented as complete.",
+      "evidence": "BL-40 notebook stretch is outside the BL-45 product.",
+      "status": "blocked_dependency",
+      "surface": "bl40_notebook"
+    }
+  ],
+  "surrogate_model": {
+    "claim_boundary": "Local Gaussian-RBF interpolation with an analytic input gradient only; not exact quantum differentiation, hardware execution, generalisation, closed-loop control, or quantum-advantage evidence.",
+    "intercept": 0.11122457131608131,
+    "length_scale": 0.506449510224598,
+    "model": "gaussian_rbf",
+    "n_centres": 25,
+    "n_parameters": 2,
+    "training_input_digests": [
+      "9438f8a3c3bd167b5f9eca5bf2bfb87ad3214e8e745e35e69605663aaf59cacb",
+      "7e868619698329de0943ebe489edb4997147a569484115e54acad1f0c3094bc8",
+      "fa2caece0b9566c8b9a710abe275066fc3772c975cea5a7d144db047f86437d1",
+      "1da6fca4d47001a58e1348450e65e0f77e059259f748a3fc909775bde4a29f18",
+      "12aeb482d88b90e20cc064bfa8737f4cf8dca537c83bd7933644ef33fae89fbd",
+      "35bb93c83a94dd8a88f30db6933d2fd8367991fb793187f7c619a8d2e093709e",
+      "1f315fd806b7e755cdeffa5deadad75db302e45d5bf3db5bdbd132224597687c",
+      "2e7580a47fe36d318975c85e7cf9e643f8cf560e932c0c0291b5784b98cdf1af",
+      "a8d0301a3c97e12e82dd4ccbb12473739bd611ffbf8f6a6708a1e049f7ffe4fe",
+      "e6ba5b0e56b80da2734e568e0f5af64bb74a81569c2b4f263668552d4eb6f4ca",
+      "e6c5f587ea3f368f3e55d8c19bec7e12dd6b69aae52a6fcd10bb3002d34bc2dc",
+      "604bdb19b020f527632589c1c9fe00a68157d7f994feb376d4532f63f6b705e0",
+      "2d8c6fff93a2975c4c36358878635df06c44727827f9b2ef54c9c05a0f8dc5c2",
+      "bd4cec0154ea3f3e0f7394639f4efe58800a1fd46d9aff0101d741cac8c237db",
+      "cf69dbf36ee85d8354aa9a25dd55f12dfd850b92a1008cf6949a4f99281b0bb7",
+      "12afd4e87f17ddab2c0fdfa7511e1db52d045027658228d58c964e0e11d90bae",
+      "c19f050521dd40e689a1dad65c9052405c15cac5a145240c754c72ad203dec35",
+      "b93dd14042c4bdbd528f6c39a99f4c0bda9cf07ac5506f11deee4dfd39268e0c",
+      "f2c16e8fd8eea370762762d21abf83da1fa082c262995db7d720af78ac77e040",
+      "142ea17e986f763a23da80031103b0593acd7ed79d0671813073a0408ea4433c",
+      "a0a0e3636e338a253cf33c4c520cc8e45f45817874ebc74f96ef037f64b12b88",
+      "aa6fe89f6be23119b16d92c71d93debc0e6e0590151fa85ab58a8ef19ce63e51",
+      "d85f179b56e92c95ef178c3fcadda77ad338658793f882b4501dfaf6bf5e404f",
+      "1b42365ad00f4e3cefefd436a19b70ebf1ee549e7e8ed0734123e349f8a02889",
+      "8ae65e7da250e54cee00e792ceb364a58ad08655b40b9a7eddd2ac2cdb029686"
+    ],
+    "training_target_digest": "f6fd2084f54916477bafcc776d68de7a89300877c5af0f8e2375c51869b4fcac"
+  },
+  "value_fidelity": {
+    "claim_boundary": "Local Gaussian-RBF interpolation with an analytic input gradient only; not exact quantum differentiation, hardware execution, generalisation, closed-loop control, or quantum-advantage evidence.",
+    "exact_target_digest": "5958a9b2adb0b72f4220df17a993ae2d32271c40eefbedd94054238ad1e08dcf",
+    "hardware_execution": false,
+    "max_absolute_error": 0.0007917648845387482,
+    "mean_absolute_error": 0.0003616580915990161,
+    "n_training": 25,
+    "n_validation": 16,
+    "passed": true,
+    "prediction_digest": "36759eeacf9e88ebe6960929a9c3c4f4d0c7385b3b78341d8f43566ddee83ebe",
+    "r_squared": 0.9999946906550073,
+    "rmse": 0.00042286963966441343,
+    "simulator": "local_exact_statevector",
+    "thresholds": {
+      "max_absolute_error": 0.025,
+      "max_rmse": 0.01,
+      "min_r_squared": 0.98
+    },
+    "training_overlap_count": 0,
+    "validation_input_digest": "1866089b2dd2b54e1255af1ce407dfadd3fef5224bcb038064f2d4f3aa652011"
+  }
+}

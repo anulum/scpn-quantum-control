@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import pytest
 from numpy.typing import NDArray
@@ -16,11 +18,12 @@ from numpy.typing import NDArray
 from scpn_quantum_control.applications import (
     ClassicalESNReadoutResult,
     QRCBaselineComparison,
+    QRCHoldoutComparison,
     classical_esn_feature_matrix,
     classical_esn_ridge_regression,
     compare_quantum_reservoir_to_esn,
+    compare_quantum_reservoir_to_esn_holdout,
 )
-from scpn_quantum_control.applications import qrc_baseline as qrc_baseline_module
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
 
@@ -59,7 +62,7 @@ def test_classical_esn_feature_matrix_rejects_malformed_inputs() -> None:
     with pytest.raises(ValueError, match="positive"):
         classical_esn_feature_matrix(x_train, reservoir_size=0)
     with pytest.raises(TypeError, match="integer"):
-        classical_esn_feature_matrix(x_train, reservoir_size=3.5)  # type: ignore[arg-type]
+        classical_esn_feature_matrix(x_train, reservoir_size=cast(int, np.int64(3)))
     with pytest.raises(ValueError, match="leak_rate"):
         classical_esn_feature_matrix(x_train, reservoir_size=3, leak_rate=1.5)
 
@@ -140,46 +143,56 @@ def test_quantum_reservoir_comparison_allows_explicit_esn_size() -> None:
     assert comparison.n_esn_features == 4
 
 
-def test_quantum_reservoir_comparison_arithmetic_with_injected_features(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Comparison arithmetic stays covered when coverage reloads NumPy/Qiskit."""
+def test_quantum_reservoir_holdout_comparison_uses_disjoint_real_surfaces() -> None:
+    """Held-out comparison evaluates the real QRC and continuing ESN paths."""
     x_train, y_train = _training_data()
-
-    def feature_matrix(
-        X: NDArray[np.float64],
-        K: NDArray[np.float64],
-        *,
-        omega: NDArray[np.float64] | None = None,
-        max_weight: int = 1,
-    ) -> NDArray[np.float64]:
-        assert K.shape == (3, 3)
-        assert omega is None
-        assert max_weight == 1
-        return np.column_stack(
-            [
-                np.ones(X.shape[0]),
-                X[:, 0],
-                X[:, 1],
-                X[:, 2],
-            ]
-        ).astype(np.float64)
-
-    monkeypatch.setattr(qrc_baseline_module, "reservoir_feature_matrix", feature_matrix)
-
-    comparison = compare_quantum_reservoir_to_esn(
+    x_validation = x_train[:3] + 0.03125
+    y_validation = np.sin(2.0 * x_validation[:, 0]) + 0.25 * x_validation[:, 1]
+    comparison = compare_quantum_reservoir_to_esn_holdout(
         x_train,
         y_train,
-        np.eye(3, dtype=np.float64),
-        reservoir_size=4,
+        x_validation,
+        y_validation,
+        build_knm_paper27(L=3),
+        max_weight=1,
         seed=9,
     )
 
-    assert comparison.n_quantum_features == 4
-    assert comparison.n_esn_features == 4
-    assert comparison.quantum_predictions.shape == y_train.shape
-    assert comparison.esn_predictions.shape == y_train.shape
-    assert comparison.mse_delta == pytest.approx(comparison.quantum_mse - comparison.esn_mse)
+    assert isinstance(comparison, QRCHoldoutComparison)
+    assert comparison.n_train == 10
+    assert comparison.n_validation == 3
+    assert comparison.n_quantum_features == 9
+    assert comparison.n_esn_features == 9
+    assert comparison.quantum_train_predictions.shape == y_train.shape
+    assert comparison.quantum_validation_predictions.shape == y_validation.shape
+    assert comparison.esn_train_predictions.shape == y_train.shape
+    assert comparison.esn_validation_predictions.shape == y_validation.shape
+    assert comparison.validation_mse_delta == pytest.approx(
+        comparison.quantum_validation_mse - comparison.esn_validation_mse
+    )
+
+
+def test_quantum_reservoir_holdout_comparison_rejects_malformed_validation() -> None:
+    """Held-out comparison rejects mismatched validation shapes and targets."""
+    x_train, y_train = _training_data()
+    coupling = build_knm_paper27(L=3)
+
+    with pytest.raises(ValueError, match="equal feature width"):
+        compare_quantum_reservoir_to_esn_holdout(
+            x_train,
+            y_train,
+            np.ones((3, 2), dtype=np.float64),
+            np.ones(3, dtype=np.float64),
+            coupling,
+        )
+    with pytest.raises(ValueError, match="matching"):
+        compare_quantum_reservoir_to_esn_holdout(
+            x_train,
+            y_train,
+            x_train[:3] + 0.125,
+            np.ones(2, dtype=np.float64),
+            coupling,
+        )
 
 
 def test_qrc_baseline_exports_through_applications_namespace() -> None:
@@ -187,4 +200,8 @@ def test_qrc_baseline_exports_through_applications_namespace() -> None:
     from scpn_quantum_control import applications
 
     assert applications.compare_quantum_reservoir_to_esn is compare_quantum_reservoir_to_esn
+    assert (
+        applications.compare_quantum_reservoir_to_esn_holdout
+        is compare_quantum_reservoir_to_esn_holdout
+    )
     assert applications.classical_esn_feature_matrix is classical_esn_feature_matrix

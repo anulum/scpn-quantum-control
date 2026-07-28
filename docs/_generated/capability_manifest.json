@@ -1,7 +1,7 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 34,
+    "domain_package_families": 35,
     "example_files": 37,
     "github_workflows": 24,
     "model_documentation_pages": null,
@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 346,
-    "python_model_classes": 1282,
-    "python_model_source_modules": 663,
+    "python_model_classes": 1295,
+    "python_model_source_modules": 669,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1117
+    "test_files": 1123
   },
   "documentation": {
     "examples": [
@@ -549,7 +549,7 @@
       {
         "package": "applications",
         "path": "src/scpn_quantum_control/applications",
-        "python_modules": 15
+        "python_modules": 16
       },
       {
         "package": "benchmark_harness",
@@ -690,6 +690,11 @@
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
         "python_modules": 30
+      },
+      {
+        "package": "surrogates",
+        "path": "src/scpn_quantum_control/surrogates",
+        "python_modules": 5
       },
       {
         "package": "tcbo",
@@ -2049,6 +2054,10 @@
         "path": "src/scpn_quantum_control/analysis/dla_parity_exact_baseline.py"
       },
       {
+        "name": "ExactValidatedSurrogateProposal",
+        "path": "src/scpn_quantum_control/surrogates/hybrid.py"
+      },
+      {
         "name": "ExecutableCompilerADKernel",
         "path": "src/scpn_quantum_control/compiler/mlir_executable_kernel.py"
       },
@@ -2367,6 +2376,10 @@
       {
         "name": "GaugeLatticeCrosscheck",
         "path": "src/scpn_quantum_control/gauge/lattice_crosscheck.py"
+      },
+      {
+        "name": "GaussianRBFSurrogate",
+        "path": "src/scpn_quantum_control/surrogates/models.py"
       },
       {
         "name": "GeneralisedParameterShiftPlan",
@@ -4653,6 +4666,10 @@
         "path": "src/scpn_quantum_control/applications/qrc_baseline.py"
       },
       {
+        "name": "QRCHoldoutComparison",
+        "path": "src/scpn_quantum_control/applications/qrc_baseline.py"
+      },
+      {
         "name": "QRCPhaseResult",
         "path": "src/scpn_quantum_control/analysis/qrc_phase_detector.py"
       },
@@ -4881,6 +4898,10 @@
         "path": "src/scpn_quantum_control/control/qpetri.py"
       },
       {
+        "name": "QuantumReservoirSurrogateEvidence",
+        "path": "src/scpn_quantum_control/surrogates/report.py"
+      },
+      {
         "name": "QuantumSTDP",
         "path": "src/scpn_quantum_control/qsnn/qstdp.py"
       },
@@ -5057,8 +5078,20 @@
         "path": "src/scpn_quantum_control/dla_parity/reproduce.py"
       },
       {
+        "name": "ReservoirLinearObjective",
+        "path": "src/scpn_quantum_control/applications/quantum_reservoir_product.py"
+      },
+      {
         "name": "ReservoirResult",
         "path": "src/scpn_quantum_control/applications/quantum_reservoir.py"
+      },
+      {
+        "name": "ReservoirTaskKind",
+        "path": "src/scpn_quantum_control/applications/quantum_reservoir_product.py"
+      },
+      {
+        "name": "ReservoirTrainingCertificate",
+        "path": "src/scpn_quantum_control/applications/quantum_reservoir_product.py"
       },
       {
         "name": "ResolvedAggregatorProviderRoute",
@@ -5393,6 +5426,26 @@
         "path": "src/scpn_quantum_control/forecasting/neural_operator_cost_model.py"
       },
       {
+        "name": "SurrogateFidelityCertificate",
+        "path": "src/scpn_quantum_control/surrogates/fidelity.py"
+      },
+      {
+        "name": "SurrogateFidelityThresholds",
+        "path": "src/scpn_quantum_control/surrogates/fidelity.py"
+      },
+      {
+        "name": "SurrogateFitConfig",
+        "path": "src/scpn_quantum_control/surrogates/train.py"
+      },
+      {
+        "name": "SurrogateGradientCertificate",
+        "path": "src/scpn_quantum_control/surrogates/fidelity.py"
+      },
+      {
+        "name": "SurrogateSupportRow",
+        "path": "src/scpn_quantum_control/surrogates/report.py"
+      },
+      {
         "name": "SymmetryDecayModel",
         "path": "src/scpn_quantum_control/mitigation/symmetry_decay.py"
       },
@@ -5463,6 +5516,10 @@
       {
         "name": "SyntheticReconstructionCertificate",
         "path": "src/scpn_quantum_control/circuit_cutting_product.py"
+      },
+      {
+        "name": "SyntheticReservoirDataset",
+        "path": "src/scpn_quantum_control/applications/quantum_reservoir_product.py"
       },
       {
         "name": "TCBOResult",
@@ -5932,6 +5989,7 @@
       "src/scpn_quantum_control/applications/quantum_evs.py",
       "src/scpn_quantum_control/applications/quantum_kernel.py",
       "src/scpn_quantum_control/applications/quantum_reservoir.py",
+      "src/scpn_quantum_control/applications/quantum_reservoir_product.py",
       "src/scpn_quantum_control/attested_result_pack.py",
       "src/scpn_quantum_control/backend_dispatch.py",
       "src/scpn_quantum_control/bench_cli.py",
@@ -6478,6 +6536,11 @@
       "src/scpn_quantum_control/studio/verbs.py",
       "src/scpn_quantum_control/studio/xy_compile_recompute_artifact.py",
       "src/scpn_quantum_control/studio_executive_product.py",
+      "src/scpn_quantum_control/surrogates/fidelity.py",
+      "src/scpn_quantum_control/surrogates/hybrid.py",
+      "src/scpn_quantum_control/surrogates/models.py",
+      "src/scpn_quantum_control/surrogates/report.py",
+      "src/scpn_quantum_control/surrogates/train.py",
       "src/scpn_quantum_control/tcbo/quantum_observer.py",
       "src/scpn_quantum_control/thermo_readiness_product.py",
       "src/scpn_quantum_control/thermodynamics/readiness.py",
@@ -8535,6 +8598,7 @@
       "tests/test_quantum_persistent_homology.py",
       "tests/test_quantum_phi.py",
       "tests/test_quantum_reservoir.py",
+      "tests/test_quantum_reservoir_product.py",
       "tests/test_quantum_sensing_readiness.py",
       "tests/test_quantum_speed_limit.py",
       "tests/test_quantum_speed_limit_validation.py",
@@ -8680,6 +8744,11 @@
       "tests/test_submit_s1_readout_zne_ibm.py",
       "tests/test_submit_s1b_xy_observable_pair.py",
       "tests/test_surface_code_upde.py",
+      "tests/test_surrogate_fidelity.py",
+      "tests/test_surrogate_hybrid.py",
+      "tests/test_surrogate_models.py",
+      "tests/test_surrogate_report.py",
+      "tests/test_surrogate_train.py",
       "tests/test_symmetry_decay.py",
       "tests/test_symmetry_sector_compiler.py",
       "tests/test_symmetry_sector_compiler_branches.py",
