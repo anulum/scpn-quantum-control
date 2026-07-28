@@ -360,7 +360,7 @@
 - Qiskit v2.0 migration guide. [Link](https://quantum.cloud.ibm.com/docs/en/guides/qiskit-2.0)
 - Qiskit SDK 2.0 release notes. [Link](https://docs.quantum.ibm.com/api/qiskit/release-notes/2.0)
 - Fractional gates migration. [Link](https://quantum.cloud.ibm.com/docs/en/guides/pulse-migration)
-- IBM backend retirements. [Link](https://quantum.cloud.ibm.com/announcements/en/product-updates)
+- IBM backend retirements. [Link](https://quantum.cloud.ibm.com/docs/en/guides/latest-updates)
 
 ### Trotterization
 - Optimal-order Trotter-Suzuki, QIP (2024). [arXiv:2405.01131](https://arxiv.org/html/2405.01131)
