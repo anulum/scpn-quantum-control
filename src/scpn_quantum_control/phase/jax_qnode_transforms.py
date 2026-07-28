@@ -15,6 +15,8 @@ optional-JAX loader and retains later compatibility and maturity orchestration.
 from __future__ import annotations
 
 from collections.abc import Callable
+from contextlib import suppress
+from importlib import import_module
 from typing import Any, TypeAlias, cast
 
 import numpy as np
@@ -107,6 +109,9 @@ def _require_jax_phase_qnode_aot_export_support(jax_module: Any) -> Any:
             "JAX ShapeDtypeStruct is required for registered Phase-QNode AOT export"
         )
     export_module = getattr(jax_module, "export", None)
+    if export_module is None and getattr(jax_module, "__name__", None) == "jax":
+        with suppress(ImportError):
+            export_module = import_module("jax.export")
     if export_module is None:
         raise RuntimeError("JAX export is required for registered Phase-QNode AOT export")
     for name in ("export", "deserialize"):

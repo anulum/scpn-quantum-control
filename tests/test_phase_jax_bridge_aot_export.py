@@ -17,6 +17,7 @@ import pytest
 from _phase_jax_qnode_test_helpers import _FakeAOTJAX, _single_parameter_circuit
 
 import scpn_quantum_control.phase.jax_bridge as jax_bridge
+import scpn_quantum_control.phase.jax_qnode_transforms as jax_qnode_transforms
 from scpn_quantum_control.phase import (
     PauliTerm,
     PhaseJAXPhaseQNodeAOTExportResult,
@@ -88,6 +89,33 @@ def test_phase_jax_registered_qnode_aot_export_audit_fails_without_export(
             _single_parameter_circuit(),
             np.array([np.pi / 2.0], dtype=np.float64),
         )
+
+
+def test_phase_jax_registered_qnode_aot_export_lazily_loads_submodule(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Installed-style JAX modules should load the export submodule on demand."""
+    fake_jax = _FakeAOTJAX()
+    export_module = fake_jax.export
+    monkeypatch.setattr(fake_jax, "export", None)
+    monkeypatch.setattr(fake_jax, "__name__", "jax", raising=False)
+    imported: list[str] = []
+
+    def import_export(name: str) -> object:
+        imported.append(name)
+        return export_module
+
+    monkeypatch.setattr(jax_qnode_transforms, "import_module", import_export)
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+
+    result = jax_phase_qnode_aot_export_audit(
+        _single_parameter_circuit(),
+        np.array([np.pi / 2.0], dtype=np.float64),
+        tolerance=1e-6,
+    )
+
+    assert result.passed
+    assert imported == ["jax.export"]
 
 
 def test_phase_jax_registered_qnode_aot_export_audit_replays_deserialized_value() -> None:
