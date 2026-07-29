@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Quantum Phi
-"""Tests for quantum integrated information (Φ)."""
+"""Tests for the legacy-named minimum bipartite QMI diagnostic."""
 
 from __future__ import annotations
 
@@ -97,6 +97,8 @@ class TestMutualInformation:
 
 
 class TestComputeQuantumPhi:
+    """Retain import compatibility while enforcing mutual-information semantics."""
+
     def test_returns_phi_result(self):
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -131,12 +133,12 @@ class TestComputeQuantumPhi:
         assert sorted(a + b) == list(range(3))
 
     def test_scpn_default_phi(self):
-        """Record Φ_Q at SCPN default parameters."""
+        """Record the legacy-named minimum QMI at default parameters."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_quantum_phi(K, omega)
-        print(f"\n  Φ_Q (4 osc, default K) = {result.phi_quantum:.6f}")
-        print(f"  Φ_max = {result.phi_max:.6f}")
+        print(f"\n  minimum QMI (4 osc, default K) = {result.phi_quantum:.6f}")
+        print(f"  maximum QMI = {result.phi_max:.6f}")
         print(f"  Total entropy = {result.total_entropy:.6f}")
         print(f"  MIP: {result.mip_partition}")
         print(f"  Bipartitions: {result.n_bipartitions}")

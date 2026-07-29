@@ -447,6 +447,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [MagicResult, magic_vs_coupling]
 
+::: scpn_quantum_control.analysis.theory_hook_promotion
+    options:
+      members: [TheoryHookTier, TheoryHookRole, TheoryHookStatus, TheoryHookPromotionRecord, TheoryHookEvidenceRecord, TheoryHookPromotionReport, list_theory_hook_promotions, get_theory_hook_promotion, run_theory_hook_evidence, build_theory_hook_promotion_report, render_theory_hook_promotion_markdown]
+
 ## Crypto
 
 ::: scpn_quantum_control.crypto

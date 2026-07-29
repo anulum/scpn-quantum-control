@@ -159,6 +159,21 @@ from .tcbo_weighted_complex import (
     tcbo_weighted_complex,
     tcbo_weighted_threshold_scan,
 )
+from .theory_hook_promotion import (
+    THEORY_HOOK_PROMOTION_BOUNDARY,
+    THEORY_HOOK_PROMOTION_SCHEMA,
+    TheoryHookEvidenceRecord,
+    TheoryHookPromotionRecord,
+    TheoryHookPromotionReport,
+    TheoryHookRole,
+    TheoryHookStatus,
+    TheoryHookTier,
+    build_theory_hook_promotion_report,
+    get_theory_hook_promotion,
+    list_theory_hook_promotions,
+    render_theory_hook_promotion_markdown,
+    run_theory_hook_evidence,
+)
 from .thermodynamic_witness import ThermodynamicWitness
 from .vortex_binding import VortexBindingResult, compute_vortex_binding
 from .witness_discovery import (
@@ -348,6 +363,19 @@ __all__ = [
     "coupling_weighted_edge_matrix",
     "tcbo_weighted_complex",
     "tcbo_weighted_threshold_scan",
+    "THEORY_HOOK_PROMOTION_BOUNDARY",
+    "THEORY_HOOK_PROMOTION_SCHEMA",
+    "TheoryHookEvidenceRecord",
+    "TheoryHookPromotionRecord",
+    "TheoryHookPromotionReport",
+    "TheoryHookRole",
+    "TheoryHookStatus",
+    "TheoryHookTier",
+    "build_theory_hook_promotion_report",
+    "get_theory_hook_promotion",
+    "list_theory_hook_promotions",
+    "render_theory_hook_promotion_markdown",
+    "run_theory_hook_evidence",
     "AnisotropyScanResult",
     "anisotropy_phase_diagram",
 ]

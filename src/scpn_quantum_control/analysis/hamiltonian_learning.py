@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Hamiltonian Learning
-"""Hamiltonian learning: recover K_nm from measurement data.
+"""Bounded inverse fitting of ``K_nm`` from exact ground-state correlators.
 
 Given correlator measurements <X_i X_j + Y_i Y_j> from the ground
 state, reconstruct the coupling matrix K_nm. This is the inverse
@@ -22,8 +22,12 @@ coupling parameters. We minimise:
 
 where C_ij^model(K) = <ψ_0(K)|XX_ij + YY_ij|ψ_0(K)>.
 
-This closes the loop: physical measurements → K_nm → quantum simulation.
-If the learned K_nm matches the input K_nm, the model is self-consistent.
+The current implementation is a small dense synthetic inverse problem.  It
+does not model shot noise, calibration error, model misspecification,
+identifiability, or parameter uncertainty, and it has not been validated on
+provider or laboratory measurements.  A low training residual therefore shows
+only self-consistency on the supplied correlators; it is not evidence that the
+generating coupling is unique or experimentally recovered.
 """
 
 from __future__ import annotations
@@ -39,7 +43,22 @@ from ..hardware.classical import classical_exact_diag
 
 @dataclass
 class HamiltonianLearningResult:
-    """Result of Hamiltonian learning."""
+    """Result of a bounded coupling-matrix fit.
+
+    Attributes
+    ----------
+    K_learned
+        Symmetric non-negative coupling estimate with a zero diagonal.
+    omega_learned
+        Copy of the caller-supplied frequency vector. Frequencies are not
+        optimized by this routine despite the compatibility field name.
+    loss
+        Sum of squared residuals over the full correlator matrix.
+    n_iterations
+        Number of COBYLA objective evaluations reported by SciPy.
+    correlator_error
+        Mean absolute residual over the full correlator matrix.
+    """
 
     K_learned: NDArray[np.float64]
     omega_learned: NDArray[np.float64]
@@ -52,9 +71,23 @@ def measure_correlators(
     K: NDArray[np.float64],
     omega: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    """Measure <X_i X_j + Y_i Y_j> from ground state.
+    """Compute exact ground-state ``<X_i X_j + Y_i Y_j>`` correlators.
 
-    Returns n×n symmetric matrix of correlators.
+    Parameters
+    ----------
+    K
+        Coupling matrix forwarded to the dense exact diagonalizer.
+    omega
+        Natural-frequency vector with one entry per oscillator.
+
+    Returns
+    -------
+    numpy.ndarray
+        Symmetric ``n × n`` correlator matrix with a zero diagonal.
+
+    Notes
+    -----
+    This is an exact-simulator helper, not a hardware measurement routine.
     """
     n = K.shape[0]
     exact = classical_exact_diag(n, K=K, omega=omega)
@@ -121,13 +154,32 @@ def learn_hamiltonian(
     K_init: NDArray[np.float64] | None = None,
     maxiter: int = 100,
 ) -> HamiltonianLearningResult:
-    """Learn K_nm from measured correlators.
+    """Fit a symmetric non-negative ``K_nm`` to supplied correlators.
 
-    Args:
-        C_measured: n×n correlator matrix <XX+YY>_ij
-        omega: known natural frequencies
-        K_init: initial guess for K (default: uniform 0.5)
-        maxiter: maximum optimizer iterations
+    Parameters
+    ----------
+    C_measured
+        Target ``n × n`` ``<XX+YY>`` correlator matrix. The name is a
+        compatibility convention; the routine does not establish measurement
+        provenance.
+    omega
+        Known natural frequencies. They are copied into the result and are not
+        fitted.
+    K_init
+        Initial symmetric coupling guess. Defaults to off-diagonal ``0.5``.
+    maxiter
+        Maximum COBYLA objective evaluations.
+
+    Returns
+    -------
+    HamiltonianLearningResult
+        Fitted matrix and in-sample residual summaries.
+
+    Notes
+    -----
+    The objective repeatedly performs dense exact diagonalization. A small
+    residual is not an identifiability, uncertainty, held-out, or experimental
+    validation certificate.
     """
     n = len(omega)
 

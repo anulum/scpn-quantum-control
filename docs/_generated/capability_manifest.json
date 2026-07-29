@@ -4,16 +4,16 @@
     "domain_package_families": 38,
     "example_files": 37,
     "github_workflows": 24,
-    "model_documentation_pages": 4,
+    "model_documentation_pages": 5,
     "notebook_files": 109,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 355,
-    "python_model_classes": 1355,
-    "python_model_source_modules": 694,
+    "public_documentation_pages": 357,
+    "python_model_classes": 1361,
+    "python_model_source_modules": 695,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1151
+    "test_files": 1152
   },
   "documentation": {
     "examples": [
@@ -189,6 +189,7 @@
       "docs/api/application_honesty_kits.md",
       "docs/api/chimera_control.md",
       "docs/api/dla_topology_control.md",
+      "docs/api/theory_hook_promotion.md",
       "docs/api/topology_kernel_product.md",
       "docs/api.md",
       "docs/application_benchmarks.md",
@@ -506,6 +507,7 @@
       "docs/tensor_networks.md",
       "docs/test_infrastructure.md",
       "docs/theory.md",
+      "docs/theory_hook_promotion.md",
       "docs/thermo_readiness_product.md",
       "docs/tier_benchmarks.md",
       "docs/tn_mps_baseline_design.md",
@@ -550,6 +552,7 @@
       "application_honesty_kits.md",
       "chimera_control.md",
       "dla_topology_control.md",
+      "theory_hook_promotion.md",
       "topology_kernel_product.md"
     ],
     "domain_package_counts": [
@@ -561,7 +564,7 @@
       {
         "package": "analysis",
         "path": "src/scpn_quantum_control/analysis",
-        "python_modules": 66
+        "python_modules": 67
       },
       {
         "package": "applications",
@@ -5814,6 +5817,30 @@
         "path": "src/scpn_quantum_control/phase/gradient_tape.py"
       },
       {
+        "name": "TheoryHookEvidenceRecord",
+        "path": "src/scpn_quantum_control/analysis/theory_hook_promotion.py"
+      },
+      {
+        "name": "TheoryHookPromotionRecord",
+        "path": "src/scpn_quantum_control/analysis/theory_hook_promotion.py"
+      },
+      {
+        "name": "TheoryHookPromotionReport",
+        "path": "src/scpn_quantum_control/analysis/theory_hook_promotion.py"
+      },
+      {
+        "name": "TheoryHookRole",
+        "path": "src/scpn_quantum_control/analysis/theory_hook_promotion.py"
+      },
+      {
+        "name": "TheoryHookStatus",
+        "path": "src/scpn_quantum_control/analysis/theory_hook_promotion.py"
+      },
+      {
+        "name": "TheoryHookTier",
+        "path": "src/scpn_quantum_control/analysis/theory_hook_promotion.py"
+      },
+      {
         "name": "ThermodynamicSweepConfig",
         "path": "src/scpn_quantum_control/thermodynamics/readiness.py"
       },
@@ -6240,6 +6267,7 @@
       "src/scpn_quantum_control/analysis/sync_uncertainty.py",
       "src/scpn_quantum_control/analysis/sync_witness.py",
       "src/scpn_quantum_control/analysis/tcbo_weighted_complex.py",
+      "src/scpn_quantum_control/analysis/theory_hook_promotion.py",
       "src/scpn_quantum_control/analysis/thermodynamic_witness.py",
       "src/scpn_quantum_control/analysis/translation_symmetry.py",
       "src/scpn_quantum_control/analysis/two_colour_schedule.py",
@@ -9096,6 +9124,7 @@
       "tests/test_tcbo_weighted_complex_validation.py",
       "tests/test_tensor_jump.py",
       "tests/test_tensor_jump_contracts.py",
+      "tests/test_theory_hook_promotion.py",
       "tests/test_thermo_readiness_product.py",
       "tests/test_thermodynamic_witness.py",
       "tests/test_tier_benchmark_regression_gate.py",

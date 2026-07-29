@@ -5,7 +5,14 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — integrated information phi module
-"""Guarded integrated-information observable interfaces."""
+"""Fail-closed interface for integrated-information requests.
+
+No Integrated Information Theory (IIT) causal model is implemented. Exact
+Kuramoto-XY inputs can be routed only to an explicitly requested minimum
+bipartite quantum-mutual-information diagnostic. Entropy and mutual information
+are not returned under a ``phi`` key and must not be interpreted as
+consciousness, sentience, cognition, or a clinical-state measure.
+"""
 
 from __future__ import annotations
 
@@ -17,21 +24,39 @@ import numpy as np
 
 class IntegratedInformationPhi:
     """
-    Guarded integrated-information observable.
+    Guarded integrated-information request surface.
 
     Integrated information is not identified with output entropy. This class
-    refuses to report Φ unless a real IIT/causal-state implementation is wired.
-    For legacy dashboards, a labelled entropy proxy can be requested explicitly;
-    that proxy is never returned under the key ``phi``.
+    refuses to report Φ because no IIT causal-state implementation is wired.
+    Labelled entropy or bipartite-mutual-information diagnostics can be
+    requested explicitly; neither is returned under the key ``phi``.
     """
 
     def __call__(self, counts: Mapping[str, int] | None = None, **kwargs: Any) -> dict[str, float]:
-        """Evaluate integrated information Φ from a wired causal-state model.
+        """Reject Φ requests or return an explicitly labelled diagnostic.
 
-        Routes to the production Φ computation when both ``coupling_matrix`` and
-        ``natural_frequencies`` are supplied; otherwise fails closed unless
-        ``allow_entropy_proxy=True`` requests an explicitly labelled entropy
-        diagnostic (never returned under the ``phi`` key).
+        Parameters
+        ----------
+        counts
+            Optional outcome-count mapping used only by the entropy diagnostic.
+        **kwargs
+            ``coupling_matrix`` and ``natural_frequencies`` select the exact
+            ground-state mutual-information route, which also requires
+            ``allow_mutual_information_proxy=True``. ``allow_entropy_proxy``
+            explicitly selects the normalized count-entropy route.
+
+        Returns
+        -------
+        dict[str, float]
+            A labelled entropy or mutual-information diagnostic with
+            ``phi_available=0.0`` and ``is_integrated_information=0.0``.
+
+        Raises
+        ------
+        NotImplementedError
+            If a diagnostic is not explicitly opted into.
+        ValueError
+            If inputs are incomplete, malformed, non-finite, or inconsistent.
         """
         coupling_matrix = kwargs.get("coupling_matrix")
         natural_frequencies = kwargs.get("natural_frequencies")
@@ -41,7 +66,13 @@ class IntegratedInformationPhi:
                     "IntegratedInformationPhi requires both coupling_matrix and "
                     "natural_frequencies for production evaluation."
                 )
-            return self._compute_production_phi(coupling_matrix, natural_frequencies)
+            if not bool(kwargs.get("allow_mutual_information_proxy", False)):
+                raise NotImplementedError(
+                    "No IIT Phi implementation is wired. Pass "
+                    "allow_mutual_information_proxy=True only for the explicitly "
+                    "labelled bipartite mutual-information diagnostic."
+                )
+            return self._compute_mutual_information_proxy(coupling_matrix, natural_frequencies)
 
         if not bool(kwargs.get("allow_entropy_proxy", False)):
             raise NotImplementedError(
@@ -75,9 +106,15 @@ class IntegratedInformationPhi:
         }
 
     @staticmethod
-    def _compute_production_phi(
+    def _compute_mutual_information_proxy(
         coupling_matrix: Any, natural_frequencies: Any
     ) -> dict[str, float]:
+        """Compute the legacy minimum-bipartite-QMI diagnostic.
+
+        This private adapter validates the exact-model inputs and relabels every
+        output so downstream consumers cannot confuse quantum mutual
+        information with IIT Φ.
+        """
         from .quantum_phi import compute_quantum_phi
 
         K = np.asarray(coupling_matrix, dtype=float)
@@ -95,13 +132,14 @@ class IntegratedInformationPhi:
 
         result = compute_quantum_phi(K, omega)
         return {
-            "phi_available": 1.0,
-            "phi": float(result.phi_quantum),
-            "phi_max": float(result.phi_max),
+            "phi_available": 0.0,
+            "mutual_information_proxy_available": 1.0,
+            "minimum_bipartite_mutual_information": float(result.phi_quantum),
+            "maximum_bipartite_mutual_information": float(result.phi_max),
             "total_entropy": float(result.total_entropy),
             "n_qubits": float(result.n_qubits),
             "n_bipartitions": float(result.n_bipartitions),
             "mip_partition_size_a": float(len(result.mip_partition[0])),
             "mip_partition_size_b": float(len(result.mip_partition[1])),
-            "is_integrated_information": 1.0,
+            "is_integrated_information": 0.0,
         }

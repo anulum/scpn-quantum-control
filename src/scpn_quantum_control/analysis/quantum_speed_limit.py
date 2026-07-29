@@ -14,11 +14,16 @@ an initial state |ψ_0⟩ to a target state |ψ_T⟩:
 
 where ΔE = √(⟨H²⟩ - ⟨H⟩²) is the energy variance.
 
-The Margolus-Levitin bound gives an alternative:
+For orthogonalization, the Margolus-Levitin bound gives an alternative:
 
     τ_ML ≥ π / (2(⟨H⟩ - E_0))
 
 where E_0 is the ground state energy.
+
+The compatibility field ``tau_ML`` reports that orthogonalization-time
+reference even when the simulated target has non-zero overlap. It must not be
+interpreted as an arbitrary-fidelity lower bound; such a route requires an
+explicit extended Margolus-Levitin implementation.
 
 The threshold time is a finite closed-system simulation diagnostic. It is not
 a measured synchronization time, a critical exponent, or evidence of BKT
@@ -50,7 +55,34 @@ from ..hardware.classical import classical_exact_diag
 
 @dataclass
 class QSLResult:
-    """Quantum speed limit computation result."""
+    """Finite closed-system speed-limit diagnostics.
+
+    Attributes
+    ----------
+    tau_MT
+        Mandelstam-Tamm lower bound for the simulated initial/target overlap.
+    tau_ML
+        Legacy Margolus-Levitin orthogonalization-time reference. It is not an
+        arbitrary-fidelity bound when ``overlap`` is non-zero.
+    tau_actual
+        First sampled threshold-crossing time, or ``t_target`` if no crossing
+        was observed.
+    tightness_MT
+        Ratio ``tau_actual / tau_MT``; infinity when ``tau_MT`` is zero.
+    tightness_ML
+        Compatibility ratio using ``tau_ML``. Do not treat it as target-bound
+        tightness for non-orthogonal states.
+    overlap
+        Absolute initial/target state overlap.
+    delta_E
+        Initial-state energy standard deviation.
+    mean_E
+        Initial-state mean energy.
+    ground_E
+        Exact finite-system ground energy.
+    n_qubits
+        Number of simulated qubits.
+    """
 
     tau_MT: float
     tau_ML: float
@@ -88,11 +120,34 @@ def compute_qsl(
     *,
     max_dense_gib: float | None = None,
 ) -> QSLResult:
-    """Compute speed limits for crossing a local-phase-order threshold.
+    """Compute bounded diagnostics for a local-phase-order threshold crossing.
 
+    Parameters
+    ----------
+    K, omega
+        Coupling matrix and natural-frequency vector for the dense finite
+        Kuramoto-XY Hamiltonian.
+    t_target
+        Non-negative simulation horizon.
+    dt
+        Positive threshold-sampling interval; a final partial step is exact.
+    R_threshold
+        Local phase-order threshold in ``[0, 1]``.
+    max_dense_gib
+        Optional fail-closed dense-allocation budget.
+
+    Returns
+    -------
+    QSLResult
+        MT target-overlap bound, legacy ML orthogonalization reference, and
+        threshold-evolution diagnostics.
+
+    Notes
+    -----
     Evolves the same frequency-encoded product state used by the BL-79
     initial-state study. The returned threshold time is a bounded numerical
-    diagnostic, not a spontaneous-synchronisation or BKT certificate.
+    diagnostic, not a spontaneous-synchronisation or BKT certificate. The
+    result is not admitted as a control constraint by this function alone.
     """
     _validate_qsl_parameters(t_target, dt, R_threshold)
     n = K.shape[0]

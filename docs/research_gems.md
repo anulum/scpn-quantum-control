@@ -658,11 +658,12 @@ shifting monotonically.
 
 **Module:** `analysis/spectral_form_factor.py`
 
-The SFF $g(t) = |\mathrm{Tr}(e^{-iHt})|^2 / \mathrm{Tr}(\mathbf{I})^2$ diagnoses
-quantum chaos via the statistics of energy level spacings. A "dip-ramp-plateau"
-structure signals Random Matrix Theory (RMT) level repulsion = chaos. The level spacing
-ratio $\bar{r}$ transitions from Poisson ($\bar{r} \approx 0.386$, integrable) to GOE
-($\bar{r} \approx 0.536$, chaotic) as coupling increases through $K_c$.
+The SFF $g(t) = |\mathrm{Tr}(e^{-iHt})|^2 / \mathrm{Tr}(\mathbf{I})^2$ and the
+adjacent-gap ratio are finite-size spectral diagnostics. Random-matrix
+interpretation requires a specified symmetry sector, ensemble, energy window,
+null distribution, and finite-size protocol. The current implementation does
+not establish a dip-ramp-plateau regime, quantum chaos, a Poisson-to-GOE
+transition, or its coincidence with $K_c$.
 
 ### Gem 28: Loschmidt Echo / DQPT
 
@@ -710,10 +711,11 @@ classically simulable. The Stabilizer Rényi Entropy:
 
 $$M_2 = -\log_2\left(\frac{\sum_P \langle P\rangle^4}{2^N}\right)$$
 
-where the sum runs over all $N$-qubit Pauli operators $P$. At $K_c$, magic peaks — the
-critical ground state is maximally non-classical. This connects to the quantum advantage
-question: the synchronization transition is precisely where classical simulation becomes
-hardest.
+where the sum runs over all $N$-qubit Pauli operators $P$. The implementation
+provides an exact small-system resource diagnostic. A maximum on a finite
+coupling grid is not a certified critical point, fault-tolerant resource cost,
+classical-hardness result, or quantum-advantage result. Those interpretations
+require separately preregistered scaling and uncertainty evidence.
 
 ### Gem 33: Finite-Size Scaling
 

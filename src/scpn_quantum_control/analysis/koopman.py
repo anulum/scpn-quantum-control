@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Koopman
-"""Koopman linearisation for the nonlinear Kuramoto model.
+"""Finite local Koopman-style closure for the Kuramoto model.
 
 The Kuramoto model has nonlinear coupling sin(θ_j - θ_i). The current
 XY Hamiltonian approximation linearises this as cos(θ_j - θ_i) (valid
@@ -20,18 +20,21 @@ The Koopman observable basis uses:
     g_ij^(s) = sin(θ_j - θ_i)
     g_i = θ_i  (identity observables)
 
-In this lifted space, the dynamics become linear:
+The exact Koopman generator acts on an infinite observable space.  This module
+constructs a finite, reference-point-dependent local closure:
     dg/dt = L_K × g
 
-where L_K is the Koopman generator matrix. The eigenvalues of L_K
-give the Koopman modes (frequencies of collective motion).
+where ``L_K`` is the finite matrix implemented here. Its eigenvalues are local
+closure diagnostics; they are not certified eigenvalues of an exact invariant
+Koopman subspace.
 
-Quantum simulation of L_K via Hamiltonian encoding:
-    H_Koopman = i × L_K  (skew-Hermitian → unitary evolution)
+The helper :func:`koopman_to_hamiltonian` keeps only the anti-Hermitian part of
+``L_K`` and multiplies it by ``i``. This Hermitian projection is suitable for
+matrix experiments, but it is not dynamically equivalent to the discarded
+symmetric part.
 
-This extends the XY approximation to the full nonlinear regime,
-establishing the BQP-completeness argument from Babbush et al. 2023
-for the coupled oscillator problem.
+No function in this module establishes full nonlinear closure,
+BQP-completeness, quantum advantage, or a production control route.
 """
 
 from __future__ import annotations
@@ -93,7 +96,21 @@ def _observable_labels(n: int) -> list[str]:
 
 @dataclass
 class KoopmanResult:
-    """Koopman linearisation result."""
+    """Finite local closure and its dense spectrum.
+
+    Attributes
+    ----------
+    generator
+        Reference-point-dependent finite observable matrix.
+    eigenvalues
+        Dense eigenvalues sorted by descending absolute magnitude.
+    n_observables
+        Matrix dimension, equal to ``n_oscillators**2``.
+    n_oscillators
+        Number of input oscillators.
+    observable_labels
+        Labels for identity, cosine-pair, and sine-pair coordinates.
+    """
 
     generator: NDArray[np.float64]  # L_K matrix
     eigenvalues: NDArray[np.complex128]  # Koopman eigenvalues
@@ -108,7 +125,7 @@ def build_koopman_generator(
     theta_ref: NDArray[np.float64] | None = None,
     max_oscillators: int = MAX_OSCILLATORS_DEFAULT,
 ) -> tuple[NDArray[np.float64], list[str]]:
-    """Build the Koopman generator matrix L_K for the Kuramoto system.
+    """Build the finite local observable matrix for a Kuramoto system.
 
     Observable basis (for n oscillators):
         - n identity observables: θ_i
@@ -122,16 +139,31 @@ def build_koopman_generator(
         d/dt cos(Δ) = -(dθ_j/dt - dθ_i/dt) sin(Δ)
         d/dt sin(Δ) = +(dθ_j/dt - dθ_i/dt) cos(Δ)
 
-    At a reference point theta_ref, the linearised generator captures
-    the local dynamics exactly.
+    The pair-observable derivatives are truncated to the documented finite
+    basis. The matrix is therefore a local closure diagnostic, not an exact
+    finite-dimensional representation of the nonlinear flow.
 
-    Args:
-        K: coupling matrix (n×n, symmetric, zero diagonal)
-        omega: natural frequencies
-        theta_ref: reference phase configuration (default: zeros)
-        max_oscillators: hard cap on n to prevent unbounded n²×n²
-            allocation. Raise it explicitly when working with structured
-            problems where the dense generator is genuinely needed.
+    Parameters
+    ----------
+    K
+        Finite coupling matrix. Shape and finiteness are validated; callers
+        remain responsible for any symmetry or diagonal convention.
+    omega
+        Finite natural-frequency vector with one entry per oscillator.
+    theta_ref
+        Reference phase configuration. Defaults to the all-zero point.
+    max_oscillators
+        Hard cap on ``n`` before allocating the dense ``n² × n²`` matrix.
+
+    Returns
+    -------
+    tuple[numpy.ndarray, list[str]]
+        Finite local matrix and matching observable labels.
+
+    Raises
+    ------
+    ValueError
+        If shapes, finiteness, or the allocation cap are invalid.
     """
     _validate_inputs(K, omega, theta_ref, max_oscillators)
     n = K.shape[0]
@@ -248,12 +280,19 @@ def koopman_analysis(
     theta_ref: NDArray[np.float64] | None = None,
     max_oscillators: int = MAX_OSCILLATORS_DEFAULT,
 ) -> KoopmanResult:
-    """Full Koopman linearisation and spectral analysis.
+    """Build and diagonalize the finite local observable closure.
 
-    `max_oscillators` is forwarded to `build_koopman_generator` and
-    bounds the dense n²×n² eigendecomposition. The default keeps a
-    pathological caller (n=200, eigvals ≫ minutes, ~320 MB) from
-    silently exhausting the host.
+    Parameters are forwarded to :func:`build_koopman_generator`.
+    ``max_oscillators`` bounds the dense ``n² × n²`` eigendecomposition.
+
+    Returns
+    -------
+    KoopmanResult
+        Closure matrix, sorted spectrum, dimensions, and labels.
+
+    Notes
+    -----
+    The returned spectrum characterizes this finite local closure only.
     """
     n = K.shape[0]
     L, labels = build_koopman_generator(K, omega, theta_ref, max_oscillators)
@@ -270,17 +309,35 @@ def koopman_analysis(
 
 
 def koopman_dimension(n_osc: int) -> int:
-    """Observable space dimension for n oscillators: n + n(n-1) = n²."""
+    """Return the finite basis dimension ``n + n(n-1) = n²``.
+
+    Parameters
+    ----------
+    n_osc
+        Number of oscillators.
+    """
     return n_osc * n_osc
 
 
 def koopman_to_hamiltonian(L: NDArray[np.float64]) -> NDArray[np.complex128]:
-    """Convert Koopman generator to Hermitian Hamiltonian.
+    """Project a real closure matrix onto a Hermitian matrix.
 
     H = i × (L - L†) / 2 (anti-Hermitian part, Hermitianised)
 
-    This H can be encoded as a Pauli Hamiltonian for quantum simulation,
-    extending the XY approximation to the full nonlinear Kuramoto dynamics.
+    Parameters
+    ----------
+    L
+        Finite local closure matrix.
+
+    Returns
+    -------
+    numpy.ndarray
+        ``i(L-L†)/2``, symmetrized to exact numerical Hermiticity.
+
+    Notes
+    -----
+    The projection discards the symmetric part of ``L``. It is not a proof of
+    dynamical equivalence to the nonlinear Kuramoto system.
     """
     H: NDArray[np.complex128] = (1j * (L - L.conj().T) / 2.0).astype(np.complex128)
     # Ensure exact Hermiticity

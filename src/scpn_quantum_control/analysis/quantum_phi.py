@@ -5,13 +5,10 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Quantum Phi
-"""Quantum integrated information (Φ) from density matrix.
+"""Minimum bipartite quantum mutual information from a density matrix.
 
-Integrated Information Theory (IIT, Tononi 2004) quantifies how much
-a system's whole exceeds the sum of its parts. The quantum extension
-(Zanardi et al. 2018, PRE 97 042112) defines quantum Φ via the
-distance between the full density matrix and the product of its
-reduced subsystem density matrices.
+This legacy module was named ``quantum_phi``. The implemented quantity is
+quantum mutual information minimized over non-trivial bipartitions:
 
 For a bipartition (A, B) of n qubits:
     Φ(A, B) = S(ρ_AB || ρ_A ⊗ ρ_B)
@@ -20,15 +17,18 @@ For a bipartition (A, B) of n qubits:
 where S is the von Neumann entropy. This equals the quantum mutual
 information I(A:B).
 
-Quantum Φ (minimum over all bipartitions):
-    Φ_Q = min_{(A,B)} I(A:B)
+Minimum bipartite QMI:
+    I_min = min_{(A,B)} I(A:B)
 
-This is the "minimum information partition" — the bipartition
-where the system is most independent. A high Φ_Q means no way
-to split the system without losing information.
+The result is a finite-state correlation diagnostic. It is not Integrated
+Information Theory Φ: no causal model, intervention repertoire, cause-effect
+structure, or IIT exclusion/composition calculation is implemented. It must
+not be used as evidence about consciousness, sentience, cognition, or clinical
+state. Legacy ``phi_*`` field and function names remain for serialization and
+import compatibility only.
 
-Connection to SCPN: Φ_Q at the synchronization transition
-should peak (maximum integration at criticality).
+No peak or criticality claim is made. Such a claim requires a preregistered
+finite-size study with a named null model and uncertainty analysis.
 """
 
 from __future__ import annotations
@@ -44,7 +44,26 @@ from ..hardware.classical import classical_exact_diag
 
 @dataclass
 class PhiResult:
-    """Quantum integrated information result."""
+    """Legacy-named minimum bipartite mutual-information result.
+
+    Attributes
+    ----------
+    phi_quantum
+        Minimum bipartite QMI in bits. The field name is compatibility-only and
+        does not denote IIT Φ.
+    phi_max
+        Maximum bipartite QMI in bits across enumerated partitions.
+    n_qubits
+        Number of qubits in the exact ground state.
+    n_bipartitions
+        Number of unique non-trivial bipartitions evaluated.
+    mip_partition
+        Partition attaining the minimum QMI.
+    mutual_info_per_partition
+        QMI value in bits for each enumerated partition.
+    total_entropy
+        Von Neumann entropy of the full ground-state density matrix.
+    """
 
     phi_quantum: float  # minimum mutual information over bipartitions
     phi_max: float  # maximum mutual information
@@ -58,7 +77,16 @@ class PhiResult:
 def von_neumann_entropy(rho: NDArray[np.complex128]) -> float:
     """Von Neumann entropy S(ρ) = -Tr(ρ log ρ).
 
-    Uses eigenvalue decomposition to avoid log(0).
+    Parameters
+    ----------
+    rho
+        Density matrix. The caller is responsible for physical-state
+        validation.
+
+    Returns
+    -------
+    float
+        Base-2 entropy in bits. Eigenvalues at or below ``1e-15`` are omitted.
     """
     eigenvalues = np.linalg.eigvalsh(rho)
     eigenvalues = eigenvalues[eigenvalues > 1e-15]
@@ -68,12 +96,21 @@ def von_neumann_entropy(rho: NDArray[np.complex128]) -> float:
 def partial_trace(
     rho: NDArray[np.complex128], keep: list[int], n_qubits: int
 ) -> NDArray[np.complex128]:
-    """Trace out all qubits NOT in `keep` list.
+    """Trace out every qubit not listed in ``keep``.
 
-    Args:
-        rho: 2^n × 2^n density matrix
-        keep: list of qubit indices to keep (0-indexed)
-        n_qubits: total number of qubits
+    Parameters
+    ----------
+    rho
+        ``2**n_qubits × 2**n_qubits`` density matrix.
+    keep
+        Zero-indexed qubits retained in the reduced state.
+    n_qubits
+        Total number of qubits.
+
+    Returns
+    -------
+    numpy.ndarray
+        Reduced density matrix in the retained subsystem ordering.
     """
     dims = [2] * n_qubits
     rho_tensor = rho.reshape(dims + dims)
@@ -97,9 +134,21 @@ def mutual_information(
     subsystem_b: list[int],
     n_qubits: int,
 ) -> float:
-    """Quantum mutual information I(A:B) = S(A) + S(B) - S(AB).
+    """Compute ``I(A:B) = S(A) + S(B) - S(AB)``.
 
-    Returns mutual information in bits (log base 2).
+    Parameters
+    ----------
+    rho
+        Full density matrix.
+    subsystem_a, subsystem_b
+        Qubit indices defining the bipartition.
+    n_qubits
+        Total number of qubits represented by ``rho``.
+
+    Returns
+    -------
+    float
+        Quantum mutual information in bits.
     """
     rho_a = partial_trace(rho, subsystem_a, n_qubits)
     rho_b = partial_trace(rho, subsystem_b, n_qubits)
@@ -133,10 +182,19 @@ def compute_quantum_phi(
     K: NDArray[np.float64],
     omega: NDArray[np.float64],
 ) -> PhiResult:
-    """Compute quantum Φ from ground state of K_nm Hamiltonian.
+    """Compute legacy-named minimum bipartite QMI for an exact ground state.
 
-    Finds the minimum information partition (MIP) — the bipartition
-    where the system is most separable.
+    Parameters
+    ----------
+    K, omega
+        Coupling matrix and natural-frequency vector passed to the dense exact
+        Kuramoto-XY diagonalizer.
+
+    Returns
+    -------
+    PhiResult
+        Minimum/maximum bipartite QMI and partition metadata. Despite the
+        compatibility type name, the result is not IIT Φ.
     """
     n = K.shape[0]
     exact = classical_exact_diag(n, K=K, omega=omega)
@@ -172,7 +230,11 @@ def phi_vs_coupling_scan(
     omega: NDArray[np.float64],
     k_base_values: NDArray[np.float64] | None = None,
 ) -> dict[str, list[float]]:
-    """Scan Φ_Q vs coupling strength to find the criticality peak."""
+    """Scan the legacy-named minimum-QMI diagnostic over coupling.
+
+    The finite scan does not locate or certify a critical point. Returned
+    ``phi_*`` keys are compatibility names for bipartite QMI values.
+    """
     from ..bridge.knm_hamiltonian import build_knm_paper27
 
     if k_base_values is None:

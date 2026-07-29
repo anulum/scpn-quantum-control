@@ -155,7 +155,7 @@ def test_integrated_information_entropy_proxy_rejects_invalid_count_totals() -> 
         witness({"00": 2, "11": -1}, allow_entropy_proxy=True)
 
 
-def test_integrated_information_routes_real_hamiltonian_inputs_to_quantum_phi_engine() -> None:
+def test_integrated_information_requires_explicit_mutual_information_proxy_opt_in() -> None:
     witness = IntegratedInformationPhi()
     coupling_matrix = np.array(
         [
@@ -167,18 +167,30 @@ def test_integrated_information_routes_real_hamiltonian_inputs_to_quantum_phi_en
     )
     natural_frequencies = np.array([0.1, 0.2, 0.3], dtype=float)
 
+    with pytest.raises(NotImplementedError, match="No IIT Phi implementation"):
+        witness(
+            coupling_matrix=coupling_matrix,
+            natural_frequencies=natural_frequencies,
+        )
+
     result = witness(
         coupling_matrix=coupling_matrix,
         natural_frequencies=natural_frequencies,
+        allow_mutual_information_proxy=True,
     )
 
-    assert result["phi_available"] == 1.0
-    assert result["is_integrated_information"] == 1.0
-    assert result["phi"] >= 0.0
-    assert result["phi_max"] >= result["phi"]
+    assert result["phi_available"] == 0.0
+    assert result["mutual_information_proxy_available"] == 1.0
+    assert result["is_integrated_information"] == 0.0
+    assert result["minimum_bipartite_mutual_information"] >= 0.0
+    assert (
+        result["maximum_bipartite_mutual_information"]
+        >= result["minimum_bipartite_mutual_information"]
+    )
     assert result["n_qubits"] == 3.0
     assert result["n_bipartitions"] > 0.0
     assert "entropy_proxy" not in result
+    assert "phi" not in result
 
 
 def test_integrated_information_rejects_partial_or_invalid_hamiltonian_inputs() -> None:
@@ -187,15 +199,28 @@ def test_integrated_information_rejects_partial_or_invalid_hamiltonian_inputs() 
     with pytest.raises(ValueError, match="coupling_matrix and natural_frequencies"):
         witness(coupling_matrix=np.eye(2))
     with pytest.raises(ValueError, match="square"):
-        witness(coupling_matrix=np.ones((2, 3)), natural_frequencies=np.ones(2))
+        witness(
+            coupling_matrix=np.ones((2, 3)),
+            natural_frequencies=np.ones(2),
+            allow_mutual_information_proxy=True,
+        )
     with pytest.raises(ValueError, match="finite"):
-        witness(coupling_matrix=np.eye(2), natural_frequencies=np.array([0.0, np.nan]))
+        witness(
+            coupling_matrix=np.eye(2),
+            natural_frequencies=np.array([0.0, np.nan]),
+            allow_mutual_information_proxy=True,
+        )
     with pytest.raises(ValueError, match="matching"):
-        witness(coupling_matrix=np.eye(2), natural_frequencies=np.ones(3))
+        witness(
+            coupling_matrix=np.eye(2),
+            natural_frequencies=np.ones(3),
+            allow_mutual_information_proxy=True,
+        )
     with pytest.raises(ValueError, match="symmetric"):
         witness(
             coupling_matrix=np.array([[0.0, 0.1], [0.2, 0.0]]),
             natural_frequencies=np.array([0.0, 0.1]),
+            allow_mutual_information_proxy=True,
         )
 
 

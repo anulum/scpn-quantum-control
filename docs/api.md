@@ -19,6 +19,8 @@ The differentiable-programming surface has its own public guide and API map:
 - [Differentiable API](differentiable_api.md)
 - [Adaptive FIM next-experiment proposals](adaptive_fim_feedback.md)
 - [Differentiable Roadmap](differentiable_roadmap.md)
+- [Theory-Hook Promotion Matrix](theory_hook_promotion.md)
+- [Theory-Hook Promotion API](api/theory_hook_promotion.md)
 
 Use these pages when you need gradient-bearing optimisation, parameter-shift
 VQE, compiler/program AD kernels, primitive derivative registries, or planned

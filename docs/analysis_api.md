@@ -9,6 +9,12 @@ This is an advanced module reference. Use
 drop into this page when a specific analysis probe or low-level diagnostic is
 needed.
 
+Experimental QSL, Hamiltonian-learning, Koopman, minimum-QMI, magic, and SFF
+routes are governed by the [Theory-Hook Promotion Matrix](theory_hook_promotion.md)
+and its [typed API](api/theory_hook_promotion.md). Importability does not grant
+control, differentiability, criticality, hardware, consciousness, or
+publication claims.
+
 ---
 
 ## Synchronization Detection
@@ -408,20 +414,28 @@ from scpn_quantum_control.analysis.otoc_sync_probe import (
 
 ### `spectral_form_factor` — SFF and Level Statistics
 
-Spectral Form Factor diagnoses chaos via Random Matrix Theory level statistics.
+Exact finite-system spectral-form-factor and adjacent-gap-ratio diagnostics.
+Interpretation requires a specified symmetry sector, ensemble, energy window,
+null distribution, and finite-size protocol; these values do not by themselves
+certify quantum chaos or a Poisson-to-RMT transition.
 
 ```python
 from scpn_quantum_control.analysis.spectral_form_factor import (
-    spectral_form_factor,
-    level_spacing_ratio,
+    compute_sff,
+    sff_vs_coupling,
     SFFResult,
+    SFFScanResult,
 )
 ```
 
 | Function | Description |
 |----------|-------------|
-| `spectral_form_factor(H, t_values)` | $g(t) = \|\mathrm{Tr}(e^{-iHt})\|^2 / d^2$ |
-| `level_spacing_ratio(H)` | Mean ratio $\bar{r}$: Poisson ≈ 0.386, GOE ≈ 0.536 |
+| `compute_sff(K, omega, t_max=20.0, n_times=200, *, level_spacing_basis="magnetisation", magnetisation=None, parity=None, max_dense_gib=None)` | Full-spectrum normalized SFF plus selected-sector and full-spectrum gap ratios |
+| `sff_vs_coupling(omega, K_topology, k_range=None, ..., max_dense_gib=None)` | Finite coupling-grid diagnostics; `chaos_onset_K` is a heuristic threshold crossing only |
+
+The default spacing ratio is resolved in a U(1) magnetisation sector. The SFF
+itself still uses the full spectrum, and both selected-sector and full-spectrum
+ratios remain explicit in `SFFResult`.
 
 ### `loschmidt_echo` — Loschmidt Echo and DQPT
 
@@ -498,8 +512,11 @@ as proxy values, never as production QFI.
 
 ### `magic_nonstabilizerness` — Stabilizer Rényi Entropy
 
-Magic $M_2 = -\log_2(\sum_P \langle P\rangle^4 / 2^N)$ peaks at $K_c$ — the critical
-state is maximally non-classical.
+Exact small-system stabilizer Rényi-2 resource diagnostic
+$M_2 = -\log_2(\sum_P \langle P\rangle^4 / 2^N)$. The implementation enumerates
+all $4^N$ Pauli strings. A finite-grid maximum is not a critical-point
+estimator, a fault-tolerant resource-cost certificate, or evidence of classical
+hardness or quantum advantage.
 
 ```python
 from scpn_quantum_control.analysis.magic_nonstabilizerness import (
@@ -516,11 +533,14 @@ the dense exact ground state and Stabilizer Renyi entropy at one coupling.
 forwards the dense eigensolver budget to every coupling point and returns a
 `MagicScanResult` with the scanned values and peak location.
 
-### `quantum_phi` — Integrated Information (IIT)
+### `quantum_phi` — Minimum Bipartite Quantum Mutual Information
 
-Quantum integrated information from the Kuramoto-XY ground-state density
-matrix. `compute_quantum_phi(K, omega)` computes the minimum mutual information
-over bipartitions and reports the minimum-information partition.
+`compute_quantum_phi(K, omega)` is a compatibility-named routine that computes
+quantum mutual information over all non-trivial bipartitions of the exact
+Kuramoto-XY ground state. It reports the minimum and maximum QMI plus the
+minimum-information partition. It does **not** compute Integrated Information
+Theory Φ: there is no causal model, intervention repertoire, cause-effect
+structure, or IIT composition/exclusion calculation.
 
 ```python
 from scpn_quantum_control.analysis.quantum_phi import (
@@ -530,10 +550,15 @@ from scpn_quantum_control.analysis.quantum_phi import (
 ```
 
 `IntegratedInformationPhi` is the dashboard-facing wrapper. When supplied with
-`coupling_matrix` and `natural_frequencies`, it routes to `compute_quantum_phi`
-and returns `phi`, `phi_max`, entropy, and partition metadata. Counts-only
-entropy remains available only via `allow_entropy_proxy=True` and is labelled
-`entropy_proxy`, never `phi`.
+`coupling_matrix` and `natural_frequencies`, it fails closed unless
+`allow_mutual_information_proxy=True` is explicit. The diagnostic returns
+`minimum_bipartite_mutual_information`, sets `phi_available = 0.0` and
+`is_integrated_information = 0.0`, and never returns a `phi` key. Counts-only
+entropy similarly requires `allow_entropy_proxy=True`.
+
+This route is tier D research-only and authorises no consciousness, sentience,
+cognition, or clinical interpretation. See the
+[Theory-Hook Promotion Matrix](theory_hook_promotion.md).
 
 ### `shadow_tomography` — Classical Shadow Estimation
 
@@ -549,11 +574,17 @@ from scpn_quantum_control.analysis.shadow_tomography import (
 
 ### `quantum_speed_limit` — Bounded State-Evolution Speed Limits
 
-`compute_qsl(...)` evaluates Mandelstam-Tamm and Margolus-Levitin bounds from
+`compute_qsl(...)` evaluates a Mandelstam–Tamm target-overlap bound and a legacy
+Margolus–Levitin orthogonalization-time reference from
 the frequency-encoded product state and records the first simulated crossing
 of a visibility-aware local-phase-order threshold. The threshold time is a
 finite closed-system diagnostic, not a measured synchronisation time, critical
 exponent, or BKT certificate.
+
+When the simulated target is not orthogonal to the initial state, `tau_ML` is
+not an arbitrary-fidelity lower bound for that target. The compatibility field
+remains explicitly labelled until an extended Margolus–Levitin contract is
+implemented and tested.
 
 ```python
 from scpn_quantum_control.analysis.quantum_speed_limit import (
@@ -764,8 +795,12 @@ Network topology metrics (clustering, betweenness, modularity) of the $K_{nm}$ m
 
 ### `koopman` — Koopman Linearisation
 
-Koopman operator for the nonlinear Kuramoto dynamics — the BQP argument for quantum
-advantage.
+Finite, reference-point-dependent Koopman-style closure over phase identities
+and pairwise sine/cosine observables. Higher-order terms are truncated, so the
+matrix and its spectrum are classical local-baseline diagnostics, not an exact
+finite invariant subspace or full nonlinear dynamics. The Hermitian projection
+`i(L-L†)/2` discards the symmetric part of `L`; it does not establish dynamical
+equivalence, BQP-completeness, or quantum advantage.
 
 `build_koopman_generator_rust()` now routes to the optional
 `scpn_quantum_engine.koopman_generator` kernel when that export is present and
@@ -775,7 +810,13 @@ fallback, served the dense generator.
 
 ### `hamiltonian_learning` — Recover $K_{nm}$ from Measurements
 
-Learn the coupling matrix from measurement data using compressed sensing.
+`learn_hamiltonian(C_measured, omega, K_init=None, maxiter=100)` performs a
+small dense fit of a symmetric non-negative coupling matrix to supplied exact
+ground-state `XX+YY` correlators. It uses COBYLA, not compressed sensing.
+
+The input name preserves compatibility but does not establish measurement
+provenance. A low in-sample residual is not an identifiability, uncertainty,
+held-out, noise-robustness, or experimental-recovery certificate.
 
 ### `hamiltonian_self_consistency` — Self-Consistency Loop
 

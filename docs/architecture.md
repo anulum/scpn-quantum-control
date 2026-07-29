@@ -464,7 +464,7 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 688 (excluding package initialisers) |
+| Python modules | 695 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 81 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% line gate; branch telemetry required and currently observational) |
@@ -485,7 +485,7 @@ preparation and `bridge/` for Hamiltonian access.
 graph TD
     bridge["bridge/ (15)\nK_nm → quantum objects"]
     phase["phase/ (116)\nTime evolution"]
-    analysis["analysis/ (66)\nSync probes"]
+    analysis["analysis/ (67)\nSync probes"]
     control["control/ (14)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
     identity["identity/ (6)\nIdentity analysis"]
@@ -493,7 +493,7 @@ graph TD
     mitigation["mitigation/ (13)\nError mitigation"]
     qec["qec/ (13)\nError correction"]
     gauge["gauge/ (6)\nGauge theory"]
-    apps["applications/ (16)\nBenchmarks"]
+    apps["applications/ (17)\nBenchmarks"]
     crypto["crypto/ (9)\nQKD + PQC"]
     benchmarks["benchmarks/ (36)\nPerformance"]
     ssgf["ssgf/ (4)\nGeometry"]
@@ -628,7 +628,7 @@ bridge/                                    ← Foundation: K_nm → quantum obje
 ├── sc_to_quantum.py                         Angle/probability conversion
 └── spn_to_qcircuit.py                       SPN token → circuit amplitude
 
-analysis/                                  ← 66 modules: probes of the sync transition
+analysis/                                  ← 67 modules: probes of the sync transition
 ├── sync_witness.py                          ★ Synchronization witnesses (Gem 1)
 ├── sync_entanglement_witness.py             ★ R as entanglement witness (Gem 12)
 ├── quantum_persistent_homology.py           ★ Full PH pipeline from counts (Gem 5)
@@ -660,14 +660,14 @@ analysis/                                  ← 66 modules: probes of the sync tr
 ├── otoc.py                                    Core OTOC computation
 ├── otoc_sync_probe.py                       ★ OTOC as sync probe (Gem 9)
 ├── quantum_speed_limit.py                   Bounded product-state QSL diagnostics; no BKT claim
-├── quantum_phi.py                             IIT Φ from density matrix
+├── quantum_phi.py                             Legacy-named minimum bipartite QMI
 ├── shadow_tomography.py                       Classical shadow estimation
 ├── bkt_analysis.py                            Core BKT diagnostics
 ├── bkt_universals.py                          10 candidate expressions for p_H1
 ├── p_h1_derivation.py                         p_H1 derivation audit / open question
 ├── phase_diagram.py                           K_c vs T_eff boundary
 ├── graph_topology_scan.py                     Coupling graph metrics
-├── koopman.py                                 Koopman linearisation (BQP argument)
+├── koopman.py                                 Finite local Koopman-style closure
 ├── monte_carlo_xy.py                          Classical XY MC (Rust-accelerated)
 ├── vortex_binding.py                          Kosterlitz RG flow
 ├── enaqt.py                                   Site-basis Lindblad transport scan

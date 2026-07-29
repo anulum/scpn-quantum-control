@@ -122,17 +122,17 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.0.0 |
 | Public API exports | 841 |
-| Python source modules | 694 |
-| Public Python classes | 1355 |
+| Python source modules | 695 |
+| Public Python classes | 1361 |
 | Domain package families | 38 |
-| API documentation pages | 4 |
+| API documentation pages | 5 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
 | Notebook files | 109 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1151 |
-| Public documentation pages | 355 |
+| Python test files | 1152 |
+| Public documentation pages | 357 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.

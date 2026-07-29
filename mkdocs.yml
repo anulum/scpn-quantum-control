@@ -79,6 +79,8 @@ nav:
       - ENAQT Optimal-Noise Scan: enaqt_optimal_noise.md
       - Entangled Initial-State Coherence Study: entanglement_initial_state_study.md
       - Adaptive FIM Feedback: adaptive_fim_feedback.md
+      - Theory-Hook Promotion Matrix: theory_hook_promotion.md
+      - Theory-Hook Promotion API: api/theory_hook_promotion.md
       - Differentiable Support Matrix: differentiable_support_matrix.md
       - Governed Route Matrix: governed_route_matrix.md
       - Differentiable Reviewer Evidence: differentiable_reviewer_evidence.md

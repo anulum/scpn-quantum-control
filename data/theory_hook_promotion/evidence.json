@@ -1,0 +1,293 @@
+{
+  "claim_boundary": "bounded local synthetic evidence only; not hardware validation, differentiable support, criticality certification, quantum advantage, consciousness evidence, clinical interpretation, or actuation authority",
+  "content_digest": "5aa16e504736d9079d478aaf932529c877d4b6ce7be825456bd9abcbb3626eaa",
+  "evidence": [
+    {
+      "checks": {
+        "finite_bounds": true,
+        "mt_not_above_simulated_time": true,
+        "two_qubit_fixture": true
+      },
+      "fixture": "two-qubit closed-system threshold evolution",
+      "hook_id": "quantum_speed_limit",
+      "metrics": {
+        "tau_actual": 0.05,
+        "tau_ml_legacy": 2.296987427405,
+        "tau_mt": 0.04998074083
+      },
+      "passed": true
+    },
+    {
+      "checks": {
+        "correlator_error_below_fixture_gate": true,
+        "non_negative_fit": true,
+        "symmetric_fit": true
+      },
+      "fixture": "two-qubit exact correlators initialized at the generating coupling",
+      "hook_id": "hamiltonian_learning",
+      "metrics": {
+        "correlator_error": 0.0,
+        "loss": 0.0,
+        "optimizer_evaluations": 5
+      },
+      "passed": true
+    },
+    {
+      "checks": {
+        "finite_entries": true,
+        "finite_four_by_four_closure": true,
+        "hermitian_projection": true
+      },
+      "fixture": "two-oscillator finite observable closure at the zero-phase reference",
+      "hook_id": "koopman_local_closure",
+      "metrics": {
+        "observable_dimension": 4,
+        "reference_phase": "zero"
+      },
+      "passed": true
+    },
+    {
+      "checks": {
+        "bell_qmi_is_two_bits": true,
+        "not_admitted_for_control": true,
+        "tier_d_research_only": true
+      },
+      "fixture": "two-qubit Bell-state bipartite mutual information",
+      "hook_id": "bipartite_mutual_information",
+      "metrics": {
+        "iit_phi": "not_computed",
+        "mutual_information_bits": 2.0
+      },
+      "passed": true
+    },
+    {
+      "checks": {
+        "finite_results": true,
+        "stabilizer_zero": true,
+        "t_state_positive": true
+      },
+      "fixture": "single-qubit computational stabilizer and T state",
+      "hook_id": "stabilizer_renyi_entropy",
+      "metrics": {
+        "stabilizer_sre_m2": -0.0,
+        "t_state_sre_m2": 0.415037499279
+      },
+      "passed": true
+    },
+    {
+      "checks": {
+        "magnetisation_sector_default": true,
+        "sff_bounded": true,
+        "sff_normalized_at_zero": true
+      },
+      "fixture": "four-qubit exact spectrum with magnetisation-sector level statistics",
+      "hook_id": "spectral_form_factor",
+      "metrics": {
+        "sector_dimension": 6,
+        "sff_at_zero": 1.0,
+        "time_points": 4
+      },
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "records": [
+    {
+      "admitted_for_control": false,
+      "admitted_for_publication_claim": false,
+      "allowed_claims": [
+        "computes finite-system Mandelstam-Tamm and legacy Margolus-Levitin diagnostics",
+        "may inform an offline optional lower-bound check after independent control validation"
+      ],
+      "differentiable": false,
+      "evidence_fixture": "two-qubit closed-system threshold evolution",
+      "forbidden_claims": [
+        "hardware validation or provider performance",
+        "differentiable or gradient support",
+        "quantum advantage or computational supremacy",
+        "operational actuation or safety authority",
+        "measured synchronization time or critical exponent",
+        "BKT certification"
+      ],
+      "hook_id": "quantum_speed_limit",
+      "module": "scpn_quantum_control.analysis.quantum_speed_limit",
+      "promotion_requirements": [
+        "define a control-objective contract that consumes the bound",
+        "validate arbitrary-fidelity bound semantics and numerical tolerance",
+        "add held-out controller comparisons before control admission"
+      ],
+      "references": [
+        "doi:10.1103/PhysRevLett.103.160502"
+      ],
+      "role": "optional_control_constraint",
+      "status": "bounded_candidate",
+      "tier": "B",
+      "title": "Quantum speed-limit threshold diagnostic"
+    },
+    {
+      "admitted_for_control": false,
+      "admitted_for_publication_claim": false,
+      "allowed_claims": [
+        "solves a small non-negative symmetric coupling fit on exact synthetic correlators",
+        "reports reconstruction loss and correlator residual for the fitted fixture"
+      ],
+      "differentiable": false,
+      "evidence_fixture": "two-qubit exact correlators with the generating coupling as initial point",
+      "forbidden_claims": [
+        "hardware validation or provider performance",
+        "differentiable or gradient support",
+        "quantum advantage or computational supremacy",
+        "operational actuation or safety authority",
+        "identifiable recovery from arbitrary measurements",
+        "noise-robust experimental learning"
+      ],
+      "hook_id": "hamiltonian_learning",
+      "module": "scpn_quantum_control.analysis.hamiltonian_learning",
+      "promotion_requirements": [
+        "add identifiability and uncertainty analysis",
+        "evaluate held-out noisy and misspecified synthetic systems",
+        "validate measured-data calibration without reusing fit data"
+      ],
+      "references": [
+        "doi:10.1103/PhysRevA.89.042314"
+      ],
+      "role": "synthetic_inverse_problem",
+      "status": "bounded_candidate",
+      "tier": "B",
+      "title": "Ground-state correlator inverse problem"
+    },
+    {
+      "admitted_for_control": false,
+      "admitted_for_publication_claim": false,
+      "allowed_claims": [
+        "constructs a finite local observable-space matrix for the documented basis",
+        "provides a classical local spectral baseline and Hermitian projection"
+      ],
+      "differentiable": false,
+      "evidence_fixture": "two-oscillator finite observable matrix and Hermitian projection",
+      "forbidden_claims": [
+        "hardware validation or provider performance",
+        "differentiable or gradient support",
+        "quantum advantage or computational supremacy",
+        "operational actuation or safety authority",
+        "exact finite Koopman invariant subspace",
+        "full nonlinear dynamics",
+        "BQP-completeness"
+      ],
+      "hook_id": "koopman_local_closure",
+      "module": "scpn_quantum_control.analysis.koopman",
+      "promotion_requirements": [
+        "quantify closure residual against nonlinear trajectories",
+        "compare held-out reference points and observable dictionaries",
+        "separate approximation error from eigensolver error"
+      ],
+      "references": [
+        "doi:10.1007/s00332-015-9258-5"
+      ],
+      "role": "classical_local_baseline",
+      "status": "diagnostic_only",
+      "tier": "B",
+      "title": "Finite local Koopman-style closure"
+    },
+    {
+      "admitted_for_control": false,
+      "admitted_for_publication_claim": false,
+      "allowed_claims": [
+        "computes bipartite von Neumann mutual information",
+        "retains a legacy quantum_phi field for serialization compatibility"
+      ],
+      "differentiable": false,
+      "evidence_fixture": "two-qubit Bell-state mutual information",
+      "forbidden_claims": [
+        "hardware validation or provider performance",
+        "differentiable or gradient support",
+        "quantum advantage or computational supremacy",
+        "operational actuation or safety authority",
+        "Integrated Information Theory Phi",
+        "consciousness, sentience, cognition, or clinical state",
+        "minimum mutual information as causal irreducibility"
+      ],
+      "hook_id": "bipartite_mutual_information",
+      "module": "scpn_quantum_control.analysis.quantum_phi",
+      "promotion_requirements": [
+        "implement an explicit causal model and intervention semantics",
+        "validate the chosen IIT formulation independently",
+        "rename or migrate all legacy phi fields before any promotion"
+      ],
+      "references": [
+        "doi:10.1371/journal.pcbi.1003588"
+      ],
+      "role": "mutual_information_diagnostic",
+      "status": "research_only",
+      "tier": "D",
+      "title": "Minimum bipartite quantum mutual information"
+    },
+    {
+      "admitted_for_control": false,
+      "admitted_for_publication_claim": false,
+      "allowed_claims": [
+        "computes the documented pure-state stabilizer Rényi-2 diagnostic",
+        "labels non-stabilizerness as a resource-theory observable"
+      ],
+      "differentiable": false,
+      "evidence_fixture": "single-qubit stabilizer and T-state contrast",
+      "forbidden_claims": [
+        "hardware validation or provider performance",
+        "differentiable or gradient support",
+        "quantum advantage or computational supremacy",
+        "operational actuation or safety authority",
+        "critical-point estimator",
+        "fault-tolerant resource cost",
+        "classical hardness"
+      ],
+      "hook_id": "stabilizer_renyi_entropy",
+      "module": "scpn_quantum_control.analysis.magic_nonstabilizerness",
+      "promotion_requirements": [
+        "add finite-size preregistration before criticality studies",
+        "add uncertainty-aware measurement protocol for non-exact inputs",
+        "validate resource monotone conventions across supported states"
+      ],
+      "references": [
+        "doi:10.1103/PhysRevLett.128.050402"
+      ],
+      "role": "resource_theory_diagnostic",
+      "status": "diagnostic_only",
+      "tier": "B",
+      "title": "Stabilizer Rényi entropy resource diagnostic"
+    },
+    {
+      "admitted_for_control": false,
+      "admitted_for_publication_claim": false,
+      "allowed_claims": [
+        "computes normalized finite-spectrum form factors",
+        "reports symmetry-resolved adjacent-gap-ratio diagnostics"
+      ],
+      "differentiable": false,
+      "evidence_fixture": "four-qubit exact spectrum with magnetisation-sector spacing ratio",
+      "forbidden_claims": [
+        "hardware validation or provider performance",
+        "differentiable or gradient support",
+        "quantum advantage or computational supremacy",
+        "operational actuation or safety authority",
+        "quantum-chaos certification",
+        "Poisson-to-RMT transition",
+        "BKT-chaos coincidence"
+      ],
+      "hook_id": "spectral_form_factor",
+      "module": "scpn_quantum_control.analysis.spectral_form_factor",
+      "promotion_requirements": [
+        "preregister ensemble, unfolding, symmetry, and finite-size protocol",
+        "establish uncertainty and null distributions",
+        "replicate scaling on held-out model families"
+      ],
+      "references": [
+        "doi:10.1103/PhysRevLett.110.084101"
+      ],
+      "role": "spectral_diagnostic",
+      "status": "diagnostic_only",
+      "tier": "B",
+      "title": "Finite-size spectral diagnostics"
+    }
+  ],
+  "schema": "scpn.theory-hook-promotion.v1"
+}

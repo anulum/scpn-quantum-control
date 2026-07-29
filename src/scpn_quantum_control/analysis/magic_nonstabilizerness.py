@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Magic Nonstabilizerness
-"""Magic (non-stabilizerness) at the synchronization transition.
+"""Exact small-system stabilizer Rényi-2 diagnostics.
 
 Stabilizer Rényi Entropy M_n measures how far a state is from the
 set of stabilizer states (classically simulable via Clifford circuits).
@@ -14,14 +14,10 @@ M_2(|ψ⟩) = -log₂(Σ_P ⟨ψ|P|ψ⟩⁴ / 2^n) - n
 
 where the sum is over all n-qubit Pauli strings P (4^n terms).
 
-At a QPT: magic typically peaks at criticality (the critical state
-is maximally non-classical). For BKT (infinite-order): the scaling
-of magic is unknown — the infinite-order character may produce
-different behaviour from the power-law peaks seen at 2nd-order QPTs.
-
-Prior art: Tarabunga et al. 2024 (magic at QPTs in XXZ chain, but
-Ising-type transitions, not BKT). Hoshino et al. 2025 (SRE + CFT
-for c=1/2 Ising). Nobody for c=1 BKT or Kuramoto.
+The implementation enumerates all ``4**n`` Pauli strings and is therefore a
+bounded exact diagnostic. A maximum in a finite coupling scan is not, by
+itself, a critical-point estimator, a fault-tolerant resource-cost certificate,
+or evidence of classical hardness or quantum advantage.
 """
 
 from __future__ import annotations
@@ -39,7 +35,7 @@ from ..dense_budget import require_dense_allocation
 
 @dataclass
 class MagicResult:
-    """Magic / non-stabilizerness result."""
+    """Single-coupling pure-state stabilizer Rényi-2 result."""
 
     K_base: float
     sre_m2: float  # Stabilizer Rényi Entropy M_2
@@ -49,7 +45,11 @@ class MagicResult:
 
 @dataclass
 class MagicScanResult:
-    """Magic scan across coupling strength."""
+    """Finite coupling scan of stabilizer Rényi-2 values.
+
+    ``peak_K`` is the maximum on the supplied grid only; it is not a certified
+    phase-transition location.
+    """
 
     k_values: NDArray[np.float64]
     sre_m2: NDArray[np.float64]  # M_2 at each K
@@ -90,7 +90,26 @@ def magic_at_coupling(
     *,
     max_dense_gib: float | None = None,
 ) -> MagicResult:
-    """Compute SRE M_2 of ground state at given coupling."""
+    """Compute exact ground-state SRE ``M_2`` at one coupling.
+
+    Parameters
+    ----------
+    omega, K_topology, K_base
+        Frequency vector, topology matrix, and scalar coupling multiplier.
+    max_dense_gib
+        Optional fail-closed budget for dense eigensolver allocations.
+
+    Returns
+    -------
+    MagicResult
+        Exact small-system SRE value and raw Pauli fourth-moment sum.
+
+    Notes
+    -----
+    Runtime grows exponentially through both dense diagonalization and Pauli
+    enumeration. The result is a resource diagnostic, not a criticality or
+    advantage certificate.
+    """
     n = len(omega)
     K = K_base * K_topology
     require_dense_allocation(
@@ -123,9 +142,10 @@ def magic_vs_coupling(
     *,
     max_dense_gib: float | None = None,
 ) -> MagicScanResult:
-    """Scan magic across coupling to find non-stabilizerness peak.
+    """Scan exact small-system non-stabilizerness on a finite coupling grid.
 
-    At K_c: magic should peak (maximally non-classical critical state).
+    ``peak_K`` reports only the grid argmax. Interpreting it as a critical point
+    requires a separate preregistered finite-size and uncertainty study.
     """
     if k_range is None:
         k_range = np.linspace(0.5, 5.0, 15, dtype=np.float64)

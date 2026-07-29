@@ -5,21 +5,18 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Spectral Form Factor
-"""Spectral Form Factor (SFF) at the synchronization transition.
+"""Finite-size spectral form-factor and adjacent-gap diagnostics.
 
-The SFF K(t) = |Tr(e^{-iHt})|² / Z² is the diagnostic fingerprint
-of quantum chaos:
+The normalized SFF ``K(t) = |Tr(exp(-iHt))|² / d²`` and adjacent-gap ratio
+are commonly used spectral diagnostics. Their interpretation depends on
+symmetry resolution, ensemble/energy-window choices, unfolding conventions,
+and finite-size scaling.
 - Integrable systems (Poisson): K(t) ≈ 1 (no dip)
 - Chaotic systems (RMT): dip → ramp → plateau structure
 
-At the BKT synchronization critical point K_c:
-- Does the SFF transition from Poisson to RMT?
-- Is the synchronization transition also a chaos transition?
-- The BKT essential singularity may produce anomalous SFF behaviour
-
-Prior art: Joshi et al. PRL 2025 (SFF on hardware for chaos/MBL).
-Andersen et al. Nature 2025 (BKT on hardware, no SFF).
-SFF + synchronization: never combined.
+This module reports exact finite-system values. It does not certify quantum
+chaos, a Poisson-to-RMT transition, a BKT transition, or a coincidence between
+chaos and synchronization.
 
 The level spacing ratio r̄ (mean of min(δ_n, δ_{n+1})/max(...))
 distinguishes:
@@ -46,7 +43,11 @@ LevelSpacingBasis = Literal["magnetisation", "parity", "full"]
 
 @dataclass
 class SFFResult:
-    """SFF computation at a single coupling strength."""
+    """Finite-spectrum SFF and level-spacing result at one coupling.
+
+    The selected symmetry basis and sector metadata are part of the result so
+    callers cannot silently present a mixed-sector ratio as chaos evidence.
+    """
 
     K_base: float
     times: NDArray[np.float64]
@@ -61,7 +62,11 @@ class SFFResult:
 
 @dataclass
 class SFFScanResult:
-    """SFF scan across coupling strength."""
+    """Finite-grid spectral diagnostic scan.
+
+    ``chaos_onset_K`` is a heuristic first threshold crossing on the supplied
+    grid, not a statistical or thermodynamic-limit certification.
+    """
 
     k_values: NDArray[np.float64]
     level_spacing_ratios: NDArray[np.float64]  # r̄ at each K
@@ -132,11 +137,32 @@ def compute_sff(
     parity: int | None = None,
     max_dense_gib: float | None = None,
 ) -> SFFResult:
-    """Compute the Spectral Form Factor K(t) from exact eigenvalues.
+    """Compute normalized SFF values from exact finite-system eigenvalues.
 
+    Parameters
+    ----------
+    K, omega
+        Coupling matrix and natural-frequency vector.
+    t_max, n_times
+        Inclusive time horizon and number of grid points.
+    level_spacing_basis
+        ``"magnetisation"`` (default), ``"parity"``, or ``"full"``.
+    magnetisation, parity
+        Optional explicit sector selectors for their corresponding basis.
+    max_dense_gib
+        Optional fail-closed dense eigensolver budget.
+
+    Returns
+    -------
+    SFFResult
+        Full-spectrum SFF plus selected-sector and full-spectrum gap ratios.
+
+    Notes
+    -----
     The SFF itself uses the full finite-size spectrum. The reported
     level-spacing ratio defaults to a U(1) magnetisation sector because
-    mixing independent symmetry sectors biases chaos diagnostics.
+    mixing independent symmetry sectors biases spectral diagnostics. The
+    output is not a quantum-chaos certificate.
     """
     n = len(omega)
     require_dense_eigensolver_workspace(
@@ -196,9 +222,11 @@ def sff_vs_coupling(
     parity: int | None = None,
     max_dense_gib: float | None = None,
 ) -> SFFScanResult:
-    """Scan SFF diagnostics across coupling strength.
+    """Scan finite-size SFF diagnostics across a coupling grid.
 
-    At K_c, look for r̄ transition from Poisson (0.386) toward GOE (0.530).
+    The compatibility field ``chaos_onset_K`` uses a fixed adjacent-gap-ratio
+    threshold. It is a heuristic grid crossing only and does not establish a
+    Poisson-to-GOE transition or critical coupling.
     """
     if k_range is None:
         k_range = np.linspace(0.5, 5.0, 15, dtype=np.float64)
