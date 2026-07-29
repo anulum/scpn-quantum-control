@@ -24,6 +24,15 @@ from scpn_quantum_control.benchmark_harness.synchronisation import (
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO_ROOT / "data" / "synchronisation_benchmarks"
 DOC_PATH = REPO_ROOT / "docs" / "synchronisation_benchmark_suite.md"
+_MARKDOWN_SPDX_HEADER = (
+    "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
+    "<!-- Commercial license available -->",
+    "<!-- (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->",
+    "<!-- (c) Code 2020-2026 Miroslav Sotek. All rights reserved. -->",
+    "<!-- ORCID: 0009-0009-3560-0851 -->",
+    "<!-- Contact: www.anulum.li | protoscience@anulum.li -->",
+    "<!-- scpn-quantum-control -- synchronisation benchmark documentation -->",
+)
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> str:
@@ -39,6 +48,8 @@ def markdown(payload: dict[str, Any]) -> str:
     """Render a compact public registry document."""
 
     lines = [
+        *_MARKDOWN_SPDX_HEADER,
+        "",
         "# Standardised Synchronisation Benchmark Suite",
         "",
         "This suite defines canonical coupled-oscillator benchmark instances and a stable result schema. It is a contract for future backends, not a new hardware claim.",

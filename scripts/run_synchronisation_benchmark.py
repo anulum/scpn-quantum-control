@@ -28,6 +28,29 @@ from scpn_quantum_control.benchmark_harness.synchronisation_runner import (
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = REPO_ROOT / "data" / "synchronisation_benchmarks"
 DOC_PATH = REPO_ROOT / "docs" / "synchronisation_benchmark_kuramoto_ring_n4.md"
+_MARKDOWN_SPDX_HEADER = (
+    "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
+    "<!-- Commercial license available -->",
+    "<!-- (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved. -->",
+    "<!-- (c) Code 2020-2026 Miroslav Sotek. All rights reserved. -->",
+    "<!-- ORCID: 0009-0009-3560-0851 -->",
+    "<!-- Contact: www.anulum.li | protoscience@anulum.li -->",
+    "<!-- scpn-quantum-control -- synchronisation benchmark documentation -->",
+)
+_BENCHMARK_TITLES = {
+    RING_N4_BENCHMARK_ID: "Kuramoto Ring n=4 Synchronisation Benchmark",
+    CHAIN_N8_BENCHMARK_ID: "Kuramoto Chain n=8 Synchronisation Benchmark",
+}
+_BENCHMARK_SUMMARIES = {
+    RING_N4_BENCHMARK_ID: (
+        "This no-QPU artefact records schema-compatible reference rows for the "
+        "canonical four-node Kuramoto-XY ring benchmark."
+    ),
+    CHAIN_N8_BENCHMARK_ID: (
+        "This no-QPU artefact records schema-compatible reference rows for the "
+        "canonical eight-node Kuramoto chain with decaying coupling."
+    ),
+}
 
 
 def current_commit() -> str:
@@ -55,10 +78,18 @@ def write_json(path: Path, payload: dict[str, Any]) -> str:
 def markdown(payload: dict[str, Any]) -> str:
     """Render a public benchmark result summary."""
 
+    benchmark_id = str(payload["benchmark_id"])
+    title = _BENCHMARK_TITLES.get(benchmark_id, "Synchronisation Benchmark")
+    summary = _BENCHMARK_SUMMARIES.get(
+        benchmark_id,
+        "This no-QPU artefact records schema-compatible synchronisation reference rows.",
+    )
     lines = [
-        "# Kuramoto Ring n=4 Synchronisation Benchmark",
+        *_MARKDOWN_SPDX_HEADER,
         "",
-        "This no-QPU artefact records schema-compatible reference rows for the canonical four-node Kuramoto-XY ring benchmark.",
+        f"# {title}",
+        "",
+        summary,
         "",
         f"Benchmark ID: `{payload['benchmark_id']}`",
         "",

@@ -6,9 +6,9 @@
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
 <!-- scpn-quantum-control -- synchronisation benchmark documentation -->
 
-# Kuramoto Ring n=4 Synchronisation Benchmark
+# Kuramoto Chain n=8 Synchronisation Benchmark
 
-This no-QPU artefact records schema-compatible reference rows for the canonical four-node Kuramoto-XY ring benchmark.
+This no-QPU artefact records schema-compatible reference rows for the canonical eight-node Kuramoto chain with decaying coupling.
 
 Benchmark ID: `kuramoto_chain_n8_decay_omega`
 

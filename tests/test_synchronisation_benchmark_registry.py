@@ -128,3 +128,27 @@ def test_kuramoto_chain_n8_references_are_finite_and_bounded() -> None:
     assert 0.0 <= values["order_parameter_t1"] <= 1.0
     assert abs(values["state_norm_t1"] - 1.0) <= 1e-10
     assert math.isfinite(values["energy_expectation_t1"])
+
+
+def test_markdown_generators_preserve_headers_and_instance_identity() -> None:
+    """Generated benchmark docs retain licence custody and accurate headings."""
+    from scpn_quantum_control.benchmark_harness.synchronisation_runner import (
+        run_kuramoto_chain_n8_decay_omega,
+        run_kuramoto_ring_n4_linear_omega,
+    )
+    from scripts import export_synchronisation_benchmark_registry as registry_export
+    from scripts import run_synchronisation_benchmark as benchmark_export
+
+    registry_markdown = registry_export.markdown(synchronisation_benchmark_registry_payload())
+    ring_markdown = benchmark_export.markdown(
+        run_kuramoto_ring_n4_linear_omega(command="test", commit="abc123")
+    )
+    chain_markdown = benchmark_export.markdown(
+        run_kuramoto_chain_n8_decay_omega(command="test", commit="abc123")
+    )
+
+    for rendered in (registry_markdown, ring_markdown, chain_markdown):
+        assert rendered.startswith("<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->\n")
+        assert "<!-- Contact: www.anulum.li | protoscience@anulum.li -->" in rendered
+    assert "# Kuramoto Ring n=4 Synchronisation Benchmark" in ring_markdown
+    assert "# Kuramoto Chain n=8 Synchronisation Benchmark" in chain_markdown
