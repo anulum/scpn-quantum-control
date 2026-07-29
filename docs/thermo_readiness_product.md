@@ -61,6 +61,45 @@ assert probe.row_count >= 3
 assert probe.thermodynamic_peak_claim_allowed is False
 ```
 
+## Public API contracts
+
+### Discovery and inventory
+
+| API | Contract |
+|---|---|
+| `verify_ambient_claim_boundary()` | Validate the ambient readiness claim boundary and reject missing honesty clauses. |
+| `list_readiness_capability_ids()` | Return readiness capability identifiers in stable catalogue order. |
+| `list_fep_module_ids()` | Return the bounded FEP research-only inventory identifiers. |
+| `get_readiness_capability(capability_id)` | Resolve one capability and reject blank or unknown identifiers. |
+| `get_fep_inventory_row(module_id)` | Resolve one FEP row and reject blank or unknown identifiers. |
+| `iter_readiness_capabilities(kind=...)` | Return all capabilities or an immutable kind-filtered view. |
+| `iter_fep_inventory(status=...)` | Return all FEP rows or a status-filtered view. |
+
+### Eligibility and materialisation
+
+`decide_readiness_path()` is the required fail-closed decision point. It binds
+the ambient claim boundary and refuses thermodynamic peak claims, hardware
+submission, unsupported capabilities, and FEP product promotion. A refused
+decision carries explicit blockers.
+
+`materialise_k_sweep_probe()` accepts only an allowed `k_sweep_protocol`
+decision and returns a no-submit evidence probe. `materialise_demo_k_sweep_probe()`
+uses the deterministic local fixture. `materialise_quantum_thermo_payload_probe()`
+validates the ambient payload and preserves the same non-promotion boundary.
+
+### Registry, surfaces, and provenance
+
+| API | Contract |
+|---|---|
+| `map_thermo_readiness_public_surfaces()` | Emit deterministic public-surface descriptors and roles. |
+| `build_thermo_readiness_product_registry()` | Build the schema-tagged capability/FEP catalogue and policy payload. |
+| `assert_thermo_readiness_product_integrity(payload=None)` | Reject missing, duplicate, blank, count-drifted, or invent-green registry state. |
+| `compute_k_sweep_request_digest(...)` | Hash the normalised capability and sweep request for reproducible provenance. |
+
+The data records expose `to_dict()` JSON-ready payloads and validate their
+required identifiers, status/kind enums, blockers, counts, no-submit flags,
+and bounded claim text at construction time.
+
 ## Residuals (honest)
 
 - **S100.3** — optional future FEP sync-control hook design only (no

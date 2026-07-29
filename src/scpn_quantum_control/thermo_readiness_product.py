@@ -115,6 +115,7 @@ class ReadinessCapabilityRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     capability_id: str
@@ -199,6 +200,7 @@ class FepInventoryRow:
         Must remain False until owner-approved promotion.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     module_id: str
@@ -263,6 +265,7 @@ class PathEligibilityDecision:
         Non-empty when refused.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     outcome: PathDecisionOutcome
@@ -327,6 +330,7 @@ class MaterialisedKSweepProbe:
         Demo fixture label.
     claim_boundary
         Product claim boundary.
+
     """
 
     capability_id: str
@@ -525,6 +529,7 @@ def verify_ambient_claim_boundary() -> str:
     ------
     ValueError
         If ambient boundary is blank or missing required honesty fragments.
+
     """
     boundary = AMBIENT_CLAIM_BOUNDARY
     if not boundary or not str(boundary).strip():
@@ -544,6 +549,7 @@ def list_readiness_capability_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Stable capability ids.
+
     """
     return tuple(row.capability_id for row in _CAPABILITIES)
 
@@ -555,6 +561,7 @@ def list_fep_module_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Stable FEP module ids.
+
     """
     return tuple(row.module_id for row in _FEP_INVENTORY)
 
@@ -576,6 +583,7 @@ def get_readiness_capability(capability_id: str) -> ReadinessCapabilityRow:
     ------
     ValueError
         If blank or unknown.
+
     """
     if not capability_id or not str(capability_id).strip():
         raise ValueError("capability_id must be non-empty")
@@ -603,6 +611,7 @@ def get_fep_inventory_row(module_id: str) -> FepInventoryRow:
     ------
     ValueError
         If blank or unknown.
+
     """
     if not module_id or not str(module_id).strip():
         raise ValueError("module_id must be non-empty")
@@ -628,6 +637,7 @@ def iter_readiness_capabilities(
     -------
     tuple[ReadinessCapabilityRow, ...]
         Matching rows.
+
     """
     rows: Sequence[ReadinessCapabilityRow] = _CAPABILITIES
     if kind is not None:
@@ -650,6 +660,7 @@ def iter_fep_inventory(
     -------
     tuple[FepInventoryRow, ...]
         Matching rows.
+
     """
     rows: Sequence[FepInventoryRow] = _FEP_INVENTORY
     if status is not None:
@@ -681,6 +692,7 @@ def decide_readiness_path(
     -------
     PathEligibilityDecision
         Allowed or refused with blockers.
+
     """
     row = get_readiness_capability(capability_id)
     # S100.0: ambient boundary must remain honest before any allowed path.
@@ -776,6 +788,7 @@ def materialise_k_sweep_probe(
     ------
     ValueError
         If path refused, wrong capability, or ambient honesty broken.
+
     """
     decision = decide_readiness_path(
         capability_id,
@@ -817,6 +830,7 @@ def materialise_demo_k_sweep_probe() -> MaterialisedKSweepProbe:
     -------
     MaterialisedKSweepProbe
         Default demo probe over ambient :func:`run_k_sweep_protocol`.
+
     """
     return materialise_k_sweep_probe("k_sweep_protocol")
 
@@ -833,6 +847,7 @@ def materialise_quantum_thermo_payload_probe() -> dict[str, object]:
     ------
     ValueError
         If ambient invent-green flags or boundary honesty fail.
+
     """
     ambient_boundary = verify_ambient_claim_boundary()
     raw = quantum_thermo_payload()
@@ -868,6 +883,7 @@ def map_thermo_readiness_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Surface descriptors with module paths and roles.
+
     """
     return (
         {
@@ -904,6 +920,7 @@ def build_thermo_readiness_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema v1 registry with capabilities, FEP inventory, and policy flags.
+
     """
     ambient_boundary = verify_ambient_claim_boundary()
     capabilities = [row.to_dict() for row in _CAPABILITIES]
@@ -950,6 +967,7 @@ def assert_thermo_readiness_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-green policies appear.
+
     """
     registry = dict(payload) if payload is not None else build_thermo_readiness_product_registry()
     capabilities = registry.get("capabilities")
@@ -1069,6 +1087,7 @@ def compute_k_sweep_request_digest(
     ------
     ValueError
         If inputs are empty/invalid.
+
     """
     if not capability_id or not str(capability_id).strip():
         raise ValueError("capability_id must be non-empty")

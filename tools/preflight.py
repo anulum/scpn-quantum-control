@@ -48,6 +48,9 @@ if TYPE_CHECKING:
     from tools import program_ad_array_indexing_quality_gates as _array_indexing_quality_gates
     from tools import program_ad_quality_gates as _program_ad_quality_gates
     from tools import stable_core_product_quality_gates as _stable_core_product_quality_gates
+    from tools import (
+        thermo_readiness_product_quality_gates as _thermo_readiness_product_quality_gates,
+    )
 else:
     _repo_root = str(Path(__file__).resolve().parents[1])
     if _repo_root not in sys.path:
@@ -58,6 +61,9 @@ else:
     _array_indexing_quality_gates = import_module("tools.program_ad_array_indexing_quality_gates")
     _program_ad_quality_gates = import_module("tools.program_ad_quality_gates")
     _stable_core_product_quality_gates = import_module("tools.stable_core_product_quality_gates")
+    _thermo_readiness_product_quality_gates = import_module(
+        "tools.thermo_readiness_product_quality_gates"
+    )
 
 ROOT = Path(__file__).resolve().parent.parent
 _PY = sys.executable
@@ -365,6 +371,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_differentiable_quality_gates.build_static_quality_gates(_PY),
     *_array_indexing_quality_gates.build_static_quality_gates(_PY),
     *_stable_core_product_quality_gates.build_static_quality_gates(_PY),
+    *_thermo_readiness_product_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -712,6 +719,9 @@ DECISIVE_ADVANTAGE_COVERAGE_GATES = _decisive_advantage_quality_gates.build_cove
 DIFFERENTIABLE_QUALITY_COVERAGE_GATES = _differentiable_quality_gates.build_coverage_gates(_PY)
 PROGRAM_AD_ARRAY_INDEXING_COVERAGE_GATES = _array_indexing_quality_gates.build_coverage_gates(_PY)
 STABLE_CORE_PRODUCT_COVERAGE_GATES = _stable_core_product_quality_gates.build_coverage_gates(_PY)
+THERMO_READINESS_PRODUCT_COVERAGE_GATES = (
+    _thermo_readiness_product_quality_gates.build_coverage_gates(_PY)
+)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -966,6 +976,7 @@ def main() -> int:
             gates.extend(DIFFERENTIABLE_QUALITY_COVERAGE_GATES)
             gates.extend(PROGRAM_AD_ARRAY_INDEXING_COVERAGE_GATES)
             gates.extend(STABLE_CORE_PRODUCT_COVERAGE_GATES)
+            gates.extend(THERMO_READINESS_PRODUCT_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

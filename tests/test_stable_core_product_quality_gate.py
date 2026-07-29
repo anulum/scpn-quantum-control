@@ -69,7 +69,7 @@ def test_ci_runs_and_aggregates_the_stable_core_product_gate() -> None:
     """Keep CI's focused job and aggregate check wired to the exact cohort."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
     start = workflow.index("  stable-core-product-quality:")
-    end = workflow.index("\n\n  decisive-advantage-quality:", start)
+    end = workflow.index("\n\n  thermo-readiness-product-quality:", start)
     block = workflow[start:end]
 
     for path in quality_gates.STABLE_CORE_PRODUCT_QUALITY_RATCHET:

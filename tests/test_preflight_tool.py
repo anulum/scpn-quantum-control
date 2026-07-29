@@ -957,6 +957,8 @@ def test_main_uses_coverage_pytest_by_default(
         "program-ad-array-indexing exact coverage threshold",
         "stable-core-product focused coverage",
         "stable-core-product exact coverage threshold",
+        "thermo-readiness-product focused coverage",
+        "thermo-readiness-product exact coverage threshold",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",
