@@ -17,6 +17,7 @@ import pytest
 from scpn_quantum_control.forecasting.multimodal_forecaster import (
     MultimodalPointForecast,
     MultimodalRidgeForecaster,
+    _canonical_digest_array_bytes,
     evaluate_point_forecast,
     fit_multimodal_ridge_forecaster,
 )
@@ -26,6 +27,13 @@ from scpn_quantum_control.forecasting.synthetic_multimodal import (
     SyntheticMultimodalDataset,
     generate_synthetic_multimodal_dataset,
 )
+
+
+def test_model_digest_numeric_custody_ignores_subprecision_and_signed_zero() -> None:
+    """Digest bytes are stable across insignificant BLAS/runtime drift."""
+    left = np.asarray([0.12345678901231, -0.0, 1.0e-14], dtype=np.float64)
+    right = np.asarray([0.12345678901229, 0.0, -1.0e-14], dtype=np.float64)
+    assert _canonical_digest_array_bytes(left) == _canonical_digest_array_bytes(right)
 
 
 def _dataset(*, history_steps: int = 8) -> SyntheticMultimodalDataset:

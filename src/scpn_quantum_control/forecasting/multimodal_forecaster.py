@@ -19,6 +19,14 @@ from .multimodal_schema import MultimodalObservationBatch, SyntheticDomainTag
 
 FloatArray = NDArray[np.float64]
 BoolArray = NDArray[np.bool_]
+_NUMERIC_CUSTODY_DECIMALS = 12
+
+
+def _canonical_digest_array_bytes(values: FloatArray) -> bytes:
+    """Return platform-stable bytes at the BL-37 numeric-custody precision."""
+    rounded = np.round(np.asarray(values, dtype=np.float64), _NUMERIC_CUSTODY_DECIMALS)
+    canonical = np.where(rounded == 0.0, 0.0, rounded).astype("<f8", copy=False)
+    return canonical.tobytes(order="C")
 
 
 def _immutable(values: object, *, name: str, ndim: int) -> FloatArray:
@@ -274,10 +282,10 @@ def fit_multimodal_ridge_forecaster(
     digest = hashlib.sha256()
     digest.update(b"scpn.multimodal_ridge_forecaster.v1\0")
     digest.update(train.content_digest().encode("ascii"))
-    digest.update(np.float64(ridge).tobytes())
-    digest.update(feature_means.tobytes())
-    digest.update(feature_scales.tobytes())
-    digest.update(coefficients.tobytes())
+    digest.update(_canonical_digest_array_bytes(np.asarray([ridge], dtype=np.float64)))
+    digest.update(_canonical_digest_array_bytes(feature_means))
+    digest.update(_canonical_digest_array_bytes(feature_scales))
+    digest.update(_canonical_digest_array_bytes(coefficients))
     model_digest = digest.hexdigest()
     return MultimodalRidgeForecaster(
         feature_means=feature_means,

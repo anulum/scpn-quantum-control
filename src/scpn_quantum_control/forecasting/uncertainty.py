@@ -19,6 +19,14 @@ from .multimodal_forecaster import MultimodalPointForecast, MultimodalRidgeForec
 from .multimodal_schema import MultimodalObservationBatch, SyntheticDomainTag
 
 FloatArray = NDArray[np.float64]
+_NUMERIC_CUSTODY_DECIMALS = 12
+
+
+def _canonical_digest_float_bytes(value: float) -> bytes:
+    """Return platform-stable bytes at the BL-37 numeric-custody precision."""
+    rounded = round(float(value), _NUMERIC_CUSTODY_DECIMALS)
+    canonical = 0.0 if rounded == 0.0 else rounded
+    return np.asarray(canonical, dtype="<f8").tobytes()
 
 
 def _immutable(values: object, *, name: str) -> FloatArray:
@@ -197,8 +205,8 @@ def fit_residual_interval_calibrator(
     digest.update(b"scpn.residual_interval_calibrator.v1\0")
     digest.update(model.model_digest.encode("ascii"))
     digest.update(calibration.content_digest().encode("ascii"))
-    digest.update(np.float64(alpha).tobytes())
-    digest.update(np.float64(radius).tobytes())
+    digest.update(_canonical_digest_float_bytes(alpha))
+    digest.update(_canonical_digest_float_bytes(radius))
     return ResidualIntervalCalibrator(
         alpha=alpha,
         radius=radius,

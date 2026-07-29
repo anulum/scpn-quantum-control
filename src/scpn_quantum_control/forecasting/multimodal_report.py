@@ -15,7 +15,7 @@ import os
 import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Literal, cast
 
 from .multimodal_bridge import (
     ForecastActiveSensingBridge,
@@ -32,6 +32,19 @@ BL37_EVIDENCE_BOUNDARY = (
     "domain tags. No real EEG, clinical, grid, SCADA, plasma, plant, hardware, QPU, "
     "state-estimation, control-performance, safety, deployment, or publication claim."
 )
+_NUMERIC_CUSTODY_DECIMALS = 12
+
+
+def _canonicalise_evidence_numbers(value: object) -> object:
+    """Normalise sub-precision runtime drift before evidence serialisation."""
+    if isinstance(value, float):
+        rounded = round(value, _NUMERIC_CUSTODY_DECIMALS)
+        return 0.0 if rounded == 0.0 else rounded
+    if isinstance(value, dict):
+        return {str(key): _canonicalise_evidence_numbers(child) for key, child in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_canonicalise_evidence_numbers(child) for child in value]
+    return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -158,6 +171,7 @@ class MultimodalForecastingEvidence:
             ],
             "claim_boundary": self.claim_boundary,
         }
+        payload = cast(dict[str, object], _canonicalise_evidence_numbers(payload))
         canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
         payload["content_digest"] = hashlib.sha256(canonical).hexdigest()
         return payload

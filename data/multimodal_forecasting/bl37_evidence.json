@@ -1,25 +1,25 @@
 {
   "active_sensing": {
-    "calibrator_digest": "edac9b7581786b82eecfacd2e83f4d3146cf250129d485cd0218ede0c36ce02b",
+    "calibrator_digest": "0285e064eebb45fdb1e3d8f7762f55625fe77d1ca92f8c06b96c8ef55f36381d",
     "candidates": [
       {
         "channel": "forecast_uncertainty_observer",
         "noise_variance": 0.04,
         "observable_id": "forecast_phase_node_0",
-        "prior_variance": 0.009245381461846123,
-        "sensitivity": 1.4059132945558572
+        "prior_variance": 0.009245381462,
+        "sensitivity": 1.405913294556
       },
       {
         "channel": "forecast_uncertainty_observer",
         "noise_variance": 0.06,
         "observable_id": "forecast_phase_node_2",
-        "prior_variance": 0.009245381461846123,
-        "sensitivity": 1.4059132945558572
+        "prior_variance": 0.009245381462,
+        "sensitivity": 1.405913294556
       }
     ],
     "claim_boundary": "interval-width proxy candidates composed into the existing BL-68 no-submit plan; not adaptive hardware sensing, optimal sensor placement, or domain deployment",
     "hardware_execution": false,
-    "model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
+    "model_digest": "7f0a65ed947de4c36fc8f7e19c376a76c6d6235c1ccd70804c02830f9031b0ee",
     "plan": {
       "allowed": true,
       "blockers": [],
@@ -43,10 +43,10 @@
       "observer": {
         "channel": "forecast_uncertainty_observer",
         "claim_boundary": "synthetic local information-gain planning under BL-47 no-submit shot budgets; S3 evidence is analytic/simulator-only; no adaptive QPU loop, sensing advantage, or NV 20 T hardware-calibration claim",
-        "expected_information_gain_nats": 2.0428025435497816,
+        "expected_information_gain_nats": 2.04280254355,
         "hardware_execution": false,
         "observer_id": "bl68:ci_dry_run_only:forecast_phase_node_0",
-        "posterior_variance": 0.0001554422557963455,
+        "posterior_variance": 0.000155442256,
         "s3_protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
         "selected_observable_id": "forecast_phase_node_0",
         "shot_policy_id": "ci_dry_run_only",
@@ -93,14 +93,14 @@
           "family": "pulse",
           "metrics": {
             "hardware_submission": false,
-            "infidelity_bound": 36.000000000000014,
+            "infidelity_bound": 36.0,
             "max_points_per_pulse": 200,
             "n_qubits": 4,
             "pulse_count": 4,
             "total_time": 0.2
           },
           "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
-          "score": 36.06000000000002,
+          "score": 36.06,
           "status": "ok"
         },
         {
@@ -109,14 +109,14 @@
           "family": "pulse",
           "metrics": {
             "hardware_submission": false,
-            "infidelity_bound": 37.770899168515115,
+            "infidelity_bound": 37.770899168515,
             "max_points_per_pulse": 200,
             "n_qubits": 4,
             "pulse_count": 4,
             "total_time": 0.2
           },
           "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
-          "score": 37.83089916851512,
+          "score": 37.830899168515,
           "status": "ok"
         }
       ],
@@ -124,28 +124,28 @@
       "scores": [
         {
           "channel": "forecast_uncertainty_observer",
-          "expected_information_gain_nats": 2.0428025435497816,
+          "expected_information_gain_nats": 2.04280254355,
           "observable_id": "forecast_phase_node_0",
-          "posterior_variance": 0.0001554422557963455,
+          "posterior_variance": 0.000155442256,
           "shots": 128,
-          "signal_to_noise": 58.47791618489549
+          "signal_to_noise": 58.477916184895
         },
         {
           "channel": "forecast_uncertainty_observer",
-          "expected_information_gain_nats": 1.8442556613884173,
+          "expected_information_gain_nats": 1.844255661388,
           "observable_id": "forecast_phase_node_2",
-          "posterior_variance": 0.00023121964007581915,
+          "posterior_variance": 0.00023121964,
           "shots": 128,
           "signal_to_noise": 38.985277456597
         }
       ],
       "selected": {
         "channel": "forecast_uncertainty_observer",
-        "expected_information_gain_nats": 2.0428025435497816,
+        "expected_information_gain_nats": 2.04280254355,
         "observable_id": "forecast_phase_node_0",
-        "posterior_variance": 0.0001554422557963455,
+        "posterior_variance": 0.000155442256,
         "shots": 128,
-        "signal_to_noise": 58.47791618489549
+        "signal_to_noise": 58.477916184895
       }
     },
     "sample_id": "bl37-test-1396205077-0000"
@@ -156,63 +156,63 @@
       {
         "domain_tag": "synthetic",
         "lower_mse_than_persistence": false,
-        "persistence_wrapped_mse": 0.0008389168933457322,
+        "persistence_wrapped_mse": 0.000838916893,
         "samples": 6,
-        "wrapped_mae": 0.02452091295595577,
-        "wrapped_mse": 0.001012111182489447
+        "wrapped_mae": 0.024520912956,
+        "wrapped_mse": 0.001012111182
       },
       {
         "domain_tag": "grid_like_sim",
         "lower_mse_than_persistence": true,
-        "persistence_wrapped_mse": 0.0013055206863597463,
+        "persistence_wrapped_mse": 0.001305520686,
         "samples": 6,
-        "wrapped_mae": 0.024105951880178157,
-        "wrapped_mse": 0.0010834488832325495
+        "wrapped_mae": 0.02410595188,
+        "wrapped_mse": 0.001083448883
       },
       {
         "domain_tag": "eeg_like_sim",
         "lower_mse_than_persistence": true,
-        "persistence_wrapped_mse": 0.0018210111476283277,
+        "persistence_wrapped_mse": 0.001821011148,
         "samples": 6,
-        "wrapped_mae": 0.029058759385631763,
-        "wrapped_mse": 0.0016399834505185912
+        "wrapped_mae": 0.029058759386,
+        "wrapped_mse": 0.001639983451
       },
       {
         "domain_tag": "plasma_like_sim",
         "lower_mse_than_persistence": true,
-        "persistence_wrapped_mse": 0.0007728140357363367,
+        "persistence_wrapped_mse": 0.000772814036,
         "samples": 6,
-        "wrapped_mae": 0.018897898660809806,
-        "wrapped_mse": 0.0005907729457152544
+        "wrapped_mae": 0.018897898661,
+        "wrapped_mse": 0.000590772946
       }
     ],
-    "input_missing_fraction": 0.12642045454545459,
+    "input_missing_fraction": 0.126420454545,
     "lower_mse_than_persistence": true,
-    "model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
-    "persistence_wrapped_mse": 0.0011845656907675357,
+    "model_digest": "7f0a65ed947de4c36fc8f7e19c376a76c6d6235c1ccd70804c02830f9031b0ee",
+    "persistence_wrapped_mse": 0.001184565691,
     "samples": 24,
-    "wrapped_mae": 0.024145880720643872,
-    "wrapped_mse": 0.0010815791154889605
+    "wrapped_mae": 0.024145880721,
+    "wrapped_mse": 0.001081579115
   },
   "calibrator": {
     "alpha": 0.1,
     "calibration_batch_digest": "104ee69e33fa42b9797a9a2a7db1957392a3098b3640239511bd9f62f36d6097",
     "calibration_samples": 24,
-    "calibrator_digest": "edac9b7581786b82eecfacd2e83f4d3146cf250129d485cd0218ede0c36ce02b",
+    "calibrator_digest": "0285e064eebb45fdb1e3d8f7762f55625fe77d1ca92f8c06b96c8ef55f36381d",
     "claim_boundary": "sample-level split residual interval over independent synthetic trajectories; not sequential EnbPI, conditional coverage, domain transfer, or deployment evidence",
-    "model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
+    "model_digest": "7f0a65ed947de4c36fc8f7e19c376a76c6d6235c1ccd70804c02830f9031b0ee",
     "order_statistic_rank": 23,
-    "radius": 0.09615290667393328,
+    "radius": 0.096152906674,
     "target_coverage": 0.9
   },
   "claim_boundary": "Deterministic synthetic Kuramoto trajectory evidence under explicit simulation-only domain tags. No real EEG, clinical, grid, SCADA, plasma, plant, hardware, QPU, state-estimation, control-performance, safety, deployment, or publication claim.",
-  "content_digest": "f7728c62a7fae64afd6b17fa900d1c733cf5616f9b87cedd25b4b440b6550c02",
+  "content_digest": "21ef2604b837a2ebbf9c8df975212a53357fd51f2e47b9f4b30be69352a23917",
   "controller_initialisation": {
     "applied": false,
-    "calibrator_digest": "edac9b7581786b82eecfacd2e83f4d3146cf250129d485cd0218ede0c36ce02b",
+    "calibrator_digest": "0285e064eebb45fdb1e3d8f7762f55625fe77d1ca92f8c06b96c8ef55f36381d",
     "claim_boundary": "synthetic forecast-derived BL-33 initialisation proposal only; unapplied and not a safety, stability, closed-loop, realtime, or operational control decision",
-    "model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
-    "predicted_order_parameter": 0.1595854885802571,
+    "model_digest": "7f0a65ed947de4c36fc8f7e19c376a76c6d6235c1ccd70804c02830f9031b0ee",
+    "predicted_order_parameter": 0.15958548858,
     "proposal": {
       "gain_scale": 0.25,
       "parameters": [
@@ -240,7 +240,7 @@
       "event_channels": 2,
       "history_steps": 12,
       "horizon_steps": 4,
-      "missing_fraction": 0.12642045454545459,
+      "missing_fraction": 0.126420454545,
       "nodes": 4,
       "samples": 24,
       "source": "scpn.bl37.synthetic_kuramoto.v1",
@@ -259,7 +259,7 @@
       "event_channels": 2,
       "history_steps": 12,
       "horizon_steps": 4,
-      "missing_fraction": 0.1257102272727273,
+      "missing_fraction": 0.125710227273,
       "nodes": 4,
       "samples": 32,
       "source": "scpn.bl37.synthetic_kuramoto.v1",
@@ -276,7 +276,7 @@
       "event_channels": 2,
       "history_steps": 12,
       "horizon_steps": 4,
-      "missing_fraction": 0.11576704545454541,
+      "missing_fraction": 0.115767045455,
       "nodes": 4,
       "samples": 64,
       "source": "scpn.bl37.synthetic_kuramoto.v1",
@@ -284,7 +284,7 @@
     }
   },
   "interval_coverage": {
-    "calibrator_digest": "edac9b7581786b82eecfacd2e83f4d3146cf250129d485cd0218ede0c36ce02b",
+    "calibrator_digest": "0285e064eebb45fdb1e3d8f7762f55625fe77d1ca92f8c06b96c8ef55f36381d",
     "claim_boundary": "sample-level split residual interval over independent synthetic trajectories; not sequential EnbPI, conditional coverage, domain transfer, or deployment evidence",
     "domains": [
       {
@@ -312,8 +312,8 @@
         "value_coverage": 1.0
       }
     ],
-    "mean_interval_width": 0.19230581334786656,
-    "model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
+    "mean_interval_width": 0.192305813348,
+    "model_digest": "7f0a65ed947de4c36fc8f7e19c376a76c6d6235c1ccd70804c02830f9031b0ee",
     "sample_coverage": 0.90625,
     "sample_target_met": true,
     "samples": 32,
@@ -326,7 +326,7 @@
     "history_steps": 12,
     "horizon_steps": 4,
     "kind": "missingness_aware_linear_ridge",
-    "model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
+    "model_digest": "7f0a65ed947de4c36fc8f7e19c376a76c6d6235c1ccd70804c02830f9031b0ee",
     "nodes": 4,
     "ridge": 10.0,
     "training_batch_digest": "bf32c6586e30d1d391d9d17b75eb2f8200ac8a0beaf9a0a663454ab7a209062d"
@@ -334,333 +334,333 @@
   "partial_observation": {
     "batch_digest": "0c85a46f6e8a6c2bcaafce5ccfabfc2a276fd06f442e9e913137e5837203234a",
     "claim_boundary": "synthetic held-out phase scoring with complete known simulator couplings; not arbitrary state/parameter inference, data assimilation, or operational control",
-    "forecast_model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
-    "mean_kuramoto_residual_rmse": 0.2103773958899911,
-    "mean_observed_wrapped_rmse": 0.02548752076534897,
-    "mean_total_objective": 0.36627430659567684,
+    "forecast_model_digest": "7f0a65ed947de4c36fc8f7e19c376a76c6d6235c1ccd70804c02830f9031b0ee",
+    "mean_kuramoto_residual_rmse": 0.21037739589,
+    "mean_observed_wrapped_rmse": 0.025487520765,
+    "mean_total_objective": 0.366274306596,
     "observation_mask_digest": "db92dd6db496c9f3a399fb9243887166c0969e68d3b941e0386b75f42b167007",
     "observed_fraction": 0.5,
     "samples": 32,
     "scores": [
       {
-        "kuramoto_residual_rmse": 0.17448380950713852,
-        "normalised_observation_loss": 0.0027080793424331282,
+        "kuramoto_residual_rmse": 0.174483809507,
+        "normalised_observation_loss": 0.002708079342,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.002601960483190093,
-        "physics_loss": 0.0304445997801234,
+        "observed_wrapped_rmse": 0.002601960483,
+        "physics_loss": 0.03044459978,
         "possible_values": 16,
-        "total_objective": 0.005752539320445468
+        "total_objective": 0.00575253932
       },
       {
-        "kuramoto_residual_rmse": 0.16085820009195215,
-        "normalised_observation_loss": 0.09046491400912034,
+        "kuramoto_residual_rmse": 0.160858200092,
+        "normalised_observation_loss": 0.090464914009,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.015038692929334015,
-        "physics_loss": 0.025875360536822517,
+        "observed_wrapped_rmse": 0.015038692929,
+        "physics_loss": 0.025875360537,
         "possible_values": 16,
-        "total_objective": 0.09305245006280259
+        "total_objective": 0.093052450063
       },
       {
-        "kuramoto_residual_rmse": 0.35058010348294855,
-        "normalised_observation_loss": 1.3938044330364487,
+        "kuramoto_residual_rmse": 0.350580103483,
+        "normalised_observation_loss": 1.393804433036,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.05902974743797505,
-        "physics_loss": 0.1229064089581149,
+        "observed_wrapped_rmse": 0.059029747438,
+        "physics_loss": 0.122906408958,
         "possible_values": 16,
-        "total_objective": 1.4060950739322602
+        "total_objective": 1.406095073932
       },
       {
-        "kuramoto_residual_rmse": 0.29376597044260455,
-        "normalised_observation_loss": 0.14761539677047308,
+        "kuramoto_residual_rmse": 0.293765970443,
+        "normalised_observation_loss": 0.14761539677,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.019210374590990745,
-        "physics_loss": 0.0862984453900852,
+        "observed_wrapped_rmse": 0.019210374591,
+        "physics_loss": 0.08629844539,
         "possible_values": 16,
-        "total_objective": 0.15624524130948161
+        "total_objective": 0.156245241309
       },
       {
-        "kuramoto_residual_rmse": 0.16825515994841272,
-        "normalised_observation_loss": 0.21027270902917572,
+        "kuramoto_residual_rmse": 0.168255159948,
+        "normalised_observation_loss": 0.210272709029,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.02292775114512846,
-        "physics_loss": 0.02830979884926595,
+        "observed_wrapped_rmse": 0.022927751145,
+        "physics_loss": 0.028309798849,
         "possible_values": 16,
-        "total_objective": 0.2131036889141023
+        "total_objective": 0.213103688914
       },
       {
-        "kuramoto_residual_rmse": 0.3367344911525493,
-        "normalised_observation_loss": 2.62919507149171,
+        "kuramoto_residual_rmse": 0.336734491153,
+        "normalised_observation_loss": 2.629195071492,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.08107396424703356,
-        "physics_loss": 0.1133901175317663,
+        "observed_wrapped_rmse": 0.081073964247,
+        "physics_loss": 0.113390117532,
         "possible_values": 16,
-        "total_objective": 2.6405340832448867
+        "total_objective": 2.640534083245
       },
       {
-        "kuramoto_residual_rmse": 0.045953739474490184,
-        "normalised_observation_loss": 0.0033214495663447057,
+        "kuramoto_residual_rmse": 0.045953739474,
+        "normalised_observation_loss": 0.003321449566,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.002881600929320673,
-        "physics_loss": 0.002111746171689317,
+        "observed_wrapped_rmse": 0.002881600929,
+        "physics_loss": 0.002111746172,
         "possible_values": 16,
-        "total_objective": 0.0035326241835136373
+        "total_objective": 0.003532624184
       },
       {
-        "kuramoto_residual_rmse": 0.18954308959445995,
-        "normalised_observation_loss": 0.3643019963520539,
+        "kuramoto_residual_rmse": 0.189543089594,
+        "normalised_observation_loss": 0.364301996352,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.030178717515496493,
-        "physics_loss": 0.03592658281301347,
+        "observed_wrapped_rmse": 0.030178717515,
+        "physics_loss": 0.035926582813,
         "possible_values": 16,
-        "total_objective": 0.36789465463335524
+        "total_objective": 0.367894654633
       },
       {
-        "kuramoto_residual_rmse": 0.11203377295232006,
-        "normalised_observation_loss": 0.013048908082539926,
+        "kuramoto_residual_rmse": 0.112033772952,
+        "normalised_observation_loss": 0.013048908083,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.005711590864754742,
-        "physics_loss": 0.012551566281932,
+        "observed_wrapped_rmse": 0.005711590865,
+        "physics_loss": 0.012551566282,
         "possible_values": 16,
-        "total_objective": 0.014304064710733127
+        "total_objective": 0.014304064711
       },
       {
-        "kuramoto_residual_rmse": 0.08519379319877006,
-        "normalised_observation_loss": 0.007248776423459051,
+        "kuramoto_residual_rmse": 0.085193793199,
+        "normalised_observation_loss": 0.007248776423,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.004256987321880068,
-        "physics_loss": 0.0072579823995948005,
+        "observed_wrapped_rmse": 0.004256987322,
+        "physics_loss": 0.0072579824,
         "possible_values": 16,
-        "total_objective": 0.007974574663418532
+        "total_objective": 0.007974574663
       },
       {
-        "kuramoto_residual_rmse": 0.31937327062847737,
-        "normalised_observation_loss": 0.517358160878092,
+        "kuramoto_residual_rmse": 0.319373270628,
+        "normalised_observation_loss": 0.517358160878,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.035963806836807895,
-        "physics_loss": 0.10199928599193064,
+        "observed_wrapped_rmse": 0.035963806837,
+        "physics_loss": 0.101999285992,
         "possible_values": 16,
-        "total_objective": 0.5275580894772851
+        "total_objective": 0.527558089477
       },
       {
-        "kuramoto_residual_rmse": 0.18402794957041857,
-        "normalised_observation_loss": 0.27041124364709757,
+        "kuramoto_residual_rmse": 0.18402794957,
+        "normalised_observation_loss": 0.270411243647,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.026000540554337405,
-        "physics_loss": 0.03386628622309252,
+        "observed_wrapped_rmse": 0.026000540554,
+        "physics_loss": 0.033866286223,
         "possible_values": 16,
-        "total_objective": 0.27379787226940683
+        "total_objective": 0.273797872269
       },
       {
-        "kuramoto_residual_rmse": 0.10660326979868157,
-        "normalised_observation_loss": 0.06291725993865077,
+        "kuramoto_residual_rmse": 0.106603269799,
+        "normalised_observation_loss": 0.062917259939,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.012541656583028693,
-        "physics_loss": 0.011364257131770495,
+        "observed_wrapped_rmse": 0.012541656583,
+        "physics_loss": 0.011364257132,
         "possible_values": 16,
-        "total_objective": 0.06405368565182783
+        "total_objective": 0.064053685652
       },
       {
-        "kuramoto_residual_rmse": 0.15750329692621165,
-        "normalised_observation_loss": 0.17259591485193693,
+        "kuramoto_residual_rmse": 0.157503296926,
+        "normalised_observation_loss": 0.172595914852,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.02077233225061265,
-        "physics_loss": 0.02480728854262639,
+        "observed_wrapped_rmse": 0.020772332251,
+        "physics_loss": 0.024807288543,
         "possible_values": 16,
-        "total_objective": 0.17507664370619958
+        "total_objective": 0.175076643706
       },
       {
-        "kuramoto_residual_rmse": 0.22051409441092398,
-        "normalised_observation_loss": 0.2978067995389462,
+        "kuramoto_residual_rmse": 0.220514094411,
+        "normalised_observation_loss": 0.297806799539,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.027285838796844153,
-        "physics_loss": 0.04862646583386989,
+        "observed_wrapped_rmse": 0.027285838797,
+        "physics_loss": 0.048626465834,
         "possible_values": 16,
-        "total_objective": 0.30266944612233315
+        "total_objective": 0.302669446122
       },
       {
-        "kuramoto_residual_rmse": 0.27125224259752323,
-        "normalised_observation_loss": 0.29168282440065973,
+        "kuramoto_residual_rmse": 0.271252242598,
+        "normalised_observation_loss": 0.291682824401,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.02700383419075242,
-        "physics_loss": 0.0735777791141856,
+        "observed_wrapped_rmse": 0.027003834191,
+        "physics_loss": 0.073577779114,
         "possible_values": 16,
-        "total_objective": 0.2990406023120783
+        "total_objective": 0.299040602312
       },
       {
-        "kuramoto_residual_rmse": 0.21524682188494995,
-        "normalised_observation_loss": 0.3224478360819288,
+        "kuramoto_residual_rmse": 0.215246821885,
+        "normalised_observation_loss": 0.322447836082,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.0283922452476873,
-        "physics_loss": 0.04633119433157137,
+        "observed_wrapped_rmse": 0.028392245248,
+        "physics_loss": 0.046331194332,
         "possible_values": 16,
-        "total_objective": 0.3270809555150859
+        "total_objective": 0.327080955515
       },
       {
-        "kuramoto_residual_rmse": 0.3543167386007158,
-        "normalised_observation_loss": 0.39690858100544435,
+        "kuramoto_residual_rmse": 0.354316738601,
+        "normalised_observation_loss": 0.396908581005,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.03150034051424859,
-        "physics_loss": 0.12554035125264795,
+        "observed_wrapped_rmse": 0.031500340514,
+        "physics_loss": 0.125540351253,
         "possible_values": 16,
-        "total_objective": 0.40946261613070917
+        "total_objective": 0.409462616131
       },
       {
-        "kuramoto_residual_rmse": 0.24445284950927007,
-        "normalised_observation_loss": 0.5064234625093816,
+        "kuramoto_residual_rmse": 0.244452849509,
+        "normalised_observation_loss": 0.506423462509,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.03558171800621008,
-        "physics_loss": 0.05975719563320184,
+        "observed_wrapped_rmse": 0.035581718006,
+        "physics_loss": 0.059757195633,
         "possible_values": 16,
-        "total_objective": 0.5123991820727019
+        "total_objective": 0.512399182073
       },
       {
-        "kuramoto_residual_rmse": 0.23735040509298358,
-        "normalised_observation_loss": 0.4132773562114969,
+        "kuramoto_residual_rmse": 0.237350405093,
+        "normalised_observation_loss": 0.413277356211,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.03214332575401529,
-        "physics_loss": 0.05633521479780341,
+        "observed_wrapped_rmse": 0.032143325754,
+        "physics_loss": 0.056335214798,
         "possible_values": 16,
-        "total_objective": 0.4189108776912773
+        "total_objective": 0.418910877691
       },
       {
-        "kuramoto_residual_rmse": 0.1517117672499916,
-        "normalised_observation_loss": 0.06657570659304145,
+        "kuramoto_residual_rmse": 0.15171176725,
+        "normalised_observation_loss": 0.066575706593,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.012901134309920336,
-        "physics_loss": 0.02301646032211563,
+        "observed_wrapped_rmse": 0.01290113431,
+        "physics_loss": 0.023016460322,
         "possible_values": 16,
-        "total_objective": 0.068877352625253
+        "total_objective": 0.068877352625
       },
       {
-        "kuramoto_residual_rmse": 0.1630419956669212,
-        "normalised_observation_loss": 0.1804396721487991,
+        "kuramoto_residual_rmse": 0.163041995667,
+        "normalised_observation_loss": 0.180439672149,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.02123909556388873,
-        "physics_loss": 0.026582692351052355,
+        "observed_wrapped_rmse": 0.021239095564,
+        "physics_loss": 0.026582692351,
         "possible_values": 16,
-        "total_objective": 0.18309794138390434
+        "total_objective": 0.183097941384
       },
       {
-        "kuramoto_residual_rmse": 0.2465066432342508,
-        "normalised_observation_loss": 0.24333922884874248,
+        "kuramoto_residual_rmse": 0.246506643234,
+        "normalised_observation_loss": 0.243339228849,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.024664713096281016,
-        "physics_loss": 0.06076552515861821,
+        "observed_wrapped_rmse": 0.024664713096,
+        "physics_loss": 0.060765525159,
         "possible_values": 16,
-        "total_objective": 0.2494157813646043
+        "total_objective": 0.249415781365
       },
       {
-        "kuramoto_residual_rmse": 0.2852966556550031,
-        "normalised_observation_loss": 0.8141868291743687,
+        "kuramoto_residual_rmse": 0.285296655655,
+        "normalised_observation_loss": 0.814186829174,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.045116150910022475,
-        "physics_loss": 0.08139418172792942,
+        "observed_wrapped_rmse": 0.04511615091,
+        "physics_loss": 0.081394181728,
         "possible_values": 16,
-        "total_objective": 0.8223262473471616
+        "total_objective": 0.822326247347
       },
       {
-        "kuramoto_residual_rmse": 0.2731433208057303,
-        "normalised_observation_loss": 0.37512267511076725,
+        "kuramoto_residual_rmse": 0.273143320806,
+        "normalised_observation_loss": 0.375122675111,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.030623629565695153,
-        "physics_loss": 0.07460727370078209,
+        "observed_wrapped_rmse": 0.030623629566,
+        "physics_loss": 0.074607273701,
         "possible_values": 16,
-        "total_objective": 0.38258340248084544
+        "total_objective": 0.382583402481
       },
       {
-        "kuramoto_residual_rmse": 0.16330172068094986,
-        "normalised_observation_loss": 0.08842439166114412,
+        "kuramoto_residual_rmse": 0.163301720681,
+        "normalised_observation_loss": 0.088424391661,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.014868119556718002,
-        "physics_loss": 0.02666745197735897,
+        "observed_wrapped_rmse": 0.014868119557,
+        "physics_loss": 0.026667451977,
         "possible_values": 16,
-        "total_objective": 0.09109113685888001
+        "total_objective": 0.091091136859
       },
       {
-        "kuramoto_residual_rmse": 0.2190735574862481,
-        "normalised_observation_loss": 0.37500693695212034,
+        "kuramoto_residual_rmse": 0.219073557486,
+        "normalised_observation_loss": 0.375006936952,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.03061890498336446,
-        "physics_loss": 0.047993223589680445,
+        "observed_wrapped_rmse": 0.030618904983,
+        "physics_loss": 0.04799322359,
         "possible_values": 16,
-        "total_objective": 0.37980625931108836
+        "total_objective": 0.379806259311
       },
       {
-        "kuramoto_residual_rmse": 0.244655146025485,
-        "normalised_observation_loss": 0.09473644177566606,
+        "kuramoto_residual_rmse": 0.244655146025,
+        "normalised_observation_loss": 0.094736441776,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.015389642765157521,
-        "physics_loss": 0.059856140476751384,
+        "observed_wrapped_rmse": 0.015389642765,
+        "physics_loss": 0.059856140477,
         "possible_values": 16,
-        "total_objective": 0.1007220558233412
+        "total_objective": 0.100722055823
       },
       {
-        "kuramoto_residual_rmse": 0.20685809336323144,
-        "normalised_observation_loss": 0.3486735263290402,
+        "kuramoto_residual_rmse": 0.206858093363,
+        "normalised_observation_loss": 0.348673526329,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.029524291961410366,
-        "physics_loss": 0.042790270789871375,
+        "observed_wrapped_rmse": 0.029524291961,
+        "physics_loss": 0.04279027079,
         "possible_values": 16,
-        "total_objective": 0.35295255340802734
+        "total_objective": 0.352952553408
       },
       {
-        "kuramoto_residual_rmse": 0.17899850887565363,
-        "normalised_observation_loss": 0.38693773197273135,
+        "kuramoto_residual_rmse": 0.178998508876,
+        "normalised_observation_loss": 0.386937731973,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.031102159570226447,
-        "physics_loss": 0.032040466179707454,
+        "observed_wrapped_rmse": 0.03110215957,
+        "physics_loss": 0.03204046618,
         "possible_values": 16,
-        "total_objective": 0.3901417785907021
+        "total_objective": 0.390141778591
       },
       {
-        "kuramoto_residual_rmse": 0.27815578427627224,
-        "normalised_observation_loss": 0.4603847475884701,
+        "kuramoto_residual_rmse": 0.278155784276,
+        "normalised_observation_loss": 0.460384747588,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.03392582893565278,
-        "physics_loss": 0.07737064032634809,
+        "observed_wrapped_rmse": 0.033925828936,
+        "physics_loss": 0.077370640326,
         "possible_values": 16,
-        "total_objective": 0.4681218116211049
+        "total_objective": 0.468121811621
       },
       {
-        "kuramoto_residual_rmse": 0.09329040629417676,
-        "normalised_observation_loss": 0.012232214332188386,
+        "kuramoto_residual_rmse": 0.093290406294,
+        "normalised_observation_loss": 0.012232214332,
         "observed_fraction": 0.5,
         "observed_values": 8,
-        "observed_wrapped_rmse": 0.005529967073181446,
-        "physics_loss": 0.008703099906532574,
+        "observed_wrapped_rmse": 0.005529967073,
+        "physics_loss": 0.008703099907,
         "possible_values": 16,
-        "total_objective": 0.013102524322841643
+        "total_objective": 0.013102524323
       }
     ]
   },
@@ -751,42 +751,42 @@
       {
         "domain_tag": "synthetic",
         "lower_mse_than_persistence": true,
-        "persistence_wrapped_mse": 0.0008780435617025138,
+        "persistence_wrapped_mse": 0.000878043562,
         "samples": 8,
-        "wrapped_mae": 0.01752348426198705,
-        "wrapped_mse": 0.0004701285861726097
+        "wrapped_mae": 0.017523484262,
+        "wrapped_mse": 0.000470128586
       },
       {
         "domain_tag": "grid_like_sim",
         "lower_mse_than_persistence": true,
-        "persistence_wrapped_mse": 0.0010759932794891138,
+        "persistence_wrapped_mse": 0.001075993279,
         "samples": 8,
-        "wrapped_mae": 0.020686481293044026,
-        "wrapped_mse": 0.0009506168018275083
+        "wrapped_mae": 0.020686481293,
+        "wrapped_mse": 0.000950616802
       },
       {
         "domain_tag": "eeg_like_sim",
         "lower_mse_than_persistence": true,
-        "persistence_wrapped_mse": 0.0017581692705305454,
+        "persistence_wrapped_mse": 0.001758169271,
         "samples": 8,
-        "wrapped_mae": 0.02514066516599485,
-        "wrapped_mse": 0.001109076224527011
+        "wrapped_mae": 0.025140665166,
+        "wrapped_mse": 0.001109076225
       },
       {
         "domain_tag": "plasma_like_sim",
         "lower_mse_than_persistence": true,
-        "persistence_wrapped_mse": 0.0008425100365530536,
+        "persistence_wrapped_mse": 0.000842510037,
         "samples": 8,
-        "wrapped_mae": 0.022171567622609193,
-        "wrapped_mse": 0.0007625725258503873
+        "wrapped_mae": 0.022171567623,
+        "wrapped_mse": 0.000762572526
       }
     ],
-    "input_missing_fraction": 0.1257102272727273,
+    "input_missing_fraction": 0.125710227273,
     "lower_mse_than_persistence": true,
-    "model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
-    "persistence_wrapped_mse": 0.0011386790370688069,
+    "model_digest": "7f0a65ed947de4c36fc8f7e19c376a76c6d6235c1ccd70804c02830f9031b0ee",
+    "persistence_wrapped_mse": 0.001138679037,
     "samples": 32,
-    "wrapped_mae": 0.02138054958590878,
-    "wrapped_mse": 0.0008230985345943792
+    "wrapped_mae": 0.021380549586,
+    "wrapped_mse": 0.000823098535
   }
 }

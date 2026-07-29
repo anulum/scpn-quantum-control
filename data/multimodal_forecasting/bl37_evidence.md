@@ -1,12 +1,12 @@
 # BL-37 Multimodal Forecasting Evidence
 
 Schema: `scpn.multimodal_forecasting.v1`
-Content digest: `f7728c62a7fae64afd6b17fa900d1c733cf5616f9b87cedd25b4b440b6550c02`
+Content digest: `21ef2604b837a2ebbf9c8df975212a53357fd51f2e47b9f4b30be69352a23917`
 
 ## Custody and held-out point forecast
 
 - Dataset digest: `8de23d1e490db07f463409d30a1d5804479c13da7499d06066693e43638ba8b2`; train / calibration / test samples: `64` / `24` / `32`.
-- Model digest: `bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d`; test wrapped MSE `0.000823098535` versus persistence `0.00113867904`; lower MSE: `True`.
+- Model digest: `7f0a65ed947de4c36fc8f7e19c376a76c6d6235c1ccd70804c02830f9031b0ee`; test wrapped MSE `0.000823098535` versus persistence `0.00113867904`; lower MSE: `True`.
 
 | Synthetic tag | Samples | Forecast MSE | Persistence MSE | Lower MSE |
 |---|---:|---:|---:|---|

@@ -57,6 +57,20 @@ def test_evidence_payload_and_markdown_are_deterministic(
     assert "hardware execution: `False`" in markdown
 
 
+def test_evidence_payload_normalises_subprecision_runtime_drift(
+    evidence: MultimodalForecastingEvidence,
+) -> None:
+    """Evidence bytes ignore floating drift below the declared custody precision."""
+    perturbed = dataclasses.replace(
+        evidence,
+        test_accuracy=dataclasses.replace(
+            evidence.test_accuracy,
+            wrapped_mse=evidence.test_accuracy.wrapped_mse + 1.0e-14,
+        ),
+    )
+    assert perturbed.to_dict() == evidence.to_dict()
+
+
 def test_evidence_writer_atomically_writes_matching_files(
     evidence: MultimodalForecastingEvidence,
     tmp_path: Path,

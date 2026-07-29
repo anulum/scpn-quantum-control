@@ -412,6 +412,12 @@ control, or broad quantum-advantage claim is promoted by this release.
   8/9 experiment aggregates from the raw counts to |Δmean|<1e-4 (A_odd to ~3.7%,
   original mitigation not in-pack). The data is genuine, not fabricated.
 
+### Fixed
+
+- Canonicalised BL-37 floating-point evidence and parameter-digest custody to
+  twelve decimal places, eliminating sub-precision BLAS/runtime drift across
+  the supported Python 3.11-3.13 CI matrix without weakening claim boundaries.
+
 ### Changed
 - 2026-07-22 — The differentiable dependency/environment map is now a
   version-2 fail-closed inventory: Python and Rust locks, every named framework

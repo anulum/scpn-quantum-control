@@ -25,10 +25,16 @@ from scpn_quantum_control.forecasting.synthetic_multimodal import (
 )
 from scpn_quantum_control.forecasting.uncertainty import (
     MultimodalIntervalForecast,
+    _canonical_digest_float_bytes,
     apply_residual_interval,
     certify_interval_coverage,
     fit_residual_interval_calibrator,
 )
+
+
+def test_calibrator_digest_numeric_custody_normalises_signed_zero() -> None:
+    """Scalar custody bytes ignore signed zero and sub-precision drift."""
+    assert _canonical_digest_float_bytes(-0.0) == _canonical_digest_float_bytes(1.0e-14)
 
 
 def _dataset() -> SyntheticMultimodalDataset:
