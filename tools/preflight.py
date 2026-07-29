@@ -42,6 +42,9 @@ from shutil import which
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from tools import (
+        custom_derivatives_product_quality_gates as _custom_derivatives_product_quality_gates,
+    )
     from tools import decisive_advantage_quality_gates as _decisive_advantage_quality_gates
     from tools import differentiable_quality_gates as _differentiable_quality_gates
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
@@ -58,6 +61,9 @@ else:
     _repo_root = str(Path(__file__).resolve().parents[1])
     if _repo_root not in sys.path:
         sys.path.insert(0, _repo_root)
+    _custom_derivatives_product_quality_gates = import_module(
+        "tools.custom_derivatives_product_quality_gates"
+    )
     _decisive_advantage_quality_gates = import_module("tools.decisive_advantage_quality_gates")
     _differentiable_quality_gates = import_module("tools.differentiable_quality_gates")
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
@@ -379,6 +385,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_stable_core_product_quality_gates.build_static_quality_gates(_PY),
     *_thermo_readiness_product_quality_gates.build_static_quality_gates(_PY),
     *_quantum_sync_oracle_product_quality_gates.build_static_quality_gates(_PY),
+    *_custom_derivatives_product_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -732,6 +739,9 @@ THERMO_READINESS_PRODUCT_COVERAGE_GATES = (
 QUANTUM_SYNC_ORACLE_COVERAGE_GATES = (
     _quantum_sync_oracle_product_quality_gates.build_coverage_gates(_PY)
 )
+CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_GATES = (
+    _custom_derivatives_product_quality_gates.build_coverage_gates(_PY)
+)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -988,6 +998,7 @@ def main() -> int:
             gates.extend(STABLE_CORE_PRODUCT_COVERAGE_GATES)
             gates.extend(THERMO_READINESS_PRODUCT_COVERAGE_GATES)
             gates.extend(QUANTUM_SYNC_ORACLE_COVERAGE_GATES)
+            gates.extend(CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

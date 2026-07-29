@@ -43,6 +43,7 @@ from scpn_quantum_control.program_ad_registry import (
 
 
 def test_list_contracts_and_filters() -> None:
+    """List stable contract identifiers and filter rows by contract kind."""
     ids = list_custom_derivative_contract_ids()
     assert "registration_contract" in ids
     assert "example_linear_rule" in ids
@@ -52,6 +53,7 @@ def test_list_contracts_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known contracts and reject blank or unknown identifiers."""
     row = get_custom_derivative_contract("registration_contract")
     assert row.claim_boundary == CUSTOM_DERIVATIVES_CLAIM_BOUNDARY
     assert row.bl46_pointer
@@ -62,6 +64,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_registration_policy() -> None:
+    """Expose the fail-closed registration and residual-work policy."""
     policy = registration_contract_policy()
     assert policy["fail_closed_duplicate_without_overwrite"] is True
     assert policy["require_jvp_or_vjp"] is True
@@ -70,6 +73,7 @@ def test_registration_policy() -> None:
 
 
 def test_register_query_list_fail_closed_duplicate() -> None:
+    """Register, query, list, reject duplicates, and permit explicit overwrite."""
     registry = new_product_registry()
     rule = build_example_scaled_linear_rule(scale=3.0)
     identity = f"{DEFAULT_PRODUCT_NAMESPACE}:demo@1"
@@ -111,6 +115,7 @@ def test_register_isolated_registry_default() -> None:
 
 
 def test_register_invalid_rule_and_registry() -> None:
+    """Reject invalid rules, identities, and explicit registry objects."""
     registry = new_product_registry()
     with pytest.raises(ValueError, match="CustomDerivativeRule"):
         register_product_custom_rule(
@@ -133,6 +138,7 @@ def test_register_invalid_rule_and_registry() -> None:
 
 
 def test_unknown_require_fail_closed() -> None:
+    """Refuse lookup when the requested identity has no registered rule."""
     registry = new_product_registry()
     with pytest.raises(ValueError):
         require_product_custom_rule(
@@ -142,6 +148,7 @@ def test_unknown_require_fail_closed() -> None:
 
 
 def test_example_rule_and_probe() -> None:
+    """Validate the scaled-linear rule and its deterministic round-trip probe."""
     rule = build_example_scaled_linear_rule(scale=2.5)
     assert isinstance(rule, CustomDerivativeRule)
     assert rule.jvp_rule is not None
@@ -169,6 +176,7 @@ def test_example_rule_and_probe() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Publish complete deterministic surface and product registry catalogues."""
     surfaces = map_custom_derivatives_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -185,8 +193,9 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift() -> None:
+    """Reject contract-set drift, empty catalogues, and permissive policy."""
     registry = build_custom_derivatives_product_registry()
-    contracts = cast(list[dict[str, object]], list(registry["contracts"]))
+    contracts = cast(list[dict[str, object]], registry["contracts"])
     broken = dict(registry)
     broken["contracts"] = contracts + [
         {
@@ -220,8 +229,9 @@ def test_integrity_rejects_drift() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject malformed, blank, duplicate, and count-drifted registry rows."""
     registry = build_custom_derivatives_product_registry()
-    contracts = cast(list[dict[str, object]], list(registry["contracts"]))
+    contracts = cast(list[dict[str, object]], registry["contracts"])
 
     non_map = dict(registry)
     non_map["contracts"] = [cast(Any, "nope")]
@@ -283,12 +293,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the documented product functions publicly exported."""
     assert "register_product_custom_rule" in custom_derivatives_product.__all__
     assert "build_example_scaled_linear_rule" in custom_derivatives_product.__all__
     assert "probe_example_rule_round_trip" in custom_derivatives_product.__all__
 
 
 def test_contract_row_validation() -> None:
+    """Validate every custom-derivative contract-row invariant."""
     base: dict[str, Any] = {
         "contract_id": "x",
         "kind": "example_rule",
@@ -317,6 +329,7 @@ def test_contract_row_validation() -> None:
 
 
 def test_registration_result_validation() -> None:
+    """Validate successful registration-result identity and rule metadata."""
     ok = RegistrationResult(
         identity_key="ns:n@1",
         rule_name="r",
@@ -348,6 +361,7 @@ def test_registration_result_validation() -> None:
 
 
 def test_catalogue_map_runtime_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject blank, duplicate, and empty internal contract catalogues."""
     from scpn_quantum_control import custom_derivatives_product as mod
 
     good = get_custom_derivative_contract("registration_contract")
@@ -378,6 +392,7 @@ def test_catalogue_map_runtime_guards(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_contract_to_dict() -> None:
+    """Serialize a contract row into its complete JSON-ready mapping."""
     row = get_custom_derivative_contract("metamorphic_boundary")
     payload = row.to_dict()
     assert payload["kind"] == "metamorphic_boundary"
@@ -386,6 +401,7 @@ def test_contract_to_dict() -> None:
 
 
 def test_parse_identity_none_and_probe_mismatch_value(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject a missing identity and inconsistent ambient probe values."""
     with pytest.raises(ValueError, match="non-empty string or PrimitiveIdentity"):
         parse_product_identity(cast(Any, None))
 
@@ -415,6 +431,7 @@ def test_parse_identity_none_and_probe_mismatch_value(monkeypatch: pytest.Monkey
 
 
 def test_parse_identity_object() -> None:
+    """Preserve an already structured primitive identity."""
     ident = PrimitiveIdentity(namespace="a", name="b", version="2")
     assert parse_product_identity(ident).key == "a:b@2"
 

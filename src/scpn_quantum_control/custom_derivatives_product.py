@@ -84,6 +84,7 @@ class CustomDerivativeContractRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     contract_id: str
@@ -154,6 +155,7 @@ class RegistrationResult:
         Whether overwrite was requested.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     identity_key: str
@@ -285,6 +287,7 @@ def list_custom_derivative_contract_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered contract identifiers.
+
     """
     return tuple(row.contract_id for row in _CANONICAL_CONTRACTS)
 
@@ -306,6 +309,7 @@ def get_custom_derivative_contract(contract_id: str) -> CustomDerivativeContract
     ------
     ValueError
         If ``contract_id`` is blank or unknown (fail closed).
+
     """
     if not contract_id or not str(contract_id).strip():
         raise ValueError("contract_id must be a non-empty string")
@@ -334,6 +338,7 @@ def iter_custom_derivative_contracts(
     -------
     tuple[CustomDerivativeContractRow, ...]
         Matching rows.
+
     """
     rows: Sequence[CustomDerivativeContractRow] = _CANONICAL_CONTRACTS
     if kind is not None:
@@ -348,6 +353,7 @@ def registration_contract_policy() -> dict[str, object]:
     -------
     dict[str, object]
         Policy describing identity keys, fail-closed duplicates, and residuals.
+
     """
     return {
         "product_schema": CUSTOM_DERIVATIVES_PRODUCT_SCHEMA,
@@ -379,6 +385,7 @@ def parse_product_identity(identity: PrimitiveIdentity | str) -> PrimitiveIdenti
     ------
     ValueError
         If blank or malformed.
+
     """
     if identity is None:
         raise ValueError("identity must be a non-empty string or PrimitiveIdentity")
@@ -415,6 +422,7 @@ def build_example_scaled_linear_rule(
     ------
     ValueError
         If ``scale`` is non-finite or zero, or ``name`` is blank.
+
     """
     if not name or not str(name).strip():
         raise ValueError("name must be a non-empty string")
@@ -455,6 +463,7 @@ def new_product_registry() -> CustomDerivativeRegistry:
     -------
     CustomDerivativeRegistry
         Fresh registry for product-scoped demos and tests.
+
     """
     return CustomDerivativeRegistry()
 
@@ -490,6 +499,7 @@ def register_product_custom_rule(
     ------
     ValueError
         If identity/rule is invalid or a duplicate exists without overwrite.
+
     """
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
@@ -529,6 +539,7 @@ def require_product_custom_rule(
     ------
     ValueError
         If identity is blank/unknown or rule is missing.
+
     """
     if not isinstance(registry, CustomDerivativeRegistry):
         raise ValueError("registry must be a CustomDerivativeRegistry")
@@ -551,6 +562,7 @@ def list_product_registered_identities(
     -------
     tuple[str, ...]
         Sorted identity keys.
+
     """
     if not isinstance(registry, CustomDerivativeRegistry):
         raise ValueError("registry must be a CustomDerivativeRegistry")
@@ -584,6 +596,7 @@ def probe_example_rule_round_trip(
     ------
     ValueError
         If shapes mismatch or rule construction fails.
+
     """
     from .differentiable_custom_derivatives import value_and_custom_jvp
 
@@ -626,6 +639,7 @@ def map_custom_derivatives_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     seen: set[str] = set()
     rows: list[dict[str, object]] = []
@@ -656,6 +670,7 @@ def build_custom_derivatives_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with contracts and policy (no blanks).
+
     """
     contracts = [row.to_dict() for row in _CANONICAL_CONTRACTS]
     return {
@@ -694,6 +709,7 @@ def assert_custom_derivatives_product_integrity(
     ------
     ValueError
         If coverage or blanks appear.
+
     """
     registry = (
         dict(payload) if payload is not None else build_custom_derivatives_product_registry()

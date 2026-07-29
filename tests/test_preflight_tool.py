@@ -961,6 +961,8 @@ def test_main_uses_coverage_pytest_by_default(
         "thermo-readiness-product exact coverage threshold",
         "quantum-sync-oracle focused coverage",
         "quantum-sync-oracle exact coverage threshold",
+        "custom-derivatives-product focused coverage",
+        "custom-derivatives-product exact coverage threshold",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",
