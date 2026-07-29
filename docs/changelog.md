@@ -12,11 +12,22 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 
 ## Unreleased
 
+## [1.1.0] - 2026-07-29
+
 ### Added
 
 - Complete deterministic documentation catalogs for all Python modules and
   public module-level symbols, notebooks, and public Markdown pages, plus an
   evidence-bounded solutions and market-value guide.
+- BL-54 finite parity-sector and fixed-active-set topology JVP/VJP boundaries,
+  projected synthetic optimisation, and complete API/evidence documentation.
+- BL-88 topology-aware exact-statevector fidelity-kernel product with matched
+  graph controls, custody-checked classification, and bounded synthetic
+  representability evidence.
+- BL-63 power-grid, Josephson, EEG-like, and ITER-inspired application honesty
+  kits with privacy/provenance metadata and explicit domain non-claims.
+- BL-98 theory-hook promotion registry with corrected QSL, Hamiltonian-
+  learning, Koopman, QMI, magic, SFF, and IIT-proxy boundaries.
 - BL-102 RL research governance: disabled-by-default preregistration, fixed
   multi-seed suites, iteration/evaluation budgets, deterministic zero-noise
   replay, explicit dense-reward gaming boundaries, BL-53 no-preregistration

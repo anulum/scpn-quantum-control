@@ -334,6 +334,32 @@ Before tagging:
 12. Push the commit and wait for CI before creating a release tag. The tag
     workflow re-runs the Wheel content gate against the publication artifacts.
 
+## 1.1.0 evidence-governed product and documentation scope
+
+The `1.1.0` minor release packages the post-1.0 product, differentiable,
+research-governance, application-honesty, evidence-custody, and documentation
+expansion under the existing stable-contract policy. It includes complete
+generated discovery catalogs for all ordinary Python modules, public
+module-level symbols, committed notebooks, and public documentation pages.
+
+This release does not claim broad quantum advantage, clinical efficacy,
+facility or grid control, universal hardware performance, or market-size and
+revenue outcomes. Hardware result rows retain their existing named custody and
+claim status; no new hardware claim is promoted by the version bump.
+
+Release-specific gates are:
+
+- all version carriers, generated capability surfaces, and changelogs agree on
+  `1.1.0`;
+- the complete no-hardware test and release-readiness preflight passes locally;
+- built wheel and sdist identity, content, RECORD, and SHA-256 digests are
+  recorded before tagging;
+- a full hash-pinned `pip-audit` runs before the tag;
+- `main` is pushed and every workflow for the exact head is green before a
+  signed `v1.1.0` tag and GitHub release are created;
+- failed/cancelled Actions history is deleted only where a successful
+  same-workflow replacement is recorded.
+
 ## 0.10.0 release, v0.10 surface, and documentation scope
 
 The `0.10.0` source release packages the post-0.9.12 control-surface expansion

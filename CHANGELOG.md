@@ -100,7 +100,25 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-29
+
+This backward-compatible minor release packages the evidence-governed product
+expansion since 1.0.0: bounded co-design/control and differentiable research
+surfaces, application honesty and result custody, deep-analysis/RL governance,
+topology-aware simulation products, and complete generated module, API,
+notebook, and documentation discovery. No new hardware, clinical, facility-
+control, or broad quantum-advantage claim is promoted by this release.
+
 ### Added
+
+- Complete static catalogs for all ordinary Python modules and documented
+  public module-level symbols, all committed notebooks, and all public
+  documentation pages; added an evidence-bounded solutions and market-value
+  guide while preserving authored README content.
+- BL-54 DLA/topology differentiable-control boundaries, BL-88 topology-aware
+  quantum-kernel product, BL-63 domain application honesty kits, BL-98 theory-
+  hook promotion registry, BL-84 deep-analysis research-lane registry, and
+  BL-102 preregistered deterministic RL-adjacent research governance.
 - 2026-07-29 — BL-60 finite synthetic chimera and multiscale control facade,
   exact generator, nested observables, analytic target/proposal surfaces,
   topology-constraint composition, notebook, public guide/API reference, and

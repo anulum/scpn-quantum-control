@@ -5,7 +5,7 @@
 
 | Surface | Current inventory |
 |---|---:|
-| Package version | 1.0.0 |
+| Package version | 1.1.0 |
 | Public API exports | 841 |
 | Python source modules | 697 |
 | Public Python classes | 1373 |
