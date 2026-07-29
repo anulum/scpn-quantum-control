@@ -7,13 +7,13 @@ Content digest: `84cee110467f1fec2a9783d825186a19b1fb617eb0366c1077b3b8a597a9b7e
 
 | Task | Train / validation | QRC / ESN features | QRC validation MSE | ESN validation MSE | Lower MSE |
 |---|---:|---:|---:|---:|---|
-| `classification` | 18 / 8 | 6 / 6 | 0.0696474284 | 0.0913905636 | `qrc` |
-| `forecast` | 18 / 8 | 6 / 6 | 0.890831726 | 0.0195529047 | `esn` |
+| `classification` | 18 / 8 | 6 / 6 | 0.069647 | 0.091391 | `qrc` |
+| `forecast` | 18 / 8 | 6 / 6 | 0.890832 | 0.019553 | `esn` |
 
 ## Classical surrogate fidelity
 
-- Held-out value fidelity: `passed=True`, RMSE `0.00042286964`, maximum error `0.000791764885`, R² `0.999994691`.
-- Analytic-gradient fidelity: `passed=True`, RMSE `0.000525290566`, maximum error `0.000893768362` against exact local central differences.
+- Held-out value fidelity: `passed=True`, RMSE `0.000423`, maximum error `0.000792`, R² `0.999995`.
+- Analytic-gradient fidelity: `passed=True`, RMSE `0.000525`, maximum error `0.000894` against exact local central differences.
 - Exact proposal validation: `exact_local_improvement`; the BL-33 proposal remains unapplied.
 
 ## Support matrix

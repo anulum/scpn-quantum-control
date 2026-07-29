@@ -66,6 +66,9 @@ def test_evidence_payload_normalises_subprecision_runtime_drift(
         ),
     )
     assert perturbed.to_dict() == evidence.to_dict()
+    assert render_quantum_reservoir_surrogate_markdown(
+        perturbed
+    ) == render_quantum_reservoir_surrogate_markdown(evidence)
 
 
 def test_evidence_writer_atomically_writes_matching_files(

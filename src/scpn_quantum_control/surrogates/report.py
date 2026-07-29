@@ -146,26 +146,37 @@ def render_quantum_reservoir_surrogate_markdown(
         "| Task | Train / validation | QRC / ESN features | QRC validation MSE | ESN validation MSE | Lower MSE |",
         "|---|---:|---:|---:|---:|---|",
     ]
-    for certificate in evidence.reservoir_certificates:
+    certificates = cast(list[dict[str, object]], payload["reservoir_certificates"])
+    for certificate in certificates:
+        task_kind = cast(str, certificate["task_kind"])
+        n_train = cast(int, certificate["n_train"])
+        n_validation = cast(int, certificate["n_validation"])
+        n_quantum_features = cast(int, certificate["n_quantum_features"])
+        n_esn_features = cast(int, certificate["n_esn_features"])
+        quantum_validation_mse = cast(float, certificate["quantum_validation_mse"])
+        esn_validation_mse = cast(float, certificate["esn_validation_mse"])
+        lower_validation_mse = cast(str, certificate["lower_validation_mse"])
         lines.append(
-            f"| `{certificate.task_kind}` | {certificate.n_train} / {certificate.n_validation} "
-            f"| {certificate.n_quantum_features} / {certificate.n_esn_features} "
-            f"| {certificate.quantum_validation_mse:.9g} "
-            f"| {certificate.esn_validation_mse:.9g} "
-            f"| `{certificate.lower_validation_mse}` |"
+            f"| `{task_kind}` | {n_train} / {n_validation} "
+            f"| {n_quantum_features} / {n_esn_features} "
+            f"| {quantum_validation_mse:.9g} "
+            f"| {esn_validation_mse:.9g} "
+            f"| `{lower_validation_mse}` |"
         )
+    value_fidelity = cast(dict[str, object], payload["value_fidelity"])
+    gradient_fidelity = cast(dict[str, object], payload["gradient_fidelity"])
     lines.extend(
         [
             "",
             "## Classical surrogate fidelity",
             "",
-            f"- Held-out value fidelity: `passed={evidence.value_fidelity.passed}`, "
-            f"RMSE `{evidence.value_fidelity.rmse:.9g}`, maximum error "
-            f"`{evidence.value_fidelity.max_absolute_error:.9g}`, R² "
-            f"`{evidence.value_fidelity.r_squared:.9g}`.",
-            f"- Analytic-gradient fidelity: `passed={evidence.gradient_fidelity.passed}`, "
-            f"RMSE `{evidence.gradient_fidelity.rmse:.9g}`, maximum error "
-            f"`{evidence.gradient_fidelity.max_absolute_error:.9g}` against exact local "
+            f"- Held-out value fidelity: `passed={value_fidelity['passed']}`, "
+            f"RMSE `{cast(float, value_fidelity['rmse']):.9g}`, maximum error "
+            f"`{cast(float, value_fidelity['max_absolute_error']):.9g}`, R² "
+            f"`{cast(float, value_fidelity['r_squared']):.9g}`.",
+            f"- Analytic-gradient fidelity: `passed={gradient_fidelity['passed']}`, "
+            f"RMSE `{cast(float, gradient_fidelity['rmse']):.9g}`, maximum error "
+            f"`{cast(float, gradient_fidelity['max_absolute_error']):.9g}` against exact local "
             "central differences.",
             f"- Exact proposal validation: `{evidence.exact_validated_proposal.reason}`; "
             "the BL-33 proposal remains unapplied.",
