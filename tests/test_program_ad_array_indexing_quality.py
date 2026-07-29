@@ -246,10 +246,17 @@ def test_program_ad_array_registration_preserves_existing_contracts(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Repeated registration should leave existing primitive contracts untouched."""
+    looked_up: list[Any] = []
+
+    def contract_for(identity: Any) -> object:
+        looked_up.append(identity)
+        return object()
+
     registry = SimpleNamespace(
-        contract_for=lambda _identity: object(),
+        contract_for=contract_for,
         register_transform=lambda _transform: pytest.fail("unexpected registration"),
     )
     monkeypatch.setattr(array_indexing, "DEFAULT_CUSTOM_DERIVATIVE_REGISTRY", registry)
-    result = array_indexing._register_program_ad_array_primitive_contracts()
-    assert result is None
+    array_indexing._register_program_ad_array_primitive_contracts()
+    assert looked_up
+    assert len(looked_up) == len(set(looked_up))
