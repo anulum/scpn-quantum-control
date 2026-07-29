@@ -94,6 +94,7 @@ class WirtingerImplicitSurfaceRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     surface_id: str
@@ -177,6 +178,7 @@ class MaterialisedWirtingerProbe:
         Whether residual is at or below tolerance.
     demo_label
         Which demo objective was materialised.
+
     """
 
     z: tuple[tuple[float, float], ...]
@@ -229,6 +231,7 @@ class MaterialisedImplicitProbe:
         Reported condition number.
     demo_label
         Which demo was materialised.
+
     """
 
     method: str
@@ -284,6 +287,7 @@ class ComplexContractDecision:
         BL-53 scenario id.
     bl46_id
         BL-46 law id.
+
     """
 
     allowed: bool
@@ -443,6 +447,7 @@ def list_wirtinger_implicit_surface_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered surface identifiers.
+
     """
     return tuple(row.surface_id for row in _CANONICAL_SURFACES)
 
@@ -464,6 +469,7 @@ def get_wirtinger_implicit_surface(surface_id: str) -> WirtingerImplicitSurfaceR
     ------
     ValueError
         If ``surface_id`` is blank or unknown (fail closed).
+
     """
     if not surface_id or not str(surface_id).strip():
         raise ValueError("surface_id must be a non-empty string")
@@ -495,6 +501,7 @@ def iter_wirtinger_implicit_surfaces(
     -------
     tuple[WirtingerImplicitSurfaceRow, ...]
         Matching rows.
+
     """
     rows: Sequence[WirtingerImplicitSurfaceRow] = _CANONICAL_SURFACES
     if kind is not None:
@@ -520,6 +527,7 @@ def decide_complex_objective_contract(
     ComplexContractDecision
         Allowed only when a Wirtinger contract is declared; otherwise refuse
         with BL-53 / BL-46 pointers (silent real-gradient substitution forbidden).
+
     """
     if has_wirtinger_contract:
         return ComplexContractDecision(
@@ -581,6 +589,7 @@ def materialise_demo_wirtinger_probe(
     ------
     ValueError
         If ``demo`` is unknown or ambient validation fails.
+
     """
     from .wirtinger_calculus import wirtinger_partials
 
@@ -640,6 +649,7 @@ def materialise_demo_implicit_stationary_probe(
     ------
     ValueError
         If ambient validation fails (e.g. non-positive Hessian).
+
     """
     from .differentiable_implicit_sensitivity import implicit_stationary_sensitivity
 
@@ -673,6 +683,7 @@ def map_wirtinger_implicit_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     seen: set[str] = set()
     rows: list[dict[str, object]] = []
@@ -704,6 +715,7 @@ def build_wirtinger_implicit_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with surfaces (no blanks).
+
     """
     surfaces = [row.to_dict() for row in _CANONICAL_SURFACES]
     return {
@@ -744,6 +756,7 @@ def assert_wirtinger_implicit_product_integrity(
     ------
     ValueError
         If coverage or blanks appear.
+
     """
     registry = (
         dict(payload) if payload is not None else build_wirtinger_implicit_product_registry()

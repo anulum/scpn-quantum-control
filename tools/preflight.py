@@ -82,6 +82,9 @@ if TYPE_CHECKING:
     from tools import (
         thermo_readiness_product_quality_gates as _thermo_readiness_product_quality_gates,
     )
+    from tools import (
+        wirtinger_implicit_product_quality_gates as _wirtinger_implicit_product_quality_gates,
+    )
 else:
     _repo_root = str(Path(__file__).resolve().parents[1])
     if _repo_root not in sys.path:
@@ -97,6 +100,9 @@ else:
     )
     _public_api_stability_quality_gates = import_module("tools.public_api_stability_quality_gates")
     _qpu_compute_product_quality_gates = import_module("tools.qpu_compute_product_quality_gates")
+    _wirtinger_implicit_product_quality_gates = import_module(
+        "tools.wirtinger_implicit_product_quality_gates"
+    )
     _custom_derivatives_product_quality_gates = import_module(
         "tools.custom_derivatives_product_quality_gates"
     )
@@ -447,6 +453,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_hermetic_reproduction_kit_quality_gates.build_static_quality_gates(_PY),
     *_hardware_safe_quality_gates.build_static_quality_gates(_PY),
     *_qpu_compute_product_quality_gates.build_static_quality_gates(_PY),
+    *_wirtinger_implicit_product_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -828,6 +835,9 @@ HERMETIC_REPRODUCTION_KIT_COVERAGE_GATES = (
 )
 HARDWARE_SAFE_EXECUTION_COVERAGE_GATES = _hardware_safe_quality_gates.build_coverage_gates(_PY)
 QPU_COMPUTE_PRODUCT_COVERAGE_GATES = _qpu_compute_product_quality_gates.build_coverage_gates(_PY)
+WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_GATES = (
+    _wirtinger_implicit_product_quality_gates.build_coverage_gates(_PY)
+)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -1096,6 +1106,7 @@ def main() -> int:
             gates.extend(HERMETIC_REPRODUCTION_KIT_COVERAGE_GATES)
             gates.extend(HARDWARE_SAFE_EXECUTION_COVERAGE_GATES)
             gates.extend(QPU_COMPUTE_PRODUCT_COVERAGE_GATES)
+            gates.extend(WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

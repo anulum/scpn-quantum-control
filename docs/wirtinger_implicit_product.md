@@ -7,6 +7,38 @@ BL-46 anti-silent metamorphic law.
 
 Module: `scpn_quantum_control.wirtinger_implicit_product`
 
+This is a bounded product facade over existing numerical implementations. It
+does not install a complex-gradient convention into arbitrary callers, prove
+holomorphicity beyond the reported local probe, or produce hardware evidence.
+
+## Contract discovery
+
+| Function | Contract |
+|---|---|
+| `list_wirtinger_implicit_surface_ids()` | Returns all stable surface ids in catalogue order. |
+| `get_wirtinger_implicit_surface(surface_id)` | Resolves one exact row; blank and unknown ids raise `ValueError`. |
+| `iter_wirtinger_implicit_surfaces(...)` | Filters deterministically by typed surface kind and/or support posture. |
+| `map_wirtinger_implicit_public_surfaces()` | Groups catalogue rows by their ambient module owner. |
+
+The support postures distinguish locally materialised demonstrations,
+policy-only contracts, and refuse-only guardrails. Discovery reads static local
+metadata only; it does not execute a numerical probe.
+
+## Public value objects
+
+- `WirtingerImplicitSurfaceRow` binds a stable id to its kind, ambient module
+  and symbol, support posture, BL-53/BL-46 pointers, and claim boundary.
+- `MaterialisedWirtingerProbe` carries the complex evaluation point,
+  `df/dz`, `df/dconj_z`, local residual, and thresholded holomorphic flag.
+- `MaterialisedImplicitProbe` carries a flattened real sensitivity matrix,
+  its shape, condition number, method, and demo label.
+- `ComplexContractDecision` records whether the caller declared an explicit
+  Wirtinger contract, together with blockers and governance pointers.
+
+All four are immutable, slot-backed dataclasses with validated construction and
+JSON-ready `to_dict()` mappings. A serialised probe remains local numerical
+evidence; it is not a general theorem or provider result.
+
 ## Rules
 
 | Rule | Behaviour |
@@ -17,6 +49,43 @@ Module: `scpn_quantum_control.wirtinger_implicit_product`
 | Blank/unknown surface | Fail closed |
 | Full holomorphic QFT AD | Not claimed (out of scope) |
 | Planner matrix rows | Residual S64.5 |
+
+## Complex-objective decision
+
+`decide_complex_objective_contract()` is intentionally fail closed. A caller
+that declares no Wirtinger contract receives `allowed=False`, both the BL-53
+unsuitable-scenario id and BL-46 anti-silent-law id, and non-empty blockers.
+The facade never silently substitutes an ordinary real gradient for a complex
+objective.
+
+An explicit declaration produces `allowed=True` with no blockers, but it proves
+only that the caller selected a contract. The caller still owns objective
+semantics, derivative validation, numerical tolerances, and backend support.
+
+## Local Wirtinger probes
+
+`materialise_demo_wirtinger_probe()` supports exactly two scalar objectives:
+
+| Demo | Objective | Expected local result |
+|---|---|---|
+| `holomorphic_square` | `f(z) = z²` | `df/dz = 2z`; `df/dconj_z` is approximately zero. |
+| `modulus_squared` | `f(z) = abs(z)²` | Non-zero `df/dconj_z`; classified non-holomorphic at generic points. |
+
+The ambient `wirtinger_partials()` implementation uses the requested central
+difference step. `is_holomorphic` is only the comparison
+`holomorphic_residual <= tolerance` for this point and step. Unknown demo labels
+or invalid ambient parameters raise `ValueError`.
+
+## Local implicit probe
+
+`materialise_demo_implicit_stationary_probe()` constructs the one-dimensional
+stationary system `H = [[hessian_scale]]` and `B = [[cross_scale]]`, then calls
+the ambient implicit-sensitivity implementation. The expected sensitivity is
+`-cross_scale / hessian_scale`. The Hessian scale must be positive and finite;
+the cross scale must be finite; and an empty ambient result fails closed.
+
+The returned shape and row-major flattened sensitivity are validated together.
+The reported condition number must also be finite and non-negative.
 
 Claim boundary:
 
@@ -75,6 +144,21 @@ assert abs(imp.sensitivity[0] + 0.5) < 1e-9
 | `implicit_fixed_point_sensitivity` | fixed-point sensitivity |
 | `complex_without_wirtinger_refuse` | BL-53/BL-46 refuse |
 
+## Registry integrity
+
+`build_wirtinger_implicit_product_registry()` emits schema
+`wirtinger_implicit_product.v1`, the complete catalogue, ambient public-surface
+map, exact governance pointers, default id, counts, and claim boundary.
+
+Always validate transported or stored payloads with
+`assert_wirtinger_implicit_product_integrity()`. It rejects:
+
+- an absent, empty, or non-list `surfaces` value;
+- non-mapping, blank, duplicate, missing, or extra surface rows;
+- unknown kinds or missing symbol and BL-53 pointers;
+- loss of either the default partials row or the explicit refuse row; and
+- drift in `blank_entry_count` or `surface_count`.
+
 ## Worked scalar examples (S64.6)
 
 ### Holomorphic square
@@ -94,6 +178,18 @@ For ``f(z) = |z|^2`` the function is real-valued and non-holomorphic; residual
 With ``H = [[2]]`` and ``B = [[1]]``:
 
 - ``dx*/dalpha = -H^{-1} B = -0.5``
+
+## Failure handling and non-effects
+
+Treat `ValueError` as a caller-contract or transported-registry failure. Treat
+`RuntimeError` from internal catalogue construction as repository corruption.
+Do not turn a refused decision into a fallback real gradient, and do not infer
+global holomorphicity from one locally thresholded probe.
+
+This module performs no network access, credential lookup, provider discovery,
+QPU submission, hardware execution, registry mutation, evidence promotion, or
+planner/support-matrix rewrite. Its demonstrations run locally through the
+existing NumPy-based ambient implementations.
 
 ## Bounded product status
 

@@ -36,6 +36,7 @@ from scpn_quantum_control.wirtinger_implicit_product import (
 
 
 def test_list_surfaces_and_filters() -> None:
+    """Expose the stable catalogue and its kind and posture filters."""
     ids = list_wirtinger_implicit_surface_ids()
     assert "wirtinger_partials" in ids
     assert "holomorphic_gradient" in ids
@@ -52,6 +53,7 @@ def test_list_surfaces_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve exact surfaces while rejecting blank and unknown identifiers."""
     row = get_wirtinger_implicit_surface("wirtinger_partials")
     assert row.claim_boundary == WIRTINGER_IMPLICIT_CLAIM_BOUNDARY
     assert row.bl53_pointer == BL53_COMPLEX_WITHOUT_WIRTINGER
@@ -63,6 +65,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_complex_contract_refuse_and_allow() -> None:
+    """Refuse silent complex gradients and allow explicit Wirtinger contracts."""
     refused = decide_complex_objective_contract(has_wirtinger_contract=False)
     assert refused.allowed is False
     assert refused.blockers
@@ -77,6 +80,7 @@ def test_complex_contract_refuse_and_allow() -> None:
 
 
 def test_materialise_demo_wirtinger_holomorphic() -> None:
+    """Materialise the holomorphic square probe and its analytic derivative."""
     probe = materialise_demo_wirtinger_probe(
         demo="holomorphic_square",
         z0=1.0 + 0.5j,
@@ -93,6 +97,7 @@ def test_materialise_demo_wirtinger_holomorphic() -> None:
 
 
 def test_materialise_demo_wirtinger_nonholomorphic() -> None:
+    """Detect the non-holomorphic modulus-squared demo and invalid labels."""
     probe = materialise_demo_wirtinger_probe(demo="modulus_squared", z0=0.8 + 0.3j)
     assert probe.demo_label == "modulus_squared"
     assert probe.holomorphic_residual > 1e-6
@@ -102,6 +107,7 @@ def test_materialise_demo_wirtinger_nonholomorphic() -> None:
 
 
 def test_materialise_demo_implicit_stationary() -> None:
+    """Materialise the exact one-dimensional stationary sensitivity demo."""
     probe = materialise_demo_implicit_stationary_probe(
         hessian_scale=2.0,
         cross_scale=1.0,
@@ -117,6 +123,7 @@ def test_materialise_demo_implicit_stationary() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Map ambient owners and validate the complete product registry."""
     surfaces = map_wirtinger_implicit_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -135,8 +142,11 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift() -> None:
+    """Reject extra surface rows and empty transported registries."""
     registry = build_wirtinger_implicit_product_registry()
-    surfaces = cast(list[dict[str, object]], list(registry["surfaces"]))
+    raw_surfaces = registry["surfaces"]
+    assert isinstance(raw_surfaces, list)
+    surfaces = cast(list[dict[str, object]], raw_surfaces)
 
     broken = dict(registry)
     broken["surfaces"] = surfaces + [
@@ -168,8 +178,11 @@ def test_integrity_rejects_drift() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject malformed, blank, duplicate, missing, and count-drifted rows."""
     registry = build_wirtinger_implicit_product_registry()
-    surfaces = cast(list[dict[str, object]], list(registry["surfaces"]))
+    raw_surfaces = registry["surfaces"]
+    assert isinstance(raw_surfaces, list)
+    surfaces = cast(list[dict[str, object]], raw_surfaces)
 
     non_map = dict(registry)
     non_map["surfaces"] = [cast(Any, "nope")]
@@ -244,6 +257,7 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the documented decision and materialisation functions public."""
     assert "decide_complex_objective_contract" in wirtinger_implicit_product.__all__
     assert "materialise_demo_wirtinger_probe" in wirtinger_implicit_product.__all__
     assert "materialise_demo_implicit_stationary_probe" in wirtinger_implicit_product.__all__
@@ -251,6 +265,7 @@ def test_module_exports() -> None:
 
 
 def test_surface_row_validation() -> None:
+    """Enforce every catalogue-surface value-object invariant."""
     base: dict[str, Any] = {
         "surface_id": "x",
         "kind": "wirtinger_partials",
@@ -284,6 +299,7 @@ def test_surface_row_validation() -> None:
 
 
 def test_probe_and_decision_validation() -> None:
+    """Enforce probe shapes, finite values, and decision invariants."""
     with pytest.raises(ValueError, match="z must be non-empty"):
         MaterialisedWirtingerProbe(
             z=(),
