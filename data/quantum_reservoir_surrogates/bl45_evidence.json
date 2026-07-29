@@ -1,45 +1,45 @@
 {
   "claim_boundary": "Synthetic local exact-statevector and classical-reference evidence only. No hardware QRC, provider execution, unseen-domain generalisation, closed-loop control, optimisation advantage, publication, or deployment claim.",
-  "content_digest": "9efb44e1ee268f49e4ebb789750aac733d7b4f55c2cc7a540c71377d98c36f8b",
+  "content_digest": "0dd41eaa56423421125d814a7a70ebc1441ae5c17cf7b2f413d64ee4a840be02",
   "exact_validated_proposal": {
     "accepted_by_exact_objective": true,
     "applied": false,
     "claim_boundary": "Local Gaussian-RBF interpolation with an analytic input gradient only; not exact quantum differentiation, hardware execution, generalisation, closed-loop control, or quantum-advantage evidence. The BL-33 ControllerProposal remains unapplied; exact local validation is an acceptance observation, not a safety decision or actuator command.",
-    "exact_candidate": -0.049088692,
-    "exact_current": 0.012315016,
-    "exact_observed_improvement": 0.061403708,
+    "exact_candidate": -0.04908869,
+    "exact_current": 0.01231502,
+    "exact_observed_improvement": 0.06140371,
     "hardware_execution": false,
     "proposal": {
       "gain_scale": 1.0,
       "parameters": [
-        0.314721905,
-        0.723139517
+        0.3147219,
+        0.72313952
       ],
       "update": [
-        -0.025278095,
-        0.043139517
+        -0.0252781,
+        0.04313952
       ]
     },
     "reason": "exact_local_improvement",
-    "surrogate_candidate": -0.049014726,
-    "surrogate_current": 0.012212055,
-    "surrogate_predicted_improvement": 0.061226782
+    "surrogate_candidate": -0.04901473,
+    "surrogate_current": 0.01221206,
+    "surrogate_predicted_improvement": 0.06122678
   },
   "gradient_fidelity": {
     "claim_boundary": "Local Gaussian-RBF interpolation with an analytic input gradient only; not exact quantum differentiation, hardware execution, generalisation, closed-loop control, or quantum-advantage evidence.",
-    "exact_gradient_digest": "17feec472fbfabf7f55e91ee5cfb1630d8129dcbbd90ed7b5560841b49dd1c00",
+    "exact_gradient_digest": "5f0114d465174c1183e3b1fe63cc7013202ba169ddb493826bd82146d0aff4a4",
     "finite_difference_step": 1e-05,
     "hardware_execution": false,
-    "max_absolute_error": 0.000893768,
+    "max_absolute_error": 0.00089377,
     "max_allowed_error": 0.02,
     "n_parameters": 2,
     "n_points": 4,
     "passed": true,
-    "rmse": 0.000525291,
+    "rmse": 0.00052529,
     "simulator": "local_exact_statevector_central_difference",
-    "surrogate_gradient_digest": "67d14e6ae41d16dabb511c7b2df72827fc9193c69a89b3da1f5c767f7fdc7023",
+    "surrogate_gradient_digest": "ac0fea8da2b93b3e661f00213dc73cb1eef88afb59f6e1317417c103c7e9963d",
     "training_overlap_count": 0,
-    "validation_input_digest": "8c24a43f583539917230df77f520b2174292620369444f7fb3f64a57e4d5a0bd"
+    "validation_input_digest": "4d08926e3ebda68f99888e8b61f35bccb0b270811064e99a21c4fc95760fd967"
   },
   "primary_sources": [
     {
@@ -59,8 +59,8 @@
     {
       "claim_boundary": "Deterministic synthetic tasks and local exact-statevector features only; not hardware QRC, unseen-domain generalisation, deployment, or quantum advantage.",
       "domain_tag": "synthetic",
-      "esn_train_mse": 0.055574396,
-      "esn_validation_mse": 0.091390564,
+      "esn_train_mse": 0.0555744,
+      "esn_validation_mse": 0.09139056,
       "hardware_execution": false,
       "lower_validation_mse": "qrc",
       "matched_feature_count": true,
@@ -68,22 +68,22 @@
       "n_quantum_features": 6,
       "n_train": 18,
       "n_validation": 8,
-      "quantum_train_mse": 0.041553355,
-      "quantum_validation_mse": 0.069647428,
+      "quantum_train_mse": 0.04155336,
+      "quantum_validation_mse": 0.06964743,
       "simulator": "local_exact_statevector",
       "task_id": "synthetic_nonlinear_classification_v1",
       "task_kind": "classification",
       "training_input_digest": "63781413ca846760e4b77265347a97f2e45df87a584b3f9c552276a229c635cb",
       "training_target_digest": "b198b742eaf18800c102c52ceebe48910ffd82d1faf6f4c2266faadf9b06c153",
       "validation_input_digest": "2f58d3b056563899f2642eab5fc086a6e1c46e9125f8c73ed292a4a780a1cc74",
-      "validation_mse_delta": -0.021743135,
+      "validation_mse_delta": -0.02174314,
       "validation_target_digest": "4a074763f5b90a3eb1cdaf91780a3e28583c8cef96120677c532fe1bb70a3844"
     },
     {
       "claim_boundary": "Deterministic synthetic tasks and local exact-statevector features only; not hardware QRC, unseen-domain generalisation, deployment, or quantum advantage.",
       "domain_tag": "synthetic",
-      "esn_train_mse": 0.028688533,
-      "esn_validation_mse": 0.019552905,
+      "esn_train_mse": 0.02868853,
+      "esn_validation_mse": 0.0195529,
       "hardware_execution": false,
       "lower_validation_mse": "esn",
       "matched_feature_count": true,
@@ -91,15 +91,15 @@
       "n_quantum_features": 6,
       "n_train": 18,
       "n_validation": 8,
-      "quantum_train_mse": 0.010494635,
-      "quantum_validation_mse": 0.890831726,
+      "quantum_train_mse": 0.01049463,
+      "quantum_validation_mse": 0.89083173,
       "simulator": "local_exact_statevector",
       "task_id": "synthetic_one_step_forecast_v1",
       "task_kind": "forecast",
       "training_input_digest": "787288c6325b72a815b6c97859b6c51cbc3985727971a8ba2750a8ea644e7d41",
       "training_target_digest": "36a811331cc43093abf5763e3b9964063edec3ef9150fa6d6675aeae7a4686ef",
       "validation_input_digest": "cba6b56fee15fd964a97b0744bcaf31993b6c53c5e64b2dfbab06643bb548706",
-      "validation_mse_delta": 0.871278821,
+      "validation_mse_delta": 0.87127882,
       "validation_target_digest": "330e4918fcd2273518e7156b207e564c4a7bac6ca638884b3848a24e29cb863b"
     }
   ],
@@ -150,7 +150,7 @@
   ],
   "surrogate_model": {
     "claim_boundary": "Local Gaussian-RBF interpolation with an analytic input gradient only; not exact quantum differentiation, hardware execution, generalisation, closed-loop control, or quantum-advantage evidence.",
-    "intercept": 0.111224571,
+    "intercept": 0.11122457,
     "length_scale": 0.50644951,
     "model": "gaussian_rbf",
     "n_centres": 25,
@@ -182,19 +182,19 @@
       "9e569ea6791f88b4d3ba2f3a8405066946d3ba65da47039d3292d2826a8f9513",
       "8ae65e7da250e54cee00e792ceb364a58ad08655b40b9a7eddd2ac2cdb029686"
     ],
-    "training_target_digest": "bb3c8ce10fb80654e5851da1fa26a5a86935a9ec766b38796cbabb20bbc0448a"
+    "training_target_digest": "734d20cef2db2061455eee3a56d7aa30ebea0439f90eb59f4229944a7c688fe6"
   },
   "value_fidelity": {
     "claim_boundary": "Local Gaussian-RBF interpolation with an analytic input gradient only; not exact quantum differentiation, hardware execution, generalisation, closed-loop control, or quantum-advantage evidence.",
-    "exact_target_digest": "90748e37b466b3cbf528fa853b2280015a0f2a7c072acfdc0f042ee7f4c247f5",
+    "exact_target_digest": "b10240ac5702451840c08c05fb18a9b799b6197a0139ab00734158581f878519",
     "hardware_execution": false,
-    "max_absolute_error": 0.000791765,
-    "mean_absolute_error": 0.000361658,
+    "max_absolute_error": 0.00079176,
+    "mean_absolute_error": 0.00036166,
     "n_training": 25,
     "n_validation": 16,
     "passed": true,
-    "prediction_digest": "d41a1505bda9fdc9bbbb44004e561f7b7737a45c4965898230b74e1644c5a11c",
-    "r_squared": 0.999994691,
+    "prediction_digest": "49ed4a75fcb42f91fe56b7c519230bf3da5695376e1072347b88acd73b19bb35",
+    "r_squared": 0.99999469,
     "rmse": 0.00042287,
     "simulator": "local_exact_statevector",
     "thresholds": {
@@ -203,6 +203,6 @@
       "min_r_squared": 0.98
     },
     "training_overlap_count": 0,
-    "validation_input_digest": "16644be3cd82b015d023c92ba6c3f9fc24969e1ae4227d3756fc23a48aa4d166"
+    "validation_input_digest": "ef87c36d1f09e72d57b2b5bfd596d8dc42ed33492a78b829565b0706fd886e65"
   }
 }

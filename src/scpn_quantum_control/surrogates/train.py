@@ -18,7 +18,7 @@ from numpy.typing import NDArray
 from .models import GaussianRBFSurrogate
 
 FloatArray = NDArray[np.float64]
-_NUMERIC_CUSTODY_DECIMALS = 9
+_NUMERIC_CUSTODY_DECIMALS = 8
 
 
 def _array_digest(values: FloatArray) -> str:
