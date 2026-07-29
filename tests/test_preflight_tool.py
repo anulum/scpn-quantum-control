@@ -997,6 +997,8 @@ def test_main_uses_coverage_pytest_by_default(
         "notebook-programme-product exact coverage threshold",
         "studio-executive-product focused coverage",
         "studio-executive-product exact coverage threshold",
+        "compiler-boundary-product focused coverage",
+        "compiler-boundary-product exact coverage threshold",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",

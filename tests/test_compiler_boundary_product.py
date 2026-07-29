@@ -32,7 +32,15 @@ from scpn_quantum_control.compiler_boundary_product import (
 )
 
 
+def _registry_compilers(registry: dict[str, object]) -> list[dict[str, object]]:
+    """Narrow a validated registry compiler collection for drift fixtures."""
+    raw = registry["compilers"]
+    assert isinstance(raw, list)
+    return cast(list[dict[str, object]], raw)
+
+
 def test_list_and_filters() -> None:
+    """Expose the stable compiler catalogue and deterministic filters."""
     ids = list_compiler_ids()
     assert "qir" in ids
     assert "cudaq" in ids
@@ -50,6 +58,7 @@ def test_list_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known compilers while rejecting blank and unknown ids."""
     row = get_compiler_boundary("qir")
     assert row.claim_boundary == COMPILER_BOUNDARY_CLAIM_BOUNDARY
     assert row.import_export_allowed is True
@@ -64,6 +73,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_decide_compiler_path() -> None:
+    """Allow validate-only paths and refuse invent-green execution."""
     qir = decide_compiler_path("qir", request_import_export=True)
     assert qir.allowed is True
 
@@ -86,6 +96,7 @@ def test_decide_compiler_path() -> None:
 
 
 def test_boundary_probe() -> None:
+    """Materialise bounded ambient probes without promotion claims."""
     probe = materialise_demo_compiler_boundary_probe()
     assert probe.invent_green_cudaq_runtime is False
     assert probe.invent_green_qir_provider_submit is False
@@ -100,6 +111,7 @@ def test_boundary_probe() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Publish deterministic surfaces and a validated product registry."""
     surfaces = map_compiler_boundary_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -115,8 +127,9 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift_and_policy() -> None:
+    """Reject catalogue drift and dishonest runtime policy flags."""
     registry = build_compiler_boundary_product_registry()
-    compilers = cast(list[dict[str, object]], list(registry["compilers"]))
+    compilers = _registry_compilers(registry)
 
     broken = dict(registry)
     broken["compilers"] = compilers + [
@@ -158,8 +171,9 @@ def test_integrity_rejects_drift_and_policy() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject malformed rows, duplicates, blanks, and count drift."""
     registry = build_compiler_boundary_product_registry()
-    compilers = cast(list[dict[str, object]], list(registry["compilers"]))
+    compilers = _registry_compilers(registry)
 
     non_map = dict(registry)
     non_map["compilers"] = [cast(Any, "nope")]
@@ -237,12 +251,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the supported compiler-boundary API explicitly exported."""
     assert "materialise_demo_compiler_boundary_probe" in compiler_boundary_product.__all__
     assert "decide_compiler_path" in compiler_boundary_product.__all__
     assert "list_compiler_ids" in compiler_boundary_product.__all__
 
 
 def test_row_decision_probe_validation() -> None:
+    """Enforce row, path-decision, and materialised-probe invariants."""
     base: dict[str, Any] = {
         "compiler_id": "x",
         "title": "t",
@@ -380,6 +396,7 @@ def test_row_decision_probe_validation() -> None:
 
 
 def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fail closed when the internal catalogue is empty or ambiguous."""
     monkeypatch.setattr(compiler_boundary_product, "_CANONICAL", ())
     with pytest.raises(RuntimeError, match="catalogue must be non-empty"):
         compiler_boundary_product._catalogue_map()

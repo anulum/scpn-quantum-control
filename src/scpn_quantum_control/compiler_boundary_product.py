@@ -94,6 +94,7 @@ class CompilerBoundaryRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     compiler_id: str
@@ -174,6 +175,7 @@ class PathEligibilityDecision:
         Non-empty when refused.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     outcome: PathDecisionOutcome
@@ -230,6 +232,7 @@ class MaterialisedCompilerBoundaryProbe:
         Demo fixture label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     catalyst_runner_status: str
@@ -371,6 +374,7 @@ def list_compiler_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Stable compiler ids.
+
     """
     return tuple(row.compiler_id for row in _CANONICAL)
 
@@ -392,6 +396,7 @@ def get_compiler_boundary(compiler_id: str) -> CompilerBoundaryRow:
     ------
     ValueError
         If blank or unknown.
+
     """
     if not compiler_id or not str(compiler_id).strip():
         raise ValueError("compiler_id must be non-empty")
@@ -420,6 +425,7 @@ def iter_compiler_boundaries(
     -------
     tuple[CompilerBoundaryRow, ...]
         Matching rows.
+
     """
     rows: Sequence[CompilerBoundaryRow] = _CANONICAL
     if status is not None:
@@ -453,6 +459,7 @@ def decide_compiler_path(
     -------
     PathEligibilityDecision
         Allowed or refused with blockers.
+
     """
     row = get_compiler_boundary(compiler_id)
     blockers: list[str] = []
@@ -505,6 +512,7 @@ def materialise_compiler_boundary_probe(
     -------
     MaterialisedCompilerBoundaryProbe
         Finite primary observables with invent-green flags False.
+
     """
     comparison = catalyst_compiler_workflow_comparison(runner_status=catalyst_runner_status)
     return MaterialisedCompilerBoundaryProbe(
@@ -524,6 +532,7 @@ def materialise_demo_compiler_boundary_probe() -> MaterialisedCompilerBoundaryPr
     -------
     MaterialisedCompilerBoundaryProbe
         Offline ambient composition probe.
+
     """
     return materialise_compiler_boundary_probe(catalyst_runner_status="runtime_gap")
 
@@ -535,6 +544,7 @@ def map_compiler_boundary_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     return (
         {
@@ -569,6 +579,7 @@ def build_compiler_boundary_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with rows (no blanks).
+
     """
     compilers = [row.to_dict() for row in _CANONICAL]
     return {
@@ -607,6 +618,7 @@ def assert_compiler_boundary_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-green policies appear.
+
     """
     registry = dict(payload) if payload is not None else build_compiler_boundary_product_registry()
     compilers = registry.get("compilers")
