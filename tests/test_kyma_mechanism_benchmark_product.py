@@ -38,6 +38,7 @@ from scpn_quantum_control.kyma_mechanism_benchmark_product import (
 
 
 def test_list_and_filters() -> None:
+    """List stable suite identifiers and filter rows by KYMA generation."""
     ids = list_kyma_suite_ids()
     assert ids == ("kyma_v1", "kyma_v2")
     assert ids == list_kyma_suite_ids()
@@ -49,6 +50,7 @@ def test_list_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known suites and reject blank or unknown identifiers."""
     row = get_kyma_suite("kyma_v2")
     assert row.claim_boundary == KYMA_MECHANISM_BENCHMARK_CLAIM_BOUNDARY
     assert row.mechanism_only is True
@@ -63,6 +65,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_frozen_design_constants() -> None:
+    """Keep frozen design constants digest-stable and ambient-compatible."""
     frozen = get_frozen_design_constants()
     reloaded = load_frozen_design_constants()
     assert frozen.content_digest == reloaded.content_digest
@@ -110,6 +113,7 @@ def test_frozen_design_constants() -> None:
 
 
 def test_decide_kyma_path() -> None:
+    """Allow honest mechanism paths and refuse prohibited claim routes."""
     ok = decide_kyma_path("kyma_v2")
     assert ok.allowed is True
 
@@ -127,6 +131,7 @@ def test_decide_kyma_path() -> None:
 
 
 def test_mechanism_certificate_probe() -> None:
+    """Materialise deterministic bounded mechanism-certificate evidence."""
     with pytest.raises(ValueError, match="seed"):
         materialise_mechanism_certificate_probe(seed=-1)
 
@@ -245,6 +250,7 @@ def test_materialise_certificate_import_failures_fail_closed(
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Publish complete deterministic surface and registry catalogues."""
     surfaces = map_kyma_mechanism_benchmark_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -261,6 +267,7 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift_and_policy() -> None:
+    """Reject suite drift and invent-green, retune, or held-out policies."""
     registry = build_kyma_mechanism_benchmark_product_registry()
     suites = cast(list[dict[str, object]], registry["suites"])
 
@@ -310,6 +317,7 @@ def test_integrity_rejects_drift_and_policy() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject malformed, blank, duplicate, and count-drifted registry rows."""
     registry = build_kyma_mechanism_benchmark_product_registry()
     suites = cast(list[dict[str, object]], registry["suites"])
 
@@ -397,12 +405,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the documented KYMA product functions publicly exported."""
     assert "materialise_demo_mechanism_certificate_probe" in kyma_product.__all__
     assert "decide_kyma_path" in kyma_product.__all__
     assert "get_frozen_design_constants" in kyma_product.__all__
 
 
 def test_row_decision_probe_validation() -> None:
+    """Validate every suite, decision, constant, and probe invariant."""
     base: dict[str, Any] = {
         "suite_id": "x",
         "kind": "kyma_v2",
@@ -755,6 +765,7 @@ def test_assert_mirrored_constants_detects_drift(
 
 
 def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject empty, blank, and duplicate internal suite catalogues."""
     monkeypatch.setattr(kyma_product, "_SUITES", ())
     with pytest.raises(RuntimeError, match="catalogue must be non-empty"):
         kyma_product._suite_map()

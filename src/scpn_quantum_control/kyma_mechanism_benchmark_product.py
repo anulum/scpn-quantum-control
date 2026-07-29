@@ -103,6 +103,7 @@ class KymaSuiteRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     suite_id: str
@@ -184,6 +185,7 @@ class FrozenDesignConstants:
         SHA-256 of canonical constant payload.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     g_sync_grid: tuple[float, ...]
@@ -244,6 +246,7 @@ class PathEligibilityDecision:
         Non-empty when refused.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     outcome: PathDecisionOutcome
@@ -310,6 +313,7 @@ class MaterialisedMechanismCertificateProbe:
         Demo fixture label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     suite_id: str
@@ -383,6 +387,7 @@ def _assert_mirrored_constants_match_ambient() -> None:
         defect.
     RuntimeError
         When ambient constants load but disagree with product mirrors.
+
     """
     ambient_design = importlib.import_module(
         ".benchmarks.kyma_v2.design",
@@ -425,6 +430,7 @@ def load_frozen_design_constants(
     -------
     FrozenDesignConstants
         Grids and targets with digest.
+
     """
     if verify_ambient:
         _assert_mirrored_constants_match_ambient()
@@ -509,6 +515,7 @@ def list_kyma_suite_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Stable suite ids.
+
     """
     return tuple(row.suite_id for row in _SUITES)
 
@@ -530,6 +537,7 @@ def get_kyma_suite(suite_id: str) -> KymaSuiteRow:
     ------
     ValueError
         If blank or unknown.
+
     """
     if not suite_id or not str(suite_id).strip():
         raise ValueError("suite_id must be non-empty")
@@ -555,6 +563,7 @@ def iter_kyma_suites(
     -------
     tuple[KymaSuiteRow, ...]
         Matching rows.
+
     """
     rows: Sequence[KymaSuiteRow] = _SUITES
     if kind is not None:
@@ -569,6 +578,7 @@ def get_frozen_design_constants() -> FrozenDesignConstants:
     -------
     FrozenDesignConstants
         Ambient-derived constants with digest.
+
     """
     return _FROZEN
 
@@ -600,6 +610,7 @@ def decide_kyma_path(
     -------
     PathEligibilityDecision
         Allowed or refused with blockers.
+
     """
     row = get_kyma_suite(suite_id)
     blockers: list[str] = []
@@ -667,6 +678,7 @@ def materialise_mechanism_certificate_probe(
         If seed is negative.
     RuntimeError
         If ambient KYMA/JAX path is unavailable under the current interpreter.
+
     """
     if seed < 0:
         raise ValueError("seed must be non-negative")
@@ -741,6 +753,7 @@ def materialise_demo_mechanism_certificate_probe() -> MaterialisedMechanismCerti
     -------
     MaterialisedMechanismCertificateProbe
         Ambient teacher-dynamics certificates.
+
     """
     return materialise_mechanism_certificate_probe(seed=0)
 
@@ -752,6 +765,7 @@ def map_kyma_mechanism_benchmark_public_surfaces() -> tuple[dict[str, object], .
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     return (
         {
@@ -794,6 +808,7 @@ def build_kyma_mechanism_benchmark_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with suites + frozen constants (no blanks).
+
     """
     suites = [row.to_dict() for row in _SUITES]
     frozen = get_frozen_design_constants().to_dict()
@@ -836,6 +851,7 @@ def assert_kyma_mechanism_benchmark_product_integrity(
     ------
     ValueError
         If coverage, blanks, digests, or invent-green policies appear.
+
     """
     registry = (
         dict(payload) if payload is not None else build_kyma_mechanism_benchmark_product_registry()

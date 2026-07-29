@@ -637,6 +637,51 @@ jobs:
           --fail-under=100
           --include=*/custom_derivatives_product.py
 
+  kyma-mechanism-product-quality:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check KYMA mechanism product quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/kyma_mechanism_benchmark_product.py
+          tests/test_kyma_mechanism_benchmark_product.py
+          tools/kyma_mechanism_benchmark_product_quality_gates.py
+          tests/test_kyma_mechanism_benchmark_product_quality_gate.py
+      - name: Ruff NumPy docstrings for KYMA mechanism product quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/kyma_mechanism_benchmark_product.py
+          tests/test_kyma_mechanism_benchmark_product.py
+          tools/kyma_mechanism_benchmark_product_quality_gates.py
+          tests/test_kyma_mechanism_benchmark_product_quality_gate.py
+      - name: Run KYMA mechanism product focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.kyma-mechanism-product-quality
+          --branch
+          -m pytest -q
+          tests/test_kyma_mechanism_benchmark_product.py
+      - name: Enforce KYMA mechanism product exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.kyma-mechanism-product-quality
+          --precision=2
+          --fail-under=100
+          --include=*/kyma_mechanism_benchmark_product.py
+
   decisive-advantage-quality:
     needs: lint
     runs-on: ubuntu-latest
@@ -1728,7 +1773,7 @@ jobs:
           EOF
 
   ci-gate:
-    needs: [lint, stable-core-product-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, custom-derivatives-product-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
+    needs: [lint, stable-core-product-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, custom-derivatives-product-quality, kyma-mechanism-product-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -1739,6 +1784,7 @@ jobs:
              [[ "${{ needs['thermo-readiness-product-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['quantum-sync-oracle-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['custom-derivatives-product-quality'].result }}" != "success" ]] || \
+             [[ "${{ needs['kyma-mechanism-product-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['decisive-advantage-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['mlir-leaf-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['phase-qnode-affinity-quality'].result }}" != "success" ]] || \

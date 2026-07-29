@@ -47,6 +47,9 @@ if TYPE_CHECKING:
     )
     from tools import decisive_advantage_quality_gates as _decisive_advantage_quality_gates
     from tools import differentiable_quality_gates as _differentiable_quality_gates
+    from tools import (
+        kyma_mechanism_benchmark_product_quality_gates as _kyma_mechanism_product_quality_gates,
+    )
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import program_ad_array_indexing_quality_gates as _array_indexing_quality_gates
     from tools import program_ad_quality_gates as _program_ad_quality_gates
@@ -66,6 +69,9 @@ else:
     )
     _decisive_advantage_quality_gates = import_module("tools.decisive_advantage_quality_gates")
     _differentiable_quality_gates = import_module("tools.differentiable_quality_gates")
+    _kyma_mechanism_product_quality_gates = import_module(
+        "tools.kyma_mechanism_benchmark_product_quality_gates"
+    )
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
     _array_indexing_quality_gates = import_module("tools.program_ad_array_indexing_quality_gates")
     _program_ad_quality_gates = import_module("tools.program_ad_quality_gates")
@@ -386,6 +392,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_thermo_readiness_product_quality_gates.build_static_quality_gates(_PY),
     *_quantum_sync_oracle_product_quality_gates.build_static_quality_gates(_PY),
     *_custom_derivatives_product_quality_gates.build_static_quality_gates(_PY),
+    *_kyma_mechanism_product_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -742,6 +749,9 @@ QUANTUM_SYNC_ORACLE_COVERAGE_GATES = (
 CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_GATES = (
     _custom_derivatives_product_quality_gates.build_coverage_gates(_PY)
 )
+KYMA_MECHANISM_PRODUCT_COVERAGE_GATES = _kyma_mechanism_product_quality_gates.build_coverage_gates(
+    _PY
+)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -999,6 +1009,7 @@ def main() -> int:
             gates.extend(THERMO_READINESS_PRODUCT_COVERAGE_GATES)
             gates.extend(QUANTUM_SYNC_ORACLE_COVERAGE_GATES)
             gates.extend(CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_GATES)
+            gates.extend(KYMA_MECHANISM_PRODUCT_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)
