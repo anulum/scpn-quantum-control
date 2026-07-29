@@ -38,6 +38,12 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
   rejects unregistered new modules. Registry membership grants no product,
   control, hardware, or publication claim.
 
+### Fixed
+
+- The optional `jax` extra now includes FlatBuffers so registered Phase-QNode
+  AOT export serialization and replay work after installing the documented
+  extra.
+
 ## [1.0.0] - 2026-07-17
 
 First stable release. The version carriers move to `1.0.0` and the public

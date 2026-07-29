@@ -120,7 +120,9 @@ pip install -e ".[app-fep]"         # predictive-coding workflow config
 # Portable optional surface — excludes CUDA/JAX wheels that need a matching accelerator stack
 pip install -e ".[all]"
 
-# Accelerator extras — install only on machines with the matching CUDA stack
+# Accelerator extras — install only on machines with the matching CUDA stack.
+# The JAX extra also installs FlatBuffers for registered Phase-QNode AOT export
+# serialization and replay.
 pip install -e ".[accelerated]"
 ```
 

@@ -451,6 +451,8 @@ land on live surfaces or new Zenodo versions.
   digest-gated reviewed wrapper, so the class cannot silently reappear.
 
 ### Fixed
+- The optional `jax` extra now installs FlatBuffers, which the public registered
+  Phase-QNode AOT export audit requires to serialize and replay JAX exports.
 - 2026-07-28 — Recorded immutable GitHub merge `2ff0114` in the exact
   commit-authorship debt set. Its empty follow-up attestation preserves
   provenance but does not replace the scheduled auditor's per-commit check.

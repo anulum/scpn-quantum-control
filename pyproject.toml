@@ -67,7 +67,7 @@ scpn-studio-run = "scpn_quantum_control.studio.executive_cli:main"
 viz = ["matplotlib>=3.5,<4.0"]
 studio = ["scpn-studio-platform>=0.9,<0.12"]
 gpu = ["cupy-cuda12x>=13.0"]
-jax = ["jax[cuda12]>=0.4.30"]
+jax = ["jax[cuda12]>=0.4.30", "flatbuffers>=24.12.23,<26.0"]
 torch = ["torch>=2.2,<3.0"]
 tensorflow = ["tensorflow>=2.16,<3.0"]
 rust = ["scpn-quantum-engine>=0.2.0"]
