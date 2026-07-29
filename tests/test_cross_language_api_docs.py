@@ -36,6 +36,8 @@ def test_typedoc_is_pinned_and_aggregated() -> None:
     assert "needs: [build-strict, rust-reference, typescript-reference]" in workflow
     assert "name: rustdoc-reference" in workflow
     assert "name: typedoc-reference" in workflow
+    dockerfile = Path("Dockerfile").read_text()
+    assert "COPY studio-web/package.json studio-web/package.json" in dockerfile
 
 
 def test_reference_page_is_in_existing_api_navigation() -> None:

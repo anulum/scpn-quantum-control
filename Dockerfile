@@ -44,6 +44,9 @@ COPY oscillatools/src/ oscillatools/src/
 # Hatchling metadata pair, including the README declared by its pyproject.
 COPY oscillatools/pyproject.toml oscillatools/pyproject.toml
 COPY oscillatools/README.md oscillatools/README.md
+# Cross-language documentation contract tests inspect the pinned TypeDoc
+# command and version without installing the Studio frontend in this image.
+COPY studio-web/package.json studio-web/package.json
 
 ENV PYTHONPATH=/app/src:/app/oscillatools/src:/app
 ENV XDG_CACHE_HOME=/home/sqc/.cache
