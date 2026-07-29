@@ -77,6 +77,7 @@ class ExecutionPolicy:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     policy_id: str
@@ -171,6 +172,7 @@ class DryRunPlan:
         Human-readable reason.
     blockers
         Non-empty when refused.
+
     """
 
     policy_id: str
@@ -247,6 +249,7 @@ class EnforceDecision:
         Open blockers when not allowed.
     audit_id
         Deterministic audit identifier for the decision.
+
     """
 
     policy_id: str
@@ -317,6 +320,7 @@ class AuditRecord:
         Planned shots.
     reason
         Decision reason (no secrets).
+
     """
 
     audit_id: str
@@ -449,6 +453,7 @@ def list_execution_policy_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered policy identifiers.
+
     """
     return tuple(row.policy_id for row in _CANONICAL_POLICIES)
 
@@ -470,6 +475,7 @@ def get_execution_policy(policy_id: str) -> ExecutionPolicy:
     ------
     ValueError
         If ``policy_id`` is blank or unknown (fail closed).
+
     """
     if not policy_id or not str(policy_id).strip():
         raise ValueError("policy_id must be a non-empty string")
@@ -498,6 +504,7 @@ def iter_execution_policies(
     -------
     tuple[ExecutionPolicy, ...]
         Matching policies.
+
     """
     rows: Iterable[ExecutionPolicy] = _CANONICAL_POLICIES
     if no_submit is not None:
@@ -512,6 +519,7 @@ def default_execution_policy() -> ExecutionPolicy:
     -------
     ExecutionPolicy
         ``default_no_submit`` catalogue row.
+
     """
     return get_execution_policy("default_no_submit")
 
@@ -572,6 +580,7 @@ def dry_run_execution_plan(
     ------
     ValueError
         If ``policy_id`` is blank/unknown or dimensions are non-positive.
+
     """
     policy = get_execution_policy(policy_id)
     if n_params <= 0:
@@ -684,6 +693,7 @@ def enforce_execution_request(
     ------
     ValueError
         If identifiers / dimensions / mode are invalid.
+
     """
     if mode not in {"dry_run", "would_submit", "ticketed_prep"}:
         raise ValueError(f"unknown mode: {mode!r}")
@@ -782,6 +792,7 @@ def build_audit_record(decision: EnforceDecision) -> AuditRecord:
     -------
     AuditRecord
         Structured audit row.
+
     """
     return AuditRecord(
         audit_id=decision.audit_id,
@@ -801,6 +812,7 @@ def build_hardware_safe_execution_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with every policy (no blanks).
+
     """
     rows = [row.to_dict() for row in _CANONICAL_POLICIES]
     no_submit_count = sum(1 for row in _CANONICAL_POLICIES if row.no_submit)
@@ -838,6 +850,7 @@ def assert_hardware_safe_execution_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-submit defaults appear.
+
     """
     registry = dict(payload) if payload is not None else build_hardware_safe_execution_registry()
     policies = registry.get("policies")

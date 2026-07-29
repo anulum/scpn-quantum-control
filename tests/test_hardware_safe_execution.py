@@ -34,6 +34,7 @@ from scpn_quantum_control.hardware_safe_execution import (
 
 
 def test_list_and_default_no_submit() -> None:
+    """Expose stable policy identifiers and the no-submit default."""
     ids = list_execution_policy_ids()
     assert "default_no_submit" in ids
     assert ids == list_execution_policy_ids()
@@ -46,6 +47,7 @@ def test_list_and_default_no_submit() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known policies and reject blank or unknown identifiers."""
     row = get_execution_policy("ci_dry_run_only")
     assert row.policy_id == "ci_dry_run_only"
     assert row.max_total_shots > 0
@@ -56,6 +58,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_build_registry_and_integrity() -> None:
+    """Build and validate a complete policy registry."""
     registry = build_hardware_safe_execution_registry()
     assert registry["schema"] == HARDWARE_SAFE_EXECUTION_SCHEMA
     assert registry["blank_entry_count"] == 0
@@ -69,6 +72,7 @@ def test_build_registry_and_integrity() -> None:
 
 
 def test_dry_run_allowed_and_over_budget() -> None:
+    """Allow bounded dry runs and report each exceeded budget."""
     ok = dry_run_execution_plan(
         "default_no_submit",
         n_params=2,
@@ -94,6 +98,7 @@ def test_dry_run_allowed_and_over_budget() -> None:
 
 
 def test_dry_run_refuses_would_submit_default() -> None:
+    """Refuse submit intent under the default no-submit policy."""
     refused = dry_run_execution_plan(
         "default_no_submit",
         n_params=1,
@@ -105,6 +110,7 @@ def test_dry_run_refuses_would_submit_default() -> None:
 
 
 def test_enforce_dry_run_and_would_submit() -> None:
+    """Allow safe planning while refusing live-submit enforcement."""
     dry = enforce_execution_request(
         "default_no_submit",
         mode="dry_run",
@@ -131,6 +137,7 @@ def test_enforce_dry_run_and_would_submit() -> None:
 
 
 def test_enforce_ticketed_prep_requires_owner_and_ticket() -> None:
+    """Require both owner permission and a ticket for preparation."""
     missing = enforce_execution_request(
         "owner_ticketed_prep",
         mode="ticketed_prep",
@@ -162,6 +169,7 @@ def test_enforce_ticketed_prep_requires_owner_and_ticket() -> None:
 
 
 def test_audit_record_secret_free() -> None:
+    """Materialise an audit record without credentials or secrets."""
     decision = enforce_execution_request(
         "default_no_submit",
         mode="dry_run",
@@ -176,12 +184,14 @@ def test_audit_record_secret_free() -> None:
 
 
 def test_module_exports() -> None:
+    """Publish the planner, enforcement, and default-policy contracts."""
     assert "dry_run_execution_plan" in hardware_safe_execution.__all__
     assert "enforce_execution_request" in hardware_safe_execution.__all__
     assert "default_execution_policy" in hardware_safe_execution.__all__
 
 
 def test_invalid_dimensions_and_mode() -> None:
+    """Reject non-positive plan dimensions and unknown modes."""
     with pytest.raises(ValueError, match="n_params"):
         dry_run_execution_plan("default_no_submit", n_params=0)
     with pytest.raises(ValueError, match="shift_terms"):
@@ -201,6 +211,7 @@ def test_invalid_dimensions_and_mode() -> None:
 
 
 def test_policy_record_validation() -> None:
+    """Enforce policy identifiers, budgets, cost, and owner invariants."""
     base: dict[str, Any] = {
         "policy_id": "x",
         "summary": "s",
@@ -246,6 +257,7 @@ def test_policy_record_validation() -> None:
 
 
 def test_dry_run_and_enforce_dataclass_invariants() -> None:
+    """Reject inconsistent plan, decision, and audit value objects."""
     with pytest.raises(ValueError, match="policy_id"):
         DryRunPlan(
             policy_id="",
@@ -524,6 +536,7 @@ def test_dry_run_and_enforce_dataclass_invariants() -> None:
 
 
 def test_integrity_rejects_drift_and_invent_submit() -> None:
+    """Reject registry drift, blank rows, and unsafe defaults."""
     good = build_hardware_safe_execution_registry()
     assert_hardware_safe_execution_integrity(good)
 
@@ -591,6 +604,7 @@ def test_integrity_rejects_drift_and_invent_submit() -> None:
 
 
 def test_to_dict_round_trip_fields() -> None:
+    """Serialise policies, plans, and decisions through public methods."""
     policy = get_execution_policy("owner_ticketed_prep")
     payload = policy.to_dict()
     assert payload["cost_model_status"] == "rate_table"
@@ -611,6 +625,7 @@ def test_to_dict_round_trip_fields() -> None:
 
 
 def test_catalogue_map_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject empty, blank, and duplicate canonical catalogues."""
     mod = hardware_safe_execution
     with pytest.raises(RuntimeError, match="non-empty"):
         monkeypatch.setattr(mod, "_CANONICAL_POLICIES", ())
@@ -637,6 +652,7 @@ def test_catalogue_map_guards(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_dry_run_param_and_shift_limits() -> None:
+    """Expose parameter, shift-term, and per-evaluation shot limits."""
     refused_params = dry_run_execution_plan(
         "ci_dry_run_only",
         n_params=32,
@@ -666,6 +682,7 @@ def test_dry_run_param_and_shift_limits() -> None:
 
 
 def test_ticketed_prep_empty_blockers_fallback() -> None:
+    """Preserve over-budget blockers for ticketed preparation."""
     # owner policy within budget but empty ticket already covered; also
     # ticketed over-budget path
     over = enforce_execution_request(
@@ -681,6 +698,7 @@ def test_ticketed_prep_empty_blockers_fallback() -> None:
 
 
 def test_integrity_invalid_no_submit_type() -> None:
+    """Reject invalid no-submit values and missing default policies."""
     good = build_hardware_safe_execution_registry()
     raw = good["policies"]
     assert isinstance(raw, list)
@@ -708,6 +726,7 @@ def test_integrity_invalid_no_submit_type() -> None:
 
 
 def test_more_policy_and_integrity_edges() -> None:
+    """Exercise default-shot, policy-id, and refused-plan edges."""
     # rate_table negative already covered; enforce policy_id blank path via enforce
     with pytest.raises(ValueError, match="policy_id"):
         EnforceDecision(
@@ -828,7 +847,7 @@ def test_ticketed_prep_fallback_blockers_when_plan_silent(
 def test_integrity_rejects_policy_set_drift() -> None:
     """Integrity fails closed when registry policy ids drift from the catalogue."""
     registry = build_hardware_safe_execution_registry()
-    raw = cast(list[dict[str, object]], list(registry["policies"]))
+    raw = cast(list[dict[str, object]], registry["policies"])
     drifted = dict(registry)
     rows = [dict(row) for row in raw]
     # Drop one non-default policy so seen != expected without blank invalid fields.
