@@ -36,6 +36,7 @@ from scpn_quantum_control.control_stack_compose_product import (
 
 
 def test_list_and_filters() -> None:
+    """List ownership and adapter identifiers, then filter support postures."""
     modules = list_ownership_module_ids()
     assert "realtime_feedback" in modules
     assert "execution_policy_gate" in modules
@@ -54,6 +55,7 @@ def test_list_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known ownership/port rows and reject unknown identifiers."""
     row = get_ownership_row("realtime_feedback")
     assert row.claim_boundary == CONTROL_STACK_COMPOSE_CLAIM_BOUNDARY
     assert row.rewrites_forbidden is True
@@ -75,6 +77,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_decide_control_compose_path() -> None:
+    """Allow policy-gated adapters and refuse PCS or runtime rewrites."""
     refused = decide_control_compose_path("realtime_feedback", policy_present=False)
     assert refused.allowed is False
     assert any("ClosedLoopExecutionPolicy" in b for b in refused.blockers)
@@ -100,6 +103,7 @@ def test_decide_control_compose_path() -> None:
 
 
 def test_closed_loop_telemetry_probe() -> None:
+    """Materialise policy-owned simulation telemetry and validate failures."""
     probe = materialise_demo_closed_loop_telemetry_probe()
     assert probe.authorised is True
     assert probe.mode == "simulation"
@@ -121,6 +125,7 @@ def test_closed_loop_telemetry_probe() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Publish complete deterministic surface and registry catalogues."""
     surfaces = map_control_stack_compose_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -139,9 +144,10 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift_and_policy() -> None:
+    """Reject ownership/port drift and permissive PCS or rewrite policy."""
     registry = build_control_stack_compose_product_registry()
-    ownership = cast(list[dict[str, object]], list(registry["ownership"]))
-    ports = cast(list[dict[str, object]], list(registry["adapter_ports"]))
+    ownership = cast(list[dict[str, object]], registry["ownership"])
+    ports = cast(list[dict[str, object]], registry["adapter_ports"])
 
     broken = dict(registry)
     broken["ownership"] = ownership + [
@@ -190,9 +196,10 @@ def test_integrity_rejects_drift_and_policy() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject malformed, blank, duplicate, and count-drifted registry rows."""
     registry = build_control_stack_compose_product_registry()
-    ownership = cast(list[dict[str, object]], list(registry["ownership"]))
-    ports = cast(list[dict[str, object]], list(registry["adapter_ports"]))
+    ownership = cast(list[dict[str, object]], registry["ownership"])
+    ports = cast(list[dict[str, object]], registry["adapter_ports"])
 
     non_map = dict(registry)
     non_map["ownership"] = [cast(Any, "nope")]
@@ -293,12 +300,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the documented control-compose functions publicly exported."""
     assert "materialise_demo_closed_loop_telemetry_probe" in control_stack_compose_product.__all__
     assert "decide_control_compose_path" in control_stack_compose_product.__all__
     assert "list_ownership_module_ids" in control_stack_compose_product.__all__
 
 
 def test_row_decision_probe_validation() -> None:
+    """Validate every ownership, adapter, decision, and telemetry invariant."""
     base_own: dict[str, Any] = {
         "module_id": "x",
         "module_path": "pkg.x",

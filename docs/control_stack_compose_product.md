@@ -73,6 +73,49 @@ result = run_qaoa_mpc_adapter(
 assert result.decision.mode.value == "simulation"
 ```
 
+## Public API contracts
+
+### Ownership and adapter discovery
+
+| API | Contract |
+|---|---|
+| `list_ownership_module_ids()` | Return stable ambient control-owner identifiers in catalogue order. |
+| `list_adapter_port_ids()` | Return stable executable/policy adapter identifiers. |
+| `get_ownership_row(module_id)` | Resolve one immutable owner row; blank and unknown identifiers raise `ValueError`. |
+| `get_adapter_port(port_id)` | Resolve one typed adapter contract; blank and unknown identifiers fail closed. |
+| `iter_ownership_rows(support_posture=None)` | Return every owner or a stable support-posture-filtered tuple. |
+
+`OwnershipRow` validates module identity, ambient ownership, adapter link,
+support posture, rewrite prohibition, and claim boundary. `AdapterPortRow`
+validates its ambient modules, BL-47 pointer, execution-policy requirement, and
+false invent-green PCS flag. Both records serialize through `to_dict()`.
+
+### Eligibility and telemetry
+
+| API | Contract |
+|---|---|
+| `decide_control_compose_path(port_id, ...)` | Require `ClosedLoopExecutionPolicy` presence and return explicit blockers for invented PCS integration or realtime-runtime rewrites. |
+| `materialise_closed_loop_telemetry_probe(...)` | Delegate authorization to ambient `evaluate_closed_loop_policy` and return validated simulation/hardware-gated telemetry. |
+| `materialise_demo_closed_loop_telemetry_probe()` | Materialise the deterministic simulation-only, one-round demonstration. |
+
+`PathEligibilityDecision` keeps outcome, permission, reason, and blockers
+consistent. `MaterialisedClosedLoopTelemetryProbe` validates authorization,
+mode, requested rounds, ticket presence, and the false invent-green PCS flag.
+The product does not treat a Boolean policy assertion as an executable policy
+object; runtime adapters require the actual `ClosedLoopExecutionPolicy`.
+
+### Registry evidence and integrity
+
+| API | Contract |
+|---|---|
+| `map_control_stack_compose_public_surfaces()` | Emit deterministic product and ambient control-surface descriptors with rewrite boundaries. |
+| `build_control_stack_compose_product_registry()` | Build schema-tagged ownership, adapters, surfaces, policy flags, counts, and residual-work evidence. |
+| `assert_control_stack_compose_product_integrity(payload=None)` | Reject empty, malformed, blank, duplicate, count-drifted, policy-gate-missing, ownership/port-drifted, invent-green, or rewrite-permissive state. |
+
+These APIs compose the existing control stack. They do not create a second
+runtime, execute provider pulses, rewrite realtime ownership, bypass BL-47, or
+promote PCS claims.
+
 ## Completed boundaries
 
 - **S67.3** — abstract QAOA-MPC is adapted; pulse execution is explicitly

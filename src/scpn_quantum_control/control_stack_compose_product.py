@@ -111,6 +111,7 @@ class OwnershipRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     module_id: str
@@ -204,6 +205,7 @@ class AdapterPortRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     port_id: AdapterPort
@@ -278,6 +280,7 @@ class PathEligibilityDecision:
         Non-empty when refused.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     outcome: PathDecisionOutcome
@@ -338,6 +341,7 @@ class MaterialisedClosedLoopTelemetryProbe:
         Demo fixture label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     authorised: bool
@@ -568,6 +572,7 @@ def list_ownership_module_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Stable module ids.
+
     """
     return tuple(row.module_id for row in _OWNERSHIP)
 
@@ -579,6 +584,7 @@ def list_adapter_port_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Stable port ids.
+
     """
     return tuple(row.port_id for row in _PORTS)
 
@@ -600,6 +606,7 @@ def get_ownership_row(module_id: str) -> OwnershipRow:
     ------
     ValueError
         If blank or unknown.
+
     """
     if not module_id or not str(module_id).strip():
         raise ValueError("module_id must be non-empty")
@@ -627,6 +634,7 @@ def get_adapter_port(port_id: str) -> AdapterPortRow:
     ------
     ValueError
         If blank or unknown.
+
     """
     if not port_id or not str(port_id).strip():
         raise ValueError("port_id must be non-empty")
@@ -652,6 +660,7 @@ def iter_ownership_rows(
     -------
     tuple[OwnershipRow, ...]
         Matching rows.
+
     """
     rows: Sequence[OwnershipRow] = _OWNERSHIP
     if support_posture is not None:
@@ -683,6 +692,7 @@ def decide_control_compose_path(
     -------
     PathEligibilityDecision
         Allowed or refused with blockers.
+
     """
     port = get_adapter_port(port_id)
     blockers: list[str] = []
@@ -752,6 +762,7 @@ def materialise_closed_loop_telemetry_probe(
     ------
     ValueError
         If requested_rounds invalid or ambient evaluate fails validation.
+
     """
     if requested_rounds < 1:
         raise ValueError("requested_rounds must be positive")
@@ -785,6 +796,7 @@ def materialise_demo_closed_loop_telemetry_probe() -> MaterialisedClosedLoopTele
     -------
     MaterialisedClosedLoopTelemetryProbe
         Authorised simulation decision with invent_green_pcs=False.
+
     """
     return materialise_closed_loop_telemetry_probe(
         allow_hardware=False,
@@ -802,6 +814,7 @@ def map_control_stack_compose_public_surfaces() -> tuple[dict[str, object], ...]
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     return (
         {
@@ -844,6 +857,7 @@ def build_control_stack_compose_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with ownership + ports (no blanks).
+
     """
     ownership = [row.to_dict() for row in _OWNERSHIP]
     ports = [row.to_dict() for row in _PORTS]
@@ -886,6 +900,7 @@ def assert_control_stack_compose_product_integrity(
     ------
     ValueError
         If coverage, blanks, invent-green PCS, or rewrite policy drift.
+
     """
     registry = (
         dict(payload) if payload is not None else build_control_stack_compose_product_registry()

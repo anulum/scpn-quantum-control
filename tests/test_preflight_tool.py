@@ -969,6 +969,8 @@ def test_main_uses_coverage_pytest_by_default(
         "campaign-harness-product exact coverage threshold",
         "cloud-native-deployment focused coverage",
         "cloud-native-deployment exact coverage threshold",
+        "control-stack-compose focused coverage",
+        "control-stack-compose exact coverage threshold",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",
