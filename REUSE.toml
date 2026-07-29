@@ -26,6 +26,11 @@ SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
 [[annotations]]
-path = ["*.ipynb"]
+path = ["*.ipynb", "notebooks/50_chimera_multiscale_control.ipynb"]
+SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["data/chimera_multiscale_control/*"]
 SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
 SPDX-License-Identifier = "AGPL-3.0-or-later"

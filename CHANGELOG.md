@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-07-29 — Chimera and multiscale synchronisation control (BL-60):
+  added immutable nested hierarchy/target contracts, exact finite two-
+  population Kuramoto–Sakaguchi regimes, multiscale Shanahan observables,
+  composed analytic cluster targets, an unapplied backtracking phase proposal,
+  topology-ledger projection custody, notebook 50, and deterministic evidence.
+  Thermodynamic-limit, biological/EEG, stability, controllability, provider,
+  QPU, hardware, deployment, and market-efficacy claims are refused; optional
+  BL-32 F5–F6 catalogue rows are explicitly descoped.
 - 2026-07-29 — Multimodal forecasting under partial observation (BL-37):
   added immutable simulation-only series/graph/event/mask custody, disjoint
   synthetic train/calibration/test trajectories, a training-only missingness-
@@ -83,6 +91,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-29 — BL-60 finite synthetic chimera and multiscale control facade,
+  exact generator, nested observables, analytic target/proposal surfaces,
+  topology-constraint composition, notebook, public guide/API reference, and
+  canonical JSON/Markdown evidence artefacts.
 - 2026-07-29 — BL-37 multimodal partial-observation forecasting facade,
   deterministic synthetic generator, missingness-aware ridge comparator,
   partial-observation and uncertainty certificates, bounded BL-68/BL-33 ports,

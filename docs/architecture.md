@@ -21,6 +21,36 @@ under `accel/` now ships as the standalone `oscillatools` distribution;
 This split is why the same repository can support both reproducible research
 workflows and integration-oriented development.
 
+## Chimera and multiscale control composition
+
+`scpn_quantum_control.chimera_control` isolates BL-60 into six responsibility
+modules plus a public facade: immutable hierarchy/target contracts, exact
+finite two-population synthesis, nested observables, composed analytic
+objectives and unapplied proposals, topology-ledger projection reports, and
+deterministic evidence custody. The package imports the production
+`oscillatools` Sakaguchi force and Shanahan diagnostics, the existing
+`phase.synchronisation_objectives` cluster term, and
+`topology_control.constraints`; it does not duplicate those owners.
+
+The dependency direction is one-way:
+
+```text
+chimera_control.schema
+        ↓
+chimera_control.synthetic ──→ oscillatools Sakaguchi/chimera diagnostics
+        ↓
+chimera_control.observables
+        ↓
+chimera_control.objectives ─→ phase.synchronisation_objectives
+chimera_control.topology ───→ topology_control.constraints
+        ↓
+chimera_control.evidence ───→ deterministic JSON/Markdown + notebook 50
+```
+
+No external execution, controller mutation, hardware, provider, QPU, or
+biological-data dependency enters this package. See
+[Chimera and Multiscale Synchronisation Control](chimera_multiscale_control.md).
+
 ## Multimodal forecasting composition
 
 `scpn_quantum_control.forecasting` now separates BL-37 into seven cohesive
@@ -405,7 +435,7 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 676 (excluding package initialisers) |
+| Python modules | 682 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 81 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% line gate; branch telemetry required and currently observational) |

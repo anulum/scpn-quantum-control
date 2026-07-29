@@ -42,6 +42,13 @@ generic `K_nm`/`omega` compiler path before any domain-specific benchmark.
 If you first need the product, application, and claim-boundary overview, start
 with [Onboarding](onboarding.md).
 
+For finite synthetic partial synchrony, use
+[Chimera and Multiscale Synchronisation Control](chimera_multiscale_control.md)
+with notebook `50_chimera_multiscale_control.ipynb`. That path covers exact
+two-population Kuramoto–Sakaguchi generation, nested order parameters,
+analytic hierarchy targets, an unapplied phase proposal, topology-ledger
+projection, evidence replay, and the associated non-claims.
+
 ```mermaid
 graph TD
     subgraph "Level 1: Foundations — What is this package doing?"

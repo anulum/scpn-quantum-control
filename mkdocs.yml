@@ -137,6 +137,8 @@ nav:
           - Application Benchmark Plugins: application_benchmarks.md
           - Real-Data Synchronisation Forecasting: real_data_sync_forecasting.md
           - Multimodal Partial-Observation Forecasting: multimodal_forecasting.md
+          - Chimera and Multiscale Control: chimera_multiscale_control.md
+          - Chimera Control API: api/chimera_control.md
           - Classical Baselines: classical_baselines.md
           - Benchmarks API: benchmarks_api.md
           - TN/MPS Baseline Design: tn_mps_baseline_design.md

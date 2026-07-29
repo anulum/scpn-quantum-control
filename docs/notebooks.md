@@ -1,6 +1,6 @@
 # Interactive Notebooks
 
-*100 tracked Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
+*107 tracked Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
 frontier research. Notebooks 01-13 cover core quantum simulation. Notebooks 14-47
 document the FIM (Fisher Information Metric) strange loop investigation campaign
 (2026-03-29) with 19 findings (6 negative). The IBM v2 "dual protection on ibm_fez"
@@ -8,7 +8,8 @@ result is retired as a claim (its data is recovered and published in full,
 `data/ibm_hardware_v2_recovered_2026-07-18/`; falsified on the promoted ibm_kingston
 SCPN/FIM campaign — the observation is genuine, the protection interpretation is not).
 Notebook 48 is the Phase 5 Kuramoto handbook workflow companion. Notebook 49 is the
-differentiable first-path companion.*
+differentiable first-path companion. Notebook 50 is the finite synthetic chimera and
+multiscale-control companion.*
 
 ---
 
@@ -27,7 +28,9 @@ Recommended first path:
 3. `03_error_mitigation.ipynb` for ZNE concepts.
 4. `10_qsnn_training.ipynb` for the current gradient-training notebook lane.
 5. `48_kuramoto_handbook_workflow.ipynb` for the Phase 5 Kuramoto facade path.
-6. `13_cross_repo_bridges.ipynb` for integration boundaries.
+6. `50_chimera_multiscale_control.ipynb` for nested order parameters, analytic
+   hierarchy targets, and an unapplied topology-constrained proposal.
+7. `13_cross_repo_bridges.ipynb` for integration boundaries.
 
 ## Notebook governance
 
@@ -55,6 +58,14 @@ All curriculum rows set `hardware_execution: false`.
 Use `49_differentiable_first_path.ipynb` for the no-credential
 `scpn_quantum_control.diff` and `scpn.diff` first-path API before moving into
 framework-specific notebooks.
+
+Use `50_chimera_multiscale_control.ipynb` with the public
+`scpn_quantum_control.chimera_control` facade for exact finite synthetic
+Kuramoto–Sakaguchi regimes, nested population/ensemble observables, analytic
+target gradients, and local topology-ledger projection. Pair it with the
+[chimera and multiscale control guide](chimera_multiscale_control.md). Its
+outputs are configuration-specific simulator evidence, not a biological, EEG,
+stability, controllability, hardware, or deployment result.
 
 For Phase-QNode performance language, notebooks are never enough by themselves:
 the CI evidence bundle must report `isolated_affinity` from a self-hosted

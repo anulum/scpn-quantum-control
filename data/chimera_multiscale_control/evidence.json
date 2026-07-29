@@ -1,0 +1,107 @@
+{
+  "chimera": {
+    "chimera_index": 0.07256167763441221,
+    "community_metastability": 0.022214543610248504,
+    "global_order_mean": 0.7161935162334205,
+    "metastability_index": 0.016669793103209714,
+    "objective_after": 0.037408041846826355,
+    "objective_before": 0.03742679340878786,
+    "population_max": [
+      0.9999999993891631,
+      0.8579984907682651
+    ],
+    "population_mean": [
+      0.9999990262451705,
+      0.5041990621981967
+    ],
+    "population_min": [
+      0.9999882238605796,
+      0.06234977471597839
+    ],
+    "population_std": [
+      2.2475053970327858e-06,
+      0.21078208466434173
+    ],
+    "proposal_accepted": true,
+    "proposal_step_size": 0.25,
+    "regime": "chimera_transient",
+    "trajectory_digest": "b7e6f7f244109fb5bcec07c447a36236720c94bfd39787156f643375f2dbf6e0",
+    "trajectory_samples": 1001
+  },
+  "claim_boundary": "deterministic finite-N synthetic Kuramoto-Sakaguchi analysis and unapplied control proposals; no thermodynamic-limit, stability, controllability, biological, EEG, clinical, hardware, or deployment claim",
+  "content_digest": "a50a32ac6171502e3caebaef63d5b3b34b83f3dddb952100c578700f07e682fd",
+  "generated_on": "2026-07-29",
+  "gradient_max_abs_error": 2.491207289284994e-11,
+  "population_size": 64,
+  "schema_version": "chimera_multiscale_control_evidence.v1",
+  "support": [
+    {
+      "capability": "S60.1 synthetic chimera generators",
+      "evidence": "exact production Sakaguchi force with deterministic RK4 and two frozen regimes",
+      "non_claim": "finite trajectories do not prove a thermodynamic-limit attractor",
+      "status": "supported"
+    },
+    {
+      "capability": "S60.2 differentiable chimera and cluster losses",
+      "evidence": "composed existing analytic cluster-order gradients with finite-difference replay",
+      "non_claim": "a local phase objective is not a closed-loop stability certificate",
+      "status": "supported"
+    },
+    {
+      "capability": "S60.3 multiscale order-parameter suite",
+      "evidence": "nested population and ensemble partitions measured through oscillatools",
+      "non_claim": "synthetic hierarchy does not validate a biological or EEG hierarchy",
+      "status": "supported"
+    },
+    {
+      "capability": "S60.4 BL-32 F5-F6 catalogue rows",
+      "evidence": "BL-60 has a direct tested facade; the optional unrelated registry extension has no consumer",
+      "non_claim": "absence from BL-32 does not imply missing BL-60 production APIs",
+      "status": "descoped"
+    },
+    {
+      "capability": "S60.5 topology-constraint interaction",
+      "evidence": "existing TopologyConstraintLedger projection with before/after violation custody",
+      "non_claim": "projection is not differentiable learning, PH, DLA, hardware, or controllability proof",
+      "status": "bounded"
+    },
+    {
+      "capability": "S60.6 notebook and evidence artefact",
+      "evidence": "executable notebook 50 and deterministic JSON/Markdown byte-check runner",
+      "non_claim": "tutorial output is configuration-specific research evidence",
+      "status": "supported"
+    }
+  ],
+  "synchronised_control": {
+    "chimera_index": 0.00026038858721395266,
+    "community_metastability": 0.00019570318967240181,
+    "global_order_mean": 0.9848680825207307,
+    "metastability_index": 0.00016907297907560324,
+    "objective_after": 1.5594839697341993e-05,
+    "objective_before": 1.559563000933519e-05,
+    "population_max": [
+      0.9999948881896344,
+      0.9964699292717325
+    ],
+    "population_mean": [
+      0.9999558638973342,
+      0.9744416090743557
+    ],
+    "population_min": [
+      0.9999117755087652,
+      0.8991158609981655
+    ],
+    "population_std": [
+      2.9422397267077955e-05,
+      0.019783971129865276
+    ],
+    "proposal_accepted": true,
+    "proposal_step_size": 0.25,
+    "regime": "synchronised_control",
+    "trajectory_digest": "ee35adb9ae444b0833515f9c43a17f9a23c9c61f9c6687853a46ddff7f535605",
+    "trajectory_samples": 501
+  },
+  "topology_digest": "3b599a11eb6a1869ca334963a6f69d1ea53a8657ac88f2ba41c4a815d6d8d5d1",
+  "topology_violation_after": 2.842170943040401e-14,
+  "topology_violation_before": 182.2484375
+}

@@ -9,6 +9,16 @@ is copied here.
 
 ### Current platform programme: reproducible evidence and benchmark infrastructure
 
+- [x] **BL-60 finite synthetic chimera and multiscale control.** Implemented
+  2026-07-29: exact two-population Kuramoto–Sakaguchi regimes, complete nested
+  hierarchy contracts, multiscale Shanahan observables, composed analytic
+  cluster-order targets, an unapplied backtracking phase proposal, topology-
+  ledger projection reports, notebook 50, and digest-bound deterministic
+  evidence. Thermodynamic-limit, biological/EEG, stability, controllability,
+  provider, QPU, hardware, deployment, and market-efficacy claims remain out of
+  scope. Optional BL-32 F5–F6 catalogue rows are explicitly descoped because
+  the direct public facade has no registry consumer.
+
 - [x] **Platform opportunity prioritisation.** Recorded 2026-05-18 in
   `<private-internal-record>`: first
   result packs, then benchmark suite, then symmetry/sector-aware mitigation

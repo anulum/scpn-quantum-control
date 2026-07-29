@@ -1,5 +1,35 @@
 # Validation
 
+## BL-60 chimera and multiscale control
+
+The BL-60 validation lane exercises the public
+`scpn_quantum_control.chimera_control` facade and the real evidence CLI. Its
+focused gates cover:
+
+- complete, disjoint, fine-to-coarse nested hierarchy validation;
+- deterministic two-population Kuramoto–Sakaguchi trajectories through the
+  production force dispatcher;
+- population and ensemble order parameters composed from existing Shanahan
+  diagnostics;
+- analytic hierarchy-target gradients against central finite differences;
+- strict objective decrease for an unapplied backtracking proposal;
+- before/after constraint violations through the existing
+  `TopologyConstraintLedger`;
+- read-only array custody and SHA-256 binding;
+- JSON/Markdown write and byte-check failure on drift;
+- execution of notebook 50 and the evidence runner through user-facing
+  boundaries; and
+- strict API, documentation, typing, lint, security, and focused branch-
+  coverage gates.
+
+The committed 64-per-population evidence separates the frozen chimera transient
+from its synchronised control for the exact configuration and checks the
+analytic gradient to `2.49120728928e-11` maximum absolute error. It does not
+validate an infinite-population attractor, arbitrary network, biological or EEG
+system, learned topology, stability, controllability, provider, QPU, hardware,
+or deployment path. Reproduce with
+`scripts/run_chimera_multiscale_control_evidence.py --check`.
+
 ## Test Suite
 
 Unit, integration, property-based, regression, claim-guard, and workflow-contract

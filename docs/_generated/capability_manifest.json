@@ -1,19 +1,19 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 35,
+    "domain_package_families": 36,
     "example_files": 37,
     "github_workflows": 24,
-    "model_documentation_pages": null,
-    "notebook_files": 106,
+    "model_documentation_pages": 1,
+    "notebook_files": 107,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 347,
-    "python_model_classes": 1314,
-    "python_model_source_modules": 676,
+    "public_documentation_pages": 349,
+    "python_model_classes": 1329,
+    "python_model_source_modules": 682,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1130
+    "test_files": 1137
   },
   "documentation": {
     "examples": [
@@ -105,6 +105,7 @@
       "notebooks/47_winding_number_topological.ipynb",
       "notebooks/48_kuramoto_handbook_workflow.ipynb",
       "notebooks/49_differentiable_first_path.ipynb",
+      "notebooks/50_chimera_multiscale_control.ipynb",
       "notebooks/colab/kaggle_aging_k_decay.ipynb",
       "notebooks/colab/kaggle_anaesthesia_consciousness.ipynb",
       "notebooks/colab/kaggle_biochemical_validation.ipynb",
@@ -183,6 +184,7 @@
       "docs/analog_mapping_feasibility.md",
       "docs/analog_native_readiness.md",
       "docs/analysis_api.md",
+      "docs/api/chimera_control.md",
       "docs/api.md",
       "docs/application_benchmarks.md",
       "docs/architecture.md",
@@ -314,6 +316,7 @@
       "docs/campaigns/validation_readiness_2026-05-05.md",
       "docs/campaigns/vqs_alternative_prereg_2026-05-06.md",
       "docs/changelog.md",
+      "docs/chimera_multiscale_control.md",
       "docs/choosing_a_gradient_path.md",
       "docs/circuit_cutting_product.md",
       "docs/classical_baselines.md",
@@ -535,7 +538,9 @@
     "version": "Package version"
   },
   "models": {
-    "documentation_pages": [],
+    "documentation_pages": [
+      "chimera_control.md"
+    ],
     "domain_package_counts": [
       {
         "package": "analog_mapping",
@@ -566,6 +571,11 @@
         "package": "bridge",
         "path": "src/scpn_quantum_control/bridge",
         "python_modules": 15
+      },
+      {
+        "package": "chimera_control",
+        "path": "src/scpn_quantum_control/chimera_control",
+        "python_modules": 6
       },
       {
         "package": "codegen",
@@ -1141,6 +1151,18 @@
       {
         "name": "CheckpointPolicy",
         "path": "src/scpn_quantum_control/adjoint_replay_product.py"
+      },
+      {
+        "name": "ChimeraControlSpecification",
+        "path": "src/scpn_quantum_control/chimera_control/schema.py"
+      },
+      {
+        "name": "ChimeraMultiscaleEvidence",
+        "path": "src/scpn_quantum_control/chimera_control/evidence.py"
+      },
+      {
+        "name": "ChimeraSupportRow",
+        "path": "src/scpn_quantum_control/chimera_control/evidence.py"
       },
       {
         "name": "CircuitCuttingPlan",
@@ -2679,6 +2701,18 @@
         "path": "src/scpn_quantum_control/phase/param_shift.py"
       },
       {
+        "name": "HierarchyCouplingSummary",
+        "path": "src/scpn_quantum_control/chimera_control/topology.py"
+      },
+      {
+        "name": "HierarchyLevel",
+        "path": "src/scpn_quantum_control/chimera_control/schema.py"
+      },
+      {
+        "name": "HierarchyTarget",
+        "path": "src/scpn_quantum_control/chimera_control/schema.py"
+      },
+      {
         "name": "HigherOrderKuramotoSpec",
         "path": "src/scpn_quantum_control/phase/kuramoto_variants.py"
       },
@@ -3007,6 +3041,10 @@
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
+        "name": "LevelOrderParameterSummary",
+        "path": "src/scpn_quantum_control/chimera_control/observables.py"
+      },
+      {
         "name": "LevenbergMarquardtDampingUpdate",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
@@ -3317,6 +3355,14 @@
       {
         "name": "MultiscaleComparison",
         "path": "src/scpn_quantum_control/qec/logical_dla_parity.py"
+      },
+      {
+        "name": "MultiscaleHierarchy",
+        "path": "src/scpn_quantum_control/chimera_control/schema.py"
+      },
+      {
+        "name": "MultiscaleOrderParameterReport",
+        "path": "src/scpn_quantum_control/chimera_control/observables.py"
       },
       {
         "name": "MultiscaleQECResult",
@@ -3893,6 +3939,10 @@
       {
         "name": "PhaseBoundary",
         "path": "src/scpn_quantum_control/analysis/phase_diagram.py"
+      },
+      {
+        "name": "PhaseControlProposal",
+        "path": "src/scpn_quantum_control/chimera_control/objectives.py"
       },
       {
         "name": "PhaseDiagramResult",
@@ -5579,6 +5629,14 @@
         "path": "src/scpn_quantum_control/qec/syndrome_flow.py"
       },
       {
+        "name": "SyntheticChimeraConfig",
+        "path": "src/scpn_quantum_control/chimera_control/synthetic.py"
+      },
+      {
+        "name": "SyntheticChimeraRun",
+        "path": "src/scpn_quantum_control/chimera_control/synthetic.py"
+      },
+      {
         "name": "SyntheticDomainTag",
         "path": "src/scpn_quantum_control/forecasting/multimodal_schema.py"
       },
@@ -5593,6 +5651,14 @@
       {
         "name": "SyntheticReconstructionCertificate",
         "path": "src/scpn_quantum_control/circuit_cutting_product.py"
+      },
+      {
+        "name": "SyntheticRegime",
+        "path": "src/scpn_quantum_control/chimera_control/schema.py"
+      },
+      {
+        "name": "SyntheticRegimeEvidence",
+        "path": "src/scpn_quantum_control/chimera_control/evidence.py"
       },
       {
         "name": "SyntheticReservoirDataset",
@@ -5693,6 +5759,10 @@
       {
         "name": "TopologyOptimisationTrace",
         "path": "src/scpn_quantum_control/topology_control/optimizers.py"
+      },
+      {
+        "name": "TopologyProjectionReport",
+        "path": "src/scpn_quantum_control/chimera_control/topology.py"
       },
       {
         "name": "TraceADArray",
@@ -6140,6 +6210,12 @@
       "src/scpn_quantum_control/bridge/ssgf_adapter.py",
       "src/scpn_quantum_control/bridge/ssgf_w_adapter.py",
       "src/scpn_quantum_control/campaign_harness_product.py",
+      "src/scpn_quantum_control/chimera_control/evidence.py",
+      "src/scpn_quantum_control/chimera_control/objectives.py",
+      "src/scpn_quantum_control/chimera_control/observables.py",
+      "src/scpn_quantum_control/chimera_control/schema.py",
+      "src/scpn_quantum_control/chimera_control/synthetic.py",
+      "src/scpn_quantum_control/chimera_control/topology.py",
       "src/scpn_quantum_control/circuit_cutting_product.py",
       "src/scpn_quantum_control/cloud_native_deployment_product.py",
       "src/scpn_quantum_control/codegen/ultrascale_hls.py",
@@ -7918,6 +7994,13 @@
       "tests/test_check_rust_pyi_exports.py",
       "tests/test_check_secrets.py",
       "tests/test_check_version_consistency.py",
+      "tests/test_chimera_control_e2e.py",
+      "tests/test_chimera_control_evidence.py",
+      "tests/test_chimera_control_objectives.py",
+      "tests/test_chimera_control_observables.py",
+      "tests/test_chimera_control_schema.py",
+      "tests/test_chimera_control_synthetic.py",
+      "tests/test_chimera_control_topology.py",
       "tests/test_ci_documentation_surface_gate.py",
       "tests/test_circuit_cutting.py",
       "tests/test_circuit_cutting_product.py",
