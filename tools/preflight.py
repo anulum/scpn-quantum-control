@@ -63,6 +63,9 @@ if TYPE_CHECKING:
     from tools import (
         kyma_mechanism_benchmark_product_quality_gates as _kyma_mechanism_product_quality_gates,
     )
+    from tools import (
+        migration_guides_product_quality_gates as _migration_guides_product_quality_gates,
+    )
     from tools import multi_hal_federation_product_quality_gates as _multi_hal_quality_gates
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import (
@@ -114,6 +117,9 @@ else:
     _hardware_safe_quality_gates = import_module("tools.hardware_safe_execution_quality_gates")
     _kyma_mechanism_product_quality_gates = import_module(
         "tools.kyma_mechanism_benchmark_product_quality_gates"
+    )
+    _migration_guides_product_quality_gates = import_module(
+        "tools.migration_guides_product_quality_gates"
     )
     _multi_hal_quality_gates = import_module("tools.multi_hal_federation_product_quality_gates")
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
@@ -454,6 +460,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_hardware_safe_quality_gates.build_static_quality_gates(_PY),
     *_qpu_compute_product_quality_gates.build_static_quality_gates(_PY),
     *_wirtinger_implicit_product_quality_gates.build_static_quality_gates(_PY),
+    *_migration_guides_product_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -838,6 +845,9 @@ QPU_COMPUTE_PRODUCT_COVERAGE_GATES = _qpu_compute_product_quality_gates.build_co
 WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_GATES = (
     _wirtinger_implicit_product_quality_gates.build_coverage_gates(_PY)
 )
+MIGRATION_GUIDES_PRODUCT_COVERAGE_GATES = (
+    _migration_guides_product_quality_gates.build_coverage_gates(_PY)
+)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -1107,6 +1117,7 @@ def main() -> int:
             gates.extend(HARDWARE_SAFE_EXECUTION_COVERAGE_GATES)
             gates.extend(QPU_COMPUTE_PRODUCT_COVERAGE_GATES)
             gates.extend(WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_GATES)
+            gates.extend(MIGRATION_GUIDES_PRODUCT_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

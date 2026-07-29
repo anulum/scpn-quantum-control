@@ -37,7 +37,14 @@ from scpn_quantum_control.migration_guides_product import (
 )
 
 
+def _registry_concepts(registry: dict[str, object]) -> list[dict[str, object]]:
+    raw = registry["concepts"]
+    assert isinstance(raw, list)
+    return cast(list[dict[str, object]], raw)
+
+
 def test_list_concepts_and_filters() -> None:
+    """Expose the stable concept catalogue and typed filters."""
     ids = list_migration_concept_ids()
     assert "pl_parameter_shift_to_phase_qnode" in ids
     assert "qk_statevector_parameter_shift" in ids
@@ -51,6 +58,7 @@ def test_list_concepts_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known concepts while rejecting blank and unknown identifiers."""
     row = get_migration_concept("pl_parameter_shift_to_phase_qnode")
     assert row.claim_boundary == MIGRATION_GUIDES_CLAIM_BOUNDARY
     assert row.allows_live_runtime is False
@@ -62,6 +70,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_path_eligibility_refuse_and_allow() -> None:
+    """Allow supported local subsets and refuse unsupported migration paths."""
     allowed = decide_migration_path(local_supported_subset=True)
     assert allowed.allowed is True
     assert allowed.outcome == "allowed"
@@ -79,6 +88,7 @@ def test_path_eligibility_refuse_and_allow() -> None:
 
 
 def test_materialise_demo_pennylane_round_trip() -> None:
+    """Materialise the bounded PennyLane to Phase-QNode round trip."""
     probe = materialise_demo_pennylane_round_trip(theta=0.4)
     assert probe.demo_label.startswith("pl_rx_z_expval")
     assert probe.n_parameters == 1
@@ -93,6 +103,7 @@ def test_materialise_demo_pennylane_round_trip() -> None:
 
 
 def test_materialise_demo_qiskit_local_gradient() -> None:
+    """Materialise the local Qiskit statevector gradient comparison."""
     probe = materialise_demo_qiskit_local_gradient(theta=0.4)
     assert probe.demo_label.startswith("qk_rx_z")
     assert abs(probe.value - np.cos(0.4)) < 1e-9
@@ -105,6 +116,7 @@ def test_materialise_demo_qiskit_local_gradient() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Map ambient owners and validate the complete migration registry."""
     surfaces = map_migration_guides_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -121,8 +133,9 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_ghost_concept_drift() -> None:
+    """Verify integrity rejects ghost concept drift."""
     registry = build_migration_guides_product_registry()
-    concepts = cast(list[dict[str, object]], list(registry["concepts"]))
+    concepts = _registry_concepts(registry)
     broken = dict(registry)
     broken["concepts"] = concepts + [
         {
@@ -146,6 +159,7 @@ def test_integrity_rejects_ghost_concept_drift() -> None:
 
 
 def test_integrity_rejects_empty_concepts() -> None:
+    """Verify integrity rejects empty concepts."""
     empty: dict[str, object] = {
         "concepts": [],
         "blank_entry_count": 0,
@@ -156,8 +170,9 @@ def test_integrity_rejects_empty_concepts() -> None:
 
 
 def test_integrity_rejects_invent_green_live_runtime() -> None:
+    """Verify integrity rejects invent green live runtime."""
     registry = build_migration_guides_product_registry()
-    concepts = cast(list[dict[str, object]], list(registry["concepts"]))
+    concepts = _registry_concepts(registry)
     live = dict(registry)
     live_rows = [dict(row) for row in concepts]
     live_rows[0]["allows_live_runtime"] = True
@@ -167,8 +182,9 @@ def test_integrity_rejects_invent_green_live_runtime() -> None:
 
 
 def test_integrity_rejects_invent_green_full_parity() -> None:
+    """Verify integrity rejects invent green full parity."""
     registry = build_migration_guides_product_registry()
-    concepts = cast(list[dict[str, object]], list(registry["concepts"]))
+    concepts = _registry_concepts(registry)
     parity = dict(registry)
     parity_rows = [dict(row) for row in concepts]
     parity_rows[0]["allows_full_parity_claim"] = True
@@ -178,6 +194,7 @@ def test_integrity_rejects_invent_green_full_parity() -> None:
 
 
 def test_integrity_rejects_non_mapping_row() -> None:
+    """Verify integrity rejects non mapping row."""
     registry = build_migration_guides_product_registry()
     non_map = dict(registry)
     non_map["concepts"] = [cast(Any, "nope")]
@@ -186,8 +203,9 @@ def test_integrity_rejects_non_mapping_row() -> None:
 
 
 def test_integrity_rejects_blank_concept_id() -> None:
+    """Verify integrity rejects blank concept id."""
     registry = build_migration_guides_product_registry()
-    concepts = cast(list[dict[str, object]], list(registry["concepts"]))
+    concepts = _registry_concepts(registry)
     blank_id = dict(registry)
     rows = [dict(row) for row in concepts]
     rows[0]["concept_id"] = "  "
@@ -197,8 +215,9 @@ def test_integrity_rejects_blank_concept_id() -> None:
 
 
 def test_integrity_rejects_invalid_framework() -> None:
+    """Verify integrity rejects invalid framework."""
     registry = build_migration_guides_product_registry()
-    concepts = cast(list[dict[str, object]], list(registry["concepts"]))
+    concepts = _registry_concepts(registry)
     bad_fw = dict(registry)
     frows = [dict(row) for row in concepts]
     frows[1]["framework"] = "nope"
@@ -208,8 +227,9 @@ def test_integrity_rejects_invalid_framework() -> None:
 
 
 def test_integrity_rejects_blank_symbol_name() -> None:
+    """Verify integrity rejects blank symbol name."""
     registry = build_migration_guides_product_registry()
-    concepts = cast(list[dict[str, object]], list(registry["concepts"]))
+    concepts = _registry_concepts(registry)
     no_symbol = dict(registry)
     srows = [dict(row) for row in concepts]
     srows[0]["symbol_name"] = ""
@@ -219,8 +239,9 @@ def test_integrity_rejects_blank_symbol_name() -> None:
 
 
 def test_integrity_rejects_missing_default_concept() -> None:
+    """Verify integrity rejects missing default concept."""
     registry = build_migration_guides_product_registry()
-    concepts = cast(list[dict[str, object]], list(registry["concepts"]))
+    concepts = _registry_concepts(registry)
     no_default = dict(registry)
     renamed = [dict(row) for row in concepts]
     for row in renamed:
@@ -232,8 +253,9 @@ def test_integrity_rejects_missing_default_concept() -> None:
 
 
 def test_integrity_rejects_missing_refuse_concept() -> None:
+    """Verify integrity rejects missing refuse concept."""
     registry = build_migration_guides_product_registry()
-    concepts = cast(list[dict[str, object]], list(registry["concepts"]))
+    concepts = _registry_concepts(registry)
     no_refuse = dict(registry)
     without = [
         dict(row) for row in concepts if row.get("concept_id") != "refuse_full_runtime_parity"
@@ -245,8 +267,9 @@ def test_integrity_rejects_missing_refuse_concept() -> None:
 
 
 def test_integrity_rejects_duplicate_concept_id() -> None:
+    """Verify integrity rejects duplicate concept id."""
     registry = build_migration_guides_product_registry()
-    concepts = cast(list[dict[str, object]], list(registry["concepts"]))
+    concepts = _registry_concepts(registry)
     dup = dict(registry)
     drows = [dict(row) for row in concepts]
     drows.append(dict(drows[0]))
@@ -257,6 +280,7 @@ def test_integrity_rejects_duplicate_concept_id() -> None:
 
 
 def test_integrity_rejects_nonzero_blank_entry_count() -> None:
+    """Verify integrity rejects nonzero blank entry count."""
     registry = build_migration_guides_product_registry()
     blank_count = dict(registry)
     blank_count["blank_entry_count"] = 1
@@ -265,6 +289,7 @@ def test_integrity_rejects_nonzero_blank_entry_count() -> None:
 
 
 def test_integrity_rejects_concept_count_mismatch() -> None:
+    """Verify integrity rejects concept count mismatch."""
     registry = build_migration_guides_product_registry()
     count_mismatch = dict(registry)
     count_mismatch["concept_count"] = 0
@@ -273,6 +298,7 @@ def test_integrity_rejects_concept_count_mismatch() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep every documented migration product entry point public."""
     assert "materialise_demo_pennylane_round_trip" in migration_guides_product.__all__
     assert "materialise_demo_qiskit_local_gradient" in migration_guides_product.__all__
     assert "list_migration_concept_ids" in migration_guides_product.__all__
@@ -292,6 +318,7 @@ def _valid_concept_row_kwargs() -> dict[str, Any]:
 
 
 def test_concept_row_accepts_valid_fields() -> None:
+    """Verify concept row accepts valid fields."""
     row = MigrationConceptRow(**_valid_concept_row_kwargs())
     assert row.concept_id == "x"
     payload = row.to_dict()
@@ -300,36 +327,43 @@ def test_concept_row_accepts_valid_fields() -> None:
 
 
 def test_concept_row_rejects_blank_concept_id() -> None:
+    """Verify concept row rejects blank concept id."""
     with pytest.raises(ValueError, match="concept_id"):
         MigrationConceptRow(**{**_valid_concept_row_kwargs(), "concept_id": ""})
 
 
 def test_concept_row_rejects_unknown_framework() -> None:
+    """Verify concept row rejects unknown framework."""
     with pytest.raises(ValueError, match="framework"):
         MigrationConceptRow(**{**_valid_concept_row_kwargs(), "framework": cast(Any, "nope")})
 
 
 def test_concept_row_rejects_invent_green_live_runtime() -> None:
+    """Verify concept row rejects invent green live runtime."""
     with pytest.raises(ValueError, match="allows_live_runtime"):
         MigrationConceptRow(**{**_valid_concept_row_kwargs(), "allows_live_runtime": True})
 
 
 def test_concept_row_rejects_invent_green_full_parity() -> None:
+    """Verify concept row rejects invent green full parity."""
     with pytest.raises(ValueError, match="allows_full_parity"):
         MigrationConceptRow(**{**_valid_concept_row_kwargs(), "allows_full_parity_claim": True})
 
 
 def test_concept_row_rejects_blank_external_concept() -> None:
+    """Verify concept row rejects blank external concept."""
     with pytest.raises(ValueError, match="external_concept"):
         MigrationConceptRow(**{**_valid_concept_row_kwargs(), "external_concept": ""})
 
 
 def test_concept_row_rejects_blank_scpn_api() -> None:
+    """Verify concept row rejects blank scpn api."""
     with pytest.raises(ValueError, match="scpn_api"):
         MigrationConceptRow(**{**_valid_concept_row_kwargs(), "scpn_api": ""})
 
 
 def test_concept_row_rejects_unknown_support_posture() -> None:
+    """Verify concept row rejects unknown support posture."""
     with pytest.raises(ValueError, match="support_posture"):
         MigrationConceptRow(
             **{**_valid_concept_row_kwargs(), "support_posture": cast(Any, "nope")}
@@ -337,26 +371,31 @@ def test_concept_row_rejects_unknown_support_posture() -> None:
 
 
 def test_concept_row_rejects_blank_summary() -> None:
+    """Verify concept row rejects blank summary."""
     with pytest.raises(ValueError, match="summary"):
         MigrationConceptRow(**{**_valid_concept_row_kwargs(), "summary": ""})
 
 
 def test_concept_row_rejects_blank_module_path() -> None:
+    """Verify concept row rejects blank module path."""
     with pytest.raises(ValueError, match="module_path"):
         MigrationConceptRow(**{**_valid_concept_row_kwargs(), "module_path": ""})
 
 
 def test_concept_row_rejects_blank_symbol_name() -> None:
+    """Verify concept row rejects blank symbol name."""
     with pytest.raises(ValueError, match="symbol_name"):
         MigrationConceptRow(**{**_valid_concept_row_kwargs(), "symbol_name": ""})
 
 
 def test_concept_row_rejects_blank_as_of() -> None:
+    """Verify concept row rejects blank as of."""
     with pytest.raises(ValueError, match="as_of"):
         MigrationConceptRow(**{**_valid_concept_row_kwargs(), "as_of": ""})
 
 
 def test_path_decision_refused_requires_blockers() -> None:
+    """Verify path decision refused requires blockers."""
     with pytest.raises(ValueError, match="require blockers"):
         PathEligibilityDecision(
             outcome="refused",
@@ -367,6 +406,7 @@ def test_path_decision_refused_requires_blockers() -> None:
 
 
 def test_path_decision_rejects_unknown_outcome() -> None:
+    """Verify path decision rejects unknown outcome."""
     with pytest.raises(ValueError, match="outcome"):
         PathEligibilityDecision(
             outcome=cast(Any, "nope"),
@@ -377,6 +417,7 @@ def test_path_decision_rejects_unknown_outcome() -> None:
 
 
 def test_path_decision_rejects_blank_reason() -> None:
+    """Verify path decision rejects blank reason."""
     with pytest.raises(ValueError, match="reason"):
         PathEligibilityDecision(
             outcome="refused",
@@ -387,6 +428,7 @@ def test_path_decision_rejects_blank_reason() -> None:
 
 
 def test_path_decision_allowed_flag_must_match_outcome() -> None:
+    """Verify path decision allowed flag must match outcome."""
     with pytest.raises(ValueError, match="outcome=allowed"):
         PathEligibilityDecision(
             outcome="refused",
@@ -404,6 +446,7 @@ def test_path_decision_allowed_flag_must_match_outcome() -> None:
 
 
 def test_path_decision_allowed_cannot_list_blockers() -> None:
+    """Verify path decision allowed cannot list blockers."""
     with pytest.raises(ValueError, match="cannot list blockers"):
         PathEligibilityDecision(
             outcome="allowed",
@@ -414,6 +457,7 @@ def test_path_decision_allowed_cannot_list_blockers() -> None:
 
 
 def test_path_decision_rejects_blank_blocker_entries() -> None:
+    """Verify path decision rejects blank blocker entries."""
     with pytest.raises(ValueError, match="blockers entries"):
         PathEligibilityDecision(
             outcome="refused",
@@ -424,10 +468,12 @@ def test_path_decision_rejects_blank_blocker_entries() -> None:
 
 
 def test_path_decision_to_dict_allowed() -> None:
+    """Verify path decision to dict allowed."""
     assert decide_migration_path().to_dict()["allowed"] is True
 
 
 def test_pennylane_probe_rejects_non_finite_values() -> None:
+    """Verify pennylane probe rejects non finite values."""
     with pytest.raises(ValueError, match="finite"):
         MaterialisedPennyLaneRoundTrip(
             value_match=True,
@@ -442,6 +488,7 @@ def test_pennylane_probe_rejects_non_finite_values() -> None:
 
 
 def test_pennylane_probe_rejects_negative_value_difference() -> None:
+    """Verify pennylane probe rejects negative value difference."""
     with pytest.raises(ValueError, match="max_value_difference"):
         MaterialisedPennyLaneRoundTrip(
             value_match=True,
@@ -456,6 +503,7 @@ def test_pennylane_probe_rejects_negative_value_difference() -> None:
 
 
 def test_pennylane_probe_rejects_negative_gradient_difference() -> None:
+    """Verify pennylane probe rejects negative gradient difference."""
     with pytest.raises(ValueError, match="max_gradient_difference"):
         MaterialisedPennyLaneRoundTrip(
             value_match=True,
@@ -470,6 +518,7 @@ def test_pennylane_probe_rejects_negative_gradient_difference() -> None:
 
 
 def test_pennylane_probe_rejects_negative_n_parameters() -> None:
+    """Verify pennylane probe rejects negative n parameters."""
     with pytest.raises(ValueError, match="n_parameters"):
         MaterialisedPennyLaneRoundTrip(
             value_match=True,
@@ -484,6 +533,7 @@ def test_pennylane_probe_rejects_negative_n_parameters() -> None:
 
 
 def test_pennylane_probe_rejects_blank_demo_label() -> None:
+    """Verify pennylane probe rejects blank demo label."""
     with pytest.raises(ValueError, match="demo_label"):
         MaterialisedPennyLaneRoundTrip(
             value_match=True,
@@ -498,6 +548,7 @@ def test_pennylane_probe_rejects_blank_demo_label() -> None:
 
 
 def test_qiskit_probe_rejects_empty_gradient() -> None:
+    """Verify qiskit probe rejects empty gradient."""
     with pytest.raises(ValueError, match="gradient must be non-empty"):
         MaterialisedQiskitLocalGradient(
             value=0.0,
@@ -512,6 +563,7 @@ def test_qiskit_probe_rejects_empty_gradient() -> None:
 
 
 def test_qiskit_probe_rejects_gradient_length_mismatch() -> None:
+    """Verify qiskit probe rejects gradient length mismatch."""
     with pytest.raises(ValueError, match="gradient length"):
         MaterialisedQiskitLocalGradient(
             value=0.0,
@@ -526,6 +578,7 @@ def test_qiskit_probe_rejects_gradient_length_mismatch() -> None:
 
 
 def test_qiskit_probe_rejects_non_finite_value() -> None:
+    """Verify qiskit probe rejects non finite value."""
     with pytest.raises(ValueError, match="finite"):
         MaterialisedQiskitLocalGradient(
             value=float("nan"),
@@ -540,6 +593,7 @@ def test_qiskit_probe_rejects_non_finite_value() -> None:
 
 
 def test_qiskit_probe_rejects_negative_value_difference() -> None:
+    """Verify qiskit probe rejects negative value difference."""
     with pytest.raises(ValueError, match="max_value_difference"):
         MaterialisedQiskitLocalGradient(
             value=0.0,
@@ -554,6 +608,7 @@ def test_qiskit_probe_rejects_negative_value_difference() -> None:
 
 
 def test_qiskit_probe_rejects_negative_gradient_difference() -> None:
+    """Verify qiskit probe rejects negative gradient difference."""
     with pytest.raises(ValueError, match="max_gradient_difference"):
         MaterialisedQiskitLocalGradient(
             value=0.0,
@@ -568,6 +623,7 @@ def test_qiskit_probe_rejects_negative_gradient_difference() -> None:
 
 
 def test_qiskit_probe_rejects_blank_method() -> None:
+    """Verify qiskit probe rejects blank method."""
     with pytest.raises(ValueError, match="method"):
         MaterialisedQiskitLocalGradient(
             value=0.0,
@@ -582,6 +638,7 @@ def test_qiskit_probe_rejects_blank_method() -> None:
 
 
 def test_qiskit_probe_rejects_blank_demo_label() -> None:
+    """Verify qiskit probe rejects blank demo label."""
     with pytest.raises(ValueError, match="demo_label"):
         MaterialisedQiskitLocalGradient(
             value=0.0,
@@ -596,26 +653,32 @@ def test_qiskit_probe_rejects_blank_demo_label() -> None:
 
 
 def test_materialise_pennylane_rejects_non_finite_theta() -> None:
+    """Verify materialise pennylane rejects non finite theta."""
     with pytest.raises(ValueError, match="theta"):
         materialise_demo_pennylane_round_trip(theta=float("nan"))
 
 
 def test_materialise_qiskit_rejects_non_finite_theta() -> None:
+    """Verify materialise qiskit rejects non finite theta."""
     with pytest.raises(ValueError, match="theta"):
         materialise_demo_qiskit_local_gradient(theta=float("nan"))
 
 
 def test_materialise_pennylane_rejects_negative_value_tolerance() -> None:
+    """Verify materialise pennylane rejects negative value tolerance."""
     with pytest.raises(ValueError, match="value_tolerance"):
         materialise_demo_pennylane_round_trip(value_tolerance=-0.1)
 
 
 def test_materialise_pennylane_rejects_negative_gradient_tolerance() -> None:
+    """Verify materialise pennylane rejects negative gradient tolerance."""
     with pytest.raises(ValueError, match="gradient_tolerance"):
         materialise_demo_pennylane_round_trip(gradient_tolerance=-0.1)
 
 
 def test_materialise_refuses_when_path_blocked(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Refuse both materialisers when the migration path policy blocks."""
+
     def _refuse(**_kwargs: Any) -> PathEligibilityDecision:
         return PathEligibilityDecision(
             outcome="refused",
@@ -740,6 +803,35 @@ def test_materialise_pennylane_falls_back_when_import_unavailable(
     probe = materialise_demo_pennylane_round_trip(theta=0.4)
     assert probe.demo_label == "pl_rx_z_expval_phase_qnode_local"
     assert probe.value_match is True
+
+
+def test_materialise_pennylane_falls_back_when_import_probe_raises(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Recover through the local subset when optional PennyLane probing raises."""
+
+    def _raise() -> bool:
+        raise RuntimeError("optional PennyLane probe failed")
+
+    monkeypatch.setattr(
+        "scpn_quantum_control.phase.pennylane_import.is_pennylane_import_available",
+        _raise,
+    )
+    probe = materialise_demo_pennylane_round_trip(theta=0.4)
+    assert probe.demo_label == "pl_rx_z_expval_phase_qnode_local"
+    assert probe.gradient_match is True
+
+
+def test_materialise_qiskit_falls_back_when_import_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Recover through Phase-QNode when the optional Qiskit import is incomplete."""
+    monkeypatch.setitem(sys.modules, "qiskit", types.ModuleType("qiskit"))
+    probe = materialise_demo_qiskit_local_gradient(theta=0.4)
+    assert probe.demo_label == "qk_rx_z_phase_qnode_local"
+    assert probe.method == "phase_qnode_parameter_shift_local_subset"
+    assert probe.max_value_difference < 1e-12
+    assert probe.max_gradient_difference < 1e-12
 
 
 def test_materialise_qiskit_uses_statevector_parameter_shift(

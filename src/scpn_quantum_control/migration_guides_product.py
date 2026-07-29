@@ -88,6 +88,7 @@ class MigrationConceptRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     concept_id: str
@@ -171,6 +172,7 @@ class PathEligibilityDecision:
         Human-readable reason.
     blockers
         Non-empty when refused.
+
     """
 
     outcome: PathDecisionOutcome
@@ -229,6 +231,7 @@ class MaterialisedPennyLaneRoundTrip:
         Number of gate parameters.
     demo_label
         Demo circuit label.
+
     """
 
     value_match: bool
@@ -291,6 +294,7 @@ class MaterialisedQiskitLocalGradient:
         Ambient method name.
     demo_label
         Demo circuit label.
+
     """
 
     value: float
@@ -466,6 +470,7 @@ def list_migration_concept_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered concept identifiers.
+
     """
     return tuple(row.concept_id for row in _CANONICAL_CONCEPTS)
 
@@ -487,6 +492,7 @@ def get_migration_concept(concept_id: str) -> MigrationConceptRow:
     ------
     ValueError
         If ``concept_id`` is blank or unknown (fail closed).
+
     """
     if not concept_id or not str(concept_id).strip():
         raise ValueError("concept_id must be a non-empty string")
@@ -518,6 +524,7 @@ def iter_migration_concepts(
     -------
     tuple[MigrationConceptRow, ...]
         Matching rows.
+
     """
     rows: Sequence[MigrationConceptRow] = _CANONICAL_CONCEPTS
     if framework is not None:
@@ -548,6 +555,7 @@ def decide_migration_path(
     -------
     PathEligibilityDecision
         Allowed or refused decision with blockers.
+
     """
     blockers: list[str] = []
     if request_live_runtime:
@@ -640,6 +648,7 @@ def materialise_demo_pennylane_round_trip(
     ------
     ValueError
         If path is refused or ambient validation fails.
+
     """
     decision = decide_migration_path(local_supported_subset=True)
     if not decision.allowed:
@@ -728,6 +737,7 @@ def materialise_demo_qiskit_local_gradient(
     ------
     ValueError
         If path is refused or ambient validation fails.
+
     """
     decision = decide_migration_path(local_supported_subset=True)
     if not decision.allowed:
@@ -800,6 +810,7 @@ def map_migration_guides_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     seen: set[str] = set()
     rows: list[dict[str, object]] = []
@@ -831,6 +842,7 @@ def build_migration_guides_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with concepts (no blanks).
+
     """
     concepts = [row.to_dict() for row in _CANONICAL_CONCEPTS]
     return {
@@ -869,6 +881,7 @@ def assert_migration_guides_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-green flags appear.
+
     """
     registry = dict(payload) if payload is not None else build_migration_guides_product_registry()
     concepts = registry.get("concepts")

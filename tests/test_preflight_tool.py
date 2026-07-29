@@ -987,6 +987,8 @@ def test_main_uses_coverage_pytest_by_default(
         "qpu-compute-product exact coverage threshold",
         "wirtinger-implicit-product focused coverage",
         "wirtinger-implicit-product exact coverage threshold",
+        "migration-guides-product focused coverage",
+        "migration-guides-product exact coverage threshold",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",
