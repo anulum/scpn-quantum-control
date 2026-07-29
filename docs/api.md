@@ -10,6 +10,12 @@ The commercial goal is to reduce dependency on internal layout while keeping
 advanced users with a direct path to deeper modules. Each function section below
 is accompanied by explicit boundary context in the corresponding guide pages.
 
+For exhaustive discoverability, use the
+[complete Python module and API catalog](api/module_catalog.md). It lists every
+ordinary source module and every documented public module-level class or
+function. This curated page remains the decision guide: catalog membership does
+not make an advanced or research module a stable facade.
+
 ## Differentiable programming entry points
 
 The differentiable-programming surface has its own public guide and API map:

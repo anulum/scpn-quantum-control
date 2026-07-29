@@ -1,6 +1,6 @@
 # Interactive Notebooks
 
-*108 tracked Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
+*109 tracked Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
 frontier research. Notebooks 01-13 cover core quantum simulation. Notebooks 14-47
 document the FIM (Fisher Information Metric) strange loop investigation campaign
 (2026-03-29) with 19 findings (6 negative). The IBM v2 "dual protection on ibm_fez"
@@ -10,7 +10,14 @@ SCPN/FIM campaign — the observation is genuine, the protection interpretation 
 Notebook 48 is the Phase 5 Kuramoto handbook workflow companion. Notebook 49 is the
 differentiable first-path companion. Notebook 50 is the finite synthetic chimera and
 multiscale-control companion. Notebook 51 is the local DLA-parity and fixed-active-set
-topology-derivative companion.*
+topology-derivative companion. Notebook 52 is the topology-aware quantum-kernel
+representability companion.*
+
+This guide explains the recommended learning sequence and principal notebooks
+in depth. The deterministic [complete notebook catalog](notebook_catalog.md)
+indexes all 109 committed notebooks—including research campaigns,
+Colab/Kaggle workbooks, and differentiable tutorials—without changing their
+cells.
 
 ---
 

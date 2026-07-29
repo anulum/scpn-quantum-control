@@ -125,14 +125,14 @@ claims only when the evidence exists.
 | Python source modules | 697 |
 | Public Python classes | 1373 |
 | Domain package families | 38 |
-| API documentation pages | 7 |
+| API documentation pages | 8 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
 | Notebook files | 109 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1154 |
-| Public documentation pages | 361 |
+| Python test files | 1155 |
+| Public documentation pages | 365 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -885,6 +885,7 @@ Optional:
 Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/scpn-quantum-control)**:
 
 - [Onboarding](docs/onboarding.md) — project purpose, user routes, application value, and claim boundaries
+- [Solutions and Market Value](docs/solutions_and_market_value.md) — credible applications, stakeholder value, pilot decisions, and commercial routes
 - [Installation](docs/installation.md) — pip install + all optional extras
 - [Quickstart](docs/quickstart.md) — first experiment in 5 minutes
 - [Differentiable Tutorials](docs/differentiable_tutorials.md) — runnable gradient workflow with diagnostics, compiler report, and bounded QNN training
@@ -902,6 +903,8 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Kuramoto Standalone Package Decision](docs/kuramoto_standalone_package_decision.md) — the `oscillatools` package split, CEO/IP-approved 2026-07-04
 - [Sparse Kuramoto CPU Path](docs/kuramoto_sparse_cpu.md) — SciPy sparse force/Euler/RK4 route with 1M-node ring scaling evidence
 - [API Overview](docs/api.md) — stable facade route first, advanced module references second
+- [Complete Python Module and API Catalog](docs/api/module_catalog.md) — every source module and documented public module-level symbol
+- [Complete Documentation Catalog](docs/documentation_catalog.md) — every public guide, contract, protocol, and evidence page
 - [Research Gems](docs/research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](docs/equations.md) — every equation in the codebase
 - [Architecture](docs/architecture.md) — dependency graph + 20 subpackages
@@ -916,6 +919,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [p_h1 Open-Claim Guard](docs/p_h1_open_guard.md) — public wording guard that keeps the 0.72 threshold open until reproduced
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
 - [Notebooks](docs/notebooks.md) — 109 tracked notebooks
+- [Complete Notebook Catalog](docs/notebook_catalog.md) — all notebooks with categories, cell counts, and claim posture
 - [Bridges](docs/bridges_api.md) — cross-repo integrations
 - [Language Policy](docs/language_policy.md) — Rust / Julia / Go / Mojo accel chain
 - [Pipeline Performance](docs/pipeline_performance.md) — every module's measured wall-time + multi-language benchmarks

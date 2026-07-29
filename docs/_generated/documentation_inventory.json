@@ -1,0 +1,23 @@
+{
+  "SPDX-License-Identifier": "AGPL-3.0-or-later",
+  "content_digest": "3e92fa68e3c1b10b832b497175384348f3a87bddcc5fb6c887a489bde1abf215",
+  "counts": {
+    "module_docstring_gaps": 0,
+    "notebooks": 109,
+    "primary_navigation_pages": 161,
+    "public_documentation_pages": 365,
+    "public_module_symbols": 3908,
+    "public_symbol_docstring_gaps": 0,
+    "python_modules": 697,
+    "root_package_exports": 841
+  },
+  "coverage": {
+    "all_notebooks_cataloged": true,
+    "all_public_documentation_pages_cataloged": true,
+    "all_public_module_symbols_cataloged": true,
+    "all_python_modules_cataloged": true
+  },
+  "evidence_boundary": "Static discoverability inventory only; stability, correctness, performance, hardware, scientific, clinical, market, and product claims require their dedicated contracts and evidence.",
+  "generator": "tools/build_documentation_catalog.py",
+  "schema": "scpn.documentation-catalog.v1"
+}

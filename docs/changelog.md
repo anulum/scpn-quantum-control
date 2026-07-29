@@ -14,6 +14,9 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 
 ### Added
 
+- Complete deterministic documentation catalogs for all Python modules and
+  public module-level symbols, notebooks, and public Markdown pages, plus an
+  evidence-bounded solutions and market-value guide.
 - BL-102 RL research governance: disabled-by-default preregistration, fixed
   multi-seed suites, iteration/evaluation budgets, deterministic zero-noise
   replay, explicit dense-reward gaming boundaries, BL-53 no-preregistration

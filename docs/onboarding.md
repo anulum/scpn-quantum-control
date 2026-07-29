@@ -114,6 +114,9 @@ coupled dynamics matter:
 
 ## Market-fit framing
 
+For the full stakeholder, application, pilot, licensing, and commercial route
+map, see [Solutions, Applications, and Market Value](solutions_and_market_value.md).
+
 The strongest adoption case is not a claim of near-term quantum advantage. The
 adoption case is governed uncertainty reduction for domains where coupled
 dynamics matter and where uncontrolled evidence would be expensive:
@@ -177,11 +180,12 @@ dynamics matter and where uncontrolled evidence would be expensive:
   larger verified factorisation helper passes the native correctness gate. This
   remaining limitation is useful research evidence, not a silent runtime
   fallback.
-- Full gradient tape semantics, public JAX/PyTorch/TensorFlow adapters,
-  PennyLane/Qiskit migration bridges, backend-aware hardware gradient
-  planning, QNN/QGNN/QSNN production examples, and analog oscillator mapping
-  are planned roadmap surfaces until their tests, docs, and support matrix
-  entries are complete.
+- Framework, transform, compiler, provider, and accelerator combinations have
+  different support states. Some routes are complete local software surfaces;
+  others remain approximate, research-only, or blocked. Use the generated
+  [complete module catalog](api/module_catalog.md), the
+  [differentiable support matrix](differentiable_support_matrix.md), and the
+  relevant evidence page instead of inferring support from importability.
 
 ## Commercial Route
 

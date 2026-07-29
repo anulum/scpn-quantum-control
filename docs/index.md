@@ -44,13 +44,15 @@ If you are new to the repository, read these pages in order:
 
 1. [Onboarding](onboarding.md) — what the software is, who it serves, what is
    mature, and what remains claim-bound.
-2. [Quickstart](quickstart.md) — run a local no-credential Kuramoto-XY
+2. [Solutions and Market Value](solutions_and_market_value.md) — credible
+   application, pilot, adoption, and commercial routes without inflated claims.
+3. [Quickstart](quickstart.md) — run a local no-credential Kuramoto-XY
    simulation.
-3. [Tutorials](tutorials.md) — follow the learning path from first simulation
+4. [Tutorials](tutorials.md) — follow the learning path from first simulation
    to research workflow.
-4. [Stable Facades API](stable_facades_api.md) — use supported public entry
+5. [Stable Facades API](stable_facades_api.md) — use supported public entry
    points before advanced internals.
-5. [Hardware Status Ledger](hardware_status_ledger.md) — understand which
+6. [Hardware Status Ledger](hardware_status_ledger.md) — understand which
    hardware and scientific claims are promoted, bounded, or blocked.
 
 The short version: provide a coupling matrix `K_nm` and natural frequencies
@@ -83,13 +85,13 @@ Use [Differentiable Tutorials](differentiable_tutorials.md),
 workflow can be trained or optimised. Use [Hardware Status Ledger](hardware_status_ledger.md)
 when the central question is whether a result can be promoted as hardware evidence.
 
-## Status Snapshot — 2026-06-26
+## Status Snapshot — 2026-07-29
 
 | Area | Public status |
 |---|---|
 | Package line | Version `1.0.0`, Python `>=3.11`, Qiskit `>=2.2,<3.0`. |
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, order-parameter measurements, and Kuramoto variant trajectories. |
-| v0.10 public surfaces | QRNG streaming, ML-DSA/PQC trigger signing, UltraScale+ HLS pulse emission, realtime telemetry, NV magnetometry, FRC pulsed-shot QAOA scheduling, and Studio federation manifest/evidence-bundle emission are documented from API, tutorial, and example routes. |
+| Stable integration surfaces | QRNG streaming, ML-DSA/PQC trigger signing, UltraScale+ HLS pulse emission, realtime telemetry, NV magnetometry, FRC pulsed-shot QAOA scheduling, and Studio federation manifest/evidence-bundle emission are documented from API, tutorial, and example routes. |
 | Hardware evidence | Promoted raw-count campaigns: `ibm_kingston` DLA parity Phase 1, selected Phase 2 A+G/B-C/popcount controls, and the SCPN/FIM negative/falsification result for the tested digital circuit family. Legacy `ibm_fez` rows require artefact-level citation. |
 | Claim source | [Hardware Status Ledger](hardware_status_ledger.md). |
 
@@ -157,30 +159,22 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 
 ## Package map
 
-| Subpackage | Modules | Purpose |
+Module counts change as governed capabilities land. The
+[complete Python module and API catalog](api/module_catalog.md) is generated
+from the current source tree and is the authoritative module inventory.
+
+| Subpackage | Inventory | Purpose |
 |------------|:-------:|---------|
-| `analysis` | 58 | Synchronisation probes: witnesses, witness discovery, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
-| `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
-| `phase` | 77 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad, Kuramoto variants, differentiable/gradient surfaces |
-| `bridge` | 13 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
-| `applications` | 17 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, QRC+ESN baseline, benchmark plugins, honesty kits |
-| `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
-| `qec` | 13 | Toric code, MWPM decoder boundary, repetition code UPDE, surface code, biological surface code, DLA-protected memory/scar prototypes, error budget, multi-scale, syndrome flow |
-| `control` | 11 | QAOA-MPC, residual-certified VQLS Grad-Shafranov proxy, Petri nets, ITER disruption, topological optimiser |
-| `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
-| `qsnn` | 7 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
-| `crypto` | 9 | Entanglement QKD, topology authentication, ML-DSA signing, key hierarchy |
-| `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
-| `ssgf` | 4 | SSGF quantum integration |
-| `benchmarks` | 7 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
-| `psi_field` | 4 | U(1) compact lattice gauge: lattice, infoton, observables, SCPN mapping |
-| `forecasting` | 11 | Real/source-backed synchronisation benchmarks plus bounded synthetic multimodal forecasting, partial-observation scoring, split residual intervals, and fail-closed BL-68/BL-33 composition |
-| `dla_topology_control` | 7 | Exact finite parity-sector derivatives, projected synthetic control, fixed-active-set topology-ledger JVP/VJP rules, and deterministic evidence |
-| `accel` | 3 | Multi-language dispatcher + Julia tier (Rust → Julia → Python fallback chain) |
-| `fep` | 2 | Friston Free Energy Principle: variational free energy, predictive coding |
-| `tcbo` | 1 | TCBO quantum observer |
-| `pgbo` | 1 | PGBO quantum bridge |
-| `l16` | 1 | Layer 16 quantum director |
+| `analysis` | catalog | Synchronisation probes, witness discovery, QFI, topology, open-system, complexity, and governed research lanes |
+| `hardware` | catalog | Provider-neutral capabilities, multi-provider adapters, result custody, feedback, layouts, cutting, and no-submit gates |
+| `phase` | catalog | Time evolution, variational solvers, open systems, QNodes, framework bridges, and differentiable/gradient surfaces |
+| `bridge` | catalog | $K_{nm}$ → Hamiltonian and cross-repository adapters |
+| `applications` | catalog | Power-grid, plasma, EEG-like, Josephson, reservoir, kernel, and benchmark integrations with honesty boundaries |
+| `control` and `dla_topology_control` | catalog | Bounded classical/quantum control objectives, constraints, topology derivatives, and evidence |
+| `compiler` and root Program-AD modules | catalog | Static trace contracts, primitive derivatives, native lowering, parity evidence, and fail-closed unsupported routes |
+| `studio` | catalog | Executive workflows, reproducible artefacts, scorecards, manifests, validation, and replay |
+| `crypto` | 9 | Governed QKD, topology authentication, signing, QRNG integration, and key custody |
+| Other domain families | catalog | Mitigation, QEC, QSNN, gauge, forecasting, thermodynamics, co-design, analog mapping, and benchmark harnesses |
 
 ## Quick example
 
@@ -221,6 +215,7 @@ for name, w in results.items():
 ## Documentation
 
 - [Onboarding](onboarding.md) — project purpose, user routes, application value, and claim boundaries
+- [Solutions and Market Value](solutions_and_market_value.md) — application portfolio, stakeholder value, pilot framework, and commercial routes
 - [Installation](installation.md) — pip install + all optional extras
 - [Quickstart](quickstart.md) — first experiment in 5 minutes
 - [Differentiable Tutorials](differentiable_tutorials.md) — runnable gradient workflow with diagnostics, compiler report, and bounded QNN training
@@ -235,6 +230,8 @@ for name, w in results.items():
 - [Differentiable API](differentiable_api.md) — public `scpn_quantum_control.differentiable` namespace map
 - [Differentiable Roadmap](differentiable_roadmap.md) — staged plan for framework adapters, advanced gradients, benchmarks, verification, and dashboards
 - [API Overview](api.md) — stable facade route first, advanced module references second
+- [Complete Python Module and API Catalog](api/module_catalog.md) — every source module and documented public module-level symbol
+- [Complete Documentation Catalog](documentation_catalog.md) — every public guide, contract, protocol, and evidence page
 - [Campaign Artefacts](campaigns/README.md) — dated preregistration, readiness, manifest, and result notes
 - [Publication Operations](publication/README.md) — submission checklists, source packaging, and venue-readiness notes
 - [Release Readiness Gate](release_readiness.md) — deterministic tag-readiness audit for version, licensing, coverage, behavioural quality, and claim-boundary artefacts
@@ -257,7 +254,8 @@ for name, w in results.items():
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup
 - [Bridges](bridges_api.md) — cross-repo integrations
 - [Tutorials](tutorials.md) — 4-level learning path, 14 tutorials
-- [Notebooks](notebooks.md) — 99 tracked notebooks
+- [Notebooks](notebooks.md) — curated learning sequence
+- [Complete Notebook Catalog](notebook_catalog.md) — all 109 committed notebooks with category and claim posture
 - [Language Policy](language_policy.md) — Rust / Julia / Go / Mojo accel-chain rules
 - [Pipeline Performance](pipeline_performance.md) — measured wall-times + multi-language benchmarks
 - [Methods Benchmark Dashboard](methods_benchmark_dashboard.md) — one-command artefact regeneration and paper-supporting benchmark provenance

@@ -10,14 +10,14 @@
 | Python source modules | 697 |
 | Public Python classes | 1373 |
 | Domain package families | 38 |
-| API documentation pages | 7 |
+| API documentation pages | 8 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
 | Notebook files | 109 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1154 |
-| Public documentation pages | 361 |
+| Python test files | 1155 |
+| Public documentation pages | 365 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.

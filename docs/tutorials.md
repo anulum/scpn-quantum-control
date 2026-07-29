@@ -40,7 +40,10 @@ New users who do not need SCPN-specific layers should start with
 [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md). It introduces the
 generic `K_nm`/`omega` compiler path before any domain-specific benchmark.
 If you first need the product, application, and claim-boundary overview, start
-with [Onboarding](onboarding.md).
+with [Onboarding](onboarding.md). For all application and commercial routes,
+continue to [Solutions, Applications, and Market Value](solutions_and_market_value.md).
+The [complete notebook catalog](notebook_catalog.md) maps every committed
+workbook after you choose a learning path here.
 
 For finite synthetic partial synchrony, use
 [Chimera and Multiscale Synchronisation Control](chimera_multiscale_control.md)
@@ -130,9 +133,9 @@ graph TD
 Every route keeps the same rule: simulator output, hardware evidence, and open
 scientific claims are separate evidence classes.
 
-## v0.10 workflow routes
+## Stable integration workflow routes
 
-The v0.10 surfaces are usable from no-credential examples and are documented
+These integration surfaces are usable from no-credential examples and are documented
 before the lower-level module index:
 
 | Workflow | Start with | Safe first command |

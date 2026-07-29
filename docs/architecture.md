@@ -457,7 +457,7 @@ The selected table is explanatory; `tools/module_size_policy.json` is the exhaus
 including Rust, oscillatools, tests, facades, and entry points. An approved entry is re-opened if a
 future change adds an independent responsibility or crosses its recorded dependency boundary.
 
-## Package Statistics (v0.10.0)
+## Package statistics (current source tree)
 
 These counts mirror the generated capability inventory in the README; that
 auto-generated block is the source of truth if the two ever drift.
