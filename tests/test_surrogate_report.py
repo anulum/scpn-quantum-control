@@ -54,6 +54,20 @@ def test_evidence_payload_and_markdown_are_deterministic(
     assert "No hardware QRC" in markdown
 
 
+def test_evidence_payload_normalises_subprecision_runtime_drift(
+    evidence: QuantumReservoirSurrogateEvidence,
+) -> None:
+    """Evidence bytes ignore floating drift below the custody precision."""
+    perturbed = dataclasses.replace(
+        evidence,
+        value_fidelity=dataclasses.replace(
+            evidence.value_fidelity,
+            rmse=evidence.value_fidelity.rmse + 1.0e-14,
+        ),
+    )
+    assert perturbed.to_dict() == evidence.to_dict()
+
+
 def test_evidence_writer_atomically_writes_matching_files(
     evidence: QuantumReservoirSurrogateEvidence,
     tmp_path: Path,

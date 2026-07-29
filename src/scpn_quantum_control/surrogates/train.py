@@ -18,11 +18,13 @@ from numpy.typing import NDArray
 from .models import GaussianRBFSurrogate
 
 FloatArray = NDArray[np.float64]
+_NUMERIC_CUSTODY_DECIMALS = 9
 
 
 def _array_digest(values: FloatArray) -> str:
-    """Return a shape-bound SHA-256 identity for one float array."""
-    array = np.ascontiguousarray(values, dtype="<f8")
+    """Return a shape-bound, cross-runtime SHA-256 identity for one float array."""
+    rounded = np.round(np.asarray(values, dtype=np.float64), _NUMERIC_CUSTODY_DECIMALS)
+    array = np.ascontiguousarray(np.where(rounded == 0.0, 0.0, rounded), dtype="<f8")
     digest = hashlib.sha256()
     digest.update(str(array.shape).encode("ascii"))
     digest.update(array.tobytes(order="C"))

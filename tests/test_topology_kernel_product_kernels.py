@@ -27,6 +27,13 @@ from scpn_quantum_control.topology_kernel_product import (
     validate_feature_matrix,
     validate_topology,
 )
+from scpn_quantum_control.topology_kernel_product.kernels import _float_bytes
+
+
+def test_kernel_custody_bytes_normalise_subprecision_and_signed_zero() -> None:
+    left = np.asarray([-0.0, 0.12345678901231], dtype=np.float64)
+    right = np.asarray([1.0e-14, 0.12345678901229], dtype=np.float64)
+    assert _float_bytes(left) == _float_bytes(right)
 
 
 def test_canonical_edges_and_edge_encoder_contract() -> None:

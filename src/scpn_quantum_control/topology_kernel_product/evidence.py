@@ -13,7 +13,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Literal, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -43,6 +43,19 @@ BL88_EVIDENCE_SCHEMA = "bl88_topology_aware_quantum_kernel_evidence_v1"
 BL88_EVIDENCE_DATE = "2026-07-29"
 
 SupportStatus = Literal["supported", "descoped"]
+_NUMERIC_CUSTODY_DECIMALS = 12
+
+
+def _canonicalise_evidence_numbers(value: object) -> object:
+    """Normalise sub-precision platform drift before evidence custody."""
+    if isinstance(value, float):
+        rounded = round(value, _NUMERIC_CUSTODY_DECIMALS)
+        return 0.0 if rounded == 0.0 else rounded
+    if isinstance(value, dict):
+        return {str(key): _canonicalise_evidence_numbers(child) for key, child in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_canonicalise_evidence_numbers(child) for child in value]
+    return value
 
 
 def _is_digest(value: str) -> bool:
@@ -239,7 +252,7 @@ class TopologyKernelEvidence:
         }
         if include_content_digest:
             payload["content_digest"] = self.content_digest
-        return payload
+        return cast(dict[str, object], _canonicalise_evidence_numbers(payload))
 
 
 def _evaluate_quantum_control(

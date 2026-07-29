@@ -53,7 +53,7 @@ def test_frozen_evidence_matches_registered_metrics(evidence: TopologyKernelEvid
     assert evidence.generated_on == BL88_EVIDENCE_DATE
     assert (
         evidence.content_digest
-        == "a960ec0386d892518548c0d00cb8bc765301768ef52c4b29a6922050eb1d2c22"
+        == "e0f6fd8a5ed3a12c2da0edc2df9eaf9a9ae39148f87250726999c3ce32755306"
     )
     assert evidence.ring.accuracy == pytest.approx(1.0)
     assert evidence.path.accuracy == pytest.approx(0.25)
@@ -64,6 +64,16 @@ def test_frozen_evidence_matches_registered_metrics(evidence: TopologyKernelEvid
     assert evidence.gram_minimum_eigenvalue > 0.0
     assert evidence.permutation_max_abs_error < 1.0e-12
     assert evidence.to_dict(include_content_digest=False).get("content_digest") is None
+
+
+def test_evidence_payload_normalises_subprecision_runtime_drift(
+    evidence: TopologyKernelEvidence,
+) -> None:
+    perturbed = replace(
+        evidence,
+        gram_minimum_eigenvalue=evidence.gram_minimum_eigenvalue + 1.0e-14,
+    )
+    assert perturbed.to_dict() == evidence.to_dict()
 
 
 def test_support_row_normalises_and_serialises() -> None:

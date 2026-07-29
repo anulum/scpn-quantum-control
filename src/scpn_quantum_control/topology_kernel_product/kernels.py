@@ -21,9 +21,13 @@ from scpn_quantum_control.applications.quantum_kernel import (
 
 from .schema import FloatArray, TopologyKernelConfig, TopologyKernelMatrix
 
+_NUMERIC_CUSTODY_DECIMALS = 12
+
 
 def _float_bytes(value: NDArray[np.float64]) -> bytes:
-    return np.ascontiguousarray(value, dtype="<f8").tobytes()
+    rounded = np.round(np.asarray(value, dtype=np.float64), _NUMERIC_CUSTODY_DECIMALS)
+    canonical = np.where(rounded == 0.0, 0.0, rounded)
+    return np.ascontiguousarray(canonical, dtype="<f8").tobytes()
 
 
 def _matrix_digest(

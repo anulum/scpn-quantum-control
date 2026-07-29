@@ -15,6 +15,7 @@ from dataclasses import replace
 from pathlib import Path
 from types import ModuleType
 
+import numpy as np
 import pytest
 
 import scpn_quantum_control.analysis.theory_hook_promotion as promotion
@@ -196,6 +197,12 @@ def test_evidence_record_serialization_preserves_named_maps() -> None:
         "checks": {"invariant": True},
         "metrics": {"value": 1.0},
     }
+
+
+def test_evidence_record_rejects_numpy_scalar_metrics() -> None:
+    """Evidence custody requires JSON-native scalars at construction time."""
+    with pytest.raises(ValueError, match="JSON-native"):
+        replace(_sample_evidence(), metrics=(("value", np.int64(5)),))
 
 
 def test_all_real_local_fixtures_pass_without_granting_promotion() -> None:

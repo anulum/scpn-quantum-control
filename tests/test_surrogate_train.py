@@ -57,6 +57,13 @@ def test_input_row_digests_bind_values_shape_and_order() -> None:
     assert all(len(digest) == 64 for digest in first)
 
 
+def test_input_row_digests_normalise_subprecision_and_signed_zero() -> None:
+    """Provenance hashes ignore insignificant runtime drift."""
+    left = np.array([[-0.0, 0.12345678901231]], dtype=np.float64)
+    right = np.array([[1.0e-14, 0.12345678901229]], dtype=np.float64)
+    assert input_row_digests(left) == input_row_digests(right)
+
+
 @pytest.mark.parametrize(
     ("kwargs", "message"),
     [

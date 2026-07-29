@@ -219,6 +219,8 @@ class TheoryHookEvidenceRecord:
             raise ValueError("check names must be unique")
         if len(set(metric_names)) != len(metric_names):
             raise ValueError("metric names must be unique")
+        if any(isinstance(value, np.generic) for _name, value in self.metrics):
+            raise ValueError("metrics must use JSON-native scalar values")
         if self.passed is not all(value for _name, value in self.checks):
             raise ValueError("passed must equal the conjunction of checks")
 
@@ -511,7 +513,7 @@ def _hamiltonian_learning_evidence() -> TheoryHookEvidenceRecord:
         metrics=(
             ("correlator_error", _round(result.correlator_error)),
             ("loss", _round(result.loss)),
-            ("optimizer_evaluations", result.n_iterations),
+            ("optimizer_evaluations", int(result.n_iterations)),
         ),
     )
 
