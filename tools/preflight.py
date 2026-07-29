@@ -70,6 +70,9 @@ if TYPE_CHECKING:
         kyma_mechanism_benchmark_product_quality_gates as _kyma_mechanism_product_quality_gates,
     )
     from tools import (
+        metamorphic_ad_verification_quality_gates as _metamorphic_ad_verification_quality_gates,
+    )
+    from tools import (
         migration_guides_product_quality_gates as _migration_guides_product_quality_gates,
     )
     from tools import multi_hal_federation_product_quality_gates as _multi_hal_quality_gates
@@ -138,6 +141,9 @@ else:
         "tools.hermetic_reproduction_kit_quality_gates"
     )
     _hardware_safe_quality_gates = import_module("tools.hardware_safe_execution_quality_gates")
+    _metamorphic_ad_verification_quality_gates = import_module(
+        "tools.metamorphic_ad_verification_quality_gates"
+    )
     _kyma_mechanism_product_quality_gates = import_module(
         "tools.kyma_mechanism_benchmark_product_quality_gates"
     )
@@ -502,6 +508,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_compiler_boundary_product_quality_gates.build_static_quality_gates(_PY),
     *_resource_budget_gate_quality_gates.build_static_quality_gates(_PY),
     *_advantage_language_protocol_quality_gates.build_static_quality_gates(_PY),
+    *_metamorphic_ad_verification_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -906,6 +913,9 @@ RESOURCE_BUDGET_GATE_COVERAGE_GATES = _resource_budget_gate_quality_gates.build_
 ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES = (
     _advantage_language_protocol_quality_gates.build_coverage_gates(_PY)
 )
+METAMORPHIC_AD_VERIFICATION_COVERAGE_GATES = (
+    _metamorphic_ad_verification_quality_gates.build_coverage_gates(_PY)
+)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -1183,6 +1193,7 @@ def main() -> int:
             gates.extend(COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES)
             gates.extend(RESOURCE_BUDGET_GATE_COVERAGE_GATES)
             gates.extend(ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES)
+            gates.extend(METAMORPHIC_AD_VERIFICATION_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

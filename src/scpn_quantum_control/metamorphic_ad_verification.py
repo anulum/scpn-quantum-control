@@ -72,6 +72,7 @@ class MetamorphicLawRecord:
         Default residual band for pure residual checks (when applicable).
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     law_id: str
@@ -147,6 +148,7 @@ class MetamorphicCheckResult:
         Operator-facing decision message.
     refused
         True when the path is fail-closed refuse / invent-green blocked.
+
     """
 
     law_id: str
@@ -330,6 +332,7 @@ def list_metamorphic_law_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered law identifiers.
+
     """
     return tuple(row.law_id for row in _CANONICAL_LAWS)
 
@@ -351,6 +354,7 @@ def get_metamorphic_law(law_id: str) -> MetamorphicLawRecord:
     ------
     ValueError
         If ``law_id`` is blank or unknown.
+
     """
     if not law_id or not str(law_id).strip():
         raise ValueError("law_id must be a non-empty string")
@@ -382,6 +386,7 @@ def iter_metamorphic_laws(
     -------
     tuple[MetamorphicLawRecord, ...]
         Matching rows.
+
     """
     rows: Iterable[MetamorphicLawRecord] = _CANONICAL_LAWS
     if kind is not None:
@@ -398,6 +403,7 @@ def build_metamorphic_ad_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with every catalogue cell (no blanks).
+
     """
     rows = [row.to_dict() for row in _CANONICAL_LAWS]
     counts: dict[str, int] = {
@@ -442,6 +448,7 @@ def probe_metamorphic_law(
     ------
     ValueError
         If ``law_id`` is blank, or unknown under ``unknown_policy='raise'``.
+
     """
     if not law_id or not str(law_id).strip():
         raise ValueError("law_id must be a non-empty string")
@@ -531,6 +538,7 @@ def evaluate_linearity_residual(
     ------
     ValueError
         If ``law_id`` is not the linearity executable law, or values are non-finite.
+
     """
     record = get_metamorphic_law(law_id)
     if record.law_id != "law:metamorphic.linearity":
@@ -587,6 +595,7 @@ def evaluate_chain_rule_residual(
     ------
     ValueError
         If ``law_id`` is wrong or values are non-finite / non-positive tolerance.
+
     """
     record = get_metamorphic_law(law_id)
     if record.law_id != "law:metamorphic.chain_rule_scalar":
@@ -638,6 +647,7 @@ def assert_metamorphic_registry_integrity(
     ------
     ValueError
         If blank entries or count drift are detected.
+
     """
     registry = dict(payload) if payload is not None else build_metamorphic_ad_registry()
     laws = registry.get("laws")

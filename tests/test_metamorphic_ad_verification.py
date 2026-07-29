@@ -29,6 +29,7 @@ from scpn_quantum_control.metamorphic_ad_verification import (
 
 
 def test_list_ids_stable() -> None:
+    """Expose unique law ids in stable canonical order."""
     ids = list_metamorphic_law_ids()
     assert ids
     assert len(ids) == len(set(ids))
@@ -37,6 +38,7 @@ def test_list_ids_stable() -> None:
 
 
 def test_get_executable_and_boundary_laws() -> None:
+    """Resolve executable, evidence-gated, and permanent-boundary laws."""
     lin = get_metamorphic_law("law:metamorphic.linearity")
     assert lin.expected_outcome == "executable_local"
     assert not lin.reason
@@ -49,6 +51,7 @@ def test_get_executable_and_boundary_laws() -> None:
 
 
 def test_get_rejects_blank_and_unknown() -> None:
+    """Reject blank and unknown law identifiers fail closed."""
     with pytest.raises(ValueError, match="non-empty"):
         get_metamorphic_law("  ")
     with pytest.raises(ValueError, match="unknown metamorphic law_id"):
@@ -56,6 +59,7 @@ def test_get_rejects_blank_and_unknown() -> None:
 
 
 def test_iter_filters() -> None:
+    """Return the full catalogue or deterministic outcome subsets."""
     all_rows = iter_metamorphic_laws()
     assert len(all_rows) == len(list_metamorphic_law_ids())
     anti = iter_metamorphic_laws(kind="anti_silent_wrong")
@@ -67,6 +71,7 @@ def test_iter_filters() -> None:
 
 
 def test_build_registry_zero_blanks() -> None:
+    """Build a schema-tagged registry with complete outcome counts."""
     registry = build_metamorphic_ad_registry()
     assert registry["schema"] == METAMORPHIC_AD_VERIFICATION_SCHEMA
     assert registry["blank_entry_count"] == 0
@@ -76,6 +81,7 @@ def test_build_registry_zero_blanks() -> None:
 
 
 def test_probe_known_paths() -> None:
+    """Probe executable, gated, and refused catalogue paths."""
     local = probe_metamorphic_law("law:metamorphic.linearity")
     assert local.passed is True
     assert local.refused is False
@@ -95,6 +101,7 @@ def test_probe_known_paths() -> None:
 
 
 def test_probe_unknown_policies() -> None:
+    """Raise or refuse unknown laws according to explicit policy."""
     with pytest.raises(ValueError, match="unknown metamorphic law_id"):
         probe_metamorphic_law("law:missing")
     refused = probe_metamorphic_law("law:missing", unknown_policy="refuse")
@@ -110,6 +117,7 @@ def test_probe_unknown_policies() -> None:
 
 
 def test_evaluate_linearity_pass_and_fail() -> None:
+    """Evaluate passing and failing additive-linearity residuals."""
     ok = evaluate_linearity_residual(1.0, 2.0, 3.0)
     assert ok.passed is True
     assert ok.residual == 0.0
@@ -119,6 +127,7 @@ def test_evaluate_linearity_pass_and_fail() -> None:
 
 
 def test_evaluate_chain_rule_pass_and_fail() -> None:
+    """Evaluate passing and failing scalar chain-rule residuals."""
     # g'(f)=2, f'=3 => (g∘f)'=6
     ok = evaluate_chain_rule_residual(2.0, 3.0, 6.0)
     assert ok.passed is True
@@ -127,6 +136,7 @@ def test_evaluate_chain_rule_pass_and_fail() -> None:
 
 
 def test_evaluate_rejects_wrong_law_and_bad_values() -> None:
+    """Reject mismatched laws, non-finite inputs, and invalid bands."""
     with pytest.raises(ValueError, match="linearity"):
         evaluate_linearity_residual(1.0, 1.0, 2.0, law_id="law:metamorphic.chain_rule_scalar")
     with pytest.raises(ValueError, match="chain_rule"):
@@ -142,6 +152,7 @@ def test_evaluate_rejects_wrong_law_and_bad_values() -> None:
 
 
 def test_record_validation() -> None:
+    """Enforce law-record identifiers, outcomes, evidence, and reasons."""
     with pytest.raises(ValueError, match="law_id"):
         MetamorphicLawRecord(
             law_id="",
@@ -212,6 +223,7 @@ def test_record_validation() -> None:
 
 
 def test_check_result_validation() -> None:
+    """Enforce check-result residual, refusal, and message invariants."""
     with pytest.raises(ValueError, match="law_id"):
         MetamorphicCheckResult(
             law_id="",
@@ -256,6 +268,7 @@ def test_check_result_validation() -> None:
 
 
 def test_assert_integrity_rejects_invalid() -> None:
+    """Reject malformed registries, blanks, missing reasons, and drift."""
     with pytest.raises(ValueError, match="non-empty laws"):
         assert_metamorphic_registry_integrity({"laws": []})
     with pytest.raises(ValueError, match="blank"):
@@ -310,6 +323,7 @@ def test_assert_integrity_rejects_invalid() -> None:
 
 
 def test_catalogue_map_rejects_duplicates(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fail closed when canonical law identifiers are duplicated."""
     row = get_metamorphic_law("law:metamorphic.linearity")
     monkeypatch.setattr(metamorphic_ad_verification, "_CANONICAL_LAWS", (row, row))
     with pytest.raises(RuntimeError, match="duplicate law_id"):
@@ -317,6 +331,7 @@ def test_catalogue_map_rejects_duplicates(monkeypatch: pytest.MonkeyPatch) -> No
 
 
 def test_to_dict_round_trips() -> None:
+    """Serialise law records and check results to JSON-ready maps."""
     row = get_metamorphic_law("law:fd.agreement_band.parameter_shift")
     payload = row.to_dict()
     assert payload["law_id"] == row.law_id

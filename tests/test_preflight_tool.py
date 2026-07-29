@@ -1003,6 +1003,8 @@ def test_main_uses_coverage_pytest_by_default(
         "resource-budget-gate exact coverage threshold",
         "advantage-language-protocol focused coverage",
         "advantage-language-protocol exact coverage threshold",
+        "metamorphic-ad-verification focused coverage",
+        "metamorphic-ad-verification exact coverage threshold",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",
