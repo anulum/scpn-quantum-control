@@ -1001,6 +1001,8 @@ def test_main_uses_coverage_pytest_by_default(
         "compiler-boundary-product exact coverage threshold",
         "resource-budget-gate focused coverage",
         "resource-budget-gate exact coverage threshold",
+        "advantage-language-protocol focused coverage",
+        "advantage-language-protocol exact coverage threshold",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",

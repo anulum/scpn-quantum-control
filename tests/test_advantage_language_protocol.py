@@ -30,6 +30,7 @@ from scpn_quantum_control.advantage_language_protocol import (
 
 
 def test_list_ids_stable_and_include_default() -> None:
+    """Expose unique stable ids including the default no-advantage row."""
     ids = list_advantage_protocol_ids()
     assert ids
     assert len(ids) == len(set(ids))
@@ -38,6 +39,7 @@ def test_list_ids_stable_and_include_default() -> None:
 
 
 def test_get_default_and_decisive_protocols() -> None:
+    """Resolve default, decisive, and bounded research protocols."""
     default = get_advantage_protocol("protocol:default.no_advantage")
     assert default.language_status == "no_advantage_default"
     assert not default.reason
@@ -55,6 +57,7 @@ def test_get_default_and_decisive_protocols() -> None:
 
 
 def test_get_rejects_blank_and_unknown() -> None:
+    """Reject blank and unknown protocol identifiers fail closed."""
     with pytest.raises(ValueError, match="non-empty"):
         get_advantage_protocol("  ")
     with pytest.raises(ValueError, match="unknown advantage protocol_id"):
@@ -62,6 +65,7 @@ def test_get_rejects_blank_and_unknown() -> None:
 
 
 def test_iter_filters_by_status() -> None:
+    """Return the full catalogue or deterministic status subsets."""
     all_rows = iter_advantage_protocols()
     assert len(all_rows) == len(list_advantage_protocol_ids())
     research = iter_advantage_protocols(language_status="research_observation")
@@ -70,6 +74,7 @@ def test_iter_filters_by_status() -> None:
 
 
 def test_build_registry_zero_blanks() -> None:
+    """Build a schema-tagged registry with complete status counts."""
     registry = build_advantage_language_registry()
     assert registry["schema"] == ADVANTAGE_LANGUAGE_PROTOCOL_SCHEMA
     assert registry["blank_entry_count"] == 0
@@ -82,6 +87,7 @@ def test_build_registry_zero_blanks() -> None:
 
 
 def test_issue_no_advantage_certificate_default() -> None:
+    """Issue deterministic default and protocol-bound certificates."""
     cert = issue_no_advantage_certificate(context="docs homepage")
     assert isinstance(cert, NoAdvantageCertificate)
     assert cert.language_status == "no_advantage_default"
@@ -99,6 +105,7 @@ def test_issue_no_advantage_certificate_default() -> None:
 
 
 def test_issue_certificate_rejects_blank_and_refuse_protocol() -> None:
+    """Reject blank contexts and refuse-only protocol bindings."""
     with pytest.raises(ValueError, match="context"):
         issue_no_advantage_certificate(context="  ")
     with pytest.raises(ValueError, match="refuse protocol"):
@@ -106,6 +113,7 @@ def test_issue_certificate_rejects_blank_and_refuse_protocol() -> None:
 
 
 def test_find_triggers_and_probe_ungoverned_advantage() -> None:
+    """Detect marketing triggers and refuse ungoverned advantage claims."""
     triggers = find_advantage_language_triggers(
         "This shows Quantum Advantage over classical solvers."
     )
@@ -119,6 +127,7 @@ def test_find_triggers_and_probe_ungoverned_advantage() -> None:
 
 
 def test_probe_neutral_default_allowed() -> None:
+    """Allow neutral wording under the default no-advantage posture."""
     result = probe_advantage_language("Local statevector parity under claim_boundary.")
     assert result.allowed is True
     assert result.language_status == "no_advantage_default"
@@ -126,6 +135,7 @@ def test_probe_neutral_default_allowed() -> None:
 
 
 def test_probe_bound_protocols() -> None:
+    """Apply default, research, decisive, and refuse protocol policies."""
     research_ok = probe_advantage_language(
         "S2 scaling matrix research observation only.",
         protocol_id="protocol:s2.scaling_matrix",
@@ -169,6 +179,7 @@ def test_probe_bound_protocols() -> None:
 
 
 def test_probe_unknown_protocol_policies() -> None:
+    """Raise or refuse unknown protocols according to explicit policy."""
     with pytest.raises(ValueError, match="unknown advantage protocol_id"):
         probe_advantage_language("x", protocol_id="protocol:missing")
     refused = probe_advantage_language(
@@ -187,6 +198,7 @@ def test_probe_unknown_protocol_policies() -> None:
 
 
 def test_probe_none_claim_and_empty_protocol_id() -> None:
+    """Reject absent claims and treat blank protocol ids as unbound."""
     with pytest.raises(TypeError, match="claim_text"):
         probe_advantage_language(None)  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="claim_text"):
@@ -198,6 +210,7 @@ def test_probe_none_claim_and_empty_protocol_id() -> None:
 
 
 def test_record_and_certificate_validation() -> None:
+    """Enforce catalogue-record and certificate construction invariants."""
     with pytest.raises(ValueError, match="protocol_id"):
         AdvantageProtocolRecord(
             protocol_id="",
@@ -270,6 +283,7 @@ def test_record_and_certificate_validation() -> None:
 
 
 def test_probe_result_validation() -> None:
+    """Enforce probe reason, refusal, and trigger invariants."""
     with pytest.raises(ValueError, match="claim_text"):
         AdvantageLanguageProbeResult(
             claim_text=None,  # type: ignore[arg-type]
@@ -309,6 +323,7 @@ def test_probe_result_validation() -> None:
 
 
 def test_assert_integrity_rejects_invalid_payloads() -> None:
+    """Reject malformed rows, blanks, missing reasons, and count drift."""
     with pytest.raises(ValueError, match="non-empty protocols"):
         assert_advantage_language_registry_integrity({"protocols": []})
     with pytest.raises(ValueError, match="blank"):
@@ -367,6 +382,7 @@ def test_assert_integrity_rejects_invalid_payloads() -> None:
 
 
 def test_catalogue_map_rejects_duplicates(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fail closed when canonical protocol identifiers are duplicated."""
     row = get_advantage_protocol("protocol:default.no_advantage")
     monkeypatch.setattr(
         advantage_language_protocol,
@@ -378,6 +394,7 @@ def test_catalogue_map_rejects_duplicates(monkeypatch: pytest.MonkeyPatch) -> No
 
 
 def test_record_to_dict_and_probe_to_dict() -> None:
+    """Serialise protocol records and probe decisions to JSON-ready maps."""
     row = get_advantage_protocol("protocol:neural_operator.structural_surrogate")
     payload = row.to_dict()
     assert payload["protocol_id"] == row.protocol_id

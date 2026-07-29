@@ -73,6 +73,7 @@ class AdvantageProtocolRecord:
         ``no_advantage_default``.
     claim_boundary
         Non-promotional claim boundary string.
+
     """
 
     protocol_id: str
@@ -134,6 +135,7 @@ class NoAdvantageCertificate:
         Optional bound protocol when issued under a known id.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     certificate_id: str
@@ -182,6 +184,7 @@ class AdvantageLanguageProbeResult:
         Trigger phrases found in the claim text.
     reason
         Human-readable decision reason.
+
     """
 
     claim_text: str
@@ -321,6 +324,7 @@ def list_advantage_protocol_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered protocol identifiers.
+
     """
     return tuple(row.protocol_id for row in _CANONICAL_PROTOCOLS)
 
@@ -342,6 +346,7 @@ def get_advantage_protocol(protocol_id: str) -> AdvantageProtocolRecord:
     ------
     ValueError
         If ``protocol_id`` is blank or unknown.
+
     """
     if not protocol_id or not str(protocol_id).strip():
         raise ValueError("protocol_id must be a non-empty string")
@@ -370,6 +375,7 @@ def iter_advantage_protocols(
     -------
     tuple[AdvantageProtocolRecord, ...]
         Matching rows.
+
     """
     rows: Iterable[AdvantageProtocolRecord] = _CANONICAL_PROTOCOLS
     if language_status is not None:
@@ -384,6 +390,7 @@ def build_advantage_language_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with every catalogue cell (no blanks).
+
     """
     rows = [row.to_dict() for row in _CANONICAL_PROTOCOLS]
     counts: dict[str, int] = {
@@ -427,6 +434,7 @@ def issue_no_advantage_certificate(
     ------
     ValueError
         If ``context`` is blank, or ``protocol_id`` is unknown / refuse-status.
+
     """
     if not context or not str(context).strip():
         raise ValueError("context must be a non-empty string")
@@ -460,6 +468,7 @@ def find_advantage_language_triggers(claim_text: str) -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Trigger phrases found in catalogue order.
+
     """
     if claim_text is None:
         raise TypeError("claim_text must not be None")
@@ -506,6 +515,7 @@ def probe_advantage_language(
         under ``unknown_policy='raise'``.
     TypeError
         If ``claim_text`` is ``None``.
+
     """
     if claim_text is None:
         raise TypeError("claim_text must not be None")
@@ -648,6 +658,7 @@ def assert_advantage_language_registry_integrity(
     ------
     ValueError
         If blank entries or count drift are detected.
+
     """
     registry = dict(payload) if payload is not None else build_advantage_language_registry()
     protocols = registry.get("protocols")

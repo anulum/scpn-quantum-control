@@ -43,6 +43,9 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from tools import (
+        advantage_language_protocol_quality_gates as _advantage_language_protocol_quality_gates,
+    )
+    from tools import (
         campaign_harness_product_quality_gates as _campaign_harness_product_quality_gates,
     )
     from tools import (
@@ -106,6 +109,9 @@ else:
     _repo_root = str(Path(__file__).resolve().parents[1])
     if _repo_root not in sys.path:
         sys.path.insert(0, _repo_root)
+    _advantage_language_protocol_quality_gates = import_module(
+        "tools.advantage_language_protocol_quality_gates"
+    )
     _campaign_harness_product_quality_gates = import_module(
         "tools.campaign_harness_product_quality_gates"
     )
@@ -495,6 +501,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_studio_executive_quality_gates.build_static_quality_gates(_PY),
     *_compiler_boundary_product_quality_gates.build_static_quality_gates(_PY),
     *_resource_budget_gate_quality_gates.build_static_quality_gates(_PY),
+    *_advantage_language_protocol_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -896,6 +903,9 @@ COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES = (
     _compiler_boundary_product_quality_gates.build_coverage_gates(_PY)
 )
 RESOURCE_BUDGET_GATE_COVERAGE_GATES = _resource_budget_gate_quality_gates.build_coverage_gates(_PY)
+ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES = (
+    _advantage_language_protocol_quality_gates.build_coverage_gates(_PY)
+)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -1172,6 +1182,7 @@ def main() -> int:
             gates.extend(STUDIO_EXECUTIVE_PRODUCT_COVERAGE_GATES)
             gates.extend(COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES)
             gates.extend(RESOURCE_BUDGET_GATE_COVERAGE_GATES)
+            gates.extend(ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

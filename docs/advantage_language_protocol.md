@@ -67,6 +67,115 @@ registry = assert_advantage_language_registry_integrity(
 )
 ```
 
+## API reference
+
+All public objects are exported by
+`scpn_quantum_control.advantage_language_protocol`. Registry and `to_dict()`
+payloads contain JSON-ready primitives.
+
+### Types and constants
+
+| API | Contract |
+|---|---|
+| `ProtocolLanguageStatus` | Literal status: `no_advantage_default`, `research_observation`, `decisive_gated`, or `refuse_advantage_language`. |
+| `ADVANTAGE_LANGUAGE_PROTOCOL_SCHEMA` | Stable registry schema identifier, currently `advantage_language_protocol.v1`. |
+| `ADVANTAGE_LANGUAGE_CLAIM_BOUNDARY` | Shared non-promotional boundary copied into records, certificates, probes, and registries. |
+
+### Data models
+
+#### `AdvantageProtocolRecord`
+
+Frozen, slotted catalogue row containing the protocol id, language status,
+summary, evidence-module pointers, reason, and claim boundary. The default row
+must have an empty reason; every non-default row requires one. Evidence-module
+entries must be non-blank. `to_dict()` serialises the tuple as a list.
+
+#### `NoAdvantageCertificate`
+
+Frozen, slotted non-promotional certificate with a deterministic id, statement,
+bound protocol, and claim boundary. Its status is always
+`no_advantage_default`. Construction rejects blank fields or any other status;
+`to_dict()` returns the complete certificate.
+
+#### `AdvantageLanguageProbeResult`
+
+Frozen, slotted language-gate decision containing the original claim, allowed
+flag, effective status, protocol id, matched trigger phrases, reason, and claim
+boundary. A refuse-status result cannot be allowed, and every trigger must be
+non-blank. `to_dict()` converts triggers to a list.
+
+### Catalogue access
+
+| Function | Parameters | Returns | Failure behavior |
+|---|---|---|---|
+| `list_advantage_protocol_ids()` | None | Protocol ids in canonical order. | No failure for the built-in catalogue. |
+| `get_advantage_protocol(protocol_id)` | Non-blank protocol id. | Matching `AdvantageProtocolRecord`. | Raises `ValueError` for blank or unknown ids. |
+| `iter_advantage_protocols(*, language_status=None)` | Optional status filter. | Stable tuple of matching records. | Returns an empty tuple when no row matches. |
+
+The catalogue also includes
+`protocol:bl79.initial_state_observation`, a research-observation row for
+population-matched initial-state comparisons. Catalogue evidence modules are
+pointers; their presence is not proof that their protocol gates passed.
+
+### Certificates and trigger detection
+
+`issue_no_advantage_certificate(*, context="public_claim",
+protocol_id="protocol:default.no_advantage")` normalises spaces in `context`
+to underscores and returns a deterministic certificate. The protocol must be
+known and cannot be the refuse row. Blank contexts, unknown ids, and refuse-row
+bindings raise `ValueError`.
+
+`find_advantage_language_triggers(claim_text)` performs a case-insensitive
+ordered scan for the module's governed marketing phrases. It returns a tuple
+of matched phrases and raises `TypeError` for `None`.
+
+```python
+from scpn_quantum_control.advantage_language_protocol import (
+    find_advantage_language_triggers,
+    issue_no_advantage_certificate,
+)
+
+certificate = issue_no_advantage_certificate(context="release notes")
+assert certificate.certificate_id.startswith("no_advantage:release_notes:")
+assert find_advantage_language_triggers("Proven quantum advantage")
+```
+
+### Language probe
+
+`probe_advantage_language(claim_text, protocol_id=None, *,
+unknown_policy="raise")` applies these rules:
+
+| Binding | Neutral/research wording | Trigger wording |
+|---|---|---|
+| No protocol or blank id | Allowed under default posture | Refused through the ungoverned row |
+| `no_advantage_default` | Allowed | Refused |
+| `research_observation` | Allowed | Refused |
+| `decisive_gated` | Allowed into the evidence path | Allowed into the evidence path, not declared proven |
+| `refuse_advantage_language` | Refused | Refused |
+
+Unknown protocol ids raise `ValueError` by default. With
+`unknown_policy="refuse"`, they produce a structured refusal instead. Any
+other policy value raises `ValueError`; a `None` claim raises `TypeError`.
+
+### Registry and integrity
+
+`build_advantage_language_registry()` assembles the schema, claim boundary,
+protocol count, per-status counts, blank count, and canonical records.
+`assert_advantage_language_registry_integrity(payload=None)` validates a
+supplied registry or builds the canonical one. It raises `ValueError` for an
+empty or malformed protocol list, blank/unknown statuses, missing reasons on
+non-default rows, or inconsistent blank/protocol counts.
+
+## Safety and side effects
+
+- All APIs are pure and deterministic for their supplied inputs.
+- The module does not run benchmarks or QPU/provider jobs, access credentials,
+  mutate evidence, publish wording, or promote a claim.
+- `decisive_gated` means only that wording may enter an explicit evidence path;
+  it never means quantum advantage has been demonstrated.
+- A certificate governs wording only. It is not scientific, performance,
+  release, legal, or marketing approval.
+
 ## Catalogue seeds
 
 - `protocol:default.no_advantage` — default posture
