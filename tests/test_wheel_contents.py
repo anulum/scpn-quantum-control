@@ -234,6 +234,7 @@ def test_real_wheel_repack_accepts_a_platform_extension(
     tmp_path: Path,
 ) -> None:
     """A non-empty ABI-tagged extension passes in a non-pure platform wheel."""
+    main_expectation = _main_expectation()
 
     def add_extension(members: dict[str, bytes]) -> None:
         members["scpn_quantum_control/native.abi3.so"] = b"ELF-placeholder"
@@ -249,12 +250,14 @@ def test_real_wheel_repack_accepts_a_platform_extension(
         built_wheels.main,
         tmp_path,
         add_extension,
-        filename=("scpn_quantum_control-1.0.0-cp312-abi3-manylinux_2_17_x86_64.whl"),
+        filename=(
+            f"scpn_quantum_control-{main_expectation.version}-cp312-abi3-manylinux_2_17_x86_64.whl"
+        ),
     )
     expectation = WheelExpectation(
-        "scpn-quantum-control",
-        "1.0.0",
-        ("scpn_quantum_control", "scpn"),
+        main_expectation.distribution,
+        main_expectation.version,
+        main_expectation.packages,
         ("scpn_quantum_control.native",),
     )
 
