@@ -75,6 +75,7 @@ class ParityFamily:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     family_id: str
@@ -147,6 +148,7 @@ class PolyglotParityCertificate:
         Non-empty when unsupported or failed.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     family_id: str
@@ -230,6 +232,7 @@ class CertificateVerifyDecision:
         Non-empty when failed or refused.
     observed_max_abs_error
         Recomputed error (0.0 when digests match for supported certs).
+
     """
 
     family_id: str
@@ -385,6 +388,7 @@ def list_parity_family_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered family identifiers.
+
     """
     return tuple(row.family_id for row in _CANONICAL_FAMILIES)
 
@@ -406,6 +410,7 @@ def get_parity_family(family_id: str) -> ParityFamily:
     ------
     ValueError
         If ``family_id`` is blank or unknown (fail closed).
+
     """
     if not family_id or not str(family_id).strip():
         raise ValueError("family_id must be a non-empty string")
@@ -434,6 +439,7 @@ def iter_parity_families(
     -------
     tuple[ParityFamily, ...]
         Matching families.
+
     """
     rows: Sequence[ParityFamily] = _CANONICAL_FAMILIES
     if support is not None:
@@ -453,6 +459,7 @@ def canonical_json_bytes(payload: Mapping[str, Any]) -> bytes:
     -------
     bytes
         Canonical JSON encoding.
+
     """
     if not isinstance(payload, Mapping):
         raise ValueError("payload must be a mapping")
@@ -472,6 +479,7 @@ def digest_payload(payload: Mapping[str, Any]) -> str:
     -------
     str
         64-character lowercase hex digest.
+
     """
     return hashlib.sha256(canonical_json_bytes(payload)).hexdigest()
 
@@ -546,6 +554,7 @@ def build_sample_certificate(
     ------
     ValueError
         If ``family_id`` or ``sample_id`` is blank/unknown.
+
     """
     family = get_parity_family(family_id)
     if not sample_id or not str(sample_id).strip():
@@ -624,6 +633,7 @@ def certificate_from_dict(payload: Mapping[str, Any]) -> PolyglotParityCertifica
     ------
     ValueError
         If required fields are blank, missing, or invalid.
+
     """
     if not isinstance(payload, Mapping):
         raise ValueError("certificate payload must be a mapping")
@@ -701,6 +711,7 @@ def verify_certificate(
     -------
     CertificateVerifyDecision
         Passed / failed / refused decision.
+
     """
     cert = (
         certificate
@@ -795,6 +806,7 @@ def map_parity_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     seen: set[str] = set()
     rows: list[dict[str, object]] = []
@@ -823,6 +835,7 @@ def build_polyglot_parity_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with families (no blanks).
+
     """
     families = [row.to_dict() for row in _CANONICAL_FAMILIES]
     sample_count = sum(1 for row in _CANONICAL_FAMILIES if row.support == "sample_bitexact")
@@ -863,6 +876,7 @@ def assert_polyglot_parity_product_integrity(
     ------
     ValueError
         If coverage or blanks appear.
+
     """
     registry = dict(payload) if payload is not None else build_polyglot_parity_product_registry()
     families = registry.get("families")

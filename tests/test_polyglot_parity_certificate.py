@@ -36,6 +36,7 @@ from scpn_quantum_control.polyglot_parity_certificate import (
 
 
 def test_list_families_and_filters() -> None:
+    """Keep family ordering deterministic and support filtering exact."""
     ids = list_parity_family_ids()
     assert "scalar_interpreter_replay" in ids
     assert "value_and_gradient_replay" in ids
@@ -47,6 +48,7 @@ def test_list_families_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve declared families while refusing blank and unknown identifiers."""
     family = get_parity_family("scalar_interpreter_replay")
     assert family.bl97_stability_class == "experimental_workbench"
     assert family.claim_boundary == POLYGLOT_PARITY_CLAIM_BOUNDARY
@@ -57,6 +59,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_build_and_verify_sample_bitexact() -> None:
+    """Build and verify a supported deterministic bit-exact sample."""
     cert = build_sample_certificate("scalar_interpreter_replay")
     assert cert.supported is True
     assert cert.max_abs_error == 0.0
@@ -72,6 +75,7 @@ def test_build_and_verify_sample_bitexact() -> None:
 
 
 def test_build_boundary_and_catalogue_refuse() -> None:
+    """Represent boundary and catalogue-only families as honest refusals."""
     boundary = build_sample_certificate("elementwise_primitive_parity")
     assert boundary.supported is False
     assert boundary.blocked_reasons
@@ -87,6 +91,7 @@ def test_build_boundary_and_catalogue_refuse() -> None:
 
 
 def test_verify_detects_tamper() -> None:
+    """Fail verification when a certificate digest is tampered."""
     cert = build_sample_certificate("value_and_gradient_replay")
     tampered = PolyglotParityCertificate(
         family_id=cert.family_id,
@@ -106,6 +111,7 @@ def test_verify_detects_tamper() -> None:
 
 
 def test_verify_expect_supported_mismatch() -> None:
+    """Fail when the certificate support flag violates caller expectation."""
     cert = build_sample_certificate("scalar_interpreter_replay")
     decision = verify_certificate(cert, expect_supported=False)
     assert decision.passed is False
@@ -113,6 +119,7 @@ def test_verify_expect_supported_mismatch() -> None:
 
 
 def test_certificate_from_dict_and_round_trip() -> None:
+    """Round-trip certificate mappings through validation and verification."""
     cert = build_sample_certificate("registry_metadata_mirror", sample_id="sample-1")
     rebuilt = certificate_from_dict(cert.to_dict())
     assert rebuilt.family_id == cert.family_id
@@ -123,6 +130,7 @@ def test_certificate_from_dict_and_round_trip() -> None:
 
 
 def test_certificate_from_dict_fail_closed() -> None:
+    """Reject malformed, unknown, and ill-typed certificate mappings."""
     with pytest.raises(ValueError, match="mapping"):
         certificate_from_dict(cast(Any, "nope"))
     with pytest.raises(ValueError, match="family_id"):
@@ -186,6 +194,7 @@ def test_certificate_from_dict_fail_closed() -> None:
 
 
 def test_registry_and_integrity() -> None:
+    """Build and validate both explicit and default product registries."""
     registry = build_polyglot_parity_product_registry()
     assert registry["schema"] == POLYGLOT_PARITY_PRODUCT_SCHEMA
     assert registry["certificate_schema"] == POLYGLOT_PARITY_CERTIFICATE_SCHEMA
@@ -197,6 +206,7 @@ def test_registry_and_integrity() -> None:
 
 
 def test_public_surfaces() -> None:
+    """Map every owning module to the governed certificate surface role."""
     surfaces = map_parity_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -206,8 +216,9 @@ def test_public_surfaces() -> None:
 
 
 def test_integrity_rejects_drift() -> None:
+    """Reject extra family identifiers and empty registry inventories."""
     registry = build_polyglot_parity_product_registry()
-    families = cast(list[dict[str, object]], list(registry["families"]))
+    families = cast(list[dict[str, object]], registry["families"])
     broken = dict(registry)
     broken["families"] = families + [
         {
@@ -231,8 +242,9 @@ def test_integrity_rejects_drift() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject malformed rows, blank fields, duplicates, counts, and schemas."""
     registry = build_polyglot_parity_product_registry()
-    families = cast(list[dict[str, object]], list(registry["families"]))
+    families = cast(list[dict[str, object]], registry["families"])
 
     non_map = dict(registry)
     non_map["families"] = [cast(Any, "nope")]
@@ -287,12 +299,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the documented catalogue, builder, and verifier APIs exported."""
     assert "build_sample_certificate" in polyglot_parity_certificate.__all__
     assert "verify_certificate" in polyglot_parity_certificate.__all__
     assert "list_parity_family_ids" in polyglot_parity_certificate.__all__
 
 
 def test_family_validation() -> None:
+    """Reject every invalid family-catalogue invariant at construction."""
     base: dict[str, Any] = {
         "family_id": "x",
         "title": "t",
@@ -318,7 +332,8 @@ def test_family_validation() -> None:
 
 
 def test_certificate_invariants() -> None:
-    good = dict(
+    """Reject inconsistent supported and blocked certificate records."""
+    good: dict[str, Any] = dict(
         family_id="scalar_interpreter_replay",
         schema=POLYGLOT_PARITY_CERTIFICATE_SCHEMA,
         sample_id="s",
@@ -360,6 +375,7 @@ def test_certificate_invariants() -> None:
 
 
 def test_decision_invariants() -> None:
+    """Reject malformed verification outcomes and decision metadata."""
     with pytest.raises(ValueError, match="family_id"):
         CertificateVerifyDecision(
             family_id="",
@@ -413,6 +429,7 @@ def test_decision_invariants() -> None:
 
 
 def test_digest_and_canonical() -> None:
+    """Canonicalise mappings deterministically and digest their exact bytes."""
     payload = {"b": 2, "a": 1}
     digest = digest_payload(payload)
     assert len(digest) == 64
@@ -422,11 +439,13 @@ def test_digest_and_canonical() -> None:
 
 
 def test_build_sample_id_blank() -> None:
+    """Reject blank sample identifiers before certificate construction."""
     with pytest.raises(ValueError, match="sample_id"):
         build_sample_certificate("scalar_interpreter_replay", sample_id="  ")
 
 
 def test_catalogue_map_runtime_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Exercise blank, duplicate, and empty catalogue construction guards."""
     from scpn_quantum_control import polyglot_parity_certificate as mod
 
     good = get_parity_family("scalar_interpreter_replay")
@@ -456,6 +475,7 @@ def test_catalogue_map_runtime_guards(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_family_to_dict() -> None:
+    """Serialise family records without losing policy or provenance fields."""
     family = get_parity_family("linalg_primitive_parity")
     payload = family.to_dict()
     assert payload["support"] == "boundary_unsupported"
@@ -463,6 +483,7 @@ def test_family_to_dict() -> None:
 
 
 def test_certificate_from_dict_type_edges() -> None:
+    """Reject certificate fields with invalid scalar and sequence types."""
     base = {
         "family_id": "scalar_interpreter_replay",
         "schema": POLYGLOT_PARITY_CERTIFICATE_SCHEMA,
@@ -491,6 +512,7 @@ def test_certificate_from_dict_type_edges() -> None:
 
 
 def test_certificate_blank_blockers_entry() -> None:
+    """Reject blank blocker text in unsupported certificate mappings."""
     with pytest.raises(ValueError, match="blocked_reasons entries"):
         PolyglotParityCertificate(
             family_id="scalar_interpreter_replay",
@@ -506,6 +528,7 @@ def test_certificate_blank_blockers_entry() -> None:
 
 
 def test_decision_more_invariants() -> None:
+    """Cover refused, passed, and blocker consistency invariants."""
     with pytest.raises(ValueError, match="sample_id"):
         CertificateVerifyDecision(
             family_id="f",
@@ -634,6 +657,7 @@ def test_verify_object_path_unknown_schema_fail_closed() -> None:
 
 
 def test_verify_input_and_error_paths() -> None:
+    """Exercise verifier mapping input and recomputed mismatch paths."""
     cert = build_sample_certificate("scalar_interpreter_replay")
     bad_input = PolyglotParityCertificate(
         family_id=cert.family_id,

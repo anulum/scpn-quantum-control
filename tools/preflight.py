@@ -60,6 +60,9 @@ if TYPE_CHECKING:
         kyma_mechanism_benchmark_product_quality_gates as _kyma_mechanism_product_quality_gates,
     )
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
+    from tools import (
+        polyglot_parity_certificate_quality_gates as _polyglot_parity_certificate_quality_gates,
+    )
     from tools import program_ad_array_indexing_quality_gates as _array_indexing_quality_gates
     from tools import program_ad_quality_gates as _program_ad_quality_gates
     from tools import public_api_stability_quality_gates as _public_api_stability_quality_gates
@@ -93,6 +96,9 @@ else:
         "tools.kyma_mechanism_benchmark_product_quality_gates"
     )
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
+    _polyglot_parity_certificate_quality_gates = import_module(
+        "tools.polyglot_parity_certificate_quality_gates"
+    )
     _array_indexing_quality_gates = import_module("tools.program_ad_array_indexing_quality_gates")
     _program_ad_quality_gates = import_module("tools.program_ad_quality_gates")
     _quantum_sync_oracle_product_quality_gates = import_module(
@@ -417,6 +423,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_cloud_native_deployment_quality_gates.build_static_quality_gates(_PY),
     *_control_stack_compose_quality_gates.build_static_quality_gates(_PY),
     *_public_api_stability_quality_gates.build_static_quality_gates(_PY),
+    *_polyglot_parity_certificate_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -786,6 +793,9 @@ CONTROL_STACK_COMPOSE_COVERAGE_GATES = _control_stack_compose_quality_gates.buil
     _PY
 )
 PUBLIC_API_STABILITY_COVERAGE_GATES = _public_api_stability_quality_gates.build_coverage_gates(_PY)
+POLYGLOT_PARITY_CERTIFICATE_COVERAGE_GATES = (
+    _polyglot_parity_certificate_quality_gates.build_coverage_gates(_PY)
+)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -1048,6 +1058,7 @@ def main() -> int:
             gates.extend(CLOUD_NATIVE_DEPLOYMENT_COVERAGE_GATES)
             gates.extend(CONTROL_STACK_COMPOSE_COVERAGE_GATES)
             gates.extend(PUBLIC_API_STABILITY_COVERAGE_GATES)
+            gates.extend(POLYGLOT_PARITY_CERTIFICATE_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

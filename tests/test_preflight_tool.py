@@ -973,6 +973,8 @@ def test_main_uses_coverage_pytest_by_default(
         "control-stack-compose exact coverage threshold",
         "public-api-stability focused coverage",
         "public-api-stability exact coverage threshold",
+        "polyglot-parity-certificate focused coverage",
+        "polyglot-parity-certificate exact coverage threshold",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",
