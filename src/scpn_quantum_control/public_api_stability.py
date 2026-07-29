@@ -88,13 +88,14 @@ class PublicApiSymbolRecord:
     summary
         Short description.
     replacement_target
-        Prefered replacement path when deprecated (empty when not).
+        Preferred replacement path when deprecated (empty when not).
     removal_horizon
         Planned removal release label when deprecated (empty when not).
     as_of
         Inventory date label (ISO-like string, not a runtime clock claim).
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     symbol_id: str
@@ -191,6 +192,7 @@ class PathClassification:
         Human-readable classification reason.
     in_catalogue
         Whether the path matches a declared catalogue row exactly.
+
     """
 
     path_id: str
@@ -241,6 +243,7 @@ class DeprecationProbe:
         Message that would be emitted by the deprecation decorator/policy.
     reason
         Decision reason.
+
     """
 
     symbol_id: str
@@ -294,6 +297,7 @@ class BreakingChangeDecision:
         Human-readable decision reason.
     requires_deprecation
         Whether a prior deprecation record is required.
+
     """
 
     symbol_id: str
@@ -544,6 +548,7 @@ def list_public_api_symbol_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered symbol identifiers.
+
     """
     return tuple(row.symbol_id for row in _CANONICAL_SYMBOLS)
 
@@ -565,6 +570,7 @@ def get_public_api_symbol(symbol_id: str) -> PublicApiSymbolRecord:
     ------
     ValueError
         If ``symbol_id`` is blank or unknown (fail closed — never invent-stable).
+
     """
     if not symbol_id or not str(symbol_id).strip():
         raise ValueError("symbol_id must be a non-empty string")
@@ -599,6 +605,7 @@ def iter_public_api_symbols(
     -------
     tuple[PublicApiSymbolRecord, ...]
         Matching rows.
+
     """
     rows: Iterable[PublicApiSymbolRecord] = _CANONICAL_SYMBOLS
     if stability_class is not None:
@@ -644,6 +651,7 @@ def classify_api_path(path_id: str) -> PathClassification:
     ------
     ValueError
         If ``path_id`` is blank.
+
     """
     if not path_id or not str(path_id).strip():
         raise ValueError("path_id must be a non-empty string")
@@ -705,6 +713,7 @@ def probe_deprecation(symbol_id: str) -> DeprecationProbe:
     ------
     ValueError
         If ``symbol_id`` is blank or unknown.
+
     """
     record = get_public_api_symbol(symbol_id)
     if record.deprecation_state == "deprecated":
@@ -758,6 +767,7 @@ def validate_breaking_change(
     ------
     ValueError
         If ``symbol_id`` / ``change_kind`` are invalid.
+
     """
     if change_kind not in {"remove", "rename", "signature_break"}:
         raise ValueError(f"unknown change_kind: {change_kind!r}")
@@ -804,7 +814,7 @@ def deprecated_public(
     replacement_target: str,
     removal_horizon: str,
 ) -> Callable[[_F], _F]:
-    """Decorator that emits ``DeprecationWarning`` per DEPRECATIONS.md policy.
+    """Emit ``DeprecationWarning`` from a policy-bound decorator.
 
     Does not mutate the static catalogue; call sites that decorate live callables
     still need a catalogue row (or pack slice) for inventory integrity. Use
@@ -815,7 +825,7 @@ def deprecated_public(
     symbol_id
         Public symbol being deprecated (for the warning text).
     replacement_target
-        Prefered replacement path.
+        Preferred replacement path.
     removal_horizon
         Planned removal release label.
 
@@ -828,6 +838,7 @@ def deprecated_public(
     ------
     ValueError
         If any required field is blank.
+
     """
     if not symbol_id or not str(symbol_id).strip():
         raise ValueError("symbol_id must be a non-empty string")
@@ -858,6 +869,7 @@ def build_public_api_stability_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with every catalogue row (no blanks).
+
     """
     rows = [row.to_dict() for row in _CANONICAL_SYMBOLS]
     semver = sum(1 for row in _CANONICAL_SYMBOLS if row.stability_class == "semver_stable")
@@ -904,6 +916,7 @@ def assert_public_api_stability_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-stable rows appear.
+
     """
     registry = dict(payload) if payload is not None else build_public_api_stability_registry()
     symbols = registry.get("symbols")
@@ -967,6 +980,7 @@ def version_compatibility_note() -> dict[str, object]:
     -------
     dict[str, object]
         Compatibility matrix note linking DEPRECATIONS.md policy to this surface.
+
     """
     return {
         "schema": "public_api_version_compatibility.v1",

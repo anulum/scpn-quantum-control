@@ -37,6 +37,7 @@ from scpn_quantum_control.public_api_stability import (
 
 
 def test_list_is_non_empty_deterministic_and_covers_classes() -> None:
+    """Keep catalogue ordering deterministic and every stability class represented."""
     ids = list_public_api_symbol_ids()
     assert len(ids) >= 10
     assert ids == list_public_api_symbol_ids()
@@ -49,6 +50,7 @@ def test_list_is_non_empty_deterministic_and_covers_classes() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve declared symbols while refusing blank and unknown identifiers."""
     row = get_public_api_symbol("scpn_quantum_control.stable_core.Problem")
     assert row.stability_class == "semver_stable"
     assert row.visibility == "public"
@@ -61,6 +63,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_classify_public_vs_internal() -> None:
+    """Classify durable, workbench, internal, and undeclared paths honestly."""
     public = classify_api_path("scpn_quantum_control.stable_core.Problem")
     assert public.visibility == "public"
     assert public.guaranteed_stable is True
@@ -98,6 +101,7 @@ def test_undeclared_never_guaranteed_stable() -> None:
 
 
 def test_build_registry_and_integrity() -> None:
+    """Build a complete registry and validate both explicit and default payloads."""
     registry = build_public_api_stability_registry()
     assert registry["schema"] == PUBLIC_API_STABILITY_SCHEMA
     assert registry["blank_entry_count"] == 0
@@ -124,6 +128,7 @@ def test_build_registry_and_integrity() -> None:
 
 
 def test_probe_deprecation_active_and_deprecated() -> None:
+    """Distinguish active symbols from staged deprecations and reject unknowns."""
     active = probe_deprecation("scpn_quantum_control.stable_core.Problem")
     assert active.is_deprecated is False
     assert active.replacement_target == ""
@@ -140,6 +145,7 @@ def test_probe_deprecation_active_and_deprecated() -> None:
 
 
 def test_validate_breaking_change_fail_closed_without_deprecation() -> None:
+    """Refuse unstaged public breaks while permitting governed and internal changes."""
     refuse = validate_breaking_change(
         "scpn_quantum_control.stable_core.Problem",
         change_kind="remove",
@@ -170,6 +176,8 @@ def test_validate_breaking_change_fail_closed_without_deprecation() -> None:
 
 
 def test_deprecated_public_decorator_emits_warning() -> None:
+    """Emit the policy warning and reject blank decorator metadata."""
+
     @deprecated_public(
         symbol_id="demo.legacy_fn",
         replacement_target="demo.new_fn",
@@ -203,6 +211,7 @@ def test_deprecated_public_decorator_emits_warning() -> None:
 
 
 def test_version_compatibility_note() -> None:
+    """Expose the version, migration, policy, and claim-boundary record."""
     note = version_compatibility_note()
     assert note["schema"] == "public_api_version_compatibility.v1"
     assert "DEPRECATIONS.md" in str(note["deprecation_policy"])
@@ -211,6 +220,7 @@ def test_version_compatibility_note() -> None:
 
 
 def test_iter_filters() -> None:
+    """Filter catalogue rows independently by class, state, and visibility."""
     stable = iter_public_api_symbols(stability_class="semver_stable")
     assert stable
     assert all(row.stability_class == "semver_stable" for row in stable)
@@ -223,6 +233,7 @@ def test_iter_filters() -> None:
 
 
 def test_record_to_dict_and_dataclasses() -> None:
+    """Serialise each public record type without losing decision fields."""
     row = get_public_api_symbol("scpn_quantum_control.accel")
     payload = row.to_dict()
     assert payload["symbol_id"] == "scpn_quantum_control.accel"
@@ -240,6 +251,7 @@ def test_record_to_dict_and_dataclasses() -> None:
 
 
 def test_public_api_symbol_record_validation() -> None:
+    """Reject every invalid symbol-record invariant at construction time."""
     with pytest.raises(ValueError, match="symbol_id"):
         PublicApiSymbolRecord(
             symbol_id="",
@@ -396,6 +408,7 @@ def test_public_api_symbol_record_validation() -> None:
 
 
 def test_integrity_rejects_blank_and_drift() -> None:
+    """Reject malformed rows, duplicate identifiers, counts, and catalogue drift."""
     good = build_public_api_stability_registry()
     assert_public_api_stability_integrity(good)
 
@@ -498,6 +511,7 @@ def test_integrity_rejects_blank_and_drift() -> None:
 
 
 def test_module_all_exports() -> None:
+    """Keep the documented query and policy functions publicly exported."""
     assert "classify_api_path" in public_api_stability.__all__
     assert "probe_deprecation" in public_api_stability.__all__
     assert "validate_breaking_change" in public_api_stability.__all__
@@ -505,6 +519,7 @@ def test_module_all_exports() -> None:
 
 
 def test_path_classification_and_probe_invariants() -> None:
+    """Reject inconsistent path, probe, and breaking-decision records."""
     with pytest.raises(ValueError, match="path_id"):
         PathClassification(
             path_id="",
@@ -613,6 +628,7 @@ def test_path_classification_and_probe_invariants() -> None:
 
 
 def test_internal_path_heuristics_and_decorator_horizon() -> None:
+    """Recognise private path forms and require a nonblank removal horizon."""
     assert classify_api_path("tests/unit/foo.py").visibility == "internal"
     assert classify_api_path("docs/internal/plan.md").visibility == "internal"
     assert classify_api_path("pkg.foo._bar.helper").visibility == "internal"

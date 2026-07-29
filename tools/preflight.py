@@ -62,6 +62,7 @@ if TYPE_CHECKING:
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import program_ad_array_indexing_quality_gates as _array_indexing_quality_gates
     from tools import program_ad_quality_gates as _program_ad_quality_gates
+    from tools import public_api_stability_quality_gates as _public_api_stability_quality_gates
     from tools import (
         quantum_sync_oracle_product_quality_gates as _quantum_sync_oracle_product_quality_gates,
     )
@@ -82,6 +83,7 @@ else:
     _control_stack_compose_quality_gates = import_module(
         "tools.control_stack_compose_product_quality_gates"
     )
+    _public_api_stability_quality_gates = import_module("tools.public_api_stability_quality_gates")
     _custom_derivatives_product_quality_gates = import_module(
         "tools.custom_derivatives_product_quality_gates"
     )
@@ -414,6 +416,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_campaign_harness_product_quality_gates.build_static_quality_gates(_PY),
     *_cloud_native_deployment_quality_gates.build_static_quality_gates(_PY),
     *_control_stack_compose_quality_gates.build_static_quality_gates(_PY),
+    *_public_api_stability_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -782,6 +785,7 @@ CLOUD_NATIVE_DEPLOYMENT_COVERAGE_GATES = (
 CONTROL_STACK_COMPOSE_COVERAGE_GATES = _control_stack_compose_quality_gates.build_coverage_gates(
     _PY
 )
+PUBLIC_API_STABILITY_COVERAGE_GATES = _public_api_stability_quality_gates.build_coverage_gates(_PY)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -1043,6 +1047,7 @@ def main() -> int:
             gates.extend(CAMPAIGN_HARNESS_PRODUCT_COVERAGE_GATES)
             gates.extend(CLOUD_NATIVE_DEPLOYMENT_COVERAGE_GATES)
             gates.extend(CONTROL_STACK_COMPOSE_COVERAGE_GATES)
+            gates.extend(PUBLIC_API_STABILITY_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)
