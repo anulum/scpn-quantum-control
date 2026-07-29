@@ -20,13 +20,30 @@ from .app_plugins import (
 from .cross_domain import CrossDomainResult, run_cross_domain_validation
 from .dataset_catalog import (
     ApplicationBenchmarkDescriptor,
+    ApplicationBenchmarkPrivacyAudit,
     artifact_to_kuramoto_problem,
+    audit_application_benchmark_privacy,
     get_application_benchmark_descriptor,
     list_application_benchmark_descriptors,
     load_application_benchmark_artifact,
 )
 from .eeg_benchmark import EEGBenchmarkResult, eeg_benchmark
 from .fmo_benchmark import FMOBenchmarkResult, fmo_benchmark, fmo_coupling_matrix
+from .honesty_kits import (
+    APPLICATION_HONESTY_CLAIM_BOUNDARY,
+    APPLICATION_HONESTY_SCHEMA,
+    BL37_FORECASTING_DOMAIN_TAGS,
+    ApplicationDataOrigin,
+    ApplicationHonestyAuditReport,
+    ApplicationSupportStatus,
+    DomainApplicationHonestyKit,
+    ForecastingDomainTag,
+    build_application_honesty_audit_report,
+    get_domain_application_honesty_kit,
+    get_domain_application_honesty_kit_for_dataset,
+    list_domain_application_honesty_kits,
+    render_application_honesty_audit_markdown,
+)
 from .iter_benchmark import ITERBenchmarkResult, iter_benchmark
 from .josephson_array import JosephsonBenchmarkResult, josephson_benchmark
 from .josephson_magnitude_study import (
@@ -68,9 +85,18 @@ from .quantum_reservoir_product import (
 
 __all__ = [
     "ApplicationBenchmarkDescriptor",
+    "ApplicationBenchmarkPrivacyAudit",
+    "APPLICATION_HONESTY_CLAIM_BOUNDARY",
+    "APPLICATION_HONESTY_SCHEMA",
+    "BL37_FORECASTING_DOMAIN_TAGS",
+    "ApplicationDataOrigin",
+    "ApplicationHonestyAuditReport",
     "ApplicationPluginBenchmark",
     "ApplicationPluginRegistry",
+    "ApplicationSupportStatus",
     "artifact_to_kuramoto_problem",
+    "audit_application_benchmark_privacy",
+    "build_application_honesty_audit_report",
     "ClassicalESNReadoutResult",
     "classical_esn_feature_matrix",
     "classical_esn_ridge_regression",
@@ -79,6 +105,8 @@ __all__ = [
     "compare_quantum_reservoir_to_esn",
     "compare_quantum_reservoir_to_esn_holdout",
     "discover_application_plugins",
+    "DomainApplicationHonestyKit",
+    "ForecastingDomainTag",
     "EEGBenchmarkResult",
     "eeg_benchmark",
     "FMOBenchmarkResult",
@@ -99,7 +127,10 @@ __all__ = [
     "get_application_benchmark_descriptor",
     "get_application_plugin",
     "get_application_plugin_registry",
+    "get_domain_application_honesty_kit",
+    "get_domain_application_honesty_kit_for_dataset",
     "list_application_benchmark_descriptors",
+    "list_domain_application_honesty_kits",
     "load_application_benchmark_artifact",
     "load_application_dataset",
     "QuantumEVSResult",
@@ -112,6 +143,7 @@ __all__ = [
     "QRCHoldoutComparison",
     "QRC_PRODUCT_CLAIM_BOUNDARY",
     "render_josephson_knm_magnitude_study_markdown",
+    "render_application_honesty_audit_markdown",
     "ReservoirResult",
     "ReservoirLinearObjective",
     "ReservoirTaskKind",

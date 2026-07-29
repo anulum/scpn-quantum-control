@@ -163,7 +163,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
 | `phase` | 77 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad, Kuramoto variants, differentiable/gradient surfaces |
 | `bridge` | 13 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
-| `applications` | 14 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, QRC+ESN baseline, application benchmark plugins |
+| `applications` | 17 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, QRC+ESN baseline, benchmark plugins, honesty kits |
 | `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
 | `qec` | 13 | Toric code, MWPM decoder boundary, repetition code UPDE, surface code, biological surface code, DLA-protected memory/scar prototypes, error budget, multi-scale, syndrome flow |
 | `control` | 11 | QAOA-MPC, residual-certified VQLS Grad-Shafranov proxy, Petri nets, ITER disruption, topological optimiser |
@@ -247,6 +247,7 @@ for name, w in results.items():
 - [Analysis API](analysis_api.md) — advanced reference for the analysis modules
 - [Witness Discovery](witness_discovery.md) — Bayesian/bandit search over synchronisation witness candidates
 - [Application Benchmark Plugins](application_benchmarks.md) — EEG, plasma, power-grid, and FEP datasets through the QPU artifact contract
+- [Domain Application Honesty Kits](application_honesty_kits.md) — typed synthetic/curated boundaries, forbidden claims, and packaged-data privacy audit
 - [Phase API](phase_api.md) — advanced reference for the phase evolution and gradient modules
 - [Kuramoto Variants](kuramoto_variants.md) — higher-order, monitored, and PT-symmetric trajectory APIs
 - [Classical Baselines](classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces

@@ -122,17 +122,17 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.0.0 |
 | Public API exports | 841 |
-| Python source modules | 693 |
-| Public Python classes | 1350 |
+| Python source modules | 694 |
+| Public Python classes | 1355 |
 | Domain package families | 38 |
-| API documentation pages | 3 |
+| API documentation pages | 4 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
 | Notebook files | 109 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1150 |
-| Public documentation pages | 353 |
+| Python test files | 1151 |
+| Public documentation pages | 355 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -707,7 +707,7 @@ graph TD
 | `analysis` | 61 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
 | `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
 | `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
-| `applications` | 16 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, QRC+ESN baseline |
+| `applications` | 17 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, QRC+ESN baseline, honesty kits |
 | `bridge` | 13 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
 | `control` | 11 | QAOA-MPC, residual-certified VQLS Grad-Shafranov proxy, Petri nets, ITER disruption, topological optimiser |
 | `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z2 parity, CPDR, symmetry verification, GUESS, compound |
@@ -825,7 +825,7 @@ scpn_quantum_control/
 ├── hardware/       63 modules — IBM runner, backends, GPU, cutting, provenance
 ├── phase/          76 modules — time evolution + variational + Lindblad
 ├── bridge/         14 modules — K_nm → quantum objects + cross-repo
-├── applications/   14 modules — physical system benchmarks
+├── applications/   17 modules — physical benchmarks + honesty kits
 ├── control/        14 modules — QAOA-MPC, residual VQLS-GS proxy, Petri, ITER, topological
 ├── mitigation/     12 modules — ZNE, PEC, DD, Z2, CPDR, symmetry
 ├── qec/            13 modules — error correction + biological surface code
@@ -908,6 +908,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Analysis API](docs/analysis_api.md) — advanced reference for 46 analysis modules
 - [Phase API](docs/phase_api.md) — advanced reference for 29 evolution algorithms
 - [Application Benchmark Plugins](docs/application_benchmarks.md) — EEG, plasma, power-grid, and FEP datasets through QPU artefacts
+- [Domain Application Honesty Kits](docs/application_honesty_kits.md) — typed claim boundaries and packaged-data privacy audit
 - [Classical Baselines](docs/classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
 - [TN/MPS Baseline Design](docs/tn_mps_baseline_design.md) — CPU-first N=30-40 tensor-network baseline plan
 - [TN/MPS Crossover Stage-1 Gate](docs/tn_mps_crossover_stage1.md) — QWC-5.1 N=30-40 row schema and claim boundary

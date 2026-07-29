@@ -2152,6 +2152,25 @@ downstream non-admission policy.
 
 ## applications
 
+### `honesty_kits` and packaged-dataset privacy
+
+```python
+list_domain_application_honesty_kits() -> tuple[DomainApplicationHonestyKit, ...]
+get_domain_application_honesty_kit(kit_id) -> DomainApplicationHonestyKit
+get_domain_application_honesty_kit_for_dataset(dataset_id) -> DomainApplicationHonestyKit
+audit_application_benchmark_privacy() -> tuple[ApplicationBenchmarkPrivacyAudit, ...]
+build_application_honesty_audit_report() -> ApplicationHonestyAuditReport
+render_application_honesty_audit_markdown(report) -> str
+```
+
+BL-63 immutable policy records cover power-grid, Josephson, EEG-like, and
+ITER-inspired routes. They bind support status, data origin, synthetic-only
+policy, allowed uses, caveats, forbidden claims, and BL-37 simulation tags.
+The privacy audit validates only versioned packaged benchmark artifacts and
+fails closed on provenance or licence-boundary mismatch. See
+[Domain Application Honesty Kits](application_honesty_kits.md) and the
+[complete source-derived API reference](api/application_honesty_kits.md).
+
 ### `eeg_classification`
 
 ```python

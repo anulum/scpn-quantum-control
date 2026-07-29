@@ -135,6 +135,8 @@ nav:
           - Sparse Kuramoto CPU Path: kuramoto_sparse_cpu.md
           - Witness Discovery: witness_discovery.md
           - Application Benchmark Plugins: application_benchmarks.md
+          - Domain Application Honesty Kits: application_honesty_kits.md
+          - Application Honesty API: api/application_honesty_kits.md
           - Real-Data Synchronisation Forecasting: real_data_sync_forecasting.md
           - Multimodal Partial-Observation Forecasting: multimodal_forecasting.md
           - Chimera and Multiscale Control: chimera_multiscale_control.md

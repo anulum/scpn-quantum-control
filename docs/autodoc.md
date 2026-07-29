@@ -461,7 +461,11 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.applications.dataset_catalog
     options:
-      members: [ApplicationBenchmarkDescriptor, list_application_benchmark_descriptors, get_application_benchmark_descriptor, load_application_benchmark_artifact, artifact_to_kuramoto_problem]
+      members: [ApplicationBenchmarkDescriptor, ApplicationBenchmarkPrivacyAudit, list_application_benchmark_descriptors, get_application_benchmark_descriptor, load_application_benchmark_artifact, audit_application_benchmark_privacy, artifact_to_kuramoto_problem]
+
+::: scpn_quantum_control.applications.honesty_kits
+    options:
+      members: [ApplicationSupportStatus, ApplicationDataOrigin, DomainApplicationHonestyKit, ApplicationHonestyAuditReport, list_domain_application_honesty_kits, get_domain_application_honesty_kit, get_domain_application_honesty_kit_for_dataset, build_application_honesty_audit_report, render_application_honesty_audit_markdown]
 
 ::: scpn_quantum_control.applications.app_plugins
     options:

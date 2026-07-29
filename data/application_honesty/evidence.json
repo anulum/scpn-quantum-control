@@ -1,0 +1,187 @@
+{
+  "claim_boundary": "software-contract and synthetic-or-curated benchmark evidence only; not domain validation, operational control, clinical use, facility prediction, hardware performance, or quantum advantage",
+  "content_digest": "a4792a063a1ed710811d2b82acb629623280c2f17774ea5718c56a73fc1a976a",
+  "dataset_privacy": [
+    {
+      "artifact_hashes": {
+        "K_nm_sha256": "15fb121a65500c7be85d65e2319ab5023bb0851b0e18ac9683345c5d9604d662",
+        "omega_sha256": "58d04184e7a4e169925495491d9886130479d9d5c34f8b51dce4fba601fbeb38",
+        "theta0_sha256": "239e09dbfd4a0cd22502e384fb0ff5fe28a624bebef48eeed6b57e0198ad65be"
+      },
+      "contains_personal_data": false,
+      "dataset_id": "eeg_alpha_plv_8ch",
+      "passed": true,
+      "privacy_boundary": "small curated benchmark matrix for software validation; not a raw participant recording",
+      "privacy_classification": "public_curated_no_personal_data",
+      "source_mode": "curated"
+    },
+    {
+      "artifact_hashes": {
+        "K_nm_sha256": "92c1a1fb76bc7c128ee23481d2debe63849e1a9b3858066985c0b1a74cade0bf",
+        "omega_sha256": "f40c4bf279027c087718ae228a22e4aa85aeaf5bdbc3bc40d040fea0182014aa",
+        "theta0_sha256": "395fbcb76e27c6145916370385963eb54f1c89ac6f5d046e5468909d873427d3"
+      },
+      "contains_personal_data": false,
+      "dataset_id": "iter_mhd_8mode",
+      "passed": true,
+      "privacy_boundary": "small curated benchmark matrix for software validation; not a proprietary ITER discharge trace",
+      "privacy_classification": "public_curated_no_facility_trace",
+      "source_mode": "curated"
+    },
+    {
+      "artifact_hashes": {
+        "K_nm_sha256": "f2dfc5c4aaf83e0b3de401d5b8b8edb6ceb63285803316da709b6158a568bee2",
+        "omega_sha256": "a3ac7185e3efb358778cdb9ebcf77455ca3b4a0c88bd0c11f157dd79a09c9a65",
+        "theta0_sha256": "4159ca27786ea0cfc72088b015d4c936c64e46fba192f502f2d4a998c8844f04"
+      },
+      "contains_personal_data": false,
+      "dataset_id": "ieee5bus_power_grid",
+      "passed": true,
+      "privacy_boundary": "small public benchmark constants",
+      "privacy_classification": "public_benchmark_constants",
+      "source_mode": "curated"
+    },
+    {
+      "artifact_hashes": {
+        "K_nm_sha256": "021269bc8fc1745e0d9ae868f44ea1e2dc01d94b0d5190f07e8c13ee63eb40d7",
+        "omega_sha256": "538f5453470496cb6c57a0252c46091cb4cc0b15fdb53350c374235fa9139bd7",
+        "theta0_sha256": "404529de258aed5a839e2c7903c8ce018c89e32ff92b79bb6aa6193cbc7c0abe"
+      },
+      "contains_personal_data": false,
+      "dataset_id": "friston_fep_6node",
+      "passed": true,
+      "privacy_boundary": "small curated workflow benchmark; not human-subject data",
+      "privacy_classification": "public_curated_no_human_subject_data",
+      "source_mode": "curated"
+    }
+  ],
+  "dataset_privacy_count": 4,
+  "kit_count": 4,
+  "kits": [
+    {
+      "allowed_uses": [
+        "compile public IEEE benchmark constants into a bounded Kuramoto problem",
+        "exercise topology-similarity and artifact-custody software contracts"
+      ],
+      "caveats": [
+        "the packaged case is a compact public benchmark, not live SCADA data",
+        "topology similarity is not transient-stability or control validation"
+      ],
+      "claims_forbidden": [
+        "live-grid control",
+        "operational stability prediction",
+        "utility deployment readiness",
+        "quantum advantage"
+      ],
+      "data_origin": "curated_public",
+      "dataset_ids": [
+        "ieee5bus_power_grid"
+      ],
+      "domain_tag": "power_grid_benchmark",
+      "forecasting_tags": [
+        "grid_like_sim"
+      ],
+      "kit_id": "power_grid_public_benchmark",
+      "publication_safe": false,
+      "source_modules": [
+        "scpn_quantum_control.applications.power_grid",
+        "scpn_quantum_control.applications.app_plugins"
+      ],
+      "support_status": "bounded_research",
+      "synthetic_only": false,
+      "title": "Public power-grid benchmark kit"
+    },
+    {
+      "allowed_uses": [
+        "construct labelled illustrative coupling topologies",
+        "compare finite synthetic coupling structures"
+      ],
+      "caveats": [
+        "nominal transmon values are literature illustrations, not calibration records",
+        "an XY structural analogy is not a device-level reproduction"
+      ],
+      "claims_forbidden": [
+        "measured-device validation",
+        "hardware self-simulation",
+        "fabrication or calibration guidance",
+        "quantum advantage"
+      ],
+      "data_origin": "synthetic",
+      "dataset_ids": [],
+      "domain_tag": "josephson_like_sim",
+      "forecasting_tags": [],
+      "kit_id": "josephson_illustrative_simulation",
+      "publication_safe": false,
+      "source_modules": [
+        "scpn_quantum_control.applications.josephson_array"
+      ],
+      "support_status": "simulation_only",
+      "synthetic_only": true,
+      "title": "Illustrative Josephson-array simulation kit"
+    },
+    {
+      "allowed_uses": [
+        "exercise PLV-shaped matrix validation with generated inputs",
+        "evaluate BL-37 EEG-like simulation tags"
+      ],
+      "caveats": [
+        "EEG-like labels describe generator shape only",
+        "no participant recording, diagnosis, or clinical endpoint is admitted"
+      ],
+      "claims_forbidden": [
+        "clinical classification",
+        "diagnostic or therapeutic use",
+        "neural-dynamics reproduction",
+        "human-subject generalisation"
+      ],
+      "data_origin": "synthetic",
+      "dataset_ids": [],
+      "domain_tag": "eeg_like_sim",
+      "forecasting_tags": [
+        "eeg_like_sim"
+      ],
+      "kit_id": "eeg_like_synthetic",
+      "publication_safe": false,
+      "source_modules": [
+        "scpn_quantum_control.applications.eeg_classification",
+        "scpn_quantum_control.forecasting.synthetic_multimodal"
+      ],
+      "support_status": "simulation_only",
+      "synthetic_only": true,
+      "title": "Synthetic EEG-like software kit"
+    },
+    {
+      "allowed_uses": [
+        "generate opt-in synthetic disruption-feature fixtures",
+        "exercise advisory classifier and dependency contracts locally"
+      ],
+      "caveats": [
+        "feature ranges and generated labels are simulation fixtures",
+        "facility data and downstream control admission require independent evidence"
+      ],
+      "claims_forbidden": [
+        "ITER disruption prediction",
+        "facility validation",
+        "real-time controller admission",
+        "plasma-operation guidance"
+      ],
+      "data_origin": "synthetic",
+      "dataset_ids": [],
+      "domain_tag": "plasma_like_sim",
+      "forecasting_tags": [
+        "plasma_like_sim"
+      ],
+      "kit_id": "iter_disruption_inspired_simulation",
+      "publication_safe": false,
+      "source_modules": [
+        "scpn_quantum_control.applications.disruption_classifier",
+        "scpn_quantum_control.control.q_disruption_iter"
+      ],
+      "support_status": "simulation_only",
+      "synthetic_only": true,
+      "title": "ITER-inspired disruption simulation kit"
+    }
+  ],
+  "passed": true,
+  "schema_version": "scpn.application-honesty.v1"
+}

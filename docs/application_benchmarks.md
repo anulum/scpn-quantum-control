@@ -66,6 +66,22 @@ Third-party plugins register factories under the
 plugin is logged and skipped so one domain adapter cannot block the
 rest of the benchmark suite.
 
+## Honesty and privacy boundary
+
+BL-63 adds typed domain honesty kits without changing the existing plugin
+results or artifact bytes. Use
+`list_domain_application_honesty_kits()` to inspect the allowed software uses,
+caveats, forbidden claims, synthetic-only policy, and BL-37 simulation tags.
+Use `audit_application_benchmark_privacy()` to bind every packaged artifact to
+its exact source mode, privacy classification, licence note, and array hashes.
+
+The kits and audit are documented in
+[Domain Application Honesty Kits](application_honesty_kits.md) and the
+[Application Honesty API](api/application_honesty_kits.md). A passing report is
+software-contract evidence only; it does not establish domain fidelity,
+clinical utility, facility prediction, operational control, hardware
+performance, or quantum advantage.
+
 ## Curated Researcher Workflows
 
 The promoted researcher workflows are deliberately small and

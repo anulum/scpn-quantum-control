@@ -44,3 +44,8 @@ SPDX-License-Identifier = "AGPL-3.0-or-later"
 path = ["data/topology_kernel_product/*"]
 SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["data/application_honesty/*"]
+SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

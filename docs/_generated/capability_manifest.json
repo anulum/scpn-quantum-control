@@ -4,16 +4,16 @@
     "domain_package_families": 38,
     "example_files": 37,
     "github_workflows": 24,
-    "model_documentation_pages": 3,
+    "model_documentation_pages": 4,
     "notebook_files": 109,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 353,
-    "python_model_classes": 1350,
-    "python_model_source_modules": 693,
+    "public_documentation_pages": 355,
+    "python_model_classes": 1355,
+    "python_model_source_modules": 694,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1150
+    "test_files": 1151
   },
   "documentation": {
     "examples": [
@@ -186,11 +186,13 @@
       "docs/analog_mapping_feasibility.md",
       "docs/analog_native_readiness.md",
       "docs/analysis_api.md",
+      "docs/api/application_honesty_kits.md",
       "docs/api/chimera_control.md",
       "docs/api/dla_topology_control.md",
       "docs/api/topology_kernel_product.md",
       "docs/api.md",
       "docs/application_benchmarks.md",
+      "docs/application_honesty_kits.md",
       "docs/architecture.md",
       "docs/architecture_map.md",
       "docs/artifact_storage.md",
@@ -545,6 +547,7 @@
   },
   "models": {
     "documentation_pages": [
+      "application_honesty_kits.md",
       "chimera_control.md",
       "dla_topology_control.md",
       "topology_kernel_product.md"
@@ -563,7 +566,7 @@
       {
         "package": "applications",
         "path": "src/scpn_quantum_control/applications",
-        "python_modules": 16
+        "python_modules": 17
       },
       {
         "package": "benchmark_harness",
@@ -931,6 +934,18 @@
         "path": "src/scpn_quantum_control/applications/dataset_catalog.py"
       },
       {
+        "name": "ApplicationBenchmarkPrivacyAudit",
+        "path": "src/scpn_quantum_control/applications/dataset_catalog.py"
+      },
+      {
+        "name": "ApplicationDataOrigin",
+        "path": "src/scpn_quantum_control/applications/honesty_kits.py"
+      },
+      {
+        "name": "ApplicationHonestyAuditReport",
+        "path": "src/scpn_quantum_control/applications/honesty_kits.py"
+      },
+      {
         "name": "ApplicationPlugin",
         "path": "src/scpn_quantum_control/applications/app_plugins.py"
       },
@@ -941,6 +956,10 @@
       {
         "name": "ApplicationPluginRegistry",
         "path": "src/scpn_quantum_control/applications/app_plugins.py"
+      },
+      {
+        "name": "ApplicationSupportStatus",
+        "path": "src/scpn_quantum_control/applications/honesty_kits.py"
       },
       {
         "name": "ApprovalGatedFeedbackHardwareScheduler",
@@ -1969,6 +1988,10 @@
       {
         "name": "DlaTopologyControlEvidence",
         "path": "src/scpn_quantum_control/dla_topology_control/evidence.py"
+      },
+      {
+        "name": "DomainApplicationHonestyKit",
+        "path": "src/scpn_quantum_control/applications/honesty_kits.py"
       },
       {
         "name": "DomainForecastAccuracy",
@@ -6230,6 +6253,7 @@
       "src/scpn_quantum_control/applications/eeg_benchmark.py",
       "src/scpn_quantum_control/applications/eeg_classification.py",
       "src/scpn_quantum_control/applications/fmo_benchmark.py",
+      "src/scpn_quantum_control/applications/honesty_kits.py",
       "src/scpn_quantum_control/applications/iter_benchmark.py",
       "src/scpn_quantum_control/applications/josephson_array.py",
       "src/scpn_quantum_control/applications/josephson_magnitude_study.py",
@@ -8042,6 +8066,7 @@
       "tests/test_ansatz_methodology.py",
       "tests/test_ansatz_scaling_tn_benchmark.py",
       "tests/test_app_plugins_branches.py",
+      "tests/test_application_honesty_kits.py",
       "tests/test_application_plugins.py",
       "tests/test_applications_benchmark_contracts.py",
       "tests/test_appqsim.py",
