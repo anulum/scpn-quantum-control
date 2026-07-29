@@ -67,6 +67,9 @@ if TYPE_CHECKING:
         migration_guides_product_quality_gates as _migration_guides_product_quality_gates,
     )
     from tools import multi_hal_federation_product_quality_gates as _multi_hal_quality_gates
+    from tools import (
+        notebook_programme_product_quality_gates as _notebook_programme_product_quality_gates,
+    )
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import (
         polyglot_parity_certificate_quality_gates as _polyglot_parity_certificate_quality_gates,
@@ -128,6 +131,9 @@ else:
         "tools.migration_guides_product_quality_gates"
     )
     _multi_hal_quality_gates = import_module("tools.multi_hal_federation_product_quality_gates")
+    _notebook_programme_product_quality_gates = import_module(
+        "tools.notebook_programme_product_quality_gates"
+    )
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
     _polyglot_parity_certificate_quality_gates = import_module(
         "tools.polyglot_parity_certificate_quality_gates"
@@ -475,6 +481,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_migration_guides_product_quality_gates.build_static_quality_gates(_PY),
     *_visualisation_dashboard_product_quality_gates.build_static_quality_gates(_PY),
     *_stochastic_estimators_product_quality_gates.build_static_quality_gates(_PY),
+    *_notebook_programme_product_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -868,6 +875,9 @@ VISUALISATION_DASHBOARD_PRODUCT_COVERAGE_GATES = (
 STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_GATES = (
     _stochastic_estimators_product_quality_gates.build_coverage_gates(_PY)
 )
+NOTEBOOK_PROGRAMME_PRODUCT_COVERAGE_GATES = (
+    _notebook_programme_product_quality_gates.build_coverage_gates(_PY)
+)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -1140,6 +1150,7 @@ def main() -> int:
             gates.extend(MIGRATION_GUIDES_PRODUCT_COVERAGE_GATES)
             gates.extend(VISUALISATION_DASHBOARD_PRODUCT_COVERAGE_GATES)
             gates.extend(STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_GATES)
+            gates.extend(NOTEBOOK_PROGRAMME_PRODUCT_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

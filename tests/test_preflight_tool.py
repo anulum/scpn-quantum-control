@@ -993,6 +993,8 @@ def test_main_uses_coverage_pytest_by_default(
         "visualisation-dashboard-product exact coverage threshold",
         "stochastic-estimators-product focused coverage",
         "stochastic-estimators-product exact coverage threshold",
+        "notebook-programme-product focused coverage",
+        "notebook-programme-product exact coverage threshold",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",

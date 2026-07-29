@@ -35,7 +35,15 @@ from scpn_quantum_control.notebook_programme_product import (
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
+def _registry_notebooks(registry: dict[str, object]) -> list[dict[str, object]]:
+    """Narrow a validated registry notebook collection for drift fixtures."""
+    raw = registry["notebooks"]
+    assert isinstance(raw, list)
+    return cast(list[dict[str, object]], raw)
+
+
 def test_list_and_filters() -> None:
+    """Expose the ordered core-six catalogue and runtime-class filters."""
     ids = list_curriculum_notebook_ids()
     assert len(ids) == 6
     assert ids[0] == "01_parameter_shift_kuramoto_xy"
@@ -49,6 +57,7 @@ def test_list_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known notebooks while rejecting blank and unknown ids."""
     row = get_curriculum_notebook("01_parameter_shift_kuramoto_xy")
     assert row.hardware_execution is False
     assert row.claim_boundary == NOTEBOOK_PROGRAMME_CLAIM_BOUNDARY
@@ -59,6 +68,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_path_eligibility_refuse_and_allow() -> None:
+    """Allow the bounded curriculum and refuse hardware or archive expansion."""
     allowed = decide_notebook_programme_path()
     assert allowed.allowed is True
     assert allowed.outcome == "allowed"
@@ -73,6 +83,7 @@ def test_path_eligibility_refuse_and_allow() -> None:
 
 
 def test_materialise_curriculum_probe_and_paths() -> None:
+    """Materialise the core-six manifest and verify repository paths."""
     probe = materialise_curriculum_probe(repo_root=_REPO_ROOT)
     assert probe.notebook_count == 6
     assert probe.hardware_execution_any is False
@@ -89,6 +100,7 @@ def test_materialise_curriculum_probe_and_paths() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Map the public owner and validate the complete curriculum registry."""
     surfaces = map_notebook_programme_public_surfaces()
     assert surfaces
     assert surfaces[0]["hardware_execution"] is False
@@ -104,8 +116,9 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift_and_hardware() -> None:
+    """Reject notebook-set drift and hardware-execution relaxation."""
     registry = build_notebook_programme_registry()
-    notebooks = cast(list[dict[str, object]], list(registry["notebooks"]))
+    notebooks = _registry_notebooks(registry)
 
     broken = dict(registry)
     broken["notebooks"] = notebooks + [
@@ -148,8 +161,9 @@ def test_integrity_rejects_drift_and_hardware() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject malformed rows, missing defaults, duplicates, and count drift."""
     registry = build_notebook_programme_registry()
-    notebooks = cast(list[dict[str, object]], list(registry["notebooks"]))
+    notebooks = _registry_notebooks(registry)
 
     non_map = dict(registry)
     non_map["notebooks"] = [cast(Any, "nope")]
@@ -206,12 +220,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep every documented notebook product entry point public."""
     assert "materialise_curriculum_probe" in notebook_programme_product.__all__
     assert "list_curriculum_notebook_ids" in notebook_programme_product.__all__
     assert "decide_notebook_programme_path" in notebook_programme_product.__all__
 
 
 def test_row_decision_probe_validation() -> None:
+    """Enforce curriculum row, eligibility decision, and probe invariants."""
     base: dict[str, Any] = {
         "notebook_id": "x",
         "title": "t",
@@ -347,6 +363,8 @@ def test_row_decision_probe_validation() -> None:
 
 
 def test_probe_refused_when_path_blocked(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Stop curriculum materialisation when path policy refuses it."""
+
     def _refuse(**_kwargs: Any) -> PathEligibilityDecision:
         return PathEligibilityDecision(
             outcome="refused",
@@ -361,6 +379,7 @@ def test_probe_refused_when_path_blocked(monkeypatch: pytest.MonkeyPatch) -> Non
 
 
 def test_missing_paths_counted(tmp_path: Path) -> None:
+    """Count every absent core-six notebook under an empty repository root."""
     probe = materialise_curriculum_probe(repo_root=tmp_path)
     assert probe.missing_path_count == 6
     assert resolve_curriculum_directory(tmp_path).name == "differentiable"

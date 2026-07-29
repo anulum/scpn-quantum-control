@@ -77,6 +77,7 @@ class CurriculumNotebookRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     notebook_id: str
@@ -152,6 +153,7 @@ class PathEligibilityDecision:
         Human-readable reason.
     blockers
         Non-empty when refused.
+
     """
 
     outcome: PathDecisionOutcome
@@ -204,6 +206,7 @@ class MaterialisedCurriculumProbe:
         Default first-path curriculum id.
     missing_path_count
         Count of rows whose relative paths are missing on disk (0 when present).
+
     """
 
     notebook_ids: tuple[str, ...]
@@ -354,6 +357,7 @@ def list_curriculum_notebook_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered notebook identifiers.
+
     """
     return tuple(row.notebook_id for row in _CANONICAL_CURRICULUM)
 
@@ -375,6 +379,7 @@ def get_curriculum_notebook(notebook_id: str) -> CurriculumNotebookRow:
     ------
     ValueError
         If ``notebook_id`` is blank or unknown (fail closed).
+
     """
     if not notebook_id or not str(notebook_id).strip():
         raise ValueError("notebook_id must be a non-empty string")
@@ -403,6 +408,7 @@ def iter_curriculum_notebooks(
     -------
     tuple[CurriculumNotebookRow, ...]
         Matching rows.
+
     """
     rows: Sequence[CurriculumNotebookRow] = _CANONICAL_CURRICULUM
     if runtime_class is not None:
@@ -428,6 +434,7 @@ def decide_notebook_programme_path(
     -------
     PathEligibilityDecision
         Allowed or refused decision with blockers.
+
     """
     blockers: list[str] = []
     if request_hardware_execution:
@@ -471,6 +478,7 @@ def resolve_curriculum_directory(repo_root: str | Path | None = None) -> Path:
     -------
     pathlib.Path
         Absolute path to ``notebooks/differentiable``.
+
     """
     if repo_root is None:
         # src/scpn_quantum_control/this_file -> repo root is parents[2]
@@ -500,6 +508,7 @@ def materialise_curriculum_probe(
     ------
     ValueError
         If path is refused or catalogue invariants fail.
+
     """
     decision = decide_notebook_programme_path()
     if not decision.allowed:
@@ -527,6 +536,7 @@ def map_notebook_programme_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     return (
         {
@@ -548,6 +558,7 @@ def build_notebook_programme_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with curriculum notebooks (no blanks).
+
     """
     notebooks = [row.to_dict() for row in _CANONICAL_CURRICULUM]
     return {
@@ -588,6 +599,7 @@ def assert_notebook_programme_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-green hardware flags appear.
+
     """
     registry = dict(payload) if payload is not None else build_notebook_programme_registry()
     notebooks = registry.get("notebooks")

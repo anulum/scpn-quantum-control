@@ -5,6 +5,35 @@ with mandatory `hardware_execution: false` honesty.
 
 Module: `scpn_quantum_control.notebook_programme_product`
 
+This page documents a bounded catalogue and filesystem probe for the existing
+core-six curriculum. It does not execute notebooks, install optional
+frameworks, convert the historical archive, or certify the nbclient matrix.
+
+## Contract discovery
+
+| Function | Contract |
+|---|---|
+| `list_curriculum_notebook_ids()` | Returns all six stable ids in curriculum order. |
+| `get_curriculum_notebook(notebook_id)` | Resolves one exact row; blank and unknown ids raise `ValueError`. |
+| `iter_curriculum_notebooks(...)` | Returns all rows or filters by runtime class. |
+| `map_notebook_programme_public_surfaces()` | Describes the owning product module and curriculum directory. |
+
+Discovery is static and local. It reads no notebook body and performs no
+provider, hardware, credential, kernel, or package operation.
+
+## Public value objects
+
+- `CurriculumNotebookRow` records the stable id, title, relative path, runtime
+  class, package declarations, order, and `hardware_execution=False` boundary.
+- `PathEligibilityDecision` records an allowed/refused outcome, reason, ordered
+  blockers, and the shared non-promotional claim boundary.
+- `MaterialisedCurriculumProbe` records ordered ids, counts, the default id,
+  hardware honesty, and the number of missing notebook paths.
+
+All records are immutable slot-backed dataclasses with validated construction
+and JSON-ready `to_dict()` mappings. A zero missing-path count proves only that
+the six files exist under the selected root, not that any cell executed.
+
 ## Rules
 
 | Rule | Behaviour |
@@ -15,6 +44,16 @@ Module: `scpn_quantum_control.notebook_programme_product`
 | Live QPU notebooks | Refused |
 | Full archive conversion | Refused |
 | Blank/unknown id | Fail closed |
+
+## Eligibility decisions
+
+`decide_notebook_programme_path()` permits only the bounded core-six CPU
+curriculum. It returns a structured refusal for live hardware execution or
+full historical-archive conversion. When both are requested, blockers are
+de-duplicated in first-seen order.
+
+An allowed result is a catalogue-path decision only. It is not provider
+authority, QPU access, package compatibility, or notebook execution evidence.
 
 Claim boundary:
 
@@ -47,6 +86,18 @@ refused = decide_notebook_programme_path(request_hardware_execution=True)
 assert refused.allowed is False
 ```
 
+## Directory resolution and materialised probe
+
+`resolve_curriculum_directory()` returns the absolute
+`notebooks/differentiable` path beneath an explicit repository root or the
+package-derived default root. It does not create the directory.
+
+`materialise_curriculum_probe()` first applies the eligibility policy, then
+checks each canonical row with `Path.is_file()`. It reports all ordered ids,
+the exact row count, the default id, aggregate hardware flag, and missing-path
+count. It does not parse JSON, trust notebook metadata, run a kernel, or mutate
+any file.
+
 ## Core six (S40.0)
 
 | Order | ID |
@@ -57,6 +108,32 @@ assert refused.allowed is False
 | 4 | `04_pytorch_quantum_layer` |
 | 5 | `05_fail_closed_boundaries` |
 | 6 | `06_witnesses_challenge_fixture` |
+
+## Registry integrity
+
+`build_notebook_programme_registry()` emits schema
+`notebook_programme_product.v1`, the full core-six catalogue, public surface
+map, default id, directory, counts, policy note, and claim boundary.
+
+Always validate transported or stored payloads through
+`assert_notebook_programme_product_integrity()`. It rejects:
+
+- missing, empty, non-list, non-mapping, blank, duplicate, missing, or extra rows;
+- unknown runtime classes or missing relative paths;
+- any `hardware_execution=True` row or relaxed registry policy;
+- loss of the default first notebook; and
+- `blank_entry_count` or `notebook_count` drift.
+
+## Failure handling and operational non-effects
+
+Treat `ValueError` as a caller-contract, path-policy, or transported registry
+failure. Treat `RuntimeError` from catalogue construction as repository
+corruption.
+
+This product performs no network access, credential lookup, provider or QPU
+discovery, notebook execution, kernel launch, package installation, archive
+conversion, file creation, notebook rewrite, metadata mutation, result
+promotion, or evidence publication.
 
 ## Bounded product status
 
