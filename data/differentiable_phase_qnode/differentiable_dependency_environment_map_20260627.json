@@ -122,11 +122,11 @@
         "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json"
       ],
       "evidence_sha256": [
-        "422417be1d6cf115d6f94f4b1b9cd2859b97c475ca6e2afff5f7e78f8ccb70c5",
+        "47cee1034eec2dbbbb6197b6abf47ad2a1cd3428ade8c586be1bf28fba3ea8bd",
         "4c7d06efcf6956c6aec2e0f305cf063503993561d7c54c0f0d7d722a3dc3e522",
         "62a83c5e005282fa7e2a71d81779771dfbdd28a59835b35e71f02deb98318562",
         "af1cdfe5833ef159f73dbd352ca9e151606ad51d7624b83147e373883ebc9786",
-        "8d7adde5ea4fbc0fc25e345d48966e6f756d2a9d02e2d96bb2d65aa2101b4fd6"
+        "7ffb9fd2132c56899016bb475f9027760f3fa46fd2ad8ef1d04d133bd9a0f767"
       ],
       "evidence_status": "locked",
       "blockers": [],
@@ -329,7 +329,7 @@
         "src/scpn_quantum_control/phase/torch_maturity.py"
       ],
       "evidence_sha256": [
-        "422417be1d6cf115d6f94f4b1b9cd2859b97c475ca6e2afff5f7e78f8ccb70c5",
+        "47cee1034eec2dbbbb6197b6abf47ad2a1cd3428ade8c586be1bf28fba3ea8bd",
         "8c32c988ed2a1acdf5b7ad9d37dcd258167abc130bca6f3fb2cdc4e898cb97b5",
         "f335a8ccd0bce75945caf8e243846f796cc26d68bbb8c01d296722db3da62e21"
       ],
@@ -392,7 +392,7 @@
       ],
       "evidence_sha256": [
         "877f6203165da422a4995d1877d72bd58178271b39389ead8598b5aa5dd76b06",
-        "eb12eac60bfd5cce6356ec548d4f7555bed2a27bd411df3df5d3e10e509d3449"
+        "864d1b7fda5a4f8a90bf9a0da7660cb2d4bab0b16da59dc606a293189d850dc2"
       ],
       "evidence_status": "hard_gap",
       "blockers": [
@@ -413,7 +413,7 @@
       ],
       "evidence_sha256": [
         "877f6203165da422a4995d1877d72bd58178271b39389ead8598b5aa5dd76b06",
-        "eb12eac60bfd5cce6356ec548d4f7555bed2a27bd411df3df5d3e10e509d3449"
+        "864d1b7fda5a4f8a90bf9a0da7660cb2d4bab0b16da59dc606a293189d850dc2"
       ],
       "evidence_status": "hard_gap",
       "blockers": [
@@ -434,7 +434,7 @@
       ],
       "evidence_sha256": [
         "8c32c988ed2a1acdf5b7ad9d37dcd258167abc130bca6f3fb2cdc4e898cb97b5",
-        "eb12eac60bfd5cce6356ec548d4f7555bed2a27bd411df3df5d3e10e509d3449"
+        "864d1b7fda5a4f8a90bf9a0da7660cb2d4bab0b16da59dc606a293189d850dc2"
       ],
       "evidence_status": "hard_gap",
       "blockers": [
