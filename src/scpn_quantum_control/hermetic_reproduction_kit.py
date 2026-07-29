@@ -73,6 +73,7 @@ class KitDigestSpec:
         Lowercase 64-char SHA-256 hex digest of the declared payload/content.
     fixture_payload
         Optional exact payload bytes used to derive the digest for pure checks.
+
     """
 
     label: str
@@ -125,6 +126,7 @@ class HermeticKitEntry:
         Required for non-core refuse/gated rows; empty for ``core_local``.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     entry_id: str
@@ -199,6 +201,7 @@ class DigestCheckResult:
         Operator-facing decision message.
     refused
         True when blank/mismatch/invent-green paths refuse green.
+
     """
 
     label: str
@@ -380,6 +383,7 @@ def list_hermetic_kit_entry_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered entry identifiers.
+
     """
     return tuple(row.entry_id for row in _CANONICAL_ENTRIES)
 
@@ -401,6 +405,7 @@ def get_hermetic_kit_entry(entry_id: str) -> HermeticKitEntry:
     ------
     ValueError
         If ``entry_id`` is blank or unknown.
+
     """
     if not entry_id or not str(entry_id).strip():
         raise ValueError("entry_id must be a non-empty string")
@@ -432,6 +437,7 @@ def iter_hermetic_kit_entries(
     -------
     tuple[HermeticKitEntry, ...]
         Matching rows.
+
     """
     rows: Iterable[HermeticKitEntry] = _CANONICAL_ENTRIES
     if core_only:
@@ -448,6 +454,7 @@ def build_hermetic_reproduction_kit() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with every catalogue cell (no blanks).
+
     """
     rows = [row.to_dict() for row in _CANONICAL_ENTRIES]
     core = sum(1 for row in _CANONICAL_ENTRIES if row.kind == "core_local")
@@ -482,6 +489,7 @@ def sha256_hex_of(content: bytes) -> str:
     ------
     TypeError
         If ``content`` is not :class:`bytes`.
+
     """
     if not isinstance(content, (bytes, bytearray)):
         raise TypeError("content must be bytes")
@@ -509,6 +517,7 @@ def verify_digest(
     -------
     DigestCheckResult
         Deterministic match/refuse result.
+
     """
     if not label or not str(label).strip():
         raise ValueError("label must be a non-empty string")
@@ -589,6 +598,7 @@ def verify_kit_entry_digests(
     ValueError
         If ``entry_id`` is unknown/blank, or the entry is a refuse-invent-green row
         that must not produce green digest success.
+
     """
     entry = get_hermetic_kit_entry(entry_id)
     if entry.kind == "refuse_invent_green":
@@ -632,6 +642,7 @@ def probe_hermetic_kit_entry(
     ------
     ValueError
         If ``entry_id`` is blank or unknown under ``unknown_policy='raise'``.
+
     """
     if not entry_id or not str(entry_id).strip():
         raise ValueError("entry_id must be a non-empty string")
@@ -694,6 +705,7 @@ def assert_hermetic_kit_integrity(
     ------
     ValueError
         If blank entries, core-QPU violations, or count drift are detected.
+
     """
     kit = dict(payload) if payload is not None else build_hermetic_reproduction_kit()
     entries = kit.get("entries")
@@ -754,6 +766,7 @@ def fixture_payload(label: str) -> bytes:
     ------
     ValueError
         If the label is unknown or has no fixture payload.
+
     """
     if not label or not str(label).strip():
         raise ValueError("label must be a non-empty string")

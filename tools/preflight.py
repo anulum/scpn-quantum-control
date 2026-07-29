@@ -57,6 +57,9 @@ if TYPE_CHECKING:
     from tools import decisive_advantage_quality_gates as _decisive_advantage_quality_gates
     from tools import differentiable_quality_gates as _differentiable_quality_gates
     from tools import (
+        hermetic_reproduction_kit_quality_gates as _hermetic_reproduction_kit_quality_gates,
+    )
+    from tools import (
         kyma_mechanism_benchmark_product_quality_gates as _kyma_mechanism_product_quality_gates,
     )
     from tools import multi_hal_federation_product_quality_gates as _multi_hal_quality_gates
@@ -96,6 +99,9 @@ else:
     )
     _decisive_advantage_quality_gates = import_module("tools.decisive_advantage_quality_gates")
     _differentiable_quality_gates = import_module("tools.differentiable_quality_gates")
+    _hermetic_reproduction_kit_quality_gates = import_module(
+        "tools.hermetic_reproduction_kit_quality_gates"
+    )
     _kyma_mechanism_product_quality_gates = import_module(
         "tools.kyma_mechanism_benchmark_product_quality_gates"
     )
@@ -434,6 +440,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_polyglot_parity_certificate_quality_gates.build_static_quality_gates(_PY),
     *_program_ad_fuzz_assurance_quality_gates.build_static_quality_gates(_PY),
     *_multi_hal_quality_gates.build_static_quality_gates(_PY),
+    *_hermetic_reproduction_kit_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -810,6 +817,9 @@ PROGRAM_AD_FUZZ_ASSURANCE_COVERAGE_GATES = (
     _program_ad_fuzz_assurance_quality_gates.build_coverage_gates(_PY)
 )
 MULTI_HAL_FEDERATION_COVERAGE_GATES = _multi_hal_quality_gates.build_coverage_gates(_PY)
+HERMETIC_REPRODUCTION_KIT_COVERAGE_GATES = (
+    _hermetic_reproduction_kit_quality_gates.build_coverage_gates(_PY)
+)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -1075,6 +1085,7 @@ def main() -> int:
             gates.extend(POLYGLOT_PARITY_CERTIFICATE_COVERAGE_GATES)
             gates.extend(PROGRAM_AD_FUZZ_ASSURANCE_COVERAGE_GATES)
             gates.extend(MULTI_HAL_FEDERATION_COVERAGE_GATES)
+            gates.extend(HERMETIC_REPRODUCTION_KIT_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

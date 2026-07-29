@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import pytest
 
 import scpn_quantum_control.hermetic_reproduction_kit as hermetic_reproduction_kit
@@ -32,6 +34,7 @@ from scpn_quantum_control.hermetic_reproduction_kit import (
 
 
 def test_list_ids_and_core_entries() -> None:
+    """Expose unique ordered identifiers and offline core rows."""
     ids = list_hermetic_kit_entry_ids()
     assert ids
     assert len(ids) == len(set(ids))
@@ -42,6 +45,7 @@ def test_list_ids_and_core_entries() -> None:
 
 
 def test_get_core_and_hardware_entries() -> None:
+    """Distinguish core-local and hardware-gated catalogue records."""
     core = get_hermetic_kit_entry("kit:core.transform_algebra_smoke")
     assert core.kind == "core_local"
     assert core.argv
@@ -54,6 +58,7 @@ def test_get_core_and_hardware_entries() -> None:
 
 
 def test_get_rejects_blank_and_unknown() -> None:
+    """Reject blank and unknown exact-entry lookups."""
     with pytest.raises(ValueError, match="non-empty"):
         get_hermetic_kit_entry("  ")
     with pytest.raises(ValueError, match="unknown hermetic kit entry_id"):
@@ -61,6 +66,7 @@ def test_get_rejects_blank_and_unknown() -> None:
 
 
 def test_build_kit_zero_core_qpu() -> None:
+    """Build an internally consistent kit without core QPU requirements."""
     kit = build_hermetic_reproduction_kit()
     assert kit["schema"] == HERMETIC_REPRODUCTION_KIT_SCHEMA
     assert kit["blank_entry_count"] == 0
@@ -71,6 +77,7 @@ def test_build_kit_zero_core_qpu() -> None:
 
 
 def test_sha256_and_verify_digest_paths() -> None:
+    """Verify matching, blank, malformed, missing, and altered digests."""
     payload = fixture_payload("fixture:transform_algebra_smoke")
     digest = sha256_hex_of(payload)
     ok = verify_digest(
@@ -108,6 +115,7 @@ def test_sha256_and_verify_digest_paths() -> None:
 
 
 def test_verify_kit_entry_digests_with_fixtures() -> None:
+    """Check declared fixtures and caller-supplied content without execution."""
     results = verify_kit_entry_digests("kit:core.metamorphic_linearity")
     assert results
     assert all(item.matched for item in results)
@@ -126,11 +134,13 @@ def test_verify_kit_entry_digests_with_fixtures() -> None:
 
 
 def test_verify_refuse_invent_green_entry_raises() -> None:
+    """Refuse digest verification for invent-green catalogue rows."""
     with pytest.raises(ValueError, match="refuse_invent_green"):
         verify_kit_entry_digests("kit:refuse.invent_green_qpu_digest")
 
 
 def test_probe_paths() -> None:
+    """Report core eligibility and fail-closed unknown-entry outcomes."""
     core = probe_hermetic_kit_entry("kit:core.no_advantage_certificate")
     assert core["found"] is True
     assert core["core_eligible"] is True
@@ -156,6 +166,7 @@ def test_probe_paths() -> None:
 
 
 def test_fixture_payload_and_sha256_type() -> None:
+    """Reject unknown fixture labels and non-byte hash inputs."""
     with pytest.raises(ValueError, match="unknown fixture"):
         fixture_payload("fixture:nope")
     with pytest.raises(ValueError, match="non-empty"):
@@ -165,6 +176,7 @@ def test_fixture_payload_and_sha256_type() -> None:
 
 
 def test_digest_spec_and_entry_validation() -> None:
+    """Enforce digest and catalogue-record construction invariants."""
     payload = b"abc\n"
     digest = sha256_hex_of(payload)
     no_fixture = KitDigestSpec(label="l", sha256_hex=digest)
@@ -274,6 +286,7 @@ def test_digest_spec_and_entry_validation() -> None:
 
 
 def test_digest_check_result_validation() -> None:
+    """Reject invalid digest-result labels, messages, and states."""
     with pytest.raises(ValueError, match="label"):
         DigestCheckResult(
             label="",
@@ -302,6 +315,7 @@ def test_digest_check_result_validation() -> None:
 
 
 def test_assert_integrity_rejects_invalid() -> None:
+    """Reject malformed rows and inconsistent aggregate counters."""
     with pytest.raises(ValueError, match="non-empty entries"):
         assert_hermetic_kit_integrity({"entries": []})
     with pytest.raises(ValueError, match="blank"):
@@ -399,6 +413,7 @@ def test_assert_integrity_rejects_invalid() -> None:
 
 
 def test_catalogue_map_rejects_duplicates(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject duplicate canonical entry identifiers."""
     row = get_hermetic_kit_entry("kit:core.transform_algebra_smoke")
     monkeypatch.setattr(hermetic_reproduction_kit, "_CANONICAL_ENTRIES", (row, row))
     with pytest.raises(RuntimeError, match="duplicate entry_id"):
@@ -406,13 +421,14 @@ def test_catalogue_map_rejects_duplicates(monkeypatch: pytest.MonkeyPatch) -> No
 
 
 def test_iter_kind_filter_and_to_dict() -> None:
+    """Filter stable records and serialise public value objects."""
     all_rows = iter_hermetic_kit_entries()
     assert len(all_rows) == len(list_hermetic_kit_entry_ids())
     optional = iter_hermetic_kit_entries(kind="optional_extra")
     assert optional
     assert all(row.kind == "optional_extra" for row in optional)
     payload = get_hermetic_kit_entry("kit:core.transform_algebra_smoke").to_dict()
-    assert payload["entry_id"].startswith("kit:core.")
+    assert cast(str, payload["entry_id"]).startswith("kit:core.")
     assert isinstance(payload["digests"], list)
     check = verify_digest(
         label="l",
