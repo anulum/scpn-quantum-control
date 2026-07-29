@@ -1,7 +1,7 @@
 # BL-45 Quantum Reservoir and Surrogate Evidence
 
 Schema: `scpn.quantum_reservoir_surrogates.v1`
-Content digest: `0dd41eaa56423421125d814a7a70ebc1441ae5c17cf7b2f413d64ee4a840be02`
+Content digest: `84cee110467f1fec2a9783d825186a19b1fb617eb0366c1077b3b8a597a9b7e8`
 
 ## Held-out reservoir certificates
 

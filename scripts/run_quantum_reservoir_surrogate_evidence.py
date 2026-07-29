@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 from pathlib import Path
 
@@ -35,6 +36,24 @@ from scpn_quantum_control.surrogates import (
 
 DEFAULT_JSON = Path("data/quantum_reservoir_surrogates/bl45_evidence.json")
 DEFAULT_MARKDOWN = Path("data/quantum_reservoir_surrogates/bl45_evidence.md")
+
+
+def _stale_evidence_message(path: Path, actual: str, expected: str) -> str:
+    """Return a bounded unified diff for one stale evidence artifact."""
+    difference = list(
+        difflib.unified_diff(
+            actual.splitlines(),
+            expected.splitlines(),
+            fromfile=f"committed/{path.as_posix()}",
+            tofile=f"generated/{path.as_posix()}",
+            lineterm="",
+            n=2,
+        )
+    )
+    excerpt = "\n".join(difference[:80])
+    if len(difference) > 80:
+        excerpt += f"\n... {len(difference) - 80} additional diff lines omitted"
+    return f"stale or missing evidence: {path}\n{excerpt}".rstrip()
 
 
 def build_evidence() -> QuantumReservoirSurrogateEvidence:
@@ -181,16 +200,19 @@ def main() -> int:
     evidence = build_evidence()
     if args.check:
         expected_json = json.dumps(evidence.to_dict(), indent=2, sort_keys=True) + "\n"
-        if not args.json.is_file() or args.json.read_text(encoding="utf-8") != expected_json:
-            raise SystemExit(f"stale or missing evidence: {args.json}")
+        actual_json = args.json.read_text(encoding="utf-8") if args.json.is_file() else ""
+        if actual_json != expected_json:
+            raise SystemExit(_stale_evidence_message(args.json, actual_json, expected_json))
         from scpn_quantum_control.surrogates import render_quantum_reservoir_surrogate_markdown
 
         expected_markdown = render_quantum_reservoir_surrogate_markdown(evidence)
-        if (
-            not args.markdown.is_file()
-            or args.markdown.read_text(encoding="utf-8") != expected_markdown
-        ):
-            raise SystemExit(f"stale or missing evidence: {args.markdown}")
+        actual_markdown = (
+            args.markdown.read_text(encoding="utf-8") if args.markdown.is_file() else ""
+        )
+        if actual_markdown != expected_markdown:
+            raise SystemExit(
+                _stale_evidence_message(args.markdown, actual_markdown, expected_markdown)
+            )
         print(
             json.dumps({"check": "passed", "content_digest": evidence.to_dict()["content_digest"]})
         )

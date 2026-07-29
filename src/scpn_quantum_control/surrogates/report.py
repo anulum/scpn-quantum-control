@@ -28,7 +28,7 @@ BL45_EVIDENCE_BOUNDARY = (
     "No hardware QRC, provider execution, unseen-domain generalisation, closed-loop "
     "control, optimisation advantage, publication, or deployment claim."
 )
-_NUMERIC_CUSTODY_DECIMALS = 8
+_NUMERIC_CUSTODY_DECIMALS = 6
 
 
 def _canonicalise_evidence_numbers(value: object) -> object:

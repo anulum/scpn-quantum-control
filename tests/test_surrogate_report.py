@@ -123,11 +123,12 @@ def test_committed_evidence_replays_through_public_runner() -> None:
             "scripts/run_quantum_reservoir_surrogate_evidence.py",
             "--check",
         ],
-        check=True,
+        check=False,
         capture_output=True,
         text=True,
         timeout=60,
     )
+    assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["check"] == "passed"
     assert len(payload["content_digest"]) == 64

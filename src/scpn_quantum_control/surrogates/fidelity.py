@@ -20,7 +20,7 @@ from .models import CLASSICAL_SURROGATE_CLAIM_BOUNDARY, GaussianRBFSurrogate
 from .train import input_row_digests
 
 FloatArray = NDArray[np.float64]
-_NUMERIC_CUSTODY_DECIMALS = 8
+_NUMERIC_CUSTODY_DECIMALS = 6
 
 
 def _array_digest(values: FloatArray) -> str:
