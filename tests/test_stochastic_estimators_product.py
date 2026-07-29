@@ -33,7 +33,15 @@ from scpn_quantum_control.stochastic_estimators_product import (
 )
 
 
+def _registry_estimators(registry: dict[str, object]) -> list[dict[str, object]]:
+    """Narrow a validated registry estimator collection for drift fixtures."""
+    raw = registry["estimators"]
+    assert isinstance(raw, list)
+    return cast(list[dict[str, object]], raw)
+
+
 def test_list_estimators_and_filters() -> None:
+    """Expose stable estimator ids and deterministic catalogue filters."""
     ids = list_stochastic_estimator_ids()
     assert "spsa_gradient" in ids
     assert "score_function_gradient" in ids
@@ -48,6 +56,7 @@ def test_list_estimators_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known estimators while rejecting blank and unknown ids."""
     row = get_stochastic_estimator("spsa_gradient")
     assert row.allows_hardware_shots is False
     assert row.claim_boundary == STOCHASTIC_ESTIMATORS_CLAIM_BOUNDARY
@@ -59,6 +68,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_dry_run_allowed_and_hardware_refuse() -> None:
+    """Allow local shot planning while refusing hardware execution."""
     decision = dry_run_stochastic_estimator("spsa_gradient", planned_shots=50)
     assert decision.allowed is True
     assert decision.outcome == "allowed_dry_run"
@@ -75,6 +85,7 @@ def test_dry_run_allowed_and_hardware_refuse() -> None:
 
 
 def test_dry_run_invalid_shots() -> None:
+    """Reject non-positive and non-integer dry-run shot budgets."""
     with pytest.raises(ValueError, match="planned_shots"):
         dry_run_stochastic_estimator("score_function_gradient", planned_shots=0)
     with pytest.raises(ValueError, match="planned_shots"):
@@ -85,6 +96,7 @@ def test_dry_run_invalid_shots() -> None:
 
 
 def test_product_failure_policy() -> None:
+    """Build the ambient fail-closed confidence policy through the product."""
     policy = build_product_failure_policy(max_standard_error=0.1)
     assert isinstance(policy, GradientFailurePolicy)
     assert policy.max_standard_error == 0.1
@@ -92,6 +104,7 @@ def test_product_failure_policy() -> None:
 
 
 def test_materialise_demo_spsa_probe() -> None:
+    """Materialise a deterministic local SPSA product probe."""
     probe = materialise_demo_spsa_probe(seed=1, repetitions=3)
     assert probe.gradient
     assert len(probe.gradient) == 2
@@ -107,6 +120,7 @@ def test_materialise_demo_spsa_probe() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Map ambient owners and validate the complete estimator registry."""
     surfaces = map_stochastic_estimators_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -123,8 +137,9 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift_and_hardware() -> None:
+    """Reject estimator-set drift and hardware-shot claim relaxation."""
     registry = build_stochastic_estimators_product_registry()
-    estimators = cast(list[dict[str, object]], list(registry["estimators"]))
+    estimators = _registry_estimators(registry)
 
     broken = dict(registry)
     broken["estimators"] = estimators + [
@@ -163,8 +178,9 @@ def test_integrity_rejects_drift_and_hardware() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject malformed rows, missing defaults, duplicates, and count drift."""
     registry = build_stochastic_estimators_product_registry()
-    estimators = cast(list[dict[str, object]], list(registry["estimators"]))
+    estimators = _registry_estimators(registry)
 
     non_map = dict(registry)
     non_map["estimators"] = [cast(Any, "nope")]
@@ -221,12 +237,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep every documented stochastic product entry point public."""
     assert "dry_run_stochastic_estimator" in stochastic_estimators_product.__all__
     assert "materialise_demo_spsa_probe" in stochastic_estimators_product.__all__
     assert "list_stochastic_estimator_ids" in stochastic_estimators_product.__all__
 
 
 def test_estimator_row_validation() -> None:
+    """Enforce immutable estimator catalogue-row invariants."""
     base: dict[str, Any] = {
         "estimator_id": "x",
         "kind": "spsa",
@@ -260,6 +278,7 @@ def test_estimator_row_validation() -> None:
 
 
 def test_decision_invariants() -> None:
+    """Enforce dry-run outcome, blocker, reason, and budget invariants."""
     with pytest.raises(ValueError, match="estimator_id"):
         EstimatorDryRunDecision(
             estimator_id="",
@@ -355,6 +374,7 @@ def test_decision_invariants() -> None:
 
 
 def test_materialised_probe_validation() -> None:
+    """Enforce materialised SPSA result invariants and serialization."""
     ok = MaterialisedSPSAProbe(
         gradient=(1.0, -0.5),
         seed=0,
@@ -406,6 +426,7 @@ def test_materialised_probe_validation() -> None:
 
 
 def test_catalogue_map_runtime_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject blank, duplicate, and empty runtime catalogues."""
     from scpn_quantum_control import stochastic_estimators_product as mod
 
     good = get_stochastic_estimator("spsa_gradient")
@@ -437,6 +458,7 @@ def test_catalogue_map_runtime_guards(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_row_to_dict() -> None:
+    """Serialize catalogue rows without relaxing hardware boundaries."""
     row = get_stochastic_estimator("gradient_failure_policy")
     payload = row.to_dict()
     assert payload["kind"] == "confidence_policy"

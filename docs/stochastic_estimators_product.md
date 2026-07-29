@@ -6,6 +6,35 @@ primitives. Materialised uncertainty only; composes BL-47 no-submit honesty.
 
 Module: `scpn_quantum_control.stochastic_estimators_product`
 
+This page documents a bounded product facade over existing local estimator and
+policy primitives. It does not claim calibrated hardware uncertainty, execute
+shots, or substitute a dry-run plan for experimental evidence.
+
+## Contract discovery
+
+| Function | Contract |
+|---|---|
+| `list_stochastic_estimator_ids()` | Returns every stable estimator id in catalogue order. |
+| `get_stochastic_estimator(estimator_id)` | Resolves one exact row; blank and unknown ids raise `ValueError`. |
+| `iter_stochastic_estimators(...)` | Filters deterministically by kind and/or support posture. |
+| `map_stochastic_estimators_public_surfaces()` | Groups estimator ids by their ambient implementation owner. |
+
+Discovery is static and local. It performs no sampling, provider lookup,
+credential access, hardware submission, or shot allocation.
+
+## Public value objects
+
+- `StochasticEstimatorRow` maps a stable id to its kind, ambient owner, symbol,
+  support posture, BL-47 pointer, and no-hardware boundary.
+- `EstimatorDryRunDecision` records the selected estimator, allowed/refused
+  outcome, reason, ordered blockers, and acknowledged planned shots.
+- `MaterialisedSPSAProbe` records the gradient, seed, repetition count, shot
+  mode, maximum absolute component, and shared claim boundary.
+
+All records are immutable slot-backed dataclasses with validated construction
+and JSON-ready `to_dict()` mappings. A positive dry-run decision authorises
+only local planning; it never means that QPU shots ran.
+
 ## Rules
 
 | Rule | Behaviour |
@@ -16,6 +45,23 @@ Module: `scpn_quantum_control.stochastic_estimators_product`
 | Blank/unknown estimator | Fail closed |
 | Live QPU execution | Never claimed by this product |
 | Variance/bias campaign | Residual S93.2 |
+
+## Confidence and failure policy
+
+`build_product_failure_policy()` constructs the ambient
+`GradientFailurePolicy` with optional positive standard-error and confidence-
+radius thresholds plus the trainability requirement. Validation remains owned
+by that ambient policy; this facade does not weaken or duplicate it.
+
+## Dry-run decisions
+
+`dry_run_stochastic_estimator()` validates the exact catalogue id and returns a
+structured local plan for a positive integer shot budget. A hardware-shot
+request is refused before budget validation and records zero planned shots,
+preserving the BL-47 no-submit boundary.
+
+The default `planned_shots=100` is planning metadata, not spend authority,
+provider availability, a queue reservation, or a completed experiment.
 
 Claim boundary:
 
@@ -59,6 +105,18 @@ policy = build_product_failure_policy(max_standard_error=0.05)
 assert policy.max_standard_error == 0.05
 ```
 
+## Local SPSA probe
+
+`materialise_demo_spsa_probe()` calls the ambient
+`spsa_gradient_estimate()` on the deterministic local quadratic objective
+`f(x) = sum(x_i**2)`. The default parameter vector is `[0.5, -0.25]`; callers
+may set the seed, repetition count, perturbation radius, and values.
+
+The probe uses `shots=None`, flattens the returned gradient into immutable
+floats, and fails closed on an empty gradient. Its result exercises a local
+contract and deterministic seed path; it is not a full estimator-bias or
+variance campaign.
+
 ## Catalogue (S93.0)
 
 | ID | Kind |
@@ -67,6 +125,33 @@ assert policy.max_standard_error == 0.05
 | `score_function_gradient` | score-function |
 | `parameter_shift_shot_allocation` | shot allocation |
 | `gradient_failure_policy` | confidence policy |
+
+## Registry integrity
+
+`build_stochastic_estimators_product_registry()` emits schema
+`stochastic_estimators_product.v1`, the complete catalogue, ambient surface
+map, default id, counts, policy note, and shared claim boundary.
+
+Always validate transported or stored payloads through
+`assert_stochastic_estimators_product_integrity()`. It rejects:
+
+- missing, empty, non-list, non-mapping, blank, duplicate, missing, or extra rows;
+- unknown estimator kinds or missing symbol names;
+- any `allows_hardware_shots=True` relaxation;
+- loss of the default `spsa_gradient` row; and
+- `blank_entry_count` or `estimator_count` drift.
+
+## Failure handling and operational non-effects
+
+Treat `ValueError` as a caller-contract, ambient estimator, or transported
+registry failure. Treat `RuntimeError` from catalogue construction as
+repository corruption.
+
+This product performs no credential lookup, network access, provider or QPU
+discovery, hardware execution, shot submission, queue reservation, spend,
+result retrieval, feedback, benchmark promotion, or evidence mutation. The
+score-function and shot-allocation entries remain ambient catalogue contracts;
+the shipped demo materialises SPSA only.
 
 ## Bounded product status
 

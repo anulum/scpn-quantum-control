@@ -90,6 +90,7 @@ class StochasticEstimatorRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     estimator_id: str
@@ -175,6 +176,7 @@ class EstimatorDryRunDecision:
         Non-empty when refused.
     planned_shots
         Acknowledged shot budget for the dry-run plan (0 when refused).
+
     """
 
     estimator_id: str
@@ -237,6 +239,7 @@ class MaterialisedSPSAProbe:
         Finite-shot count used (None when infinite/analytic materialisation).
     max_abs_gradient
         Maximum absolute gradient entry (primary observable).
+
     """
 
     gradient: tuple[float, ...]
@@ -370,6 +373,7 @@ def list_stochastic_estimator_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered estimator identifiers.
+
     """
     return tuple(row.estimator_id for row in _CANONICAL_ESTIMATORS)
 
@@ -391,6 +395,7 @@ def get_stochastic_estimator(estimator_id: str) -> StochasticEstimatorRow:
     ------
     ValueError
         If ``estimator_id`` is blank or unknown (fail closed).
+
     """
     if not estimator_id or not str(estimator_id).strip():
         raise ValueError("estimator_id must be a non-empty string")
@@ -422,6 +427,7 @@ def iter_stochastic_estimators(
     -------
     tuple[StochasticEstimatorRow, ...]
         Matching rows.
+
     """
     rows: Sequence[StochasticEstimatorRow] = _CANONICAL_ESTIMATORS
     if kind is not None:
@@ -452,6 +458,7 @@ def build_product_failure_policy(
     -------
     GradientFailurePolicy
         Ambient fail-closed policy object.
+
     """
     return GradientFailurePolicy(
         max_standard_error=max_standard_error,
@@ -487,6 +494,7 @@ def dry_run_stochastic_estimator(
     ValueError
         If ``estimator_id`` is blank/unknown or ``planned_shots`` is invalid
         when not refused for hardware first.
+
     """
     row = get_stochastic_estimator(estimator_id)
     blockers: list[str] = []
@@ -555,6 +563,7 @@ def materialise_demo_spsa_probe(
     ------
     ValueError
         If ambient SPSA validation fails.
+
     """
     from .differentiable_stochastic_estimators import spsa_gradient_estimate
 
@@ -592,6 +601,7 @@ def map_stochastic_estimators_public_surfaces() -> tuple[dict[str, object], ...]
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     seen: set[str] = set()
     rows: list[dict[str, object]] = []
@@ -622,6 +632,7 @@ def build_stochastic_estimators_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with estimators (no blanks).
+
     """
     estimators = [row.to_dict() for row in _CANONICAL_ESTIMATORS]
     return {
@@ -660,6 +671,7 @@ def assert_stochastic_estimators_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-hardware rows appear.
+
     """
     registry = (
         dict(payload) if payload is not None else build_stochastic_estimators_product_registry()
