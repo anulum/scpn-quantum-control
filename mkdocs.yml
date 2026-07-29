@@ -83,6 +83,8 @@ nav:
       - Theory-Hook Promotion API: api/theory_hook_promotion.md
       - Deep-Analysis Research Lanes: research_lanes.md
       - Research-Lane Registry API: api/research_lane_registry.md
+      - RL Research Governance: rl_research_governance.md
+      - RL Research Governance API: api/rl_research_governance.md
       - Differentiable Support Matrix: differentiable_support_matrix.md
       - Governed Route Matrix: governed_route_matrix.md
       - Differentiable Reviewer Evidence: differentiable_reviewer_evidence.md

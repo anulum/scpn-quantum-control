@@ -2,20 +2,20 @@
   "claim_boundary": "catalogue metadata only; registry membership does not grant productisation, differentiability, control, hardware, advantage, criticality, topology, consciousness, clinical, or publication claims",
   "claim_status_counts": {
     "diagnostic_only": 24,
-    "evidence_bounded": 16,
+    "evidence_bounded": 17,
     "refuse_only": 3,
     "research_only": 30
   },
-  "content_digest": "ee0e999e8c3d587ae0b5fc5deeecaa02aa245dedf8c98620e5375c61e5d9f5a5",
+  "content_digest": "24660f8ddb4d7964d599a9af4b7f4e9d95a3bc42b96f6d8ec59c670fb2d74a69",
   "diff_hook_counts": {
     "bounded_composition": 5,
     "candidate_requires_evidence": 5,
     "deferred_owner_gate": 1,
     "diagnostic_only": 47,
-    "none": 15
+    "none": 16
   },
   "inventory": {
-    "discovered_count": 73,
+    "discovered_count": 74,
     "discovered_modules": [
       "scpn_quantum_control.analysis.adaptive_fim_evidence",
       "scpn_quantum_control.analysis.adaptive_fim_feedback",
@@ -68,6 +68,7 @@
       "scpn_quantum_control.analysis.quantum_speed_limit",
       "scpn_quantum_control.analysis.rl_discovery_agent",
       "scpn_quantum_control.analysis.rl_pulse_optimizer",
+      "scpn_quantum_control.analysis.rl_research_governance",
       "scpn_quantum_control.analysis.sensing",
       "scpn_quantum_control.analysis.shadow_tomography",
       "scpn_quantum_control.analysis.spectral_form_factor",
@@ -94,7 +95,7 @@
     "missing_modules": [],
     "orphaned_records": [],
     "passed": true,
-    "registered_count": 73,
+    "registered_count": 74,
     "registered_modules": [
       "scpn_quantum_control.analysis.adaptive_fim_evidence",
       "scpn_quantum_control.analysis.adaptive_fim_feedback",
@@ -147,6 +148,7 @@
       "scpn_quantum_control.analysis.quantum_speed_limit",
       "scpn_quantum_control.analysis.rl_discovery_agent",
       "scpn_quantum_control.analysis.rl_pulse_optimizer",
+      "scpn_quantum_control.analysis.rl_research_governance",
       "scpn_quantum_control.analysis.sensing",
       "scpn_quantum_control.analysis.shadow_tomography",
       "scpn_quantum_control.analysis.spectral_form_factor",
@@ -172,11 +174,11 @@
     ]
   },
   "maturity_counts": {
-    "product_candidate": 15,
+    "product_candidate": 16,
     "prototype": 29,
     "research": 29
   },
-  "record_count": 73,
+  "record_count": 74,
   "records": [
     {
       "claim_status": "evidence_bounded",
@@ -890,6 +892,21 @@
       "registry_grants_productisation": false,
       "registry_grants_publication_claim": false,
       "summary": "Fail-fast placeholder for unavailable RL pulse optimisation."
+    },
+    {
+      "claim_status": "evidence_bounded",
+      "diff_hook": "none",
+      "evidence_refs": [
+        "data/rl_research_governance/evidence.json"
+      ],
+      "family": "analysis",
+      "maturity": "product_candidate",
+      "module": "scpn_quantum_control.analysis.rl_research_governance",
+      "promotion_targets": [],
+      "registry_grants_control": false,
+      "registry_grants_productisation": false,
+      "registry_grants_publication_claim": false,
+      "summary": "Fail-closed preregistration, seed, budget, and no-control policy for RL-adjacent research."
     },
     {
       "claim_status": "evidence_bounded",

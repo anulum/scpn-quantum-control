@@ -19,7 +19,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from scpn_quantum_control.analysis import RLPulseOptimizer, dla_truncated_tn
+from scpn_quantum_control.analysis import (
+    RLPulseOptimizer,
+    RLResearchGovernanceError,
+    dla_truncated_tn,
+)
 
 
 def _load_frontier_orchestrator(monkeypatch: pytest.MonkeyPatch):
@@ -109,10 +113,10 @@ def test_dla_truncated_tensor_network_rejects_invalid_configuration(kwargs, matc
         dla_truncated_tn(**params)
 
 
-def test_rl_pulse_optimizer_fails_until_implemented():
+def test_rl_pulse_optimizer_is_research_disabled_by_default():
     optimiser = RLPulseOptimizer(runner=object(), target_sync_order=0.5, episodes=1)
 
-    with pytest.raises(NotImplementedError, match="not implemented"):
+    with pytest.raises(RLResearchGovernanceError, match="research_extra_disabled"):
         asyncio.run(optimiser.optimize_pulses())
 
     with pytest.raises(NotImplementedError, match="No RL pulse"):

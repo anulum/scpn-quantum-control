@@ -69,7 +69,7 @@ def test_registry_covers_every_analysis_and_gauge_module_exactly_once() -> None:
     records = list_research_lanes()
     report = assert_research_lane_inventory()
 
-    assert len(records) == 73
+    assert len(records) == 74
     assert tuple(record.module for record in records) == tuple(
         sorted(record.module for record in records)
     )
@@ -77,7 +77,7 @@ def test_registry_covers_every_analysis_and_gauge_module_exactly_once() -> None:
     assert report.passed
     assert report.missing_modules == ()
     assert report.orphaned_records == ()
-    assert len(report.registered_modules) == len(report.discovered_modules) == 73
+    assert len(report.registered_modules) == len(report.discovered_modules) == 74
 
 
 def test_registry_is_non_promotional_and_has_human_classifications() -> None:
@@ -217,7 +217,7 @@ def test_inventory_report_identifies_new_and_orphaned_modules() -> None:
     assert report.missing_modules == ("scpn_quantum_control.analysis.new_lane",)
     assert report.orphaned_records == (registered[0],)
     assert payload["passed"] is False
-    assert payload["registered_count"] == payload["discovered_count"] == 73
+    assert payload["registered_count"] == payload["discovered_count"] == 74
     with pytest.raises(RuntimeError, match="registry drift"):
         assert_research_lane_inventory(discovered)
 
@@ -233,10 +233,10 @@ def test_report_is_digest_locked_complete_and_json_ready() -> None:
     assert first.claim_boundary == RESEARCH_LANE_REGISTRY_BOUNDARY
     assert first.content_digest == second.content_digest
     assert len(first.content_digest) == 64
-    assert payload["record_count"] == 73
-    assert sum(payload["maturity_counts"].values()) == 73
-    assert sum(payload["diff_hook_counts"].values()) == 73
-    assert sum(payload["claim_status_counts"].values()) == 73
+    assert payload["record_count"] == 74
+    assert sum(payload["maturity_counts"].values()) == 74
+    assert sum(payload["diff_hook_counts"].values()) == 74
+    assert sum(payload["claim_status_counts"].values()) == 74
     assert payload["inventory"]["passed"] is True
     json.dumps(payload, sort_keys=True)
 
@@ -249,7 +249,7 @@ def test_markdown_renderer_exposes_gates_without_marketing_promotion() -> None:
 
     assert markdown == implicit
     assert markdown.endswith("\n")
-    assert "Inventory: **PASS** (73 registered / 73 discovered)" in markdown
+    assert "Inventory: **PASS** (74 registered / 74 discovered)" in markdown
     assert "BL-50:planned" in markdown
     assert "BL-54:complete" in markdown
     assert "BL-72:deferred-owner-gate" in markdown

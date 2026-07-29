@@ -276,6 +276,21 @@ _CANONICAL_SCENARIOS: Final[tuple[UnsuitableScenarioRecord, ...]] = (
         test_id="test_probe_pennylane_hardware_refuses",
     ),
     _scenario(
+        "unsuitable:rl.research_without_preregistration",
+        "unsuitable_scenario",
+        "RL-adjacent witness or pulse research requested without a preregistration ID.",
+        "fail_closed_plan",
+        "RLResearchGovernanceError:preregistration_id_missing",
+        (
+            "RL-adjacent search is disabled by default and requires fixed seeds, "
+            "bounded evaluations, deterministic zero-noise evaluation, and a "
+            "preregistration ID before local witness discovery can run."
+        ),
+        evidence=("bl102_rl_research_governance", "no_production_control_default"),
+        related_route_ids=("research:rl.witness_discovery", "research:rl.pulse_optimisation"),
+        test_id="test_probe_rl_without_preregistration_refuses",
+    ),
+    _scenario(
         "anti_silent:differentiation_interface.compiled_tape",
         "anti_silent_wrong",
         (

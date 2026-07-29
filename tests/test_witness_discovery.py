@@ -18,6 +18,7 @@ import pytest
 
 from scpn_quantum_control.analysis import (
     RLDiscoveryAgent,
+    RLResearchPolicy,
     WitnessCandidate,
     WitnessDiscoveryResult,
     WitnessDiscoverySpec,
@@ -361,6 +362,13 @@ def test_rl_discovery_agent_requires_real_problem_and_runs_when_configured() -> 
         omega=omega,
         theta0=theta0,
         spec=_small_spec(seed=9),
+        policy=RLResearchPolicy(
+            enabled=True,
+            preregistration_id="test-witness-discovery-v1",
+            seeds=(3, 5, 9),
+            max_episodes=3,
+            max_evaluations_per_seed=14,
+        ),
     )
     result = asyncio.run(configured.run_discovery_loop())
 

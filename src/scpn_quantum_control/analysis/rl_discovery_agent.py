@@ -5,7 +5,13 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — RL discovery agent compatibility wrapper
-"""Compatibility wrapper for automated Kuramoto witness discovery."""
+"""Compatibility wrapper for governed Kuramoto witness discovery.
+
+Execution is disabled unless callers provide an enabled, preregistered
+:class:`RLResearchPolicy`. The wrapped search is a seeded static candidate
+search rather than a Gym environment or production reinforcement-learning
+policy.
+"""
 
 from __future__ import annotations
 
@@ -16,6 +22,11 @@ from typing import Any, TypeAlias
 import numpy as np
 from numpy.typing import NDArray
 
+from .rl_research_governance import (
+    RLResearchLane,
+    RLResearchPolicy,
+    assert_rl_research_allowed,
+)
 from .witness_discovery import (
     WitnessDiscoveryResult,
     WitnessDiscoverySpec,
@@ -29,7 +40,21 @@ _SUPPORTED_REWARD_FUNCTION = "witness_score"
 
 
 class RLDiscoveryAgent:
-    """Bandit/Bayesian discovery agent for Kuramoto witness candidates."""
+    """Research-only Bandit/Bayesian Kuramoto witness candidate search.
+
+    Parameters
+    ----------
+    policy
+        Explicit BL-102 research policy. ``None`` keeps execution disabled.
+        The policy must enable the research extra, carry a preregistration ID,
+        fix at least three seeds, and bound search iterations/evaluations.
+
+    Notes
+    -----
+    ``reward_function='witness_score'`` is the only wired reward. It is a dense
+    composite diagnostic and may not be interpreted as operational utility or
+    optimal-policy evidence.
+    """
 
     def __init__(
         self,
@@ -42,6 +67,7 @@ class RLDiscoveryAgent:
         omega: FloatArray | None = None,
         theta0: FloatArray | None = None,
         spec: WitnessDiscoverySpec | None = None,
+        policy: RLResearchPolicy | None = None,
     ) -> None:
         if runner is not None:
             raise ValueError(
@@ -66,6 +92,7 @@ class RLDiscoveryAgent:
         self.omega = None if omega is None else np.array(omega, dtype=np.float64, copy=True)
         self.theta0 = None if theta0 is None else np.array(theta0, dtype=np.float64, copy=True)
         self.spec = spec
+        self.policy = policy
         self.result: WitnessDiscoveryResult | None = None
         self.discovered_phases: list[dict[str, Any]] = []
 
@@ -77,6 +104,11 @@ class RLDiscoveryAgent:
                 "output has been removed; configure a real Kuramoto problem."
             )
         spec = self.spec or WitnessDiscoverySpec(n_iterations=self.n_episodes)
+        assert_rl_research_allowed(
+            self.policy,
+            RLResearchLane.WITNESS_DISCOVERY,
+            spec=spec,
+        )
         self.result = discover_kuramoto_witnesses(
             self.K_nm,
             self.omega,

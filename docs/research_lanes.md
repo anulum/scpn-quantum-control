@@ -5,8 +5,8 @@ modules. They do not all have the same maturity, evidence, or relationship to
 differentiable control. The BL-84 registry makes those differences explicit
 without turning importability into a product or scientific claim.
 
-The committed snapshot covers **73 modules**: 29 research lanes, 29 prototypes,
-and 15 product candidates. “Product candidate” is a software-maturity label,
+The committed snapshot covers **74 modules**: 29 research lanes, 29 prototypes,
+and 16 product candidates. “Product candidate” is a software-maturity label,
 not productisation. Every row explicitly denies product, control, and
 publication grants from registry membership alone.
 

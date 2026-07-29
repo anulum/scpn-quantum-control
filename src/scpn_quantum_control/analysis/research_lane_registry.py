@@ -645,6 +645,14 @@ _RESEARCH_LANES = tuple(
                 _RO,
             ),
             _lane(
+                "analysis.rl_research_governance",
+                "Fail-closed preregistration, seed, budget, and no-control policy for RL-adjacent research.",
+                _C,
+                _N,
+                _EB,
+                evidence_refs=("data/rl_research_governance/evidence.json",),
+            ),
+            _lane(
                 "analysis.rl_pulse_optimizer",
                 "Fail-fast placeholder for unavailable RL pulse optimisation.",
                 _P,

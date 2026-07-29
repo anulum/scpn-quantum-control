@@ -455,6 +455,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [ResearchLaneMaturity, ResearchLaneDiffHook, ResearchLaneClaimStatus, ResearchLaneRecord, ResearchLaneInventoryReport, ResearchLaneRegistryReport, list_research_lanes, get_research_lane, discover_research_lane_modules, validate_research_lane_inventory, assert_research_lane_inventory, build_research_lane_registry_report, render_research_lane_registry_markdown]
 
+::: scpn_quantum_control.analysis.rl_research_governance
+    options:
+      members: [RLResearchLane, RLResearchGovernanceError, RLResearchPolicy, RLResearchDecision, RLSeedEvaluation, RLSeedSuiteReport, estimate_witness_evaluation_budget, assess_rl_research, assert_rl_research_allowed, build_witness_seed_suite, run_governed_witness_seed_suite, build_rl_research_evidence_report, render_rl_research_evidence_markdown]
+
 ## Crypto
 
 ::: scpn_quantum_control.crypto

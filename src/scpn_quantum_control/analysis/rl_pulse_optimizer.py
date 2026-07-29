@@ -5,23 +5,36 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — RL pulse optimiser interface
-"""Fail-fast interface for future RL pulse optimisation."""
+"""Fail-fast, research-disabled interface for future RL pulse optimisation."""
 
 from operator import index
 from typing import Any
 
 import numpy as np
 
+from .rl_research_governance import (
+    RLResearchLane,
+    RLResearchPolicy,
+    assert_rl_research_allowed,
+)
+
 
 class RLPulseOptimizer:
-    """
-    RL optimizer interface for pulse shaping.
+    """RL optimiser configuration boundary for pulse shaping.
 
-    This class is intentionally not implemented yet. It must fail loudly
-    rather than emit synthetic optimisation results.
+    This class is intentionally not implemented. Execution is disabled by
+    default and remains refused even with an enabled research policy because
+    BL-58 pulse contracts and the optimiser implementation are incomplete.
     """
 
-    def __init__(self, runner: Any, target_sync_order: float = 0.0, episodes: int = 250):
+    def __init__(
+        self,
+        runner: Any,
+        target_sync_order: float = 0.0,
+        episodes: int = 250,
+        *,
+        policy: RLResearchPolicy | None = None,
+    ) -> None:
         if runner is None:
             raise ValueError("runner must be provided for RL pulse optimisation configuration.")
         target = float(target_sync_order)
@@ -31,14 +44,15 @@ class RLPulseOptimizer:
         self.runner = runner
         self.target_sync_order = target
         self.episodes = episode_count
+        self.policy = policy
 
     async def optimize_pulses(self) -> None:
         """Fail closed until a real RL pulse optimizer is implemented."""
-        raise NotImplementedError(
-            "RL pulse optimisation is not implemented. Do not use this path "
-            "for QPU campaigns until a real optimiser, objective, and replayable "
-            "training trace are added."
+        assert_rl_research_allowed(
+            self.policy,
+            RLResearchLane.PULSE_OPTIMISATION,
         )
+        raise AssertionError("unreachable: pulse research is refused by the current gate")
 
     def save_results(self, filepath: str) -> None:
         """Fail closed instead of writing non-existent optimization results."""

@@ -1,7 +1,7 @@
 # Analysis API Reference
 
 *Advanced references for the analysis stack. The governed
-[research-lane registry](research_lanes.md) currently classifies 73 ordinary
+[research-lane registry](research_lanes.md) currently classifies 74 ordinary
 `analysis/` and `gauge/` modules by maturity, differentiable relevance, and
 claim status.*
 
@@ -16,6 +16,11 @@ routes are governed by the [Theory-Hook Promotion Matrix](theory_hook_promotion.
 and its [typed API](api/theory_hook_promotion.md). Importability does not grant
 control, differentiability, criticality, hardware, consciousness, or
 publication claims.
+
+RL-adjacent witness discovery and the unimplemented pulse shell are governed by
+[RL Research Governance](rl_research_governance.md) and its
+[typed API](api/rl_research_governance.md). Research execution is disabled by
+default and requires preregistration, fixed seeds, and explicit budgets.
 
 The broader module inventory is enforced by
 `assert_research_lane_inventory()`. Consult the

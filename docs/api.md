@@ -23,6 +23,8 @@ The differentiable-programming surface has its own public guide and API map:
 - [Theory-Hook Promotion API](api/theory_hook_promotion.md)
 - [Deep-analysis Research Lanes](research_lanes.md)
 - [Research-lane Registry API](api/research_lane_registry.md)
+- [RL Research Governance](rl_research_governance.md)
+- [RL Research Governance API](api/rl_research_governance.md)
 
 Use these pages when you need gradient-bearing optimisation, parameter-shift
 VQE, compiler/program AD kernels, primitive derivative registries, or planned

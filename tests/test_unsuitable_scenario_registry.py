@@ -47,6 +47,11 @@ def test_get_known_unsuitable_and_anti_silent() -> None:
     assert di_jl.citation
     assert "competitor:differentiation_interface.silent_wrong_grads" in (di_jl.related_route_ids)
 
+    rl = get_unsuitable_scenario("unsuitable:rl.research_without_preregistration")
+    assert rl.expected_outcome == "fail_closed_plan"
+    assert "preregistration" in rl.trigger.lower()
+    assert "research:rl.witness_discovery" in rl.related_route_ids
+
 
 def test_get_rejects_blank_and_unknown() -> None:
     with pytest.raises(ValueError, match="non-empty"):
@@ -169,6 +174,16 @@ def test_probe_known_unsuitable_refuses_with_reason() -> None:
     payload = result.to_dict()
     assert payload["refused"] is True
     assert payload["claim_boundary"] == UNSUITABLE_SCENARIO_CLAIM_BOUNDARY
+
+
+def test_probe_rl_without_preregistration_refuses() -> None:
+    """BL-53 carries the BL-102 no-preregistration refusal explicitly."""
+    result = probe_unsuitable_scenario("unsuitable:rl.research_without_preregistration")
+    assert result.refused
+    assert result.selected.expected_error == (
+        "RLResearchGovernanceError:preregistration_id_missing"
+    )
+    assert "fixed seeds" in result.selected.reason
 
 
 def test_probe_competitor_anti_silent_fixtures() -> None:

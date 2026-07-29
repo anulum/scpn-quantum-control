@@ -59,3 +59,13 @@ SPDX-License-Identifier = "AGPL-3.0-or-later"
 path = ["data/research_lane_registry/*"]
 SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["data/rl_research_governance/*"]
+SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["docs/_generated/capability_manifest.json"]
+SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

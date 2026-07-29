@@ -464,7 +464,7 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 696 (excluding package initialisers) |
+| Python modules | 697 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 81 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% line gate; branch telemetry required and currently observational) |
@@ -485,7 +485,7 @@ preparation and `bridge/` for Hamiltonian access.
 graph TD
     bridge["bridge/ (15)\nK_nm → quantum objects"]
     phase["phase/ (116)\nTime evolution"]
-    analysis["analysis/ (68)\nSync probes + governed registry"]
+    analysis["analysis/ (69)\nSync probes + governed registries"]
     control["control/ (14)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
     identity["identity/ (6)\nIdentity analysis"]
@@ -826,6 +826,13 @@ scpn_quantum_engine/                       ← Rust crate (PyO3 0.29, rayon para
 2026). The complete current `analysis/` plus `gauge/` source inventory is
 governed separately by the [Deep-analysis Research Lanes](research_lanes.md)
 registry; a star is not a maturity or promotion marker.
+
+RL-adjacent analysis has an additional one-way governance dependency:
+`rl_discovery_agent` and `rl_pulse_optimizer` consult
+`rl_research_governance` before execution. The governance leaf reuses the
+existing witness-discovery engine for fixed local seed replays; it does not
+depend on provider, hardware, pulse, or control runtimes. Pulse admission stays
+blocked on both implementation and BL-58.
 
 ## Classical-to-Quantum Mapping
 

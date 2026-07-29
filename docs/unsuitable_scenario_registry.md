@@ -79,6 +79,12 @@ boundary = probe_unsuitable_scenario(
     "no.such.scenario", unknown_policy="boundary"
 )
 assert boundary.refused is True
+
+# RL research without preregistration also fails closed
+rl = probe_unsuitable_scenario(
+    "unsuitable:rl.research_without_preregistration"
+)
+assert rl.refused is True
 ```
 
 ## Seed catalogue (bounded product)
@@ -90,6 +96,7 @@ Unsuitable scenarios (local refuse paths):
 - Rust Program AD dynamic axes on static replay
 - Unregistered torch fullgraph compile
 - PennyLane hardware-plugin gradients
+- RL-adjacent research without preregistration, fixed seeds, and budgets
 
 Anti-silent-wrong / competitor fixtures:
 

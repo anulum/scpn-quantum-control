@@ -153,7 +153,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | IBM hardware evidence | Legacy ibm_fez artifact rows + 342-circuit ibm_kingston Phase 1 DLA-parity raw-count dataset |
 | DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6, reproduced from `data/phase1_dla_parity/` |
 | Test suite | CI-gated suite, 90% line gate; branch telemetry required and currently observational |
-| Python modules | 696 Python source modules + 1 Rust crate (177 PyO3 bindings) + Julia tier (`accel/julia/*.jl`) |
+| Python modules | 697 Python source modules + 1 Rust crate (177 PyO3 bindings) + Julia tier (`accel/julia/*.jl`) |
 
 ## Package map
 
@@ -241,6 +241,7 @@ for name, w in results.items():
 - [Licensing FAQ](licensing_faq.md) — AGPL/commercial route, core-split boundary, and release gate for licence drift
 - [Research Gems](research_gems.md) — legacy curated Rounds 1–8 theory narratives
 - [Deep-analysis Research Lanes](research_lanes.md) — governed maturity, differentiable-hook, claim-status, and inventory-gate catalogue
+- [RL Research Governance](rl_research_governance.md) — disabled-by-default preregistration, seed, budget, deterministic-replay, and no-control gates
 - [Literature Catalogue](literature/README.md) — project-relevant literature surveys and citation-planning material
 - [Equations](equations.md) — every equation in the codebase
 - [Architecture](architecture.md) — dependency graph + 20 subpackages

@@ -1,8 +1,8 @@
 # BL-84 research-lane registry evidence
 
 - Schema: `scpn.research-lane-registry.v1`
-- Content digest: `ee0e999e8c3d587ae0b5fc5deeecaa02aa245dedf8c98620e5375c61e5d9f5a5`
-- Inventory: **PASS** (73 registered / 73 discovered)
+- Content digest: `24660f8ddb4d7964d599a9af4b7f4e9d95a3bc42b96f6d8ec59c670fb2d74a69`
+- Inventory: **PASS** (74 registered / 74 discovered)
 - Boundary: catalogue metadata only; registry membership does not grant productisation, differentiability, control, hardware, advantage, criticality, topology, consciousness, clinical, or publication claims.
 
 | Module | Maturity | Diff hook | Claim status | Promotion route | Evidence |
@@ -58,6 +58,7 @@
 | `scpn_quantum_control.analysis.quantum_speed_limit` | prototype | diagnostic_only | evidence_bounded | — | `data/theory_hook_promotion/evidence.json` |
 | `scpn_quantum_control.analysis.rl_discovery_agent` | prototype | none | research_only | — | — |
 | `scpn_quantum_control.analysis.rl_pulse_optimizer` | prototype | none | refuse_only | — | — |
+| `scpn_quantum_control.analysis.rl_research_governance` | product_candidate | none | evidence_bounded | — | `data/rl_research_governance/evidence.json` |
 | `scpn_quantum_control.analysis.sensing` | product_candidate | diagnostic_only | evidence_bounded | — | `data/s11_quantum_sensing/quantum_sensing_readiness_2026-05-20.json` |
 | `scpn_quantum_control.analysis.shadow_tomography` | prototype | diagnostic_only | diagnostic_only | — | — |
 | `scpn_quantum_control.analysis.spectral_form_factor` | prototype | diagnostic_only | evidence_bounded | — | `data/theory_hook_promotion/evidence.json` |

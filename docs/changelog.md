@@ -14,7 +14,11 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 
 ### Added
 
-- BL-84 deep-analysis research-lane registry: 73 immutable human-reviewed
+- BL-102 RL research governance: disabled-by-default preregistration, fixed
+  multi-seed suites, iteration/evaluation budgets, deterministic zero-noise
+  replay, explicit dense-reward gaming boundaries, BL-53 no-preregistration
+  refusal, and current unimplemented/BL-58 pulse blockers.
+- BL-84 initial deep-analysis research-lane registry: 73 immutable human-reviewed
   `analysis/` and `gauge/` rows, explicit maturity/differentiable-hook/claim
   classifications, deterministic evidence, and an exact inventory gate that
   rejects unregistered new modules. Registry membership grants no product,

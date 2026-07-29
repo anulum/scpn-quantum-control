@@ -4,16 +4,16 @@
     "domain_package_families": 38,
     "example_files": 37,
     "github_workflows": 24,
-    "model_documentation_pages": 6,
+    "model_documentation_pages": 7,
     "notebook_files": 109,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 359,
-    "python_model_classes": 1367,
-    "python_model_source_modules": 696,
+    "public_documentation_pages": 361,
+    "python_model_classes": 1373,
+    "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1153
+    "test_files": 1154
   },
   "documentation": {
     "examples": [
@@ -190,6 +190,7 @@
       "docs/api/chimera_control.md",
       "docs/api/dla_topology_control.md",
       "docs/api/research_lane_registry.md",
+      "docs/api/rl_research_governance.md",
       "docs/api/theory_hook_promotion.md",
       "docs/api/topology_kernel_product.md",
       "docs/api.md",
@@ -483,6 +484,7 @@
       "docs/research_lanes.md",
       "docs/resource_budget_gate.md",
       "docs/results.md",
+      "docs/rl_research_governance.md",
       "docs/rust_engine.md",
       "docs/scorecard_acceptance_engine.md",
       "docs/sparse.md",
@@ -555,6 +557,7 @@
       "chimera_control.md",
       "dla_topology_control.md",
       "research_lane_registry.md",
+      "rl_research_governance.md",
       "theory_hook_promotion.md",
       "topology_kernel_product.md"
     ],
@@ -567,7 +570,7 @@
       {
         "package": "analysis",
         "path": "src/scpn_quantum_control/analysis",
-        "python_modules": 68
+        "python_modules": 69
       },
       {
         "package": "applications",
@@ -5156,6 +5159,30 @@
         "path": "src/scpn_quantum_control/analysis/rl_pulse_optimizer.py"
       },
       {
+        "name": "RLResearchDecision",
+        "path": "src/scpn_quantum_control/analysis/rl_research_governance.py"
+      },
+      {
+        "name": "RLResearchGovernanceError",
+        "path": "src/scpn_quantum_control/analysis/rl_research_governance.py"
+      },
+      {
+        "name": "RLResearchLane",
+        "path": "src/scpn_quantum_control/analysis/rl_research_governance.py"
+      },
+      {
+        "name": "RLResearchPolicy",
+        "path": "src/scpn_quantum_control/analysis/rl_research_governance.py"
+      },
+      {
+        "name": "RLSeedEvaluation",
+        "path": "src/scpn_quantum_control/analysis/rl_research_governance.py"
+      },
+      {
+        "name": "RLSeedSuiteReport",
+        "path": "src/scpn_quantum_control/analysis/rl_research_governance.py"
+      },
+      {
         "name": "RProvider",
         "path": "src/scpn_quantum_control/benchmarks/layout_method_comparison.py"
       },
@@ -6286,6 +6313,7 @@
       "src/scpn_quantum_control/analysis/research_lane_registry.py",
       "src/scpn_quantum_control/analysis/rl_discovery_agent.py",
       "src/scpn_quantum_control/analysis/rl_pulse_optimizer.py",
+      "src/scpn_quantum_control/analysis/rl_research_governance.py",
       "src/scpn_quantum_control/analysis/sensing.py",
       "src/scpn_quantum_control/analysis/shadow_tomography.py",
       "src/scpn_quantum_control/analysis/spectral_form_factor.py",
@@ -9007,6 +9035,7 @@
       "tests/test_retrieve_march_flagship_receipts.py",
       "tests/test_retrieve_phase3_large_system_ibm.py",
       "tests/test_rl_discovery_agent_branches.py",
+      "tests/test_rl_research_governance.py",
       "tests/test_robustness_certificate.py",
       "tests/test_run_closed_loop_publication.py",
       "tests/test_run_decisive_advantage_benchmark.py",
