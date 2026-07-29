@@ -46,4 +46,6 @@ def test_ci_runs_and_aggregates_gate() -> None:
     end = workflow.index("\n\n  decisive-advantage-quality:", start)
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.STUDIO_EXECUTIVE_PRODUCT_QUALITY_RATCHET)
+    assert "requirements-ci-studio-platform.txt" in block
+    assert "--no-deps --require-hashes" in block
     assert "studio-executive-product-quality" in workflow[workflow.index("  ci-gate:") :]

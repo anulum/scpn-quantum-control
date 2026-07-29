@@ -1250,6 +1250,10 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with: {python-version: "3.12", cache: 'pip'}
       - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Install Studio recompute dependency
+        run: >-
+          python -m pip install --no-deps --require-hashes
+          -r requirements-ci-studio-platform.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/studio_executive_product.py
