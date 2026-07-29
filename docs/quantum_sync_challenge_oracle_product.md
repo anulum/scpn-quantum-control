@@ -56,6 +56,43 @@ assert probe.witness_all_passed is True
 assert probe.invent_green_advantage is False
 ```
 
+## Public API contracts
+
+### Catalogue discovery
+
+| API | Contract |
+|---|---|
+| `list_problem_family_ids()` | Return family identifiers in stable catalogue order. |
+| `list_metric_ids()` | Return the bounded challenge metric identifiers. |
+| `list_baseline_ids()` | Return baseline identifiers without executing them. |
+| `get_problem_family(family_id)` | Resolve one family and reject blank or unknown identifiers. |
+| `iter_problem_families(support_status=...)` | Return all families or an immutable support-filtered view. |
+
+### Provenance and eligibility
+
+`compute_instance_digest()` binds the product schema, family identifier, and
+non-negative seed into a deterministic SHA-256 digest. It rejects unknown
+families and negative seeds rather than manufacturing an instance identity.
+
+`decide_challenge_path()` is the required fail-closed decision point. Synthetic
+families may proceed only within the declared claim boundary. Invented quantum
+advantage, unvalidated leaderboard rank, hardware execution without a ticket,
+and the schema-only hardware family return explicit blockers.
+
+### Witness materialisation and registry integrity
+
+| API | Contract |
+|---|---|
+| `materialise_oracle_probe(family_id)` | Compose the selected family with the ambient synchronisation witness suite and reject empty evidence. |
+| `materialise_demo_oracle_probe()` | Run the deterministic F1 local demonstration without provider or hardware work. |
+| `map_quantum_sync_challenge_oracle_public_surfaces()` | Emit deterministic descriptors for ambient and product API surfaces. |
+| `build_quantum_sync_challenge_oracle_product_registry()` | Build the schema-tagged family, metric, baseline, policy, and surface catalogue. |
+| `assert_quantum_sync_challenge_oracle_product_integrity(payload=None)` | Reject missing, blank, duplicate, count-drifted, or invent-green registry state. |
+
+The public data records validate identifiers, support and outcome enums,
+digests, witness counts, blockers, no-submit flags, and bounded claim text at
+construction time; their `to_dict()` methods return JSON-ready payloads.
+
 ## Residuals (honest)
 
 - **S32.4–S32.5** — full classical/quantum baseline runners

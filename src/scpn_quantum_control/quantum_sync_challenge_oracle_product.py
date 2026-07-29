@@ -122,6 +122,7 @@ class ProblemFamilyRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     family_id: str
@@ -219,6 +220,7 @@ class MetricCatalogueRow:
         Support posture badge.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     metric_id: str
@@ -286,6 +288,7 @@ class BaselineCatalogueRow:
         Support posture badge.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     baseline_id: str
@@ -349,6 +352,7 @@ class PathEligibilityDecision:
         Non-empty when refused.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     outcome: PathDecisionOutcome
@@ -411,6 +415,7 @@ class MaterialisedOracleProbe:
         Demo fixture label.
     claim_boundary
         Product claim boundary.
+
     """
 
     family_id: str
@@ -643,6 +648,7 @@ def list_problem_family_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Stable family ids.
+
     """
     return tuple(row.family_id for row in _FAMILIES)
 
@@ -654,6 +660,7 @@ def list_metric_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Stable metric ids.
+
     """
     return tuple(row.metric_id for row in _METRICS)
 
@@ -665,6 +672,7 @@ def list_baseline_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Stable baseline ids.
+
     """
     return tuple(row.baseline_id for row in _BASELINES)
 
@@ -686,6 +694,7 @@ def get_problem_family(family_id: str) -> ProblemFamilyRow:
     ------
     ValueError
         If blank or unknown.
+
     """
     if not family_id or not str(family_id).strip():
         raise ValueError("family_id must be non-empty")
@@ -711,6 +720,7 @@ def iter_problem_families(
     -------
     tuple[ProblemFamilyRow, ...]
         Matching rows.
+
     """
     rows: Sequence[ProblemFamilyRow] = _FAMILIES
     if support_status is not None:
@@ -744,6 +754,7 @@ def compute_instance_digest(
     ------
     ValueError
         If family unknown or seed negative.
+
     """
     row = get_problem_family(family_id)
     use_seed = row.default_seed if seed is None else seed
@@ -793,6 +804,7 @@ def decide_challenge_path(
     -------
     PathEligibilityDecision
         Allowed or refused with blockers.
+
     """
     row = get_problem_family(family_id)
     blockers: list[str] = []
@@ -857,6 +869,7 @@ def materialise_oracle_probe(
     ------
     ValueError
         If family unknown or ambient suite empty.
+
     """
     row = get_problem_family(family_id)
     if row.support_status == "hardware_gated":
@@ -896,6 +909,7 @@ def materialise_demo_oracle_probe() -> MaterialisedOracleProbe:
     -------
     MaterialisedOracleProbe
         Ambient composition probe.
+
     """
     return materialise_oracle_probe("F1_all_to_all_kuramoto")
 
@@ -907,6 +921,7 @@ def map_quantum_sync_challenge_oracle_public_surfaces() -> tuple[dict[str, objec
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     return (
         {
@@ -950,6 +965,7 @@ def build_quantum_sync_challenge_oracle_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with families/metrics/baselines (no blanks).
+
     """
     families = [row.to_dict() for row in _FAMILIES]
     metrics = [row.to_dict() for row in _METRICS]
@@ -995,6 +1011,7 @@ def assert_quantum_sync_challenge_oracle_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-green policies appear.
+
     """
     registry = (
         dict(payload)

@@ -38,6 +38,7 @@ from scpn_quantum_control.quantum_sync_challenge_oracle_product import (
 
 
 def test_list_and_filters() -> None:
+    """List catalogue identifiers and filter problem families by status."""
     families = list_problem_family_ids()
     assert "F1_all_to_all_kuramoto" in families
     assert "FH_hardware_gated" in families
@@ -53,6 +54,7 @@ def test_list_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known families and reject blank or unknown identifiers."""
     row = get_problem_family("F1_all_to_all_kuramoto")
     assert row.claim_boundary == QUANTUM_SYNC_CHALLENGE_ORACLE_CLAIM_BOUNDARY
     assert row.invent_green_advantage is False
@@ -67,6 +69,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_instance_digest_stable() -> None:
+    """Keep instance digests deterministic and sensitive to family and seed."""
     d1 = compute_instance_digest("F1_all_to_all_kuramoto")
     d2 = compute_instance_digest("F1_all_to_all_kuramoto")
     assert d1 == d2
@@ -82,6 +85,7 @@ def test_instance_digest_stable() -> None:
 
 
 def test_decide_challenge_path() -> None:
+    """Allow bounded synthetic paths and refuse prohibited claim routes."""
     ok = decide_challenge_path("F1_all_to_all_kuramoto")
     assert ok.allowed is True
 
@@ -130,6 +134,7 @@ def test_decide_challenge_path() -> None:
 
 
 def test_oracle_probe() -> None:
+    """Materialise the ambient witness probe and reject hardware-only rows."""
     probe = materialise_demo_oracle_probe()
     assert probe.family_id == "F1_all_to_all_kuramoto"
     assert probe.witness_case_count >= 1
@@ -148,6 +153,7 @@ def test_oracle_probe() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Publish complete deterministic surface and registry catalogues."""
     surfaces = map_quantum_sync_challenge_oracle_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -165,8 +171,9 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift_and_policy() -> None:
+    """Reject catalogue drift and any invent-green or hardware policy."""
     registry = build_quantum_sync_challenge_oracle_product_registry()
-    families = cast(list[dict[str, object]], list(registry["families"]))
+    families = cast(list[dict[str, object]], registry["families"])
 
     broken = dict(registry)
     broken["families"] = families + [
@@ -212,10 +219,11 @@ def test_integrity_rejects_drift_and_policy() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject blank, duplicate, invalid, and count-drifted registry rows."""
     registry = build_quantum_sync_challenge_oracle_product_registry()
-    families = cast(list[dict[str, object]], list(registry["families"]))
-    metrics = cast(list[dict[str, object]], list(registry["metrics"]))
-    baselines = cast(list[dict[str, object]], list(registry["baselines"]))
+    families = cast(list[dict[str, object]], registry["families"])
+    metrics = cast(list[dict[str, object]], registry["metrics"])
+    baselines = cast(list[dict[str, object]], registry["baselines"])
 
     non_map = dict(registry)
     non_map["families"] = [cast(Any, "nope")]
@@ -340,12 +348,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the documented challenge-oracle symbols publicly exported."""
     assert "materialise_demo_oracle_probe" in oracle_product.__all__
     assert "decide_challenge_path" in oracle_product.__all__
     assert "compute_instance_digest" in oracle_product.__all__
 
 
 def test_row_decision_probe_validation() -> None:
+    """Validate every row, decision, and materialised-probe invariant."""
     base_f: dict[str, Any] = {
         "family_id": "Fx",
         "title": "t",
@@ -586,6 +596,7 @@ def test_row_decision_probe_validation() -> None:
 
 
 def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject empty, blank, and duplicate internal catalogue definitions."""
     monkeypatch.setattr(oracle_product, "_FAMILIES", ())
     with pytest.raises(RuntimeError, match="catalogue must be non-empty"):
         oracle_product._family_map()

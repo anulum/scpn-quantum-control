@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — quantum-sync oracle product quality-gate tests
+"""Lock the BL-19 quantum-sync oracle quality gate into preflight and CI."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from tools import preflight
+from tools import quantum_sync_oracle_product_quality_gates as quality_gates
+
+
+def test_static_gate_is_strict_and_numpy_documented() -> None:
+    """Require strict typing and isolated NumPy docstrings for the cohort."""
+    gates = dict(quality_gates.build_static_quality_gates("/python"))
+    mypy = gates["mypy-strict-quantum-sync-oracle-quality"]
+    ruff = gates["ruff D quantum-sync-oracle quality ratchet"]
+
+    assert mypy[5:] == quality_gates.QUANTUM_SYNC_ORACLE_QUALITY_RATCHET
+    assert (
+        ruff[-len(quality_gates.QUANTUM_SYNC_ORACLE_QUALITY_RATCHET) :]
+        == quality_gates.QUANTUM_SYNC_ORACLE_QUALITY_RATCHET
+    )
+    assert "--isolated" in ruff and "D,D413" in ruff
+
+
+def test_coverage_gate_is_isolated_and_exact() -> None:
+    """Require branch execution and a 100 percent source-only report."""
+    gates = dict(quality_gates.build_coverage_gates("/python"))
+    run = gates["quantum-sync-oracle focused coverage"]
+    report = gates["quantum-sync-oracle exact coverage threshold"]
+
+    assert f"--data-file={quality_gates.QUANTUM_SYNC_ORACLE_COVERAGE_DATA_FILE}" in run
+    assert "--branch" in run
+    assert run[-1:] == quality_gates.QUANTUM_SYNC_ORACLE_COVERAGE_COHORT
+    assert "--fail-under=100" in report
+    assert "--include=*/quantum_sync_challenge_oracle_product.py" in report
+
+
+def test_preflight_uses_the_helper_defined_gates() -> None:
+    """Keep helper-defined static and coverage commands verbatim in preflight."""
+    static = dict(preflight.STATIC_GATES)
+    coverage = dict(preflight.QUANTUM_SYNC_ORACLE_COVERAGE_GATES)
+    for name, command in quality_gates.build_static_quality_gates(preflight._PY):
+        assert static[name] == command
+    assert coverage == dict(quality_gates.build_coverage_gates(preflight._PY))
+
+
+def test_ci_runs_and_aggregates_the_oracle_gate() -> None:
+    """Keep the focused CI job and aggregate dependency required."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    start = workflow.index("  quantum-sync-oracle-quality:")
+    end = workflow.index("\n\n  decisive-advantage-quality:", start)
+    block = workflow[start:end]
+
+    for path in quality_gates.QUANTUM_SYNC_ORACLE_QUALITY_RATCHET:
+        assert path in block
+    assert "--fail-under=100" in block
+    assert "--include=*/quantum_sync_challenge_oracle_product.py" in block
+    assert "quantum-sync-oracle-quality" in workflow[workflow.index("  ci-gate:") :]

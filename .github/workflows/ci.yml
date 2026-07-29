@@ -547,6 +547,51 @@ jobs:
           --fail-under=100
           --include=*/thermo_readiness_product.py
 
+  quantum-sync-oracle-quality:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check quantum-sync oracle quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py
+          tests/test_quantum_sync_challenge_oracle_product.py
+          tools/quantum_sync_oracle_product_quality_gates.py
+          tests/test_quantum_sync_oracle_product_quality_gate.py
+      - name: Ruff NumPy docstrings for quantum-sync oracle quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py
+          tests/test_quantum_sync_challenge_oracle_product.py
+          tools/quantum_sync_oracle_product_quality_gates.py
+          tests/test_quantum_sync_oracle_product_quality_gate.py
+      - name: Run quantum-sync oracle focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.quantum-sync-oracle-quality
+          --branch
+          -m pytest -q
+          tests/test_quantum_sync_challenge_oracle_product.py
+      - name: Enforce quantum-sync oracle exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.quantum-sync-oracle-quality
+          --precision=2
+          --fail-under=100
+          --include=*/quantum_sync_challenge_oracle_product.py
+
   decisive-advantage-quality:
     needs: lint
     runs-on: ubuntu-latest
@@ -1638,7 +1683,7 @@ jobs:
           EOF
 
   ci-gate:
-    needs: [lint, stable-core-product-quality, thermo-readiness-product-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
+    needs: [lint, stable-core-product-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -1647,6 +1692,7 @@ jobs:
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs['stable-core-product-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['thermo-readiness-product-quality'].result }}" != "success" ]] || \
+             [[ "${{ needs['quantum-sync-oracle-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['decisive-advantage-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['mlir-leaf-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['phase-qnode-affinity-quality'].result }}" != "success" ]] || \

@@ -47,6 +47,9 @@ if TYPE_CHECKING:
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import program_ad_array_indexing_quality_gates as _array_indexing_quality_gates
     from tools import program_ad_quality_gates as _program_ad_quality_gates
+    from tools import (
+        quantum_sync_oracle_product_quality_gates as _quantum_sync_oracle_product_quality_gates,
+    )
     from tools import stable_core_product_quality_gates as _stable_core_product_quality_gates
     from tools import (
         thermo_readiness_product_quality_gates as _thermo_readiness_product_quality_gates,
@@ -60,6 +63,9 @@ else:
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
     _array_indexing_quality_gates = import_module("tools.program_ad_array_indexing_quality_gates")
     _program_ad_quality_gates = import_module("tools.program_ad_quality_gates")
+    _quantum_sync_oracle_product_quality_gates = import_module(
+        "tools.quantum_sync_oracle_product_quality_gates"
+    )
     _stable_core_product_quality_gates = import_module("tools.stable_core_product_quality_gates")
     _thermo_readiness_product_quality_gates = import_module(
         "tools.thermo_readiness_product_quality_gates"
@@ -372,6 +378,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_array_indexing_quality_gates.build_static_quality_gates(_PY),
     *_stable_core_product_quality_gates.build_static_quality_gates(_PY),
     *_thermo_readiness_product_quality_gates.build_static_quality_gates(_PY),
+    *_quantum_sync_oracle_product_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -722,6 +729,9 @@ STABLE_CORE_PRODUCT_COVERAGE_GATES = _stable_core_product_quality_gates.build_co
 THERMO_READINESS_PRODUCT_COVERAGE_GATES = (
     _thermo_readiness_product_quality_gates.build_coverage_gates(_PY)
 )
+QUANTUM_SYNC_ORACLE_COVERAGE_GATES = (
+    _quantum_sync_oracle_product_quality_gates.build_coverage_gates(_PY)
+)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -977,6 +987,7 @@ def main() -> int:
             gates.extend(PROGRAM_AD_ARRAY_INDEXING_COVERAGE_GATES)
             gates.extend(STABLE_CORE_PRODUCT_COVERAGE_GATES)
             gates.extend(THERMO_READINESS_PRODUCT_COVERAGE_GATES)
+            gates.extend(QUANTUM_SYNC_ORACLE_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

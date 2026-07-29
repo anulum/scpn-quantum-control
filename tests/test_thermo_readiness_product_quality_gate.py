@@ -57,7 +57,7 @@ def test_ci_runs_and_aggregates_the_thermo_readiness_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
     start = workflow.index("  thermo-readiness-product-quality:")
-    end = workflow.index("\n\n  decisive-advantage-quality:", start)
+    end = workflow.index("\n\n  quantum-sync-oracle-quality:", start)
     block = workflow[start:end]
 
     for path in quality_gates.THERMO_READINESS_PRODUCT_TYPING_RATCHET:
