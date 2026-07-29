@@ -9,6 +9,18 @@ is copied here.
 
 ### Current platform programme: reproducible evidence and benchmark infrastructure
 
+- [x] **BL-54 DLA and topology-constrained differentiable control.**
+  Implemented 2026-07-29: exact finite parity-sector JVP/VJP and leakage
+  gradients, a strict-decrease projected synthetic task, fixed-active-set
+  topology-ledger JVP/VJP rules, explicit non-smooth/discrete blockers,
+  composition evidence for the existing projected optimiser, notebook 51,
+  and digest-bound JSON/Markdown evidence. Full-DLA classification,
+  controllability, persistent-homology derivatives, active budget rescaling,
+  positive connectivity thresholds, error correction, hardware, provider,
+  QPU, deployment, and application claims remain out of scope. S54.5 QGNN
+  wiring is descoped because no typed consumer maps Hilbert-space parity to
+  graph topology.
+
 - [x] **BL-60 finite synthetic chimera and multiscale control.** Implemented
   2026-07-29: exact two-population Kuramoto–Sakaguchi regimes, complete nested
   hierarchy contracts, multiscale Shanahan observables, composed analytic

@@ -1,5 +1,33 @@
 # Validation
 
+## BL-54 DLA and topology-constrained differentiable control
+
+The BL-54 validation lane exercises the public
+`scpn_quantum_control.dla_topology_control` facade, notebook 51, and the real
+evidence CLI. Focused gates cover:
+
+- delegation to the existing DLA-parity projector and exact projector JVP/VJP;
+- absolute and normalised leakage gradients against central differences;
+- strict-decrease parity-projected synthetic optimisation;
+- topology-ledger JVP finite-difference agreement and JVP/VJP adjoint identity;
+- supported signed, nonnegative, fixed-sign, clipping, hardware-mask, frozen-
+  edge, and inactive-budget branches;
+- fail-closed sign/bound kinks, active weight rescaling, positive connectivity
+  thresholds, and discrete topology or persistent-homology changes;
+- composition with the existing hard projected SPSA optimiser;
+- immutable array custody, deterministic JSON/Markdown evidence, and byte
+  checks; and
+- strict API documentation, typing, lint, security, and focused branch-
+  coverage gates.
+
+The committed evidence reaches zero final outside-sector mass, matches the
+analytic objective gradient within `3.59233087721e-10`, matches the parity and
+topology JVPs within `9.98454884353e-11` and `3.93055310521e-11`, and satisfies
+the topology adjoint identity within `8.881784197e-16`. It does not validate a
+full DLA, controllability, persistent-homology derivative, error correction,
+hardware parity preservation, provider, QPU, deployment, or application
+claim. Reproduce with `scripts/run_dla_topology_control_evidence.py --check`.
+
 ## BL-60 chimera and multiscale control
 
 The BL-60 validation lane exercises the public

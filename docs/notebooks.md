@@ -1,6 +1,6 @@
 # Interactive Notebooks
 
-*107 tracked Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
+*108 tracked Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
 frontier research. Notebooks 01-13 cover core quantum simulation. Notebooks 14-47
 document the FIM (Fisher Information Metric) strange loop investigation campaign
 (2026-03-29) with 19 findings (6 negative). The IBM v2 "dual protection on ibm_fez"
@@ -9,7 +9,8 @@ result is retired as a claim (its data is recovered and published in full,
 SCPN/FIM campaign — the observation is genuine, the protection interpretation is not).
 Notebook 48 is the Phase 5 Kuramoto handbook workflow companion. Notebook 49 is the
 differentiable first-path companion. Notebook 50 is the finite synthetic chimera and
-multiscale-control companion.*
+multiscale-control companion. Notebook 51 is the local DLA-parity and fixed-active-set
+topology-derivative companion.*
 
 ---
 
@@ -30,7 +31,9 @@ Recommended first path:
 5. `48_kuramoto_handbook_workflow.ipynb` for the Phase 5 Kuramoto facade path.
 6. `50_chimera_multiscale_control.ipynb` for nested order parameters, analytic
    hierarchy targets, and an unapplied topology-constrained proposal.
-7. `13_cross_repo_bridges.ipynb` for integration boundaries.
+7. `51_dla_topology_constrained_control.ipynb` for exact parity projection,
+   fixed-active-set topology JVP/VJP rules, and fail-closed branch reports.
+8. `13_cross_repo_bridges.ipynb` for integration boundaries.
 
 ## Notebook governance
 
@@ -66,6 +69,15 @@ target gradients, and local topology-ledger projection. Pair it with the
 [chimera and multiscale control guide](chimera_multiscale_control.md). Its
 outputs are configuration-specific simulator evidence, not a biological, EEG,
 stability, controllability, hardware, or deployment result.
+
+Use `51_dla_topology_constrained_control.ipynb` with the public
+`scpn_quantum_control.dla_topology_control` facade for exact finite parity-
+sector projection, leakage gradients, projected synthetic optimisation, and
+supported fixed-active-set topology-ledger JVP/VJP rules. Pair it with the
+[DLA and topology-constrained control guide](dla_topology_constrained_control.md).
+The notebook refuses non-smooth or discrete branches and makes no full-DLA,
+controllability, persistent-homology, error-correction, hardware, or deployment
+claim.
 
 For Phase-QNode performance language, notebooks are never enough by themselves:
 the CI evidence bundle must report `isolated_affinity` from a self-hosted

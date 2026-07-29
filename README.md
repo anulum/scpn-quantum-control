@@ -122,17 +122,17 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.0.0 |
 | Public API exports | 841 |
-| Python source modules | 682 |
-| Public Python classes | 1329 |
-| Domain package families | 36 |
-| API documentation pages | 1 |
+| Python source modules | 688 |
+| Public Python classes | 1343 |
+| Domain package families | 37 |
+| API documentation pages | 2 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
-| Notebook files | 107 |
+| Notebook files | 108 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1137 |
-| Public documentation pages | 349 |
+| Python test files | 1144 |
+| Public documentation pages | 351 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -724,6 +724,7 @@ graph TD
 | `fep` | 2 | Friston Free Energy Principle: variational free energy, predictive coding |
 | `forecasting` | 11 | Real/source-backed synchronisation benchmarks plus bounded synthetic multimodal forecasting, partial-observation scoring, split residual intervals, and fail-closed BL-68/BL-33 composition |
 | `chimera_control` | 7 | Finite synthetic Kuramoto–Sakaguchi regimes, nested order parameters, analytic hierarchy targets, unapplied proposals, topology-ledger projection, and deterministic evidence |
+| `dla_topology_control` | 7 | Exact finite parity-sector derivatives, projected synthetic control, fixed-active-set topology-ledger JVP/VJP rules, and deterministic evidence |
 | `benchmark_harness` | 4 | Reproducible benchmark harness entry points |
 | `tcbo` | 1 | TCBO quantum observer |
 | `pgbo` | 1 | PGBO quantum bridge |
@@ -788,7 +789,7 @@ All examples run on statevector simulation (no QPU needed).
 
 ## Notebooks
 
-107 tracked Jupyter notebooks in [`notebooks/`](notebooks/) — including the
+108 tracked Jupyter notebooks in [`notebooks/`](notebooks/) — including the
 core tutorials and retained investigation notebooks. Core notebooks:
 
 | # | Notebook | Level | Key Output |
@@ -808,9 +809,10 @@ core tutorials and retained investigation notebooks. Core notebooks:
 | 13 | Cross-Repo Bridges | Integration | Phase roundtrip, adapter demos |
 | 48 | Kuramoto Handbook Workflow | Intermediate | Phase 5 facade workflow summary |
 | 50 | Chimera Multiscale Control | Advanced | Finite synthetic regimes, nested targets, and unapplied topology-constrained proposal |
+| 51 | DLA Topology-Constrained Control | Advanced | Exact parity projection, fixed-active-set topology JVP/VJP rules, and fail-closed branch reports |
 
-The quantum notebooks run on local AerSimulator; notebook 50 uses local NumPy
-simulation. No IBM credentials are needed.
+The quantum notebooks run on local AerSimulator; notebooks 50 and 51 use local
+NumPy simulation. No IBM credentials are needed.
 
 ## Architecture
 
@@ -827,6 +829,7 @@ scpn_quantum_control/
 ├── benchmarks/     21 modules — performance baselines
 ├── forecasting/    11 modules — real/source-backed and synthetic partial-observation forecasts
 ├── chimera_control/ 7 modules — finite synthetic chimera and multiscale control
+├── dla_topology_control/ 7 modules — parity and fixed-active-set topology derivatives
 ├── identity/        6 modules — identity continuity analysis
 ├── qsnn/            7 modules — quantum spiking neural networks + neuromorphic bridge
 ├── crypto/          9 modules — entanglement QKD, topology authentication, ML-DSA signing, key hierarchy

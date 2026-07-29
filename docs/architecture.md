@@ -51,6 +51,35 @@ No external execution, controller mutation, hardware, provider, QPU, or
 biological-data dependency enters this package. See
 [Chimera and Multiscale Synchronisation Control](chimera_multiscale_control.md).
 
+## DLA and topology-constrained control composition
+
+`scpn_quantum_control.dla_topology_control` isolates BL-54 into six
+responsibility modules plus a public facade. Parity projection delegates its
+forward map to `analysis.dla_parity_theorem`; topology sensitivity calls the
+production `TopologyConstraintLedger.project` and supplies local JVP/VJP rules
+only for fixed supported active sets. The synthetic objective, projected-
+gradient trace, immutable support schema, and deterministic evidence remain
+separate owners.
+
+```text
+dla_topology_control.schema
+        ↓
+dla_topology_control.parity ─────→ analysis.dla_parity_theorem
+        ↓
+dla_topology_control.objectives
+        ↓
+dla_topology_control.optimizer
+
+dla_topology_control.projection ─→ topology_control.constraints
+        ↓
+dla_topology_control.evidence ───→ existing projected SPSA + notebook 51
+```
+
+The topology path refuses derivatives at sign and clipping kinks, active
+total-weight rescaling, positive connectivity thresholds, and discrete or
+persistent-homology changes. See
+[DLA and Topology-Constrained Differentiable Control](dla_topology_constrained_control.md).
+
 ## Multimodal forecasting composition
 
 `scpn_quantum_control.forecasting` now separates BL-37 into seven cohesive
@@ -435,14 +464,14 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 682 (excluding package initialisers) |
+| Python modules | 688 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 81 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% line gate; branch telemetry required and currently observational) |
 | Subpackages | domain package families (see the package map below) |
 | Research gems | See generated capability inventory and module-level docs |
 | Examples | 29 |
-| Notebooks | 98 tracked notebooks |
+| Notebooks | 108 tracked notebooks |
 | Doc pages | See the generated capability inventory |
 
 ## Subpackage Dependency Graph

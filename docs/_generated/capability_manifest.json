@@ -1,19 +1,19 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 36,
+    "domain_package_families": 37,
     "example_files": 37,
     "github_workflows": 24,
-    "model_documentation_pages": 1,
-    "notebook_files": 107,
+    "model_documentation_pages": 2,
+    "notebook_files": 108,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 349,
-    "python_model_classes": 1329,
-    "python_model_source_modules": 682,
+    "public_documentation_pages": 351,
+    "python_model_classes": 1343,
+    "python_model_source_modules": 688,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1137
+    "test_files": 1144
   },
   "documentation": {
     "examples": [
@@ -106,6 +106,7 @@
       "notebooks/48_kuramoto_handbook_workflow.ipynb",
       "notebooks/49_differentiable_first_path.ipynb",
       "notebooks/50_chimera_multiscale_control.ipynb",
+      "notebooks/51_dla_topology_constrained_control.ipynb",
       "notebooks/colab/kaggle_aging_k_decay.ipynb",
       "notebooks/colab/kaggle_anaesthesia_consciousness.ipynb",
       "notebooks/colab/kaggle_biochemical_validation.ipynb",
@@ -185,6 +186,7 @@
       "docs/analog_native_readiness.md",
       "docs/analysis_api.md",
       "docs/api/chimera_control.md",
+      "docs/api/dla_topology_control.md",
       "docs/api.md",
       "docs/application_benchmarks.md",
       "docs/architecture.md",
@@ -341,6 +343,7 @@
       "docs/dla_parity.md",
       "docs/dla_protected_scar_memory.md",
       "docs/dla_protected_subspace.md",
+      "docs/dla_topology_constrained_control.md",
       "docs/dynq_qubit_mapping.md",
       "docs/e2e_contract_boundaries.md",
       "docs/e2e_testing.md",
@@ -539,7 +542,8 @@
   },
   "models": {
     "documentation_pages": [
-      "chimera_control.md"
+      "chimera_control.md",
+      "dla_topology_control.md"
     ],
     "domain_package_counts": [
       {
@@ -616,6 +620,11 @@
         "package": "dla_parity",
         "path": "src/scpn_quantum_control/dla_parity",
         "python_modules": 4
+      },
+      {
+        "package": "dla_topology_control",
+        "path": "src/scpn_quantum_control/dla_topology_control",
+        "python_modules": 6
       },
       {
         "package": "entropy",
@@ -1401,6 +1410,10 @@
         "path": "src/scpn_quantum_control/cosimulation/knm_partition.py"
       },
       {
+        "name": "ConstraintSupportRow",
+        "path": "src/scpn_quantum_control/dla_topology_control/schema.py"
+      },
+      {
         "name": "ConstraintViolation",
         "path": "src/scpn_quantum_control/topology_control/constraints.py"
       },
@@ -1693,6 +1706,14 @@
         "path": "src/scpn_quantum_control/differentiable_api_contracts.py"
       },
       {
+        "name": "DifferentiabilityKind",
+        "path": "src/scpn_quantum_control/dla_topology_control/schema.py"
+      },
+      {
+        "name": "DifferentiabilityReport",
+        "path": "src/scpn_quantum_control/dla_topology_control/schema.py"
+      },
+      {
         "name": "DifferentiableArchitectureMap",
         "path": "src/scpn_quantum_control/differentiable_architecture_map.py"
       },
@@ -1935,6 +1956,10 @@
       {
         "name": "DlaParityRun",
         "path": "src/scpn_quantum_control/dla_parity/schema.py"
+      },
+      {
+        "name": "DlaTopologyControlEvidence",
+        "path": "src/scpn_quantum_control/dla_topology_control/evidence.py"
       },
       {
         "name": "DomainForecastAccuracy",
@@ -3749,6 +3774,30 @@
         "path": "src/scpn_quantum_control/polyglot_parity_certificate.py"
       },
       {
+        "name": "ParityLeakageEvaluation",
+        "path": "src/scpn_quantum_control/dla_topology_control/parity.py"
+      },
+      {
+        "name": "ParityProjectedOptimisationTrace",
+        "path": "src/scpn_quantum_control/dla_topology_control/optimizer.py"
+      },
+      {
+        "name": "ParityProtectedObjectiveEvaluation",
+        "path": "src/scpn_quantum_control/dla_topology_control/objectives.py"
+      },
+      {
+        "name": "ParityProtectedQuadraticObjective",
+        "path": "src/scpn_quantum_control/dla_topology_control/objectives.py"
+      },
+      {
+        "name": "ParitySector",
+        "path": "src/scpn_quantum_control/dla_topology_control/schema.py"
+      },
+      {
+        "name": "ParitySectorProjector",
+        "path": "src/scpn_quantum_control/dla_topology_control/parity.py"
+      },
+      {
         "name": "PartialObservationBatchCertificate",
         "path": "src/scpn_quantum_control/forecasting/partial_observation.py"
       },
@@ -4595,6 +4644,14 @@
       {
         "name": "ProgramADViewAliasProvenance",
         "path": "src/scpn_quantum_control/program_ad_alias_contracts.py"
+      },
+      {
+        "name": "ProjectedGradientConfig",
+        "path": "src/scpn_quantum_control/dla_topology_control/optimizer.py"
+      },
+      {
+        "name": "ProjectedGradientStep",
+        "path": "src/scpn_quantum_control/dla_topology_control/optimizer.py"
       },
       {
         "name": "ProjectedSPSAOptimizer",
@@ -5761,6 +5818,10 @@
         "path": "src/scpn_quantum_control/topology_control/optimizers.py"
       },
       {
+        "name": "TopologyProjectionDifferential",
+        "path": "src/scpn_quantum_control/dla_topology_control/projection.py"
+      },
+      {
         "name": "TopologyProjectionReport",
         "path": "src/scpn_quantum_control/chimera_control/topology.py"
       },
@@ -5867,6 +5928,10 @@
       {
         "name": "UnsuitableScenarioRecord",
         "path": "src/scpn_quantum_control/unsuitable_scenario_registry.py"
+      },
+      {
+        "name": "UnsupportedDifferentiableConstraintError",
+        "path": "src/scpn_quantum_control/dla_topology_control/schema.py"
       },
       {
         "name": "VJPResult",
@@ -6329,6 +6394,12 @@
       "src/scpn_quantum_control/dla_parity/dataset.py",
       "src/scpn_quantum_control/dla_parity/reproduce.py",
       "src/scpn_quantum_control/dla_parity/schema.py",
+      "src/scpn_quantum_control/dla_topology_control/evidence.py",
+      "src/scpn_quantum_control/dla_topology_control/objectives.py",
+      "src/scpn_quantum_control/dla_topology_control/optimizer.py",
+      "src/scpn_quantum_control/dla_topology_control/parity.py",
+      "src/scpn_quantum_control/dla_topology_control/projection.py",
+      "src/scpn_quantum_control/dla_topology_control/schema.py",
       "src/scpn_quantum_control/entropy/fips_140_2.py",
       "src/scpn_quantum_control/entropy/nist_sp800_22.py",
       "src/scpn_quantum_control/entropy/qrng_stream.py",
@@ -8165,6 +8236,13 @@
       "tests/test_dla_protected_scar_branches.py",
       "tests/test_dla_protected_subspace.py",
       "tests/test_dla_protected_subspace_branches.py",
+      "tests/test_dla_topology_control_e2e.py",
+      "tests/test_dla_topology_control_evidence.py",
+      "tests/test_dla_topology_control_objectives.py",
+      "tests/test_dla_topology_control_optimizer.py",
+      "tests/test_dla_topology_control_parity.py",
+      "tests/test_dla_topology_control_projection.py",
+      "tests/test_dla_topology_control_schema.py",
       "tests/test_doc_claim_boundaries.py",
       "tests/test_documentation_inventory_consistency.py",
       "tests/test_documentation_surface_audit.py",

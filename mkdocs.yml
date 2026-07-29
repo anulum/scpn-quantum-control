@@ -139,6 +139,8 @@ nav:
           - Multimodal Partial-Observation Forecasting: multimodal_forecasting.md
           - Chimera and Multiscale Control: chimera_multiscale_control.md
           - Chimera Control API: api/chimera_control.md
+          - DLA and Topology-Constrained Control: dla_topology_constrained_control.md
+          - DLA Topology Control API: api/dla_topology_control.md
           - Classical Baselines: classical_baselines.md
           - Benchmarks API: benchmarks_api.md
           - TN/MPS Baseline Design: tn_mps_baseline_design.md

@@ -49,6 +49,13 @@ two-population Kuramoto–Sakaguchi generation, nested order parameters,
 analytic hierarchy targets, an unapplied phase proposal, topology-ledger
 projection, evidence replay, and the associated non-claims.
 
+For local derivatives under parity and graph constraints, use
+[DLA and Topology-Constrained Differentiable Control](dla_topology_constrained_control.md)
+with notebook `51_dla_topology_constrained_control.ipynb`. That route separates
+Hilbert-space parity from coupling-graph topology, provides exact projector
+JVP/VJP rules and fixed-active-set ledger sensitivities, and fails closed at
+non-smooth or discrete branches.
+
 ```mermaid
 graph TD
     subgraph "Level 1: Foundations — What is this package doing?"

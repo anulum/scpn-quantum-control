@@ -1,5 +1,15 @@
 # Changelog
 
+- 2026-07-29 — DLA and topology-constrained differentiable control (BL-54):
+  added exact finite parity-sector JVP/VJP and leakage gradients, a projected
+  synthetic optimisation trace, fixed-active-set topology-ledger JVP/VJP rules,
+  explicit non-smooth/discrete support reports, existing projected-optimiser
+  composition evidence, notebook 51, and deterministic evidence custody. Full-
+  DLA classification, controllability, persistent-homology derivatives, active
+  budget rescaling, positive connectivity thresholds, error correction,
+  hardware, provider, QPU, deployment, and application claims are refused;
+  S54.5 QGNN wiring is explicitly descoped because no typed parity/topology
+  consumer exists.
 - 2026-07-29 — Chimera and multiscale synchronisation control (BL-60):
   added immutable nested hierarchy/target contracts, exact finite two-
   population Kuramoto–Sakaguchi regimes, multiscale Shanahan observables,
