@@ -45,7 +45,7 @@ fn inertial_field_into(
 /// Pure Rust fixed-step RK4 forward trajectory of the inertial (second-order) networked flow.
 ///
 /// Advances the concatenated ``[θ, v]`` state by the classical four-stage Runge–Kutta rule applied
-/// to [`inertial_field_into`], mirroring the Python floor's arithmetic so the two agree to the
+/// to `inertial_field_into`, mirroring the Python floor's arithmetic so the two agree to the
 /// requested tolerance (the only difference is the coupling-force summation order — a scalar loop
 /// here versus NumPy's vectorised reduction — so the tiers are tolerance-parity, ~1e-11, not
 /// bit-identical). Samples ``θ`` and ``v`` at every step. Returns the ``(M + 1,)`` sample times,

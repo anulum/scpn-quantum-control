@@ -91,7 +91,7 @@ pub fn hyp2f1(a: f64, b: f64, c: f64, z: f64) -> f64 {
 
 /// Compute hypergeometric pulse envelope for an array of time points.
 ///
-/// envelope[i] = sech(γ × t[i]) × ₂F₁(α, β; (α+β+1)/2; (1+tanh(γ×t[i]))/2)
+/// `envelope[i] = sech(γ × t[i]) × ₂F₁(α, β; (α+β+1)/2; (1+tanh(γ×t[i]))/2)`
 ///
 /// Parallelised across time points via rayon.
 #[pyfunction]

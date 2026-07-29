@@ -39,7 +39,7 @@ pub fn pec_coefficients_inner(gate_error_rate: f64) -> [f64; 4] {
 /// PEC sign-sampling in parallel (rayon). Single-qubit depolarising model.
 ///
 /// Returns (mitigated_value, overhead, sign_distribution).
-/// `base_exp_z` is the noiseless <Z> expectation from the ideal circuit.
+/// `base_exp_z` is the noiseless ⟨Z⟩ expectation from the ideal circuit.
 /// Each sample draws a Pauli correction per gate, accumulates the sign
 /// product, and scales by gamma^n_gates. The sampled operator identity
 /// affects the sign but not the base expectation — this is the single-qubit

@@ -100,8 +100,8 @@ pub fn free_energy_gradient_rust<'py>(
 /// Hierarchical prediction error across SCPN layers.
 ///
 /// For each layer i: ε_i = Π_i × (x_i − x̂_i)
-/// where x̂_i = Σ_j K[i,j] × μ_j / Σ_j K[i,j] (coupling-weighted mean)
-/// and Π_i = Σ_j K[i,j] (total coupling = local precision).
+/// where x̂_i = Σ_j `K[i,j]` × μ_j / Σ_j `K[i,j]` (coupling-weighted mean)
+/// and Π_i = Σ_j `K[i,j]` (total coupling = local precision).
 #[pyfunction]
 pub fn hierarchical_prediction_error_rust<'py>(
     py: Python<'py>,

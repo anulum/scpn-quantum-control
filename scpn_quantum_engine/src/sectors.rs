@@ -10,7 +10,7 @@
 //! matrix, and Z�� parity filtering.
 //!
 //! The XY Hamiltonian preserves total magnetisation M = N − 2×popcount(k),
-//! enabling block-diagonal analysis. The correlation matrix C[i,j] = ⟨XX_ij + YY_ij⟩
+//! enabling block-diagonal analysis. The correlation matrix `C[i,j] = ⟨XX_ij + YY_ij⟩`
 //! drives Hebbian learning in DynamicCouplingEngine.
 
 use ndarray::Array2;
@@ -38,7 +38,7 @@ fn validate_statevector_pair(re: &[f64], im: &[f64], n: usize) -> PyResult<()> {
     validate_finite(im, "psi_im")
 }
 
-/// Magnetisation labels: result[k] = M of basis state |k⟩.
+/// Magnetisation labels: `result[k] = M` of basis state |k⟩.
 /// M = n − 2 × popcount(k). Uses hardware popcount instruction.
 #[pyfunction]
 pub fn magnetisation_labels<'py>(py: Python<'py>, n: usize) -> PyResult<Bound<'py, PyArray1<i32>>> {
@@ -98,7 +98,7 @@ pub fn order_param_from_statevector(
     Ok((z_re * z_re + z_im * z_im).sqrt())
 }
 
-/// XY correlation matrix C[i,j] = ⟨XX_ij + YY_ij⟩ from statevector.
+/// XY correlation matrix `C[i,j] = ⟨XX_ij + YY_ij⟩` from statevector.
 /// Used by DynamicCouplingEngine for Hebbian learning.
 /// Parallelised over qubit pairs via rayon.
 #[pyfunction]

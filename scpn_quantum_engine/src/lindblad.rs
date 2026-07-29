@@ -41,8 +41,8 @@ fn validate_threshold(threshold: f64) -> PyResult<()> {
 
 /// Lindblad jump operator COO data + anti-Hermitian diagonal.
 ///
-/// Builds all jump operators L_k for pairs (i,j) where |K[i,j]| > threshold.
-/// Returns (rows, cols, op_starts, n_ops) where op_starts[k] is the first
+/// Builds all jump operators L_k for pairs (i,j) where `|K[i,j]| > threshold`.
+/// Returns (rows, cols, op_starts, n_ops) where `op_starts[k]` is the first
 /// index in rows/cols belonging to operator k. op_starts has length n_ops+1.
 #[allow(clippy::type_complexity)]
 #[pyfunction]
@@ -100,7 +100,7 @@ pub fn lindblad_jump_ops_coo<'py>(
 
 /// Anti-Hermitian diagonal for Lindblad trajectory path.
 ///
-/// diag[idx] = number of active jump channels that can fire from state |idx⟩.
+/// `diag[idx]` = number of active jump channels that can fire from state |idx⟩.
 #[pyfunction]
 pub fn lindblad_anti_hermitian_diag<'py>(
     py: Python<'py>,

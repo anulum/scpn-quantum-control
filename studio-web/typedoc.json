@@ -1,0 +1,14 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src"],
+  "entryPointStrategy": "expand",
+  "exclude": ["**/*.test.ts", "**/*.test.tsx"],
+  "out": "../build/api/typescript",
+  "readme": "none",
+  "treatWarningsAsErrors": true,
+  "validation": {
+    "invalidLink": true,
+    "notDocumented": false,
+    "notExported": false
+  }
+}

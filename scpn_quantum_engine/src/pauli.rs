@@ -174,7 +174,7 @@ pub fn expectation_pauli_fast(
 
 /// Batch compute per-qubit X and Y expectations for all n qubits in one call.
 ///
-/// Returns (exp_x[n], exp_y[n]). Avoids 2n FFI roundtrips vs calling
+/// Returns (`exp_x[n]`, `exp_y[n]`). Avoids 2n FFI roundtrips vs calling
 /// expectation_pauli_fast individually per qubit per Pauli.
 #[pyfunction]
 pub fn all_xy_expectations<'py>(

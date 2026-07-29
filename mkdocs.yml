@@ -72,6 +72,7 @@ nav:
       - Literature Survey 2024-2026: literature/literature_survey_2024_2026.md
       - Orchestrator Integration: orchestrator_integration.md
   - API Reference:
+      - Cross-Language Reference Builds: cross_language_api_reference.md
       - Complete Python Module Catalog: api/module_catalog.md
       - Choosing a Gradient Path: choosing_a_gradient_path.md
       - Differentiable API: differentiable_api.md

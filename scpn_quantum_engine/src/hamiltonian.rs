@@ -8,7 +8,7 @@
 
 //! Dense and sparse XY Hamiltonian construction via bitwise flip-flop.
 //!
-//! H = −Σ_{i<j} K[i,j](X_iX_j + Y_iY_j) − Σ_i ω_i Z_i
+//! `H = −Σ_{i<j} K[i,j](X_iX_j + Y_iY_j) − Σ_i ω_i Z_i`
 //!
 //! Uses the identity (XX+YY)|↑↓⟩ = 2|↓↑⟩, zero when same spin, to construct
 //! the Hamiltonian directly from bit patterns without Qiskit SparsePauliOp.
