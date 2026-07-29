@@ -40,6 +40,7 @@ from scpn_quantum_control.multi_hal_federation_product import (
 
 
 def test_list_and_filters() -> None:
+    """Keep backend/provider discovery deterministic and filters exact."""
     ids = list_hal_backend_ids()
     assert len(ids) >= 10
     assert ids == list_hal_backend_ids()
@@ -63,6 +64,7 @@ def test_list_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve declared backends while refusing blank and unknown identifiers."""
     backend_id = list_hal_backend_ids()[0]
     row = get_hal_capability(backend_id)
     assert row.claim_boundary == MULTI_HAL_FEDERATION_CLAIM_BOUNDARY
@@ -76,6 +78,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_decide_federation_route() -> None:
+    """Allow bounded preparation paths and refuse network or live submission."""
     backend_id = list_hal_backend_ids()[0]
     dry = decide_federation_route(backend_id, mode="dry_run")
     assert dry.allowed is True
@@ -103,6 +106,7 @@ def test_decide_federation_route() -> None:
 
 
 def test_dry_run_probe() -> None:
+    """Materialise offline probes and surface unmet IR requirements."""
     probe = materialise_demo_federation_dry_run_probe()
     assert probe.no_submit is True
     assert probe.invent_green_live_submit is False
@@ -126,6 +130,7 @@ def test_dry_run_probe() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Map ambient owners and validate explicit and default registries."""
     surfaces = map_multi_hal_federation_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -144,8 +149,9 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift_and_policy() -> None:
+    """Reject backend drift and unsafe submission-policy changes."""
     registry = build_multi_hal_federation_product_registry()
-    matrix = cast(list[dict[str, object]], list(registry["federation_matrix"]))
+    matrix = cast(list[dict[str, object]], registry["federation_matrix"])
 
     broken = dict(registry)
     broken["federation_matrix"] = matrix + [
@@ -194,8 +200,9 @@ def test_integrity_rejects_drift_and_policy() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject malformed rows, missing capabilities, duplicates, and counts."""
     registry = build_multi_hal_federation_product_registry()
-    matrix = cast(list[dict[str, object]], list(registry["federation_matrix"]))
+    matrix = cast(list[dict[str, object]], registry["federation_matrix"])
 
     non_map = dict(registry)
     non_map["federation_matrix"] = [cast(Any, "nope")]
@@ -257,12 +264,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the documented discovery, route, and probe APIs exported."""
     assert "materialise_demo_federation_dry_run_probe" in multi_hal_federation_product.__all__
     assert "decide_federation_route" in multi_hal_federation_product.__all__
     assert "build_federation_matrix" in multi_hal_federation_product.__all__
 
 
 def test_row_decision_probe_validation() -> None:
+    """Reject inconsistent capability, route-decision, and probe records."""
     base: dict[str, Any] = {
         "backend_id": "x",
         "provider": "p",

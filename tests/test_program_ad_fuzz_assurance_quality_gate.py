@@ -54,7 +54,7 @@ def test_ci_runs_and_aggregates_the_product_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
     start = workflow.index("  program-ad-fuzz-assurance-quality:")
-    end = workflow.index("\n\n  decisive-advantage-quality:", start)
+    end = workflow.index("\n\n  multi-hal-federation-quality:", start)
     block = workflow[start:end]
     for path in quality_gates.PROGRAM_AD_FUZZ_ASSURANCE_QUALITY_RATCHET:
         assert path in block

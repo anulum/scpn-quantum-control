@@ -59,6 +59,7 @@ if TYPE_CHECKING:
     from tools import (
         kyma_mechanism_benchmark_product_quality_gates as _kyma_mechanism_product_quality_gates,
     )
+    from tools import multi_hal_federation_product_quality_gates as _multi_hal_quality_gates
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import (
         polyglot_parity_certificate_quality_gates as _polyglot_parity_certificate_quality_gates,
@@ -98,6 +99,7 @@ else:
     _kyma_mechanism_product_quality_gates = import_module(
         "tools.kyma_mechanism_benchmark_product_quality_gates"
     )
+    _multi_hal_quality_gates = import_module("tools.multi_hal_federation_product_quality_gates")
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
     _polyglot_parity_certificate_quality_gates = import_module(
         "tools.polyglot_parity_certificate_quality_gates"
@@ -431,6 +433,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_public_api_stability_quality_gates.build_static_quality_gates(_PY),
     *_polyglot_parity_certificate_quality_gates.build_static_quality_gates(_PY),
     *_program_ad_fuzz_assurance_quality_gates.build_static_quality_gates(_PY),
+    *_multi_hal_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -806,6 +809,7 @@ POLYGLOT_PARITY_CERTIFICATE_COVERAGE_GATES = (
 PROGRAM_AD_FUZZ_ASSURANCE_COVERAGE_GATES = (
     _program_ad_fuzz_assurance_quality_gates.build_coverage_gates(_PY)
 )
+MULTI_HAL_FEDERATION_COVERAGE_GATES = _multi_hal_quality_gates.build_coverage_gates(_PY)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -1070,6 +1074,7 @@ def main() -> int:
             gates.extend(PUBLIC_API_STABILITY_COVERAGE_GATES)
             gates.extend(POLYGLOT_PARITY_CERTIFICATE_COVERAGE_GATES)
             gates.extend(PROGRAM_AD_FUZZ_ASSURANCE_COVERAGE_GATES)
+            gates.extend(MULTI_HAL_FEDERATION_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

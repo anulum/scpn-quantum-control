@@ -977,6 +977,8 @@ def test_main_uses_coverage_pytest_by_default(
         "polyglot-parity-certificate exact coverage threshold",
         "program-ad-fuzz-assurance focused coverage",
         "program-ad-fuzz-assurance exact coverage threshold",
+        "multi-hal-federation focused coverage",
+        "multi-hal-federation exact coverage threshold",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",

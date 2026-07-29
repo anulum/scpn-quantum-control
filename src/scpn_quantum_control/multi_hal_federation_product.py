@@ -104,6 +104,7 @@ class HalCapabilityRecord:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     backend_id: str
@@ -195,6 +196,7 @@ class PathEligibilityDecision:
         Non-empty when refused.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     outcome: PathDecisionOutcome
@@ -255,6 +257,7 @@ class MaterialisedFederationDryRunProbe:
         Demo fixture label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     backend_id: str
@@ -417,6 +420,7 @@ def list_hal_backend_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Stable backend ids from ambient inventory.
+
     """
     return tuple(row.backend_id for row in _CANONICAL_HALS)
 
@@ -428,6 +432,7 @@ def list_hal_providers() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Provider tokens.
+
     """
     seen: list[str] = []
     for row in _CANONICAL_HALS:
@@ -453,6 +458,7 @@ def get_hal_capability(backend_id: str) -> HalCapabilityRecord:
     ------
     ValueError
         If blank or unknown.
+
     """
     if not backend_id or not str(backend_id).strip():
         raise ValueError("backend_id must be non-empty")
@@ -484,6 +490,7 @@ def iter_hal_capabilities(
     -------
     tuple[HalCapabilityRecord, ...]
         Matching rows.
+
     """
     rows: Sequence[HalCapabilityRecord] = _CANONICAL_HALS
     if provider is not None:
@@ -502,6 +509,7 @@ def build_federation_matrix() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         One row per ambient HAL backend (no blanks).
+
     """
     return tuple(row.to_dict() for row in _CANONICAL_HALS)
 
@@ -534,6 +542,7 @@ def decide_federation_route(
     -------
     PathEligibilityDecision
         Allowed or refused with blockers.
+
     """
     row = get_hal_capability(backend_id)
     blockers: list[str] = []
@@ -628,6 +637,7 @@ def materialise_federation_dry_run_probe(
     -------
     MaterialisedFederationDryRunProbe
         Finite primary observables with invent_green_live_submit=False.
+
     """
     row = get_hal_capability(backend_id)
     snapshot = _snapshot_from_record(row)
@@ -659,6 +669,7 @@ def materialise_demo_federation_dry_run_probe() -> MaterialisedFederationDryRunP
     -------
     MaterialisedFederationDryRunProbe
         Offline assess with invent_green_live_submit=False.
+
     """
     first = list_hal_backend_ids()[0]
     return materialise_federation_dry_run_probe(first)
@@ -671,6 +682,7 @@ def map_multi_hal_federation_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     return (
         {
@@ -713,6 +725,7 @@ def build_multi_hal_federation_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with matrix rows (no blanks).
+
     """
     matrix = list(build_federation_matrix())
     return {
@@ -753,6 +766,7 @@ def assert_multi_hal_federation_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-green policies appear.
+
     """
     registry = (
         dict(payload) if payload is not None else build_multi_hal_federation_product_registry()
