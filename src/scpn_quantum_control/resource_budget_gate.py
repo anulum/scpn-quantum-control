@@ -70,6 +70,7 @@ class BudgetDimension:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     budget_id: str
@@ -132,6 +133,7 @@ class ResourceBudgetEstimate:
         Whether ``bytes_required <= budget_bytes``.
     detail
         Extra estimator fields (term_count, dimension, …).
+
     """
 
     budget_id: str
@@ -196,6 +198,7 @@ class ResourceBudgetDecision:
         Human-readable decision reason.
     blockers
         Non-empty when refused.
+
     """
 
     budget_id: str
@@ -325,6 +328,7 @@ def list_budget_dimension_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered budget identifiers.
+
     """
     return tuple(row.budget_id for row in _CANONICAL_DIMENSIONS)
 
@@ -346,6 +350,7 @@ def get_budget_dimension(budget_id: str) -> BudgetDimension:
     ------
     ValueError
         If ``budget_id`` is blank or unknown (fail closed).
+
     """
     if not budget_id or not str(budget_id).strip():
         raise ValueError("budget_id must be a non-empty string")
@@ -374,6 +379,7 @@ def iter_budget_dimensions(
     -------
     tuple[BudgetDimension, ...]
         Matching dimensions.
+
     """
     rows: Iterable[BudgetDimension] = _CANONICAL_DIMENSIONS
     if family is not None:
@@ -421,6 +427,7 @@ def estimate_resource_budget(
         If identifiers / dimensions are invalid.
     TypeError
         If ``n_qubits`` is not an integer (from low-level estimators).
+
     """
     dimension = get_budget_dimension(budget_id)
     if not isinstance(n_qubits, int):
@@ -522,6 +529,7 @@ def check_resource_budget(
     ------
     ValueError
         If identifiers / dimensions are invalid.
+
     """
     estimate = estimate_resource_budget(
         budget_id,
@@ -603,6 +611,7 @@ def enforce_resource_budget(
         When the request exceeds the active budget.
     ValueError
         If identifiers / dimensions are invalid.
+
     """
     decision = check_resource_budget(
         budget_id,
@@ -670,6 +679,7 @@ def build_resource_budget_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with every dimension (no blanks).
+
     """
     rows = [row.to_dict() for row in _CANONICAL_DIMENSIONS]
     compile_count = sum(1 for row in _CANONICAL_DIMENSIONS if row.family == "compile_pauli")
@@ -710,6 +720,7 @@ def assert_resource_budget_integrity(
     ------
     ValueError
         If coverage or blanks fail.
+
     """
     registry = dict(payload) if payload is not None else build_resource_budget_registry()
     dimensions = registry.get("dimensions")

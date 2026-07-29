@@ -87,6 +87,7 @@ if TYPE_CHECKING:
     from tools import (
         quantum_sync_oracle_product_quality_gates as _quantum_sync_oracle_product_quality_gates,
     )
+    from tools import resource_budget_gate_quality_gates as _resource_budget_gate_quality_gates
     from tools import stable_core_product_quality_gates as _stable_core_product_quality_gates
     from tools import (
         stochastic_estimators_product_quality_gates as _stochastic_estimators_product_quality_gates,
@@ -153,6 +154,7 @@ else:
     _quantum_sync_oracle_product_quality_gates = import_module(
         "tools.quantum_sync_oracle_product_quality_gates"
     )
+    _resource_budget_gate_quality_gates = import_module("tools.resource_budget_gate_quality_gates")
     _stable_core_product_quality_gates = import_module("tools.stable_core_product_quality_gates")
     _stochastic_estimators_product_quality_gates = import_module(
         "tools.stochastic_estimators_product_quality_gates"
@@ -492,6 +494,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_notebook_programme_product_quality_gates.build_static_quality_gates(_PY),
     *_studio_executive_quality_gates.build_static_quality_gates(_PY),
     *_compiler_boundary_product_quality_gates.build_static_quality_gates(_PY),
+    *_resource_budget_gate_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -892,6 +895,7 @@ STUDIO_EXECUTIVE_PRODUCT_COVERAGE_GATES = _studio_executive_quality_gates.build_
 COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES = (
     _compiler_boundary_product_quality_gates.build_coverage_gates(_PY)
 )
+RESOURCE_BUDGET_GATE_COVERAGE_GATES = _resource_budget_gate_quality_gates.build_coverage_gates(_PY)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -1167,6 +1171,7 @@ def main() -> int:
             gates.extend(NOTEBOOK_PROGRAMME_PRODUCT_COVERAGE_GATES)
             gates.extend(STUDIO_EXECUTIVE_PRODUCT_COVERAGE_GATES)
             gates.extend(COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES)
+            gates.extend(RESOURCE_BUDGET_GATE_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

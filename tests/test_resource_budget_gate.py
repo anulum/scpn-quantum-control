@@ -35,6 +35,7 @@ from scpn_quantum_control.resource_budget_gate import (
 
 
 def test_list_and_families() -> None:
+    """Expose the ordered budget catalogue and both family filters."""
     ids = list_budget_dimension_ids()
     assert "compile_pauli_default" in ids
     assert "dense_hilbert_default" in ids
@@ -48,6 +49,7 @@ def test_list_and_families() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known dimensions while rejecting blank and unknown ids."""
     row = get_budget_dimension("compile_pauli_default")
     assert row.budget_id == "compile_pauli_default"
     assert row.claim_boundary == RESOURCE_BUDGET_GATE_CLAIM_BOUNDARY
@@ -59,6 +61,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_estimate_composes_low_level_pauli() -> None:
+    """Match the low-level sparse-Pauli estimate and detail fields."""
     product = estimate_resource_budget("compile_pauli_default", n_qubits=4, include_zz=True)
     low = estimate_pauli_operator(
         4,
@@ -73,6 +76,7 @@ def test_estimate_composes_low_level_pauli() -> None:
 
 
 def test_estimate_composes_low_level_dense() -> None:
+    """Match the low-level dense-allocation estimate and detail fields."""
     product = estimate_resource_budget("dense_hilbert_default", n_qubits=3, dense_rank=2)
     low = estimate_dense_allocation(
         3,
@@ -87,6 +91,7 @@ def test_estimate_composes_low_level_dense() -> None:
 
 
 def test_within_budget_allowed() -> None:
+    """Return a blocker-free allowed decision within the active cap."""
     decision = check_resource_budget("compile_pauli_default", n_qubits=2)
     assert decision.allowed is True
     assert decision.outcome == "allowed"
@@ -95,6 +100,7 @@ def test_within_budget_allowed() -> None:
 
 
 def test_exceed_budget_refused() -> None:
+    """Refuse sparse and dense requests that exceed explicit caps."""
     # Explicit tiny cap forces exceed for modest n (tight catalogue still
     # may fit small constructions depending on term math).
     decision = check_resource_budget(
@@ -116,6 +122,7 @@ def test_exceed_budget_refused() -> None:
 
 
 def test_enforce_raises_typed_error() -> None:
+    """Raise structured errors on refusal and return allowed estimates."""
     with pytest.raises(ResourceBudgetExceededError) as excinfo:
         enforce_resource_budget("dense_hilbert_tight", n_qubits=8, max_gib=1e-9)
     err = excinfo.value
@@ -131,6 +138,7 @@ def test_enforce_raises_typed_error() -> None:
 
 
 def test_build_registry_and_integrity() -> None:
+    """Build and validate a complete schema-tagged dimension registry."""
     registry = build_resource_budget_registry()
     assert registry["schema"] == RESOURCE_BUDGET_GATE_SCHEMA
     assert registry["blank_entry_count"] == 0
@@ -143,12 +151,14 @@ def test_build_registry_and_integrity() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the supported resource-budget API explicitly exported."""
     assert "check_resource_budget" in resource_budget_gate.__all__
     assert "enforce_resource_budget" in resource_budget_gate.__all__
     assert "estimate_resource_budget" in resource_budget_gate.__all__
 
 
 def test_invalid_n_qubits() -> None:
+    """Reject invalid sizes, types, and non-positive cap overrides."""
     with pytest.raises(ValueError, match="n_qubits"):
         estimate_resource_budget("compile_pauli_default", n_qubits=0)
     with pytest.raises(TypeError, match="integer"):
@@ -158,6 +168,7 @@ def test_invalid_n_qubits() -> None:
 
 
 def test_dimension_validation() -> None:
+    """Enforce identifiers, families, labels, caps, and inventory dates."""
     base: dict[str, Any] = {
         "budget_id": "x",
         "family": "compile_pauli",
@@ -181,6 +192,7 @@ def test_dimension_validation() -> None:
 
 
 def test_estimate_and_decision_invariants() -> None:
+    """Enforce estimate arithmetic and structured-decision consistency."""
     with pytest.raises(ValueError, match="budget_id"):
         ResourceBudgetEstimate(
             budget_id="",
@@ -320,6 +332,7 @@ def test_estimate_and_decision_invariants() -> None:
 
 
 def test_to_dict_paths() -> None:
+    """Serialise dimensions, estimates, and decisions to JSON-ready maps."""
     dim = get_budget_dimension("dense_hilbert_default")
     assert dim.to_dict()["family"] == "dense_hilbert"
     est = estimate_resource_budget("compile_pauli_default", n_qubits=2)
@@ -329,6 +342,7 @@ def test_to_dict_paths() -> None:
 
 
 def test_integrity_rejects_drift() -> None:
+    """Reject malformed registries, missing families, and duplicate ids."""
     good = build_resource_budget_registry()
     assert_resource_budget_integrity(good)
 
@@ -392,6 +406,7 @@ def test_integrity_rejects_drift() -> None:
 
 
 def test_catalogue_map_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fail closed when the internal catalogue is empty or ambiguous."""
     mod = resource_budget_gate
     with pytest.raises(RuntimeError, match="non-empty"):
         monkeypatch.setattr(mod, "_CANONICAL_DIMENSIONS", ())
