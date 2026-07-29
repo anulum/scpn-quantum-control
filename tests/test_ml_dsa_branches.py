@@ -156,7 +156,8 @@ def test_research_warning_is_suppressible() -> None:
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         pair = key_gen(bytes(32), suppress_research_warning=True)
-        sign(pair.secret_key, b"payload", suppress_research_warning=True)
+        signature = sign(pair.secret_key, b"payload", suppress_research_warning=True)
+    assert len(signature) == ml_dsa.SIGNATURE_BYTES
 
 
 def test_hint_unpack_rejects_out_of_range_end() -> None:

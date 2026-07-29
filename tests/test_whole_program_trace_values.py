@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 from typing import Any, cast
 
@@ -880,7 +881,7 @@ def _expect_array_function_failure(
     args_factory: ArrayFunctionArgs,
     kwargs_factory: ArrayFunctionKwargs,
     message: str,
-) -> None:
+) -> str:
     """Exercise one fail-closed NumPy protocol call through the public AD API."""
 
     def objective(values: FloatArray) -> object:
@@ -892,12 +893,15 @@ def _expect_array_function_failure(
             kwargs_factory(traced),
         )
 
-    with pytest.raises(ValueError, match=message):
+    with pytest.raises(ValueError) as error:
         whole_program_value_and_grad(
             objective,
             np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
             trace=False,
         )
+    rendered = str(error.value)
+    assert re.search(message, rendered) is not None
+    return rendered
 
 
 def test_trace_values_are_crosswired_at_the_package_root() -> None:
@@ -933,12 +937,13 @@ def test_array_function_protocol_rejects_malformed_calls(
     message: str,
 ) -> None:
     """The public trace protocol should reject malformed NumPy dispatch calls."""
-    _expect_array_function_failure(
+    rendered = _expect_array_function_failure(
         function,
         args_factory,
         kwargs_factory,
         message,
     )
+    assert re.search(message, rendered) is not None
 
 
 def test_dot_contract_rejects_invalid_shapes_and_handles_empty_vectors() -> None:
@@ -967,15 +972,17 @@ def test_dot_contract_rejects_invalid_shapes_and_handles_empty_vectors() -> None
 
 def test_clip_protocol_rejects_output_buffers() -> None:
     """The trace protocol should reject NumPy clip output buffers instead of ignoring them."""
-    _expect_array_function_failure(
+    positional_error = _expect_array_function_failure(
         np.clip,
         lambda array: (array, -1.0, 1.0, object()),
         lambda _array: {},
         r"np\.clip supports array, lower, and upper",
     )
-    _expect_array_function_failure(
+    keyword_error = _expect_array_function_failure(
         np.clip,
         lambda array: (array, -1.0, 1.0),
         lambda _array: {"out": object()},
         r"np\.clip supports array, lower, and upper",
     )
+    assert "np.clip supports array, lower, and upper" in positional_error
+    assert "np.clip supports array, lower, and upper" in keyword_error

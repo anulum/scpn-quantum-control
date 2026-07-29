@@ -187,4 +187,5 @@ def test_public_exports_fail_closed_on_nonliteral_or_missing_all(tmp_path: Path)
 
 
 def test_committed_documentation_catalogs_are_current() -> None:
-    _load_tool().refresh(_repo_root(), check=True)
+    result = _load_tool().refresh(_repo_root(), check=True)
+    assert result is None

@@ -50,7 +50,7 @@ def _rust_parity_probe(
     objective: Any,
     values: NDArray[np.float64],
     expected_ops: set[str],
-) -> None:
+) -> set[str]:
     """Assert bit-tight Rust replay parity for one diag objective."""
 
     engine = pytest.importorskip("scpn_quantum_engine")
@@ -63,7 +63,8 @@ def _rust_parity_probe(
     )
 
     assert result.program_ir is not None
-    assert expected_ops <= {effect.operation for effect in result.program_ir.effects}
+    observed_ops = {effect.operation for effect in result.program_ir.effects}
+    assert expected_ops <= observed_ops
 
     rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
 
@@ -71,30 +72,35 @@ def _rust_parity_probe(
     assert rust_result.value == pytest.approx(result.value, abs=1.0e-12)
     np.testing.assert_allclose(rust_result.gradient, result.gradient, rtol=1.0e-12, atol=1.0e-12)
     assert "static_linalg_primitives" in rust_result.claim_boundary
+    return observed_ops
 
 
 def test_rust_bridge_replays_program_ad_diag_construct_nodes() -> None:
     """Rust Program AD replay should match Python adjoints for vector-to-matrix diag."""
 
-    _rust_parity_probe(
+    expected_ops = {
+        "linalg:diag:3:offset:1:construct:0",
+        "linalg:diag:3:offset:1:construct:1",
+        "linalg:diag:3:offset:1:construct:2",
+    }
+    observed_ops = _rust_parity_probe(
         _weighted_diag_construct_objective,
         np.array([1.5, -2.0, 0.75], dtype=np.float64),
-        {
-            "linalg:diag:3:offset:1:construct:0",
-            "linalg:diag:3:offset:1:construct:1",
-            "linalg:diag:3:offset:1:construct:2",
-        },
+        expected_ops,
     )
+    assert expected_ops <= observed_ops
 
 
 def test_rust_bridge_replays_program_ad_diag_extract_nodes() -> None:
     """Rust Program AD replay should match Python adjoints for matrix-to-vector diag."""
 
-    _rust_parity_probe(
+    expected_ops = {
+        "linalg:diag:3x2:offset:-1:extract:0",
+        "linalg:diag:3x2:offset:-1:extract:1",
+    }
+    observed_ops = _rust_parity_probe(
         _weighted_diag_extract_objective,
         np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=np.float64),
-        {
-            "linalg:diag:3x2:offset:-1:extract:0",
-            "linalg:diag:3x2:offset:-1:extract:1",
-        },
+        expected_ops,
     )
+    assert expected_ops <= observed_ops

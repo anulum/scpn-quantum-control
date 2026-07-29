@@ -251,4 +251,5 @@ def test_program_ad_array_registration_preserves_existing_contracts(
         register_transform=lambda _transform: pytest.fail("unexpected registration"),
     )
     monkeypatch.setattr(array_indexing, "DEFAULT_CUSTOM_DERIVATIVE_REGISTRY", registry)
-    array_indexing._register_program_ad_array_primitive_contracts()
+    result = array_indexing._register_program_ad_array_primitive_contracts()
+    assert result is None

@@ -55,7 +55,7 @@ def _rust_parity_probe(
     objective: Any,
     values: NDArray[np.float64],
     expected_ops: set[str],
-) -> None:
+) -> set[str]:
     """Assert bit-tight Rust replay parity for one diagflat objective."""
 
     engine = pytest.importorskip("scpn_quantum_engine")
@@ -68,52 +68,60 @@ def _rust_parity_probe(
     )
 
     assert result.program_ir is not None
-    assert expected_ops <= {effect.operation for effect in result.program_ir.effects}
+    observed_ops = {effect.operation for effect in result.program_ir.effects}
+    assert expected_ops <= observed_ops
 
     rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
 
     assert rust_result.supported is True, rust_result.blocked_reasons
     assert rust_result.value == pytest.approx(result.value, abs=1.0e-12)
     np.testing.assert_allclose(rust_result.gradient, result.gradient, atol=1.0e-12)
+    return observed_ops
 
 
 def test_rust_bridge_replays_program_ad_main_diagonal_diagflat() -> None:
     """Rust Program AD replay should match Python adjoints for np.diagflat."""
 
-    _rust_parity_probe(
+    expected_ops = {
+        "linalg:diagflat:3:offset:0:construct:0",
+        "linalg:diagflat:3:offset:0:construct:1",
+        "linalg:diagflat:3:offset:0:construct:2",
+    }
+    observed_ops = _rust_parity_probe(
         _weighted_main_diagonal_objective,
         np.array([1.5, -2.0, 0.75], dtype=np.float64),
-        {
-            "linalg:diagflat:3:offset:0:construct:0",
-            "linalg:diagflat:3:offset:0:construct:1",
-            "linalg:diagflat:3:offset:0:construct:2",
-        },
+        expected_ops,
     )
+    assert expected_ops <= observed_ops
 
 
 def test_rust_bridge_replays_program_ad_offset_diagonal_diagflat() -> None:
     """Rust Program AD replay should match Python adjoints for offset diagonals."""
 
-    _rust_parity_probe(
+    expected_ops = {
+        "linalg:diagflat:2:offset:1:construct:0",
+        "linalg:diagflat:2:offset:1:construct:1",
+    }
+    observed_ops = _rust_parity_probe(
         _weighted_offset_diagonal_objective,
         np.array([0.5, -1.25], dtype=np.float64),
-        {
-            "linalg:diagflat:2:offset:1:construct:0",
-            "linalg:diagflat:2:offset:1:construct:1",
-        },
+        expected_ops,
     )
+    assert expected_ops <= observed_ops
 
 
 def test_rust_bridge_replays_program_ad_matrix_source_diagflat() -> None:
     """Rust Program AD replay should flatten matrix sources exactly like NumPy."""
 
-    _rust_parity_probe(
+    expected_ops = {
+        "linalg:diagflat:2x2:offset:0:construct:0",
+        "linalg:diagflat:2x2:offset:0:construct:1",
+        "linalg:diagflat:2x2:offset:0:construct:2",
+        "linalg:diagflat:2x2:offset:0:construct:3",
+    }
+    observed_ops = _rust_parity_probe(
         _weighted_matrix_source_objective,
         np.array([0.5, -1.25, 2.0, 3.5], dtype=np.float64),
-        {
-            "linalg:diagflat:2x2:offset:0:construct:0",
-            "linalg:diagflat:2x2:offset:0:construct:1",
-            "linalg:diagflat:2x2:offset:0:construct:2",
-            "linalg:diagflat:2x2:offset:0:construct:3",
-        },
+        expected_ops,
     )
+    assert expected_ops <= observed_ops
