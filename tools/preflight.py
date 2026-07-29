@@ -86,6 +86,9 @@ if TYPE_CHECKING:
         thermo_readiness_product_quality_gates as _thermo_readiness_product_quality_gates,
     )
     from tools import (
+        visualisation_dashboard_product_quality_gates as _visualisation_dashboard_product_quality_gates,
+    )
+    from tools import (
         wirtinger_implicit_product_quality_gates as _wirtinger_implicit_product_quality_gates,
     )
 else:
@@ -137,6 +140,9 @@ else:
     _stable_core_product_quality_gates = import_module("tools.stable_core_product_quality_gates")
     _thermo_readiness_product_quality_gates = import_module(
         "tools.thermo_readiness_product_quality_gates"
+    )
+    _visualisation_dashboard_product_quality_gates = import_module(
+        "tools.visualisation_dashboard_product_quality_gates"
     )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -461,6 +467,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_qpu_compute_product_quality_gates.build_static_quality_gates(_PY),
     *_wirtinger_implicit_product_quality_gates.build_static_quality_gates(_PY),
     *_migration_guides_product_quality_gates.build_static_quality_gates(_PY),
+    *_visualisation_dashboard_product_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -848,6 +855,9 @@ WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_GATES = (
 MIGRATION_GUIDES_PRODUCT_COVERAGE_GATES = (
     _migration_guides_product_quality_gates.build_coverage_gates(_PY)
 )
+VISUALISATION_DASHBOARD_PRODUCT_COVERAGE_GATES = (
+    _visualisation_dashboard_product_quality_gates.build_coverage_gates(_PY)
+)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -1118,6 +1128,7 @@ def main() -> int:
             gates.extend(QPU_COMPUTE_PRODUCT_COVERAGE_GATES)
             gates.extend(WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_GATES)
             gates.extend(MIGRATION_GUIDES_PRODUCT_COVERAGE_GATES)
+            gates.extend(VISUALISATION_DASHBOARD_PRODUCT_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

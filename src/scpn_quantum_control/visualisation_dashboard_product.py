@@ -96,6 +96,7 @@ class VisualisationPanelRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     panel_id: str
@@ -172,6 +173,7 @@ class PathEligibilityDecision:
         Human-readable reason.
     blockers
         Non-empty when refused.
+
     """
 
     outcome: PathDecisionOutcome
@@ -218,6 +220,7 @@ class SecretsScanResult:
         Whether no secret patterns matched.
     findings
         Matched pattern labels (empty when clean).
+
     """
 
     clean: bool
@@ -262,6 +265,7 @@ class MaterialisedStaticReportProbe:
         Whether export text passed the secrets scanner.
     demo_label
         Demo fixture label.
+
     """
 
     panel_ids: tuple[str, ...]
@@ -429,6 +433,7 @@ def list_visualisation_panel_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered panel identifiers.
+
     """
     return tuple(row.panel_id for row in _CANONICAL_PANELS)
 
@@ -450,6 +455,7 @@ def get_visualisation_panel(panel_id: str) -> VisualisationPanelRow:
     ------
     ValueError
         If ``panel_id`` is blank or unknown (fail closed).
+
     """
     if not panel_id or not str(panel_id).strip():
         raise ValueError("panel_id must be a non-empty string")
@@ -481,6 +487,7 @@ def iter_visualisation_panels(
     -------
     tuple[VisualisationPanelRow, ...]
         Matching rows.
+
     """
     rows: Sequence[VisualisationPanelRow] = _CANONICAL_PANELS
     if kind is not None:
@@ -507,6 +514,7 @@ def scan_export_for_secrets(text: str) -> SecretsScanResult:
     ------
     ValueError
         If ``text`` is not a string.
+
     """
     if not isinstance(text, str):
         raise ValueError("text must be a string")
@@ -540,6 +548,7 @@ def decide_visualisation_path(
     -------
     PathEligibilityDecision
         Allowed or refused decision with blockers.
+
     """
     blockers: list[str] = []
     if request_live_qpu_stream:
@@ -603,6 +612,7 @@ def materialise_demo_static_report_probe() -> MaterialisedStaticReportProbe:
     ------
     ValueError
         If path is refused or secrets scan fails.
+
     """
     decision = decide_visualisation_path(fixture_driven=True)
     if not decision.allowed:
@@ -643,6 +653,7 @@ def map_visualisation_dashboard_public_surfaces() -> tuple[dict[str, object], ..
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     return (
         {
@@ -672,6 +683,7 @@ def build_visualisation_dashboard_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with panels (no blanks).
+
     """
     panels = [row.to_dict() for row in _CANONICAL_PANELS]
     return {
@@ -711,6 +723,7 @@ def assert_visualisation_dashboard_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-green live_qpu flags appear.
+
     """
     registry = (
         dict(payload) if payload is not None else build_visualisation_dashboard_product_registry()

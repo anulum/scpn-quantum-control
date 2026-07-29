@@ -33,7 +33,15 @@ from scpn_quantum_control.visualisation_dashboard_product import (
 )
 
 
+def _registry_panels(registry: dict[str, object]) -> list[dict[str, object]]:
+    """Narrow a validated registry panel collection for drift fixtures."""
+    raw = registry["panels"]
+    assert isinstance(raw, list)
+    return cast(list[dict[str, object]], raw)
+
+
 def test_list_and_filters() -> None:
+    """Expose the stable catalogue and deterministic posture filters."""
     ids = list_visualisation_panel_ids()
     assert "order_parameter_energy_loss" in ids
     assert "gradient_norm" in ids
@@ -47,6 +55,7 @@ def test_list_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known panels while rejecting blank and unknown identifiers."""
     row = get_visualisation_panel("order_parameter_energy_loss")
     assert row.live_qpu is False
     assert row.claim_boundary == VISUALISATION_DASHBOARD_CLAIM_BOUNDARY
@@ -57,6 +66,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_path_eligibility_and_secrets() -> None:
+    """Allow static fixtures while refusing unsafe paths and secret exports."""
     allowed = decide_visualisation_path(fixture_driven=True)
     assert allowed.allowed is True
     qpu = decide_visualisation_path(request_live_qpu_stream=True)
@@ -76,6 +86,7 @@ def test_path_eligibility_and_secrets() -> None:
 
 
 def test_materialise_demo_static_report_probe() -> None:
+    """Materialise a deterministic secret-clean static report probe."""
     probe = materialise_demo_static_report_probe()
     assert probe.live_qpu is False
     assert probe.secrets_clean is True
@@ -92,6 +103,7 @@ def test_materialise_demo_static_report_probe() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Map public owners and validate the complete dashboard registry."""
     surfaces = map_visualisation_dashboard_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -107,8 +119,9 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift_and_live_qpu() -> None:
+    """Reject panel-set drift and any live-QPU policy relaxation."""
     registry = build_visualisation_dashboard_product_registry()
-    panels = cast(list[dict[str, object]], list(registry["panels"]))
+    panels = _registry_panels(registry)
 
     broken = dict(registry)
     broken["panels"] = panels + [
@@ -147,8 +160,9 @@ def test_integrity_rejects_drift_and_live_qpu() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject malformed rows, missing sentinels, duplicates, and count drift."""
     registry = build_visualisation_dashboard_product_registry()
-    panels = cast(list[dict[str, object]], list(registry["panels"]))
+    panels = _registry_panels(registry)
 
     non_map = dict(registry)
     non_map["panels"] = [cast(Any, "nope")]
@@ -212,12 +226,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep every documented dashboard product entry point public."""
     assert "materialise_demo_static_report_probe" in visualisation_dashboard_product.__all__
     assert "scan_export_for_secrets" in visualisation_dashboard_product.__all__
     assert "list_visualisation_panel_ids" in visualisation_dashboard_product.__all__
 
 
 def test_row_decision_probe_validation() -> None:
+    """Enforce immutable row, decision, scan, and probe invariants."""
     base: dict[str, Any] = {
         "panel_id": "x",
         "kind": "gradient_norm",
@@ -378,6 +394,8 @@ def test_row_decision_probe_validation() -> None:
 
 
 def test_probe_refused_when_path_blocked(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Stop materialisation when the dashboard path policy refuses it."""
+
     def _refuse(**_kwargs: Any) -> PathEligibilityDecision:
         return PathEligibilityDecision(
             outcome="refused",
@@ -418,7 +436,7 @@ def test_materialised_probe_rejects_blank_panel_id_entry() -> None:
 
 
 def test_iter_visualisation_panels_by_kind() -> None:
-    """kind filter must select only matching panel families."""
+    """Kind filter must select only matching panel families."""
     grads = iter_visualisation_panels(kind="gradient_norm")
     assert grads
     assert all(row.kind == "gradient_norm" for row in grads)
