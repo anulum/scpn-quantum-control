@@ -35,6 +35,7 @@ from scpn_quantum_control.qpu_compute_types import SUPPORTED_KERNELS
 
 
 def test_list_kinds_and_kernels() -> None:
+    """Expose stable catalogue, kernel, backend, and mode-filter inventories."""
     ids = list_plan_kind_ids()
     assert "dry_run_simulator" in ids
     assert ids == list_plan_kind_ids()
@@ -46,6 +47,7 @@ def test_list_kinds_and_kernels() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known kinds while rejecting blank and unknown identifiers."""
     kind = get_plan_kind("dry_run_simulator")
     assert kind.no_submit is True
     assert kind.default_hardware_enabled is False
@@ -57,6 +59,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_construct_and_dry_run_allowed() -> None:
+    """Construct and approve a bounded simulator-only dry-run plan."""
     plan = construct_compute_plan("dry_run_simulator", kernel="sync_dla", shots=128)
     assert plan.hardware_enabled is False
     assert plan.backend_policy == "simulator_statevector"
@@ -69,6 +72,7 @@ def test_construct_and_dry_run_allowed() -> None:
 
 
 def test_refuse_would_live_and_hardware() -> None:
+    """Refuse would-live kinds and explicit hardware enablement."""
     live = dry_run_compute_plan("live_would_submit")
     assert live.allowed is False
     assert live.blockers
@@ -82,6 +86,7 @@ def test_refuse_would_live_and_hardware() -> None:
 
 
 def test_ticketed_prep_requires_ticket() -> None:
+    """Require a non-empty owner ticket for preparation-only plans."""
     missing = dry_run_compute_plan("ticketed_prep_plan")
     assert missing.allowed is False
     assert any("ticket" in item for item in missing.blockers)
@@ -95,6 +100,7 @@ def test_ticketed_prep_requires_ticket() -> None:
 
 
 def test_unsupported_backend_and_kernel() -> None:
+    """Reject unsupported kernels and refuse unsupported backend policies."""
     with pytest.raises(ValueError, match="kernel must be one of"):
         construct_compute_plan("dry_run_simulator", kernel="not_a_kernel")
 
@@ -107,6 +113,7 @@ def test_unsupported_backend_and_kernel() -> None:
 
 
 def test_registry_and_integrity() -> None:
+    """Build and validate the complete schema-tagged product registry."""
     registry = build_qpu_compute_product_registry()
     assert registry["schema"] == QPU_COMPUTE_PRODUCT_SCHEMA
     assert registry["blank_entry_count"] == 0
@@ -120,6 +127,7 @@ def test_registry_and_integrity() -> None:
 
 
 def test_audit_secret_free() -> None:
+    """Emit a secret-free audit payload with the composed BL-47 record."""
     decision = dry_run_compute_plan("dry_run_simulator")
     audit = audit_compute_plan_decision(decision)
     assert audit["contains_secrets"] is False
@@ -128,11 +136,13 @@ def test_audit_secret_free() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the documented plan construction and validation functions public."""
     assert "dry_run_compute_plan" in qpu_compute_product.__all__
     assert "construct_compute_plan" in qpu_compute_product.__all__
 
 
 def test_plan_kind_validation() -> None:
+    """Enforce every catalogue-kind value-object invariant."""
     base: dict[str, Any] = {
         "plan_kind_id": "x",
         "mode": "dry_run",
@@ -168,6 +178,7 @@ def test_plan_kind_validation() -> None:
 
 
 def test_record_and_decision_invariants() -> None:
+    """Enforce constructed-plan and validation-decision invariants."""
     with pytest.raises(ValueError, match="plan_kind_id"):
         ComputePlanRecord(
             plan_kind_id="",
@@ -337,6 +348,7 @@ def test_record_and_decision_invariants() -> None:
 
 
 def test_to_dict_paths() -> None:
+    """Serialise every public value object into JSON-ready mappings."""
     kind = get_plan_kind("dry_run_simulator")
     assert kind.to_dict()["no_submit"] is True
     plan = construct_compute_plan("dry_run_simulator")
@@ -346,6 +358,7 @@ def test_to_dict_paths() -> None:
 
 
 def test_integrity_rejects_drift() -> None:
+    """Reject blank, duplicate, missing, count-drifted, or invent-live rows."""
     good = build_qpu_compute_product_registry()
     assert_qpu_compute_product_integrity(good)
 
@@ -424,6 +437,7 @@ def test_integrity_rejects_drift() -> None:
 
 
 def test_catalogue_map_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject empty, blank-keyed, and duplicate internal catalogues."""
     mod = qpu_compute_product
     with pytest.raises(RuntimeError, match="non-empty"):
         monkeypatch.setattr(mod, "_CANONICAL_KINDS", ())
@@ -447,6 +461,7 @@ def test_catalogue_map_guards(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_integrity_invalid_mode_and_no_submit_type() -> None:
+    """Reject invalid registry modes and non-boolean no-submit values."""
     good = build_qpu_compute_product_registry()
     raw = good["plan_kinds"]
     assert isinstance(raw, list)
@@ -472,6 +487,7 @@ def test_integrity_invalid_mode_and_no_submit_type() -> None:
 
 
 def test_audit_would_live_and_ticketed() -> None:
+    """Audit refused live intent and accepted ticketed preparation safely."""
     live = dry_run_compute_plan("live_would_submit")
     audit_live = audit_compute_plan_decision(live)
     assert audit_live["contains_secrets"] is False

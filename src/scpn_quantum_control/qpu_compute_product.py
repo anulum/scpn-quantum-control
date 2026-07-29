@@ -70,6 +70,7 @@ class ComputePlanKind:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     plan_kind_id: str
@@ -139,6 +140,7 @@ class ComputePlanRecord:
         Optional ticket label (never a secret).
     no_submit
         Effective no-submit posture.
+
     """
 
     plan_kind_id: str
@@ -205,6 +207,7 @@ class ComputePlanDecision:
         Deterministic audit identifier.
     bl47_policy_id
         BL-47 policy used for compose (if any).
+
     """
 
     plan_kind_id: str
@@ -337,6 +340,7 @@ def list_plan_kind_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered plan kind identifiers.
+
     """
     return tuple(row.plan_kind_id for row in _CANONICAL_KINDS)
 
@@ -358,6 +362,7 @@ def get_plan_kind(plan_kind_id: str) -> ComputePlanKind:
     ------
     ValueError
         If ``plan_kind_id`` is blank or unknown (fail closed).
+
     """
     if not plan_kind_id or not str(plan_kind_id).strip():
         raise ValueError("plan_kind_id must be a non-empty string")
@@ -386,6 +391,7 @@ def iter_plan_kinds(
     -------
     tuple[ComputePlanKind, ...]
         Matching kinds.
+
     """
     rows: Iterable[ComputePlanKind] = _CANONICAL_KINDS
     if mode is not None:
@@ -400,6 +406,7 @@ def list_supported_kernels() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Sorted kernel identifiers.
+
     """
     return tuple(sorted(SUPPORTED_KERNELS))
 
@@ -411,6 +418,7 @@ def list_supported_backend_policies() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Sorted backend policy identifiers.
+
     """
     return tuple(sorted(SUPPORTED_BACKEND_POLICIES))
 
@@ -450,6 +458,7 @@ def construct_compute_plan(
     ------
     ValueError
         If identifiers / dimensions are invalid.
+
     """
     kind = get_plan_kind(plan_kind_id)
     policy = kind.default_backend_policy if backend_policy is None else str(backend_policy).strip()
@@ -506,6 +515,7 @@ def dry_run_compute_plan(
     ------
     ValueError
         If identifiers / dimensions are invalid.
+
     """
     plan = construct_compute_plan(
         plan_kind_id,
@@ -601,6 +611,7 @@ def audit_compute_plan_decision(decision: ComputePlanDecision) -> dict[str, obje
     -------
     dict[str, object]
         Secret-free audit mapping.
+
     """
     payload: dict[str, object] = {
         "schema": "qpu_compute_product_audit.v1",
@@ -645,6 +656,7 @@ def build_qpu_compute_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with every plan kind (no blanks).
+
     """
     rows = [row.to_dict() for row in _CANONICAL_KINDS]
     dry_run_count = sum(1 for row in _CANONICAL_KINDS if row.mode == "dry_run")
@@ -687,6 +699,7 @@ def assert_qpu_compute_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-live defaults appear.
+
     """
     registry = dict(payload) if payload is not None else build_qpu_compute_product_registry()
     kinds = registry.get("plan_kinds")
