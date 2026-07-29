@@ -907,6 +907,51 @@ jobs:
           --fail-under=100
           --include=*/polyglot_parity_certificate.py
 
+  program-ad-fuzz-assurance-quality:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check Program AD fuzz assurance quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/program_ad_fuzz_assurance.py
+          tests/test_program_ad_fuzz_assurance.py
+          tools/program_ad_fuzz_assurance_quality_gates.py
+          tests/test_program_ad_fuzz_assurance_quality_gate.py
+      - name: Ruff NumPy docstrings for Program AD fuzz assurance quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/program_ad_fuzz_assurance.py
+          tests/test_program_ad_fuzz_assurance.py
+          tools/program_ad_fuzz_assurance_quality_gates.py
+          tests/test_program_ad_fuzz_assurance_quality_gate.py
+      - name: Run Program AD fuzz assurance focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.program-ad-fuzz-assurance-quality
+          --branch
+          -m pytest -q
+          tests/test_program_ad_fuzz_assurance.py
+      - name: Enforce Program AD fuzz assurance exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.program-ad-fuzz-assurance-quality
+          --precision=2
+          --fail-under=100
+          --include=*/program_ad_fuzz_assurance.py
+
   decisive-advantage-quality:
     needs: lint
     runs-on: ubuntu-latest
@@ -1998,7 +2043,7 @@ jobs:
           EOF
 
   ci-gate:
-    needs: [lint, stable-core-product-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, custom-derivatives-product-quality, kyma-mechanism-product-quality, campaign-harness-product-quality, cloud-native-deployment-quality, control-stack-compose-quality, public-api-stability-quality, polyglot-parity-certificate-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
+    needs: [lint, stable-core-product-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, custom-derivatives-product-quality, kyma-mechanism-product-quality, campaign-harness-product-quality, cloud-native-deployment-quality, control-stack-compose-quality, public-api-stability-quality, polyglot-parity-certificate-quality, program-ad-fuzz-assurance-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -2015,6 +2060,7 @@ jobs:
              [[ "${{ needs['control-stack-compose-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['public-api-stability-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['polyglot-parity-certificate-quality'].result }}" != "success" ]] || \
+             [[ "${{ needs['program-ad-fuzz-assurance-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['decisive-advantage-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['mlir-leaf-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['phase-qnode-affinity-quality'].result }}" != "success" ]] || \

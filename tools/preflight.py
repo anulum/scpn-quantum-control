@@ -64,6 +64,9 @@ if TYPE_CHECKING:
         polyglot_parity_certificate_quality_gates as _polyglot_parity_certificate_quality_gates,
     )
     from tools import program_ad_array_indexing_quality_gates as _array_indexing_quality_gates
+    from tools import (
+        program_ad_fuzz_assurance_quality_gates as _program_ad_fuzz_assurance_quality_gates,
+    )
     from tools import program_ad_quality_gates as _program_ad_quality_gates
     from tools import public_api_stability_quality_gates as _public_api_stability_quality_gates
     from tools import (
@@ -100,6 +103,9 @@ else:
         "tools.polyglot_parity_certificate_quality_gates"
     )
     _array_indexing_quality_gates = import_module("tools.program_ad_array_indexing_quality_gates")
+    _program_ad_fuzz_assurance_quality_gates = import_module(
+        "tools.program_ad_fuzz_assurance_quality_gates"
+    )
     _program_ad_quality_gates = import_module("tools.program_ad_quality_gates")
     _quantum_sync_oracle_product_quality_gates = import_module(
         "tools.quantum_sync_oracle_product_quality_gates"
@@ -424,6 +430,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_control_stack_compose_quality_gates.build_static_quality_gates(_PY),
     *_public_api_stability_quality_gates.build_static_quality_gates(_PY),
     *_polyglot_parity_certificate_quality_gates.build_static_quality_gates(_PY),
+    *_program_ad_fuzz_assurance_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -796,6 +803,9 @@ PUBLIC_API_STABILITY_COVERAGE_GATES = _public_api_stability_quality_gates.build_
 POLYGLOT_PARITY_CERTIFICATE_COVERAGE_GATES = (
     _polyglot_parity_certificate_quality_gates.build_coverage_gates(_PY)
 )
+PROGRAM_AD_FUZZ_ASSURANCE_COVERAGE_GATES = (
+    _program_ad_fuzz_assurance_quality_gates.build_coverage_gates(_PY)
+)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -1059,6 +1069,7 @@ def main() -> int:
             gates.extend(CONTROL_STACK_COMPOSE_COVERAGE_GATES)
             gates.extend(PUBLIC_API_STABILITY_COVERAGE_GATES)
             gates.extend(POLYGLOT_PARITY_CERTIFICATE_COVERAGE_GATES)
+            gates.extend(PROGRAM_AD_FUZZ_ASSURANCE_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

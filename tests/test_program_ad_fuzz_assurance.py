@@ -37,6 +37,7 @@ from scpn_quantum_control.program_ad_fuzz_assurance import (
 
 
 def test_list_targets_and_filters() -> None:
+    """Keep target ordering deterministic and filters responsibility-scoped."""
     ids = list_fuzz_target_ids()
     assert "program_ad_ir" in ids
     assert "knm_validators" in ids
@@ -51,6 +52,7 @@ def test_list_targets_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve declared targets while refusing blank and unknown identifiers."""
     target = get_fuzz_target("program_ad_ir")
     assert target.package == "scpn-quantum-engine-fuzz"
     assert "program_ad_ir.rs" in target.rust_path
@@ -62,6 +64,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_policy_defaults() -> None:
+    """Expose bounded, optional, and invent-green-forbidden policy defaults."""
     policy = fuzz_assurance_policy()
     assert policy.continuous_fuzz_default is False
     assert policy.invent_green_forbidden is True
@@ -72,6 +75,7 @@ def test_policy_defaults() -> None:
 
 
 def test_validate_time_box() -> None:
+    """Accept bounded integer durations and refuse invalid or continuous spans."""
     assert validate_time_box_seconds(60) == 60
     assert validate_time_box_seconds(MAX_TIME_BOX_SECONDS) == MAX_TIME_BOX_SECONDS
     with pytest.raises(ValueError, match="positive"):
@@ -83,6 +87,7 @@ def test_validate_time_box() -> None:
 
 
 def test_dry_run_allowed() -> None:
+    """Plan default and custom bounded dry-runs without executing cargo-fuzz."""
     decision = dry_run_fuzz_target("program_ad_ir")
     assert decision.allowed is True
     assert decision.outcome == "allowed_dry_run"
@@ -94,6 +99,7 @@ def test_dry_run_allowed() -> None:
 
 
 def test_dry_run_refuses_continuous_and_invent_green() -> None:
+    """Refuse continuous and invent-green requests with typed blockers."""
     refused = dry_run_fuzz_target("program_ad_ir", request_continuous=True)
     assert refused.allowed is False
     assert refused.outcome == "refused"
@@ -116,11 +122,13 @@ def test_dry_run_refuses_continuous_and_invent_green() -> None:
 
 
 def test_dry_run_invalid_time_box_raises() -> None:
+    """Reject an over-bound time box on an otherwise allowed dry-run."""
     with pytest.raises(ValueError, match="exceeds max|continuous"):
         dry_run_fuzz_target("program_ad_ir", time_box_seconds=MAX_TIME_BOX_SECONDS + 5)
 
 
 def test_corpus_and_crash_policies() -> None:
+    """Report corpus retention and crash automation as honest residuals."""
     corpus = corpus_governance_policy()
     assert corpus["retention_ops_implemented"] is False
     assert corpus["residual_slice"] == "S96.2"
@@ -130,6 +138,7 @@ def test_corpus_and_crash_policies() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Map product surfaces and validate explicit and default registries."""
     surfaces = map_fuzz_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -143,12 +152,14 @@ def test_public_surfaces_and_registry() -> None:
     validated = assert_fuzz_assurance_integrity(registry)
     assert validated["target_count"] == len(list_fuzz_target_ids())
     assert assert_fuzz_assurance_integrity()["blank_entry_count"] == 0
-    assert validated["policy"]["continuous_fuzz_default"] is False
+    policy = cast(dict[str, object], validated["policy"])
+    assert policy["continuous_fuzz_default"] is False
 
 
 def test_integrity_rejects_drift_and_invent_green_policy() -> None:
+    """Reject target drift, empty inventories, and unsafe policy mutations."""
     registry = build_fuzz_assurance_registry()
-    targets = cast(list[dict[str, object]], list(registry["targets"]))
+    targets = cast(list[dict[str, object]], registry["targets"])
 
     broken = dict(registry)
     broken["targets"] = targets + [
@@ -192,8 +203,9 @@ def test_integrity_rejects_drift_and_invent_green_policy() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject malformed rows, missing paths/defaults, duplicates, and counts."""
     registry = build_fuzz_assurance_registry()
-    targets = cast(list[dict[str, object]], list(registry["targets"]))
+    targets = cast(list[dict[str, object]], registry["targets"])
 
     non_map = dict(registry)
     non_map["targets"] = [cast(Any, "nope")]
@@ -255,12 +267,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the documented catalogue, policy, and dry-run APIs exported."""
     assert "dry_run_fuzz_target" in program_ad_fuzz_assurance.__all__
     assert "fuzz_assurance_policy" in program_ad_fuzz_assurance.__all__
     assert "list_fuzz_target_ids" in program_ad_fuzz_assurance.__all__
 
 
 def test_target_validation() -> None:
+    """Reject every invalid fuzz-target invariant at construction."""
     base: dict[str, Any] = {
         "target_id": "x",
         "title": "t",
@@ -291,7 +305,8 @@ def test_target_validation() -> None:
 
 
 def test_policy_validation() -> None:
-    base = dict(
+    """Reject unbounded, continuous-default, and invent-green policy records."""
+    base: dict[str, Any] = dict(
         policy_id="p",
         default_time_box_seconds=60,
         max_time_box_seconds=120,
@@ -315,6 +330,7 @@ def test_policy_validation() -> None:
 
 
 def test_decision_invariants() -> None:
+    """Reject inconsistent dry-run/refusal decisions and blocker metadata."""
     with pytest.raises(ValueError, match="target_id"):
         FuzzProbeDecision(
             target_id="",
@@ -410,6 +426,7 @@ def test_decision_invariants() -> None:
 
 
 def test_catalogue_map_runtime_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Exercise blank, duplicate, empty, and valid catalogue construction."""
     from scpn_quantum_control import program_ad_fuzz_assurance as mod
 
     good = get_fuzz_target("program_ad_ir")
@@ -440,6 +457,7 @@ def test_catalogue_map_runtime_guards(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_target_to_dict() -> None:
+    """Serialise a target without losing kind or identifier fields."""
     target = get_fuzz_target("ml_dsa_ntt")
     payload = target.to_dict()
     assert payload["kind"] == "ml_dsa_ntt"

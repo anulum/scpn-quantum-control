@@ -89,6 +89,7 @@ class FuzzTarget:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     target_id: str
@@ -171,6 +172,7 @@ class FuzzPolicy:
         Whether invent-green continuous coverage is forbidden (must be True).
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     policy_id: str
@@ -227,6 +229,7 @@ class FuzzProbeDecision:
         Non-empty when refused.
     time_box_seconds
         Time box acknowledged (0 when refused).
+
     """
 
     target_id: str
@@ -375,6 +378,7 @@ def list_fuzz_target_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered target identifiers.
+
     """
     return tuple(row.target_id for row in _CANONICAL_TARGETS)
 
@@ -396,6 +400,7 @@ def get_fuzz_target(target_id: str) -> FuzzTarget:
     ------
     ValueError
         If ``target_id`` is blank or unknown (fail closed).
+
     """
     if not target_id or not str(target_id).strip():
         raise ValueError("target_id must be a non-empty string")
@@ -427,6 +432,7 @@ def iter_fuzz_targets(
     -------
     tuple[FuzzTarget, ...]
         Matching targets.
+
     """
     rows: Sequence[FuzzTarget] = _CANONICAL_TARGETS
     if posture is not None:
@@ -443,6 +449,7 @@ def fuzz_assurance_policy() -> FuzzPolicy:
     -------
     FuzzPolicy
         Product policy (continuous default false; invent-green forbidden).
+
     """
     return _DEFAULT_POLICY
 
@@ -464,6 +471,7 @@ def validate_time_box_seconds(time_box_seconds: int) -> int:
     ------
     ValueError
         If non-positive, non-int, or exceeds max time box (continuous refuse).
+
     """
     if not isinstance(time_box_seconds, int) or isinstance(time_box_seconds, bool):
         raise ValueError("time_box_seconds must be an int")
@@ -508,6 +516,7 @@ def dry_run_fuzz_target(
     ValueError
         If ``target_id`` is blank/unknown or time box is invalid (when not
         refused via continuous flags first).
+
     """
     target = get_fuzz_target(target_id)
     policy = fuzz_assurance_policy()
@@ -561,6 +570,7 @@ def corpus_governance_policy() -> dict[str, object]:
     -------
     dict[str, object]
         Policy describing residual corpus retention ops (not invent-green ops).
+
     """
     return {
         "policy_id": "corpus_governance_boundary_v1",
@@ -583,6 +593,7 @@ def crash_pipeline_policy() -> dict[str, object]:
     -------
     dict[str, object]
         Policy describing residual crash automation.
+
     """
     return {
         "policy_id": "crash_regression_pipeline_boundary_v1",
@@ -602,6 +613,7 @@ def map_fuzz_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     return (
         {
@@ -628,6 +640,7 @@ def build_fuzz_assurance_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with targets and policy (no blanks).
+
     """
     targets = [row.to_dict() for row in _CANONICAL_TARGETS]
     policy = fuzz_assurance_policy().to_dict()
@@ -669,6 +682,7 @@ def assert_fuzz_assurance_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-green policy appear.
+
     """
     registry = dict(payload) if payload is not None else build_fuzz_assurance_registry()
     targets = registry.get("targets")
