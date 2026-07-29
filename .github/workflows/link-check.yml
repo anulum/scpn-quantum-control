@@ -57,6 +57,7 @@ jobs:
             --exclude-path site
             --exclude-path .venv-linux
             --exclude-path paper
+            --exclude-path ARCHITECTURE.md
             --exclude https://www.contributor-covenant.org
             --exclude https://doi.org/10.5281/zenodo.18821929
             --exclude https://ojs.aaai.org/index.php/AAAI-SS/article/view/36900
@@ -66,6 +67,7 @@ jobs:
             --exclude https://www.nature.com/articles/s41534-025-01118-6
             --exclude https://www.nature.com/articles/s41567-025-03090-6
             --exclude https://enzyme.mit.edu/
+            --exclude https://pyo3.rs/
             './**/*.md'
           # 403/429/500/502/503 are accepted because many journals and
           # vendor pages return those for anonymous HEAD requests yet
@@ -73,7 +75,11 @@ jobs:
           # more than catching every deep dead link. `--max-retries 3`
           # with a 5 s backoff absorbs transient network errors
           # (`contributor-covenant.org` hit this on the 2026-04-17
-          # 06:44 UTC run); a hard-dead URL still fails after the
+          # 06:44 UTC run); pyo3.rs likewise refused the 2026-07-29
+          # runner after all retries. ARCHITECTURE.md is a root symlink
+          # to the separately scanned docs/architecture.md; excluding the
+          # alias prevents Lychee from resolving its sibling links against
+          # the wrong directory. A hard-dead URL still fails after the
           # retries so the gate remains meaningful.
           fail: true
       - name: Create issue on failure
