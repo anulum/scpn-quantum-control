@@ -8,12 +8,12 @@
     "notebook_files": 106,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 346,
-    "python_model_classes": 1295,
-    "python_model_source_modules": 669,
+    "public_documentation_pages": 347,
+    "python_model_classes": 1314,
+    "python_model_source_modules": 676,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1123
+    "test_files": 1130
   },
   "documentation": {
     "examples": [
@@ -399,6 +399,7 @@
       "docs/ml_dsa_pqc.md",
       "docs/multi_hal_federation_product.md",
       "docs/multi_platform.md",
+      "docs/multimodal_forecasting.md",
       "docs/multiscale_qec.md",
       "docs/mutation_testing.md",
       "docs/native_speedup_benchmark.md",
@@ -619,7 +620,7 @@
       {
         "package": "forecasting",
         "path": "src/scpn_quantum_control/forecasting",
-        "python_modules": 4
+        "python_modules": 11
       },
       {
         "package": "gauge",
@@ -1914,6 +1915,14 @@
         "path": "src/scpn_quantum_control/dla_parity/schema.py"
       },
       {
+        "name": "DomainForecastAccuracy",
+        "path": "src/scpn_quantum_control/forecasting/multimodal_forecaster.py"
+      },
+      {
+        "name": "DomainIntervalCoverage",
+        "path": "src/scpn_quantum_control/forecasting/uncertainty.py"
+      },
+      {
         "name": "DryRunPlan",
         "path": "src/scpn_quantum_control/hardware_safe_execution.py"
       },
@@ -2312,6 +2321,18 @@
       {
         "name": "FloquetResult",
         "path": "src/scpn_quantum_control/phase/floquet_kuramoto.py"
+      },
+      {
+        "name": "ForecastAccuracyCertificate",
+        "path": "src/scpn_quantum_control/forecasting/multimodal_forecaster.py"
+      },
+      {
+        "name": "ForecastActiveSensingBridge",
+        "path": "src/scpn_quantum_control/forecasting/multimodal_bridge.py"
+      },
+      {
+        "name": "ForecastControllerInitialisation",
+        "path": "src/scpn_quantum_control/forecasting/multimodal_bridge.py"
       },
       {
         "name": "ForecastModelRun",
@@ -2784,6 +2805,10 @@
       {
         "name": "IntegrationDisposition",
         "path": "src/scpn_quantum_control/neural_operator_baseline_product.py"
+      },
+      {
+        "name": "IntervalCoverageCertificate",
+        "path": "src/scpn_quantum_control/forecasting/uncertainty.py"
       },
       {
         "name": "IonQCloudHALAdapter",
@@ -3266,6 +3291,30 @@
         "path": "src/scpn_quantum_control/analysis/quantum_mpemba.py"
       },
       {
+        "name": "MultimodalForecastingEvidence",
+        "path": "src/scpn_quantum_control/forecasting/multimodal_report.py"
+      },
+      {
+        "name": "MultimodalIntervalForecast",
+        "path": "src/scpn_quantum_control/forecasting/uncertainty.py"
+      },
+      {
+        "name": "MultimodalObservationBatch",
+        "path": "src/scpn_quantum_control/forecasting/multimodal_schema.py"
+      },
+      {
+        "name": "MultimodalPointForecast",
+        "path": "src/scpn_quantum_control/forecasting/multimodal_forecaster.py"
+      },
+      {
+        "name": "MultimodalRidgeForecaster",
+        "path": "src/scpn_quantum_control/forecasting/multimodal_forecaster.py"
+      },
+      {
+        "name": "MultimodalSupportRow",
+        "path": "src/scpn_quantum_control/forecasting/multimodal_report.py"
+      },
+      {
         "name": "MultiscaleComparison",
         "path": "src/scpn_quantum_control/qec/logical_dla_parity.py"
       },
@@ -3652,6 +3701,18 @@
       {
         "name": "ParityFamily",
         "path": "src/scpn_quantum_control/polyglot_parity_certificate.py"
+      },
+      {
+        "name": "PartialObservationBatchCertificate",
+        "path": "src/scpn_quantum_control/forecasting/partial_observation.py"
+      },
+      {
+        "name": "PartialObservationScore",
+        "path": "src/scpn_quantum_control/forecasting/partial_observation.py"
+      },
+      {
+        "name": "PartialObservationWeights",
+        "path": "src/scpn_quantum_control/forecasting/partial_observation.py"
       },
       {
         "name": "PasqalPulserHALAdapter",
@@ -5094,6 +5155,10 @@
         "path": "src/scpn_quantum_control/applications/quantum_reservoir_product.py"
       },
       {
+        "name": "ResidualIntervalCalibrator",
+        "path": "src/scpn_quantum_control/forecasting/uncertainty.py"
+      },
+      {
         "name": "ResolvedAggregatorProviderRoute",
         "path": "src/scpn_quantum_control/hardware/aggregators.py"
       },
@@ -5512,6 +5577,18 @@
       {
         "name": "SyndromeFlow",
         "path": "src/scpn_quantum_control/qec/syndrome_flow.py"
+      },
+      {
+        "name": "SyntheticDomainTag",
+        "path": "src/scpn_quantum_control/forecasting/multimodal_schema.py"
+      },
+      {
+        "name": "SyntheticMultimodalConfig",
+        "path": "src/scpn_quantum_control/forecasting/synthetic_multimodal.py"
+      },
+      {
+        "name": "SyntheticMultimodalDataset",
+        "path": "src/scpn_quantum_control/forecasting/synthetic_multimodal.py"
       },
       {
         "name": "SyntheticReconstructionCertificate",
@@ -6186,9 +6263,16 @@
       "src/scpn_quantum_control/fep/predictive_coding.py",
       "src/scpn_quantum_control/fep/variational_free_energy.py",
       "src/scpn_quantum_control/forecasting/kuramoto_neural_operator.py",
+      "src/scpn_quantum_control/forecasting/multimodal_bridge.py",
+      "src/scpn_quantum_control/forecasting/multimodal_forecaster.py",
+      "src/scpn_quantum_control/forecasting/multimodal_report.py",
+      "src/scpn_quantum_control/forecasting/multimodal_schema.py",
       "src/scpn_quantum_control/forecasting/neural_operator_advantage.py",
       "src/scpn_quantum_control/forecasting/neural_operator_cost_model.py",
+      "src/scpn_quantum_control/forecasting/partial_observation.py",
       "src/scpn_quantum_control/forecasting/real_data_sync.py",
+      "src/scpn_quantum_control/forecasting/synthetic_multimodal.py",
+      "src/scpn_quantum_control/forecasting/uncertainty.py",
       "src/scpn_quantum_control/gauge/cft_analysis.py",
       "src/scpn_quantum_control/gauge/confinement.py",
       "src/scpn_quantum_control/gauge/lattice_crosscheck.py",
@@ -8064,6 +8148,7 @@
       "tests/test_floquet_kuramoto_strict_surface.py",
       "tests/test_fmo_benchmark.py",
       "tests/test_fmo_benchmark_branches.py",
+      "tests/test_forecast_uncertainty.py",
       "tests/test_fractional_gates.py",
       "tests/test_frc_pulsed_qaoa_branches.py",
       "tests/test_frontier_generate_params.py",
@@ -8256,6 +8341,10 @@
       "tests/test_mps_evolution.py",
       "tests/test_multi_hal_federation_product.py",
       "tests/test_multicircuit_qec_readiness.py",
+      "tests/test_multimodal_bridge.py",
+      "tests/test_multimodal_forecaster.py",
+      "tests/test_multimodal_report.py",
+      "tests/test_multimodal_schema.py",
       "tests/test_multiplatform_export_workflow.py",
       "tests/test_multiscale_qec.py",
       "tests/test_native_decomposition_readiness.py",
@@ -8294,6 +8383,7 @@
       "tests/test_param_shift.py",
       "tests/test_param_shift_contracts.py",
       "tests/test_parametrized_sweeps.py",
+      "tests/test_partial_observation_forecast.py",
       "tests/test_pea_mitigation.py",
       "tests/test_pec.py",
       "tests/test_pec_rng_default.py",
@@ -8770,6 +8860,7 @@
       "tests/test_synchronisation_benchmark_registry.py",
       "tests/test_synchronisation_compare_branches.py",
       "tests/test_synchronisation_runner_branches.py",
+      "tests/test_synthetic_multimodal.py",
       "tests/test_tcbo_observer.py",
       "tests/test_tcbo_observer_edge_cases.py",
       "tests/test_tcbo_reproduction_audit.py",

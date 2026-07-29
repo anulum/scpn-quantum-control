@@ -122,16 +122,16 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.0.0 |
 | Public API exports | 841 |
-| Python source modules | 669 |
-| Public Python classes | 1295 |
+| Python source modules | 676 |
+| Public Python classes | 1314 |
 | Domain package families | 35 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
 | Notebook files | 106 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1123 |
-| Public documentation pages | 346 |
+| Python test files | 1130 |
+| Public documentation pages | 347 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -721,7 +721,7 @@ graph TD
 | `accel` | 3 | Multi-language dispatcher + Julia tier (Rust → Julia → Python fallback chain) |
 | `dla_parity` | 4 | DLA parity helpers and campaign analysis support |
 | `fep` | 2 | Friston Free Energy Principle: variational free energy, predictive coding |
-| `forecasting` | 1 | Held-out synchronisation forecasting over hardware traces and source-backed topology replays |
+| `forecasting` | 11 | Real/source-backed synchronisation benchmarks plus bounded synthetic multimodal forecasting, partial-observation scoring, split residual intervals, and fail-closed BL-68/BL-33 composition |
 | `benchmark_harness` | 4 | Reproducible benchmark harness entry points |
 | `tcbo` | 1 | TCBO quantum observer |
 | `pgbo` | 1 | PGBO quantum bridge |
@@ -821,6 +821,7 @@ scpn_quantum_control/
 ├── mitigation/     12 modules — ZNE, PEC, DD, Z2, CPDR, symmetry
 ├── qec/            13 modules — error correction + biological surface code
 ├── benchmarks/     21 modules — performance baselines
+├── forecasting/    11 modules — real/source-backed and synthetic partial-observation forecasts
 ├── identity/        6 modules — identity continuity analysis
 ├── qsnn/            7 modules — quantum spiking neural networks + neuromorphic bridge
 ├── crypto/          9 modules — entanglement QKD, topology authentication, ML-DSA signing, key hierarchy

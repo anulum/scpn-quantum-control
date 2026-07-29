@@ -21,6 +21,30 @@ under `accel/` now ships as the standalone `oscillatools` distribution;
 This split is why the same repository can support both reproducible research
 workflows and integration-oriented development.
 
+## Multimodal forecasting composition
+
+`scpn_quantum_control.forecasting` now separates BL-37 into seven cohesive
+owners: immutable multimodal custody, deterministic synthetic generation,
+missingness-aware point forecasting, partial-observation scoring, residual
+interval calibration, external composition ports, and digest-bound reporting.
+The existing real-data and neural-operator benchmark modules remain independent;
+BL-37 does not relabel their datasets or claims.
+
+The dependency direction is one-way. The generator uses the established exact
+Kuramoto simulator; model fitting consumes immutable batches; calibration
+consumes a frozen model plus a disjoint calibration split; reporting consumes
+certificates without owning numerical algorithms. The bridge module converts
+interval widths into existing BL-68 `InformationGainCandidate` records and a
+terminal forecast into an existing BL-33 `ControllerProposal`. Neither BL-68 nor
+BL-33 imports forecasting, so no control/sensing back-edge is introduced.
+
+Complete known simulator couplings are retained for the physics-residual
+certificate. Consequently the partial-observation surface scores a forecast; it
+does not infer hidden states, graph edges, or parameters. All domain tags remain
+simulation-only, hardware requests fail closed, and controller proposals remain
+unapplied. See [Multimodal Forecasting Under Partial
+Observation](multimodal_forecasting.md).
+
 ## Quantum-classical co-design composition
 
 `scpn_quantum_control.codesign` is a thin composition layer, not a new physics
@@ -381,7 +405,7 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 669 (excluding package initialisers) |
+| Python modules | 676 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 81 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% line gate; branch telemetry required and currently observational) |
@@ -668,6 +692,19 @@ surrogates/                                ← Differentiable classical quantum-
 ├── fidelity.py                                Disjoint value/gradient exact-simulator gates
 ├── hybrid.py                                  Unapplied BL-33 proposal + exact validation
 └── report.py                                  Digest-bound BL-45 JSON/Markdown evidence
+
+forecasting/                               ← Forecast benchmarks + bounded multimodal product
+├── kuramoto_neural_operator.py                Backward-compatible oscillatools re-export
+├── real_data_sync.py                          Source-backed held-out synchronisation benchmark
+├── neural_operator_advantage.py               Held-out neural-operator fidelity/cost evidence
+├── neural_operator_cost_model.py              Host-independent operation-count crossover model
+├── multimodal_schema.py                       Immutable values, masks, tags, split custody
+├── synthetic_multimodal.py                    Disjoint deterministic Kuramoto trajectories
+├── multimodal_forecaster.py                   Missingness-aware ridge + persistence comparison
+├── partial_observation.py                     Observed-phase + known-simulator residual score
+├── uncertainty.py                             Independent split residual intervals
+├── multimodal_bridge.py                       BL-68 no-submit + unapplied BL-33 ports
+└── multimodal_report.py                       Digest-bound BL-37 JSON/Markdown evidence
 
 benchmarks/                                ← 23 modules: performance baselines
 ├── quantum_advantage.py                       Classical vs quantum scaling

@@ -2204,6 +2204,27 @@ unapplied BL-33 proposal. See [Quantum Reservoir Computing and Classical
 Surrogates](quantum_reservoir.md). No hardware, provider, generalisation,
 closed-loop, or advantage claim is implied.
 
+### `forecasting` multimodal partial-observation product
+
+```python
+generate_synthetic_multimodal_dataset(config=None) -> SyntheticMultimodalDataset
+fit_multimodal_ridge_forecaster(train, ridge=1.0, max_dense_gib=0.25) -> MultimodalRidgeForecaster
+evaluate_point_forecast(forecast, batch) -> ForecastAccuracyCertificate
+evaluate_partial_observation_batch(forecast, batch, observation_mask, weights=None) -> PartialObservationBatchCertificate
+fit_residual_interval_calibrator(model, forecast, calibration, alpha=0.10) -> ResidualIntervalCalibrator
+certify_interval_coverage(model, calibrator, interval, test) -> IntervalCoverageCertificate
+plan_forecast_active_sensing(interval, batch, ...) -> ForecastActiveSensingBridge
+forecast_to_controller_initialisation(interval, ...) -> ForecastControllerInitialisation
+```
+
+BL-37 exposes digest-bound train/calibration/test custody, a missingness-aware
+linear reference, partial-target scoring with complete known simulator
+couplings, empirical split residual intervals, a BL-68 no-submit sensing port,
+and an unapplied BL-33 proposal. See [Multimodal forecasting under partial
+observation](multimodal_forecasting.md). Domain tags are stylised simulations;
+no real-domain, inference, provider, hardware, control, safety, or deployment
+claim is implied.
+
 ## mitigation
 
 ### `compound_mitigation`

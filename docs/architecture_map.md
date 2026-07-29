@@ -210,6 +210,22 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
   reduces to single-qubit Z (separable Ising). Closed-loop analysis is software-in-the-loop,
   fail-closed without a live ticket.
 
+### 4.8a Forecasting — `forecasting/`
+- **Real/source-backed benchmark lane**: `real_data_sync` retains its own
+  dataset provenance and held-out benchmark contract; BL-37 does not promote or
+  relabel it.
+- **BL-37 synthetic multimodal lane**: immutable phase-series, graph, event,
+  missingness-mask, target, frequency, tag, and split custody feeds a training-
+  only ridge baseline, persistence comparison, known-simulator Kuramoto-
+  residual score, and independent split residual intervals.
+- **Composition only**: interval-width proxies enter the existing BL-68
+  no-submit planner; terminal forecasts create existing BL-33 proposals that
+  remain unapplied. There is no hardware sensing, hidden-state inference,
+  safety decision, or operational control path.
+- **Honest caveat**: `grid_like_sim`, `eeg_like_sim`, and `plasma_like_sim` are
+  stylised oscillator configurations, not real-domain fidelity evidence. See
+  [Multimodal Forecasting Under Partial Observation](multimodal_forecasting.md).
+
 ### 4.9 Crypto / QEC / QSNN / gauge — `crypto/`, `qec/`, `qsnn/`, `gauge/`, `psi_field/`
 - **Standout** (*mature/production*): `crypto/ml_dsa` is a genuine from-spec **FIPS 204 ML-DSA-65**
   with KAT + ACVP tests. **Entropy**: NIST SP 800-22 QRNG harness.

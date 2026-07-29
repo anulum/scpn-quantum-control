@@ -1,0 +1,792 @@
+{
+  "active_sensing": {
+    "calibrator_digest": "edac9b7581786b82eecfacd2e83f4d3146cf250129d485cd0218ede0c36ce02b",
+    "candidates": [
+      {
+        "channel": "forecast_uncertainty_observer",
+        "noise_variance": 0.04,
+        "observable_id": "forecast_phase_node_0",
+        "prior_variance": 0.009245381461846123,
+        "sensitivity": 1.4059132945558572
+      },
+      {
+        "channel": "forecast_uncertainty_observer",
+        "noise_variance": 0.06,
+        "observable_id": "forecast_phase_node_2",
+        "prior_variance": 0.009245381461846123,
+        "sensitivity": 1.4059132945558572
+      }
+    ],
+    "claim_boundary": "interval-width proxy candidates composed into the existing BL-68 no-submit plan; not adaptive hardware sensing, optimal sensor placement, or domain deployment",
+    "hardware_execution": false,
+    "model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
+    "plan": {
+      "allowed": true,
+      "blockers": [],
+      "budget": {
+        "blockers": [],
+        "claim_boundary": "hardware-safe execution product only; no-submit is the default; dry-run plans estimate shots/cost status without provider submission; enforce refuses would-submit and over-budget without owner-gated allow; this surface never executes QPU jobs or invents hardware results",
+        "cost_model_status": "blocked",
+        "estimated_cost_usd": null,
+        "estimated_total_shots": 512,
+        "evaluations": 4,
+        "n_params": 2,
+        "outcome": "allowed_plan",
+        "policy_id": "ci_dry_run_only",
+        "reason": "dry-run plan allowed under policy; no provider submission occurred (cost_model_status=blocked)",
+        "shift_terms": 1,
+        "shots_per_evaluation": 128,
+        "would_submit": false
+      },
+      "claim_boundary": "synthetic local information-gain planning under BL-47 no-submit shot budgets; S3 evidence is analytic/simulator-only; no adaptive QPU loop, sensing advantage, or NV 20 T hardware-calibration claim",
+      "hardware_execution": false,
+      "observer": {
+        "channel": "forecast_uncertainty_observer",
+        "claim_boundary": "synthetic local information-gain planning under BL-47 no-submit shot budgets; S3 evidence is analytic/simulator-only; no adaptive QPU loop, sensing advantage, or NV 20 T hardware-calibration claim",
+        "expected_information_gain_nats": 2.0428025435497816,
+        "hardware_execution": false,
+        "observer_id": "bl68:ci_dry_run_only:forecast_phase_node_0",
+        "posterior_variance": 0.0001554422557963455,
+        "s3_protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+        "selected_observable_id": "forecast_phase_node_0",
+        "shot_policy_id": "ci_dry_run_only",
+        "shots": 128
+      },
+      "outcome": "allowed_plan",
+      "reason": "local synthetic active-sensing plan allowed; no hardware submission occurred",
+      "s3_evidence": [
+        {
+          "candidate_label": "ansatz_shallow_knm",
+          "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+          "family": "ansatz",
+          "metrics": {
+            "depth": 8,
+            "hardware_submission": false,
+            "n_qubits": 4,
+            "parameters": 0,
+            "size": 20,
+            "two_qubit_gates": 8
+          },
+          "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+          "score": 45.0,
+          "status": "ok"
+        },
+        {
+          "candidate_label": "ansatz_mid_knm",
+          "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+          "family": "ansatz",
+          "metrics": {
+            "depth": 14,
+            "hardware_submission": false,
+            "n_qubits": 4,
+            "parameters": 0,
+            "size": 36,
+            "two_qubit_gates": 16
+          },
+          "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+          "score": 87.0,
+          "status": "ok"
+        },
+        {
+          "candidate_label": "pulse_stirap_balanced",
+          "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+          "family": "pulse",
+          "metrics": {
+            "hardware_submission": false,
+            "infidelity_bound": 36.000000000000014,
+            "max_points_per_pulse": 200,
+            "n_qubits": 4,
+            "pulse_count": 4,
+            "total_time": 0.2
+          },
+          "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+          "score": 36.06000000000002,
+          "status": "ok"
+        },
+        {
+          "candidate_label": "pulse_demkov_kunike",
+          "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+          "family": "pulse",
+          "metrics": {
+            "hardware_submission": false,
+            "infidelity_bound": 37.770899168515115,
+            "max_points_per_pulse": 200,
+            "n_qubits": 4,
+            "pulse_count": 4,
+            "total_time": 0.2
+          },
+          "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
+          "score": 37.83089916851512,
+          "status": "ok"
+        }
+      ],
+      "schema": "active_sensing_product.v1",
+      "scores": [
+        {
+          "channel": "forecast_uncertainty_observer",
+          "expected_information_gain_nats": 2.0428025435497816,
+          "observable_id": "forecast_phase_node_0",
+          "posterior_variance": 0.0001554422557963455,
+          "shots": 128,
+          "signal_to_noise": 58.47791618489549
+        },
+        {
+          "channel": "forecast_uncertainty_observer",
+          "expected_information_gain_nats": 1.8442556613884173,
+          "observable_id": "forecast_phase_node_2",
+          "posterior_variance": 0.00023121964007581915,
+          "shots": 128,
+          "signal_to_noise": 38.985277456597
+        }
+      ],
+      "selected": {
+        "channel": "forecast_uncertainty_observer",
+        "expected_information_gain_nats": 2.0428025435497816,
+        "observable_id": "forecast_phase_node_0",
+        "posterior_variance": 0.0001554422557963455,
+        "shots": 128,
+        "signal_to_noise": 58.47791618489549
+      }
+    },
+    "sample_id": "bl37-test-1396205077-0000"
+  },
+  "calibration_accuracy": {
+    "batch_digest": "104ee69e33fa42b9797a9a2a7db1957392a3098b3640239511bd9f62f36d6097",
+    "domains": [
+      {
+        "domain_tag": "synthetic",
+        "lower_mse_than_persistence": false,
+        "persistence_wrapped_mse": 0.0008389168933457322,
+        "samples": 6,
+        "wrapped_mae": 0.02452091295595577,
+        "wrapped_mse": 0.001012111182489447
+      },
+      {
+        "domain_tag": "grid_like_sim",
+        "lower_mse_than_persistence": true,
+        "persistence_wrapped_mse": 0.0013055206863597463,
+        "samples": 6,
+        "wrapped_mae": 0.024105951880178157,
+        "wrapped_mse": 0.0010834488832325495
+      },
+      {
+        "domain_tag": "eeg_like_sim",
+        "lower_mse_than_persistence": true,
+        "persistence_wrapped_mse": 0.0018210111476283277,
+        "samples": 6,
+        "wrapped_mae": 0.029058759385631763,
+        "wrapped_mse": 0.0016399834505185912
+      },
+      {
+        "domain_tag": "plasma_like_sim",
+        "lower_mse_than_persistence": true,
+        "persistence_wrapped_mse": 0.0007728140357363367,
+        "samples": 6,
+        "wrapped_mae": 0.018897898660809806,
+        "wrapped_mse": 0.0005907729457152544
+      }
+    ],
+    "input_missing_fraction": 0.12642045454545459,
+    "lower_mse_than_persistence": true,
+    "model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
+    "persistence_wrapped_mse": 0.0011845656907675357,
+    "samples": 24,
+    "wrapped_mae": 0.024145880720643872,
+    "wrapped_mse": 0.0010815791154889605
+  },
+  "calibrator": {
+    "alpha": 0.1,
+    "calibration_batch_digest": "104ee69e33fa42b9797a9a2a7db1957392a3098b3640239511bd9f62f36d6097",
+    "calibration_samples": 24,
+    "calibrator_digest": "edac9b7581786b82eecfacd2e83f4d3146cf250129d485cd0218ede0c36ce02b",
+    "claim_boundary": "sample-level split residual interval over independent synthetic trajectories; not sequential EnbPI, conditional coverage, domain transfer, or deployment evidence",
+    "model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
+    "order_statistic_rank": 23,
+    "radius": 0.09615290667393328,
+    "target_coverage": 0.9
+  },
+  "claim_boundary": "Deterministic synthetic Kuramoto trajectory evidence under explicit simulation-only domain tags. No real EEG, clinical, grid, SCADA, plasma, plant, hardware, QPU, state-estimation, control-performance, safety, deployment, or publication claim.",
+  "content_digest": "f7728c62a7fae64afd6b17fa900d1c733cf5616f9b87cedd25b4b440b6550c02",
+  "controller_initialisation": {
+    "applied": false,
+    "calibrator_digest": "edac9b7581786b82eecfacd2e83f4d3146cf250129d485cd0218ede0c36ce02b",
+    "claim_boundary": "synthetic forecast-derived BL-33 initialisation proposal only; unapplied and not a safety, stability, closed-loop, realtime, or operational control decision",
+    "model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
+    "predicted_order_parameter": 0.1595854885802571,
+    "proposal": {
+      "gain_scale": 0.25,
+      "parameters": [
+        0.2,
+        -0.1
+      ],
+      "update": [
+        0.05,
+        0.05
+      ]
+    },
+    "safety_decision": false,
+    "sample_id": "bl37-test-1396205077-0000",
+    "target_order_parameter": 0.9
+  },
+  "dataset": {
+    "calibration": {
+      "content_digest": "104ee69e33fa42b9797a9a2a7db1957392a3098b3640239511bd9f62f36d6097",
+      "domain_counts": {
+        "eeg_like_sim": 6,
+        "grid_like_sim": 6,
+        "plasma_like_sim": 6,
+        "synthetic": 6
+      },
+      "event_channels": 2,
+      "history_steps": 12,
+      "horizon_steps": 4,
+      "missing_fraction": 0.12642045454545459,
+      "nodes": 4,
+      "samples": 24,
+      "source": "scpn.bl37.synthetic_kuramoto.v1",
+      "split": "calibration"
+    },
+    "content_digest": "8de23d1e490db07f463409d30a1d5804479c13da7499d06066693e43638ba8b2",
+    "source": "scpn.bl37.synthetic_kuramoto.v1",
+    "test": {
+      "content_digest": "0c85a46f6e8a6c2bcaafce5ccfabfc2a276fd06f442e9e913137e5837203234a",
+      "domain_counts": {
+        "eeg_like_sim": 8,
+        "grid_like_sim": 8,
+        "plasma_like_sim": 8,
+        "synthetic": 8
+      },
+      "event_channels": 2,
+      "history_steps": 12,
+      "horizon_steps": 4,
+      "missing_fraction": 0.1257102272727273,
+      "nodes": 4,
+      "samples": 32,
+      "source": "scpn.bl37.synthetic_kuramoto.v1",
+      "split": "test"
+    },
+    "train": {
+      "content_digest": "bf32c6586e30d1d391d9d17b75eb2f8200ac8a0beaf9a0a663454ab7a209062d",
+      "domain_counts": {
+        "eeg_like_sim": 16,
+        "grid_like_sim": 16,
+        "plasma_like_sim": 16,
+        "synthetic": 16
+      },
+      "event_channels": 2,
+      "history_steps": 12,
+      "horizon_steps": 4,
+      "missing_fraction": 0.11576704545454541,
+      "nodes": 4,
+      "samples": 64,
+      "source": "scpn.bl37.synthetic_kuramoto.v1",
+      "split": "train"
+    }
+  },
+  "interval_coverage": {
+    "calibrator_digest": "edac9b7581786b82eecfacd2e83f4d3146cf250129d485cd0218ede0c36ce02b",
+    "claim_boundary": "sample-level split residual interval over independent synthetic trajectories; not sequential EnbPI, conditional coverage, domain transfer, or deployment evidence",
+    "domains": [
+      {
+        "domain_tag": "synthetic",
+        "sample_coverage": 1.0,
+        "samples": 8,
+        "value_coverage": 1.0
+      },
+      {
+        "domain_tag": "grid_like_sim",
+        "sample_coverage": 0.75,
+        "samples": 8,
+        "value_coverage": 0.9765625
+      },
+      {
+        "domain_tag": "eeg_like_sim",
+        "sample_coverage": 0.875,
+        "samples": 8,
+        "value_coverage": 0.9921875
+      },
+      {
+        "domain_tag": "plasma_like_sim",
+        "sample_coverage": 1.0,
+        "samples": 8,
+        "value_coverage": 1.0
+      }
+    ],
+    "mean_interval_width": 0.19230581334786656,
+    "model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
+    "sample_coverage": 0.90625,
+    "sample_target_met": true,
+    "samples": 32,
+    "target_coverage": 0.9,
+    "test_batch_digest": "0c85a46f6e8a6c2bcaafce5ccfabfc2a276fd06f442e9e913137e5837203234a",
+    "value_coverage": 0.9921875
+  },
+  "model": {
+    "event_channels": 2,
+    "history_steps": 12,
+    "horizon_steps": 4,
+    "kind": "missingness_aware_linear_ridge",
+    "model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
+    "nodes": 4,
+    "ridge": 10.0,
+    "training_batch_digest": "bf32c6586e30d1d391d9d17b75eb2f8200ac8a0beaf9a0a663454ab7a209062d"
+  },
+  "partial_observation": {
+    "batch_digest": "0c85a46f6e8a6c2bcaafce5ccfabfc2a276fd06f442e9e913137e5837203234a",
+    "claim_boundary": "synthetic held-out phase scoring with complete known simulator couplings; not arbitrary state/parameter inference, data assimilation, or operational control",
+    "forecast_model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
+    "mean_kuramoto_residual_rmse": 0.2103773958899911,
+    "mean_observed_wrapped_rmse": 0.02548752076534897,
+    "mean_total_objective": 0.36627430659567684,
+    "observation_mask_digest": "db92dd6db496c9f3a399fb9243887166c0969e68d3b941e0386b75f42b167007",
+    "observed_fraction": 0.5,
+    "samples": 32,
+    "scores": [
+      {
+        "kuramoto_residual_rmse": 0.17448380950713852,
+        "normalised_observation_loss": 0.0027080793424331282,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.002601960483190093,
+        "physics_loss": 0.0304445997801234,
+        "possible_values": 16,
+        "total_objective": 0.005752539320445468
+      },
+      {
+        "kuramoto_residual_rmse": 0.16085820009195215,
+        "normalised_observation_loss": 0.09046491400912034,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.015038692929334015,
+        "physics_loss": 0.025875360536822517,
+        "possible_values": 16,
+        "total_objective": 0.09305245006280259
+      },
+      {
+        "kuramoto_residual_rmse": 0.35058010348294855,
+        "normalised_observation_loss": 1.3938044330364487,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.05902974743797505,
+        "physics_loss": 0.1229064089581149,
+        "possible_values": 16,
+        "total_objective": 1.4060950739322602
+      },
+      {
+        "kuramoto_residual_rmse": 0.29376597044260455,
+        "normalised_observation_loss": 0.14761539677047308,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.019210374590990745,
+        "physics_loss": 0.0862984453900852,
+        "possible_values": 16,
+        "total_objective": 0.15624524130948161
+      },
+      {
+        "kuramoto_residual_rmse": 0.16825515994841272,
+        "normalised_observation_loss": 0.21027270902917572,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.02292775114512846,
+        "physics_loss": 0.02830979884926595,
+        "possible_values": 16,
+        "total_objective": 0.2131036889141023
+      },
+      {
+        "kuramoto_residual_rmse": 0.3367344911525493,
+        "normalised_observation_loss": 2.62919507149171,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.08107396424703356,
+        "physics_loss": 0.1133901175317663,
+        "possible_values": 16,
+        "total_objective": 2.6405340832448867
+      },
+      {
+        "kuramoto_residual_rmse": 0.045953739474490184,
+        "normalised_observation_loss": 0.0033214495663447057,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.002881600929320673,
+        "physics_loss": 0.002111746171689317,
+        "possible_values": 16,
+        "total_objective": 0.0035326241835136373
+      },
+      {
+        "kuramoto_residual_rmse": 0.18954308959445995,
+        "normalised_observation_loss": 0.3643019963520539,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.030178717515496493,
+        "physics_loss": 0.03592658281301347,
+        "possible_values": 16,
+        "total_objective": 0.36789465463335524
+      },
+      {
+        "kuramoto_residual_rmse": 0.11203377295232006,
+        "normalised_observation_loss": 0.013048908082539926,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.005711590864754742,
+        "physics_loss": 0.012551566281932,
+        "possible_values": 16,
+        "total_objective": 0.014304064710733127
+      },
+      {
+        "kuramoto_residual_rmse": 0.08519379319877006,
+        "normalised_observation_loss": 0.007248776423459051,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.004256987321880068,
+        "physics_loss": 0.0072579823995948005,
+        "possible_values": 16,
+        "total_objective": 0.007974574663418532
+      },
+      {
+        "kuramoto_residual_rmse": 0.31937327062847737,
+        "normalised_observation_loss": 0.517358160878092,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.035963806836807895,
+        "physics_loss": 0.10199928599193064,
+        "possible_values": 16,
+        "total_objective": 0.5275580894772851
+      },
+      {
+        "kuramoto_residual_rmse": 0.18402794957041857,
+        "normalised_observation_loss": 0.27041124364709757,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.026000540554337405,
+        "physics_loss": 0.03386628622309252,
+        "possible_values": 16,
+        "total_objective": 0.27379787226940683
+      },
+      {
+        "kuramoto_residual_rmse": 0.10660326979868157,
+        "normalised_observation_loss": 0.06291725993865077,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.012541656583028693,
+        "physics_loss": 0.011364257131770495,
+        "possible_values": 16,
+        "total_objective": 0.06405368565182783
+      },
+      {
+        "kuramoto_residual_rmse": 0.15750329692621165,
+        "normalised_observation_loss": 0.17259591485193693,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.02077233225061265,
+        "physics_loss": 0.02480728854262639,
+        "possible_values": 16,
+        "total_objective": 0.17507664370619958
+      },
+      {
+        "kuramoto_residual_rmse": 0.22051409441092398,
+        "normalised_observation_loss": 0.2978067995389462,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.027285838796844153,
+        "physics_loss": 0.04862646583386989,
+        "possible_values": 16,
+        "total_objective": 0.30266944612233315
+      },
+      {
+        "kuramoto_residual_rmse": 0.27125224259752323,
+        "normalised_observation_loss": 0.29168282440065973,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.02700383419075242,
+        "physics_loss": 0.0735777791141856,
+        "possible_values": 16,
+        "total_objective": 0.2990406023120783
+      },
+      {
+        "kuramoto_residual_rmse": 0.21524682188494995,
+        "normalised_observation_loss": 0.3224478360819288,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.0283922452476873,
+        "physics_loss": 0.04633119433157137,
+        "possible_values": 16,
+        "total_objective": 0.3270809555150859
+      },
+      {
+        "kuramoto_residual_rmse": 0.3543167386007158,
+        "normalised_observation_loss": 0.39690858100544435,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.03150034051424859,
+        "physics_loss": 0.12554035125264795,
+        "possible_values": 16,
+        "total_objective": 0.40946261613070917
+      },
+      {
+        "kuramoto_residual_rmse": 0.24445284950927007,
+        "normalised_observation_loss": 0.5064234625093816,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.03558171800621008,
+        "physics_loss": 0.05975719563320184,
+        "possible_values": 16,
+        "total_objective": 0.5123991820727019
+      },
+      {
+        "kuramoto_residual_rmse": 0.23735040509298358,
+        "normalised_observation_loss": 0.4132773562114969,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.03214332575401529,
+        "physics_loss": 0.05633521479780341,
+        "possible_values": 16,
+        "total_objective": 0.4189108776912773
+      },
+      {
+        "kuramoto_residual_rmse": 0.1517117672499916,
+        "normalised_observation_loss": 0.06657570659304145,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.012901134309920336,
+        "physics_loss": 0.02301646032211563,
+        "possible_values": 16,
+        "total_objective": 0.068877352625253
+      },
+      {
+        "kuramoto_residual_rmse": 0.1630419956669212,
+        "normalised_observation_loss": 0.1804396721487991,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.02123909556388873,
+        "physics_loss": 0.026582692351052355,
+        "possible_values": 16,
+        "total_objective": 0.18309794138390434
+      },
+      {
+        "kuramoto_residual_rmse": 0.2465066432342508,
+        "normalised_observation_loss": 0.24333922884874248,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.024664713096281016,
+        "physics_loss": 0.06076552515861821,
+        "possible_values": 16,
+        "total_objective": 0.2494157813646043
+      },
+      {
+        "kuramoto_residual_rmse": 0.2852966556550031,
+        "normalised_observation_loss": 0.8141868291743687,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.045116150910022475,
+        "physics_loss": 0.08139418172792942,
+        "possible_values": 16,
+        "total_objective": 0.8223262473471616
+      },
+      {
+        "kuramoto_residual_rmse": 0.2731433208057303,
+        "normalised_observation_loss": 0.37512267511076725,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.030623629565695153,
+        "physics_loss": 0.07460727370078209,
+        "possible_values": 16,
+        "total_objective": 0.38258340248084544
+      },
+      {
+        "kuramoto_residual_rmse": 0.16330172068094986,
+        "normalised_observation_loss": 0.08842439166114412,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.014868119556718002,
+        "physics_loss": 0.02666745197735897,
+        "possible_values": 16,
+        "total_objective": 0.09109113685888001
+      },
+      {
+        "kuramoto_residual_rmse": 0.2190735574862481,
+        "normalised_observation_loss": 0.37500693695212034,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.03061890498336446,
+        "physics_loss": 0.047993223589680445,
+        "possible_values": 16,
+        "total_objective": 0.37980625931108836
+      },
+      {
+        "kuramoto_residual_rmse": 0.244655146025485,
+        "normalised_observation_loss": 0.09473644177566606,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.015389642765157521,
+        "physics_loss": 0.059856140476751384,
+        "possible_values": 16,
+        "total_objective": 0.1007220558233412
+      },
+      {
+        "kuramoto_residual_rmse": 0.20685809336323144,
+        "normalised_observation_loss": 0.3486735263290402,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.029524291961410366,
+        "physics_loss": 0.042790270789871375,
+        "possible_values": 16,
+        "total_objective": 0.35295255340802734
+      },
+      {
+        "kuramoto_residual_rmse": 0.17899850887565363,
+        "normalised_observation_loss": 0.38693773197273135,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.031102159570226447,
+        "physics_loss": 0.032040466179707454,
+        "possible_values": 16,
+        "total_objective": 0.3901417785907021
+      },
+      {
+        "kuramoto_residual_rmse": 0.27815578427627224,
+        "normalised_observation_loss": 0.4603847475884701,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.03392582893565278,
+        "physics_loss": 0.07737064032634809,
+        "possible_values": 16,
+        "total_objective": 0.4681218116211049
+      },
+      {
+        "kuramoto_residual_rmse": 0.09329040629417676,
+        "normalised_observation_loss": 0.012232214332188386,
+        "observed_fraction": 0.5,
+        "observed_values": 8,
+        "observed_wrapped_rmse": 0.005529967073181446,
+        "physics_loss": 0.008703099906532574,
+        "possible_values": 16,
+        "total_objective": 0.013102524322841643
+      }
+    ]
+  },
+  "primary_sources": [
+    {
+      "role": "missing-data time-series forecasting context",
+      "url": "https://proceedings.neurips.cc/paper_files/paper/2018/hash/734e6bfcd358e25ac1db0a4241b95651-Abstract.html"
+    },
+    {
+      "doi": "10.1109/TPAMI.2023.3272339",
+      "role": "time-series predictive uncertainty context"
+    },
+    {
+      "role": "dynamics learning from partial observations context",
+      "url": "https://arxiv.org/abs/2309.03545"
+    },
+    {
+      "doi": "10.1073/pnas.1212134110",
+      "role": "Kuramoto network synchronization context"
+    }
+  ],
+  "schema": "scpn.multimodal_forecasting.v1",
+  "support_rows": [
+    {
+      "boundary": "All four tags identify stylised simulator configurations only.",
+      "evidence": "Immutable series, graph, event, mask, target, tag, and split custody.",
+      "status": "synthetic_supported",
+      "surface": "synthetic_multimodal_schema"
+    },
+    {
+      "boundary": "Linear reference baseline, not BRITS or a production forecaster.",
+      "evidence": "Training-only imputation/scaling and held-out persistence comparison.",
+      "status": "synthetic_supported",
+      "surface": "missingness_aware_ridge"
+    },
+    {
+      "boundary": "Known simulator coupling; no hidden-state or parameter inference.",
+      "evidence": "Observed wrapped error plus exact Kuramoto forward residual.",
+      "status": "synthetic_supported",
+      "surface": "partial_observation_objective"
+    },
+    {
+      "boundary": "Not sequential EnbPI, conditional coverage, or domain transfer.",
+      "evidence": "Independent calibration rows and empirical held-out test coverage.",
+      "status": "synthetic_supported",
+      "surface": "split_residual_intervals"
+    },
+    {
+      "boundary": "Not adaptive hardware sensing or optimal sensor placement.",
+      "evidence": "Interval-width proxies enter the existing no-submit sensing planner.",
+      "status": "bounded_supported",
+      "surface": "bl68_active_sensing_bridge"
+    },
+    {
+      "boundary": "Proposal remains unapplied and is not a safety decision.",
+      "evidence": "Terminal forecast creates a clipped existing ControllerProposal.",
+      "status": "bounded_supported",
+      "surface": "bl33_controller_initialisation"
+    },
+    {
+      "boundary": "The eeg_like_sim tag provides no clinical or neuroscience validity.",
+      "evidence": "No governed real EEG or clinical dataset is in custody.",
+      "status": "blocked_dependency",
+      "surface": "real_eeg_clinical_data"
+    },
+    {
+      "boundary": "The grid_like_sim tag is not a power-system operational model.",
+      "evidence": "No governed grid or SCADA dataset is in custody.",
+      "status": "blocked_dependency",
+      "surface": "real_grid_scada_data"
+    },
+    {
+      "boundary": "The plasma_like_sim tag provides no reactor or plant evidence.",
+      "evidence": "No governed plasma diagnostic or plant dataset is in custody.",
+      "status": "blocked_dependency",
+      "surface": "real_plasma_plant_data"
+    },
+    {
+      "boundary": "Local deterministic simulation only; no QPU, provider, or spend.",
+      "evidence": "No hardware or provider request is made by this evidence runner.",
+      "status": "blocked_dependency",
+      "surface": "hardware_qpu_execution"
+    }
+  ],
+  "test_accuracy": {
+    "batch_digest": "0c85a46f6e8a6c2bcaafce5ccfabfc2a276fd06f442e9e913137e5837203234a",
+    "domains": [
+      {
+        "domain_tag": "synthetic",
+        "lower_mse_than_persistence": true,
+        "persistence_wrapped_mse": 0.0008780435617025138,
+        "samples": 8,
+        "wrapped_mae": 0.01752348426198705,
+        "wrapped_mse": 0.0004701285861726097
+      },
+      {
+        "domain_tag": "grid_like_sim",
+        "lower_mse_than_persistence": true,
+        "persistence_wrapped_mse": 0.0010759932794891138,
+        "samples": 8,
+        "wrapped_mae": 0.020686481293044026,
+        "wrapped_mse": 0.0009506168018275083
+      },
+      {
+        "domain_tag": "eeg_like_sim",
+        "lower_mse_than_persistence": true,
+        "persistence_wrapped_mse": 0.0017581692705305454,
+        "samples": 8,
+        "wrapped_mae": 0.02514066516599485,
+        "wrapped_mse": 0.001109076224527011
+      },
+      {
+        "domain_tag": "plasma_like_sim",
+        "lower_mse_than_persistence": true,
+        "persistence_wrapped_mse": 0.0008425100365530536,
+        "samples": 8,
+        "wrapped_mae": 0.022171567622609193,
+        "wrapped_mse": 0.0007625725258503873
+      }
+    ],
+    "input_missing_fraction": 0.1257102272727273,
+    "lower_mse_than_persistence": true,
+    "model_digest": "bc48466a9001ccc26fa9b14a97087d1edaecda5eb9813d7379b875332ff7b94d",
+    "persistence_wrapped_mse": 0.0011386790370688069,
+    "samples": 32,
+    "wrapped_mae": 0.02138054958590878,
+    "wrapped_mse": 0.0008230985345943792
+  }
+}

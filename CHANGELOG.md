@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-07-29 — Multimodal forecasting under partial observation (BL-37):
+  added immutable simulation-only series/graph/event/mask custody, disjoint
+  synthetic train/calibration/test trajectories, a training-only missingness-
+  aware ridge baseline, exact known-simulator Kuramoto-residual scoring,
+  empirical split residual intervals, BL-68 no-submit sensing composition, an
+  unapplied BL-33 proposal, and deterministic digest-bound evidence. Real
+  EEG/clinical/grid/SCADA/plasma/plant, hidden-state inference, provider,
+  hardware, safety, control-performance, and deployment claims are refused.
 - 2026-07-29 — Quantum reservoir and differentiable surrogate product (BL-45):
   hardened exact-statevector allocation/input boundaries; added disjoint
   synthetic QRC versus matched-feature ESN certificates, Gaussian-RBF value and
@@ -75,6 +83,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-29 — BL-37 multimodal partial-observation forecasting facade,
+  deterministic synthetic generator, missingness-aware ridge comparator,
+  partial-observation and uncertainty certificates, bounded BL-68/BL-33 ports,
+  public guide, evidence CLI, and canonical JSON/Markdown artefacts.
 - 2026-07-29 — BL-45 held-out QRC/ESN certificate suite, differentiable
   Gaussian-RBF surrogate and disjoint exact-simulator fidelity gates,
   exact-validated unapplied BL-33 proposal, public guide, evidence CLI, and

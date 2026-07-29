@@ -143,8 +143,9 @@ isolated-core production benchmark.
   simulator.
 - The ESN baseline is a deterministic NumPy reference comparator, not an
   accelerated service path.
-- BL-37 multimodal schemas are not implemented, so the adapter remains an
-  explicit blocked dependency; no clinical, grid, or plasma data is admitted.
+- BL-37 now supplies a bounded simulation-only multimodal schema and classical
+  forecasting product, but no QRC-to-BL-37 adapter was added in BL-45. No real
+  clinical, grid, or plasma data is admitted by either product.
 - The BL-40 notebook is a blocked stretch dependency and is not represented as
   complete.
 - No hardware QRC, provider execution, unseen-domain generalisation, closed-loop
