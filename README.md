@@ -122,17 +122,17 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 1.0.0 |
 | Public API exports | 841 |
-| Python source modules | 688 |
-| Public Python classes | 1343 |
-| Domain package families | 37 |
-| API documentation pages | 2 |
+| Python source modules | 693 |
+| Public Python classes | 1350 |
+| Domain package families | 38 |
+| API documentation pages | 3 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 49 |
-| Notebook files | 108 |
+| Notebook files | 109 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1144 |
-| Public documentation pages | 351 |
+| Python test files | 1150 |
+| Public documentation pages | 353 |
 | GitHub Actions workflows | 24 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -725,6 +725,7 @@ graph TD
 | `forecasting` | 11 | Real/source-backed synchronisation benchmarks plus bounded synthetic multimodal forecasting, partial-observation scoring, split residual intervals, and fail-closed BL-68/BL-33 composition |
 | `chimera_control` | 7 | Finite synthetic Kuramoto–Sakaguchi regimes, nested order parameters, analytic hierarchy targets, unapplied proposals, topology-ledger projection, and deterministic evidence |
 | `dla_topology_control` | 7 | Exact finite parity-sector derivatives, projected synthetic control, fixed-active-set topology-ledger JVP/VJP rules, and deterministic evidence |
+| `topology_kernel_product` | 6 | Edge-aligned exact-statevector fidelity kernels, custody-checked classification, graph/classical controls, and deterministic synthetic evidence |
 | `benchmark_harness` | 4 | Reproducible benchmark harness entry points |
 | `tcbo` | 1 | TCBO quantum observer |
 | `pgbo` | 1 | PGBO quantum bridge |
@@ -789,7 +790,7 @@ All examples run on statevector simulation (no QPU needed).
 
 ## Notebooks
 
-108 tracked Jupyter notebooks in [`notebooks/`](notebooks/) — including the
+109 tracked Jupyter notebooks in [`notebooks/`](notebooks/) — including the
 core tutorials and retained investigation notebooks. Core notebooks:
 
 | # | Notebook | Level | Key Output |
@@ -810,9 +811,11 @@ core tutorials and retained investigation notebooks. Core notebooks:
 | 48 | Kuramoto Handbook Workflow | Intermediate | Phase 5 facade workflow summary |
 | 50 | Chimera Multiscale Control | Advanced | Finite synthetic regimes, nested targets, and unapplied topology-constrained proposal |
 | 51 | DLA Topology-Constrained Control | Advanced | Exact parity projection, fixed-active-set topology JVP/VJP rules, and fail-closed branch reports |
+| 52 | Topology-Aware Quantum Kernel | Advanced | Edge-aligned fidelity kernels, graph/RBF controls, identifier custody, and bounded synthetic evidence |
 
-The quantum notebooks run on local AerSimulator; notebooks 50 and 51 use local
-NumPy simulation. No IBM credentials are needed.
+The quantum notebooks run on local simulators; notebooks 50 and 51 use local
+NumPy simulation, and notebook 52 uses exact local Qiskit Statevector
+simulation. No IBM credentials are needed.
 
 ## Architecture
 
@@ -830,6 +833,7 @@ scpn_quantum_control/
 ├── forecasting/    11 modules — real/source-backed and synthetic partial-observation forecasts
 ├── chimera_control/ 7 modules — finite synthetic chimera and multiscale control
 ├── dla_topology_control/ 7 modules — parity and fixed-active-set topology derivatives
+├── topology_kernel_product/ 6 modules — edge-aligned fidelity kernels and controls
 ├── identity/        6 modules — identity continuity analysis
 ├── qsnn/            7 modules — quantum spiking neural networks + neuromorphic bridge
 ├── crypto/          9 modules — entanglement QKD, topology authentication, ML-DSA signing, key hierarchy
@@ -910,7 +914,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Josephson K_nm Magnitude Study](docs/josephson_knm_magnitude_study.md) — N=14 rho=0.990 topology candidate plus N=20/30/40 measured-magnitude gates
 - [p_h1 Open-Claim Guard](docs/p_h1_open_guard.md) — public wording guard that keeps the 0.72 threshold open until reproduced
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
-- [Notebooks](docs/notebooks.md) — 99 tracked notebooks
+- [Notebooks](docs/notebooks.md) — 109 tracked notebooks
 - [Bridges](docs/bridges_api.md) — cross-repo integrations
 - [Language Policy](docs/language_policy.md) — Rust / Julia / Go / Mojo accel chain
 - [Pipeline Performance](docs/pipeline_performance.md) — every module's measured wall-time + multi-language benchmarks

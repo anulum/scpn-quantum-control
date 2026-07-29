@@ -49,7 +49,12 @@ from .qrc_baseline import (
     compare_quantum_reservoir_to_esn_holdout,
 )
 from .quantum_evs import QuantumEVSResult, quantum_evs_enhance
-from .quantum_kernel import QuantumKernelResult, compute_kernel_matrix
+from .quantum_kernel import (
+    QuantumKernelResult,
+    canonical_edge_pairs,
+    compute_kernel_matrix,
+    encode_topology_edge_features,
+)
 from .quantum_reservoir import ReservoirResult, reservoir_features
 from .quantum_reservoir_product import (
     QRC_PRODUCT_CLAIM_BOUNDARY,
@@ -100,7 +105,9 @@ __all__ = [
     "QuantumEVSResult",
     "quantum_evs_enhance",
     "QuantumKernelResult",
+    "canonical_edge_pairs",
     "compute_kernel_matrix",
+    "encode_topology_edge_features",
     "QRCBaselineComparison",
     "QRCHoldoutComparison",
     "QRC_PRODUCT_CLAIM_BOUNDARY",

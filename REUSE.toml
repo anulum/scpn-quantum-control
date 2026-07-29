@@ -26,7 +26,7 @@ SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
 [[annotations]]
-path = ["*.ipynb", "notebooks/50_chimera_multiscale_control.ipynb", "notebooks/51_dla_topology_constrained_control.ipynb"]
+path = ["*.ipynb", "notebooks/50_chimera_multiscale_control.ipynb", "notebooks/51_dla_topology_constrained_control.ipynb", "notebooks/52_topology_aware_quantum_kernel.ipynb"]
 SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
 SPDX-License-Identifier = "AGPL-3.0-or-later"
 
@@ -37,5 +37,10 @@ SPDX-License-Identifier = "AGPL-3.0-or-later"
 
 [[annotations]]
 path = ["data/dla_topology_control/*"]
+SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+[[annotations]]
+path = ["data/topology_kernel_product/*"]
 SPDX-FileCopyrightText = "1996–2026 Miroslav Šotek"
 SPDX-License-Identifier = "AGPL-3.0-or-later"

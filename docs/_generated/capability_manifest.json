@@ -1,19 +1,19 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 37,
+    "domain_package_families": 38,
     "example_files": 37,
     "github_workflows": 24,
-    "model_documentation_pages": 2,
-    "notebook_files": 108,
+    "model_documentation_pages": 3,
+    "notebook_files": 109,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 351,
-    "python_model_classes": 1343,
-    "python_model_source_modules": 688,
+    "public_documentation_pages": 353,
+    "python_model_classes": 1350,
+    "python_model_source_modules": 693,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1144
+    "test_files": 1150
   },
   "documentation": {
     "examples": [
@@ -107,6 +107,7 @@
       "notebooks/49_differentiable_first_path.ipynb",
       "notebooks/50_chimera_multiscale_control.ipynb",
       "notebooks/51_dla_topology_constrained_control.ipynb",
+      "notebooks/52_topology_aware_quantum_kernel.ipynb",
       "notebooks/colab/kaggle_aging_k_decay.ipynb",
       "notebooks/colab/kaggle_anaesthesia_consciousness.ipynb",
       "notebooks/colab/kaggle_biochemical_validation.ipynb",
@@ -187,6 +188,7 @@
       "docs/analysis_api.md",
       "docs/api/chimera_control.md",
       "docs/api/dla_topology_control.md",
+      "docs/api/topology_kernel_product.md",
       "docs/api.md",
       "docs/application_benchmarks.md",
       "docs/architecture.md",
@@ -506,6 +508,7 @@
       "docs/tier_benchmarks.md",
       "docs/tn_mps_baseline_design.md",
       "docs/tn_mps_crossover_stage1.md",
+      "docs/topology_aware_quantum_kernel.md",
       "docs/triage.md",
       "docs/tutorials.md",
       "docs/ultrascale_hls.md",
@@ -543,7 +546,8 @@
   "models": {
     "documentation_pages": [
       "chimera_control.md",
-      "dla_topology_control.md"
+      "dla_topology_control.md",
+      "topology_kernel_product.md"
     ],
     "domain_package_counts": [
       {
@@ -730,6 +734,11 @@
         "package": "topology_control",
         "path": "src/scpn_quantum_control/topology_control",
         "python_modules": 7
+      },
+      {
+        "package": "topology_kernel_product",
+        "path": "src/scpn_quantum_control/topology_kernel_product",
+        "python_modules": 5
       }
     ],
     "python_classes": [
@@ -2932,6 +2941,18 @@
       {
         "name": "JosephsonMagnitudeStudyDesign",
         "path": "src/scpn_quantum_control/applications/josephson_magnitude_study.py"
+      },
+      {
+        "name": "KernelEvaluation",
+        "path": "src/scpn_quantum_control/topology_kernel_product/schema.py"
+      },
+      {
+        "name": "KernelRidgeClassifier",
+        "path": "src/scpn_quantum_control/topology_kernel_product/classifier.py"
+      },
+      {
+        "name": "KernelSupportRow",
+        "path": "src/scpn_quantum_control/topology_kernel_product/evidence.py"
       },
       {
         "name": "KitDigestSpec",
@@ -5806,6 +5827,22 @@
         "path": "src/scpn_quantum_control/topology_control/hardware_integration.py"
       },
       {
+        "name": "TopologyKernelConfig",
+        "path": "src/scpn_quantum_control/topology_kernel_product/schema.py"
+      },
+      {
+        "name": "TopologyKernelDataset",
+        "path": "src/scpn_quantum_control/topology_kernel_product/schema.py"
+      },
+      {
+        "name": "TopologyKernelEvidence",
+        "path": "src/scpn_quantum_control/topology_kernel_product/evidence.py"
+      },
+      {
+        "name": "TopologyKernelMatrix",
+        "path": "src/scpn_quantum_control/topology_kernel_product/schema.py"
+      },
+      {
         "name": "TopologyOptimisationArtifact",
         "path": "src/scpn_quantum_control/topology_control/artefacts.py"
       },
@@ -6782,6 +6819,11 @@
       "src/scpn_quantum_control/topology_control/objectives.py",
       "src/scpn_quantum_control/topology_control/optimizers.py",
       "src/scpn_quantum_control/topology_control/qsnn_integration.py",
+      "src/scpn_quantum_control/topology_kernel_product/classifier.py",
+      "src/scpn_quantum_control/topology_kernel_product/evidence.py",
+      "src/scpn_quantum_control/topology_kernel_product/kernels.py",
+      "src/scpn_quantum_control/topology_kernel_product/schema.py",
+      "src/scpn_quantum_control/topology_kernel_product/synthetic.py",
       "src/scpn_quantum_control/unsuitable_scenario_registry.py",
       "src/scpn_quantum_control/visualisation_dashboard_product.py",
       "src/scpn_quantum_control/whole_program_ad_api.py",
@@ -9042,6 +9084,12 @@
       "tests/test_topology_constraints_guards.py",
       "tests/test_topology_control_core.py",
       "tests/test_topology_control_integration.py",
+      "tests/test_topology_kernel_product_classifier.py",
+      "tests/test_topology_kernel_product_e2e.py",
+      "tests/test_topology_kernel_product_evidence.py",
+      "tests/test_topology_kernel_product_kernels.py",
+      "tests/test_topology_kernel_product_schema.py",
+      "tests/test_topology_kernel_product_synthetic.py",
       "tests/test_topology_objectives_branches.py",
       "tests/test_topology_optimizers_branches.py",
       "tests/test_transform_algebra.py",

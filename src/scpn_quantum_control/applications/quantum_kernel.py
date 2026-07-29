@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Quantum Kernel
-"""Quantum kernel for coupled oscillator classification.
+"""Finite simulator fidelity kernels informed by oscillator coupling.
 
 A quantum kernel K(x, x') = |<φ(x)|φ(x')>|² maps classical feature
 vectors into quantum Hilbert space via a parameterised encoding circuit.
@@ -16,14 +16,14 @@ For the Kuramoto-XY system, the encoding uses the coupling topology:
 where U_K encodes features x into the XY Hamiltonian evolution:
     U_K(x) = exp(-i Σ_ij x_k K_ij (X_i X_j + Y_i Y_j) t)
 
-This produces a kernel that naturally respects the coupling structure.
-The same kernel works for:
-    1. Tokamak disruption classification (x = plasma features)
-    2. EEG state classification (x = neural oscillation features)
-    3. Power grid stability (x = generator features)
+The legacy encoder also applies local feature rotations. The edge-aligned
+encoder added for BL-88 instead assigns one feature to every canonical
+undirected qubit pair and modulates only that coupling entry. Both paths use
+exact local statevectors. They are feature-map implementations, not evidence
+of quantum advantage, domain fitness, provider execution, or hardware results.
 
-Ref: Havlíček et al., Nature 567, 209 (2019) — quantum advantage
-for classification with quantum kernels.
+Reference: Havlíček et al., Nature 567, 209 (2019), DOI
+10.1038/s41586-019-0980-2.
 """
 
 from __future__ import annotations
@@ -38,6 +38,8 @@ from qiskit.quantum_info import Statevector
 from qiskit.synthesis import LieTrotter
 
 from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+
+Edge = tuple[int, int]
 
 
 @dataclass
@@ -74,6 +76,111 @@ def _validated_feature_vector(x: NDArray[np.float64], *, name: str = "x") -> NDA
     if not np.all(np.isfinite(x_array)):
         raise ValueError(f"{name} must contain only finite values.")
     return x_array
+
+
+def canonical_edge_pairs(n_qubits: int) -> tuple[Edge, ...]:
+    """Return canonical undirected pairs in upper-triangular order.
+
+    Parameters
+    ----------
+    n_qubits:
+        Positive qubit count.
+
+    Returns
+    -------
+    tuple[tuple[int, int], ...]
+        Pairs ``(i, j)`` with ``0 <= i < j < n_qubits``.
+
+    Raises
+    ------
+    ValueError
+        If ``n_qubits`` is not a positive integer.
+    """
+    if isinstance(n_qubits, bool) or not isinstance(n_qubits, int) or n_qubits < 1:
+        raise ValueError("n_qubits must be a positive integer.")
+    return tuple((i, j) for i in range(n_qubits) for j in range(i + 1, n_qubits))
+
+
+def encode_topology_edge_features(
+    x: NDArray[np.float64],
+    K: NDArray[np.float64],
+    n_qubits: int,
+    *,
+    t: float = 0.8,
+    reps: int = 2,
+    max_qubits: int = 8,
+) -> Statevector:
+    """Encode canonical edge features through a coupling-modulated XY circuit.
+
+    Feature ``x[k]`` multiplies the coupling for the ``k``-th pair returned by
+    :func:`canonical_edge_pairs`. The circuit prepares ``|+>**n`` and applies
+    one Trotter-synthesised evolution of the resulting XY Hamiltonian. No local
+    feature rotations or provider calls are performed.
+
+    Parameters
+    ----------
+    x:
+        Finite vector of length ``n_qubits * (n_qubits - 1) // 2``.
+    K:
+        Finite symmetric ``(n_qubits, n_qubits)`` coupling matrix with zero
+        diagonal. Zero entries are topology masks and ignore their features.
+    n_qubits:
+        Qubit count, bounded by ``max_qubits`` before dense simulation.
+    t:
+        Positive finite evolution time.
+    reps:
+        Positive integer Lie-Trotter repetition count, at most 16.
+    max_qubits:
+        Positive dense-state allocation budget, at most 20.
+
+    Returns
+    -------
+    qiskit.quantum_info.Statevector
+        Exact local statevector of dimension ``2**n_qubits``.
+
+    Raises
+    ------
+    ValueError
+        If shapes, symmetry, diagonal, finiteness, evolution settings, or
+        resource budgets violate the contract.
+    """
+    if isinstance(max_qubits, bool) or not isinstance(max_qubits, int):
+        raise ValueError("max_qubits must be an integer.")
+    if max_qubits < 1 or max_qubits > 20:
+        raise ValueError("max_qubits must lie in [1, 20].")
+    if n_qubits > max_qubits:
+        raise ValueError("n_qubits exceeds the configured dense-state budget.")
+    coupling = _validated_coupling_matrix(K, n_qubits)
+    if not np.allclose(coupling, coupling.T, rtol=0.0, atol=1.0e-12):
+        raise ValueError("K must be symmetric for edge-aligned encoding.")
+    if not np.allclose(np.diag(coupling), 0.0, rtol=0.0, atol=1.0e-12):
+        raise ValueError("K diagonal must be zero for edge-aligned encoding.")
+    features = _validated_feature_vector(x)
+    pairs = canonical_edge_pairs(n_qubits)
+    if features.shape != (len(pairs),):
+        raise ValueError(f"x must have shape ({len(pairs)},) for canonical edge features.")
+    if not np.isfinite(t) or t <= 0.0:
+        raise ValueError("t must be finite and positive.")
+    if isinstance(reps, bool) or not isinstance(reps, int) or not 1 <= reps <= 16:
+        raise ValueError("reps must be an integer in [1, 16].")
+
+    modulated = np.zeros_like(coupling)
+    for feature, (i, j) in zip(features, pairs, strict=True):
+        value = float(feature * coupling[i, j])
+        modulated[i, j] = value
+        modulated[j, i] = value
+    hamiltonian = knm_to_hamiltonian(modulated, np.zeros(n_qubits))
+    circuit = QuantumCircuit(n_qubits)
+    circuit.h(range(n_qubits))
+    circuit.append(
+        PauliEvolutionGate(
+            hamiltonian,
+            time=float(t),
+            synthesis=LieTrotter(reps=reps),
+        ),
+        range(n_qubits),
+    )
+    return Statevector.from_instruction(circuit)
 
 
 def _encode_features(
