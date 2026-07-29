@@ -451,6 +451,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [TheoryHookTier, TheoryHookRole, TheoryHookStatus, TheoryHookPromotionRecord, TheoryHookEvidenceRecord, TheoryHookPromotionReport, list_theory_hook_promotions, get_theory_hook_promotion, run_theory_hook_evidence, build_theory_hook_promotion_report, render_theory_hook_promotion_markdown]
 
+::: scpn_quantum_control.analysis.research_lane_registry
+    options:
+      members: [ResearchLaneMaturity, ResearchLaneDiffHook, ResearchLaneClaimStatus, ResearchLaneRecord, ResearchLaneInventoryReport, ResearchLaneRegistryReport, list_research_lanes, get_research_lane, discover_research_lane_modules, validate_research_lane_inventory, assert_research_lane_inventory, build_research_lane_registry_report, render_research_lane_registry_markdown]
+
 ## Crypto
 
 ::: scpn_quantum_control.crypto

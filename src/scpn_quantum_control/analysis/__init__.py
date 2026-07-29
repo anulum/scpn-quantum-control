@@ -121,6 +121,23 @@ from .quantum_fisher_information import QuantumFisherInformation
 from .quantum_mpemba import MpembaResult, mpemba_experiment
 from .quantum_persistent_homology import QuantumPHResult, ph_sync_scan
 from .quantum_phi import PhiResult, compute_quantum_phi, phi_vs_coupling_scan, von_neumann_entropy
+from .research_lane_registry import (
+    RESEARCH_LANE_REGISTRY_BOUNDARY,
+    RESEARCH_LANE_REGISTRY_SCHEMA,
+    ResearchLaneClaimStatus,
+    ResearchLaneDiffHook,
+    ResearchLaneInventoryReport,
+    ResearchLaneMaturity,
+    ResearchLaneRecord,
+    ResearchLaneRegistryReport,
+    assert_research_lane_inventory,
+    build_research_lane_registry_report,
+    discover_research_lane_modules,
+    get_research_lane,
+    list_research_lanes,
+    render_research_lane_registry_markdown,
+    validate_research_lane_inventory,
+)
 from .rl_discovery_agent import RLDiscoveryAgent
 from .rl_pulse_optimizer import RLPulseOptimizer
 from .sensing import (
@@ -253,6 +270,21 @@ __all__ = [
     "compute_quantum_phi",
     "phi_vs_coupling_scan",
     "von_neumann_entropy",
+    "RESEARCH_LANE_REGISTRY_BOUNDARY",
+    "RESEARCH_LANE_REGISTRY_SCHEMA",
+    "ResearchLaneClaimStatus",
+    "ResearchLaneDiffHook",
+    "ResearchLaneInventoryReport",
+    "ResearchLaneMaturity",
+    "ResearchLaneRecord",
+    "ResearchLaneRegistryReport",
+    "assert_research_lane_inventory",
+    "build_research_lane_registry_report",
+    "discover_research_lane_modules",
+    "get_research_lane",
+    "list_research_lanes",
+    "render_research_lane_registry_markdown",
+    "validate_research_lane_inventory",
     "ShadowResult",
     "classical_shadow_estimation",
     "VortexBindingResult",

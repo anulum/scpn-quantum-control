@@ -1,7 +1,9 @@
 # Analysis API Reference
 
-*42 modules for probing quantum synchronization transitions, entanglement structure,
-topological invariants, and computational complexity of the Kuramoto-XY Hamiltonian.*
+*Advanced references for the analysis stack. The governed
+[research-lane registry](research_lanes.md) currently classifies 73 ordinary
+`analysis/` and `gauge/` modules by maturity, differentiable relevance, and
+claim status.*
 
 This is an advanced module reference. Use
 [Stable Facades API](stable_facades_api.md) and
@@ -14,6 +16,11 @@ routes are governed by the [Theory-Hook Promotion Matrix](theory_hook_promotion.
 and its [typed API](api/theory_hook_promotion.md). Importability does not grant
 control, differentiability, criticality, hardware, consciousness, or
 publication claims.
+
+The broader module inventory is enforced by
+`assert_research_lane_inventory()`. Consult the
+[Research-lane Registry API](api/research_lane_registry.md) before treating an
+importable analysis helper as a supported integration surface.
 
 ---
 

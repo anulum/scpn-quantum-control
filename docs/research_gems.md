@@ -1,7 +1,13 @@
 # Research Gems: Novel Quantum Probes of Synchronization
 
-*33 modules implementing original research at the intersection of quantum information,
-condensed matter physics, and the SCPN coupling architecture.*
+*A legacy curated set of 33 research-gem modules at the intersection of quantum
+information, condensed matter physics, and the SCPN coupling architecture.*
+
+This page preserves the authored Rounds 1–8 research narrative. It is not the
+current package inventory or a maturity claim. The governed
+[Deep-analysis Research Lanes](research_lanes.md) catalogue classifies every
+ordinary `analysis/` and `gauge/` module and fails CI when a new module lacks a
+human-reviewed row.
 
 ---
 
@@ -13,7 +19,7 @@ matrix $K_{nm}$ maps to an XY Hamiltonian on qubits:
 
 $$H = -\sum_{i<j} K_{ij}(X_i X_j + Y_i Y_j) - \sum_i \omega_i Z_i$$
 
-The 33 research gems in this package probe the **synchronization phase transition** —
+The 33 legacy curated research gems on this page probe the **synchronization phase transition** —
 the quantum analogue of the classical Kuramoto transition — using tools from quantum
 information theory, algebraic topology, gauge theory, and computational complexity.
 Each module implements a measurement or analysis technique applied to the

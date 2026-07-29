@@ -4,16 +4,16 @@
     "domain_package_families": 38,
     "example_files": 37,
     "github_workflows": 24,
-    "model_documentation_pages": 5,
+    "model_documentation_pages": 6,
     "notebook_files": 109,
     "optional_extras": 43,
     "public_api_exports": 841,
-    "public_documentation_pages": 357,
-    "python_model_classes": 1361,
-    "python_model_source_modules": 695,
+    "public_documentation_pages": 359,
+    "python_model_classes": 1367,
+    "python_model_source_modules": 696,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1152
+    "test_files": 1153
   },
   "documentation": {
     "examples": [
@@ -189,6 +189,7 @@
       "docs/api/application_honesty_kits.md",
       "docs/api/chimera_control.md",
       "docs/api/dla_topology_control.md",
+      "docs/api/research_lane_registry.md",
       "docs/api/theory_hook_promotion.md",
       "docs/api/topology_kernel_product.md",
       "docs/api.md",
@@ -479,6 +480,7 @@
       "docs/realtime_runtime.md",
       "docs/release_readiness.md",
       "docs/research_gems.md",
+      "docs/research_lanes.md",
       "docs/resource_budget_gate.md",
       "docs/results.md",
       "docs/rust_engine.md",
@@ -552,6 +554,7 @@
       "application_honesty_kits.md",
       "chimera_control.md",
       "dla_topology_control.md",
+      "research_lane_registry.md",
       "theory_hook_promotion.md",
       "topology_kernel_product.md"
     ],
@@ -564,7 +567,7 @@
       {
         "package": "analysis",
         "path": "src/scpn_quantum_control/analysis",
-        "python_modules": 67
+        "python_modules": 68
       },
       {
         "package": "applications",
@@ -5293,6 +5296,30 @@
         "path": "src/scpn_quantum_control/dla_parity/reproduce.py"
       },
       {
+        "name": "ResearchLaneClaimStatus",
+        "path": "src/scpn_quantum_control/analysis/research_lane_registry.py"
+      },
+      {
+        "name": "ResearchLaneDiffHook",
+        "path": "src/scpn_quantum_control/analysis/research_lane_registry.py"
+      },
+      {
+        "name": "ResearchLaneInventoryReport",
+        "path": "src/scpn_quantum_control/analysis/research_lane_registry.py"
+      },
+      {
+        "name": "ResearchLaneMaturity",
+        "path": "src/scpn_quantum_control/analysis/research_lane_registry.py"
+      },
+      {
+        "name": "ResearchLaneRecord",
+        "path": "src/scpn_quantum_control/analysis/research_lane_registry.py"
+      },
+      {
+        "name": "ResearchLaneRegistryReport",
+        "path": "src/scpn_quantum_control/analysis/research_lane_registry.py"
+      },
+      {
         "name": "ReservoirLinearObjective",
         "path": "src/scpn_quantum_control/applications/quantum_reservoir_product.py"
       },
@@ -6256,6 +6283,7 @@
       "src/scpn_quantum_control/analysis/quantum_persistent_homology.py",
       "src/scpn_quantum_control/analysis/quantum_phi.py",
       "src/scpn_quantum_control/analysis/quantum_speed_limit.py",
+      "src/scpn_quantum_control/analysis/research_lane_registry.py",
       "src/scpn_quantum_control/analysis/rl_discovery_agent.py",
       "src/scpn_quantum_control/analysis/rl_pulse_optimizer.py",
       "src/scpn_quantum_control/analysis/sensing.py",
@@ -8973,6 +9001,7 @@
       "tests/test_report_decisive_advantage_gate.py",
       "tests/test_report_s2_scaling_claim_boundary.py",
       "tests/test_reproducible_comparison.py",
+      "tests/test_research_lane_registry.py",
       "tests/test_resource_budget_gate.py",
       "tests/test_result_pack_seal.py",
       "tests/test_retrieve_march_flagship_receipts.py",

@@ -10,6 +10,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md).
 
+## Unreleased
+
+### Added
+
+- BL-84 deep-analysis research-lane registry: 73 immutable human-reviewed
+  `analysis/` and `gauge/` rows, explicit maturity/differentiable-hook/claim
+  classifications, deterministic evidence, and an exact inventory gate that
+  rejects unregistered new modules. Registry membership grants no product,
+  control, hardware, or publication claim.
+
 ## [1.0.0] - 2026-07-17
 
 First stable release. The version carriers move to `1.0.0` and the public

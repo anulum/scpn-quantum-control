@@ -464,7 +464,7 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 695 (excluding package initialisers) |
+| Python modules | 696 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 81 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% line gate; branch telemetry required and currently observational) |
@@ -485,7 +485,7 @@ preparation and `bridge/` for Hamiltonian access.
 graph TD
     bridge["bridge/ (15)\nK_nm → quantum objects"]
     phase["phase/ (116)\nTime evolution"]
-    analysis["analysis/ (67)\nSync probes"]
+    analysis["analysis/ (68)\nSync probes + governed registry"]
     control["control/ (14)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
     identity["identity/ (6)\nIdentity analysis"]
@@ -822,7 +822,10 @@ scpn_quantum_engine/                       ← Rust crate (PyO3 0.29, rayon para
                                                all_xy_expectations
 ```
 
-★ marks modules from the 33 Research Gems (Rounds 1-8, March 2026).
+★ marks modules from the legacy curated 33 Research Gems (Rounds 1–8, March
+2026). The complete current `analysis/` plus `gauge/` source inventory is
+governed separately by the [Deep-analysis Research Lanes](research_lanes.md)
+registry; a star is not a maturity or promotion marker.
 
 ## Classical-to-Quantum Mapping
 
