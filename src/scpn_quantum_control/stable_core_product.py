@@ -87,6 +87,7 @@ class StableCoreContractRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     contract_id: str
@@ -161,6 +162,7 @@ class StableCoreRoundTripResult:
         Whether post-round-trip dict equals original serialised dict.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     kind: ContractKind
@@ -285,6 +287,7 @@ def list_stable_core_contract_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered contract identifiers.
+
     """
     return tuple(row.contract_id for row in _CANONICAL_CONTRACTS)
 
@@ -306,6 +309,7 @@ def get_stable_core_contract(contract_id: str) -> StableCoreContractRow:
     ------
     ValueError
         If ``contract_id`` is blank or unknown (fail closed).
+
     """
     if not contract_id or not str(contract_id).strip():
         raise ValueError("contract_id must be a non-empty string")
@@ -334,6 +338,7 @@ def iter_stable_core_contracts(
     -------
     tuple[StableCoreContractRow, ...]
         Matching rows.
+
     """
     rows: Sequence[StableCoreContractRow] = _CANONICAL_CONTRACTS
     if kind is not None:
@@ -348,6 +353,7 @@ def schema_version_policy() -> dict[str, object]:
     -------
     dict[str, object]
         Policy payload with supported versions and refuse rules.
+
     """
     return {
         "product_schema": STABLE_CORE_PRODUCT_SCHEMA,
@@ -378,6 +384,7 @@ def validate_model_schema_version(schema_version: str) -> str:
     ------
     ValueError
         If blank or unknown.
+
     """
     if not schema_version or not str(schema_version).strip():
         raise ValueError("schema_version must be a non-empty string")
@@ -422,6 +429,7 @@ def problem_from_dict(payload: Mapping[str, Any]) -> Problem:
     ------
     ValueError
         If required fields are blank, missing, or invalid.
+
     """
     data = _require_mapping("problem payload", payload)
     problem_id = _require_non_empty_str("problem_id", data.get("problem_id"))
@@ -468,6 +476,7 @@ def backend_from_dict(payload: Mapping[str, Any]) -> Backend:
     ------
     ValueError
         If required fields are blank, missing, or invalid.
+
     """
     data = _require_mapping("backend payload", payload)
     backend_id = _require_non_empty_str("backend_id", data.get("backend_id"))
@@ -509,6 +518,7 @@ def experiment_from_dict(payload: Mapping[str, Any]) -> Experiment:
     ------
     ValueError
         If required fields are blank, missing, or invalid.
+
     """
     data = _require_mapping("experiment payload", payload)
     experiment_id = _require_non_empty_str("experiment_id", data.get("experiment_id"))
@@ -558,6 +568,7 @@ def result_from_dict(payload: Mapping[str, Any]) -> Result:
     ------
     ValueError
         If required fields are blank, missing, or invalid.
+
     """
     data = _require_mapping("result payload", payload)
     experiment_id = _require_non_empty_str("experiment_id", data.get("experiment_id"))
@@ -615,6 +626,7 @@ def wrap_model_envelope(
     ------
     ValueError
         If kind/schema/body invalid.
+
     """
     if kind not in {"problem", "backend", "experiment", "result"}:
         raise ValueError(f"envelope kind must be problem|backend|experiment|result, got {kind!r}")
@@ -646,6 +658,7 @@ def unwrap_model_envelope(envelope: Mapping[str, Any]) -> tuple[str, ContractKin
     ------
     ValueError
         If envelope is blank/unknown/invalid.
+
     """
     data = _require_mapping("envelope", envelope)
     version = validate_model_schema_version(str(data.get("schema_version", "")))
@@ -673,6 +686,7 @@ def canonical_json_bytes(payload: Mapping[str, Any]) -> bytes:
     -------
     bytes
         Canonical JSON encoding.
+
     """
     if not isinstance(payload, Mapping):
         raise ValueError("payload must be a mapping")
@@ -692,6 +706,7 @@ def digest_stable_core_payload(payload: Mapping[str, Any]) -> str:
     -------
     str
         64-character lowercase hex digest.
+
     """
     return hashlib.sha256(canonical_json_bytes(payload)).hexdigest()
 
@@ -803,6 +818,7 @@ def build_demo_experiment() -> Experiment:
     -------
     Experiment
         Classical-reference experiment with a 2-qubit Kuramoto/XY problem.
+
     """
     problem = build_problem(
         problem_id="demo-kuramoto-2q",
@@ -830,6 +846,7 @@ def map_stable_core_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     return tuple(
         {
@@ -852,6 +869,7 @@ def build_stable_core_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with contracts and policy (no blanks).
+
     """
     contracts = [row.to_dict() for row in _CANONICAL_CONTRACTS]
     return {
@@ -890,6 +908,7 @@ def assert_stable_core_product_integrity(
     ------
     ValueError
         If coverage or blanks appear.
+
     """
     registry = dict(payload) if payload is not None else build_stable_core_product_registry()
     contracts = registry.get("contracts")

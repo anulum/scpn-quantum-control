@@ -47,6 +47,7 @@ if TYPE_CHECKING:
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import program_ad_array_indexing_quality_gates as _array_indexing_quality_gates
     from tools import program_ad_quality_gates as _program_ad_quality_gates
+    from tools import stable_core_product_quality_gates as _stable_core_product_quality_gates
 else:
     _repo_root = str(Path(__file__).resolve().parents[1])
     if _repo_root not in sys.path:
@@ -56,6 +57,7 @@ else:
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
     _array_indexing_quality_gates = import_module("tools.program_ad_array_indexing_quality_gates")
     _program_ad_quality_gates = import_module("tools.program_ad_quality_gates")
+    _stable_core_product_quality_gates = import_module("tools.stable_core_product_quality_gates")
 
 ROOT = Path(__file__).resolve().parent.parent
 _PY = sys.executable
@@ -95,6 +97,7 @@ DIFFERENTIABLE_DOCSTRING_RATCHET = [
     "src/scpn_quantum_control/phase/tensorflow_maintenance.py",
     "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py",
     "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
+    "src/scpn_quantum_control/stable_core_product.py",
     "tests/test_differentiable_external_validation.py",
     "tests/test_differentiable_finite_difference.py",
     "tests/test_differentiable_competitive_baselines.py",
@@ -105,6 +108,7 @@ DIFFERENTIABLE_DOCSTRING_RATCHET = [
     "tests/test_program_ad_shape_transforms.py",
     "tests/test_phase_tensorflow_maintenance.py",
     "tests/test_differentiable_hardening_gate.py",
+    "tests/test_stable_core_product.py",
     "tools/differentiable_support_matrix_page.py",
     "tests/test_differentiable_support_matrix_page.py",
     "tools/differentiable_reviewer_evidence_catalog.py",
@@ -360,6 +364,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_decisive_advantage_quality_gates.build_static_quality_gates(_PY),
     *_differentiable_quality_gates.build_static_quality_gates(_PY),
     *_array_indexing_quality_gates.build_static_quality_gates(_PY),
+    *_stable_core_product_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -706,6 +711,7 @@ MLIR_LEAF_COVERAGE_GATES: list[tuple[str, list[str]]] = [
 DECISIVE_ADVANTAGE_COVERAGE_GATES = _decisive_advantage_quality_gates.build_coverage_gates(_PY)
 DIFFERENTIABLE_QUALITY_COVERAGE_GATES = _differentiable_quality_gates.build_coverage_gates(_PY)
 PROGRAM_AD_ARRAY_INDEXING_COVERAGE_GATES = _array_indexing_quality_gates.build_coverage_gates(_PY)
+STABLE_CORE_PRODUCT_COVERAGE_GATES = _stable_core_product_quality_gates.build_coverage_gates(_PY)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -959,6 +965,7 @@ def main() -> int:
             gates.extend(DECISIVE_ADVANTAGE_COVERAGE_GATES)
             gates.extend(DIFFERENTIABLE_QUALITY_COVERAGE_GATES)
             gates.extend(PROGRAM_AD_ARRAY_INDEXING_COVERAGE_GATES)
+            gates.extend(STABLE_CORE_PRODUCT_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

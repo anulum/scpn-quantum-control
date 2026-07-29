@@ -578,7 +578,7 @@ def test_ci_and_preflight_share_the_docstring_ratchet_cohort() -> None:
     """CI and the local static gate must enforce the same ordered file cohort."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
     block_start = workflow.index("      - name: Ruff docstring ratchet")
-    block_end = workflow.index("\n\n  decisive-advantage-quality:", block_start)
+    block_end = workflow.index("\n\n  stable-core-product-quality:", block_start)
     ci_paths = [
         line.strip()
         for line in workflow[block_start:block_end].splitlines()
@@ -955,6 +955,8 @@ def test_main_uses_coverage_pytest_by_default(
         *(name for name, _command in _preflight.DIFFERENTIABLE_QUALITY_COVERAGE_GATES),
         "program-ad-array-indexing focused coverage",
         "program-ad-array-indexing exact coverage threshold",
+        "stable-core-product focused coverage",
+        "stable-core-product exact coverage threshold",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",

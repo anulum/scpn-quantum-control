@@ -57,6 +57,7 @@ from scpn_quantum_control.stable_core_product import (
 
 
 def test_list_contracts_and_filters() -> None:
+    """List contracts deterministically and filter them by contract kind."""
     ids = list_stable_core_contract_ids()
     assert "schema_policy" in ids
     assert "experiment_contract" in ids
@@ -68,6 +69,7 @@ def test_list_contracts_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known contracts and reject blank or unknown identifiers."""
     row = get_stable_core_contract("experiment_contract")
     assert row.bl97_stability_class == "stable_core"
     assert row.claim_boundary == STABLE_CORE_PRODUCT_CLAIM_BOUNDARY
@@ -80,6 +82,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_schema_version_policy() -> None:
+    """Expose the supported schema and refuse silent field drops."""
     policy = schema_version_policy()
     assert policy["model_schema_version"] == STABLE_CORE_MODEL_SCHEMA_VERSION
     assert policy["silent_field_drop_allowed"] is False
@@ -91,6 +94,7 @@ def test_schema_version_policy() -> None:
 
 
 def test_problem_round_trip_and_digest() -> None:
+    """Round-trip a problem with stable canonical payload and digest output."""
     problem = build_problem(
         problem_id="p1",
         coupling_matrix=((0.0, 0.2), (0.2, 0.0)),
@@ -108,6 +112,7 @@ def test_problem_round_trip_and_digest() -> None:
 
 
 def test_experiment_round_trip_demo() -> None:
+    """Round-trip the deterministic no-hardware demonstration experiment."""
     experiment = build_demo_experiment()
     assert experiment.backend.kind == "classical_reference"
     assert experiment.backend.hardware_submission_allowed is False
@@ -121,6 +126,7 @@ def test_experiment_round_trip_demo() -> None:
 
 
 def test_backend_and_result_serialise() -> None:
+    """Serialise and rebuild backend and result envelopes without field loss."""
     backend = classical_reference_backend()
     env = serialise_backend(backend)
     assert env["kind"] == "backend"
@@ -146,6 +152,7 @@ def test_backend_and_result_serialise() -> None:
 
 
 def test_from_dict_fail_closed() -> None:
+    """Reject malformed mappings across all stable-core contract builders."""
     with pytest.raises(ValueError, match="mapping"):
         problem_from_dict(cast(Any, "nope"))
     with pytest.raises(ValueError, match="problem_id"):
@@ -202,6 +209,7 @@ def test_from_dict_fail_closed() -> None:
 
 
 def test_envelope_wrap_unwrap_fail_closed() -> None:
+    """Validate envelope round-trips and reject invalid schema or body data."""
     body = build_problem(
         problem_id="p",
         coupling_matrix=((0.0,),),
@@ -235,6 +243,7 @@ def test_envelope_wrap_unwrap_fail_closed() -> None:
 
 
 def test_kind_mismatch_on_deserialise() -> None:
+    """Reject envelopes whose declared kind differs from the target model."""
     problem = build_problem(
         problem_id="p",
         coupling_matrix=((0.0,),),
@@ -252,6 +261,7 @@ def test_kind_mismatch_on_deserialise() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Publish a complete deterministic surface map and product registry."""
     surfaces = map_stable_core_public_surfaces()
     assert surfaces
     symbols = {row["symbol_name"] for row in surfaces}
@@ -271,8 +281,9 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift() -> None:
+    """Reject missing, duplicate, or schema-policy registry drift."""
     registry = build_stable_core_product_registry()
-    contracts = cast(list[dict[str, object]], list(registry["contracts"]))
+    contracts = list(cast(list[dict[str, object]], registry["contracts"]))
     broken = dict(registry)
     broken["contracts"] = contracts + [
         {
@@ -304,8 +315,9 @@ def test_integrity_rejects_drift() -> None:
 
 
 def test_integrity_rejects_blank_invalid_and_metadata() -> None:
+    """Reject blank, invalid, and inconsistent registry metadata."""
     registry = build_stable_core_product_registry()
-    contracts = cast(list[dict[str, object]], list(registry["contracts"]))
+    contracts = list(cast(list[dict[str, object]], registry["contracts"]))
 
     non_map = dict(registry)
     non_map["contracts"] = [cast(Any, "not-a-mapping")]
@@ -367,12 +379,14 @@ def test_integrity_rejects_blank_invalid_and_metadata() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the documented stable-core product symbols publicly exported."""
     assert "round_trip_experiment" in stable_core_product.__all__
     assert "build_demo_experiment" in stable_core_product.__all__
     assert "schema_version_policy" in stable_core_product.__all__
 
 
 def test_contract_row_validation() -> None:
+    """Validate every required contract-row invariant independently."""
     base: dict[str, Any] = {
         "contract_id": "x",
         "kind": "problem",
@@ -401,6 +415,7 @@ def test_contract_row_validation() -> None:
 
 
 def test_round_trip_result_validation() -> None:
+    """Validate round-trip result kind, schema, digest, and payload fields."""
     with pytest.raises(ValueError, match="kind"):
         StableCoreRoundTripResult(
             kind=cast(Any, "nope"),
@@ -444,6 +459,7 @@ def test_round_trip_result_validation() -> None:
 
 
 def test_serialise_type_guards() -> None:
+    """Reject values that do not match the requested serialisation model."""
     with pytest.raises(ValueError, match="Problem"):
         serialise_problem(cast(Any, "nope"))
     with pytest.raises(ValueError, match="Backend"):
@@ -457,6 +473,7 @@ def test_serialise_type_guards() -> None:
 
 
 def test_catalogue_map_runtime_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject empty, blank, and duplicate internal catalogue definitions."""
     from scpn_quantum_control import stable_core_product as mod
 
     good = get_stable_core_contract("problem_contract")
@@ -487,6 +504,7 @@ def test_catalogue_map_runtime_guards(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_to_dict_on_contract_row() -> None:
+    """Render every contract-row field into a JSON-ready mapping."""
     row = get_stable_core_contract("schema_policy")
     payload = row.to_dict()
     assert payload["kind"] == "schema_policy"
@@ -494,6 +512,7 @@ def test_to_dict_on_contract_row() -> None:
 
 
 def test_backend_from_dict_hw_flag() -> None:
+    """Preserve a valid hardware flag and reject non-boolean flag values."""
     backend = build_backend(
         backend_id="qiskit-runtime",
         kind="qiskit",
@@ -514,6 +533,7 @@ def test_backend_from_dict_hw_flag() -> None:
 
 
 def test_from_dict_extra_type_edges() -> None:
+    """Reject additional sequence, mapping, scalar, and null type violations."""
     with pytest.raises(ValueError, match="unsupported problem kind"):
         problem_from_dict(
             {
@@ -659,6 +679,7 @@ def test_from_dict_extra_type_edges() -> None:
 
 
 def test_envelope_kind_and_body_edges() -> None:
+    """Reject unsupported kinds and empty or non-mapping envelope bodies."""
     with pytest.raises(ValueError, match="kind must be a non-empty string"):
         unwrap_model_envelope(
             {
@@ -678,6 +699,7 @@ def test_envelope_kind_and_body_edges() -> None:
 
 
 def test_round_trip_detects_field_loss(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fail closed when a rebuilt model loses fields during round-trip."""
     from scpn_quantum_control import stable_core_product as mod
 
     problem = build_problem(
