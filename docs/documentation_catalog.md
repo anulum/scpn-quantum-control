@@ -4,7 +4,7 @@ The primary navigation stays intentionally compact. This catalog keeps every
 public guide, evidence note, contract, campaign protocol, and reference page
 discoverable without crowding the main learning path.
 
-Current inventory: **365 public pages**; **161** are in the
+Current inventory: **366 public pages**; **162** are in the
 primary navigation and the remainder are indexed here.
 
 Labels marked `catalog` are intentionally outside the primary navigation; they
@@ -19,6 +19,7 @@ are still built, link-checked, searchable, and public.
 | [Auto-Generated API Reference](autodoc.md) | primary nav | Generated from source docstrings via mkdocstrings. |
 | [Benchmarks API Reference](benchmarks_api.md) | primary nav | The benchmarks package measures the computational frontier: at what system size does quantum hardware outperform the best classical methods for simulating Kuramoto-XY dynamics? Seven modules answer this from different angles — documented cl |
 | [Bridges API Reference](bridges_api.md) | primary nav | The bridge package is the central nervous system of scpn-quantum-control. Every module in this package translates between classical SCPN state representations and quantum operator formats. Without the bridge layer, coupling matrices are num |
+| [Cross-language API reference builds](cross_language_api_reference.md) | primary nav | The repository builds API references with each language ecosystem's native documentation tool. CI treats warnings and broken links as failures. Generated HTML stays out of Git; source comments, docstrings, and configuration remain the revie |
 | [Differentiable API](differentiable_api.md) | primary nav | > **New here?** Start with Choosing a Gradient Path — > a 60-second decision table from *what you are differentiating* to *which entry > point to call*. This page is the full reference behind that guide. |
 | [Identity Continuity API](identity_api.md) | primary nav | The identity package provides quantitative tools for characterising identity attractor basins, coherence budgets, entanglement structure, robustness certification, and cryptographic fingerprinting of coupling topologies. |
 | [Mitigation API Reference](mitigation_api.md) | primary nav | The mitigation package provides six error mitigation techniques for noise reduction on NISQ hardware. Each technique exploits a different aspect of the noise: ZNE extrapolates through noise amplification, PEC cancels errors via quasi-probab |
