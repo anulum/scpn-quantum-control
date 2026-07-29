@@ -50,6 +50,51 @@ assert probe.invent_green_live_submit is False
 assert probe.attestation_slot_present is False
 ```
 
+## Public API contracts
+
+### Harness discovery and eligibility
+
+| API | Contract |
+|---|---|
+| `list_campaign_harness_ids()` | Return stable product harness identifiers in catalogue order. |
+| `get_campaign_harness(harness_id)` | Resolve one immutable harness row; blank and unknown identifiers raise `ValueError`. |
+| `iter_campaign_harnesses(kind=None)` | Return every harness or a stable kind-filtered tuple. |
+| `list_ambient_benchmark_family_ids()` | Return the bounded ambient benchmark families referenced by the product. |
+| `decide_campaign_path(harness_id, ...)` | Allow dry-run/no-submit use and return explicit blockers for live submission, preregistration mutation, unattested promotion, or invalid execution mode. |
+
+`CampaignHarnessRow` validates identity, ambient pointers, preregistration
+digest, supported execution modes, no-submit policy, attestation requirement,
+and claim boundary. `PathEligibilityDecision` keeps outcome, permission,
+reason, and blockers mutually consistent. Both records serialize through
+`to_dict()` for evidence pipelines.
+
+### Dry-run probe materialisation
+
+| API | Contract |
+|---|---|
+| `materialise_appqsim_probe(seed=0)` | Run the ambient appqsim protocol in deterministic no-submit mode and bind its result digest. |
+| `materialise_iqm_layout_probe(seed=0)` | Build the bounded IQM layout-transfer dry-run evidence without provider submission. |
+| `materialise_closed_loop_probe(seed=0)` | Materialise closed-loop publication metadata while preserving no-submit and unattested status. |
+| `materialise_demo_campaign_probe()` | Return the deterministic appqsim seed-zero demonstration. |
+
+Every `MaterialisedCampaignProbe` validates non-negative seed, non-empty
+harness/protocol/digest metadata, dry-run execution, no-submit status, finite
+metrics, and false invent-green/attestation flags. Ambient import or payload
+failures are surfaced explicitly; they are never converted into a successful
+campaign claim.
+
+### Registry evidence and integrity
+
+| API | Contract |
+|---|---|
+| `map_campaign_harness_public_surfaces()` | Emit deterministic product and ambient module descriptors with harness and claim metadata. |
+| `build_campaign_harness_product_registry()` | Build schema-tagged harnesses, surfaces, policy flags, counts, and residual-work evidence. |
+| `assert_campaign_harness_product_integrity(payload=None)` | Reject empty, malformed, blank, invalid-kind, duplicate, count-drifted, digest-drifted, or permissive submit/promotion state. |
+
+These APIs package reusable dry-run campaign evidence only. They do not submit
+to a QPU, spend provider credits, seal an attestation, promote a scientific
+claim, or substitute for ticketed multi-size campaign execution.
+
 ## Residuals (honest)
 
 - **S99.4** — BL-55 hermetic kit + BL-48 attestation sealing slots

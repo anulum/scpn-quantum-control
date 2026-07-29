@@ -36,6 +36,7 @@ from scpn_quantum_control.campaign_harness_product import (
 
 
 def test_list_and_filters() -> None:
+    """List stable harness identifiers and filter rows by harness kind."""
     ids = list_campaign_harness_ids()
     assert "appqsim_protocol" in ids
     assert "closed_loop_publication" in ids
@@ -52,6 +53,7 @@ def test_list_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known harnesses and reject blank or unknown identifiers."""
     row = get_campaign_harness("appqsim_protocol")
     assert row.claim_boundary == CAMPAIGN_HARNESS_CLAIM_BOUNDARY
     assert row.no_submit_default is True
@@ -65,6 +67,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_decide_campaign_path() -> None:
+    """Allow dry runs and refuse live, mutable, or unattested claim routes."""
     ok = decide_campaign_path("appqsim_protocol", mode="dry_run")
     assert ok.allowed is True
 
@@ -119,6 +122,7 @@ def _run_probe_or_subprocess(label: str, code: str) -> None:
 
 
 def test_campaign_probes() -> None:
+    """Materialise deterministic dry-run probes for every campaign family."""
     with pytest.raises(ValueError, match="n_oscillators"):
         materialise_closed_loop_probe(n_oscillators=1)
     with pytest.raises(ValueError, match="n_rounds"):
@@ -187,6 +191,7 @@ def test_campaign_probes() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Publish complete deterministic surface and registry catalogues."""
     surfaces = map_campaign_harness_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -204,8 +209,9 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift_and_policy() -> None:
+    """Reject harness drift and permissive submit or promotion policies."""
     registry = build_campaign_harness_product_registry()
-    harnesses = cast(list[dict[str, object]], list(registry["harnesses"]))
+    harnesses = cast(list[dict[str, object]], registry["harnesses"])
 
     broken = dict(registry)
     broken["harnesses"] = harnesses + [
@@ -259,8 +265,9 @@ def test_integrity_rejects_drift_and_policy() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject malformed, blank, duplicate, and count-drifted registry rows."""
     registry = build_campaign_harness_product_registry()
-    harnesses = cast(list[dict[str, object]], list(registry["harnesses"]))
+    harnesses = cast(list[dict[str, object]], registry["harnesses"])
 
     non_map = dict(registry)
     non_map["harnesses"] = [cast(Any, "nope")]
@@ -331,12 +338,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the documented campaign-harness functions publicly exported."""
     assert "materialise_demo_campaign_probe" in campaign_product.__all__
     assert "decide_campaign_path" in campaign_product.__all__
     assert "list_campaign_harness_ids" in campaign_product.__all__
 
 
 def test_row_decision_probe_validation() -> None:
+    """Validate every harness, eligibility decision, and probe invariant."""
     base: dict[str, Any] = {
         "harness_id": "x",
         "kind": "appqsim_protocol",
@@ -618,6 +627,7 @@ def test_materialise_probes_with_stub_ambient(monkeypatch: pytest.MonkeyPatch) -
 
 
 def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject empty, blank, and duplicate internal harness catalogues."""
     monkeypatch.setattr(campaign_product, "_HARNESSES", ())
     with pytest.raises(RuntimeError, match="catalogue must be non-empty"):
         campaign_product._harness_map()

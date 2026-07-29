@@ -4,26 +4,26 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — KYMA mechanism product quality-gate tests
-"""Lock the BL-19 KYMA mechanism quality gate into preflight and CI."""
+# SCPN Quantum Control — campaign-harness product quality-gate tests
+"""Lock the BL-19 campaign-harness quality gate into preflight and CI."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from tools import kyma_mechanism_benchmark_product_quality_gates as quality_gates
+from tools import campaign_harness_product_quality_gates as quality_gates
 from tools import preflight
 
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
     """Require strict typing and isolated NumPy docstrings for the cohort."""
     gates = dict(quality_gates.build_static_quality_gates("/python"))
-    mypy = gates["mypy-strict-kyma-mechanism-product-quality"]
-    ruff = gates["ruff D kyma-mechanism-product quality ratchet"]
-    assert mypy[5:] == quality_gates.KYMA_MECHANISM_PRODUCT_QUALITY_RATCHET
+    mypy = gates["mypy-strict-campaign-harness-product-quality"]
+    ruff = gates["ruff D campaign-harness-product quality ratchet"]
+    assert mypy[5:] == quality_gates.CAMPAIGN_HARNESS_PRODUCT_QUALITY_RATCHET
     assert (
-        ruff[-len(quality_gates.KYMA_MECHANISM_PRODUCT_QUALITY_RATCHET) :]
-        == quality_gates.KYMA_MECHANISM_PRODUCT_QUALITY_RATCHET
+        ruff[-len(quality_gates.CAMPAIGN_HARNESS_PRODUCT_QUALITY_RATCHET) :]
+        == quality_gates.CAMPAIGN_HARNESS_PRODUCT_QUALITY_RATCHET
     )
     assert "--isolated" in ruff and "D,D413" in ruff
 
@@ -31,19 +31,19 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
 def test_coverage_gate_is_isolated_and_exact() -> None:
     """Require branch execution and a 100 percent source-only report."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    run = gates["kyma-mechanism-product focused coverage"]
-    report = gates["kyma-mechanism-product exact coverage threshold"]
-    assert f"--data-file={quality_gates.KYMA_MECHANISM_PRODUCT_COVERAGE_DATA_FILE}" in run
+    run = gates["campaign-harness-product focused coverage"]
+    report = gates["campaign-harness-product exact coverage threshold"]
+    assert f"--data-file={quality_gates.CAMPAIGN_HARNESS_PRODUCT_COVERAGE_DATA_FILE}" in run
     assert "--branch" in run
-    assert run[-1:] == quality_gates.KYMA_MECHANISM_PRODUCT_COVERAGE_COHORT
+    assert run[-1:] == quality_gates.CAMPAIGN_HARNESS_PRODUCT_COVERAGE_COHORT
     assert "--fail-under=100" in report
-    assert "--include=*/kyma_mechanism_benchmark_product.py" in report
+    assert "--include=*/campaign_harness_product.py" in report
 
 
 def test_preflight_uses_the_helper_defined_gates() -> None:
     """Keep helper-defined static and coverage commands verbatim in preflight."""
     static = dict(preflight.STATIC_GATES)
-    coverage = dict(preflight.KYMA_MECHANISM_PRODUCT_COVERAGE_GATES)
+    coverage = dict(preflight.CAMPAIGN_HARNESS_PRODUCT_COVERAGE_GATES)
     for name, command in quality_gates.build_static_quality_gates(preflight._PY):
         assert static[name] == command
     assert coverage == dict(quality_gates.build_coverage_gates(preflight._PY))
@@ -52,11 +52,11 @@ def test_preflight_uses_the_helper_defined_gates() -> None:
 def test_ci_runs_and_aggregates_the_product_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
-    start = workflow.index("  kyma-mechanism-product-quality:")
-    end = workflow.index("\n\n  campaign-harness-product-quality:", start)
+    start = workflow.index("  campaign-harness-product-quality:")
+    end = workflow.index("\n\n  decisive-advantage-quality:", start)
     block = workflow[start:end]
-    for path in quality_gates.KYMA_MECHANISM_PRODUCT_QUALITY_RATCHET:
+    for path in quality_gates.CAMPAIGN_HARNESS_PRODUCT_QUALITY_RATCHET:
         assert path in block
     assert "--fail-under=100" in block
-    assert "--include=*/kyma_mechanism_benchmark_product.py" in block
-    assert "kyma-mechanism-product-quality" in workflow[workflow.index("  ci-gate:") :]
+    assert "--include=*/campaign_harness_product.py" in block
+    assert "campaign-harness-product-quality" in workflow[workflow.index("  ci-gate:") :]

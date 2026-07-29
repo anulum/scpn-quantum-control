@@ -110,6 +110,7 @@ class CampaignHarnessRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     harness_id: str
@@ -202,6 +203,7 @@ class PathEligibilityDecision:
         Non-empty when refused.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     outcome: PathDecisionOutcome
@@ -266,6 +268,7 @@ class MaterialisedCampaignProbe:
         Demo fixture label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     harness_id: str
@@ -426,6 +429,7 @@ def list_campaign_harness_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Stable harness ids.
+
     """
     return tuple(row.harness_id for row in _HARNESSES)
 
@@ -447,6 +451,7 @@ def get_campaign_harness(harness_id: str) -> CampaignHarnessRow:
     ------
     ValueError
         If blank or unknown.
+
     """
     if not harness_id or not str(harness_id).strip():
         raise ValueError("harness_id must be non-empty")
@@ -475,6 +480,7 @@ def iter_campaign_harnesses(
     -------
     tuple[CampaignHarnessRow, ...]
         Matching rows.
+
     """
     rows: Sequence[CampaignHarnessRow] = _HARNESSES
     if kind is not None:
@@ -491,6 +497,7 @@ def list_ambient_benchmark_family_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Stable ambient family identifiers.
+
     """
     return tuple(family.benchmark_id for family in list_benchmark_families())
 
@@ -525,6 +532,7 @@ def decide_campaign_path(
     -------
     PathEligibilityDecision
         Allowed or refused with blockers.
+
     """
     row = get_campaign_harness(harness_id)
     blockers: list[str] = []
@@ -598,6 +606,7 @@ def materialise_appqsim_probe(
     ------
     ValueError
         If inputs are invalid.
+
     """
     if n_oscillators < 2:
         raise ValueError("n_oscillators must be >= 2")
@@ -657,6 +666,7 @@ def materialise_iqm_layout_probe(
     ------
     ValueError
         If inputs are invalid.
+
     """
     if num_qubits < 4:
         raise ValueError("num_qubits must be >= 4")
@@ -723,6 +733,7 @@ def materialise_closed_loop_probe(
     ------
     ValueError
         If inputs are invalid.
+
     """
     if n_oscillators < 2:
         raise ValueError("n_oscillators must be >= 2")
@@ -771,6 +782,7 @@ def materialise_demo_campaign_probe() -> MaterialisedCampaignProbe:
     -------
     MaterialisedCampaignProbe
         Closed-loop publication dry-run probe.
+
     """
     return materialise_closed_loop_probe(n_oscillators=3, n_rounds=3, seed=0)
 
@@ -782,6 +794,7 @@ def map_campaign_harness_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     return (
         {
@@ -830,6 +843,7 @@ def build_campaign_harness_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with harnesses (no blanks).
+
     """
     harnesses = [row.to_dict() for row in _HARNESSES]
     ambient_families = list(list_ambient_benchmark_family_ids())
@@ -872,6 +886,7 @@ def assert_campaign_harness_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-green policies appear.
+
     """
     registry = dict(payload) if payload is not None else build_campaign_harness_product_registry()
     harnesses = registry.get("harnesses")

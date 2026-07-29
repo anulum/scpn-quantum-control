@@ -965,6 +965,8 @@ def test_main_uses_coverage_pytest_by_default(
         "custom-derivatives-product exact coverage threshold",
         "kyma-mechanism-product focused coverage",
         "kyma-mechanism-product exact coverage threshold",
+        "campaign-harness-product focused coverage",
+        "campaign-harness-product exact coverage threshold",
         "MLIR leaf focused coverage",
         "MLIR leaf exact coverage threshold",
         "phase-qnode affinity focused coverage",
