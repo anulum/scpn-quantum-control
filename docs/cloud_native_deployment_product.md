@@ -54,6 +54,48 @@ assert "deployment.yaml" in probe.file_names
 assert probe.invent_green_live_cluster is False
 ```
 
+## Public API contracts
+
+### Pattern and threat discovery
+
+| API | Contract |
+|---|---|
+| `list_deployment_pattern_ids()` | Return stable deployment-pattern identifiers in catalogue order. |
+| `list_threat_ids()` | Return the bounded cloud threat-model identifiers. |
+| `get_deployment_pattern(pattern_id)` | Resolve one immutable pattern row; blank and unknown identifiers raise `ValueError`. |
+| `iter_deployment_patterns(kind=None)` | Return every pattern or a stable kind-filtered tuple. |
+
+`DeploymentPatternRow` validates identity, execution kind, image command,
+replica posture, QPU/secret/cluster prohibitions, evidence pointers, and claim
+boundary. `ThreatModelRow` validates each threat, mitigation, severity, and
+fail-closed state. Both records provide JSON-ready `to_dict()` payloads.
+
+### Eligibility and manifest dry runs
+
+| API | Contract |
+|---|---|
+| `decide_deploy_path(pattern_id, ...)` | Allow bounded manifest generation and return explicit blockers for always-on QPU, live cluster creation, secret injection, or credential loading. |
+| `compute_spec_digest(name, image, command, replicas=1, env=None)` | Bind a validated deployment specification to a deterministic SHA-256 digest without resolving credentials. |
+| `materialise_deploy_dry_run_probe(pattern_id, ...)` | Compose the ambient manifest generator, reject secret-like environment keys, and return content-addressed filenames without applying them. |
+| `materialise_demo_deploy_dry_run_probe()` | Materialise the deterministic batch-worker dry run. |
+
+`PathEligibilityDecision` keeps outcome, permission, reason, and blockers
+mutually consistent. `MaterialisedDeployDryRunProbe` validates its pattern,
+manifest digest, file set, ambient claim boundary, and false live-cluster,
+always-on-QPU, and secret flags.
+
+### Registry evidence and integrity
+
+| API | Contract |
+|---|---|
+| `map_cloud_native_deployment_public_surfaces()` | Emit deterministic product and ambient generator descriptors with pattern and claim metadata. |
+| `build_cloud_native_deployment_product_registry()` | Build schema-tagged patterns, threats, surfaces, policy flags, counts, and residual-work evidence. |
+| `assert_cloud_native_deployment_product_integrity(payload=None)` | Reject empty, malformed, blank, invalid-kind/severity, duplicate, count-drifted, or permissive QPU/secret/cluster state. |
+
+These APIs generate and validate deployment files only. They do not create a
+cluster, load credentials, submit QPU work, expose secrets, apply manifests, or
+claim enterprise operations evidence.
+
 ## Residuals (honest)
 
 - **S101.3** — fuller enterprise packaging / ops runbooks depth

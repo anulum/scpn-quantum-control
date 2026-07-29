@@ -36,6 +36,7 @@ from scpn_quantum_control.cloud_native_deployment_product import (
 
 
 def test_list_and_filters() -> None:
+    """List deployment patterns and threats, then filter patterns by kind."""
     ids = list_deployment_pattern_ids()
     assert "batch_worker" in ids
     assert "stable_core_gate" in ids
@@ -52,6 +53,7 @@ def test_list_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known patterns and reject blank or unknown identifiers."""
     row = get_deployment_pattern("batch_worker")
     assert row.claim_boundary == CLOUD_NATIVE_DEPLOYMENT_CLAIM_BOUNDARY
     assert row.allows_always_on_qpu is False
@@ -64,6 +66,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_decide_deploy_path() -> None:
+    """Allow dry runs and refuse QPU, cluster, secret, or credential routes."""
     ok = decide_deploy_path("batch_worker")
     assert ok.allowed is True
 
@@ -85,6 +88,7 @@ def test_decide_deploy_path() -> None:
 
 
 def test_deploy_dry_run_probe() -> None:
+    """Materialise bounded manifests and reject secret-like environment keys."""
     probe = materialise_demo_deploy_dry_run_probe()
     assert probe.pattern_id == "batch_worker"
     assert len(probe.manifest_sha256) == 64
@@ -111,6 +115,7 @@ def test_deploy_dry_run_probe() -> None:
 
 
 def test_spec_digest() -> None:
+    """Keep deployment specification digests deterministic and validated."""
     d1 = compute_spec_digest(
         name="scpn-batch-worker",
         image="img:1",
@@ -140,6 +145,7 @@ def test_spec_digest() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Publish complete deterministic surface and registry catalogues."""
     surfaces = map_cloud_native_deployment_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -158,8 +164,9 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift_and_policy() -> None:
+    """Reject pattern drift and permissive QPU, secret, or cluster policies."""
     registry = build_cloud_native_deployment_product_registry()
-    patterns = cast(list[dict[str, object]], list(registry["patterns"]))
+    patterns = cast(list[dict[str, object]], registry["patterns"])
 
     broken = dict(registry)
     broken["patterns"] = patterns + [
@@ -215,9 +222,10 @@ def test_integrity_rejects_drift_and_policy() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject malformed, blank, duplicate, and count-drifted registry rows."""
     registry = build_cloud_native_deployment_product_registry()
-    patterns = cast(list[dict[str, object]], list(registry["patterns"]))
-    threats = cast(list[dict[str, object]], list(registry["threats"]))
+    patterns = cast(list[dict[str, object]], registry["patterns"])
+    threats = cast(list[dict[str, object]], registry["threats"])
 
     non_map = dict(registry)
     non_map["patterns"] = [cast(Any, "nope")]
@@ -325,12 +333,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the documented deployment-product functions publicly exported."""
     assert "materialise_demo_deploy_dry_run_probe" in deploy_product.__all__
     assert "decide_deploy_path" in deploy_product.__all__
     assert "list_deployment_pattern_ids" in deploy_product.__all__
 
 
 def test_row_decision_probe_validation() -> None:
+    """Validate every pattern, threat, decision, and dry-run probe invariant."""
     base: dict[str, Any] = {
         "pattern_id": "x",
         "kind": "batch_worker",
@@ -547,6 +557,7 @@ def test_row_decision_probe_validation() -> None:
 
 
 def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject empty, blank, and duplicate internal pattern catalogues."""
     monkeypatch.setattr(deploy_product, "_PATTERNS", ())
     with pytest.raises(RuntimeError, match="catalogue must be non-empty"):
         deploy_product._pattern_map()

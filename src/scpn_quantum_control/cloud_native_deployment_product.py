@@ -113,6 +113,7 @@ class DeploymentPatternRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     pattern_id: str
@@ -198,6 +199,7 @@ class ThreatModelRow:
         Must remain True.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     threat_id: str
@@ -254,6 +256,7 @@ class PathEligibilityDecision:
         Non-empty when refused.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     outcome: PathDecisionOutcome
@@ -314,6 +317,7 @@ class MaterialisedDeployDryRunProbe:
         Demo fixture label.
     claim_boundary
         Product claim boundary.
+
     """
 
     pattern_id: str
@@ -483,6 +487,7 @@ def list_deployment_pattern_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Stable pattern ids.
+
     """
     return tuple(row.pattern_id for row in _PATTERNS)
 
@@ -494,6 +499,7 @@ def list_threat_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Stable threat ids.
+
     """
     return tuple(row.threat_id for row in _THREATS)
 
@@ -515,6 +521,7 @@ def get_deployment_pattern(pattern_id: str) -> DeploymentPatternRow:
     ------
     ValueError
         If blank or unknown.
+
     """
     if not pattern_id or not str(pattern_id).strip():
         raise ValueError("pattern_id must be non-empty")
@@ -540,6 +547,7 @@ def iter_deployment_patterns(
     -------
     tuple[DeploymentPatternRow, ...]
         Matching rows.
+
     """
     rows: Sequence[DeploymentPatternRow] = _PATTERNS
     if kind is not None:
@@ -574,6 +582,7 @@ def decide_deploy_path(
     -------
     PathEligibilityDecision
         Allowed or refused with blockers.
+
     """
     row = get_deployment_pattern(pattern_id)
     blockers: list[str] = []
@@ -647,6 +656,7 @@ def materialise_deploy_dry_run_probe(
     ------
     ValueError
         If pattern unknown or ambient validation fails (e.g. secret env).
+
     """
     row = get_deployment_pattern(pattern_id)
     env_map = dict(env) if env is not None else {}
@@ -688,6 +698,7 @@ def materialise_demo_deploy_dry_run_probe() -> MaterialisedDeployDryRunProbe:
     -------
     MaterialisedDeployDryRunProbe
         Ambient manifest dry-run probe.
+
     """
     return materialise_deploy_dry_run_probe("batch_worker")
 
@@ -699,6 +710,7 @@ def map_cloud_native_deployment_public_surfaces() -> tuple[dict[str, object], ..
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     return (
         {
@@ -727,6 +739,7 @@ def build_cloud_native_deployment_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with patterns + threats (no blanks).
+
     """
     patterns = [row.to_dict() for row in _PATTERNS]
     threats = [row.to_dict() for row in _THREATS]
@@ -769,6 +782,7 @@ def assert_cloud_native_deployment_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-green policies appear.
+
     """
     registry = (
         dict(payload) if payload is not None else build_cloud_native_deployment_product_registry()
@@ -889,6 +903,7 @@ def compute_spec_digest(
     ------
     ValueError
         If inputs are empty/invalid.
+
     """
     if not name or not name.strip():
         raise ValueError("name must be non-empty")
