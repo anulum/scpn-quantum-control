@@ -88,6 +88,7 @@ if TYPE_CHECKING:
     from tools import (
         stochastic_estimators_product_quality_gates as _stochastic_estimators_product_quality_gates,
     )
+    from tools import studio_executive_product_quality_gates as _studio_executive_quality_gates
     from tools import (
         thermo_readiness_product_quality_gates as _thermo_readiness_product_quality_gates,
     )
@@ -150,6 +151,7 @@ else:
     _stochastic_estimators_product_quality_gates = import_module(
         "tools.stochastic_estimators_product_quality_gates"
     )
+    _studio_executive_quality_gates = import_module("tools.studio_executive_product_quality_gates")
     _thermo_readiness_product_quality_gates = import_module(
         "tools.thermo_readiness_product_quality_gates"
     )
@@ -482,6 +484,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_visualisation_dashboard_product_quality_gates.build_static_quality_gates(_PY),
     *_stochastic_estimators_product_quality_gates.build_static_quality_gates(_PY),
     *_notebook_programme_product_quality_gates.build_static_quality_gates(_PY),
+    *_studio_executive_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-realtime-runtime",
         [
@@ -878,6 +881,7 @@ STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_GATES = (
 NOTEBOOK_PROGRAMME_PRODUCT_COVERAGE_GATES = (
     _notebook_programme_product_quality_gates.build_coverage_gates(_PY)
 )
+STUDIO_EXECUTIVE_PRODUCT_COVERAGE_GATES = _studio_executive_quality_gates.build_coverage_gates(_PY)
 
 PHASE_QNODE_AFFINITY_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -1151,6 +1155,7 @@ def main() -> int:
             gates.extend(VISUALISATION_DASHBOARD_PRODUCT_COVERAGE_GATES)
             gates.extend(STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_GATES)
             gates.extend(NOTEBOOK_PROGRAMME_PRODUCT_COVERAGE_GATES)
+            gates.extend(STUDIO_EXECUTIVE_PRODUCT_COVERAGE_GATES)
             gates.extend(MLIR_LEAF_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_AFFINITY_COVERAGE_GATES)
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)

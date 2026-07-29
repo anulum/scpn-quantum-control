@@ -91,6 +91,7 @@ class ExecutiveVerbRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     verb_id: str
@@ -165,6 +166,7 @@ class PathEligibilityDecision:
         Human-readable reason.
     blockers
         Non-empty when refused.
+
     """
 
     outcome: PathDecisionOutcome
@@ -225,6 +227,7 @@ class MaterialisedCoverageFrontierProbe:
         Whether improvable candidates remain unanswered.
     demo_label
         Demo fixture label.
+
     """
 
     total_claims: int
@@ -434,6 +437,7 @@ def list_executive_verb_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered verb identifiers.
+
     """
     return tuple(row.verb_id for row in _CANONICAL_VERBS)
 
@@ -455,6 +459,7 @@ def get_executive_verb(verb_id: str) -> ExecutiveVerbRow:
     ------
     ValueError
         If ``verb_id`` is blank or unknown (fail closed).
+
     """
     if not verb_id or not str(verb_id).strip():
         raise ValueError("verb_id must be a non-empty string")
@@ -483,6 +488,7 @@ def iter_executive_verbs(
     -------
     tuple[ExecutiveVerbRow, ...]
         Matching rows.
+
     """
     rows: Sequence[ExecutiveVerbRow] = _CANONICAL_VERBS
     if support_posture is not None:
@@ -519,6 +525,7 @@ def decide_executive_path(
     ------
     ValueError
         If ``verb_id`` is blank or unknown.
+
     """
     row = get_executive_verb(verb_id)
     blockers: list[str] = []
@@ -585,6 +592,7 @@ def compute_coverage_frontier_score(
     ------
     ValueError
         If counts are inconsistent.
+
     """
     if total_claims <= 0:
         raise ValueError("total_claims must be positive for materialised frontier probe")
@@ -627,6 +635,7 @@ def materialise_demo_coverage_frontier_probe() -> MaterialisedCoverageFrontierPr
     ------
     ValueError
         If scoring validation fails.
+
     """
     return compute_coverage_frontier_score(
         total_claims=10,
@@ -643,6 +652,7 @@ def map_studio_executive_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic surface rows.
+
     """
     return (
         {
@@ -677,6 +687,7 @@ def build_studio_executive_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with verbs (no blanks).
+
     """
     verbs = [row.to_dict() for row in _CANONICAL_VERBS]
     return {
@@ -716,6 +727,7 @@ def assert_studio_executive_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-green policies appear.
+
     """
     registry = dict(payload) if payload is not None else build_studio_executive_product_registry()
     verbs = registry.get("verbs")

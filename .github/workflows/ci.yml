@@ -1240,6 +1240,38 @@ jobs:
           --data-file=.coverage.notebook-programme-quality
           --precision=2 --fail-under=100 --include=*/notebook_programme_product.py
 
+  studio-executive-product-quality:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/studio_executive_product.py
+          tests/test_studio_executive_product.py
+          tools/studio_executive_product_quality_gates.py
+          tests/test_studio_executive_product_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/studio_executive_product.py
+          tests/test_studio_executive_product.py
+          tools/studio_executive_product_quality_gates.py
+          tests/test_studio_executive_product_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=.coverage.studio-executive-product-quality --branch
+          -m pytest -q tests/test_studio_executive_product.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=.coverage.studio-executive-product-quality
+          --precision=2 --fail-under=100 --include=*/studio_executive_product.py
+
   decisive-advantage-quality:
     needs: lint
     runs-on: ubuntu-latest
@@ -2331,7 +2363,7 @@ jobs:
           EOF
 
   ci-gate:
-    needs: [lint, stable-core-product-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, custom-derivatives-product-quality, kyma-mechanism-product-quality, campaign-harness-product-quality, cloud-native-deployment-quality, control-stack-compose-quality, public-api-stability-quality, polyglot-parity-certificate-quality, program-ad-fuzz-assurance-quality, multi-hal-federation-quality, hermetic-reproduction-kit-quality, hardware-safe-execution-quality, qpu-compute-product-quality, wirtinger-implicit-product-quality, migration-guides-product-quality, visualisation-dashboard-product-quality, stochastic-estimators-product-quality, notebook-programme-product-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
+    needs: [lint, stable-core-product-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, custom-derivatives-product-quality, kyma-mechanism-product-quality, campaign-harness-product-quality, cloud-native-deployment-quality, control-stack-compose-quality, public-api-stability-quality, polyglot-parity-certificate-quality, program-ad-fuzz-assurance-quality, multi-hal-federation-quality, hermetic-reproduction-kit-quality, hardware-safe-execution-quality, qpu-compute-product-quality, wirtinger-implicit-product-quality, migration-guides-product-quality, visualisation-dashboard-product-quality, stochastic-estimators-product-quality, notebook-programme-product-quality, studio-executive-product-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -2358,6 +2390,7 @@ jobs:
              [[ "${{ needs['visualisation-dashboard-product-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['stochastic-estimators-product-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['notebook-programme-product-quality'].result }}" != "success" ]] || \
+             [[ "${{ needs['studio-executive-product-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['decisive-advantage-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['mlir-leaf-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['phase-qnode-affinity-quality'].result }}" != "success" ]] || \

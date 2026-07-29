@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import sys
 from typing import Any, cast
 
 import pytest
@@ -32,7 +33,15 @@ from scpn_quantum_control.studio_executive_product import (
 )
 
 
+def _registry_verbs(registry: dict[str, object]) -> list[dict[str, object]]:
+    """Narrow a validated registry verb collection for drift fixtures."""
+    raw = registry["verbs"]
+    assert isinstance(raw, list)
+    return cast(list[dict[str, object]], raw)
+
+
 def test_list_and_filters() -> None:
+    """Expose the complete verb catalogue and deterministic posture filter."""
     ids = list_executive_verb_ids()
     assert "differentiate" in ids
     assert "execute" in ids
@@ -45,6 +54,7 @@ def test_list_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Resolve known verbs while rejecting blank and unknown identifiers."""
     row = get_executive_verb("differentiate")
     assert row.claim_boundary == STUDIO_EXECUTIVE_CLAIM_BOUNDARY
     assert row.allows_live_hardware is False
@@ -59,6 +69,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_decide_executive_path() -> None:
+    """Allow governed routes and refuse unsupported, dishonest, or ungated paths."""
     allowed = decide_executive_path("differentiate")
     assert allowed.allowed is True
 
@@ -82,6 +93,7 @@ def test_decide_executive_path() -> None:
 
 
 def test_coverage_frontier_probe() -> None:
+    """Materialise and recompute honest answer-rate frontier scores."""
     probe = materialise_demo_coverage_frontier_probe()
     assert probe.total_claims == 10
     assert probe.answered_confident == 3
@@ -106,6 +118,7 @@ def test_coverage_frontier_probe() -> None:
 
 
 def test_public_surfaces_and_registry() -> None:
+    """Map public owners and validate the complete executive registry."""
     surfaces = map_studio_executive_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -121,8 +134,9 @@ def test_public_surfaces_and_registry() -> None:
 
 
 def test_integrity_rejects_drift_and_policy() -> None:
+    """Reject verb-set drift, live-hardware leakage, and dishonest policy."""
     registry = build_studio_executive_product_registry()
-    verbs = cast(list[dict[str, object]], list(registry["verbs"]))
+    verbs = _registry_verbs(registry)
 
     broken = dict(registry)
     broken["verbs"] = verbs + [
@@ -164,8 +178,9 @@ def test_integrity_rejects_drift_and_policy() -> None:
 
 
 def test_integrity_rejects_blank_invalid() -> None:
+    """Reject malformed rows, missing sentinels, duplicates, and count drift."""
     registry = build_studio_executive_product_registry()
-    verbs = cast(list[dict[str, object]], list(registry["verbs"]))
+    verbs = _registry_verbs(registry)
 
     non_map = dict(registry)
     non_map["verbs"] = [cast(Any, "nope")]
@@ -229,12 +244,14 @@ def test_integrity_rejects_blank_invalid() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep every documented Studio product entry point public."""
     assert "materialise_demo_coverage_frontier_probe" in studio_executive_product.__all__
     assert "decide_executive_path" in studio_executive_product.__all__
     assert "list_executive_verb_ids" in studio_executive_product.__all__
 
 
 def test_row_decision_probe_validation() -> None:
+    """Enforce verb row, path decision, and coverage-probe invariants."""
     base: dict[str, Any] = {
         "verb_id": "x",
         "title": "t",
@@ -510,3 +527,22 @@ def test_iter_executive_verbs_without_posture_filter() -> None:
     all_rows = iter_executive_verbs()
     assert len(all_rows) == len(list_executive_verb_ids())
     assert {row.verb_id for row in all_rows} == set(list_executive_verb_ids())
+
+
+def test_build_canonical_verbs_uses_local_fallback_when_studio_import_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Materialise the honest local catalogue when the Studio extra is absent."""
+    monkeypatch.setitem(sys.modules, "scpn_quantum_control.studio.executive", None)
+    rows = studio_executive_product._build_canonical_verbs()
+    assert tuple(row.verb_id for row in rows) == tuple(
+        spec[0] for spec in studio_executive_product._FALLBACK_VERB_SPECS
+    )
+    execute = rows[-1]
+    assert execute.verb_id == "execute"
+    assert execute.requires_approval is True
+    assert execute.allows_live_hardware is True
+
+    monkeypatch.setattr(studio_executive_product, "_FALLBACK_VERB_SPECS", ())
+    with pytest.raises(RuntimeError, match="catalogue must be non-empty"):
+        studio_executive_product._build_fallback_canonical_verbs()
