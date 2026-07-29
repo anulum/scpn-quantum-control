@@ -117,7 +117,7 @@ BKT phase transition analysis for Kuramoto-XY systems.
 
 ### `scpn_quantum_control.analysis.bkt_universals`
 
-BKT universal amplitude ratio check for p_h1 = 0.72.
+BKT universal amplitude-ratio audit: p_h1 = 0.72 remains an open question.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/analysis/bkt_universals.py) · Public symbols: **3**
 
@@ -281,7 +281,7 @@ Graph topology → p_h1 systematic scan.
 
 ### `scpn_quantum_control.analysis.h1_persistence`
 
-Evaluate H1 persistence at the BKT transition against p_h1 = 0.72.
+Evaluate H1 persistence: p_h1 = 0.72 remains an open question.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/analysis/h1_persistence.py) · Public symbols: **2**
 
@@ -415,7 +415,7 @@ OTOC as a synchronization transition probe.
 
 ### `scpn_quantum_control.analysis.p_h1_derivation`
 
-Audit of the failed p_h1 = 0.72 BKT-universal derivation.
+Negative-control audit: p_h1 = 0.72 remains an open question.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/analysis/p_h1_derivation.py) · Public symbols: **2**
 
@@ -425,7 +425,7 @@ Audit of the failed p_h1 = 0.72 BKT-universal derivation.
 
 ### `scpn_quantum_control.analysis.p_h1_open_guard`
 
-Public-claim guard for the open ``p_h1 = 0.72`` question.
+Public-claim guard: ``p_h1 = 0.72`` remains an open question.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/analysis/p_h1_open_guard.py) · Public symbols: **5**
 

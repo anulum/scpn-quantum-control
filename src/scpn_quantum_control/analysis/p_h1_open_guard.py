@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — p_h1 Open-Claim Guard
-"""Public-claim guard for the open ``p_h1 = 0.72`` question.
+"""Public-claim guard: ``p_h1 = 0.72`` remains an open question.
 
 The guard scans outward-facing Markdown surfaces and rejects wording that
 turns the current ``p_h1 = 0.72`` threshold into a closed derivation,

@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Bkt Universals
-"""BKT universal amplitude ratio check for p_h1 = 0.72.
+"""BKT universal amplitude-ratio audit: p_h1 = 0.72 remains an open question.
 
 Tests whether 0.72 can be expressed as a combination of BKT
 universal numbers:

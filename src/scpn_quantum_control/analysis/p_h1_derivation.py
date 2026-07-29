@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — P H1 Derivation Audit
-"""Audit of the failed p_h1 = 0.72 BKT-universal derivation.
+"""Negative-control audit: p_h1 = 0.72 remains an open question.
 
 The square-lattice candidate chain is:
 
