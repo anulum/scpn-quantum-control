@@ -109,6 +109,7 @@ class CompetitiveWatchRecord:
         Inventory date label used for refresh classification.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     competitor_id: CompetitiveBaselineId
@@ -210,6 +211,7 @@ class RefreshProbeResult:
         Human-readable decision reason.
     blockers
         Open blockers when not green.
+
     """
 
     competitor_id: str
@@ -268,6 +270,7 @@ class FeedProbeResult:
         Structured evidence / route / category pointers (may be empty when blocked).
     blockers
         Open blockers when not allowed.
+
     """
 
     competitor_id: str
@@ -392,6 +395,7 @@ def list_competitor_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered competitor identifiers.
+
     """
     return tuple(record.competitor_id for record in _CANONICAL_WATCH)
 
@@ -413,6 +417,7 @@ def get_competitive_watch(competitor_id: str) -> CompetitiveWatchRecord:
     ------
     ValueError
         If ``competitor_id`` is blank or unknown (fail closed).
+
     """
     if not competitor_id or not str(competitor_id).strip():
         raise ValueError("competitor_id must be a non-empty string")
@@ -444,6 +449,7 @@ def iter_competitive_watch(
     -------
     tuple[CompetitiveWatchRecord, ...]
         Matching rows.
+
     """
     rows: Iterable[CompetitiveWatchRecord] = _CANONICAL_WATCH
     if pin_status is not None:
@@ -470,6 +476,7 @@ def probe_refresh(competitor_id: str) -> RefreshProbeResult:
     ------
     ValueError
         If ``competitor_id`` is blank or unknown.
+
     """
     record = get_competitive_watch(competitor_id)
     # Product policy: continuous watch never claims green-current without CI re-pin.
@@ -515,6 +522,7 @@ def probe_feed(
     ------
     ValueError
         If identifiers / targets are invalid.
+
     """
     if feed_target not in {"bl52_route_matrix", "bl56_scorecard"}:
         raise ValueError(f"unknown feed_target: {feed_target!r}")
@@ -565,6 +573,7 @@ def build_competitive_baseline_watch_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with every required competitor (no blanks).
+
     """
     rows = [row.to_dict() for row in _CANONICAL_WATCH]
     pinned = sum(1 for row in _CANONICAL_WATCH if row.pin_status == "pinned_snapshot")
@@ -611,6 +620,7 @@ def assert_competitive_baseline_watch_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-green feed claims appear.
+
     """
     registry = (
         dict(payload) if payload is not None else build_competitive_baseline_watch_registry()

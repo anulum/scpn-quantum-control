@@ -39,6 +39,7 @@ from scpn_quantum_control.differentiable_competitive_baselines import (
 
 
 def test_list_covers_required_competitors() -> None:
+    """Expose every required competitor once and in canonical order."""
     ids = list_competitor_ids()
     assert len(ids) == len(REQUIRED_BASELINE_IDS)
     assert set(ids) == set(REQUIRED_BASELINE_IDS)
@@ -47,6 +48,7 @@ def test_list_covers_required_competitors() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Return known rows while rejecting blank and unknown identifiers."""
     row = get_competitive_watch("catalyst")
     assert row.competitor_id == "catalyst"
     assert row.claim_boundary == COMPETITIVE_BASELINE_WATCH_CLAIM_BOUNDARY
@@ -61,6 +63,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_inventory_composes_competitive_baselines() -> None:
+    """Compose watch rows from the committed competitive-baseline inventory."""
     refresh = run_competitive_baseline_refresh()
     by_id = {row.baseline_id: row for row in refresh.rows}
     for competitor_id in list_competitor_ids():
@@ -72,6 +75,7 @@ def test_inventory_composes_competitive_baselines() -> None:
 
 
 def test_build_registry_and_integrity() -> None:
+    """Build and validate the complete JSON-ready watch registry."""
     registry = build_competitive_baseline_watch_registry()
     assert registry["schema"] == COMPETITIVE_BASELINE_WATCH_SCHEMA
     assert registry["blank_entry_count"] == 0
@@ -88,6 +92,7 @@ def test_build_registry_and_integrity() -> None:
 
 
 def test_probe_refresh_never_invent_green() -> None:
+    """Keep refresh probes non-promotional while verification blockers remain."""
     for competitor_id in list_competitor_ids():
         probe = probe_refresh(competitor_id)
         assert probe.allowed_green_current is False
@@ -99,6 +104,7 @@ def test_probe_refresh_never_invent_green() -> None:
 
 
 def test_probe_feed_bl56_blocked() -> None:
+    """Keep BL-56 scorecard feeds blocked without accepted evidence packages."""
     feed = probe_feed("pennylane", feed_target="bl56_scorecard")
     assert feed.allowed is False
     assert feed.status == "blocked"
@@ -108,6 +114,7 @@ def test_probe_feed_bl56_blocked() -> None:
 
 
 def test_probe_feed_bl52_pending_pointers() -> None:
+    """Expose bounded BL-52 pointers without mutating the route matrix."""
     feed = probe_feed("catalyst", feed_target="bl52_route_matrix")
     assert feed.allowed is False
     assert feed.status == "pending"
@@ -119,6 +126,7 @@ def test_probe_feed_bl52_pending_pointers() -> None:
 
 
 def test_iter_filters() -> None:
+    """Filter the canonical watch deterministically by pin and refresh state."""
     pinned = iter_competitive_watch(pin_status="pinned_snapshot")
     assert pinned
     assert all(row.pin_status == "pinned_snapshot" for row in pinned)
@@ -128,6 +136,7 @@ def test_iter_filters() -> None:
 
 
 def test_record_to_dict_and_probes() -> None:
+    """Serialise records and probe results into JSON-ready mappings."""
     row = get_competitive_watch("jax")
     payload = row.to_dict()
     assert payload["competitor_id"] == "jax"
@@ -139,12 +148,14 @@ def test_record_to_dict_and_probes() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the documented public watch operations exported."""
     assert "probe_refresh" in competitive_baseline_watch.__all__
     assert "probe_feed" in competitive_baseline_watch.__all__
     assert "build_competitive_baseline_watch_registry" in competitive_baseline_watch.__all__
 
 
 def test_watch_record_validation() -> None:
+    """Reject malformed watch records and invent-green combinations."""
     base_kwargs: dict[str, Any] = {
         "competitor_id": "jax",
         "display_name": "JAX",
@@ -218,6 +229,7 @@ def test_watch_record_validation() -> None:
 
 
 def test_refresh_and_feed_probe_invariants() -> None:
+    """Reject invalid refresh and feed probe result combinations."""
     with pytest.raises(ValueError, match="competitor_id"):
         RefreshProbeResult(
             competitor_id="",
@@ -361,6 +373,7 @@ def test_refresh_and_feed_probe_invariants() -> None:
 
 
 def test_integrity_rejects_blank_and_invent_green() -> None:
+    """Reject incomplete, duplicate, or promotional registry payloads."""
     good = build_competitive_baseline_watch_registry()
     assert_competitive_baseline_watch_integrity(good)
 
@@ -523,6 +536,7 @@ def test_classify_unpinned_and_due_via_helpers(
 
 
 def test_integrity_bad_pin_and_refresh_class() -> None:
+    """Reject unsupported pin and refresh vocabularies in registry rows."""
     good = build_competitive_baseline_watch_registry()
     raw = good["competitors"]
     assert isinstance(raw, list)
