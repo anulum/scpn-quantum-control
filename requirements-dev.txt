@@ -32,7 +32,7 @@ mkdocstrings[python]==1.0.6
 # IBM hardware
 qiskit-ibm-runtime==0.47.0
 # AWS Braket provider surface
-amazon-braket-sdk==1.124.3
+amazon-braket-sdk==1.125.0
 # Visualization
 matplotlib==3.11.1
 # CI/runtime extras

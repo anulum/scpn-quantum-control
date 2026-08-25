@@ -14,9 +14,9 @@ amazon-braket-schemas==1.29.1 \
     # via
     #   amazon-braket-default-simulator
     #   amazon-braket-sdk
-amazon-braket-sdk==1.124.3 \
-    --hash=sha256:18f46d8ccbbdf6c99e6df3c0ee7637921f008d16c8ae7ac6c8387de6026cff39 \
-    --hash=sha256:aeb77821009869a36b2f136970418bf1cdd744c62e9e7fd78dd92983c8fd890e
+amazon-braket-sdk==1.125.0 \
+    --hash=sha256:58cbd0aa36d660cadcc5bb45f1b2fb75b771fed895e1753ab54945112da6ed52 \
+    --hash=sha256:7851f1e39c19b326c557b722208fcd948b8a962de8f5578f3ccded65f1e8cd23
     # via -r requirements-dev.txt
 annotated-types==0.7.0 \
     --hash=sha256:1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53 \
