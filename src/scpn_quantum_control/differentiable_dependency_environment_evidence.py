@@ -229,10 +229,10 @@ def build_differentiable_dependency_environment_evidence(
             (
                 "anyhow==1.0.104",
                 "chrono==0.4.45",
-                "clap==4.6.3",
+                "clap==4.6.6",
                 "criterion==0.5.1",
                 "scpn-quantum-engine==0.2.0",
-                "pyo3==0.29.0",
+                "pyo3==0.29.2",
                 "ndarray==0.16.1",
                 "numpy==0.29.0",
                 "nalgebra==0.35.0",

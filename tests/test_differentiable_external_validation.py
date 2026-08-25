@@ -206,11 +206,11 @@ def test_build_external_validation_artifact_bundle_records_committed_evidence() 
     assert "data/differentiable_phase_qnode/claim_ledger.json" in paths
     assert "data/differentiable_phase_qnode/public_claim_table_20260616.md" in paths
     assert (
-        "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260826.json"
+        "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260825.json"
         in paths
     )
     assert (
-        "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260826.md"
+        "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260825.md"
         in paths
     )
     assert (

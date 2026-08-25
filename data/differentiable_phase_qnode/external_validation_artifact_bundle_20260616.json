@@ -46,15 +46,15 @@
       "size_bytes": 9720
     },
     {
-      "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260826.json",
+      "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260825.json",
       "role": "Differentiable competitive-baseline freshness artefact",
-      "sha256": "d9724703669ba3738206fddb6017c7e7f97cd2a9a570fe8390240f7ad9acdeb9",
+      "sha256": "e366ca9949f4ebcf7b9ad4f3a7760edb020726f567d6e484326ad63f0798c990",
       "size_bytes": 10154
     },
     {
-      "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260826.md",
+      "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260825.md",
       "role": "Differentiable competitive-baseline freshness reviewer summary",
-      "sha256": "40434b40dd397bb9cb00f7aa9caf370c89c698cd00544ab134b957dfa6a09ed3",
+      "sha256": "989ec778ebafd8ff75479a0152aabd01ebe744ef98822a23e0728b862f2470a1",
       "size_bytes": 3035
     },
     {
@@ -84,13 +84,13 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
       "role": "Differentiable dependency and environment evidence map artefact",
-      "sha256": "cf7dfac4db4f77ab3d949e5e97a38f546be64df375ac3bd777fdab09eb58aa97",
+      "sha256": "54fa1dfcccb75caa85405190ff8deca915e332cba8cb196a3eec556c7d11188a",
       "size_bytes": 20488
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md",
       "role": "Differentiable dependency and environment evidence map reviewer summary",
-      "sha256": "bae35d4ae010aa9f819f9b4d1f310ced790a8dd3fb30e4ce781fe3541d1336ee",
+      "sha256": "7c66aaa75841e0731bdb203445e31ca49d97b9321614bb08926fdbad6464abc9",
       "size_bytes": 4763
     },
     {

@@ -58,7 +58,7 @@
         "requirements-ci-py312-linux.txt",
         "requirements-ci-py313-linux.txt"
       ],
-      "pinned_package_count": 491,
+      "pinned_package_count": 488,
       "checksum_count": 4,
       "evidence_status": "locked",
       "blockers": [],
@@ -123,10 +123,10 @@
       ],
       "evidence_sha256": [
         "35660e01a5aa20c65e54a1d892675f78aaf37fd2204232587aadee07a43dd986",
-        "4c7d06efcf6956c6aec2e0f305cf063503993561d7c54c0f0d7d722a3dc3e522",
-        "62a83c5e005282fa7e2a71d81779771dfbdd28a59835b35e71f02deb98318562",
-        "af1cdfe5833ef159f73dbd352ca9e151606ad51d7624b83147e373883ebc9786",
-        "9279ac645cb2101f9200eaaf20593a5bf7b2d528e53d8af5a45e0ae591a06252"
+        "c3384a5df0ce28a051eaada0d125e60339bd3d0b94e177787ad3aebc439d5a2b",
+        "c798f6d219d99e7f4aa945667c42d6081dac46cb37140d44b35ea2eda6837f9f",
+        "7b9ee8bacca351db197e200b4e4ed4d5a6ade20a194ade4c319037acef4f4b07",
+        "585709f793c43283e6e3271536122fad0895c0da55e99c4eaebf461b457101ff"
       ],
       "evidence_status": "locked",
       "blockers": [],
@@ -141,10 +141,10 @@
       "version_pins": [
         "anyhow==1.0.104",
         "chrono==0.4.45",
-        "clap==4.6.3",
+        "clap==4.6.6",
         "criterion==0.5.1",
         "scpn-quantum-engine==0.2.0",
-        "pyo3==0.29.0",
+        "pyo3==0.29.2",
         "ndarray==0.16.1",
         "numpy==0.29.0",
         "nalgebra==0.35.0",
@@ -160,7 +160,7 @@
         "scpn_quantum_engine/Cargo.lock"
       ],
       "evidence_sha256": [
-        "93d63908f60d37313e780a66d161d4687d1cb5c90a3929cba1cb8f3e9914653e"
+        "4f44f7494ab110345358fdc0064a127a5b6bef201b1956464d08c3efbae3df72"
       ],
       "evidence_status": "locked",
       "blockers": [],
@@ -262,7 +262,7 @@
       ],
       "evidence_sha256": [
         "67d30486ee7b3d478dcdab2c44ed932dada3a2fcda326b2cda425a057bc62618",
-        "0907984b611ebe09f66a2def5bd7b210b205606914b7e44e66a1223cf06745c7"
+        "5cc61b41d8eed90e3d8dd1ca93763fecef4a7f795e566f89f28151f4c4228b0e"
       ],
       "evidence_status": "locked",
       "blockers": [],

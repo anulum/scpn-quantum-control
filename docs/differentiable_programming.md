@@ -257,9 +257,9 @@ wording remains allowed so roadmap and reviewer documentation can describe
 the governance lane without upgrading claims.
 `run_competitive_baseline_refresh()` records the official upstream source
 streams used to refresh that scorecard. The committed artefacts live at
-`data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260826.json`
+`data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260825.json`
 and
-`data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260826.md`.
+`data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260825.md`.
 `audit_competitive_baseline_promotion_gate()` validates the refresh window and
 combines it with the public-language audit, so promotion wording remains blocked
 unless fresh upstream baseline evidence, ready scorecard rows, and promoted
