@@ -24,40 +24,40 @@
       "path": "requirements-dev.txt",
       "pinned_package_count": 28,
       "role": "Developer verification dependency lock input",
-      "sha256": "5cc61b41d8eed90e3d8dd1ca93763fecef4a7f795e566f89f28151f4c4228b0e",
-      "size_bytes": 1361
+      "sha256": "89df06e4f18b56c255255b7fb537f3ca694604957e796925fc4fa4b504b61be8",
+      "size_bytes": 1362
     },
     {
-      "line_count": 355,
+      "line_count": 374,
       "path": "requirements-ci-cross-platform-smoke.txt",
       "pinned_package_count": 17,
       "role": "Cross-platform smoke CI lockfile",
-      "sha256": "6d3e3afd3c60251a6b0e858c338e0ddc14a7e31948f0811fccd07efb395b181d",
-      "size_bytes": 27523
+      "sha256": "73411b493d920d4e3bcba6fdf9bd881b1fa79d4b72c7080df3e76c6a58aeca9a",
+      "size_bytes": 29139
     },
     {
-      "line_count": 3016,
+      "line_count": 3035,
       "path": "requirements-ci-py311-linux.txt",
       "pinned_package_count": 157,
       "role": "Python 3.11 Linux CI lockfile",
-      "sha256": "c3384a5df0ce28a051eaada0d125e60339bd3d0b94e177787ad3aebc439d5a2b",
-      "size_bytes": 222889
+      "sha256": "5731b8a32d2c3c670431c16af8e3e700d8366796de9dd2de3c461d90c1f2d598",
+      "size_bytes": 224505
     },
     {
-      "line_count": 2971,
+      "line_count": 2990,
       "path": "requirements-ci-py312-linux.txt",
       "pinned_package_count": 157,
       "role": "Python 3.12 Linux CI lockfile",
-      "sha256": "c798f6d219d99e7f4aa945667c42d6081dac46cb37140d44b35ea2eda6837f9f",
-      "size_bytes": 219064
+      "sha256": "1f340b038a5b920705c0ee6516cf3afa13815a17c0f56b331cb0a952a409ba5a",
+      "size_bytes": 220680
     },
     {
-      "line_count": 3012,
+      "line_count": 3031,
       "path": "requirements-ci-py313-linux.txt",
       "pinned_package_count": 157,
       "role": "Python 3.13 Linux CI lockfile",
-      "sha256": "7b9ee8bacca351db197e200b4e4ed4d5a6ade20a194ade4c319037acef4f4b07",
-      "size_bytes": 222814
+      "sha256": "fb17773e32c7e775e1ff49cc40b3c24b496df8f9c1ffb8a4c5cbad09f9b92597",
+      "size_bytes": 224430
     },
     {
       "line_count": 54,
