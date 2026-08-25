@@ -48,10 +48,10 @@ def _write_refresh_payload(tmp_path: Path, payload: object) -> Path:
 def test_competitive_baseline_refresh_records_required_sources() -> None:
     """The baseline refresh artifact must cover all required competitor sources."""
     refresh = run_competitive_baseline_refresh()
-    validation = validate_competitive_baseline_refresh(refresh, as_of=date(2026, 6, 27))
+    validation = validate_competitive_baseline_refresh(refresh, as_of=date(2026, 8, 26))
 
     assert refresh.schema == "scpn_qc_differentiable_competitive_baseline_refresh_v1"
-    assert refresh.artifact_id == "diff-competitive-baseline-refresh-20260627"
+    assert refresh.artifact_id == "diff-competitive-baseline-refresh-20260826"
     assert refresh.max_age_days == MAX_BASELINE_AGE_DAYS
     assert {row.baseline_id for row in refresh.rows} == set(REQUIRED_BASELINE_IDS)
     assert set(validation.checked_categories) == set(REQUIRED_BASELINE_CATEGORIES)
@@ -59,7 +59,7 @@ def test_competitive_baseline_refresh_records_required_sources() -> None:
     assert validation.errors == ()
     assert all(row.source_url.startswith("https://") for row in refresh.rows)
     assert validation.to_dict()["passed"] is True
-    assert refresh.rows[0].age_days(as_of=date(2026, 6, 28)) == 1
+    assert refresh.rows[0].age_days(as_of=date(2026, 8, 27)) == 1
 
 
 def test_committed_competitive_baseline_refresh_matches_current_builder() -> None:
@@ -70,7 +70,7 @@ def test_committed_competitive_baseline_refresh_matches_current_builder() -> Non
     assert committed.to_dict() == generated.to_dict()
     assert validate_competitive_baseline_refresh(
         committed,
-        as_of=date(2026, 6, 27),
+        as_of=date(2026, 8, 26),
     ).passed
 
 
@@ -80,7 +80,7 @@ def test_competitive_baseline_refresh_rejects_stale_rows() -> None:
 
     validation = validate_competitive_baseline_refresh(
         refresh,
-        as_of=date(2026, 6, 27) + timedelta(days=MAX_BASELINE_AGE_DAYS + 1),
+        as_of=date(2026, 8, 26) + timedelta(days=MAX_BASELINE_AGE_DAYS + 1),
     )
 
     assert not validation.passed
@@ -101,7 +101,7 @@ def test_competitive_baseline_refresh_rejects_missing_baseline_and_category() ->
 
     validation = validate_competitive_baseline_refresh(
         incomplete,
-        as_of=date(2026, 6, 27),
+        as_of=date(2026, 8, 26),
     )
 
     assert not validation.passed
@@ -133,8 +133,8 @@ def test_competitive_baseline_row_rejects_invalid_source() -> None:
     (
         ({"baseline_id": "unknown"}, "unknown competitive baseline"),
         ({"source_kind": "blog"}, "unknown baseline source kind"),
-        ({"checked_on": datetime(2026, 6, 27)}, "checked_on must be a date"),
-        ({"refresh_due_on": "2026-08-11"}, "refresh_due_on must be a date"),
+        ({"checked_on": datetime(2026, 8, 26)}, "checked_on must be a date"),
+        ({"refresh_due_on": "2026-10-10"}, "refresh_due_on must be a date"),
         ({"max_age_days": True}, "max_age_days must be a positive integer"),
         ({"max_age_days": 0}, "max_age_days must be a positive integer"),
         ({"refresh_due_on": date(2026, 8, 12)}, "refresh_due_on must match"),
@@ -183,7 +183,7 @@ def test_competitive_baseline_age_rejects_datetime_subclass() -> None:
     (
         ({"schema": "unknown"}, "schema is not canonical"),
         ({"artifact_id": "unknown"}, "artifact_id is not canonical"),
-        ({"generated_on": datetime(2026, 6, 27)}, "generated_on must be a date"),
+        ({"generated_on": datetime(2026, 8, 26)}, "generated_on must be a date"),
         ({"max_age_days": True}, "max_age_days must be a positive integer"),
         ({"max_age_days": 44}, "max_age_days is not canonical"),
         ({"rows": []}, "rows must be a non-empty row tuple"),
@@ -238,7 +238,7 @@ def test_competitive_baseline_validation_rejects_future_rows() -> None:
     with pytest.raises(ValueError, match="validation as_of must be a date"):
         validate_competitive_baseline_refresh(
             refresh,
-            as_of=cast(Any, datetime(2026, 6, 27)),
+            as_of=cast(Any, datetime(2026, 8, 26)),
         )
 
 
@@ -267,7 +267,7 @@ def test_competitive_baseline_validation_rejects_future_rows() -> None:
             "checked_urls must contain unique values",
         ),
         ({"checked_urls": ("http://example.com",)}, "absolute credential-free HTTPS URL"),
-        ({"as_of": datetime(2026, 6, 27)}, "as_of must be a date"),
+        ({"as_of": datetime(2026, 8, 26)}, "as_of must be a date"),
         ({"claim_boundary": "validated"}, "claim_boundary is not canonical"),
     ),
 )
@@ -278,7 +278,7 @@ def test_competitive_baseline_validation_result_rejects_incoherence(
     """Validation result objects must not admit ambiguous success evidence."""
     validation = validate_competitive_baseline_refresh(
         run_competitive_baseline_refresh(),
-        as_of=date(2026, 6, 27),
+        as_of=date(2026, 8, 26),
     )
 
     with pytest.raises(ValueError, match=message):
@@ -289,7 +289,7 @@ def test_competitive_baseline_promotion_gate_combines_language_and_freshness() -
     """The combined gate must reject unbacked promotional wording and require freshness."""
     audit = audit_competitive_baseline_promotion_gate(
         refresh=run_competitive_baseline_refresh(),
-        as_of=date(2026, 6, 27),
+        as_of=date(2026, 8, 26),
         public_texts={
             "README.md": ("The differentiable stack is world-leading for PyTorch autograd.")
         },
@@ -316,7 +316,7 @@ def test_competitive_baseline_promotion_gate_requires_category_baseline() -> Non
 
     audit = audit_competitive_baseline_promotion_gate(
         refresh=without_pytorch_category,
-        as_of=date(2026, 6, 27),
+        as_of=date(2026, 8, 26),
         public_texts={"README.md": "The stack is world-leading for PyTorch autograd."},
     )
 
@@ -360,7 +360,7 @@ def test_competitive_baseline_promotion_result_rejects_incoherence(
     """Combined-gate objects must preserve typed components and fail-closed state."""
     audit = audit_competitive_baseline_promotion_gate(
         refresh=run_competitive_baseline_refresh(),
-        as_of=date(2026, 6, 27),
+        as_of=date(2026, 8, 26),
         public_texts={"README.md": "Bounded differentiable evidence."},
     )
     assert audit.passed
@@ -373,7 +373,7 @@ def test_competitive_baseline_promotion_rejects_incoherent_components() -> None:
     """A combined result must not conceal failed or malformed component results."""
     audit = audit_competitive_baseline_promotion_gate(
         refresh=run_competitive_baseline_refresh(),
-        as_of=date(2026, 6, 27),
+        as_of=date(2026, 8, 26),
         public_texts={"README.md": "Bounded differentiable evidence."},
     )
     failed_validation = replace(

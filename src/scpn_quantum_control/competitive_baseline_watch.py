@@ -54,7 +54,7 @@ COMPETITIVE_BASELINE_WATCH_CLAIM_BOUNDARY: Final[str] = (
 """Shared claim boundary for watch rows and probe results."""
 
 # Deterministic inventory clock for watch classification (not a live network clock).
-_WATCH_AS_OF: Final[date] = date(2026, 7, 23)
+_WATCH_AS_OF: Final[date] = date(2026, 8, 26)
 
 # Explicit blockers when continuous re-verification / CI harness is not landed.
 _DEFAULT_WATCH_BLOCKERS: Final[tuple[str, ...]] = (
@@ -125,7 +125,7 @@ class CompetitiveWatchRecord:
     feed_bl52_status: FeedStatus
     feed_bl56_status: FeedStatus
     blockers: tuple[str, ...]
-    as_of: str = "2026-07-23"
+    as_of: str = "2026-08-26"
     claim_boundary: str = COMPETITIVE_BASELINE_WATCH_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
