@@ -41,13 +41,13 @@ jobs:
           python tools/check_wheel_contents.py
           --project oscillatools/pyproject.toml
           'oscillatools/dist/*.whl'
-      - uses: pypa/gh-action-pypi-publish@ba38be9e461d3875417946c167d0b5f3d385a247  # release/v1
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33  # v1.14.2
         with:
           attestations: true
           packages-dir: oscillatools/dist
       # Sign the sdist + wheels with Sigstore (Fulcio + Rekor, OIDC keyless).
       # `.sigstore` bundles land next to each artefact in `oscillatools/dist/`.
-      - uses: sigstore/gh-action-sigstore-python@f514d46b907ebcd5bedc05145c03b69c1edd8b46  # v3.0.1
+      - uses: sigstore/gh-action-sigstore-python@790bc6befb9d733738f18d8f895854b453640ec9  # v3.5.0
         with:
           inputs: >-
             ./oscillatools/dist/*.tar.gz

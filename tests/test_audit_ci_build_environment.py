@@ -171,18 +171,18 @@ def test_project_metadata_rejects_malformed_and_incomplete_contracts() -> None:
 
 def test_development_input_requires_unique_exact_build_pins() -> None:
     """Missing, duplicate, ranged, wrong, and malformed direct pins must fail."""
-    valid = "# comment\n-r requirements.txt\n\nBuild==1.5.1\nhatchling==1.31.0\n"
+    valid = "# comment\n-r requirements.txt\n\nBuild==1.5.0\nhatchling==1.31.0\n"
     assert build_audit.audit_development_input(valid) == ()
     assert build_audit.parse_direct_requirements(valid)[0].name == "Build"
 
     errors = build_audit.audit_development_input(
         "build>=1\nhatchling==1.30.0\nhatchling==1.31.0\n"
     )
-    assert "build==1.5.1" in errors[0]
+    assert "build==1.5.0" in errors[0]
     assert "found 2" in errors[1]
-    missing = build_audit.audit_development_input("build==1.5.1\n")
+    missing = build_audit.audit_development_input("build==1.5.0\n")
     assert "found 0" in missing[0]
-    malformed = build_audit.audit_development_input("build==1.5.1\nnot a req @\n")
+    malformed = build_audit.audit_development_input("build==1.5.0\nnot a req @\n")
     assert "invalid direct requirement on line 2" in malformed[0]
 
 
@@ -232,14 +232,14 @@ def test_lock_audit_rejects_provenance_pin_hash_and_owner_drift() -> None:
     bad = lock_texts[first_path]
     bad = bad.replace(f"Python {first_version}", "Python 3.10")
     bad = bad.replace(f"--output-file={first_path}", "--output-file=wrong.txt")
-    bad = bad.replace("build==1.5.1", "build==1.5.0")
+    bad = bad.replace("build==1.5.0", "build==1.5.1")
     bad = bad.replace(next(iter(build_audit.EXPECTED_BUILD_PINS[0].hashes)), "0" * 64)
     bad = bad.replace("# via -r requirements-dev.txt", "# via transitive-owner", 1)
     bad = bad.replace(_lock_stanza(build_audit.EXPECTED_BUILD_PINS[1]), "")
     errors = build_audit.audit_lockfiles({first_path: bad})
     assert any("provenance" in error for error in errors)
     assert any("canonical pip-compile command" in error for error in errors)
-    assert any("found 1.5.0" in error for error in errors)
+    assert any("found 1.5.1" in error for error in errors)
     assert any("distribution hashes drifted" in error for error in errors)
     assert any("pin owners drifted" in error for error in errors)
     assert any("expected one hatchling pin, found 0" in error for error in errors)
