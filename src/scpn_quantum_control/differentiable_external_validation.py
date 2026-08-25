@@ -85,11 +85,11 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "Differentiable baseline category scorecard reviewer summary",
     ),
     (
-        "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.json",
+        "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260826.json",
         "Differentiable competitive-baseline freshness artefact",
     ),
     (
-        "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.md",
+        "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260826.md",
         "Differentiable competitive-baseline freshness reviewer summary",
     ),
     (

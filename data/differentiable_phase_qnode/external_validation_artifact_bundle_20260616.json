@@ -46,16 +46,16 @@
       "size_bytes": 9720
     },
     {
-      "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.json",
+      "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260826.json",
       "role": "Differentiable competitive-baseline freshness artefact",
-      "sha256": "be0f37ae8e9a0359fbd0f50da53764ea1d8795fa1218a8518eac728841194865",
-      "size_bytes": 10009
+      "sha256": "d9724703669ba3738206fddb6017c7e7f97cd2a9a570fe8390240f7ad9acdeb9",
+      "size_bytes": 10154
     },
     {
-      "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.md",
+      "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260826.md",
       "role": "Differentiable competitive-baseline freshness reviewer summary",
-      "sha256": "94a2cf78ce1c4408fb74cf56dd246fc915a7af4b1215228e2341a9337699688d",
-      "size_bytes": 3003
+      "sha256": "40434b40dd397bb9cb00f7aa9caf370c89c698cd00544ab134b957dfa6a09ed3",
+      "size_bytes": 3035
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
@@ -156,13 +156,13 @@
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
       "role": "Exact environment-lock manifest",
-      "sha256": "9279ac645cb2101f9200eaaf20593a5bf7b2d528e53d8af5a45e0ae591a06252",
+      "sha256": "585709f793c43283e6e3271536122fad0895c0da55e99c4eaebf461b457101ff",
       "size_bytes": 3226
     },
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md",
       "role": "Environment-lock reviewer summary",
-      "sha256": "d3ed3f415b588ae43955db099164abe6532a8d6fcab0bb3fdb933b26354d22d2",
+      "sha256": "9cc97b6e1a5c34a70a88cea95353e11d5d307d50dcbfef56043faa5054919011",
       "size_bytes": 2373
     },
     {
