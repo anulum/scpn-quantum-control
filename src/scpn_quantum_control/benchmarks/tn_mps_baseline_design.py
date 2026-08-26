@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — TN/MPS baseline design
-"""CPU-first TN/MPS baseline design for S2 scaling follow-up."""
+"""Design a CPU-first tensor-network MPS scaling baseline."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from typing import Any, Literal
 AdapterStatus = Literal["ready", "optional_dependency", "blocked", "owner_gated"]
 SizeClass = Literal["pilot", "extension"]
 
-TN_MPS_BASELINE_DESIGN_SCHEMA = "scpn_qc_tn_mps_baseline_design_v1"
+TN_MPS_BASELINE_DESIGN_SCHEMA = "scpn_qc_tn_mps_baseline_design_v2"
 TN_MPS_BASELINE_DESIGN_CLAIM_BOUNDARY = (
     "Design and preregistration evidence only; no N>=30 tensor-network row, "
     "hardware advantage, or broad quantum-advantage claim is established."
@@ -38,6 +38,7 @@ class TNBaselineAdapter:
     notes: tuple[str, ...]
 
     def __post_init__(self) -> None:
+        """Validate adapter metadata and resource bounds."""
         _require_text(self.name, "name")
         _require_text(self.language, "language")
         _require_text(self.dependency, "dependency")
@@ -62,9 +63,10 @@ class TNBaselineSizePlan:
     acceptance_gates: tuple[str, ...]
     blocked_claims: tuple[str, ...]
     gpu_followup: str
-    qwc5_1_unblocker: bool
+    enables_cpu_execution: bool
 
     def __post_init__(self) -> None:
+        """Validate one target-size execution plan."""
         _require_positive_int(self.n_qubits, "n_qubits")
         _require_text(self.cpu_first_adapter, "cpu_first_adapter")
         _require_nonempty_texts(self.required_rows, "required_rows")
@@ -88,13 +90,14 @@ class TNBaselineDesign:
     size_plan: tuple[TNBaselineSizePlan, ...]
     acceptance_gates: tuple[str, ...]
     blocked_claims: tuple[str, ...]
-    qwc5_1_unblocked_by: str
+    cpu_execution_prerequisites: str
     claim_boundary: str = TN_MPS_BASELINE_DESIGN_CLAIM_BOUNDARY
     benchmark_execution_performed: bool = False
     hardware_submission_allowed: bool = False
     advantage_claim_allowed: bool = False
 
     def __post_init__(self) -> None:
+        """Validate manifest completeness and fail-closed defaults."""
         _validate_target_sizes(self.target_sizes)
         _require_text(self.schema, "schema")
         _require_text(self.decision, "decision")
@@ -104,7 +107,7 @@ class TNBaselineDesign:
             raise ValueError("size_plan must have one row per target size")
         _require_nonempty_texts(self.acceptance_gates, "acceptance_gates")
         _require_nonempty_texts(self.blocked_claims, "blocked_claims")
-        _require_text(self.qwc5_1_unblocked_by, "qwc5_1_unblocked_by")
+        _require_text(self.cpu_execution_prerequisites, "cpu_execution_prerequisites")
         _require_text(self.claim_boundary, "claim_boundary")
 
     def to_dict(self) -> dict[str, Any]:
@@ -117,7 +120,7 @@ class TNBaselineDesign:
             "size_plan": [row.to_dict() for row in self.size_plan],
             "acceptance_gates": list(self.acceptance_gates),
             "blocked_claims": list(self.blocked_claims),
-            "qwc5_1_unblocked_by": self.qwc5_1_unblocked_by,
+            "cpu_execution_prerequisites": self.cpu_execution_prerequisites,
             "claim_boundary": self.claim_boundary,
             "benchmark_execution_performed": self.benchmark_execution_performed,
             "hardware_submission_allowed": self.hardware_submission_allowed,
@@ -146,8 +149,8 @@ def build_tn_mps_baseline_design(
             "Every N=30-40 row must record status, wall_time_ms, memory_bytes, max_bond, "
             "discarded_weight, entropy proxy, command, machine, dependencies, and git_commit.",
             "Skipped rows must carry explicit size, dependency, or resource-gate reasons.",
-            "TN/MPS rows must be compared against the S2 protocol matrix before any "
-            "QWC-5.1 promotion.",
+            "TN/MPS rows must be compared against the registered scaling-protocol "
+            "matrix before any execution evidence is promoted.",
         ),
         blocked_claims=(
             "No broad quantum advantage claim from this design artifact.",
@@ -155,9 +158,9 @@ def build_tn_mps_baseline_design(
             "No GPU TN comparison until the owner-gated GPU lane promotes it.",
             "No Julia/ITensor parity claim until a maintained Julia adapter is measured.",
         ),
-        qwc5_1_unblocked_by=(
-            "QWC-5.1 can execute the CPU-first TN/MPS rows once the quimb dependency, "
-            "resource caps, and S2 row schema are pinned by this manifest."
+        cpu_execution_prerequisites=(
+            "The CPU-first TN/MPS rows can execute once the quimb dependency, "
+            "resource caps, and scaling-row schema are pinned by this manifest."
         ),
     )
 
@@ -167,7 +170,7 @@ def render_tn_mps_baseline_design_markdown(design: TNBaselineDesign) -> str:
     lines = [
         "# TN/MPS Baseline Design",
         "",
-        "This is the QWC-4.2 design artifact for the N=30-40 tensor-network",
+        "This is the CPU-first design artifact for the N=30-40 tensor-network",
         "baseline path. It is planning and preregistration evidence only.",
         "",
         "## Boundary",
@@ -193,14 +196,14 @@ def render_tn_mps_baseline_design_markdown(design: TNBaselineDesign) -> str:
             "",
             "## Size Plan",
             "",
-            "| N | class | CPU-first adapter | QWC-5.1 unblocker | GPU follow-up |",
+            "| N | class | CPU-first adapter | CPU execution enabled | GPU follow-up |",
             "| ---: | --- | --- | --- | --- |",
         ]
     )
     for row in design.size_plan:
         lines.append(
             "| {n_qubits} | {size_class} | {cpu_first_adapter} | "
-            "{qwc5_1_unblocker} | {gpu_followup} |".format(**row.to_dict())
+            "{enables_cpu_execution} | {gpu_followup} |".format(**row.to_dict())
         )
     lines.extend(["", "## Acceptance Gates", ""])
     lines.extend(f"- {gate}" for gate in design.acceptance_gates)
@@ -209,9 +212,9 @@ def render_tn_mps_baseline_design_markdown(design: TNBaselineDesign) -> str:
     lines.extend(
         [
             "",
-            "## QWC-5.1 Unblocker",
+            "## CPU Execution Prerequisites",
             "",
-            design.qwc5_1_unblocked_by,
+            design.cpu_execution_prerequisites,
             "",
             "## Regeneration",
             "",
@@ -234,7 +237,7 @@ def _default_adapters(max_target_qubits: int) -> tuple[TNBaselineAdapter, ...]:
             max_target_qubits=max_target_qubits,
             claim_boundary="Measured rows only; optional dependency absence must emit skipped rows.",
             notes=(
-                "First execution path for QWC-5.1.",
+                "First execution path for the CPU tensor-network baseline.",
                 "Long-range K_nm truncation must report omitted coupling mass.",
             ),
         ),
@@ -260,7 +263,7 @@ def _default_adapters(max_target_qubits: int) -> tuple[TNBaselineAdapter, ...]:
             max_target_qubits=max_target_qubits,
             claim_boundary="No Julia parity or speed claim until measured and maintained.",
             notes=(
-                "Not part of the CPU-first QWC-5.1 gate.",
+                "Not part of the CPU-first execution gate.",
                 "Requires separate dependency and CI ownership.",
             ),
         ),
@@ -273,7 +276,7 @@ def _default_adapters(max_target_qubits: int) -> tuple[TNBaselineAdapter, ...]:
             max_target_qubits=max_target_qubits,
             claim_boundary="GPU comparison is blocked until the owner-gated GPU lane promotes it.",
             notes=(
-                "Kept out of CPU-first QWC-4.2/QWC-5.1.",
+                "Kept out of the CPU-first design and execution gates.",
                 "Must not be used to imply current GPU TN evidence.",
             ),
         ),
@@ -301,8 +304,8 @@ def _size_plan_row(n_qubits: int) -> TNBaselineSizePlan:
             "tensor-network hardness",
             "hardware scaling win",
         ),
-        gpu_followup="defer to owner-gated GPU lane #32",
-        qwc5_1_unblocker=True,
+        gpu_followup="defer to the owner-gated GPU lane",
+        enables_cpu_execution=True,
     )
 
 

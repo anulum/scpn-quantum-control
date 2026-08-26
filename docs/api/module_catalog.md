@@ -1403,7 +1403,7 @@ Benchmark artefacts for bounded synchronisation-witness runs.
 
 ### `scpn_quantum_control.benchmarks.tn_mps_baseline_design`
 
-CPU-first TN/MPS baseline design for S2 scaling follow-up.
+Design a CPU-first tensor-network MPS scaling baseline.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/tn_mps_baseline_design.py) · Public symbols: **5**
 

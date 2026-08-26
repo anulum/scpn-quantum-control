@@ -983,6 +983,8 @@ def test_main_uses_coverage_pytest_by_default(
         "campaign-harness-product exact coverage threshold",
         "geometric-control-product focused coverage",
         "geometric-control-product exact coverage threshold",
+        "tn-mps-baseline-design focused coverage",
+        "tn-mps-baseline-design exact coverage threshold",
         "cloud-native-deployment focused coverage",
         "cloud-native-deployment exact coverage threshold",
         "control-stack-compose focused coverage",

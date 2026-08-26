@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — TN/MPS baseline design tests
-"""Tests for the QWC-4.2 TN/MPS baseline design manifest."""
+"""Test the CPU-first tensor-network MPS baseline design manifest."""
 
 from __future__ import annotations
 
@@ -46,7 +46,7 @@ def _load_export_script() -> ModuleType:
 
 
 def test_design_manifest_records_cpu_first_path_and_blocked_claims() -> None:
-    """The QWC-4.2 manifest is explicit about what is and is not evidence."""
+    """Keep the CPU-first manifest explicit about evidence boundaries."""
     design = build_tn_mps_baseline_design()
     payload = design.to_dict()
 
@@ -63,7 +63,7 @@ def test_design_manifest_records_cpu_first_path_and_blocked_claims() -> None:
         "gpu_tn": "owner_gated",
     }
     assert all(row.cpu_first_adapter == "quimb_mps_cpu" for row in design.size_plan)
-    assert all(row.qwc5_1_unblocker for row in design.size_plan)
+    assert all(row.enables_cpu_execution for row in design.size_plan)
     assert "quantum advantage" in " ".join(design.blocked_claims)
     assert payload["target_sizes"] == list(DEFAULT_TARGET_SIZES)
 
@@ -122,7 +122,7 @@ def test_manifest_dataclasses_fail_closed_on_empty_fields() -> None:
             acceptance_gates=("gate",),
             blocked_claims=("claim",),
             gpu_followup="defer",
-            qwc5_1_unblocker=True,
+            enables_cpu_execution=True,
         )
     with pytest.raises(ValueError, match="size_plan"):
         TNBaselineDesign(
@@ -133,7 +133,7 @@ def test_manifest_dataclasses_fail_closed_on_empty_fields() -> None:
             size_plan=(),
             acceptance_gates=("gate",),
             blocked_claims=("claim",),
-            qwc5_1_unblocked_by="unblocker",
+            cpu_execution_prerequisites="prerequisites",
         )
     with pytest.raises(ValueError, match="adapters"):
         TNBaselineDesign(
@@ -150,12 +150,12 @@ def test_manifest_dataclasses_fail_closed_on_empty_fields() -> None:
                     acceptance_gates=("gate",),
                     blocked_claims=("claim",),
                     gpu_followup="defer",
-                    qwc5_1_unblocker=True,
+                    enables_cpu_execution=True,
                 ),
             ),
             acceptance_gates=("gate",),
             blocked_claims=("claim",),
-            qwc5_1_unblocked_by="unblocker",
+            cpu_execution_prerequisites="prerequisites",
         )
 
 
@@ -191,5 +191,20 @@ def test_export_script_writes_json_and_markdown(
     assert len(json_files) == 1
     payload = json.loads(json_files[0].read_text(encoding="utf-8"))
     assert payload["schema"] == TN_MPS_BASELINE_DESIGN_SCHEMA
+    assert "cpu_execution_prerequisites" in payload
+    assert set(payload) == {
+        "acceptance_gates",
+        "adapters",
+        "advantage_claim_allowed",
+        "benchmark_execution_performed",
+        "blocked_claims",
+        "claim_boundary",
+        "cpu_execution_prerequisites",
+        "decision",
+        "hardware_submission_allowed",
+        "schema",
+        "size_plan",
+        "target_sizes",
+    }
     assert payload["advantage_claim_allowed"] is False
     assert "TN/MPS Baseline Design" in doc_path.read_text(encoding="utf-8")

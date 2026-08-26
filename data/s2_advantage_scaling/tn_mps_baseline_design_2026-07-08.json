@@ -2,7 +2,7 @@
   "acceptance_gates": [
     "Every N=30-40 row must record status, wall_time_ms, memory_bytes, max_bond, discarded_weight, entropy proxy, command, machine, dependencies, and git_commit.",
     "Skipped rows must carry explicit size, dependency, or resource-gate reasons.",
-    "TN/MPS rows must be compared against the S2 protocol matrix before any QWC-5.1 promotion."
+    "TN/MPS rows must be compared against the registered scaling-protocol matrix before any execution evidence is promoted."
   ],
   "adapters": [
     {
@@ -12,7 +12,7 @@
       "max_target_qubits": 40,
       "name": "quimb_mps_cpu",
       "notes": [
-        "First execution path for QWC-5.1.",
+        "First execution path for the CPU tensor-network baseline.",
         "Long-range K_nm truncation must report omitted coupling mass."
       ],
       "role": "CPU DMRG/TEBD execution adapter for nearest-neighbour or explicitly truncated K_nm",
@@ -38,7 +38,7 @@
       "max_target_qubits": 40,
       "name": "itensor_julia",
       "notes": [
-        "Not part of the CPU-first QWC-5.1 gate.",
+        "Not part of the CPU-first execution gate.",
         "Requires separate dependency and CI ownership."
       ],
       "role": "Future independent MPS parity adapter after Julia ownership is assigned",
@@ -51,7 +51,7 @@
       "max_target_qubits": 40,
       "name": "gpu_tn",
       "notes": [
-        "Kept out of CPU-first QWC-4.2/QWC-5.1.",
+        "Kept out of the CPU-first design and execution gates.",
         "Must not be used to imply current GPU TN evidence."
       ],
       "role": "Future GPU tensor-network comparison lane",
@@ -67,10 +67,10 @@
     "No Julia/ITensor parity claim until a maintained Julia adapter is measured."
   ],
   "claim_boundary": "Design and preregistration evidence only; no N>=30 tensor-network row, hardware advantage, or broad quantum-advantage claim is established.",
+  "cpu_execution_prerequisites": "The CPU-first TN/MPS rows can execute once the quimb dependency, resource caps, and scaling-row schema are pinned by this manifest.",
   "decision": "Use the Python/quimb CPU MPS adapter as the first execution path, with the bounded native Schmidt/resource model as a deterministic fallback and validation scaffold. Keep ITensor/Julia and GPU TN as explicitly blocked follow-ups until owner-gated toolchain work.",
   "hardware_submission_allowed": false,
-  "qwc5_1_unblocked_by": "QWC-5.1 can execute the CPU-first TN/MPS rows once the quimb dependency, resource caps, and S2 row schema are pinned by this manifest.",
-  "schema": "scpn_qc_tn_mps_baseline_design_v1",
+  "schema": "scpn_qc_tn_mps_baseline_design_v2",
   "size_plan": [
     {
       "acceptance_gates": [
@@ -84,9 +84,9 @@
         "hardware scaling win"
       ],
       "cpu_first_adapter": "quimb_mps_cpu",
-      "gpu_followup": "defer to owner-gated GPU lane #32",
+      "enables_cpu_execution": true,
+      "gpu_followup": "defer to the owner-gated GPU lane",
       "n_qubits": 30,
-      "qwc5_1_unblocker": true,
       "required_rows": [
         "classical_ode",
         "mps_tensor_network",
@@ -107,9 +107,9 @@
         "hardware scaling win"
       ],
       "cpu_first_adapter": "quimb_mps_cpu",
-      "gpu_followup": "defer to owner-gated GPU lane #32",
+      "enables_cpu_execution": true,
+      "gpu_followup": "defer to the owner-gated GPU lane",
       "n_qubits": 32,
-      "qwc5_1_unblocker": true,
       "required_rows": [
         "classical_ode",
         "mps_tensor_network",
@@ -130,9 +130,9 @@
         "hardware scaling win"
       ],
       "cpu_first_adapter": "quimb_mps_cpu",
-      "gpu_followup": "defer to owner-gated GPU lane #32",
+      "enables_cpu_execution": true,
+      "gpu_followup": "defer to the owner-gated GPU lane",
       "n_qubits": 36,
-      "qwc5_1_unblocker": true,
       "required_rows": [
         "classical_ode",
         "mps_tensor_network",
@@ -153,9 +153,9 @@
         "hardware scaling win"
       ],
       "cpu_first_adapter": "quimb_mps_cpu",
-      "gpu_followup": "defer to owner-gated GPU lane #32",
+      "enables_cpu_execution": true,
+      "gpu_followup": "defer to the owner-gated GPU lane",
       "n_qubits": 40,
-      "qwc5_1_unblocker": true,
       "required_rows": [
         "classical_ode",
         "mps_tensor_network",

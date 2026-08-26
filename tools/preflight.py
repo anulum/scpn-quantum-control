@@ -141,6 +141,9 @@ if TYPE_CHECKING:
         thermo_readiness_product_quality_gates as _thermo_readiness_product_quality_gates,
     )
     from tools import (
+        tn_mps_baseline_design_quality_gates as _tn_mps_baseline_design_quality_gates,
+    )
+    from tools import (
         unsuitable_scenario_registry_quality_gates as _unsuitable_scenario_registry_quality_gates,
     )
     from tools import (
@@ -166,6 +169,9 @@ else:
     )
     _geometric_control_product_quality_gates = import_module(
         "tools.geometric_control_product_quality_gates"
+    )
+    _tn_mps_baseline_design_quality_gates = import_module(
+        "tools.tn_mps_baseline_design_quality_gates"
     )
     _cloud_native_deployment_quality_gates = import_module(
         "tools.cloud_native_deployment_product_quality_gates"
@@ -586,6 +592,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_kyma_mechanism_product_quality_gates.build_static_quality_gates(_PY),
     *_campaign_harness_product_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
+    *_tn_mps_baseline_design_quality_gates.build_static_quality_gates(_PY),
     *_cloud_native_deployment_quality_gates.build_static_quality_gates(_PY),
     *_control_stack_compose_quality_gates.build_static_quality_gates(_PY),
     *_public_api_stability_quality_gates.build_static_quality_gates(_PY),
@@ -1006,6 +1013,9 @@ CAMPAIGN_HARNESS_PRODUCT_COVERAGE_GATES = (
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
     _geometric_control_product_quality_gates.build_coverage_gates(_PY)
 )
+TN_MPS_BASELINE_DESIGN_COVERAGE_GATES = _tn_mps_baseline_design_quality_gates.build_coverage_gates(
+    _PY
+)
 CLOUD_NATIVE_DEPLOYMENT_COVERAGE_GATES = (
     _cloud_native_deployment_quality_gates.build_coverage_gates(_PY)
 )
@@ -1356,6 +1366,7 @@ def main() -> int:
             gates.extend(KYMA_MECHANISM_PRODUCT_COVERAGE_GATES)
             gates.extend(CAMPAIGN_HARNESS_PRODUCT_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
+            gates.extend(TN_MPS_BASELINE_DESIGN_COVERAGE_GATES)
             gates.extend(CLOUD_NATIVE_DEPLOYMENT_COVERAGE_GATES)
             gates.extend(CONTROL_STACK_COMPOSE_COVERAGE_GATES)
             gates.extend(PUBLIC_API_STABILITY_COVERAGE_GATES)

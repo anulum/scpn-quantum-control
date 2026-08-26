@@ -1,6 +1,6 @@
 # TN/MPS Baseline Design
 
-This is the QWC-4.2 design artifact for the N=30-40 tensor-network
+This is the CPU-first design artifact for the N=30-40 tensor-network
 baseline path. It is planning and preregistration evidence only.
 
 ## Boundary
@@ -22,18 +22,18 @@ Use the Python/quimb CPU MPS adapter as the first execution path, with the bound
 
 ## Size Plan
 
-| N | class | CPU-first adapter | QWC-5.1 unblocker | GPU follow-up |
+| N | class | CPU-first adapter | CPU execution enabled | GPU follow-up |
 | ---: | --- | --- | --- | --- |
-| 30 | pilot | quimb_mps_cpu | True | defer to owner-gated GPU lane #32 |
-| 32 | pilot | quimb_mps_cpu | True | defer to owner-gated GPU lane #32 |
-| 36 | extension | quimb_mps_cpu | True | defer to owner-gated GPU lane #32 |
-| 40 | extension | quimb_mps_cpu | True | defer to owner-gated GPU lane #32 |
+| 30 | pilot | quimb_mps_cpu | True | defer to the owner-gated GPU lane |
+| 32 | pilot | quimb_mps_cpu | True | defer to the owner-gated GPU lane |
+| 36 | extension | quimb_mps_cpu | True | defer to the owner-gated GPU lane |
+| 40 | extension | quimb_mps_cpu | True | defer to the owner-gated GPU lane |
 
 ## Acceptance Gates
 
 - Every N=30-40 row must record status, wall_time_ms, memory_bytes, max_bond, discarded_weight, entropy proxy, command, machine, dependencies, and git_commit.
 - Skipped rows must carry explicit size, dependency, or resource-gate reasons.
-- TN/MPS rows must be compared against the S2 protocol matrix before any QWC-5.1 promotion.
+- TN/MPS rows must be compared against the registered scaling-protocol matrix before any execution evidence is promoted.
 
 ## Blocked Claims
 
@@ -42,9 +42,9 @@ Use the Python/quimb CPU MPS adapter as the first execution path, with the bound
 - No GPU TN comparison until the owner-gated GPU lane promotes it.
 - No Julia/ITensor parity claim until a maintained Julia adapter is measured.
 
-## QWC-5.1 Unblocker
+## CPU Execution Prerequisites
 
-QWC-5.1 can execute the CPU-first TN/MPS rows once the quimb dependency, resource caps, and S2 row schema are pinned by this manifest.
+The CPU-first TN/MPS rows can execute once the quimb dependency, resource caps, and scaling-row schema are pinned by this manifest.
 
 ## Regeneration
 

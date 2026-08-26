@@ -6,7 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — TN/MPS baseline design export
-"""Export the QWC-4.2 TN/MPS baseline design artifacts."""
+"""Export the CPU-first tensor-network MPS baseline design artifacts."""
 
 from __future__ import annotations
 
@@ -55,7 +55,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
-    """Write the QWC-4.2 TN/MPS baseline design artifacts."""
+    """Write the CPU-first tensor-network MPS baseline design artifacts."""
     args = parse_args()
     design = build_tn_mps_baseline_design()
     json_path = args.out_dir / f"tn_mps_baseline_design_{DATE}.json"
