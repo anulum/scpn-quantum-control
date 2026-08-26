@@ -9113,7 +9113,7 @@
       "tests/test_rust_ffi_safety_audit.py",
       "tests/test_rust_ffi_validation.py",
       "tests/test_rust_kernel_execution_audit.py",
-      "tests/test_rust_llvm_jit_decision.py",
+      "tests/test_rust_llvm_jit_decision_evidence.py",
       "tests/test_rust_new_functions.py",
       "tests/test_rust_parity.py",
       "tests/test_rust_path_benchmarks.py",

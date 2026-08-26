@@ -1,6 +1,6 @@
 {
-  "artifact_id": "rust-llvm-jit-decision-20260726",
-  "claim_boundary": "BL-38 decision evidence only: functional parity and non-isolated descriptive timings for the existing bounded Rust Program-AD replay and Python-owned llvmlite JIT. No Rust LLVM/JIT implementation, isolated performance, provider, hardware, GPU, or public performance claim.",
+  "artifact_id": "rust-llvm-jit-decision-evidence-20260726",
+  "claim_boundary": "Functional parity and non-isolated descriptive timing evidence for the existing bounded Rust Program-AD replay and Python-owned llvmlite JIT only. No Rust LLVM/JIT implementation, isolated performance, provider, hardware, GPU, or public performance claim.",
   "criteria": {
     "parity_certificate_family_expansion": false,
     "dual_compiler_maintenance_burden": true,
@@ -23,7 +23,7 @@
     "python": "3.12.13",
     "scpn_quantum_engine": "0.2.0"
   },
-  "follow_up_boundary": "Reopen only if a named user-facing path is blocked on Rust-owned native execution and a preregistered isolated spike can test >=2x benefit without weakening parity, rollback, fallback, or BL-49 coverage.",
+  "follow_up_boundary": "Reopen only if a named user-facing path is blocked on Rust-owned native execution and a preregistered isolated spike can test >=2x benefit without weakening parity, rollback, fallback, or parity-certificate coverage.",
   "inventory": [
     {
       "python_mlir_llvmlite": "native_jit_value_jvp_vjp_gradient",
@@ -154,9 +154,9 @@
       "rust_value_error": 0.0
     }
   ],
-  "rationale": "No user-facing path is blocked on a Rust-owned JIT: existing Rust replay already covers the bounded parity role, while the pinned Python/llvmlite path already owns native JIT execution. A second LLVM owner would add compiler and supply-chain burden without expanding BL-49 certifiable families.",
-  "schema": "rust_llvm_jit_decision.v1",
-  "sha256": "7c5e04f31b82761b0366ea57e620b4fb9ad53bab552b62551bb9050369f0f6ab",
+  "rationale": "No user-facing path is blocked on a Rust-owned JIT: existing Rust replay already covers the bounded parity role, while the pinned Python/llvmlite path already owns native JIT execution. A second LLVM owner would add compiler and supply-chain burden without expanding published parity-certificate families.",
+  "schema": "rust_llvm_jit_decision_evidence.v2",
+  "sha256": "e70b7975c3ddd5312e0b38043a1269cebb7dd1cd57f0684211f23cbfa0f940b2",
   "stamp": "20260726",
   "timing_protocol": {
     "interpretation": "descriptive_only_no_performance_claim",

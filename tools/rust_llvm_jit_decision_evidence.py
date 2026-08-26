@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Rust-JIT-decision Rust LLVM/JIT decision evidence
-"""Capture the bounded evidence needed for the Rust-JIT decision Rust JIT decision.
+# SCPN Quantum Control — Rust replay/native-JIT decision evidence
+"""Capture evidence for deciding whether a Rust-owned LLVM JIT is warranted.
 
 The comparison deliberately measures the existing Rust Program-AD replay and
 the existing Python-owned llvmlite JIT on the same trace and inputs.  It does
@@ -39,12 +39,24 @@ from scpn_quantum_control.differentiable import (
     whole_program_value_and_grad,
 )
 
-SCHEMA = "rust_llvm_jit_decision.v1"
+SCHEMA = "rust_llvm_jit_decision_evidence.v2"
+ARTIFACT_ID_PREFIX = "rust-llvm-jit-decision-evidence-"
 CLAIM_BOUNDARY = (
-    "BL-38 decision evidence only: functional parity and non-isolated descriptive "
-    "timings for the existing bounded Rust Program-AD replay and Python-owned "
-    "llvmlite JIT. No Rust LLVM/JIT implementation, isolated performance, provider, "
-    "hardware, GPU, or public performance claim."
+    "Functional parity and non-isolated descriptive timing evidence for the existing "
+    "bounded Rust Program-AD replay and Python-owned llvmlite JIT only. No Rust "
+    "LLVM/JIT implementation, isolated performance, provider, hardware, GPU, or "
+    "public performance claim."
+)
+RATIONALE = (
+    "No user-facing path is blocked on a Rust-owned JIT: existing Rust replay already "
+    "covers the bounded parity role, while the pinned Python/llvmlite path already "
+    "owns native JIT execution. A second LLVM owner would add compiler and supply-chain "
+    "burden without expanding published parity-certificate families."
+)
+FOLLOW_UP_BOUNDARY = (
+    "Reopen only if a named user-facing path is blocked on Rust-owned native execution "
+    "and a preregistered isolated spike can test >=2x benefit without weakening parity, "
+    "rollback, fallback, or parity-certificate coverage."
 )
 PARITY_TOLERANCE = 1.0e-9
 
@@ -94,7 +106,7 @@ def _trace_3x3(values: Any) -> Any:
 
 
 def decision_kernels() -> tuple[DecisionKernel, ...]:
-    """Return the frozen six-kernel comparison set from S38.2."""
+    """Return the frozen six-kernel parity and timing comparison set."""
     matrix_2 = np.array([5.0, 2.0, 0.0, 4.0], dtype=np.float64)
     matrix_3 = np.array([6.0, 2.0, 0.0, 1.0, 7.0, 2.0, 0.0, 1.0, 5.0], dtype=np.float64)
     return (
@@ -123,7 +135,7 @@ def decision_kernels() -> tuple[DecisionKernel, ...]:
 
 
 def inventory_matrix() -> tuple[dict[str, object], ...]:
-    """Return the source-verified current-role matrix used by S38.1."""
+    """Return the source-verified execution-role matrix."""
     return (
         {
             "surface": "branchless_scalar",
@@ -193,7 +205,8 @@ def _capture_kernel(
 ) -> dict[str, object]:
     """Capture one same-trace Rust-replay versus native-JIT comparison row."""
     traced = whole_program_value_and_grad(kernel_spec.objective, kernel_spec.values)
-    if traced.program_ir is None:
+    program_ir = traced.program_ir
+    if program_ir is None:
         raise ValueError(f"{kernel_spec.case_id} did not emit Program AD IR")
 
     compile_started = time.perf_counter()
@@ -205,7 +218,7 @@ def _capture_kernel(
     native_compile_seconds = time.perf_counter() - compile_started
 
     rust_result = value_and_grad_program_ad_effect_ir_with_rust(
-        traced.program_ir,
+        program_ir,
         kernel_spec.values,
     )
     if not rust_result.supported or rust_result.value is None:
@@ -228,11 +241,17 @@ def _capture_kernel(
     ):
         raise ValueError(f"{kernel_spec.case_id} exceeded parity tolerance")
 
-    rust_callback = lambda: value_and_grad_program_ad_effect_ir_with_rust(  # noqa: E731
-        traced.program_ir,
-        kernel_spec.values,
-    )
-    native_callback = lambda: native.value_and_grad(kernel_spec.values)  # noqa: E731
+    def rust_callback() -> object:
+        """Replay the captured trace through the bounded Rust interpreter."""
+        return value_and_grad_program_ad_effect_ir_with_rust(
+            program_ir,
+            kernel_spec.values,
+        )
+
+    def native_callback() -> object:
+        """Execute value and gradient through the Python-owned native JIT."""
+        return native.value_and_grad(kernel_spec.values)
+
     rust_ns = _median_runtime_ns(
         rust_callback,
         rounds=rounds,
@@ -249,7 +268,7 @@ def _capture_kernel(
         "case_id": kernel_spec.case_id,
         "family": kernel_spec.family,
         "parameter_count": int(kernel_spec.values.size),
-        "effect_count": len(traced.program_ir.effects),
+        "effect_count": len(program_ir.effects),
         "rust_replay_supported": True,
         "native_jit_supported": True,
         "rust_value_error": rust_value_error,
@@ -279,7 +298,7 @@ def capture_decision_evidence(
     warmups: int = 10,
     isolated: bool = False,
 ) -> dict[str, object]:
-    """Capture and return the validated BL-38 decision evidence payload."""
+    """Capture and return a validated decision-evidence payload."""
     if not stamp.strip():
         raise ValueError("stamp must be non-empty")
     if rounds < 3 or repetitions < 1 or warmups < 0:
@@ -307,18 +326,12 @@ def capture_decision_evidence(
     inventory = inventory_matrix()
     product_role_proven = any(bool(row["rust_jit_product_gap"]) for row in inventory)
     decision = "NO-GO"
-    rationale = (
-        "No user-facing path is blocked on a Rust-owned JIT: existing Rust replay already "
-        "covers the bounded parity role, while the pinned Python/llvmlite path already "
-        "owns native JIT execution. A second LLVM owner would add compiler and supply-chain "
-        "burden without expanding BL-49 certifiable families."
-    )
     payload: dict[str, object] = {
         "schema": SCHEMA,
-        "artifact_id": f"rust-llvm-jit-decision-{stamp}",
+        "artifact_id": f"{ARTIFACT_ID_PREFIX}{stamp}",
         "stamp": stamp,
         "decision": decision,
-        "rationale": rationale,
+        "rationale": RATIONALE,
         "claim_boundary": CLAIM_BOUNDARY,
         "criteria": {
             "parity_passed": max_error <= PARITY_TOLERANCE,
@@ -350,22 +363,37 @@ def capture_decision_evidence(
         },
         "inventory": list(inventory),
         "kernels": rows,
-        "follow_up_boundary": (
-            "Reopen only if a named user-facing path is blocked on Rust-owned native "
-            "execution and a preregistered isolated spike can test >=2x benefit without "
-            "weakening parity, rollback, fallback, or BL-49 coverage."
-        ),
+        "follow_up_boundary": FOLLOW_UP_BOUNDARY,
     }
+    _validate_decision_contract(payload)
+    payload["sha256"] = _decision_evidence_digest(payload)
     validate_decision_evidence(payload)
-    digest_source = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
-    payload["sha256"] = hashlib.sha256(digest_source).hexdigest()
     return payload
 
 
-def validate_decision_evidence(payload: Mapping[str, object]) -> None:
-    """Fail closed when a BL-38 decision payload violates its frozen contract."""
+def _decision_evidence_digest(payload: Mapping[str, object]) -> str:
+    """Return the canonical digest of an unsigned decision-evidence payload."""
+    unsigned = dict(payload)
+    unsigned.pop("sha256", None)
+    digest_source = json.dumps(unsigned, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(digest_source).hexdigest()
+
+
+def _validate_decision_contract(payload: Mapping[str, object]) -> None:
+    """Fail closed when decision evidence violates its descriptive contract."""
     if payload.get("schema") != SCHEMA:
-        raise ValueError("unexpected BL-38 decision schema")
+        raise ValueError("unexpected Rust LLVM/JIT decision-evidence schema")
+    stamp = payload.get("stamp")
+    if not isinstance(stamp, str) or not stamp.strip():
+        raise ValueError("decision-evidence stamp must be non-empty")
+    if payload.get("artifact_id") != f"{ARTIFACT_ID_PREFIX}{stamp}":
+        raise ValueError("unexpected Rust LLVM/JIT decision-evidence artifact ID")
+    if payload.get("claim_boundary") != CLAIM_BOUNDARY:
+        raise ValueError("unexpected Rust LLVM/JIT decision-evidence claim boundary")
+    if payload.get("rationale") != RATIONALE:
+        raise ValueError("unexpected Rust LLVM/JIT decision-evidence rationale")
+    if payload.get("follow_up_boundary") != FOLLOW_UP_BOUNDARY:
+        raise ValueError("unexpected Rust LLVM/JIT decision-evidence follow-up boundary")
     if payload.get("decision") not in {"GO", "NO-GO", "DEFER"}:
         raise ValueError("decision must be GO, NO-GO, or DEFER")
     criteria = payload.get("criteria")
@@ -387,8 +415,26 @@ def validate_decision_evidence(payload: Mapping[str, object]) -> None:
     if payload.get("decision") == "NO-GO" and bool(criteria.get("product_role_proven")):
         raise ValueError("NO-GO cannot claim a proven product role")
     case_ids = [row.get("case_id") for row in kernels if isinstance(row, Mapping)]
-    if len(case_ids) != len(kernels) or len(set(case_ids)) != len(case_ids):
+    if (
+        len(case_ids) != len(kernels)
+        or any(not isinstance(case_id, str) or not case_id for case_id in case_ids)
+        or len(set(case_ids)) != len(case_ids)
+    ):
         raise ValueError("kernel case_ids must be unique non-empty mappings")
+
+
+def validate_decision_evidence(payload: Mapping[str, object]) -> None:
+    """Validate the frozen contract and canonical embedded digest."""
+    _validate_decision_contract(payload)
+    digest = payload.get("sha256")
+    if (
+        not isinstance(digest, str)
+        or len(digest) != 64
+        or any(character not in "0123456789abcdef" for character in digest)
+    ):
+        raise ValueError("decision-evidence sha256 must be lowercase hexadecimal")
+    if digest != _decision_evidence_digest(payload):
+        raise ValueError("decision-evidence sha256 mismatch")
 
 
 def write_decision_evidence(payload: Mapping[str, object], path: Path) -> Path:
