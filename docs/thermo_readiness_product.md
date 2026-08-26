@@ -1,8 +1,8 @@
 # Thermodynamics readiness product
 
-Honest **S9 quantum-thermodynamics readiness** as a productised boundary, plus
-an **FEP research-only inventory** (BL-84 / tier C). No thermodynamic peak
-claim, no hardware submission, no invent-green FEP product promotion.
+Honest **quantum-thermodynamics readiness** as a productised boundary, plus an
+**FEP research-only inventory**. No thermodynamic peak claim, no hardware
+submission, no invent-green FEP product promotion.
 
 Module: `scpn_quantum_control.thermo_readiness_product`
 
@@ -13,8 +13,8 @@ Module: `scpn_quantum_control.thermo_readiness_product`
 | Product schema | `thermo_readiness_product.v1` |
 | Ambient readiness | `thermodynamics.readiness` (CLAIM_BOUNDARY machine-checked) |
 | Peak claim | Refuse invent-green |
-| Hardware submit | Refuse invent-green (no-submit S9) |
-| FEP status | `research_only` only (BL-84 pointer) |
+| Hardware submit | Refuse invent-green (no-submit readiness) |
+| FEP status | `research_only` only (research-lane pointer) |
 | Unknown capability / module | Fail closed |
 
 ## Readiness capabilities
@@ -100,17 +100,17 @@ The data records expose `to_dict()` JSON-ready payloads and validate their
 required identifiers, status/kind enums, blockers, counts, no-submit flags,
 and bounded claim text at construction time.
 
-## Residuals (honest)
+## Research boundaries
 
-- **S100.3** — optional future FEP sync-control hook design only (no
-  implementation without owner approval)
-- FEP remains tier **C** inventory; promotion path is BL-84 / BL-98, not this product
+- An optional future FEP sync-control hook is design-only; implementation
+  requires separate owner approval.
+- FEP remains a research-only inventory. Promotion belongs to the research-lane
+  registry and theory-hook promotion policy, not this product.
 
 ## Related
 
-- Pack: `docs/internal/differentiable_programming/p3_strategic/bl100_thermodynamics_readiness_and_fep_inventory.md`
 - Ambient: `scpn_quantum_control.thermodynamics.readiness`
 - FEP ambient: `scpn_quantum_control.fep.*`
-- BL-47 hardware-safe · BL-84 research-lane registry · BL-98 theory-hook promotion
+- Hardware-safe execution · research-lane registry · theory-hook promotion
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

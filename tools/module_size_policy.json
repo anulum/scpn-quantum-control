@@ -366,7 +366,7 @@
       "lines": 1125,
       "kind": "facade",
       "disposition": "facade",
-      "responsibility": "Thermo readiness product surface (BL-100) with FEP inventory and fail-closed readiness gates.",
+      "responsibility": "Thermodynamics-readiness product with an FEP research inventory and fail-closed readiness gates.",
       "dependency_boundary": "Facades thermodynamics readiness catalogue over ambient thermo helpers; tests own the paired suite.",
       "reassess_when": "A production solver or free-energy estimator is implemented in this product file."
     },

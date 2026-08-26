@@ -7,7 +7,7 @@
 # SCPN Quantum Control — Thermodynamics readiness product
 """Fail-closed **thermodynamics readiness** product surface.
 
-Productises the honest S9 quantum-thermodynamics readiness model over ambient
+Productises the honest quantum-thermodynamics readiness model over ambient
 :mod:`scpn_quantum_control.thermodynamics.readiness` and inventories Free Energy
 Principle (FEP) modules as **research-only** (research-lane / tier C) until a concrete
 sync-control hook is proven:
@@ -59,7 +59,7 @@ FepInventoryStatus = Literal[
     "product_hook_open",
     "permanent_boundary",
 ]
-"""FEP inventory status badges (BL-84 classification side)."""
+"""FEP research-inventory status badges."""
 
 SupportPosture = Literal[
     "local_research",
@@ -77,21 +77,21 @@ THERMO_READINESS_PRODUCT_SCHEMA: Final[str] = "thermo_readiness_product.v1"
 """JSON schema identifier for serialised product payloads."""
 
 THERMO_READINESS_CLAIM_BOUNDARY: Final[str] = (
-    "Thermodynamics readiness product surface only; catalogues S9 no-submit "
+    "Thermodynamics readiness product surface only; catalogues no-submit "
     "readiness capabilities over ambient thermodynamics.readiness; inventories "
-    "FEP modules as research-only (BL-84 / tier C); refuse invent-green "
-    "thermodynamic peak claims and hardware submission; residual S100.3 optional "
-    "future sync-control FEP hook design open honestly without implementation"
+    "FEP modules as research-only; refuse invent-green thermodynamic peak claims "
+    "and hardware submission; optional future sync-control FEP hook design remains "
+    "open honestly without implementation"
 )
 """Shared claim boundary for thermo readiness product payloads."""
 
 _EXPECTED_AMBIENT_BOUNDARY_FRAGMENT: Final[str] = "no thermodynamic peak"
-"""Substring that must appear in ambient CLAIM_BOUNDARY (S100.0 machine check)."""
+"""Substring required in the ambient claim boundary."""
 
 
 @dataclass(frozen=True, slots=True)
 class ReadinessCapabilityRow:
-    """One thermodynamics readiness capability catalogue row (S100.0 / S100.1).
+    """One thermodynamics-readiness capability catalogue row.
 
     Attributes
     ----------
@@ -180,7 +180,7 @@ class ReadinessCapabilityRow:
 
 @dataclass(frozen=True, slots=True)
 class FepInventoryRow:
-    """One FEP research-only inventory row (S100.2 / BL-84 classification).
+    """One FEP research-only inventory row.
 
     Attributes
     ----------
@@ -195,7 +195,7 @@ class FepInventoryRow:
     status
         Inventory status (research_only by default).
     research_lane_pointer
-        BL-84 deep-analysis research-lane pointer.
+        Deep-analysis research-lane pointer.
     product_hook_proven
         Must remain False until owner-approved promotion.
     claim_boundary
@@ -232,7 +232,7 @@ class FepInventoryRow:
         if self.product_hook_proven:
             raise ValueError(
                 "product_hook_proven must be False on product surface "
-                "(S100.3 residual; no invent-green FEP promotion)"
+                "(research-only inventory; no invent-green FEP promotion)"
             )
 
     def to_dict(self) -> dict[str, object]:
@@ -304,7 +304,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedKSweepProbe:
-    """Materialised S9 K-sweep readiness probe via ambient run_k_sweep_protocol.
+    """Materialised K-sweep readiness probe via ambient run_k_sweep_protocol.
 
     Attributes
     ----------
@@ -388,12 +388,12 @@ class MaterialisedKSweepProbe:
 
 
 def _build_capabilities() -> tuple[ReadinessCapabilityRow, ...]:
-    """Build readiness capability catalogue (S100.0 / S100.1)."""
+    """Build the thermodynamics-readiness capability catalogue."""
     return (
         ReadinessCapabilityRow(
             capability_id="k_sweep_protocol",
             kind="k_sweep_protocol",
-            title="S9 K-sweep readiness protocol",
+            title="K-sweep thermodynamics-readiness protocol",
             summary=(
                 "Deterministic no-submit K-sweep over calibrated entropy/heat/"
                 "work observables; peak_k is a candidate only, never a peak claim."
@@ -439,8 +439,8 @@ def _build_capabilities() -> tuple[ReadinessCapabilityRow, ...]:
             kind="claim_boundary_gate",
             title="Machine-checked claim boundary",
             summary=(
-                "S100.0 gate: ambient CLAIM_BOUNDARY must retain no peak claim "
-                "and no hardware submission honesty language."
+                "Ambient CLAIM_BOUNDARY must retain no-peak-claim and "
+                "no-hardware-submission honesty language."
             ),
             ambient_symbol="CLAIM_BOUNDARY",
             support_posture="policy_only",
@@ -449,7 +449,7 @@ def _build_capabilities() -> tuple[ReadinessCapabilityRow, ...]:
 
 
 def _build_fep_inventory() -> tuple[FepInventoryRow, ...]:
-    """Build FEP research-only inventory (S100.2 / BL-84)."""
+    """Build the FEP research-only inventory."""
     return (
         FepInventoryRow(
             module_id="predictive_coding",
@@ -458,7 +458,7 @@ def _build_fep_inventory() -> tuple[FepInventoryRow, ...]:
             summary=(
                 "Friston-style hierarchical prediction-error message passing "
                 "mapped onto SCPN layers; research-only until sync-control hook "
-                "is proven (S100.3 residual)."
+                "is proven."
             ),
             status="research_only",
             research_lane_pointer="deep_analysis_research_lane_registry.fep.predictive_coding",
@@ -518,7 +518,7 @@ _FEP_BY_ID: Final[Mapping[str, FepInventoryRow]] = _fep_map()
 
 
 def verify_ambient_claim_boundary() -> str:
-    """Return ambient CLAIM_BOUNDARY after S100.0 machine-check (fail-closed).
+    """Return the machine-checked ambient claim boundary.
 
     Returns
     -------
@@ -675,7 +675,7 @@ def decide_readiness_path(
     invent_green_hardware_submit: bool = False,
     invent_green_fep_product: bool = False,
 ) -> PathEligibilityDecision:
-    """Decide whether a thermo readiness product path may proceed (S100.0–S100.2).
+    """Decide whether a thermodynamics-readiness path may proceed.
 
     Parameters
     ----------
@@ -686,7 +686,7 @@ def decide_readiness_path(
     invent_green_hardware_submit
         If true, refuse (no hardware submission).
     invent_green_fep_product
-        If true, refuse (FEP remains research-only / BL-84).
+        If true, refuse because FEP remains research-only.
 
     Returns
     -------
@@ -695,7 +695,7 @@ def decide_readiness_path(
 
     """
     row = get_readiness_capability(capability_id)
-    # S100.0: ambient boundary must remain honest before any allowed path.
+    # The ambient boundary must remain honest before any allowed path.
     verify_ambient_claim_boundary()
     blockers: list[str] = []
     if invent_green_peak_claim:
@@ -706,12 +706,12 @@ def decide_readiness_path(
     if invent_green_hardware_submit:
         blockers.append(
             "invent-green hardware submission refused "
-            f"(capability={row.capability_id}; no-submit S9 readiness only)"
+            f"(capability={row.capability_id}; no-submit readiness only)"
         )
     if invent_green_fep_product:
         blockers.append(
             "invent-green FEP product promotion refused "
-            f"(capability={row.capability_id}; FEP inventory is research_only / BL-84)"
+            f"(capability={row.capability_id}; FEP inventory is research_only)"
         )
     if blockers:
         return PathEligibilityDecision(
@@ -940,10 +940,9 @@ def build_thermo_readiness_product_registry() -> dict[str, object]:
         "capabilities": capabilities,
         "fep_inventory": fep_rows,
         "policy_note": (
-            "S9 readiness estimate only via thermodynamics.readiness; "
-            "FEP modules inventoried as research_only (BL-84 / tier C); "
-            "no invent-green peak claim or hardware submit; S100.3 residual "
-            "future FEP sync-control hook design open honestly."
+            "Readiness estimate only via thermodynamics.readiness; FEP modules "
+            "inventoried as research_only; no invent-green peak claim or hardware "
+            "submit; future FEP sync-control hook design remains open honestly."
         ),
     }
 
