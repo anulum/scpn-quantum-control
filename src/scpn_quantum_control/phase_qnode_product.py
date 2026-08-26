@@ -74,6 +74,7 @@ class PhaseQNodeJourney:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     journey_id: str
@@ -153,6 +154,7 @@ class PhaseQNodeJourneyDecision:
         Non-empty when refused.
     steps_completed
         Steps acknowledged in the dry-run posture (not full engine execution).
+
     """
 
     journey_id: str
@@ -344,6 +346,7 @@ def list_phase_qnode_journey_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered journey identifiers.
+
     """
     return tuple(row.journey_id for row in _CANONICAL_JOURNEYS)
 
@@ -365,6 +368,7 @@ def get_phase_qnode_journey(journey_id: str) -> PhaseQNodeJourney:
     ------
     ValueError
         If ``journey_id`` is blank or unknown (fail closed).
+
     """
     if not journey_id or not str(journey_id).strip():
         raise ValueError("journey_id must be a non-empty string")
@@ -393,6 +397,7 @@ def iter_phase_qnode_journeys(
     -------
     tuple[PhaseQNodeJourney, ...]
         Matching journeys.
+
     """
     rows: Iterable[PhaseQNodeJourney] = _CANONICAL_JOURNEYS
     if support_badge is not None:
@@ -427,6 +432,7 @@ def dry_run_phase_qnode_journey(
     ------
     ValueError
         If ``journey_id`` is blank or unknown.
+
     """
     journey = get_phase_qnode_journey(journey_id)
     blockers: list[str] = []
@@ -478,6 +484,7 @@ def map_phase_qnode_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic module map rows for documentation and inventory.
+
     """
     # Deduplicate module paths preserving journey order.
     seen: set[str] = set()
@@ -509,6 +516,7 @@ def build_phase_qnode_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with every journey (no blanks).
+
     """
     journeys = [row.to_dict() for row in _CANONICAL_JOURNEYS]
     local = sum(1 for row in _CANONICAL_JOURNEYS if row.support_badge == "local_dry_run")
@@ -548,6 +556,7 @@ def assert_phase_qnode_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-hardware rows appear.
+
     """
     registry = dict(payload) if payload is not None else build_phase_qnode_product_registry()
     journeys = registry.get("journeys")

@@ -1009,6 +1009,8 @@ def test_main_uses_coverage_pytest_by_default(
         "governed-route-matrix exact coverage threshold",
         "attested-result-pack focused coverage",
         "attested-result-pack exact coverage threshold",
+        "phase-qnode-product focused coverage",
+        "phase-qnode-product exact coverage threshold",
         "resource-budget-gate focused coverage",
         "resource-budget-gate exact coverage threshold",
         "advantage-language-protocol focused coverage",

@@ -30,6 +30,7 @@ from scpn_quantum_control.phase_qnode_product import (
 
 
 def test_list_journeys_and_filters() -> None:
+    """List stable journeys and filter them by support badge."""
     ids = list_phase_qnode_journey_ids()
     assert "build_differentiate_dry_run" in ids
     assert ids == list_phase_qnode_journey_ids()
@@ -39,6 +40,7 @@ def test_list_journeys_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Return known journeys and reject blank or unknown identifiers."""
     journey = get_phase_qnode_journey("build_differentiate_dry_run")
     assert journey.allows_hardware is False
     assert journey.bl97_stability_class == "experimental_workbench"
@@ -50,6 +52,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_dry_run_allowed_canonical_journey() -> None:
+    """Allow a canonical journey only as a no-hardware dry run."""
     decision = dry_run_phase_qnode_journey("build_differentiate_dry_run")
     assert decision.allowed is True
     assert decision.outcome == "allowed_dry_run"
@@ -59,6 +62,7 @@ def test_dry_run_allowed_canonical_journey() -> None:
 
 
 def test_dry_run_refuses_hardware() -> None:
+    """Refuse hardware requests across the public journey surface."""
     refused = dry_run_phase_qnode_journey(
         "build_differentiate_dry_run",
         request_hardware=True,
@@ -75,6 +79,7 @@ def test_dry_run_refuses_hardware() -> None:
 
 
 def test_public_surface_map() -> None:
+    """Expose the deterministic Phase-QNode public-surface map."""
     surfaces = map_phase_qnode_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -85,6 +90,7 @@ def test_public_surface_map() -> None:
 
 
 def test_registry_and_integrity() -> None:
+    """Build and validate the canonical product registry."""
     registry = build_phase_qnode_product_registry()
     assert registry["schema"] == PHASE_QNODE_PRODUCT_SCHEMA
     assert registry["blank_entry_count"] == 0
@@ -98,11 +104,13 @@ def test_registry_and_integrity() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep documented product functions in the export list."""
     assert "dry_run_phase_qnode_journey" in phase_qnode_product.__all__
     assert "map_phase_qnode_public_surfaces" in phase_qnode_product.__all__
 
 
 def test_journey_validation() -> None:
+    """Enforce every immutable journey construction invariant."""
     base: dict[str, Any] = {
         "journey_id": "x",
         "title": "t",
@@ -135,6 +143,7 @@ def test_journey_validation() -> None:
 
 
 def test_decision_invariants() -> None:
+    """Enforce consistent allowed and refused decision states."""
     with pytest.raises(ValueError, match="journey_id"):
         PhaseQNodeJourneyDecision(
             journey_id="",
@@ -228,6 +237,7 @@ def test_decision_invariants() -> None:
 
 
 def test_to_dict_paths() -> None:
+    """Materialise journey and decision records as JSON-ready mappings."""
     journey = get_phase_qnode_journey("local_transform_suite")
     assert journey.to_dict()["support_badge"] == "local_dry_run"
     decision = dry_run_phase_qnode_journey("framework_bridge_parity")
@@ -235,6 +245,7 @@ def test_to_dict_paths() -> None:
 
 
 def test_integrity_rejects_drift() -> None:
+    """Reject malformed rows, invented hardware, and catalogue drift."""
     good = build_phase_qnode_product_registry()
     assert_phase_qnode_product_integrity(good)
 
@@ -322,6 +333,7 @@ def test_integrity_rejects_drift() -> None:
 
 
 def test_catalogue_map_guards(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject empty, blank, and duplicate canonical catalogue entries."""
     mod = phase_qnode_product
     with pytest.raises(RuntimeError, match="non-empty"):
         monkeypatch.setattr(mod, "_CANONICAL_JOURNEYS", ())
