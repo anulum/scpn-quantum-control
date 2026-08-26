@@ -1,8 +1,8 @@
 # Domain Application Honesty Kits
 
 Domain-facing examples are useful only when their evidence boundary survives
-copying into notebooks, proposals, and downstream integrations. BL-63 makes
-that boundary executable. Each honesty kit states what the software route can
+copying into notebooks, proposals, and downstream integrations. These policy
+records make that boundary executable. Each kit states what the software route can
 demonstrate, what data provenance it admits, and which claims remain forbidden.
 
 The kits are policy-bearing software records, not certificates of scientific
@@ -46,7 +46,7 @@ network access, private-data discovery, provider submission, or hardware work.
 | `allowed_uses` | Narrow software demonstrations admitted by the kit. |
 | `caveats` | Scientific and operational limitations that must travel with the result. |
 | `claims_forbidden` | Explicit claims the kit never authorises. |
-| `forecasting_tags` | BL-37 generator tags; always simulation-only. |
+| `forecasting_tags` | Generator-domain tags; always simulation-only. |
 | `publication_safe` | Always `False`: the kit itself is not domain-publication evidence. |
 
 Construction fails closed on blank or duplicate policy text, enum bypasses,
@@ -62,7 +62,7 @@ supports artifact-custody checks, Kuramoto compilation, and structural-proxy
 software tests. It does not support live-grid control, transient-stability
 prediction, utility deployment, or quantum-advantage claims.
 
-The related BL-37 tag is `grid_like_sim`. That tag still denotes a generated
+The related forecasting tag is `grid_like_sim`. That tag still denotes a generated
 forecasting configuration, even though this separate kit also governs one
 curated public benchmark.
 
@@ -75,7 +75,7 @@ self-simulation, calibration guidance, or fabrication evidence.
 
 ### Synthetic EEG-like software route
 
-`eeg_like_synthetic` admits generated PLV-shaped inputs and the BL-37
+`eeg_like_synthetic` admits generated PLV-shaped inputs and the
 `eeg_like_sim` tag. It deliberately names no packaged dataset. EEG-like means
 only that a generator has a documented matrix shape and feature convention; it
 does not mean clinical classification, neural-dynamics reproduction, diagnosis,
@@ -88,7 +88,7 @@ but it is not silently relabelled as synthetic or promoted by this kit.
 ### ITER-inspired disruption simulation
 
 `iter_disruption_inspired_simulation` governs opt-in generated disruption
-features and local advisory-contract exercises. Its related BL-37 tag is
+features and local advisory-contract exercises. Its related forecasting tag is
 `plasma_like_sim`. It does not validate ITER prediction, facility operation,
 real-time controller admission, or plasma-operation guidance.
 

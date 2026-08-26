@@ -1029,6 +1029,8 @@ def test_main_uses_coverage_pytest_by_default(
         "kuramoto-layout-cost exact coverage threshold",
         "kuramoto-layout-relaxation focused coverage",
         "kuramoto-layout-relaxation exact coverage threshold",
+        "application-honesty focused coverage",
+        "application-honesty exact coverage threshold",
         "layout-method-comparison focused coverage",
         "layout-method-comparison exact coverage threshold",
         "unsuitable-scenario-registry focused coverage",

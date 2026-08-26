@@ -2,12 +2,12 @@
 
 - Schema: `scpn.application-honesty.v1`
 - Result: `PASS`
-- Content digest: `a4792a063a1ed710811d2b82acb629623280c2f17774ea5718c56a73fc1a976a`
+- Content digest: `8f49455d3578b219b5220767491946fcdc2da7b833cd03a5837fb041805d8a37`
 - Claim boundary: software-contract and synthetic-or-curated benchmark evidence only; not domain validation, operational control, clinical use, facility prediction, hardware performance, or quantum advantage.
 
 ## Honesty kits
 
-| Kit | Support | Data origin | Synthetic only | BL-37 tags |
+| Kit | Support | Data origin | Synthetic only | Forecasting tags |
 |---|---|---|:---:|---|
 | `power_grid_public_benchmark` | `bounded_research` | `curated_public` | `false` | `grid_like_sim` |
 | `josephson_illustrative_simulation` | `simulation_only` | `synthetic` | `true` | `none` |

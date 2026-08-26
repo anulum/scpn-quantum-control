@@ -68,10 +68,10 @@ rest of the benchmark suite.
 
 ## Honesty and privacy boundary
 
-BL-63 adds typed domain honesty kits without changing the existing plugin
+Typed domain honesty kits preserve the existing plugin
 results or artifact bytes. Use
 `list_domain_application_honesty_kits()` to inspect the allowed software uses,
-caveats, forbidden claims, synthetic-only policy, and BL-37 simulation tags.
+caveats, forbidden claims, synthetic-only policy, and forecasting tags.
 Use `audit_application_benchmark_privacy()` to bind every packaged artifact to
 its exact source mode, privacy classification, licence note, and array hashes.
 

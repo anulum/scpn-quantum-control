@@ -6,7 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Domain application honesty evidence runner
-"""Generate or verify deterministic application-honesty application-honesty evidence."""
+"""Generate or verify deterministic application-honesty evidence."""
 
 from __future__ import annotations
 

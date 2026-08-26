@@ -97,14 +97,15 @@ class DomainApplicationHonestyKit:
     claims_forbidden
         Explicit claims that this kit never authorises.
     forecasting_tags
-        BL-37 simulation-only tags that may be cross-referenced.  These tags
-        do not convert a synthetic forecast into domain evidence.
+        Simulation-only forecasting tags that may be cross-referenced. These
+        tags do not convert a synthetic forecast into domain evidence.
 
     Notes
     -----
     Construction validates the internal policy relationships.  In particular,
     a synthetic-only kit cannot declare curated input data or packaged dataset
     identifiers, and every kit must retain at least one forbidden claim.
+
     """
 
     kit_id: str
@@ -143,7 +144,7 @@ class DomainApplicationHonestyKit:
         _require_non_empty_strings(self.claims_forbidden, name="claims_forbidden")
         _require_unique_strings(self.dataset_ids, name="dataset_ids")
         if any(tag not in FORECASTING_DOMAIN_TAGS for tag in self.forecasting_tags):
-            raise ValueError("forecasting_tags must use the BL-37 simulation-only vocabulary")
+            raise ValueError("forecasting_tags must use the simulation-only vocabulary")
         if len(set(self.forecasting_tags)) != len(self.forecasting_tags):
             raise ValueError("forecasting_tags must be unique")
 
@@ -182,6 +183,7 @@ class ApplicationHonestyAuditReport:
     dataset_privacy
         Catalogue privacy audit rows.  Each row has already loaded and
         validated the corresponding packaged ``QPUDataArtifact``.
+
     """
 
     kits: tuple[DomainApplicationHonestyKit, ...]
@@ -309,7 +311,7 @@ _BUILTIN_KITS = (
         ),
         allowed_uses=(
             "exercise PLV-shaped matrix validation with generated inputs",
-            "evaluate BL-37 EEG-like simulation tags",
+            "evaluate EEG-like simulation-only forecasting tags",
         ),
         caveats=(
             "EEG-like labels describe generator shape only",
@@ -355,7 +357,7 @@ _BUILTIN_KITS = (
 
 
 def list_domain_application_honesty_kits() -> tuple[DomainApplicationHonestyKit, ...]:
-    """Return all built-in BL-63 honesty kits in stable registry order."""
+    """Return all built-in domain application honesty kits in stable order."""
     return _BUILTIN_KITS
 
 
@@ -371,6 +373,7 @@ def get_domain_application_honesty_kit(kit_id: str) -> DomainApplicationHonestyK
     ------
     KeyError
         If ``kit_id`` is unknown.  The error includes the known identifiers.
+
     """
     for kit in _BUILTIN_KITS:
         if kit.kit_id == kit_id:
@@ -393,6 +396,7 @@ def get_domain_application_honesty_kit_for_dataset(
         If no built-in kit governs ``dataset_id``.
     RuntimeError
         If registry corruption assigns the same dataset to multiple kits.
+
     """
     matches = tuple(kit for kit in _BUILTIN_KITS if dataset_id in kit.dataset_ids)
     if not matches:
@@ -414,6 +418,7 @@ def build_application_honesty_audit_report() -> ApplicationHonestyAuditReport:
     -----
     The audit loads only versioned packaged application artifacts.  It performs
     no network access and never opens a user-supplied or private dataset.
+
     """
     return ApplicationHonestyAuditReport(
         kits=list_domain_application_honesty_kits(),
@@ -431,6 +436,7 @@ def render_application_honesty_audit_markdown(
     report
         Validated report returned by
         :func:`build_application_honesty_audit_report`.
+
     """
     lines = [
         "# Domain Application Honesty Evidence",
@@ -442,7 +448,7 @@ def render_application_honesty_audit_markdown(
         "",
         "## Honesty kits",
         "",
-        "| Kit | Support | Data origin | Synthetic only | BL-37 tags |",
+        "| Kit | Support | Data origin | Synthetic only | Forecasting tags |",
         "|---|---|---|:---:|---|",
     ]
     for kit in report.kits:

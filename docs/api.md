@@ -2175,9 +2175,9 @@ build_application_honesty_audit_report() -> ApplicationHonestyAuditReport
 render_application_honesty_audit_markdown(report) -> str
 ```
 
-BL-63 immutable policy records cover power-grid, Josephson, EEG-like, and
+Immutable domain policy records cover power-grid, Josephson, EEG-like, and
 ITER-inspired routes. They bind support status, data origin, synthetic-only
-policy, allowed uses, caveats, forbidden claims, and BL-37 simulation tags.
+policy, allowed uses, caveats, forbidden claims, and simulation-only forecasting tags.
 The privacy audit validates only versioned packaged benchmark artifacts and
 fails closed on provenance or licence-boundary mismatch. See
 [Domain Application Honesty Kits](application_honesty_kits.md) and the

@@ -51,7 +51,7 @@ Typed contracts for bounded analog oscillator mapping feasibility.
 
 ### `scpn_quantum_control.analog_mapping.evidence`
 
-Deterministic BL-35 evidence bundle builder, renderer, and writer.
+Deterministic analog-mapping evidence bundle builder, renderer, and writer.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/analog_mapping/evidence.py) · Public symbols: **4**
 
@@ -193,7 +193,7 @@ Bounded environment-assisted quantum transport (ENAQT) simulation.
 
 ### `scpn_quantum_control.analysis.enaqt_evidence`
 
-Deterministic, digest-bound evidence for the bounded BL-87 ENAQT scan.
+Deterministic, digest-bound evidence for the bounded ENAQT ENAQT scan.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/analysis/enaqt_evidence.py) · Public symbols: **8**
 
@@ -243,7 +243,7 @@ Entanglement spectrum analysis at the synchronization transition.
 
 ### `scpn_quantum_control.analysis.entanglement_sync_evidence`
 
-Generate deterministic, digest-bound BL-79 initial-state evidence.
+Generate deterministic, digest-bound entanglement-sync initial-state evidence.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/analysis/entanglement_sync_evidence.py) · Public symbols: **7**
 
@@ -1155,7 +1155,7 @@ Benchmark harness for the IQM Garnet layout-transfer preregistration.
 
 ### `scpn_quantum_control.benchmarks.iqm_layout_transfer_per_size`
 
-Frozen FU-3 circuit matrix and decision-rule implementation.
+Frozen IQM layout-transfer circuit matrix and decision-rule implementation.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/iqm_layout_transfer_per_size.py) · Public symbols: **4**
 
@@ -1563,7 +1563,7 @@ SSGF geometry W adaptation from quantum R_global.
 
 ### `scpn_quantum_control.chimera_control.evidence`
 
-Deterministic BL-60 evidence construction, rendering, and byte custody.
+Deterministic chimera-control evidence construction, rendering, and byte custody.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/chimera_control/evidence.py) · Public symbols: **6**
 
@@ -1637,7 +1637,7 @@ Convert a quantum control pulse waveform into a Vivado/Vitis HLS bundle.
 
 ### `scpn_quantum_control.codesign.adapters`
 
-BL-33 adapters over BL-67 control ports and BL-68/69/70 observers.
+co-design adapters over control-stack control ports and active-sensing/69/70 observers.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/codesign/adapters.py) · Public symbols: **6**
 
@@ -1647,7 +1647,7 @@ BL-33 adapters over BL-67 control ports and BL-68/69/70 observers.
 
 ### `scpn_quantum_control.codesign.components`
 
-Deterministic estimator, evaluator, and controller components for BL-33.
+Deterministic estimator, evaluator, and controller components for co-design.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/codesign/components.py) · Public symbols: **5**
 
@@ -1657,7 +1657,7 @@ Deterministic estimator, evaluator, and controller components for BL-33.
 
 ### `scpn_quantum_control.codesign.contracts`
 
-Immutable contracts for the simulator-first BL-33 co-design loop.
+Immutable contracts for the simulator-first co-design co-design loop.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/codesign/contracts.py) · Public symbols: **18**
 
@@ -1667,7 +1667,7 @@ Immutable contracts for the simulator-first BL-33 co-design loop.
 
 ### `scpn_quantum_control.codesign.evidence`
 
-Functional non-isolated evidence writer for the bounded BL-33 workflow.
+Functional non-isolated evidence writer for the bounded co-design workflow.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/codesign/evidence.py) · Public symbols: **7**
 
@@ -1677,7 +1677,7 @@ Functional non-isolated evidence writer for the bounded BL-33 workflow.
 
 ### `scpn_quantum_control.codesign.loop`
 
-Thin deterministic orchestration over BL-33 estimator and policy ports.
+Thin deterministic orchestration over co-design estimator and policy ports.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/codesign/loop.py) · Public symbols: **1**
 
@@ -1685,7 +1685,7 @@ Thin deterministic orchestration over BL-33 estimator and policy ports.
 
 ### `scpn_quantum_control.codesign.policies`
 
-Fail-closed latency and controller-envelope policies for BL-33.
+Fail-closed latency and controller-envelope policies for co-design.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/codesign/policies.py) · Public symbols: **2**
 
@@ -1693,7 +1693,7 @@ Fail-closed latency and controller-envelope policies for BL-33.
 
 ### `scpn_quantum_control.codesign.replay`
 
-Versioned trace recording and bit-stable replay verification for BL-33.
+Versioned trace recording and bit-stable replay verification for co-design.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/codesign/replay.py) · Public symbols: **3**
 
@@ -2297,7 +2297,7 @@ No public module-level class or function is declared.
 
 ### `scpn_quantum_control.forecasting.multimodal_bridge`
 
-Bounded BL-37 composition into BL-68 sensing and BL-33 proposals.
+Bounded multimodal-forecasting composition into active-sensing sensing and co-design proposals.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/forecasting/multimodal_bridge.py) · Public symbols: **4**
 
@@ -2307,7 +2307,7 @@ Bounded BL-37 composition into BL-68 sensing and BL-33 proposals.
 
 ### `scpn_quantum_control.forecasting.multimodal_forecaster`
 
-Classical reference forecasting over immutable BL-37 multimodal batches.
+Classical reference forecasting over immutable multimodal-forecasting multimodal batches.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/forecasting/multimodal_forecaster.py) · Public symbols: **6**
 
@@ -2317,7 +2317,7 @@ Classical reference forecasting over immutable BL-37 multimodal batches.
 
 ### `scpn_quantum_control.forecasting.multimodal_report`
 
-Deterministic JSON and Markdown evidence for the bounded BL-37 product.
+Deterministic JSON and Markdown evidence for the bounded multimodal-forecasting product.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/forecasting/multimodal_report.py) · Public symbols: **4**
 
@@ -2357,7 +2357,7 @@ Host-independent operation-count model for the Kuramoto neural-operator surrogat
 
 ### `scpn_quantum_control.forecasting.partial_observation`
 
-Observed-phase and exact Kuramoto-residual scoring for BL-37 forecasts.
+Observed-phase and exact Kuramoto-residual scoring for multimodal-forecasting forecasts.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/forecasting/partial_observation.py) · Public symbols: **5**
 
@@ -2377,7 +2377,7 @@ Held-out synchronisation forecasting on observed or source-backed traces.
 
 ### `scpn_quantum_control.forecasting.synthetic_multimodal`
 
-Deterministic simulation-only datasets for BL-37 forecast certificates.
+Deterministic simulation-only datasets for multimodal-forecasting forecast certificates.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/forecasting/synthetic_multimodal.py) · Public symbols: **3**
 
@@ -2387,7 +2387,7 @@ Deterministic simulation-only datasets for BL-37 forecast certificates.
 
 ### `scpn_quantum_control.forecasting.uncertainty`
 
-Split sample-level residual intervals for independent BL-37 trajectories.
+Split sample-level residual intervals for independent multimodal-forecasting trajectories.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/forecasting/uncertainty.py) · Public symbols: **7**
 
@@ -3383,7 +3383,7 @@ Immutable contracts for bounded QNN/QGNN/QSNN convergence examples.
 
 ### `scpn_quantum_control.ml_examples.evidence`
 
-Digest-bound JSON and Markdown evidence for the BL-42 convergence suite.
+Digest-bound JSON and Markdown evidence for the convergence-example convergence suite.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/ml_examples/evidence.py) · Public symbols: **6**
 
@@ -4925,7 +4925,7 @@ The QUANTUM studio's federation document for STUDIO/Hub ingestion.
 
 ### `scpn_quantum_control.studio.kuramoto_reference`
 
-Python reference for the WASM Kuramoto live simulator (ST-11).
+Python reference for the WASM Kuramoto live simulator.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/kuramoto_reference.py) · Public symbols: **5**
 
@@ -5059,7 +5059,7 @@ Held-out value and gradient fidelity gates for classical surrogates.
 
 ### `scpn_quantum_control.surrogates.hybrid`
 
-BL-33 proposal composition with mandatory exact local validation.
+co-design proposal composition with mandatory exact local validation.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/surrogates/hybrid.py) · Public symbols: **2**
 
@@ -5077,7 +5077,7 @@ Smooth classical surrogates for bounded quantum-objective studies.
 
 ### `scpn_quantum_control.surrogates.report`
 
-Deterministic JSON and Markdown evidence for the BL-45 product.
+Deterministic JSON and Markdown evidence for the quantum-reservoir product.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/surrogates/report.py) · Public symbols: **4**
 
@@ -5157,7 +5157,7 @@ Policy-bounded active sensing over existing sensing and S3 surfaces.
 
 ### `scpn_quantum_control.adjoint_replay_product`
 
-Fail-closed **adjoint differentiation via reversible replay** product (BL-39).
+Fail-closed **adjoint differentiation via reversible replay** product.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/adjoint_replay_product.py) · Public symbols: **15**
 
@@ -5167,7 +5167,7 @@ Fail-closed **adjoint differentiation via reversible replay** product (BL-39).
 
 ### `scpn_quantum_control.advanced_witnesses_product`
 
-Fail-closed **advanced witnesses** product surface (BL-44).
+Fail-closed **advanced witnesses** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/advanced_witnesses_product.py) · Public symbols: **27**
 
@@ -5177,7 +5177,7 @@ Fail-closed **advanced witnesses** product surface (BL-44).
 
 ### `scpn_quantum_control.advantage_language_protocol`
 
-Fail-closed advantage-language governance and protocol catalogue (BL-65).
+Fail-closed advantage-language governance and protocol catalogue.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/advantage_language_protocol.py) · Public symbols: **11**
 
@@ -5187,7 +5187,7 @@ Fail-closed advantage-language governance and protocol catalogue (BL-65).
 
 ### `scpn_quantum_control.attested_result_pack`
 
-Strip-resistant attested result-pack digests and local envelopes (BL-48).
+Strip-resistant attested result-pack digests and local envelopes.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/attested_result_pack.py) · Public symbols: **9**
 
@@ -5215,7 +5215,7 @@ One-command benchmark artefact regeneration for the methods papers.
 
 ### `scpn_quantum_control.campaign_harness_product`
 
-Fail-closed **campaign harness productisation** surface (BL-99).
+Fail-closed **campaign harness productisation** surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/campaign_harness_product.py) · Public symbols: **15**
 
@@ -5235,7 +5235,7 @@ Fail-closed circuit-cutting product for large synchronisation workloads.
 
 ### `scpn_quantum_control.cloud_native_deployment_product`
 
-Fail-closed **cloud-native deployment boundary** product surface (BL-101).
+Fail-closed **cloud-native deployment boundary** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/cloud_native_deployment_product.py) · Public symbols: **15**
 
@@ -5245,7 +5245,7 @@ Fail-closed **cloud-native deployment boundary** product surface (BL-101).
 
 ### `scpn_quantum_control.competitive_baseline_watch`
 
-Fail-closed continuous competitive-baseline watch surface (BL-61).
+Fail-closed continuous competitive-baseline watch surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/competitive_baseline_watch.py) · Public symbols: **10**
 
@@ -5265,7 +5265,7 @@ Resource guards for sparse Pauli-operator construction in the Kuramoto compiler.
 
 ### `scpn_quantum_control.compiler_boundary_product`
 
-Fail-closed **external compiler boundary register** product surface (BL-66).
+Fail-closed **external compiler boundary register** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/compiler_boundary_product.py) · Public symbols: **12**
 
@@ -5285,7 +5285,7 @@ Single source of truth for runtime configuration.
 
 ### `scpn_quantum_control.control_stack_compose_product`
 
-Fail-closed **compose existing control/*** product surface (BL-67).
+Fail-closed **compose existing control/*** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/control_stack_compose_product.py) · Public symbols: **15**
 
@@ -5295,7 +5295,7 @@ Fail-closed **compose existing control/*** product surface (BL-67).
 
 ### `scpn_quantum_control.control_stack_runtime_adapters`
 
-Executable BL-67 adapters over existing control and co-simulation surfaces.
+Executable control-stack adapters over existing control and co-simulation surfaces.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/control_stack_runtime_adapters.py) · Public symbols: **12**
 
@@ -5305,7 +5305,7 @@ Executable BL-67 adapters over existing control and co-simulation surfaces.
 
 ### `scpn_quantum_control.custom_derivatives_product`
 
-Fail-closed **custom / registered derivatives** product surface (BL-92).
+Fail-closed **custom / registered derivatives** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/custom_derivatives_product.py) · Public symbols: **16**
 
@@ -5335,7 +5335,7 @@ Canonical first-path namespace for differentiable quantum-control workflows.
 
 ### `scpn_quantum_control.diff_contract_audit`
 
-Executable DP-004 contract audit for differentiable circuit facades.
+Executable differentiable-contract contract audit for differentiable circuit facades.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/diff_contract_audit.py) · Public symbols: **3**
 
@@ -5719,7 +5719,7 @@ Eager vectorization transform for differentiable-programming objectives.
 
 ### `scpn_quantum_control.error_mitigation_product`
 
-Fail-closed **differentiable error-mitigation taxonomy** product (BL-59).
+Fail-closed **differentiable error-mitigation taxonomy** product.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/error_mitigation_product.py) · Public symbols: **19**
 
@@ -5739,7 +5739,7 @@ Static execution-surface scanner for notebooks and publication scripts.
 
 ### `scpn_quantum_control.fault_tolerant_resource_product`
 
-Compose existing QEC resource primitives into a conservative BL-36 report.
+Compose existing QEC resource primitives into a conservative fault-tolerant resource report.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/fault_tolerant_resource_product.py) · Public symbols: **12**
 
@@ -5749,7 +5749,7 @@ Compose existing QEC resource primitives into a conservative BL-36 report.
 
 ### `scpn_quantum_control.geometric_control_product`
 
-Fail-closed **geometric quantum control** product surface (BL-50).
+Fail-closed **geometric quantum control** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/geometric_control_product.py) · Public symbols: **21**
 
@@ -5795,7 +5795,7 @@ Offline verification and deterministic export for hardware result packs.
 
 ### `scpn_quantum_control.hardware_safe_execution`
 
-Fail-closed hardware-safe gradient execution policy product (BL-47).
+Fail-closed hardware-safe gradient execution policy product.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware_safe_execution.py) · Public symbols: **13**
 
@@ -5805,7 +5805,7 @@ Fail-closed hardware-safe gradient execution policy product (BL-47).
 
 ### `scpn_quantum_control.hermetic_reproduction_kit`
 
-Hermetic external reproduction kit contract (BL-55).
+Hermetic external reproduction kit contract.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hermetic_reproduction_kit.py) · Public symbols: **13**
 
@@ -5853,7 +5853,7 @@ Small public facade for Kuramoto-XY problems.
 
 ### `scpn_quantum_control.kyma_mechanism_benchmark_product`
 
-Fail-closed **KYMA / KYMA v2 public mechanism-only benchmark** product (BL-73).
+Fail-closed **KYMA / KYMA v2 public mechanism-only benchmark** product.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/kyma_mechanism_benchmark_product.py) · Public symbols: **15**
 
@@ -5871,7 +5871,7 @@ Structlog-backed logging bootstrap.
 
 ### `scpn_quantum_control.metamorphic_ad_verification`
 
-Versioned metamorphic AD verification catalogue and pure residual checks (BL-46).
+Versioned metamorphic AD verification catalogue and pure residual checks.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/metamorphic_ad_verification.py) · Public symbols: **10**
 
@@ -5881,7 +5881,7 @@ Versioned metamorphic AD verification catalogue and pure residual checks (BL-46)
 
 ### `scpn_quantum_control.migration_guides_product`
 
-Fail-closed **PennyLane + Qiskit migration guides** product surface (BL-41).
+Fail-closed **PennyLane + Qiskit migration guides** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/migration_guides_product.py) · Public symbols: **13**
 
@@ -5891,7 +5891,7 @@ Fail-closed **PennyLane + Qiskit migration guides** product surface (BL-41).
 
 ### `scpn_quantum_control.multi_hal_federation_product`
 
-Fail-closed **Multi-HAL provider federation** product surface (BL-75).
+Fail-closed **Multi-HAL provider federation** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/multi_hal_federation_product.py) · Public symbols: **14**
 
@@ -5911,7 +5911,7 @@ Compose existing neural-operator baselines under fail-closed governance.
 
 ### `scpn_quantum_control.notebook_programme_product`
 
-Fail-closed **differentiable notebook programme** product surface (BL-40).
+Fail-closed **differentiable notebook programme** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/notebook_programme_product.py) · Public symbols: **12**
 
@@ -5921,7 +5921,7 @@ Fail-closed **differentiable notebook programme** product surface (BL-40).
 
 ### `scpn_quantum_control.open_system_mcwf_product`
 
-Fail-closed **open-system MCWF completeness** product surface (BL-51).
+Fail-closed **open-system MCWF completeness** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/open_system_mcwf_product.py) · Public symbols: **22**
 
@@ -5931,7 +5931,7 @@ Fail-closed **open-system MCWF completeness** product surface (BL-51).
 
 ### `scpn_quantum_control.pgbo_qgt_product`
 
-Fail-closed **PGBO quantum geometric tensor** product surface (BL-71).
+Fail-closed **PGBO quantum geometric tensor** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/pgbo_qgt_product.py) · Public symbols: **16**
 
@@ -5941,7 +5941,7 @@ Fail-closed **PGBO quantum geometric tensor** product surface (BL-71).
 
 ### `scpn_quantum_control.phase_qnode_product`
 
-Fail-closed Phase-QNode **product** catalogue and journey map (BL-90).
+Fail-closed Phase-QNode **product** catalogue and journey map.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase_qnode_product.py) · Public symbols: **9**
 
@@ -5951,7 +5951,7 @@ Fail-closed Phase-QNode **product** catalogue and journey map (BL-90).
 
 ### `scpn_quantum_control.polyglot_edge_ad_product`
 
-Fail-closed polyglot edge Program-AD product (BL-74).
+Fail-closed polyglot edge Program-AD product.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/polyglot_edge_ad_product.py) · Public symbols: **12**
 
@@ -5961,7 +5961,7 @@ Fail-closed polyglot edge Program-AD product (BL-74).
 
 ### `scpn_quantum_control.polyglot_parity_certificate`
 
-Fail-closed **bit-exact polyglot parity certificate** product surface (BL-49).
+Fail-closed **bit-exact polyglot parity certificate** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/polyglot_parity_certificate.py) · Public symbols: **14**
 
@@ -6055,7 +6055,7 @@ Program AD elementwise primitive contracts and direct derivative factories.
 
 ### `scpn_quantum_control.program_ad_fuzz_assurance`
 
-Fail-closed **Rust Program AD fuzz assurance** product surface (BL-96).
+Fail-closed **Rust Program AD fuzz assurance** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/program_ad_fuzz_assurance.py) · Public symbols: **14**
 
@@ -6167,7 +6167,7 @@ Static trapezoidal-integration derivative rules for Program AD.
 
 ### `scpn_quantum_control.public_api_stability`
 
-Fail-closed public-vs-internal API stability catalogue (BL-97).
+Fail-closed public-vs-internal API stability catalogue.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/public_api_stability.py) · Public symbols: **14**
 
@@ -6185,7 +6185,7 @@ Public QPU compute façade and command-line entry point.
 
 ### `scpn_quantum_control.qpu_compute_product`
 
-Fail-closed qpu_compute plan/runtime product surface (BL-95).
+Fail-closed qpu_compute plan/runtime product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/qpu_compute_product.py) · Public symbols: **13**
 
@@ -6213,7 +6213,7 @@ Provider-neutral QPU compute request/result contracts.
 
 ### `scpn_quantum_control.quantum_sync_challenge_oracle_product`
 
-Fail-closed **Quantum Sync Challenge oracle** product surface (BL-32).
+Fail-closed **Quantum Sync Challenge oracle** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py) · Public symbols: **17**
 
@@ -6223,7 +6223,7 @@ Fail-closed **Quantum Sync Challenge oracle** product surface (BL-32).
 
 ### `scpn_quantum_control.resource_budget_gate`
 
-Fail-closed compile & dense resource budget product surface (BL-94).
+Fail-closed compile & dense resource budget product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/resource_budget_gate.py) · Public symbols: **12**
 
@@ -6233,7 +6233,7 @@ Fail-closed compile & dense resource budget product surface (BL-94).
 
 ### `scpn_quantum_control.scorecard_acceptance_engine`
 
-Fail-closed baseline-scorecard acceptance / promotion engine (BL-56).
+Fail-closed baseline-scorecard acceptance / promotion engine.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/scorecard_acceptance_engine.py) · Public symbols: **8**
 
@@ -6273,7 +6273,7 @@ Backend preflight checks for stable core experiments.
 
 ### `scpn_quantum_control.stable_core_product`
 
-Fail-closed **stable_core experiment model** product surface (BL-81).
+Fail-closed **stable_core experiment model** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/stable_core_product.py) · Public symbols: **29**
 
@@ -6283,7 +6283,7 @@ Fail-closed **stable_core experiment model** product surface (BL-81).
 
 ### `scpn_quantum_control.stochastic_estimators_product`
 
-Fail-closed **stochastic estimators & policies** product surface (BL-93).
+Fail-closed **stochastic estimators & policies** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/stochastic_estimators_product.py) · Public symbols: **12**
 
@@ -6303,7 +6303,7 @@ Structured logging with a stdlib fallback that tolerates event kwargs.
 
 ### `scpn_quantum_control.studio_executive_product`
 
-Fail-closed **Studio executive + coverage frontier** product surface (BL-62).
+Fail-closed **Studio executive + coverage frontier** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio_executive_product.py) · Public symbols: **12**
 
@@ -6313,7 +6313,7 @@ Fail-closed **Studio executive + coverage frontier** product surface (BL-62).
 
 ### `scpn_quantum_control.thermo_readiness_product`
 
-Fail-closed **thermodynamics readiness** product surface (BL-100).
+Fail-closed **thermodynamics readiness** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/thermo_readiness_product.py) · Public symbols: **19**
 
@@ -6333,7 +6333,7 @@ Versioned unsuitable-scenario and anti-silent-wrong-gradient registry.
 
 ### `scpn_quantum_control.visualisation_dashboard_product`
 
-Fail-closed **fixture-driven visualisation dashboard** product (BL-34).
+Fail-closed **fixture-driven visualisation dashboard** product.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/visualisation_dashboard_product.py) · Public symbols: **13**
 
@@ -6351,7 +6351,7 @@ Public whole-program automatic differentiation entry points.
 
 ### `scpn_quantum_control.whole_program_ad_product`
 
-Fail-closed whole-program AD **product** catalogue and journey map (BL-91).
+Fail-closed whole-program AD **product** catalogue and journey map.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/whole_program_ad_product.py) · Public symbols: **10**
 
@@ -6427,7 +6427,7 @@ Wirtinger calculus: holomorphic and non-holomorphic complex derivatives.
 
 ### `scpn_quantum_control.wirtinger_implicit_product`
 
-Fail-closed **Wirtinger + implicit differentiation** product surface (BL-64).
+Fail-closed **Wirtinger + implicit differentiation** product surface.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/wirtinger_implicit_product.py) · Public symbols: **13**
 
@@ -6517,7 +6517,7 @@ Custody-checked binary kernel ridge fitting and evaluation.
 
 ### `scpn_quantum_control.topology_kernel_product.evidence`
 
-Deterministic evidence and claim-boundary rendering for BL-88.
+Deterministic evidence and claim-boundary rendering for topology-kernel.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/topology_kernel_product/evidence.py) · Public symbols: **5**
 
@@ -6535,7 +6535,7 @@ Validated exact-statevector and classical-control kernel construction.
 
 ### `scpn_quantum_control.topology_kernel_product.schema`
 
-Immutable contracts for the bounded BL-88 quantum-kernel product.
+Immutable contracts for the bounded topology-kernel quantum-kernel product.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/topology_kernel_product/schema.py) · Public symbols: **4**
 

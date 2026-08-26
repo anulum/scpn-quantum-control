@@ -64,7 +64,7 @@ def _privacy_row(
 
 
 def test_builtin_kits_cover_required_domains_and_claim_boundaries() -> None:
-    """Every BL-63 family has a complete immutable honesty record."""
+    """Every supported domain family has a complete immutable honesty record."""
     kits = list_domain_application_honesty_kits()
     assert [kit.kit_id for kit in kits] == [
         "power_grid_public_benchmark",
@@ -163,7 +163,7 @@ def test_kit_rejects_blank_and_duplicate_policy_values(field: str) -> None:
 
 
 def test_kit_rejects_bad_dataset_and_forecasting_tags() -> None:
-    """Dataset identifiers and BL-37 enum tags are type- and uniqueness-checked."""
+    """Dataset identifiers and forecasting tags are type- and uniqueness-checked."""
     with pytest.raises(ValueError, match="dataset_ids"):
         _kit(
             data_origin=ApplicationDataOrigin.CURATED_PUBLIC,
@@ -176,7 +176,7 @@ def test_kit_rejects_bad_dataset_and_forecasting_tags() -> None:
             synthetic_only=False,
             dataset_ids=("same", "same"),
         )
-    with pytest.raises(ValueError, match="BL-37"):
+    with pytest.raises(ValueError, match="simulation-only"):
         _kit(forecasting_tags=("unregistered_sim",))
     with pytest.raises(ValueError, match="unique"):
         _kit(forecasting_tags=("synthetic", "synthetic"))

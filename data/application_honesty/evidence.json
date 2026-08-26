@@ -1,6 +1,6 @@
 {
   "claim_boundary": "software-contract and synthetic-or-curated benchmark evidence only; not domain validation, operational control, clinical use, facility prediction, hardware performance, or quantum advantage",
-  "content_digest": "a4792a063a1ed710811d2b82acb629623280c2f17774ea5718c56a73fc1a976a",
+  "content_digest": "8f49455d3578b219b5220767491946fcdc2da7b833cd03a5837fb041805d8a37",
   "dataset_privacy": [
     {
       "artifact_hashes": {
@@ -122,7 +122,7 @@
     {
       "allowed_uses": [
         "exercise PLV-shaped matrix validation with generated inputs",
-        "evaluate BL-37 EEG-like simulation tags"
+        "evaluate EEG-like simulation-only forecasting tags"
       ],
       "caveats": [
         "EEG-like labels describe generator shape only",

@@ -45,6 +45,7 @@ if TYPE_CHECKING:
     from tools import (
         advantage_language_protocol_quality_gates as _advantage_language_protocol_quality_gates,
     )
+    from tools import application_honesty_quality_gates as _application_honesty_quality_gates
     from tools import attested_result_pack_quality_gates as _attested_result_pack_quality_gates
     from tools import (
         campaign_harness_product_quality_gates as _campaign_harness_product_quality_gates,
@@ -150,6 +151,7 @@ else:
     if _repo_root not in sys.path:
         sys.path.insert(0, _repo_root)
     _attested_result_pack_quality_gates = import_module("tools.attested_result_pack_quality_gates")
+    _application_honesty_quality_gates = import_module("tools.application_honesty_quality_gates")
     _advantage_language_protocol_quality_gates = import_module(
         "tools.advantage_language_protocol_quality_gates"
     )
@@ -595,6 +597,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_phase_trainability_quality_gates.build_static_quality_gates(_PY),
     *_kuramoto_layout_cost_quality_gates.build_static_quality_gates(_PY),
     *_kuramoto_layout_relaxation_quality_gates.build_static_quality_gates(_PY),
+    *_application_honesty_quality_gates.build_static_quality_gates(_PY),
     *_layout_method_comparison_quality_gates.build_static_quality_gates(_PY),
     *_unsuitable_scenario_registry_quality_gates.build_static_quality_gates(_PY),
     *_scorecard_acceptance_engine_quality_gates.build_static_quality_gates(_PY),
@@ -1040,6 +1043,7 @@ KURAMOTO_LAYOUT_COST_COVERAGE_GATES = _kuramoto_layout_cost_quality_gates.build_
 KURAMOTO_LAYOUT_RELAXATION_COVERAGE_GATES = (
     _kuramoto_layout_relaxation_quality_gates.build_coverage_gates(_PY)
 )
+APPLICATION_HONESTY_COVERAGE_GATES = _application_honesty_quality_gates.build_coverage_gates(_PY)
 LAYOUT_METHOD_COMPARISON_COVERAGE_GATES = (
     _layout_method_comparison_quality_gates.build_coverage_gates(_PY)
 )
@@ -1355,6 +1359,7 @@ def main() -> int:
             gates.extend(PHASE_TRAINABILITY_COVERAGE_GATES)
             gates.extend(KURAMOTO_LAYOUT_COST_COVERAGE_GATES)
             gates.extend(KURAMOTO_LAYOUT_RELAXATION_COVERAGE_GATES)
+            gates.extend(APPLICATION_HONESTY_COVERAGE_GATES)
             gates.extend(LAYOUT_METHOD_COMPARISON_COVERAGE_GATES)
             gates.extend(UNSUITABLE_SCENARIO_REGISTRY_COVERAGE_GATES)
             gates.extend(SCORECARD_ACCEPTANCE_ENGINE_COVERAGE_GATES)

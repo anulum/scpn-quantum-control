@@ -1,6 +1,6 @@
 # Application Honesty API
 
-`scpn_quantum_control.applications.honesty_kits` is the public BL-63 policy
+`scpn_quantum_control.applications.honesty_kits` is the public policy
 surface for immutable domain claim boundaries and deterministic evidence.
 `scpn_quantum_control.applications.dataset_catalog` owns the complementary
 packaged-artifact privacy audit.
