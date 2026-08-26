@@ -1,0 +1,102 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — whole-program AD product quality-gate specification
+"""Build strict documentation, typing, and coverage gates for BL-19."""
+
+from __future__ import annotations
+
+from os import devnull
+
+Gate = tuple[str, list[str]]
+WHOLE_PROGRAM_AD_PRODUCT_QUALITY_RATCHET = [
+    "src/scpn_quantum_control/whole_program_ad_product.py",
+    "tests/test_whole_program_ad_product.py",
+    "tools/whole_program_ad_product_quality_gates.py",
+    "tests/test_whole_program_ad_product_quality_gate.py",
+]
+"""Ordered strict-typing and NumPy-docstring cohort."""
+WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_COHORT = ["tests/test_whole_program_ad_product.py"]
+"""Tests that own exact whole-program AD product coverage."""
+WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_DATA_FILE = ".coverage.whole-program-ad-product-quality"
+"""Isolated coverage database for the whole-program AD product owner."""
+
+
+def build_static_quality_gates(python: str) -> list[Gate]:
+    """Build strict typing and NumPy-docstring gates."""
+    return [
+        (
+            "mypy-strict-whole-program-ad-product-quality",
+            [
+                python,
+                "-m",
+                "mypy",
+                "--strict",
+                "--explicit-package-bases",
+                *WHOLE_PROGRAM_AD_PRODUCT_QUALITY_RATCHET,
+            ],
+        ),
+        (
+            "ruff D whole-program-ad-product quality ratchet",
+            [
+                python,
+                "-m",
+                "ruff",
+                "check",
+                "--isolated",
+                "--select",
+                "D,D413",
+                "--config",
+                'lint.pydocstyle.convention = "numpy"',
+                *WHOLE_PROGRAM_AD_PRODUCT_QUALITY_RATCHET,
+            ],
+        ),
+    ]
+
+
+def build_coverage_gates(python: str) -> list[Gate]:
+    """Build focused execution and exact source-only coverage gates."""
+    return [
+        (
+            "whole-program-ad-product focused coverage",
+            [
+                python,
+                "-m",
+                "coverage",
+                "run",
+                f"--rcfile={devnull}",
+                f"--data-file={WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_DATA_FILE}",
+                "--branch",
+                "-m",
+                "pytest",
+                "-q",
+                *WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_COHORT,
+            ],
+        ),
+        (
+            "whole-program-ad-product exact coverage threshold",
+            [
+                python,
+                "-m",
+                "coverage",
+                "report",
+                f"--rcfile={devnull}",
+                f"--data-file={WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_DATA_FILE}",
+                "--precision=2",
+                "--fail-under=100",
+                "--include=*/whole_program_ad_product.py",
+            ],
+        ),
+    ]
+
+
+__all__ = [
+    "WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_COHORT",
+    "WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_DATA_FILE",
+    "WHOLE_PROGRAM_AD_PRODUCT_QUALITY_RATCHET",
+    "build_coverage_gates",
+    "build_static_quality_gates",
+]

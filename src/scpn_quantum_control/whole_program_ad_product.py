@@ -81,6 +81,7 @@ class WholeProgramADJourney:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     journey_id: str
@@ -165,6 +166,7 @@ class WholeProgramADJourneyDecision:
         Non-empty when refused.
     steps_completed
         Steps acknowledged in the dry-run posture (not full engine execution).
+
     """
 
     journey_id: str
@@ -387,6 +389,7 @@ def list_whole_program_ad_journey_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered journey identifiers.
+
     """
     return tuple(row.journey_id for row in _CANONICAL_JOURNEYS)
 
@@ -408,6 +411,7 @@ def get_whole_program_ad_journey(journey_id: str) -> WholeProgramADJourney:
     ------
     ValueError
         If ``journey_id`` is blank or unknown (fail closed).
+
     """
     if not journey_id or not str(journey_id).strip():
         raise ValueError("journey_id must be a non-empty string")
@@ -439,6 +443,7 @@ def iter_whole_program_ad_journeys(
     -------
     tuple[WholeProgramADJourney, ...]
         Matching journeys.
+
     """
     rows: Iterable[WholeProgramADJourney] = _CANONICAL_JOURNEYS
     if support_badge is not None:
@@ -485,6 +490,7 @@ def dry_run_whole_program_ad_journey(
     ------
     ValueError
         If ``journey_id`` is blank or unknown.
+
     """
     journey = get_whole_program_ad_journey(journey_id)
     blockers: list[str] = []
@@ -556,6 +562,7 @@ def map_whole_program_ad_public_surfaces() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic module map rows for documentation and inventory.
+
     """
     seen: set[str] = set()
     rows: list[dict[str, object]] = []
@@ -587,6 +594,7 @@ def map_whole_program_ad_architecture_layers() -> tuple[dict[str, object], ...]:
     -------
     tuple[dict[str, object], ...]
         Deterministic layer rows (frontend → ir → adjoint → product → residual).
+
     """
     order = ("frontend", "ir", "adjoint", "product", "residual")
     layer_modules: dict[str, list[str]] = {name: [] for name in order}
@@ -623,6 +631,7 @@ def build_whole_program_ad_product_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with every journey (no blanks).
+
     """
     journeys = [row.to_dict() for row in _CANONICAL_JOURNEYS]
     local = sum(1 for row in _CANONICAL_JOURNEYS if row.support_badge == "local_dry_run")
@@ -664,6 +673,7 @@ def assert_whole_program_ad_product_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-hardware rows appear.
+
     """
     registry = dict(payload) if payload is not None else build_whole_program_ad_product_registry()
     journeys = registry.get("journeys")

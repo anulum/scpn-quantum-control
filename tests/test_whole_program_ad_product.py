@@ -31,6 +31,7 @@ from scpn_quantum_control.whole_program_ad_product import (
 
 
 def test_list_journeys_and_filters() -> None:
+    """List the stable catalogue and apply both supported filters."""
     ids = list_whole_program_ad_journey_ids()
     assert "frontend_compile_dry_run" in ids
     assert "value_and_grad_local_dry_run" in ids
@@ -45,6 +46,7 @@ def test_list_journeys_and_filters() -> None:
 
 
 def test_get_known_and_unknown_fail_closed() -> None:
+    """Return known journeys and reject blank or unknown identifiers."""
     journey = get_whole_program_ad_journey("frontend_compile_dry_run")
     assert journey.allows_hardware is False
     assert journey.bl97_stability_class == "experimental_workbench"
@@ -59,6 +61,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 
 def test_dry_run_allowed_canonical_journey() -> None:
+    """Allow canonical local journeys only in dry-run posture."""
     decision = dry_run_whole_program_ad_journey("frontend_compile_dry_run")
     assert decision.allowed is True
     assert decision.outcome == "allowed_dry_run"
@@ -72,6 +75,7 @@ def test_dry_run_allowed_canonical_journey() -> None:
 
 
 def test_dry_run_refuses_hardware() -> None:
+    """Refuse a hardware request through the public dry-run API."""
     refused = dry_run_whole_program_ad_journey(
         "frontend_compile_dry_run",
         request_hardware=True,
@@ -82,6 +86,7 @@ def test_dry_run_refuses_hardware() -> None:
 
 
 def test_dry_run_refuses_unsupported_frontend_execute() -> None:
+    """Refuse unsupported execution while retaining its boundary map."""
     refused = dry_run_whole_program_ad_journey(
         "unsupported_frontend_fail_closed",
         request_unsupported_frontend_execute=True,
@@ -98,6 +103,7 @@ def test_dry_run_refuses_unsupported_frontend_execute() -> None:
 
 
 def test_dry_run_refuses_polyglot_and_edge_invent_green() -> None:
+    """Refuse residual certificate and edge-routing completion claims."""
     poly = dry_run_whole_program_ad_journey(
         "polyglot_parity_boundary",
         request_polyglot_cert=True,
@@ -118,6 +124,7 @@ def test_dry_run_refuses_polyglot_and_edge_invent_green() -> None:
 
 
 def test_public_surface_and_architecture_map() -> None:
+    """Expose deterministic public-surface and architecture maps."""
     surfaces = map_whole_program_ad_public_surfaces()
     assert surfaces
     paths = {row["module_path"] for row in surfaces}
@@ -140,6 +147,7 @@ def test_public_surface_and_architecture_map() -> None:
 
 
 def test_registry_and_integrity() -> None:
+    """Build and validate the canonical serialisable registry."""
     registry = build_whole_program_ad_product_registry()
     assert registry["schema"] == WHOLE_PROGRAM_AD_PRODUCT_SCHEMA
     assert registry["blank_entry_count"] == 0
@@ -155,8 +163,9 @@ def test_registry_and_integrity() -> None:
 
 
 def test_integrity_rejects_drift_and_hardware() -> None:
+    """Reject catalogue drift, hardware claims, and empty registries."""
     registry = build_whole_program_ad_product_registry()
-    journeys = cast(list[dict[str, object]], list(registry["journeys"]))
+    journeys = cast(list[dict[str, object]], registry["journeys"])
     broken = dict(registry)
     broken["journeys"] = journeys + [
         {
@@ -191,12 +200,14 @@ def test_integrity_rejects_drift_and_hardware() -> None:
 
 
 def test_module_exports() -> None:
+    """Keep the documented product functions in the module export list."""
     assert "dry_run_whole_program_ad_journey" in whole_program_ad_product.__all__
     assert "map_whole_program_ad_public_surfaces" in whole_program_ad_product.__all__
     assert "map_whole_program_ad_architecture_layers" in whole_program_ad_product.__all__
 
 
 def test_journey_validation() -> None:
+    """Enforce every immutable journey construction invariant."""
     base: dict[str, Any] = {
         "journey_id": "x",
         "title": "t",
@@ -231,6 +242,7 @@ def test_journey_validation() -> None:
 
 
 def test_decision_invariants() -> None:
+    """Enforce allowed and refused decision-state consistency."""
     with pytest.raises(ValueError, match="journey_id"):
         WholeProgramADJourneyDecision(
             journey_id="",
@@ -336,6 +348,7 @@ def test_decision_invariants() -> None:
 
 
 def test_to_dict_serialisable() -> None:
+    """Materialise tuple fields as JSON-ready list values."""
     decision = dry_run_whole_program_ad_journey("adjoint_replay_local_dry_run")
     payload = decision.to_dict()
     assert payload["outcome"] == "allowed_dry_run"
@@ -344,8 +357,9 @@ def test_to_dict_serialisable() -> None:
 
 
 def test_integrity_rejects_blank_invalid_and_metadata() -> None:
+    """Reject malformed rows and inconsistent registry metadata."""
     registry = build_whole_program_ad_product_registry()
-    journeys = cast(list[dict[str, object]], list(registry["journeys"]))
+    journeys = cast(list[dict[str, object]], registry["journeys"])
 
     non_map = dict(registry)
     non_map["journeys"] = [cast(Any, "not-a-mapping")]
@@ -457,6 +471,7 @@ def test_catalogue_map_runtime_guards(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_architecture_map_unknown_layer(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Accept an unknown journey layer without inventing an ordered row."""
     from scpn_quantum_control import whole_program_ad_product as mod
 
     custom = WholeProgramADJourney(
@@ -531,7 +546,7 @@ def test_architecture_map_skips_empty_ir_layer(
 def test_integrity_rejects_allows_hardware_true_on_non_default_journey() -> None:
     """Non-default journeys must also set allows_hardware=False (invent-green refuse)."""
     registry = build_whole_program_ad_product_registry()
-    journeys = cast(list[dict[str, object]], list(registry["journeys"]))
+    journeys = cast(list[dict[str, object]], registry["journeys"])
     hw = dict(registry)
     hw_journeys = [dict(row) for row in journeys]
     # Prefer a non-default journey so the generic invent-green check fires.

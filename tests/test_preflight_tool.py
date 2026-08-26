@@ -1001,6 +1001,8 @@ def test_main_uses_coverage_pytest_by_default(
         "compiler-boundary-product exact coverage threshold",
         "competitive-baseline-watch focused coverage",
         "competitive-baseline-watch exact coverage threshold",
+        "whole-program-ad-product focused coverage",
+        "whole-program-ad-product exact coverage threshold",
         "resource-budget-gate focused coverage",
         "resource-budget-gate exact coverage threshold",
         "advantage-language-protocol focused coverage",
