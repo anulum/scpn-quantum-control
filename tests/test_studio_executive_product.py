@@ -76,7 +76,9 @@ def test_decide_executive_path() -> None:
     unsupported = decide_executive_path("simulate", request_unsupported_route=True)
     assert unsupported.allowed is False
     assert any(
-        "unsupported" in b.lower() or "bl-52" in b.lower() or "route_matrix_row" in b.lower()
+        "unsupported" in b.lower()
+        or "governed route" in b.lower()
+        or "route_matrix_row" in b.lower()
         for b in unsupported.blockers
     )
 
@@ -138,6 +140,11 @@ def test_integrity_rejects_drift_and_policy() -> None:
     registry = build_studio_executive_product_registry()
     verbs = _registry_verbs(registry)
 
+    stale_schema = dict(registry)
+    stale_schema["schema"] = "studio_executive_product.v1"
+    with pytest.raises(ValueError, match="schema mismatch"):
+        assert_studio_executive_product_integrity(stale_schema)
+
     broken = dict(registry)
     broken["verbs"] = verbs + [
         {
@@ -158,7 +165,12 @@ def test_integrity_rejects_drift_and_policy() -> None:
     with pytest.raises(ValueError, match="drift"):
         assert_studio_executive_product_integrity(broken)
 
-    empty: dict[str, object] = {"verbs": [], "blank_entry_count": 0, "verb_count": 0}
+    empty: dict[str, object] = {
+        "schema": STUDIO_EXECUTIVE_PRODUCT_SCHEMA,
+        "verbs": [],
+        "blank_entry_count": 0,
+        "verb_count": 0,
+    }
     with pytest.raises(ValueError, match="non-empty verbs"):
         assert_studio_executive_product_integrity(empty)
 
@@ -194,12 +206,12 @@ def test_integrity_rejects_blank_invalid() -> None:
     with pytest.raises(ValueError, match="blank or invalid"):
         assert_studio_executive_product_integrity(blank_id)
 
-    no_bl52 = dict(registry)
+    missing_route_pointer = dict(registry)
     brows = [dict(row) for row in verbs]
     brows[0]["route_matrix_pointer"] = ""
-    no_bl52["verbs"] = brows
+    missing_route_pointer["verbs"] = brows
     with pytest.raises(ValueError, match="route_matrix_pointer"):
-        assert_studio_executive_product_integrity(no_bl52)
+        assert_studio_executive_product_integrity(missing_route_pointer)
 
     no_backends = dict(registry)
     bk = [dict(row) for row in verbs]

@@ -182,7 +182,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   `scpn_quantum_control.polyglot_edge_ad_product` governs the real bounded
   native Rust replay and committed rational browser-WASM replay, composes the
   BL-49 value+gradient certificate subset, and routes through the existing
-  BL-62 `replay` / `differentiate` verbs. Arbitrary WASM programmes, silent
+  Studio executive `replay` / `differentiate` verbs. Arbitrary WASM programmes, silent
   host fallback, and Julia Program AD fail closed; the existing Julia optional
   tier remains honestly classified as Kuramoto-only. Docs:
   `docs/polyglot_edge_ad_product.md`.
@@ -277,9 +277,9 @@ control, or broad quantum-advantage claim is promoted by this release.
   policy, invent-green PCS, and realtime_runtime rewrites. Docs:
   `docs/control_stack_compose_product.md`. Fourteenth P1 A-product after
   BL-90/91/81/49/96/92/93/64/39/41/40/34/62.
-- 2026-07-24 — Studio executive + coverage frontier product (BL-62):
+- 2026-07-24 — Studio executive + coverage frontier product:
   `scpn_quantum_control.studio_executive_product` productises executive verb
-  catalogue with BL-52 route pointers, fail-closed unsupported-route and
+  catalogue with governed-route pointers, fail-closed unsupported-route and
   invent-green full-coverage refuses, and honesty×answer-rate coverage-frontier
   probes. Docs: `docs/studio_executive_product.md`. Thirteenth P1 A-product after
   BL-90/91/81/49/96/92/93/64/39/41/40/34.

@@ -1,6 +1,6 @@
 # Studio executive + coverage frontier product
 
-Versioned **executive verb catalogue** with BL-52 route pointers and a
+Versioned **executive verb catalogue** with governed-route pointers and a
 **coverage-frontier** score (honesty × answer-rate). Never invent-green full
 coverage while refuse rates are hidden.
 
@@ -25,7 +25,8 @@ same nine bounded verbs. Discovery itself executes no verb or hardware route.
 
 ## Public value objects
 
-- `ExecutiveVerbRow` records route and BL-53 pointers, support posture,
+- `ExecutiveVerbRow` records governed-route and unsuitable-scenario pointers,
+  support posture,
   approval/live-hardware flags, backends, and the shared claim boundary.
 - `PathEligibilityDecision` records an allowed/refused outcome, reason, ordered
   blockers, and non-promotional boundary.
@@ -40,10 +41,10 @@ and JSON-ready `to_dict()` mappings.
 
 | Rule | Behaviour |
 |---|---|
-| Product schema | `studio_executive_product.v1` |
+| Product schema | `studio_executive_product.v2` |
 | Default verb | `differentiate` |
 | Unknown verb | Fail closed |
-| Unsupported route invent-green | Refused (BL-52/53) |
+| Unsupported route invent-green | Refused by governed-route and unsuitable-scenario policy |
 | Full coverage invent-green | Refused |
 | Live execute without approval | Refused |
 
@@ -60,10 +61,10 @@ output.
 Claim boundary:
 
 > Studio executive + coverage frontier product surface only; catalogues
-> executive verbs with BL-52 route pointers and materialises honesty×answer-rate
+> executive verbs with governed-route pointers and materialises honesty×answer-rate
 > coverage-frontier probes; invent_green_full_coverage=false when boundary
 > abstentions exist; refuses invent-green unsupported routes and hidden refuse
-> rates; does not claim full BL-55 kit export or Studio UI redesign (S62.4 residual)
+> rates; does not claim full reproduction-kit export or Studio UI redesign
 
 ## Public API
 
@@ -88,16 +89,16 @@ assert decide_executive_path("execute").allowed is False  # needs approval
 assert decide_executive_path("execute", approval_present=True).allowed is True
 ```
 
-## Verbs (S62.0)
+## Executive verbs
 
 `compile` · `simulate` · `analyse` · `validate` · `benchmark` · `replay` ·
 `differentiate` · `mitigate` · `execute` (gated live hardware)
 
-Every verb carries a BL-52 governed-route pointer and BL-53 unsuitable-scenario
-pointer. Only `execute` may advertise live hardware, and it must require
+Every verb carries governed-route and unsuitable-scenario pointers. Only
+`execute` may advertise live hardware, and it must require
 approval. The remaining verbs are local research routes in this product.
 
-## Coverage frontier (S62.3)
+## Coverage frontier
 
 Demo partition: total=10, answered=3, honest abstentions=5, improvable=2 →
 answer_rate=0.3, honesty_rate=0.8, frontier_score=0.24, off_frontier=True.
@@ -115,7 +116,7 @@ bookkeeping, not an answered claim, and therefore cannot inflate answer rate.
 ## Registry integrity
 
 `build_studio_executive_product_registry()` emits schema
-`studio_executive_product.v1`, the full verb catalogue, public surface map,
+`studio_executive_product.v2`, the full verb catalogue, public surface map,
 default id, counts, policy note, and shared claim boundary.
 
 Always validate transported or stored payloads through
@@ -133,14 +134,14 @@ as repository or optional-platform contract corruption.
 
 This product performs no network access, credential lookup, provider or QPU
 discovery, verb execution, approval mutation, hardware submission, spend,
-benchmark, evidence export, BL-55 kit generation, Studio UI mutation, result
+benchmark, evidence export, reproduction-kit generation, Studio UI mutation, result
 promotion, or publication.
 
 ## Bounded product status
 
-Shipped: S62.0 verb→route catalogue · S62.1 inventory · S62.2 fail-closed verb
-paths · S62.3 coverage frontier metric + tests · S62.5 product docs.
+Shipped: verb-to-route catalogue and inventory, fail-closed verb paths,
+coverage-frontier metric and tests, and product documentation.
 
-Open residual: S62.4 evidence bundle export → BL-55 kit.
+Open: evidence-bundle export through the reproduction kit.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

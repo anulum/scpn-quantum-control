@@ -17,8 +17,8 @@ score (honesty × answer-rate — not all-boundary theatre):
   and ``invent_green_full_coverage=false`` when boundary abstentions exist;
 * refuse invent-green “100% route coverage” claims that hide refuse rates.
 
-Does **not** re-architect Studio UI, invent full reproduction-kit kit export automation,
-or claim federation depth complete (S62.4 residual).
+Does **not** re-architect Studio UI, invent full reproduction-kit export
+automation, or claim federation depth complete.
 """
 
 from __future__ import annotations
@@ -50,22 +50,22 @@ SupportPosture = Literal[
 PathDecisionOutcome = Literal["allowed", "refused"]
 """Structured path-eligibility outcomes."""
 
-STUDIO_EXECUTIVE_PRODUCT_SCHEMA: Final[str] = "studio_executive_product.v1"
+STUDIO_EXECUTIVE_PRODUCT_SCHEMA: Final[str] = "studio_executive_product.v2"
 """JSON schema identifier for serialised product payloads."""
 
 STUDIO_EXECUTIVE_CLAIM_BOUNDARY: Final[str] = (
     "Studio executive + coverage frontier product surface only; catalogues "
-    "executive verbs with BL-52 route pointers and materialises honesty×answer-rate "
+    "executive verbs with governed-route pointers and materialises honesty×answer-rate "
     "coverage-frontier probes; invent_green_full_coverage=false when boundary "
     "abstentions exist; refuses invent-green unsupported routes and hidden refuse "
-    "rates; does not claim full BL-55 kit export or Studio UI redesign (S62.4 residual)"
+    "rates; does not claim full reproduction-kit export or Studio UI redesign"
 )
 """Shared claim boundary for studio executive product payloads."""
 
 
 @dataclass(frozen=True, slots=True)
 class ExecutiveVerbRow:
-    """One executive verb catalogue row (S62.0 / S62.1).
+    """One executive verb catalogue row.
 
     Attributes
     ----------
@@ -76,9 +76,9 @@ class ExecutiveVerbRow:
     summary
         Short description.
     route_matrix_pointer
-        BL-52 governed-route matrix pointer for this verb family.
+        Governed-route matrix pointer for this verb family.
     unsuitable_scenario_pointer
-        BL-53 unsuitable / anti-silent-wrong honesty pointer.
+        Unsuitable-scenario / anti-silent-wrong honesty pointer.
     support_posture
         Support posture badge.
     requires_approval
@@ -205,7 +205,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedCoverageFrontierProbe:
-    """Materialised honesty×answer-rate coverage frontier probe (S62.3).
+    """Materialised honesty×answer-rate coverage frontier probe.
 
     Attributes
     ----------
@@ -503,14 +503,14 @@ def decide_executive_path(
     invent_green_full_coverage: bool = False,
     approval_present: bool = False,
 ) -> PathEligibilityDecision:
-    """Decide whether an executive verb path may proceed (S62.2).
+    """Decide whether an executive verb path may proceed.
 
     Parameters
     ----------
     verb_id
         Verb to validate (blank/unknown fail closed).
     request_unsupported_route
-        When true, refuse invent-green unsupported route (BL-52/53).
+        When true, refuse under the governed-route and unsuitable-scenario policy.
     invent_green_full_coverage
         When true, refuse invent-green 100% coverage claims.
     approval_present
@@ -532,7 +532,8 @@ def decide_executive_path(
     if request_unsupported_route:
         blockers.append(
             f"unsupported route invent-green refused for verb {row.verb_id!r} "
-            f"(compose BL-52 {row.route_matrix_pointer}; BL-53 {row.unsuitable_scenario_pointer})"
+            f"(governed route={row.route_matrix_pointer}; unsuitable scenario="
+            f"{row.unsuitable_scenario_pointer})"
         )
     if invent_green_full_coverage:
         blockers.append(
@@ -570,7 +571,7 @@ def compute_coverage_frontier_score(
     honest_abstentions: int,
     improvable_candidates: int = 0,
 ) -> MaterialisedCoverageFrontierProbe:
-    """Compute honesty×answer-rate coverage frontier score (S62.3).
+    """Compute honesty×answer-rate coverage frontier score.
 
     Parameters
     ----------
@@ -620,7 +621,7 @@ def compute_coverage_frontier_score(
 
 
 def materialise_demo_coverage_frontier_probe() -> MaterialisedCoverageFrontierProbe:
-    """Materialise a deterministic coverage-frontier demo probe (S62.3).
+    """Materialise a deterministic coverage-frontier demo probe.
 
     Uses a fixed synthetic ledger partition: 10 total, 3 answered, 5 honest
     abstentions, 2 improvable candidates → answer_rate=0.3, honesty_rate=0.8,
@@ -672,7 +673,7 @@ def map_studio_executive_public_surfaces() -> tuple[dict[str, object], ...]:
         },
         {
             "module_path": "scpn_quantum_control.studio.coverage_frontier",
-            "role": "ambient_ws6_coverage_frontier",
+            "role": "ambient_coverage_frontier_policy",
             "support_posture": "policy_only",
             "symbol_name": "measure_coverage_frontier",
             "claim_boundary": STUDIO_EXECUTIVE_CLAIM_BOUNDARY,
@@ -702,7 +703,7 @@ def build_studio_executive_product_registry() -> dict[str, object]:
         "policy_note": (
             "Studio executive product catalogue only; ambient studio.verbs / "
             "executive spine / coverage_frontier remain the implementation; "
-            "full BL-55 kit export residual S62.4; invent_green_full_coverage "
+            "full reproduction-kit evidence export remains open; invent_green_full_coverage "
             "forbidden when honesty×answer-rate shows abstentions."
         ),
     }
@@ -730,6 +731,8 @@ def assert_studio_executive_product_integrity(
 
     """
     registry = dict(payload) if payload is not None else build_studio_executive_product_registry()
+    if registry.get("schema") != STUDIO_EXECUTIVE_PRODUCT_SCHEMA:
+        raise ValueError("studio executive product schema mismatch")
     verbs = registry.get("verbs")
     if not isinstance(verbs, list) or not verbs:
         raise ValueError("studio executive product registry must contain a non-empty verbs list")
