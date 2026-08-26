@@ -29,7 +29,7 @@ from .advantage_language_protocol import NoAdvantageCertificate, issue_no_advant
 from .bridge.knm_hamiltonian import knm_to_dense_matrix
 from .phase.jax_nqs import is_jax_available, jax_vmc_ground_state
 
-JAX_NQS_BASELINE_PRODUCT_SCHEMA: Final[str] = "jax_nqs_baseline_product.v1"
+JAX_NQS_BASELINE_PRODUCT_SCHEMA: Final[str] = "jax_nqs_baseline_product.v2"
 JAX_NQS_BASELINE_MIN_QUBITS: Final[int] = 2
 JAX_NQS_BASELINE_MAX_QUBITS: Final[int] = 6
 JAX_NQS_BASELINE_MAX_ITERATIONS: Final[int] = 5_000
@@ -38,6 +38,7 @@ JAX_NQS_BASELINE_CLAIM_BOUNDARY: Final[str] = (
     "exact-diagonalisation comparison for 2 <= N <= 6; no sampled VMC, scalable "
     "many-body, hardware, provider, accuracy-guarantee, or performance-advantage claim"
 )
+_JAX_NQS_BASELINE_NO_ADVANTAGE_CONTEXT: Final[str] = "JAX NQS exact-reference baseline"
 
 
 def _canonical_digest(payload: dict[str, object]) -> str:
@@ -47,7 +48,7 @@ def _canonical_digest(payload: dict[str, object]) -> str:
 
 @dataclass(frozen=True, slots=True)
 class JAXNQSBaselineSpec:
-    """Validated immutable input for one BL-103 comparison."""
+    """Validated immutable input for one exact-reference comparison."""
 
     coupling: tuple[tuple[float, ...], ...]
     omega: tuple[float, ...]
@@ -64,7 +65,7 @@ class JAXNQSBaselineSpec:
         n_qubits = len(self.coupling)
         if not JAX_NQS_BASELINE_MIN_QUBITS <= n_qubits <= JAX_NQS_BASELINE_MAX_QUBITS:
             raise ValueError(
-                "BL-103 evidence requires "
+                "JAX NQS exact-reference evidence requires "
                 f"{JAX_NQS_BASELINE_MIN_QUBITS} <= N <= {JAX_NQS_BASELINE_MAX_QUBITS}"
             )
         if any(len(row) != n_qubits for row in self.coupling):
@@ -240,7 +241,7 @@ class JAXNQSComparison:
 
 @dataclass(frozen=True, slots=True)
 class JAXNQSBaselineProduct:
-    """Complete immutable BL-103 evidence record."""
+    """Complete immutable JAX NQS exact-reference evidence record."""
 
     schema: str
     request: JAXNQSBaselineSpec
@@ -258,20 +259,27 @@ class JAXNQSBaselineProduct:
     def __post_init__(self) -> None:
         """Enforce schema, digest, and fail-closed claim posture."""
         if self.schema != JAX_NQS_BASELINE_PRODUCT_SCHEMA:
-            raise ValueError(f"unknown BL-103 schema: {self.schema!r}")
+            raise ValueError(f"unknown JAX NQS baseline schema: {self.schema!r}")
+        if self.claim_boundary != JAX_NQS_BASELINE_CLAIM_BOUNDARY:
+            raise ValueError("JAX NQS baseline claim boundary must not drift")
         if (
             self.support_posture != "research"
             or self.execution_mode != "exact_enumeration_autodiff"
         ):
-            raise ValueError("BL-103 support and execution posture must remain bounded")
+            raise ValueError("JAX NQS support and execution posture must remain bounded")
         if (
             self.hardware_execution
             or self.performance_advantage_claimed
             or self.scalable_many_body_claimed
         ):
-            raise ValueError("BL-103 may not promote hardware, performance, or scale claims")
-        if self.no_advantage.language_status != "no_advantage_default":
-            raise ValueError("BL-103 must retain the no-advantage default")
+            raise ValueError(
+                "JAX NQS baseline may not promote hardware, performance, or scale claims"
+            )
+        expected_no_advantage = issue_no_advantage_certificate(
+            context=_JAX_NQS_BASELINE_NO_ADVANTAGE_CONTEXT
+        )
+        if self.no_advantage != expected_no_advantage:
+            raise ValueError("JAX NQS baseline must retain its canonical no-advantage certificate")
         if len(self.evidence_sha256) != 64:
             raise ValueError("evidence_sha256 must be a SHA-256 hex digest")
         if self.evidence_sha256 != _canonical_digest(self.payload_dict()):
@@ -313,7 +321,10 @@ def _observe_jax_environment() -> JAXNQSEnvironment:
 def run_jax_nqs_baseline(spec: JAXNQSBaselineSpec) -> JAXNQSBaselineProduct:
     """Run the bounded ambient JAX RBM and compare it with exact diagonalisation."""
     if not is_jax_available():
-        raise ImportError("BL-103 requires the optional JAX runtime; no NumPy fallback is used")
+        raise ImportError(
+            "JAX NQS exact-reference execution requires the optional JAX runtime; "
+            "no NumPy fallback is used"
+        )
     coupling = np.asarray(spec.coupling, dtype=float)
     omega = np.asarray(spec.omega, dtype=float)
     hamiltonian = knm_to_dense_matrix(coupling, omega, max_dense_gib=spec.max_dense_gib)
@@ -352,7 +363,7 @@ def run_jax_nqs_baseline(spec: JAXNQSBaselineSpec) -> JAXNQSBaselineProduct:
         exact_configuration_count=2**spec.n_qubits,
         energy_history=energy_history,
     )
-    no_advantage = issue_no_advantage_certificate(context="BL103 JAX NQS baseline")
+    no_advantage = issue_no_advantage_certificate(context=_JAX_NQS_BASELINE_NO_ADVANTAGE_CONTEXT)
     environment = _observe_jax_environment()
     payload = {
         "schema": JAX_NQS_BASELINE_PRODUCT_SCHEMA,

@@ -1,8 +1,8 @@
 # JAX NQS baseline product
 
-`scpn_quantum_control.jax_nqs_baseline_product` is the BL-103
-exact-reference evidence layer for the ambient JAX restricted-Boltzmann-machine
-runner. It is deliberately a small-system research baseline.
+`scpn_quantum_control.jax_nqs_baseline_product` is the exact-reference evidence
+layer for the ambient JAX restricted-Boltzmann-machine runner. It is deliberately
+a small-system research baseline.
 
 ## What it establishes
 
@@ -17,7 +17,7 @@ the product:
    declared-tolerance result;
 5. records the JAX version, backend, device kind, and X64 configuration;
 6. binds the observation to canonical JSON with SHA-256; and
-7. attaches the BL-65 default no-advantage certificate.
+7. attaches the default no-advantage certificate.
 
 The exact-reference comparison is the result. An optimiser reaching the
 declared tolerance on one instance is not a general accuracy guarantee.
@@ -64,8 +64,8 @@ it does not silently substitute the NumPy finite-difference implementation.
 - systems outside the product evidence limit.
 
 The underlying ambient runner still has its historical `N <= 12` API cap. That
-larger cap is exponential exact enumeration, not scalable sampled VMC. BL-103
-uses the stricter `N <= 6` limit so every product claim remains directly
+larger cap is exponential exact enumeration, not scalable sampled VMC. This
+product uses the stricter `N <= 6` limit so every claim remains directly
 checkable against exact diagonalisation.
 
 The Hamiltonian builder consumes only pair terms with `i < j`. Coupling-matrix

@@ -1,5 +1,11 @@
 # Changelog
 
+- 2026-08-26 — JAX NQS exact-reference naming: removed internal work-item
+  identifiers from the runtime contract, digest-bound no-advantage certificate,
+  tests, and public documentation. The serialized product advances to
+  `jax_nqs_baseline_product.v2` without aliases and now rejects stale schemas,
+  claim-boundary drift, and non-canonical no-advantage certificates; numerical
+  execution and public symbols are unchanged.
 - 2026-08-26 — IQM Garnet per-size layout-transfer naming: replaced internal
   work-item aliases across the source, live and fake execution boundaries,
   tests, evidence, campaign documentation, and manuscript with stable

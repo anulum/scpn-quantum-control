@@ -203,7 +203,7 @@ def test_real_jax_baseline_binds_exact_reference_and_claim_boundary(tmp_path: Pa
 
 def test_product_rejects_promoted_or_malformed_posture() -> None:
     environment = JAXNQSEnvironment("0.6.2", "cpu", ("CPU",), False)
-    no_advantage = issue_no_advantage_certificate(context="BL103 test")
+    no_advantage = issue_no_advantage_certificate(context="JAX NQS exact-reference baseline")
     payload = {
         "schema": JAX_NQS_BASELINE_PRODUCT_SCHEMA,
         "request": _spec().to_dict(),
@@ -229,10 +229,17 @@ def test_product_rejects_promoted_or_malformed_posture() -> None:
         digest,
     )
     with pytest.raises(ValueError, match="unknown"):
-        replace(product, schema="other")
+        replace(product, schema="jax_nqs_baseline_product.v1")
+    with pytest.raises(ValueError, match="claim boundary"):
+        replace(product, claim_boundary="broader JAX NQS claims")
     with pytest.raises(ValueError, match="bounded"):
         replace(product, support_posture="supported")
     with pytest.raises(ValueError, match="promote"):
         replace(product, hardware_execution=True)
+    with pytest.raises(ValueError, match="canonical no-advantage"):
+        replace(
+            product,
+            no_advantage=issue_no_advantage_certificate(context="unbound JAX NQS baseline"),
+        )
     with pytest.raises(ValueError, match="SHA-256"):
         replace(product, evidence_sha256="short")
