@@ -8,7 +8,8 @@
 """Fail-closed **compose existing control/*** product surface.
 
 Productises a typed adapter / ownership map over ambient production control
-modules so co-design co-design does **not** reinvent a second control stack:
+modules so quantum-classical co-design does **not** reinvent a second control
+stack:
 
 * versioned ownership catalogue for ``control/*`` and hardware feedback ports;
 * protocol adapter rows (realtime feedback, closed-loop telemetry, cosim,
@@ -23,7 +24,8 @@ modules so co-design co-design does **not** reinvent a second control stack:
 * refuse invent-green PCS integration and rewrite claims of ``realtime_runtime``.
 
 Does **not** rewrite ``realtime_runtime`` or invent PCS. Pulse execution remains
-an explicit fail-closed hand-off to optional pulse-boundary rather than a control-stack residual.
+an explicit fail-closed hand-off to the optional pulse-execution boundary rather
+than a control-stack responsibility.
 """
 
 from __future__ import annotations
@@ -80,14 +82,15 @@ CONTROL_STACK_COMPOSE_CLAIM_BOUNDARY: Final[str] = (
     "realtime_runtime, qaoa_mpc, adaptive_branching, cosimulation, and hardware "
     "feedback_* ports; refuse evaluate without ClosedLoopExecutionPolicy; refuse "
     "invent-green PCS integration and second-stack rewrites; QAOA-MPC and "
-    "cosimulation adapters are local-only; pulse execution fails closed to BL-58"
+    "cosimulation adapters are local-only; pulse execution fails closed to the "
+    "optional pulse-execution boundary"
 )
 """Shared claim boundary for control-stack compose product payloads."""
 
 
 @dataclass(frozen=True, slots=True)
 class OwnershipRow:
-    """One ownership / boundary row for the existing control stack (S67.0).
+    """One row in the existing control-stack ownership catalogue.
 
     Attributes
     ----------
@@ -183,7 +186,7 @@ class OwnershipRow:
 
 @dataclass(frozen=True, slots=True)
 class AdapterPortRow:
-    """One typed adapter port over ambient control modules (S67.1 / S67.2).
+    """One typed adapter port over ambient control modules.
 
     Attributes
     ----------
@@ -194,7 +197,7 @@ class AdapterPortRow:
     ambient_modules
         Ambient module paths this port adapts (compose, do not rewrite).
     hardware_safety_pointer
-        BL-47 hardware-safe / no-submit honesty pointer.
+        Hardware-safe, no-submit policy pointer.
     support_posture
         Support posture badge.
     requires_execution_policy
@@ -266,7 +269,7 @@ class AdapterPortRow:
 
 @dataclass(frozen=True, slots=True)
 class PathEligibilityDecision:
-    """Fail-closed path eligibility for control-stack compose use (S67.5).
+    """Fail-closed path eligibility for control-stack compose use.
 
     Attributes
     ----------
@@ -319,7 +322,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedClosedLoopTelemetryProbe:
-    """Materialised closed-loop telemetry probe from ambient policy evaluate (S67.2).
+    """Materialised telemetry probe from ambient closed-loop policy evaluation.
 
     Attributes
     ----------
@@ -402,7 +405,7 @@ def _build_ownership_catalogue() -> tuple[OwnershipRow, ...]:
             module_path="scpn_quantum_control.control.realtime_runtime",
             owner_kind="control_runtime",
             title="Realtime runtime + SLA",
-            summary="Production realtime loop/SLA; rewrites forbidden under BL-67.",
+            summary="Production realtime loop/SLA; compose adapters cannot rewrite it.",
             adapter_port=None,
             support_posture="local_research",
             rewrites_forbidden=True,
@@ -422,7 +425,10 @@ def _build_ownership_catalogue() -> tuple[OwnershipRow, ...]:
             module_path="scpn_quantum_control.control.qaoa_mpc",
             owner_kind="control_qaoa_mpc",
             title="QAOA-MPC schedule control",
-            summary="Abstract QAOA-MPC adapter; pulse execution fails closed to BL-58.",
+            summary=(
+                "Abstract QAOA-MPC adapter; pulse execution fails closed to the "
+                "optional pulse-execution boundary."
+            ),
             adapter_port="qaoa_mpc_optional",
             support_posture="local_research",
             rewrites_forbidden=True,
@@ -461,7 +467,7 @@ def _build_ownership_catalogue() -> tuple[OwnershipRow, ...]:
             module_id="execution_policy_gate",
             module_path="scpn_quantum_control.control.closed_loop_analysis",
             owner_kind="policy_compose",
-            title="ExecutionPolicy gate (BL-47 compose)",
+            title="ExecutionPolicy gate (hardware-safe compose)",
             summary="Refuse evaluate/run without ClosedLoopExecutionPolicy.",
             adapter_port="execution_policy_gate",
             support_posture="policy_only",
@@ -471,7 +477,7 @@ def _build_ownership_catalogue() -> tuple[OwnershipRow, ...]:
 
 
 def _build_adapter_ports() -> tuple[AdapterPortRow, ...]:
-    """Build typed adapter port catalogue (S67.1–S67.2 / S67.5)."""
+    """Build the typed adapter-port catalogue."""
     return (
         AdapterPortRow(
             port_id="execution_policy_gate",
@@ -675,7 +681,7 @@ def decide_control_compose_path(
     invent_green_pcs: bool = False,
     rewrite_realtime_runtime: bool = False,
 ) -> PathEligibilityDecision:
-    """Decide whether a compose adapter path may proceed (S67.5).
+    """Decide whether a compose adapter path may proceed.
 
     Parameters
     ----------
@@ -702,12 +708,13 @@ def decide_control_compose_path(
         )
     if rewrite_realtime_runtime:
         blockers.append(
-            "rewrite of realtime_runtime refused (BL-67 adapters only; rewrites_forbidden)"
+            "rewrite of realtime_runtime refused (compose adapters preserve ambient "
+            "runtime ownership; rewrites_forbidden)"
         )
     if port.requires_execution_policy and not policy_present:
         blockers.append(
             "ClosedLoopExecutionPolicy required before evaluate/run "
-            f"(port={port.port_id}; BL-47 compose)"
+            f"(port={port.port_id}; hardware-safe compose gate)"
         )
     if blockers:
         return PathEligibilityDecision(
@@ -735,7 +742,7 @@ def materialise_closed_loop_telemetry_probe(
     round_budget: int = 8,
     requested_rounds: int = 1,
 ) -> MaterialisedClosedLoopTelemetryProbe:
-    """Materialise telemetry via ambient evaluate_closed_loop_policy (S67.2).
+    """Materialise telemetry via ambient ``evaluate_closed_loop_policy``.
 
     Always sets ``invent_green_pcs=False``. Live hardware requires ambient
     policy authorisation (ticket + allow_hardware).
@@ -876,7 +883,8 @@ def build_control_stack_compose_product_registry() -> dict[str, object]:
             "Compose adapters over ambient control/* only; no second stack; "
             "ClosedLoopExecutionPolicy required before evaluate/run; "
             "PCS invent-green forbidden; local QAOA-MPC and cosimulation adapters "
-            "are executable; pulse execution fails closed to BL-58."
+            "are executable; pulse execution fails closed to the optional "
+            "pulse-execution boundary."
         ),
     }
 

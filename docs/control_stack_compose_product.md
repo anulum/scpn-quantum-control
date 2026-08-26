@@ -1,7 +1,7 @@
 # Compose existing control/* stack product
 
 Versioned **ownership map** and **typed, executable adapter ports** over ambient production
-`control/*` modules so co-design (BL-33) does **not** invent a second stack.
+`control/*` modules so quantum-classical co-design does **not** invent a second stack.
 Refuse evaluate/run without `ClosedLoopExecutionPolicy`. Never invent-green PCS.
 
 Modules: `scpn_quantum_control.control_stack_compose_product` and
@@ -17,7 +17,7 @@ Modules: `scpn_quantum_control.control_stack_compose_product` and
 | Evaluate without policy | Refuse |
 | PCS invent-green | Refuse |
 | `realtime_runtime` rewrite | Forbidden |
-| Live hardware | Ambient policy + ticket (BL-47 compose) |
+| Live hardware | Ambient hardware-safe execution policy + ticket |
 
 ## Ownership catalogue (ambient, no rewrite)
 
@@ -26,7 +26,7 @@ Modules: `scpn_quantum_control.control_stack_compose_product` and
 | `realtime_feedback` | sync feedback controller |
 | `realtime_runtime` | production runtime/SLA (no rewrite) |
 | `closed_loop_analysis` | ExecutionPolicy + telemetry |
-| `qaoa_mpc` | executable abstract QAOA-MPC adapter; pulse execution delegated to BL-58 |
+| `qaoa_mpc` | executable abstract QAOA-MPC adapter; pulse execution delegated to the optional pulse-execution boundary |
 | `adaptive_branching` | readiness tables |
 | `cosimulation_quantum_classical` | executable local partition bridge + mapped telemetry |
 | `hardware_feedback_dryrun` | hardware-side adapter port |
@@ -87,8 +87,9 @@ assert result.decision.mode.value == "simulation"
 
 `OwnershipRow` validates module identity, ambient ownership, adapter link,
 support posture, rewrite prohibition, and claim boundary. `AdapterPortRow`
-validates its ambient modules, BL-47 pointer, execution-policy requirement, and
-false invent-green PCS flag. Both records serialize through `to_dict()`.
+validates its ambient modules, hardware-safety pointer, execution-policy
+requirement, and false invent-green PCS flag. Both records serialize through
+`to_dict()`.
 
 ### Eligibility and telemetry
 
@@ -113,24 +114,23 @@ object; runtime adapters require the actual `ClosedLoopExecutionPolicy`.
 | `assert_control_stack_compose_product_integrity(payload=None)` | Reject empty, malformed, blank, duplicate, count-drifted, policy-gate-missing, ownership/port-drifted, invent-green, or rewrite-permissive state. |
 
 These APIs compose the existing control stack. They do not create a second
-runtime, execute provider pulses, rewrite realtime ownership, bypass BL-47, or
-promote PCS claims.
+runtime, execute provider pulses, rewrite realtime ownership, bypass the
+hardware-safe execution policy, or promote PCS claims.
 
 ## Completed boundaries
 
-- **S67.3** — abstract QAOA-MPC is adapted; pulse execution is explicitly
+- The abstract QAOA-MPC controller is adapted; pulse execution is explicitly
   descoped and fails closed to `pulse-boundary/runtime-adapter`.
-- **S67.4** — the existing mean-field co-simulation is policy-gated and its
+- The existing mean-field co-simulation is policy-gated and its
   partition outputs are mapped into compact telemetry without changing ownership.
-- **S67.6** — BL-33 now specifies ports over BL-67 adapters.
+- Quantum-classical co-design specifies ports over the compose adapters.
 
 All executable adapters are local-simulator only. Even a hardware-authorising
-policy is refused because BL-67 does not own provider submission.
+policy is refused because this compose product does not own provider submission.
 
 ## Related
 
-- Pack: `docs/internal/differentiable_programming/p3_strategic/bl67_compose_existing_control_stack.md`
 - Ambient: `control.realtime_feedback`, `control.closed_loop_analysis`, `control.realtime_runtime`
-- BL-47 hardware-safe execution posture
+- Hardware-safe execution posture
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
