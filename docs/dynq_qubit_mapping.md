@@ -711,6 +711,9 @@ Qiskit routing is stochastic when unseeded, so `routed_layout_depth` accepts a
 `seed_transpiler` argument; pass it whenever the depth feeds a reproducible
 cost landscape (the §7.5 optimiser and the §8.4 comparison both do).
 
+See the [Kuramoto-XY layout-cost API](api/kuramoto_layout_cost.md) for exact
+signatures, validation, record fields, reproducibility, and evidence boundaries.
+
 ### 7.5 Discrete Layout Optimiser over the Kuramoto-XY Cost
 
 `hardware/kuramoto_layout_optimiser.py` minimises the §7.4 cost over injective
@@ -750,7 +753,7 @@ The benchmark against DynQ and SABRE lives in
 `benchmarks/layout_method_comparison.py` (path-import, like every benchmarks
 module) and is measured in §8.4.
 
-### 7.6 Sinkhorn Continuous Relaxation (KT-4, RESEARCH)
+### 7.6 Sinkhorn Continuous Relaxation (Research)
 
 `hardware/kuramoto_layout_relaxation.py` carries a **research-labelled**
 alternative to the §7.5 discrete search: an annealed Sinkhorn relaxation over
@@ -763,7 +766,7 @@ budget — the surrogate never enters the comparison. The open question,
 verified literature, and comparison protocol are preregistered in
 [layout_relaxation_preregistration.md](layout_relaxation_preregistration.md);
 the honest outcome may be "modest or no gain", and nothing is promoted
-without KT-5. The preregistered seed-sweep experiment and its measured
+without isolated-host confirmation. The preregistered seed-sweep experiment and its measured
 verdict are in §8.5.
 
 ---
@@ -844,7 +847,7 @@ written to `data/layout_method_comparison/`.
 
 ---
 
-### 8.5 KT-4 Preregistered Seed Sweep: Sinkhorn Relaxation vs Discrete Optimiser (Measured — No Gain)
+### 8.5 Preregistered Seed Sweep: Sinkhorn Relaxation vs Discrete Optimiser (Measured — No Gain)
 
 Measured by `scripts/run_layout_relaxation_experiment.py` under the protocol
 preregistered in
@@ -889,7 +892,7 @@ Reading the result honestly:
 - **This is the preregistered outcome, not a rescue.** The falsification
   criterion was fixed before the optimiser existed; per the design doc, the
   research label stays, the discrete optimiser (§7.5) remains the production
-  recommendation, and no KT-5 promotion case exists on this evidence.
+  recommendation, and no isolated-host promotion case exists on this evidence.
 - Same honest labels as §8.4: analytic models are not hardware measurements,
   and selection wall-times on a shared host are advisory.
 
@@ -968,7 +971,7 @@ The §7.4/§7.5/§8.4 surfaces carry their own dedicated test modules, each at
   convergence flags;
 - `test_layout_method_comparison.py` — serialisation, problem validation, the
   calibration-priced success model, real routing metrics, the full comparison
-  run (stubbed and real-transpilation paths), and the KT-4 research row
+  run (stubbed and real-transpilation paths), and the continuous-relaxation research row
   (budget bind, labelling, candidate regions);
 - `test_run_layout_method_comparison.py` — CLI wiring for the §8.4 script;
 - `test_kuramoto_layout_relaxation.py` — Sinkhorn projection, graph

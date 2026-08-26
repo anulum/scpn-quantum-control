@@ -73,6 +73,9 @@ if TYPE_CHECKING:
         hermetic_reproduction_kit_quality_gates as _hermetic_reproduction_kit_quality_gates,
     )
     from tools import (
+        kuramoto_layout_cost_quality_gates as _kuramoto_layout_cost_quality_gates,
+    )
+    from tools import (
         kyma_mechanism_benchmark_product_quality_gates as _kyma_mechanism_product_quality_gates,
     )
     from tools import (
@@ -197,6 +200,7 @@ else:
     _layout_method_comparison_quality_gates = import_module(
         "tools.layout_method_comparison_quality_gates"
     )
+    _kuramoto_layout_cost_quality_gates = import_module("tools.kuramoto_layout_cost_quality_gates")
     _unsuitable_scenario_registry_quality_gates = import_module(
         "tools.unsuitable_scenario_registry_quality_gates"
     )
@@ -583,6 +587,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_attested_result_pack_quality_gates.build_static_quality_gates(_PY),
     *_phase_qnode_product_quality_gates.build_static_quality_gates(_PY),
     *_phase_trainability_quality_gates.build_static_quality_gates(_PY),
+    *_kuramoto_layout_cost_quality_gates.build_static_quality_gates(_PY),
     *_layout_method_comparison_quality_gates.build_static_quality_gates(_PY),
     *_unsuitable_scenario_registry_quality_gates.build_static_quality_gates(_PY),
     *_scorecard_acceptance_engine_quality_gates.build_static_quality_gates(_PY),
@@ -1024,6 +1029,7 @@ GOVERNED_ROUTE_MATRIX_COVERAGE_GATES = _governed_route_matrix_quality_gates.buil
 ATTESTED_RESULT_PACK_COVERAGE_GATES = _attested_result_pack_quality_gates.build_coverage_gates(_PY)
 PHASE_QNODE_PRODUCT_COVERAGE_GATES = _phase_qnode_product_quality_gates.build_coverage_gates(_PY)
 PHASE_TRAINABILITY_COVERAGE_GATES = _phase_trainability_quality_gates.build_coverage_gates(_PY)
+KURAMOTO_LAYOUT_COST_COVERAGE_GATES = _kuramoto_layout_cost_quality_gates.build_coverage_gates(_PY)
 LAYOUT_METHOD_COMPARISON_COVERAGE_GATES = (
     _layout_method_comparison_quality_gates.build_coverage_gates(_PY)
 )
@@ -1337,6 +1343,7 @@ def main() -> int:
             gates.extend(ATTESTED_RESULT_PACK_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_PRODUCT_COVERAGE_GATES)
             gates.extend(PHASE_TRAINABILITY_COVERAGE_GATES)
+            gates.extend(KURAMOTO_LAYOUT_COST_COVERAGE_GATES)
             gates.extend(LAYOUT_METHOD_COMPARISON_COVERAGE_GATES)
             gates.extend(UNSUITABLE_SCENARIO_REGISTRY_COVERAGE_GATES)
             gates.extend(SCORECARD_ACCEPTANCE_ENGINE_COVERAGE_GATES)

@@ -52,7 +52,10 @@ def _fixed_depth(value: int) -> Any:
 
 
 class TestCostWeights:
+    """Exercise weighted-objective configuration invariants."""
+
     def test_defaults_valid(self) -> None:
+        """Use unit weights for every objective term by default."""
         assert CostWeights().to_dict() == {"depth": 1.0, "trotter_error": 1.0, "infidelity": 1.0}
 
     @pytest.mark.parametrize(
@@ -65,11 +68,14 @@ class TestCostWeights:
         ],
     )
     def test_invalid_weights_raise(self, kwargs: dict[str, Any], match: str) -> None:
+        """Reject negative, non-finite, or uniformly zero weights."""
         with pytest.raises(ValueError, match=match):
             CostWeights(**kwargs)
 
 
 class TestValidation:
+    """Exercise fail-closed layout and problem validation."""
+
     @pytest.mark.parametrize(
         ("layout", "fidelity", "t", "reps", "match"),
         [
@@ -84,6 +90,7 @@ class TestValidation:
     def test_invalid_inputs_raise(
         self, layout: tuple[int, ...], fidelity: float, t: float, reps: int, match: str
     ) -> None:
+        """Reject invalid placements, fidelity, time, or repetitions."""
         with pytest.raises(ValueError, match=match):
             kuramoto_layout_cost(
                 layout,
@@ -97,6 +104,7 @@ class TestValidation:
             )
 
     def test_non_square_K_raises(self) -> None:
+        """Reject a non-square coupling matrix."""
         with pytest.raises(ValueError, match="square"):
             kuramoto_layout_cost(
                 (0, 1),
@@ -108,6 +116,7 @@ class TestValidation:
             )
 
     def test_omega_shape_mismatch_raises(self) -> None:
+        """Reject a frequency vector with the wrong oscillator count."""
         with pytest.raises(ValueError, match="omega must have shape"):
             kuramoto_layout_cost(
                 (0, 1, 2, 3),
@@ -120,7 +129,10 @@ class TestValidation:
 
 
 class TestCostCombinator:
+    """Exercise objective-term assembly and serialisation."""
+
     def test_weighted_sum_with_injected_depth(self) -> None:
+        """Combine injected depth, error, and infidelity by their weights."""
         cost = kuramoto_layout_cost(
             (0, 1, 2, 3),
             _K,
@@ -138,6 +150,7 @@ class TestCostCombinator:
         assert cost.routed_depth == 7
 
     def test_default_weights_and_serialisation(self) -> None:
+        """Serialise every component under default unit weights."""
         cost = kuramoto_layout_cost(
             (0, 1, 2, 3),
             _K,
@@ -162,6 +175,7 @@ class TestCostCombinator:
         }
 
     def test_second_order_trotter(self) -> None:
+        """Price a second-order product-formula error bound."""
         cost = kuramoto_layout_cost(
             (0, 1, 2, 3),
             _K,
@@ -175,7 +189,10 @@ class TestCostCombinator:
 
 
 class TestDynqFidelity:
+    """Exercise fidelity extraction from a selected execution region."""
+
     def test_extracts_region_fidelity(self) -> None:
+        """Return the selected region's mean gate fidelity."""
         region = ExecutionRegion(
             qubits=frozenset({0, 1, 2}),
             quality_score=0.8,
@@ -193,13 +210,17 @@ class TestDynqFidelity:
 
 
 class TestRoutedDepthAdapter:
+    """Exercise the real Qiskit routing boundary."""
+
     def test_real_routing_returns_positive_depth(self) -> None:
+        """Return a positive integer depth for a connected target."""
         coupling_map = CouplingMap([[0, 1], [1, 2], [2, 3]])
         depth = routed_layout_depth((0, 1, 2, 3), _K, _OMEGA, coupling_map, t=0.1, reps=1)
         assert isinstance(depth, int)
         assert depth > 0
 
     def test_end_to_end_default_provider(self) -> None:
+        """Use real routing through the public cost function default."""
         coupling_map = CouplingMap([[0, 1], [1, 2], [2, 3]])
         cost = kuramoto_layout_cost(
             (0, 1, 2, 3), _K, _OMEGA, coupling_map, mean_gate_fidelity=0.99, t=0.1, reps=1
@@ -208,6 +229,7 @@ class TestRoutedDepthAdapter:
         assert cost.total > 0.0
 
     def test_seeded_routing_is_reproducible(self) -> None:
+        """Return the same routed depth for a fixed transpiler seed."""
         coupling_map = CouplingMap([[0, 1], [1, 2], [2, 3]])
         depths = [
             routed_layout_depth(

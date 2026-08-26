@@ -1,9 +1,9 @@
-# KT-4 — Continuous-Relaxation Layout Search: Research Design (RESEARCH LABEL)
+# Continuous-Relaxation Layout Search: Research Design
 
 **Status: RESEARCH — ANSWERED (2026-07-16). The preregistered experiment ran
-(§6): the null hypothesis stands — the relaxation shows no gain over the KT-3
+(§6): the null hypothesis stands — the relaxation shows no gain over the discrete
 discrete baseline at matched true-cost budget. The research label stays; the
-discrete optimiser remains the production recommendation; no KT-5 promotion
+discrete optimiser remains the production recommendation; no isolated-host promotion
 case exists on this evidence.**
 
 Date: 2026-07-16. Author seat: SCPN-QUANTUM-CONTROL/claude-7f6b.
@@ -17,11 +17,11 @@ Date: 2026-07-16. Author seat: SCPN-QUANTUM-CONTROL/claude-7f6b.
 
 Does a Sinkhorn/Gumbel-softmax continuous relaxation over qubit-placement
 logits — annealed to a discrete layout with coupling-map feasibility
-projection — find layouts with a **lower true KT-2 cost** (and hence a higher
-calibration-priced R proxy) than KT-3's multi-restart best-improvement hill
+projection — find layouts with a **lower true discrete layout cost** (and hence a higher
+calibration-priced R proxy) than the discrete optimiser's multi-restart best-improvement hill
 climbing, **at a matched budget of true-cost evaluations**?
 
-Null hypothesis (what falsifies the value of KT-4): at equal true-cost
+Null hypothesis (what falsifies the value of the continuous relaxation): at equal true-cost
 evaluation budget across a preregistered seed set, the relaxed-then-rounded
 search does not beat the discrete baseline's mean best cost.
 
@@ -41,7 +41,7 @@ Foundations of the relaxation (all arXiv listings fetched this session):
   sampling; the annealing schedule template.
 - **SABRE baseline** — Li, Ding, Xie, *Tackling the Qubit Mapping Problem for
   NISQ-Era Quantum Devices*, arXiv:1809.02573 (ASPLOS 2019). The
-  depth-oriented heuristic KT-3 already benchmarks against.
+  depth-oriented discrete heuristic already used as the benchmark.
 
 Adjacent discrete-optimisation formulations of placement (no gradient flow):
 QUBO qubit allocation (arXiv:2009.00140), MaxSAT mapping-and-routing
@@ -59,7 +59,7 @@ art in these searches is evidence of absence in the searched venues only.
 1. **Relax** the placement of `n` logical onto `m` candidate physical qubits
    as a doubly-stochastic matrix `P = Sinkhorn(logits / τ)` (square via
    padding when `m > n`).
-2. **Differentiable cost surrogate.** The true KT-2 cost's depth term is
+2. **Differentiable cost surrogate.** The true discrete layout cost's depth term is
    routing-derived (non-differentiable: `transpile`). Surrogate: expected
    SWAP-distance load `E_P[Σ_{i<j} K_ij · d(p_i, p_j)]` with `d` the
    coupling-map graph distance — continuous in `P`, correlates with routed
@@ -70,23 +70,23 @@ art in these searches is evidence of absence in the searched venues only.
    **project** to coupling-map feasibility (candidate-set membership,
    injectivity).
 4. **Honest evaluation**: every candidate the relaxation proposes is scored
-   with the **true seeded KT-2 cost** (`kuramoto_layout_cost` with
-   `seed_transpiler` bound — the KT-3 reproducible landscape). The comparison
+   with the **true seeded discrete layout cost** (`kuramoto_layout_cost` with
+   `seed_transpiler` bound — the discrete optimiser's reproducible landscape). The comparison
    metric is true cost, never the surrogate.
 
 ## 4. Preregistered comparison protocol
 
-- Baseline: `optimise_kuramoto_layout` (KT-3), same seeds, same candidate
+- Baseline: `optimise_kuramoto_layout`, with the same seeds and candidate
   regions, same weights, same `t/reps/order`.
 - Budget match: the relaxation may call the true cost at most as many times
   as the baseline's `n_evaluations` on the same instance.
-- Instances: the committed two-cluster topology (KT-3 artifact reference:
+- Instances: the committed two-cluster topology (discrete-optimiser artifact reference:
   dynq+kuramoto_opt depth 98, success proxy 0.8063, 22 evaluations,
   converged) plus preregistered seed sweep (seeds 0..9) and at least one
   larger region (m ≥ 2n) where relocations dominate.
 - Decision: report mean±spread of best true cost per budget; the research
-  label stays unless the relaxation wins consistently AND KT-5 (isolated
-  host) confirms; "modest/no gain" is a publishable, honest outcome and gets
+  label stays unless the relaxation wins consistently and an isolated-host run
+  confirms it; "modest/no gain" is a publishable, honest outcome and gets
   recorded in the docs as such.
 
 ## 5. Implementation plan (next session)
@@ -119,7 +119,7 @@ discrete baseline's `n_evaluations`:
   lost by +15 despite a 208-evaluation budget.
 - Consequences (as preregistered): the research label stays, the discrete
   optimiser (`dynq_qubit_mapping.md` §7.5) remains the production
-  recommendation, and no KT-5 promotion case exists on this evidence.
+  recommendation, and no isolated-host promotion case exists on this evidence.
 
 Measured table and honest reading: `dynq_qubit_mapping.md` §8.5; artifact:
 `data/layout_relaxation_experiment/layout_relaxation_experiment_n4_seeds0-9.json`.

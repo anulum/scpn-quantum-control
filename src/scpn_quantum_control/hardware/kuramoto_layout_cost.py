@@ -15,7 +15,7 @@ map is scored by one number,
         ``+ w_error · Trotter error bound``
         ``+ w_infidelity · (1 − DynQ mean gate fidelity)``,
 
-so a discrete optimiser (KT-3) can compare layouts on a single objective. The
+so a discrete optimiser can compare layouts on a single objective. The
 cost is **continuous** in the couplings ``K``, frequencies ``omega``, and gate
 fidelities, and **discrete** in the layout: only the post-routing depth depends
 on the integer layout, through the SWAP overhead the coupling map forces on the
@@ -33,7 +33,7 @@ The three terms reuse existing surfaces rather than reimplementing them:
   region fidelity (see :func:`dynq_mean_gate_fidelity`).
 
 The cost function is pure and side-effect-free given a ``depth_provider``, so
-KT-3's optimiser can call it in a tight loop.
+the discrete optimiser can call it in a tight loop.
 """
 
 from __future__ import annotations
@@ -90,6 +90,7 @@ class CostWeights:
         Weight on the Trotter error bound.
     infidelity
         Weight on ``1 − mean gate fidelity``.
+
     """
 
     depth: float = 1.0
@@ -103,6 +104,7 @@ class CostWeights:
         ------
         ValueError
             If any weight is non-finite or negative, or if all three are zero.
+
         """
         for name, value in (
             ("depth", self.depth),
@@ -161,6 +163,7 @@ def dynq_mean_gate_fidelity(result: QubitMappingResult) -> float:
     -------
     float
         The mean gate fidelity of the selected execution region.
+
     """
     return float(result.selected_region.mean_gate_fidelity)
 
@@ -203,13 +206,14 @@ def routed_layout_depth(
         Qiskit optimisation level for routing.
     seed_transpiler
         Transpiler seed; Qiskit routing is stochastic when unseeded, so pass a
-        seed whenever the depth feeds a reproducible cost landscape (the KT-3
-        optimiser and the layout-method comparison do).
+        seed whenever the depth feeds a reproducible cost landscape (the
+        discrete optimiser and the layout-method comparison do).
 
     Returns
     -------
     int
         The routed circuit depth.
+
     """
     from qiskit import transpile
 
@@ -241,6 +245,7 @@ def _validate_inputs(
         If the layout is not a distinct integer placement of the right length,
         the problem arrays are malformed, the fidelity is outside ``[0, 1]``, or
         the time/reps are non-positive.
+
     """
     n = K.shape[0]
     if K.ndim != 2 or K.shape[0] != K.shape[1]:
@@ -300,6 +305,7 @@ def kuramoto_layout_cost(
     -------
     LayoutCost
         The total cost and its three weighted component terms.
+
     """
     weights = weights or CostWeights()
     _validate_inputs(layout, K, omega, mean_gate_fidelity, t, reps)
