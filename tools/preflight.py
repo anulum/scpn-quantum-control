@@ -75,6 +75,9 @@ if TYPE_CHECKING:
         kyma_mechanism_benchmark_product_quality_gates as _kyma_mechanism_product_quality_gates,
     )
     from tools import (
+        layout_method_comparison_quality_gates as _layout_method_comparison_quality_gates,
+    )
+    from tools import (
         metamorphic_ad_verification_quality_gates as _metamorphic_ad_verification_quality_gates,
     )
     from tools import (
@@ -169,6 +172,9 @@ else:
     )
     _kyma_mechanism_product_quality_gates = import_module(
         "tools.kyma_mechanism_benchmark_product_quality_gates"
+    )
+    _layout_method_comparison_quality_gates = import_module(
+        "tools.layout_method_comparison_quality_gates"
     )
     _migration_guides_product_quality_gates = import_module(
         "tools.migration_guides_product_quality_gates"
@@ -541,6 +547,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_attested_result_pack_quality_gates.build_static_quality_gates(_PY),
     *_phase_qnode_product_quality_gates.build_static_quality_gates(_PY),
     *_phase_trainability_quality_gates.build_static_quality_gates(_PY),
+    *_layout_method_comparison_quality_gates.build_static_quality_gates(_PY),
     *_resource_budget_gate_quality_gates.build_static_quality_gates(_PY),
     *_advantage_language_protocol_quality_gates.build_static_quality_gates(_PY),
     *_metamorphic_ad_verification_quality_gates.build_static_quality_gates(_PY),
@@ -974,6 +981,9 @@ GOVERNED_ROUTE_MATRIX_COVERAGE_GATES = _governed_route_matrix_quality_gates.buil
 ATTESTED_RESULT_PACK_COVERAGE_GATES = _attested_result_pack_quality_gates.build_coverage_gates(_PY)
 PHASE_QNODE_PRODUCT_COVERAGE_GATES = _phase_qnode_product_quality_gates.build_coverage_gates(_PY)
 PHASE_TRAINABILITY_COVERAGE_GATES = _phase_trainability_quality_gates.build_coverage_gates(_PY)
+LAYOUT_METHOD_COMPARISON_COVERAGE_GATES = (
+    _layout_method_comparison_quality_gates.build_coverage_gates(_PY)
+)
 RESOURCE_BUDGET_GATE_COVERAGE_GATES = _resource_budget_gate_quality_gates.build_coverage_gates(_PY)
 ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES = (
     _advantage_language_protocol_quality_gates.build_coverage_gates(_PY)
@@ -1263,6 +1273,7 @@ def main() -> int:
             gates.extend(ATTESTED_RESULT_PACK_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_PRODUCT_COVERAGE_GATES)
             gates.extend(PHASE_TRAINABILITY_COVERAGE_GATES)
+            gates.extend(LAYOUT_METHOD_COMPARISON_COVERAGE_GATES)
             gates.extend(RESOURCE_BUDGET_GATE_COVERAGE_GATES)
             gates.extend(ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES)
             gates.extend(METAMORPHIC_AD_VERIFICATION_COVERAGE_GATES)

@@ -213,6 +213,7 @@ class LayoutComparisonConfig:
         ``order``, and ``seed``. Its ``max_true_cost_evaluations`` is always
         overridden by the run with the discrete optimiser's ``n_evaluations``
         — the preregistered budget match.
+
     """
 
     t: float = 0.1
@@ -236,6 +237,7 @@ class LayoutComparisonConfig:
         ValueError
             If ``t`` is not finite and positive, ``reps`` is not positive, or
             ``candidate_region`` is not a known region choice.
+
         """
         if not isfinite(self.t) or self.t <= 0.0:
             raise ValueError("t must be finite and positive")
@@ -329,6 +331,7 @@ def coupling_map_from_gate_errors(gate_errors: GateErrors) -> Any:
     -------
     CouplingMap
         The bidirectional coupling map over every calibrated edge.
+
     """
     from qiskit.transpiler import CouplingMap
 
@@ -347,6 +350,7 @@ def _edge_error(gate_errors: GateErrors, i: int, j: int) -> float:
     ValueError
         If the routed circuit uses an edge absent from the calibration data —
         the analytic success model then has no defensible value (fail-closed).
+
     """
     if (i, j) in gate_errors:
         return gate_errors[(i, j)]
@@ -374,6 +378,7 @@ def ideal_xy_order_parameter(K: FloatArray, omega: FloatArray, *, t: float, reps
     -------
     float
         The ideal order parameter ``R`` in ``[0, 1]``.
+
     """
     from qiskit.quantum_info import Statevector
 
@@ -430,6 +435,7 @@ def routed_layout_metrics(
     ValueError
         If both or neither of ``initial_layout`` and ``layout_method`` are
         given, or a routed gate lands on an uncalibrated edge.
+
     """
     from qiskit import transpile
 
@@ -479,6 +485,7 @@ def _validate_problem(K: FloatArray, omega: FloatArray, gate_errors: GateErrors)
     ValueError
         If ``K`` is not square, ``omega`` has the wrong shape, the calibration
         set is empty, or any calibration error lies outside ``[0, 1)``.
+
     """
     if K.ndim != 2 or K.shape[0] != K.shape[1]:
         raise ValueError("K must be a square matrix")
@@ -550,6 +557,7 @@ def run_layout_method_comparison(
         If the problem inputs are malformed or no DynQ region fits the
         circuit width (fail-closed: without a DynQ baseline the comparison
         has no defensible reference).
+
     """
     config = config or LayoutComparisonConfig()
     n = _validate_problem(K, omega, gate_errors)

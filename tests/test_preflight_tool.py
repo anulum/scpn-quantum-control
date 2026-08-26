@@ -1025,6 +1025,8 @@ def test_main_uses_coverage_pytest_by_default(
         "phase-qnode-product exact coverage threshold",
         "phase-trainability focused coverage",
         "phase-trainability exact coverage threshold",
+        "layout-method-comparison focused coverage",
+        "layout-method-comparison exact coverage threshold",
         "resource-budget-gate focused coverage",
         "resource-budget-gate exact coverage threshold",
         "advantage-language-protocol focused coverage",

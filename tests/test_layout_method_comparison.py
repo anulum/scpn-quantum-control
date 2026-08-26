@@ -121,7 +121,10 @@ def _run_stubbed(
 
 
 class TestSerialisation:
+    """Verify stable JSON and Markdown representations."""
+
     def test_routed_layout_metrics_to_dict(self) -> None:
+        """Serialise measured routing metrics without type loss."""
         metrics = RoutedLayoutMetrics(12, 7, 0.83)
         assert metrics.to_dict() == {
             "routed_depth": 12,
@@ -130,6 +133,7 @@ class TestSerialisation:
         }
 
     def test_method_row_to_dict(self) -> None:
+        """Convert tuple-backed row fields to JSON-compatible lists."""
         row = MethodRow(
             method="dynq",
             layout=(0, 1, 2),
@@ -147,6 +151,7 @@ class TestSerialisation:
         assert payload["r_noisy_proxy"] == pytest.approx(0.45)
 
     def test_artifact_to_dict_and_table(self) -> None:
+        """Render complete artifacts as mappings and readable tables."""
         artifact = _run_stubbed()
         payload = artifact.to_dict()
         assert payload["schema_version"] == "1.1"
@@ -158,6 +163,8 @@ class TestSerialisation:
 
 
 class TestLayoutComparisonConfig:
+    """Verify run configuration validation, derivation, and serialisation."""
+
     @pytest.mark.parametrize(
         ("kwargs", "match"),
         [
@@ -168,30 +175,36 @@ class TestLayoutComparisonConfig:
         ],
     )
     def test_invalid_configuration_rejected(self, kwargs: dict[str, Any], match: str) -> None:
+        """Reject non-physical time, repetition, and region settings."""
         with pytest.raises(ValueError, match=match):
             LayoutComparisonConfig(**kwargs)
 
     def test_search_config_derived_from_run_settings(self) -> None:
+        """Propagate shared run settings into the default discrete search."""
         config = LayoutComparisonConfig(t=0.2, reps=3, order=2, seed=9)
         derived = config.search_config()
         assert (derived.t, derived.reps, derived.order, derived.seed) == (0.2, 3, 2, 9)
 
     def test_explicit_search_config_wins(self) -> None:
+        """Preserve an explicitly supplied discrete-search configuration."""
         explicit = LayoutSearchConfig(n_restarts=2, seed=1)
         config = LayoutComparisonConfig(search=explicit)
         assert config.search_config() is explicit
 
     def test_relaxation_config_derived_from_run_settings(self) -> None:
+        """Propagate shared run settings into the default relaxation."""
         config = LayoutComparisonConfig(t=0.2, reps=3, order=2, seed=9)
         derived = config.relaxation_config()
         assert (derived.t, derived.reps, derived.order, derived.seed) == (0.2, 3, 2, 9)
 
     def test_explicit_relaxation_config_wins(self) -> None:
+        """Preserve an explicitly supplied relaxation configuration."""
         explicit = SinkhornRelaxationConfig(n_anneal_steps=2, seed=1)
         config = LayoutComparisonConfig(relaxation=explicit)
         assert config.relaxation_config() is explicit
 
     def test_to_dict_includes_search(self) -> None:
+        """Serialise the derived search and default research-arm state."""
         payload = LayoutComparisonConfig().to_dict()
         assert payload["search"]["n_restarts"] == 4
         assert payload["dynq_min_qubits"] == 3
@@ -200,29 +213,37 @@ class TestLayoutComparisonConfig:
         assert payload["relaxation"] is None
 
     def test_to_dict_serialises_relaxation_when_included(self) -> None:
+        """Include relaxation settings only when the research arm is enabled."""
         payload = LayoutComparisonConfig(include_relaxation=True, seed=5).to_dict()
         assert payload["include_relaxation"] is True
         assert payload["relaxation"]["seed"] == 5
 
 
 class TestProblemValidation:
+    """Verify fail-closed validation of benchmark problem inputs."""
+
     def test_non_square_K_rejected(self) -> None:
+        """Reject a coupling matrix that is not square."""
         with pytest.raises(ValueError, match="square"):
             _run_with_problem(np.ones((2, 3)), _OMEGA)
 
     def test_omega_shape_rejected(self) -> None:
+        """Reject a frequency vector that does not match the coupling matrix."""
         with pytest.raises(ValueError, match="omega"):
             _run_with_problem(_K, np.array([0.1, 0.2]))
 
     def test_empty_gate_errors_rejected(self) -> None:
+        """Reject comparisons without calibration edges."""
         with pytest.raises(ValueError, match="gate_errors"):
             run_layout_method_comparison({}, _K, _OMEGA, r_provider=_stub_r)
 
     def test_out_of_range_gate_error_rejected(self) -> None:
+        """Reject calibration probabilities outside the open unit interval."""
         with pytest.raises(ValueError, match="must lie in"):
             run_layout_method_comparison({(0, 1): 1.0}, _K, _OMEGA, r_provider=_stub_r)
 
     def test_no_fitting_dynq_region_fails_closed(self) -> None:
+        """Refuse a comparison that lacks a defensible DynQ baseline."""
         K4 = (np.ones((4, 4)) - np.eye(4)).astype(np.float64)
         omega4 = np.linspace(0.1, 0.4, 4, dtype=np.float64)
         with pytest.raises(ValueError, match="no DynQ region fits"):
@@ -249,16 +270,21 @@ def _run_with_problem(K: Any, omega: Any) -> LayoutComparisonArtifact:
 
 
 class TestEdgeErrorModel:
+    """Verify symmetric calibration lookup and coupling-map construction."""
+
     def test_forward_and_reverse_lookup(self) -> None:
+        """Resolve a calibrated edge in either physical direction."""
         errors = {(0, 1): 0.25}
         assert _edge_error(errors, 0, 1) == 0.25
         assert _edge_error(errors, 1, 0) == 0.25
 
     def test_uncalibrated_edge_fails_closed(self) -> None:
+        """Refuse to price a routed gate without calibration evidence."""
         with pytest.raises(ValueError, match="uncalibrated edge"):
             _edge_error({(0, 1): 0.25}, 1, 2)
 
     def test_coupling_map_is_symmetric(self) -> None:
+        """Expose every calibrated edge in both routing directions."""
         coupling = coupling_map_from_gate_errors({(0, 1): 0.1, (1, 2): 0.1})
         edges = set(coupling.get_edges())
         assert (0, 1) in edges and (1, 0) in edges
@@ -266,9 +292,12 @@ class TestEdgeErrorModel:
 
 
 class TestRoutedLayoutMetrics:
+    """Verify transpiled routing measurements and analytic gate pricing."""
+
     _LINE_ERRORS = {(0, 1): 0.0, (1, 2): 0.0}
 
     def test_exactly_one_selector_required(self) -> None:
+        """Require either a fixed layout or a layout pass, but not both."""
         for initial_layout, layout_method in (((0, 1, 2), "sabre"), (None, None)):
             with pytest.raises(ValueError, match="exactly one"):
                 routed_layout_metrics(
@@ -284,6 +313,7 @@ class TestRoutedLayoutMetrics:
                 )
 
     def test_fixed_layout_zero_error_gives_unit_success(self) -> None:
+        """Price a calibrated zero-error fixed layout at unit success."""
         metrics, used_layout = routed_layout_metrics(
             _K,
             _OMEGA,
@@ -301,6 +331,7 @@ class TestRoutedLayoutMetrics:
         assert metrics.estimated_success_probability == pytest.approx(1.0)
 
     def test_uniform_error_prices_every_routed_gate(self) -> None:
+        """Apply the uniform edge error once per routed two-qubit gate."""
         error = 0.01
         errors = {(0, 1): error, (1, 2): error}
         metrics, _ = routed_layout_metrics(
@@ -318,6 +349,7 @@ class TestRoutedLayoutMetrics:
         assert metrics.estimated_success_probability == pytest.approx(expected)
 
     def test_sabre_reports_the_layout_it_chose(self) -> None:
+        """Return SABRE's selected physical layout with its metrics."""
         errors = {(0, 1): 0.01, (1, 2): 0.01, (2, 3): 0.01, (3, 4): 0.01}
         metrics, used_layout = routed_layout_metrics(
             _K,
@@ -337,11 +369,13 @@ class TestRoutedLayoutMetrics:
 
 
 class TestIdealOrderParameter:
-    """The qiskit statevector simulation trips the known qiskit×coverage
-    tracer bug (module-identity split after the conftest NumPy reload), so it
-    is stubbed with canned statevectors of analytically known ``R``; the
-    compile path is owned by the xy_compiler tests and the pure R arithmetic
-    by the floquet_kuramoto tests."""
+    """Verify ideal order parameters against analytically known states.
+
+    The qiskit statevector simulation trips the known qiskit×coverage tracer
+    bug (module-identity split after the conftest NumPy reload), so it is
+    stubbed with canned statevectors. The compile path is owned by the
+    xy_compiler tests and the pure R arithmetic by the floquet_kuramoto tests.
+    """
 
     @staticmethod
     def _patch_statevector(monkeypatch: pytest.MonkeyPatch, psi: Any) -> None:
@@ -355,6 +389,7 @@ class TestIdealOrderParameter:
     def test_fully_synchronised_product_state_gives_unit_R(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Recover unit order for a fully phase-aligned product state."""
         # |+++>: every qubit phase is 0, so R = 1 exactly.
         self._patch_statevector(monkeypatch, np.full(8, 1.0 / np.sqrt(8), dtype=np.complex128))
         assert ideal_xy_order_parameter(_K, _OMEGA, t=0.05, reps=1) == pytest.approx(1.0)
@@ -362,6 +397,7 @@ class TestIdealOrderParameter:
     def test_quarter_turn_dephased_pair_gives_root_half_R(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Recover root-half order for a quarter-turn phase separation."""
         # |+> ⊗ |+i>: qubit phases {0, π/2}, so R = |1 + i| / 2 = √2 / 2.
         plus = np.array([1.0, 1.0], dtype=np.complex128) / np.sqrt(2)
         plus_i = np.array([1.0, 1.0j], dtype=np.complex128) / np.sqrt(2)
@@ -373,11 +409,15 @@ class TestIdealOrderParameter:
 
 
 class TestRunComparison:
+    """Verify complete comparison assembly, labels, and provenance."""
+
     def test_rows_methods_and_order(self) -> None:
+        """Emit the promoted comparison methods in stable order."""
         artifact = _run_stubbed()
         assert [row.method for row in artifact.rows] == ["dynq", "dynq+kuramoto_opt", "sabre"]
 
     def test_dynq_rows_use_low_error_triangle(self) -> None:
+        """Keep DynQ-derived methods inside the selected low-error region."""
         artifact = _run_stubbed()
         dynq_row, opt_row, sabre_row = artifact.rows
         assert set(dynq_row.layout) <= {0, 1, 2}
@@ -385,6 +425,7 @@ class TestRunComparison:
         assert sabre_row.layout == (4, 5, 6)
 
     def test_r_proxy_scales_ideal_r_by_success_probability(self) -> None:
+        """Scale the method-independent ideal order by analytic success."""
         artifact = _run_stubbed()
         assert artifact.r_ideal == 0.5
         for row in artifact.rows:
@@ -394,22 +435,26 @@ class TestRunComparison:
             )
 
     def test_optimiser_row_includes_pipeline_selection_time(self) -> None:
+        """Account for DynQ selection in the optimiser pipeline timing."""
         artifact = _run_stubbed()
         dynq_row, opt_row, _ = artifact.rows
         assert opt_row.selection_time_s >= dynq_row.selection_time_s
 
     def test_isolated_host_grades_timings(self) -> None:
+        """Mark selection timings as measured on a ready isolated host."""
         artifact = _run_stubbed(ready=True)
         assert artifact.timing_grade == "isolated_measured"
         assert not any("advisory" in note for note in artifact.notes)
 
     def test_shared_host_labels_timings_advisory(self) -> None:
+        """Downgrade timings collected on an unready shared host."""
         artifact = _run_stubbed(ready=False)
         assert artifact.timing_grade == "advisory_shared_host"
         assert any("advisory" in note for note in artifact.notes)
         assert artifact.host["ready"] is False
 
     def test_provenance_and_honest_labels(self) -> None:
+        """Record reproducibility metadata and non-hardware model labels."""
         artifact = _run_stubbed()
         assert sorted(artifact.provenance) == [
             "command",
@@ -422,6 +467,7 @@ class TestRunComparison:
         assert all("not hardware measurements" in row.notes[0] for row in artifact.rows)
 
     def test_default_depth_provider_is_seed_wrapped_end_to_end(self) -> None:
+        """Bind the run seed across the real default routing path."""
         # Real transpilation path: only the ideal-R provider is stubbed (the
         # qiskit statevector simulation trips the known coverage tracer bug).
         config = LayoutComparisonConfig(
@@ -451,11 +497,13 @@ class TestRunComparison:
         ]
 
     def test_relaxation_row_absent_by_default(self) -> None:
+        """Keep the research relaxation arm out of promoted default runs."""
         artifact = _run_stubbed()
         assert "relaxation" not in artifact.provenance
         assert all(row.method != "dynq+sinkhorn_relaxation" for row in artifact.rows)
 
     def test_live_host_captured_when_not_injected(self) -> None:
+        """Capture and retain live host readiness when no verdict is injected."""
         artifact = run_layout_method_comparison(
             _GATE_ERRORS,
             _K,
@@ -486,6 +534,7 @@ class TestRelaxationRow:
         )
 
     def test_research_row_appended_and_labelled(self) -> None:
+        """Append the optional relaxation row with its research label."""
         artifact = self._run_with_relaxation()
         assert [row.method for row in artifact.rows] == [
             "dynq",
@@ -498,6 +547,7 @@ class TestRelaxationRow:
         assert any("RESEARCH row (KT-4)" in note for note in artifact.notes)
 
     def test_budget_bound_to_discrete_baseline(self) -> None:
+        """Bind relaxation true-cost work to the discrete search budget."""
         artifact = self._run_with_relaxation()
         optimiser = artifact.provenance["optimiser"]
         relaxation = artifact.provenance["relaxation"]
@@ -506,6 +556,7 @@ class TestRelaxationRow:
         assert relaxation["research_label"] == RESEARCH_LABEL
 
     def test_explicit_relaxation_budget_is_overridden(self) -> None:
+        """Override an explicit relaxation budget with the matched baseline."""
         artifact = self._run_with_relaxation(
             relaxation=SinkhornRelaxationConfig(
                 n_anneal_steps=2,
@@ -519,6 +570,7 @@ class TestRelaxationRow:
         assert artifact.provenance["relaxation"]["budget"] == optimiser["n_evaluations"]
 
     def test_full_device_region_widens_both_search_arms(self) -> None:
+        """Widen both search arms when the full device region is selected."""
         artifact = self._run_with_relaxation(candidate_region="full_device")
         device = {qubit for edge in _GATE_ERRORS for qubit in edge}
         _, opt_row, _, research_row = artifact.rows

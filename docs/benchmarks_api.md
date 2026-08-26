@@ -343,12 +343,37 @@ optimiser cost landscape. Measured results and the honest reading live in
 `dynq_qubit_mapping.md` §8.4; the CLI is
 `scripts/run_layout_method_comparison.py`.
 
+The data model has three immutable layers. `RoutedLayoutMetrics` contains the
+transpiler-observed depth and two-qubit-gate count plus the calibration-priced
+success estimate. `MethodRow` binds those metrics to the physical layout,
+ideal and proxy order parameters, selection time, and method-specific notes.
+`LayoutComparisonArtifact` collects the ordered rows with the effective
+configuration, host-readiness verdict, dependency and command provenance,
+schema version, and artifact-wide honesty notes. Each layer has an explicit
+JSON-compatible mapping; tuple-valued layouts, rows, and notes serialise as
+lists, while `render_markdown_table()` is presentation only.
+
+The comparison fails closed before searching when `K` is not square, `omega`
+does not match its width, the calibration set is empty, or an edge error is
+non-finite or outside `[0, 1)`. Routing also refuses ambiguous selector input
+(both or neither of a fixed layout and a layout method) and any two-qubit gate
+on an uncalibrated edge. A missing DynQ region aborts the complete comparison:
+without that baseline, the other rows have no defensible common reference.
+
 With `LayoutComparisonConfig.include_relaxation` (off by default, so the
 promoted surface never silently carries a research arm) the artifact gains a
 research-labelled `dynq+sinkhorn_relaxation` row whose true-cost budget is
 bound to the discrete optimiser's `n_evaluations` on the same instance — the
 preregistered KT-4 budget match. `candidate_region` selects the search space
 of both arms: the DynQ region (default) or the full calibrated device.
+
+The optional research row never changes the promoted default. When enabled,
+its true-cost limit is replaced by the discrete optimiser's observed
+evaluation count for the same instance, even if the caller supplied a larger
+relaxation budget. Neither configuration construction nor serialisation runs
+a provider, submits a circuit, spends a hardware budget, mutates calibration
+data, or promotes the research row. Actual transpilation and statevector work
+occurs only when the comparison function uses its default providers.
 
 ---
 
