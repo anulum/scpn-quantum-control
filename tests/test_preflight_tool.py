@@ -1003,6 +1003,8 @@ def test_main_uses_coverage_pytest_by_default(
         "competitive-baseline-watch exact coverage threshold",
         "whole-program-ad-product focused coverage",
         "whole-program-ad-product exact coverage threshold",
+        "neural-operator-cost-model focused coverage",
+        "neural-operator-cost-model exact coverage threshold",
         "resource-budget-gate focused coverage",
         "resource-budget-gate exact coverage threshold",
         "advantage-language-protocol focused coverage",

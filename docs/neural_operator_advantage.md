@@ -68,6 +68,95 @@ algorithm, not the host:
 The per-query FLOP ratio is a modelling estimate, not a measurement; the model's assumptions are
 stated so the arithmetic is reproducible.
 
+### Cost-model constants and formulas
+
+`forecasting.neural_operator_cost_model` exposes the constants that define the
+arithmetic convention. RK4 uses four force evaluations per step. Each dense
+oscillator-pair interaction charges four operations: phase subtraction,
+`sin`, coupling multiplication, and row-sum accumulation. The RK4 stage
+combination charges 14 operations per oscillator. Matrix multiplication
+charges two operations per multiply-accumulate, and one training step is
+modelled as three forward passes for forward-plus-backward work.
+
+The public counting functions compose those constants without inspecting a
+host:
+
+| Function | Count |
+|---|---|
+| `rk4_right_hand_side_evaluations(steps)` | `4 × steps` |
+| `networked_force_flops(N)` | `4 × N² + N` |
+| `rk4_step_flops(N)` | four force counts plus `14 × N` |
+| `direct_simulation_flops(N, steps)` | `steps × rk4_step_flops(N)` |
+| `deeponet_forward_flops(N, latent, hidden)` | branch + trunk + latent contraction + bias |
+| `training_flops(...)` | rollout generation + full-batch optimisation |
+
+All dimensions, step counts, trajectory counts, and epoch counts must be
+positive integers. A non-positive value raises `ValueError`; the module never
+coerces an invalid workload into a zero-cost estimate.
+
+```python
+from scpn_quantum_control.forecasting.neural_operator_cost_model import (
+    deeponet_forward_flops,
+    direct_simulation_flops,
+    rk4_right_hand_side_evaluations,
+)
+
+assert rk4_right_hand_side_evaluations(20) == 80
+direct = direct_simulation_flops(32, 20)
+surrogate = deeponet_forward_flops(32, 32, 96)
+ratio = direct / surrogate
+```
+
+### Training amortisation
+
+`amortised_break_even_queries(training, direct, surrogate)` returns the first
+positive query count whose cumulative surrogate cost is strictly lower than
+the repeated direct cost. It adds one after flooring the quotient so equality
+does not count as a win. When `direct <= surrogate`, there is no positive
+per-query saving and the function returns `None`. Training and per-query counts
+may be zero but not negative.
+
+```python
+from scpn_quantum_control.forecasting.neural_operator_cost_model import (
+    amortised_break_even_queries,
+)
+
+assert amortised_break_even_queries(1_000, 100, 10) == 12
+assert amortised_break_even_queries(1_000, 10, 10) is None
+```
+
+### Immutable result object
+
+`build_cost_model(...)` returns a frozen `SurrogateCostModel` containing the
+configuration, RK4 evaluation count, direct and surrogate per-query counts,
+their ratio, one-time training count, and optional crossover. Its `to_dict()`
+method returns the documented JSON-ready key set without changing the model.
+Because every derived field is computed by the public counting functions, the
+object can be independently checked from its input configuration.
+
+```python
+from scpn_quantum_control.forecasting.neural_operator_cost_model import (
+    build_cost_model,
+)
+
+model = build_cost_model(
+    32,
+    n_steps=20,
+    latent_dim=32,
+    hidden_dim=96,
+    n_trajectories=256,
+    epochs=300,
+)
+payload = model.to_dict()
+assert payload["direct_flops_per_query"] == model.direct_flops_per_query
+```
+
+The cost-model API performs no model training, trajectory integration, tensor
+allocation, benchmark execution, file write, network request, or hardware
+submission. It reports integer operation counts under the stated convention;
+it does not turn those counts into a wall-clock, energy, fidelity, scientific,
+or provider-performance claim.
+
 ### Where the FLOP advantage appears
 
 The per-query direct cost grows like `n_steps · N²` while the surrogate's grows like

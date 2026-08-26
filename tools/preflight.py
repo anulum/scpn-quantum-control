@@ -80,6 +80,9 @@ if TYPE_CHECKING:
     )
     from tools import multi_hal_federation_product_quality_gates as _multi_hal_quality_gates
     from tools import (
+        neural_operator_cost_model_quality_gates as _neural_operator_cost_model_quality_gates,
+    )
+    from tools import (
         notebook_programme_product_quality_gates as _notebook_programme_product_quality_gates,
     )
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
@@ -163,6 +166,9 @@ else:
         "tools.migration_guides_product_quality_gates"
     )
     _multi_hal_quality_gates = import_module("tools.multi_hal_federation_product_quality_gates")
+    _neural_operator_cost_model_quality_gates = import_module(
+        "tools.neural_operator_cost_model_quality_gates"
+    )
     _notebook_programme_product_quality_gates = import_module(
         "tools.notebook_programme_product_quality_gates"
     )
@@ -520,6 +526,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_compiler_boundary_product_quality_gates.build_static_quality_gates(_PY),
     *_competitive_baseline_watch_quality_gates.build_static_quality_gates(_PY),
     *_whole_program_ad_product_quality_gates.build_static_quality_gates(_PY),
+    *_neural_operator_cost_model_quality_gates.build_static_quality_gates(_PY),
     *_resource_budget_gate_quality_gates.build_static_quality_gates(_PY),
     *_advantage_language_protocol_quality_gates.build_static_quality_gates(_PY),
     *_metamorphic_ad_verification_quality_gates.build_static_quality_gates(_PY),
@@ -929,6 +936,9 @@ COMPETITIVE_BASELINE_WATCH_COVERAGE_GATES = (
 WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_GATES = (
     _whole_program_ad_product_quality_gates.build_coverage_gates(_PY)
 )
+NEURAL_OPERATOR_COST_MODEL_COVERAGE_GATES = (
+    _neural_operator_cost_model_quality_gates.build_coverage_gates(_PY)
+)
 RESOURCE_BUDGET_GATE_COVERAGE_GATES = _resource_budget_gate_quality_gates.build_coverage_gates(_PY)
 ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES = (
     _advantage_language_protocol_quality_gates.build_coverage_gates(_PY)
@@ -1213,6 +1223,7 @@ def main() -> int:
             gates.extend(COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES)
             gates.extend(COMPETITIVE_BASELINE_WATCH_COVERAGE_GATES)
             gates.extend(WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_GATES)
+            gates.extend(NEURAL_OPERATOR_COST_MODEL_COVERAGE_GATES)
             gates.extend(RESOURCE_BUDGET_GATE_COVERAGE_GATES)
             gates.extend(ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES)
             gates.extend(METAMORPHIC_AD_VERIFICATION_COVERAGE_GATES)

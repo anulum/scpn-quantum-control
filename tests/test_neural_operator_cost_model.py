@@ -47,17 +47,20 @@ def _expected_forward_flops(n: int, latent: int, hidden: int) -> int:
 
 
 def test_rhs_evaluations_is_four_stages_per_step() -> None:
+    """Count the four RK4 force evaluations charged per step."""
     assert rk4_right_hand_side_evaluations(20) == RK4_STAGES_PER_STEP * 20
     assert rk4_right_hand_side_evaluations(1) == 4
 
 
 @pytest.mark.parametrize("n", [1, 2, 3, 8, 32])
 def test_networked_force_flops_matches_formula(n: int) -> None:
+    """Match the declared dense-force operation-count formula."""
     assert networked_force_flops(n) == FORCE_FLOPS_PER_OSCILLATOR_PAIR * n * n + n
 
 
 @pytest.mark.parametrize("n", [1, 3, 16])
 def test_rk4_step_flops_is_four_forces_plus_combination(n: int) -> None:
+    """Compose one RK4 step from four forces and stage arithmetic."""
     expected = (
         RK4_STAGES_PER_STEP * networked_force_flops(n) + RK4_COMBINATION_FLOPS_PER_OSCILLATOR * n
     )
@@ -65,6 +68,7 @@ def test_rk4_step_flops_is_four_forces_plus_combination(n: int) -> None:
 
 
 def test_direct_simulation_flops_scales_linearly_in_steps() -> None:
+    """Scale direct integration cost linearly with the step count."""
     n, steps = 5, 7
     assert direct_simulation_flops(n, steps) == steps * rk4_step_flops(n)
     # linear in the number of steps
@@ -76,10 +80,12 @@ def test_direct_simulation_flops_scales_linearly_in_steps() -> None:
     [(2, 3, 5), (4, 8, 16), (32, 32, 96)],
 )
 def test_deeponet_forward_flops_matches_explicit_model(n: int, latent: int, hidden: int) -> None:
+    """Match the explicit branch, trunk, contraction, and bias count."""
     assert deeponet_forward_flops(n, latent, hidden) == _expected_forward_flops(n, latent, hidden)
 
 
 def test_forward_flops_grow_linearly_in_oscillators() -> None:
+    """Distinguish linear surrogate growth from quadratic RK4 growth."""
     # doubling N (with fixed latent/hidden) roughly doubles the dominant branch term; the surrogate is
     # linear in N whereas an RK4 step is quadratic — the source of the asymptotic crossover.
     small = deeponet_forward_flops(8, 16, 32)
@@ -90,6 +96,7 @@ def test_forward_flops_grow_linearly_in_oscillators() -> None:
 
 
 def test_training_flops_is_dataset_plus_optimisation() -> None:
+    """Combine rollout generation with full-batch optimisation cost."""
     n, steps, traj, epochs, latent, hidden = 4, 6, 10, 5, 8, 16
     dataset = traj * steps * rk4_step_flops(n)
     samples = traj * (steps + 1)
@@ -113,20 +120,24 @@ def test_training_flops_is_dataset_plus_optimisation() -> None:
 
 
 def test_break_even_exists_when_surrogate_cheaper_per_query() -> None:
+    """Return the first query with strictly lower cumulative cost."""
     # train=1000, direct=100, surrogate=10 => margin 90 => floor(1000/90)+1 = 12
     assert amortised_break_even_queries(1000, 100, 10) == 12
     # the returned count is the first strictly-cheaper query
     break_even = amortised_break_even_queries(1000, 100, 10)
+    assert break_even is not None
     assert 1000 + break_even * 10 < break_even * 100
     assert 1000 + (break_even - 1) * 10 >= (break_even - 1) * 100
 
 
 def test_break_even_is_none_when_surrogate_not_cheaper() -> None:
+    """Report no crossover when per-query savings are non-positive."""
     assert amortised_break_even_queries(1000, 10, 10) is None
     assert amortised_break_even_queries(1000, 5, 10) is None
 
 
 def test_break_even_with_zero_training_is_first_query() -> None:
+    """Cross over on the first query when training carries no cost."""
     assert amortised_break_even_queries(0, 100, 10) == 1
 
 
@@ -156,11 +167,13 @@ def test_break_even_with_zero_training_is_first_query() -> None:
     ],
 )
 def test_non_positive_arguments_are_rejected(call: Callable[[], int]) -> None:
+    """Reject every non-positive dimension and workload count."""
     with pytest.raises(ValueError):
         call()
 
 
 def test_break_even_rejects_negative_arguments() -> None:
+    """Reject negative training and per-query operation counts."""
     with pytest.raises(ValueError, match="training_flops_total"):
         amortised_break_even_queries(-1, 100, 10)
     with pytest.raises(ValueError, match="per-query"):
@@ -170,6 +183,7 @@ def test_break_even_rejects_negative_arguments() -> None:
 
 
 def test_build_cost_model_assembles_every_field() -> None:
+    """Assemble every derived field from the public counting functions."""
     model = build_cost_model(
         24, n_steps=20, latent_dim=32, hidden_dim=96, n_trajectories=160, epochs=250
     )
@@ -189,6 +203,7 @@ def test_build_cost_model_assembles_every_field() -> None:
 
 
 def test_cost_model_to_dict_round_trips_keys() -> None:
+    """Serialise the immutable model into the documented key set."""
     model = build_cost_model(
         8, n_steps=10, latent_dim=16, hidden_dim=32, n_trajectories=20, epochs=30
     )
@@ -213,6 +228,7 @@ def test_cost_model_to_dict_round_trips_keys() -> None:
 
 
 def test_per_query_ratio_grows_with_horizon_and_size() -> None:
+    """Increase the direct-to-surrogate ratio with horizon and size."""
     # the per-query FLOP advantage strengthens as either the horizon or the network grows
     base = build_cost_model(
         16, n_steps=20, latent_dim=16, hidden_dim=32, n_trajectories=10, epochs=10
@@ -228,6 +244,7 @@ def test_per_query_ratio_grows_with_horizon_and_size() -> None:
 
 
 def test_break_even_is_a_positive_integer_when_present() -> None:
+    """Expose a positive integral crossover for a cheaper surrogate."""
     model = build_cost_model(
         32, n_steps=40, latent_dim=32, hidden_dim=96, n_trajectories=200, epochs=300
     )

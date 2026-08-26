@@ -103,6 +103,7 @@ def rk4_right_hand_side_evaluations(n_steps: int) -> int:
     ------
     ValueError
         If ``n_steps`` is not positive.
+
     """
     return RK4_STAGES_PER_STEP * _require_positive("n_steps", n_steps)
 
@@ -129,6 +130,7 @@ def networked_force_flops(n_oscillators: int) -> int:
     ------
     ValueError
         If ``n_oscillators`` is not positive.
+
     """
     count = _require_positive("n_oscillators", n_oscillators)
     return FORCE_FLOPS_PER_OSCILLATOR_PAIR * count * count + count
@@ -153,6 +155,7 @@ def rk4_step_flops(n_oscillators: int) -> int:
     ------
     ValueError
         If ``n_oscillators`` is not positive.
+
     """
     count = _require_positive("n_oscillators", n_oscillators)
     return (
@@ -180,6 +183,7 @@ def direct_simulation_flops(n_oscillators: int, n_steps: int) -> int:
     ------
     ValueError
         If either argument is not positive.
+
     """
     steps = _require_positive("n_steps", n_steps)
     return steps * rk4_step_flops(n_oscillators)
@@ -212,6 +216,7 @@ def deeponet_forward_flops(n_oscillators: int, latent_dim: int, hidden_dim: int)
     ------
     ValueError
         If any argument is not positive.
+
     """
     count = _require_positive("n_oscillators", n_oscillators)
     latent = _require_positive("latent_dim", latent_dim)
@@ -265,6 +270,7 @@ def training_flops(
     ------
     ValueError
         If any argument is not positive.
+
     """
     steps = _require_positive("n_steps", n_steps)
     trajectories = _require_positive("n_trajectories", n_trajectories)
@@ -308,6 +314,7 @@ def amortised_break_even_queries(
     ------
     ValueError
         If any argument is negative.
+
     """
     if training_flops_total < 0:
         raise ValueError("training_flops_total must be non-negative")
@@ -349,6 +356,7 @@ class SurrogateCostModel:
         The one-time training FLOP count.
     break_even_queries : int or None
         Queries beyond which the trained surrogate is cheaper overall, or ``None`` if never.
+
     """
 
     n_oscillators: int
@@ -417,6 +425,7 @@ def build_cost_model(
     ------
     ValueError
         If any argument is not positive.
+
     """
     direct = direct_simulation_flops(n_oscillators, n_steps)
     surrogate = deeponet_forward_flops(n_oscillators, latent_dim, hidden_dim)
