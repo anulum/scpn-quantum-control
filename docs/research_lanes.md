@@ -2,8 +2,8 @@
 
 SCPN Quantum Control contains a substantial collection of analysis and gauge
 modules. They do not all have the same maturity, evidence, or relationship to
-differentiable control. The BL-84 registry makes those differences explicit
-without turning importability into a product or scientific claim.
+differentiable control. The research-lane registry makes those differences
+explicit without turning importability into a product or scientific claim.
 
 The committed snapshot covers **74 modules**: 29 research lanes, 29 prototypes,
 and 16 product candidates. “Product candidate” is a software-maturity label,
@@ -45,14 +45,14 @@ into “promoted”:
 
 | Route | Current meaning |
 |---|---|
-| BL-50 geometric QFI control | `planned`; QFI modules remain candidates requiring separate evidence |
-| BL-54 DLA/topology control | `complete`; selected DLA assets are composed by BL-54's separate bounded package and evidence |
-| BL-72 TCBO observer | `deferred-owner-gate`; the tier-C route remains blocked without owner override |
-| BL-80 adaptive FIM | `complete`; the feedback and custody modules point to their separate committed evidence |
+| Geometric QFI control | `planned`; QFI modules remain candidates requiring separate evidence |
+| Topology-constrained control | `complete`; selected DLA assets are composed by a separate bounded package and evidence |
+| Topological coherence observer | `deferred-owner-gate`; the route remains blocked without owner override |
+| Adaptive FIM feedback | `complete`; the feedback and custody modules point to their separate committed evidence |
 
 These links do not transfer the target's status to unrelated modules. In
-particular, BL-54 and BL-80 completion does not promote the full analysis
-catalogue.
+particular, completion of the topology-control and adaptive-FIM routes does not
+promote the full analysis catalogue.
 
 ## Inventory gate
 

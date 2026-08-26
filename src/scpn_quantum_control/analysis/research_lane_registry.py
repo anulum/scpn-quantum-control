@@ -7,10 +7,11 @@
 # SCPN Quantum Control — Deep-analysis research-lane registry
 """Governed catalogue of the package's analysis and gauge research lanes.
 
-research-lane makes the existing deep-analysis stack visible without promoting every
-importable module into a product or scientific claim.  Each immutable row
-records the module's human-reviewed maturity, relevance to differentiable
-work, current claim status, optional promotion route, and evidence pointers.
+The research-lane registry makes the existing deep-analysis stack visible
+without promoting every importable module into a product or scientific claim.
+Each immutable row records the module's human-reviewed maturity, relevance to
+differentiable work, current claim status, optional promotion route, and
+evidence pointers.
 
 The inventory gate is intentionally strict: every ordinary ``analysis`` or
 ``gauge`` module must have exactly one row.  Package ``__init__`` modules and
@@ -108,6 +109,7 @@ class ResearchLaneRecord:
     ``PRODUCT_CANDIDATE`` and ``EVIDENCE_BOUNDED`` remain non-promotional here.
     Callers must consult the referenced product/evidence package before making
     any stronger claim.
+
     """
 
     module: str
@@ -168,12 +170,12 @@ class ResearchLaneRecord:
 
     @property
     def registry_grants_control(self) -> bool:
-        """Return ``False`` because BL-84 grants no actuation authority."""
+        """Return ``False``; catalogue membership grants no actuation authority."""
         return False
 
     @property
     def registry_grants_publication_claim(self) -> bool:
-        """Return ``False`` because BL-84 is not publication evidence."""
+        """Return ``False``; catalogue membership is not publication evidence."""
         return False
 
     def as_dict(self) -> dict[str, Any]:
@@ -227,7 +229,7 @@ class ResearchLaneInventoryReport:
 
 @dataclass(frozen=True, slots=True)
 class ResearchLaneRegistryReport:
-    """Complete BL-84 catalogue, inventory gate, counts, and digest."""
+    """Complete research-lane catalogue, inventory gate, counts, and digest."""
 
     schema: str
     claim_boundary: str
@@ -293,7 +295,8 @@ _RESEARCH_LANES = tuple(
         (
             _lane(
                 "analysis.adaptive_fim_evidence",
-                "Digest-bound offline calibration and historical replay custody for BL-80.",
+                "Digest-bound offline calibration and historical replay custody "
+                "for adaptive FIM feedback.",
                 _C,
                 _B,
                 _EB,
@@ -725,7 +728,7 @@ _RESEARCH_LANES = tuple(
             ),
             _lane(
                 "analysis.theory_hook_promotion",
-                "BL-98 fail-closed promotion decisions and local fixture evidence.",
+                "Fail-closed theory-hook promotion decisions and local fixture evidence.",
                 _C,
                 _N,
                 _EB,
@@ -815,6 +818,7 @@ def list_research_lanes() -> tuple[ResearchLaneRecord, ...]:
     tuple[ResearchLaneRecord, ...]
         The immutable registry. The tuple and its records may be safely shared
         between callers.
+
     """
     return _RESEARCH_LANES
 
@@ -832,6 +836,7 @@ def get_research_lane(module: str) -> ResearchLaneRecord:
     ------
     KeyError
         If no human-reviewed registry row matches ``module``.
+
     """
     for record in _RESEARCH_LANES:
         if record.module == module:
@@ -859,6 +864,7 @@ def discover_research_lane_modules(package_root: Path | None = None) -> tuple[st
     ------
     FileNotFoundError
         If either required package directory is absent.
+
     """
     root = package_root if package_root is not None else Path(__file__).resolve().parents[1]
     discovered: list[str] = []
@@ -893,6 +899,7 @@ def validate_research_lane_inventory(
         Exact registered/discovered sets plus missing and orphaned entries.
         Inspect :attr:`ResearchLaneInventoryReport.passed` or call
         :func:`assert_research_lane_inventory` for exception semantics.
+
     """
     registered = tuple(record.module for record in _RESEARCH_LANES)
     discovered = tuple(
@@ -923,6 +930,7 @@ def assert_research_lane_inventory(
     ------
     RuntimeError
         If a discovered module lacks a row or a row has no implementation.
+
     """
     report = validate_research_lane_inventory(discovered_modules)
     if not report.passed:
@@ -961,7 +969,7 @@ def _report_payload(
 
 
 def build_research_lane_registry_report() -> ResearchLaneRegistryReport:
-    """Build the deterministic BL-84 report after enforcing inventory parity.
+    """Build the deterministic research-lane report after inventory validation.
 
     Returns
     -------
@@ -972,6 +980,7 @@ def build_research_lane_registry_report() -> ResearchLaneRegistryReport:
     ------
     RuntimeError
         If the source inventory and reviewed rows differ.
+
     """
     inventory = assert_research_lane_inventory()
     payload = _report_payload(inventory)
@@ -1002,10 +1011,11 @@ def render_research_lane_registry_markdown(
     -------
     str
         Deterministic Markdown ending with a newline.
+
     """
     current = report if report is not None else build_research_lane_registry_report()
     lines = [
-        "# BL-84 research-lane registry evidence",
+        "# Research-lane registry evidence",
         "",
         f"- Schema: `{current.schema}`",
         f"- Content digest: `{current.content_digest}`",

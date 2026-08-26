@@ -2,9 +2,9 @@
 
 Module: `scpn_quantum_control.analysis.research_lane_registry`
 
-This API provides the typed BL-84 catalogue and its exact source-inventory
-gate. It is deterministic, credential-free, and read-only except for the
-separate evidence runner writing its requested output files.
+This API provides the typed research-lane catalogue and its exact
+source-inventory gate. It is deterministic, credential-free, and read-only
+except for the separate evidence runner writing its requested output files.
 
 ## Constants
 

@@ -81,7 +81,7 @@ def test_registry_covers_every_analysis_and_gauge_module_exactly_once() -> None:
 
 
 def test_registry_is_non_promotional_and_has_human_classifications() -> None:
-    """Every row exposes required BL-84 fields and explicit negative grants."""
+    """Every row exposes required catalogue fields and explicit negative grants."""
     records = list_research_lanes()
 
     assert {record.family for record in records} == {"analysis", "gauge"}
@@ -95,7 +95,7 @@ def test_registry_is_non_promotional_and_has_human_classifications() -> None:
 
 
 def test_selected_promotion_routes_retain_their_real_gate_status() -> None:
-    """BL-50/54/72/80 links distinguish planned, complete, and deferred work."""
+    """Promotion links distinguish planned, complete, and deferred work."""
     qfi = get_research_lane("scpn_quantum_control.analysis.qfi")
     dla = get_research_lane("scpn_quantum_control.analysis.dla_parity_theorem")
     tcbo = get_research_lane("scpn_quantum_control.analysis.tcbo_weighted_complex")

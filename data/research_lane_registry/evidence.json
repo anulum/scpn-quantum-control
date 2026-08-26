@@ -6,7 +6,7 @@
     "refuse_only": 3,
     "research_only": 30
   },
-  "content_digest": "93d09737f4cb8bb8943c3db2725298aa6d68005885a0122781369b59df24f02f",
+  "content_digest": "3e55616d2de733a8b02cb96344240e31daa4663467f122d85639d8fc5ed303e2",
   "diff_hook_counts": {
     "bounded_composition": 5,
     "candidate_requires_evidence": 5,
@@ -195,7 +195,7 @@
       "registry_grants_control": false,
       "registry_grants_productisation": false,
       "registry_grants_publication_claim": false,
-      "summary": "Digest-bound offline calibration and historical replay custody for BL-80."
+      "summary": "Digest-bound offline calibration and historical replay custody for adaptive FIM feedback."
     },
     {
       "claim_status": "evidence_bounded",
@@ -1044,7 +1044,7 @@
       "registry_grants_control": false,
       "registry_grants_productisation": false,
       "registry_grants_publication_claim": false,
-      "summary": "BL-98 fail-closed promotion decisions and local fixture evidence."
+      "summary": "Fail-closed theory-hook promotion decisions and local fixture evidence."
     },
     {
       "claim_status": "diagnostic_only",

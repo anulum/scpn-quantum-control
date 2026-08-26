@@ -1,7 +1,7 @@
-# BL-84 research-lane registry evidence
+# Research-lane registry evidence
 
 - Schema: `scpn.research-lane-registry.v1`
-- Content digest: `93d09737f4cb8bb8943c3db2725298aa6d68005885a0122781369b59df24f02f`
+- Content digest: `3e55616d2de733a8b02cb96344240e31daa4663467f122d85639d8fc5ed303e2`
 - Inventory: **PASS** (74 registered / 74 discovered)
 - Boundary: catalogue metadata only; registry membership does not grant productisation, differentiability, control, hardware, advantage, criticality, topology, consciousness, clinical, or publication claims.
 
