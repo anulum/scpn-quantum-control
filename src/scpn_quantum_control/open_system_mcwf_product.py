@@ -80,13 +80,13 @@ OPEN_SYSTEM_MCWF_CLAIM_BOUNDARY: Final[str] = (
     "open_system_objectives; seeded ensemble variance certificates; refuse "
     "invent-green hardware noise fidelity, adjoint Lindblad gradients, "
     "non-Markovian process-tensor AD, and unseeded variance claims; residual "
-    "S51.6 evidence artefact refresh depth and S51.7 closed/open/hardware-noisy "
-    "gradient docs depth open honestly"
+    "committed evidence breadth and comparative closed/open/hardware-noisy "
+    "gradient documentation remain explicitly incomplete"
 )
 """Shared claim boundary for open-system MCWF product payloads."""
 
 NOISE_MODEL_SCHEMA_ID: Final[str] = "open_system_sim_noise_model.v1"
-"""Simulation noise-model schema identifier (S51.4)."""
+"""Simulation-only noise-model schema identifier."""
 
 _DEMO_SEED: Final[int] = 51
 _DEMO_N_TRAJECTORIES: Final[int] = 4
@@ -96,7 +96,7 @@ _DEMO_DT: Final[float] = 0.05
 
 @dataclass(frozen=True, slots=True)
 class OpenSystemSurfaceRow:
-    """One open-system completeness surface catalogue row (S51.0 / S51.1).
+    """One open-system completeness surface catalogue row.
 
     Attributes
     ----------
@@ -120,6 +120,7 @@ class OpenSystemSurfaceRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     surface_id: str
@@ -183,7 +184,7 @@ class OpenSystemSurfaceRow:
 
 @dataclass(frozen=True, slots=True)
 class OpenSystemBoundaryRow:
-    """One hard-gap boundary row for open-system completeness (S51.5 / S51.3).
+    """One hard-gap boundary row for open-system completeness.
 
     Attributes
     ----------
@@ -201,6 +202,7 @@ class OpenSystemBoundaryRow:
         Must remain True.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     boundary_id: str
@@ -261,6 +263,7 @@ class PathEligibilityDecision:
         Non-empty when refused.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     outcome: PathDecisionOutcome
@@ -299,7 +302,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedMcwfEnsembleProbe:
-    """Materialised MCWF ensemble probe via ambient ``mcwf_ensemble`` (S51.1/S51.2).
+    """Materialised MCWF probe through the seeded ambient ensemble surface.
 
     Attributes
     ----------
@@ -327,6 +330,7 @@ class MaterialisedMcwfEnsembleProbe:
         Demo fixture label.
     claim_boundary
         Product claim boundary.
+
     """
 
     surface_id: str
@@ -385,7 +389,7 @@ class MaterialisedMcwfEnsembleProbe:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedReproducibilityProbe:
-    """Same-seed MCWF reproducibility probe via ambient certificate (S51.2).
+    """Same-seed MCWF reproducibility probe through the ambient certificate.
 
     Attributes
     ----------
@@ -394,13 +398,14 @@ class MaterialisedReproducibilityProbe:
     certificate
         Ambient :class:`MCWFReproducibilityCertificate` as dict.
     ambient_claim_boundary
-        BL-16 open-system objective claim boundary.
+        Bounded open-system objective claim boundary.
     probe_digest
         Digest over certificate payload.
     demo_label
         Demo fixture label.
     claim_boundary
         Product claim boundary.
+
     """
 
     surface_id: str
@@ -438,7 +443,7 @@ class MaterialisedReproducibilityProbe:
 
 
 def _build_surfaces() -> tuple[OpenSystemSurfaceRow, ...]:
-    """Build open-system surface catalogue (S51.0)."""
+    """Build the open-system surface catalogue."""
     return (
         OpenSystemSurfaceRow(
             surface_id="lindblad_density",
@@ -446,7 +451,7 @@ def _build_surfaces() -> tuple[OpenSystemSurfaceRow, ...]:
             title="Lindblad density-matrix path",
             summary=(
                 "Scipy Lindblad density-matrix evolution on small local systems; "
-                "objective evidence via open_system_objectives (BL-16)."
+                "objective evidence comes from the bounded open-system objective suite."
             ),
             ambient_module="scpn_quantum_control.phase.lindblad",
             ambient_symbol="LindbladKuramotoSolver",
@@ -469,8 +474,8 @@ def _build_surfaces() -> tuple[OpenSystemSurfaceRow, ...]:
             kind="mcwf_ensemble",
             title="MCWF trajectory ensemble",
             summary=(
-                "Seeded ensemble mean/std of order-parameter histories; "
-                "supports variance certificates (S51.2)."
+                "Seeded ensemble mean/std of order-parameter histories with "
+                "reproducibility and variance certificates."
             ),
             ambient_module="scpn_quantum_control.phase.tensor_jump",
             ambient_symbol="mcwf_ensemble",
@@ -504,7 +509,7 @@ def _build_surfaces() -> tuple[OpenSystemSurfaceRow, ...]:
 
 
 def _build_boundaries() -> tuple[OpenSystemBoundaryRow, ...]:
-    """Build hard-gap boundary catalogue (S51.3 / S51.5)."""
+    """Build the hard-gap boundary catalogue."""
     return (
         OpenSystemBoundaryRow(
             boundary_id="non_cp_map",
@@ -544,7 +549,7 @@ def _build_boundaries() -> tuple[OpenSystemBoundaryRow, ...]:
             failure_class="no_live_provider_attestation",
             summary=(
                 "No hardware-submitted open-system gradient or provider noise "
-                "fidelity claim; compose BL-47 no-submit posture."
+                "fidelity claim; the no-submit safety policy remains binding."
             ),
         ),
         OpenSystemBoundaryRow(
@@ -553,7 +558,7 @@ def _build_boundaries() -> tuple[OpenSystemBoundaryRow, ...]:
             title="Process-tensor automatic differentiation",
             failure_class="process_tensor_ad_out_of_scope",
             summary=(
-                "Process-tensor AD is out of BL-51 v1; residual for a future "
+                "Process-tensor AD is outside the current product scope; residual for a future "
                 "promotion package with validated invariants."
             ),
         ),
@@ -645,13 +650,13 @@ def decide_open_system_path(
     invent_green_non_cp: bool = False,
     unseeded_variance_claim: bool = False,
 ) -> PathEligibilityDecision:
-    """Decide whether an open-system product path may proceed (S51.0–S51.5)."""
+    """Decide whether a catalogued open-system product path may proceed."""
     row = get_open_system_surface(surface_id)
     blockers: list[str] = []
     if invent_green_hardware_noise:
         blockers.append(
             "invent-green hardware noise fidelity refused "
-            f"(surface={row.surface_id}; BL-47 no-submit / no provider attestation)"
+            f"(surface={row.surface_id}; no-submit policy / no provider attestation)"
         )
     if invent_green_adjoint_lindblad:
         blockers.append(
@@ -661,7 +666,7 @@ def decide_open_system_path(
     if invent_green_non_markovian:
         blockers.append(
             "invent-green non-Markovian process-tensor path refused "
-            f"(surface={row.surface_id}; out of BL-51 v1 scope)"
+            f"(surface={row.surface_id}; outside current product scope)"
         )
     if invent_green_non_cp:
         blockers.append(
@@ -671,7 +676,7 @@ def decide_open_system_path(
     if unseeded_variance_claim:
         blockers.append(
             "unseeded variance certificate claim refused "
-            f"(surface={row.surface_id}; seeded replay required for S51.2)"
+            f"(surface={row.surface_id}; seeded replay required for variance evidence)"
         )
     if blockers:
         return PathEligibilityDecision(
@@ -812,7 +817,7 @@ def materialise_mcwf_ensemble_probe(
     invent_green_adjoint_lindblad: bool = False,
     demo_label: str = "mcwf_ensemble_demo",
 ) -> MaterialisedMcwfEnsembleProbe:
-    """Materialise a real ambient MCWF ensemble probe (S51.1 / S51.2)."""
+    """Materialise a real seeded probe through the ambient MCWF ensemble."""
     decision = decide_open_system_path(
         surface_id,
         invent_green_hardware_noise=invent_green_hardware_noise,
@@ -892,7 +897,7 @@ def materialise_reproducibility_probe(
     n_trajectories: int = _DEMO_N_TRAJECTORIES,
     demo_label: str = "mcwf_reproducibility_demo",
 ) -> MaterialisedReproducibilityProbe:
-    """Run same-seed ensemble twice and certify via ambient (S51.2)."""
+    """Run the same seeded ensemble twice and certify reproducibility."""
     decision = decide_open_system_path("mcwf_ensemble", unseeded_variance_claim=False)
     if not decision.allowed:
         raise ValueError("reproducibility probe refused: " + "; ".join(decision.blockers))
@@ -935,7 +940,7 @@ def export_sim_noise_model(
     gamma_deph: float,
     label: str = "sim_noise",
 ) -> dict[str, object]:
-    """Export a simulation noise-model payload (S51.4; not hardware fidelity)."""
+    """Export a simulation noise-model payload without hardware-fidelity claims."""
     if not math.isfinite(gamma_amp) or gamma_amp < 0.0:
         raise ValueError("gamma_amp must be finite and non-negative")
     if not math.isfinite(gamma_deph) or gamma_deph < 0.0:
@@ -964,7 +969,7 @@ def export_sim_noise_model(
 
 
 def import_sim_noise_model(payload: Mapping[str, object]) -> dict[str, object]:
-    """Import and validate a simulation noise-model payload (S51.4)."""
+    """Import and validate a simulation-only noise-model payload."""
     if not isinstance(payload, Mapping):
         raise ValueError("noise model payload must be a mapping")
     schema = payload.get("schema")
@@ -1015,7 +1020,7 @@ def map_open_system_mcwf_public_surfaces() -> tuple[dict[str, object], ...]:
 
 
 def list_ambient_objective_boundary_ids() -> tuple[str, ...]:
-    """Return ambient BL-16 objective boundary case ids (S51.3 compose)."""
+    """Return case identifiers from the bounded objective boundary catalogue."""
     return tuple(row.case_id for row in open_system_objective_boundary_rows())
 
 

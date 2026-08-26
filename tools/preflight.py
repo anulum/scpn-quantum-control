@@ -98,6 +98,9 @@ if TYPE_CHECKING:
     from tools import (
         notebook_programme_product_quality_gates as _notebook_programme_product_quality_gates,
     )
+    from tools import (
+        open_system_completeness_quality_gates as _open_system_completeness_quality_gates,
+    )
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import phase_qnode_product_quality_gates as _phase_qnode_product_quality_gates
     from tools import phase_trainability_quality_gates as _phase_trainability_quality_gates
@@ -221,6 +224,9 @@ else:
     )
     _notebook_programme_product_quality_gates = import_module(
         "tools.notebook_programme_product_quality_gates"
+    )
+    _open_system_completeness_quality_gates = import_module(
+        "tools.open_system_completeness_quality_gates"
     )
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
     _phase_qnode_product_quality_gates = import_module("tools.phase_qnode_product_quality_gates")
@@ -567,6 +573,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_differentiable_quality_gates.build_static_quality_gates(_PY),
     *_array_indexing_quality_gates.build_static_quality_gates(_PY),
     *_stable_core_product_quality_gates.build_static_quality_gates(_PY),
+    *_open_system_completeness_quality_gates.build_static_quality_gates(_PY),
     *_thermo_readiness_product_quality_gates.build_static_quality_gates(_PY),
     *_quantum_sync_oracle_product_quality_gates.build_static_quality_gates(_PY),
     *_custom_derivatives_product_quality_gates.build_static_quality_gates(_PY),
@@ -971,6 +978,9 @@ DECISIVE_ADVANTAGE_COVERAGE_GATES = _decisive_advantage_quality_gates.build_cove
 DIFFERENTIABLE_QUALITY_COVERAGE_GATES = _differentiable_quality_gates.build_coverage_gates(_PY)
 PROGRAM_AD_ARRAY_INDEXING_COVERAGE_GATES = _array_indexing_quality_gates.build_coverage_gates(_PY)
 STABLE_CORE_PRODUCT_COVERAGE_GATES = _stable_core_product_quality_gates.build_coverage_gates(_PY)
+OPEN_SYSTEM_COMPLETENESS_COVERAGE_GATES = (
+    _open_system_completeness_quality_gates.build_coverage_gates(_PY)
+)
 THERMO_READINESS_PRODUCT_COVERAGE_GATES = (
     _thermo_readiness_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -1329,6 +1339,7 @@ def main() -> int:
             gates.extend(DIFFERENTIABLE_QUALITY_COVERAGE_GATES)
             gates.extend(PROGRAM_AD_ARRAY_INDEXING_COVERAGE_GATES)
             gates.extend(STABLE_CORE_PRODUCT_COVERAGE_GATES)
+            gates.extend(OPEN_SYSTEM_COMPLETENESS_COVERAGE_GATES)
             gates.extend(THERMO_READINESS_PRODUCT_COVERAGE_GATES)
             gates.extend(QUANTUM_SYNC_ORACLE_COVERAGE_GATES)
             gates.extend(CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_GATES)

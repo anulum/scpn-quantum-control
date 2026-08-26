@@ -22,7 +22,7 @@ Module: `scpn_quantum_control.open_system_mcwf_product`
 
 | surface_id | role |
 |---|---|
-| `lindblad_density` | Scipy density-matrix path (BL-16 compose) |
+| `lindblad_density` | Scipy density-matrix path composed with the bounded objective suite |
 | `mcwf_trajectory` | Single sparse MCWF trajectory |
 | `mcwf_ensemble` | Seeded ensemble mean/std |
 | `noise_model_io` | Sim-only rate schema import/export |
@@ -62,13 +62,12 @@ assert repro.certificate["passed"] is True
 
 ## Residuals (honest)
 
-- **S51.6** — fuller evidence-artefact refresh beyond BL-16 depth
-- **S51.7** — deeper closed / open / hardware-noisy gradient narrative docs
+- Fuller committed evidence breadth beyond the current objective suite
+- Comparative closed, open, and hardware-noisy gradient documentation
 
 ## Related
 
-- Pack: `docs/internal/differentiable_programming/p3_strategic/bl51_open_system_mcwf_completeness.md`
 - Ambient: `scpn_quantum_control.phase.tensor_jump`, `open_system_objectives`
-- BL-16 open-system objectives · BL-47 hardware-safe
+- Bounded open-system objectives · no-submit hardware-safety policy
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

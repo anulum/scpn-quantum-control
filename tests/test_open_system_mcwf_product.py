@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import subprocess
 from typing import Any, cast
 
 import pytest
@@ -918,9 +919,9 @@ def test_ambient_mcwf_subprocess_called_process_error(
     """CalledProcessError from ambient MCWF subprocess is fail-closed."""
 
     def boom(*_a: object, **_k: object) -> object:
-        raise mcwf_product.subprocess.CalledProcessError(1, "x", stderr="mcwf boom")
+        raise subprocess.CalledProcessError(1, "x", stderr="mcwf boom")
 
-    monkeypatch.setattr(mcwf_product.subprocess, "run", boom)
+    monkeypatch.setattr(subprocess, "run", boom)
     with pytest.raises(ValueError, match="ambient MCWF subprocess failed"):
         materialise_mcwf_ensemble_probe("mcwf_ensemble", n_trajectories=1)
 
@@ -931,9 +932,9 @@ def test_ambient_mcwf_subprocess_timeout(
     """TimeoutExpired from ambient MCWF subprocess is fail-closed."""
 
     def timeout(*_a: object, **_k: object) -> object:
-        raise mcwf_product.subprocess.TimeoutExpired(cmd="x", timeout=1)
+        raise subprocess.TimeoutExpired(cmd="x", timeout=1)
 
-    monkeypatch.setattr(mcwf_product.subprocess, "run", timeout)
+    monkeypatch.setattr(subprocess, "run", timeout)
     with pytest.raises(ValueError, match="timed out"):
         materialise_mcwf_ensemble_probe("mcwf_ensemble", n_trajectories=1)
 
@@ -946,7 +947,7 @@ def test_ambient_mcwf_subprocess_non_json(
     class _Out:
         stdout = "not-json\n"
 
-    monkeypatch.setattr(mcwf_product.subprocess, "run", lambda *_a, **_k: _Out())
+    monkeypatch.setattr(subprocess, "run", lambda *_a, **_k: _Out())
     with pytest.raises(ValueError, match="non-JSON"):
         materialise_mcwf_ensemble_probe("mcwf_ensemble", n_trajectories=1)
 
@@ -959,7 +960,7 @@ def test_ambient_mcwf_subprocess_non_object_json(
     class _Out:
         stdout = "[1, 2, 3]\n"
 
-    monkeypatch.setattr(mcwf_product.subprocess, "run", lambda *_a, **_k: _Out())
+    monkeypatch.setattr(subprocess, "run", lambda *_a, **_k: _Out())
     with pytest.raises(ValueError, match="must be an object"):
         materialise_mcwf_ensemble_probe("mcwf_ensemble", n_trajectories=1)
 

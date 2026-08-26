@@ -969,6 +969,8 @@ def test_main_uses_coverage_pytest_by_default(
         "program-ad-array-indexing exact coverage threshold",
         "stable-core-product focused coverage",
         "stable-core-product exact coverage threshold",
+        "open-system-completeness focused coverage",
+        "open-system-completeness exact coverage threshold",
         "thermo-readiness-product focused coverage",
         "thermo-readiness-product exact coverage threshold",
         "quantum-sync-oracle focused coverage",
