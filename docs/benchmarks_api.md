@@ -368,8 +368,9 @@ With `LayoutComparisonConfig.include_relaxation` (off by default, so the
 promoted surface never silently carries a research arm) the artifact gains a
 research-labelled `dynq+sinkhorn_relaxation` row whose true-cost budget is
 bound to the discrete optimiser's `n_evaluations` on the same instance — the
-preregistered KT-4 budget match. `candidate_region` selects the search space
-of both arms: the DynQ region (default) or the full calibrated device.
+preregistered continuous-relaxation budget match. `candidate_region` selects
+the search space of both arms: the DynQ region (default) or the full calibrated
+device.
 
 The optional research row never changes the promoted default. When enabled,
 its true-cost limit is replaced by the discrete optimiser's observed
@@ -414,16 +415,18 @@ tests. Details in `ultrascale_hls.md`; the CLI is
 
 ---
 
-### 2g. `layout_relaxation_experiment` — Preregistered KT-4 Seed Sweep (RESEARCH)
+### 2g. `layout_relaxation_experiment` — Preregistered Layout-Relaxation Seed Sweep
+
+**Status: RESEARCH.**
 
 Runs the comparison protocol preregistered in
 [layout_relaxation_preregistration.md](layout_relaxation_preregistration.md):
 on every preregistered instance (the two-cluster topology under seeds 0..9
 plus one full-device `m ≥ 2n` instance), the annealed Sinkhorn relaxation
-(`hardware/kuramoto_layout_relaxation.py`) competes against the KT-3 discrete
-optimiser at a matched budget of true seeded cost evaluations. The decision
-metric is the mean best true cost; the surrogate never enters the comparison,
-and the verdict is computed against the preregistered null hypothesis —
+(`hardware/kuramoto_layout_relaxation.py`) competes against the discrete
+multi-restart optimiser at a matched budget of true seeded cost evaluations.
+The decision metric is the mean best true cost; the surrogate never enters the
+comparison, and the verdict is computed against the preregistered null hypothesis —
 "no gain" is a valid, publishable outcome (and is the measured outcome, see
 `dynq_qubit_mapping.md` §8.5).
 

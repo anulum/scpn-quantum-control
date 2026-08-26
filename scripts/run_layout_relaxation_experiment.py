@@ -5,16 +5,16 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — KT-4 relaxation seed-sweep experiment run script
-"""Run the preregistered KT-4 relaxation seed-sweep experiment (RESEARCH).
+# SCPN Quantum Control — Preregistered layout-relaxation experiment runner
+"""Run the preregistered layout-relaxation seed sweep (RESEARCH).
 
 Executes the preregistered instances — the synthetic two-cluster topology
 under a seed sweep with both search arms in the DynQ region, plus one
 full-device instance where the candidate set is at least twice the logical
 width — and writes the experiment artifact with the verdict against the
-preregistered null hypothesis. "No gain" over the KT-3 discrete baseline is
-a valid, publishable outcome; nothing here promotes the relaxation beyond a
-research observation.
+preregistered null hypothesis. "No gain" over the discrete multi-restart
+baseline is a valid, publishable outcome; nothing here promotes the relaxation
+beyond a research observation.
 """
 
 from __future__ import annotations

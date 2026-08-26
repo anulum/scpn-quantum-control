@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Tests for the KT-4 experiment run script
+# SCPN Quantum Control — Tests for the layout-relaxation experiment runner
 """Tests for scripts/run_layout_relaxation_experiment.py.
 
 The experiment run is stubbed via a canned artifact so the CLI wiring
@@ -15,7 +15,9 @@ NumPy coverage tracer.
 
 from __future__ import annotations
 
+import importlib
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -67,6 +69,17 @@ def _canned_artifact() -> RelaxationExperimentArtifact:
 
 
 class TestArgumentParsing:
+    def test_import_bootstraps_repository_root(self) -> None:
+        """Insert the repository root when direct-script imports cannot see it."""
+        repository_root = str(script.REPO_ROOT)
+        original_path = sys.path.copy()
+        try:
+            sys.path[:] = [entry for entry in sys.path if entry != repository_root]
+            reloaded = importlib.reload(script)
+            assert sys.path[0] == str(reloaded.REPO_ROOT)
+        finally:
+            sys.path[:] = original_path
+
     def test_defaults_follow_the_preregistered_protocol(self) -> None:
         args = script._parse_args([])
         assert args.n == 4

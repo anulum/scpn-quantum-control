@@ -85,15 +85,15 @@
   "host": {
     "blockers": [
       "cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
-      "host load 41.80 exceeds the isolated threshold 1.00; quiesce concurrent jobs"
+      "host load 8.89 exceeds the isolated threshold 1.00; quiesce concurrent jobs"
     ],
-    "frequency_mhz": 3800.0,
+    "frequency_mhz": 3800.298,
     "governor": "powersave",
     "governor_is_stable": false,
     "load_average": [
-      41.80224609375,
-      34.86865234375,
-      32.82568359375
+      7.32080078125,
+      8.3330078125,
+      8.8896484375
     ],
     "load_is_low": false,
     "ready": false,
@@ -101,8 +101,8 @@
   },
   "losses": 6,
   "notes": [
-    "RESEARCH (KT-4): relaxed-then-rounded layout search under a preregistered protocol; results are research observations, not a promoted capability",
-    "best true cost is the seeded KT-2 layout cost: a routed-depth measurement combined with Trotter-error and infidelity models, not a hardware measurement",
+    "RESEARCH: relaxed-then-rounded layout search under a preregistered protocol; results are research observations, not a promoted capability",
+    "best true cost is the seeded routed-layout cost: a routed-depth measurement combined with Trotter-error and infidelity models, not a hardware measurement",
     "the relaxation's true-cost budget is bound per instance to the discrete optimiser's n_evaluations (the preregistered budget match)",
     "selection wall-times measured on a shared host: advisory only"
   ],
@@ -397,7 +397,7 @@
   ],
   "preregistration": "docs/layout_relaxation_preregistration.md",
   "provenance": {
-    "command": "scripts/run_layout_relaxation_experiment.py",
+    "command": "scripts/run_layout_relaxation_experiment.py --out-dir data/layout_relaxation_experiment",
     "dependencies": {
       "numpy": "2.2.6",
       "python": "3.12.13",
@@ -406,11 +406,11 @@
       "qutip": "5.2.3",
       "scipy": "1.15.3"
     },
-    "git_commit": "d9bda1226f8f20979e63c7a9c667b62f89612f2e"
+    "git_commit": "c5c8457a0f232b72c50f1d20874d28d964fea8c0"
   },
   "relaxation_cost_std": 4.2445881927013644,
   "relaxation_mean_cost": 99.73407272727273,
-  "research_label": "RESEARCH (KT-4): relaxed-then-rounded layout search under a preregistered protocol; results are research observations, not a promoted capability",
+  "research_label": "RESEARCH: relaxed-then-rounded layout search under a preregistered protocol; results are research observations, not a promoted capability",
   "schema_version": "1.0",
   "ties": 5,
   "timing_grade": "advisory_shared_host",

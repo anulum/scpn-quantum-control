@@ -1333,7 +1333,7 @@ Honest comparison of layout methods for the Kuramoto XY-Trotter circuit.
 
 ### `scpn_quantum_control.benchmarks.layout_relaxation_experiment`
 
-RESEARCH: the KT-4 preregistered seed-sweep experiment.
+RESEARCH: the preregistered layout-relaxation seed-sweep experiment.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/layout_relaxation_experiment.py) · Public symbols: **5**
 

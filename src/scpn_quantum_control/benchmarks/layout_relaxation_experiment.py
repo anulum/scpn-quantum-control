@@ -4,15 +4,15 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — KT-4 preregistered relaxation seed-sweep experiment
-"""RESEARCH: the KT-4 preregistered seed-sweep experiment.
+# SCPN Quantum Control — Preregistered layout-relaxation seed-sweep experiment
+"""RESEARCH: the preregistered layout-relaxation seed-sweep experiment.
 
 **Research label.** Runs the comparison protocol preregistered in
 ``docs/layout_relaxation_preregistration.md``
 §4: on every preregistered instance, the annealed Sinkhorn relaxation
 (:func:`~scpn_quantum_control.hardware.kuramoto_layout_relaxation.relax_kuramoto_layout`)
-competes against the KT-3 discrete optimiser at a **matched budget of true
-seeded KT-2 cost evaluations** (the binding is enforced inside
+competes against the discrete multi-restart optimiser at a **matched budget of
+true seeded routed-layout cost evaluations** (the binding is enforced inside
 :func:`~scpn_quantum_control.benchmarks.layout_method_comparison.run_layout_method_comparison`).
 
 The preregistered instance set is the two-cluster topology under seeds 0..9
@@ -23,14 +23,14 @@ instances; the surrogate never enters the comparison.
 
 Honest labelling
 ----------------
-* The best true cost is the seeded KT-2 layout cost — a routed-depth
+* The best true cost is the seeded routed-layout cost — a routed-depth
   measurement combined with Trotter-error and infidelity *models*; it is not
   a hardware measurement.
 * The verdict is computed against the preregistered null hypothesis: *the
   relaxation does not beat the discrete baseline's mean best cost at matched
   budget*. "No gain" is a valid, publishable outcome.
 * Nothing in this artifact promotes the relaxation beyond a research
-  observation; promotion requires the owner-gated KT-5 isolated benchmark.
+  observation; promotion requires owner-approved isolated-host confirmation.
 """
 
 from __future__ import annotations
@@ -64,7 +64,7 @@ PREREGISTRATION_REFERENCE = "docs/layout_relaxation_preregistration.md"
 _SWEEP_SEEDS: tuple[int, ...] = tuple(range(10))
 
 _TRUE_COST_NOTE = (
-    "best true cost is the seeded KT-2 layout cost: a routed-depth measurement "
+    "best true cost is the seeded routed-layout cost: a routed-depth measurement "
     "combined with Trotter-error and infidelity models, not a hardware measurement"
 )
 _BUDGET_NOTE = (
@@ -105,7 +105,7 @@ def preregistered_instances(
     seeds: tuple[int, ...] = _SWEEP_SEEDS,
     full_device_seed: int = 0,
 ) -> tuple[RelaxationExperimentInstance, ...]:
-    """Return the preregistered instance set of the KT-4 protocol.
+    """Return the preregistered layout-relaxation instance set.
 
     Parameters
     ----------
@@ -284,11 +284,13 @@ def _verdict(wins: int, n_instances: int, null_hypothesis_rejected: bool) -> str
     if wins == n_instances:
         return (
             "consistent_gain: the relaxation beats the discrete baseline on every "
-            "instance at matched budget (research observation; promotion requires KT-5)"
+            "instance at matched budget (research observation; promotion requires "
+            "owner-approved isolated-host confirmation)"
         )
     return (
         "inconsistent_gain: the relaxation beats the discrete baseline on mean best "
-        "true cost but not on every instance (research observation; promotion requires KT-5)"
+        "true cost but not on every instance (research observation; promotion requires "
+        "owner-approved isolated-host confirmation)"
     )
 
 
@@ -305,7 +307,7 @@ def run_layout_relaxation_experiment(
     metrics_provider: MetricsProvider = routed_layout_metrics,
     depth_provider: DepthProvider = routed_layout_depth,
 ) -> RelaxationExperimentArtifact:
-    """Run the preregistered KT-4 seed-sweep experiment.
+    """Run the preregistered layout-relaxation seed-sweep experiment.
 
     Every instance runs the full layout-method comparison with the research
     row enabled; the per-instance seed and candidate region come from the

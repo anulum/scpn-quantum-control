@@ -1,5 +1,10 @@
 # Changelog
 
+- 2026-08-26 — Preregistered layout-relaxation naming: replaced internal
+  experiment-stage labels in the runtime result, executable runner, committed
+  benchmark artifact, and public benchmark/API descriptions with domain terms.
+  The seed set, matched true-cost budget, numerical outcomes, research boundary,
+  and no-gain verdict are unchanged.
 - 2026-08-26 — Topology-kernel descriptive evidence contract: advanced the
   deterministic evidence payload to version 2, replaced internal planning
   labels with implementation responsibilities, and made schema, support-row,

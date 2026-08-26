@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Tests for the KT-4 relaxation seed-sweep experiment
+# SCPN Quantum Control — Tests for the preregistered layout-relaxation seed sweep
 """Multi-angle tests for benchmarks/layout_relaxation_experiment.py.
 
 Dimensions: the preregistered instance set, input validation (fail-closed on
@@ -17,6 +17,7 @@ stubbed, so nothing here touches transpilation or the NumPy coverage tracer.
 
 from __future__ import annotations
 
+import json
 from statistics import mean, pstdev
 from typing import Any
 
@@ -215,6 +216,14 @@ class TestStubbedRun:
         assert RESEARCH_LABEL in artifact.notes
         assert any("not a hardware measurement" in note for note in artifact.notes)
         assert any("budget match" in note for note in artifact.notes)
+        public_text = json.dumps(
+            {
+                "research_label": artifact.research_label,
+                "notes": artifact.notes,
+                "verdict": artifact.verdict,
+            }
+        )
+        assert "KT-" not in public_text
 
     def test_config_records_base_and_instances(self) -> None:
         artifact = _run_stubbed()
