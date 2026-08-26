@@ -1,12 +1,12 @@
 # Unsuitable-scenario + anti-silent-wrong registry
 
 This page is the operator-facing guide for the **negative-space governance**
-product under BL-53: a versioned catalogue of scenarios that must **fail closed**
-rather than silently produce wrong gradients.
+surface: a versioned catalogue of scenarios that must **fail closed** rather
+than silently produce wrong gradients.
 
 Related surfaces:
 
-- Multi-ecosystem route matrix (BL-52): [Governed route matrix](governed_route_matrix.md)
+- Multi-ecosystem route matrix: [Governed route matrix](governed_route_matrix.md)
 - Generated planner/support matrix: [Differentiable Support Matrix](differentiable_support_matrix.md)
 - Full API map: [Differentiable API](differentiable_api.md)
 - Module: `scpn_quantum_control.unsuitable_scenario_registry`
@@ -16,8 +16,14 @@ Related surfaces:
 Silent-wrong reverse-mode classes (for example DifferentiationInterface.jl
 compiled tapes under value-dependent control flow) are a known industry hazard.
 SCPN publishes refuse paths as first-class catalogue entries with reasons,
-evidence pointers, and deep links to BL-52 route IDs — the opposite of inventing
-green support.
+evidence pointers, and deep links to governed route IDs — the opposite of
+inventing green support.
+
+This registry is a decision-support surface, not a gradient executor. Reading,
+filtering, serialising, or probing it cannot submit provider work, access a
+QPU, mutate a circuit, run a benchmark, or certify that a gradient method is
+safe. A refusal explains a known boundary; it does not diagnose arbitrary
+caller code.
 
 ## How to read the registry
 
@@ -31,7 +37,10 @@ Every entry has:
 | `expected_outcome` | Refuse class (`raise_value_error`, `permanent_boundary`, …) |
 | `expected_error` | Error / boundary token |
 | `reason` | Non-empty human-readable refusal reason |
-| `related_route_ids` | Optional BL-52 governed route IDs |
+| `related_route_ids` | Optional governed route-matrix identifiers |
+| `test_id` | Stable test label expected to exercise the refusal |
+| `citation` | Optional literature or competitor evidence label |
+| `claim_boundary` | Non-promotional statement attached to every row |
 
 There are **no blank entries** and **no green probes**. Unknown scenario IDs
 either raise or, under `unknown_policy="boundary"`, synthesise a refuse row
@@ -42,6 +51,56 @@ Claim boundary:
 > unsuitable-scenario and anti-silent-wrong registry only; entries document
 > explicit refuse paths and competitor failure modes, never invent gradient
 > success, hardware execution, or silent-tape recovery claims
+
+## Record and result layers
+
+`UnsuitableScenarioRecord` is the immutable catalogue layer. Construction
+rejects blank identifiers, triggers, errors, reasons, evidence labels, and
+route identifiers. It also rejects classification values outside the closed
+`ScenarioKind` and `RefuseOutcome` vocabularies. `to_dict()` converts tuple
+fields to lists so the result is JSON-ready without weakening the stored
+record.
+
+`ScenarioProbeResult` is the immutable decision layer. Its `refused` field is
+required to be `True`; attempting to construct a green result raises
+`ValueError`. The selected record, operator message, deterministic notes, and
+shared claim boundary remain available through `to_dict()`.
+
+The registry payload is the aggregate layer. It carries the schema identifier,
+claim boundary, category counts, zero-blank count, and serialised rows. The
+catalogue order is stable and is also the order returned by
+`list_unsuitable_scenario_ids()` and `iter_unsuitable_scenarios()`.
+
+## Lookup and filtering
+
+Use `get_unsuitable_scenario()` when the identifier must already exist. Blank
+or unknown input raises `ValueError`; lookup never manufactures a matching
+row. Use `iter_unsuitable_scenarios()` to select by `kind`,
+`expected_outcome`, both, or neither. It returns an immutable tuple and
+preserves catalogue order.
+
+`probe_unsuitable_scenario()` has two explicit unknown-ID policies:
+
+- `unknown_policy="raise"` is the default and rejects the identifier.
+- `unknown_policy="boundary"` returns an always-refused synthetic row whose
+  identifier starts with `unknown:`.
+
+Known anti-silent-wrong rows add a classification note. Known rows with route
+links add a deterministic `related_route_ids=` note; rows without links do not
+invent one.
+
+## Integrity validation
+
+Call `assert_unsuitable_registry_integrity()` with no argument to build and
+validate the canonical payload, or pass a payload received through another
+local boundary. Validation requires a non-empty scenario list, mapping-shaped
+rows, non-empty identifiers, one of the two closed kinds, reasons and expected
+errors, a zero `blank_entry_count`, and an exact `scenario_count`.
+
+The validator deliberately does not treat a malformed row as partial success.
+It reports the first structural failure and refuses the payload. This makes it
+suitable as a pre-serialisation or evidence-ingest check, while schema
+validation and provenance checks remain separate caller responsibilities.
 
 ## Public API
 
@@ -106,17 +165,18 @@ Anti-silent-wrong / competitor fixtures:
 
 ## Bounded product status
 
-Shipped in this slice:
+Shipped:
 
 - Versioned schema + catalogue (no blanks)
 - Pure `probe_unsuitable_scenario` / lookup APIs
-- Competitor anti-silent fixtures with citations + BL-52 deep links
+- Competitor anti-silent fixtures with citations and governed-route deep links
 - Operator guide (this page)
 - Real-surface tests
 
-Still open by design:
+Outside this surface:
 
-- S53.2 executable CI probe runner job
-- S53.4 require new gradient methods to declare scenario coverage
+- Executing gradient implementations or provider workloads
+- Automatically declaring new gradient methods safe or supported
+- Replacing caller-side schema, provenance, or evidence validation
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

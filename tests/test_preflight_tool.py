@@ -1027,6 +1027,8 @@ def test_main_uses_coverage_pytest_by_default(
         "phase-trainability exact coverage threshold",
         "layout-method-comparison focused coverage",
         "layout-method-comparison exact coverage threshold",
+        "unsuitable-scenario-registry focused coverage",
+        "unsuitable-scenario-registry exact coverage threshold",
         "resource-budget-gate focused coverage",
         "resource-budget-gate exact coverage threshold",
         "advantage-language-protocol focused coverage",

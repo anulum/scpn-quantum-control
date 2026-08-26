@@ -116,6 +116,9 @@ if TYPE_CHECKING:
         thermo_readiness_product_quality_gates as _thermo_readiness_product_quality_gates,
     )
     from tools import (
+        unsuitable_scenario_registry_quality_gates as _unsuitable_scenario_registry_quality_gates,
+    )
+    from tools import (
         visualisation_dashboard_product_quality_gates as _visualisation_dashboard_product_quality_gates,
     )
     from tools import (
@@ -175,6 +178,9 @@ else:
     )
     _layout_method_comparison_quality_gates = import_module(
         "tools.layout_method_comparison_quality_gates"
+    )
+    _unsuitable_scenario_registry_quality_gates = import_module(
+        "tools.unsuitable_scenario_registry_quality_gates"
     )
     _migration_guides_product_quality_gates = import_module(
         "tools.migration_guides_product_quality_gates"
@@ -548,6 +554,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_phase_qnode_product_quality_gates.build_static_quality_gates(_PY),
     *_phase_trainability_quality_gates.build_static_quality_gates(_PY),
     *_layout_method_comparison_quality_gates.build_static_quality_gates(_PY),
+    *_unsuitable_scenario_registry_quality_gates.build_static_quality_gates(_PY),
     *_resource_budget_gate_quality_gates.build_static_quality_gates(_PY),
     *_advantage_language_protocol_quality_gates.build_static_quality_gates(_PY),
     *_metamorphic_ad_verification_quality_gates.build_static_quality_gates(_PY),
@@ -984,6 +991,9 @@ PHASE_TRAINABILITY_COVERAGE_GATES = _phase_trainability_quality_gates.build_cove
 LAYOUT_METHOD_COMPARISON_COVERAGE_GATES = (
     _layout_method_comparison_quality_gates.build_coverage_gates(_PY)
 )
+UNSUITABLE_SCENARIO_REGISTRY_COVERAGE_GATES = (
+    _unsuitable_scenario_registry_quality_gates.build_coverage_gates(_PY)
+)
 RESOURCE_BUDGET_GATE_COVERAGE_GATES = _resource_budget_gate_quality_gates.build_coverage_gates(_PY)
 ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES = (
     _advantage_language_protocol_quality_gates.build_coverage_gates(_PY)
@@ -1274,6 +1284,7 @@ def main() -> int:
             gates.extend(PHASE_QNODE_PRODUCT_COVERAGE_GATES)
             gates.extend(PHASE_TRAINABILITY_COVERAGE_GATES)
             gates.extend(LAYOUT_METHOD_COMPARISON_COVERAGE_GATES)
+            gates.extend(UNSUITABLE_SCENARIO_REGISTRY_COVERAGE_GATES)
             gates.extend(RESOURCE_BUDGET_GATE_COVERAGE_GATES)
             gates.extend(ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES)
             gates.extend(METAMORPHIC_AD_VERIFICATION_COVERAGE_GATES)

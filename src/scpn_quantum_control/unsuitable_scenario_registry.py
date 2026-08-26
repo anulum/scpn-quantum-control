@@ -72,6 +72,7 @@ class UnsuitableScenarioRecord:
         Optional literature or competitor citation label.
     claim_boundary
         Non-promotional claim boundary string.
+
     """
 
     scenario_id: str
@@ -144,6 +145,7 @@ class ScenarioProbeResult:
         Operator-facing refuse message.
     notes
         Additional deterministic notes.
+
     """
 
     scenario_id: str
@@ -369,6 +371,7 @@ def list_unsuitable_scenario_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered scenario identifiers.
+
     """
     return tuple(row.scenario_id for row in _CANONICAL_SCENARIOS)
 
@@ -390,6 +393,7 @@ def get_unsuitable_scenario(scenario_id: str) -> UnsuitableScenarioRecord:
     ------
     ValueError
         If ``scenario_id`` is empty/blank or not present in the catalogue.
+
     """
     if not scenario_id or not str(scenario_id).strip():
         raise ValueError("scenario_id must be a non-empty string")
@@ -421,6 +425,7 @@ def iter_unsuitable_scenarios(
     -------
     tuple[UnsuitableScenarioRecord, ...]
         Matching rows.
+
     """
     rows: Iterable[UnsuitableScenarioRecord] = _CANONICAL_SCENARIOS
     if kind is not None:
@@ -437,6 +442,7 @@ def build_unsuitable_scenario_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with every catalogue cell (no blanks).
+
     """
     rows = [row.to_dict() for row in _CANONICAL_SCENARIOS]
     unsuitable = sum(1 for row in _CANONICAL_SCENARIOS if row.kind == "unsuitable_scenario")
@@ -498,6 +504,7 @@ def probe_unsuitable_scenario(
     ValueError
         If ``scenario_id`` is blank, or unknown under ``unknown_policy='raise'``,
         or if ``unknown_policy`` is not recognised.
+
     """
     if not scenario_id or not str(scenario_id).strip():
         raise ValueError("scenario_id must be a non-empty string")
@@ -558,6 +565,7 @@ def assert_unsuitable_registry_integrity(
     ------
     ValueError
         If blank entries, missing reasons, or count drift are detected.
+
     """
     registry = dict(payload) if payload is not None else build_unsuitable_scenario_registry()
     scenarios = registry.get("scenarios")

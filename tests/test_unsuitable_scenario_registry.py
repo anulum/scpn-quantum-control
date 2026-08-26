@@ -27,6 +27,7 @@ from scpn_quantum_control.unsuitable_scenario_registry import (
 
 
 def test_list_ids_stable_nonempty_unique() -> None:
+    """Keep the public identifier catalogue non-empty, unique, and stable."""
     ids = list_unsuitable_scenario_ids()
     assert ids
     assert len(ids) == len(set(ids))
@@ -35,6 +36,7 @@ def test_list_ids_stable_nonempty_unique() -> None:
 
 
 def test_get_known_unsuitable_and_anti_silent() -> None:
+    """Resolve governed unsuitable and anti-silent rows by public identifier."""
     complex_row = get_unsuitable_scenario("unsuitable:complex.objective_without_wirtinger")
     assert complex_row.kind == "unsuitable_scenario"
     assert complex_row.reason
@@ -54,6 +56,7 @@ def test_get_known_unsuitable_and_anti_silent() -> None:
 
 
 def test_get_rejects_blank_and_unknown() -> None:
+    """Reject blank and unregistered identifiers without inventing support."""
     with pytest.raises(ValueError, match="non-empty"):
         get_unsuitable_scenario("  ")
     with pytest.raises(ValueError, match="unknown unsuitable scenario_id"):
@@ -61,6 +64,7 @@ def test_get_rejects_blank_and_unknown() -> None:
 
 
 def test_iter_filters_by_kind_and_outcome() -> None:
+    """Filter immutable catalogue rows by either supported classification."""
     anti = iter_unsuitable_scenarios(kind="anti_silent_wrong")
     assert anti
     assert all(row.kind == "anti_silent_wrong" for row in anti)
@@ -81,22 +85,31 @@ def test_iter_filters_by_kind_and_outcome() -> None:
 
 
 def test_build_registry_zero_blanks_and_schema() -> None:
+    """Build a schema-tagged registry with consistent counts and no blanks."""
     registry = build_unsuitable_scenario_registry()
+    scenarios = registry["scenarios"]
+    scenario_count = registry["scenario_count"]
+    unsuitable_count = registry["unsuitable_scenario_count"]
+    anti_silent_count = registry["anti_silent_wrong_count"]
+    assert isinstance(scenarios, list)
+    assert isinstance(scenario_count, int)
+    assert isinstance(unsuitable_count, int)
+    assert isinstance(anti_silent_count, int)
     assert registry["schema"] == UNSUITABLE_SCENARIO_REGISTRY_SCHEMA
     assert registry["blank_entry_count"] == 0
-    assert registry["scenario_count"] == len(registry["scenarios"])  # type: ignore[arg-type]
-    assert int(registry["unsuitable_scenario_count"]) + int(
-        registry["anti_silent_wrong_count"]
-    ) == int(registry["scenario_count"])
+    assert scenario_count == len(scenarios)
+    assert unsuitable_count + anti_silent_count == scenario_count
     validated = assert_unsuitable_registry_integrity(registry)
     assert validated["blank_entry_count"] == 0
-    for row in registry["scenarios"]:  # type: ignore[union-attr]
+    for row in scenarios:
+        assert isinstance(row, dict)
         assert row["kind"] in {"unsuitable_scenario", "anti_silent_wrong"}
         assert row["reason"]
         assert row["expected_error"]
 
 
 def test_assert_integrity_rejects_invalid_payloads() -> None:
+    """Reject malformed rows, invalid classifications, and count drift."""
     with pytest.raises(ValueError, match="non-empty scenarios"):
         assert_unsuitable_registry_integrity({"scenarios": []})
     with pytest.raises(ValueError, match="blank"):
@@ -165,6 +178,7 @@ def test_assert_integrity_rejects_invalid_payloads() -> None:
 
 
 def test_probe_known_unsuitable_refuses_with_reason() -> None:
+    """Return a reasoned refusal for a known unsuitable scenario."""
     result = probe_unsuitable_scenario("unsuitable:complex.objective_without_wirtinger")
     assert isinstance(result, ScenarioProbeResult)
     assert result.refused is True
@@ -177,7 +191,7 @@ def test_probe_known_unsuitable_refuses_with_reason() -> None:
 
 
 def test_probe_rl_without_preregistration_refuses() -> None:
-    """BL-53 carries the BL-102 no-preregistration refusal explicitly."""
+    """Carry the no-preregistration research refusal explicitly."""
     result = probe_unsuitable_scenario("unsuitable:rl.research_without_preregistration")
     assert result.refused
     assert result.selected.expected_error == (
@@ -187,6 +201,7 @@ def test_probe_rl_without_preregistration_refuses() -> None:
 
 
 def test_probe_competitor_anti_silent_fixtures() -> None:
+    """Expose competitor silent-wrong boundaries as explicit refusals."""
     di_jl = probe_unsuitable_scenario("anti_silent:differentiation_interface.compiled_tape")
     assert di_jl.refused is True
     assert di_jl.selected.kind == "anti_silent_wrong"
@@ -202,6 +217,7 @@ def test_probe_competitor_anti_silent_fixtures() -> None:
 
 
 def test_probe_unknown_fail_closed_policies() -> None:
+    """Fail closed for unknown identifiers under both public policies."""
     with pytest.raises(ValueError, match="unknown unsuitable scenario_id"):
         probe_unsuitable_scenario("no.such.scenario")
 
@@ -215,6 +231,7 @@ def test_probe_unknown_fail_closed_policies() -> None:
 
 
 def test_probe_rejects_blank_and_bad_unknown_policy() -> None:
+    """Reject blank identifiers and unsupported unknown-ID policies."""
     with pytest.raises(ValueError, match="non-empty"):
         probe_unsuitable_scenario("")
     with pytest.raises(ValueError, match="unknown_policy"):
@@ -225,6 +242,7 @@ def test_probe_rejects_blank_and_bad_unknown_policy() -> None:
 
 
 def test_record_validation_edge_paths() -> None:
+    """Enforce every immutable catalogue-record invariant."""
     with pytest.raises(ValueError, match="scenario_id"):
         UnsuitableScenarioRecord(
             scenario_id="",
@@ -309,6 +327,7 @@ def test_record_validation_edge_paths() -> None:
 
 
 def test_probe_result_validation() -> None:
+    """Forbid blank, green, or message-free probe results."""
     selected = get_unsuitable_scenario("unsuitable:hardware.gradient_without_ticket")
     with pytest.raises(ValueError, match="scenario_id must be non-empty"):
         ScenarioProbeResult(
@@ -334,6 +353,7 @@ def test_probe_result_validation() -> None:
 
 
 def test_catalogue_map_rejects_duplicates(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject duplicate identifiers while constructing the catalogue map."""
     row = get_unsuitable_scenario("unsuitable:rust.dynamic_axes_replay")
     monkeypatch.setattr(
         unsuitable_scenario_registry,
@@ -345,6 +365,7 @@ def test_catalogue_map_rejects_duplicates(monkeypatch: pytest.MonkeyPatch) -> No
 
 
 def test_record_to_dict_fields() -> None:
+    """Serialize a catalogue row into the complete public mapping shape."""
     row = get_unsuitable_scenario("unsuitable:pennylane.hardware_plugin_gradient")
     payload = row.to_dict()
     assert payload["scenario_id"] == row.scenario_id
@@ -356,6 +377,7 @@ def test_record_to_dict_fields() -> None:
 def test_probe_rows_without_related_routes_omit_route_note(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Omit route notes when neither synthetic nor known rows provide routes."""
     # unknown boundary path
     result = probe_unsuitable_scenario("blank.x", unknown_policy="boundary")
     assert result.refused is True
