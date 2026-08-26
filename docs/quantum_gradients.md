@@ -1330,9 +1330,36 @@ cost, cost unit, and `hardware_execution=False`. Hardware and provider backends
 fail closed because this route never requests hardware policy approval. When
 the caller omits plus/minus variances, the report derives a conservative
 variance tensor from sampled gradient variance and the configured variance
-floor. The external comparison suite also records a Catalyst boundary row for
-this BL-14 surface: adaptive finite-shot trainability dry-runs are not promoted
-as Catalyst broadcast/vmap evidence.
+floor.
+
+The immutable result is split into three explicit record layers:
+
+- `TrainabilityGradientSample` binds each parameter vector to its scalar value,
+  parameter-shift gradient, norm, evaluation count, and method;
+- `AdaptiveShotAllocationDryRun` binds the allocation to the fail-closed
+  backend plan, variance source, evaluation/shot totals, cost estimate, cap
+  state, and non-execution flag;
+- `BarrenPlateauTrainabilityReport` aggregates empirical means and variances,
+  the sampled classification, warning vocabulary, and the claim boundary.
+
+Statuses have narrow meanings. `trainable` means the sampled diagnostics did
+not cross the configured low-norm or low-variance thresholds. `flat_objective`
+requires both. `low_gradient_variance` records low variance without a low mean
+norm, and `shot_limited` records that a cap prevents the requested standard
+error. None of these statuses proves global trainability, convergence,
+advantage, or absence of barren plateaus outside the supplied samples.
+
+The call fails before producing a report for non-finite or undersized sample
+matrices, invalid thresholds or shot limits, blank cost units, one-sided
+variance inputs, and unsupported/hardware backend routes. Multi-frequency
+rules retain their full term axis; frozen parameters remain present with zero
+allocated standard error. Serialization copies arrays into built-in containers
+and does not mutate inputs, execute circuits, submit provider jobs, persist
+evidence, or promote benchmark claims.
+
+The external comparison suite also records a Catalyst boundary row for this
+trainability surface: adaptive finite-shot dry-runs are not promoted as
+Catalyst broadcast/vmap evidence.
 
 `phase_qnode_computational_basis_fisher_information(circuit, params)` computes
 the exact classical Fisher matrix for computational-basis statevector

@@ -60,6 +60,7 @@ class TrainabilityGradientSample:
         Objective evaluations consumed by the parameter-shift rule.
     method
         Gradient method reported by the differentiable core.
+
     """
 
     index: int
@@ -77,6 +78,7 @@ class TrainabilityGradientSample:
         -------
         dict[str, object]
             Scalar and array metadata converted to built-in Python containers.
+
         """
         return {
             "index": self.index,
@@ -115,6 +117,7 @@ class AdaptiveShotAllocationDryRun:
         Whether a shot cap prevented the target standard error.
     hardware_execution
         Always ``False`` for this dry-run record.
+
     """
 
     allocation: ShotAllocationResult
@@ -135,6 +138,7 @@ class AdaptiveShotAllocationDryRun:
         dict[str, object]
             Allocation, backend, cost, and safety metadata converted to
             built-in Python containers.
+
         """
         return {
             "allocation": {
@@ -187,6 +191,7 @@ class BarrenPlateauTrainabilityReport:
         Adaptive shot-allocation dry run for finite-shot parameter-shift use.
     claim_boundary
         Explicit non-hardware and non-promotion boundary for the report.
+
     """
 
     samples: tuple[TrainabilityGradientSample, ...]
@@ -208,6 +213,7 @@ class BarrenPlateauTrainabilityReport:
         -------
         int
             Number of sample records used by this report.
+
         """
         return len(self.samples)
 
@@ -218,6 +224,7 @@ class BarrenPlateauTrainabilityReport:
         -------
         dict[str, object]
             Report payload suitable for JSON artifact emission.
+
         """
         return {
             "samples": [sample.to_dict() for sample in self.samples],
@@ -302,6 +309,7 @@ def run_barren_plateau_trainability_report(
     The report samples parameter-shift gradients across caller-supplied
     parameter vectors, flags flat low-variance landscapes, and uses the existing
     finite-shot allocator to estimate shot counts before any backend execution.
+
     """
     starts = _as_sample_matrix(sample_params)
     variance_floor = _non_negative_float(

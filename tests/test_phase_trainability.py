@@ -40,6 +40,7 @@ def _linear_objective(params: NDArray[np.float64]) -> float:
 
 
 def test_trainability_report_marks_trainable_landscape_and_dry_run_cost() -> None:
+    """Report a curved landscape and preserve dry-run cost metadata."""
     report = run_barren_plateau_trainability_report(
         _curved_objective,
         np.array([[0.2, -0.3], [0.7, 0.4], [-0.5, 0.6]], dtype=np.float64),
@@ -73,6 +74,7 @@ def test_trainability_report_marks_trainable_landscape_and_dry_run_cost() -> Non
 
 
 def test_trainability_report_detects_flat_objective_from_low_gradient_samples() -> None:
+    """Classify a constant objective as a sampled flat landscape."""
     report = run_barren_plateau_trainability_report(
         _flat_objective,
         np.array([[0.0, 0.0], [0.4, -0.2]], dtype=np.float64),
@@ -91,6 +93,7 @@ def test_trainability_report_detects_flat_objective_from_low_gradient_samples() 
 
 
 def test_trainability_report_handles_multi_frequency_and_frozen_parameter() -> None:
+    """Respect multi-frequency rules and frozen parameter masks."""
     rule = ParameterShiftRule(
         shifts=(float(np.pi / 2.0), float(np.pi / 4.0)),
         coefficients=(0.5, 0.25),
@@ -129,6 +132,7 @@ def test_trainability_report_handles_multi_frequency_and_frozen_parameter() -> N
 
 
 def test_trainability_report_marks_shot_limited_when_cap_prevents_target() -> None:
+    """Expose a shot cap that prevents the requested standard error."""
     report = run_barren_plateau_trainability_report(
         _curved_objective,
         np.array([[0.2, -0.3], [0.7, 0.4], [-0.5, 0.6]], dtype=np.float64),
@@ -145,6 +149,7 @@ def test_trainability_report_marks_shot_limited_when_cap_prevents_target() -> No
 
 
 def test_trainability_report_marks_low_gradient_variance_without_flat_norm() -> None:
+    """Distinguish low variance from a genuinely flat sampled objective."""
     report = run_barren_plateau_trainability_report(
         _linear_objective,
         np.array([[0.0, 0.0], [0.4, -0.2], [0.8, 0.3]], dtype=np.float64),
@@ -178,6 +183,7 @@ def test_trainability_report_marks_low_gradient_variance_without_flat_norm() -> 
     ),
 )
 def test_trainability_report_rejects_invalid_inputs(case: str, match: str) -> None:
+    """Fail closed for malformed samples, thresholds, costs, and backends."""
     sample_params = np.array([[0.2, -0.3], [0.7, 0.4]], dtype=np.float64)
     objective = cast(ScalarObjective, _curved_objective)
 
