@@ -11,11 +11,11 @@ Module: `scpn_quantum_control.kyma_mechanism_benchmark_product`
 
 | Rule | Behaviour |
 |---|---|
-| Product schema | `kyma_mechanism_benchmark_product.v1` |
+| Product schema | `kyma_mechanism_benchmark_product.v2` |
 | Design freeze | Ambient `kyma_v2.design` grids + targets + digest |
 | Student held-out design | Refuse |
 | Post-hoc retune | Refuse |
-| Advantage invent-green | Refuse (need protocol id / BL-65) |
+| Advantage invent-green | Refuse (requires protocol id and advantage-language governance) |
 | Unknown suite | Fail closed |
 
 ## Suites
@@ -93,15 +93,14 @@ The demo fallback is product-local evidence derived only from preregistered
 floors. It is not an isolated performance benchmark, hardware result, student
 accuracy claim, or quantum-advantage promotion.
 
-## Residuals (honest)
+## Open evidence and integration depth
 
-- **S73.3** — full classical ML baseline harness depth + multi-seed evidence
-- **S73.4** — optional BL-32 family registration wire
-- **S73.6** — hermetic kit entry (BL-55)
+- Full classical ML baseline-harness depth and multi-seed evidence
+- Optional sync-challenge family registration
+- Hermetic reproduction-kit entry
 
 ## Related
 
-- Pack: `docs/internal/differentiable_programming/p3_strategic/bl73_kyma_public_mechanism_benchmark.md`
 - Ambient: `benchmarks.kyma`, `benchmarks.kyma_v2.design`, `task`, `teacher`
 - Campaigns: `docs/campaigns/kyma_v2_composition_probe_2026-07-21.md`
 

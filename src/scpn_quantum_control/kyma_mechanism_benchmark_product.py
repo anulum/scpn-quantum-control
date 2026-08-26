@@ -19,8 +19,8 @@ ambient :mod:`benchmarks.kyma` / :mod:`benchmarks.kyma_v2`:
 * refuse post-hoc constant retuning, invent-green advantage without KYMA
   protocol id, and design freeze from student metrics (advantage-language compose).
 
-Does **not** re-train full student/MLP suites, invent hermetic kit export
-(S73.6 residual), or claim public marketing gold without promotion package.
+Does **not** re-train full student/MLP suites, invent hermetic reproduction-kit
+export, or claim public marketing gold without a promotion package.
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ from typing import Any, Final, Literal
 # Product-mirrored prereg §5 design constants — must match ambient
 # ``benchmarks.kyma_v2.design`` module values (teacher-dynamics freeze grids).
 # Lazy ambient import for certificate probes avoids pytest-cov/numpy reload
-# breaking JAX at product import time (same class as BL-41 PL under --cov).
+# breaking JAX at product import time (the same optional-framework coverage class).
 _G_SYNC_GRID: Final[tuple[float, ...]] = (0.5, 0.75, 1.0, 1.5, 2.0)
 _STEPS_GRID: Final[tuple[int, ...]] = (40, 50, 60, 70, 80)
 _K_BRIDGE_GRID: Final[tuple[float, ...]] = (0.2, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0)
@@ -57,7 +57,7 @@ SupportPosture = Literal[
 PathDecisionOutcome = Literal["allowed", "refused"]
 """Structured path-eligibility outcomes."""
 
-KYMA_MECHANISM_BENCHMARK_PRODUCT_SCHEMA: Final[str] = "kyma_mechanism_benchmark_product.v1"
+KYMA_MECHANISM_BENCHMARK_PRODUCT_SCHEMA: Final[str] = "kyma_mechanism_benchmark_product.v2"
 """JSON schema identifier for serialised product payloads."""
 
 KYMA_MECHANISM_BENCHMARK_CLAIM_BOUNDARY: Final[str] = (
@@ -65,19 +65,19 @@ KYMA_MECHANISM_BENCHMARK_CLAIM_BOUNDARY: Final[str] = (
     "design constants fixed from teacher dynamics (prereg §5) never from student "
     "held-out accuracy; realisability and non-separability certificates via ambient "
     "kyma_v2.design; refuse post-hoc constant retuning and invent-green advantage "
-    "without KYMA protocol id; residual S73.3 full baseline harness depth and "
-    "S73.6 hermetic kit export open honestly"
+    "without KYMA protocol id; full baseline-harness depth and hermetic "
+    "reproduction-kit export remain open"
 )
 """Shared claim boundary for KYMA mechanism benchmark product payloads."""
 
-# Protocol id required for advantage-language composition (BL-65 / S73.5).
+# Protocol id required by the advantage-language policy.
 KYMA_V2_PROTOCOL_ID: Final[str] = "KYMA_V2_PROBE_PREREGISTRATION_7f6b_2026-07-21"
 """Frozen KYMA v2 preregistration protocol identifier."""
 
 
 @dataclass(frozen=True, slots=True)
 class KymaSuiteRow:
-    """One KYMA suite catalogue row (S73.0).
+    """One KYMA suite catalogue row.
 
     Attributes
     ----------
@@ -165,7 +165,7 @@ class KymaSuiteRow:
 
 @dataclass(frozen=True, slots=True)
 class FrozenDesignConstants:
-    """Frozen prereg design constants for KYMA v2 (S73.1).
+    """Frozen preregistered design constants for KYMA v2.
 
     Attributes
     ----------
@@ -232,7 +232,7 @@ class FrozenDesignConstants:
 
 @dataclass(frozen=True, slots=True)
 class PathEligibilityDecision:
-    """Fail-closed path eligibility for KYMA product use (S73.5).
+    """Fail-closed path eligibility for KYMA product use.
 
     Attributes
     ----------
@@ -285,7 +285,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedMechanismCertificateProbe:
-    """Materialised realisability / non-separability certificate (S73.2).
+    """Materialised realisability and non-separability certificate.
 
     Attributes
     ----------
@@ -418,7 +418,7 @@ def load_frozen_design_constants(
     *,
     verify_ambient: bool = False,
 ) -> FrozenDesignConstants:
-    """Load prereg design constants with content digest (S73.1).
+    """Load preregistered design constants with a content digest.
 
     Parameters
     ----------
@@ -591,7 +591,7 @@ def decide_kyma_path(
     post_hoc_constant_retune: bool = False,
     design_from_student_held_out: bool = False,
 ) -> PathEligibilityDecision:
-    """Decide whether a KYMA benchmark path may proceed (S73.5).
+    """Decide whether a KYMA benchmark path may proceed.
 
     Parameters
     ----------
@@ -617,7 +617,8 @@ def decide_kyma_path(
     if invent_green_advantage:
         blockers.append(
             "invent-green advantage claim refused without promoted KYMA protocol "
-            f"(suite={row.suite_id}; require protocol_id={row.protocol_id}; BL-65)"
+            f"(suite={row.suite_id}; require protocol_id={row.protocol_id}; "
+            "advantage-language policy)"
         )
     if invent_green_advantage and not protocol_id_present:
         blockers.append(f"advantage language requires KYMA protocol id for suite {row.suite_id!r}")
@@ -654,7 +655,7 @@ def materialise_mechanism_certificate_probe(
     seed: int = 0,
     config: Any | None = None,
 ) -> MaterialisedMechanismCertificateProbe:
-    """Materialise realisability + non-separability certificates (S73.2).
+    """Materialise realisability and non-separability certificates.
 
     Uses ambient :func:`build_trials`, :func:`single_relation_realisability`,
     and :func:`non_separability_rate` on the frozen default ProbeConfigV2
@@ -826,8 +827,8 @@ def build_kyma_mechanism_benchmark_product_registry() -> dict[str, object]:
         "suites": suites,
         "policy_note": (
             "Mechanism-only KYMA product; teacher dynamics design freeze; "
-            "advantage language requires protocol id (BL-65); S73.3 full baseline "
-            "harness and S73.6 hermetic kit residual open honestly."
+            "advantage language requires a protocol id; full baseline-harness "
+            "depth and hermetic reproduction-kit export remain open."
         ),
     }
 
@@ -856,6 +857,8 @@ def assert_kyma_mechanism_benchmark_product_integrity(
     registry = (
         dict(payload) if payload is not None else build_kyma_mechanism_benchmark_product_registry()
     )
+    if registry.get("schema") != KYMA_MECHANISM_BENCHMARK_PRODUCT_SCHEMA:
+        raise ValueError("KYMA mechanism benchmark product schema mismatch")
     suites = registry.get("suites")
     frozen = registry.get("frozen_design_constants")
     if not isinstance(suites, list) or not suites:

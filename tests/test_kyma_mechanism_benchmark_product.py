@@ -271,6 +271,11 @@ def test_integrity_rejects_drift_and_policy() -> None:
     registry = build_kyma_mechanism_benchmark_product_registry()
     suites = cast(list[dict[str, object]], registry["suites"])
 
+    wrong_schema = dict(registry)
+    wrong_schema["schema"] = "kyma_mechanism_benchmark_product.v1"
+    with pytest.raises(ValueError, match="schema mismatch"):
+        assert_kyma_mechanism_benchmark_product_integrity(wrong_schema)
+
     broken = dict(registry)
     broken["suites"] = suites + [
         {
@@ -292,6 +297,7 @@ def test_integrity_rejects_drift_and_policy() -> None:
         assert_kyma_mechanism_benchmark_product_integrity(broken)
 
     empty: dict[str, object] = {
+        "schema": KYMA_MECHANISM_BENCHMARK_PRODUCT_SCHEMA,
         "suites": [],
         "blank_entry_count": 0,
         "suite_count": 0,
