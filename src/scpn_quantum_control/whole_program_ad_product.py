@@ -9,13 +9,13 @@
 
 Productises whole-program AD as a versioned frontend → IR → adjoint/replay
 capability: public journey inventory, layered architecture map, dry-run
-journey posture, fail-closed unknown/blank ids, and refuse invent-green for
-unsupported frontends, hardware, polyglot certs, and edge WASM claims.
+journey posture, fail-closed unknown/blank IDs, and explicit refusal for
+unsupported frontends, hardware, polyglot certificates, and edge/WASM claims.
 
 Composes honesty from API-stability (workbench not silently SemVer-stable), unsuitable-scenario
 (unsupported frontend fail-closed), metamorphic-verification (metamorphic/formal AD residual),
 parity-certificate (polyglot parity residual), polyglot-edge-AD (edge WASM residual), and QPU-compute
-(no invent-green compute). Does **not** freeze every ``whole_program_*`` /
+(no unsupported compute claims). Does **not** freeze every ``whole_program_*`` /
 ``program_ad_*`` symbol as a mega-contract and does not execute QPU jobs.
 """
 
@@ -43,10 +43,11 @@ WHOLE_PROGRAM_AD_PRODUCT_SCHEMA: Final[str] = "whole_program_ad_product.v1"
 WHOLE_PROGRAM_AD_PRODUCT_CLAIM_BOUNDARY: Final[str] = (
     "Whole-program AD product surface only; catalogues public journeys and "
     "layered architecture map; ambient whole_program_*/program_ad_* workbench "
-    "is not a frozen SemVer mega-contract (BL-97); unsupported frontend cases "
-    "fail closed toward BL-53; polyglot parity certs (BL-49) and edge/WASM "
-    "(BL-74) remain residual; dry-run journeys refuse invent-green hardware "
-    "and unsupported execution (BL-95); does not replace full IR/adjoint engines"
+    "is not a frozen SemVer mega-contract; unsupported frontend cases fail "
+    "closed toward the unsuitable-scenario registry; polyglot parity "
+    "certificates and edge/WASM routing remain residual; dry-run journeys "
+    "refuse unsupported hardware and execution claims; does not replace full "
+    "IR/adjoint engines"
 )
 """Shared claim boundary for journeys and decisions."""
 
@@ -74,7 +75,7 @@ class WholeProgramADJourney:
     architecture_layer
         Layered architecture label (frontend, ir, adjoint, product, residual).
     unsuitable_scenario_pointer
-        Optional BL-53 unsuitable/unsupported pointer.
+        Optional unsuitable-scenario registry pointer.
     api_stability_class
         Stability honesty class (not invent-stable for workbench).
     as_of
@@ -272,7 +273,7 @@ _CANONICAL_JOURNEYS: Final[tuple[WholeProgramADJourney, ...]] = (
         summary=(
             "Plan whole_program_value_and_grad over a frontend-ready objective: "
             "trace-aware parameter injection, adjoint generation, and local "
-            "replay posture without invent-green hardware or unsupported "
+            "replay posture without unsupported hardware or execution "
             "semantics."
         ),
         module_path="scpn_quantum_control.whole_program_ad_api",
@@ -305,11 +306,11 @@ _CANONICAL_JOURNEYS: Final[tuple[WholeProgramADJourney, ...]] = (
     ),
     _journey(
         "unsupported_frontend_fail_closed",
-        title="Unsupported frontend → BL-53 fail closed",
+        title="Unsupported frontend → unsuitable-scenario refusal",
         summary=(
             "Product path for unsupported Python semantics (async, generators, "
-            "context managers, filtered comprehensions, …): refuse invent-green "
-            "execution and point at BL-53 unsuitable/anti-silent-wrong registry."
+            "context managers, filtered comprehensions, …): refuse unsupported "
+            "execution and point at the unsuitable-scenario registry."
         ),
         module_path="scpn_quantum_control.whole_program_frontend_contracts",
         support_badge="frontend_boundary",
@@ -324,10 +325,10 @@ _CANONICAL_JOURNEYS: Final[tuple[WholeProgramADJourney, ...]] = (
     ),
     _journey(
         "polyglot_parity_boundary",
-        title="Polyglot parity certificate boundary (BL-49 residual)",
+        title="Polyglot parity certificate boundary",
         summary=(
             "Boundary-only product row for bit-exact polyglot parity certificates. "
-            "Does not invent green parity; residual full BL-49 subset open."
+            "Does not claim complete parity; the full certificate subset remains open."
         ),
         module_path="scpn_quantum_control.program_ad_rust_bridge",
         support_badge="parity_boundary",
@@ -340,10 +341,10 @@ _CANONICAL_JOURNEYS: Final[tuple[WholeProgramADJourney, ...]] = (
     ),
     _journey(
         "edge_wasm_boundary",
-        title="Edge / WASM AD routing boundary (BL-74 residual)",
+        title="Edge / WASM AD routing boundary",
         summary=(
             "Boundary-only product row for edge WASM / Julia AD routing. "
-            "Refuses invent-green edge execution; residual full BL-74 open."
+            "Refuses unsupported edge execution; full edge routing remains open."
         ),
         module_path="scpn_quantum_control.whole_program_ad_api",
         support_badge="edge_boundary",
@@ -420,7 +421,7 @@ def get_whole_program_ad_journey(journey_id: str) -> WholeProgramADJourney:
         return _JOURNEY_BY_ID[key]
     except KeyError as exc:
         raise ValueError(
-            f"unknown journey_id {key!r}; refuse invent-green whole-program AD "
+            f"unknown journey_id {key!r}; refuse unsupported whole-program AD "
             f"product claim (known_count={len(_JOURNEY_BY_ID)})"
         ) from exc
 
@@ -462,24 +463,24 @@ def dry_run_whole_program_ad_journey(
     request_polyglot_cert: bool = False,
     request_edge_wasm: bool = False,
 ) -> WholeProgramADJourneyDecision:
-    """Exercise a product journey in dry-run posture (no QPU / invent-green).
+    """Exercise a product journey in a no-submit dry-run posture.
 
     Acknowledges the catalogue journey steps as a structured dry-run plan.
-    Hardware, unsupported-frontend execute, invent-green polyglot certs, and
-    edge WASM requests are refused.
+    Hardware, unsupported-frontend execution, unverified polyglot certificates,
+    and incomplete edge/WASM requests are refused.
 
     Parameters
     ----------
     journey_id
         Catalogue journey key.
     request_hardware
-        When true, refuse (no invent-green hardware).
+        When true, refuse hardware execution.
     request_unsupported_frontend_execute
         When true, refuse execution of unsupported frontend semantics.
     request_polyglot_cert
-        When true, refuse invent-green BL-49 polyglot certificates.
+        When true, refuse an unverified polyglot parity certificate.
     request_edge_wasm
-        When true, refuse invent-green BL-74 edge/WASM routing.
+        When true, refuse incomplete edge/WASM routing.
 
     Returns
     -------
@@ -497,16 +498,17 @@ def dry_run_whole_program_ad_journey(
     if request_hardware or journey.allows_hardware:
         blockers.append(
             "hardware/QPU request refused on whole-program AD product surface "
-            "(compose BL-95 no invent-green compute)"
+            "(no-submit compute policy)"
         )
     if request_unsupported_frontend_execute or (
         journey.support_badge == "frontend_boundary" and request_unsupported_frontend_execute
     ):
         blockers.append(
-            "unsupported frontend execute refused; fail closed toward BL-53 "
+            "unsupported frontend execute refused; fail closed toward the "
+            "unsuitable-scenario registry "
             f"(pointer={journey.unsuitable_scenario_pointer or 'unsuitable_scenario_registry'})"
         )
-    # Frontend-boundary journeys refuse invent-green execute when asked to
+    # Frontend-boundary journeys refuse unsupported execution when asked to
     # "run" unsupported paths; dry-run without the flag still plans refuse steps.
     if journey.support_badge == "frontend_boundary" and request_unsupported_frontend_execute:
         blockers.append("frontend_boundary journeys fail closed before objective execution")
@@ -514,18 +516,18 @@ def dry_run_whole_program_ad_journey(
         journey.support_badge == "parity_boundary" and request_polyglot_cert
     ):
         blockers.append(
-            "polyglot parity certificate invent-green refused "
-            "(BL-49 residual; product boundary only)"
+            "unverified polyglot parity certificate refused "
+            "(certificate subset remains residual; product boundary only)"
         )
     if request_edge_wasm or (journey.support_badge == "edge_boundary" and request_edge_wasm):
-        blockers.append("edge/WASM invent-green refused (BL-74 residual; product boundary only)")
-    # Boundary journeys that are purely residual always refuse invent-green
+        blockers.append("incomplete edge/WASM routing refused (residual; product boundary only)")
+    # Boundary journeys that are purely residual always refuse completion
     # "cert complete" claims when their residual flag is set; dry-run without
     # residual claim flags remains allowed as a boundary map step.
     if journey.support_badge == "parity_boundary" and request_polyglot_cert:
-        blockers.append("parity_boundary journeys do not ship full BL-49 certs here")
+        blockers.append("parity_boundary journeys do not ship full certificates here")
     if journey.support_badge == "edge_boundary" and request_edge_wasm:
-        blockers.append("edge_boundary journeys do not ship full BL-74 routing here")
+        blockers.append("edge_boundary journeys do not ship full edge routing here")
 
     if blockers:
         unique = tuple(dict.fromkeys(item for item in blockers if item.strip()))
@@ -548,7 +550,7 @@ def dry_run_whole_program_ad_journey(
             f"dry-run journey {journey.journey_id!r} allowed under product surface; "
             f"module={journey.module_path}; layer={journey.architecture_layer}; "
             f"badge={journey.support_badge}; stability={journey.api_stability_class}; "
-            "no QPU submission and no invent-green residual cert occurred"
+            "no QPU submission or unsupported residual certification occurred"
         ),
         blockers=(),
         steps_completed=journey.steps,
@@ -556,7 +558,7 @@ def dry_run_whole_program_ad_journey(
 
 
 def map_whole_program_ad_public_surfaces() -> tuple[dict[str, object], ...]:
-    """Return a public API map of whole-program AD product modules (S91.0/S91.1).
+    """Return a public API map of whole-program AD product modules.
 
     Returns
     -------
@@ -588,7 +590,7 @@ def map_whole_program_ad_public_surfaces() -> tuple[dict[str, object], ...]:
 
 
 def map_whole_program_ad_architecture_layers() -> tuple[dict[str, object], ...]:
-    """Return layered architecture map for whole-program AD (S91.0).
+    """Return the layered architecture map for whole-program AD.
 
     Returns
     -------
@@ -647,9 +649,8 @@ def build_whole_program_ad_product_registry() -> dict[str, object]:
         "journeys": journeys,
         "policy_note": (
             "Whole-program AD product catalogue only; ambient whole_program_* / "
-            "program_ad_* exports remain experimental_workbench under BL-97 "
-            "unless promoted; S91.3 BL-49 polyglot cert subset and S91.4 BL-74 "
-            "edge/WASM residual open honestly."
+            "program_ad_* exports remain experimental_workbench unless promoted; "
+            "the polyglot certificate subset and edge/WASM routing remain open."
         ),
     }
 
@@ -718,8 +719,7 @@ def assert_whole_program_ad_product_integrity(
             raise ValueError(f"journey {jid!r} must have architecture_layer")
         if allows_hardware is True:
             raise ValueError(
-                f"journey {jid!r} invent-green hardware: product journeys must "
-                "set allows_hardware=False"
+                f"journey {jid!r} claims hardware: product journeys must set allows_hardware=False"
             )
         if jid == "unsupported_frontend_fail_closed":
             pointer = row.get("unsuitable_scenario_pointer")

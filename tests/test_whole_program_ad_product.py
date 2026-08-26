@@ -95,9 +95,7 @@ def test_dry_run_refuses_unsupported_frontend_execute() -> None:
         request_unsupported_frontend_execute=True,
     )
     assert refused.allowed is False
-    assert any(
-        "bl-53" in item.lower() or "unsupported" in item.lower() for item in refused.blockers
-    )
+    assert any("unsupported" in item.lower() for item in refused.blockers)
 
     # Boundary map dry-run without execute request remains allowed.
     mapped = dry_run_whole_program_ad_journey("unsupported_frontend_fail_closed")
@@ -105,23 +103,23 @@ def test_dry_run_refuses_unsupported_frontend_execute() -> None:
     assert "point_unsuitable_scenario_registry" in mapped.steps_completed
 
 
-def test_dry_run_refuses_polyglot_and_edge_invent_green() -> None:
+def test_dry_run_refuses_unverified_polyglot_and_incomplete_edge_requests() -> None:
     """Refuse residual certificate and edge-routing completion claims."""
     poly = dry_run_whole_program_ad_journey(
         "polyglot_parity_boundary",
         request_polyglot_cert=True,
     )
     assert poly.allowed is False
-    assert any("bl-49" in item.lower() or "polyglot" in item.lower() for item in poly.blockers)
+    assert any("polyglot" in item.lower() for item in poly.blockers)
 
     edge = dry_run_whole_program_ad_journey(
         "edge_wasm_boundary",
         request_edge_wasm=True,
     )
     assert edge.allowed is False
-    assert any("bl-74" in item.lower() or "wasm" in item.lower() for item in edge.blockers)
+    assert any("wasm" in item.lower() for item in edge.blockers)
 
-    # Boundary dry-run without invent-green residual claim is allowed.
+    # Boundary dry-run without a residual completion claim is allowed.
     assert dry_run_whole_program_ad_journey("polyglot_parity_boundary").allowed is True
     assert dry_run_whole_program_ad_journey("edge_wasm_boundary").allowed is True
 
@@ -194,7 +192,7 @@ def test_integrity_rejects_drift_and_hardware() -> None:
     hw_journeys = [dict(row) for row in journeys]
     hw_journeys[0]["allows_hardware"] = True
     hw["journeys"] = hw_journeys
-    with pytest.raises(ValueError, match="invent-green hardware|allows_hardware"):
+    with pytest.raises(ValueError, match="claims hardware|allows_hardware"):
         assert_whole_program_ad_product_integrity(hw)
 
     empty: dict[str, object] = {"journeys": [], "blank_entry_count": 0, "journey_count": 0}
@@ -397,14 +395,14 @@ def test_integrity_rejects_blank_invalid_and_metadata() -> None:
     with pytest.raises(ValueError, match="architecture_layer"):
         assert_whole_program_ad_product_integrity(no_layer)
 
-    no_bl53 = dict(registry)
-    bl53_rows = [dict(row) for row in journeys]
-    for row in bl53_rows:
+    without_unsuitable_pointer = dict(registry)
+    journeys_without_pointer = [dict(row) for row in journeys]
+    for row in journeys_without_pointer:
         if row.get("journey_id") == "unsupported_frontend_fail_closed":
             row["unsuitable_scenario_pointer"] = ""
-    no_bl53["journeys"] = bl53_rows
+    without_unsuitable_pointer["journeys"] = journeys_without_pointer
     with pytest.raises(ValueError, match="unsuitable_scenario_pointer"):
-        assert_whole_program_ad_product_integrity(no_bl53)
+        assert_whole_program_ad_product_integrity(without_unsuitable_pointer)
 
     no_default = dict(registry)
     renamed = [dict(row) for row in journeys]
@@ -547,12 +545,12 @@ def test_architecture_map_skips_empty_ir_layer(
 
 
 def test_integrity_rejects_allows_hardware_true_on_non_default_journey() -> None:
-    """Non-default journeys must also set allows_hardware=False (invent-green refuse)."""
+    """Non-default journeys must also preserve the no-hardware contract."""
     registry = build_whole_program_ad_product_registry()
     journeys = cast(list[dict[str, object]], registry["journeys"])
     hw = dict(registry)
     hw_journeys = [dict(row) for row in journeys]
-    # Prefer a non-default journey so the generic invent-green check fires.
+    # Prefer a non-default journey so the generic hardware-claim check fires.
     target = next(
         i
         for i, row in enumerate(hw_journeys)
@@ -560,5 +558,5 @@ def test_integrity_rejects_allows_hardware_true_on_non_default_journey() -> None
     )
     hw_journeys[target]["allows_hardware"] = True
     hw["journeys"] = hw_journeys
-    with pytest.raises(ValueError, match="invent-green hardware"):
+    with pytest.raises(ValueError, match="claims hardware"):
         assert_whole_program_ad_product_integrity(hw)
