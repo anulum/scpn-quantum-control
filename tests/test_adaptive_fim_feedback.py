@@ -241,7 +241,7 @@ def test_count_schedule_threads_only_qualified_decreases() -> None:
     assert steps[2].lambda_in == steps[1].lambda_out
 
 
-def test_bl47_budget_precedes_schedule_and_observer_generation() -> None:
+def test_hardware_safe_budget_precedes_schedule_and_observer_generation() -> None:
     witnesses = (_witness(), _witness())
     allowed = plan_adaptive_fim_schedule(
         4.0,
@@ -290,8 +290,11 @@ def test_plan_and_observer_contract_reject_invalid_states() -> None:
             shots_per_arm=64,
         )
     step = propose_count_aware_lambda(1.0, _witness(), AdaptiveFIMConfig(target_leakage=0.05))
+    observer = observer_record_from_step(step, policy_id="ci_dry_run_only")
     with pytest.raises(ValueError, match="policy_id"):
         observer_record_from_step(step, policy_id="")
+    with pytest.raises(ValueError, match="claim boundary"):
+        replace(observer, claim_boundary="broader observer claims")
     with pytest.raises(ValueError, match="hardware execution"):
         AdaptiveFIMObserverRecord(
             "id",
@@ -322,6 +325,10 @@ def test_plan_and_observer_contract_reject_invalid_states() -> None:
 def test_step_and_plan_invariants_fail_closed() -> None:
     witness = _witness()
     step = propose_count_aware_lambda(1.0, witness, AdaptiveFIMConfig(target_leakage=0.05))
+    with pytest.raises(ValueError, match="unknown adaptive FIM feedback schema"):
+        replace(step, schema="adaptive_fim_feedback.v2")
+    with pytest.raises(ValueError, match="claim boundary"):
+        replace(step, claim_boundary="broader proposal claims")
     with pytest.raises(ValueError, match="non-negative"):
         replace(step, index=-1)
     with pytest.raises(ValueError, match="lambda values"):
@@ -340,6 +347,10 @@ def test_step_and_plan_invariants_fail_closed() -> None:
         shots_per_arm=64,
         config=AdaptiveFIMConfig(target_leakage=0.05),
     )
+    with pytest.raises(ValueError, match="unknown adaptive FIM feedback schema"):
+        replace(plan, schema="adaptive_fim_feedback.v2")
+    with pytest.raises(ValueError, match="claim boundary"):
+        replace(plan, claim_boundary="broader plan claims")
     with pytest.raises(ValueError, match="allowed must match"):
         replace(plan, outcome="refused")
     with pytest.raises(ValueError, match="cannot list blockers"):

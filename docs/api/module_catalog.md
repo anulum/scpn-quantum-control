@@ -1637,7 +1637,7 @@ Convert a quantum control pulse waveform into a Vivado/Vitis HLS bundle.
 
 ### `scpn_quantum_control.codesign.adapters`
 
-co-design adapters over control-stack control ports and active-sensing/69/70 observers.
+Co-design adapters for control ports and sensing, identity, geometry, and FIM observers.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/codesign/adapters.py) · Public symbols: **6**
 

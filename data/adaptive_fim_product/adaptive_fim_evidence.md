@@ -1,6 +1,6 @@
-# BL-80 adaptive FIM evidence
+# Adaptive FIM proposal evidence
 
-Schema: `adaptive_fim_evidence.v1`
+Schema: `adaptive_fim_evidence.v2`
 
 ## Frozen results
 
@@ -8,7 +8,7 @@ Schema: `adaptive_fim_evidence.v1`
 | --- | --- | --- |
 | Synthetic calibration | decrease -> hold -> hold | High-signal decrease; boundary and underpowered controls hold |
 | Historical offline replay | decrease -> decrease -> decrease | Replays already committed adverse lambda=4 witnesses; no efficacy test |
-| BL-47 over-budget request | refused | No schedule or observer emitted |
+| Hardware-safe over-budget request | refused | No schedule or observer emitted |
 | Hardware request | refused | No provider submission or execution |
 
 ## Custody
@@ -20,11 +20,11 @@ Schema: `adaptive_fim_evidence.v1`
 
 ## Claim boundary
 
-uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim
+uncertainty-aware batch-level next-experiment proposals under hardware-safe no-submit dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim
 
 The replay shows that the rule is deterministic and conservative for the
 selected committed witnesses. It does not test whether later proposed
 batches improve leakage or retention, and therefore does not validate a
 closed-loop controller, FIM protection, an optimal policy, or advantage.
 
-Content digest: `7aeeb99d94ca3979eed288d7c3d533ec56145ba58596f88933d2691f09107460`
+Content digest: `274e298e10fca27d3ab924cddb99e962abeaf4a9a398bcfcee40fdff2cd52274`

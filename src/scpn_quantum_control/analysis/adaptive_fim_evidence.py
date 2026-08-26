@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — adaptive-FIM adaptive FIM evidence
+# SCPN Quantum Control — adaptive FIM calibration and replay evidence
 """Digest-bound calibration controls and offline FIM custody replay."""
 
 from __future__ import annotations
@@ -18,13 +18,14 @@ from typing import Final, cast
 
 from .adaptive_fim_feedback import (
     ADAPTIVE_FIM_CLAIM_BOUNDARY,
+    ADAPTIVE_FIM_SCHEMA,
     AdaptiveFIMConfig,
     FIMWitness,
     adaptive_count_aware_schedule,
     plan_adaptive_fim_schedule,
 )
 
-ADAPTIVE_FIM_EVIDENCE_SCHEMA: Final[str] = "adaptive_fim_evidence.v1"
+ADAPTIVE_FIM_EVIDENCE_SCHEMA: Final[str] = "adaptive_fim_evidence.v2"
 REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[3]
 HISTORICAL_SOURCE: Final[Path] = REPO_ROOT / (
     "data/scpn_fim_hamiltonian/"
@@ -190,7 +191,7 @@ def _config() -> AdaptiveFIMConfig:
 def adaptive_fim_evidence_payload(
     source_path: Path = HISTORICAL_SOURCE,
 ) -> dict[str, object]:
-    """Build the deterministic BL-80 calibration and replay evidence payload."""
+    """Build the deterministic adaptive-FIM calibration and replay payload."""
     config = _config()
     synthetic = synthetic_calibration_witnesses()
     calibration = plan_adaptive_fim_schedule(
@@ -281,7 +282,7 @@ def adaptive_fim_evidence_payload(
 
 
 def validate_adaptive_fim_evidence(payload: object) -> tuple[str, ...]:
-    """Return fail-closed findings for one BL-80 evidence payload."""
+    """Return fail-closed findings for one adaptive-FIM evidence payload."""
     if not isinstance(payload, dict):
         return ("payload must be a JSON object",)
     data = cast(dict[str, object], payload)
@@ -313,6 +314,8 @@ def validate_adaptive_fim_evidence(payload: object) -> tuple[str, ...]:
         if source.get("use") != "offline_proposal_replay_only":
             findings.append("historical_source use must remain offline replay only")
     calibration = data.get("synthetic_calibration")
+    if not _plan_contract_matches(calibration):
+        findings.append("synthetic calibration plan contracts must remain exact")
     if not _actions_match(calibration, ["decrease", "hold", "hold"]):
         findings.append("synthetic calibration actions must be decrease, hold, hold")
     replay = data.get("historical_offline_replay")
@@ -320,6 +323,8 @@ def validate_adaptive_fim_evidence(payload: object) -> tuple[str, ...]:
         findings.append("historical_offline_replay must be an object")
     else:
         steps = replay.get("steps")
+        if not _step_contracts_match(steps):
+            findings.append("historical replay step contracts must remain exact")
         actions = _step_actions(steps)
         if actions != ["decrease", "decrease", "decrease"]:
             findings.append("historical replay actions must be three decreases")
@@ -329,6 +334,8 @@ def validate_adaptive_fim_evidence(payload: object) -> tuple[str, ...]:
             findings.append("historical replay cannot claim closed-loop efficacy")
     for key in ("budget_refusal", "hardware_refusal"):
         refusal = data.get(key)
+        if not _plan_contract_matches(refusal):
+            findings.append(f"{key} plan contracts must remain exact")
         if not isinstance(refusal, dict) or refusal.get("allowed") is not False:
             findings.append(f"{key} must remain refused")
         elif refusal.get("steps") != [] or refusal.get("observers") != []:
@@ -350,6 +357,40 @@ def _step_actions(value: object) -> list[object] | None:
     return [cast(dict[str, object], item).get("decision") for item in value]
 
 
+def _step_contracts_match(value: object) -> bool:
+    """Return whether serialized proposal steps retain the exact contract."""
+    if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
+        return False
+    return all(
+        cast(dict[str, object], item).get("schema") == ADAPTIVE_FIM_SCHEMA
+        and cast(dict[str, object], item).get("claim_boundary") == ADAPTIVE_FIM_CLAIM_BOUNDARY
+        for item in value
+    )
+
+
+def _observer_contracts_match(value: object) -> bool:
+    """Return whether serialized observers retain the exact claim boundary."""
+    if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
+        return False
+    return all(
+        cast(dict[str, object], item).get("claim_boundary") == ADAPTIVE_FIM_CLAIM_BOUNDARY
+        for item in value
+    )
+
+
+def _plan_contract_matches(value: object) -> bool:
+    """Return whether a serialized plan and its rows retain exact contracts."""
+    if not isinstance(value, dict):
+        return False
+    plan = cast(dict[str, object], value)
+    return (
+        plan.get("schema") == ADAPTIVE_FIM_SCHEMA
+        and plan.get("claim_boundary") == ADAPTIVE_FIM_CLAIM_BOUNDARY
+        and _step_contracts_match(plan.get("steps"))
+        and _observer_contracts_match(plan.get("observers"))
+    )
+
+
 def _actions_match(plan: object, expected: Sequence[str]) -> bool:
     """Return whether one JSON-like plan has exactly the expected actions."""
     if not isinstance(plan, dict):
@@ -368,7 +409,7 @@ def render_adaptive_fim_evidence_markdown(payload: Mapping[str, object]) -> str:
     calibration_steps = cast(list[dict[str, object]], calibration["steps"])
     replay_steps = cast(list[dict[str, object]], replay["steps"])
     lines = [
-        "# BL-80 adaptive FIM evidence",
+        "# Adaptive FIM proposal evidence",
         "",
         f"Schema: `{payload['schema']}`",
         "",
@@ -382,7 +423,7 @@ def render_adaptive_fim_evidence_markdown(payload: Mapping[str, object]) -> str:
         "| Historical offline replay | "
         + " -> ".join(str(step["decision"]) for step in replay_steps)
         + " | Replays already committed adverse lambda=4 witnesses; no efficacy test |",
-        "| BL-47 over-budget request | refused | No schedule or observer emitted |",
+        "| Hardware-safe over-budget request | refused | No schedule or observer emitted |",
         "| Hardware request | refused | No provider submission or execution |",
         "",
         "## Custody",
@@ -414,7 +455,7 @@ def write_adaptive_fim_evidence(
     payload: dict[str, object] | None = None,
     source_path: Path = HISTORICAL_SOURCE,
 ) -> dict[str, object]:
-    """Validate and atomically write BL-80 JSON and Markdown evidence."""
+    """Validate and atomically write adaptive-FIM JSON and Markdown evidence."""
     evidence = adaptive_fim_evidence_payload(source_path) if payload is None else payload
     findings = validate_adaptive_fim_evidence(evidence)
     if findings:
@@ -431,7 +472,7 @@ def write_adaptive_fim_evidence(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Write the default or caller-selected BL-80 evidence artefacts."""
+    """Write the default or caller-selected adaptive-FIM evidence artefacts."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--json-output",

@@ -45,11 +45,11 @@
   row favours QRC while the forecast row strongly favours ESN; no general,
   hardware, provider, control, optimisation-advantage, or deployment claim is
   made.
-- 2026-07-29 — Adaptive FIM next-experiment proposals (BL-80): upgraded the
+- 2026-07-29 — Adaptive FIM next-experiment proposals: upgraded the
   point-estimate lambda rule with count-bound Wilson intervals, minimum-shot and
-  bounded-delta gates, complete BL-47 paired-arm dry-run approval, BL-33
-  observer/unapplied-proposal ports, synthetic calibration controls, and
-  digest-bound offline replay of committed repeated-FIM counts. Hardware,
+  bounded-delta gates, complete hardware-safe paired-arm dry-run approval,
+  co-design observer/unapplied-proposal ports, synthetic calibration controls,
+  and digest-bound offline replay of committed repeated-FIM counts. Hardware,
   closed-loop efficacy, FIM protection, optimal-policy, and advantage claims
   remain refused.
 - 2026-07-28 — Bounded entangled initial-state coherence study (BL-79):
@@ -153,9 +153,10 @@ control, or broad quantum-advantage claim is promoted by this release.
   Gaussian-RBF surrogate and disjoint exact-simulator fidelity gates,
   exact-validated unapplied BL-33 proposal, public guide, evidence CLI, and
   deterministic JSON/Markdown artefacts.
-- 2026-07-29 — BL-80 uncertainty-aware adaptive FIM proposal API, BL-47/BL-33
-  composition, primary-source boundary, evidence CLI, public guide, and
-  deterministic JSON/Markdown calibration and custody-replay artefacts.
+- 2026-07-29 — Uncertainty-aware adaptive FIM proposal API, hardware-safe budget
+  and co-design observer composition, primary-source boundary, evidence CLI,
+  public guide, and deterministic JSON/Markdown calibration and custody-replay
+  artefacts.
 - 2026-07-28 — BL-79 visibility-aware phase/coherence observables,
   dephased-control comparison API, BL-65 research-observation certificate,
   evidence CLI, public scientific-boundary guide, and committed deterministic

@@ -32,12 +32,12 @@ ProposalDecision = Literal["decrease", "hold"]
 PlanOutcome = Literal["allowed_plan", "refused"]
 WitnessSource = Literal["unspecified", "synthetic", "simulator", "hardware_replay"]
 
-ADAPTIVE_FIM_SCHEMA: Final[str] = "adaptive_fim_feedback.v2"
+ADAPTIVE_FIM_SCHEMA: Final[str] = "adaptive_fim_feedback.v3"
 ADAPTIVE_FIM_CLAIM_BOUNDARY: Final[str] = (
-    "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run "
-    "budgets; offline replay is not closed-loop validation; no provider submission, "
-    "live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime "
-    "control, or quantum-advantage claim"
+    "uncertainty-aware batch-level next-experiment proposals under hardware-safe "
+    "no-submit dry-run budgets; offline replay is not closed-loop validation; no "
+    "provider submission, live QPU feedback, FIM protection, optimal-policy, "
+    "hardware-efficacy, realtime control, or quantum-advantage claim"
 )
 
 
@@ -234,6 +234,10 @@ class AdaptiveFIMStep:
 
     def __post_init__(self) -> None:
         """Validate proposal invariants."""
+        if self.schema != ADAPTIVE_FIM_SCHEMA:
+            raise ValueError(f"unknown adaptive FIM feedback schema: {self.schema!r}")
+        if self.claim_boundary != ADAPTIVE_FIM_CLAIM_BOUNDARY:
+            raise ValueError("adaptive FIM step claim boundary must not drift")
         if self.index < 0:
             raise ValueError("index must be non-negative")
         for value, name in (
@@ -273,7 +277,7 @@ class AdaptiveFIMStep:
 
 @dataclass(frozen=True, slots=True)
 class AdaptiveFIMObserverRecord:
-    """Bounded BL-33 telemetry for one unapplied BL-80 proposal."""
+    """Bounded co-design telemetry for one unapplied adaptive-FIM proposal."""
 
     observer_id: str
     action: ProposalDecision
@@ -289,6 +293,8 @@ class AdaptiveFIMObserverRecord:
 
     def __post_init__(self) -> None:
         """Validate adapter telemetry without promoting an applied action."""
+        if self.claim_boundary != ADAPTIVE_FIM_CLAIM_BOUNDARY:
+            raise ValueError("adaptive FIM observer claim boundary must not drift")
         if not self.observer_id.strip() or not self.shot_policy_id.strip():
             raise ValueError("observer_id and shot_policy_id must be non-empty")
         if self.hardware_execution:
@@ -303,7 +309,7 @@ class AdaptiveFIMObserverRecord:
 
 @dataclass(frozen=True, slots=True)
 class AdaptiveFIMPlan:
-    """Complete BL-47 budget, schedule, and BL-33 telemetry decision."""
+    """Complete hardware-safe budget, schedule, and observer decision."""
 
     outcome: PlanOutcome
     allowed: bool
@@ -317,6 +323,10 @@ class AdaptiveFIMPlan:
 
     def __post_init__(self) -> None:
         """Validate fail-closed product-plan invariants."""
+        if self.schema != ADAPTIVE_FIM_SCHEMA:
+            raise ValueError(f"unknown adaptive FIM feedback schema: {self.schema!r}")
+        if self.claim_boundary != ADAPTIVE_FIM_CLAIM_BOUNDARY:
+            raise ValueError("adaptive FIM plan claim boundary must not drift")
         if not self.reason.strip():
             raise ValueError("reason must be non-empty")
         if self.allowed != (self.outcome == "allowed_plan"):
@@ -383,7 +393,7 @@ def propose_next_lambda(
 ) -> AdaptiveFIMStep:
     """Return the legacy point-estimate proposal for compatibility only.
 
-    This helper reproduces the pre-BL-80 proportional rule. It has no count
+    This helper reproduces the original proportional rule. It has no count
     qualification and must not be used as calibration or hardware evidence.
     """
     cfg = config or AdaptiveFIMConfig()
@@ -520,12 +530,13 @@ def plan_adaptive_fim_schedule(
     config: AdaptiveFIMConfig | None = None,
     request_hardware: bool = False,
 ) -> AdaptiveFIMPlan:
-    """Gate a paired-arm future schedule through BL-47 before proposing.
+    """Gate a paired-arm future schedule through hardware-safe policy.
 
     Each witness corresponds to one planned next batch with a control arm and a
-    proposed-lambda arm. Consequently BL-47 receives ``n_params=len(witnesses)``
-    and its two-sided evaluation bound accounts for exactly two evaluations per
-    batch. Refusal occurs before interval scoring or BL-33 telemetry creation.
+    proposed-lambda arm. Consequently the dry-run budget receives
+    ``n_params=len(witnesses)`` and its two-sided evaluation bound accounts for
+    exactly two evaluations per batch. Refusal occurs before interval scoring
+    or co-design telemetry creation.
     """
     if not witnesses:
         raise ValueError("witnesses must be non-empty")
@@ -538,7 +549,9 @@ def plan_adaptive_fim_schedule(
     )
     blockers = list(budget.blockers)
     if request_hardware:
-        blockers.append("adaptive FIM hardware execution is unavailable on BL-80")
+        blockers.append(
+            "adaptive FIM hardware execution is unavailable on this offline proposal surface"
+        )
     if blockers:
         return AdaptiveFIMPlan(
             outcome="refused",
@@ -555,7 +568,8 @@ def plan_adaptive_fim_schedule(
         outcome="allowed_plan",
         allowed=True,
         reason=(
-            "offline next-batch proposals allowed under BL-47 dry-run budget; "
+            "offline next-batch proposals allowed under the hardware-safe no-submit "
+            "dry-run budget; "
             "no provider submission or controller application occurred"
         ),
         blockers=(),
@@ -570,7 +584,7 @@ def observer_record_from_step(
     *,
     policy_id: str,
 ) -> AdaptiveFIMObserverRecord:
-    """Map one proposal step to bounded BL-33 observer telemetry."""
+    """Map one proposal step to bounded co-design observer telemetry."""
     if not policy_id.strip():
         raise ValueError("policy_id must be non-empty")
     interval = step.interval

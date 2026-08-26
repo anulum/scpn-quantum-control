@@ -23,19 +23,19 @@
       "shots_per_evaluation": 4096,
       "would_submit": false
     },
-    "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+    "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under hardware-safe no-submit dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
     "closed_loop_validated": false,
     "hardware_execution": false,
     "observers": [],
     "outcome": "refused",
     "provider_submission": false,
     "reason": "adaptive FIM plan refused before schedule generation",
-    "schema": "adaptive_fim_feedback.v2",
+    "schema": "adaptive_fim_feedback.v3",
     "steps": []
   },
-  "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+  "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under hardware-safe no-submit dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
   "closed_loop_validated": false,
-  "content_digest": "7aeeb99d94ca3979eed288d7c3d533ec56145ba58596f88933d2691f09107460",
+  "content_digest": "274e298e10fca27d3ab924cddb99e962abeaf4a9a398bcfcee40fdff2cd52274",
   "decision_policy": {
     "config": {
       "confidence_z": 1.959963984540054,
@@ -59,7 +59,7 @@
     "blockers": [
       "policy no_submit=True refuses would-submit path",
       "would-submit requires owner_allow_submit gate",
-      "adaptive FIM hardware execution is unavailable on BL-80"
+      "adaptive FIM hardware execution is unavailable on this offline proposal surface"
     ],
     "budget": {
       "blockers": [
@@ -79,14 +79,14 @@
       "shots_per_evaluation": 128,
       "would_submit": true
     },
-    "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+    "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under hardware-safe no-submit dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
     "closed_loop_validated": false,
     "hardware_execution": false,
     "observers": [],
     "outcome": "refused",
     "provider_submission": false,
     "reason": "adaptive FIM plan refused before schedule generation",
-    "schema": "adaptive_fim_feedback.v2",
+    "schema": "adaptive_fim_feedback.v3",
     "steps": []
   },
   "historical_offline_replay": {
@@ -94,7 +94,7 @@
     "deterministic_replay": true,
     "steps": [
       {
-        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under hardware-safe no-submit dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
         "clipped": false,
         "count_qualified": true,
         "decision": "decrease",
@@ -111,7 +111,7 @@
         "lambda_in": 4.0,
         "lambda_out": 3.837615782258726,
         "rationale": "leakage Wilson lower bound exceeds target plus deadband",
-        "schema": "adaptive_fim_feedback.v2",
+        "schema": "adaptive_fim_feedback.v3",
         "witness": {
           "artifact_id": "fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387:circuit-0",
           "count_bound": true,
@@ -125,7 +125,7 @@
         }
       },
       {
-        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under hardware-safe no-submit dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
         "clipped": false,
         "count_qualified": true,
         "decision": "decrease",
@@ -142,7 +142,7 @@
         "lambda_in": 3.837615782258726,
         "lambda_out": 3.337615782258726,
         "rationale": "leakage Wilson lower bound exceeds target plus deadband",
-        "schema": "adaptive_fim_feedback.v2",
+        "schema": "adaptive_fim_feedback.v3",
         "witness": {
           "artifact_id": "fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387:circuit-3",
           "count_bound": true,
@@ -156,7 +156,7 @@
         }
       },
       {
-        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under hardware-safe no-submit dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
         "clipped": false,
         "count_qualified": true,
         "decision": "decrease",
@@ -173,7 +173,7 @@
         "lambda_in": 3.337615782258726,
         "lambda_out": 3.149443916465617,
         "rationale": "leakage Wilson lower bound exceeds target plus deadband",
-        "schema": "adaptive_fim_feedback.v2",
+        "schema": "adaptive_fim_feedback.v3",
         "witness": {
           "artifact_id": "fim_ibm_repeated_followup_raw_counts_2026-05-05_ibm-run-cf4835290f607387:circuit-7",
           "count_bound": true,
@@ -263,7 +263,7 @@
   "optimal_policy_claimed": false,
   "provider_submission": false,
   "quantum_advantage_claimed": false,
-  "schema": "adaptive_fim_evidence.v1",
+  "schema": "adaptive_fim_evidence.v2",
   "synthetic_calibration": {
     "allowed": true,
     "blockers": [],
@@ -282,13 +282,13 @@
       "shots_per_evaluation": 128,
       "would_submit": false
     },
-    "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+    "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under hardware-safe no-submit dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
     "closed_loop_validated": false,
     "hardware_execution": false,
     "observers": [
       {
         "action": "decrease",
-        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under hardware-safe no-submit dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
         "hardware_execution": false,
         "interval_lower": 0.09213577125424062,
         "interval_upper": 0.14794081953359148,
@@ -301,7 +301,7 @@
       },
       {
         "action": "hold",
-        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under hardware-safe no-submit dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
         "hardware_execution": false,
         "interval_lower": 0.033289430544156826,
         "interval_upper": 0.07108655145578816,
@@ -314,7 +314,7 @@
       },
       {
         "action": "hold",
-        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under hardware-safe no-submit dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
         "hardware_execution": false,
         "interval_lower": null,
         "interval_upper": null,
@@ -328,11 +328,11 @@
     ],
     "outcome": "allowed_plan",
     "provider_submission": false,
-    "reason": "offline next-batch proposals allowed under BL-47 dry-run budget; no provider submission or controller application occurred",
-    "schema": "adaptive_fim_feedback.v2",
+    "reason": "offline next-batch proposals allowed under the hardware-safe no-submit dry-run budget; no provider submission or controller application occurred",
+    "schema": "adaptive_fim_feedback.v3",
     "steps": [
       {
-        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under hardware-safe no-submit dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
         "clipped": false,
         "count_qualified": true,
         "decision": "decrease",
@@ -349,7 +349,7 @@
         "lambda_in": 4.0,
         "lambda_out": 3.8314569149830375,
         "rationale": "leakage Wilson lower bound exceeds target plus deadband",
-        "schema": "adaptive_fim_feedback.v2",
+        "schema": "adaptive_fim_feedback.v3",
         "witness": {
           "artifact_id": "adaptive_fim.synthetic.high_leakage",
           "count_bound": true,
@@ -363,7 +363,7 @@
         }
       },
       {
-        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under hardware-safe no-submit dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
         "clipped": false,
         "count_qualified": true,
         "decision": "hold",
@@ -380,7 +380,7 @@
         "lambda_in": 3.8314569149830375,
         "lambda_out": 3.8314569149830375,
         "rationale": "hold: harmful-direction interval does not clear the decision boundary",
-        "schema": "adaptive_fim_feedback.v2",
+        "schema": "adaptive_fim_feedback.v3",
         "witness": {
           "artifact_id": "adaptive_fim.synthetic.boundary_hold",
           "count_bound": true,
@@ -394,7 +394,7 @@
         }
       },
       {
-        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
+        "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under hardware-safe no-submit dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
         "clipped": false,
         "count_qualified": false,
         "decision": "hold",
@@ -404,7 +404,7 @@
         "lambda_in": 3.8314569149830375,
         "lambda_out": 3.8314569149830375,
         "rationale": "hold: shots 32 below min_shots 256; uncertainty gate not qualified",
-        "schema": "adaptive_fim_feedback.v2",
+        "schema": "adaptive_fim_feedback.v3",
         "witness": {
           "artifact_id": "adaptive_fim.synthetic.underpowered_hold",
           "count_bound": true,

@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — co-design adapters over existing product ports
-"""co-design adapters over control-stack control ports and active-sensing/69/70 observers."""
+"""Co-design adapters for control ports and sensing, identity, geometry, and FIM observers."""
 
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ from .contracts import (
 
 @dataclass(frozen=True, slots=True)
 class ControlAdapterEvidence:
-    """Compact evidence that BL-33 consumed an existing BL-67 port."""
+    """Compact evidence from an existing policy-gated control port."""
 
     adapter_id: str
     authorised: bool
@@ -58,7 +58,7 @@ def observer_inputs_from_products(
     geometry: SsgfGeometryObserverRecord | None = None,
     adaptive_fim: AdaptiveFIMObserverRecord | None = None,
 ) -> ObserverInputs:
-    """Map completed observer products into bounded BL-33 telemetry."""
+    """Map completed observer products into bounded co-design telemetry."""
     return ObserverInputs(
         active_sensing_id=(None if active_sensing is None else active_sensing.observer_id),
         identity_action=None if identity is None else identity.action,
@@ -71,10 +71,10 @@ def observer_inputs_from_products(
 
 
 def adaptive_fim_proposal_port(step: AdaptiveFIMStep) -> ControllerProposal:
-    """Map one BL-80 scalar proposal to the unapplied BL-33 controller port.
+    """Map one adaptive-FIM proposal to the unapplied controller port.
 
     The adapter does not pass a safety envelope or apply the proposal. A hold is
-    represented by a zero update; ``gain_scale=1`` avoids inventing a BL-33 gain.
+    represented by a zero update; ``gain_scale=1`` avoids inventing a controller gain.
     """
     return ControllerProposal(
         parameters=(step.lambda_out,),
@@ -90,7 +90,7 @@ def consume_realtime_feedback_port(
     n_rounds: int,
     seed: int | None = None,
 ) -> ControlAdapterEvidence:
-    """Consume the existing BL-67 realtime-feedback port under policy."""
+    """Consume the existing realtime-feedback port under execution policy."""
     result = run_realtime_feedback_adapter(
         controller,
         policy=policy,
@@ -111,7 +111,7 @@ def consume_qaoa_mpc_port(
     policy: ClosedLoopExecutionPolicy,
     seed: int | None = None,
 ) -> ControlAdapterEvidence:
-    """Consume the existing BL-67 abstract QAOA-MPC port under policy."""
+    """Consume the existing abstract QAOA-MPC port under execution policy."""
     result = run_qaoa_mpc_adapter(controller, policy=policy, seed=seed)
     return ControlAdapterEvidence(
         adapter_id="control_stack.qaoa_mpc",
@@ -131,7 +131,7 @@ def consume_cosimulation_port(
     max_quantum_nodes: int = 8,
     seed: int | None = None,
 ) -> ControlAdapterEvidence:
-    """Consume the existing BL-67 policy-gated co-simulation partition."""
+    """Consume the existing policy-gated co-simulation partition."""
     result = run_cosimulation_partition_adapter(
         coupling,
         omega,

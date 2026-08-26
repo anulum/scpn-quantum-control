@@ -109,7 +109,7 @@ def test_writer_and_cli_emit_valid_atomic_files(
     markdown_path = tmp_path / "nested" / "evidence.md"
     assert write_adaptive_fim_evidence(json_path, markdown_path, payload=payload) == payload
     assert json.loads(json_path.read_text(encoding="utf-8")) == payload
-    assert markdown_path.read_text(encoding="utf-8").startswith("# BL-80")
+    assert markdown_path.read_text(encoding="utf-8").startswith("# Adaptive FIM proposal evidence")
     assert not json_path.with_suffix(".json.tmp").exists()
 
     generated_json = tmp_path / "generated.json"
@@ -159,7 +159,7 @@ def test_repository_runner_delegates_to_evidence_main(monkeypatch: pytest.Monkey
 @pytest.mark.parametrize(
     ("mutation", "message"),
     [
-        ({"schema": "wrong"}, "schema"),
+        ({"schema": "adaptive_fim_evidence.v1"}, "schema"),
         ({"claim_boundary": "promoted"}, "claim_boundary"),
         ({"functional_passed": False}, "functional_passed"),
         ({"provider_submission": True}, "provider_submission"),
@@ -207,6 +207,20 @@ def test_validator_rejects_nested_promotion_and_action_drift(payload: dict[str, 
     assert any(
         "synthetic calibration" in item for item in validate_adaptive_fim_evidence(calibration)
     )
+    calibration_schema = copy.deepcopy(payload)
+    cast(dict[str, object], calibration_schema["synthetic_calibration"])["schema"] = (
+        "adaptive_fim_feedback.v2"
+    )
+    assert any(
+        "synthetic calibration plan contracts" in item
+        for item in validate_adaptive_fim_evidence(calibration_schema)
+    )
+    calibration_observers = copy.deepcopy(payload)
+    cast(dict[str, object], calibration_observers["synthetic_calibration"])["observers"] = "bad"
+    assert any(
+        "synthetic calibration plan contracts" in item
+        for item in validate_adaptive_fim_evidence(calibration_observers)
+    )
 
     replay = copy.deepcopy(payload)
     cast(dict[str, object], replay["historical_offline_replay"])["closed_loop_efficacy_tested"] = (
@@ -222,6 +236,16 @@ def test_validator_rejects_nested_promotion_and_action_drift(payload: dict[str, 
     assert any(
         "three decreases" in item for item in validate_adaptive_fim_evidence(replay_actions)
     )
+    replay_contract = copy.deepcopy(payload)
+    contract_steps = cast(
+        list[dict[str, object]],
+        cast(dict[str, object], replay_contract["historical_offline_replay"])["steps"],
+    )
+    contract_steps[0]["claim_boundary"] = "broader replay claims"
+    assert any(
+        "historical replay step contracts" in item
+        for item in validate_adaptive_fim_evidence(replay_contract)
+    )
     replay_nondeterministic = copy.deepcopy(payload)
     cast(dict[str, object], replay_nondeterministic["historical_offline_replay"])[
         "deterministic_replay"
@@ -232,6 +256,14 @@ def test_validator_rejects_nested_promotion_and_action_drift(payload: dict[str, 
     refusal_steps = copy.deepcopy(payload)
     cast(dict[str, object], refusal_steps["budget_refusal"])["steps"] = [{}]
     assert any("no proposals" in item for item in validate_adaptive_fim_evidence(refusal_steps))
+    refusal_schema = copy.deepcopy(payload)
+    cast(dict[str, object], refusal_schema["budget_refusal"])["schema"] = (
+        "adaptive_fim_feedback.v2"
+    )
+    assert any(
+        "budget_refusal plan contracts" in item
+        for item in validate_adaptive_fim_evidence(refusal_schema)
+    )
     invalid_steps = copy.deepcopy(payload)
     cast(dict[str, object], invalid_steps["synthetic_calibration"])["steps"] = "bad"
     assert any(
