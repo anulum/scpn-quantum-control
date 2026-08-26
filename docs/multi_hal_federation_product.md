@@ -1,7 +1,7 @@
 # Multi-HAL provider federation product
 
 **Capability-true federation matrix** over ambient `hardware/hal_*` adapters and
-backend descriptors. Default **no-submit dry-run** (BL-47). Never invent-green
+backend descriptors. Default **hardware-safe no-submit dry-run**. Never invent-green
 live submit without an owner ticket; never invent online queue depth.
 
 Module: `scpn_quantum_control.multi_hal_federation_product`
@@ -10,7 +10,7 @@ Module: `scpn_quantum_control.multi_hal_federation_product`
 
 | Rule | Behaviour |
 |---|---|
-| Product schema | `multi_hal_federation_product.v1` |
+| Product schema | `multi_hal_federation_product.v2` |
 | Inventory source | Ambient `list_hal_backend_descriptors` + `built_in_backend_profiles` |
 | Unknown backend | Fail closed |
 | Dry-run | Allowed, no network |
@@ -112,16 +112,15 @@ assert probe.invent_green_live_submit is False
 assert probe.no_submit is True
 ```
 
-## Residuals (honest)
+## Open capabilities
 
-- **S75.4** — full feedback_* wire under BL-67/47
-- **S75.5** — BL-61 competitor-watch version automation
+- Complete feedback-adapter integration under closed-loop and hardware-safe policies
+- Automated competitive-baseline version monitoring
 - Live ticketed submit remains residual (product refuses auto would_live)
 
 ## Related
 
-- Pack: `docs/internal/differentiable_programming/p3_strategic/bl75_multi_hal_provider_federation.md`
 - Ambient: `hardware.backends`, `hardware.hal`, `provider_capability_core`
-- BL-47 hardware-safe execution; BL-52 route matrix; BL-67 control compose
+- Hardware-safe execution, governed route matrix, and control-stack composition
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

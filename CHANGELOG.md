@@ -266,12 +266,11 @@ control, or broad quantum-advantage claim is promoted by this release.
   invent-green CUDA-Q runtime and QIR provider submit. Docs:
   `docs/compiler_boundary_product.md`. Sixteenth P1 A-product after
   BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75.
-- 2026-07-24 — Multi-HAL provider federation product (BL-75):
+- 2026-07-24 — Multi-HAL provider federation product:
   `scpn_quantum_control.multi_hal_federation_product` productises capability-true
   federation matrix over ambient hardware/hal_* descriptors and profiles with
-  BL-47 no-submit dry-run default; refuse invent-green live submit and network
-  dry-run probes. Docs: `docs/multi_hal_federation_product.md`. Fifteenth P1
-  A-product after BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67.
+  hardware-safe no-submit dry-run default; refuse invent-green live submit and
+  network dry-run probes. Docs: `docs/multi_hal_federation_product.md`.
 - 2026-07-24 — Compose existing control/* stack product (BL-67):
   `scpn_quantum_control.control_stack_compose_product` productises ownership map
   and typed adapter ports over ambient control/* (realtime feedback, closed-loop

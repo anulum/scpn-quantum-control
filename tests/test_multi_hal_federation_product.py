@@ -153,6 +153,16 @@ def test_integrity_rejects_drift_and_policy() -> None:
     registry = build_multi_hal_federation_product_registry()
     matrix = cast(list[dict[str, object]], registry["federation_matrix"])
 
+    stale_schema = dict(registry)
+    stale_schema["schema"] = "multi_hal_federation_product.v1"
+    with pytest.raises(ValueError, match="schema mismatch"):
+        assert_multi_hal_federation_product_integrity(stale_schema)
+
+    stale_boundary = dict(registry)
+    stale_boundary["claim_boundary"] = "stale boundary"
+    with pytest.raises(ValueError, match="claim boundary mismatch"):
+        assert_multi_hal_federation_product_integrity(stale_boundary)
+
     broken = dict(registry)
     broken["federation_matrix"] = matrix + [
         {
@@ -180,11 +190,10 @@ def test_integrity_rejects_drift_and_policy() -> None:
     with pytest.raises(ValueError, match="drift"):
         assert_multi_hal_federation_product_integrity(broken)
 
-    empty: dict[str, object] = {
-        "federation_matrix": [],
-        "blank_entry_count": 0,
-        "backend_count": 0,
-    }
+    empty = dict(registry)
+    empty["federation_matrix"] = []
+    empty["blank_entry_count"] = 0
+    empty["backend_count"] = 0
     with pytest.raises(ValueError, match="non-empty federation_matrix"):
         assert_multi_hal_federation_product_integrity(empty)
 

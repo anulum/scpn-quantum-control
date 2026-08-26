@@ -11,14 +11,14 @@ Productises a **capability-true federation matrix** over ambient HAL adapters
 (``hardware/hal_*.py``, ``backends.list_hal_backend_descriptors``,
 ``hal.built_in_backend_profiles``) with hardware-safety no-submit default:
 
-* versioned HAL inventory from live ambient descriptors/profiles (S75.0);
-* capability record schema (shots / mid-circuit / pulse / approval / IR) (S75.1);
-* federation matrix generation fail-closed on blank/unknown backend ids (S75.2);
-* dry-run path decision without network submission (S75.3);
+* versioned HAL inventory from live ambient descriptors and profiles;
+* capability records for shots, mid-circuit measurement, pulse, approval, and IR;
+* federation-matrix generation that rejects blank or unknown backend ids;
+* offline dry-run path decisions without network submission;
 * refuse invent-green live submit without owner ticket (hardware-safety compose).
 
-Does **not** submit QPU jobs, invent online calibration, complete feedback_*
-depth (S75.4 residual), or ship baseline-watch competitor-watch automation (S75.5).
+Does **not** submit QPU jobs, invent online calibration, complete the feedback
+adapter integration, or automate competitive-baseline monitoring.
 """
 
 from __future__ import annotations
@@ -49,22 +49,22 @@ PathDecisionOutcome = Literal["allowed", "refused"]
 FederationRouteMode = Literal["dry_run", "ticketed_prep", "would_live"]
 """Product-level federation route modes (surface never auto-submits)."""
 
-MULTI_HAL_FEDERATION_PRODUCT_SCHEMA: Final[str] = "multi_hal_federation_product.v1"
+MULTI_HAL_FEDERATION_PRODUCT_SCHEMA: Final[str] = "multi_hal_federation_product.v2"
 """JSON schema identifier for serialised product payloads."""
 
 MULTI_HAL_FEDERATION_CLAIM_BOUNDARY: Final[str] = (
     "Multi-HAL provider federation product surface only; capability-true matrix "
     "over ambient hardware/hal_* adapters and backend descriptors; default "
-    "no-submit dry-run (BL-47); refuse invent-green live submit without owner "
+    "hardware-safe no-submit dry-run; refuse invent-green live submit without owner "
     "ticket and refuse blank/unknown backend ids; does not claim live queue "
-    "depth, full feedback_* wire (S75.4), or BL-61 competitor automation (S75.5)"
+    "depth, complete feedback-adapter integration, or automated competitive-baseline monitoring"
 )
 """Shared claim boundary for multi-HAL federation product payloads."""
 
 
 @dataclass(frozen=True, slots=True)
 class HalCapabilityRecord:
-    """One capability-true HAL row in the federation matrix (S75.0 / S75.1).
+    """One capability-true HAL row in the versioned federation matrix.
 
     Attributes
     ----------
@@ -235,7 +235,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedFederationDryRunProbe:
-    """Materialised dry-run federation probe for one HAL row (S75.3).
+    """Materialised offline dry-run federation probe for one HAL row.
 
     Attributes
     ----------
@@ -503,7 +503,7 @@ def iter_hal_capabilities(
 
 
 def build_federation_matrix() -> tuple[dict[str, object], ...]:
-    """Build the serialisable federation matrix from the catalogue (S75.2).
+    """Build the serialisable federation matrix from the validated catalogue.
 
     Returns
     -------
@@ -522,7 +522,7 @@ def decide_federation_route(
     invent_green_live_submit: bool = False,
     allow_network: bool = False,
 ) -> PathEligibilityDecision:
-    """Decide whether a federation route may proceed (S75.3 / BL-47).
+    """Decide whether a hardware-safe federation route may proceed.
 
     Parameters
     ----------
@@ -548,7 +548,7 @@ def decide_federation_route(
     blockers: list[str] = []
     if invent_green_live_submit:
         blockers.append(
-            f"invent-green live submit refused (backend={row.backend_id}; BL-47 no-submit default)"
+            f"invent-green live submit refused (backend={row.backend_id}; no-submit default)"
         )
     if mode not in {"dry_run", "ticketed_prep", "would_live"}:
         blockers.append(f"unknown federation mode: {mode!r}")
@@ -570,7 +570,7 @@ def decide_federation_route(
         # ticketed prep is the honest residual path.
         blockers.append(
             "would_live auto-submit refused on product surface "
-            "(use ticketed_prep residual; BL-47 compose)"
+            "(use the ticketed_prep residual under hardware-safe execution policy)"
         )
     if blockers:
         return PathEligibilityDecision(
@@ -620,7 +620,7 @@ def materialise_federation_dry_run_probe(
     required_ir_format: str | None = None,
     min_qubits: int | None = None,
 ) -> MaterialisedFederationDryRunProbe:
-    """Materialise a dry-run capability probe via ambient assess (S75.3).
+    """Materialise an offline dry-run capability probe via ambient assessment.
 
     Offline / no-submit snapshot; does not open network connections.
 
@@ -741,8 +741,8 @@ def build_multi_hal_federation_product_registry() -> dict[str, object]:
         "providers": list(list_hal_providers()),
         "policy_note": (
             "Capability-true multi-HAL matrix over ambient adapters only; "
-            "no-submit dry-run default (BL-47); live submit residual ticketed; "
-            "S75.4 feedback_* wire and S75.5 BL-61 competitor watch residual."
+            "hardware-safe no-submit dry-run default; live submit remains ticketed; "
+            "feedback-adapter integration and competitive-baseline monitoring remain open."
         ),
     }
 
@@ -771,6 +771,10 @@ def assert_multi_hal_federation_product_integrity(
     registry = (
         dict(payload) if payload is not None else build_multi_hal_federation_product_registry()
     )
+    if registry.get("schema") != MULTI_HAL_FEDERATION_PRODUCT_SCHEMA:
+        raise ValueError("multi-HAL federation product schema mismatch")
+    if registry.get("claim_boundary") != MULTI_HAL_FEDERATION_CLAIM_BOUNDARY:
+        raise ValueError("multi-HAL federation product claim boundary mismatch")
     matrix = registry.get("federation_matrix")
     if not isinstance(matrix, list) or not matrix:
         raise ValueError(
