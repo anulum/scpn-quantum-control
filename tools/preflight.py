@@ -62,6 +62,7 @@ if TYPE_CHECKING:
     from tools import (
         control_stack_compose_product_quality_gates as _control_stack_compose_quality_gates,
     )
+    from tools import coverage_frontier_quality_gates as _coverage_frontier_quality_gates
     from tools import (
         custom_derivatives_product_quality_gates as _custom_derivatives_product_quality_gates,
     )
@@ -185,6 +186,7 @@ else:
     _compiler_boundary_product_quality_gates = import_module(
         "tools.compiler_boundary_product_quality_gates"
     )
+    _coverage_frontier_quality_gates = import_module("tools.coverage_frontier_quality_gates")
     _competitive_baseline_watch_quality_gates = import_module(
         "tools.competitive_baseline_watch_quality_gates"
     )
@@ -615,6 +617,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_stochastic_estimators_product_quality_gates.build_static_quality_gates(_PY),
     *_notebook_programme_product_quality_gates.build_static_quality_gates(_PY),
     *_studio_executive_quality_gates.build_static_quality_gates(_PY),
+    *_coverage_frontier_quality_gates.build_static_quality_gates(_PY),
     *_compiler_boundary_product_quality_gates.build_static_quality_gates(_PY),
     *_competitive_baseline_watch_quality_gates.build_static_quality_gates(_PY),
     *_whole_program_ad_product_quality_gates.build_static_quality_gates(_PY),
@@ -1061,6 +1064,7 @@ NOTEBOOK_PROGRAMME_PRODUCT_COVERAGE_GATES = (
     _notebook_programme_product_quality_gates.build_coverage_gates(_PY)
 )
 STUDIO_EXECUTIVE_PRODUCT_COVERAGE_GATES = _studio_executive_quality_gates.build_coverage_gates(_PY)
+COVERAGE_FRONTIER_COVERAGE_GATES = _coverage_frontier_quality_gates.build_coverage_gates(_PY)
 COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES = (
     _compiler_boundary_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -1393,6 +1397,7 @@ def main() -> int:
             gates.extend(STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_GATES)
             gates.extend(NOTEBOOK_PROGRAMME_PRODUCT_COVERAGE_GATES)
             gates.extend(STUDIO_EXECUTIVE_PRODUCT_COVERAGE_GATES)
+            gates.extend(COVERAGE_FRONTIER_COVERAGE_GATES)
             gates.extend(COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES)
             gates.extend(COMPETITIVE_BASELINE_WATCH_COVERAGE_GATES)
             gates.extend(WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_GATES)

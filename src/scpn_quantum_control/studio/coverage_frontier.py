@@ -4,12 +4,12 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — WS-6 coverage frontier for the differentiable claim ledger
-"""WS-6 coverage-frontier report for QUANTUM's differentiable claim ledger.
+# scpn-quantum-control — Differentiable claim-ledger coverage frontier
+"""Coverage-frontier report for QUANTUM's differentiable claim ledger.
 
 The honesty floor without coverage is theatre: a ledger that answers nothing is
-perfectly honest and perfectly useless. WS-6 (FLUCTARA's contract, type-A
-abstaining gate) requires every gate to publish an *answer rate* beside its
+perfectly honest and perfectly useless. The federated type-A abstaining-gate
+contract requires every gate to publish an *answer rate* beside its
 integrity claim and to ship — and honestly flag — its **frontier operating point**:
 the most coverage it can give subject to the integrity floor, never the
 safest-looking point.
@@ -20,11 +20,11 @@ The differentiable claim ledger
 honesty axis — the platform :class:`~scpn_studio_platform.evidence.ClaimStatus` — and
 measures the resulting answer rate.
 
-The mapping is **conservative by CEO LOCK-4**: promotion is *maturity*, not
-*validation*, and must never launder into ``reference-validated``. A promoted claim
-rests at :data:`~scpn_studio_platform.evidence.ClaimStatus.BOUNDED_MODEL` and reaches
-``reference-validated`` only when reference-validation evidence is attached to its
-bundle (the WS-3 dependency) — never by relabelling. So on a ledger of candidates
+The mapping enforces the evidence-before-validation rule: promotion is *maturity*,
+not *validation*, and must never launder into ``reference-validated``. A promoted
+claim rests at :data:`~scpn_studio_platform.evidence.ClaimStatus.BOUNDED_MODEL` and
+reaches ``reference-validated`` only when reference-validation evidence is attached
+to its bundle — never by relabelling. So on a ledger of candidates
 the honest answer rate is zero, and the gate reports itself as knowingly
 *off-frontier* (over-conservative): the frontier advances by attaching evidence, not
 by moving labels.
@@ -55,7 +55,7 @@ from .reference_validation import (
 ANSWERED_STATUSES: frozenset[ClaimStatus] = frozenset(
     {ClaimStatus.REFERENCE_VALIDATED, ClaimStatus.REFUTED}
 )
-"""The claim statuses that count as a *confident answer* (WS-6 type-A).
+"""The claim statuses that count as a confident type-A answer.
 
 A claim is answered only when it is established against a reference
 (``reference-validated``) or promoted as a negative finding (``refuted``). Every
@@ -64,7 +64,7 @@ an honest *abstention*: the ledger declines to answer rather than over-claim.
 """
 
 #: The maturity status a claim must hold before reference-validation evidence can
-#: elevate it to ``reference-validated`` (LOCK-4: promotion precedes validation).
+#: elevate it to ``reference-validated``; promotion must precede validation.
 _REFERENCE_VALIDATION_ELIGIBLE: frozenset[PromotionStatus] = frozenset({"promoted"})
 
 
@@ -73,12 +73,12 @@ def map_claim_status(
 ) -> ClaimStatus:
     """Map a ledger ``promotion_status`` onto a federation :class:`ClaimStatus`.
 
-    The mapping is conservative by LOCK-4 — a maturity label never launders into a
-    validation grade:
+    The mapping enforces the evidence-before-validation rule: a maturity label
+    never launders into a validation grade:
 
     - ``promoted`` → ``bounded-model``, or ``reference-validated`` *only* when
       ``reference_validated`` certifies that reference-validation evidence is
-      attached to the claim's bundle (the WS-3 dependency).
+      attached to the claim's bundle by the reference-validation registry.
     - ``bounded_candidate`` → ``bounded-model`` (a credible, within-bounds candidate;
       ``bounded-support`` is reserved for domain fail-closed states, which a
       candidacy is not).
@@ -105,11 +105,12 @@ def map_claim_status(
     ValueError
         If ``promotion_status`` is unknown, or ``reference_validated`` is set for a
         status that is not promotion-eligible.
+
     """
     if reference_validated and promotion_status not in _REFERENCE_VALIDATION_ELIGIBLE:
         raise ValueError(
             f"reference_validated is only admissible for a promoted claim, "
-            f"not {promotion_status!r} (LOCK-4: promotion precedes validation)"
+            f"not {promotion_status!r} (promotion must precede validation)"
         )
     if promotion_status == "promoted":
         return (
@@ -126,7 +127,7 @@ def map_claim_status(
 
 @dataclass(frozen=True)
 class CoverageFrontierReport:
-    """A WS-6 type-A coverage report for the differentiable claim ledger.
+    """A type-A coverage report for the differentiable claim ledger.
 
     Parameters
     ----------
@@ -143,13 +144,14 @@ class CoverageFrontierReport:
     off_frontier
         Whether the gate is knowingly off the frontier — here, over-conservative:
         candidate claims rest unanswered that could be answered by attaching
-        reference-validation evidence (WS-3), not by relabelling.
+        reference-validation evidence, not by relabelling.
     off_frontier_reason
         A one-line justification when ``off_frontier`` is set, else ``None``.
     calibration_status
         The state of the answered verdicts' false-positive rate. This number is
-        owned by WS-3 (validate-the-grader); until that lands it is reported as
-        ``"pending-ws3"`` rather than fabricated.
+        owned by reference-validation calibration; until that lands it is reported
+        as ``"pending-reference-validation-calibration"`` rather than fabricated.
+
     """
 
     total: int
@@ -180,14 +182,14 @@ def measure_coverage_frontier(
     *,
     reference_validated_claim_ids: Iterable[str] = (),
 ) -> CoverageFrontierReport:
-    """Measure the WS-6 coverage frontier of the differentiable claim ledger.
+    """Measure the coverage frontier of the differentiable claim ledger.
 
     Parameters
     ----------
     rows_or_ledger
         The loaded ledger or its rows.
     reference_validated_claim_ids
-        Claim IDs an external reference-validation process (WS-3) has certified as
+        Claim IDs an external reference-validation process has certified as
         carrying reference-validation evidence. Empty by default — so a bare ledger
         of candidates reports an honest ``0.0`` answer rate, and nothing is laundered
         upward. A non-eligible claim listed here fails closed (see
@@ -197,6 +199,7 @@ def measure_coverage_frontier(
     -------
     CoverageFrontierReport
         The type-A report with the chosen operating point and the off-frontier flag.
+
     """
     rows = tuple(
         rows_or_ledger.rows if isinstance(rows_or_ledger, ClaimLedger) else rows_or_ledger
@@ -217,7 +220,7 @@ def measure_coverage_frontier(
             answered += 1
         elif status is ClaimStatus.BOUNDED_MODEL:
             # A within-bounds candidate: unanswered, but answerable by attaching
-            # reference-validation evidence (WS-3). Validation gaps and external
+            # reference-validation evidence. Validation gaps and external
             # blocks are honestly unanswerable now and are NOT counted as improvable.
             improvable += 1
 
@@ -228,8 +231,8 @@ def measure_coverage_frontier(
     if off_frontier:
         reason = (
             f"{improvable} candidate claim(s) rest at bounded-model awaiting attached "
-            "reference-validation evidence (WS-3); the frontier advances by attaching "
-            "that evidence, never by relabelling (LOCK-4)."
+            "reference-validation evidence; the frontier advances by attaching "
+            "that evidence, never by relabelling."
         )
 
     return CoverageFrontierReport(
@@ -240,7 +243,7 @@ def measure_coverage_frontier(
         claim_status_by_id=status_by_id,
         off_frontier=off_frontier,
         off_frontier_reason=reason,
-        calibration_status="pending-ws3",
+        calibration_status="pending-reference-validation-calibration",
     )
 
 
@@ -249,7 +252,7 @@ def measure_coverage_frontier_from_certifications(
     *,
     registry: ReferenceValidationRegistry | None = None,
 ) -> CoverageFrontierReport:
-    """Measure WS-6 coverage from a validated WS-3 certification registry.
+    """Measure coverage from a validated reference-certification registry.
 
     Parameters
     ----------
@@ -257,14 +260,15 @@ def measure_coverage_frontier_from_certifications(
         The loaded ledger or its rows. Defaults to the committed differentiable
         claim ledger.
     registry
-        Optional pre-loaded WS-3 registry. Defaults to the committed empty
-        registry. Invalid registries fail closed before any claim ID reaches
+        Optional pre-loaded reference-validation registry. Defaults to the committed
+        empty registry. Invalid registries fail closed before any claim ID reaches
         :func:`measure_coverage_frontier`.
 
     Returns
     -------
     CoverageFrontierReport
         The coverage report measured with the registry-certified claim IDs.
+
     """
     ledger_input = load_differentiable_claim_ledger() if rows_or_ledger is None else rows_or_ledger
     rows = tuple(ledger_input.rows if isinstance(ledger_input, ClaimLedger) else ledger_input)
@@ -276,7 +280,7 @@ def measure_coverage_frontier_from_certifications(
 
 
 def render_coverage_frontier_markdown(report: CoverageFrontierReport) -> str:
-    """Render the coverage-frontier report as the WS-6 release artefact.
+    """Render the coverage-frontier report as a release artefact.
 
     Parameters
     ----------
@@ -288,6 +292,7 @@ def render_coverage_frontier_markdown(report: CoverageFrontierReport) -> str:
     str
         A reviewer-facing Markdown summary carrying the real numbers, the chosen
         operating point, and the off-frontier flag.
+
     """
     lines = [
         "<!--",
@@ -297,10 +302,10 @@ def render_coverage_frontier_markdown(report: CoverageFrontierReport) -> str:
         "© Code 2020–2026 Miroslav Šotek. All rights reserved.",
         "ORCID: 0009-0009-3560-0851",
         "Contact: www.anulum.li | protoscience@anulum.li",
-        "SCPN Quantum Control — WS-6 Differentiable Coverage Frontier",
+        "SCPN Quantum Control — Differentiable Claim-Ledger Coverage Frontier",
         "-->",
         "",
-        "# WS-6 Coverage Frontier — Differentiable Claim Ledger",
+        "# Coverage Frontier — Differentiable Claim Ledger",
         "",
         f"- **Answer rate:** {report.answer_rate:.3f} "
         f"({report.answered_confident}/{report.total} confident)",
@@ -324,7 +329,7 @@ def render_coverage_frontier_markdown(report: CoverageFrontierReport) -> str:
         [
             "",
             "Answered = reference-validated ∪ refuted. Promotion is maturity, not "
-            "validation (LOCK-4): a candidate is answered only when reference-validation "
+            "validation: a candidate is answered only when reference-validation "
             "evidence is attached, never by relabelling.",
             "",
         ]

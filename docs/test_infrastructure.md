@@ -40,6 +40,32 @@ pytest tests/ -v --tb=short -m "not slow"
 pytest tests/ --cov=src/scpn_quantum_control --cov-branch --cov-report=html -m "not slow"
 ```
 
+## Coverage-frontier quality gate
+
+The Studio coverage-frontier owner has one descriptively named permanent gate.
+Its four-file static cohort enforces strict MyPy and NumPy docstrings; its owner
+test exercises every statement and branch in the runtime module. The same
+helper-defined commands are wired byte-for-byte into local preflight and the
+required `coverage-frontier-quality` CI job:
+
+```bash
+quality_paths=(
+  src/scpn_quantum_control/studio/coverage_frontier.py
+  tests/test_coverage_frontier.py
+  tools/coverage_frontier_quality_gates.py
+  tests/test_studio_claim_frontier_quality_gate.py
+)
+python -m mypy --strict --explicit-package-bases "${quality_paths[@]}"
+python -m ruff check --isolated --select D,D413 \
+  --config 'lint.pydocstyle.convention = "numpy"' "${quality_paths[@]}"
+python -m coverage run --rcfile=/dev/null \
+  --data-file=.coverage.coverage-frontier-quality --branch \
+  -m pytest -q tests/test_coverage_frontier.py
+python -m coverage report --rcfile=/dev/null \
+  --data-file=.coverage.coverage-frontier-quality --precision=2 \
+  --fail-under=100 --include='*/studio/coverage_frontier.py'
+```
+
 ## Test typing ratchet
 
 Production Python remains under repository-wide strict mypy. The test tree is

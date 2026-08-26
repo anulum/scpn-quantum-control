@@ -4803,7 +4803,7 @@ Emit the effective-coupling invariant as a schema-B evidence bundle.
 
 ### `scpn_quantum_control.studio.coverage_frontier`
 
-WS-6 coverage-frontier report for QUANTUM's differentiable claim ledger.
+Coverage-frontier report for QUANTUM's differentiable claim ledger.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/coverage_frontier.py) · Public symbols: **5**
 

@@ -4,10 +4,10 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Tests for the WS-6 differentiable coverage frontier
-"""Tests for studio/coverage_frontier.py — the WS-6 type-A coverage report.
+# scpn-quantum-control — Tests for the differentiable coverage frontier
+"""Tests for the Studio type-A coverage-frontier report.
 
-Covers the LOCK-4 conservative mapping, the answer-rate measurement, the
+Covers the evidence-before-validation mapping, the answer-rate measurement, the
 off-frontier flag (over-conservative when candidates await reference-validation
 evidence), the markdown artefact, and the real committed ledger.
 """
@@ -55,7 +55,7 @@ def _row(claim_id: str, promotion_status: PromotionStatus) -> ClaimLedgerRow:
     )
 
 
-# ── the LOCK-4 conservative mapping ────────────────────────────────────
+# ── evidence-before-validation mapping ────────────────────────────────
 
 
 def test_promoted_maps_to_bounded_model_without_evidence() -> None:
@@ -78,7 +78,7 @@ def test_bounded_candidate_and_gaps_map_conservatively() -> None:
 
 
 def test_reference_validated_on_non_promoted_fails_closed() -> None:
-    """An unpromoted claim cannot be reference-validated (LOCK-4 ordering)."""
+    """An unpromoted claim cannot be reference-validated."""
     with pytest.raises(ValueError, match="only admissible for a promoted claim"):
         map_claim_status("bounded_candidate", reference_validated=True)
 
@@ -108,7 +108,7 @@ def test_candidate_ledger_answers_nothing_and_is_off_frontier() -> None:
     assert report.off_frontier is True
     assert report.off_frontier_reason is not None
     assert "reference-validation evidence" in report.off_frontier_reason
-    assert report.calibration_status == "pending-ws3"
+    assert report.calibration_status == "pending-reference-validation-calibration"
 
 
 def test_attaching_evidence_advances_the_frontier() -> None:
@@ -126,7 +126,7 @@ def test_attaching_evidence_advances_the_frontier() -> None:
 
 
 def test_certification_registry_feeds_reference_validated_claim_ids() -> None:
-    """WS-3 per-claim certifications are the approved feed into the WS-6 frontier."""
+    """Per-claim reference certifications are the approved frontier feed."""
     registry = ReferenceValidationRegistry(
         schema="studio.reference-validation-certifications.v1",
         certifications=(
@@ -194,7 +194,7 @@ def test_to_dict_round_trips_the_report() -> None:
     assert payload["grade_distribution"] == {"bounded-model": 1}
     assert payload["claim_status_by_id"] == {"c1": "bounded-model"}
     assert payload["off_frontier"] is True
-    assert payload["calibration_status"] == "pending-ws3"
+    assert payload["calibration_status"] == "pending-reference-validation-calibration"
 
 
 # ── the markdown artefact ──────────────────────────────────────────────
@@ -204,12 +204,12 @@ def test_markdown_reports_off_frontier_with_reason() -> None:
     """The off-frontier artefact carries the answer rate, the flag, and the reason."""
     report = measure_coverage_frontier([_row("c1", "bounded_candidate")])
     markdown = render_coverage_frontier_markdown(report)
-    assert "WS-6 Coverage Frontier" in markdown
+    assert "Coverage Frontier" in markdown
     assert "Answer rate:** 0.000 (0/1 confident)" in markdown
     assert "OFF-frontier (over-conservative)" in markdown
     assert "Off-frontier reason:" in markdown
     assert "| bounded-model | 1 |" in markdown
-    assert "pending-ws3" in markdown
+    assert "pending-reference-validation-calibration" in markdown
 
 
 def test_markdown_on_frontier_omits_the_reason_line() -> None:
