@@ -14,8 +14,8 @@ blank/unknown/duplicate paths, and an example linear rule.
 Composes ambient :class:`~scpn_quantum_control.program_ad_registry.CustomDerivativeRegistry`
 and :class:`~scpn_quantum_control.program_ad_registry.CustomDerivativeRule` —
 does **not** rewrite the full transform algebra stack or invent-green full
-transform-algebra/route-matrix CI. Residual S92.2 transform-algebra interaction CI and
-S92.4 full metamorphic-verification metamorphic automation remain open honestly.
+transform-algebra/route-matrix CI. Complete transform-algebra interaction
+coverage and per-rule metamorphic verification remain open honestly.
 """
 
 from __future__ import annotations
@@ -42,7 +42,7 @@ ContractKind = Literal[
 ]
 """Product contract kinds in the catalogue."""
 
-CUSTOM_DERIVATIVES_PRODUCT_SCHEMA: Final[str] = "custom_derivatives_product.v1"
+CUSTOM_DERIVATIVES_PRODUCT_SCHEMA: Final[str] = "custom_derivatives_product.v2"
 """JSON schema identifier for serialised product payloads."""
 
 DEFAULT_PRODUCT_NAMESPACE: Final[str] = "scpn.product.custom_derivatives"
@@ -51,16 +51,16 @@ DEFAULT_PRODUCT_NAMESPACE: Final[str] = "scpn.product.custom_derivatives"
 CUSTOM_DERIVATIVES_CLAIM_BOUNDARY: Final[str] = (
     "Custom derivatives product surface only; versioned registration contract "
     "and fail-closed register/query over ambient CustomDerivativeRegistry; "
-    "does not invent-green full transform-algebra CI (BL-03/52) or mass rule "
-    "migration; residual S92.2 transform-algebra interaction tests and S92.4 "
-    "full BL-46 metamorphic automation open honestly"
+    "does not invent-green complete transform-algebra and governed route-matrix "
+    "CI or mass rule migration; transform-algebra interaction coverage and "
+    "per-rule metamorphic verification remain open honestly"
 )
 """Shared claim boundary for contracts, registrations, and decisions."""
 
 
 @dataclass(frozen=True, slots=True)
 class CustomDerivativeContractRow:
-    """One product contract row for the custom-derivatives surface (S92.0).
+    """One product contract row for the custom-derivatives surface.
 
     Attributes
     ----------
@@ -77,7 +77,7 @@ class CustomDerivativeContractRow:
     symbol_name
         Primary ambient symbol.
     metamorphic_verification_pointer
-        Optional BL-46 metamorphic honesty pointer.
+        Optional metamorphic-verification boundary pointer.
     api_stability_class
         Stability honesty class.
     as_of
@@ -231,19 +231,17 @@ _CANONICAL_CONTRACTS: Final[tuple[CustomDerivativeContractRow, ...]] = (
         "example_linear_rule",
         kind="example_rule",
         title="Example scaled-linear custom rule",
-        summary=(
-            "Documented example CustomDerivativeRule with exact JVP/VJP for y = scale * x (S92.3)."
-        ),
+        summary=("Documented example CustomDerivativeRule with exact JVP/VJP for y = scale * x."),
         module_path="scpn_quantum_control.custom_derivatives_product",
         symbol_name="build_example_scaled_linear_rule",
     ),
     _row(
         "transform_algebra_boundary",
         kind="transform_algebra_boundary",
-        title="Transform-algebra interaction boundary (BL-03/52 residual)",
+        title="Transform-algebra interaction coverage boundary",
         summary=(
             "Boundary-only product row: full transform-algebra matrix CI for "
-            "custom rules remains residual S92.2."
+            "custom rules remains open."
         ),
         module_path="scpn_quantum_control.differentiable_custom_derivatives",
         symbol_name="custom_jvp",
@@ -251,10 +249,10 @@ _CANONICAL_CONTRACTS: Final[tuple[CustomDerivativeContractRow, ...]] = (
     _row(
         "metamorphic_boundary",
         kind="metamorphic_boundary",
-        title="BL-46 metamorphic requirements boundary",
+        title="Per-rule metamorphic verification boundary",
         summary=(
             "Boundary-only product row: full metamorphic automation for every "
-            "new custom rule remains residual S92.4."
+            "new custom rule remains open."
         ),
         module_path="scpn_quantum_control.metamorphic_ad_verification",
         symbol_name="probe_metamorphic_law",
@@ -347,7 +345,7 @@ def iter_custom_derivative_contracts(
 
 
 def registration_contract_policy() -> dict[str, object]:
-    """Return the versioned registration contract policy (S92.0).
+    """Return the versioned registration contract policy.
 
     Returns
     -------
@@ -362,8 +360,8 @@ def registration_contract_policy() -> dict[str, object]:
         "fail_closed_blank_identity": True,
         "fail_closed_duplicate_without_overwrite": True,
         "require_jvp_or_vjp": True,
-        "transform_algebra_ci_residual": "S92.2",
-        "metamorphic_verification_residual": "S92.4",
+        "transform_algebra_ci_residual": "transform-algebra-interaction-coverage",
+        "metamorphic_verification_residual": "custom-rule-metamorphic-verification",
         "claim_boundary": CUSTOM_DERIVATIVES_CLAIM_BOUNDARY,
     }
 
@@ -399,7 +397,7 @@ def build_example_scaled_linear_rule(
     scale: float = 2.0,
     name: str = "scaled_linear",
 ) -> CustomDerivativeRule:
-    """Build the documented example scaled-linear custom rule (S92.3).
+    """Build the documented example scaled-linear custom rule.
 
     Implements ``y = scale * x`` with exact JVP/VJP:
 
@@ -475,7 +473,7 @@ def register_product_custom_rule(
     overwrite: bool = False,
     registry: CustomDerivativeRegistry | None = None,
 ) -> RegistrationResult:
-    """Register a custom derivative rule fail-closed (S92.1).
+    """Register a custom derivative rule fail-closed.
 
     Parameters
     ----------
@@ -684,8 +682,8 @@ def build_custom_derivatives_product_registry() -> dict[str, object]:
         "contracts": contracts,
         "policy_note": (
             "Custom derivatives product catalogue only; ambient registry remains "
-            "the implementation; full transform-algebra CI (S92.2) and full "
-            "BL-46 metamorphic automation (S92.4) residual open honestly."
+            "the implementation; complete transform-algebra interaction coverage "
+            "and per-rule metamorphic verification remain open honestly."
         ),
     }
 

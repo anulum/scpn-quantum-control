@@ -66,10 +66,11 @@ def test_get_known_and_unknown_fail_closed() -> None:
 def test_registration_policy() -> None:
     """Expose the fail-closed registration and residual-work policy."""
     policy = registration_contract_policy()
+    assert CUSTOM_DERIVATIVES_PRODUCT_SCHEMA == "custom_derivatives_product.v2"
     assert policy["fail_closed_duplicate_without_overwrite"] is True
     assert policy["require_jvp_or_vjp"] is True
-    assert policy["transform_algebra_ci_residual"] == "S92.2"
-    assert policy["metamorphic_verification_residual"] == "S92.4"
+    assert policy["transform_algebra_ci_residual"] == "transform-algebra-interaction-coverage"
+    assert policy["metamorphic_verification_residual"] == "custom-rule-metamorphic-verification"
 
 
 def test_register_query_list_fail_closed_duplicate() -> None:

@@ -13,23 +13,28 @@ rewrite the full transform algebra stack.
 
 | Rule | Behaviour |
 |---|---|
-| Product schema | `custom_derivatives_product.v1` |
+| Product schema | `custom_derivatives_product.v2` |
 | Default contract | `registration_contract` |
 | Identity format | `namespace:name@version` |
 | Default product namespace | `scpn.product.custom_derivatives` |
 | Duplicate without overwrite | Fail closed |
 | Blank/unknown contract or identity | Fail closed |
 | Isolated registry | Product register creates isolated registry unless caller passes one |
-| Transform-algebra CI | Residual S92.2 (not invent-green) |
-| BL-46 metamorphic automation | Residual S92.4 (not invent-green) |
+| Transform-algebra interaction coverage | Residual boundary (not invent-green) |
+| Per-rule metamorphic verification | Residual boundary (not invent-green) |
+
+Schema v2 replaces opaque residual-policy markers with the descriptive values
+`transform-algebra-interaction-coverage` and
+`custom-rule-metamorphic-verification`. Consumers of v1 policy payloads must
+regenerate them; no compatibility alias retains the opaque values.
 
 Claim boundary:
 
 > Custom derivatives product surface only; versioned registration contract and
 > fail-closed register/query over ambient CustomDerivativeRegistry; does not
-> invent-green full transform-algebra CI (transform-algebra/route-matrix) or mass rule migration;
-> residual S92.2 transform-algebra interaction tests and S92.4 full BL-46
-> metamorphic automation open honestly
+> invent-green complete transform-algebra and governed route-matrix CI or mass
+> rule migration; transform-algebra interaction coverage and per-rule
+> metamorphic verification remain open honestly
 
 ## Public API
 
@@ -116,14 +121,15 @@ assert require_product_custom_rule(identity, registry=registry) is rule
 
 These surfaces describe and validate the bounded registration product. They do
 not claim full transform-algebra matrix CI, mass rule migration, provider or
-hardware evidence, or complete BL-46 metamorphic automation.
+hardware evidence, or complete per-rule metamorphic verification.
 
 ## Bounded product status
 
-Shipped: S92.0 registration contract · S92.1 public register API + fail-closed
-duplicates · S92.3 example custom rule + docs · BL-46 residual pointer.
+Shipped: versioned registration contract · public register API with fail-closed
+duplicates · documented example custom rule · metamorphic-verification boundary
+pointer.
 
-Open: S92.2 full transform-algebra interaction CI (transform-algebra/route-matrix) · S92.4 full
-BL-46 metamorphic automation for every new rule.
+Open: complete transform-algebra interaction CI across the transform algebra and
+governed route matrix · complete metamorphic automation for every new rule.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
