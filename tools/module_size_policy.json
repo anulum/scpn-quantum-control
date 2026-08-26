@@ -96,7 +96,7 @@
       "lines": 1435,
       "kind": "facade",
       "disposition": "facade",
-      "responsibility": "Fail-closed advanced witnesses product surface (BL-44): Krylov/OTOC/classical-shadow catalogue with WitnessEstimate provenance.",
+      "responsibility": "Fail-closed advanced-witnesses surface: Krylov, OTOC, and classical-shadow catalogue with WitnessEstimate provenance.",
       "dependency_boundary": "Composes ambient analysis/* and related kernels via public product APIs; refuses invent-green OTOC advantage and live QPU; tests own test_advanced_witnesses_product.",
       "reassess_when": "A second independent witness family or non-product compute kernel is implemented in this file."
     },
@@ -393,7 +393,7 @@
       "lines": 1417,
       "kind": "test",
       "disposition": "cohesive",
-      "responsibility": "Real-surface regression suite for advanced_witnesses_product (BL-44).",
+      "responsibility": "Real-surface regression suite for the advanced-witnesses product.",
       "dependency_boundary": "Owns advanced_witnesses_product through its public API; no other test imports this module.",
       "reassess_when": "The product splits into independently versioned witness family packages."
     },

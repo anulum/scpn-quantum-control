@@ -12,7 +12,7 @@ OTOC, and classical-shadow surfaces:
 
 * versioned witness capability catalogue (Krylov complexity, OTOC probe,
   classical shadows, small-system tomography cap, ambient inventory,
-  synchronisation-witness synchronisation-witness compose);
+  harmonic synchronisation-witness compose);
 * common :class:`WitnessEstimate` with estimator id, mean, uncertainty,
   support status, and provenance;
 * local probes over ambient
@@ -34,7 +34,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-import subprocess
+import subprocess  # nosec B404
 import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -48,6 +48,7 @@ from .analysis.otoc import OTOCResult, compute_otoc
 from .bridge.knm_hamiltonian import knm_to_dense_matrix
 from .phase.synchronisation_witness import harmonic_order_parameter
 
+# Subprocess use is limited to the current interpreter and an in-memory fixed script.
 WitnessCapabilityKind = Literal[
     "krylov_complexity",
     "otoc_probe",
@@ -94,13 +95,13 @@ ADVANCED_WITNESSES_CLAIM_BOUNDARY: Final[str] = (
     "classical-shadow estimators with uncertainty and provenance over ambient "
     "analysis/*; small-system probes with hard qubit/shot caps; refuse "
     "invent-green OTOC advantage, topology certification, live QPU witness "
-    "campaigns, and unrestricted shadow tomography; compose BL-18 order "
-    "parameters; residual S44.7 BL-32/BL-34 panel hooks and S44.6 full suite "
-    "artefact depth open honestly"
+    "campaigns, and unrestricted shadow tomography; compose harmonic "
+    "synchronisation order parameters; residual dashboard panel hooks and "
+    "full-suite artefact depth remain open honestly"
 )
 """Shared claim boundary for advanced witnesses product payloads."""
 
-# Hard product caps (S44.2–S44.5) — fail-closed beyond these bounds.
+# Hard local-probe caps; every path fails closed beyond these bounds.
 MAX_WITNESS_QUBITS: Final[int] = 6
 """Maximum qubit count for dense local witness probes."""
 
@@ -132,12 +133,12 @@ WITNESS_GLOSSARY: Final[Mapping[str, str]] = {
         "support_status, provenance (backend, shots/n_times, caps)."
     ),
 }
-"""Machine-readable glossary labels (S44.0 / S44.1)."""
+"""Machine-readable glossary labels for capabilities and estimates."""
 
 
 @dataclass(frozen=True, slots=True)
 class WitnessCapabilityRow:
-    """One advanced-witness capability catalogue row (S44.0 / S44.1).
+    """One advanced-witness capability catalogue row.
 
     Attributes
     ----------
@@ -161,6 +162,7 @@ class WitnessCapabilityRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     capability_id: str
@@ -225,7 +227,7 @@ class WitnessCapabilityRow:
 
 @dataclass(frozen=True, slots=True)
 class WitnessBoundaryRow:
-    """One hard-gap boundary row for advanced witnesses (S44.0 out-of-scope)."""
+    """One hard-gap boundary row for out-of-scope advanced witnesses."""
 
     boundary_id: str
     kind: BoundaryKind
@@ -267,7 +269,7 @@ class WitnessBoundaryRow:
 
 @dataclass(frozen=True, slots=True)
 class WitnessEstimate:
-    """Common witness estimate envelope (S44.1).
+    """Common witness estimate envelope.
 
     Attributes
     ----------
@@ -289,6 +291,7 @@ class WitnessEstimate:
         Must remain False.
     claim_boundary
         Honesty boundary string.
+
     """
 
     estimator_id: str
@@ -376,7 +379,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedKrylovProbe:
-    """Materialised Krylov complexity probe result (S44.2)."""
+    """Materialised Krylov complexity probe result."""
 
     estimate: WitnessEstimate
     peak_complexity: float
@@ -420,7 +423,7 @@ class MaterialisedKrylovProbe:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedOtocProbe:
-    """Materialised OTOC probe result (S44.3)."""
+    """Materialised OTOC probe result."""
 
     estimate: WitnessEstimate
     final_otoc: float
@@ -466,7 +469,7 @@ class MaterialisedOtocProbe:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedShadowProbe:
-    """Materialised classical-shadow probe result (S44.4)."""
+    """Materialised classical-shadow probe result."""
 
     estimate: WitnessEstimate
     observables: Mapping[str, float]
@@ -571,9 +574,10 @@ out = {{
     "shadow_norm_bound": float(result.shadow_norm_bound),
 }}
 print(json.dumps(out))
-"""
+    """
     try:
-        completed = subprocess.run(
+        # The executable and flags are fixed; inputs are integers or repr-escaped strings.
+        completed = subprocess.run(  # nosec B603
             [sys.executable, "-c", script],
             check=True,
             capture_output=True,
@@ -658,9 +662,9 @@ def iter_witness_capabilities() -> tuple[WitnessCapabilityRow, ...]:
         WitnessCapabilityRow(
             capability_id="synchronisation_witness_compose",
             kind="synchronisation_witness_compose",
-            title="BL-18 synchronisation witness compose",
+            title="Harmonic synchronisation witness compose",
             summary=(
-                "Compose with ambient harmonic_order_parameter (BL-18) for "
+                "Compose with the ambient harmonic_order_parameter for "
                 "order-parameter diagnostics alongside advanced estimators."
             ),
             ambient_module="scpn_quantum_control.phase.synchronisation_witness",
@@ -701,7 +705,7 @@ def iter_witness_boundaries() -> tuple[WitnessBoundaryRow, ...]:
             title="Topology / topological-phase certification",
             summary=(
                 "Refuse invent-green topological certification from witnesses; "
-                "BL-18 VR persistence remains a synthetic diagnostic, not a cert."
+                "Vietoris–Rips persistence remains a synthetic diagnostic, not a cert."
             ),
         ),
         WitnessBoundaryRow(
@@ -786,7 +790,7 @@ def list_witness_ambient_inventory() -> tuple[dict[str, str], ...]:
         {
             "module": "scpn_quantum_control.phase.synchronisation_witness",
             "symbol": "harmonic_order_parameter",
-            "role": "BL-18 harmonic order-parameter compose",
+            "role": "harmonic synchronisation order-parameter compose",
         },
     )
 
@@ -832,6 +836,7 @@ def decide_witness_path(
         When True, refuse unrestricted shadow campaigns.
     n_qubits
         Optional qubit count to enforce the product cap.
+
     """
     if not path_id or not path_id.strip():
         raise ValueError("path_id must be non-empty")
@@ -1073,7 +1078,8 @@ def materialise_shadow_probe(
     """Materialise a bounded classical-shadow probe over ambient APIs.
 
     Under-sampled runs (``n_shots < MIN_SHADOW_SHOTS``) still return a probe
-    but mark ``support_status="under_sampled"`` (fail-closed honesty, S44.4 H3).
+    but mark ``support_status="under_sampled"`` under the fail-closed sampling
+    policy.
 
     Invent-green / unrestricted flags are forwarded to :func:`decide_witness_path`
     and refuse before ambient shadow work.
@@ -1181,7 +1187,7 @@ def materialise_harmonic_order_parameter_compose(
     invent_green_topology_cert: bool = False,
     invent_green_live_qpu: bool = False,
 ) -> WitnessEstimate:
-    """Compose BL-18 harmonic order parameter into a :class:`WitnessEstimate`.
+    """Compose the harmonic order parameter into a :class:`WitnessEstimate`.
 
     Parameters
     ----------
@@ -1190,10 +1196,11 @@ def materialise_harmonic_order_parameter_compose(
     harmonic
         Harmonic index for the ambient order-parameter estimator.
     invent_green_topology_cert
-        When True, refuse invent-green topology certification (BL-18 is a
-        synthetic diagnostic, not a cert).
+        When True, refuse invent-green topology certification because the harmonic
+        order parameter is a synthetic diagnostic, not a certificate.
     invent_green_live_qpu
         When True, refuse live-QPU invent-green on this compose path.
+
     """
     if harmonic < 1:
         raise ValueError("harmonic must be >= 1")
@@ -1263,6 +1270,7 @@ def assert_advanced_witnesses_product_integrity(
     -------
     dict[str, object]
         The validated registry (same object if provided and valid).
+
     """
     if registry is None:
         reg: dict[str, object] = build_advanced_witnesses_product_registry()

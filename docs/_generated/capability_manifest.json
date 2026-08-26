@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1205
+    "test_files": 1206
   },
   "documentation": {
     "examples": [
@@ -8146,6 +8146,7 @@
       "tests/test_adiabatic_preparation.py",
       "tests/test_adjoint_replay_product.py",
       "tests/test_advanced_witnesses_product.py",
+      "tests/test_advanced_witnesses_quality_gate.py",
       "tests/test_advantage_language_protocol.py",
       "tests/test_advantage_language_protocol_quality_gate.py",
       "tests/test_advantage_protocol.py",

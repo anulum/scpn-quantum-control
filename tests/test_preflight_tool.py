@@ -1017,6 +1017,8 @@ def test_main_uses_coverage_pytest_by_default(
         "notebook-programme-product exact coverage threshold",
         "studio-executive-product focused coverage",
         "studio-executive-product exact coverage threshold",
+        "advanced-witnesses focused coverage",
+        "advanced-witnesses exact coverage threshold",
         "coverage-frontier focused coverage",
         "coverage-frontier exact coverage threshold",
         "compiler-boundary-product focused coverage",

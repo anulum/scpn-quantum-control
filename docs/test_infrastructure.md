@@ -40,6 +40,31 @@ pytest tests/ -v --tb=short -m "not slow"
 pytest tests/ --cov=src/scpn_quantum_control --cov-branch --cov-report=html -m "not slow"
 ```
 
+## Advanced-witnesses quality gate
+
+The Krylov, OTOC, classical-shadow, and harmonic-order-parameter product has a
+single descriptively named permanent gate. Its four-file static cohort enforces
+strict MyPy and NumPy docstrings; its owner test executes every statement and
+branch, including fail-closed subprocess and registry-integrity paths:
+
+```bash
+quality_paths=(
+  src/scpn_quantum_control/advanced_witnesses_product.py
+  tests/test_advanced_witnesses_product.py
+  tools/advanced_witnesses_quality_gates.py
+  tests/test_advanced_witnesses_quality_gate.py
+)
+python -m mypy --strict --explicit-package-bases "${quality_paths[@]}"
+python -m ruff check --isolated --select D,D413 \
+  --config 'lint.pydocstyle.convention = "numpy"' "${quality_paths[@]}"
+python -m coverage run --rcfile=/dev/null \
+  --data-file=.coverage.advanced-witnesses-quality --branch \
+  -m pytest -q tests/test_advanced_witnesses_product.py
+python -m coverage report --rcfile=/dev/null \
+  --data-file=.coverage.advanced-witnesses-quality --precision=2 \
+  --fail-under=100 --include='*/advanced_witnesses_product.py'
+```
+
 ## Coverage-frontier quality gate
 
 The Studio coverage-frontier owner has one descriptively named permanent gate.

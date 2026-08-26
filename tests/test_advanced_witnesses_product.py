@@ -13,6 +13,8 @@ One concern per test. No coverage buckets, no unused-assert padding.
 from __future__ import annotations
 
 import math
+import subprocess
+from collections.abc import Mapping
 
 import numpy as np
 import pytest
@@ -52,6 +54,20 @@ from scpn_quantum_control.advanced_witnesses_product import (
     materialise_shadow_probe,
 )
 
+
+def _registry_rows(registry: Mapping[str, object], key: str) -> list[dict[str, object]]:
+    """Return mutable copies of registry rows after structural narrowing."""
+    raw_rows = registry[key]
+    if not isinstance(raw_rows, list):
+        raise AssertionError(f"{key} must be a list in the valid registry fixture")
+    rows: list[dict[str, object]] = []
+    for raw_row in raw_rows:
+        if not isinstance(raw_row, dict):
+            raise AssertionError(f"{key} rows must be mappings in the valid fixture")
+        rows.append(dict(raw_row))
+    return rows
+
+
 # ---------------------------------------------------------------------------
 # Registry / catalogue
 # ---------------------------------------------------------------------------
@@ -76,7 +92,7 @@ def test_assert_integrity_none_builds_fresh() -> None:
 
 
 def test_capability_catalogue_lists_core_kinds() -> None:
-    """Catalogue includes Krylov, OTOC, shadows, and BL-18 compose rows."""
+    """Catalogue includes Krylov, OTOC, shadows, and harmonic compose rows."""
     ids = list_witness_capability_ids()
     assert "krylov_complexity" in ids
     assert "otoc_probe" in ids
@@ -291,7 +307,7 @@ def test_shadow_multi_observable_real_ambient() -> None:
 
 
 def test_harmonic_order_parameter_compose_sync_cloud() -> None:
-    """BL-18 compose returns high R for a tightly synchronised phase cloud."""
+    """Harmonic compose returns high R for a tightly synchronised phase cloud."""
     est = materialise_harmonic_order_parameter_compose()
     assert est.mean > 0.9
     assert est.support_status == "supported"
@@ -351,13 +367,13 @@ def test_shadow_refuses_unrestricted_campaign() -> None:
 
 
 def test_bl18_refuses_invent_green_topology_cert() -> None:
-    """BL-18 compose refuses invent-green topology certification."""
+    """Harmonic compose refuses invent-green topology certification."""
     with pytest.raises(ValueError, match="topology"):
         materialise_harmonic_order_parameter_compose(invent_green_topology_cert=True)
 
 
 def test_bl18_refuses_invent_green_live_qpu() -> None:
-    """BL-18 compose refuses invent-green live QPU."""
+    """Harmonic compose refuses invent-green live QPU."""
     with pytest.raises(ValueError, match="live QPU"):
         materialise_harmonic_order_parameter_compose(invent_green_live_qpu=True)
 
@@ -403,48 +419,44 @@ def test_shadow_subprocess_called_process_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """CalledProcessError from ambient shadow subprocess is fail-closed."""
-    import scpn_quantum_control.advanced_witnesses_product as mod
 
     def boom(*_a: object, **_k: object) -> object:
-        raise mod.subprocess.CalledProcessError(1, "x", stderr="shadow boom")
+        raise subprocess.CalledProcessError(1, "x", stderr="shadow boom")
 
-    monkeypatch.setattr(mod.subprocess, "run", boom)
+    monkeypatch.setattr(subprocess, "run", boom)
     with pytest.raises(ValueError, match="shadow subprocess failed"):
         materialise_shadow_probe(n_qubits=2, n_shots=20, seed=1)
 
 
 def test_shadow_subprocess_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
     """TimeoutExpired from ambient shadow subprocess is fail-closed."""
-    import scpn_quantum_control.advanced_witnesses_product as mod
 
     def timeout(*_a: object, **_k: object) -> object:
-        raise mod.subprocess.TimeoutExpired(cmd="x", timeout=1)
+        raise subprocess.TimeoutExpired(cmd="x", timeout=1)
 
-    monkeypatch.setattr(mod.subprocess, "run", timeout)
+    monkeypatch.setattr(subprocess, "run", timeout)
     with pytest.raises(ValueError, match="timed out"):
         materialise_shadow_probe(n_qubits=2, n_shots=20, seed=1)
 
 
 def test_shadow_subprocess_non_json(monkeypatch: pytest.MonkeyPatch) -> None:
     """Non-JSON stdout from ambient shadow subprocess is fail-closed."""
-    import scpn_quantum_control.advanced_witnesses_product as mod
 
     class _Out:
         stdout = "not-json\n"
 
-    monkeypatch.setattr(mod.subprocess, "run", lambda *_a, **_k: _Out())
+    monkeypatch.setattr(subprocess, "run", lambda *_a, **_k: _Out())
     with pytest.raises(ValueError, match="non-JSON"):
         materialise_shadow_probe(n_qubits=2, n_shots=20, seed=1)
 
 
 def test_shadow_subprocess_non_object_json(monkeypatch: pytest.MonkeyPatch) -> None:
     """JSON array (not object) payload from ambient shadow is fail-closed."""
-    import scpn_quantum_control.advanced_witnesses_product as mod
 
     class _Out:
         stdout = "[1, 2, 3]\n"
 
-    monkeypatch.setattr(mod.subprocess, "run", lambda *_a, **_k: _Out())
+    monkeypatch.setattr(subprocess, "run", lambda *_a, **_k: _Out())
     with pytest.raises(ValueError, match="must be an object"):
         materialise_shadow_probe(n_qubits=2, n_shots=20, seed=1)
 
@@ -1163,7 +1175,7 @@ def test_integrity_rejects_hardware_submit_on_capability() -> None:
     """Integrity fails if any capability allows hardware submit."""
     base = build_advanced_witnesses_product_registry()
     bad = dict(base)
-    caps = [dict(c) for c in base["capabilities"]]  # type: ignore[index]
+    caps = _registry_rows(base, "capabilities")
     caps[0]["hardware_submit_allowed"] = True
     bad["capabilities"] = caps
     with pytest.raises(ValueError, match="hardware_submit"):
@@ -1190,12 +1202,13 @@ def test_integrity_rejects_missing_required_capability() -> None:
     """Integrity fails when a required capability row is removed."""
     base = build_advanced_witnesses_product_registry()
     missing = dict(base)
-    missing["capabilities"] = [
+    capabilities = [
         c
-        for c in base["capabilities"]  # type: ignore[union-attr]
+        for c in _registry_rows(base, "capabilities")
         if c["capability_id"] != "krylov_complexity"
     ]
-    missing["capability_count"] = len(missing["capabilities"])  # type: ignore[arg-type]
+    missing["capabilities"] = capabilities
+    missing["capability_count"] = len(capabilities)
     with pytest.raises(ValueError, match="missing|drift"):
         assert_advanced_witnesses_product_integrity(missing)
 
@@ -1276,7 +1289,7 @@ def test_integrity_rejects_duplicate_capability_id() -> None:
     """Integrity fails on duplicate capability_id."""
     base = build_advanced_witnesses_product_registry()
     dup = dict(base)
-    caps = [dict(c) for c in base["capabilities"]]  # type: ignore[index]
+    caps = _registry_rows(base, "capabilities")
     caps.append(dict(caps[0]))
     dup["capabilities"] = caps
     dup["capability_count"] = len(caps)
@@ -1288,7 +1301,7 @@ def test_integrity_rejects_boundary_fail_closed_false() -> None:
     """Integrity fails if a boundary is not fail_closed."""
     base = build_advanced_witnesses_product_registry()
     bf = dict(base)
-    bounds = [dict(b) for b in base["boundaries"]]  # type: ignore[index]
+    bounds = _registry_rows(base, "boundaries")
     bounds[0]["fail_closed"] = False
     bf["boundaries"] = bounds
     with pytest.raises(ValueError, match="fail_closed"):
@@ -1317,7 +1330,7 @@ def test_integrity_rejects_blank_capability_id_in_row() -> None:
     """Integrity fails when a capability_id is blank."""
     base = build_advanced_witnesses_product_registry()
     blank = dict(base)
-    caps = [dict(c) for c in base["capabilities"]]  # type: ignore[index]
+    caps = _registry_rows(base, "capabilities")
     caps[0]["capability_id"] = "  "
     blank["capabilities"] = caps
     with pytest.raises(ValueError, match="blank|missing|drift"):
@@ -1328,7 +1341,7 @@ def test_integrity_rejects_empty_ambient_symbol_in_row() -> None:
     """Integrity fails when ambient_symbol is empty on a capability row."""
     base = build_advanced_witnesses_product_registry()
     empty = dict(base)
-    caps = [dict(c) for c in base["capabilities"]]  # type: ignore[index]
+    caps = _registry_rows(base, "capabilities")
     caps[0]["ambient_symbol"] = ""
     empty["capabilities"] = caps
     with pytest.raises(ValueError, match="ambient_symbol"):
@@ -1339,7 +1352,7 @@ def test_integrity_rejects_blank_boundary_id_in_row() -> None:
     """Integrity fails when boundary_id is blank."""
     base = build_advanced_witnesses_product_registry()
     blank = dict(base)
-    bounds = [dict(b) for b in base["boundaries"]]  # type: ignore[index]
+    bounds = _registry_rows(base, "boundaries")
     bounds[0]["boundary_id"] = ""
     blank["boundaries"] = bounds
     with pytest.raises(ValueError, match="boundary_id"):
@@ -1350,7 +1363,7 @@ def test_integrity_rejects_duplicate_boundary_id() -> None:
     """Integrity fails on duplicate boundary_id."""
     base = build_advanced_witnesses_product_registry()
     dup = dict(base)
-    bounds = [dict(b) for b in base["boundaries"]]  # type: ignore[index]
+    bounds = _registry_rows(base, "boundaries")
     bounds.append(dict(bounds[0]))
     dup["boundaries"] = bounds
     dup["boundary_count"] = len(bounds)
@@ -1362,7 +1375,7 @@ def test_integrity_rejects_extra_capability_not_in_catalogue() -> None:
     """Integrity fails when registry lists a capability outside the catalogue."""
     base = build_advanced_witnesses_product_registry()
     extra = dict(base)
-    caps = [dict(c) for c in base["capabilities"]]  # type: ignore[index]
+    caps = _registry_rows(base, "capabilities")
     caps.append(
         {
             "capability_id": "extra_not_in_catalogue",
@@ -1387,7 +1400,7 @@ def test_integrity_rejects_extra_boundary_not_in_catalogue() -> None:
     """Integrity fails when registry lists a boundary outside the catalogue."""
     base = build_advanced_witnesses_product_registry()
     extra = dict(base)
-    bounds = [dict(b) for b in base["boundaries"]]  # type: ignore[index]
+    bounds = _registry_rows(base, "boundaries")
     bounds.append(
         {
             "boundary_id": "extra_boundary",
