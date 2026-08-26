@@ -16,7 +16,7 @@ Composes ambient
 :mod:`scpn_quantum_control.differentiable_stochastic_estimators` and
 :mod:`scpn_quantum_control.differentiable_stochastic_policy` — does **not**
 re-architect estimator engines or invent-green full variance/bias experiment
-campaigns (S93.2 residual).
+campaigns, which remain an open capability.
 """
 
 from __future__ import annotations
@@ -49,22 +49,22 @@ SupportPosture = Literal[
 DryRunOutcome = Literal["allowed_dry_run", "refused"]
 """Structured dry-run outcomes."""
 
-STOCHASTIC_ESTIMATORS_PRODUCT_SCHEMA: Final[str] = "stochastic_estimators_product.v1"
+STOCHASTIC_ESTIMATORS_PRODUCT_SCHEMA: Final[str] = "stochastic_estimators_product.v2"
 """JSON schema identifier for serialised product payloads."""
 
 STOCHASTIC_ESTIMATORS_CLAIM_BOUNDARY: Final[str] = (
     "Stochastic estimators product surface only; catalogues SPSA, "
     "score-function, and shot-allocation helpers with confidence-policy "
-    "contracts; materialised finite-shot uncertainty only; composes BL-47 "
-    "no-submit / shot-budget honesty; does not invent-green live QPU shot runs "
-    "or full variance/bias experiment campaigns (S93.2 residual)"
+    "contracts; materialised finite-shot uncertainty only; composes the "
+    "hardware-safe no-submit and shot-budget policy; does not invent-green live "
+    "QPU shot runs or full variance/bias experiment campaigns"
 )
 """Shared claim boundary for estimators, policies, and dry-run decisions."""
 
 
 @dataclass(frozen=True, slots=True)
 class StochasticEstimatorRow:
-    """One product catalogue row for a stochastic estimator or policy (S93.0).
+    """One product catalogue row for a stochastic estimator or policy.
 
     Attributes
     ----------
@@ -85,7 +85,7 @@ class StochasticEstimatorRow:
     allows_hardware_shots
         Whether this product row claims live hardware shots (must be False).
     hardware_safety_pointer
-        BL-47 hardware-safe / shot-budget honesty pointer.
+        Hardware-safe no-submit and shot-budget policy pointer.
     as_of
         Inventory date label.
     claim_boundary
@@ -134,7 +134,7 @@ class StochasticEstimatorRow:
         if self.allows_hardware_shots:
             raise ValueError(
                 "product estimators must set allows_hardware_shots=False "
-                "(compose BL-47 no-submit honesty)"
+                "under the hardware-safe no-submit policy"
             )
         if not self.as_of or not self.as_of.strip():
             raise ValueError("as_of must be non-empty")
@@ -225,7 +225,7 @@ class EstimatorDryRunDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedSPSAProbe:
-    """Materialised local SPSA probe result for product contracts (S93.1).
+    """Materialised local SPSA probe result for product contracts.
 
     Attributes
     ----------
@@ -339,7 +339,8 @@ _CANONICAL_ESTIMATORS: Final[tuple[StochasticEstimatorRow, ...]] = (
         title="Gradient failure / confidence policy",
         summary=(
             "Fail-closed uncertainty policy contracts (max SE / confidence radius) "
-            "composing BL-47 honesty for materialised stochastic gradients."
+            "composing hardware-safe shot-budget honesty for materialised "
+            "stochastic gradients."
         ),
         module_path="scpn_quantum_control.differentiable_stochastic_policy",
         symbol_name="GradientFailurePolicy",
@@ -443,7 +444,7 @@ def build_product_failure_policy(
     max_confidence_radius: float | None = None,
     require_trainable: bool = True,
 ) -> GradientFailurePolicy:
-    """Build a product-scoped gradient failure policy (S93.3 / BL-47 compose).
+    """Build a product-scoped gradient failure policy.
 
     Parameters
     ----------
@@ -482,7 +483,7 @@ def dry_run_stochastic_estimator(
     planned_shots
         Positive planned shot budget for the dry-run plan.
     request_hardware_shots
-        When true, refuse (BL-47 no-submit honesty).
+        When true, refuse under the hardware-safe no-submit policy.
 
     Returns
     -------
@@ -501,7 +502,7 @@ def dry_run_stochastic_estimator(
     if request_hardware_shots or row.allows_hardware_shots:
         blockers.append(
             "hardware/QPU shot request refused on stochastic estimators product "
-            f"(compose BL-47; pointer={row.hardware_safety_pointer})"
+            f"(hardware-safe policy pointer={row.hardware_safety_pointer})"
         )
     if blockers:
         unique = tuple(dict.fromkeys(item for item in blockers if item.strip()))
@@ -538,7 +539,7 @@ def materialise_demo_spsa_probe(
     repetitions: int = 2,
     perturbation_radius: float = 0.1,
 ) -> MaterialisedSPSAProbe:
-    """Run a deterministic local SPSA probe on a quadratic demo objective (S93.1).
+    """Run a deterministic local SPSA probe on a quadratic demo objective.
 
     Uses ambient :func:`spsa_gradient_estimate` on ``f(x) = sum(x_i^2)`` so the
     true gradient is ``2x``. No hardware shots; infinite/analytic materialisation.
@@ -646,8 +647,8 @@ def build_stochastic_estimators_product_registry() -> dict[str, object]:
         "policy_note": (
             "Stochastic estimators product catalogue only; ambient SPSA / "
             "score-function / shot-allocation engines remain the implementation; "
-            "full variance/bias experiment campaigns residual S93.2; no invent-green "
-            "live QPU shot runs (BL-47)."
+            "full variance/bias experiment campaigns remain open; no invent-green "
+            "live QPU shot runs under the hardware-safe no-submit policy."
         ),
     }
 
@@ -676,6 +677,8 @@ def assert_stochastic_estimators_product_integrity(
     registry = (
         dict(payload) if payload is not None else build_stochastic_estimators_product_registry()
     )
+    if registry.get("schema") != STOCHASTIC_ESTIMATORS_PRODUCT_SCHEMA:
+        raise ValueError("stochastic estimators product schema mismatch")
     estimators = registry.get("estimators")
     if not isinstance(estimators, list) or not estimators:
         raise ValueError(

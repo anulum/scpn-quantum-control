@@ -316,11 +316,12 @@ control, or broad quantum-advantage claim is promoted by this release.
   without a Wirtinger contract (BL-53 + BL-46). Docs:
   `docs/wirtinger_implicit_product.md`. Eighth P1 A-product after
   BL-90/91/81/49/96/92/93.
-- 2026-07-24 — Stochastic estimators & policies product (BL-93):
+- 2026-07-24 — Stochastic estimators & policies product:
   `scpn_quantum_control.stochastic_estimators_product` productises the finite-shot
   estimator catalogue (SPSA, score-function, parameter-shift shot allocation),
-  confidence-policy contracts composing BL-47 honesty, dry-run refuse invent-green
-  hardware shots, and a materialised local SPSA demo probe. Docs:
+  confidence-policy contracts composing hardware-safe shot-budget honesty,
+  dry-run refusal of invent-green hardware shots, and a materialised local SPSA
+  demo probe. Docs:
   `docs/stochastic_estimators_product.md`. Seventh P1 A-product after
   BL-90/91/81/49/96/92.
 - 2026-07-24 — Custom / registered derivatives product (BL-92):

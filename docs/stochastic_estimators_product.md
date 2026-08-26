@@ -2,7 +2,8 @@
 
 Versioned **finite-shot / stochastic gradient product** over ambient SPSA,
 score-function, parameter-shift shot allocation, and confidence-policy
-primitives. Materialised uncertainty only; composes BL-47 no-submit honesty.
+primitives. Materialised uncertainty only; composes the hardware-safe
+no-submit and shot-budget policy.
 
 Module: `scpn_quantum_control.stochastic_estimators_product`
 
@@ -25,7 +26,7 @@ credential access, hardware submission, or shot allocation.
 ## Public value objects
 
 - `StochasticEstimatorRow` maps a stable id to its kind, ambient owner, symbol,
-  support posture, BL-47 pointer, and no-hardware boundary.
+  support posture, hardware-safety pointer, and no-hardware boundary.
 - `EstimatorDryRunDecision` records the selected estimator, allowed/refused
   outcome, reason, ordered blockers, and acknowledged planned shots.
 - `MaterialisedSPSAProbe` records the gradient, seed, repetition count, shot
@@ -39,12 +40,12 @@ only local planning; it never means that QPU shots ran.
 
 | Rule | Behaviour |
 |---|---|
-| Product schema | `stochastic_estimators_product.v1` |
+| Product schema | `stochastic_estimators_product.v2` |
 | Default estimator | `spsa_gradient` |
-| Hardware shots | Always refused (BL-47) |
+| Hardware shots | Always refused by the hardware-safe no-submit policy |
 | Blank/unknown estimator | Fail closed |
 | Live QPU execution | Never claimed by this product |
-| Variance/bias campaign | Residual S93.2 |
+| Variance/bias campaign | Open capability; not claimed by this product |
 
 ## Confidence and failure policy
 
@@ -58,7 +59,7 @@ by that ambient policy; this facade does not weaken or duplicate it.
 `dry_run_stochastic_estimator()` validates the exact catalogue id and returns a
 structured local plan for a positive integer shot budget. A hardware-shot
 request is refused before budget validation and records zero planned shots,
-preserving the BL-47 no-submit boundary.
+preserving the hardware-safe no-submit boundary.
 
 The default `planned_shots=100` is planning metadata, not spend authority,
 provider availability, a queue reservation, or a completed experiment.
@@ -67,9 +68,9 @@ Claim boundary:
 
 > Stochastic estimators product surface only; catalogues SPSA, score-function,
 > and shot-allocation helpers with confidence-policy contracts; materialised
-> finite-shot uncertainty only; composes BL-47 no-submit / shot-budget honesty;
+> finite-shot uncertainty only; composes hardware-safe no-submit / shot-budget honesty;
 > does not invent-green live QPU shot runs or full variance/bias experiment
-> campaigns (S93.2 residual)
+> campaigns
 
 ## Public API
 
@@ -117,7 +118,7 @@ floats, and fails closed on an empty gradient. Its result exercises a local
 contract and deterministic seed path; it is not a full estimator-bias or
 variance campaign.
 
-## Catalogue (S93.0)
+## Estimator catalogue
 
 | ID | Kind |
 |---|---|
@@ -129,7 +130,7 @@ variance campaign.
 ## Registry integrity
 
 `build_stochastic_estimators_product_registry()` emits schema
-`stochastic_estimators_product.v1`, the complete catalogue, ambient surface
+`stochastic_estimators_product.v2`, the complete catalogue, ambient surface
 map, default id, counts, policy note, and shared claim boundary.
 
 Always validate transported or stored payloads through
@@ -155,10 +156,10 @@ the shipped demo materialises SPSA only.
 
 ## Bounded product status
 
-Shipped: S93.0 estimator catalogue · S93.1 contracts + tests (incl. materialised
-SPSA demo probe) · S93.3 policy objects composing BL-47 · S93.4 product docs /
-API map rows.
+Shipped: estimator catalogue, contracts and tests including the materialised
+SPSA demo probe, confidence-policy objects composing the hardware-safe
+no-submit boundary, product documentation, and API map rows.
 
-Open: S93.2 full variance/bias documentation + experimental campaigns.
+Open: full variance/bias documentation and experimental campaigns.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

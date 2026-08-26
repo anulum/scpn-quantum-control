@@ -144,6 +144,11 @@ def test_integrity_rejects_drift_and_hardware() -> None:
     registry = build_stochastic_estimators_product_registry()
     estimators = _registry_estimators(registry)
 
+    stale_schema = dict(registry)
+    stale_schema["schema"] = "stochastic_estimators_product.v1"
+    with pytest.raises(ValueError, match="schema mismatch"):
+        assert_stochastic_estimators_product_integrity(stale_schema)
+
     broken = dict(registry)
     broken["estimators"] = estimators + [
         {
@@ -165,6 +170,7 @@ def test_integrity_rejects_drift_and_hardware() -> None:
         assert_stochastic_estimators_product_integrity(broken)
 
     empty: dict[str, object] = {
+        "schema": STOCHASTIC_ESTIMATORS_PRODUCT_SCHEMA,
         "estimators": [],
         "blank_entry_count": 0,
         "estimator_count": 0,
