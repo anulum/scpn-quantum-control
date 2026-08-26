@@ -78,13 +78,13 @@ GEOMETRIC_CONTROL_CLAIM_BOUNDARY: Final[str] = (
     "McLachlan/QNG/criticality capabilities over ambient variational_metric "
     "and natural_gradient; local metric spectrum and QNG direction probes; "
     "refuse invent-green experimental advantage at criticality, live QPU "
-    "geometry claims, and silent indefinite-metric repair; compose BL-13 "
-    "regularisation; residual S50.5 dashboard panel depth and S50.6 notebook "
-    "depth open honestly"
+    "geometry claims, and silent indefinite-metric repair; compose the "
+    "regularised natural-gradient policy; dashboard-panel and notebook depth "
+    "remain explicit residual work"
 )
 """Shared claim boundary for geometric control product payloads."""
 
-# Glossary constants (S50.0) — machine-readable labels, not marketing claims.
+# Machine-readable glossary labels, not marketing claims.
 GEOMETRY_GLOSSARY: Final[Mapping[str, str]] = {
     "QFI": (
         "Quantum Fisher information: Braunstein–Caves multiparameter bound "
@@ -96,7 +96,7 @@ GEOMETRY_GLOSSARY: Final[Mapping[str, str]] = {
     ),
     "QNG": (
         "Quantum natural gradient: precondition Euclidean gradient by a "
-        "regularised metric solve; singular metrics use BL-13 damping policy."
+        "regularised metric solve; singular metrics use the damping and eigenvalue-floor policy."
     ),
     "criticality": (
         "Geometry criticality diagnostics: small spectral gap / large metric "
@@ -107,7 +107,7 @@ GEOMETRY_GLOSSARY: Final[Mapping[str, str]] = {
 
 @dataclass(frozen=True, slots=True)
 class GeometryCapabilityRow:
-    """One geometric control capability catalogue row (S50.0 / S50.1).
+    """One geometric-control capability catalogue row.
 
     Attributes
     ----------
@@ -131,6 +131,7 @@ class GeometryCapabilityRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     capability_id: str
@@ -194,7 +195,7 @@ class GeometryCapabilityRow:
 
 @dataclass(frozen=True, slots=True)
 class GeometryBoundaryRow:
-    """One hard-gap boundary row for geometric control (S50.0 out-of-scope)."""
+    """One hard-gap boundary row for geometric control."""
 
     boundary_id: str
     kind: BoundaryKind
@@ -277,7 +278,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedMetricDiagnosticsProbe:
-    """Materialised McLachlan metric spectrum diagnostics (S50.2 / S50.3)."""
+    """Materialised McLachlan metric-spectrum diagnostics."""
 
     capability_id: str
     n_parameters: int
@@ -341,7 +342,7 @@ class MaterialisedMetricDiagnosticsProbe:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedQngDirectionProbe:
-    """Materialised QNG direction probe via ambient regularised solve (S50.2)."""
+    """Materialised QNG direction probe through the ambient regularised solve."""
 
     capability_id: str
     metric_rank: int
@@ -406,7 +407,7 @@ class MaterialisedQngDirectionProbe:
 
 
 def _build_capabilities() -> tuple[GeometryCapabilityRow, ...]:
-    """Build geometry capability catalogue (S50.0 / S50.1)."""
+    """Build the geometric-control capability catalogue."""
     return (
         GeometryCapabilityRow(
             capability_id="qfi_spectral",
@@ -436,8 +437,8 @@ def _build_capabilities() -> tuple[GeometryCapabilityRow, ...]:
             kind="qng_regularised",
             title="Regularised quantum natural gradient",
             summary=(
-                "Ambient natural_gradient.solve_natural_gradient_direction with "
-                "BL-13 damping / eigenvalue-floor / condition policy."
+                "Ambient natural_gradient.solve_natural_gradient_direction with the "
+                "damping, eigenvalue-floor, and condition policy."
             ),
             ambient_module="scpn_quantum_control.phase.natural_gradient",
             ambient_symbol="solve_natural_gradient_direction",
@@ -488,8 +489,8 @@ def _build_boundaries() -> tuple[GeometryBoundaryRow, ...]:
             title="Live QPU geometry submit",
             failure_class="live_qpu_geometry_refused",
             summary=(
-                "Compose BL-47 no-submit; geometry probes use local synthetic "
-                "state derivatives / metrics only."
+                "Compose the no-submit safety policy; geometry probes use local "
+                "synthetic state derivatives and metrics only."
             ),
         ),
         GeometryBoundaryRow(
@@ -499,7 +500,7 @@ def _build_boundaries() -> tuple[GeometryBoundaryRow, ...]:
             failure_class="indefinite_metric_silent_repair_refused",
             summary=(
                 "Ambient QNG fails closed on indefinite metrics instead of "
-                "silently repairing them (BL-13 policy)."
+                "silently repairing them under the regularisation policy."
             ),
         ),
         GeometryBoundaryRow(
@@ -548,7 +549,7 @@ def list_geometry_boundary_ids() -> tuple[str, ...]:
 
 
 def list_geometry_glossary_keys() -> tuple[str, ...]:
-    """Return geometry glossary keys (S50.0) in stable order."""
+    """Return geometric-control glossary keys in stable order."""
     return tuple(GEOMETRY_GLOSSARY.keys())
 
 
@@ -608,7 +609,7 @@ def iter_geometry_boundaries(
 
 
 def list_geometry_ambient_inventory() -> tuple[dict[str, object], ...]:
-    """Return ambient inventory map for fisher/metric/QNG modules (S50.1)."""
+    """Return the ambient inventory map for Fisher, metric, and QNG modules."""
     return (
         {
             "module_path": "scpn_quantum_control.analysis.qfi",
@@ -658,8 +659,8 @@ def decide_geometry_path(
         )
     if invent_green_live_qpu:
         blockers.append(
-            "invent-green live QPU geometry refused "
-            f"(capability={row.capability_id}; BL-47 no-submit compose)"
+            "unsupported live QPU geometry refused "
+            f"(capability={row.capability_id}; no-submit policy)"
         )
     if invent_green_indefinite_silent_repair:
         blockers.append(
@@ -717,7 +718,7 @@ def materialise_metric_diagnostics_probe(
     invent_green_live_qpu: bool = False,
     demo_label: str = "metric_diagnostics_demo",
 ) -> MaterialisedMetricDiagnosticsProbe:
-    """Materialise McLachlan metric spectrum diagnostics (S50.2 / S50.3)."""
+    """Materialise McLachlan metric-spectrum diagnostics."""
     decision = decide_geometry_path(
         capability_id,
         invent_green_advantage=invent_green_advantage,
@@ -756,7 +757,8 @@ def materialise_metric_diagnostics_probe(
         # Fail closed rather than invent a green finite condition on singular metrics.
         raise ValueError(
             "metric condition number is non-finite or non-positive; "
-            "singular metrics require BL-13 QNG regularisation, not invent-green condition"
+            "singular metrics require the QNG regularisation policy, not an unsupported "
+            "condition claim"
         )
     digest = _digest_payload(
         {
@@ -802,7 +804,7 @@ def materialise_qng_direction_probe(
     invent_green_live_qpu: bool = False,
     demo_label: str = "qng_direction_demo",
 ) -> MaterialisedQngDirectionProbe:
-    """Materialise a regularised QNG direction via ambient solver (S50.2)."""
+    """Materialise a regularised QNG direction through the ambient solver."""
     decision = decide_geometry_path(
         capability_id,
         invent_green_advantage=invent_green_advantage,
@@ -904,8 +906,8 @@ def build_geometric_control_product_registry() -> dict[str, object]:
         "glossary": glossary,
         "policy_note": (
             "Geometry catalogue + local McLachlan/QNG probes only; no invent-green "
-            "advantage at criticality or live QPU; BL-13 regularisation compose; "
-            "S50.5/S50.6 residual dashboard/notebook depth honest."
+            "advantage at criticality or live QPU; compose the regularisation policy; "
+            "dashboard and notebook depth remain explicit residual work."
         ),
     }
 

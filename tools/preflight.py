@@ -68,6 +68,9 @@ if TYPE_CHECKING:
     from tools import decisive_advantage_quality_gates as _decisive_advantage_quality_gates
     from tools import differentiable_quality_gates as _differentiable_quality_gates
     from tools import experiment_mitigation_quality_gates as _experiment_mitigation_quality_gates
+    from tools import (
+        geometric_control_product_quality_gates as _geometric_control_product_quality_gates,
+    )
     from tools import governed_route_matrix_quality_gates as _governed_route_matrix_quality_gates
     from tools import hardware_safe_execution_quality_gates as _hardware_safe_quality_gates
     from tools import (
@@ -160,6 +163,9 @@ else:
     )
     _campaign_harness_product_quality_gates = import_module(
         "tools.campaign_harness_product_quality_gates"
+    )
+    _geometric_control_product_quality_gates = import_module(
+        "tools.geometric_control_product_quality_gates"
     )
     _cloud_native_deployment_quality_gates = import_module(
         "tools.cloud_native_deployment_product_quality_gates"
@@ -579,6 +585,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_custom_derivatives_product_quality_gates.build_static_quality_gates(_PY),
     *_kyma_mechanism_product_quality_gates.build_static_quality_gates(_PY),
     *_campaign_harness_product_quality_gates.build_static_quality_gates(_PY),
+    *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
     *_cloud_native_deployment_quality_gates.build_static_quality_gates(_PY),
     *_control_stack_compose_quality_gates.build_static_quality_gates(_PY),
     *_public_api_stability_quality_gates.build_static_quality_gates(_PY),
@@ -996,6 +1003,9 @@ KYMA_MECHANISM_PRODUCT_COVERAGE_GATES = _kyma_mechanism_product_quality_gates.bu
 CAMPAIGN_HARNESS_PRODUCT_COVERAGE_GATES = (
     _campaign_harness_product_quality_gates.build_coverage_gates(_PY)
 )
+GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
+    _geometric_control_product_quality_gates.build_coverage_gates(_PY)
+)
 CLOUD_NATIVE_DEPLOYMENT_COVERAGE_GATES = (
     _cloud_native_deployment_quality_gates.build_coverage_gates(_PY)
 )
@@ -1345,6 +1355,7 @@ def main() -> int:
             gates.extend(CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_GATES)
             gates.extend(KYMA_MECHANISM_PRODUCT_COVERAGE_GATES)
             gates.extend(CAMPAIGN_HARNESS_PRODUCT_COVERAGE_GATES)
+            gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
             gates.extend(CLOUD_NATIVE_DEPLOYMENT_COVERAGE_GATES)
             gates.extend(CONTROL_STACK_COMPOSE_COVERAGE_GATES)
             gates.extend(PUBLIC_API_STABILITY_COVERAGE_GATES)

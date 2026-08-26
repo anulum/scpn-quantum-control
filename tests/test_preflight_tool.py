@@ -981,6 +981,8 @@ def test_main_uses_coverage_pytest_by_default(
         "kyma-mechanism-product exact coverage threshold",
         "campaign-harness-product focused coverage",
         "campaign-harness-product exact coverage threshold",
+        "geometric-control-product focused coverage",
+        "geometric-control-product exact coverage threshold",
         "cloud-native-deployment focused coverage",
         "cloud-native-deployment exact coverage threshold",
         "control-stack-compose focused coverage",

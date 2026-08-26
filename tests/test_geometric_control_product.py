@@ -44,7 +44,7 @@ from scpn_quantum_control.phase.variational_metric import mclachlan_metric
 
 
 def _capability_kwargs(**overrides: Any) -> dict[str, Any]:
-    """Valid GeometryCapabilityRow constructor kwargs."""
+    """Build valid ``GeometryCapabilityRow`` constructor arguments."""
     base: dict[str, Any] = {
         "capability_id": "x",
         "kind": "mclachlan_metric",
@@ -58,7 +58,7 @@ def _capability_kwargs(**overrides: Any) -> dict[str, Any]:
 
 
 def _boundary_kwargs(**overrides: Any) -> dict[str, Any]:
-    """Valid GeometryBoundaryRow constructor kwargs."""
+    """Build valid ``GeometryBoundaryRow`` constructor arguments."""
     base: dict[str, Any] = {
         "boundary_id": "x",
         "kind": "experimental_advantage_criticality",
@@ -71,7 +71,7 @@ def _boundary_kwargs(**overrides: Any) -> dict[str, Any]:
 
 
 def _metric_probe_kwargs(**overrides: Any) -> dict[str, Any]:
-    """Valid MaterialisedMetricDiagnosticsProbe constructor kwargs."""
+    """Build valid metric-diagnostics probe constructor arguments."""
     base: dict[str, Any] = {
         "capability_id": "c",
         "n_parameters": 3,
@@ -91,7 +91,7 @@ def _metric_probe_kwargs(**overrides: Any) -> dict[str, Any]:
 
 
 def _qng_probe_kwargs(**overrides: Any) -> dict[str, Any]:
-    """Valid MaterialisedQngDirectionProbe constructor kwargs."""
+    """Build valid natural-gradient probe constructor arguments."""
     base: dict[str, Any] = {
         "capability_id": "qng_regularised",
         "metric_rank": 3,
@@ -834,7 +834,7 @@ def test_metric_probe_rejects_nonfinite_maximum_eigenvalue() -> None:
 
 
 def test_metric_probe_rejects_eigenvalues_length_mismatch() -> None:
-    """eigenvalues length must equal n_parameters."""
+    """Require one eigenvalue per parameter."""
     with pytest.raises(ValueError, match="eigenvalues"):
         MaterialisedMetricDiagnosticsProbe(**_metric_probe_kwargs(eigenvalues=(0.1, 0.5)))
 
@@ -917,13 +917,13 @@ def test_qng_probe_rejects_blank_regularization_reason() -> None:
 
 
 def test_qng_probe_rejects_empty_direction() -> None:
-    """direction must be non-empty."""
+    """Reject an empty natural-gradient direction."""
     with pytest.raises(ValueError, match="direction"):
         MaterialisedQngDirectionProbe(**_qng_probe_kwargs(direction=()))
 
 
 def test_qng_probe_rejects_nonfinite_direction_entries() -> None:
-    """direction entries must be finite."""
+    """Require finite natural-gradient direction entries."""
     with pytest.raises(ValueError, match="direction entries"):
         MaterialisedQngDirectionProbe(**_qng_probe_kwargs(direction=(0.1, float("nan"), 0.3)))
 

@@ -12,12 +12,12 @@ Module: `scpn_quantum_control.geometric_control_product`
 |---|---|
 | Product schema | `geometric_control_product.v1` |
 | Ambient metric | `phase.variational_metric.mclachlan_metric` |
-| Ambient QNG | `phase.natural_gradient.solve_natural_gradient_direction` (BL-13) |
+| Ambient QNG | `phase.natural_gradient.solve_natural_gradient_direction` with regularisation |
 | Experimental advantage at criticality | Refuse invent-green |
-| Live QPU geometry | Refuse invent-green (BL-47) |
+| Live QPU geometry | Refused by the no-submit safety policy |
 | Indefinite metric silent repair | Refuse invent-green |
 
-## Glossary (S50.0)
+## Glossary
 
 `QFI` · `Fubini_Study_McLachlan` · `QNG` · `criticality`
 
@@ -48,15 +48,14 @@ qng = materialise_qng_direction_probe()
 assert qng.regularization_reason
 ```
 
-## Residuals (honest)
+## Residuals
 
-- **S50.5** — BL-34 metric spectrum dashboard panel depth
-- **S50.6** — BL-40 notebook + fuller claim-bounded narrative docs
+- Metric-spectrum dashboard panel depth
+- Notebook coverage and fuller claim-bounded narrative documentation
 
 ## Related
 
-- Pack: `docs/internal/differentiable_programming/p3_strategic/bl50_geometric_quantum_control_qfi.md`
 - Ambient: `phase.variational_metric`, `phase.natural_gradient`, `analysis.qfi`
-- BL-13 QNG regularisation · BL-47 hardware-safe · BL-71 PGBO (compose later)
+- QNG regularisation · no-submit hardware safety · PGBO geometry composition
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
