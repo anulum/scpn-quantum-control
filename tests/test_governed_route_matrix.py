@@ -32,6 +32,7 @@ from scpn_quantum_control.governed_route_matrix import (
 
 
 def test_list_ids_are_stable_nonempty_and_unique() -> None:
+    """List stable, non-blank, unique canonical route identifiers."""
     ids = list_governed_route_ids()
     assert ids
     assert len(ids) == len(set(ids))
@@ -40,6 +41,7 @@ def test_list_ids_are_stable_nonempty_and_unique() -> None:
 
 
 def test_get_governed_route_supported_and_boundary() -> None:
+    """Return both supported and boundary catalogue records."""
     supported = get_governed_route("transform:native.grad_vmap")
     assert supported.closure_status == "supported"
     assert supported.family == "transform"
@@ -53,6 +55,7 @@ def test_get_governed_route_supported_and_boundary() -> None:
 
 
 def test_ssgf_latent_gradient_routes_are_explicit() -> None:
+    """Keep supported and boundary SSGF gradient routes explicit."""
     supported = get_governed_route("transform:ssgf.latent_finite_difference")
     boundary = get_governed_route("transform:ssgf.latent_parameter_shift")
 
@@ -74,6 +77,7 @@ def test_l16_indicator_and_hardware_routes_are_explicit() -> None:
 
 
 def test_get_governed_route_rejects_blank_and_unknown() -> None:
+    """Reject blank and unknown route identifiers."""
     with pytest.raises(ValueError, match="non-empty"):
         get_governed_route("  ")
     with pytest.raises(ValueError, match="unknown governed route_id"):
@@ -81,6 +85,7 @@ def test_get_governed_route_rejects_blank_and_unknown() -> None:
 
 
 def test_iter_governed_routes_filters() -> None:
+    """Filter the catalogue by family and closure status."""
     adapters = iter_governed_routes(family="adapter")
     assert adapters
     assert all(row.family == "adapter" for row in adapters)
@@ -97,6 +102,7 @@ def test_iter_governed_routes_filters() -> None:
 
 
 def test_build_matrix_has_zero_blanks_and_schema() -> None:
+    """Build a schema-tagged matrix without blank cells."""
     matrix = build_governed_route_matrix()
     routes = cast(list[dict[str, object]], matrix["routes"])
     assert matrix["schema"] == GOVERNED_ROUTE_MATRIX_SCHEMA
@@ -121,6 +127,7 @@ def test_build_matrix_has_zero_blanks_and_schema() -> None:
 
 
 def test_assert_no_blank_matrix_cells_rejects_invalid_payload() -> None:
+    """Reject malformed rows, blank cells, and count drift."""
     with pytest.raises(ValueError, match="non-empty routes"):
         assert_no_blank_matrix_cells({"routes": []})
     with pytest.raises(ValueError, match="blank"):
@@ -148,6 +155,7 @@ def test_assert_no_blank_matrix_cells_rejects_invalid_payload() -> None:
 
 
 def test_explain_route_supported_transform_with_rejected_alternatives() -> None:
+    """Explain a supported transform and its rejected alternatives."""
     explanation = explain_route(
         "transform:native.grad_vmap",
         RouteCapability(ecosystem="native", method="grad"),
@@ -164,6 +172,7 @@ def test_explain_route_supported_transform_with_rejected_alternatives() -> None:
 
 
 def test_explain_route_adapter_and_implementation_path() -> None:
+    """Explain supported adapters and implementation-path routes."""
     jax_supported = explain_route(
         "adapter:jax.value_and_grad_local",
         {"ecosystem": "JAX", "method": "value_and_grad"},
@@ -181,6 +190,7 @@ def test_explain_route_adapter_and_implementation_path() -> None:
 
 
 def test_explain_route_competitor_boundary_fixture() -> None:
+    """Explain a competitor failure fixture as a permanent boundary."""
     explanation = explain_route(
         "competitor:differentiation_interface.silent_wrong_grads",
         RouteCapability(ecosystem="julia", method="reverse"),
@@ -191,6 +201,7 @@ def test_explain_route_competitor_boundary_fixture() -> None:
 
 
 def test_explain_route_unknown_fail_closed_policies() -> None:
+    """Apply raise and boundary policies to unknown routes."""
     with pytest.raises(ValueError, match="unknown governed route_id"):
         explain_route("blank.invent.green", RouteCapability(ecosystem="native"))
 
@@ -207,6 +218,7 @@ def test_explain_route_unknown_fail_closed_policies() -> None:
 
 
 def test_explain_route_rejects_blank_ids_and_bad_capability() -> None:
+    """Reject blank IDs and unsupported capability input types."""
     with pytest.raises(ValueError, match="non-empty"):
         explain_route("", RouteCapability(ecosystem="native"))
     with pytest.raises(TypeError, match="capability"):
@@ -218,6 +230,7 @@ def test_explain_route_rejects_blank_ids_and_bad_capability() -> None:
 
 
 def test_explain_route_hardware_and_finite_shot_notes() -> None:
+    """Report hardware and finite-shot policy notes without promotion."""
     closed = explain_route(
         "provider:hardware.gradient_live",
         RouteCapability(ecosystem="provider", allow_hardware=False),
@@ -241,6 +254,7 @@ def test_explain_route_hardware_and_finite_shot_notes() -> None:
 
 
 def test_governed_route_record_invariants() -> None:
+    """Enforce supported and non-supported record invariants."""
     with pytest.raises(ValueError, match="closure_reason"):
         GovernedRouteRecord(
             route_id="x:y",
@@ -264,6 +278,7 @@ def test_governed_route_record_invariants() -> None:
 
 
 def test_default_capability_when_none() -> None:
+    """Use the native automatic capability when none is supplied."""
     explanation = explain_route("rust:program_ad.static_registry_replay")
     assert explanation.capability.ecosystem == "native"
     assert explanation.capability.method == "auto"
@@ -271,6 +286,7 @@ def test_default_capability_when_none() -> None:
 
 
 def test_record_validation_edge_paths() -> None:
+    """Reject invalid record fields and blank evidence entries."""
     with pytest.raises(ValueError, match="route_id"):
         GovernedRouteRecord(
             route_id="",
@@ -328,6 +344,7 @@ def test_record_validation_edge_paths() -> None:
 
 
 def test_explanation_validation_and_matrix_count_drift() -> None:
+    """Reject inconsistent explanations and matrix counts."""
     with pytest.raises(ValueError, match="route_id must be non-empty"):
         RouteExplanation(
             route_id="",
@@ -386,6 +403,7 @@ def test_explanation_validation_and_matrix_count_drift() -> None:
 
 
 def test_explain_route_invalid_unknown_policy_rejected() -> None:
+    """Reject unknown policies outside the closed vocabulary."""
     with pytest.raises(ValueError, match="unknown_policy"):
         explain_route(
             "not.in.catalogue",
@@ -395,6 +413,7 @@ def test_explain_route_invalid_unknown_policy_rejected() -> None:
 
 
 def test_record_to_dict_round_trip_fields() -> None:
+    """Serialise every immutable route-record field."""
     row = get_governed_route("adapter:torch.func_local")
     payload = row.to_dict()
     assert payload["route_id"] == row.route_id
@@ -404,6 +423,7 @@ def test_record_to_dict_round_trip_fields() -> None:
 
 
 def test_catalogue_map_rejects_duplicate_route_ids(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject duplicate identifiers in canonical catalogue construction."""
     row = get_governed_route("transform:native.grad_vmap")
     monkeypatch.setattr(governed_route_matrix, "_CANONICAL_ROUTES", (row, row))
     with pytest.raises(RuntimeError, match="duplicate route_id"):
@@ -413,6 +433,7 @@ def test_catalogue_map_rejects_duplicate_route_ids(monkeypatch: pytest.MonkeyPat
 def test_explain_route_skips_missing_rejected_alternative(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Skip missing alternative pointers while retaining valid rejections."""
     base = get_governed_route("transform:native.vmap_grad")
     patched = replace(base, rejected_alternatives=("missing:not.in.catalogue",))
     mapping = dict(governed_route_matrix._ROUTE_BY_ID)

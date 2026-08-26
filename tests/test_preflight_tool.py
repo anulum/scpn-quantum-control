@@ -1005,6 +1005,8 @@ def test_main_uses_coverage_pytest_by_default(
         "whole-program-ad-product exact coverage threshold",
         "neural-operator-cost-model focused coverage",
         "neural-operator-cost-model exact coverage threshold",
+        "governed-route-matrix focused coverage",
+        "governed-route-matrix exact coverage threshold",
         "resource-budget-gate focused coverage",
         "resource-budget-gate exact coverage threshold",
         "advantage-language-protocol focused coverage",

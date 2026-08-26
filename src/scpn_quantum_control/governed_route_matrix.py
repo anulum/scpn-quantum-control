@@ -67,6 +67,7 @@ class RouteCapability:
         Whether the caller requires finite-shot planning.
     allow_hardware
         Whether policy-gated hardware routes may be considered.
+
     """
 
     ecosystem: str
@@ -106,6 +107,7 @@ class GovernedRouteRecord:
         Required free-text reason for non-supported rows; empty for supported.
     claim_boundary
         Non-promotional claim boundary string.
+
     """
 
     route_id: str
@@ -181,6 +183,7 @@ class RouteExplanation:
         Alternative routes considered and rejected with reasons.
     notes
         Additional deterministic notes for operators.
+
     """
 
     route_id: str
@@ -454,6 +457,7 @@ def list_governed_route_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered route identifiers from the fail-closed catalogue.
+
     """
     return tuple(row.route_id for row in _CANONICAL_ROUTES)
 
@@ -475,6 +479,7 @@ def get_governed_route(route_id: str) -> GovernedRouteRecord:
     ------
     ValueError
         If ``route_id`` is empty/blank or not present in the catalogue.
+
     """
     if not route_id or not str(route_id).strip():
         raise ValueError("route_id must be a non-empty string")
@@ -506,6 +511,7 @@ def iter_governed_routes(
     -------
     tuple[GovernedRouteRecord, ...]
         Matching rows.
+
     """
     rows: Iterable[GovernedRouteRecord] = _CANONICAL_ROUTES
     if family is not None:
@@ -523,6 +529,7 @@ def build_governed_route_matrix() -> dict[str, object]:
     dict[str, object]
         Schema-tagged payload with every catalogue cell (no blanks). Counts are
         derived from the catalogue so drift is visible to callers.
+
     """
     rows = [row.to_dict() for row in _CANONICAL_ROUTES]
     supported = sum(1 for row in _CANONICAL_ROUTES if row.closure_status == "supported")
@@ -588,6 +595,7 @@ def explain_route(
         unknown under ``unknown_policy='raise'``.
     TypeError
         If ``capability`` is neither a :class:`RouteCapability` nor a mapping.
+
     """
     if not route_id or not str(route_id).strip():
         raise ValueError("route_id must be a non-empty string")
@@ -692,6 +700,7 @@ def assert_no_blank_matrix_cells(
     ------
     ValueError
         If blank cells, missing statuses, or count drift are detected.
+
     """
     matrix = dict(payload) if payload is not None else build_governed_route_matrix()
     routes = matrix.get("routes")

@@ -71,6 +71,66 @@ boundary = explain_route("no.such.route", unknown_policy="boundary")
 assert boundary.selected.closure_status == "permanent_boundary"
 ```
 
+### Immutable records and capability context
+
+`RouteCapability` normalises the caller's ecosystem and method to lower-case
+labels and carries the finite-shot and hardware-policy flags. Blank ecosystem
+or method values raise `ValueError`; they are never interpreted as permission.
+
+`GovernedRouteRecord` is the frozen catalogue cell. It validates the closed
+family and closure-status vocabularies, non-blank identity and summary, and
+non-blank evidence and alternative pointers. Supported rows cannot carry a
+closure reason. Every `permanent_boundary` or `implementation_path` row must
+carry one, so a non-green cell always explains why it is closed.
+
+`RouteExplanation` binds the requested ID, normalised capability, selected
+record, rejected alternatives, and deterministic operator notes. Its
+`to_dict()` method materialises tuple fields as JSON-ready lists while leaving
+the slot-backed records immutable.
+
+### Catalogue lookup and filtering
+
+`list_governed_route_ids()` returns the stable catalogue order.
+`get_governed_route(route_id)` returns the exact immutable row and rejects a
+blank or unknown ID. `iter_governed_routes()` optionally filters by family,
+closure status, or their intersection without discovery or network access.
+
+```python
+from scpn_quantum_control.governed_route_matrix import iter_governed_routes
+
+adapter_gaps = iter_governed_routes(
+    family="adapter",
+    closure_status="implementation_path",
+)
+assert all(row.family == "adapter" for row in adapter_gaps)
+```
+
+### Explanation policy
+
+`explain_route()` accepts a `RouteCapability`, a mapping, or no capability. A
+missing capability becomes the bounded `native` / `auto` default. Other input
+types raise `TypeError`. The `unknown_policy` vocabulary is closed to `raise`
+and `boundary`; any other value raises `ValueError`.
+
+Hardware permission never upgrades `provider:hardware.gradient_live` to
+supported. The explanation only records whether hardware is disabled or that
+owner-ticket evidence remains required. Likewise, `finite_shot=True` adds an
+operator note for a supported transform but does not silently redirect it to a
+finite-shot planner. Rejected alternatives are resolved from the catalogue;
+missing pointers are skipped rather than converted into invented records.
+
+### Matrix integrity
+
+`build_governed_route_matrix()` derives every count from the canonical rows and
+sets `blank_cell_count` to zero. Pass a transported payload to
+`assert_no_blank_matrix_cells()` before consumption. It rejects non-list or
+empty route collections, non-mapping rows, blank IDs, unsupported statuses,
+duplicate cells, catalogue drift, and inconsistent per-status or blank-cell
+counts. Omitting the payload validates a freshly built canonical matrix.
+
+An integrity exception is a stop condition. It is not permission to fall back
+to a guessed route or to promote an implementation path.
+
 ### Route ID taxonomy
 
 Route identifiers use `family:ecosystem.or.surface` keys:
@@ -112,6 +172,8 @@ Competitor rows are first-class catalogue cells, not prose footnotes:
 ## What this surface does *not* do
 
 - Execute gradients or submit hardware jobs.
+- Import or execute adapter, compiler, Rust, provider, or competitor runtimes.
+- Read credentials, contact networks, mutate the catalogue, or write evidence.
 - Promote performance, category-leadership, or universal-transform claims.
 - Fill blank cells by inventing backends (that is forbidden; use
   `permanent_boundary` or `implementation_path` instead).
