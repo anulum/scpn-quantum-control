@@ -168,6 +168,7 @@ def reference_dense_xy_hamiltonian(
     -------
     NDArray[np.float64]
         The dense XY Hamiltonian of shape ``(2**n, 2**n)``.
+
     """
     size = len(frequencies)
     if coupling.shape != (size, size):
@@ -207,6 +208,7 @@ def native_dense_xy_hamiltonian(
     ------
     RuntimeError
         If the ``scpn_quantum_engine`` native kernel is not importable.
+
     """
     engine = optional_rust_engine()
     if engine is None or not hasattr(engine, "build_xy_hamiltonian_dense"):
@@ -237,6 +239,7 @@ def measure_p50_us(fn: Callable[[], object], *, warmup: int, repeats: int) -> fl
     -------
     float
         The median (P50) latency in microseconds.
+
     """
     for _ in range(warmup):
         fn()
@@ -294,6 +297,7 @@ class BenchmarkActionHandler(ActionHandler):
         -------
         ExecutionPlan
             The normalised, inspectable plan.
+
         """
         backend = request.backend or _DEFAULT_BACKEND
         if backend not in contract.backends:
@@ -340,6 +344,7 @@ class BenchmarkActionHandler(ActionHandler):
         RuntimeError
             If the ``rust`` backend is requested but the native kernel is not
             importable — the spine seals this as a failed record.
+
         """
         benchmark_spec: dict[str, Any] = dict(plan.parameters)
         k_nm, omega = _arrays(benchmark_spec)
@@ -400,6 +405,7 @@ class BenchmarkActionHandler(ActionHandler):
         -------
         GeneratedScript
             The reproduction script, digest attached.
+
         """
         benchmark_spec: dict[str, Any] = dict(plan.parameters)
         source = _render_script(

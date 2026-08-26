@@ -352,6 +352,10 @@ them. A `rust` request fails closed when the native kernel is not importable.
 The action feeds the informative `studio.native-speedup.v1` and
 `studio.benchmark-databank.v1` families.
 
+For exact function signatures, validation bounds, result fields, and generated
+script behaviour, see the
+[Studio executive benchmark API](api/studio_executive_benchmark.md).
+
 ## Deploying to a QPU endpoint
 
 The `execute` verb is the studio's only live-hardware action, and it is

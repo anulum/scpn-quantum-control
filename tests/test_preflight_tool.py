@@ -1031,6 +1031,8 @@ def test_main_uses_coverage_pytest_by_default(
         "unsuitable-scenario-registry exact coverage threshold",
         "scorecard-acceptance-engine focused coverage",
         "scorecard-acceptance-engine exact coverage threshold",
+        "studio-executive-benchmark focused coverage",
+        "studio-executive-benchmark exact coverage threshold",
         "synchronisation-witness focused coverage",
         "synchronisation-witness exact coverage threshold",
         "experiment-mitigation focused coverage",

@@ -19,6 +19,7 @@ from typing import Any
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
 
@@ -56,8 +57,10 @@ class _StubEngine:
 
     @staticmethod
     def build_xy_hamiltonian_dense(
-        coupling_flat: np.ndarray, frequencies: np.ndarray, size: int
-    ) -> np.ndarray:
+        coupling_flat: NDArray[np.float64],
+        frequencies: NDArray[np.float64],
+        size: int,
+    ) -> NDArray[np.float64]:
         coupling = np.asarray(coupling_flat, dtype=np.float64).reshape(size, size)
         return reference_dense_xy_hamiltonian(
             coupling, np.asarray(frequencies, dtype=np.float64)
@@ -69,8 +72,10 @@ class _DriftingStubEngine:
 
     @staticmethod
     def build_xy_hamiltonian_dense(
-        coupling_flat: np.ndarray, frequencies: np.ndarray, size: int
-    ) -> np.ndarray:
+        coupling_flat: NDArray[np.float64],
+        frequencies: NDArray[np.float64],
+        size: int,
+    ) -> NDArray[np.float64]:
         coupling = np.asarray(coupling_flat, dtype=np.float64).reshape(size, size)
         drifted = reference_dense_xy_hamiltonian(
             coupling, np.asarray(frequencies, dtype=np.float64)
@@ -108,6 +113,7 @@ def _stub_engine(monkeypatch: pytest.MonkeyPatch, engine: object) -> None:
 # reference construction ground truth
 # --------------------------------------------------------------------------- #
 def test_reference_matches_hand_computed_two_node_operator() -> None:
+    """Match the dense reference against a hand-built two-node operator."""
     coupling = np.array([[0.0, 0.7], [0.7, 0.0]])
     omega = np.array([0.3, -0.2])
     identity = np.eye(2)
@@ -125,6 +131,7 @@ def test_reference_matches_hand_computed_two_node_operator() -> None:
 
 
 def test_reference_skips_zero_couplings_and_is_symmetric() -> None:
+    """Skip zero edges while retaining a real symmetric Hamiltonian."""
     coupling = np.array([[0.0, 0.0, 0.5], [0.0, 0.0, 0.0], [0.5, 0.0, 0.0]])
     omega = np.array([0.1, 0.0, -0.1])
     built = reference_dense_xy_hamiltonian(coupling, omega)
@@ -133,12 +140,14 @@ def test_reference_skips_zero_couplings_and_is_symmetric() -> None:
 
 
 def test_reference_rejects_mismatched_coupling_shape() -> None:
+    """Reject a coupling matrix that does not match the frequency count."""
     with pytest.raises(ValueError, match="coupling must be square"):
         reference_dense_xy_hamiltonian(np.zeros((2, 2)), np.array([0.1, 0.2, 0.3]))
 
 
 @pytest.mark.skipif(not _HAS_NATIVE, reason="scpn_quantum_engine not installed")
 def test_reference_matches_real_native_kernel() -> None:
+    """Match the shipped native kernel when the extension is installed."""
     coupling = np.asarray(_K_NM, dtype=np.float64)
     omega = np.asarray(_OMEGA, dtype=np.float64)
     native = native_dense_xy_hamiltonian(coupling, omega)
@@ -147,18 +156,21 @@ def test_reference_matches_real_native_kernel() -> None:
 
 
 def test_native_raises_without_engine(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fail closed when the optional native engine is absent."""
     _stub_engine(monkeypatch, None)
     with pytest.raises(RuntimeError, match="native kernel is not available"):
         native_dense_xy_hamiltonian(np.asarray(_K_NM), np.asarray(_OMEGA))
 
 
 def test_native_raises_without_dense_symbol(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fail closed when the engine lacks the dense-construction symbol."""
     _stub_engine(monkeypatch, object())
     with pytest.raises(RuntimeError, match="native kernel is not available"):
         native_dense_xy_hamiltonian(np.asarray(_K_NM), np.asarray(_OMEGA))
 
 
 def test_measure_p50_us_returns_positive_median() -> None:
+    """Return a positive median for a bounded construction loop."""
     p50 = measure_p50_us(lambda: sum(range(64)), warmup=1, repeats=5)
     assert p50 > 0.0
 
@@ -167,6 +179,7 @@ def test_measure_p50_us_returns_positive_median() -> None:
 # end-to-end (stubbed native kernel — coverage-safe without the extension)
 # --------------------------------------------------------------------------- #
 def test_benchmark_rust_backend_with_stub_engine(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Exercise the native plan and evidence fields with an exact stub."""
     _stub_engine(monkeypatch, _StubEngine())
     record = run_action(_request(), registry=_registry())
     assert record.result.status == "succeeded", record.result.error
@@ -188,6 +201,7 @@ def test_benchmark_rust_backend_with_stub_engine(monkeypatch: pytest.MonkeyPatch
 
 
 def test_benchmark_detects_native_drift(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Report false parity when the native operator drifts."""
     _stub_engine(monkeypatch, _DriftingStubEngine())
     record = run_action(_request(), registry=_registry())
     assert record.result.status == "succeeded"
@@ -195,6 +209,7 @@ def test_benchmark_detects_native_drift(monkeypatch: pytest.MonkeyPatch) -> None
 
 
 def test_benchmark_fails_closed_without_native_kernel(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Seal a failed action when the requested native kernel is missing."""
     _stub_engine(monkeypatch, None)
     record = run_action(_request(), registry=_registry())
     assert record.result.status == "failed"
@@ -204,6 +219,7 @@ def test_benchmark_fails_closed_without_native_kernel(monkeypatch: pytest.Monkey
 
 
 def test_benchmark_python_backend_measures_reference_only() -> None:
+    """Keep native-only outputs empty on the NumPy reference backend."""
     record = run_action(_request(backend="python"), registry=_registry())
     assert record.result.status == "succeeded", record.result.error
     outputs = record.result.outputs
@@ -216,6 +232,7 @@ def test_benchmark_python_backend_measures_reference_only() -> None:
 
 @pytest.mark.skipif(not _HAS_NATIVE, reason="scpn_quantum_engine not installed")
 def test_benchmark_rust_backend_with_real_engine() -> None:
+    """Exercise the complete native action when the extension is installed."""
     record = run_action(_request(), registry=_registry())
     assert record.result.status == "succeeded", record.result.error
     assert record.result.outputs["parity"] is True
@@ -225,6 +242,7 @@ def test_benchmark_rust_backend_with_real_engine() -> None:
 # committed databank summary
 # --------------------------------------------------------------------------- #
 def test_benchmark_summarises_committed_databank() -> None:
+    """Expose the validated committed databank summary."""
     record = run_action(_request(backend="python"), registry=_registry())
     outputs = record.result.outputs
     assert outputs["databank_admitted"] is True
@@ -237,6 +255,7 @@ def test_benchmark_summarises_committed_databank() -> None:
 # planning
 # --------------------------------------------------------------------------- #
 def test_benchmark_plan_defaults_rust_backend() -> None:
+    """Default to the native backend and describe all plan steps."""
     plan = preview_action(_request(), registry=_registry())
     assert plan.backend == "rust"
     assert plan.requires_approval is False
@@ -247,11 +266,13 @@ def test_benchmark_plan_defaults_rust_backend() -> None:
 
 
 def test_benchmark_plan_python_backend_step_wording() -> None:
+    """Describe reference-only timing for the NumPy backend."""
     plan = preview_action(_request(backend="python"), registry=_registry())
     assert plan.steps[2] == "time the numpy reference construction only"
 
 
 def test_benchmark_rejects_undeclared_backend() -> None:
+    """Reject a backend outside the benchmark verb contract."""
     handler = BenchmarkActionHandler()
     contract = resolve_verb_contract(BENCHMARK_VERB)
     with pytest.raises(ValueError, match="is not declared for the benchmark verb"):
@@ -264,6 +285,7 @@ def test_benchmark_rejects_undeclared_backend() -> None:
 def test_generated_benchmark_script_embeds_verdicts_and_compiles(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Embed deterministic verdicts in a compilable reproduction script."""
     _stub_engine(monkeypatch, _StubEngine())
     record = run_action(_request(), registry=_registry())
     assert record.script is not None
@@ -280,6 +302,7 @@ def test_generated_benchmark_script_embeds_verdicts_and_compiles(
 
 
 def test_generated_python_backend_script_skips_native(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Generate a reference-only script without a native parity claim."""
     record = run_action(_request(backend="python"), registry=_registry())
     assert record.script is not None
     assert "BACKEND = 'python'" in record.script.source
@@ -291,12 +314,14 @@ def test_generated_python_backend_script_skips_native(monkeypatch: pytest.Monkey
 # --------------------------------------------------------------------------- #
 @pytest.mark.parametrize("bad", [True, "one", None, float("nan"), float("inf")])
 def test_as_float_rejects_bad(bad: Any) -> None:
+    """Reject Boolean, non-numeric, and non-finite scalar inputs."""
     with pytest.raises(ValueError):
         _as_float("v", bad)
 
 
 @pytest.mark.parametrize("bad", [True, "two", 0, 33])
 def test_as_bounded_int_rejects_bad(bad: Any) -> None:
+    """Reject non-integers and values outside the requested bounds."""
     with pytest.raises(ValueError):
         _as_bounded_int("v", bad, minimum=1, maximum=32)
 
@@ -316,6 +341,7 @@ def test_as_bounded_int_rejects_bad(bad: Any) -> None:
     ],
 )
 def test_as_coupling_matrix_rejects_invalid(matrix: Any, message: str) -> None:
+    """Reject malformed, non-square, asymmetric, or non-numeric networks."""
     with pytest.raises(ValueError, match=message):
         _as_coupling_matrix(matrix)
 
@@ -335,6 +361,7 @@ def test_as_coupling_matrix_rejects_invalid(matrix: Any, message: str) -> None:
     ],
 )
 def test_normalise_benchmark_rejects_invalid(overrides: dict[str, Any]) -> None:
+    """Reject unknown parameters and invalid timing or frequency values."""
     parameters: dict[str, Any] = {"K_nm": _K_NM, "omega": _OMEGA}
     parameters.update(overrides)
     with pytest.raises(ValueError):
@@ -342,6 +369,7 @@ def test_normalise_benchmark_rejects_invalid(overrides: dict[str, Any]) -> None:
 
 
 def test_normalise_benchmark_defaults_timing_loop() -> None:
+    """Apply bounded timing defaults without changing network values."""
     spec = _normalise_benchmark({"K_nm": _K_NM, "omega": _OMEGA})
     assert spec["repeats"] == 5
     assert spec["warmup"] == 1
@@ -350,5 +378,6 @@ def test_normalise_benchmark_defaults_timing_loop() -> None:
 
 
 def test_safe_slug_normal_and_empty() -> None:
+    """Normalise action identifiers and retain a safe empty fallback."""
     assert _safe_slug("bench-3node.v1") == "bench_3node_v1"
     assert _safe_slug("!!!") == "action"
