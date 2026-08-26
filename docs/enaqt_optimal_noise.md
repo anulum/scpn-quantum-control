@@ -111,7 +111,7 @@ a provider, QPU, laboratory noise source, biological system, or plant requires
 a separately authorised and calibrated control protocol. No such protocol is
 implemented here.
 
-BL-50's QFI/QNG geometry and BL-60's future chimera/multiscale synchronisation
-targets remain separate scientific lanes. This transport scan neither consumes
+QFI/QNG geometry and chimera/multiscale synchronisation targets remain separate
+scientific lanes. This transport scan neither consumes
 their observables nor promotes a transport optimum into a geometry or
 synchronisation result.

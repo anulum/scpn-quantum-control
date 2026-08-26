@@ -37,7 +37,7 @@ from .synthetic import (
 )
 from .topology import project_chimera_coupling
 
-CHIMERA_CONTROL_EVIDENCE_SCHEMA = "chimera_multiscale_control_evidence.v1"
+CHIMERA_CONTROL_EVIDENCE_SCHEMA = "chimera_multiscale_control_evidence.v2"
 CHIMERA_CONTROL_EVIDENCE_DATE = "2026-07-29"
 SupportStatus = Literal["supported", "bounded", "descoped"]
 
@@ -55,7 +55,7 @@ def _finite_non_negative(name: str, value: float) -> float:
 
 @dataclass(frozen=True, slots=True)
 class ChimeraSupportRow:
-    """One BL-60 scope row with evidence and an explicit non-claim."""
+    """One capability row with evidence and an explicit non-claim."""
 
     capability: str
     status: SupportStatus
@@ -75,7 +75,6 @@ class ChimeraSupportRow:
 
     def to_dict(self) -> dict[str, str]:
         """Return a JSON-ready support row."""
-
         return {
             "capability": self.capability,
             "status": self.status,
@@ -156,7 +155,6 @@ class SyntheticRegimeEvidence:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready regime metrics without rounding."""
-
         return {
             "regime": self.regime.value,
             "trajectory_digest": self.trajectory_digest,
@@ -178,7 +176,7 @@ class SyntheticRegimeEvidence:
 
 @dataclass(frozen=True, slots=True)
 class ChimeraMultiscaleEvidence:
-    """Complete deterministic BL-60 evidence payload.
+    """Complete deterministic chimera-control evidence payload.
 
     The payload binds the exact synthetic configurations, two measured regime
     rows, finite-difference agreement, topology-ledger before/after violations,
@@ -226,7 +224,6 @@ class ChimeraMultiscaleEvidence:
 
     def to_dict(self) -> dict[str, object]:
         """Return the canonical JSON-ready payload."""
-
         return {
             "schema_version": self.schema_version,
             "generated_on": self.generated_on,
@@ -305,37 +302,37 @@ def _gradient_error(run: SyntheticChimeraRun) -> float:
 def _support_rows() -> tuple[ChimeraSupportRow, ...]:
     return (
         ChimeraSupportRow(
-            "S60.1 synthetic chimera generators",
+            "synthetic chimera generators",
             "supported",
             "exact production Sakaguchi force with deterministic RK4 and two frozen regimes",
             "finite trajectories do not prove a thermodynamic-limit attractor",
         ),
         ChimeraSupportRow(
-            "S60.2 differentiable chimera and cluster losses",
+            "differentiable chimera and cluster losses",
             "supported",
             "composed existing analytic cluster-order gradients with finite-difference replay",
             "a local phase objective is not a closed-loop stability certificate",
         ),
         ChimeraSupportRow(
-            "S60.3 multiscale order-parameter suite",
+            "multiscale order-parameter suite",
             "supported",
             "nested population and ensemble partitions measured through oscillatools",
             "synthetic hierarchy does not validate a biological or EEG hierarchy",
         ),
         ChimeraSupportRow(
-            "S60.4 BL-32 F5-F6 catalogue rows",
+            "optional challenge-registry extension",
             "descoped",
-            "BL-60 has a direct tested facade; the optional unrelated registry extension has no consumer",
-            "absence from BL-32 does not imply missing BL-60 production APIs",
+            "the chimera-control package has a direct tested facade; the unrelated registry extension has no consumer",
+            "absence from the optional challenge registry does not imply missing production APIs",
         ),
         ChimeraSupportRow(
-            "S60.5 topology-constraint interaction",
+            "topology-constraint interaction",
             "bounded",
             "existing TopologyConstraintLedger projection with before/after violation custody",
             "projection is not differentiable learning, PH, DLA, hardware, or controllability proof",
         ),
         ChimeraSupportRow(
-            "S60.6 notebook and evidence artefact",
+            "notebook and evidence artefact",
             "supported",
             "executable notebook 50 and deterministic JSON/Markdown byte-check runner",
             "tutorial output is configuration-specific research evidence",
@@ -360,7 +357,6 @@ def build_chimera_multiscale_evidence(
     objectives, finite-differences one gradient, and projects one local
     coupling candidate through the existing topology ledger.
     """
-
     chimera_run = generate_two_population_chimera(
         SyntheticChimeraConfig.for_regime(
             SyntheticRegime.CHIMERA_TRANSIENT,
@@ -420,11 +416,10 @@ def build_chimera_multiscale_evidence(
 
 def render_chimera_multiscale_markdown(evidence: ChimeraMultiscaleEvidence) -> str:
     """Render the evidence payload as deterministic reviewer-facing Markdown."""
-
     chimera = evidence.chimera
     synchronised = evidence.synchronised_control
     lines = [
-        "# BL-60 Chimera and Multiscale Control Evidence",
+        "# Chimera and Multiscale Control Evidence",
         "",
         f"- Schema: `{evidence.schema_version}`",
         f"- Generated on: `{evidence.generated_on}`",
@@ -492,7 +487,6 @@ def write_chimera_multiscale_evidence(
     In write mode parent directories are created and both UTF-8 files end with
     one newline.
     """
-
     json_text = json.dumps(evidence.to_dict(), indent=2, sort_keys=True) + "\n"
     markdown_text = render_chimera_multiscale_markdown(evidence)
     if check:

@@ -1,6 +1,6 @@
 # Chimera and Multiscale Synchronisation Control
 
-BL-60 turns finite synthetic chimera states, nested order parameters, and
+This package turns finite synthetic chimera states, nested order parameters, and
 hierarchical coherence targets into a documented local control workflow. The
 implementation composes the repository's existing Kuramoto–Sakaguchi force,
 Shanahan diagnostics, analytic cluster-order gradients, and topology
@@ -271,6 +271,6 @@ or claim:
 - provider submission, QPU, FPGA, neuromorphic, or other hardware execution;
 - autonomous actuation, safety certification, deployment, or market efficacy.
 
-BL-32 F5–F6 challenge-registry rows were optional in the BL-60 design pack and
-are explicitly descoped. BL-60 has its own direct, tested public facade and no
-current consumer requires an unrelated registry mutation.
+Challenge-registry extensions were optional in the original design notes and
+are explicitly descoped. The package has its own direct, tested public facade,
+and no current consumer requires an unrelated registry mutation.

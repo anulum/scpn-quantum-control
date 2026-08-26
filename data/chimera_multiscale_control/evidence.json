@@ -29,44 +29,44 @@
     "trajectory_samples": 1001
   },
   "claim_boundary": "deterministic finite-N synthetic Kuramoto-Sakaguchi analysis and unapplied control proposals; no thermodynamic-limit, stability, controllability, biological, EEG, clinical, hardware, or deployment claim",
-  "content_digest": "a50a32ac6171502e3caebaef63d5b3b34b83f3dddb952100c578700f07e682fd",
+  "content_digest": "86fe44bae543de5c3df844dc18638bf02b9239953e692d879408b3cf16225901",
   "generated_on": "2026-07-29",
   "gradient_max_abs_error": 2.491207289284994e-11,
   "population_size": 64,
-  "schema_version": "chimera_multiscale_control_evidence.v1",
+  "schema_version": "chimera_multiscale_control_evidence.v2",
   "support": [
     {
-      "capability": "S60.1 synthetic chimera generators",
+      "capability": "synthetic chimera generators",
       "evidence": "exact production Sakaguchi force with deterministic RK4 and two frozen regimes",
       "non_claim": "finite trajectories do not prove a thermodynamic-limit attractor",
       "status": "supported"
     },
     {
-      "capability": "S60.2 differentiable chimera and cluster losses",
+      "capability": "differentiable chimera and cluster losses",
       "evidence": "composed existing analytic cluster-order gradients with finite-difference replay",
       "non_claim": "a local phase objective is not a closed-loop stability certificate",
       "status": "supported"
     },
     {
-      "capability": "S60.3 multiscale order-parameter suite",
+      "capability": "multiscale order-parameter suite",
       "evidence": "nested population and ensemble partitions measured through oscillatools",
       "non_claim": "synthetic hierarchy does not validate a biological or EEG hierarchy",
       "status": "supported"
     },
     {
-      "capability": "S60.4 BL-32 F5-F6 catalogue rows",
-      "evidence": "BL-60 has a direct tested facade; the optional unrelated registry extension has no consumer",
-      "non_claim": "absence from BL-32 does not imply missing BL-60 production APIs",
+      "capability": "optional challenge-registry extension",
+      "evidence": "the chimera-control package has a direct tested facade; the unrelated registry extension has no consumer",
+      "non_claim": "absence from the optional challenge registry does not imply missing production APIs",
       "status": "descoped"
     },
     {
-      "capability": "S60.5 topology-constraint interaction",
+      "capability": "topology-constraint interaction",
       "evidence": "existing TopologyConstraintLedger projection with before/after violation custody",
       "non_claim": "projection is not differentiable learning, PH, DLA, hardware, or controllability proof",
       "status": "bounded"
     },
     {
-      "capability": "S60.6 notebook and evidence artefact",
+      "capability": "notebook and evidence artefact",
       "evidence": "executable notebook 50 and deterministic JSON/Markdown byte-check runner",
       "non_claim": "tutorial output is configuration-specific research evidence",
       "status": "supported"

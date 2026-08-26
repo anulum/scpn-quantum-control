@@ -23,11 +23,11 @@ workflows and integration-oriented development.
 
 ## Chimera and multiscale control composition
 
-`scpn_quantum_control.chimera_control` isolates BL-60 into six responsibility
-modules plus a public facade: immutable hierarchy/target contracts, exact
-finite two-population synthesis, nested observables, composed analytic
-objectives and unapplied proposals, topology-ledger projection reports, and
-deterministic evidence custody. The package imports the production
+`scpn_quantum_control.chimera_control` separates the surface into six
+responsibility modules plus a public facade: immutable hierarchy/target
+contracts, exact finite two-population synthesis, nested observables, composed
+analytic objectives and unapplied proposals, topology-ledger projection
+reports, and deterministic evidence custody. The package imports the production
 `oscillatools` Sakaguchi force and Shanahan diagnostics, the existing
 `phase.synchronisation_objectives` cluster term, and
 `topology_control.constraints`; it does not duplicate those owners.

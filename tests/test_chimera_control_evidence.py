@@ -69,8 +69,8 @@ def test_frozen_gradient_projection_and_scope_rows_are_fail_closed(
     assert frozen_evidence.topology_violation_before > 100.0
     assert frozen_evidence.topology_violation_after < 1.0e-10
     statuses = {row.capability: row.status for row in frozen_evidence.support}
-    assert statuses["S60.4 BL-32 F5-F6 catalogue rows"] == "descoped"
-    assert statuses["S60.5 topology-constraint interaction"] == "bounded"
+    assert statuses["optional challenge-registry extension"] == "descoped"
+    assert statuses["topology-constraint interaction"] == "bounded"
     assert len(frozen_evidence.content_digest) == 64
 
 
@@ -85,7 +85,7 @@ def test_evidence_serialisation_and_markdown_expose_exact_claim_boundary(
     assert payload["content_digest"] == frozen_evidence.content_digest
     assert payload["chimera"] == frozen_evidence.chimera.to_dict()
     assert "finite-N synthetic" in str(payload["claim_boundary"])
-    assert "# BL-60 Chimera and Multiscale Control Evidence" in markdown
+    assert "# Chimera and Multiscale Control Evidence" in markdown
     assert frozen_evidence.content_digest in markdown
     assert "not an attractor, generalisation, or physical-domain claim" in markdown
     assert markdown.endswith("\n")

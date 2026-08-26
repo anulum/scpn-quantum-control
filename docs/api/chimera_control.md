@@ -1,13 +1,14 @@
 # Chimera Control API
 
-The `scpn_quantum_control.chimera_control` package is the public BL-60 facade
+The `scpn_quantum_control.chimera_control` package is the public facade
 for finite synthetic chimera generation, nested coherence observables,
 analytic hierarchy targets, unapplied phase proposals, topology-constraint
 composition, and deterministic evidence custody.
 
-All arrays returned by BL-60 custody objects are copied and read-only. The API
-is local and simulator-only: it performs no provider submission, QPU or
-hardware execution, external actuation, deployment, or biological inference.
+All arrays returned by chimera-control custody objects are copied and
+read-only. The API is local and simulator-only: it performs no provider
+submission, QPU or hardware execution, external actuation, deployment, or
+biological inference.
 
 For a task-oriented walkthrough and measured evidence, read
 [Chimera and Multiscale Synchronisation Control](../chimera_multiscale_control.md).

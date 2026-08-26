@@ -21,9 +21,9 @@ import pytest
 
 def _load_runner(repo: Path) -> ModuleType:
     path = repo / "scripts/run_chimera_multiscale_control_evidence.py"
-    spec = importlib.util.spec_from_file_location("bl60_evidence_runner", path)
+    spec = importlib.util.spec_from_file_location("chimera_evidence_runner", path)
     if spec is None or spec.loader is None:
-        raise RuntimeError("cannot load BL-60 evidence runner")
+        raise RuntimeError("cannot load chimera evidence runner")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -70,7 +70,7 @@ def test_evidence_runner_writes_then_byte_checks_real_outputs(tmp_path: Path) ->
     assert f"checked {json_path}" in checked.stdout
     assert json_path.stat().st_size > 1000
     assert markdown_path.read_text(encoding="utf-8").startswith(
-        "# BL-60 Chimera and Multiscale Control Evidence"
+        "# Chimera and Multiscale Control Evidence"
     )
 
 
