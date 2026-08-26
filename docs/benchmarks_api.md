@@ -312,6 +312,10 @@ The `scripts/run_decisive_advantage_benchmark.py` CLI emits the preregistration
 manifest (default) or runs the classical baselines and writes the artifact
 (`--run`, with `--no-mps`, `--t-max`, `--dt`, `--reserved-core` options).
 
+For exact signatures, row and artefact fields, validation rules, provenance,
+and timing-evidence boundaries, see the
+[decisive classical-run API](api/decisive_run_harness.md).
+
 ---
 
 ### 2d. `layout_method_comparison` — DynQ vs Optimiser vs SABRE

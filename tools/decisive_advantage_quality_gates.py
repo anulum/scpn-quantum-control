@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — decisive-advantage quality-gate specification
-"""Build exact quality gates for the decisive-advantage protocol owner."""
+"""Build exact quality gates for the decisive-advantage decision surface."""
 
 from __future__ import annotations
 
@@ -15,15 +15,18 @@ Gate = tuple[str, list[str]]
 
 DECISIVE_ADVANTAGE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py",
+    "src/scpn_quantum_control/benchmarks/decisive_run_harness.py",
     "tests/test_decisive_advantage_protocol.py",
+    "tests/test_decisive_run_harness.py",
     "tools/decisive_advantage_quality_gates.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
 
 DECISIVE_ADVANTAGE_COVERAGE_COHORT = [
     "tests/test_decisive_advantage_protocol.py",
+    "tests/test_decisive_run_harness.py",
 ]
-"""Tests that own exact decisive-protocol statement and branch coverage."""
+"""Tests that own exact protocol and classical-run coverage."""
 
 DECISIVE_ADVANTAGE_COVERAGE_DATA_FILE = ".coverage.decisive-advantage-quality"
 """Isolated coverage database for the decisive-protocol owner."""
@@ -115,7 +118,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={DECISIVE_ADVANTAGE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/decisive_advantage_protocol.py",
+                "--include=*/decisive_advantage_protocol.py,*/decisive_run_harness.py",
             ],
         ),
     ]

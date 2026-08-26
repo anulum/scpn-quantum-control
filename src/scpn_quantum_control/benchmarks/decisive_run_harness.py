@@ -103,6 +103,7 @@ class DecisiveRunConfig:
     reserved_core
         CPU core index whose isolation state is captured for the timing-grade
         label; must be non-negative.
+
     """
 
     t_max: float = 1.0
@@ -118,6 +119,7 @@ class DecisiveRunConfig:
         ------
         ValueError
             If any field falls outside its documented bound.
+
         """
         if not isfinite(self.t_max) or self.t_max <= 0.0:
             raise ValueError("t_max must be finite and positive")
@@ -225,6 +227,7 @@ def dependency_versions() -> dict[str, str]:
         Maps ``"python"`` and each tracked package to its installed version, or
         ``"not installed"`` when the package is absent. Read from installed
         metadata so the record reflects the true environment, never a guess.
+
     """
     versions = {"python": sys.version.split()[0]}
     for package in _TRACKED_DEPENDENCIES:
@@ -305,6 +308,7 @@ def dense_reference_row(
     tuple of (dict, float)
         The schema-valid ``ok`` row (with ``reference_error`` of zero, since this
         row *is* the reference) and the reference order parameter ``R``.
+
     """
     start = time.perf_counter()
     evolution = classical_exact_evolution(n_qubits, t_max, dt, K=K, omega=omega)
@@ -386,6 +390,7 @@ def mps_row(
         unavailable run becomes an explicit ``skipped`` row with notes.
     n_qubits, protocol_id, reference_r, bond_dim
         Row metadata and the reference order parameter for the relative error.
+
     """
     row = _base_row("mps_tensor_network", n_qubits, protocol_id)
     if not run.available:
@@ -477,6 +482,7 @@ def run_decisive_benchmark(
         The measured rows, the delegated protocol validation, and the
         fail-closed decision (``inconclusive`` for the default no-QPU protocol),
         with full provenance and the timing-grade label.
+
     """
     protocol = protocol or default_decisive_advantage_protocol()
     config = config or DecisiveRunConfig()

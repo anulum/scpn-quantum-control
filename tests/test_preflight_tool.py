@@ -218,7 +218,7 @@ def test_static_gates_include_differentiable_docstring_ratchet() -> None:
 
 
 def test_static_gates_include_decisive_advantage_quality_ratchets() -> None:
-    """The decisive benchmark source and owner test must stay typed and documented."""
+    """Keep the decisive protocol and run harness typed and documented."""
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
     strict_cmd = gate_map["mypy-strict-decisive-advantage-quality"]
     docstring_cmd = gate_map["ruff D decisive-advantage quality ratchet"]
@@ -247,17 +247,17 @@ def test_static_gates_include_decisive_advantage_quality_ratchets() -> None:
 
 
 def test_decisive_advantage_coverage_gate_is_exact_and_focused() -> None:
-    """The decisive benchmark must retain exact statement and branch coverage."""
+    """The decisive decision surface must retain exact branch coverage."""
     focused_name, focused_cmd = _preflight.DECISIVE_ADVANTAGE_COVERAGE_GATES[0]
     threshold_name, threshold_cmd = _preflight.DECISIVE_ADVANTAGE_COVERAGE_GATES[1]
     assert focused_name == "decisive-advantage focused coverage"
     assert "--branch" in focused_cmd
-    assert focused_cmd[-1:] == (
+    assert focused_cmd[-2:] == (
         _preflight._decisive_advantage_quality_gates.DECISIVE_ADVANTAGE_COVERAGE_COHORT
     )
     assert threshold_name == "decisive-advantage exact coverage threshold"
     assert "--fail-under=100" in threshold_cmd
-    assert "--include=*/decisive_advantage_protocol.py" in threshold_cmd
+    assert "--include=*/decisive_advantage_protocol.py,*/decisive_run_harness.py" in threshold_cmd
     gate_names = {name for name, _cmd in _preflight.STATIC_GATES}
     assert "mypy-strict-program-ad-array-indexing-quality" in gate_names
     array_gates = _preflight.PROGRAM_AD_ARRAY_INDEXING_COVERAGE_GATES

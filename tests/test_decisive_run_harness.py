@@ -17,20 +17,25 @@ decision size.
 
 from __future__ import annotations
 
+import shutil
 import subprocess
+import sys
 from importlib import metadata
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pytest
 
 from scpn_quantum_control.benchmarks import decisive_run_harness as harness
+from scpn_quantum_control.benchmarks.advantage_protocol import (
+    ScalingBaseline,
+    ScalingProtocol,
+)
 from scpn_quantum_control.benchmarks.classical_baselines import ClassicalBaselineRun
 from scpn_quantum_control.benchmarks.decisive_advantage_protocol import (
     DecisionCriterion,
     DecisiveAdvantageProtocol,
-    ScalingBaseline,
-    ScalingProtocol,
     SubmissionGate,
 )
 from scpn_quantum_control.benchmarks.decisive_run_harness import (
@@ -48,6 +53,7 @@ from scpn_quantum_control.benchmarks.isolated_host_readiness import (
     HostReadiness,
     assess_host_readiness,
 )
+from scpn_quantum_control.bridge import build_knm_paper27, omega_for_oscillators
 
 _ROW_KEYS = [
     "protocol_id",
@@ -146,7 +152,10 @@ def _shared_host() -> HostReadiness:
 
 
 class TestDecisiveRunConfig:
+    """Exercise deterministic benchmark-configuration validation."""
+
     def test_defaults_are_valid(self) -> None:
+        """Accept the documented default configuration."""
         config = DecisiveRunConfig()
         assert config.include_mps is True
 
@@ -163,105 +172,129 @@ class TestDecisiveRunConfig:
         ],
     )
     def test_invalid_config_raises(self, kwargs: dict[str, Any], match: str) -> None:
+        """Reject non-finite, non-positive, or inconsistent run controls."""
         with pytest.raises(ValueError, match=match):
             DecisiveRunConfig(**kwargs)
 
 
 class TestProvenanceHelpers:
+    """Exercise command, dependency, and repository provenance capture."""
+
     def test_command_line_joins_argv(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(harness.sys, "argv", ["a", "b"])
+        """Join the live argument vector into the recorded command."""
+        monkeypatch.setattr(sys, "argv", ["a", "b"])
         assert command_line() == "a b"
 
     def test_command_line_empty_argv(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(harness.sys, "argv", [])
+        """Use the interpreter fallback for an empty argument vector."""
+        monkeypatch.setattr(sys, "argv", [])
         assert command_line() == "python"
 
     def test_dependency_versions_reports_python_and_numpy(self) -> None:
+        """Record Python and the installed NumPy version."""
         versions = dependency_versions()
         assert versions["python"]
         assert versions["numpy"] == np.__version__
 
     def test_dependency_versions_missing_package(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Represent an unavailable optional dependency explicitly."""
+
         def _raise(_name: str) -> str:
             raise metadata.PackageNotFoundError
 
-        monkeypatch.setattr(harness.metadata, "version", _raise)
+        monkeypatch.setattr(metadata, "version", _raise)
         versions = dependency_versions()
         assert versions["numpy"] == "not installed"
 
     def test_resolve_git_executable_none_when_absent(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        monkeypatch.setattr(harness.shutil, "which", lambda _name: None)
+        """Return no Git executable when PATH resolution fails."""
+        monkeypatch.setattr(shutil, "which", lambda _name: None)
         assert harness._resolve_git_executable() is None
 
     def test_resolve_git_executable_none_when_unresolvable(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Any
     ) -> None:
-        monkeypatch.setattr(harness.shutil, "which", lambda _name: str(tmp_path / "absent-git"))
+        """Reject a resolved Git path that does not exist."""
+        monkeypatch.setattr(shutil, "which", lambda _name: str(tmp_path / "absent-git"))
         assert harness._resolve_git_executable() is None
 
     def test_resolve_git_executable_none_when_directory(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: Any
     ) -> None:
-        monkeypatch.setattr(harness.shutil, "which", lambda _name: str(tmp_path))
+        """Reject a directory presented as the Git executable."""
+        monkeypatch.setattr(shutil, "which", lambda _name: str(tmp_path))
         assert harness._resolve_git_executable() is None
 
     def test_resolve_git_executable_returns_executable(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        monkeypatch.setattr(harness.shutil, "which", lambda _name: harness.sys.executable)
+        """Accept a resolved executable file."""
+        monkeypatch.setattr(shutil, "which", lambda _name: sys.executable)
         resolved = harness._resolve_git_executable()
         assert resolved is not None
-        assert harness.Path(resolved).is_file()
+        assert Path(resolved).is_file()
 
     def test_git_commit_unknown_without_git(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Return an explicit unknown commit when Git is unavailable."""
         monkeypatch.setattr(harness, "_resolve_git_executable", lambda: None)
         assert git_commit() == "unknown"
 
     def test_git_commit_success(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Return the stripped commit emitted by Git."""
         monkeypatch.setattr(harness, "_resolve_git_executable", lambda: "/usr/bin/git")
 
         def _run(*_args: Any, **_kwargs: Any) -> subprocess.CompletedProcess[str]:
             return subprocess.CompletedProcess(args=[], returncode=0, stdout="abc123\n", stderr="")
 
-        monkeypatch.setattr(harness.subprocess, "run", _run)
+        monkeypatch.setattr(subprocess, "run", _run)
         assert git_commit() == "abc123"
 
     def test_git_commit_empty_stdout(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Return unknown when Git emits no commit text."""
         monkeypatch.setattr(harness, "_resolve_git_executable", lambda: "/usr/bin/git")
 
         def _run(*_args: Any, **_kwargs: Any) -> subprocess.CompletedProcess[str]:
             return subprocess.CompletedProcess(args=[], returncode=0, stdout="\n", stderr="")
 
-        monkeypatch.setattr(harness.subprocess, "run", _run)
+        monkeypatch.setattr(subprocess, "run", _run)
         assert git_commit() == "unknown"
 
     def test_git_commit_process_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Return unknown when the Git subprocess fails."""
         monkeypatch.setattr(harness, "_resolve_git_executable", lambda: "/usr/bin/git")
 
         def _run(*_args: Any, **_kwargs: Any) -> subprocess.CompletedProcess[str]:
             raise subprocess.CalledProcessError(1, "git")
 
-        monkeypatch.setattr(harness.subprocess, "run", _run)
+        monkeypatch.setattr(subprocess, "run", _run)
         assert git_commit() == "unknown"
 
 
 class TestNumericModels:
+    """Exercise error and analytic-memory calculations."""
+
     def test_relative_error_normal(self) -> None:
+        """Compute relative error against a non-zero reference."""
         assert harness._relative_error(1.1, 1.0) == pytest.approx(0.1)
 
     def test_relative_error_near_zero_reference_uses_absolute(self) -> None:
+        """Use absolute error when the reference is numerically zero."""
         # A near-zero reference must not manufacture a huge relative error.
         assert harness._relative_error(1e-6, 0.0) == pytest.approx(1e-6)
 
     def test_ode_memory_bytes(self) -> None:
+        """Price the complete ODE trajectory in float64 bytes."""
         # (round(0.5/0.1) + 1) time samples × 4 qubits × 8 bytes.
         assert harness._ode_memory_bytes(4, 0.5, 0.1) == 6 * 4 * 8
 
 
 class TestMpsRow:
+    """Exercise tensor-network row construction and skip semantics."""
+
     def test_available_run_is_ok_row(self) -> None:
+        """Serialise an available tensor-network run as an exact row."""
         run = ClassicalBaselineRun(
             name="mps_tebd",
             backend="quimb.TEBD",
@@ -277,6 +310,7 @@ class TestMpsRow:
         assert row["memory_bytes"] > 0
 
     def test_available_run_without_order_parameter_is_inf(self) -> None:
+        """Fail the accuracy metric when a run has no final observable."""
         run = ClassicalBaselineRun(
             name="mps_tebd",
             backend="quimb.TEBD",
@@ -288,6 +322,7 @@ class TestMpsRow:
         assert row["metric_payload"]["reference_error"] == float("inf")
 
     def test_unavailable_run_is_skipped_row(self) -> None:
+        """Preserve the explicit reason for an unavailable dependency."""
         run = ClassicalBaselineRun(
             name="mps_tebd",
             backend="quimb.TEBD",
@@ -363,9 +398,12 @@ def stub_heavy(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.usefixtures("stub_heavy")
 class TestBaselineRows:
+    """Exercise dense-reference and classical-ODE row assembly."""
+
     def test_dense_reference_row_has_zero_error(self) -> None:
-        coupling = harness.build_knm_paper27(L=4)
-        omega = harness.omega_for_oscillators(4)
+        """Mark the dense reference with zero self-error."""
+        coupling = build_knm_paper27(L=4)
+        omega = omega_for_oscillators(4)
         row, reference_r = dense_reference_row(
             4, "small_decisive_n4", coupling, omega, t_max=0.5, dt=0.1
         )
@@ -375,14 +413,17 @@ class TestBaselineRows:
         assert row["metric_payload"]["ground_energy"] == pytest.approx(-1.2345)
 
     def test_ode_row_reports_relative_error(self) -> None:
-        coupling = harness.build_knm_paper27(L=4)
-        omega = harness.omega_for_oscillators(4)
+        """Report the ODE observable error against the dense reference."""
+        coupling = build_knm_paper27(L=4)
+        omega = omega_for_oscillators(4)
         row = ode_row(4, "small_decisive_n4", coupling, omega, 0.574, t_max=0.5, dt=0.1)
         assert row["status"] == "ok"
         assert row["metric_payload"]["reference_error"] == pytest.approx(abs(0.40 - 0.574) / 0.574)
         assert set(_ROW_KEYS) <= set(row)
 
     def test_ode_row_without_final_is_inf(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Fail the ODE accuracy metric when its final observable is absent."""
+
         def _empty_ode(K: Any, omega: Any, *, t_max: float, dt: float) -> ClassicalBaselineRun:
             del omega, t_max, dt
             return ClassicalBaselineRun(
@@ -394,25 +435,30 @@ class TestBaselineRows:
             )
 
         monkeypatch.setattr(harness, "scipy_ode_baseline", _empty_ode)
-        coupling = harness.build_knm_paper27(L=4)
-        omega = harness.omega_for_oscillators(4)
+        coupling = build_knm_paper27(L=4)
+        omega = omega_for_oscillators(4)
         row = ode_row(4, "small_decisive_n4", coupling, omega, 0.574, t_max=0.5, dt=0.1)
         assert row["metric_payload"]["reference_error"] == float("inf")
 
 
 class TestHostReadinessDict:
+    """Exercise serialisation of isolated-host readiness evidence."""
+
     def test_ready_host_serialises_load(self) -> None:
+        """Retain a complete load average for an isolated host."""
         payload = harness._host_readiness_dict(_ready_host())
         assert payload["ready"] is True
         assert payload["load_average"] == [0.1, 0.1, 0.1]
 
     def test_shared_host_none_load(self) -> None:
+        """Retain blockers and load for a shared host."""
         payload = harness._host_readiness_dict(_shared_host())
         assert payload["ready"] is False
         assert payload["load_average"] == [9.0, 9.0, 9.0]
         assert payload["blockers"]
 
     def test_missing_load_average_is_none(self) -> None:
+        """Preserve a missing load average as JSON-ready null."""
         readiness = assess_host_readiness(
             reserved_core=0, governor="performance", frequency_mhz=3000.0, load_average=None
         )
@@ -421,7 +467,10 @@ class TestHostReadinessDict:
 
 @pytest.mark.usefixtures("stub_heavy")
 class TestRunDecisiveBenchmark:
+    """Exercise complete fail-closed decisive benchmark assembly."""
+
     def test_end_to_end_is_inconclusive(self) -> None:
+        """Return an inconclusive verdict when no QPU row exists."""
         artifact = run_decisive_benchmark(
             protocol=_small_protocol(4),
             config=DecisiveRunConfig(t_max=0.5, dt=0.1, include_mps=True),
@@ -440,6 +489,7 @@ class TestRunDecisiveBenchmark:
         }
 
     def test_config_gated_mps_skip(self) -> None:
+        """Emit an explicit skip when tensor-network execution is disabled."""
         artifact = run_decisive_benchmark(
             protocol=_small_protocol(4),
             config=DecisiveRunConfig(t_max=0.5, dt=0.1, include_mps=False),
@@ -454,6 +504,7 @@ class TestRunDecisiveBenchmark:
     def test_defaults_use_small_protocol_via_monkeypatch(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Exercise default protocol, config, and live-readiness branches."""
         # Exercise the `protocol or default(...)` and `config or ...` default
         # branches and the live host-readiness path without running n=12.
         monkeypatch.setattr(
