@@ -302,7 +302,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   parameter-shift demos, and refuse invent-green live Runtime / full feature
   parity. Docs: `docs/migration_guides_product.md`. Tenth P1 A-product after
   BL-90/91/81/49/96/92/93/64/39.
-- 2026-07-24 — Adjoint reversible simulator replay product (BL-39):
+- 2026-07-24 — Adjoint reversible simulator replay product:
   `scpn_quantum_control.adjoint_replay_product` productises reverse-mode
   Program AD adjoint generation and executable step replay, checkpoint-policy
   contracts, reversibility predicates, and refuse invent-green mid-circuit

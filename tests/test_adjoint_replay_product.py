@@ -155,6 +155,11 @@ def test_integrity_rejects_drift_and_invent_green() -> None:
     registry = build_adjoint_replay_product_registry()
     surfaces = cast(list[dict[str, object]], registry["surfaces"])
 
+    stale_schema = dict(registry)
+    stale_schema["schema"] = "adjoint_replay_product.v1"
+    with pytest.raises(ValueError, match="schema mismatch"):
+        assert_adjoint_replay_product_integrity(stale_schema)
+
     broken = dict(registry)
     broken["surfaces"] = surfaces + [
         {
@@ -176,6 +181,7 @@ def test_integrity_rejects_drift_and_invent_green() -> None:
         assert_adjoint_replay_product_integrity(broken)
 
     empty: dict[str, object] = {
+        "schema": ADJOINT_REPLAY_PRODUCT_SCHEMA,
         "surfaces": [],
         "blank_entry_count": 0,
         "surface_count": 0,

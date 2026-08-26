@@ -11,13 +11,13 @@ Module: `scpn_quantum_control.adjoint_replay_product`
 
 | Rule | Behaviour |
 |---|---|
-| Product schema | `adjoint_replay_product.v1` |
+| Product schema | `adjoint_replay_product.v2` |
 | Default surface | `reverse_adjoint_grad` |
 | Mid-circuit measurement | Refused |
 | Catalyst parity | Refused |
 | Hardware adjoint | Refused |
 | Blank/unknown surface | Fail closed |
-| Full automatic checkpointing | Residual (S39.5+) |
+| Full automatic checkpointing | Open capability; not claimed by this product |
 
 Claim boundary:
 
@@ -26,8 +26,8 @@ Claim boundary:
 > executable adjoint step replay over ambient program_ad_adjoint; materialised
 > local scalar demos only; refuses mid-circuit measurement / irreversible ops
 > invent-green, Catalyst parity, and hardware adjoint; does not invent full
-> automatic checkpointing, open-system reverse, or planner CI matrix
-> (S39.5–S39.8 residual)
+> automatic checkpointing, open-system reverse, or complete planner-registration
+> coverage
 
 ## Public API
 
@@ -62,7 +62,7 @@ policy = build_checkpoint_policy(schedule="every_k", interval_k=2)
 assert policy.interval_k == 2
 ```
 
-## Catalogue (S39.0)
+## Replay surface catalogue
 
 | ID | Kind |
 |---|---|
@@ -83,12 +83,12 @@ For ``f(x, y) = x^2 + y^2`` at ``[0.5, -0.25]``:
 
 ## Bounded product status
 
-Shipped: S39.0 surface catalogue · S39.1 reversibility + checkpoint policy
-contracts · S39.3 reverse/replay materialised demo · irreversible / Catalyst /
-hardware refuse · docs / API map.
+Shipped: surface catalogue, reversibility and checkpoint-policy contracts,
+reverse/replay materialised demo, irreversible/Catalyst/hardware refusal, and
+documentation/API map.
 
-Open residual: S39.2 full checkpointed simulator campaign · S39.4 extended
-validation harness suite · S39.5 memory/time report artefacts · S39.6 planner
-registration matrix · S39.7 extended usage guide · S39.8 open-system reverse.
+Open: full checkpointed simulator campaign, extended validation harness,
+memory/time report artefacts, planner-registration matrix, extended usage
+guide, and open-system reverse.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

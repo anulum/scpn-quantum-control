@@ -20,7 +20,8 @@ adjoint generation and executable replay:
   Catalyst parity, and hardware adjoint claims.
 
 Does **not** re-architect ambient engines, invent Catalyst-class reverse
-simulators, or claim hardware adjoint (S39.5–S39.8 residual).
+simulators, or claim hardware adjoint; the reporting, planner-registration,
+usage-guide, and open-system-reverse capabilities remain open.
 """
 
 from __future__ import annotations
@@ -55,7 +56,7 @@ CheckpointSchedule = Literal["every_k", "binomial", "fixed_budget"]
 PathDecisionOutcome = Literal["allowed", "refused"]
 """Structured path-eligibility outcomes."""
 
-ADJOINT_REPLAY_PRODUCT_SCHEMA: Final[str] = "adjoint_replay_product.v1"
+ADJOINT_REPLAY_PRODUCT_SCHEMA: Final[str] = "adjoint_replay_product.v2"
 """JSON schema identifier for serialised product payloads."""
 
 ADJOINT_REPLAY_CLAIM_BOUNDARY: Final[str] = (
@@ -65,7 +66,7 @@ ADJOINT_REPLAY_CLAIM_BOUNDARY: Final[str] = (
     "materialised local scalar demos only; refuses mid-circuit measurement / "
     "irreversible ops invent-green, Catalyst parity, and hardware adjoint; "
     "does not invent full automatic checkpointing, open-system reverse, or "
-    "planner CI matrix (S39.5–S39.8 residual)"
+    "planner-registration coverage"
 )
 """Shared claim boundary for adjoint-replay product payloads."""
 
@@ -82,7 +83,7 @@ def _demo_quadratic_objective(values: Any) -> object:
 
 @dataclass(frozen=True, slots=True)
 class AdjointReplaySurfaceRow:
-    """One product catalogue row for an adjoint-replay surface (S39.0).
+    """One product catalogue row for an adjoint-replay surface.
 
     Attributes
     ----------
@@ -182,7 +183,7 @@ class AdjointReplaySurfaceRow:
 
 @dataclass(frozen=True, slots=True)
 class CheckpointPolicy:
-    """Checkpoint schedule contract for reverse-mode memory trade-offs (S39.1).
+    """Checkpoint schedule contract for reverse-mode memory trade-offs.
 
     Attributes
     ----------
@@ -225,7 +226,7 @@ class CheckpointPolicy:
 
 @dataclass(frozen=True, slots=True)
 class ReversibilityReport:
-    """Reversibility predicate report for a candidate reverse path (S39.1).
+    """Reversibility predicate report for a candidate reverse path.
 
     Attributes
     ----------
@@ -323,7 +324,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedAdjointReplayProbe:
-    """Materialised local reverse-adjoint + executable replay probe (S39.3).
+    """Materialised local reverse-adjoint + executable replay probe.
 
     Attributes
     ----------
@@ -586,7 +587,7 @@ def build_checkpoint_policy(
     max_checkpoints: int = 8,
     recompute_allowed: bool = True,
 ) -> CheckpointPolicy:
-    """Build a product-scoped checkpoint policy contract (S39.1).
+    """Build a product-scoped checkpoint policy contract.
 
     Parameters
     ----------
@@ -619,7 +620,7 @@ def assess_reversibility(
     has_irreversible_ops: bool = False,
     has_supported_unitary_ir: bool = True,
 ) -> ReversibilityReport:
-    """Assess whether a path is reversible under product predicates (S39.1).
+    """Assess whether a path is reversible under product predicates.
 
     Parameters
     ----------
@@ -738,7 +739,7 @@ def materialise_demo_adjoint_replay_probe(
     *,
     values: ArrayLike | None = None,
 ) -> MaterialisedAdjointReplayProbe:
-    """Materialise reverse adjoint + executable replay on ``x**2+y**2`` (S39.3).
+    """Materialise reverse adjoint + executable replay on ``x**2+y**2``.
 
     Uses ambient whole-program AD + :func:`program_adjoint_gradient` and
     :func:`program_adjoint_replay_gradient`. True gradient at default
@@ -859,8 +860,9 @@ def build_adjoint_replay_product_registry() -> dict[str, object]:
         "policy_note": (
             "Adjoint reversible-replay product catalogue only; ambient "
             "program_ad_adjoint remains the reverse/replay implementation; "
-            "full checkpoint-schedule campaign, planner matrix, and open-system "
-            "reverse residual S39.5–S39.8; no invent-green Catalyst/hardware."
+            "full checkpoint-schedule campaign, reporting, planner registration, "
+            "usage guide, and open-system reverse remain open; no invent-green "
+            "Catalyst/hardware."
         ),
     }
 
@@ -887,6 +889,8 @@ def assert_adjoint_replay_product_integrity(
 
     """
     registry = dict(payload) if payload is not None else build_adjoint_replay_product_registry()
+    if registry.get("schema") != ADJOINT_REPLAY_PRODUCT_SCHEMA:
+        raise ValueError("adjoint-replay product schema mismatch")
     surfaces = registry.get("surfaces")
     if not isinstance(surfaces, list) or not surfaces:
         raise ValueError("adjoint-replay product registry must contain a non-empty surfaces list")
