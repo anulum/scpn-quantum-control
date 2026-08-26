@@ -84,13 +84,15 @@ def test_get_known_and_unknown_fail_closed() -> None:
 def test_schema_version_policy() -> None:
     """Expose the supported schema and refuse silent field drops."""
     policy = schema_version_policy()
+    assert STABLE_CORE_MODEL_SCHEMA_VERSION == "stable_core.experiment_model.v2"
+    assert STABLE_CORE_PRODUCT_SCHEMA == "stable_core_product.v2"
     assert policy["model_schema_version"] == STABLE_CORE_MODEL_SCHEMA_VERSION
     assert policy["silent_field_drop_allowed"] is False
     assert validate_model_schema_version(STABLE_CORE_MODEL_SCHEMA_VERSION)
     with pytest.raises(ValueError, match="non-empty"):
         validate_model_schema_version("")
     with pytest.raises(ValueError, match="unknown model schema_version"):
-        validate_model_schema_version("stable_core.experiment_model.v999")
+        validate_model_schema_version("stable_core.experiment_model.v1")
 
 
 def test_problem_round_trip_and_digest() -> None:
@@ -216,6 +218,8 @@ def test_envelope_wrap_unwrap_fail_closed() -> None:
         omega=(0.0,),
     ).to_dict()
     env = wrap_model_envelope("problem", body)
+    assert set(env) == {"schema_version", "kind", "body", "claim_boundary"}
+    assert env["claim_boundary"] == STABLE_CORE_PRODUCT_CLAIM_BOUNDARY
     version, kind, unwrapped = unwrap_model_envelope(env)
     assert version == STABLE_CORE_MODEL_SCHEMA_VERSION
     assert kind == "problem"
@@ -230,14 +234,28 @@ def test_envelope_wrap_unwrap_fail_closed() -> None:
                 "schema_version": "nope.v0",
                 "kind": "problem",
                 "body": body,
+                "claim_boundary": STABLE_CORE_PRODUCT_CLAIM_BOUNDARY,
             }
         )
+    with pytest.raises(ValueError, match="envelope key drift"):
+        unwrap_model_envelope(
+            {
+                "schema_version": STABLE_CORE_MODEL_SCHEMA_VERSION,
+                "kind": "problem",
+                "body": body,
+            }
+        )
+    with pytest.raises(ValueError, match="envelope key drift"):
+        unwrap_model_envelope({**env, "unexpected": True})
+    with pytest.raises(ValueError, match="claim_boundary drift"):
+        unwrap_model_envelope({**env, "claim_boundary": "drifted"})
     with pytest.raises(ValueError, match="unknown envelope kind"):
         unwrap_model_envelope(
             {
                 "schema_version": STABLE_CORE_MODEL_SCHEMA_VERSION,
                 "kind": "ghost",
                 "body": body,
+                "claim_boundary": STABLE_CORE_PRODUCT_CLAIM_BOUNDARY,
             }
         )
 
@@ -312,6 +330,54 @@ def test_integrity_rejects_drift() -> None:
     no_policy["schema_policy"] = {"silent_field_drop_allowed": True}
     with pytest.raises(ValueError, match="silent field drops"):
         assert_stable_core_product_integrity(no_policy)
+
+    extra_key = dict(registry)
+    extra_key["unexpected"] = True
+    with pytest.raises(ValueError, match="registry key drift"):
+        assert_stable_core_product_integrity(extra_key)
+
+    old_schema = dict(registry)
+    old_schema["schema"] = "stable_core_product.v1"
+    with pytest.raises(ValueError, match="registry schema drift"):
+        assert_stable_core_product_integrity(old_schema)
+
+    claim_drift = dict(registry)
+    claim_drift["claim_boundary"] = "drifted"
+    with pytest.raises(ValueError, match="claim_boundary drift"):
+        assert_stable_core_product_integrity(claim_drift)
+
+    default_drift = dict(registry)
+    default_drift["default_contract_id"] = "problem_contract"
+    with pytest.raises(ValueError, match="default_contract_id drift"):
+        assert_stable_core_product_integrity(default_drift)
+
+    policy_drift = dict(registry)
+    drifted_policy = dict(cast(dict[str, object], registry["schema_policy"]))
+    drifted_policy["refuse_unknown_schema"] = False
+    policy_drift["schema_policy"] = drifted_policy
+    with pytest.raises(ValueError, match="schema_policy drift"):
+        assert_stable_core_product_integrity(policy_drift)
+
+    surface_drift = dict(registry)
+    drifted_surfaces = [
+        dict(row) for row in cast(list[dict[str, object]], registry["public_surfaces"])
+    ]
+    drifted_surfaces[0]["role"] = "drifted"
+    surface_drift["public_surfaces"] = drifted_surfaces
+    with pytest.raises(ValueError, match="public_surfaces drift"):
+        assert_stable_core_product_integrity(surface_drift)
+
+    row_drift = dict(registry)
+    drifted_rows = [dict(row) for row in contracts]
+    drifted_rows[0]["title"] = "Drifted"
+    row_drift["contracts"] = drifted_rows
+    with pytest.raises(ValueError, match="canonical contract rows drift"):
+        assert_stable_core_product_integrity(row_drift)
+
+    note_drift = dict(registry)
+    note_drift["policy_note"] = "drifted"
+    with pytest.raises(ValueError, match="policy_note drift"):
+        assert_stable_core_product_integrity(note_drift)
 
 
 def test_integrity_rejects_blank_invalid_and_metadata() -> None:
@@ -412,6 +478,8 @@ def test_contract_row_validation() -> None:
         StableCoreContractRow(**{**base, "api_stability_class": ""})
     with pytest.raises(ValueError, match="as_of"):
         StableCoreContractRow(**{**base, "as_of": ""})
+    with pytest.raises(ValueError, match="claim_boundary"):
+        StableCoreContractRow(**{**base, "claim_boundary": "drifted"})
 
 
 def test_round_trip_result_validation() -> None:
@@ -427,7 +495,7 @@ def test_round_trip_result_validation() -> None:
     with pytest.raises(ValueError, match="schema_version"):
         StableCoreRoundTripResult(
             kind="problem",
-            schema_version="",
+            schema_version="stable_core.experiment_model.v1",
             digest_sha256="a" * 64,
             payload={"k": 1},
             matched=True,
@@ -440,6 +508,14 @@ def test_round_trip_result_validation() -> None:
             payload={"k": 1},
             matched=True,
         )
+    with pytest.raises(ValueError, match="digest_sha256"):
+        StableCoreRoundTripResult(
+            kind="problem",
+            schema_version=STABLE_CORE_MODEL_SCHEMA_VERSION,
+            digest_sha256="A" * 64,
+            payload={"k": 1},
+            matched=True,
+        )
     with pytest.raises(ValueError, match="payload"):
         StableCoreRoundTripResult(
             kind="problem",
@@ -447,6 +523,15 @@ def test_round_trip_result_validation() -> None:
             digest_sha256="a" * 64,
             payload={},
             matched=True,
+        )
+    with pytest.raises(ValueError, match="claim_boundary"):
+        StableCoreRoundTripResult(
+            kind="problem",
+            schema_version=STABLE_CORE_MODEL_SCHEMA_VERSION,
+            digest_sha256="a" * 64,
+            payload={"k": 1},
+            matched=True,
+            claim_boundary="drifted",
         )
     ok = StableCoreRoundTripResult(
         kind="problem",
@@ -686,6 +771,7 @@ def test_envelope_kind_and_body_edges() -> None:
                 "schema_version": STABLE_CORE_MODEL_SCHEMA_VERSION,
                 "kind": "  ",
                 "body": {"problem_id": "p"},
+                "claim_boundary": STABLE_CORE_PRODUCT_CLAIM_BOUNDARY,
             }
         )
     with pytest.raises(ValueError, match="body must be a non-empty mapping"):
@@ -694,6 +780,7 @@ def test_envelope_kind_and_body_edges() -> None:
                 "schema_version": STABLE_CORE_MODEL_SCHEMA_VERSION,
                 "kind": "problem",
                 "body": {},
+                "claim_boundary": STABLE_CORE_PRODUCT_CLAIM_BOUNDARY,
             }
         )
 
@@ -721,11 +808,6 @@ def test_round_trip_detects_field_loss(monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(ValueError, match="round-trip lost or altered"):
         mod.round_trip_problem(problem)
 
-    def broken_exp_deserialise(envelope: Any) -> Any:
-        return build_demo_experiment()  # different seed metadata path may match;
-        # force different experiment_id via rebuild
-
-    # Rebuild with different id
     from scpn_quantum_control.stable_core import build_experiment as be
 
     def broken_exp(envelope: Any) -> Any:

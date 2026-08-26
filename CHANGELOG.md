@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-26 — Stable-core descriptive contract hardening:
+  advanced the product registry and model envelope schemas to v2 without
+  aliases, removed internal planning codes from the public product narrative,
+  and made registry and envelope drift fail closed. Public Python symbols,
+  contract identifiers, model fields, and deterministic demo values are
+  unchanged.
+
 - 2026-08-26 — Preregistered layout-relaxation naming: replaced internal
   experiment-stage labels in the runtime result, executable runner, committed
   benchmark artifact, and public benchmark/API descriptions with domain terms.
@@ -368,13 +375,14 @@ control, or broad quantum-advantage claim is promoted by this release.
   unsupported families. The ambient Program AD Rust bridge remains an
   experimental workbench. Docs: `docs/polyglot_parity_certificate.md`. Fourth
   priority product in the original productisation sequence.
-- 2026-07-24 — stable_core experiment model product (BL-81):
+- 2026-07-24 — Stable-core experiment model:
   `scpn_quantum_control.stable_core_product` productises versioned schema
   policy, public contract catalogue over Problem/Backend/Experiment/Result,
   JSON envelope round-trip + SHA-256 digests, and fail-closed blank/unknown
   schema and contract ids. Ambient `stable_core` remains the narrow durable
-  SemVer-intent surface under BL-97; substrate for BL-55/BL-56. Docs:
-  `docs/stable_core_product.md`. Third P1 A-product after BL-90/BL-91.
+  SemVer-intent surface in the public API stability programme and a substrate
+  for hermetic reproduction kits and scorecard acceptance. Docs:
+  `docs/stable_core_product.md`.
 - 2026-07-24 — Whole-program AD product surface (BL-91):
   `scpn_quantum_control.whole_program_ad_product` productises versioned
   frontend→IR→adjoint/replay journeys, layered architecture map, fail-closed

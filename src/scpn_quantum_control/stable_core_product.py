@@ -12,11 +12,11 @@ versioned public experiment model: schema policy, JSON serialisation and
 round-trip helpers, digest helpers, and fail-closed blank/unknown/invalid
 payloads.
 
-Composes ambient :mod:`scpn_quantum_control.stable_core` types (does not rewrite
-challenge/scorecard stacks). Honesty pointers: API-stability (stable_core is the narrow
-durable SemVer-intent surface), reproduction-kit (hermetic reproduction substrate), scorecard
-(scorecard acceptance substrate). Residual mass adapter migration (S81.3)
-remains open honestly.
+Composes ambient :mod:`scpn_quantum_control.stable_core` types without
+rewriting challenge or scorecard stacks. The durable SemVer-intent surface is
+governed by the public API stability programme and provides substrate for
+hermetic reproduction kits and scorecard acceptance. Mass adapter migration
+remains incomplete.
 """
 
 from __future__ import annotations
@@ -42,21 +42,45 @@ from .stable_core import (
 ContractKind = Literal["problem", "backend", "experiment", "result", "schema_policy"]
 """Public product contract kinds."""
 
-STABLE_CORE_PRODUCT_SCHEMA: Final[str] = "stable_core_product.v1"
+STABLE_CORE_PRODUCT_SCHEMA: Final[str] = "stable_core_product.v2"
 """JSON schema identifier for serialised product payloads."""
 
-STABLE_CORE_MODEL_SCHEMA_VERSION: Final[str] = "stable_core.experiment_model.v1"
+STABLE_CORE_MODEL_SCHEMA_VERSION: Final[str] = "stable_core.experiment_model.v2"
 """Version label for the durable experiment-model payload envelope."""
 
 STABLE_CORE_PRODUCT_CLAIM_BOUNDARY: Final[str] = (
     "stable_core product surface only; versioned schema policy and JSON "
     "round-trip/digest helpers over Problem/Backend/Experiment/Result; "
-    "narrow durable SemVer-intent surface under BL-97; substrate for BL-55 "
-    "hermetic kits and BL-56 scorecards; does not migrate all challenge/"
-    "scorecard adapters (S81.3 residual); does not invent-green hardware "
-    "submission or claim full historical field compatibility matrix"
+    "narrow durable SemVer-intent surface governed by the public API stability "
+    "programme; substrate for hermetic reproduction kits and scorecard "
+    "acceptance; challenge and scorecard adapter migration remains incomplete; "
+    "does not invent-green hardware submission or claim a full historical "
+    "field-compatibility matrix"
 )
 """Shared claim boundary for product rows and envelopes."""
+
+_STABLE_CORE_PRODUCT_POLICY_NOTE: Final[str] = (
+    "stable_core product catalogue only; ambient stable_core types are the "
+    "narrow durable SemVer-intent surface governed by the public API stability "
+    "programme; mass challenge and scorecard adapter migration remains "
+    "incomplete"
+)
+_MODEL_ENVELOPE_KEYS: Final[frozenset[str]] = frozenset(
+    {"schema_version", "kind", "body", "claim_boundary"}
+)
+_PRODUCT_REGISTRY_KEYS: Final[frozenset[str]] = frozenset(
+    {
+        "schema",
+        "claim_boundary",
+        "contract_count",
+        "blank_entry_count",
+        "default_contract_id",
+        "schema_policy",
+        "public_surfaces",
+        "contracts",
+        "policy_note",
+    }
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -126,6 +150,8 @@ class StableCoreContractRow:
             raise ValueError("api_stability_class must be non-empty")
         if not self.as_of or not self.as_of.strip():
             raise ValueError("as_of must be non-empty")
+        if self.claim_boundary != STABLE_CORE_PRODUCT_CLAIM_BOUNDARY:
+            raise ValueError("claim_boundary must match the stable-core product boundary")
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this contract row."""
@@ -182,12 +208,16 @@ class StableCoreRoundTripResult:
             "schema_policy",
         }:
             raise ValueError(f"unknown contract kind: {self.kind!r}")
-        if not self.schema_version or not self.schema_version.strip():
-            raise ValueError("schema_version must be non-empty")
-        if not self.digest_sha256 or len(self.digest_sha256) != 64:
-            raise ValueError("digest_sha256 must be a 64-char hex digest")
+        if self.schema_version != STABLE_CORE_MODEL_SCHEMA_VERSION:
+            raise ValueError("schema_version must match the current stable-core model schema")
+        if len(self.digest_sha256) != 64 or any(
+            character not in "0123456789abcdef" for character in self.digest_sha256
+        ):
+            raise ValueError("digest_sha256 must be a 64-character lowercase hex digest")
         if not self.payload:
             raise ValueError("payload must be non-empty")
+        if self.claim_boundary != STABLE_CORE_PRODUCT_CLAIM_BOUNDARY:
+            raise ValueError("claim_boundary must match the stable-core product boundary")
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this round-trip result."""
@@ -347,7 +377,7 @@ def iter_stable_core_contracts(
 
 
 def schema_version_policy() -> dict[str, object]:
-    """Return the versioned schema policy for the experiment model (S81.0).
+    """Return the versioned schema policy for the experiment model.
 
     Returns
     -------
@@ -410,6 +440,32 @@ def _require_non_empty_str(name: str, value: object) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{name} must be a non-empty string")
     return value.strip()
+
+
+def _require_exact_keys(name: str, value: Mapping[str, object], expected: frozenset[str]) -> None:
+    """Require an exact serialized key set.
+
+    Parameters
+    ----------
+    name
+        Payload name used in the error.
+    value
+        Serialized mapping under validation.
+    expected
+        Canonical key set.
+
+    Raises
+    ------
+    ValueError
+        If required keys are missing or unexpected keys are present.
+
+    """
+    actual = frozenset(value)
+    if actual != expected:
+        raise ValueError(
+            f"{name} key drift (missing={sorted(expected - actual)!r}, "
+            f"unexpected={sorted(actual - expected)!r})"
+        )
 
 
 def problem_from_dict(payload: Mapping[str, Any]) -> Problem:
@@ -662,6 +718,9 @@ def unwrap_model_envelope(envelope: Mapping[str, Any]) -> tuple[str, ContractKin
     """
     data = _require_mapping("envelope", envelope)
     version = validate_model_schema_version(str(data.get("schema_version", "")))
+    _require_exact_keys("envelope", data, _MODEL_ENVELOPE_KEYS)
+    if data.get("claim_boundary") != STABLE_CORE_PRODUCT_CLAIM_BOUNDARY:
+        raise ValueError("envelope claim_boundary drift")
     kind_raw = data.get("kind")
     if not isinstance(kind_raw, str) or not kind_raw.strip():
         raise ValueError("envelope kind must be a non-empty string")
@@ -772,7 +831,7 @@ def deserialise_result(envelope: Mapping[str, Any]) -> Result:
 
 
 def round_trip_problem(problem: Problem) -> StableCoreRoundTripResult:
-    """JSON round-trip a Problem and return digest + match status (S81.2)."""
+    """JSON round-trip a Problem and return its digest and match status."""
     envelope = serialise_problem(problem)
     rebuilt = deserialise_problem(envelope)
     original_body = problem.to_dict()
@@ -794,7 +853,7 @@ def round_trip_problem(problem: Problem) -> StableCoreRoundTripResult:
 
 
 def round_trip_experiment(experiment: Experiment) -> StableCoreRoundTripResult:
-    """JSON round-trip an Experiment and return digest + match status (S81.2)."""
+    """JSON round-trip an Experiment and return its digest and match status."""
     envelope = serialise_experiment(experiment)
     rebuilt = deserialise_experiment(envelope)
     original_json = canonical_json_bytes(experiment.to_dict())
@@ -840,7 +899,7 @@ def build_demo_experiment() -> Experiment:
 
 
 def map_stable_core_public_surfaces() -> tuple[dict[str, object], ...]:
-    """Return a public API map of stable_core product symbols (S81.1).
+    """Return a public API map of stable_core product symbols.
 
     Returns
     -------
@@ -881,11 +940,7 @@ def build_stable_core_product_registry() -> dict[str, object]:
         "schema_policy": schema_version_policy(),
         "public_surfaces": list(map_stable_core_public_surfaces()),
         "contracts": contracts,
-        "policy_note": (
-            "stable_core product catalogue only; ambient stable_core types are "
-            "the narrow durable SemVer-intent surface under BL-97; S81.3 mass "
-            "challenge/scorecard adapter migration residual open honestly."
-        ),
+        "policy_note": _STABLE_CORE_PRODUCT_POLICY_NOTE,
     }
 
 
@@ -914,6 +969,11 @@ def assert_stable_core_product_integrity(
     contracts = registry.get("contracts")
     if not isinstance(contracts, list) or not contracts:
         raise ValueError("stable_core product registry must contain a non-empty contracts list")
+    _require_exact_keys("stable_core product registry", registry, _PRODUCT_REGISTRY_KEYS)
+    if registry.get("schema") != STABLE_CORE_PRODUCT_SCHEMA:
+        raise ValueError("stable_core product registry schema drift")
+    if registry.get("claim_boundary") != STABLE_CORE_PRODUCT_CLAIM_BOUNDARY:
+        raise ValueError("stable_core product registry claim_boundary drift")
     seen: set[str] = set()
     blank = 0
     default_found = False
@@ -947,6 +1007,8 @@ def assert_stable_core_product_integrity(
         raise ValueError(f"stable_core product registry has {blank} blank or invalid entries")
     if not default_found:
         raise ValueError("stable_core product registry missing experiment_contract")
+    if registry.get("default_contract_id") != "experiment_contract":
+        raise ValueError("stable_core product registry default_contract_id drift")
     expected = set(list_stable_core_contract_ids())
     if seen != expected:
         raise ValueError(
@@ -963,6 +1025,16 @@ def assert_stable_core_product_integrity(
         raise ValueError("schema_policy must be a mapping")
     if policy.get("silent_field_drop_allowed") is not False:
         raise ValueError("schema_policy must refuse silent field drops")
+    if dict(policy) != schema_version_policy():
+        raise ValueError("stable_core product registry schema_policy drift")
+    expected_surfaces = list(map_stable_core_public_surfaces())
+    if registry.get("public_surfaces") != expected_surfaces:
+        raise ValueError("stable_core product registry public_surfaces drift")
+    expected_contracts = [row.to_dict() for row in _CANONICAL_CONTRACTS]
+    if contracts != expected_contracts:
+        raise ValueError("stable_core product registry canonical contract rows drift")
+    if registry.get("policy_note") != _STABLE_CORE_PRODUCT_POLICY_NOTE:
+        raise ValueError("stable_core product registry policy_note drift")
     return registry
 
 
