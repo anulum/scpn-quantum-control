@@ -42,7 +42,7 @@ evidence or proof of general framework equivalence.
 
 | Rule | Behaviour |
 |---|---|
-| Product schema | `migration_guides_product.v1` |
+| Product schema | `migration_guides_product.v2` |
 | Default concept | `pl_parameter_shift_to_phase_qnode` |
 | Live Runtime / QPU | Refused |
 | Full feature parity | Refused |
@@ -86,12 +86,11 @@ not instantiate IBM Runtime, select a backend, submit a circuit, or spend shots.
 
 Claim boundary:
 
-> PennyLane + Qiskit migration guides product surface only; catalogues
-> concept-map rows and materialised local round-trips on supported subsets
-> over ambient phase.pennylane_import and phase.qiskit_gradients; refuses
-> invent-green full Runtime feature parity and live QPU Runtime; does not
-> claim full framework API coverage, companion notebooks, or version-skew CI
-> (S41.5–S41.7 residual)
+> This migration-guide product maps supported PennyLane and Qiskit concepts to
+> local SCPN APIs and materialises bounded local round trips through
+> phase.pennylane_import and phase.qiskit_gradients. It refuses full Runtime
+> feature parity and live QPU Runtime claims. Full framework API coverage,
+> companion notebooks, and version-skew CI remain outside the current product.
 
 ## Public API
 
@@ -124,7 +123,7 @@ qk = materialise_demo_qiskit_local_gradient(theta=0.4)
 assert abs(qk.value - __import__("math").cos(0.4)) < 1e-9
 ```
 
-## Catalogue (S41.0)
+## Concept catalogue
 
 | ID | Framework |
 |---|---|
@@ -138,7 +137,7 @@ assert abs(qk.value - __import__("math").cos(0.4)) < 1e-9
 ## Registry integrity
 
 `build_migration_guides_product_registry()` emits schema
-`migration_guides_product.v1`, the full concept catalogue, ambient surface map,
+`migration_guides_product.v2`, the full concept catalogue, ambient surface map,
 default id, counts, policy note, and claim boundary. Every row keeps
 `allows_live_runtime=False` and `allows_full_parity_claim=False`.
 
@@ -150,16 +149,17 @@ Always validate transported or stored payloads through
 - unknown framework kinds or missing symbol names;
 - any live-Runtime or full-parity flag relaxation;
 - loss of the default mapping or explicit refuse row; and
-- `blank_entry_count` or `concept_count` drift.
+- schema, claim-boundary, policy, canonical-row, public-surface, default-id, or
+  count drift.
 
 ## Worked demos
 
-### PennyLane (S41.1)
+### PennyLane import round trip
 
 `RX(θ)` on wire 0, measure `⟨Z⟩`, import into Phase-QNode; ambient
 `check_pennylane_phase_qnode_import_round_trip` agrees value and gradient.
 
-### Qiskit (S41.3)
+### Qiskit local gradient
 
 Same circuit via Qiskit Statevector parameter-shift; analytic
 `value=cos(θ)`, `grad=-sin(θ)`.
@@ -178,10 +178,10 @@ examples remain local one-parameter demonstrations over existing ambient APIs.
 
 ## Bounded product status
 
-Shipped: S41.0 concept inventory · S41.1 PL round-trip · S41.3 Qiskit local
-gradient · S41.4 Runtime boundary refuse · product docs.
+Shipped: concept inventory · PennyLane round trip · Qiskit local gradient ·
+Runtime boundary refusal · product documentation.
 
-Open residual: S41.2 full MkDocs nav polish · S41.5 BL-12 matrix sync ·
-S41.6 companion notebooks · S41.7 version-skew CI.
+Open product work: full MkDocs navigation polish · support-matrix
+synchronisation · companion notebooks · version-skew CI.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

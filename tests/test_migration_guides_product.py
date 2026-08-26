@@ -297,6 +297,44 @@ def test_integrity_rejects_concept_count_mismatch() -> None:
         assert_migration_guides_product_integrity(count_mismatch)
 
 
+@pytest.mark.parametrize(
+    ("field", "value", "error"),
+    (
+        ("schema", "migration_guides_product.v1", "product schema"),
+        ("claim_boundary", "drifted claim", "claim_boundary"),
+        ("policy_note", "drifted policy", "policy_note"),
+        ("default_concept_id", "qk_statevector_parameter_shift", "default_concept_id"),
+    ),
+)
+def test_integrity_rejects_governed_metadata_drift(
+    field: str,
+    value: str,
+    error: str,
+) -> None:
+    """Reject stale schemas and drifted governed registry metadata."""
+    registry = build_migration_guides_product_registry()
+    broken = dict(registry)
+    broken[field] = value
+    with pytest.raises(ValueError, match=error):
+        assert_migration_guides_product_integrity(broken)
+
+
+def test_integrity_rejects_canonical_row_and_surface_drift() -> None:
+    """Reject transported concept and public-surface mutations exactly."""
+    registry = build_migration_guides_product_registry()
+    concepts = [dict(row) for row in _registry_concepts(registry)]
+    concepts[0]["summary"] = "drifted summary"
+    row_drift = dict(registry)
+    row_drift["concepts"] = concepts
+    with pytest.raises(ValueError, match="concept row 0 drift"):
+        assert_migration_guides_product_integrity(row_drift)
+
+    surface_drift = dict(registry)
+    surface_drift["public_surfaces"] = []
+    with pytest.raises(ValueError, match="public_surfaces"):
+        assert_migration_guides_product_integrity(surface_drift)
+
+
 def test_module_exports() -> None:
     """Keep every documented migration product entry point public."""
     assert "materialise_demo_pennylane_round_trip" in migration_guides_product.__all__
@@ -324,6 +362,47 @@ def test_concept_row_accepts_valid_fields() -> None:
     payload = row.to_dict()
     assert payload["concept_id"] == "x"
     assert payload["allows_live_runtime"] is False
+
+
+def test_records_reject_claim_boundary_drift() -> None:
+    """Require the exact governed claim on every serialisable record type."""
+    with pytest.raises(ValueError, match="claim_boundary"):
+        MigrationConceptRow(
+            **_valid_concept_row_kwargs(),
+            claim_boundary="drifted claim",
+        )
+    with pytest.raises(ValueError, match="claim_boundary"):
+        PathEligibilityDecision(
+            outcome="allowed",
+            allowed=True,
+            reason="bounded local path",
+            blockers=(),
+            claim_boundary="drifted claim",
+        )
+    with pytest.raises(ValueError, match="claim_boundary"):
+        MaterialisedPennyLaneRoundTrip(
+            value_match=True,
+            gradient_match=True,
+            phase_value=0.0,
+            pennylane_value=0.0,
+            max_value_difference=0.0,
+            max_gradient_difference=0.0,
+            n_parameters=1,
+            demo_label="bounded_round_trip",
+            claim_boundary="drifted claim",
+        )
+    with pytest.raises(ValueError, match="claim_boundary"):
+        MaterialisedQiskitLocalGradient(
+            value=0.0,
+            gradient=(0.0,),
+            analytic_value=0.0,
+            analytic_gradient=(0.0,),
+            max_value_difference=0.0,
+            max_gradient_difference=0.0,
+            method="parameter_shift",
+            demo_label="bounded_gradient",
+            claim_boundary="drifted claim",
+        )
 
 
 def test_concept_row_rejects_blank_concept_id() -> None:

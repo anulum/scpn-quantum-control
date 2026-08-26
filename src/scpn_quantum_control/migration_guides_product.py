@@ -19,16 +19,19 @@ Productises adoption-path contracts for researchers leaving PL/Qiskit:
   Runtime submission.
 
 Does **not** re-architect ambient bridges, claim full PL/Qiskit API parity, or
-ship companion notebooks / version-skew CI (S41.5–S41.7 residual).
+ship companion notebooks or version-skew CI.
 """
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Final, Literal
 
 import numpy as np
+
+_LOGGER = logging.getLogger(__name__)
 
 FrameworkKind = Literal["pennylane", "qiskit", "boundary"]
 """Catalogue framework / boundary kinds."""
@@ -44,23 +47,36 @@ SupportPosture = Literal[
 PathDecisionOutcome = Literal["allowed", "refused"]
 """Structured path-eligibility outcomes."""
 
-MIGRATION_GUIDES_PRODUCT_SCHEMA: Final[str] = "migration_guides_product.v1"
+MIGRATION_GUIDES_PRODUCT_SCHEMA: Final[str] = "migration_guides_product.v2"
 """JSON schema identifier for serialised product payloads."""
 
 MIGRATION_GUIDES_CLAIM_BOUNDARY: Final[str] = (
-    "PennyLane + Qiskit migration guides product surface only; catalogues "
-    "concept-map rows and materialised local round-trips on supported subsets "
-    "over ambient phase.pennylane_import and phase.qiskit_gradients; refuses "
-    "invent-green full Runtime feature parity and live QPU Runtime; does not "
-    "claim full framework API coverage, companion notebooks, or version-skew CI "
-    "(S41.5–S41.7 residual)"
+    "This migration-guide product maps supported PennyLane and Qiskit concepts "
+    "to local SCPN APIs and materialises bounded local round trips through "
+    "phase.pennylane_import and phase.qiskit_gradients. It refuses full Runtime "
+    "feature parity and live QPU Runtime claims. Full framework API coverage, "
+    "companion notebooks, and version-skew CI remain outside the current product."
 )
 """Shared claim boundary for migration product payloads."""
+
+_MIGRATION_GUIDES_POLICY_NOTE: Final[str] = (
+    "Use the catalogue only for supported local adoption paths. The ambient "
+    "PennyLane import and Qiskit gradient modules remain the implementations. "
+    "Full Runtime parity and live QPU Runtime claims are refused; companion "
+    "notebooks and version-skew CI remain outside this product."
+)
+"""Canonical product-registry policy note."""
+
+
+def _require_exact_claim_boundary(claim_boundary: str) -> None:
+    """Reject records whose claim boundary differs from the governed contract."""
+    if claim_boundary != MIGRATION_GUIDES_CLAIM_BOUNDARY:
+        raise ValueError("claim_boundary must match MIGRATION_GUIDES_CLAIM_BOUNDARY exactly")
 
 
 @dataclass(frozen=True, slots=True)
 class MigrationConceptRow:
-    """One concept-map row: external concept → SCPN surface (S41.0).
+    """One concept-map row from an external concept to an SCPN surface.
 
     Attributes
     ----------
@@ -139,6 +155,7 @@ class MigrationConceptRow:
             )
         if not self.as_of or not self.as_of.strip():
             raise ValueError("as_of must be non-empty")
+        _require_exact_claim_boundary(self.claim_boundary)
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this row."""
@@ -197,6 +214,7 @@ class PathEligibilityDecision:
             raise ValueError("refused decisions require blockers")
         if any(not item or not item.strip() for item in self.blockers):
             raise ValueError("blockers entries must be non-empty")
+        _require_exact_claim_boundary(self.claim_boundary)
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this decision."""
@@ -211,7 +229,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedPennyLaneRoundTrip:
-    """Materialised local PennyLane → Phase-QNode round-trip (S41.1).
+    """Materialised local PennyLane to Phase-QNode round trip.
 
     Attributes
     ----------
@@ -256,6 +274,7 @@ class MaterialisedPennyLaneRoundTrip:
             raise ValueError("n_parameters must be non-negative")
         if not self.demo_label or not self.demo_label.strip():
             raise ValueError("demo_label must be non-empty")
+        _require_exact_claim_boundary(self.claim_boundary)
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this round-trip."""
@@ -274,7 +293,7 @@ class MaterialisedPennyLaneRoundTrip:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedQiskitLocalGradient:
-    """Materialised local Qiskit Statevector parameter-shift demo (S41.3).
+    """Materialised local Qiskit Statevector parameter-shift demo.
 
     Attributes
     ----------
@@ -323,6 +342,7 @@ class MaterialisedQiskitLocalGradient:
             raise ValueError("method must be non-empty")
         if not self.demo_label or not self.demo_label.strip():
             raise ValueError("demo_label must be non-empty")
+        _require_exact_claim_boundary(self.claim_boundary)
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this gradient demo."""
@@ -622,7 +642,7 @@ def materialise_demo_pennylane_round_trip(
     value_tolerance: float = 1e-6,
     gradient_tolerance: float = 1e-6,
 ) -> MaterialisedPennyLaneRoundTrip:
-    """Materialise PL-migration RX(θ)–⟨Z⟩ local subset round-trip (S41.1).
+    """Materialise a PennyLane RX(θ)–⟨Z⟩ local-subset round trip.
 
     Primary path: ambient Phase-QNode (SCPN migration target) vs analytic
     ``cos(θ)`` / ``-sin(θ)`` (PennyLane default.qubit parameter-shift reference
@@ -690,8 +710,10 @@ def materialise_demo_pennylane_round_trip(
                 demo_label="pl_rx_z_expval_import",
             )
     except Exception:
-        # Optional stack may fail under coverage/numpy-reload; fall through.
-        pass
+        _LOGGER.debug(
+            "PennyLane import round trip unavailable; using the local analytic fallback",
+            exc_info=True,
+        )
 
     phase_value, phase_grad = _rx_z_phase_qnode_value_and_grad(theta)
     pennylane_value = float(np.cos(theta))
@@ -716,7 +738,7 @@ def materialise_demo_qiskit_local_gradient(
     *,
     theta: float = 0.4,
 ) -> MaterialisedQiskitLocalGradient:
-    """Materialise Qiskit-migration RX(θ)–⟨Z⟩ local subset gradient (S41.3).
+    """Materialise a Qiskit RX(θ)–⟨Z⟩ local-subset gradient.
 
     Primary path: ambient Phase-QNode parameter-shift (SCPN planner target for
     Qiskit local gradients) vs analytic ``cos(θ)`` / ``-sin(θ)``. When Qiskit
@@ -784,7 +806,10 @@ def materialise_demo_qiskit_local_gradient(
             demo_label="qk_rx_z_statevector_parameter_shift",
         )
     except Exception:
-        pass
+        _LOGGER.debug(
+            "Qiskit local gradient unavailable; using the Phase-QNode fallback",
+            exc_info=True,
+        )
 
     value, gradient = _rx_z_phase_qnode_value_and_grad(theta)
     max_value_difference = abs(value - analytic_value)
@@ -853,12 +878,7 @@ def build_migration_guides_product_registry() -> dict[str, object]:
         "default_concept_id": "pl_parameter_shift_to_phase_qnode",
         "public_surfaces": list(map_migration_guides_public_surfaces()),
         "concepts": concepts,
-        "policy_note": (
-            "Migration guides product catalogue only; ambient pennylane_import / "
-            "qiskit_gradients remain the implementation; full Runtime parity, "
-            "companion notebooks, and version-skew CI residual S41.5–S41.7; "
-            "no invent-green live Runtime."
-        ),
+        "policy_note": _MIGRATION_GUIDES_POLICY_NOTE,
     }
 
 
@@ -940,6 +960,21 @@ def assert_migration_guides_product_integrity(
     concept_count = registry.get("concept_count", -1)
     if not isinstance(concept_count, int) or concept_count != len(concepts):
         raise ValueError("concept_count does not match concepts list length")
+    if registry.get("schema") != MIGRATION_GUIDES_PRODUCT_SCHEMA:
+        raise ValueError("product schema mismatch")
+    if registry.get("claim_boundary") != MIGRATION_GUIDES_CLAIM_BOUNDARY:
+        raise ValueError("claim_boundary mismatch")
+    if registry.get("policy_note") != _MIGRATION_GUIDES_POLICY_NOTE:
+        raise ValueError("policy_note mismatch")
+    if registry.get("default_concept_id") != "pl_parameter_shift_to_phase_qnode":
+        raise ValueError("default_concept_id mismatch")
+    expected_rows = {row.concept_id: row.to_dict() for row in _CANONICAL_CONCEPTS}
+    for index, row in enumerate(concepts):
+        concept_id = str(row["concept_id"]).strip()
+        if dict(row) != expected_rows[concept_id]:
+            raise ValueError(f"concept row {index} drift for {concept_id!r}")
+    if registry.get("public_surfaces") != list(map_migration_guides_public_surfaces()):
+        raise ValueError("public_surfaces mismatch")
     return registry
 
 
