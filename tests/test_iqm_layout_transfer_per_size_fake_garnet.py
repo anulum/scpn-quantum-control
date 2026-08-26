@@ -27,6 +27,15 @@ def _runner() -> ModuleType:
     )
 
 
+def _complete_labels() -> list[str]:
+    labels: list[str] = []
+    for size in (8, 12, 16):
+        for arm in ("optimised", "default", "naive"):
+            labels.extend(f"main_n{size}_{arm}_rep{repetition}" for repetition in (1, 2, 3, 4))
+        labels.extend((f"readout_n{size}_zeros", f"readout_n{size}_ones"))
+    return labels
+
+
 def _install_iqm_stub(monkeypatch: pytest.MonkeyPatch) -> None:
     module_names = (
         "iqm",
@@ -46,6 +55,7 @@ def test_optional_loaders_resolve_and_fail_closed(
     runner = _runner()
     _install_iqm_stub(monkeypatch)
     assert runner._load_fake_backend_type() is object
+    assert callable(runner._load_qpy_wrapper().reviewed_qpy_load_circuits)
     monkeypatch.setattr(runner.importlib.util, "spec_from_file_location", lambda *_args: None)
     with pytest.raises(ImportError, match="cannot load reviewed QPY"):
         runner._load_qpy_wrapper()
@@ -124,6 +134,49 @@ def test_run_uses_descriptive_fail_closed_diagnostics(
 
     with pytest.raises(ValueError, match=message):
         runner._run(args)
+
+
+def test_run_executes_complete_provider_free_matrix(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runner = _runner()
+    labels = _complete_labels()
+    args, circuits = _args(tmp_path, labels=labels)
+
+    class Result:
+        def __init__(self, count: int, shots: int) -> None:
+            self._count = count
+            self._shots = shots
+
+        def get_counts(self) -> list[dict[str, int]]:
+            return [{"0": self._shots} for _index in range(self._count)]
+
+    class Job:
+        def __init__(self, count: int, shots: int) -> None:
+            self._result = Result(count, shots)
+
+        def result(self) -> Result:
+            return self._result
+
+    class Backend:
+        def run(self, native: list[object], *, shots: int) -> Job:
+            return Job(len(native), shots)
+
+    monkeypatch.setattr(
+        runner,
+        "_load_qpy_wrapper",
+        lambda: SimpleNamespace(reviewed_qpy_load_circuits=lambda _path: circuits),
+    )
+    monkeypatch.setattr(runner, "_load_fake_backend_type", lambda: Backend)
+    monkeypatch.setattr("qiskit.transpile", lambda selected, **_kwargs: selected)
+
+    assert runner._run(args) == 0
+    payload = json.loads(Path(args.out).read_text(encoding="utf-8"))
+    assert payload["completed_batches"] == ["mains", "readout"]
+    assert len(payload["counts"]) == 42
+    assert payload["counts"]["main_n8_optimised_rep1"] == {"0": 2048}
+    assert payload["counts"]["readout_n16_ones"] == {"0": 1024}
 
 
 def test_main_exposes_per_size_fake_backend_responsibility() -> None:
