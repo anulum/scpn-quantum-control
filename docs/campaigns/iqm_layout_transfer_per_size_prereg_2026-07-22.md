@@ -55,7 +55,8 @@ Shot count: `73,728` main + `6,144` readout = `79,872` shots.
 **Batching disclosure (frozen):** the whole matrix submits in one pass —
 mains batched into one job (or the minimum number the batch limit allows)
 and readout into one more. All arms of every size ride in the SAME batch,
-so window-level drift (the FU-1 finding, quantified by FU-W) cancels in
+so window-level drift (the previous cross-window finding, quantified by the
+window-variability study) cancels in
 the per-size ARM DIFFERENCES; the campaign makes no cross-window claim.
 
 ## Endpoints and Decision Rules (frozen)

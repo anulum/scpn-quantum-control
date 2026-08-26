@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib
 import importlib.util
 import json
 import sys
@@ -32,11 +33,19 @@ def _load_qpy_wrapper() -> ModuleType:
     spec = importlib.util.spec_from_file_location(
         "qpy_artifact_io", REPO_ROOT / "scripts" / "qpy_artifact_io.py"
     )
-    assert spec is not None and spec.loader is not None
+    if spec is None or spec.loader is None:
+        raise ImportError("cannot load reviewed QPY artefact module")
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+def _load_fake_backend_type() -> type[Any]:
+    """Resolve the optional IQM fake backend inside the isolated environment."""
+    module = importlib.import_module("iqm.qiskit_iqm.fake_backends.fake_garnet")
+    backend_type: type[Any] = module.IQMFakeGarnet
+    return backend_type
 
 
 def _sha256(path: Path) -> str:
@@ -61,9 +70,6 @@ def _checkpoint(path: Path, payload: dict[str, Any]) -> None:
 
 
 def _run(args: argparse.Namespace) -> int:
-    from iqm.qiskit_iqm.fake_backends.fake_garnet import (  # type: ignore[import-not-found]
-        IQMFakeGarnet,
-    )
     from qiskit import transpile
 
     circuits_path = Path(args.circuits)
@@ -77,9 +83,9 @@ def _run(args: argparse.Namespace) -> int:
 
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
     if plan.get("campaign") != "iqm_layout_transfer_per_size_prereg_2026-07-22":
-        raise ValueError("refusing non-FU-3 plan")
+        raise ValueError("refusing a plan outside the frozen per-size campaign")
     if not plan.get("all_gates_pass") or int(plan.get("circuit_count", 0)) != 42:
-        raise ValueError("FU-3 plan must contain 42 circuits with every depth gate green")
+        raise ValueError("per-size plan must contain 42 circuits with every depth gate green")
 
     hashes = {
         "plan_sha256": _sha256(plan_path),
@@ -114,9 +120,9 @@ def _run(args: argparse.Namespace) -> int:
         ),
     )
     if [len(indices) for _, indices, _ in groups] != [36, 6]:
-        raise ValueError("FU-3 labels must partition into 36 mains and 6 readouts")
+        raise ValueError("per-size labels must partition into 36 mains and 6 readouts")
 
-    backend = IQMFakeGarnet()
+    backend = _load_fake_backend_type()()
     for batch_name, indices, shots in groups:
         batch_labels = [labels[index] for index in indices]
         existing = payload.get("counts", {})
@@ -147,7 +153,7 @@ def _run(args: argparse.Namespace) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Run the provider-free, resumable FU-3 fake backend gate."""
+    """Run the provider-free, resumable per-size fake-backend gate."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--circuits", required=True)
     parser.add_argument("--labels", required=True)

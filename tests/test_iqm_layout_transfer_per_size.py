@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — IQM IQM-layout-transfer per-size readiness tests
-"""Tests for the frozen IQM IQM layout-transfer per-size readiness package."""
+# SCPN Quantum Control — IQM Garnet per-size layout-transfer readiness tests
+"""Tests for the frozen IQM Garnet per-size layout-transfer readiness package."""
 
 from __future__ import annotations
 

@@ -139,7 +139,7 @@
     "resamples": 10000,
     "seed": 20260722
   },
-  "interpretation_boundary": "FU-3 resolves sampled per-size layout effects on one IQM Garnet calibration window only; no quantum-advantage or cross-device claim",
+  "interpretation_boundary": "The powered per-size run resolves sampled layout effects on one IQM Garnet calibration window only; no quantum-advantage or cross-device claim",
   "backend": "garnet",
   "evidence_kind": "hardware_counts_analysis",
   "job_ids": [

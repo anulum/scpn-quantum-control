@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1206
+    "test_files": 1207
   },
   "documentation": {
     "examples": [
@@ -8578,6 +8578,7 @@
       "tests/test_iqm_layout_pinned_dla.py",
       "tests/test_iqm_layout_transfer_benchmark.py",
       "tests/test_iqm_layout_transfer_per_size.py",
+      "tests/test_iqm_layout_transfer_per_size_fake_garnet.py",
       "tests/test_iqm_layout_transfer_resonance.py",
       "tests/test_isolated_host_readiness.py",
       "tests/test_iter_benchmark.py",

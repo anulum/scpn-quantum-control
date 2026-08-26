@@ -215,9 +215,10 @@ We report exactly the preregistered bounded conclusion:
 A transfer claim therefore required a fresh design powered for per-size
 conclusions and uniformity. That preregistered follow-up has now executed.
 
-### 3.4 Powered per-size follow-up (FU-3)
+### 3.4 Powered per-size layout-transfer follow-up
 
-FU-3 was frozen on 2026-07-22 before its hardware data existed
+The per-size layout-transfer study was frozen on 2026-07-22 before its
+hardware data existed
 (`docs/campaigns/iqm_layout_transfer_per_size_prereg_2026-07-22.md`). It
 repeated every arm four times at each size (8,192 main shots per arm/size),
 added a fresh all-zero/all-one readout pair per size, and submitted the whole
@@ -382,7 +383,8 @@ asymmetry (noiseless leakage is exactly zero). No layout-transfer claim
 (the frozen rule failed). No extrapolation beyond the sampled device,
 calibration windows, chain lengths, depths, and schedules. The core results
 are statements about IQM Garnet on 2026-07-21 under calibration set
-`246a4930-54e3-4cd9-a2d1-fcc0919675f5`; FU-3 is separately bounded to its
+`246a4930-54e3-4cd9-a2d1-fcc0919675f5`; the per-size study is separately
+bounded to its
 2026-07-26 window under calibration set
 `c2097be4-1e23-49bc-adaa-8e8c01df6223`.
 

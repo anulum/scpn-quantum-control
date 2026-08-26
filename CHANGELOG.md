@@ -1,5 +1,10 @@
 # Changelog
 
+- 2026-08-26 — IQM Garnet per-size layout-transfer naming: replaced internal
+  work-item aliases across the source, live and fake execution boundaries,
+  tests, evidence, campaign documentation, and manuscript with stable
+  responsibility-descriptive terminology. Campaign identifiers and scientific
+  results remain unchanged.
 - 2026-07-29 — DLA and topology-constrained differentiable control (BL-54):
   added exact finite parity-sector JVP/VJP and leakage gradients, a projected
   synthetic optimisation trace, fixed-active-set topology-ledger JVP/VJP rules,

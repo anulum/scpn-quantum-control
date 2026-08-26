@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — IQM layout-transfer Resonance runner tests
-"""Tests for the owner-gated IQM IQM layout-transfer live submission boundary."""
+"""Tests for the owner-gated IQM Garnet layout-transfer submission boundary."""
 
 from __future__ import annotations
 
@@ -158,10 +158,10 @@ def test_all_sizes_submits_exact_frozen_two_job_split(
     assert all(record[key] for key in ("plan_sha256", "labels_sha256", "circuits_sha256"))
 
 
-def test_all_sizes_rejects_non_fu3_plan(tmp_path: Path) -> None:
+def test_all_sizes_rejects_plan_outside_per_size_campaign(tmp_path: Path) -> None:
     runner = _load_runner()
     labels, circuits = _matrix()
-    with pytest.raises(ValueError, match="restricted to the frozen FU-3"):
+    with pytest.raises(ValueError, match="restricted to the frozen per-size"):
         runner._select_submission_matrix(
             labels,
             circuits,
@@ -315,7 +315,7 @@ def test_legacy_one_size_selection_remains_available() -> None:
     [
         (
             lambda labels, circuits: labels.__setitem__(0, "main_n8_unknown_rep1"),
-            "unexpected FU-3 main label",
+            "unexpected per-size layout-transfer main label",
         ),
         (
             lambda labels, circuits: circuits.__setitem__(0, QuantumCircuit(2, 2)),

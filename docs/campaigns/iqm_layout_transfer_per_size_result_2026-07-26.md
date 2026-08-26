@@ -4,9 +4,9 @@
 <!-- © Code 2020–2026 Miroslav Šotek. All rights reserved. -->
 <!-- ORCID: 0009-0009-3560-0851 -->
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
-<!-- SCPN Quantum Control — IQM FU-3 Per-Size Layout-Transfer Result -->
+<!-- SCPN Quantum Control — IQM Garnet Per-Size Layout-Transfer Result -->
 
-# IQM Garnet IQM layout-transfer Per-Size Layout-Transfer Result
+# IQM Garnet Per-Size Layout-Transfer Result
 
 Execution date: 2026-07-26
 
@@ -67,9 +67,10 @@ n=12 reversal at the powered shot budget.
 
 ## Interpretation boundary
 
-FU-3 resolves a strongly heterogeneous, size-dependent layout effect on one
-IQM Garnet calibration window. It supports neither a quantum-advantage claim
-nor a cross-device generalisation. The result specifically rejects a simple
+The powered per-size run resolves a strongly heterogeneous, size-dependent
+layout effect on one IQM Garnet calibration window. It supports neither a
+quantum-advantage claim nor a cross-device generalisation. The result
+specifically rejects a simple
 "calibration-aware placement always helps" account: it helps at n=8 and n=16
 but is materially worse than default placement at n=12 under the frozen
 observable and correction model.

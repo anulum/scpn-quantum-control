@@ -5,7 +5,7 @@
 <!-- ORCID: 0009-0009-3560-0851 -->
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
 
-# IQM IQM layout-transfer Per-Size Layout-Transfer Readiness
+# IQM Garnet Per-Size Layout-Transfer Readiness
 
 This package implements the provider-free gates frozen in
 `iqm_layout_transfer_per_size_prereg_2026-07-22.md`. It does not authorize a
@@ -23,13 +23,13 @@ provider call or hardware execution.
 
 ## Local readiness sequence
 
-Use the existing fake-Garnet calibration extractor, then the new FU-3 runner:
+Use the existing fake-Garnet calibration extractor, then the per-size runner:
 
 ```bash
 .venv-iqm/bin/python scripts/iqm_layout_transfer_fake_garnet.py dump-calibration \
-  --date YYYY-MM-DD --out /tmp/fu3_calibration.json
+  --date YYYY-MM-DD --out /tmp/iqm_layout_calibration.json
 .venv/bin/python scripts/iqm_layout_transfer_per_size_harness.py prepare \
-  --calibration /tmp/fu3_calibration.json --date YYYY-MM-DD \
+  --calibration /tmp/iqm_layout_calibration.json --date YYYY-MM-DD \
   --out-dir data/iqm_layout_transfer_per_size
 .venv-iqm/bin/python scripts/iqm_layout_transfer_per_size_fake_garnet.py \
   --circuits data/iqm_layout_transfer_per_size/iqm_layout_transfer_per_size_circuits_YYYY-MM-DD.qpy \
@@ -46,7 +46,7 @@ Use the existing fake-Garnet calibration extractor, then the new FU-3 runner:
 The reviewed QPY loader intentionally accepts artefacts only beneath the
 repository's governed `data/` tree. Keeping QPY and derived evidence there is a
 readiness invariant; do not move the circuit bundle to `/tmp` or bypass the
-loader. The FU-3 fake runner uses the frozen two-batch split and atomically
+loader. The per-size fake runner uses the frozen two-batch split and atomically
 checkpoints each completed batch; rerunning the same command resumes a matching
 checkpoint instead of discarding completed simulation work.
 
@@ -83,7 +83,7 @@ against `garnet:mock`:
   --i-have-owner-go
 ```
 
-The `--all-sizes` route is restricted to the frozen FU-3 campaign, requires
+The `--all-sizes` route is restricted to the frozen per-size campaign, requires
 exactly 36 mains plus six readouts, rechecks depth parity after provider
 transpilation, and submits the frozen single-pass split as two jobs. Replace
 only `garnet:mock` with `garnet` after the mock record, same-day calibration,

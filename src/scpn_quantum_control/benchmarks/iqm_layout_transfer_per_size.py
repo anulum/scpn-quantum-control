@@ -61,7 +61,7 @@ ALPHA = 0.05
 
 @dataclass(frozen=True)
 class PerSizeLayoutTransferPlan:
-    """FU-3 wrapper around the committed single-pass layout plan."""
+    """Immutable wrapper around the committed per-size layout-transfer plan."""
 
     base: LayoutTransferPlan
 
@@ -122,7 +122,7 @@ def build_per_size_layout_transfer_plan(
     sizes: tuple[int, ...] = CHAIN_SIZES,
     seed: int = TRANSPILER_SEED,
 ) -> PerSizeLayoutTransferPlan:
-    """Build FU-3 from one calibration snapshot without provider I/O."""
+    """Build the per-size transfer matrix from one calibration snapshot."""
     return PerSizeLayoutTransferPlan(
         build_layout_transfer_plan(calibration, sizes=sizes, seed=seed)
     )
@@ -223,11 +223,11 @@ def analyse_per_size_counts(
     n_resamples: int = BOOTSTRAP_RESAMPLES,
     seed: int = BOOTSTRAP_SEED,
 ) -> dict[str, Any]:
-    """Evaluate every frozen FU-3 endpoint from a complete count matrix."""
+    """Evaluate every frozen endpoint from a complete per-size count matrix."""
     if plan.get("campaign") != CAMPAIGN:
         raise ValueError(f"expected campaign {CAMPAIGN!r}")
     if not bool(plan.get("all_gates_pass")):
-        raise ValueError("depth-parity gate failed; FU-3 analysis is blocked")
+        raise ValueError("depth-parity gate failed; per-size analysis is blocked")
     if n_resamples < 2:
         raise ValueError("bootstrap requires at least two resamples")
     required = _required_labels(plan)
@@ -332,7 +332,7 @@ def analyse_per_size_counts(
         "s3_cochran_q": heterogeneity,
         "bootstrap": {"resamples": n_resamples, "seed": seed},
         "interpretation_boundary": (
-            "FU-3 resolves sampled per-size layout effects on one IQM Garnet "
+            "The powered per-size run resolves sampled layout effects on one IQM Garnet "
             "calibration window only; no quantum-advantage or cross-device claim"
         ),
     }

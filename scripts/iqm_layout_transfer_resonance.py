@@ -117,23 +117,25 @@ def _select_submission_matrix(
     only_n: int | None,
     all_sizes: bool,
 ) -> tuple[str, list[tuple[str, Any]]]:
-    """Select one legacy size block or the complete frozen FU-3 matrix."""
+    """Select one legacy size block or the complete frozen per-size matrix."""
     if len(labels) != len(circuits):
         raise ValueError(f"{len(labels)} labels but {len(circuits)} circuits")
     if all_sizes:
         if only_n is not None:
             raise ValueError("--all-sizes and --only-n are mutually exclusive")
         if plan.get("campaign") != IQM_LAYOUT_TRANSFER_CAMPAIGN:
-            raise ValueError("--all-sizes is restricted to the frozen FU-3 campaign")
+            raise ValueError("--all-sizes is restricted to the frozen per-size campaign")
         if not plan.get("all_gates_pass") or int(plan.get("circuit_count", 0)) != 42:
-            raise ValueError("FU-3 requires a 42-circuit plan with every depth gate green")
+            raise ValueError(
+                "per-size submission requires a 42-circuit plan with every depth gate green"
+            )
         selected = list(zip(labels, circuits, strict=True))
         mains = [label for label, _circuit in selected if label.startswith("main_")]
         readouts = [label for label, _circuit in selected if label.startswith("readout_")]
         if len(selected) != 42 or len(mains) != 36 or len(readouts) != 6:
-            raise ValueError("FU-3 labels must partition into 36 mains and 6 readouts")
+            raise ValueError("per-size labels must partition into 36 mains and 6 readouts")
         if len(set(labels)) != len(labels):
-            raise ValueError("FU-3 circuit labels must be unique")
+            raise ValueError("per-size circuit labels must be unique")
         return "all_sizes", selected
     if only_n is None:
         raise ValueError("choose exactly one of --only-n or --all-sizes")
@@ -163,18 +165,19 @@ def _validate_iqm_layout_transfer_live_depths(native: list[tuple[str, Any]]) -> 
             continue
         match = pattern.fullmatch(label)
         if match is None:
-            raise ValueError(f"unexpected FU-3 main label {label!r}")
+            raise ValueError(f"unexpected per-size layout-transfer main label {label!r}")
         depth = _two_qubit_depth(circuit)
         if depth <= 0:
-            raise ValueError(f"FU-3 main circuit {label!r} has no two-qubit depth")
+            raise ValueError(f"per-size main circuit {label!r} has no two-qubit depth")
         depths[label] = depth
         per_size[int(match.group(1))].append(depth)
     if any(len(values) != 12 for values in per_size.values()):
-        raise ValueError("FU-3 live matrix must contain 12 main circuits per size")
+        raise ValueError("live per-size matrix must contain 12 main circuits per size")
     for n, values in per_size.items():
         if max(values) > min(values) * 1.1:
             raise ValueError(
-                f"FU-3 live depth-parity violation at n={n}: min={min(values)}, max={max(values)}"
+                "live per-size depth-parity violation at "
+                f"n={n}: min={min(values)}, max={max(values)}"
             )
     return depths
 
@@ -376,7 +379,7 @@ def main(argv: list[str] | None = None) -> int:
     selection.add_argument(
         "--all-sizes",
         action="store_true",
-        help="submit the complete frozen FU-3 matrix as one mains/readout pass",
+        help="submit the complete frozen per-size matrix as one mains/readout pass",
     )
     submit.add_argument("--date", required=True, help="artefact date stamp (YYYY-MM-DD)")
     submit.add_argument("--out", required=True, help="submission record JSON")
