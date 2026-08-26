@@ -180,10 +180,10 @@ control, or broad quantum-advantage claim is promoted by this release.
   hardware-safe no-submit execution policy. Non-finite or over-budget plans,
   omitted-coupling full-energy claims, and live submission fail closed. Docs:
   `docs/circuit_cutting_product.md`.
-- 2026-07-25 — Polyglot edge Program-AD product (BL-74):
+- 2026-07-25 — Polyglot edge Program-AD runtime contract:
   `scpn_quantum_control.polyglot_edge_ad_product` governs the real bounded
   native Rust replay and committed rational browser-WASM replay, composes the
-  BL-49 value+gradient certificate subset, and routes through the existing
+  value-and-gradient parity certificate subset, and routes through the existing
   Studio executive `replay` / `differentiate` verbs. Arbitrary WASM programmes, silent
   host fallback, and Julia Program AD fail closed; the existing Julia optional
   tier remains honestly classified as Kuramoto-only. Docs:
@@ -357,7 +357,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   `scpn_quantum_control.whole_program_ad_product` productises versioned
   frontend→IR→adjoint/replay journeys, layered architecture map, fail-closed
   unknown ids, unsupported-frontend→BL-53 refuse, and refuse invent-green for
-  hardware, polyglot certs (BL-49 residual), and edge/WASM (BL-74 residual).
+  hardware, polyglot parity-certificate, and edge/WASM runtime residuals.
   Ambient `whole_program_*`/`program_ad_*` remains experimental_workbench under
   BL-97 honesty. Docs: `docs/whole_program_ad_product.md`. Second P1 A-product
   after BL-90.

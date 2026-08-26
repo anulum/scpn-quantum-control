@@ -35,7 +35,7 @@ from .studio.program_ad_replay_artifact import (
 )
 
 RuntimeId = Literal["rust_native_replay", "browser_wasm_replay", "julia_program_ad"]
-"""Stable runtime identifiers on the BL-74 product surface."""
+"""Stable identifiers for the governed edge Program-AD runtimes."""
 
 RuntimeKind = Literal["native_rust", "browser_wasm", "julia"]
 """Runtime implementation families."""
@@ -50,19 +50,19 @@ SupportPosture = Literal[
 PathOutcome = Literal["allowed", "refused"]
 """Structured edge-path decision outcomes."""
 
-POLYGLOT_EDGE_AD_PRODUCT_SCHEMA: Final[str] = "polyglot_edge_ad_product.v1"
+POLYGLOT_EDGE_AD_PRODUCT_SCHEMA: Final[str] = "polyglot_edge_ad_product.v2"
 """Schema identifier for the product registry."""
 
-POLYGLOT_EDGE_AD_CERTIFICATE_SCHEMA: Final[str] = "polyglot_edge_ad_certificate.v1"
+POLYGLOT_EDGE_AD_CERTIFICATE_SCHEMA: Final[str] = "polyglot_edge_ad_certificate.v2"
 """Schema identifier for the composed committed-sample certificate."""
 
 POLYGLOT_EDGE_AD_CLAIM_BOUNDARY: Final[str] = (
-    "BL-74 bounded edge Program-AD product only: native Rust is the replay "
-    "authority; browser WASM is bit-exact only for the committed rational "
-    "value+gradient artefact and wasm-safe bounded replay; arbitrary programs, "
-    "transcendentals, general linalg, live edge execution, and performance are "
-    "not claimed; Julia Program-AD is unsupported (the existing Julia optional "
-    "tier accelerates Kuramoto numerics only); no silent host fallback"
+    "Bounded edge Program-AD runtime contract: native Rust is the replay authority; "
+    "browser WASM is bit-exact only for the committed rational value-and-gradient "
+    "artefact and wasm-safe bounded replay; arbitrary programs, transcendentals, "
+    "general linear algebra, live edge execution, and performance are not claimed; "
+    "Julia Program-AD is unsupported because the existing Julia optional tier "
+    "accelerates Kuramoto numerics only; no silent host fallback"
 )
 """Shared non-promotional claim boundary."""
 
@@ -89,7 +89,7 @@ class EdgeADRuntimeRow:
     authority_pointer
         Repository authority for the row.
     studio_verb_ids
-        Existing BL-62 verbs that route this surface.
+        Existing Studio executive verbs that route this surface.
     wasm_safe_operations
         Operations admitted by the committed browser sample.
     max_ir_bytes
@@ -224,7 +224,7 @@ class EdgeADPathDecision:
 
 @dataclass(frozen=True, slots=True)
 class CommittedWasmReplayCertificate:
-    """Composed BL-49 + committed-artifact certificate for browser WASM."""
+    """Composed value-and-gradient parity certificate for browser WASM."""
 
     schema: str
     artifact_id: str
@@ -397,7 +397,7 @@ def decide_edge_ad_path(
     if request_host_fallback:
         blockers.append("silent or requested host fallback is forbidden for an edge path")
     if request_general_program_ad:
-        blockers.append("general Program-AD execution is outside the BL-74 bounded product")
+        blockers.append("general Program-AD execution is outside the bounded runtime contract")
     if row.support_posture == "boundary_unsupported":
         blockers.append(
             "Julia Program-AD is unsupported; the existing Julia tier is Kuramoto-only"
@@ -414,7 +414,7 @@ def decide_edge_ad_path(
             runtime_id=row.runtime_id,
             outcome="refused",
             allowed=False,
-            reason="edge Program-AD path refused under fail-closed BL-74 policy",
+            reason="edge Program-AD path refused under the fail-closed runtime policy",
             blockers=tuple(blockers),
         )
     return EdgeADPathDecision(
@@ -493,7 +493,7 @@ def _trusted_artifact_fields(
 def materialise_wasm_replay_certificate(
     payload: Mapping[str, object] | None = None,
 ) -> CommittedWasmReplayCertificate:
-    """Compose committed replay validation with the BL-49 parity subset."""
+    """Compose committed replay validation with value-and-gradient parity evidence."""
     blockers: list[str] = []
     candidate: Mapping[str, object]
     try:
@@ -551,7 +551,7 @@ def materialise_wasm_replay_certificate(
 
 
 def map_polyglot_edge_ad_public_surfaces() -> tuple[dict[str, object], ...]:
-    """Return the bounded BL-74 public surface map."""
+    """Return the bounded edge Program-AD public surface map."""
     return (
         {
             "module_path": "scpn_quantum_control.polyglot_edge_ad_product",
@@ -575,7 +575,7 @@ def map_polyglot_edge_ad_public_surfaces() -> tuple[dict[str, object], ...]:
 
 
 def build_polyglot_edge_ad_product_registry() -> dict[str, object]:
-    """Build the deterministic BL-74 product registry."""
+    """Build the deterministic edge Program-AD runtime registry."""
     runtimes = [row.to_dict() for row in _RUNTIMES]
     return {
         "schema": POLYGLOT_EDGE_AD_PRODUCT_SCHEMA,
@@ -596,8 +596,12 @@ def build_polyglot_edge_ad_product_registry() -> dict[str, object]:
 def assert_polyglot_edge_ad_product_integrity(
     payload: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
-    """Validate the BL-74 registry and return a plain dictionary."""
+    """Validate the edge Program-AD registry and return a plain dictionary."""
     registry = dict(payload) if payload is not None else build_polyglot_edge_ad_product_registry()
+    if registry.get("schema") != POLYGLOT_EDGE_AD_PRODUCT_SCHEMA:
+        raise ValueError("unknown edge Program-AD product schema")
+    if registry.get("claim_boundary") != POLYGLOT_EDGE_AD_CLAIM_BOUNDARY:
+        raise ValueError("edge Program-AD claim boundary drift")
     runtimes_obj = registry.get("runtimes")
     if not isinstance(runtimes_obj, list) or not runtimes_obj:
         raise ValueError("edge product registry requires non-empty runtimes")
@@ -619,6 +623,8 @@ def assert_polyglot_edge_ad_product_integrity(
             raise ValueError("runtime silent_host_fallback must be False")
         if raw.get("general_program_ad") is not False:
             raise ValueError("runtime general_program_ad must be False")
+        if raw.get("claim_boundary") != POLYGLOT_EDGE_AD_CLAIM_BOUNDARY:
+            raise ValueError("runtime claim boundary drift")
         if runtime_id == "browser_wasm_replay":
             wasm_found = True
             if raw.get("support_posture") != "committed_sample_bitexact":
@@ -641,6 +647,8 @@ def assert_polyglot_edge_ad_product_integrity(
         raise ValueError("general_program_ad_policy must be False")
     if seen != set(list_edge_ad_runtime_ids()):
         raise ValueError("runtime catalogue drift vs canonical product")
+    if registry.get("public_surfaces") != list(map_polyglot_edge_ad_public_surfaces()):
+        raise ValueError("edge Program-AD public surface map drift")
     return registry
 
 

@@ -53,11 +53,11 @@ assert julia.allowed is False
 
 ## Routing and fallback
 
-The committed browser replay composes the existing BL-62 `replay` verb and the
-Studio Program-AD replay card. Native bounded replay may use `differentiate` or
-`replay`. Julia Program AD is refused until an actual Julia replay authority
-exists. An edge request never falls through to Python or native Rust silently,
-even if that host route is locally available.
+The committed browser replay composes the existing Studio executive `replay`
+verb and the Program-AD replay card. Native bounded replay may use
+`differentiate` or `replay`. Julia Program AD is refused until an actual Julia
+replay authority exists. An edge request never falls through to Python or
+native Rust silently, even if that host route is locally available.
 
 ## Hermetic reproduction notes
 
@@ -81,6 +81,6 @@ substitute reproduction path for Program AD.
 - General arbitrary-program browser execution is outside this bounded product.
 - A Julia Program-AD implementation and parity corpus do not yet exist.
 - Live edge execution and performance promotion require separate evidence.
-- Full BL-55 hermetic-kit packaging is not claimed by these reproduction notes.
+- Full hermetic external-reproduction-kit packaging is not claimed by these notes.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

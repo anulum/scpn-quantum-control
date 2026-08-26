@@ -235,6 +235,16 @@ def test_registry_integrity_rejects_shape_and_policy_drift() -> None:
     registry = build_polyglot_edge_ad_product_registry()
     runtimes = cast(list[dict[str, object]], registry["runtimes"])
 
+    stale_schema = dict(registry)
+    stale_schema["schema"] = "polyglot_edge_ad_product.v1"
+    with pytest.raises(ValueError, match="unknown edge Program-AD product schema"):
+        assert_polyglot_edge_ad_product_integrity(stale_schema)
+
+    claim_drift = dict(registry)
+    claim_drift["claim_boundary"] = "legacy planning label"
+    with pytest.raises(ValueError, match="claim boundary drift"):
+        assert_polyglot_edge_ad_product_integrity(claim_drift)
+
     bad_runtime_payloads: tuple[object, ...] = ([], "nope")
     for bad in bad_runtime_payloads:
         payload = dict(registry)
@@ -265,10 +275,11 @@ def test_registry_integrity_rejects_shape_and_policy_drift() -> None:
     for field, message in (
         ("silent_host_fallback", "runtime silent_host_fallback"),
         ("general_program_ad", "runtime general_program_ad"),
+        ("claim_boundary", "runtime claim boundary drift"),
     ):
         drift = dict(registry)
         rows = [dict(row) for row in runtimes]
-        rows[0][field] = True
+        rows[0][field] = "drift" if field == "claim_boundary" else True
         drift["runtimes"] = rows
         with pytest.raises(ValueError, match=message):
             assert_polyglot_edge_ad_product_integrity(drift)
@@ -318,6 +329,11 @@ def test_registry_integrity_rejects_counts_and_top_level_policies() -> None:
     general["general_program_ad_policy"] = True
     with pytest.raises(ValueError, match="general_program_ad_policy"):
         assert_polyglot_edge_ad_product_integrity(general)
+
+    surface_drift = dict(registry)
+    surface_drift["public_surfaces"] = []
+    with pytest.raises(ValueError, match="public surface map drift"):
+        assert_polyglot_edge_ad_product_integrity(surface_drift)
 
     drift = dict(registry)
     rows = [dict(row) for row in runtimes]
