@@ -39,8 +39,8 @@ from scpn_quantum_control.ssgf_geometry_gradient_product import (
 )
 
 
-def test_realtime_feedback_adapter_consumes_existing_bl67_port() -> None:
-    """Consume the real realtime-feedback controller through the BL-67 port."""
+def test_realtime_feedback_adapter_consumes_existing_control_port() -> None:
+    """Consume the real realtime-feedback controller through the control port."""
     controller = RealtimeSyncFeedbackController(
         np.array([[0.0, 0.4], [0.4, 0.0]], dtype=np.float64),
         np.array([0.1, -0.1], dtype=np.float64),
@@ -59,8 +59,8 @@ def test_realtime_feedback_adapter_consumes_existing_bl67_port() -> None:
     assert evidence.to_dict()["hardware_execution"] is False
 
 
-def test_qaoa_adapter_consumes_existing_bl67_port() -> None:
-    """Consume the real abstract QAOA-MPC optimiser through the BL-67 port."""
+def test_qaoa_adapter_consumes_existing_control_port() -> None:
+    """Consume the real abstract QAOA-MPC optimiser through the control port."""
     controller = QAOA_MPC(
         np.array([[1.0]], dtype=np.float64),
         np.array([0.5], dtype=np.float64),
@@ -78,7 +78,7 @@ def test_qaoa_adapter_consumes_existing_bl67_port() -> None:
     assert evidence.values in {(0.0,), (1.0,)}
 
 
-def test_cosimulation_adapter_consumes_existing_bl67_partition() -> None:
+def test_cosimulation_adapter_consumes_existing_control_partition() -> None:
     """Consume the real policy-gated quantum/classical partition."""
     evidence = consume_cosimulation_port(
         np.array([[0.0, 0.5], [0.5, 0.0]], dtype=np.float64),
@@ -96,7 +96,7 @@ def test_cosimulation_adapter_consumes_existing_bl67_partition() -> None:
     assert all(0.0 <= value <= 1.0 for value in evidence.values)
 
 
-def test_observer_adapter_maps_bl68_bl69_and_bl70_records() -> None:
+def test_observer_adapter_maps_sensing_identity_and_geometry_records() -> None:
     """Map public observer records without promoting their claim boundaries."""
     active = ActiveSensingObserverRecord(
         observer_id="active-1",
@@ -106,7 +106,7 @@ def test_observer_adapter_maps_bl68_bl69_and_bl70_records() -> None:
         posterior_variance=0.1,
         shots=16,
         shot_policy_id="local_simulator_default",
-        s3_protocol_id="s3",
+        analytic_design_protocol_id="analytic-design",
     )
     identity_record = IdentityObserverRecord(
         energy_gap=0.5,
@@ -156,7 +156,7 @@ def test_observer_adapter_maps_bl68_bl69_and_bl70_records() -> None:
 
 
 def test_adaptive_fim_observer_and_proposer_ports_remain_unapplied() -> None:
-    """Map BL-80 telemetry and scalar proposal without applying a controller."""
+    """Map proposal telemetry and scalar values without applying a controller."""
     witness = FIMWitness.from_counts(
         leakage_events=100,
         retention_events=800,
@@ -183,7 +183,7 @@ def test_adaptive_fim_observer_and_proposer_ports_remain_unapplied() -> None:
 
 
 def test_adaptive_fim_observer_fields_fail_closed() -> None:
-    """Reject partial, invalid, blank, non-finite, and negative BL-80 telemetry."""
+    """Reject partial, invalid, blank, non-finite, and negative proposal telemetry."""
     with np.testing.assert_raises_regex(ValueError, "adaptive_fim_action"):
         ObserverInputs(adaptive_fim_action="increase")
     with np.testing.assert_raises_regex(ValueError, "supplied together"):

@@ -123,7 +123,7 @@ claims only when the evidence exists.
 | Package version | 1.1.0 |
 | Public API exports | 841 |
 | Python source modules | 697 |
-| Public Python classes | 1373 |
+| Public Python classes | 1374 |
 | Domain package families | 38 |
 | API documentation pages | 14 |
 | Rust PyO3 function bindings | 177 |
@@ -722,7 +722,7 @@ graph TD
 | `accel` | 3 | Multi-language dispatcher + Julia tier (Rust → Julia → Python fallback chain) |
 | `dla_parity` | 4 | DLA parity helpers and campaign analysis support |
 | `fep` | 2 | Friston Free Energy Principle: variational free energy, predictive coding |
-| `forecasting` | 11 | Real/source-backed synchronisation benchmarks plus bounded synthetic multimodal forecasting, partial-observation scoring, split residual intervals, and fail-closed BL-68/BL-33 composition |
+| `forecasting` | 11 | Real/source-backed synchronisation benchmarks plus bounded synthetic multimodal forecasting, partial-observation scoring, split residual intervals, and fail-closed active-sensing/controller composition |
 | `chimera_control` | 7 | Finite synthetic Kuramoto–Sakaguchi regimes, nested order parameters, analytic hierarchy targets, unapplied proposals, topology-ledger projection, and deterministic evidence |
 | `dla_topology_control` | 7 | Exact finite parity-sector derivatives, projected synthetic control, fixed-active-set topology-ledger JVP/VJP rules, and deterministic evidence |
 | `topology_kernel_product` | 6 | Edge-aligned exact-statevector fidelity kernels, custody-checked classification, graph/classical controls, and deterministic synthetic evidence |

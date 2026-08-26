@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **697 modules** across **39 package families**
-- **3908 documented public module-level symbols**
+- **3909 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5147,11 +5147,11 @@ Single resilient entry point to the optional :mod:`oscillatools` Rust engine.
 
 ### `scpn_quantum_control.active_sensing_product`
 
-Policy-bounded active sensing over existing sensing and S3 surfaces.
+Policy-bounded active sensing over existing analytic-design surfaces.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/active_sensing_product.py) · Public symbols: **9**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/active_sensing_product.py) · Public symbols: **10**
 
-**Classes:** `SensingInventoryRow`, `InformationGainCandidate`, `InformationGainScore`, `ActiveSensingObserverRecord`, `ActiveSensingPlan`
+**Classes:** `SensingInventoryRow`, `InformationGainCandidate`, `InformationGainScore`, `AnalyticDesignEvidenceRow`, `ActiveSensingObserverRecord`, `ActiveSensingPlan`
 
 **Functions:** `sensing_surface_inventory()`, `score_expected_information_gain()`, `plan_active_sensing()`, `demo_information_gain_candidates()`
 

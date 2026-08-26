@@ -17,11 +17,77 @@
         "sensitivity": 1.405913294556
       }
     ],
-    "claim_boundary": "interval-width proxy candidates composed into the existing BL-68 no-submit plan; not adaptive hardware sensing, optimal sensor placement, or domain deployment",
+    "claim_boundary": "interval-width proxy candidates composed into the existing no-submit sensing plan; not adaptive hardware sensing, optimal sensor placement, or domain deployment",
     "hardware_execution": false,
     "model_digest": "a19e4d14a1a386a82c0453bb13c1967d601706de4a2875481175f4d5f0899fe3",
     "plan": {
       "allowed": true,
+      "analytic_design_evidence": [
+        {
+          "analytic_design_protocol_id": "ml_augmented_pulse_ansatz_design_2026-05-06",
+          "candidate_label": "ansatz_shallow_knm",
+          "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+          "family": "ansatz",
+          "metrics": {
+            "depth": 8,
+            "hardware_submission": false,
+            "n_qubits": 4,
+            "parameters": 0,
+            "size": 20,
+            "two_qubit_gates": 8
+          },
+          "score": 45.0,
+          "status": "ok"
+        },
+        {
+          "analytic_design_protocol_id": "ml_augmented_pulse_ansatz_design_2026-05-06",
+          "candidate_label": "ansatz_mid_knm",
+          "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
+          "family": "ansatz",
+          "metrics": {
+            "depth": 14,
+            "hardware_submission": false,
+            "n_qubits": 4,
+            "parameters": 0,
+            "size": 36,
+            "two_qubit_gates": 16
+          },
+          "score": 87.0,
+          "status": "ok"
+        },
+        {
+          "analytic_design_protocol_id": "ml_augmented_pulse_ansatz_design_2026-05-06",
+          "candidate_label": "pulse_stirap_balanced",
+          "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+          "family": "pulse",
+          "metrics": {
+            "hardware_submission": false,
+            "infidelity_bound": 36.0,
+            "max_points_per_pulse": 200,
+            "n_qubits": 4,
+            "pulse_count": 4,
+            "total_time": 0.2
+          },
+          "score": 36.06,
+          "status": "ok"
+        },
+        {
+          "analytic_design_protocol_id": "ml_augmented_pulse_ansatz_design_2026-05-06",
+          "candidate_label": "pulse_demkov_kunike",
+          "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
+          "family": "pulse",
+          "metrics": {
+            "hardware_submission": false,
+            "infidelity_bound": 37.770899168515,
+            "max_points_per_pulse": 200,
+            "n_qubits": 4,
+            "pulse_count": 4,
+            "total_time": 0.2
+          },
+          "score": 37.830899168515,
+          "status": "ok"
+        }
+      ],
       "blockers": [],
       "budget": {
         "blockers": [],
@@ -38,89 +104,23 @@
         "shots_per_evaluation": 128,
         "would_submit": false
       },
-      "claim_boundary": "synthetic local information-gain planning under BL-47 no-submit shot budgets; S3 evidence is analytic/simulator-only; no adaptive QPU loop, sensing advantage, or NV 20 T hardware-calibration claim",
+      "claim_boundary": "synthetic local information-gain planning under hardware-safe no-submit shot budgets; candidate-design evidence is analytic/simulator-only; no adaptive QPU loop, sensing advantage, or NV 20 T hardware-calibration claim",
       "hardware_execution": false,
       "observer": {
+        "analytic_design_protocol_id": "ml_augmented_pulse_ansatz_design_2026-05-06",
         "channel": "forecast_uncertainty_observer",
-        "claim_boundary": "synthetic local information-gain planning under BL-47 no-submit shot budgets; S3 evidence is analytic/simulator-only; no adaptive QPU loop, sensing advantage, or NV 20 T hardware-calibration claim",
+        "claim_boundary": "synthetic local information-gain planning under hardware-safe no-submit shot budgets; candidate-design evidence is analytic/simulator-only; no adaptive QPU loop, sensing advantage, or NV 20 T hardware-calibration claim",
         "expected_information_gain_nats": 2.04280254355,
         "hardware_execution": false,
         "observer_id": "active-sensing:ci_dry_run_only:forecast_phase_node_0",
         "posterior_variance": 0.000155442256,
-        "s3_protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
         "selected_observable_id": "forecast_phase_node_0",
         "shot_policy_id": "ci_dry_run_only",
         "shots": 128
       },
       "outcome": "allowed_plan",
       "reason": "local synthetic active-sensing plan allowed; no hardware submission occurred",
-      "s3_evidence": [
-        {
-          "candidate_label": "ansatz_shallow_knm",
-          "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
-          "family": "ansatz",
-          "metrics": {
-            "depth": 8,
-            "hardware_submission": false,
-            "n_qubits": 4,
-            "parameters": 0,
-            "size": 20,
-            "two_qubit_gates": 8
-          },
-          "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
-          "score": 45.0,
-          "status": "ok"
-        },
-        {
-          "candidate_label": "ansatz_mid_knm",
-          "claim_boundary": "Resource proxy only; not a trained ML or VQE performance claim.",
-          "family": "ansatz",
-          "metrics": {
-            "depth": 14,
-            "hardware_submission": false,
-            "n_qubits": 4,
-            "parameters": 0,
-            "size": 36,
-            "two_qubit_gates": 16
-          },
-          "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
-          "score": 87.0,
-          "status": "ok"
-        },
-        {
-          "candidate_label": "pulse_stirap_balanced",
-          "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
-          "family": "pulse",
-          "metrics": {
-            "hardware_submission": false,
-            "infidelity_bound": 36.0,
-            "max_points_per_pulse": 200,
-            "n_qubits": 4,
-            "pulse_count": 4,
-            "total_time": 0.2
-          },
-          "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
-          "score": 36.06,
-          "status": "ok"
-        },
-        {
-          "candidate_label": "pulse_demkov_kunike",
-          "claim_boundary": "Analytic pulse proxy only; provider pulse calibration is still required.",
-          "family": "pulse",
-          "metrics": {
-            "hardware_submission": false,
-            "infidelity_bound": 37.770899168515,
-            "max_points_per_pulse": 200,
-            "n_qubits": 4,
-            "pulse_count": 4,
-            "total_time": 0.2
-          },
-          "protocol_id": "s3_ml_augmented_pulse_ansatz_design_2026-05-06",
-          "score": 37.830899168515,
-          "status": "ok"
-        }
-      ],
-      "schema": "active_sensing_product.v1",
+      "schema": "active_sensing_product.v2",
       "scores": [
         {
           "channel": "forecast_uncertainty_observer",
@@ -206,11 +206,11 @@
     "target_coverage": 0.9
   },
   "claim_boundary": "Deterministic synthetic Kuramoto trajectory evidence under explicit simulation-only domain tags. No real EEG, clinical, grid, SCADA, plasma, plant, hardware, QPU, state-estimation, control-performance, safety, deployment, or publication claim.",
-  "content_digest": "820bd43a90910c449da10f2721fbda3bfc7e4eb203d6d83dac7c0d7334d0dc3d",
+  "content_digest": "2d770f7d5a23b27d06717ba45fa925981c993d1b0feea20578e6b60ab52d199d",
   "controller_initialisation": {
     "applied": false,
     "calibrator_digest": "28b5c1eaaeefd36e117089fb6b5388c8822eab67adbb9b43fe614e1e7d9ca10f",
-    "claim_boundary": "synthetic forecast-derived BL-33 initialisation proposal only; unapplied and not a safety, stability, closed-loop, realtime, or operational control decision",
+    "claim_boundary": "synthetic forecast-derived controller initialisation proposal only; unapplied and not a safety, stability, closed-loop, realtime, or operational control decision",
     "model_digest": "a19e4d14a1a386a82c0453bb13c1967d601706de4a2875481175f4d5f0899fe3",
     "predicted_order_parameter": 0.15958548858,
     "proposal": {

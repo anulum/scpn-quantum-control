@@ -101,7 +101,7 @@ def test_evidence_writer_atomically_writes_matching_files(
         ("partial_batch", "test batch"),
         ("model_chain", "model digest"),
         ("calibrator_chain", "calibrator digest"),
-        ("support_rows", "complete BL-37"),
+        ("support_rows", "complete bounded forecasting surface"),
     ],
 )
 def test_evidence_bundle_rejects_broken_custody(

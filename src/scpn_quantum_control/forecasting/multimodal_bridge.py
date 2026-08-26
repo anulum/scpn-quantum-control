@@ -25,7 +25,7 @@ from .uncertainty import MultimodalIntervalForecast
 
 @dataclass(frozen=True, slots=True)
 class ForecastActiveSensingBridge:
-    """BL-68 plan composed from one synthetic interval forecast."""
+    """No-submit sensing plan composed from one synthetic interval forecast."""
 
     sample_id: str
     candidates: tuple[InformationGainCandidate, ...]
@@ -34,7 +34,7 @@ class ForecastActiveSensingBridge:
     calibrator_digest: str
     hardware_execution: bool = False
     claim_boundary: str = (
-        "interval-width proxy candidates composed into the existing BL-68 no-submit plan; "
+        "interval-width proxy candidates composed into the existing no-submit sensing plan; "
         "not adaptive hardware sensing, optimal sensor placement, or domain deployment"
     )
 
@@ -62,7 +62,7 @@ class ForecastActiveSensingBridge:
 
 @dataclass(frozen=True, slots=True)
 class ForecastControllerInitialisation:
-    """Unapplied BL-33 proposal initialised from a terminal forecast."""
+    """Unapplied controller proposal initialised from a terminal forecast."""
 
     sample_id: str
     predicted_order_parameter: float
@@ -73,7 +73,7 @@ class ForecastControllerInitialisation:
     applied: bool = False
     safety_decision: bool = False
     claim_boundary: str = (
-        "synthetic forecast-derived BL-33 initialisation proposal only; unapplied and "
+        "synthetic forecast-derived controller initialisation proposal only; unapplied and "
         "not a safety, stability, closed-loop, realtime, or operational control decision"
     )
 
@@ -125,7 +125,7 @@ def plan_forecast_active_sensing(
     shots_per_observable: int,
     request_hardware: bool = False,
 ) -> ForecastActiveSensingBridge:
-    """Compose interval-width proxies into the existing BL-68 policy path."""
+    """Compose interval-width proxies into the existing no-submit sensing path."""
     _validate_interval_batch(interval, batch)
     if not 0 <= sample_index < batch.n_samples:
         raise ValueError("sample_index is out of range")
@@ -174,7 +174,7 @@ def forecast_to_controller_initialisation(
     gain_scale: float,
     max_abs_update: float,
 ) -> ForecastControllerInitialisation:
-    """Map a terminal phase forecast to an unapplied BL-33 proposal."""
+    """Map a terminal phase forecast to an unapplied controller proposal."""
     if not 0 <= sample_index < len(interval.sample_ids):
         raise ValueError("sample_index is out of range")
     if not current_parameters:

@@ -212,14 +212,14 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
 
 ### 4.8a Forecasting — `forecasting/`
 - **Real/source-backed benchmark lane**: `real_data_sync` retains its own
-  dataset provenance and held-out benchmark contract; BL-37 does not promote or
+  dataset provenance and held-out benchmark contract; the synthetic forecasting product does not promote or
   relabel it.
-- **BL-37 synthetic multimodal lane**: immutable phase-series, graph, event,
+- **Synthetic multimodal lane**: immutable phase-series, graph, event,
   missingness-mask, target, frequency, tag, and split custody feeds a training-
   only ridge baseline, persistence comparison, known-simulator Kuramoto-
   residual score, and independent split residual intervals.
-- **Composition only**: interval-width proxies enter the existing BL-68
-  no-submit planner; terminal forecasts create existing BL-33 proposals that
+- **Composition only**: interval-width proxies enter the existing no-submit active-sensing
+  planner; terminal forecasts create existing controller proposals that
   remain unapplied. There is no hardware sensing, hidden-state inference,
   safety decision, or operational control path.
 - **Honest caveat**: `grid_like_sim`, `eeg_like_sim`, and `plasma_like_sim` are

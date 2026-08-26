@@ -9,7 +9,7 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 374,
-    "python_model_classes": 1373,
+    "python_model_classes": 1374,
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
@@ -937,6 +937,10 @@
       {
         "name": "AnalyseActionHandler",
         "path": "src/scpn_quantum_control/studio/executive_analyse.py"
+      },
+      {
+        "name": "AnalyticDesignEvidenceRow",
+        "path": "src/scpn_quantum_control/active_sensing_product.py"
       },
       {
         "name": "AncillaCircuitStats",

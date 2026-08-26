@@ -49,7 +49,7 @@ def _canonicalise_evidence_numbers(value: object) -> object:
 
 @dataclass(frozen=True, slots=True)
 class MultimodalSupportRow:
-    """One executable or explicitly blocked BL-37 support-matrix row."""
+    """One executable or explicitly blocked forecasting support-matrix row."""
 
     surface: str
     status: Literal["synthetic_supported", "bounded_supported", "blocked_dependency"]
@@ -68,7 +68,7 @@ class MultimodalSupportRow:
 
 @dataclass(frozen=True, slots=True)
 class MultimodalForecastingEvidence:
-    """Complete deterministic BL-37 evidence bundle."""
+    """Complete deterministic multimodal-forecasting evidence bundle."""
 
     dataset: SyntheticMultimodalDataset
     model: MultimodalRidgeForecaster
@@ -126,7 +126,7 @@ class MultimodalForecastingEvidence:
             "hardware_qpu_execution",
         }
         if {row.surface for row in self.support_rows} != required_surfaces:
-            raise ValueError("support rows must cover the complete BL-37 bounded surface")
+            raise ValueError("support rows must cover the complete bounded forecasting surface")
 
     def to_dict(self) -> dict[str, object]:
         """Return a canonical digest-bound evidence mapping."""
@@ -178,13 +178,13 @@ class MultimodalForecastingEvidence:
 
 
 def render_multimodal_forecasting_markdown(evidence: MultimodalForecastingEvidence) -> str:
-    """Render a human-readable view of deterministic BL-37 evidence."""
+    """Render a human-readable view of deterministic forecasting evidence."""
     payload = evidence.to_dict()
     test = evidence.test_accuracy
     coverage = evidence.interval_coverage
     partial = evidence.partial_observation
     lines = [
-        "# BL-37 Multimodal Forecasting Evidence",
+        "# Multimodal Forecasting Evidence",
         "",
         f"Schema: `{evidence.schema}`",
         f"Content digest: `{payload['content_digest']}`",
@@ -222,9 +222,11 @@ def render_multimodal_forecasting_markdown(evidence: MultimodalForecastingEviden
             "",
             "## Composition ports",
             "",
-            f"- BL-68 plan allowed: `{evidence.active_sensing.plan.allowed}`; hardware execution: "
+            f"- Active-sensing plan allowed: `{evidence.active_sensing.plan.allowed}`; "
+            "hardware execution: "
             f"`{evidence.active_sensing.hardware_execution}`.",
-            f"- BL-33 proposal applied: `{evidence.controller_initialisation.applied}`; safety "
+            f"- Controller proposal applied: `{evidence.controller_initialisation.applied}`; "
+            "safety "
             f"decision: `{evidence.controller_initialisation.safety_decision}`.",
             "",
             "## Support matrix",

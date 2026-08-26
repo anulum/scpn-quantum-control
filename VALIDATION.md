@@ -138,10 +138,11 @@ All 20 experiment circuits validated on AerSimulator (no IBM credentials needed)
 
 ### Quantum-Classical Co-Design Tests
 
-The BL-33 package has module-specific tests for immutable contracts, exact
-phase-objective evaluation, optional BL-16 composition, latency and safety
-policies, all three loop directions, deterministic replay, BL-67 runtime ports,
-BL-68/69/70 observer mapping, and the evidence CLI. The focused lane requires
+The co-design package has module-specific tests for immutable contracts, exact
+phase-objective evaluation, optional bounded open-system composition, latency
+and safety policies, all three loop directions, deterministic replay, existing
+control-stack ports, active-sensing/identity/geometry observer mapping, and the
+evidence CLI. The focused lane requires
 100% line and branch coverage over `scpn_quantum_control.codesign` and the
 repository evidence runner. The end-to-end tests use actual local simulator,
 QAOA-MPC, realtime-feedback, and co-simulation surfaces; no provider job or QPU

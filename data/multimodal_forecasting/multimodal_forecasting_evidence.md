@@ -1,7 +1,7 @@
-# BL-37 Multimodal Forecasting Evidence
+# Multimodal Forecasting Evidence
 
 Schema: `scpn.multimodal_forecasting.v1`
-Content digest: `820bd43a90910c449da10f2721fbda3bfc7e4eb203d6d83dac7c0d7334d0dc3d`
+Content digest: `2d770f7d5a23b27d06717ba45fa925981c993d1b0feea20578e6b60ab52d199d`
 
 ## Custody and held-out point forecast
 
@@ -22,8 +22,8 @@ Content digest: `820bd43a90910c449da10f2721fbda3bfc7e4eb203d6d83dac7c0d7334d0dc3
 
 ## Composition ports
 
-- BL-68 plan allowed: `True`; hardware execution: `False`.
-- BL-33 proposal applied: `False`; safety decision: `False`.
+- Active-sensing plan allowed: `True`; hardware execution: `False`.
+- Controller proposal applied: `False`; safety decision: `False`.
 
 ## Support matrix
 

@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any
 
 import numpy as np
@@ -38,8 +39,8 @@ def test_inventory_preserves_ownership_and_hardware_boundary() -> None:
     rows = sensing_surface_inventory()
 
     assert {row.surface_id for row in rows} == {
-        "s11_sensing",
-        "s3_design_protocol",
+        "quantum_fisher_sync_readiness",
+        "analytic_candidate_design",
         "shot_budget",
         "nv_20t",
         "codesign_observer",
@@ -125,7 +126,7 @@ def test_candidate_validation(kwargs: dict[str, Any], message: str) -> None:
         InformationGainCandidate(**kwargs)
 
 
-def test_plan_runs_real_budget_and_s3_surfaces() -> None:
+def test_plan_runs_real_budget_and_analytic_design_surfaces() -> None:
     k_matrix, omega = _problem()
     plan = plan_active_sensing(
         demo_information_gain_candidates(),
@@ -143,15 +144,26 @@ def test_plan_runs_real_budget_and_s3_surfaces() -> None:
     assert plan.observer is not None
     assert plan.observer.selected_observable_id == plan.selected.observable_id
     assert plan.observer.hardware_execution is False
-    assert {row.family for row in plan.s3_evidence} == {"ansatz", "pulse"}
+    assert {row.family for row in plan.analytic_design_evidence} == {"ansatz", "pulse"}
+    assert {row.analytic_design_protocol_id for row in plan.analytic_design_evidence} == {
+        "ml_augmented_pulse_ansatz_design_2026-05-06"
+    }
     payload = plan.to_dict()
     assert payload["schema"] == ACTIVE_SENSING_PRODUCT_SCHEMA
     assert payload["hardware_execution"] is False
     assert payload["selected"] is not None
     assert payload["observer"] is not None
+    assert "analytic_design_evidence" in payload
+    assert "s3_evidence" not in payload
+    observer_payload = payload["observer"]
+    assert isinstance(observer_payload, dict)
+    assert observer_payload["analytic_design_protocol_id"] == (
+        "ml_augmented_pulse_ansatz_design_2026-05-06"
+    )
+    assert "s3_protocol_id" not in observer_payload
 
 
-def test_budget_refusal_prevents_information_and_s3_evaluation() -> None:
+def test_budget_refusal_prevents_information_and_analytic_design_evaluation() -> None:
     k_matrix, omega = _problem()
     plan = plan_active_sensing(
         demo_information_gain_candidates(),
@@ -163,7 +175,7 @@ def test_budget_refusal_prevents_information_and_s3_evaluation() -> None:
 
     assert plan.allowed is False
     assert plan.scores == ()
-    assert plan.s3_evidence == ()
+    assert plan.analytic_design_evidence == ()
     assert plan.selected is None
     assert plan.observer is None
     payload = plan.to_dict()
@@ -184,7 +196,7 @@ def test_hardware_adaptive_path_is_fail_closed() -> None:
 
     assert plan.allowed is False
     assert any("adaptive hardware sensing" in blocker for blocker in plan.blockers)
-    assert plan.s3_evidence == ()
+    assert plan.analytic_design_evidence == ()
 
 
 def test_plan_rejects_empty_or_duplicate_candidates() -> None:
@@ -208,7 +220,7 @@ def test_plan_rejects_empty_or_duplicate_candidates() -> None:
         )
 
 
-def test_allowed_plan_propagates_real_s3_input_validation() -> None:
+def test_allowed_plan_propagates_analytic_design_input_validation() -> None:
     _, omega = _problem()
     with pytest.raises(ValueError, match="square"):
         plan_active_sensing(
@@ -218,3 +230,33 @@ def test_allowed_plan_propagates_real_s3_input_validation() -> None:
             policy_id="ci_dry_run_only",
             shots_per_observable=64,
         )
+
+
+def test_plan_rejects_stale_serialized_schema() -> None:
+    """Reject the superseded payload contract without a compatibility alias."""
+    k_matrix, omega = _problem()
+    plan = plan_active_sensing(
+        demo_information_gain_candidates(),
+        k_matrix,
+        omega,
+        policy_id="ci_dry_run_only",
+        shots_per_observable=64,
+    )
+
+    with pytest.raises(ValueError, match="unexpected active-sensing product schema"):
+        replace(plan, schema="active_sensing_product.v1")
+
+
+def test_plan_rejects_claim_boundary_drift() -> None:
+    """Reject serialized claim language that differs from the live contract."""
+    k_matrix, omega = _problem()
+    plan = plan_active_sensing(
+        demo_information_gain_candidates(),
+        k_matrix,
+        omega,
+        policy_id="ci_dry_run_only",
+        shots_per_observable=64,
+    )
+
+    with pytest.raises(ValueError, match="claim boundary drift"):
+        replace(plan, claim_boundary="legacy planning label")

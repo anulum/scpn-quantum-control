@@ -57,7 +57,7 @@ def _evidence() -> tuple[SyntheticMultimodalDataset, MultimodalIntervalForecast]
     return dataset, interval
 
 
-def test_interval_composes_into_real_bl68_no_submit_plan() -> None:
+def test_interval_composes_into_real_no_submit_sensing_plan() -> None:
     dataset, interval = _evidence()
     bridge = plan_forecast_active_sensing(
         interval,
@@ -80,7 +80,7 @@ def test_interval_composes_into_real_bl68_no_submit_plan() -> None:
     assert "not adaptive hardware" in bridge.claim_boundary
 
 
-def test_hardware_request_remains_refused_by_bl68() -> None:
+def test_hardware_request_remains_refused_by_sensing_policy() -> None:
     dataset, interval = _evidence()
     bridge = plan_forecast_active_sensing(
         interval,
@@ -99,7 +99,7 @@ def test_hardware_request_remains_refused_by_bl68() -> None:
     assert any("hardware" in blocker for blocker in bridge.plan.blockers)
 
 
-def test_terminal_forecast_creates_bounded_unapplied_bl33_proposal() -> None:
+def test_terminal_forecast_creates_bounded_unapplied_controller_proposal() -> None:
     _, interval = _evidence()
     result = forecast_to_controller_initialisation(
         interval,

@@ -1,9 +1,10 @@
 # Active sensing and experimental design
 
 `scpn_quantum_control.active_sensing_product` chooses the next synthetic scalar
-observation by expected information gain, but only after the existing BL-47
-policy accepts its complete shot plan. It then runs the existing S3 analytic
-design protocol and maps the selection to a BL-33 observer record.
+observation by expected information gain, but only after the hardware-safe
+no-submit policy accepts its complete shot plan. It then runs the existing
+analytic candidate-design protocol and maps the selection to a co-design
+observer record.
 
 ## Contract
 
@@ -11,9 +12,9 @@ design protocol and maps the selection to a BL-33 observer record.
 |---|---|
 | Information gain | Gaussian scalar posterior reduction in natural-log units |
 | Shot budget | `hardware_safe_execution.dry_run_execution_plan` is authoritative |
-| S3 evidence | Real ansatz and pulse proxy rows from `s3_design_protocol` |
-| BL-33 | Immutable `ActiveSensingObserverRecord` |
-| Hardware request | Refused before information/S3 evaluation |
+| Analytic design evidence | Real ansatz and pulse proxy rows from the candidate-design harness |
+| Observer telemetry | Immutable `ActiveSensingObserverRecord` |
+| Hardware request | Refused before information/design evaluation |
 | NV 20 T | Research-only, hardware-blocked inventory row |
 
 ```python
@@ -41,6 +42,6 @@ assert plan.observer.hardware_execution is False
 The score is synthetic design evidence, not a sensing-advantage measurement.
 No path in this module submits a provider job. Adaptive hardware execution
 requires a separate owner ticket and a surface that owns provider submission;
-BL-68 deliberately does neither.
+this active-sensing surface deliberately does neither.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

@@ -10,11 +10,11 @@ claim operational plasma stability.
 
 ```text
 LoopStepInput
-  -> PhaseObjectiveSimulator (BL-47 policy + phase objective + BL-09 plan)
+  -> PhaseObjectiveSimulator (hardware-safe policy + phase objective + governed plan)
   -> ExponentialOrderEstimator
   -> GradientFeedbackController proposal
   -> LatencyPolicy
-  -> SafetyEnvelope (+ optional BL-69 interlock)
+  -> SafetyEnvelope (+ optional identity-observer interlock)
   -> LoopStepOutput / ReplayTrace
 ```
 
@@ -32,32 +32,33 @@ replayable without pretending that workstation timing is a hardware deadline.
 
 The evaluator builds the existing analytic Kuramoto order-parameter target
 objective. Its exact objective gradient is the applied simulator reference.
-The attached BL-09 explanation is a backend-capability decision, not a claim
+The attached governed-route explanation is a backend-capability decision, not a claim
 that the analytic classical term was silently converted to parameter shift.
 
 ## Policy and safety contract
 
 - A concrete `ClosedLoopExecutionPolicy` is mandatory.
-- Even an otherwise valid hardware policy is refused by the BL-33 evaluator.
+- Even an otherwise valid hardware policy is refused by the co-design evaluator.
 - Missing and stale gradients select an explicit `hold` or `abort`; no previous
   gradient is silently reused.
 - Gradient norm, update norm, and absolute parameter envelopes are checked
   before proposed parameters become the applied output.
-- BL-69 `hold` and `abort` decisions take precedence over controller proposals.
-- BL-68 active-sensing and BL-70 geometry records remain telemetry only.
+- Identity-observer `hold` and `abort` decisions take precedence over controller proposals.
+- Active-sensing and geometry records remain telemetry only.
 - No network I/O or provider SDK call occurs in this package.
 
 ## Existing-product adapters
 
-The package consumes, rather than duplicates, the BL-67 ports:
+The package consumes, rather than duplicates, the existing control-stack ports:
 
 - `consume_realtime_feedback_port(...)` uses `RealtimeFeedbackPort`;
 - `consume_qaoa_mpc_port(...)` uses `QaoaMpcPort`;
 - `consume_cosimulation_port(...)` uses the policy-gated existing partition;
-- `observer_inputs_from_products(...)` maps BL-68, BL-69, BL-70, and BL-80
-  records. BL-80 contributes only decrease/hold telemetry after BL-47 approves
-  its complete dry-run shot plan.
-- `adaptive_fim_proposal_port(...)` maps one BL-80 step to an unapplied scalar
+- `observer_inputs_from_products(...)` maps active-sensing, identity, geometry,
+  and adaptive-information records. Adaptive-information feedback contributes
+  only decrease/hold telemetry after the hardware-safe policy approves its
+  complete dry-run shot plan.
+- `adaptive_fim_proposal_port(...)` maps one adaptive-information step to an unapplied scalar
   `ControllerProposal`; the co-design safety envelope must still decide whether
   any later simulator action is allowed.
 
@@ -70,7 +71,7 @@ dependency is required.
 ## Optional open-system objective
 
 `OpenSystemObjectiveConfig` augments the phase objective with one existing
-BL-16 bounded Lindblad or seeded-MCWF case at the current parameter vector.
+bounded Lindblad or seeded-MCWF case at the current parameter vector.
 The configured weight is explicit. Dimension drift fails closed. This is local
 solver evidence, not measured hardware decoherence or an adjoint-Lindblad
 gradient claim.

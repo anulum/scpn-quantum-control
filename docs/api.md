@@ -2248,10 +2248,10 @@ plan_forecast_active_sensing(interval, batch, ...) -> ForecastActiveSensingBridg
 forecast_to_controller_initialisation(interval, ...) -> ForecastControllerInitialisation
 ```
 
-BL-37 exposes digest-bound train/calibration/test custody, a missingness-aware
+The multimodal forecasting package exposes digest-bound train/calibration/test custody, a missingness-aware
 linear reference, partial-target scoring with complete known simulator
-couplings, empirical split residual intervals, a BL-68 no-submit sensing port,
-and an unapplied BL-33 proposal. See [Multimodal forecasting under partial
+couplings, empirical split residual intervals, a no-submit active-sensing port,
+and an unapplied controller proposal. See [Multimodal forecasting under partial
 observation](multimodal_forecasting.md). Domain tags are stylised simulations;
 no real-domain, inference, provider, hardware, control, safety, or deployment
 claim is implied.

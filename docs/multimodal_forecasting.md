@@ -1,9 +1,10 @@
 # Multimodal Forecasting Under Partial Observation
 
-This page defines the bounded BL-37 multimodal forecasting product. It provides
+This page defines the bounded multimodal forecasting product. It provides
 immutable multimodal custody, a deterministic missingness-aware classical
 baseline, partial-observation scoring, empirical split residual intervals, and
-explicit composition ports into BL-68 sensing and BL-33 controller proposals.
+explicit composition ports into no-submit active sensing and unapplied
+controller proposals.
 
 ## Production surfaces
 
@@ -22,9 +23,9 @@ The public `scpn_quantum_control.forecasting` facade exports:
   `certify_interval_coverage(...)` for sample-max split residual intervals over
   independent synthetic trajectory rows;
 - `plan_forecast_active_sensing(...)` for an interval-width proxy entering the
-  existing BL-68 no-submit planner; and
+  existing no-submit active-sensing planner; and
 - `forecast_to_controller_initialisation(...)` for a clipped, unapplied
-  existing BL-33 `ControllerProposal`.
+  existing `ControllerProposal`.
 
 The four allowed tags—`synthetic`, `grid_like_sim`, `eeg_like_sim`, and
 `plasma_like_sim`—identify stylised generator configurations. They do not
@@ -122,15 +123,15 @@ Committed custody:
 - `data/multimodal_forecasting/multimodal_forecasting_evidence.json`
 - `data/multimodal_forecasting/multimodal_forecasting_evidence.md`
 - content digest
-  `f7728c62a7fae64afd6b17fa900d1c733cf5616f9b87cedd25b4b440b6550c02`
+  `2d770f7d5a23b27d06717ba45fa925981c993d1b0feea20578e6b60ab52d199d`
 
 ## Composition boundaries
 
 `plan_forecast_active_sensing(...)` converts per-node interval widths into
-`InformationGainCandidate` records and calls the existing BL-68 planner. The
+`InformationGainCandidate` records and calls the existing active-sensing planner. The
 frozen evidence produces an allowed local dry-run plan with
 `hardware_execution=False`, `would_submit=False`, and no provider cost claim.
-Passing `request_hardware=True` remains refused by BL-68.
+Passing `request_hardware=True` remains refused by the active-sensing policy.
 
 `forecast_to_controller_initialisation(...)` maps the terminal forecast order
 parameter into a clipped existing `ControllerProposal`. The returned record is
@@ -141,12 +142,12 @@ closed-loop stability, control performance, or operational suitability.
 
 - [Cao et al. (2018), BRITS](https://proceedings.neurips.cc/paper_files/paper/2018/hash/734e6bfcd358e25ac1db0a4241b95651-Abstract.html)
   motivates preserving explicit missingness in multivariate time-series
-  models. BL-37 does not implement or claim BRITS.
+  models. This bounded implementation does not implement or claim BRITS.
 - [Xu and Xie (2023)](https://doi.org/10.1109/TPAMI.2023.3272339) motivates
-  careful uncertainty claims for time series. BL-37 uses independent synthetic
+  careful uncertainty claims for time series. This product uses independent synthetic
   trajectory rows and does not claim their sequential method.
 - [Smith and Gottwald (2023)](https://arxiv.org/abs/2309.03545) treats dynamics
-  learning under partial observation as a data-assimilation problem. BL-37 does
+  learning under partial observation as a data-assimilation problem. This product does
   not claim their ensemble Kalman parameter-inference result.
 - [Dörfler, Chertkov, and Bullo (2013)](https://doi.org/10.1073/pnas.1212134110)
   supplies oscillator-network context for the grid-like simulation tag. It
@@ -159,7 +160,7 @@ deployment suitability.
 ## Explicit exclusions
 
 - No real EEG, clinical, grid, SCADA, plasma diagnostic, or plant data is in
-  BL-37 custody.
+  this product's custody.
 - No hidden-state reconstruction, coupling inference, data assimilation, or
   arbitrary partial-observation solution is claimed.
 - No hardware, provider, QPU, adaptive sensing, clinical, safety, stability,

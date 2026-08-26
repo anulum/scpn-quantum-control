@@ -5,12 +5,13 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Active sensing / experimental design product
-"""Policy-bounded active sensing over existing sensing and S3 surfaces.
+"""Policy-bounded active sensing over existing analytic-design surfaces.
 
 This module ranks synthetic scalar observations by Gaussian expected
-information gain, applies the hardware-safety no-submit shot budget before scoring, runs
-the existing S3 design protocol as evidence, and emits a co-design observer record.
-It never submits hardware work or promotes the research-only NV 20 T surface.
+information gain, applies the hardware-safe no-submit shot budget before
+scoring, runs the existing analytic candidate-design protocol as evidence, and
+emits a co-design observer record. It never submits hardware work or promotes
+the research-only NV 20 T surface.
 """
 
 from __future__ import annotations
@@ -22,24 +23,24 @@ import numpy as np
 from numpy.typing import NDArray
 
 from .benchmarks.s3_design_protocol import (
-    S3DesignRow,
     default_s3_design_protocol,
     score_s3_candidates,
 )
 from .hardware_safe_execution import DryRunPlan, dry_run_execution_plan
 
-ACTIVE_SENSING_PRODUCT_SCHEMA: Final[str] = "active_sensing_product.v1"
+ACTIVE_SENSING_PRODUCT_SCHEMA: Final[str] = "active_sensing_product.v2"
 ACTIVE_SENSING_CLAIM_BOUNDARY: Final[str] = (
-    "synthetic local information-gain planning under BL-47 no-submit shot budgets; "
-    "S3 evidence is analytic/simulator-only; no adaptive QPU loop, sensing advantage, "
-    "or NV 20 T hardware-calibration claim"
+    "synthetic local information-gain planning under hardware-safe no-submit shot "
+    "budgets; candidate-design evidence is analytic/simulator-only; no adaptive QPU "
+    "loop, sensing advantage, or NV 20 T hardware-calibration claim"
 )
+_ANALYTIC_DESIGN_PROTOCOL_ID: Final[str] = "ml_augmented_pulse_ansatz_design_2026-05-06"
 PlanOutcome = Literal["allowed_plan", "refused"]
 
 
 @dataclass(frozen=True, slots=True)
 class SensingInventoryRow:
-    """One existing sensing surface and its BL-68 ownership posture."""
+    """One existing sensing surface and its active-sensing support posture."""
 
     surface_id: str
     module_path: str
@@ -63,7 +64,7 @@ class InformationGainCandidate:
     noise_variance
         Per-shot observation-noise variance.
     channel
-        BL-33 observer-channel label.
+        Co-design observer-channel label.
     """
 
     observable_id: str
@@ -100,8 +101,25 @@ class InformationGainScore:
 
 
 @dataclass(frozen=True, slots=True)
+class AnalyticDesignEvidenceRow:
+    """One descriptive analytic candidate-design evidence row."""
+
+    analytic_design_protocol_id: str
+    candidate_label: str
+    family: Literal["ansatz", "pulse"]
+    status: str
+    score: float
+    metrics: dict[str, float | int | str]
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready analytic-design evidence mapping."""
+        return asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
 class ActiveSensingObserverRecord:
-    """BL-33 observer-channel record for the selected measurement."""
+    """Co-design observer-channel record for the selected measurement."""
 
     observer_id: str
     channel: str
@@ -110,18 +128,18 @@ class ActiveSensingObserverRecord:
     posterior_variance: float
     shots: int
     shot_policy_id: str
-    s3_protocol_id: str
+    analytic_design_protocol_id: str
     hardware_execution: bool = False
     claim_boundary: str = ACTIVE_SENSING_CLAIM_BOUNDARY
 
     def to_dict(self) -> dict[str, object]:
-        """Return a JSON-ready BL-33 telemetry mapping."""
+        """Return a JSON-ready observer telemetry mapping."""
         return asdict(self)
 
 
 @dataclass(frozen=True, slots=True)
 class ActiveSensingPlan:
-    """Complete policy, ranking, S3 evidence, and observer decision."""
+    """Complete policy, ranking, analytic evidence, and observer decision."""
 
     outcome: PlanOutcome
     allowed: bool
@@ -130,10 +148,17 @@ class ActiveSensingPlan:
     budget: DryRunPlan
     scores: tuple[InformationGainScore, ...]
     selected: InformationGainScore | None
-    s3_evidence: tuple[S3DesignRow, ...]
+    analytic_design_evidence: tuple[AnalyticDesignEvidenceRow, ...]
     observer: ActiveSensingObserverRecord | None
     schema: str = ACTIVE_SENSING_PRODUCT_SCHEMA
     claim_boundary: str = ACTIVE_SENSING_CLAIM_BOUNDARY
+
+    def __post_init__(self) -> None:
+        """Reject stale schemas and claim-boundary drift."""
+        if self.schema != ACTIVE_SENSING_PRODUCT_SCHEMA:
+            raise ValueError("unexpected active-sensing product schema")
+        if self.claim_boundary != ACTIVE_SENSING_CLAIM_BOUNDARY:
+            raise ValueError("active-sensing claim boundary drift")
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready product payload."""
@@ -146,7 +171,7 @@ class ActiveSensingPlan:
             "budget": self.budget.to_dict(),
             "scores": [score.to_dict() for score in self.scores],
             "selected": None if self.selected is None else self.selected.to_dict(),
-            "s3_evidence": [row.to_dict() for row in self.s3_evidence],
+            "analytic_design_evidence": [row.to_dict() for row in self.analytic_design_evidence],
             "observer": None if self.observer is None else self.observer.to_dict(),
             "hardware_execution": False,
             "claim_boundary": self.claim_boundary,
@@ -155,21 +180,21 @@ class ActiveSensingPlan:
 
 _INVENTORY: Final[tuple[SensingInventoryRow, ...]] = (
     SensingInventoryRow(
-        "s11_sensing",
+        "quantum_fisher_sync_readiness",
         "scpn_quantum_control.analysis.sensing",
         "QFI and sync-order readiness source",
         "local_research",
     ),
     SensingInventoryRow(
-        "s3_design_protocol",
-        "scpn_quantum_control.benchmarks.s3_design_protocol",
+        "analytic_candidate_design",
+        "scpn_quantum_control.active_sensing_product.AnalyticDesignEvidenceRow",
         "analytic candidate evidence harness",
         "no_qpu",
     ),
     SensingInventoryRow(
         "shot_budget",
         "scpn_quantum_control.hardware_safe_execution",
-        "BL-47 no-submit budget authority",
+        "hardware-safe no-submit budget authority",
         "policy_only",
     ),
     SensingInventoryRow(
@@ -188,7 +213,7 @@ _INVENTORY: Final[tuple[SensingInventoryRow, ...]] = (
 
 
 def sensing_surface_inventory() -> tuple[SensingInventoryRow, ...]:
-    """Return the frozen BL-68 ownership inventory."""
+    """Return the frozen active-sensing surface inventory."""
     return _INVENTORY
 
 
@@ -232,10 +257,11 @@ def plan_active_sensing(
     shots_per_observable: int,
     request_hardware: bool = False,
 ) -> ActiveSensingPlan:
-    """Build a complete BL-68 plan through BL-47 and the real S3 harness.
+    """Build a complete plan through the budget and analytic-design harnesses.
 
-    Budget enforcement occurs before information scoring or S3 circuit/pulse
-    construction. Hardware-adaptive requests are always refused on this surface.
+    Budget enforcement occurs before information scoring or analytic
+    circuit/pulse construction. Hardware-adaptive requests are always refused
+    on this surface.
     """
     if not candidates:
         raise ValueError("candidates must be non-empty")
@@ -251,7 +277,9 @@ def plan_active_sensing(
     )
     blockers = list(budget.blockers)
     if request_hardware:
-        blockers.append("adaptive hardware sensing is owner-ticketed and unavailable on BL-68")
+        blockers.append(
+            "adaptive hardware sensing requires a separately authorised provider surface"
+        )
     if blockers:
         return ActiveSensingPlan(
             outcome="refused",
@@ -261,7 +289,7 @@ def plan_active_sensing(
             budget=budget,
             scores=(),
             selected=None,
-            s3_evidence=(),
+            analytic_design_evidence=(),
             observer=None,
         )
 
@@ -276,7 +304,18 @@ def plan_active_sensing(
     )
     selected = scores[0]
     protocol = default_s3_design_protocol()
-    s3_rows = score_s3_candidates(protocol, k_matrix, omega)
+    design_rows = tuple(
+        AnalyticDesignEvidenceRow(
+            analytic_design_protocol_id=_ANALYTIC_DESIGN_PROTOCOL_ID,
+            candidate_label=row.candidate_label,
+            family=row.family,
+            status=row.status,
+            score=row.score,
+            metrics=dict(row.metrics),
+            claim_boundary=row.claim_boundary,
+        )
+        for row in score_s3_candidates(protocol, k_matrix, omega)
+    )
     observer = ActiveSensingObserverRecord(
         observer_id=f"active-sensing:{policy_id}:{selected.observable_id}",
         channel=selected.channel,
@@ -285,7 +324,7 @@ def plan_active_sensing(
         posterior_variance=selected.posterior_variance,
         shots=selected.shots,
         shot_policy_id=policy_id,
-        s3_protocol_id=protocol.protocol_id,
+        analytic_design_protocol_id=_ANALYTIC_DESIGN_PROTOCOL_ID,
     )
     return ActiveSensingPlan(
         outcome="allowed_plan",
@@ -295,7 +334,7 @@ def plan_active_sensing(
         budget=budget,
         scores=scores,
         selected=selected,
-        s3_evidence=s3_rows,
+        analytic_design_evidence=design_rows,
         observer=observer,
     )
 
@@ -312,6 +351,7 @@ def demo_information_gain_candidates() -> tuple[InformationGainCandidate, ...]:
 __all__ = [
     "ACTIVE_SENSING_CLAIM_BOUNDARY",
     "ACTIVE_SENSING_PRODUCT_SCHEMA",
+    "AnalyticDesignEvidenceRow",
     "ActiveSensingObserverRecord",
     "ActiveSensingPlan",
     "InformationGainCandidate",

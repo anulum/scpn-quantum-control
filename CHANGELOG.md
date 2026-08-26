@@ -23,12 +23,12 @@
   Thermodynamic-limit, biological/EEG, stability, controllability, provider,
   QPU, hardware, deployment, and market-efficacy claims are refused; optional
   BL-32 F5–F6 catalogue rows are explicitly descoped.
-- 2026-07-29 — Multimodal forecasting under partial observation (BL-37):
+- 2026-07-29 — Multimodal forecasting under partial observation:
   added immutable simulation-only series/graph/event/mask custody, disjoint
   synthetic train/calibration/test trajectories, a training-only missingness-
   aware ridge baseline, exact known-simulator Kuramoto-residual scoring,
-  empirical split residual intervals, BL-68 no-submit sensing composition, an
-  unapplied BL-33 proposal, and deterministic digest-bound evidence. Real
+  empirical split residual intervals, no-submit active-sensing composition, an
+  unapplied controller proposal, and deterministic digest-bound evidence. Real
   EEG/clinical/grid/SCADA/plasma/plant, hidden-state inference, provider,
   hardware, safety, control-performance, and deployment claims are refused.
 - 2026-07-29 — Quantum reservoir and differentiable surrogate product (BL-45):
@@ -73,10 +73,11 @@
   JAX and PyTorch QNN agreement ran locally; TensorFlow was explicitly
   unavailable. Provider, QPU, neuromorphic-hardware, arbitrary-architecture,
   generalisation, SOTA, and production-convergence claims remain excluded.
-- 2026-07-28 — Quantum-classical co-design loop (BL-33):
-  `scpn_quantum_control.codesign` composes exact phase objectives, BL-09
-  planner explanations, optional BL-16 evidence, BL-67 runtime ports, and
-  BL-68/69/70 observers behind deterministic latency and safety policies.
+- 2026-07-28 — Quantum-classical co-design loop:
+  `scpn_quantum_control.codesign` composes exact phase objectives, governed
+  planner explanations, optional bounded open-system evidence, existing
+  control-stack ports, and active-sensing/identity/geometry observers behind
+  deterministic latency and safety policies.
   Digest-bound replay and functional non-isolated evidence are included;
   hardware, provider submission, and operational plasma control remain refused.
 - 2026-07-25 — SSGF quantum-in-the-loop geometry gradient (BL-70):
@@ -90,10 +91,10 @@
   coherence-budget, and optional CHSH metrics into explicit BL-33/67 safety
   decisions. Threshold violations hold; missing or invalid requested witnesses
   abort; identity-key and universal-identity claims remain out of scope.
-- 2026-07-25 — Active sensing / experimental design product (BL-68):
+- 2026-07-25 — Active sensing / experimental design product:
   `scpn_quantum_control.active_sensing_product` composes synthetic Gaussian
-  information-gain ranking with BL-47 shot-budget enforcement, the real S3
-  ansatz/pulse evidence harness, and BL-33 observer telemetry. Hardware-adaptive
+  information-gain ranking with hardware-safe shot-budget enforcement, the real
+  analytic ansatz/pulse evidence harness, and co-design observer telemetry. Hardware-adaptive
   requests fail before evaluation; NV 20 T remains research-only.
 - 2026-07-25 — Complete compose-existing-control-stack adapters (BL-67):
   `scpn_quantum_control.control_stack_runtime_adapters` now runs ambient realtime
@@ -138,9 +139,9 @@ control, or broad quantum-advantage claim is promoted by this release.
   exact generator, nested observables, analytic target/proposal surfaces,
   topology-constraint composition, notebook, public guide/API reference, and
   canonical JSON/Markdown evidence artefacts.
-- 2026-07-29 — BL-37 multimodal partial-observation forecasting facade,
+- 2026-07-29 — Multimodal partial-observation forecasting facade,
   deterministic synthetic generator, missingness-aware ridge comparator,
-  partial-observation and uncertainty certificates, bounded BL-68/BL-33 ports,
+  partial-observation and uncertainty certificates, bounded active-sensing/controller ports,
   public guide, evidence CLI, and canonical JSON/Markdown artefacts.
 - 2026-07-29 — BL-45 held-out QRC/ESN certificate suite, differentiable
   Gaussian-RBF surrogate and disjoint exact-simulator fidelity gates,

@@ -82,20 +82,20 @@ persistent-homology changes. See
 
 ## Multimodal forecasting composition
 
-`scpn_quantum_control.forecasting` now separates BL-37 into seven cohesive
+`scpn_quantum_control.forecasting` separates multimodal forecasting into seven cohesive
 owners: immutable multimodal custody, deterministic synthetic generation,
 missingness-aware point forecasting, partial-observation scoring, residual
 interval calibration, external composition ports, and digest-bound reporting.
 The existing real-data and neural-operator benchmark modules remain independent;
-BL-37 does not relabel their datasets or claims.
+the bounded forecasting product does not relabel their datasets or claims.
 
 The dependency direction is one-way. The generator uses the established exact
 Kuramoto simulator; model fitting consumes immutable batches; calibration
 consumes a frozen model plus a disjoint calibration split; reporting consumes
 certificates without owning numerical algorithms. The bridge module converts
-interval widths into existing BL-68 `InformationGainCandidate` records and a
-terminal forecast into an existing BL-33 `ControllerProposal`. Neither BL-68 nor
-BL-33 imports forecasting, so no control/sensing back-edge is introduced.
+interval widths into existing `InformationGainCandidate` records and a
+terminal forecast into an existing `ControllerProposal`. Neither the sensing
+nor controller surface imports forecasting, so no control/sensing back-edge is introduced.
 
 Complete known simulator couplings are retained for the physics-residual
 certificate. Consequently the partial-observation surface scores a forecast; it
@@ -111,8 +111,8 @@ or realtime-control stack. Its dependency direction is one-way: immutable
 contracts feed a local phase-objective evaluator, estimator and controller;
 latency and safety policies decide whether the proposal is applied to the next
 simulator state; replay serialises the complete decision. The package consumes
-BL-67 `RealtimeFeedbackPort`, `QaoaMpcPort`, and policy-gated co-simulation
-adapters, plus BL-68/69/70 observer records. It does not import a partner
+`RealtimeFeedbackPort`, `QaoaMpcPort`, and policy-gated co-simulation adapters,
+plus active-sensing, identity, and geometry observer records. It does not import a partner
 repository or move plant-model ownership into this codebase.
 
 The evaluator reuses the existing synchronisation objective and exact analytic
@@ -762,8 +762,8 @@ forecasting/                               ← Forecast benchmarks + bounded mul
 ├── multimodal_forecaster.py                   Missingness-aware ridge + persistence comparison
 ├── partial_observation.py                     Observed-phase + known-simulator residual score
 ├── uncertainty.py                             Independent split residual intervals
-├── multimodal_bridge.py                       BL-68 no-submit + unapplied BL-33 ports
-└── multimodal_report.py                       Digest-bound BL-37 JSON/Markdown evidence
+├── multimodal_bridge.py                       No-submit sensing + unapplied controller ports
+└── multimodal_report.py                       Digest-bound forecasting JSON/Markdown evidence
 
 benchmarks/                                ← 23 modules: performance baselines
 ├── quantum_advantage.py                       Classical vs quantum scaling
