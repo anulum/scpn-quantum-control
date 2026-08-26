@@ -55,11 +55,12 @@
   interior optimum and two negative controls replay deterministically. The
   forbidden ENAQT--BKT--consciousness leap is removed; universal, biological,
   synchronisation, hardware, advantage, and noise-setpoint claims are refused.
-- 2026-07-28 — Bounded L16 director (BL-85): three frozen exact-simulator
-  scenarios, deterministic replay, BL-33 `continue/adjust/halt` safety mapping,
-  BL-67 policy gating, BL-52 local/permanent-boundary routes, and digest-bound
-  evidence. The legacy weighted score remains a heuristic; Lyapunov, PCS,
-  stability, causal, autonomous-actuation, provider, and QPU claims are refused.
+- 2026-07-28 — Bounded L16 director: three frozen exact-simulator scenarios,
+  deterministic replay, conservative `continue/adjust/halt` safety mapping,
+  closed-loop execution-policy gating, governed local/permanent-boundary routes,
+  and digest-bound evidence. The legacy weighted score remains a heuristic;
+  Lyapunov, PCS, stability, causal, autonomous-actuation, provider, and QPU
+  claims are refused.
 - 2026-07-28 — QNN/QGNN/QSNN convergence examples (BL-42):
   `scpn_quantum_control.ml_examples` composes the existing phase-QNN, QGNN,
   and QSNN trainers into three frozen deterministic convergence certificates,
@@ -150,7 +151,7 @@ control, or broad quantum-advantage claim is promoted by this release.
 - 2026-07-28 — BL-87 site-basis ENAQT scanner, explicit transfer-efficiency
   contract, two negative controls, primary-source boundary, evidence CLI,
   public guide, and digest-bound local evidence artefacts.
-- 2026-07-28 — BL-85 bounded L16 indicator suite, conservative co-design
+- 2026-07-28 — Bounded L16 indicator suite, conservative co-design
   interlock, governed routes, public guide, evidence CLI, and committed
   functional evidence with promotion blockers.
 - 2026-07-28 — BL-42 QNN/QGNN/QSNN local convergence suite, complete

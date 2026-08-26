@@ -74,7 +74,7 @@
     }
   ],
   "claim_boundary": "bounded exact-simulator L16 indicator and heuristic safety-routing evidence; no classical or quantum Lyapunov-exponent proof, PCS certificate, causal diagnosis, stability guarantee, autonomous actuation, provider, QPU, or production-control claim",
-  "content_digest": "891e44634fa049a2cdcb41fc76fcdf68b52758d84e078ea4ef0a82ee5b819ae9",
+  "content_digest": "a35948cb2ce54e0915fefb04fb74dcac2e8ed62f39cabcc92ed70aac7e4c8c6a",
   "functional_passed": true,
   "hardware_execution": false,
   "promotion_blockers": [
@@ -98,5 +98,5 @@
       "route_id": "adapter:l16.autonomous_hardware_control"
     }
   ],
-  "schema": "l16_director_product.v1"
+  "schema": "l16_director_product.v2"
 }

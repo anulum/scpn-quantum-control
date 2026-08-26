@@ -5,7 +5,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-85 L16 evidence runner
+# SCPN Quantum Control — bounded L16 director evidence runner
 """Run the bounded L16 director evidence suite."""
 
 from scpn_quantum_control.l16.director_evidence import main

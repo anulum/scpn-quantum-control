@@ -21,7 +21,7 @@ from .director_product import run_l16_director_suite
 
 
 def canonical_l16_json(value: object) -> str:
-    """Return canonical JSON text used by the BL-85 integrity digest."""
+    """Return canonical JSON text used by the L16 director integrity digest."""
     return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
 
 
@@ -33,12 +33,12 @@ def l16_evidence_payload() -> dict[str, object]:
 
 
 def render_l16_evidence_markdown(payload: Mapping[str, object]) -> str:
-    """Render a compact human-readable view of validated BL-85 evidence."""
+    """Render a compact human-readable view of validated L16 director evidence."""
     certificates = cast(list[dict[str, object]], payload["certificates"])
     routes = cast(list[dict[str, object]], payload["routes"])
     blockers = cast(list[str], payload["promotion_blockers"])
     lines = [
-        "# BL-85 L16 director functional evidence",
+        "# L16 director functional evidence",
         "",
         f"- Schema: `{payload['schema']}`",
         f"- Functional passed: `{str(payload['functional_passed']).lower()}`",
@@ -49,7 +49,7 @@ def render_l16_evidence_markdown(payload: Mapping[str, object]) -> str:
         "",
         "## Indicator certificates",
         "",
-        "| Scenario | Echo | Variance | Susceptibility | R | Score | Heuristic | BL-33 action | Informative |",
+        "| Scenario | Echo | Variance | Susceptibility | R | Score | Heuristic | Safety action | Informative |",
         "|---|---:|---:|---:|---:|---:|---|---|---|",
     ]
     for certificate in certificates:
@@ -75,7 +75,7 @@ def render_l16_evidence_markdown(payload: Mapping[str, object]) -> str:
     lines.extend(
         [
             "",
-            "## BL-52 routes",
+            "## Governed routes",
             "",
             "| Route | Status | Boundary |",
             "|---|---|---|",
@@ -91,7 +91,7 @@ def render_l16_evidence_markdown(payload: Mapping[str, object]) -> str:
 
 
 def validate_l16_evidence(payload: object) -> tuple[str, ...]:
-    """Return fail-closed findings for one BL-85 evidence payload."""
+    """Return fail-closed findings for one L16 director evidence payload."""
     if not isinstance(payload, dict):
         return ("payload must be a JSON object",)
     data = cast(dict[str, object], payload)
@@ -130,7 +130,7 @@ def validate_l16_evidence(payload: object) -> tuple[str, ...]:
             findings.append("every L16 certificate must pass its functional gate")
     routes = data.get("routes")
     if not isinstance(routes, list) or len(routes) != 2:
-        findings.append("routes must contain the two BL-52 L16 rows")
+        findings.append("routes must contain the two governed L16 rows")
     elif {
         (route.get("route_id"), route.get("closure_status"))
         for route in routes
@@ -165,11 +165,11 @@ def write_l16_evidence(
     *,
     payload: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
-    """Validate and atomically write real or independently supplied BL-85 evidence."""
+    """Validate and atomically write real or independently supplied L16 evidence."""
     selected_payload = dict(payload) if payload is not None else l16_evidence_payload()
     findings = validate_l16_evidence(selected_payload)
     if findings:
-        raise RuntimeError("invalid BL-85 evidence: " + "; ".join(findings))
+        raise RuntimeError("invalid L16 director evidence: " + "; ".join(findings))
     json_text = json.dumps(selected_payload, indent=2, sort_keys=True) + "\n"
     markdown_text = render_l16_evidence_markdown(selected_payload)
     json_path.parent.mkdir(parents=True, exist_ok=True)
@@ -192,7 +192,7 @@ def _as_float(value: object, name: str) -> float:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Run the BL-85 evidence CLI."""
+    """Run the bounded L16 director evidence CLI."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--json-output",

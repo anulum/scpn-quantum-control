@@ -13,7 +13,7 @@ import math
 from dataclasses import asdict, dataclass
 from typing import Final
 
-L16_DIRECTOR_SCHEMA: Final[str] = "l16_director_product.v1"
+L16_DIRECTOR_SCHEMA: Final[str] = "l16_director_product.v2"
 L16_DIRECTOR_CLAIM_BOUNDARY: Final[str] = (
     "bounded exact-simulator L16 indicator and heuristic safety-routing evidence; "
     "no classical or quantum Lyapunov-exponent proof, PCS certificate, causal "
@@ -99,9 +99,9 @@ class L16IndicatorCertificate:
         if not self.route_id.strip():
             raise ValueError("route_id must be non-empty")
         if self.hardware_execution:
-            raise ValueError("BL-85 certificates must remain simulator-only")
+            raise ValueError("bounded L16 director certificates must remain simulator-only")
         if self.claim_boundary != L16_DIRECTOR_CLAIM_BOUNDARY:
-            raise ValueError("BL-85 certificate claim boundary is fixed")
+            raise ValueError("bounded L16 director certificate claim boundary is fixed")
 
     @property
     def passed(self) -> bool:
@@ -131,7 +131,7 @@ class L16IndicatorCertificate:
 
 @dataclass(frozen=True, slots=True)
 class L16RouteEvidence:
-    """One BL-52 route status retained in BL-85 evidence."""
+    """One governed route status retained in bounded L16 director evidence."""
 
     route_id: str
     closure_status: str
@@ -155,7 +155,7 @@ class L16RouteEvidence:
 
 @dataclass(frozen=True, slots=True)
 class L16DirectorEvidence:
-    """Complete functional BL-85 evidence without stability promotion."""
+    """Complete functional L16 director evidence without stability promotion."""
 
     certificates: tuple[L16IndicatorCertificate, ...]
     routes: tuple[L16RouteEvidence, ...]
@@ -174,7 +174,7 @@ class L16DirectorEvidence:
             "susceptibility_probe",
             "weak_coupling_probe",
         ):
-            raise ValueError("certificates must retain the frozen BL-85 scenario order")
+            raise ValueError("certificates must retain the frozen L16 scenario order")
         route_ids = tuple(route.route_id for route in self.routes)
         if route_ids != (
             "adapter:l16.local_indicator",
@@ -189,9 +189,9 @@ class L16DirectorEvidence:
             self.schema != L16_DIRECTOR_SCHEMA
             or self.claim_boundary != L16_DIRECTOR_CLAIM_BOUNDARY
         ):
-            raise ValueError("BL-85 evidence schema and claim boundary are fixed")
+            raise ValueError("L16 director evidence schema and claim boundary are fixed")
         if self.provider_execution or self.hardware_execution or self.promotion_ready:
-            raise ValueError("BL-85 evidence cannot promote or record external execution")
+            raise ValueError("L16 director evidence cannot promote or record external execution")
 
     @property
     def functional_passed(self) -> bool:

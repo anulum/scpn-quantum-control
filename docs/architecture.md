@@ -807,8 +807,8 @@ pgbo/                                      ← PGBO quantum bridge
 
 l16/                                       ← Layer 16 bounded director
 ├── quantum_director.py                        Legacy indicators + heuristic score
-├── director_contracts.py                      Frozen BL-85 evidence contracts
-├── director_product.py                        Policy-gated suite + BL-33 safety mapping
+├── director_contracts.py                      Frozen bounded-director evidence contracts
+├── director_product.py                        Policy-gated suite + conservative safety mapping
 └── director_evidence.py                       Digest-bound JSON/Markdown evidence
 
 scpn_quantum_engine/                       ← Rust crate (PyO3 0.29, rayon parallel)

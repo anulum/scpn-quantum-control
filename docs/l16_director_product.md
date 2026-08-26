@@ -1,9 +1,9 @@
 # Bounded L16 director product
 
-BL-85 turns the existing L16 indicator calculation into a policy-gated local
-product. It runs three frozen small-system scenarios, replays every result,
-maps the legacy heuristic labels into the BL-33 safety envelope, and writes
-digest-bound JSON and Markdown evidence.
+The bounded L16 director turns the existing indicator calculation into a
+policy-gated local product. It runs three frozen small-system scenarios,
+replays every result, maps the legacy heuristic labels into the conservative
+co-design safety envelope, and writes digest-bound JSON and Markdown evidence.
 
 This surface does **not** establish a classical or quantum Lyapunov exponent.
 The Loschmidt echo evolves an exact ground state under the same Hamiltonian, so
@@ -35,7 +35,8 @@ assert output.safety.action.value == "hold"
 `run_l16_indicator_scenario(...)` requires a
 `ClosedLoopExecutionPolicy`. The default suite supplies a bounded simulation
 policy. An unauthorised policy fails before calculation, and an otherwise
-ticketed hardware decision is still refused because BL-85 is simulator-only.
+ticketed hardware decision is still refused because the bounded director is
+simulator-only.
 
 ## Frozen functional evidence
 
@@ -63,13 +64,14 @@ Artefacts:
 
 ## Safety and route mapping
 
-| L16 heuristic | BL-33 action | Meaning |
+| L16 heuristic | Safety action | Meaning |
 |---|---|---|
 | `continue` | `allow` | L16 adds no interlock; all other envelopes still apply. |
 | `adjust` | `hold` | Preserve current parameters and require replanning. |
 | `halt` | `abort` | Stop the loop step before parameter application. |
 
-An identity-observer hold or abort retains precedence over L16. BL-52 exposes
+An identity-observer hold or abort retains precedence over L16. The governed
+route matrix exposes
 `adapter:l16.local_indicator` as supported bounded-local work and
 `adapter:l16.autonomous_hardware_control` as a permanent boundary. A supported
 route is not a stability or hardware claim.

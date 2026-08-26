@@ -143,7 +143,7 @@ def compute_l16_lyapunov(
 
     The returned ``stability_score`` name is retained for compatibility. It is
     an uncalibrated weighted composite, not a Lyapunov exponent or stability
-    guarantee. Use the BL-85 product for policy gating and claim boundaries.
+    guarantee. Use the bounded L16 director product for policy gating and claim boundaries.
     """
     n = K.shape[0]
 

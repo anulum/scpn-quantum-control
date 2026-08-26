@@ -109,7 +109,7 @@ def test_indicator_classification_and_promotion_policy_cover_both_outcomes(
 
 
 def test_l16_actions_drive_real_codesign_safety_interlocks() -> None:
-    """Route all legacy labels through a real BL-33 loop step."""
+    """Route all legacy labels through a real conservative co-design loop step."""
     loop = build_demo_loop()
     step_input = demo_inputs()[0]
 

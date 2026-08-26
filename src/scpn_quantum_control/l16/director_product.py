@@ -35,11 +35,11 @@ _ACTION_MAP = {"continue": "allow", "adjust": "hold", "halt": "abort"}
 
 
 class L16DirectorPolicyError(RuntimeError):
-    """Raised when BL-67 policy refuses bounded L16 evaluation."""
+    """Raised when the closed-loop execution policy refuses bounded L16 evaluation."""
 
 
 def frozen_l16_scenarios() -> tuple[L16ScenarioSpec, ...]:
-    """Return the three ordered small-system BL-85 scenarios."""
+    """Return the three ordered small-system L16 director scenarios."""
     return (
         L16ScenarioSpec("paper27_baseline", 4, 1.0, 1.0, 0.5),
         L16ScenarioSpec("susceptibility_probe", 3, 0.3, 0.1, 0.5),
@@ -52,7 +52,7 @@ def observer_inputs_from_l16(
     *,
     reason: str = "",
 ) -> ObserverInputs:
-    """Map a legacy L16 action into the BL-33 observer interlock contract."""
+    """Map a legacy L16 action into the conservative observer interlock contract."""
     if action not in _ACTION_MAP:
         raise ValueError("L16 action must be continue, adjust, or halt")
     mapped_reason = reason.strip() or (
@@ -69,13 +69,13 @@ def run_l16_indicator_scenario(
     policy: ClosedLoopExecutionPolicy,
     backend: str | None = None,
 ) -> L16IndicatorCertificate:
-    """Execute and replay one frozen scenario under the shared BL-67 policy."""
+    """Execute and replay one frozen scenario under the shared execution policy."""
     decision = evaluate_closed_loop_policy(policy, backend=backend, requested_rounds=1)
     if not decision.authorised:
         raise L16DirectorPolicyError(f"execution policy refused L16 evaluation: {decision.reason}")
     if decision.mode is not ExecutionMode.SIMULATION:
         raise L16DirectorPolicyError(
-            "BL-85 L16 evidence is local-simulator only; hardware mode is refused"
+            "bounded L16 director evidence is local-simulator only; hardware mode is refused"
         )
     coupling, omega = _scenario_arrays(scenario)
     first = compute_l16_lyapunov(coupling, omega, t=scenario.evolution_time)
