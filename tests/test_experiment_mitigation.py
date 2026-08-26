@@ -10,10 +10,14 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import Any, cast
 
 import numpy as np
+import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.hardware import experiment_mitigation as em
+from scpn_quantum_control.hardware.runner import HardwareRunner
 from scpn_quantum_control.mitigation import zne as zne_mod
 
 
@@ -38,7 +42,10 @@ class _RecordingRunner:
         self.dd_inputs: list[object] = []
         self.saved: list[tuple[object, str | None]] = []
 
-    def run_sampler(self, circuits, shots: int = 100, name: str = "run"):
+    def run_sampler(
+        self, circuits: Any, shots: int = 100, name: str = "run"
+    ) -> list[_CountsResult]:
+        """Record one sampler boundary call and return deterministic counts."""
         circuits = list(circuits)
         self.run_calls.append({"name": name, "shots": shots, "circuits": circuits})
         return [
@@ -46,39 +53,56 @@ class _RecordingRunner:
             for i, _circuit in enumerate(circuits)
         ]
 
-    def transpile(self, circuit):
+    def transpile(self, circuit: Any) -> Any:
+        """Return the circuit token unchanged."""
         return circuit
 
-    def transpile_with_dd(self, circuit, dd_sequence=None):
+    def transpile_with_dd(
+        self, circuit: Any, dd_sequence: list[str] | None = None
+    ) -> _CircuitToken:
+        """Record dynamical-decoupling input and preserve circuit depth."""
         self.dd_inputs.append(circuit)
         return _CircuitToken(axis=getattr(circuit, "axis", "z"), depth_value=circuit.depth())
 
-    def save_result(self, result, filename: str | None = None):
+    def save_result(self, result: object, filename: str | None = None) -> str | None:
+        """Record the requested result filename without filesystem output."""
         self.saved.append((result, filename))
         return filename
 
 
 def _patch_lightweight_physics(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
     r_values: list[float],
     *,
     classical_r: float = 0.75,
 ) -> None:
     """Replace heavy circuit/classical work with deterministic boundary signals."""
-
     r_iter = iter(r_values)
 
-    def build_base(n, _K, _omega, _t, trotter_reps):
+    def build_base(
+        n: int, _K: object, _omega: object, _t: float, trotter_reps: int
+    ) -> _CircuitToken:
         return _CircuitToken(n=n, reps=trotter_reps, depth_value=10 + n + trotter_reps)
 
-    def build_xyz(base, n):
+    def build_xyz(base: _CircuitToken, n: int) -> tuple[_CircuitToken, ...]:
         return (
             _CircuitToken(axis="z", n=n, depth_value=base.depth()),
             _CircuitToken(axis="x", n=n, depth_value=base.depth()),
             _CircuitToken(axis="y", n=n, depth_value=base.depth()),
         )
 
-    def r_from_xyz(_z_counts, _x_counts, _y_counts, n):
+    def r_from_xyz(
+        _z_counts: object, _x_counts: object, _y_counts: object, n: int
+    ) -> tuple[
+        float,
+        float,
+        NDArray[np.float64],
+        NDArray[np.float64],
+        NDArray[np.float64],
+        NDArray[np.float64],
+        NDArray[np.float64],
+        NDArray[np.float64],
+    ]:
         r_value = float(next(r_iter))
         exp_x = np.full(n, r_value)
         exp_y = np.full(n, r_value / 2.0)
@@ -96,11 +120,12 @@ def _patch_lightweight_physics(
     )
 
 
-def _patch_zne(monkeypatch):
+def _patch_zne(monkeypatch: pytest.MonkeyPatch) -> tuple[list[int], list[int]]:
+    """Replace folding and extrapolation with observable deterministic doubles."""
     fold_scales: list[int] = []
     zne_orders: list[int] = []
 
-    def fold(circuit, scale: int):
+    def fold(circuit: _CircuitToken, scale: int) -> _CircuitToken:
         fold_scales.append(scale)
         return _CircuitToken(
             n=getattr(circuit, "n", 0),
@@ -108,7 +133,7 @@ def _patch_zne(monkeypatch):
             depth_value=circuit.depth() * scale,
         )
 
-    def extrapolate(scales, values, order: int = 1):
+    def extrapolate(scales: list[int], values: list[float], order: int = 1) -> SimpleNamespace:
         zne_orders.append(order)
         return SimpleNamespace(
             zero_noise_estimate=float(np.mean(values) - 0.01 * order),
@@ -120,12 +145,17 @@ def _patch_zne(monkeypatch):
     return fold_scales, zne_orders
 
 
-def test_kuramoto_4osc_zne_uses_default_scales_and_scalar_extrapolation(monkeypatch):
+def test_kuramoto_4osc_zne_uses_default_scales_and_scalar_extrapolation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Use default fold scales and return the scalar linear extrapolation."""
     _patch_lightweight_physics(monkeypatch, [0.61, 0.53, 0.47], classical_r=0.8)
     fold_scales, zne_orders = _patch_zne(monkeypatch)
     runner = _RecordingRunner()
 
-    result = em.kuramoto_4osc_zne_experiment(runner, shots=123, dt=0.05, scales=None)
+    result = em.kuramoto_4osc_zne_experiment(
+        cast(HardwareRunner, runner), shots=123, dt=0.05, scales=None
+    )
 
     assert result["experiment"] == "kuramoto_4osc_zne"
     assert result["scales"] == [1, 3, 5]
@@ -138,11 +168,14 @@ def test_kuramoto_4osc_zne_uses_default_scales_and_scalar_extrapolation(monkeypa
     assert all(call["shots"] == 123 for call in runner.run_calls)
 
 
-def test_noise_baseline_saves_result_and_preserves_expectation_vectors(monkeypatch):
+def test_noise_baseline_saves_result_and_preserves_expectation_vectors(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Save the baseline result and preserve all expectation vectors."""
     _patch_lightweight_physics(monkeypatch, [0.33], classical_r=0.98)
     runner = _RecordingRunner()
 
-    result = em.noise_baseline_experiment(runner, shots=77)
+    result = em.noise_baseline_experiment(cast(HardwareRunner, runner), shots=77)
 
     assert result["experiment"] == "noise_baseline"
     assert result["n_qubits"] == 4
@@ -154,12 +187,17 @@ def test_noise_baseline_saves_result_and_preserves_expectation_vectors(monkeypat
     assert runner.run_calls[0]["name"] == "noise_baseline"
 
 
-def test_kuramoto_8osc_zne_uses_eight_oscillator_result_contract(monkeypatch):
+def test_kuramoto_8osc_zne_uses_eight_oscillator_result_contract(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Return the eight-oscillator result schema with default fold scales."""
     _patch_lightweight_physics(monkeypatch, [0.42, 0.37, 0.31], classical_r=0.69)
     fold_scales, zne_orders = _patch_zne(monkeypatch)
     runner = _RecordingRunner()
 
-    result = em.kuramoto_8osc_zne_experiment(runner, shots=90, dt=0.12, scales=None)
+    result = em.kuramoto_8osc_zne_experiment(
+        cast(HardwareRunner, runner), shots=90, dt=0.12, scales=None
+    )
 
     assert result["experiment"] == "kuramoto_8osc_zne"
     assert result["n_oscillators"] == 8
@@ -171,11 +209,14 @@ def test_kuramoto_8osc_zne_uses_eight_oscillator_result_contract(monkeypatch):
     assert [call["name"] for call in runner.run_calls] == ["zne8_s1", "zne8_s3", "zne8_s5"]
 
 
-def test_upde_16_dd_submits_raw_and_decoupled_batches(monkeypatch):
+def test_upde_16_dd_submits_raw_and_decoupled_batches(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Submit raw and decoupled batches and preserve their separate results."""
     _patch_lightweight_physics(monkeypatch, [0.12, 0.28], classical_r=0.54)
     runner = _RecordingRunner()
 
-    result = em.upde_16_dd_experiment(runner, shots=44, trotter_steps=2)
+    result = em.upde_16_dd_experiment(cast(HardwareRunner, runner), shots=44, trotter_steps=2)
 
     assert result["experiment"] == "upde_16_dd"
     assert result["n_layers"] == 16
@@ -189,7 +230,10 @@ def test_upde_16_dd_submits_raw_and_decoupled_batches(monkeypatch):
     assert len(result["hw_exp_x_dd"]) == 16
 
 
-def test_higher_order_zne_reports_each_polynomial_order(monkeypatch):
+def test_higher_order_zne_reports_each_polynomial_order(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Report one bounded extrapolation record for each requested order."""
     _patch_lightweight_physics(
         monkeypatch,
         [0.71, 0.65, 0.59, 0.52, 0.44],
@@ -199,7 +243,7 @@ def test_higher_order_zne_reports_each_polynomial_order(monkeypatch):
     runner = _RecordingRunner()
 
     result = em.zne_higher_order_experiment(
-        runner,
+        cast(HardwareRunner, runner),
         shots=55,
         dt=0.08,
         scales=None,
@@ -223,11 +267,16 @@ def test_higher_order_zne_reports_each_polynomial_order(monkeypatch):
     ]
 
 
-def test_decoherence_scaling_returns_nan_fit_when_only_one_valid_point(monkeypatch):
+def test_decoherence_scaling_returns_nan_fit_when_only_one_valid_point(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Return undefined fit metrics when only one positive ratio exists."""
     _patch_lightweight_physics(monkeypatch, [0.25], classical_r=0.5)
     runner = _RecordingRunner()
 
-    result = em.decoherence_scaling_experiment(runner, shots=31, qubit_counts=[2])
+    result = em.decoherence_scaling_experiment(
+        cast(HardwareRunner, runner), shots=31, qubit_counts=[2]
+    )
 
     assert result["experiment"] == "decoherence_scaling"
     assert result["data_points"] == [
@@ -243,7 +292,10 @@ def test_decoherence_scaling_returns_nan_fit_when_only_one_valid_point(monkeypat
     assert runner.run_calls[0]["name"] == "decoherence_2q"
 
 
-def test_decoherence_scaling_uses_default_qubit_sweep_and_fits_decay(monkeypatch):
+def test_decoherence_scaling_uses_default_qubit_sweep_and_fits_decay(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Use the default qubit sweep and fit a finite positive decay rate."""
     _patch_lightweight_physics(
         monkeypatch,
         [0.72, 0.61, 0.50, 0.38, 0.27, 0.16],
@@ -251,7 +303,9 @@ def test_decoherence_scaling_uses_default_qubit_sweep_and_fits_decay(monkeypatch
     )
     runner = _RecordingRunner()
 
-    result = em.decoherence_scaling_experiment(runner, shots=29, qubit_counts=None)
+    result = em.decoherence_scaling_experiment(
+        cast(HardwareRunner, runner), shots=29, qubit_counts=None
+    )
 
     assert [point["n_qubits"] for point in result["data_points"]] == [2, 4, 6, 8, 10, 12]
     assert [call["name"] for call in runner.run_calls] == [
@@ -265,3 +319,22 @@ def test_decoherence_scaling_uses_default_qubit_sweep_and_fits_decay(monkeypatch
     assert np.isfinite(result["fit_gamma"])
     assert np.isfinite(result["fit_r_squared"])
     assert result["fit_gamma"] > 0.0
+
+
+def test_zne_experiments_preserve_explicit_scale_lists(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Exercise caller-supplied scales across every public ZNE experiment."""
+    _patch_lightweight_physics(monkeypatch, [0.61, 0.52, 0.43], classical_r=0.8)
+    fold_scales, zne_orders = _patch_zne(monkeypatch)
+    runner = cast(HardwareRunner, _RecordingRunner())
+
+    four = em.kuramoto_4osc_zne_experiment(runner, scales=[2])
+    eight = em.kuramoto_8osc_zne_experiment(runner, scales=[4])
+    higher = em.zne_higher_order_experiment(runner, scales=[6], poly_order=1)
+
+    assert four["scales"] == [2]
+    assert eight["scales"] == [4]
+    assert higher["scales"] == [6]
+    assert fold_scales == [2, 4, 6]
+    assert zne_orders == [1, 1, 1]

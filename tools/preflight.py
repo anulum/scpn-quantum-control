@@ -66,6 +66,7 @@ if TYPE_CHECKING:
     )
     from tools import decisive_advantage_quality_gates as _decisive_advantage_quality_gates
     from tools import differentiable_quality_gates as _differentiable_quality_gates
+    from tools import experiment_mitigation_quality_gates as _experiment_mitigation_quality_gates
     from tools import governed_route_matrix_quality_gates as _governed_route_matrix_quality_gates
     from tools import hardware_safe_execution_quality_gates as _hardware_safe_quality_gates
     from tools import (
@@ -168,6 +169,9 @@ else:
     )
     _decisive_advantage_quality_gates = import_module("tools.decisive_advantage_quality_gates")
     _differentiable_quality_gates = import_module("tools.differentiable_quality_gates")
+    _experiment_mitigation_quality_gates = import_module(
+        "tools.experiment_mitigation_quality_gates"
+    )
     _governed_route_matrix_quality_gates = import_module(
         "tools.governed_route_matrix_quality_gates"
     )
@@ -570,6 +574,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_layout_method_comparison_quality_gates.build_static_quality_gates(_PY),
     *_unsuitable_scenario_registry_quality_gates.build_static_quality_gates(_PY),
     *_scorecard_acceptance_engine_quality_gates.build_static_quality_gates(_PY),
+    *_experiment_mitigation_quality_gates.build_static_quality_gates(_PY),
     *_research_lane_registry_quality_gates.build_static_quality_gates(_PY),
     *_theory_hook_promotion_quality_gates.build_static_quality_gates(_PY),
     *_resource_budget_gate_quality_gates.build_static_quality_gates(_PY),
@@ -1014,6 +1019,9 @@ UNSUITABLE_SCENARIO_REGISTRY_COVERAGE_GATES = (
 SCORECARD_ACCEPTANCE_ENGINE_COVERAGE_GATES = (
     _scorecard_acceptance_engine_quality_gates.build_coverage_gates(_PY)
 )
+EXPERIMENT_MITIGATION_COVERAGE_GATES = _experiment_mitigation_quality_gates.build_coverage_gates(
+    _PY
+)
 RESEARCH_LANE_REGISTRY_COVERAGE_GATES = _research_lane_registry_quality_gates.build_coverage_gates(
     _PY
 )
@@ -1312,6 +1320,7 @@ def main() -> int:
             gates.extend(LAYOUT_METHOD_COMPARISON_COVERAGE_GATES)
             gates.extend(UNSUITABLE_SCENARIO_REGISTRY_COVERAGE_GATES)
             gates.extend(SCORECARD_ACCEPTANCE_ENGINE_COVERAGE_GATES)
+            gates.extend(EXPERIMENT_MITIGATION_COVERAGE_GATES)
             gates.extend(RESEARCH_LANE_REGISTRY_COVERAGE_GATES)
             gates.extend(THEORY_HOOK_PROMOTION_COVERAGE_GATES)
             gates.extend(RESOURCE_BUDGET_GATE_COVERAGE_GATES)

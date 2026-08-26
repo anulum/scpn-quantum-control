@@ -42,6 +42,7 @@ def kuramoto_4osc_zne_experiment(
             zne_R (float): Zero-noise extrapolated R.
             classical_R (float): Exact order parameter.
             fit_residual (float): Polynomial fit residual.
+
     """
     from ..mitigation.zne import gate_fold_circuit, zne_extrapolate
 
@@ -104,6 +105,7 @@ def noise_baseline_experiment(runner: HardwareRunner, shots: int = 10000) -> dic
             hw_exp_x (list[float]): Per-qubit X expectations.
             hw_exp_y (list[float]): Per-qubit Y expectations.
             hw_exp_z (list[float]): Per-qubit Z expectations.
+
     """
     n = 4
     K = build_knm_paper27(L=n)
@@ -156,6 +158,7 @@ def kuramoto_8osc_zne_experiment(
             zne_R (float): Zero-noise extrapolated R.
             classical_R (float): Exact order parameter.
             fit_residual (float): Polynomial fit residual.
+
     """
     from ..mitigation.zne import gate_fold_circuit, zne_extrapolate
 
@@ -221,6 +224,7 @@ def upde_16_dd_experiment(
             hw_exp_x_dd (list[float]): Per-qubit X expectations (DD).
             hw_exp_y_dd (list[float]): Per-qubit Y expectations (DD).
             hw_exp_z_dd (list[float]): Per-qubit Z expectations (DD).
+
     """
     n = 16
     K = build_knm_paper27(L=n)
@@ -292,6 +296,7 @@ def zne_higher_order_experiment(
             R_per_scale (list[float]): Measured R at each scale.
             extrapolations (dict): Per-order dicts with zne_R, fit_residual.
             classical_R (float): Exact order parameter.
+
     """
     from ..mitigation.zne import gate_fold_circuit, zne_extrapolate
 
@@ -364,6 +369,7 @@ def decoherence_scaling_experiment(
                 depth, hw_R, classical_R.
             fit_gamma (float): Fitted per-gate depolarization rate.
             fit_r_squared (float): R-squared of exponential fit.
+
     """
     if qubit_counts is None:
         qubit_counts = [2, 4, 6, 8, 10, 12]
