@@ -1,4 +1,4 @@
-# Polyglot edge Program AD (BL-74)
+# Polyglot edge Program AD
 
 Fail-closed product contract over the real bounded Rust Program-AD replay, its
 standalone browser WASM build, and the optional Julia boundary.

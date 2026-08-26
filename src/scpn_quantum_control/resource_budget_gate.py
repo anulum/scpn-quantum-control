@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — compile & dense resource budget gate (BL-94 / W5)
-"""Fail-closed compile & dense resource budget product surface (BL-94).
+# SCPN Quantum Control — compile & dense resource budget gate
+"""Fail-closed compile & dense resource budget product surface.
 
 Productises versioned budget **dimensions** for sparse Pauli/compile construction
 and dense Hilbert-space allocations. Composes the low-level guards in

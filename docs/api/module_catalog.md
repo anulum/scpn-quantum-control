@@ -5173,7 +5173,7 @@ Fail-closed **advanced witnesses** product surface (BL-44).
 
 **Classes:** `WitnessCapabilityRow`, `WitnessBoundaryRow`, `WitnessEstimate`, `PathEligibilityDecision`, `MaterialisedKrylovProbe`, `MaterialisedOtocProbe`, `MaterialisedShadowProbe`
 
-**Functions:** `iter_witness_capabilities()`, `list_witness_capability_ids()`, `get_witness_capability()`, `iter_witness_boundaries()`, `list_witness_boundary_ids()`, `get_witness_boundary()`, `list_witness_glossary_keys()`, `get_witness_glossary_entry()`, `list_witness_ambient_inventory()`, `map_advanced_witnesses_public_surfaces()`, `decide_witness_path()`, `materialise_krylov_probe()`, `materialise_demo_krylov_probe()`, `materialise_otoc_probe()`, `materialise_demo_otoc_probe()`, `materialise_shadow_probe()`, `materialise_demo_shadow_probe()`, `materialise_bl18_order_parameter_compose()`, `build_advanced_witnesses_product_registry()`, `assert_advanced_witnesses_product_integrity()`
+**Functions:** `iter_witness_capabilities()`, `list_witness_capability_ids()`, `get_witness_capability()`, `iter_witness_boundaries()`, `list_witness_boundary_ids()`, `get_witness_boundary()`, `list_witness_glossary_keys()`, `get_witness_glossary_entry()`, `list_witness_ambient_inventory()`, `map_advanced_witnesses_public_surfaces()`, `decide_witness_path()`, `materialise_krylov_probe()`, `materialise_demo_krylov_probe()`, `materialise_otoc_probe()`, `materialise_demo_otoc_probe()`, `materialise_shadow_probe()`, `materialise_demo_shadow_probe()`, `materialise_harmonic_order_parameter_compose()`, `build_advanced_witnesses_product_registry()`, `assert_advanced_witnesses_product_integrity()`
 
 ### `scpn_quantum_control.advantage_language_protocol`
 

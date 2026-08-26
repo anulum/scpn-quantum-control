@@ -1,4 +1,4 @@
-# Campaign harness productisation (BL-99)
+# Campaign harness productisation
 
 Reusable **hardware-campaign harness templates** with prereg digests and BL-47
 no-submit default. Dry-run probes only. Refuse invent-green live QPU submit and

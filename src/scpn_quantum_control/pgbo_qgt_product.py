@@ -4,18 +4,18 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — PGBO quantum geometric tensor product (BL-71 / P1)
-"""Fail-closed **PGBO quantum geometric tensor** product surface (BL-71).
+# SCPN Quantum Control — PGBO quantum geometric tensor product
+"""Fail-closed **PGBO quantum geometric tensor** product surface.
 
 Productises metric + Berry curvature on coupling-parameter space over ambient
 :mod:`scpn_quantum_control.pgbo.quantum_bridge`:
 
 * versioned QGT capability catalogue (tensor compute, Fubini–Study metric,
-  Berry curvature, size-cap policy, BL-50 compose);
+  Berry curvature, size-cap policy, geometric-control compose);
 * real :func:`~scpn_quantum_control.pgbo.quantum_bridge.compute_pgbo_tensor`
   probe on small XY systems with fail-closed oscillator-count caps;
 * hard-gap boundaries: invent-green experimental geometry, live QPU, unbounded N;
-* compose BL-50 geometric control catalogue; refuse invent-green.
+* compose geometric-control geometric control catalogue; refuse invent-green.
 
 Does **not** claim experimental quantum geometry on hardware, submit to QPU,
 or remove ambient finite-difference approximation of state derivatives.
@@ -40,7 +40,7 @@ QgtCapabilityKind = Literal[
     "fubini_study_metric",
     "berry_curvature",
     "size_cap_policy",
-    "bl50_compose",
+    "geometric_control_compose",
 ]
 """QGT capability kinds on the product catalogue."""
 
@@ -133,7 +133,7 @@ class QgtCapabilityRow:
             "fubini_study_metric",
             "berry_curvature",
             "size_cap_policy",
-            "bl50_compose",
+            "geometric_control_compose",
         }:
             raise ValueError(f"unknown capability kind: {self.kind!r}")
         if not self.title or not self.title.strip():
@@ -375,8 +375,8 @@ def _build_capabilities() -> tuple[QgtCapabilityRow, ...]:
             support_posture="policy_only",
         ),
         QgtCapabilityRow(
-            capability_id="bl50_compose",
-            kind="bl50_compose",
+            capability_id="geometric_control_compose",
+            kind="geometric_control_compose",
             title="Compose BL-50 geometric control",
             summary=(
                 "Pairs with geometric_control_product (McLachlan/QNG on ansatz "
@@ -750,7 +750,7 @@ def map_pgbo_qgt_public_surfaces() -> tuple[dict[str, object], ...]:
         {
             "surface_id": "geometric_control_product",
             "module_path": "scpn_quantum_control.geometric_control_product",
-            "role": "bl50_compose",
+            "role": "geometric_control_compose",
             "claim_boundary": PGBO_QGT_CLAIM_BOUNDARY,
         },
     )

@@ -1,12 +1,12 @@
 # BL-37 Multimodal Forecasting Evidence
 
 Schema: `scpn.multimodal_forecasting.v1`
-Content digest: `21ef2604b837a2ebbf9c8df975212a53357fd51f2e47b9f4b30be69352a23917`
+Content digest: `820bd43a90910c449da10f2721fbda3bfc7e4eb203d6d83dac7c0d7334d0dc3d`
 
 ## Custody and held-out point forecast
 
-- Dataset digest: `8de23d1e490db07f463409d30a1d5804479c13da7499d06066693e43638ba8b2`; train / calibration / test samples: `64` / `24` / `32`.
-- Model digest: `7f0a65ed947de4c36fc8f7e19c376a76c6d6235c1ccd70804c02830f9031b0ee`; test wrapped MSE `0.000823098535` versus persistence `0.00113867904`; lower MSE: `True`.
+- Dataset digest: `8c6ee2912ad293f3deddc21f684b7241d400d4083a1bf789cf8364a7c1e1d196`; train / calibration / test samples: `64` / `24` / `32`.
+- Model digest: `a19e4d14a1a386a82c0453bb13c1967d601706de4a2875481175f4d5f0899fe3`; test wrapped MSE `0.000823098535` versus persistence `0.00113867904`; lower MSE: `True`.
 
 | Synthetic tag | Samples | Forecast MSE | Persistence MSE | Lower MSE |
 |---|---:|---:|---:|---|
@@ -33,8 +33,8 @@ Content digest: `21ef2604b837a2ebbf9c8df975212a53357fd51f2e47b9f4b30be69352a2391
 | `missingness_aware_ridge` | `synthetic_supported` | Training-only imputation/scaling and held-out persistence comparison. Linear reference baseline, not BRITS or a production forecaster. |
 | `partial_observation_objective` | `synthetic_supported` | Observed wrapped error plus exact Kuramoto forward residual. Known simulator coupling; no hidden-state or parameter inference. |
 | `split_residual_intervals` | `synthetic_supported` | Independent calibration rows and empirical held-out test coverage. Not sequential EnbPI, conditional coverage, or domain transfer. |
-| `bl68_active_sensing_bridge` | `bounded_supported` | Interval-width proxies enter the existing no-submit sensing planner. Not adaptive hardware sensing or optimal sensor placement. |
-| `bl33_controller_initialisation` | `bounded_supported` | Terminal forecast creates a clipped existing ControllerProposal. Proposal remains unapplied and is not a safety decision. |
+| `active_sensing_bridge` | `bounded_supported` | Interval-width proxies enter the existing no-submit sensing planner. Not adaptive hardware sensing or optimal sensor placement. |
+| `codesign_controller_initialisation` | `bounded_supported` | Terminal forecast creates a clipped existing ControllerProposal. Proposal remains unapplied and is not a safety decision. |
 | `real_eeg_clinical_data` | `blocked_dependency` | No governed real EEG or clinical dataset is in custody. The eeg_like_sim tag provides no clinical or neuroscience validity. |
 | `real_grid_scada_data` | `blocked_dependency` | No governed grid or SCADA dataset is in custody. The grid_like_sim tag is not a power-system operational model. |
 | `real_plasma_plant_data` | `blocked_dependency` | No governed plasma diagnostic or plant dataset is in custody. The plasma_like_sim tag provides no reactor or plant evidence. |

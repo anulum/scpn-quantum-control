@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Rust Program AD fuzz assurance product (BL-96 / P1)
-"""Fail-closed **Rust Program AD fuzz assurance** product surface (BL-96).
+# SCPN Quantum Control — Rust Program AD fuzz assurance product
+"""Fail-closed **Rust Program AD fuzz assurance** product surface.
 
 Productises fuzzing as a trust moat for bit-exact Program AD replay: versioned
 fuzz target catalogue over ambient ``scpn_quantum_engine/fuzz`` bins, time-boxed
@@ -14,7 +14,7 @@ multi-hour cargo-fuzz coverage claims.
 
 Does **not** execute cargo-fuzz or invent continuous corpus green status.
 Residual S96.2 corpus retention ops, S96.3 crash→regression pipeline, and
-S96.4 BL-49 fuzz-case feed remain open honestly.
+S96.4 parity-certificate fuzz-case feed remain open honestly.
 """
 
 from __future__ import annotations
@@ -81,9 +81,9 @@ class FuzzTarget:
         Cargo package name owning the fuzz bin.
     posture
         Declared execution posture.
-    bl49_pointer
+    parity_certificate_pointer
         Optional BL-49 certificate feed pointer (residual when empty feed).
-    bl97_stability_class
+    api_stability_class
         Stability honesty class.
     as_of
         Inventory date label.
@@ -99,8 +99,8 @@ class FuzzTarget:
     rust_path: str
     package: str
     posture: TargetPosture = "time_boxed_local"
-    bl49_pointer: str = "polyglot_parity_certificate.fuzz_case_feed_residual"
-    bl97_stability_class: str = "experimental_workbench"
+    parity_certificate_pointer: str = "polyglot_parity_certificate.fuzz_case_feed_residual"
+    api_stability_class: str = "experimental_workbench"
     as_of: str = "2026-07-24"
     claim_boundary: str = PROGRAM_AD_FUZZ_CLAIM_BOUNDARY
 
@@ -130,8 +130,8 @@ class FuzzTarget:
             "continuous_forbidden_default",
         }:
             raise ValueError(f"unknown posture: {self.posture!r}")
-        if not self.bl97_stability_class or not self.bl97_stability_class.strip():
-            raise ValueError("bl97_stability_class must be non-empty")
+        if not self.api_stability_class or not self.api_stability_class.strip():
+            raise ValueError("api_stability_class must be non-empty")
         if not self.as_of or not self.as_of.strip():
             raise ValueError("as_of must be non-empty")
 
@@ -145,8 +145,8 @@ class FuzzTarget:
             "rust_path": self.rust_path,
             "package": self.package,
             "posture": self.posture,
-            "bl49_pointer": self.bl49_pointer,
-            "bl97_stability_class": self.bl97_stability_class,
+            "parity_certificate_pointer": self.parity_certificate_pointer,
+            "api_stability_class": self.api_stability_class,
             "as_of": self.as_of,
             "claim_boundary": self.claim_boundary,
         }
@@ -619,14 +619,14 @@ def map_fuzz_public_surfaces() -> tuple[dict[str, object], ...]:
         {
             "module_path": "scpn_quantum_control.program_ad_fuzz_assurance",
             "role": "program_ad_fuzz_assurance_product",
-            "bl97_stability_class": "experimental_workbench",
+            "api_stability_class": "experimental_workbench",
             "target_ids": list(list_fuzz_target_ids()),
             "claim_boundary": PROGRAM_AD_FUZZ_CLAIM_BOUNDARY,
         },
         {
             "module_path": "scpn_quantum_engine.fuzz",
             "role": "ambient_cargo_fuzz_package",
-            "bl97_stability_class": "experimental_workbench",
+            "api_stability_class": "experimental_workbench",
             "target_ids": list(list_fuzz_target_ids()),
             "claim_boundary": PROGRAM_AD_FUZZ_CLAIM_BOUNDARY,
         },

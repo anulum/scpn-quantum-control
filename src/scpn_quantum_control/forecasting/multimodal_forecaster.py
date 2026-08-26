@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Missingness-aware multimodal ridge forecaster
-"""Classical reference forecasting over immutable BL-37 multimodal batches."""
+"""Classical reference forecasting over immutable multimodal-forecasting multimodal batches."""
 
 from __future__ import annotations
 

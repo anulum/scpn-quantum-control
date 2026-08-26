@@ -4,11 +4,11 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — circuit-cutting product (BL-76 / P1)
+# SCPN Quantum Control — circuit-cutting product
 """Fail-closed circuit-cutting product for large synchronisation workloads.
 
 The ambient planner supplies real partition and cut counts. This product adds
-bounded BL-47 shot accounting, synthetic reconstruction certificates, and
+bounded hardware-safety shot accounting, synthetic reconstruction certificates, and
 explicit decisions around the partition-local simulator. It does not implement
 general cut reconstruction, submit hardware jobs, or promote omitted coupling
 energy to a full-system observable.

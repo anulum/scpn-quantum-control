@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-85 L16 evidence writer
+# SCPN Quantum Control — bounded-director L16 evidence writer
 """Digest-bound JSON and Markdown evidence for the bounded L16 director."""
 
 from __future__ import annotations
@@ -197,12 +197,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--json-output",
         type=Path,
-        default=Path("data/l16_director_product/bl85_l16_director_evidence.json"),
+        default=Path("data/l16_director_product/bounded_director_evidence.json"),
     )
     parser.add_argument(
         "--markdown-output",
         type=Path,
-        default=Path("data/l16_director_product/bl85_l16_director_evidence.md"),
+        default=Path("data/l16_director_product/bounded_director_evidence.md"),
     )
     args = parser.parse_args(argv)
     payload = write_l16_evidence(args.json_output, args.markdown_output)

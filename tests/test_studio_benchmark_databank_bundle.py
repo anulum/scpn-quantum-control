@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Studio benchmark-databank bundle tests
-"""Tests for the schema-B ``studio.benchmark-databank.v1`` bundle (ST-13)."""
+"""Tests for the schema-B ``studio.benchmark-databank.v1`` bundle."""
 
 from __future__ import annotations
 

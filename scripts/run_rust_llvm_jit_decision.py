@@ -6,7 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — BL-38 decision evidence writer
-"""Write the frozen BL-38 Rust LLVM/JIT decision evidence artifact."""
+"""Write the frozen Rust-JIT decision Rust LLVM/JIT decision evidence artifact."""
 
 from __future__ import annotations
 

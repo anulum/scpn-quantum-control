@@ -1,4 +1,4 @@
-# Advanced witnesses product (BL-44)
+# Advanced witnesses product
 
 Fail-closed product surface for **estimator-aware scientific diagnostics**:
 Krylov complexity, out-of-time-order correlators (OTOC), and classical shadows,
@@ -28,7 +28,7 @@ Do **not** reimplement these modules; the product is a thin façade.
 - `classical_shadows` — Pauli shadow estimator with shadow-norm bound
 - `small_tomography_cap` — tomography only under product qubit cap
 - `ambient_inventory` — metadata inventory of ambient modules
-- `bl18_sync_compose` — compose harmonic order parameter (BL-18)
+- `synchronisation_witness_compose` — compose harmonic order parameter (BL-18)
 
 ## Hard caps
 
@@ -56,7 +56,7 @@ from scpn_quantum_control.advanced_witnesses_product import (
     materialise_demo_krylov_probe,
     materialise_demo_otoc_probe,
     materialise_demo_shadow_probe,
-    materialise_bl18_order_parameter_compose,
+    materialise_harmonic_order_parameter_compose,
 )
 
 reg = assert_advanced_witnesses_product_integrity(
@@ -66,7 +66,7 @@ assert decide_witness_path("otoc", invent_green_otoc_advantage=True).allowed is 
 k = materialise_demo_krylov_probe()
 o = materialise_demo_otoc_probe()
 s = materialise_demo_shadow_probe()
-r = materialise_bl18_order_parameter_compose()
+r = materialise_harmonic_order_parameter_compose()
 ```
 
 ## Residuals (honest)

@@ -4,20 +4,20 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Studio executive + coverage frontier product (BL-62 / P1)
-"""Fail-closed **Studio executive + coverage frontier** product surface (BL-62).
+# SCPN Quantum Control — Studio executive + coverage frontier product
+"""Fail-closed **Studio executive + coverage frontier** product surface.
 
 Productises executive verb→route catalogue honesty and a coverage-frontier
 score (honesty × answer-rate — not all-boundary theatre):
 
 * versioned verb catalogue over ambient :mod:`studio.verbs` /
-  :func:`studio.executive.resolve_verb_contract` with BL-52 route pointers;
-* fail-closed blank/unknown verbs and invent-green unsupported routes (BL-53);
+  :func:`studio.executive.resolve_verb_contract` with route-matrix route pointers;
+* fail-closed blank/unknown verbs and invent-green unsupported routes;
 * materialised coverage-frontier probe with finite honesty/answer-rate fields
   and ``invent_green_full_coverage=false`` when boundary abstentions exist;
 * refuse invent-green “100% route coverage” claims that hide refuse rates.
 
-Does **not** re-architect Studio UI, invent full BL-55 kit export automation,
+Does **not** re-architect Studio UI, invent full reproduction-kit kit export automation,
 or claim federation depth complete (S62.4 residual).
 """
 
@@ -75,9 +75,9 @@ class ExecutiveVerbRow:
         Human-readable title.
     summary
         Short description.
-    bl52_route_pointer
+    route_matrix_pointer
         BL-52 governed-route matrix pointer for this verb family.
-    bl53_pointer
+    unsuitable_scenario_pointer
         BL-53 unsuitable / anti-silent-wrong honesty pointer.
     support_posture
         Support posture badge.
@@ -97,8 +97,8 @@ class ExecutiveVerbRow:
     verb_id: str
     title: str
     summary: str
-    bl52_route_pointer: str
-    bl53_pointer: str
+    route_matrix_pointer: str
+    unsuitable_scenario_pointer: str
     support_posture: SupportPosture
     requires_approval: bool
     allows_live_hardware: bool
@@ -114,10 +114,10 @@ class ExecutiveVerbRow:
             raise ValueError("title must be non-empty")
         if not self.summary or not self.summary.strip():
             raise ValueError("summary must be non-empty")
-        if not self.bl52_route_pointer or not self.bl52_route_pointer.strip():
-            raise ValueError("bl52_route_pointer must be non-empty")
-        if not self.bl53_pointer or not self.bl53_pointer.strip():
-            raise ValueError("bl53_pointer must be non-empty")
+        if not self.route_matrix_pointer or not self.route_matrix_pointer.strip():
+            raise ValueError("route_matrix_pointer must be non-empty")
+        if not self.unsuitable_scenario_pointer or not self.unsuitable_scenario_pointer.strip():
+            raise ValueError("unsuitable_scenario_pointer must be non-empty")
         if self.support_posture not in {
             "local_research",
             "live_hardware_gated",
@@ -141,8 +141,8 @@ class ExecutiveVerbRow:
             "verb_id": self.verb_id,
             "title": self.title,
             "summary": self.summary,
-            "bl52_route_pointer": self.bl52_route_pointer,
-            "bl53_pointer": self.bl53_pointer,
+            "route_matrix_pointer": self.route_matrix_pointer,
+            "unsuitable_scenario_pointer": self.unsuitable_scenario_pointer,
             "support_posture": self.support_posture,
             "requires_approval": self.requires_approval,
             "allows_live_hardware": self.allows_live_hardware,
@@ -284,7 +284,7 @@ def _row(
     *,
     title: str,
     summary: str,
-    bl52_route_pointer: str,
+    route_matrix_pointer: str,
     support_posture: SupportPosture,
     requires_approval: bool,
     allows_live_hardware: bool,
@@ -295,8 +295,8 @@ def _row(
         verb_id=verb_id,
         title=title,
         summary=summary,
-        bl52_route_pointer=bl52_route_pointer,
-        bl53_pointer="unsuitable_scenario_registry + metamorphic_ad_verification",
+        route_matrix_pointer=route_matrix_pointer,
+        unsuitable_scenario_pointer="unsuitable_scenario_registry + metamorphic_ad_verification",
         support_posture=support_posture,
         requires_approval=requires_approval,
         allows_live_hardware=allows_live_hardware,
@@ -363,7 +363,7 @@ def _build_fallback_canonical_verbs() -> tuple[ExecutiveVerbRow, ...]:
                 name,
                 title=_TITLES.get(name, name),
                 summary=_SUMMARIES.get(name, f"Studio verb {name}"),
-                bl52_route_pointer=_ROUTE_MAP.get(name, f"governed_route:studio.{name}"),
+                route_matrix_pointer=_ROUTE_MAP.get(name, f"governed_route:studio.{name}"),
                 support_posture=posture,
                 requires_approval=requires_approval,
                 allows_live_hardware=live,
@@ -397,7 +397,7 @@ def _build_canonical_verbs() -> tuple[ExecutiveVerbRow, ...]:
                 name,
                 title=_TITLES.get(name, name),
                 summary=_SUMMARIES.get(name, f"Studio verb {name}"),
-                bl52_route_pointer=_ROUTE_MAP.get(name, f"governed_route:studio.{name}"),
+                route_matrix_pointer=_ROUTE_MAP.get(name, f"governed_route:studio.{name}"),
                 support_posture=("live_hardware_gated" if live else "local_research"),
                 requires_approval=bool(contract.requires_approval),
                 allows_live_hardware=live,
@@ -532,7 +532,7 @@ def decide_executive_path(
     if request_unsupported_route:
         blockers.append(
             f"unsupported route invent-green refused for verb {row.verb_id!r} "
-            f"(compose BL-52 {row.bl52_route_pointer}; BL-53 {row.bl53_pointer})"
+            f"(compose BL-52 {row.route_matrix_pointer}; BL-53 {row.unsuitable_scenario_pointer})"
         )
     if invent_green_full_coverage:
         blockers.append(
@@ -557,7 +557,7 @@ def decide_executive_path(
         allowed=True,
         reason=(
             f"studio executive path allowed for verb {row.verb_id!r} "
-            f"(route={row.bl52_route_pointer}; live_hardware={row.allows_live_hardware})"
+            f"(route={row.route_matrix_pointer}; live_hardware={row.allows_live_hardware})"
         ),
         blockers=(),
     )
@@ -741,7 +741,7 @@ def assert_studio_executive_product_integrity(
         if not isinstance(row, Mapping):
             raise ValueError(f"verb row {index} must be a mapping")
         verb_id = row.get("verb_id")
-        bl52 = row.get("bl52_route_pointer")
+        route_matrix_row = row.get("route_matrix_pointer")
         allows_live = row.get("allows_live_hardware")
         backends = row.get("backends")
         if not verb_id or not str(verb_id).strip():
@@ -755,8 +755,8 @@ def assert_studio_executive_product_integrity(
             default_found = True
         if vid == "execute":
             execute_found = True
-        if not bl52 or not str(bl52).strip():
-            raise ValueError(f"verb {vid!r} must have bl52_route_pointer")
+        if not route_matrix_row or not str(route_matrix_row).strip():
+            raise ValueError(f"verb {vid!r} must have route_matrix_pointer")
         if not isinstance(backends, list) or not backends:
             raise ValueError(f"verb {vid!r} must have non-empty backends list")
         if allows_live is True and vid != "execute":

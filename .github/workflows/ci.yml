@@ -92,6 +92,20 @@ jobs:
         run: python tools/audit_module_size_policy.py
       - name: Type-check module-responsibility audit
         run: mypy --strict tools/audit_module_size_policy.py
+      - name: Enforce descriptive production naming
+        run: |
+          python -m mypy --strict --explicit-package-bases \
+            tools/audit_descriptive_production_naming.py \
+            tests/test_audit_descriptive_production_naming.py
+          python -m ruff check \
+            tools/audit_descriptive_production_naming.py \
+            tests/test_audit_descriptive_production_naming.py
+          python -m ruff format --check \
+            tools/audit_descriptive_production_naming.py \
+            tests/test_audit_descriptive_production_naming.py
+          python -m pytest -q -p no:cacheprovider \
+            tests/test_audit_descriptive_production_naming.py
+          python tools/audit_descriptive_production_naming.py
       - name: Audit licence readiness and canonical source headers
         run: python tools/audit_license_readiness.py
       - name: Type-check licence readiness audit
@@ -2636,18 +2650,18 @@ jobs:
       - name: Build the WASM kernel (browser recompute path needs it at test time)
         working-directory: scpn_quantum_engine/studio_wasm_kernel
         run: cargo build --release --locked --target wasm32-unknown-unknown
-      - name: Assert the program-AD replay crate stays WASM-portable (ST-12)
+      - name: Assert the program-AD replay crate stays WASM-portable
         working-directory: scpn_quantum_engine/program_ad_replay
         run: cargo build --release --locked --target wasm32-unknown-unknown
-      - name: Build the program-AD WASM kernel (ST-12)
+      - name: Build the program-AD WASM kernel
         working-directory: scpn_quantum_engine/studio_program_ad_wasm
         run: cargo build --release --locked --target wasm32-unknown-unknown
-      - name: Test the program-AD WASM kernel (ST-12)
+      - name: Test the program-AD WASM kernel
         working-directory: scpn_quantum_engine/studio_program_ad_wasm
         run: cargo test --locked
       - name: Test with enforced coverage thresholds
         run: pnpm test:coverage
-      - name: Enforce Program-AD browser owner exact coverage (ST-12)
+      - name: Enforce Program-AD browser owner exact coverage
         run: >-
           pnpm exec vitest run
           src/panel/programAd.test.ts

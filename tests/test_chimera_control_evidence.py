@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Chimera evidence tests
-"""Measured-regime, rendering, and deterministic custody tests for BL-60."""
+"""Measured-regime, rendering, and deterministic custody tests for chimera-control."""
 
 from __future__ import annotations
 
@@ -16,8 +16,8 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.chimera_control.evidence import (
-    BL60_EVIDENCE_DATE,
-    BL60_EVIDENCE_SCHEMA,
+    CHIMERA_CONTROL_EVIDENCE_DATE,
+    CHIMERA_CONTROL_EVIDENCE_SCHEMA,
     ChimeraMultiscaleEvidence,
     ChimeraSupportRow,
     SyntheticRegimeEvidence,
@@ -43,8 +43,8 @@ def test_frozen_regimes_separate_chimera_transient_from_sync_control(
     chimera = frozen_evidence.chimera
     synchronised = frozen_evidence.synchronised_control
 
-    assert frozen_evidence.schema_version == BL60_EVIDENCE_SCHEMA
-    assert frozen_evidence.generated_on == BL60_EVIDENCE_DATE
+    assert frozen_evidence.schema_version == CHIMERA_CONTROL_EVIDENCE_SCHEMA
+    assert frozen_evidence.generated_on == CHIMERA_CONTROL_EVIDENCE_DATE
     assert frozen_evidence.population_size == 64
     assert chimera.population_min[0] > 0.99
     assert chimera.population_mean[1] < 0.75

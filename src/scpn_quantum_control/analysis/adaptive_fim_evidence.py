@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-80 adaptive FIM evidence
+# SCPN Quantum Control — adaptive-FIM adaptive FIM evidence
 """Digest-bound calibration controls and offline FIM custody replay."""
 
 from __future__ import annotations
@@ -151,7 +151,7 @@ def synthetic_calibration_witnesses() -> tuple[FIMWitness, ...]:
             shots=512,
             depth=2,
             source="synthetic",
-            artifact_id="bl80.synthetic.high_leakage",
+            artifact_id="adaptive_fim.synthetic.high_leakage",
         ),
         FIMWitness.from_counts(
             leakage_events=25,
@@ -159,7 +159,7 @@ def synthetic_calibration_witnesses() -> tuple[FIMWitness, ...]:
             shots=512,
             depth=2,
             source="synthetic",
-            artifact_id="bl80.synthetic.boundary_hold",
+            artifact_id="adaptive_fim.synthetic.boundary_hold",
         ),
         FIMWitness.from_counts(
             leakage_events=3,
@@ -167,7 +167,7 @@ def synthetic_calibration_witnesses() -> tuple[FIMWitness, ...]:
             shots=32,
             depth=2,
             source="synthetic",
-            artifact_id="bl80.synthetic.underpowered_hold",
+            artifact_id="adaptive_fim.synthetic.underpowered_hold",
         ),
     )
 
@@ -436,12 +436,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--json-output",
         type=Path,
-        default=Path("data/adaptive_fim_product/bl80_adaptive_fim_evidence.json"),
+        default=Path("data/adaptive_fim_product/adaptive_fim_evidence.json"),
     )
     parser.add_argument(
         "--markdown-output",
         type=Path,
-        default=Path("data/adaptive_fim_product/bl80_adaptive_fim_evidence.md"),
+        default=Path("data/adaptive_fim_product/adaptive_fim_evidence.md"),
     )
     parser.add_argument("--source", type=Path, default=HISTORICAL_SOURCE)
     args = parser.parse_args(argv)

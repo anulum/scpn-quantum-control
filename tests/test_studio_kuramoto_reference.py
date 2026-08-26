@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Kuramoto simulator reference tests
-"""Tests for the WASM Kuramoto simulator's Python reference (ST-11)."""
+"""Tests for the WASM Kuramoto simulator's Python reference."""
 
 from __future__ import annotations
 

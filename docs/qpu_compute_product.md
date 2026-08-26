@@ -1,4 +1,4 @@
-# qpu_compute product surface (BL-95 / substrate)
+# qpu_compute product surface
 
 Fail-closed typed **compute plan** product between algorithms and HALs. Default
 posture is **dry-run / no-submit**; would-live and hardware_enabled plans are

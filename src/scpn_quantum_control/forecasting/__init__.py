@@ -38,8 +38,8 @@ from .multimodal_forecaster import (
     fit_multimodal_ridge_forecaster,
 )
 from .multimodal_report import (
-    BL37_EVIDENCE_BOUNDARY,
-    BL37_EVIDENCE_SCHEMA,
+    MULTIMODAL_EVIDENCE_BOUNDARY,
+    MULTIMODAL_EVIDENCE_SCHEMA,
     MultimodalForecastingEvidence,
     MultimodalSupportRow,
     render_multimodal_forecasting_markdown,
@@ -89,8 +89,8 @@ from .uncertainty import (
 )
 
 __all__ = [
-    "BL37_EVIDENCE_BOUNDARY",
-    "BL37_EVIDENCE_SCHEMA",
+    "MULTIMODAL_EVIDENCE_BOUNDARY",
+    "MULTIMODAL_EVIDENCE_SCHEMA",
     "DomainForecastAccuracy",
     "DomainIntervalCoverage",
     "ForecastAccuracyCertificate",

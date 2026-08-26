@@ -1,4 +1,4 @@
-# Rust Program AD fuzz assurance (BL-96 / P1)
+# Rust Program AD fuzz assurance
 
 Versioned **fuzz trust-moat product** over ambient
 `scpn_quantum_engine/fuzz` cargo-fuzz bins: target catalogue, time-boxed

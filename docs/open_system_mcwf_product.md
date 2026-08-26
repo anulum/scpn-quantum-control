@@ -1,4 +1,4 @@
-# Open-system MCWF completeness product (BL-51)
+# Open-system MCWF completeness product
 
 Documented, fail-closed **open-system dynamics completeness**: Lindblad and
 MCWF surfaces, seeded ensemble variance certificates, simulation noise-model

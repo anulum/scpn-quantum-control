@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — competitive-baseline-watch quality-gate tests
-"""Lock the BL-19 competitive-baseline-watch gate into preflight and CI."""
+"""Lock the competitive-baseline-watch gate into preflight and CI."""
 
 from pathlib import Path
 

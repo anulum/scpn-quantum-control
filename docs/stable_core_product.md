@@ -1,4 +1,4 @@
-# stable_core experiment model product (BL-81 / P1)
+# stable_core experiment model product
 
 Versioned **public experiment model** over durable `Problem` / `Backend` /
 `Experiment` / `Result` contracts: schema policy, JSON envelope round-trip,

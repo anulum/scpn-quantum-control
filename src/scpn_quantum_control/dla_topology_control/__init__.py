@@ -8,8 +8,8 @@
 """Public finite synthetic DLA/topology differentiability facade."""
 
 from .evidence import (
-    BL54_EVIDENCE_DATE,
-    BL54_EVIDENCE_SCHEMA,
+    TOPOLOGY_CONTROL_EVIDENCE_DATE,
+    TOPOLOGY_CONTROL_EVIDENCE_SCHEMA,
     DlaTopologyControlEvidence,
     build_dla_topology_control_evidence,
     render_dla_topology_control_markdown,
@@ -42,8 +42,8 @@ from .schema import (
 )
 
 __all__ = [
-    "BL54_EVIDENCE_DATE",
-    "BL54_EVIDENCE_SCHEMA",
+    "TOPOLOGY_CONTROL_EVIDENCE_DATE",
+    "TOPOLOGY_CONTROL_EVIDENCE_SCHEMA",
     "DLA_TOPOLOGY_CLAIM_BOUNDARY",
     "ConstraintSupportRow",
     "DifferentiabilityKind",

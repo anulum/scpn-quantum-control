@@ -6,7 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — BL-102 RL research-governance evidence runner
-"""Generate or verify deterministic BL-102 RL governance evidence."""
+"""Generate or verify deterministic RL-governance RL governance evidence."""
 
 from __future__ import annotations
 

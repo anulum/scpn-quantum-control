@@ -1,4 +1,4 @@
-# Unsuitable-scenario + anti-silent-wrong registry (BL-53)
+# Unsuitable-scenario + anti-silent-wrong registry
 
 This page is the operator-facing guide for the **negative-space governance**
 product under BL-53: a versioned catalogue of scenarios that must **fail closed**
@@ -104,7 +104,7 @@ Anti-silent-wrong / competitor fixtures:
 - Catalyst qjit + vmap over quantum instructions
 - Catalyst no-broadcast adaptive finite-shot trainability
 
-## Bounded product status (BL-53)
+## Bounded product status
 
 Shipped in this slice:
 

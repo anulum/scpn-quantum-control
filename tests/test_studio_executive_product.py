@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for studio executive product (BL-62)
+# SCPN Quantum Control — tests for studio executive product
 """Real-surface tests for ``scpn_quantum_control.studio_executive_product``."""
 
 from __future__ import annotations
@@ -58,7 +58,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
     row = get_executive_verb("differentiate")
     assert row.claim_boundary == STUDIO_EXECUTIVE_CLAIM_BOUNDARY
     assert row.allows_live_hardware is False
-    assert "bl52" in row.bl52_route_pointer or "route" in row.bl52_route_pointer
+    assert "route_matrix_row" in row.route_matrix_pointer or "route" in row.route_matrix_pointer
     execute = get_executive_verb("execute")
     assert execute.allows_live_hardware is True
     assert execute.requires_approval is True
@@ -76,7 +76,7 @@ def test_decide_executive_path() -> None:
     unsupported = decide_executive_path("simulate", request_unsupported_route=True)
     assert unsupported.allowed is False
     assert any(
-        "unsupported" in b.lower() or "bl-52" in b.lower() or "bl52" in b.lower()
+        "unsupported" in b.lower() or "bl-52" in b.lower() or "route_matrix_row" in b.lower()
         for b in unsupported.blockers
     )
 
@@ -144,8 +144,8 @@ def test_integrity_rejects_drift_and_policy() -> None:
             "verb_id": "ghost",
             "title": "t",
             "summary": "s",
-            "bl52_route_pointer": "r",
-            "bl53_pointer": "p",
+            "route_matrix_pointer": "r",
+            "unsuitable_scenario_pointer": "p",
             "support_posture": "local_research",
             "requires_approval": False,
             "allows_live_hardware": False,
@@ -196,9 +196,9 @@ def test_integrity_rejects_blank_invalid() -> None:
 
     no_bl52 = dict(registry)
     brows = [dict(row) for row in verbs]
-    brows[0]["bl52_route_pointer"] = ""
+    brows[0]["route_matrix_pointer"] = ""
     no_bl52["verbs"] = brows
-    with pytest.raises(ValueError, match="bl52_route_pointer"):
+    with pytest.raises(ValueError, match="route_matrix_pointer"):
         assert_studio_executive_product_integrity(no_bl52)
 
     no_backends = dict(registry)
@@ -256,8 +256,8 @@ def test_row_decision_probe_validation() -> None:
         "verb_id": "x",
         "title": "t",
         "summary": "s",
-        "bl52_route_pointer": "r",
-        "bl53_pointer": "p",
+        "route_matrix_pointer": "r",
+        "unsuitable_scenario_pointer": "p",
         "support_posture": "local_research",
         "requires_approval": False,
         "allows_live_hardware": False,
@@ -271,10 +271,10 @@ def test_row_decision_probe_validation() -> None:
         ExecutiveVerbRow(**{**base, "title": ""})
     with pytest.raises(ValueError, match="summary"):
         ExecutiveVerbRow(**{**base, "summary": ""})
-    with pytest.raises(ValueError, match="bl52_route_pointer"):
-        ExecutiveVerbRow(**{**base, "bl52_route_pointer": ""})
-    with pytest.raises(ValueError, match="bl53_pointer"):
-        ExecutiveVerbRow(**{**base, "bl53_pointer": ""})
+    with pytest.raises(ValueError, match="route_matrix_pointer"):
+        ExecutiveVerbRow(**{**base, "route_matrix_pointer": ""})
+    with pytest.raises(ValueError, match="unsuitable_scenario_pointer"):
+        ExecutiveVerbRow(**{**base, "unsuitable_scenario_pointer": ""})
     with pytest.raises(ValueError, match="support_posture"):
         ExecutiveVerbRow(**{**base, "support_posture": cast(Any, "nope")})
     with pytest.raises(ValueError, match="only the execute"):
@@ -478,8 +478,8 @@ def test_iter_unknown_posture_and_catalogue_guards(
         verb_id="tmp",
         title="t",
         summary="s",
-        bl52_route_pointer="r",
-        bl53_pointer="p",
+        route_matrix_pointer="r",
+        unsuitable_scenario_pointer="p",
         support_posture="local_research",
         requires_approval=False,
         allows_live_hardware=False,
@@ -495,8 +495,8 @@ def test_iter_unknown_posture_and_catalogue_guards(
         verb_id="dup",
         title="t",
         summary="s",
-        bl52_route_pointer="r",
-        bl53_pointer="p",
+        route_matrix_pointer="r",
+        unsuitable_scenario_pointer="p",
         support_posture="local_research",
         requires_approval=False,
         allows_live_hardware=False,

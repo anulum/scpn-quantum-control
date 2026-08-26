@@ -4,14 +4,14 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Quantum Sync Challenge oracle product (BL-32 / P1)
-"""Fail-closed **Quantum Sync Challenge oracle** product surface (BL-32).
+# SCPN Quantum Control — Quantum Sync Challenge oracle product
+"""Fail-closed **Quantum Sync Challenge oracle** product surface.
 
 Productises a claim-governed synchronisation challenge oracle façade over ambient
 sync witnesses, objectives, and coupling recovery — not a second solver stack:
 
 * versioned problem-family catalogue F1–F4 (synthetic first; hardware schema-only);
-* metric and baseline catalogue rows with support badges (BL-52 compose);
+* metric and baseline catalogue rows with support badges (route-matrix compose);
 * materialised oracle probe via ambient
   :func:`~scpn_quantum_control.phase.synchronisation_witness.run_sync_witness_suite`
   and order-parameter metric on deterministic fixtures;
@@ -110,9 +110,9 @@ class ProblemFamilyRow:
         Default node count for smoke fixtures.
     ambient_pointer
         Ambient module pointer for composition.
-    bl52_route_pointer
+    route_matrix_pointer
         BL-52 governed-route matrix pointer.
-    bl53_pointer
+    unsuitable_scenario_pointer
         BL-53 unsuitable / anti-silent-wrong pointer.
     invent_green_advantage
         Must remain False.
@@ -132,8 +132,8 @@ class ProblemFamilyRow:
     default_seed: int
     n_nodes: int
     ambient_pointer: str
-    bl52_route_pointer: str
-    bl53_pointer: str
+    route_matrix_pointer: str
+    unsuitable_scenario_pointer: str
     invent_green_advantage: bool = False
     support_posture: SupportPosture = "local_research"
     as_of: str = "2026-07-24"
@@ -159,10 +159,10 @@ class ProblemFamilyRow:
             raise ValueError("n_nodes must be >= 2")
         if not self.ambient_pointer or not self.ambient_pointer.strip():
             raise ValueError("ambient_pointer must be non-empty")
-        if not self.bl52_route_pointer or not self.bl52_route_pointer.strip():
-            raise ValueError("bl52_route_pointer must be non-empty")
-        if not self.bl53_pointer or not self.bl53_pointer.strip():
-            raise ValueError("bl53_pointer must be non-empty")
+        if not self.route_matrix_pointer or not self.route_matrix_pointer.strip():
+            raise ValueError("route_matrix_pointer must be non-empty")
+        if not self.unsuitable_scenario_pointer or not self.unsuitable_scenario_pointer.strip():
+            raise ValueError("unsuitable_scenario_pointer must be non-empty")
         if self.invent_green_advantage:
             raise ValueError("invent_green_advantage must be False")
         if self.support_status == "hardware_gated" and self.support_posture != (
@@ -191,8 +191,8 @@ class ProblemFamilyRow:
             "default_seed": self.default_seed,
             "n_nodes": self.n_nodes,
             "ambient_pointer": self.ambient_pointer,
-            "bl52_route_pointer": self.bl52_route_pointer,
-            "bl53_pointer": self.bl53_pointer,
+            "route_matrix_pointer": self.route_matrix_pointer,
+            "unsuitable_scenario_pointer": self.unsuitable_scenario_pointer,
             "invent_green_advantage": self.invent_green_advantage,
             "support_posture": self.support_posture,
             "as_of": self.as_of,
@@ -479,8 +479,8 @@ def _build_problem_families() -> tuple[ProblemFamilyRow, ...]:
             ambient_pointer=(
                 "scpn_quantum_control.phase.synchronisation_objectives.kuramoto_order_parameter"
             ),
-            bl52_route_pointer="governed_route:challenge.F1.synthetic",
-            bl53_pointer="unsuitable_scenario_registry.challenge_f1",
+            route_matrix_pointer="governed_route:challenge.F1.synthetic",
+            unsuitable_scenario_pointer="unsuitable_scenario_registry.challenge_f1",
             support_posture="local_research",
         ),
         ProblemFamilyRow(
@@ -491,8 +491,8 @@ def _build_problem_families() -> tuple[ProblemFamilyRow, ...]:
             default_seed=3202,
             n_nodes=8,
             ambient_pointer=("scpn_quantum_control.phase.coupling_time_series_recovery"),
-            bl52_route_pointer="governed_route:challenge.F2.synthetic",
-            bl53_pointer="unsuitable_scenario_registry.challenge_f2",
+            route_matrix_pointer="governed_route:challenge.F2.synthetic",
+            unsuitable_scenario_pointer="unsuitable_scenario_registry.challenge_f2",
             support_posture="local_research",
         ),
         ProblemFamilyRow(
@@ -505,8 +505,8 @@ def _build_problem_families() -> tuple[ProblemFamilyRow, ...]:
             ambient_pointer=(
                 "scpn_quantum_control.phase.synchronisation_witness.run_sync_witness_suite"
             ),
-            bl52_route_pointer="governed_route:challenge.F3.synthetic",
-            bl53_pointer="unsuitable_scenario_registry.challenge_f3",
+            route_matrix_pointer="governed_route:challenge.F3.synthetic",
+            unsuitable_scenario_pointer="unsuitable_scenario_registry.challenge_f3",
             support_posture="local_research",
         ),
         ProblemFamilyRow(
@@ -519,8 +519,8 @@ def _build_problem_families() -> tuple[ProblemFamilyRow, ...]:
             default_seed=3204,
             n_nodes=6,
             ambient_pointer="scpn_quantum_control.phase.synchronisation_witness",
-            bl52_route_pointer="governed_route:challenge.F4.noisy_sim",
-            bl53_pointer="unsuitable_scenario_registry.challenge_f4",
+            route_matrix_pointer="governed_route:challenge.F4.noisy_sim",
+            unsuitable_scenario_pointer="unsuitable_scenario_registry.challenge_f4",
             support_posture="local_research",
         ),
         ProblemFamilyRow(
@@ -534,8 +534,8 @@ def _build_problem_families() -> tuple[ProblemFamilyRow, ...]:
             default_seed=3299,
             n_nodes=4,
             ambient_pointer="BL-47 hardware_safe_execution (no_submit default)",
-            bl52_route_pointer="governed_route:challenge.FH.hardware_gated",
-            bl53_pointer="unsuitable_scenario_registry.challenge_fh",
+            route_matrix_pointer="governed_route:challenge.FH.hardware_gated",
+            unsuitable_scenario_pointer="unsuitable_scenario_registry.challenge_fh",
             support_posture="live_hardware_gated",
         ),
     )
@@ -1041,7 +1041,7 @@ def assert_quantum_sync_challenge_oracle_product_integrity(
         family_id = row.get("family_id")
         invent = row.get("invent_green_advantage")
         support_status = row.get("support_status")
-        bl52 = row.get("bl52_route_pointer")
+        route_matrix_row = row.get("route_matrix_pointer")
         if not family_id or not str(family_id).strip():
             blank += 1
             continue
@@ -1055,8 +1055,8 @@ def assert_quantum_sync_challenge_oracle_product_integrity(
             hw_found = True
         if invent is not False:
             raise ValueError(f"family {fid!r} invent_green_advantage must be False")
-        if not bl52 or not str(bl52).strip():
-            raise ValueError(f"family {fid!r} must have bl52_route_pointer")
+        if not route_matrix_row or not str(route_matrix_row).strip():
+            raise ValueError(f"family {fid!r} must have route_matrix_pointer")
         if support_status not in {
             "synthetic_deterministic",
             "noisy_sim",

@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Synthetic forecast uncertainty calibration
-"""Split sample-level residual intervals for independent BL-37 trajectories."""
+"""Split sample-level residual intervals for independent multimodal-forecasting trajectories."""
 
 from __future__ import annotations
 

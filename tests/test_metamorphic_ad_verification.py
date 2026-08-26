@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for metamorphic AD verification (BL-46)
+# SCPN Quantum Control — tests for metamorphic AD verification
 """Real-surface tests for ``scpn_quantum_control.metamorphic_ad_verification``."""
 
 from __future__ import annotations

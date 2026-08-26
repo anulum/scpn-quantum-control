@@ -8,8 +8,8 @@
 """Synthetic chimera and hierarchical synchronisation-control surfaces."""
 
 from .evidence import (
-    BL60_EVIDENCE_DATE,
-    BL60_EVIDENCE_SCHEMA,
+    CHIMERA_CONTROL_EVIDENCE_DATE,
+    CHIMERA_CONTROL_EVIDENCE_SCHEMA,
     ChimeraMultiscaleEvidence,
     ChimeraSupportRow,
     SyntheticRegimeEvidence,
@@ -50,8 +50,8 @@ from .topology import (
 )
 
 __all__ = [
-    "BL60_EVIDENCE_DATE",
-    "BL60_EVIDENCE_SCHEMA",
+    "CHIMERA_CONTROL_EVIDENCE_DATE",
+    "CHIMERA_CONTROL_EVIDENCE_SCHEMA",
     "CHIMERA_CONTROL_CLAIM_BOUNDARY",
     "SYNTHETIC_CHIMERA_SOURCE",
     "ChimeraControlSpecification",

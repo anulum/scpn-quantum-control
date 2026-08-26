@@ -10,7 +10,7 @@
 The objects in this module do not certify domain validity.  They make the
 opposite boundary explicit: each kit identifies the small software route that
 is supported, the data origin admitted by that route, and the claims that
-remain forbidden.  The built-in registry covers the BL-63 power-grid,
+remain forbidden.  The built-in registry covers the application-honesty power-grid,
 Josephson, EEG-like, and ITER-inspired application families.
 
 All returned records are immutable and JSON-ready.  The audit functions are
@@ -43,7 +43,7 @@ ForecastingDomainTag = Literal[
     "eeg_like_sim",
     "plasma_like_sim",
 ]
-BL37_FORECASTING_DOMAIN_TAGS: frozenset[str] = frozenset(
+FORECASTING_DOMAIN_TAGS: frozenset[str] = frozenset(
     {"synthetic", "grid_like_sim", "eeg_like_sim", "plasma_like_sim"}
 )
 
@@ -142,7 +142,7 @@ class DomainApplicationHonestyKit:
         _require_non_empty_strings(self.caveats, name="caveats")
         _require_non_empty_strings(self.claims_forbidden, name="claims_forbidden")
         _require_unique_strings(self.dataset_ids, name="dataset_ids")
-        if any(tag not in BL37_FORECASTING_DOMAIN_TAGS for tag in self.forecasting_tags):
+        if any(tag not in FORECASTING_DOMAIN_TAGS for tag in self.forecasting_tags):
             raise ValueError("forecasting_tags must use the BL-37 simulation-only vocabulary")
         if len(set(self.forecasting_tags)) != len(self.forecasting_tags):
             raise ValueError("forecasting_tags must be unique")
@@ -482,7 +482,7 @@ def render_application_honesty_audit_markdown(
 __all__ = [
     "APPLICATION_HONESTY_CLAIM_BOUNDARY",
     "APPLICATION_HONESTY_SCHEMA",
-    "BL37_FORECASTING_DOMAIN_TAGS",
+    "FORECASTING_DOMAIN_TAGS",
     "ApplicationDataOrigin",
     "ApplicationHonestyAuditReport",
     "ApplicationSupportStatus",

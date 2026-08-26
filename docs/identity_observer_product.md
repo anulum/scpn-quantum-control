@@ -1,4 +1,4 @@
-# Identity and robustness control observers (BL-69)
+# Identity and robustness control observers
 
 `scpn_quantum_control.identity_observer_product` maps the existing identity
 robustness certificate, coherence budget, and optional CHSH witness into one

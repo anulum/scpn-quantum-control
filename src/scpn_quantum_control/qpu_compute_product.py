@@ -4,13 +4,13 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — qpu_compute product surface (BL-95 / substrate)
-"""Fail-closed qpu_compute plan/runtime product surface (BL-95).
+# SCPN Quantum Control — qpu_compute product surface
+"""Fail-closed qpu_compute plan/runtime product surface.
 
 Productises a typed **compute plan** catalogue between algorithms and HALs:
 inventory of plan kinds, construction/validation of dry-run plans, refuse for
 would-live / hardware_enabled without owner gate, and audit decisions aligned
-with BL-47 :mod:`hardware_safe_execution` no-submit posture.
+with hardware-safety :mod:`hardware_safe_execution` no-submit posture.
 
 Composes kernel/backend vocabulary from :mod:`qpu_compute_types`. Does **not**
 submit QPU jobs, invent hardware results, or replace provider SDKs.
@@ -205,7 +205,7 @@ class ComputePlanDecision:
         Non-empty when refused.
     audit_id
         Deterministic audit identifier.
-    bl47_policy_id
+    hardware_safety_policy_id
         BL-47 policy used for compose (if any).
 
     """
@@ -217,7 +217,7 @@ class ComputePlanDecision:
     reason: str
     blockers: tuple[str, ...]
     audit_id: str
-    bl47_policy_id: str = ""
+    hardware_safety_policy_id: str = ""
     claim_boundary: str = QPU_COMPUTE_PRODUCT_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
@@ -253,7 +253,7 @@ class ComputePlanDecision:
             "reason": self.reason,
             "blockers": list(self.blockers),
             "audit_id": self.audit_id,
-            "bl47_policy_id": self.bl47_policy_id,
+            "hardware_safety_policy_id": self.hardware_safety_policy_id,
             "claim_boundary": self.claim_boundary,
         }
 
@@ -544,26 +544,28 @@ def dry_run_compute_plan(
         blockers.append("plan kind no_submit=True refuses would_live execution")
 
     # Compose BL-47 enforce for dry_run / would_submit mapping
-    bl47_mode_raw: str
+    hardware_safety_mode_raw: str
     if plan.mode == "ticketed_prep":
-        bl47_mode_raw = "ticketed_prep"
+        hardware_safety_mode_raw = "ticketed_prep"
     elif plan.mode == "would_live" or plan.hardware_enabled:
-        bl47_mode_raw = "would_submit"
+        hardware_safety_mode_raw = "would_submit"
     else:
-        bl47_mode_raw = "dry_run"
-    bl47_mode = cast(EnforceMode, bl47_mode_raw)
-    bl47_policy = "owner_ticketed_prep" if plan.mode == "ticketed_prep" else "default_no_submit"
-    bl47 = enforce_execution_request(
-        bl47_policy,
-        mode=bl47_mode,
+        hardware_safety_mode_raw = "dry_run"
+    hardware_safety_mode = cast(EnforceMode, hardware_safety_mode_raw)
+    hardware_safety_policy = (
+        "owner_ticketed_prep" if plan.mode == "ticketed_prep" else "default_no_submit"
+    )
+    hardware_safety_audit = enforce_execution_request(
+        hardware_safety_policy,
+        mode=hardware_safety_mode,
         n_params=1,
         shots_per_evaluation=min(plan.shots, 1024),
         live_execution_ticket=plan.live_execution_ticket,
     )
-    if not bl47.allowed:
-        for item in bl47.blockers:
+    if not hardware_safety_audit.allowed:
+        for item in hardware_safety_audit.blockers:
             if item not in blockers:
-                blockers.append(f"bl47:{item}")
+                blockers.append(f"hardware_safety_audit:{item}")
 
     unique = tuple(dict.fromkeys(item for item in blockers if item.strip()))
     audit_id = (
@@ -579,7 +581,7 @@ def dry_run_compute_plan(
             reason="qpu_compute product refuse: " + "; ".join(unique),
             blockers=unique,
             audit_id=audit_id,
-            bl47_policy_id=bl47_policy,
+            hardware_safety_policy_id=hardware_safety_policy,
         )
     return ComputePlanDecision(
         plan_kind_id=plan.plan_kind_id,
@@ -593,7 +595,7 @@ def dry_run_compute_plan(
         ),
         blockers=(),
         audit_id=audit_id,
-        bl47_policy_id=bl47_policy,
+        hardware_safety_policy_id=hardware_safety_policy,
     )
 
 
@@ -622,30 +624,30 @@ def audit_compute_plan_decision(decision: ComputePlanDecision) -> dict[str, obje
         "mode": decision.mode,
         "reason": decision.reason,
         "blockers": list(decision.blockers),
-        "bl47_policy_id": decision.bl47_policy_id,
+        "hardware_safety_policy_id": decision.hardware_safety_policy_id,
         "claim_boundary": decision.claim_boundary,
-        "bl47_claim_boundary": HARDWARE_SAFE_EXECUTION_CLAIM_BOUNDARY,
+        "hardware_safety_claim_boundary": HARDWARE_SAFE_EXECUTION_CLAIM_BOUNDARY,
         "contains_secrets": False,
     }
     # Optional structured BL-47 audit when policy present
-    if decision.bl47_policy_id:
+    if decision.hardware_safety_policy_id:
         if decision.mode == "would_live":
-            bl47_mode_raw = "would_submit"
+            hardware_safety_mode_raw = "would_submit"
         elif decision.mode == "ticketed_prep":
-            bl47_mode_raw = "ticketed_prep"
+            hardware_safety_mode_raw = "ticketed_prep"
         else:
-            bl47_mode_raw = "dry_run"
-        bl47_decision = enforce_execution_request(
-            decision.bl47_policy_id,
-            mode=cast(EnforceMode, bl47_mode_raw),
+            hardware_safety_mode_raw = "dry_run"
+        hardware_safety_decision = enforce_execution_request(
+            decision.hardware_safety_policy_id,
+            mode=cast(EnforceMode, hardware_safety_mode_raw),
             n_params=1,
             shots_per_evaluation=64,
             live_execution_ticket=(
                 "ticket-audit-placeholder" if decision.mode == "ticketed_prep" else ""
             ),
         )
-        audit = build_audit_record(bl47_decision)
-        payload["bl47_audit"] = audit.to_dict()
+        audit = build_audit_record(hardware_safety_decision)
+        payload["hardware_safety_audit"] = audit.to_dict()
     return payload
 
 

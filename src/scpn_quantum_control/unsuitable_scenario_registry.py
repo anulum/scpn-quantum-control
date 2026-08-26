@@ -4,10 +4,10 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — unsuitable-scenario + anti-silent-wrong registry (BL-53)
+# SCPN Quantum Control — unsuitable-scenario + anti-silent-wrong registry
 """Versioned unsuitable-scenario and anti-silent-wrong-gradient registry.
 
-This module is the product surface for BL-53 (negative-space governance). It
+This module is the product surface for unsuitable-scenario (negative-space governance). It
 publishes scenarios that must **fail closed** rather than silently produce wrong
 gradients, and provides pure probe/lookup APIs so planners, docs, and tests share
 one catalogue.
@@ -215,7 +215,7 @@ _CANONICAL_SCENARIOS: Final[tuple[UnsuitableScenarioRecord, ...]] = (
             "Complex reverse-mode without a Wirtinger contract is refused; silent "
             "real-gradient substitution is forbidden."
         ),
-        evidence=("transform_algebra_unsupported_boundary", "bl53_seed"),
+        evidence=("transform_algebra_unsupported_boundary", "unsuitable_scenario_seed"),
         related_route_ids=("transform:unsupported.complex_objective",),
         test_id="test_probe_complex_objective_refuses",
     ),
@@ -286,7 +286,7 @@ _CANONICAL_SCENARIOS: Final[tuple[UnsuitableScenarioRecord, ...]] = (
             "bounded evaluations, deterministic zero-noise evaluation, and a "
             "preregistration ID before local witness discovery can run."
         ),
-        evidence=("bl102_rl_research_governance", "no_production_control_default"),
+        evidence=("rl_research_governance", "no_production_control_default"),
         related_route_ids=("research:rl.witness_discovery", "research:rl.pulse_optimisation"),
         test_id="test_probe_rl_without_preregistration_refuses",
     ),
@@ -307,7 +307,7 @@ _CANONICAL_SCENARIOS: Final[tuple[UnsuitableScenarioRecord, ...]] = (
         evidence=(
             "plan_sota_addendum_8_1",
             "citation:DifferentiationInterface.jl",
-            "bl52_competitor_fixture",
+            "route_matrix_competitor_fixture",
         ),
         related_route_ids=("competitor:differentiation_interface.silent_wrong_grads",),
         test_id="test_probe_di_jl_anti_silent_fixture",
@@ -324,7 +324,11 @@ _CANONICAL_SCENARIOS: Final[tuple[UnsuitableScenarioRecord, ...]] = (
             "vmap-inside-qjit is a permanent competitor boundary, not a silent gap "
             "to fill with invent-green support."
         ),
-        evidence=("catalyst_sharp_bits", "competitive_baseline", "bl52_competitor_fixture"),
+        evidence=(
+            "catalyst_sharp_bits",
+            "competitive_baseline",
+            "route_matrix_competitor_fixture",
+        ),
         related_route_ids=("compiler:catalyst.qjit_vmap",),
         test_id="test_probe_catalyst_vmap_anti_silent_fixture",
         citation="Catalyst sharp bits / batching rules for quantum instructions",
@@ -339,7 +343,7 @@ _CANONICAL_SCENARIOS: Final[tuple[UnsuitableScenarioRecord, ...]] = (
             "Catalyst comparison rows document no-broadcast/no-vmap limitations for "
             "adaptive finite-shot trainability; silent success is refused."
         ),
-        evidence=("bl14_trainability_boundary", "catalyst_comparison"),
+        evidence=("finite_shot_trainability_boundary", "catalyst_comparison"),
         related_route_ids=("competitor:catalyst.no_broadcast_adaptive_shots",),
         test_id="test_probe_catalyst_adaptive_shots_fixture",
         citation="BL-14 / Catalyst adaptive finite-shot trainability boundary",

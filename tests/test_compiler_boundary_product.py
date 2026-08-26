@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for compiler boundary product (BL-66)
+# SCPN Quantum Control — tests for compiler boundary product
 """Real-surface tests for ``scpn_quantum_control.compiler_boundary_product``."""
 
 from __future__ import annotations
@@ -139,7 +139,7 @@ def test_integrity_rejects_drift_and_policy() -> None:
             "summary": "s",
             "status": "adapter",
             "ambient_pointer": "p",
-            "bl52_route_pointer": "r",
+            "route_matrix_pointer": "r",
             "import_export_allowed": True,
             "invent_green_runtime": False,
             "support_posture": "metadata_only",
@@ -265,7 +265,7 @@ def test_row_decision_probe_validation() -> None:
         "summary": "s",
         "status": "adapter",
         "ambient_pointer": "p",
-        "bl52_route_pointer": "r",
+        "route_matrix_pointer": "r",
         "import_export_allowed": True,
     }
     assert CompilerBoundaryRow(**base).compiler_id == "x"
@@ -280,8 +280,8 @@ def test_row_decision_probe_validation() -> None:
         CompilerBoundaryRow(**{**base, "status": cast(Any, "nope")})
     with pytest.raises(ValueError, match="ambient_pointer"):
         CompilerBoundaryRow(**{**base, "ambient_pointer": ""})
-    with pytest.raises(ValueError, match="bl52_route_pointer"):
-        CompilerBoundaryRow(**{**base, "bl52_route_pointer": ""})
+    with pytest.raises(ValueError, match="route_matrix_pointer"):
+        CompilerBoundaryRow(**{**base, "route_matrix_pointer": ""})
     with pytest.raises(ValueError, match="invent_green_runtime"):
         CompilerBoundaryRow(**{**base, "invent_green_runtime": True})
     with pytest.raises(ValueError, match="permanent_boundary"):
@@ -407,7 +407,7 @@ def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
         summary="s",
         status="adapter",
         ambient_pointer="p",
-        bl52_route_pointer="r",
+        route_matrix_pointer="r",
         import_export_allowed=True,
     )
     object.__setattr__(blank, "compiler_id", "  ")
@@ -421,7 +421,7 @@ def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
         summary="s",
         status="adapter",
         ambient_pointer="p",
-        bl52_route_pointer="r",
+        route_matrix_pointer="r",
         import_export_allowed=True,
     )
     monkeypatch.setattr(compiler_boundary_product, "_CANONICAL", (good, good))

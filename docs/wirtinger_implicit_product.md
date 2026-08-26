@@ -1,4 +1,4 @@
-# Wirtinger + implicit differentiation product (BL-64)
+# Wirtinger + implicit differentiation product
 
 Versioned **complex Wirtinger + real implicit sensitivity product** over ambient
 `wirtinger_calculus` and `differentiable_implicit_sensitivity`. Materialised

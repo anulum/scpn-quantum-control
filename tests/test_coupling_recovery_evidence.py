@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Coupling-Recovery Evidence Tests
-"""Tests for BL-17 coupling-recovery artifact writing."""
+"""Tests for coupling-recovery coupling-recovery artifact writing."""
 
 from __future__ import annotations
 

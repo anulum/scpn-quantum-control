@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — whole-program AD product quality-gate tests
-"""Lock the BL-19 whole-program AD product gate into preflight and CI."""
+"""Lock the whole-program AD product gate into preflight and CI."""
 
 from pathlib import Path
 

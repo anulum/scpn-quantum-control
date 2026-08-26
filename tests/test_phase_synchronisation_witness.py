@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Synchronisation Witness Tests
-"""Tests for the BL-18 synchronisation-witness suite."""
+"""Tests for the synchronisation-witness synchronisation-witness suite."""
 
 from __future__ import annotations
 

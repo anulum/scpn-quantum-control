@@ -1,4 +1,4 @@
-# Quantum Sync Challenge oracle product (BL-32)
+# Quantum Sync Challenge oracle product
 
 Claim-governed **synchronisation challenge oracle** façade over ambient sync
 witnesses, objectives, and coupling recovery. Refuse invent-green quantum

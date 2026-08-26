@@ -32,7 +32,7 @@ The legacy weighted heuristic labels each exact local snapshot:
 
 The labels are inputs to a separate safety policy. They are not a stability
 theorem, PCS certificate, causal diagnosis, autonomous plant command, or
-provider/QPU result. The bounded BL-85 product and evidence surface lives in
+provider/QPU result. The bounded bounded-director product and evidence surface lives in
 ``scpn_quantum_control.l16.director_product``.
 """
 

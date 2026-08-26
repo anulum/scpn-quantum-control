@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Studio Kuramoto simulator reference
-"""Python reference for the WASM Kuramoto live simulator (ST-11).
+"""Python reference for the WASM Kuramoto live simulator.
 
 Mirrors the Rust kernel in ``scpn_quantum_engine/studio_wasm_kernel/src/kuramoto.rs``:
 the same canonical little-endian wire format, the same two coupling kernels

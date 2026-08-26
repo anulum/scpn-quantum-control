@@ -1,4 +1,4 @@
-# QIR / CUDA-Q compiler boundary product (BL-66)
+# QIR / CUDA-Q compiler boundary product
 
 **First-class external-compiler boundary register** — not a marketing tick list.
 Status enum: `supported` | `adapter` | `implementation_path` | `permanent_boundary`.

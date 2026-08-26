@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Topology-aware quantum-kernel facade
-"""Public finite-simulator facade for the BL-88 topology-kernel product."""
+"""Public finite-simulator facade for the topology-kernel topology-kernel product."""
 
 from .classifier import (
     KernelRidgeClassifier,
@@ -14,8 +14,8 @@ from .classifier import (
     predict_kernel_ridge,
 )
 from .evidence import (
-    BL88_EVIDENCE_DATE,
-    BL88_EVIDENCE_SCHEMA,
+    TOPOLOGY_KERNEL_EVIDENCE_DATE,
+    TOPOLOGY_KERNEL_EVIDENCE_SCHEMA,
     KernelSupportRow,
     TopologyKernelEvidence,
     build_topology_kernel_evidence,
@@ -47,8 +47,8 @@ from .synthetic import (
 )
 
 __all__ = [
-    "BL88_EVIDENCE_DATE",
-    "BL88_EVIDENCE_SCHEMA",
+    "TOPOLOGY_KERNEL_EVIDENCE_DATE",
+    "TOPOLOGY_KERNEL_EVIDENCE_SCHEMA",
     "TOPOLOGY_KERNEL_CLAIM_BOUNDARY",
     "KernelEvaluation",
     "KernelRidgeClassifier",

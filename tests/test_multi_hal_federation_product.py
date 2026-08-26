@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for multi-HAL federation product (BL-75)
+# SCPN Quantum Control — tests for multi-HAL federation product
 """Real-surface tests for ``scpn_quantum_control.multi_hal_federation_product``."""
 
 from __future__ import annotations

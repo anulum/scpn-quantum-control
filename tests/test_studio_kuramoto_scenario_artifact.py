@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — committed Kuramoto scenario artefact tests
-"""Tests for the committed Kuramoto Play scenario artefact (ST-11)."""
+"""Tests for the committed Kuramoto Play scenario artefact."""
 
 from __future__ import annotations
 

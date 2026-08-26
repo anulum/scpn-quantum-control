@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for quantum sync challenge oracle product (BL-32)
+# SCPN Quantum Control — tests for quantum sync challenge oracle product
 """Real-surface tests for ``quantum_sync_challenge_oracle_product``."""
 
 from __future__ import annotations
@@ -185,8 +185,8 @@ def test_integrity_rejects_drift_and_policy() -> None:
             "default_seed": 1,
             "n_nodes": 4,
             "ambient_pointer": "p",
-            "bl52_route_pointer": "r",
-            "bl53_pointer": "b",
+            "route_matrix_pointer": "r",
+            "unsuitable_scenario_pointer": "b",
             "invent_green_advantage": False,
             "support_posture": "local_research",
             "as_of": "2026-07-24",
@@ -246,9 +246,9 @@ def test_integrity_rejects_blank_invalid() -> None:
 
     no_bl52 = dict(registry)
     brows = [dict(row) for row in families]
-    brows[0]["bl52_route_pointer"] = ""
+    brows[0]["route_matrix_pointer"] = ""
     no_bl52["families"] = brows
-    with pytest.raises(ValueError, match="bl52_route_pointer"):
+    with pytest.raises(ValueError, match="route_matrix_pointer"):
         assert_quantum_sync_challenge_oracle_product_integrity(no_bl52)
 
     bad_status = dict(registry)
@@ -364,8 +364,8 @@ def test_row_decision_probe_validation() -> None:
         "default_seed": 1,
         "n_nodes": 4,
         "ambient_pointer": "p",
-        "bl52_route_pointer": "r",
-        "bl53_pointer": "b",
+        "route_matrix_pointer": "r",
+        "unsuitable_scenario_pointer": "b",
     }
     assert ProblemFamilyRow(**base_f).family_id == "Fx"
     assert ProblemFamilyRow(**base_f).to_dict()["family_id"] == "Fx"
@@ -383,10 +383,10 @@ def test_row_decision_probe_validation() -> None:
         ProblemFamilyRow(**{**base_f, "n_nodes": 1})
     with pytest.raises(ValueError, match="ambient_pointer"):
         ProblemFamilyRow(**{**base_f, "ambient_pointer": ""})
-    with pytest.raises(ValueError, match="bl52_route_pointer"):
-        ProblemFamilyRow(**{**base_f, "bl52_route_pointer": ""})
-    with pytest.raises(ValueError, match="bl53_pointer"):
-        ProblemFamilyRow(**{**base_f, "bl53_pointer": ""})
+    with pytest.raises(ValueError, match="route_matrix_pointer"):
+        ProblemFamilyRow(**{**base_f, "route_matrix_pointer": ""})
+    with pytest.raises(ValueError, match="unsuitable_scenario_pointer"):
+        ProblemFamilyRow(**{**base_f, "unsuitable_scenario_pointer": ""})
     with pytest.raises(ValueError, match="invent_green_advantage"):
         ProblemFamilyRow(**{**base_f, "invent_green_advantage": True})
     with pytest.raises(ValueError, match="hardware_gated"):
@@ -609,8 +609,8 @@ def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
         default_seed=1,
         n_nodes=4,
         ambient_pointer="p",
-        bl52_route_pointer="r",
-        bl53_pointer="b",
+        route_matrix_pointer="r",
+        unsuitable_scenario_pointer="b",
     )
     object.__setattr__(blank, "family_id", "  ")
     monkeypatch.setattr(oracle_product, "_FAMILIES", (blank,))
@@ -625,8 +625,8 @@ def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
         default_seed=1,
         n_nodes=4,
         ambient_pointer="p",
-        bl52_route_pointer="r",
-        bl53_pointer="b",
+        route_matrix_pointer="r",
+        unsuitable_scenario_pointer="b",
     )
     monkeypatch.setattr(oracle_product, "_FAMILIES", (good, good))
     with pytest.raises(RuntimeError, match="duplicate family_id"):

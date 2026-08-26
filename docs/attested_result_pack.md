@@ -1,4 +1,4 @@
-# Attested result packs (BL-48)
+# Attested result packs
 
 Strip-resistant **content digests bound to claim axes** — never a self-asserted
 “validated” badge. Local unsigned envelopes are first-class; absent keys yield

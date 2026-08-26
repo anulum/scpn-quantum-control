@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — cloud-native deployment quality-gate tests
-"""Lock the BL-19 cloud-native deployment gate into preflight and CI."""
+"""Lock the cloud-native deployment gate into preflight and CI."""
 
 from __future__ import annotations
 

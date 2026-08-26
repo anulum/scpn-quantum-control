@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Synthetic multimodal oscillator datasets
-"""Deterministic simulation-only datasets for BL-37 forecast certificates."""
+"""Deterministic simulation-only datasets for multimodal-forecasting forecast certificates."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ from .multimodal_schema import (
 FloatArray = NDArray[np.float64]
 BoolArray = NDArray[np.bool_]
 
-SYNTHETIC_MULTIMODAL_SOURCE = "scpn.bl37.synthetic_kuramoto.v1"
+SYNTHETIC_MULTIMODAL_SOURCE = "scpn.forecasting.synthetic_kuramoto.v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -204,7 +204,7 @@ def _make_batch(
         frequencies[index] = omega
         events[index, :, 0] = coupling_scale
         events[index, :, 1] = times
-        sample_ids.append(f"bl37-{split}-{split_seed}-{index:04d}")
+        sample_ids.append(f"forecasting-{split}-{split_seed}-{index:04d}")
         tags.append(tag)
 
     masked_series, series_mask = _masked_inputs(

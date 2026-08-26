@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Coupling-Recovery Evidence Export
-"""Export BL-17 coupling-recovery evidence rows."""
+"""Export coupling-recovery coupling-recovery evidence rows."""
 
 from __future__ import annotations
 

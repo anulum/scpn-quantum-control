@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — formal + metamorphic AD verification catalogue (BL-46)
-"""Versioned metamorphic AD verification catalogue and pure residual checks (BL-46).
+# SCPN Quantum Control — formal + metamorphic AD verification catalogue
+"""Versioned metamorphic AD verification catalogue and pure residual checks.
 
 This product surface defends gradient correctness **beyond one-off examples**: a
 catalogue of metamorphic laws, fail-closed refuse paths (including invent-green

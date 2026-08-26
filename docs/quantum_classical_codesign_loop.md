@@ -1,4 +1,4 @@
-# Quantum-classical co-design loop (BL-33)
+# Quantum-classical co-design loop
 
 `scpn_quantum_control.codesign` composes the existing phase-objective,
 gradient-planning, open-system, control-adapter, and observer products into a

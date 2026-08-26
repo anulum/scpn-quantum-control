@@ -1,4 +1,4 @@
-# Custom / registered derivatives product (BL-92 / P1)
+# Custom / registered derivatives product
 
 Versioned **safe extension surface** for third-party and domain JVP/VJP rules:
 registration contract, public register/query helpers, fail-closed duplicates,
@@ -27,7 +27,7 @@ Claim boundary:
 
 > Custom derivatives product surface only; versioned registration contract and
 > fail-closed register/query over ambient CustomDerivativeRegistry; does not
-> invent-green full transform-algebra CI (BL-03/52) or mass rule migration;
+> invent-green full transform-algebra CI (transform-algebra/route-matrix) or mass rule migration;
 > residual S92.2 transform-algebra interaction tests and S92.4 full BL-46
 > metamorphic automation open honestly
 
@@ -123,7 +123,7 @@ hardware evidence, or complete BL-46 metamorphic automation.
 Shipped: S92.0 registration contract · S92.1 public register API + fail-closed
 duplicates · S92.3 example custom rule + docs · BL-46 residual pointer.
 
-Open: S92.2 full transform-algebra interaction CI (BL-03/52) · S92.4 full
+Open: S92.2 full transform-algebra interaction CI (transform-algebra/route-matrix) · S92.4 full
 BL-46 metamorphic automation for every new rule.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

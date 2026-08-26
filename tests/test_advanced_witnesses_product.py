@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for advanced witnesses product (BL-44)
+# SCPN Quantum Control — tests for advanced witnesses product
 """Behaviour tests for :mod:`scpn_quantum_control.advanced_witnesses_product`.
 
 One concern per test. No coverage buckets, no unused-assert padding.
@@ -43,10 +43,10 @@ from scpn_quantum_control.advanced_witnesses_product import (
     list_witness_capability_ids,
     list_witness_glossary_keys,
     map_advanced_witnesses_public_surfaces,
-    materialise_bl18_order_parameter_compose,
     materialise_demo_krylov_probe,
     materialise_demo_otoc_probe,
     materialise_demo_shadow_probe,
+    materialise_harmonic_order_parameter_compose,
     materialise_krylov_probe,
     materialise_otoc_probe,
     materialise_shadow_probe,
@@ -81,7 +81,7 @@ def test_capability_catalogue_lists_core_kinds() -> None:
     assert "krylov_complexity" in ids
     assert "otoc_probe" in ids
     assert "classical_shadows" in ids
-    assert "bl18_sync_compose" in ids
+    assert "synchronisation_witness_compose" in ids
     for row in iter_witness_capabilities():
         assert row.hardware_submit_allowed is False
         assert row.to_dict()["capability_id"] == row.capability_id
@@ -290,23 +290,23 @@ def test_shadow_multi_observable_real_ambient() -> None:
     assert probe.shadow_norm_bound >= 0.0
 
 
-def test_bl18_order_parameter_compose_sync_cloud() -> None:
+def test_harmonic_order_parameter_compose_sync_cloud() -> None:
     """BL-18 compose returns high R for a tightly synchronised phase cloud."""
-    est = materialise_bl18_order_parameter_compose()
+    est = materialise_harmonic_order_parameter_compose()
     assert est.mean > 0.9
     assert est.support_status == "supported"
     assert est.invent_green_live_qpu is False
-    assert "bl18" in est.estimator_id
+    assert "harmonic_order_parameter" in est.estimator_id
 
 
-def test_bl18_compose_custom_phases_and_validation() -> None:
+def test_synchronisation_witness_compose_custom_phases_and_validation() -> None:
     """Custom phases yield R≈1 when aligned; empty phases and harmonic=0 refuse."""
-    est = materialise_bl18_order_parameter_compose([0.0, 0.0, 0.0], harmonic=1)
+    est = materialise_harmonic_order_parameter_compose([0.0, 0.0, 0.0], harmonic=1)
     assert est.mean == pytest.approx(1.0, abs=1e-9)
     with pytest.raises(ValueError, match="harmonic"):
-        materialise_bl18_order_parameter_compose(harmonic=0)
+        materialise_harmonic_order_parameter_compose(harmonic=0)
     with pytest.raises(ValueError, match="phases"):
-        materialise_bl18_order_parameter_compose([])
+        materialise_harmonic_order_parameter_compose([])
 
 
 # ---------------------------------------------------------------------------
@@ -353,13 +353,13 @@ def test_shadow_refuses_unrestricted_campaign() -> None:
 def test_bl18_refuses_invent_green_topology_cert() -> None:
     """BL-18 compose refuses invent-green topology certification."""
     with pytest.raises(ValueError, match="topology"):
-        materialise_bl18_order_parameter_compose(invent_green_topology_cert=True)
+        materialise_harmonic_order_parameter_compose(invent_green_topology_cert=True)
 
 
 def test_bl18_refuses_invent_green_live_qpu() -> None:
     """BL-18 compose refuses invent-green live QPU."""
     with pytest.raises(ValueError, match="live QPU"):
-        materialise_bl18_order_parameter_compose(invent_green_live_qpu=True)
+        materialise_harmonic_order_parameter_compose(invent_green_live_qpu=True)
 
 
 # ---------------------------------------------------------------------------

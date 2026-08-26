@@ -4,18 +4,18 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Thermodynamics readiness product (BL-100 / P1)
-"""Fail-closed **thermodynamics readiness** product surface (BL-100).
+# SCPN Quantum Control — Thermodynamics readiness product
+"""Fail-closed **thermodynamics readiness** product surface.
 
 Productises the honest S9 quantum-thermodynamics readiness model over ambient
 :mod:`scpn_quantum_control.thermodynamics.readiness` and inventories Free Energy
-Principle (FEP) modules as **research-only** (BL-84 / tier C) until a concrete
+Principle (FEP) modules as **research-only** (research-lane / tier C) until a concrete
 sync-control hook is proven:
 
 * versioned readiness-capability catalogue (K-sweep, entropy production, work
   identity, heat dissipation) with machine-checked claim boundary;
 * FEP inventory rows (predictive coding, variational free energy) marked
-  ``research_only`` with BL-84 pointers — never product peak claims;
+  ``research_only`` with research-lane pointers — never product peak claims;
 * K-sweep probe via ambient
   :func:`~scpn_quantum_control.thermodynamics.readiness.run_k_sweep_protocol`;
 * refuse invent-green thermodynamic peak claims and hardware submission;
@@ -194,7 +194,7 @@ class FepInventoryRow:
         Short description.
     status
         Inventory status (research_only by default).
-    bl84_pointer
+    research_lane_pointer
         BL-84 deep-analysis research-lane pointer.
     product_hook_proven
         Must remain False until owner-approved promotion.
@@ -208,7 +208,7 @@ class FepInventoryRow:
     title: str
     summary: str
     status: FepInventoryStatus = "research_only"
-    bl84_pointer: str = "bl84_deep_analysis_research_lane_registry.fep"
+    research_lane_pointer: str = "deep_analysis_research_lane_registry.fep"
     product_hook_proven: bool = False
     claim_boundary: str = THERMO_READINESS_CLAIM_BOUNDARY
 
@@ -224,8 +224,8 @@ class FepInventoryRow:
             raise ValueError("summary must be non-empty")
         if self.status not in {"research_only", "product_hook_open", "permanent_boundary"}:
             raise ValueError(f"unknown FEP inventory status: {self.status!r}")
-        if not self.bl84_pointer or not self.bl84_pointer.strip():
-            raise ValueError("bl84_pointer must be non-empty")
+        if not self.research_lane_pointer or not self.research_lane_pointer.strip():
+            raise ValueError("research_lane_pointer must be non-empty")
         # Specific research_only refusal first so both messages remain reachable.
         if self.status == "research_only" and self.product_hook_proven:
             raise ValueError("research_only rows cannot set product_hook_proven")
@@ -243,7 +243,7 @@ class FepInventoryRow:
             "title": self.title,
             "summary": self.summary,
             "status": self.status,
-            "bl84_pointer": self.bl84_pointer,
+            "research_lane_pointer": self.research_lane_pointer,
             "product_hook_proven": self.product_hook_proven,
             "claim_boundary": self.claim_boundary,
         }
@@ -461,7 +461,7 @@ def _build_fep_inventory() -> tuple[FepInventoryRow, ...]:
                 "is proven (S100.3 residual)."
             ),
             status="research_only",
-            bl84_pointer="bl84_deep_analysis_research_lane_registry.fep.predictive_coding",
+            research_lane_pointer="deep_analysis_research_lane_registry.fep.predictive_coding",
         ),
         FepInventoryRow(
             module_id="variational_free_energy",
@@ -472,7 +472,7 @@ def _build_fep_inventory() -> tuple[FepInventoryRow, ...]:
                 "accuracy); research-only inventory, not a product peak claim."
             ),
             status="research_only",
-            bl84_pointer="bl84_deep_analysis_research_lane_registry.fep.variational_free_energy",
+            research_lane_pointer="deep_analysis_research_lane_registry.fep.variational_free_energy",
         ),
     )
 

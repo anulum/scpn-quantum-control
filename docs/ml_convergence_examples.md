@@ -1,4 +1,4 @@
-# QNN, QGNN, and QSNN convergence examples (BL-42)
+# QNN, QGNN, and QSNN convergence examples
 
 `scpn_quantum_control.ml_examples` provides one deterministic, simulator-only
 training example for each of the repository's QNN, QGNN, and QSNN model
@@ -63,15 +63,15 @@ claim arbitrary framework parity.
 
 ```bash
 PYTHONPATH=src:oscillatools/src python scripts/run_ml_convergence_examples.py \
-  --json-output data/ml_convergence_examples/bl42_convergence_evidence.json \
-  --markdown-output data/ml_convergence_examples/bl42_convergence_evidence.md
+  --json-output data/ml_convergence_examples/convergence_evidence.json \
+  --markdown-output data/ml_convergence_examples/convergence_evidence.md
 ```
 
 The JSON payload uses schema `ml_convergence_examples.v1` and binds all task
 specifications, loss histories, certificates, framework rows, notebook
 pointers, and claim boundary with a canonical SHA-256 content digest. The
-[human-readable evidence](https://github.com/anulum/scpn-quantum-control/blob/main/data/ml_convergence_examples/bl42_convergence_evidence.md)
-and [machine-readable evidence](https://github.com/anulum/scpn-quantum-control/blob/main/data/ml_convergence_examples/bl42_convergence_evidence.json)
+[human-readable evidence](https://github.com/anulum/scpn-quantum-control/blob/main/data/ml_convergence_examples/convergence_evidence.md)
+and [machine-readable evidence](https://github.com/anulum/scpn-quantum-control/blob/main/data/ml_convergence_examples/convergence_evidence.json)
 are committed together. The CLI performs no provider, QPU, or neuromorphic
 hardware execution.
 

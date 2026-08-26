@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-68 active sensing product tests
-"""Production-surface tests for BL-68 active sensing composition."""
+# SCPN Quantum Control — active-sensing active sensing product tests
+"""Production-surface tests for active-sensing active sensing composition."""
 
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ def test_inventory_preserves_ownership_and_hardware_boundary() -> None:
         "s3_design_protocol",
         "shot_budget",
         "nv_20t",
-        "bl33_observer",
+        "codesign_observer",
     }
     assert all(row.hardware_execution is False for row in rows)
     assert next(row for row in rows if row.surface_id == "nv_20t").posture == "hardware_blocked"

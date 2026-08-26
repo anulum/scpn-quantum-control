@@ -1,4 +1,4 @@
-# Differentiable notebook programme product (BL-40)
+# Differentiable notebook programme product
 
 Versioned **core-six onboarding curriculum** under `notebooks/differentiable/`
 with mandatory `hardware_execution: false` honesty.

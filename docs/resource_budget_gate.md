@@ -1,4 +1,4 @@
-# Compile & dense resource budget gate (BL-94 / W5)
+# Compile & dense resource budget gate
 
 Fail-closed **resource budgets** for sparse Pauli/compile construction and dense
 Hilbert-space allocations. Product catalogue + probe over the low-level guards

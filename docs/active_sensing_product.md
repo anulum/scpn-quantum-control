@@ -1,4 +1,4 @@
-# Active sensing and experimental design (BL-68)
+# Active sensing and experimental design
 
 `scpn_quantum_control.active_sensing_product` chooses the next synthetic scalar
 observation by expected information gain, but only after the existing BL-47

@@ -1,4 +1,4 @@
-# Fixture-driven visualisation dashboard product (BL-34)
+# Fixture-driven visualisation dashboard product
 
 Versioned **static panel catalogue + fixture probes** for order-parameter/energy,
 gradient norms, and related panel families. `live_qpu=false` honesty; no SaaS.

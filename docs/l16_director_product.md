@@ -1,4 +1,4 @@
-# Bounded L16 director product (BL-85)
+# Bounded L16 director product
 
 BL-85 turns the existing L16 indicator calculation into a policy-gated local
 product. It runs three frozen small-system scenarios, replays every result,
@@ -24,7 +24,7 @@ evidence = run_l16_director_suite()
 assert evidence.functional_passed
 assert not evidence.promotion_ready
 
-# BL-33 interprets adjust as hold and halt as abort.
+# co-design interprets adjust as hold and halt as abort.
 output = build_demo_loop().step(
     demo_inputs()[0],
     observers=observer_inputs_from_l16("adjust"),
@@ -58,8 +58,8 @@ is no provider, QPU, plant, or realtime-hardware evidence.
 
 Artefacts:
 
-- `data/l16_director_product/bl85_l16_director_evidence.json`
-- `data/l16_director_product/bl85_l16_director_evidence.md`
+- `data/l16_director_product/bounded_director_evidence.json`
+- `data/l16_director_product/bounded_director_evidence.md`
 
 ## Safety and route mapping
 

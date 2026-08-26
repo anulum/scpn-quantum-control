@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-37 deterministic multimodal evidence runner
+# SCPN Quantum Control — multimodal-forecasting deterministic multimodal evidence runner
 """Regenerate bounded synthetic multimodal forecasting evidence."""
 
 from __future__ import annotations
@@ -42,8 +42,8 @@ from scpn_quantum_control.forecasting.uncertainty import (
     fit_residual_interval_calibrator,
 )
 
-DEFAULT_JSON = Path("data/multimodal_forecasting/bl37_evidence.json")
-DEFAULT_MARKDOWN = Path("data/multimodal_forecasting/bl37_evidence.md")
+DEFAULT_JSON = Path("data/multimodal_forecasting/multimodal_forecasting_evidence.json")
+DEFAULT_MARKDOWN = Path("data/multimodal_forecasting/multimodal_forecasting_evidence.md")
 
 
 def _support_rows() -> tuple[MultimodalSupportRow, ...]:
@@ -74,13 +74,13 @@ def _support_rows() -> tuple[MultimodalSupportRow, ...]:
             boundary="Not sequential EnbPI, conditional coverage, or domain transfer.",
         ),
         MultimodalSupportRow(
-            surface="bl68_active_sensing_bridge",
+            surface="active_sensing_bridge",
             status="bounded_supported",
             evidence="Interval-width proxies enter the existing no-submit sensing planner.",
             boundary="Not adaptive hardware sensing or optimal sensor placement.",
         ),
         MultimodalSupportRow(
-            surface="bl33_controller_initialisation",
+            surface="codesign_controller_initialisation",
             status="bounded_supported",
             evidence="Terminal forecast creates a clipped existing ControllerProposal.",
             boundary="Proposal remains unapplied and is not a safety decision.",

@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for the bounded JAX NQS baseline (BL-103)
+# SCPN Quantum Control — tests for the bounded JAX NQS baseline
 """Public-surface tests for exact-reference JAX NQS evidence."""
 
 from __future__ import annotations

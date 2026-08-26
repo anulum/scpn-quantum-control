@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-35 analog mapping tests
-"""Focused tests for the bounded BL-35 analog mapping product."""
+# SCPN Quantum Control — analog-mapping analog mapping tests
+"""Focused tests for the bounded analog-mapping analog mapping product."""
 
 from __future__ import annotations
 

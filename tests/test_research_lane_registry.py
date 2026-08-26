@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-84 research-lane registry tests
+# SCPN Quantum Control — research-lane research-lane registry tests
 """Tests for the governed deep-analysis catalogue and inventory gate."""
 
 from __future__ import annotations
@@ -101,13 +101,13 @@ def test_selected_promotion_routes_retain_their_real_gate_status() -> None:
     tcbo = get_research_lane("scpn_quantum_control.analysis.tcbo_weighted_complex")
     fim = get_research_lane("scpn_quantum_control.analysis.adaptive_fim_feedback")
 
-    assert qfi.promotion_targets == ("BL-50:planned",)
+    assert qfi.promotion_targets == ("geometric-control:planned",)
     assert qfi.diff_hook is ResearchLaneDiffHook.CANDIDATE
-    assert dla.promotion_targets == ("BL-54:complete",)
+    assert dla.promotion_targets == ("topology-control:complete",)
     assert dla.claim_status is ResearchLaneClaimStatus.EVIDENCE_BOUNDED
-    assert tcbo.promotion_targets == ("BL-72:deferred-owner-gate",)
+    assert tcbo.promotion_targets == ("coherence-observer:deferred-owner-gate",)
     assert tcbo.diff_hook is ResearchLaneDiffHook.DEFERRED
-    assert fim.promotion_targets == ("BL-80:complete",)
+    assert fim.promotion_targets == ("adaptive-fim:complete",)
     assert fim.diff_hook is ResearchLaneDiffHook.BOUNDED_COMPOSITION
 
 
@@ -250,10 +250,10 @@ def test_markdown_renderer_exposes_gates_without_marketing_promotion() -> None:
     assert markdown == implicit
     assert markdown.endswith("\n")
     assert "Inventory: **PASS** (74 registered / 74 discovered)" in markdown
-    assert "BL-50:planned" in markdown
-    assert "BL-54:complete" in markdown
-    assert "BL-72:deferred-owner-gate" in markdown
-    assert "BL-80:complete" in markdown
+    assert "geometric-control:planned" in markdown
+    assert "topology-control:complete" in markdown
+    assert "coherence-observer:deferred-owner-gate" in markdown
+    assert "adaptive-fim:complete" in markdown
     assert RESEARCH_LANE_REGISTRY_BOUNDARY in markdown
 
 

@@ -4,12 +4,12 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — stochastic estimators product surface (BL-93 / P1)
-"""Fail-closed **stochastic estimators & policies** product surface (BL-93).
+# SCPN Quantum Control — stochastic estimators product surface
+"""Fail-closed **stochastic estimators & policies** product surface.
 
 Productises finite-shot / stochastic gradient estimators as a first-class
 product: versioned estimator catalogue (SPSA, score-function, parameter-shift
-shot allocation), confidence/failure policy contracts composing BL-47 honesty,
+shot allocation), confidence/failure policy contracts composing hardware-safety honesty,
 and dry-run helpers that refuse invent-green live QPU shot runs.
 
 Composes ambient
@@ -84,7 +84,7 @@ class StochasticEstimatorRow:
         Support posture badge.
     allows_hardware_shots
         Whether this product row claims live hardware shots (must be False).
-    bl47_pointer
+    hardware_safety_pointer
         BL-47 hardware-safe / shot-budget honesty pointer.
     as_of
         Inventory date label.
@@ -101,7 +101,7 @@ class StochasticEstimatorRow:
     symbol_name: str
     support_posture: SupportPosture
     allows_hardware_shots: bool = False
-    bl47_pointer: str = "hardware_safe_execution.no_submit_shot_budget"
+    hardware_safety_pointer: str = "hardware_safe_execution.no_submit_shot_budget"
     as_of: str = "2026-07-24"
     claim_boundary: str = STOCHASTIC_ESTIMATORS_CLAIM_BOUNDARY
 
@@ -138,8 +138,8 @@ class StochasticEstimatorRow:
             )
         if not self.as_of or not self.as_of.strip():
             raise ValueError("as_of must be non-empty")
-        if not self.bl47_pointer or not self.bl47_pointer.strip():
-            raise ValueError("bl47_pointer must be non-empty")
+        if not self.hardware_safety_pointer or not self.hardware_safety_pointer.strip():
+            raise ValueError("hardware_safety_pointer must be non-empty")
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this row."""
@@ -152,7 +152,7 @@ class StochasticEstimatorRow:
             "symbol_name": self.symbol_name,
             "support_posture": self.support_posture,
             "allows_hardware_shots": self.allows_hardware_shots,
-            "bl47_pointer": self.bl47_pointer,
+            "hardware_safety_pointer": self.hardware_safety_pointer,
             "as_of": self.as_of,
             "claim_boundary": self.claim_boundary,
         }
@@ -501,7 +501,7 @@ def dry_run_stochastic_estimator(
     if request_hardware_shots or row.allows_hardware_shots:
         blockers.append(
             "hardware/QPU shot request refused on stochastic estimators product "
-            f"(compose BL-47; pointer={row.bl47_pointer})"
+            f"(compose BL-47; pointer={row.hardware_safety_pointer})"
         )
     if blockers:
         unique = tuple(dict.fromkeys(item for item in blockers if item.strip()))
@@ -618,7 +618,7 @@ def map_stochastic_estimators_public_surfaces() -> tuple[dict[str, object], ...]
                 "estimator_ids": [
                     e.estimator_id for e in _CANONICAL_ESTIMATORS if e.module_path == path
                 ],
-                "bl47_pointer": estimator.bl47_pointer,
+                "hardware_safety_pointer": estimator.hardware_safety_pointer,
                 "claim_boundary": STOCHASTIC_ESTIMATORS_CLAIM_BOUNDARY,
             }
         )

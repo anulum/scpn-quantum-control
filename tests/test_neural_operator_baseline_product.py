@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for the BL-78 neural-operator baseline product
+# SCPN Quantum Control — tests for the neural-operator neural-operator baseline product
 """Contract tests for neural-operator evidence and data admission."""
 
 from __future__ import annotations
@@ -176,11 +176,11 @@ def test_record_invariants_fail_closed() -> None:
     with pytest.raises(ValueError):
         DatasetAdmission("x", "kind", "refused", True, "reason", ())
     with pytest.raises(ValueError):
-        IntegrationDisposition("BL-32", "wired", "")
+        IntegrationDisposition("quantum_sync_oracle", "wired", "")
     with pytest.raises(ValueError):
         IntegrationDisposition(cast(Any, "BL-X"), "wired", "reason")
     with pytest.raises(ValueError):
-        IntegrationDisposition("BL-32", cast(Any, "unknown"), "reason")
+        IntegrationDisposition("quantum_sync_oracle", cast(Any, "unknown"), "reason")
     product = build_neural_operator_baseline_product(_ARTIFACT)
     with pytest.raises(ValueError):
         replace(product, schema="bad")

@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-45 deterministic evidence runner
+# SCPN Quantum Control — quantum-reservoir deterministic evidence runner
 """Regenerate local exact-statevector QRC and surrogate evidence."""
 
 from __future__ import annotations
@@ -34,8 +34,8 @@ from scpn_quantum_control.surrogates import (
     write_quantum_reservoir_surrogate_evidence,
 )
 
-DEFAULT_JSON = Path("data/quantum_reservoir_surrogates/bl45_evidence.json")
-DEFAULT_MARKDOWN = Path("data/quantum_reservoir_surrogates/bl45_evidence.md")
+DEFAULT_JSON = Path("data/quantum_reservoir_surrogates/quantum_reservoir_evidence.json")
+DEFAULT_MARKDOWN = Path("data/quantum_reservoir_surrogates/quantum_reservoir_evidence.md")
 
 
 def _stale_evidence_message(path: Path, actual: str, expected: str) -> str:
@@ -161,19 +161,19 @@ def build_evidence() -> QuantumReservoirSurrogateEvidence:
             boundary="Finite-difference reference, not hardware gradients.",
         ),
         SurrogateSupportRow(
-            surface="bl33_exact_validated_proposal",
+            surface="codesign_exact_validated_proposal",
             status="bounded_supported",
             evidence="Surrogate proposal followed by exact local objective query.",
             boundary="ControllerProposal remains unapplied.",
         ),
         SurrogateSupportRow(
-            surface="bl37_multimodal_adapter",
+            surface="multimodal_forecasting_adapter",
             status="blocked_dependency",
             evidence="BL-37 multimodal schema is not implemented.",
             boundary="No invented domain adapter or operational data.",
         ),
         SurrogateSupportRow(
-            surface="bl40_notebook",
+            surface="notebook_programme",
             status="blocked_dependency",
             evidence="BL-40 notebook stretch is outside the BL-45 product.",
             boundary="No notebook is represented as complete.",

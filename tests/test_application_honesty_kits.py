@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Domain application honesty-kit tests
-"""Tests for typed BL-63 honesty policy and deterministic evidence."""
+"""Tests for typed application-honesty honesty policy and deterministic evidence."""
 
 from __future__ import annotations
 

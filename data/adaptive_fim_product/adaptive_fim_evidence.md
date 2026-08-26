@@ -27,4 +27,4 @@ selected committed witnesses. It does not test whether later proposed
 batches improve leakage or retention, and therefore does not validate a
 closed-loop controller, FIM protection, an optimal policy, or advantage.
 
-Content digest: `f2201cce5697eab46c6217f5874b5268f521418f2a4dff393cd16122d961c23e`
+Content digest: `7aeeb99d94ca3979eed288d7c3d533ec56145ba58596f88933d2691f09107460`

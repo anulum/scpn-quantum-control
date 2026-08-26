@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — committed XY-compile recompute artefact tests
-"""Tests for the committed browser-verifiable recompute unit artefact (ST-09)."""
+"""Tests for the committed browser-verifiable recompute unit artefact."""
 
 from __future__ import annotations
 

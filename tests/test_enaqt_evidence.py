@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-87 ENAQT evidence tests
-"""Evidence contracts, replay, CLI, and negative tests for BL-87."""
+# SCPN Quantum Control — ENAQT ENAQT evidence tests
+"""Evidence contracts, replay, CLI, and negative tests for ENAQT."""
 
 from __future__ import annotations
 
@@ -158,8 +158,8 @@ def test_default_cli_paths_are_stable(monkeypatch: pytest.MonkeyPatch, tmp_path:
     assert main([]) == 0
     assert seen == [
         (
-            Path("data/enaqt_product/bl87_enaqt_evidence.json"),
-            Path("data/enaqt_product/bl87_enaqt_evidence.md"),
+            Path("data/enaqt_product/enaqt_evidence.json"),
+            Path("data/enaqt_product/enaqt_evidence.md"),
         )
     ]
 

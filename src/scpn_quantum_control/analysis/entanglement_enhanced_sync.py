@@ -36,7 +36,7 @@ from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
 
 _VISIBILITY_TOLERANCE: Final[float] = 1e-12
-_COMPARISON_PROTOCOL: Final[str] = "protocol:bl79.initial_state_observation"
+_COMPARISON_PROTOCOL: Final[str] = "protocol:entanglement.initial_state_observation"
 
 
 class InitialState(Enum):
@@ -533,7 +533,7 @@ def compare_initial_states_with_dephased_controls(
         else "entanglement_specificity_not_established"
     )
     certificate = issue_no_advantage_certificate(
-        context="bl79_initial_state_comparison",
+        context="entanglement_initial_state_comparison",
         protocol_id=_COMPARISON_PROTOCOL,
     ).to_dict()
     comparisons: dict[str, InitialStateControlComparison] = {}

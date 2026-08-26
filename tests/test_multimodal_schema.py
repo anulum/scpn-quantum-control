@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multimodal forecasting schema tests
-"""Production-surface tests for immutable BL-37 observation custody."""
+"""Production-surface tests for immutable multimodal-forecasting observation custody."""
 
 from __future__ import annotations
 

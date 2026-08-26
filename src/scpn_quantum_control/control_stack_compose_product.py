@@ -4,15 +4,15 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Compose existing control/* stack product (BL-67 / P1)
-"""Fail-closed **compose existing control/*** product surface (BL-67).
+# SCPN Quantum Control — Compose existing control/* stack product
+"""Fail-closed **compose existing control/*** product surface.
 
 Productises a typed adapter / ownership map over ambient production control
-modules so BL-33 co-design does **not** reinvent a second control stack:
+modules so co-design co-design does **not** reinvent a second control stack:
 
 * versioned ownership catalogue for ``control/*`` and hardware feedback ports;
 * protocol adapter rows (realtime feedback, closed-loop telemetry, cosim,
-  hardware dry-run) with BL-47 policy composition pointers;
+  hardware dry-run) with hardware-safety policy composition pointers;
 * fail-closed path decision: refuse evaluate / run without
   :class:`~scpn_quantum_control.control.closed_loop_analysis.ClosedLoopExecutionPolicy`;
 * materialised closed-loop telemetry probe via ambient
@@ -23,7 +23,7 @@ modules so BL-33 co-design does **not** reinvent a second control stack:
 * refuse invent-green PCS integration and rewrite claims of ``realtime_runtime``.
 
 Does **not** rewrite ``realtime_runtime`` or invent PCS. Pulse execution remains
-an explicit fail-closed hand-off to optional BL-58 rather than a BL-67 residual.
+an explicit fail-closed hand-off to optional pulse-boundary rather than a control-stack residual.
 """
 
 from __future__ import annotations
@@ -193,7 +193,7 @@ class AdapterPortRow:
         Human-readable title.
     ambient_modules
         Ambient module paths this port adapts (compose, do not rewrite).
-    bl47_pointer
+    hardware_safety_pointer
         BL-47 hardware-safe / no-submit honesty pointer.
     support_posture
         Support posture badge.
@@ -211,7 +211,7 @@ class AdapterPortRow:
     port_id: AdapterPort
     title: str
     ambient_modules: tuple[str, ...]
-    bl47_pointer: str
+    hardware_safety_pointer: str
     support_posture: SupportPosture
     requires_execution_policy: bool
     invent_green_pcs: bool = False
@@ -235,8 +235,8 @@ class AdapterPortRow:
             raise ValueError("ambient_modules must be non-empty")
         if any(not item or not str(item).strip() for item in self.ambient_modules):
             raise ValueError("ambient_modules entries must be non-empty")
-        if not self.bl47_pointer or not self.bl47_pointer.strip():
-            raise ValueError("bl47_pointer must be non-empty")
+        if not self.hardware_safety_pointer or not self.hardware_safety_pointer.strip():
+            raise ValueError("hardware_safety_pointer must be non-empty")
         if self.support_posture not in {
             "local_research",
             "live_hardware_gated",
@@ -255,7 +255,7 @@ class AdapterPortRow:
             "port_id": self.port_id,
             "title": self.title,
             "ambient_modules": list(self.ambient_modules),
-            "bl47_pointer": self.bl47_pointer,
+            "hardware_safety_pointer": self.hardware_safety_pointer,
             "support_posture": self.support_posture,
             "requires_execution_policy": self.requires_execution_policy,
             "invent_green_pcs": self.invent_green_pcs,
@@ -477,7 +477,7 @@ def _build_adapter_ports() -> tuple[AdapterPortRow, ...]:
             port_id="execution_policy_gate",
             title="ExecutionPolicy gate",
             ambient_modules=("scpn_quantum_control.control.closed_loop_analysis",),
-            bl47_pointer="hardware_safe_execution.closed_loop_execution_policy",
+            hardware_safety_pointer="hardware_safe_execution.closed_loop_execution_policy",
             support_posture="policy_only",
             requires_execution_policy=True,
         ),
@@ -485,7 +485,7 @@ def _build_adapter_ports() -> tuple[AdapterPortRow, ...]:
             port_id="realtime_feedback",
             title="Realtime feedback adapter",
             ambient_modules=("scpn_quantum_control.control.realtime_feedback",),
-            bl47_pointer="hardware_safe_execution.no_submit_feedback",
+            hardware_safety_pointer="hardware_safe_execution.no_submit_feedback",
             support_posture="local_research",
             requires_execution_policy=True,
         ),
@@ -493,7 +493,7 @@ def _build_adapter_ports() -> tuple[AdapterPortRow, ...]:
             port_id="closed_loop_telemetry",
             title="Closed-loop telemetry adapter",
             ambient_modules=("scpn_quantum_control.control.closed_loop_analysis",),
-            bl47_pointer="hardware_safe_execution.closed_loop_telemetry",
+            hardware_safety_pointer="hardware_safe_execution.closed_loop_telemetry",
             support_posture="policy_only",
             requires_execution_policy=True,
         ),
@@ -501,7 +501,7 @@ def _build_adapter_ports() -> tuple[AdapterPortRow, ...]:
             port_id="qaoa_mpc_optional",
             title="QAOA-MPC optional adapter",
             ambient_modules=("scpn_quantum_control.control.qaoa_mpc",),
-            bl47_pointer="hardware_safe_execution.qaoa_mpc_optional",
+            hardware_safety_pointer="hardware_safe_execution.qaoa_mpc_optional",
             support_posture="local_research",
             requires_execution_policy=True,
         ),
@@ -509,7 +509,7 @@ def _build_adapter_ports() -> tuple[AdapterPortRow, ...]:
             port_id="cosimulation_partition",
             title="Cosimulation partition adapter",
             ambient_modules=("scpn_quantum_control.cosimulation.quantum_classical",),
-            bl47_pointer="hardware_safe_execution.cosim_partition",
+            hardware_safety_pointer="hardware_safe_execution.cosim_partition",
             support_posture="local_research",
             requires_execution_policy=True,
         ),
@@ -520,7 +520,7 @@ def _build_adapter_ports() -> tuple[AdapterPortRow, ...]:
                 "scpn_quantum_control.hardware.feedback_dryrun",
                 "scpn_quantum_control.hardware.feedback_loop",
             ),
-            bl47_pointer="hardware_safe_execution.feedback_dryrun",
+            hardware_safety_pointer="hardware_safe_execution.feedback_dryrun",
             support_posture="live_hardware_gated",
             requires_execution_policy=True,
         ),
@@ -698,7 +698,7 @@ def decide_control_compose_path(
     blockers: list[str] = []
     if invent_green_pcs:
         blockers.append(
-            f"invent-green PCS integration refused (pointer={port.bl47_pointer}; claim_boundary)"
+            f"invent-green PCS integration refused (pointer={port.hardware_safety_pointer}; claim_boundary)"
         )
     if rewrite_realtime_runtime:
         blockers.append(

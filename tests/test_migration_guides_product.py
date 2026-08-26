@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for PL/Qiskit migration guides product (BL-41)
+# SCPN Quantum Control — tests for PL/Qiskit migration guides product
 """Real-surface tests for ``scpn_quantum_control.migration_guides_product``."""
 
 from __future__ import annotations

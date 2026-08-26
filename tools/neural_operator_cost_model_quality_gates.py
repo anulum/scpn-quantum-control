@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — neural-operator cost-model quality-gate specification
-"""Build strict documentation, typing, and coverage gates for BL-19."""
+"""Build strict documentation, typing, and exact coverage gates."""
 
 from __future__ import annotations
 

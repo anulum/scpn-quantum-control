@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Chimera-control evidence
-"""Deterministic BL-60 evidence construction, rendering, and byte custody."""
+"""Deterministic chimera-control evidence construction, rendering, and byte custody."""
 
 from __future__ import annotations
 
@@ -37,8 +37,8 @@ from .synthetic import (
 )
 from .topology import project_chimera_coupling
 
-BL60_EVIDENCE_SCHEMA = "chimera_multiscale_control_evidence.v1"
-BL60_EVIDENCE_DATE = "2026-07-29"
+CHIMERA_CONTROL_EVIDENCE_SCHEMA = "chimera_multiscale_control_evidence.v1"
+CHIMERA_CONTROL_EVIDENCE_DATE = "2026-07-29"
 SupportStatus = Literal["supported", "bounded", "descoped"]
 
 
@@ -199,7 +199,7 @@ class ChimeraMultiscaleEvidence:
     content_digest: str
 
     def __post_init__(self) -> None:
-        if self.schema_version != BL60_EVIDENCE_SCHEMA:
+        if self.schema_version != CHIMERA_CONTROL_EVIDENCE_SCHEMA:
             raise ValueError("schema_version mismatch")
         if not self.generated_on.strip():
             raise ValueError("generated_on must be non-empty")
@@ -390,8 +390,8 @@ def build_chimera_multiscale_evidence(
     gradient_error = _gradient_error(chimera_run)
     support = _support_rows()
     base: dict[str, object] = {
-        "schema_version": BL60_EVIDENCE_SCHEMA,
-        "generated_on": BL60_EVIDENCE_DATE,
+        "schema_version": CHIMERA_CONTROL_EVIDENCE_SCHEMA,
+        "generated_on": CHIMERA_CONTROL_EVIDENCE_DATE,
         "population_size": population_size,
         "chimera": chimera_evidence.to_dict(),
         "synchronised_control": synchronised_evidence.to_dict(),
@@ -403,8 +403,8 @@ def build_chimera_multiscale_evidence(
         "claim_boundary": CHIMERA_CONTROL_CLAIM_BOUNDARY,
     }
     return ChimeraMultiscaleEvidence(
-        schema_version=BL60_EVIDENCE_SCHEMA,
-        generated_on=BL60_EVIDENCE_DATE,
+        schema_version=CHIMERA_CONTROL_EVIDENCE_SCHEMA,
+        generated_on=CHIMERA_CONTROL_EVIDENCE_DATE,
         population_size=population_size,
         chimera=chimera_evidence,
         synchronised_control=synchronised_evidence,
@@ -511,8 +511,8 @@ def write_chimera_multiscale_evidence(
 
 
 __all__ = [
-    "BL60_EVIDENCE_DATE",
-    "BL60_EVIDENCE_SCHEMA",
+    "CHIMERA_CONTROL_EVIDENCE_DATE",
+    "CHIMERA_CONTROL_EVIDENCE_SCHEMA",
     "ChimeraMultiscaleEvidence",
     "ChimeraSupportRow",
     "SyntheticRegimeEvidence",

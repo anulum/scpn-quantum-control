@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for Phase-QNode product surface (BL-90)
+# SCPN Quantum Control — tests for Phase-QNode product surface
 """Real-surface tests for ``scpn_quantum_control.phase_qnode_product``."""
 
 from __future__ import annotations
@@ -43,7 +43,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
     """Return known journeys and reject blank or unknown identifiers."""
     journey = get_phase_qnode_journey("build_differentiate_dry_run")
     assert journey.allows_hardware is False
-    assert journey.bl97_stability_class == "experimental_workbench"
+    assert journey.api_stability_class == "experimental_workbench"
     assert journey.claim_boundary == PHASE_QNODE_PRODUCT_CLAIM_BOUNDARY
     with pytest.raises(ValueError, match="non-empty"):
         get_phase_qnode_journey("  ")
@@ -85,7 +85,7 @@ def test_public_surface_map() -> None:
     paths = {row["module_path"] for row in surfaces}
     assert "scpn_quantum_control.phase.qnode_circuit" in paths
     for row in surfaces:
-        assert row["bl97_stability_class"] == "experimental_workbench"
+        assert row["api_stability_class"] == "experimental_workbench"
         assert row["role"] == "phase_qnode_product_surface"
 
 
@@ -138,8 +138,8 @@ def test_journey_validation() -> None:
         PhaseQNodeJourney(**{**base, "allows_hardware": True})
     with pytest.raises(ValueError, match="as_of"):
         PhaseQNodeJourney(**{**base, "as_of": ""})
-    with pytest.raises(ValueError, match="bl97_stability_class"):
-        PhaseQNodeJourney(**{**base, "bl97_stability_class": ""})
+    with pytest.raises(ValueError, match="api_stability_class"):
+        PhaseQNodeJourney(**{**base, "api_stability_class": ""})
 
 
 def test_decision_invariants() -> None:

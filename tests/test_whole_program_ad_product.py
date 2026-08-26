@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for whole-program AD product surface (BL-91)
+# SCPN Quantum Control — tests for whole-program AD product surface
 """Real-surface tests for ``scpn_quantum_control.whole_program_ad_product``."""
 
 from __future__ import annotations
@@ -49,11 +49,14 @@ def test_get_known_and_unknown_fail_closed() -> None:
     """Return known journeys and reject blank or unknown identifiers."""
     journey = get_whole_program_ad_journey("frontend_compile_dry_run")
     assert journey.allows_hardware is False
-    assert journey.bl97_stability_class == "experimental_workbench"
+    assert journey.api_stability_class == "experimental_workbench"
     assert journey.claim_boundary == WHOLE_PROGRAM_AD_PRODUCT_CLAIM_BOUNDARY
     unsupported = get_whole_program_ad_journey("unsupported_frontend_fail_closed")
-    assert unsupported.bl53_pointer
-    assert "bl53" in unsupported.bl53_pointer or "unsuitable" in unsupported.bl53_pointer
+    assert unsupported.unsuitable_scenario_pointer
+    assert (
+        "scenario_row" in unsupported.unsuitable_scenario_pointer
+        or "unsuitable" in unsupported.unsuitable_scenario_pointer
+    )
     with pytest.raises(ValueError, match="non-empty"):
         get_whole_program_ad_journey("  ")
     with pytest.raises(ValueError, match="unknown journey_id"):
@@ -99,7 +102,7 @@ def test_dry_run_refuses_unsupported_frontend_execute() -> None:
     # Boundary map dry-run without execute request remains allowed.
     mapped = dry_run_whole_program_ad_journey("unsupported_frontend_fail_closed")
     assert mapped.allowed is True
-    assert "point_bl53_unsuitable_registry" in mapped.steps_completed
+    assert "point_unsuitable_scenario_registry" in mapped.steps_completed
 
 
 def test_dry_run_refuses_polyglot_and_edge_invent_green() -> None:
@@ -131,7 +134,7 @@ def test_public_surface_and_architecture_map() -> None:
     assert "scpn_quantum_control.whole_program_frontend" in paths
     assert "scpn_quantum_control.whole_program_ad_api" in paths
     for row in surfaces:
-        assert row["bl97_stability_class"] == "experimental_workbench"
+        assert row["api_stability_class"] == "experimental_workbench"
         assert row["role"] == "whole_program_ad_product_surface"
 
     layers = map_whole_program_ad_architecture_layers()
@@ -177,8 +180,8 @@ def test_integrity_rejects_drift_and_hardware() -> None:
             "steps": ["a"],
             "allows_hardware": False,
             "architecture_layer": "frontend",
-            "bl53_pointer": "",
-            "bl97_stability_class": "experimental_workbench",
+            "unsuitable_scenario_pointer": "",
+            "api_stability_class": "experimental_workbench",
             "as_of": "2026-07-24",
             "claim_boundary": WHOLE_PROGRAM_AD_PRODUCT_CLAIM_BOUNDARY,
         }
@@ -237,8 +240,8 @@ def test_journey_validation() -> None:
         WholeProgramADJourney(**{**base, "architecture_layer": ""})
     with pytest.raises(ValueError, match="as_of"):
         WholeProgramADJourney(**{**base, "as_of": ""})
-    with pytest.raises(ValueError, match="bl97_stability_class"):
-        WholeProgramADJourney(**{**base, "bl97_stability_class": ""})
+    with pytest.raises(ValueError, match="api_stability_class"):
+        WholeProgramADJourney(**{**base, "api_stability_class": ""})
 
 
 def test_decision_invariants() -> None:
@@ -398,9 +401,9 @@ def test_integrity_rejects_blank_invalid_and_metadata() -> None:
     bl53_rows = [dict(row) for row in journeys]
     for row in bl53_rows:
         if row.get("journey_id") == "unsupported_frontend_fail_closed":
-            row["bl53_pointer"] = ""
+            row["unsuitable_scenario_pointer"] = ""
     no_bl53["journeys"] = bl53_rows
-    with pytest.raises(ValueError, match="bl53_pointer"):
+    with pytest.raises(ValueError, match="unsuitable_scenario_pointer"):
         assert_whole_program_ad_product_integrity(no_bl53)
 
     no_default = dict(registry)

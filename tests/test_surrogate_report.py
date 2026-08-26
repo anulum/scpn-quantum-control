@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-45 evidence report tests
-"""Tests for deterministic BL-45 evidence rendering and custody."""
+# SCPN Quantum Control — quantum-reservoir evidence report tests
+"""Tests for deterministic quantum-reservoir evidence rendering and custody."""
 
 from __future__ import annotations
 

@@ -7,7 +7,7 @@
 # SCPN Quantum Control — Deep-analysis research-lane registry
 """Governed catalogue of the package's analysis and gauge research lanes.
 
-BL-84 makes the existing deep-analysis stack visible without promoting every
+research-lane makes the existing deep-analysis stack visible without promoting every
 importable module into a product or scientific claim.  Each immutable row
 records the module's human-reviewed maturity, relevance to differentiable
 work, current claim status, optional promotion route, and evidence pointers.
@@ -297,8 +297,8 @@ _RESEARCH_LANES = tuple(
                 _C,
                 _B,
                 _EB,
-                promotion_targets=("BL-80:complete",),
-                evidence_refs=("data/adaptive_fim_product/bl80_adaptive_fim_evidence.json",),
+                promotion_targets=("adaptive-fim:complete",),
+                evidence_refs=("data/adaptive_fim_product/adaptive_fim_evidence.json",),
             ),
             _lane(
                 "analysis.adaptive_fim_feedback",
@@ -306,7 +306,7 @@ _RESEARCH_LANES = tuple(
                 _C,
                 _B,
                 _EB,
-                promotion_targets=("BL-80:complete",),
+                promotion_targets=("adaptive-fim:complete",),
                 evidence_refs=("docs/adaptive_fim_feedback.md",),
             ),
             _lane("analysis.berry_phase", "Finite-size Berry-phase scan diagnostic.", _R, _D, _RO),
@@ -327,7 +327,7 @@ _RESEARCH_LANES = tuple(
                 _C,
                 _B,
                 _EB,
-                promotion_targets=("BL-54:complete",),
+                promotion_targets=("topology-control:complete",),
                 evidence_refs=("docs/dla_topology_constrained_control.md",),
             ),
             _lane(
@@ -336,7 +336,7 @@ _RESEARCH_LANES = tuple(
                 _C,
                 _B,
                 _EB,
-                promotion_targets=("BL-54:complete",),
+                promotion_targets=("topology-control:complete",),
                 evidence_refs=("data/dla_topology_control/evidence.json",),
             ),
             _lane(
@@ -345,7 +345,7 @@ _RESEARCH_LANES = tuple(
                 _P,
                 _B,
                 _DO,
-                promotion_targets=("BL-54:complete",),
+                promotion_targets=("topology-control:complete",),
             ),
             _lane(
                 "analysis.dla_truncated_tn",
@@ -360,7 +360,7 @@ _RESEARCH_LANES = tuple(
                 _P,
                 _D,
                 _DO,
-                promotion_targets=("BL-54:complete",),
+                promotion_targets=("topology-control:complete",),
             ),
             _lane(
                 "analysis.enaqt",
@@ -368,7 +368,7 @@ _RESEARCH_LANES = tuple(
                 _C,
                 _D,
                 _EB,
-                evidence_refs=("data/enaqt_product/bl87_enaqt_evidence.json",),
+                evidence_refs=("data/enaqt_product/enaqt_evidence.json",),
             ),
             _lane(
                 "analysis.enaqt_evidence",
@@ -376,7 +376,7 @@ _RESEARCH_LANES = tuple(
                 _C,
                 _N,
                 _EB,
-                evidence_refs=("data/enaqt_product/bl87_enaqt_evidence.json",),
+                evidence_refs=("data/enaqt_product/enaqt_evidence.json",),
             ),
             _lane(
                 "analysis.entanglement_enhanced_sync",
@@ -384,9 +384,7 @@ _RESEARCH_LANES = tuple(
                 _C,
                 _D,
                 _EB,
-                evidence_refs=(
-                    "data/entanglement_sync_product/bl79_entanglement_sync_evidence.json",
-                ),
+                evidence_refs=("data/entanglement_sync_product/entanglement_sync_evidence.json",),
             ),
             _lane(
                 "analysis.entanglement_entropy",
@@ -415,9 +413,7 @@ _RESEARCH_LANES = tuple(
                 _C,
                 _N,
                 _EB,
-                evidence_refs=(
-                    "data/entanglement_sync_product/bl79_entanglement_sync_evidence.json",
-                ),
+                evidence_refs=("data/entanglement_sync_product/entanglement_sync_evidence.json",),
             ),
             _lane(
                 "analysis.fim_hamiltonian",
@@ -425,7 +421,7 @@ _RESEARCH_LANES = tuple(
                 _P,
                 _K,
                 _DO,
-                promotion_targets=("BL-50:planned",),
+                promotion_targets=("geometric-control:planned",),
             ),
             _lane(
                 "analysis.finite_size_scaling",
@@ -574,7 +570,7 @@ _RESEARCH_LANES = tuple(
                 _P,
                 _K,
                 _DO,
-                promotion_targets=("BL-50:planned",),
+                promotion_targets=("geometric-control:planned",),
             ),
             _lane(
                 "analysis.qfi_criticality",
@@ -582,7 +578,7 @@ _RESEARCH_LANES = tuple(
                 _P,
                 _K,
                 _DO,
-                promotion_targets=("BL-50:planned",),
+                promotion_targets=("geometric-control:planned",),
             ),
             _lane(
                 "analysis.qfi_geometric_crosscheck",
@@ -590,7 +586,7 @@ _RESEARCH_LANES = tuple(
                 _P,
                 _K,
                 _DO,
-                promotion_targets=("BL-50:planned",),
+                promotion_targets=("geometric-control:planned",),
             ),
             _lane(
                 "analysis.qrc_phase_detector",
@@ -605,7 +601,7 @@ _RESEARCH_LANES = tuple(
                 _P,
                 _K,
                 _DO,
-                promotion_targets=("BL-50:planned",),
+                promotion_targets=("geometric-control:planned",),
             ),
             _lane(
                 "analysis.quantum_mpemba",
@@ -725,7 +721,7 @@ _RESEARCH_LANES = tuple(
                 _P,
                 _X,
                 _DO,
-                promotion_targets=("BL-72:deferred-owner-gate",),
+                promotion_targets=("coherence-observer:deferred-owner-gate",),
             ),
             _lane(
                 "analysis.theory_hook_promotion",

@@ -98,7 +98,7 @@ The gradient reference uses central differences of the exact local statevector
 objective at four disjoint points. It is not an analytic quantum gradient or a
 hardware-gradient result.
 
-## Exact-validated BL-33 proposal
+## Exact-validated co-design proposal
 
 `propose_and_validate_surrogate_step(...)` converts the surrogate gradient into
 a norm-bounded, unapplied `ControllerProposal`, then evaluates both current and
@@ -116,8 +116,8 @@ PYTHONPATH=src python scripts/run_quantum_reservoir_surrogate_evidence.py --chec
 
 Committed custody:
 
-- `data/quantum_reservoir_surrogates/bl45_evidence.json`
-- `data/quantum_reservoir_surrogates/bl45_evidence.md`
+- `data/quantum_reservoir_surrogates/quantum_reservoir_evidence.json`
+- `data/quantum_reservoir_surrogates/quantum_reservoir_evidence.md`
 - content digest `8b555933e6ec7f9b2ee3c885379ef87af11e1002ce4a2d119fa83f26507de41c`
 
 ## Scientific basis

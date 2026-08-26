@@ -63,6 +63,18 @@ def test_static_gates_include_module_size_policy_and_typing() -> None:
     assert "tools/audit_module_size_policy.py" in strict_cmd
 
 
+def test_static_gates_include_descriptive_production_naming() -> None:
+    """Preflight must keep internal work-item codes out of product names."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+
+    assert gate_map["descriptive-production-naming"][-1] == (
+        "tools/audit_descriptive_production_naming.py"
+    )
+    strict_cmd = gate_map["mypy-strict-descriptive-production-naming"]
+    assert "tools/audit_descriptive_production_naming.py" in strict_cmd
+    assert "tests/test_audit_descriptive_production_naming.py" in strict_cmd
+
+
 def test_static_gates_include_test_typing_policy_and_tool_typing() -> None:
     """Preflight must execute the test cohort and keep its audit tool strict."""
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}

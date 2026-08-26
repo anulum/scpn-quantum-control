@@ -5,13 +5,13 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — IQM layout-transfer per-size powered follow-up
-"""Frozen FU-3 circuit matrix and decision-rule implementation.
+"""Frozen IQM layout-transfer circuit matrix and decision-rule implementation.
 
 Implements the local, provider-free surfaces committed in
 ``docs/campaigns/iqm_layout_transfer_per_size_prereg_2026-07-22.md``.  The
 completed 2026-07-21 layout-transfer builder remains the single source for
 logical circuits, layouts, transpilation, exact references, readout
-calibration and depth-parity evidence.  FU-3 repeats each main circuit four
+calibration and depth-parity evidence.  IQM layout-transfer repeats each main circuit four
 times in deterministic execution order and keeps one readout pair per size.
 
 The analysis resamples every main repetition and readout circuit as a

@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-42 QGNN convergence tests
+# SCPN Quantum Control — convergence-example QGNN convergence tests
 """Real graph-conditioned Phase-QNode tests for the QGNN example."""
 
 from scpn_quantum_control.ml_examples import (

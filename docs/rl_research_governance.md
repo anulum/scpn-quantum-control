@@ -107,12 +107,12 @@ pre-approve such an environment.
 `RLPulseOptimizer.optimize_pulses()` always raises
 `RLResearchGovernanceError`. With no policy it reports the disabled research
 extra and missing preregistration. Even with a valid policy it reports both
-`rl_pulse_optimizer_unimplemented` and `BL-58_pulse_boundary_open`.
+`rl_pulse_optimizer_unimplemented` and `pulse_boundary_open`.
 
 The class cannot submit provider work, execute QPU pulses, save invented
 results, or bypass the separately governed [BL-58 pulse boundary](control_stack_compose_product.md#completed-boundaries).
 
-## BL-53 unsuitable scenario
+## unsuitable-scenario unsuitable scenario
 
 RL work without preregistration is a first-class negative-space entry:
 

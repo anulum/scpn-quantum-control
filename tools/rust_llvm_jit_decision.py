@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-38 Rust LLVM/JIT decision evidence
-"""Capture the bounded evidence needed for the BL-38 Rust JIT decision.
+# SCPN Quantum Control — Rust-JIT-decision Rust LLVM/JIT decision evidence
+"""Capture the bounded evidence needed for the Rust-JIT decision Rust JIT decision.
 
 The comparison deliberately measures the existing Rust Program-AD replay and
 the existing Python-owned llvmlite JIT on the same trace and inputs.  It does
@@ -315,7 +315,7 @@ def capture_decision_evidence(
     )
     payload: dict[str, object] = {
         "schema": SCHEMA,
-        "artifact_id": f"bl38-rust-llvm-jit-decision-{stamp}",
+        "artifact_id": f"rust-llvm-jit-decision-{stamp}",
         "stamp": stamp,
         "decision": decision,
         "rationale": rationale,
@@ -327,7 +327,7 @@ def capture_decision_evidence(
             "isolated_performance_evidence": isolated,
             "performance_claim_made": False,
             "product_role_proven": product_role_proven,
-            "bl49_family_expansion": False,
+            "parity_certificate_family_expansion": False,
             "dual_compiler_maintenance_burden": True,
             "rust_llvm_dependency_present": False,
         },

@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — differentiable notebook programme product (BL-40 / P1)
-"""Fail-closed **differentiable notebook programme** product surface (BL-40).
+# SCPN Quantum Control — differentiable notebook programme product
+"""Fail-closed **differentiable notebook programme** product surface.
 
 Productises the core-six differentiable-lane onboarding curriculum:
 

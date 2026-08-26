@@ -1,9 +1,9 @@
 # BL-102 RL research-governance evidence
 
 - Schema: `scpn.rl-research-governance.v1`
-- Policy: `rl-policy-9bf46ba406c8a6d4`
-- Preregistration: `BL102-LOCAL-WITNESS-REPLAY-v1`
-- Content digest: `871a82de560a2dd29a579b5cbda2a2f4d4348acb7eec808e506d6023c2b11362`
+- Policy: `rl-policy-5308e77754f9f46a`
+- Preregistration: `RL-GOVERNANCE-LOCAL-WITNESS-REPLAY-v1`
+- Content digest: `bfee938832bd91d28add062acefaa78205ac5fa57dc5674eeec97c33fa1319e1`
 - Result: **PASS**
 - Environment API: `not_applicable_static_candidate_search` (no Gym environment is introduced)
 - Reward: `witness_score_dense_composite_v1` (dense composite; component gaming remains a research risk)

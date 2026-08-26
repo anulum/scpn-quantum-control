@@ -1,4 +1,4 @@
-# Compose existing control/* stack product (BL-67)
+# Compose existing control/* stack product
 
 Versioned **ownership map** and **typed, executable adapter ports** over ambient production
 `control/*` modules so co-design (BL-33) does **not** invent a second stack.
@@ -119,7 +119,7 @@ promote PCS claims.
 ## Completed boundaries
 
 - **S67.3** — abstract QAOA-MPC is adapted; pulse execution is explicitly
-  descoped and fails closed to `BL-58/S58.4`.
+  descoped and fails closed to `pulse-boundary/runtime-adapter`.
 - **S67.4** — the existing mean-field co-simulation is policy-gated and its
   partition outputs are mapped into compact telemetry without changing ownership.
 - **S67.6** — BL-33 now specifies ports over BL-67 adapters.

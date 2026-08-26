@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for polyglot parity certificates (BL-49)
+# SCPN Quantum Control — tests for polyglot parity certificates
 """Real-surface tests for ``scpn_quantum_control.polyglot_parity_certificate``."""
 
 from __future__ import annotations
@@ -50,7 +50,7 @@ def test_list_families_and_filters() -> None:
 def test_get_known_and_unknown_fail_closed() -> None:
     """Resolve declared families while refusing blank and unknown identifiers."""
     family = get_parity_family("scalar_interpreter_replay")
-    assert family.bl97_stability_class == "experimental_workbench"
+    assert family.api_stability_class == "experimental_workbench"
     assert family.claim_boundary == POLYGLOT_PARITY_CLAIM_BOUNDARY
     with pytest.raises(ValueError, match="non-empty"):
         get_parity_family("  ")
@@ -227,7 +227,7 @@ def test_integrity_rejects_drift() -> None:
             "summary": "s",
             "support": "sample_bitexact",
             "module_path": "m",
-            "bl97_stability_class": "experimental_workbench",
+            "api_stability_class": "experimental_workbench",
             "as_of": "2026-07-24",
             "claim_boundary": POLYGLOT_PARITY_CLAIM_BOUNDARY,
         }
@@ -325,8 +325,8 @@ def test_family_validation() -> None:
         ParityFamily(**{**base, "support": cast(Any, "nope")})
     with pytest.raises(ValueError, match="module_path"):
         ParityFamily(**{**base, "module_path": ""})
-    with pytest.raises(ValueError, match="bl97"):
-        ParityFamily(**{**base, "bl97_stability_class": ""})
+    with pytest.raises(ValueError, match="api_stability_class"):
+        ParityFamily(**{**base, "api_stability_class": ""})
     with pytest.raises(ValueError, match="as_of"):
         ParityFamily(**{**base, "as_of": ""})
 

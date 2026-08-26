@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — quantum-classical co-design components
-"""Deterministic estimator, evaluator, and controller components for BL-33."""
+"""Deterministic estimator, evaluator, and controller components for co-design."""
 
 from __future__ import annotations
 

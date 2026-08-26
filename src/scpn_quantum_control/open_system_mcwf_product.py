@@ -4,13 +4,13 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Open-system MCWF completeness product (BL-51 / P1)
-"""Fail-closed **open-system MCWF completeness** product surface (BL-51).
+# SCPN Quantum Control — Open-system MCWF completeness product
+"""Fail-closed **open-system MCWF completeness** product surface.
 
 Productises documented open-system dynamics completeness over ambient
 :mod:`scpn_quantum_control.phase.tensor_jump` (MCWF trajectories/ensembles) and
 :mod:`scpn_quantum_control.phase.open_system_objectives` (seeded variance
-certificates, BL-16 boundary rows):
+certificates, open-system-objective boundary rows):
 
 * versioned open-system surface catalogue (Lindblad density, MCWF trajectory,
   ensemble, noise-model I/O, gradient boundary);
@@ -1008,7 +1008,7 @@ def map_open_system_mcwf_public_surfaces() -> tuple[dict[str, object], ...]:
         {
             "surface_id": "open_system_objectives",
             "module_path": "scpn_quantum_control.phase.open_system_objectives",
-            "role": "ambient_objectives_bl16",
+            "role": "ambient_objectives_trainability_evidence",
             "claim_boundary": OPEN_SYSTEM_OBJECTIVE_CLAIM_BOUNDARY,
         },
     )

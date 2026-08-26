@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for the BL-76 circuit-cutting product
+# SCPN Quantum Control — tests for the circuit-cutting circuit-cutting product
 """Real-surface tests for ``circuit_cutting_product``."""
 
 from __future__ import annotations

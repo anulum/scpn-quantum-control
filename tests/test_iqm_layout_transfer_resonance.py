@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — IQM layout-transfer Resonance runner tests
-"""Tests for the owner-gated IQM FU-3 live submission boundary."""
+"""Tests for the owner-gated IQM IQM layout-transfer live submission boundary."""
 
 from __future__ import annotations
 
@@ -140,7 +140,9 @@ def test_all_sizes_submits_exact_frozen_two_job_split(
 ) -> None:
     runner = _load_runner()
     labels, circuits = _matrix()
-    labels_path, circuits_path, plan_path = _write_inputs(tmp_path, labels, runner.FU3_CAMPAIGN)
+    labels_path, circuits_path, plan_path = _write_inputs(
+        tmp_path, labels, runner.IQM_LAYOUT_TRANSFER_CAMPAIGN
+    )
     backend = _Backend()
     monkeypatch.setattr(runner, "_load_qpy_wrapper", lambda: _QpyWrapper(circuits))
     monkeypatch.setattr(runner, "_backend", lambda _target: backend)
@@ -172,7 +174,9 @@ def test_all_sizes_rejects_non_fu3_plan(tmp_path: Path) -> None:
 def test_submit_refuses_without_current_owner_go(tmp_path: Path) -> None:
     runner = _load_runner()
     labels, _circuits = _matrix()
-    labels_path, circuits_path, plan_path = _write_inputs(tmp_path, labels, runner.FU3_CAMPAIGN)
+    labels_path, circuits_path, plan_path = _write_inputs(
+        tmp_path, labels, runner.IQM_LAYOUT_TRANSFER_CAMPAIGN
+    )
     assert (
         runner._submit(
             _args(
@@ -195,7 +199,7 @@ def test_live_depth_gate_rejects_unbalanced_size() -> None:
             for _index in range(3):
                 circuit.cz(0, 1)
     with pytest.raises(ValueError, match="depth-parity violation at n=12"):
-        runner._validate_fu3_live_depths(list(zip(labels, circuits, strict=True)))
+        runner._validate_iqm_layout_transfer_live_depths(list(zip(labels, circuits, strict=True)))
 
 
 def test_reviewed_standalone_loaders_resolve_real_modules() -> None:
@@ -277,7 +281,7 @@ def test_submission_matrix_fails_closed(
     runner = _load_runner()
     labels, circuits = _matrix()
     plan: dict[str, Any] = {
-        "campaign": runner.FU3_CAMPAIGN,
+        "campaign": runner.IQM_LAYOUT_TRANSFER_CAMPAIGN,
         "all_gates_pass": True,
         "circuit_count": 42,
     }
@@ -328,7 +332,7 @@ def test_live_depth_matrix_rejects_malformed_content(mutator: Any, message: str)
     labels, circuits = _matrix()
     mutator(labels, circuits)
     with pytest.raises(ValueError, match=message):
-        runner._validate_fu3_live_depths(list(zip(labels, circuits, strict=True)))
+        runner._validate_iqm_layout_transfer_live_depths(list(zip(labels, circuits, strict=True)))
 
 
 def test_provider_constructors_receive_vault_credentials(

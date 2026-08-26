@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — hardware-safe gradient execution product (BL-47 / Axis 5)
-"""Fail-closed hardware-safe gradient execution policy product (BL-47).
+# SCPN Quantum Control — hardware-safe gradient execution product
+"""Fail-closed hardware-safe gradient execution policy product.
 
 Productises Axis-5 safety: **no-submit default**, shot budgets, honest cost-model
 status, dry-run planning, enforce/refuse for would-submit and over-budget, and

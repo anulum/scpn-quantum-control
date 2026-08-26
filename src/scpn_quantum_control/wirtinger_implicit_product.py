@@ -4,14 +4,14 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Wirtinger + implicit differentiation product (BL-64 / P1)
-"""Fail-closed **Wirtinger + implicit differentiation** product surface (BL-64).
+# SCPN Quantum Control — Wirtinger + implicit differentiation product
+"""Fail-closed **Wirtinger + implicit differentiation** product surface.
 
 Productises complex-valued Wirtinger contracts and real-valued implicit
 sensitivity helpers as a first-class product: versioned surface catalogue,
 materialised scalar demo probes, and refuse-complex-without-Wirtinger paths
-composing BL-53 unsuitable scenario
-``unsuitable:complex.objective_without_wirtinger`` plus BL-46 metamorphic law
+composing unsuitable-scenario unsuitable scenario
+``unsuitable:complex.objective_without_wirtinger`` plus metamorphic-verification metamorphic law
 ``law:anti_silent.complex_without_wirtinger``.
 
 Composes ambient :mod:`scpn_quantum_control.wirtinger_calculus` and
@@ -59,10 +59,12 @@ WIRTINGER_IMPLICIT_CLAIM_BOUNDARY: Final[str] = (
 )
 """Shared claim boundary for Wirtinger / implicit product payloads."""
 
-BL53_COMPLEX_WITHOUT_WIRTINGER: Final[str] = "unsuitable:complex.objective_without_wirtinger"
+COMPLEX_OBJECTIVE_WITHOUT_WIRTINGER_SCENARIO: Final[str] = (
+    "unsuitable:complex.objective_without_wirtinger"
+)
 """BL-53 unsuitable scenario id for complex objective without Wirtinger."""
 
-BL46_COMPLEX_WITHOUT_WIRTINGER_LAW: Final[str] = "law:anti_silent.complex_without_wirtinger"
+COMPLEX_OBJECTIVE_WIRTINGER_LAW: Final[str] = "law:anti_silent.complex_without_wirtinger"
 """BL-46 metamorphic law id pairing the BL-53 complex refuse."""
 
 
@@ -86,9 +88,9 @@ class WirtingerImplicitSurfaceRow:
         Primary ambient symbol.
     support_posture
         Support posture badge.
-    bl53_pointer
+    unsuitable_scenario_pointer
         BL-53 unsuitable-scenario pointer (required for complex paths).
-    bl46_pointer
+    metamorphic_verification_pointer
         BL-46 metamorphic-law pointer (anti-silent complex).
     as_of
         Inventory date label.
@@ -104,8 +106,8 @@ class WirtingerImplicitSurfaceRow:
     module_path: str
     symbol_name: str
     support_posture: SupportPosture
-    bl53_pointer: str = BL53_COMPLEX_WITHOUT_WIRTINGER
-    bl46_pointer: str = BL46_COMPLEX_WITHOUT_WIRTINGER_LAW
+    unsuitable_scenario_pointer: str = COMPLEX_OBJECTIVE_WITHOUT_WIRTINGER_SCENARIO
+    metamorphic_verification_pointer: str = COMPLEX_OBJECTIVE_WIRTINGER_LAW
     as_of: str = "2026-07-24"
     claim_boundary: str = WIRTINGER_IMPLICIT_CLAIM_BOUNDARY
 
@@ -138,10 +140,13 @@ class WirtingerImplicitSurfaceRow:
             raise ValueError(f"unknown support_posture: {self.support_posture!r}")
         if not self.as_of or not self.as_of.strip():
             raise ValueError("as_of must be non-empty")
-        if not self.bl53_pointer or not self.bl53_pointer.strip():
-            raise ValueError("bl53_pointer must be non-empty")
-        if not self.bl46_pointer or not self.bl46_pointer.strip():
-            raise ValueError("bl46_pointer must be non-empty")
+        if not self.unsuitable_scenario_pointer or not self.unsuitable_scenario_pointer.strip():
+            raise ValueError("unsuitable_scenario_pointer must be non-empty")
+        if (
+            not self.metamorphic_verification_pointer
+            or not self.metamorphic_verification_pointer.strip()
+        ):
+            raise ValueError("metamorphic_verification_pointer must be non-empty")
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this row."""
@@ -153,8 +158,8 @@ class WirtingerImplicitSurfaceRow:
             "module_path": self.module_path,
             "symbol_name": self.symbol_name,
             "support_posture": self.support_posture,
-            "bl53_pointer": self.bl53_pointer,
-            "bl46_pointer": self.bl46_pointer,
+            "unsuitable_scenario_pointer": self.unsuitable_scenario_pointer,
+            "metamorphic_verification_pointer": self.metamorphic_verification_pointer,
             "as_of": self.as_of,
             "claim_boundary": self.claim_boundary,
         }
@@ -283,9 +288,9 @@ class ComplexContractDecision:
         Human-readable reason.
     blockers
         Non-empty when refused.
-    bl53_id
+    scenario_id
         BL-53 scenario id.
-    bl46_id
+    metamorphic_law_id
         BL-46 law id.
 
     """
@@ -294,8 +299,8 @@ class ComplexContractDecision:
     has_wirtinger_contract: bool
     reason: str
     blockers: tuple[str, ...]
-    bl53_id: str = BL53_COMPLEX_WITHOUT_WIRTINGER
-    bl46_id: str = BL46_COMPLEX_WITHOUT_WIRTINGER_LAW
+    scenario_id: str = COMPLEX_OBJECTIVE_WITHOUT_WIRTINGER_SCENARIO
+    metamorphic_law_id: str = COMPLEX_OBJECTIVE_WIRTINGER_LAW
     claim_boundary: str = WIRTINGER_IMPLICIT_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
@@ -318,8 +323,8 @@ class ComplexContractDecision:
             "has_wirtinger_contract": self.has_wirtinger_contract,
             "reason": self.reason,
             "blockers": list(self.blockers),
-            "bl53_id": self.bl53_id,
-            "bl46_id": self.bl46_id,
+            "scenario_id": self.scenario_id,
+            "metamorphic_law_id": self.metamorphic_law_id,
             "claim_boundary": self.claim_boundary,
         }
 
@@ -535,8 +540,8 @@ def decide_complex_objective_contract(
             has_wirtinger_contract=True,
             reason=(
                 "complex objective allowed under explicit Wirtinger contract "
-                f"(compose {BL53_COMPLEX_WITHOUT_WIRTINGER} + "
-                f"{BL46_COMPLEX_WITHOUT_WIRTINGER_LAW})"
+                f"(compose {COMPLEX_OBJECTIVE_WITHOUT_WIRTINGER_SCENARIO} + "
+                f"{COMPLEX_OBJECTIVE_WIRTINGER_LAW})"
             ),
             blockers=(),
         )
@@ -548,9 +553,9 @@ def decide_complex_objective_contract(
             "real-gradient substitution is forbidden"
         ),
         blockers=(
-            f"{BL53_COMPLEX_WITHOUT_WIRTINGER}: complex-valued objective "
+            f"{COMPLEX_OBJECTIVE_WITHOUT_WIRTINGER_SCENARIO}: complex-valued objective "
             "without explicit Wirtinger contract",
-            f"{BL46_COMPLEX_WITHOUT_WIRTINGER_LAW}: anti-silent complex without Wirtinger",
+            f"{COMPLEX_OBJECTIVE_WIRTINGER_LAW}: anti-silent complex without Wirtinger",
         ),
     )
 
@@ -700,8 +705,8 @@ def map_wirtinger_implicit_public_surfaces() -> tuple[dict[str, object], ...]:
                 "surface_ids": [
                     s.surface_id for s in _CANONICAL_SURFACES if s.module_path == path
                 ],
-                "bl53_pointer": surface.bl53_pointer,
-                "bl46_pointer": surface.bl46_pointer,
+                "unsuitable_scenario_pointer": surface.unsuitable_scenario_pointer,
+                "metamorphic_verification_pointer": surface.metamorphic_verification_pointer,
                 "claim_boundary": WIRTINGER_IMPLICIT_CLAIM_BOUNDARY,
             }
         )
@@ -724,8 +729,8 @@ def build_wirtinger_implicit_product_registry() -> dict[str, object]:
         "surface_count": len(surfaces),
         "blank_entry_count": 0,
         "default_surface_id": "wirtinger_partials",
-        "bl53_complex_without_wirtinger": BL53_COMPLEX_WITHOUT_WIRTINGER,
-        "bl46_complex_without_wirtinger_law": BL46_COMPLEX_WITHOUT_WIRTINGER_LAW,
+        "complex_objective_without_wirtinger": COMPLEX_OBJECTIVE_WITHOUT_WIRTINGER_SCENARIO,
+        "complex_objective_wirtinger_law": COMPLEX_OBJECTIVE_WIRTINGER_LAW,
         "public_surfaces": list(map_wirtinger_implicit_public_surfaces()),
         "surfaces": surfaces,
         "policy_note": (
@@ -776,7 +781,7 @@ def assert_wirtinger_implicit_product_integrity(
         surface_id = row.get("surface_id")
         kind = row.get("kind")
         symbol_name = row.get("symbol_name")
-        bl53 = row.get("bl53_pointer")
+        scenario_row = row.get("unsuitable_scenario_pointer")
         if not surface_id or not str(surface_id).strip():
             blank += 1
             continue
@@ -800,8 +805,8 @@ def assert_wirtinger_implicit_product_integrity(
             continue
         if not symbol_name or not str(symbol_name).strip():
             raise ValueError(f"surface {sid!r} must have symbol_name")
-        if not bl53 or not str(bl53).strip():
-            raise ValueError(f"surface {sid!r} must have bl53_pointer")
+        if not scenario_row or not str(scenario_row).strip():
+            raise ValueError(f"surface {sid!r} must have unsuitable_scenario_pointer")
     if blank:
         raise ValueError(
             f"wirtinger/implicit product registry has {blank} blank or invalid entries"
@@ -827,8 +832,8 @@ def assert_wirtinger_implicit_product_integrity(
 
 
 __all__ = [
-    "BL46_COMPLEX_WITHOUT_WIRTINGER_LAW",
-    "BL53_COMPLEX_WITHOUT_WIRTINGER",
+    "COMPLEX_OBJECTIVE_WIRTINGER_LAW",
+    "COMPLEX_OBJECTIVE_WITHOUT_WIRTINGER_SCENARIO",
     "WIRTINGER_IMPLICIT_CLAIM_BOUNDARY",
     "WIRTINGER_IMPLICIT_PRODUCT_SCHEMA",
     "ComplexContractDecision",

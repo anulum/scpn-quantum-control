@@ -4,13 +4,13 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — neural-operator baseline composition product (BL-78)
+# SCPN Quantum Control — neural-operator baseline composition product
 """Compose existing neural-operator baselines under fail-closed governance.
 
 The product verifies the committed runner artifact, labels training and
-inference costs separately, binds BL-65's default no-advantage certificate,
+inference costs separately, binds advantage-language's default no-advantage certificate,
 admits only public or explicitly synthetic forecast datasets, and records the
-honest BL-32/BL-37 wiring disposition. It does not train a second model or turn
+honest quantum-sync-oracle/multimodal-forecasting wiring disposition. It does not train a second model or turn
 an arithmetic crossover into a quantum-advantage claim.
 """
 
@@ -138,15 +138,18 @@ class DatasetAdmission:
 
 @dataclass(frozen=True, slots=True)
 class IntegrationDisposition:
-    """Honest BL-32 or BL-37 integration disposition."""
+    """Honest downstream product integration disposition."""
 
-    target: Literal["BL-32", "BL-37"]
+    target: Literal["quantum_sync_oracle", "multimodal_forecasting"]
     status: IntegrationStatus
     reason: str
 
     def __post_init__(self) -> None:
         """Validate integration disposition."""
-        if self.target not in {"BL-32", "BL-37"} or not self.reason.strip():
+        if (
+            self.target not in {"quantum_sync_oracle", "multimodal_forecasting"}
+            or not self.reason.strip()
+        ):
             raise ValueError("integration disposition requires a known target and reason")
         if self.status not in {"wired", "descoped_fail_closed", "design_dependency"}:
             raise ValueError(f"unknown integration status: {self.status!r}")
@@ -360,12 +363,12 @@ def build_neural_operator_baseline_product(
         ),
         integrations=(
             IntegrationDisposition(
-                "BL-32",
+                "quantum_sync_oracle",
                 "descoped_fail_closed",
                 "The current challenge oracle has no public classical-baseline registration API.",
             ),
             IntegrationDisposition(
-                "BL-37",
+                "multimodal_forecasting",
                 "design_dependency",
                 "BL-78 supplies a baseline dependency; multimodal product wiring remains BL-37 scope.",
             ),

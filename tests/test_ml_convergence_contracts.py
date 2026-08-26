@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-42 convergence contract tests
-"""Validation and serialisation tests for BL-42 evidence contracts."""
+# SCPN Quantum Control — convergence-example convergence contract tests
+"""Validation and serialisation tests for convergence-example evidence contracts."""
 
 from __future__ import annotations
 

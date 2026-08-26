@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — fixture-driven visualisation dashboard product (BL-34 / P1)
-"""Fail-closed **fixture-driven visualisation dashboard** product (BL-34).
+# SCPN Quantum Control — fixture-driven visualisation dashboard product
+"""Fail-closed **fixture-driven visualisation dashboard** product.
 
 Productises static panel catalogues and materialised report probes from
 allowed fixtures only:

@@ -4,12 +4,12 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Active sensing / experimental design product (BL-68)
+# SCPN Quantum Control — Active sensing / experimental design product
 """Policy-bounded active sensing over existing sensing and S3 surfaces.
 
 This module ranks synthetic scalar observations by Gaussian expected
-information gain, applies the BL-47 no-submit shot budget before scoring, runs
-the existing S3 design protocol as evidence, and emits a BL-33 observer record.
+information gain, applies the hardware-safety no-submit shot budget before scoring, runs
+the existing S3 design protocol as evidence, and emits a co-design observer record.
 It never submits hardware work or promotes the research-only NV 20 T surface.
 """
 
@@ -179,7 +179,7 @@ _INVENTORY: Final[tuple[SensingInventoryRow, ...]] = (
         "hardware_blocked",
     ),
     SensingInventoryRow(
-        "bl33_observer",
+        "codesign_observer",
         "scpn_quantum_control.active_sensing_product.ActiveSensingObserverRecord",
         "ports-over-adapters observer telemetry",
         "adapter_only",
@@ -278,7 +278,7 @@ def plan_active_sensing(
     protocol = default_s3_design_protocol()
     s3_rows = score_s3_candidates(protocol, k_matrix, omega)
     observer = ActiveSensingObserverRecord(
-        observer_id=f"bl68:{policy_id}:{selected.observable_id}",
+        observer_id=f"active-sensing:{policy_id}:{selected.observable_id}",
         channel=selected.channel,
         selected_observable_id=selected.observable_id,
         expected_information_gain_nats=selected.expected_information_gain_nats,

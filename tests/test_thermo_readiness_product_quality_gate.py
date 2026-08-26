@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — thermo-readiness product quality-gate tests
-"""Lock the BL-19 thermo-readiness quality gate into preflight and CI."""
+"""Lock the thermo-readiness quality gate into preflight and CI."""
 
 from __future__ import annotations
 

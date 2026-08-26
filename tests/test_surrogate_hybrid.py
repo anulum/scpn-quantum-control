@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Exact-validated surrogate proposal tests
-"""Tests for the unapplied BL-33 surrogate proposal boundary."""
+"""Tests for the unapplied co-design surrogate proposal boundary."""
 
 from __future__ import annotations
 

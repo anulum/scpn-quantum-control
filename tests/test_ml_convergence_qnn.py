@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-42 QNN convergence tests
+# SCPN Quantum Control — convergence-example QNN convergence tests
 """Real trainer and installed-framework tests for the QNN example."""
 
 from __future__ import annotations

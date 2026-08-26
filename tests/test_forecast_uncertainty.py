@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multimodal forecast uncertainty tests
-"""Production-surface tests for BL-37 split residual interval custody."""
+"""Production-surface tests for multimodal-forecasting split residual interval custody."""
 
 from __future__ import annotations
 

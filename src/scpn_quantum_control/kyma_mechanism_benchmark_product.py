@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — KYMA mechanism benchmark product (BL-73 / P1)
-"""Fail-closed **KYMA / KYMA v2 public mechanism-only benchmark** product (BL-73).
+# SCPN Quantum Control — KYMA mechanism benchmark product
+"""Fail-closed **KYMA / KYMA v2 public mechanism-only benchmark** product.
 
 Productises a preregistered, mechanism-only sync-learning honesty surface over
 ambient :mod:`benchmarks.kyma` / :mod:`benchmarks.kyma_v2`:
@@ -17,7 +17,7 @@ ambient :mod:`benchmarks.kyma` / :mod:`benchmarks.kyma_v2`:
   :mod:`benchmarks.kyma_v2.design`;
 * baseline harness pointers (classical ML residual depth honest);
 * refuse post-hoc constant retuning, invent-green advantage without KYMA
-  protocol id, and design freeze from student metrics (BL-65 compose).
+  protocol id, and design freeze from student metrics (advantage-language compose).
 
 Does **not** re-train full student/MLP suites, invent hermetic kit export
 (S73.6 residual), or claim public marketing gold without promotion package.

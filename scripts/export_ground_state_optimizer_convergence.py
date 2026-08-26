@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Ground-State Optimizer Convergence Export
-"""Export BL-15 ground-state optimizer convergence benchmark rows."""
+"""Export optimizer-convergence ground-state optimizer convergence benchmark rows."""
 
 from __future__ import annotations
 

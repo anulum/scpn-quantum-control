@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-88 deterministic evidence
-"""Deterministic evidence and claim-boundary rendering for BL-88."""
+# SCPN Quantum Control — topology-kernel deterministic evidence
+"""Deterministic evidence and claim-boundary rendering for topology-kernel."""
 
 from __future__ import annotations
 
@@ -39,8 +39,8 @@ from .synthetic import (
     zero_topology,
 )
 
-BL88_EVIDENCE_SCHEMA = "bl88_topology_aware_quantum_kernel_evidence_v1"
-BL88_EVIDENCE_DATE = "2026-07-29"
+TOPOLOGY_KERNEL_EVIDENCE_SCHEMA = "topology_aware_quantum_kernel_evidence_v1"
+TOPOLOGY_KERNEL_EVIDENCE_DATE = "2026-07-29"
 
 SupportStatus = Literal["supported", "descoped"]
 _NUMERIC_CUSTODY_DECIMALS = 12
@@ -169,9 +169,9 @@ class TopologyKernelEvidence:
     content_digest: str
 
     def __post_init__(self) -> None:
-        if self.schema_version != BL88_EVIDENCE_SCHEMA:
+        if self.schema_version != TOPOLOGY_KERNEL_EVIDENCE_SCHEMA:
             raise ValueError("schema_version is unsupported")
-        if self.generated_on != BL88_EVIDENCE_DATE:
+        if self.generated_on != TOPOLOGY_KERNEL_EVIDENCE_DATE:
             raise ValueError("generated_on must match the frozen evidence date")
         for name in ("seed", "n_qubits", "feature_dim", "train_count", "test_count"):
             value = getattr(self, name)
@@ -413,8 +413,8 @@ def build_topology_kernel_evidence(
         ),
     )
     fields: dict[str, object] = {
-        "schema_version": BL88_EVIDENCE_SCHEMA,
-        "generated_on": BL88_EVIDENCE_DATE,
+        "schema_version": TOPOLOGY_KERNEL_EVIDENCE_SCHEMA,
+        "generated_on": TOPOLOGY_KERNEL_EVIDENCE_DATE,
         "seed": seed,
         "n_qubits": policy.n_qubits,
         "feature_dim": policy.feature_dim,

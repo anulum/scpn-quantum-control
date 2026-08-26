@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Differentiable error mitigation product (BL-59 / P1)
-"""Fail-closed **differentiable error-mitigation taxonomy** product (BL-59).
+# SCPN Quantum Control — Differentiable error mitigation product
+"""Fail-closed **differentiable error-mitigation taxonomy** product.
 
 Productises a versioned mitigator taxonomy and local simulation probes over
 ambient :mod:`scpn_quantum_control.mitigation` and Studio
@@ -19,7 +19,7 @@ ambient :mod:`scpn_quantum_control.mitigation` and Studio
 * readout confusion-matrix mitigation probe from calibration counts;
 * hard-gap boundaries: invent-green ideal-gradient restoration, live QPU
   mitigation claims, mitiq-as-hard-dependency without extra;
-* compose BL-47 no-submit and BL-62 executive ``mitigate`` claim boundary.
+* compose hardware-safety no-submit and Studio-executive executive ``mitigate`` claim boundary.
 
 Does **not** claim mitigation restores ideal gradients, run live hardware,
 or require mitiq as a hard dependency.
@@ -985,7 +985,7 @@ def map_error_mitigation_public_surfaces() -> tuple[dict[str, object], ...]:
         {
             "surface_id": "studio_executive_mitigate",
             "module_path": "scpn_quantum_control.studio.executive_mitigate",
-            "role": "studio_bl62_compose",
+            "role": "studio_executive_compose",
             "claim_boundary": _studio_mitigate_claim_boundary_text(),
         },
     )

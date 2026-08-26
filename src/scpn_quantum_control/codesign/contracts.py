@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — quantum-classical co-design contracts
-"""Immutable contracts for the simulator-first BL-33 co-design loop."""
+"""Immutable contracts for the simulator-first co-design co-design loop."""
 
 from __future__ import annotations
 

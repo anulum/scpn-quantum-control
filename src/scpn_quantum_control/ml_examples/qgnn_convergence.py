@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-42 bounded QGNN convergence example
+# SCPN Quantum Control — convergence-example bounded QGNN convergence example
 """Frozen graph-regression convergence task over the existing bounded QGNN."""
 
 from __future__ import annotations

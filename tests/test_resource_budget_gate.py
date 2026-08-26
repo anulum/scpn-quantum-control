@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for resource budget gate (BL-94)
+# SCPN Quantum Control — tests for resource budget gate
 """Real-surface tests for ``scpn_quantum_control.resource_budget_gate``."""
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-# SSGF quantum-in-the-loop geometry gradient (BL-70)
+# SSGF quantum-in-the-loop geometry gradient
 
 `scpn_quantum_control.ssgf_geometry_gradient_product` governs the existing
 SSGF simulator path

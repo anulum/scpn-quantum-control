@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Open-System Objective Evidence Tests
-"""Tests for BL-16 open-system objective artifact writing."""
+"""Tests for open-system-objective open-system objective artifact writing."""
 
 from __future__ import annotations
 

@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for cloud-native deployment product (BL-101)
+# SCPN Quantum Control — tests for cloud-native deployment product
 """Real-surface tests for ``cloud_native_deployment_product``."""
 
 from __future__ import annotations
@@ -179,8 +179,8 @@ def test_integrity_rejects_drift_and_policy() -> None:
             "allows_always_on_qpu": False,
             "secret_env_allowed": False,
             "live_cluster_create": False,
-            "bl47_pointer": "p",
-            "bl95_pointer": "p",
+            "hardware_safety_pointer": "p",
+            "compute_plan_pointer": "p",
             "support_posture": "policy_only",
             "as_of": "2026-07-24",
             "claim_boundary": CLOUD_NATIVE_DEPLOYMENT_CLAIM_BOUNDARY,
@@ -366,10 +366,10 @@ def test_row_decision_probe_validation() -> None:
         DeploymentPatternRow(**{**base, "secret_env_allowed": True})
     with pytest.raises(ValueError, match="live_cluster_create"):
         DeploymentPatternRow(**{**base, "live_cluster_create": True})
-    with pytest.raises(ValueError, match="bl47_pointer"):
-        DeploymentPatternRow(**{**base, "bl47_pointer": ""})
-    with pytest.raises(ValueError, match="bl95_pointer"):
-        DeploymentPatternRow(**{**base, "bl95_pointer": ""})
+    with pytest.raises(ValueError, match="hardware_safety_pointer"):
+        DeploymentPatternRow(**{**base, "hardware_safety_pointer": ""})
+    with pytest.raises(ValueError, match="compute_plan_pointer"):
+        DeploymentPatternRow(**{**base, "compute_plan_pointer": ""})
     with pytest.raises(ValueError, match="support_posture"):
         DeploymentPatternRow(**{**base, "support_posture": cast(Any, "nope")})
     with pytest.raises(ValueError, match="as_of"):

@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for competitive baseline watch (BL-61)
+# SCPN Quantum Control — tests for competitive baseline watch
 """Real-surface tests for ``scpn_quantum_control.competitive_baseline_watch``."""
 
 from __future__ import annotations
@@ -54,7 +54,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
     assert row.claim_boundary == COMPETITIVE_BASELINE_WATCH_CLAIM_BOUNDARY
     assert row.pin_status == "pinned_snapshot"
     assert row.upstream_version
-    assert row.feed_bl56_status == "blocked"
+    assert row.scorecard_feed_status == "blocked"
     assert row.blockers
     with pytest.raises(ValueError, match="non-empty"):
         get_competitive_watch("  ")
@@ -105,7 +105,7 @@ def test_probe_refresh_never_invent_green() -> None:
 
 def test_probe_feed_bl56_blocked() -> None:
     """Keep BL-56 scorecard feeds blocked without accepted evidence packages."""
-    feed = probe_feed("pennylane", feed_target="bl56_scorecard")
+    feed = probe_feed("pennylane", feed_target="scorecard_acceptance")
     assert feed.allowed is False
     assert feed.status == "blocked"
     assert feed.blockers
@@ -115,7 +115,7 @@ def test_probe_feed_bl56_blocked() -> None:
 
 def test_probe_feed_bl52_pending_pointers() -> None:
     """Expose bounded BL-52 pointers without mutating the route matrix."""
-    feed = probe_feed("catalyst", feed_target="bl52_route_matrix")
+    feed = probe_feed("catalyst", feed_target="governed_route_matrix")
     assert feed.allowed is False
     assert feed.status == "pending"
     assert feed.pointers
@@ -143,7 +143,7 @@ def test_record_to_dict_and_probes() -> None:
     assert payload["pin_status"] == "pinned_snapshot"
     refresh = probe_refresh("jax")
     assert refresh.to_dict()["allowed_green_current"] is False
-    feed = probe_feed("jax", feed_target="bl52_route_matrix")
+    feed = probe_feed("jax", feed_target="governed_route_matrix")
     assert feed.to_dict()["allowed"] is False
 
 
@@ -167,8 +167,8 @@ def test_watch_record_validation() -> None:
         "refresh_due_on": "2026-08-11",
         "refresh_state": "pending_verification",
         "scorecard_categories": ("jax_native_transforms",),
-        "feed_bl52_status": "pending",
-        "feed_bl56_status": "blocked",
+        "route_matrix_feed_status": "pending",
+        "scorecard_feed_status": "blocked",
         "blockers": ("re-pin pending",),
     }
     ok = CompetitiveWatchRecord(**base_kwargs)
@@ -182,10 +182,10 @@ def test_watch_record_validation() -> None:
         CompetitiveWatchRecord(**{**base_kwargs, "refresh_state": cast(Any, "weird")})
     with pytest.raises(ValueError, match="display_name"):
         CompetitiveWatchRecord(**{**base_kwargs, "display_name": ""})
-    with pytest.raises(ValueError, match="feed_bl52_status"):
-        CompetitiveWatchRecord(**{**base_kwargs, "feed_bl52_status": cast(Any, "nope")})
-    with pytest.raises(ValueError, match="feed_bl56_status"):
-        CompetitiveWatchRecord(**{**base_kwargs, "feed_bl56_status": cast(Any, "nope")})
+    with pytest.raises(ValueError, match="route_matrix_feed_status"):
+        CompetitiveWatchRecord(**{**base_kwargs, "route_matrix_feed_status": cast(Any, "nope")})
+    with pytest.raises(ValueError, match="scorecard_feed_status"):
+        CompetitiveWatchRecord(**{**base_kwargs, "scorecard_feed_status": cast(Any, "nope")})
     with pytest.raises(ValueError, match="source_url"):
         CompetitiveWatchRecord(**{**base_kwargs, "source_url": ""})
     with pytest.raises(ValueError, match="source_kind"):
@@ -222,8 +222,8 @@ def test_watch_record_validation() -> None:
                 "blockers": (),
             }
         )
-    with pytest.raises(ValueError, match="feed_bl56_status must be blocked"):
-        CompetitiveWatchRecord(**{**base_kwargs, "feed_bl56_status": "ready_pointer"})
+    with pytest.raises(ValueError, match="scorecard_feed_status must be blocked"):
+        CompetitiveWatchRecord(**{**base_kwargs, "scorecard_feed_status": "ready_pointer"})
     with pytest.raises(ValueError, match="requires at least one blocker"):
         CompetitiveWatchRecord(**{**base_kwargs, "blockers": ()})
 
@@ -283,7 +283,7 @@ def test_refresh_and_feed_probe_invariants() -> None:
     with pytest.raises(ValueError, match="competitor_id"):
         FeedProbeResult(
             competitor_id="",
-            feed_target="bl52_route_matrix",
+            feed_target="governed_route_matrix",
             status="blocked",
             allowed=False,
             reason="r",
@@ -303,7 +303,7 @@ def test_refresh_and_feed_probe_invariants() -> None:
     with pytest.raises(ValueError, match="status"):
         FeedProbeResult(
             competitor_id="jax",
-            feed_target="bl52_route_matrix",
+            feed_target="governed_route_matrix",
             status=cast(Any, "nope"),
             allowed=False,
             reason="r",
@@ -313,7 +313,7 @@ def test_refresh_and_feed_probe_invariants() -> None:
     with pytest.raises(ValueError, match="reason"):
         FeedProbeResult(
             competitor_id="jax",
-            feed_target="bl52_route_matrix",
+            feed_target="governed_route_matrix",
             status="blocked",
             allowed=False,
             reason="",
@@ -323,7 +323,7 @@ def test_refresh_and_feed_probe_invariants() -> None:
     with pytest.raises(ValueError, match="allowed feed cannot list blockers"):
         FeedProbeResult(
             competitor_id="jax",
-            feed_target="bl52_route_matrix",
+            feed_target="governed_route_matrix",
             status="ready_pointer",
             allowed=True,
             reason="r",
@@ -333,7 +333,7 @@ def test_refresh_and_feed_probe_invariants() -> None:
     with pytest.raises(ValueError, match="blocked feed requires blockers"):
         FeedProbeResult(
             competitor_id="jax",
-            feed_target="bl52_route_matrix",
+            feed_target="governed_route_matrix",
             status="blocked",
             allowed=False,
             reason="r",
@@ -343,7 +343,7 @@ def test_refresh_and_feed_probe_invariants() -> None:
     with pytest.raises(ValueError, match="blockers entries must be non-empty"):
         FeedProbeResult(
             competitor_id="jax",
-            feed_target="bl52_route_matrix",
+            feed_target="governed_route_matrix",
             status="blocked",
             allowed=False,
             reason="r",
@@ -353,7 +353,7 @@ def test_refresh_and_feed_probe_invariants() -> None:
     with pytest.raises(ValueError, match="pointers entries must be non-empty"):
         FeedProbeResult(
             competitor_id="jax",
-            feed_target="bl52_route_matrix",
+            feed_target="governed_route_matrix",
             status="blocked",
             allowed=False,
             reason="r",
@@ -363,7 +363,7 @@ def test_refresh_and_feed_probe_invariants() -> None:
     with pytest.raises(ValueError, match="must not allow invent-green"):
         FeedProbeResult(
             competitor_id="jax",
-            feed_target="bl56_scorecard",
+            feed_target="scorecard_acceptance",
             status="ready_pointer",
             allowed=True,
             reason="r",
@@ -405,7 +405,7 @@ def test_integrity_rejects_blank_and_invent_green() -> None:
 
     invent = dict(good)
     invent_row = dict(symbols[0])
-    invent_row["feed_bl56_status"] = "ready_pointer"
+    invent_row["scorecard_feed_status"] = "ready_pointer"
     invent["competitors"] = [
         invent_row if row["competitor_id"] == invent_row["competitor_id"] else row
         for row in symbols

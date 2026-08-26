@@ -373,7 +373,7 @@ Every unit carries `verifiability_mode = attestation`. The absent-signal is
 loud: with no provider attestation `present_qpu_result_pack` renders
 `unverifiable` and `seal_qpu_result_pack` refuses to seal — a QPU unit is never
 emitted as `verified` on the studio signature alone. The committed hardware
-packs carry no live provider attestation yet (BL-29 territory), so their units
+packs carry no live provider attestation yet (provider-attestation integration), so their units
 are honestly `unverifiable` today; the shape and the fail-closed boundary are
 what ships. A supplied attestation must sign the exact `raw_results_digest`, or
 it is rejected.

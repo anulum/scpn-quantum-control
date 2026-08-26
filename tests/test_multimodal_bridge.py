@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multimodal forecast bridge tests
-"""Production-surface tests for bounded BL-68 and BL-33 composition."""
+"""Production-surface tests for bounded active-sensing and co-design composition."""
 
 from __future__ import annotations
 

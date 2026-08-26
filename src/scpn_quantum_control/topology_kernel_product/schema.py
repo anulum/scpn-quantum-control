@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Topology-aware quantum-kernel contracts
-"""Immutable contracts for the bounded BL-88 quantum-kernel product."""
+"""Immutable contracts for the bounded topology-kernel quantum-kernel product."""
 
 from __future__ import annotations
 

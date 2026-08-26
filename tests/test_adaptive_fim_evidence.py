@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — adaptive FIM evidence tests
-"""Replay, digest, CLI, and negative tests for BL-80 evidence."""
+"""Replay, digest, CLI, and negative tests for adaptive-FIM evidence."""
 
 from __future__ import annotations
 
@@ -141,8 +141,8 @@ def test_default_cli_paths_are_stable(monkeypatch: pytest.MonkeyPatch) -> None:
     assert main([]) == 0
     assert seen == [
         (
-            Path("data/adaptive_fim_product/bl80_adaptive_fim_evidence.json"),
-            Path("data/adaptive_fim_product/bl80_adaptive_fim_evidence.md"),
+            Path("data/adaptive_fim_product/adaptive_fim_evidence.json"),
+            Path("data/adaptive_fim_product/adaptive_fim_evidence.md"),
             HISTORICAL_SOURCE,
         )
     ]

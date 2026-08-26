@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-37 multimodal forecasting evidence reporting
-"""Deterministic JSON and Markdown evidence for the bounded BL-37 product."""
+# SCPN Quantum Control — multimodal-forecasting multimodal forecasting evidence reporting
+"""Deterministic JSON and Markdown evidence for the bounded multimodal-forecasting product."""
 
 from __future__ import annotations
 
@@ -26,8 +26,8 @@ from .partial_observation import PartialObservationBatchCertificate
 from .synthetic_multimodal import SyntheticMultimodalDataset
 from .uncertainty import IntervalCoverageCertificate, ResidualIntervalCalibrator
 
-BL37_EVIDENCE_SCHEMA = "scpn.multimodal_forecasting.v1"
-BL37_EVIDENCE_BOUNDARY = (
+MULTIMODAL_EVIDENCE_SCHEMA = "scpn.multimodal_forecasting.v1"
+MULTIMODAL_EVIDENCE_BOUNDARY = (
     "Deterministic synthetic Kuramoto trajectory evidence under explicit simulation-only "
     "domain tags. No real EEG, clinical, grid, SCADA, plasma, plant, hardware, QPU, "
     "state-estimation, control-performance, safety, deployment, or publication claim."
@@ -80,8 +80,8 @@ class MultimodalForecastingEvidence:
     active_sensing: ForecastActiveSensingBridge
     controller_initialisation: ForecastControllerInitialisation
     support_rows: tuple[MultimodalSupportRow, ...]
-    schema: str = BL37_EVIDENCE_SCHEMA
-    claim_boundary: str = BL37_EVIDENCE_BOUNDARY
+    schema: str = MULTIMODAL_EVIDENCE_SCHEMA
+    claim_boundary: str = MULTIMODAL_EVIDENCE_BOUNDARY
 
     def __post_init__(self) -> None:
         """Require exact digest custody and the complete bounded support surface."""
@@ -118,8 +118,8 @@ class MultimodalForecastingEvidence:
             "missingness_aware_ridge",
             "partial_observation_objective",
             "split_residual_intervals",
-            "bl68_active_sensing_bridge",
-            "bl33_controller_initialisation",
+            "active_sensing_bridge",
+            "codesign_controller_initialisation",
             "real_eeg_clinical_data",
             "real_grid_scada_data",
             "real_plasma_plant_data",
@@ -275,8 +275,8 @@ def write_multimodal_forecasting_evidence(
 
 
 __all__ = [
-    "BL37_EVIDENCE_BOUNDARY",
-    "BL37_EVIDENCE_SCHEMA",
+    "MULTIMODAL_EVIDENCE_BOUNDARY",
+    "MULTIMODAL_EVIDENCE_SCHEMA",
     "MultimodalForecastingEvidence",
     "MultimodalSupportRow",
     "render_multimodal_forecasting_markdown",

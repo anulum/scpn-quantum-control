@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Differentiable Optimizer Convergence Artifact Tests
-"""Tests for BL-15 optimizer convergence artifact writing."""
+"""Tests for optimizer-convergence optimizer convergence artifact writing."""
 
 from __future__ import annotations
 

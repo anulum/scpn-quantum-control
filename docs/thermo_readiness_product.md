@@ -1,4 +1,4 @@
-# Thermodynamics readiness product (BL-100)
+# Thermodynamics readiness product
 
 Honest **S9 quantum-thermodynamics readiness** as a productised boundary, plus
 an **FEP research-only inventory** (BL-84 / tier C). No thermodynamic peak

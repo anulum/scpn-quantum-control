@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-37 multimodal evidence report tests
-"""Tests for deterministic BL-37 evidence rendering and custody."""
+# SCPN Quantum Control — multimodal-forecasting multimodal evidence report tests
+"""Tests for deterministic multimodal-forecasting evidence rendering and custody."""
 
 from __future__ import annotations
 

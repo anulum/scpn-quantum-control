@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — hermetic external reproduction kit (BL-55)
-"""Hermetic external reproduction kit contract (BL-55).
+# SCPN Quantum Control — hermetic external reproduction kit
+"""Hermetic external reproduction kit contract.
 
 A skeptic-facing, versioned command-manifest catalogue with pure digest
 verification. The **core** kit is local-first and must not require cloud GPUs or

@@ -4,11 +4,11 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Campaign harness productisation (BL-99 / P1)
-"""Fail-closed **campaign harness productisation** surface (BL-99).
+# SCPN Quantum Control — Campaign harness productisation
+"""Fail-closed **campaign harness productisation** surface.
 
 Productises reusable hardware-campaign harness templates with prereg hooks,
-digests, and BL-47 / BL-65 integration over ambient campaign modules:
+digests, and hardware-safety / advantage-language integration over ambient campaign modules:
 
 * versioned harness catalogue (AppQSim, IQM layout-transfer, closed-loop
   publication, ambient ``benchmark_harness`` registry);
@@ -22,7 +22,7 @@ digests, and BL-47 / BL-65 integration over ambient campaign modules:
 * refuse invent-green live QPU submit, unattested claim promotion, and
   post-hoc prereg mutation.
 
-Does **not** complete full BL-55 hermetic kit export or BL-48 attestation
+Does **not** complete full reproduction-kit hermetic kit export or attested-result attestation
 sealing (S99.4 residual).
 """
 
@@ -94,9 +94,9 @@ class CampaignHarnessRow:
         Short description.
     ambient_pointer
         Ambient module / entrypoint pointer.
-    bl47_pointer
+    hardware_safety_pointer
         BL-47 hardware-safe / no-submit honesty pointer.
-    bl65_pointer
+    advantage_protocol_pointer
         BL-65 advantage-protocol honesty pointer.
     no_submit_default
         Always True on product surface.
@@ -118,8 +118,8 @@ class CampaignHarnessRow:
     title: str
     summary: str
     ambient_pointer: str
-    bl47_pointer: str
-    bl65_pointer: str
+    hardware_safety_pointer: str
+    advantage_protocol_pointer: str
     no_submit_default: bool = True
     owner_ticket_required_for_live: bool = True
     invent_green_live_submit: bool = False
@@ -144,10 +144,10 @@ class CampaignHarnessRow:
             raise ValueError("summary must be non-empty")
         if not self.ambient_pointer or not self.ambient_pointer.strip():
             raise ValueError("ambient_pointer must be non-empty")
-        if not self.bl47_pointer or not self.bl47_pointer.strip():
-            raise ValueError("bl47_pointer must be non-empty")
-        if not self.bl65_pointer or not self.bl65_pointer.strip():
-            raise ValueError("bl65_pointer must be non-empty")
+        if not self.hardware_safety_pointer or not self.hardware_safety_pointer.strip():
+            raise ValueError("hardware_safety_pointer must be non-empty")
+        if not self.advantage_protocol_pointer or not self.advantage_protocol_pointer.strip():
+            raise ValueError("advantage_protocol_pointer must be non-empty")
         if self.no_submit_default is not True:
             raise ValueError("no_submit_default must be True on product surface")
         if self.invent_green_live_submit:
@@ -176,8 +176,8 @@ class CampaignHarnessRow:
             "title": self.title,
             "summary": self.summary,
             "ambient_pointer": self.ambient_pointer,
-            "bl47_pointer": self.bl47_pointer,
-            "bl65_pointer": self.bl65_pointer,
+            "hardware_safety_pointer": self.hardware_safety_pointer,
+            "advantage_protocol_pointer": self.advantage_protocol_pointer,
             "no_submit_default": self.no_submit_default,
             "owner_ticket_required_for_live": self.owner_ticket_required_for_live,
             "invent_green_live_submit": self.invent_green_live_submit,
@@ -343,8 +343,8 @@ def _build_harness_catalogue() -> tuple[CampaignHarnessRow, ...]:
                 "dry-run; no live QPU default."
             ),
             ambient_pointer=("scpn_quantum_control.benchmarks.appqsim_protocol.appqsim_benchmark"),
-            bl47_pointer="hardware_safe_execution.no_submit_appqsim",
-            bl65_pointer="advantage_protocol.appqsim_requires_promoted_ledger",
+            hardware_safety_pointer="hardware_safe_execution.no_submit_appqsim",
+            advantage_protocol_pointer="advantage_protocol.appqsim_requires_promoted_ledger",
             support_posture="local_research",
             owner_ticket_required_for_live=True,
         ),
@@ -360,8 +360,8 @@ def _build_harness_catalogue() -> tuple[CampaignHarnessRow, ...]:
                 "scpn_quantum_control.benchmarks.iqm_layout_transfer_benchmark."
                 "build_layout_transfer_plan"
             ),
-            bl47_pointer="hardware_safe_execution.no_submit_iqm_layout",
-            bl65_pointer="advantage_protocol.layout_transfer_requires_promoted_ledger",
+            hardware_safety_pointer="hardware_safe_execution.no_submit_iqm_layout",
+            advantage_protocol_pointer="advantage_protocol.layout_transfer_requires_promoted_ledger",
             support_posture="live_hardware_gated",
             owner_ticket_required_for_live=True,
         ),
@@ -377,8 +377,8 @@ def _build_harness_catalogue() -> tuple[CampaignHarnessRow, ...]:
                 "scpn_quantum_control.benchmarks.closed_loop_publication_run."
                 "run_closed_loop_publication"
             ),
-            bl47_pointer="hardware_safe_execution.no_submit_closed_loop",
-            bl65_pointer="advantage_protocol.closed_loop_requires_promoted_ledger",
+            hardware_safety_pointer="hardware_safe_execution.no_submit_closed_loop",
+            advantage_protocol_pointer="advantage_protocol.closed_loop_requires_promoted_ledger",
             support_posture="live_hardware_gated",
             owner_ticket_required_for_live=True,
         ),
@@ -393,8 +393,8 @@ def _build_harness_catalogue() -> tuple[CampaignHarnessRow, ...]:
             ambient_pointer=(
                 "scpn_quantum_control.benchmark_harness.registry.list_benchmark_families"
             ),
-            bl47_pointer="hardware_safe_execution.registry_no_submit",
-            bl65_pointer="advantage_protocol.registry_planned_not_promoted",
+            hardware_safety_pointer="hardware_safe_execution.registry_no_submit",
+            advantage_protocol_pointer="advantage_protocol.registry_planned_not_promoted",
             support_posture="metadata_only",
             owner_ticket_required_for_live=True,
         ),

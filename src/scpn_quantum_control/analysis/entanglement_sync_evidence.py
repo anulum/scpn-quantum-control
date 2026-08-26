@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-79 Entangled Initial-State Evidence
-"""Generate deterministic, digest-bound BL-79 initial-state evidence."""
+# SCPN Quantum Control — entanglement-sync Entangled Initial-State Evidence
+"""Generate deterministic, digest-bound entanglement-sync initial-state evidence."""
 
 from __future__ import annotations
 
@@ -322,12 +322,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--json-output",
         type=Path,
-        default=Path("data/entanglement_sync_product/bl79_entanglement_sync_evidence.json"),
+        default=Path("data/entanglement_sync_product/entanglement_sync_evidence.json"),
     )
     parser.add_argument(
         "--markdown-output",
         type=Path,
-        default=Path("data/entanglement_sync_product/bl79_entanglement_sync_evidence.md"),
+        default=Path("data/entanglement_sync_product/entanglement_sync_evidence.md"),
     )
     args = parser.parse_args(argv)
     payload = write_entanglement_sync_evidence(args.json_output, args.markdown_output)

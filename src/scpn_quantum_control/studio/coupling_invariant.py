@@ -7,7 +7,7 @@
 # scpn-quantum-control — Studio schema-B coupling-invariant bundle emission
 """Emit the effective-coupling invariant as a schema-B evidence bundle.
 
-ST-14 federates the coupling-estimation surface needed by Studio without
+coupling invariant federates the coupling-estimation surface needed by Studio without
 promoting it beyond its inputs. The invariant is deliberately narrow:
 ``knm.kuramoto.effective-coupling`` from two committed estimator classes,
 Hamiltonian learning and differentiable coupling learning with parameter-shift

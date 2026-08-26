@@ -4,15 +4,15 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Phase-QNode product surface (BL-90 / P1)
-"""Fail-closed Phase-QNode **product** catalogue and journey map (BL-90).
+# SCPN Quantum Control — Phase-QNode product surface
+"""Fail-closed Phase-QNode **product** catalogue and journey map.
 
 Productises Phase-QNode as a versioned primary quantum programming surface:
 public capability/journey inventory, dry-run journey posture, fail-closed
 unknown/blank ids, and refuse invent-green hardware / live QPU claims.
 
-Composes honesty from BL-97 (workbench not silently SemVer-stable), BL-52
-(route-matrix pointers), and BL-47/BL-95 (no-submit dry-run posture). Does
+Composes honesty from API-stability (workbench not silently SemVer-stable), route-matrix
+(route-matrix pointers), and hardware-safety/QPU-compute (no-submit dry-run posture). Does
 **not** freeze the entire ``phase/qnode_*`` workbench as a mega-contract and
 does not execute provider or QPU jobs.
 """
@@ -66,9 +66,9 @@ class PhaseQNodeJourney:
         Ordered journey step labels (build → differentiate → dry-run, …).
     allows_hardware
         Whether this journey claims hardware (product default false).
-    bl52_route_pointer
+    route_matrix_pointer
         Optional BL-52 route family pointer.
-    bl97_stability_class
+    api_stability_class
         Stability honesty class (not invent-stable for workbench).
     as_of
         Inventory date label.
@@ -84,8 +84,8 @@ class PhaseQNodeJourney:
     support_badge: SupportBadge
     steps: tuple[str, ...]
     allows_hardware: bool = False
-    bl52_route_pointer: str = "phase_qnode.local_statevector"
-    bl97_stability_class: str = "experimental_workbench"
+    route_matrix_pointer: str = "phase_qnode.local_statevector"
+    api_stability_class: str = "experimental_workbench"
     as_of: str = "2026-07-24"
     claim_boundary: str = PHASE_QNODE_PRODUCT_CLAIM_BOUNDARY
 
@@ -114,8 +114,8 @@ class PhaseQNodeJourney:
             raise ValueError("local_dry_run journeys must set allows_hardware=False")
         if not self.as_of or not self.as_of.strip():
             raise ValueError("as_of must be non-empty")
-        if not self.bl97_stability_class or not self.bl97_stability_class.strip():
-            raise ValueError("bl97_stability_class must be non-empty")
+        if not self.api_stability_class or not self.api_stability_class.strip():
+            raise ValueError("api_stability_class must be non-empty")
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this journey."""
@@ -127,8 +127,8 @@ class PhaseQNodeJourney:
             "support_badge": self.support_badge,
             "steps": list(self.steps),
             "allows_hardware": self.allows_hardware,
-            "bl52_route_pointer": self.bl52_route_pointer,
-            "bl97_stability_class": self.bl97_stability_class,
+            "route_matrix_pointer": self.route_matrix_pointer,
+            "api_stability_class": self.api_stability_class,
             "as_of": self.as_of,
             "claim_boundary": self.claim_boundary,
         }
@@ -215,8 +215,8 @@ def _journey(
     support_badge: SupportBadge,
     steps: tuple[str, ...],
     allows_hardware: bool = False,
-    bl52_route_pointer: str = "phase_qnode.local_statevector",
-    bl97_stability_class: str = "experimental_workbench",
+    route_matrix_pointer: str = "phase_qnode.local_statevector",
+    api_stability_class: str = "experimental_workbench",
 ) -> PhaseQNodeJourney:
     """Build one catalogue journey."""
     return PhaseQNodeJourney(
@@ -227,8 +227,8 @@ def _journey(
         support_badge=support_badge,
         steps=steps,
         allows_hardware=allows_hardware,
-        bl52_route_pointer=bl52_route_pointer,
-        bl97_stability_class=bl97_stability_class,
+        route_matrix_pointer=route_matrix_pointer,
+        api_stability_class=api_stability_class,
     )
 
 
@@ -249,7 +249,7 @@ _CANONICAL_JOURNEYS: Final[tuple[PhaseQNodeJourney, ...]] = (
             "differentiate_local",
             "execute_statevector_dry_run",
         ),
-        bl52_route_pointer="phase_qnode.local_statevector.parameter_shift",
+        route_matrix_pointer="phase_qnode.local_statevector.parameter_shift",
     ),
     _journey(
         "tape_finite_shot_dry_run",
@@ -265,7 +265,7 @@ _CANONICAL_JOURNEYS: Final[tuple[PhaseQNodeJourney, ...]] = (
             "seeded_finite_shot_replay",
             "provider_boundary_refuse",
         ),
-        bl52_route_pointer="phase_qnode.tape.finite_shot",
+        route_matrix_pointer="phase_qnode.tape.finite_shot",
     ),
     _journey(
         "local_transform_suite",
@@ -281,7 +281,7 @@ _CANONICAL_JOURNEYS: Final[tuple[PhaseQNodeJourney, ...]] = (
             "run_local_transform_evidence",
             "fail_closed_vectorized_provider",
         ),
-        bl52_route_pointer="phase_qnode.transforms.local_scalar",
+        route_matrix_pointer="phase_qnode.transforms.local_scalar",
     ),
     _journey(
         "framework_bridge_parity",
@@ -297,8 +297,8 @@ _CANONICAL_JOURNEYS: Final[tuple[PhaseQNodeJourney, ...]] = (
             "run_parity_suite_when_installed",
             "report_blocked_missing_deps",
         ),
-        bl52_route_pointer="phase_qnode.framework_bridge.parity",
-        bl97_stability_class="experimental_workbench",
+        route_matrix_pointer="phase_qnode.framework_bridge.parity",
+        api_stability_class="experimental_workbench",
     ),
     _journey(
         "provider_transform_boundary",
@@ -315,8 +315,8 @@ _CANONICAL_JOURNEYS: Final[tuple[PhaseQNodeJourney, ...]] = (
             "hardware_policy_refuse",
         ),
         allows_hardware=False,
-        bl52_route_pointer="phase_qnode.provider_transforms.boundary",
-        bl97_stability_class="experimental_workbench",
+        route_matrix_pointer="phase_qnode.provider_transforms.boundary",
+        api_stability_class="experimental_workbench",
     ),
 )
 
@@ -469,7 +469,7 @@ def dry_run_phase_qnode_journey(
         reason=(
             f"dry-run journey {journey.journey_id!r} allowed under product surface; "
             f"module={journey.module_path}; badge={journey.support_badge}; "
-            f"stability={journey.bl97_stability_class}; "
+            f"stability={journey.api_stability_class}; "
             "no QPU submission occurred"
         ),
         blockers=(),
@@ -498,7 +498,7 @@ def map_phase_qnode_public_surfaces() -> tuple[dict[str, object], ...]:
             {
                 "module_path": path,
                 "role": "phase_qnode_product_surface",
-                "bl97_stability_class": journey.bl97_stability_class,
+                "api_stability_class": journey.api_stability_class,
                 "support_badge": journey.support_badge,
                 "journey_ids": [
                     j.journey_id for j in _CANONICAL_JOURNEYS if j.module_path == path

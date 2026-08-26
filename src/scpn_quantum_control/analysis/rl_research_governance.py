@@ -7,12 +7,12 @@
 # SCPN Quantum Control — RL research governance
 """Fail-closed governance for witness-search and pulse-optimisation research.
 
-BL-102 keeps reinforcement-learning-adjacent routes in a research extra.  The
+RL-governance keeps reinforcement-learning-adjacent routes in a research extra.  The
 existing witness discovery is a seeded static candidate search, not a Gym
 environment or a trained production policy.  Its dense composite witness score
 is therefore named explicitly and evaluated through deterministic replay over
 multiple seeds.  The pulse optimiser remains unimplemented and blocked behind
-the separately governed BL-58 pulse boundary.
+the separately governed pulse-boundary pulse boundary.
 
 Nothing in this module enables provider submission, hardware execution,
 production control, policy deployment, or a scientific performance claim.
@@ -356,7 +356,7 @@ def assess_rl_research(
     if not current.preregistration_id:
         blockers.append("preregistration_id_missing")
     if lane is RLResearchLane.PULSE_OPTIMISATION:
-        blockers.extend(("rl_pulse_optimizer_unimplemented", "BL-58_pulse_boundary_open"))
+        blockers.extend(("rl_pulse_optimizer_unimplemented", "pulse_boundary_open"))
     else:
         current_spec = spec if spec is not None else WitnessDiscoverySpec()
         estimated = estimate_witness_evaluation_budget(current_spec)
@@ -471,7 +471,7 @@ def build_rl_research_evidence_report() -> RLSeedSuiteReport:
     """Run the frozen credential-free BL-102 three-seed fixture."""
     policy = RLResearchPolicy(
         enabled=True,
-        preregistration_id="BL102-LOCAL-WITNESS-REPLAY-v1",
+        preregistration_id="RL-GOVERNANCE-LOCAL-WITNESS-REPLAY-v1",
         seeds=DEFAULT_RL_RESEARCH_SEEDS,
         max_episodes=1,
         max_evaluations_per_seed=5,

@@ -31,7 +31,7 @@ from scpn_quantum_control.analysis import get_research_lane
 lane = get_research_lane("scpn_quantum_control.analysis.qfi")
 print(lane.maturity.value)          # prototype
 print(lane.diff_hook.value)         # candidate_requires_evidence
-print(lane.promotion_targets)       # ('BL-50:planned',)
+print(lane.promotion_targets)       # ('geometric-control:planned',)
 print(lane.registry_grants_control) # False
 ```
 

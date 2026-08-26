@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — stable_core experiment model product (BL-81 / P1)
-"""Fail-closed **stable_core experiment model** product surface (BL-81).
+# SCPN Quantum Control — stable_core experiment model product
+"""Fail-closed **stable_core experiment model** product surface.
 
 Productises the durable Problem / Backend / Experiment / Result contracts as a
 versioned public experiment model: schema policy, JSON serialisation and
@@ -13,8 +13,8 @@ round-trip helpers, digest helpers, and fail-closed blank/unknown/invalid
 payloads.
 
 Composes ambient :mod:`scpn_quantum_control.stable_core` types (does not rewrite
-challenge/scorecard stacks). Honesty pointers: BL-97 (stable_core is the narrow
-durable SemVer-intent surface), BL-55 (hermetic reproduction substrate), BL-56
+challenge/scorecard stacks). Honesty pointers: API-stability (stable_core is the narrow
+durable SemVer-intent surface), reproduction-kit (hermetic reproduction substrate), scorecard
 (scorecard acceptance substrate). Residual mass adapter migration (S81.3)
 remains open honestly.
 """
@@ -77,11 +77,11 @@ class StableCoreContractRow:
         Primary ambient module path.
     symbol_name
         Primary ambient type or builder symbol.
-    bl97_stability_class
+    api_stability_class
         Stability honesty class (stable_core is durable intent).
-    bl55_pointer
+    reproduction_kit_pointer
         Optional hermetic-kit substrate pointer.
-    bl56_pointer
+    scorecard_pointer
         Optional scorecard substrate pointer.
     as_of
         Inventory date label.
@@ -96,9 +96,9 @@ class StableCoreContractRow:
     summary: str
     module_path: str
     symbol_name: str
-    bl97_stability_class: str = "stable_core"
-    bl55_pointer: str = "hermetic_reproduction_kit.stable_core_substrate"
-    bl56_pointer: str = "scorecard_acceptance_engine.stable_core_substrate"
+    api_stability_class: str = "stable_core"
+    reproduction_kit_pointer: str = "hermetic_reproduction_kit.stable_core_substrate"
+    scorecard_pointer: str = "scorecard_acceptance_engine.stable_core_substrate"
     as_of: str = "2026-07-24"
     claim_boundary: str = STABLE_CORE_PRODUCT_CLAIM_BOUNDARY
 
@@ -122,8 +122,8 @@ class StableCoreContractRow:
             raise ValueError("module_path must be non-empty")
         if not self.symbol_name or not self.symbol_name.strip():
             raise ValueError("symbol_name must be non-empty")
-        if not self.bl97_stability_class or not self.bl97_stability_class.strip():
-            raise ValueError("bl97_stability_class must be non-empty")
+        if not self.api_stability_class or not self.api_stability_class.strip():
+            raise ValueError("api_stability_class must be non-empty")
         if not self.as_of or not self.as_of.strip():
             raise ValueError("as_of must be non-empty")
 
@@ -136,9 +136,9 @@ class StableCoreContractRow:
             "summary": self.summary,
             "module_path": self.module_path,
             "symbol_name": self.symbol_name,
-            "bl97_stability_class": self.bl97_stability_class,
-            "bl55_pointer": self.bl55_pointer,
-            "bl56_pointer": self.bl56_pointer,
+            "api_stability_class": self.api_stability_class,
+            "reproduction_kit_pointer": self.reproduction_kit_pointer,
+            "scorecard_pointer": self.scorecard_pointer,
             "as_of": self.as_of,
             "claim_boundary": self.claim_boundary,
         }
@@ -362,7 +362,7 @@ def schema_version_policy() -> dict[str, object]:
         "refuse_blank_schema": True,
         "refuse_unknown_schema": True,
         "silent_field_drop_allowed": False,
-        "bl97_stability_class": "stable_core",
+        "api_stability_class": "stable_core",
         "claim_boundary": STABLE_CORE_PRODUCT_CLAIM_BOUNDARY,
     }
 
@@ -855,7 +855,7 @@ def map_stable_core_public_surfaces() -> tuple[dict[str, object], ...]:
             "symbol_name": row.symbol_name,
             "kind": row.kind,
             "role": "stable_core_product_surface",
-            "bl97_stability_class": row.bl97_stability_class,
+            "api_stability_class": row.api_stability_class,
             "claim_boundary": STABLE_CORE_PRODUCT_CLAIM_BOUNDARY,
         }
         for row in _CANONICAL_CONTRACTS

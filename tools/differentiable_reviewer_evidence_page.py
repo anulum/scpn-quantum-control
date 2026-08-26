@@ -7,7 +7,7 @@
 # SCPN Quantum Control — generated differentiable reviewer-evidence page
 """Generate and audit the public differentiable reviewer-evidence page.
 
-Every DP-015 criticism and DP-030 evidence-package row must name a scoped
+Every reviewer-criticism and evidence-package row must name a scoped
 runnable command or a public open-gap pointer. Rendering fails closed when a
 repository path, command, changelog marker, support-matrix count, roadmap
 marker, or capability-manifest surface drifts.
@@ -383,7 +383,7 @@ def render_differentiable_reviewer_evidence_page(
         "",
         "# Differentiable Reviewer Evidence",
         "",
-        "This page maps the bounded DP-015 reviewer criticisms and the DP-030 evidence",
+        "This page maps bounded reviewer criticisms and the evidence package",
         "package to real repository commands, artefacts, and explicit public gaps. It is",
         "an index into executable evidence, not a replacement for the tests or artefacts.",
         "",
@@ -412,7 +412,7 @@ def render_differentiable_reviewer_evidence_page(
             f"`{support.get('planner_blocked')}` fail-closed |"
         ),
         "",
-        "## DP-015 reviewer criticisms",
+        "## Reviewer criticisms",
         "",
         "| ID | Criticism | Status | Evidence and reproduction | Open gap | Boundary |",
         "|---|---|---|---|---|---|",
@@ -421,7 +421,7 @@ def render_differentiable_reviewer_evidence_page(
     lines.extend(
         [
             "",
-            "## DP-030 evidence package",
+            "## Evidence package",
             "",
             "| ID | Requirement | Status | Evidence and reproduction | Open gap | Boundary |",
             "|---|---|---|---|---|---|",
@@ -754,7 +754,7 @@ def _validate_evidence_row(
         errors.append(f"{row_id} has unsupported category: {category}")
     if status not in _ALLOWED_STATUSES:
         errors.append(f"{row_id} has unsupported status: {status}")
-    prefix = "DP-015-" if category == "reviewer_criticism" else "DP-030-"
+    prefix = "reviewer-criticism-" if category == "reviewer_criticism" else "evidence-package-"
     if row_id and category in _ALLOWED_CATEGORIES and not row_id.startswith(prefix):
         errors.append(f"{row_id} does not match category prefix {prefix}")
     commands = _row_string_tuple(row, "commands", row_id, errors)

@@ -506,7 +506,7 @@ reasons, warnings, alternatives, and claim boundaries. This guide does not
 maintain a duplicate component table or fixed case counts.
 
 The generated [Differentiable Reviewer Evidence](differentiable_reviewer_evidence.md)
-page maps the DP-015 quantum-gradient criticisms and DP-030 benchmark package
+page maps the quantum-gradient reviewer criticisms and benchmark evidence package
 to module-scoped commands or explicit public roadmap gaps. Its `bounded` and
 `open` labels preserve provider, hardware, compiler, and isolated-performance
 boundaries even when local functional checks pass.

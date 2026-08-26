@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-35 analog mapping package
+# SCPN Quantum Control — analog-mapping analog mapping package
 """Research-feasibility analog oscillator mapping product."""
 
 from .calibrate import (

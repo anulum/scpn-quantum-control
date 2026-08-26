@@ -1,4 +1,4 @@
-# Phase-QNode product surface (BL-90 / P1)
+# Phase-QNode product surface
 
 Versioned **primary quantum programming product** map for Phase-QNode: public
 journeys, support badges, and dry-run posture. Ambient `phase/qnode_*` workbench

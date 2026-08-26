@@ -1,4 +1,4 @@
-# Differentiable error-mitigation product (BL-59)
+# Differentiable error-mitigation product
 
 Versioned **mitigator taxonomy** with differentiability classes, local ZNE and
 readout probes, and hard gaps for invent-green ideal-gradient restoration or

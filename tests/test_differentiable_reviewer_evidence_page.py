@@ -61,7 +61,7 @@ ROW_CONSTRUCTOR_MUTATIONS: tuple[
         lambda row: replace(row, status=cast(EvidenceStatus, "other")),
         "unsupported.*status",
     ),
-    (lambda row: replace(row, row_id="DP-030-99"), "row IDs must start"),
+    (lambda row: replace(row, row_id="evidence-package-wrong-category"), "row IDs must start"),
     (
         lambda row: replace(row, commands=("",)),
         "commands must contain only",
@@ -156,7 +156,7 @@ def test_catalogue_records_have_deterministic_json_shapes() -> None:
     """Typed catalogue records expose every field required by the generator."""
     assert OPEN_GAPS[0].to_dict()["pointer"] == "DIFF-OPEN-01"
     row = REVIEWER_EVIDENCE_ROWS[0].to_dict()
-    assert row["row_id"] == "DP-015-01"
+    assert row["row_id"] == "reviewer-criticism-parameter-shift-implementation"
     assert row["commands"]
     assert row["evidence_paths"]
     assert SUMMARY.to_dict() == {
@@ -377,13 +377,13 @@ def test_payload_validation_rejects_row_and_gap_drift(
     elif mutation == "missing_id":
         rows.pop()
     elif mutation == "unexpected_id":
-        rows[-1]["row_id"] = "DP-030-99"
+        rows[-1]["row_id"] = "evidence-package-unregistered"
     elif mutation == "unknown_category":
         rows[0]["category"] = "other"
     elif mutation == "unknown_status":
         rows[0]["status"] = "other"
     elif mutation == "prefix":
-        rows[0]["row_id"] = "DP-030-01"
+        rows[0]["row_id"] = "evidence-package-gradient-correctness-runtime"
     elif mutation == "blank_field":
         rows[0]["criticism"] = " "
     elif mutation == "commands_shape":
@@ -487,8 +487,8 @@ def test_renderer_emits_all_rows_gaps_boundaries_and_escaped_text() -> None:
     rows[0]["evidence_summary"] = "line one\npipe | tick `"
     rendered = render_differentiable_reviewer_evidence_page(payload)
     assert "# Differentiable Reviewer Evidence" in rendered
-    assert "## DP-015 reviewer criticisms" in rendered
-    assert "## DP-030 evidence package" in rendered
+    assert "## Reviewer criticisms" in rendered
+    assert "## Evidence package" in rendered
     assert "## Public open-gap pointers" in rendered
     assert all(row_id in rendered for row_id in REQUIRED_ROW_IDS)
     assert all(gap.pointer in rendered for gap in OPEN_GAPS)

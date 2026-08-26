@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Studio support-matrix bundle tests
-"""Tests for the schema-B transform support-matrix bundle emitter (ST-03)."""
+"""Tests for the schema-B transform support-matrix bundle emitter."""
 
 from __future__ import annotations
 

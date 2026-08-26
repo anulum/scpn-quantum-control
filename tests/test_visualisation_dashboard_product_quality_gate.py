@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — visualisation-dashboard quality-gate tests
-"""Lock the BL-19 visualisation-dashboard product gate into preflight and CI."""
+"""Lock the visualisation-dashboard product gate into preflight and CI."""
 
 from pathlib import Path
 

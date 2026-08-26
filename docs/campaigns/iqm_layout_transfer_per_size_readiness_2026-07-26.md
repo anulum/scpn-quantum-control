@@ -5,7 +5,7 @@
 <!-- ORCID: 0009-0009-3560-0851 -->
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
 
-# IQM FU-3 Per-Size Layout-Transfer Readiness
+# IQM IQM layout-transfer Per-Size Layout-Transfer Readiness
 
 This package implements the provider-free gates frozen in
 `iqm_layout_transfer_per_size_prereg_2026-07-22.md`. It does not authorize a

@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — co-design adapter tests
-"""Real BL-67 and observer-product integration tests for BL-33."""
+"""Real control-stack and observer-product integration tests for co-design."""
 
 from __future__ import annotations
 
@@ -52,7 +52,7 @@ def test_realtime_feedback_adapter_consumes_existing_bl67_port() -> None:
         seed=17,
     )
 
-    assert evidence.adapter_id == "bl67.realtime_feedback"
+    assert evidence.adapter_id == "control_stack.realtime_feedback"
     assert evidence.authorised is True
     assert evidence.samples == 2
     assert evidence.values == tuple(step.r_live for step in controller.history)
@@ -73,7 +73,7 @@ def test_qaoa_adapter_consumes_existing_bl67_port() -> None:
         seed=5,
     )
 
-    assert evidence.adapter_id == "bl67.qaoa_mpc"
+    assert evidence.adapter_id == "control_stack.qaoa_mpc"
     assert evidence.samples == 1
     assert evidence.values in {(0.0,), (1.0,)}
 
@@ -90,7 +90,7 @@ def test_cosimulation_adapter_consumes_existing_bl67_partition() -> None:
         seed=3,
     )
 
-    assert evidence.adapter_id == "bl67.cosimulation_partition"
+    assert evidence.adapter_id == "control_stack.cosimulation_partition"
     assert evidence.samples == 3
     assert len(evidence.values) == 3
     assert all(0.0 <= value <= 1.0 for value in evidence.values)
@@ -173,7 +173,7 @@ def test_adaptive_fim_observer_and_proposer_ports_remain_unapplied() -> None:
     mapped = observer_inputs_from_products(adaptive_fim=observer)
     proposal = adaptive_fim_proposal_port(step)
 
-    assert mapped.adaptive_fim_id == "bl80:ci_dry_run_only:0"
+    assert mapped.adaptive_fim_id == "adaptive_fim:ci_dry_run_only:0"
     assert mapped.adaptive_fim_action == "decrease"
     assert mapped.adaptive_fim_lambda_out == step.lambda_out
     assert mapped.to_dict()["adaptive_fim_action"] == "decrease"

@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-35 analog mapping evidence
-"""Deterministic BL-35 evidence bundle builder, renderer, and writer."""
+# SCPN Quantum Control — analog-mapping analog mapping evidence
+"""Deterministic analog-mapping evidence bundle builder, renderer, and writer."""
 
 from __future__ import annotations
 

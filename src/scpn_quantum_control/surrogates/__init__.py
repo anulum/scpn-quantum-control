@@ -20,8 +20,8 @@ from .hybrid import (
 )
 from .models import CLASSICAL_SURROGATE_CLAIM_BOUNDARY, GaussianRBFSurrogate
 from .report import (
-    BL45_EVIDENCE_BOUNDARY,
-    BL45_EVIDENCE_SCHEMA,
+    QUANTUM_RESERVOIR_EVIDENCE_BOUNDARY,
+    QUANTUM_RESERVOIR_EVIDENCE_SCHEMA,
     QuantumReservoirSurrogateEvidence,
     SurrogateSupportRow,
     render_quantum_reservoir_surrogate_markdown,
@@ -30,8 +30,8 @@ from .report import (
 from .train import SurrogateFitConfig, fit_gaussian_rbf_surrogate, input_row_digests
 
 __all__ = [
-    "BL45_EVIDENCE_BOUNDARY",
-    "BL45_EVIDENCE_SCHEMA",
+    "QUANTUM_RESERVOIR_EVIDENCE_BOUNDARY",
+    "QUANTUM_RESERVOIR_EVIDENCE_SCHEMA",
     "CLASSICAL_SURROGATE_CLAIM_BOUNDARY",
     "ExactValidatedSurrogateProposal",
     "GaussianRBFSurrogate",

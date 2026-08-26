@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for polyglot edge Program-AD product (BL-74)
+# SCPN Quantum Control — tests for polyglot edge Program-AD product
 """Real-surface tests for ``polyglot_edge_ad_product``."""
 
 from __future__ import annotations
@@ -218,7 +218,7 @@ def test_public_surfaces_and_registry() -> None:
     roles = {str(row["role"]) for row in surfaces}
     assert "polyglot_edge_ad_product_surface" in roles
     assert "committed_wasm_replay_artifact_authority" in roles
-    assert "bl49_parity_subset_authority" in roles
+    assert "parity_certificate_subset_authority" in roles
 
     registry = build_polyglot_edge_ad_product_registry()
     assert registry["schema"] == POLYGLOT_EDGE_AD_PRODUCT_SCHEMA

@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — governed route-matrix quality-gate tests
-"""Lock the BL-19 governed route-matrix gate into preflight and CI."""
+"""Lock the governed route-matrix gate into preflight and CI."""
 
 from pathlib import Path
 

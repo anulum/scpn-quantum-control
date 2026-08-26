@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Policy-gated adapters over the existing control stack
-"""Executable BL-67 adapters over existing control and co-simulation surfaces.
+"""Executable control-stack adapters over existing control and co-simulation surfaces.
 
 The adapters in this module are deliberately thin. They accept the ambient
 controllers through typed ports, apply the existing closed-loop execution
@@ -243,7 +243,7 @@ def decide_pulse_compose_boundary(
             "pulse execution is outside BL-67; use BL-58 S58.4 after its pulse "
             "contracts and export validation are complete"
         ),
-        dependency="BL-58/S58.4",
+        dependency="pulse-boundary/runtime-adapter",
     )
 
 

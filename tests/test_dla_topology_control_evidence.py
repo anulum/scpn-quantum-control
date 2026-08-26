@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-54 evidence tests
+# SCPN Quantum Control — topology-control evidence tests
 """Frozen metrics, support rows, rendering, and byte-custody tests."""
 
 from __future__ import annotations
@@ -14,8 +14,8 @@ from pathlib import Path
 import pytest
 
 from scpn_quantum_control.dla_topology_control.evidence import (
-    BL54_EVIDENCE_DATE,
-    BL54_EVIDENCE_SCHEMA,
+    TOPOLOGY_CONTROL_EVIDENCE_DATE,
+    TOPOLOGY_CONTROL_EVIDENCE_SCHEMA,
     DlaTopologyControlEvidence,
     build_dla_topology_control_evidence,
     render_dla_topology_control_markdown,
@@ -34,8 +34,8 @@ def test_frozen_metrics_prove_bounded_derivatives_and_projection(
 ) -> None:
     """Require strict decrease, zero leakage, derivative agreement, and custody."""
     evidence = frozen_evidence
-    assert evidence.schema_version == BL54_EVIDENCE_SCHEMA
-    assert evidence.generated_on == BL54_EVIDENCE_DATE
+    assert evidence.schema_version == TOPOLOGY_CONTROL_EVIDENCE_SCHEMA
+    assert evidence.generated_on == TOPOLOGY_CONTROL_EVIDENCE_DATE
     assert evidence.n_qubits == 4
     assert evidence.sector == "even"
     assert evidence.initial_objective > 5.0

@@ -4,15 +4,15 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Advanced witnesses product (BL-44 / P1)
-"""Fail-closed **advanced witnesses** product surface (BL-44).
+# SCPN Quantum Control — Advanced witnesses product
+"""Fail-closed **advanced witnesses** product surface.
 
 Productises estimator-aware scientific diagnostics over ambient Krylov,
 OTOC, and classical-shadow surfaces:
 
 * versioned witness capability catalogue (Krylov complexity, OTOC probe,
   classical shadows, small-system tomography cap, ambient inventory,
-  BL-18 synchronisation-witness compose);
+  synchronisation-witness synchronisation-witness compose);
 * common :class:`WitnessEstimate` with estimator id, mean, uncertainty,
   support status, and provenance;
 * local probes over ambient
@@ -25,7 +25,7 @@ OTOC, and classical-shadow surfaces:
   profiles.
 
 Does **not** claim OTOC quantum advantage, certify topological phases,
-submit to QPU hardware, or replace BL-18 order-parameter / Vietoris–Rips
+submit to QPU hardware, or replace synchronisation-witness order-parameter / Vietoris–Rips
 witnesses.
 """
 
@@ -54,7 +54,7 @@ WitnessCapabilityKind = Literal[
     "classical_shadows",
     "small_tomography_cap",
     "ambient_inventory",
-    "bl18_sync_compose",
+    "synchronisation_witness_compose",
 ]
 """Witness capability kinds on the product catalogue."""
 
@@ -184,7 +184,7 @@ class WitnessCapabilityRow:
             "classical_shadows",
             "small_tomography_cap",
             "ambient_inventory",
-            "bl18_sync_compose",
+            "synchronisation_witness_compose",
         }:
             raise ValueError(f"unknown capability kind: {self.kind!r}")
         if not self.title or not self.title.strip():
@@ -656,8 +656,8 @@ def iter_witness_capabilities() -> tuple[WitnessCapabilityRow, ...]:
             support_posture="metadata_only",
         ),
         WitnessCapabilityRow(
-            capability_id="bl18_sync_compose",
-            kind="bl18_sync_compose",
+            capability_id="synchronisation_witness_compose",
+            kind="synchronisation_witness_compose",
             title="BL-18 synchronisation witness compose",
             summary=(
                 "Compose with ambient harmonic_order_parameter (BL-18) for "
@@ -799,7 +799,7 @@ def map_advanced_witnesses_public_surfaces() -> dict[str, str]:
         "shadow_probe": (
             "scpn_quantum_control.analysis.shadow_tomography.classical_shadow_estimation"
         ),
-        "bl18_order_parameter": (
+        "harmonic_order_parameter": (
             "scpn_quantum_control.phase.synchronisation_witness.harmonic_order_parameter"
         ),
         "product_registry": "advanced_witnesses_product.v1",
@@ -821,7 +821,7 @@ def decide_witness_path(
     ----------
     path_id
         Logical path identifier (``krylov``, ``otoc``, ``shadow``,
-        ``tomography_small``, ``bl18_compose``).
+        ``tomography_small``, ``synchronisation_witness_compose``).
     invent_green_otoc_advantage
         When True, refuse with invent-green flag.
     invent_green_topology_cert
@@ -878,7 +878,7 @@ def decide_witness_path(
         "otoc",
         "shadow",
         "tomography_small",
-        "bl18_compose",
+        "synchronisation_witness_compose",
         "ambient_inventory",
     }
     if pid not in allowed_paths:
@@ -1174,7 +1174,7 @@ def materialise_demo_shadow_probe() -> MaterialisedShadowProbe:
     return materialise_shadow_probe(n_qubits=2, n_shots=80, seed=7)
 
 
-def materialise_bl18_order_parameter_compose(
+def materialise_harmonic_order_parameter_compose(
     phases: Sequence[float] | None = None,
     *,
     harmonic: int = 1,
@@ -1198,7 +1198,7 @@ def materialise_bl18_order_parameter_compose(
     if harmonic < 1:
         raise ValueError("harmonic must be >= 1")
     decision = decide_witness_path(
-        "bl18_compose",
+        "synchronisation_witness_compose",
         invent_green_topology_cert=invent_green_topology_cert,
         invent_green_live_qpu=invent_green_live_qpu,
     )
@@ -1212,7 +1212,7 @@ def materialise_bl18_order_parameter_compose(
             raise ValueError("phases must be a non-empty 1-D sequence")
     r_value = float(harmonic_order_parameter(phase_arr, harmonic=harmonic))
     return WitnessEstimate(
-        estimator_id=f"bl18_R_h{harmonic}",
+        estimator_id=f"harmonic_order_parameter_R_h{harmonic}",
         mean=r_value,
         uncertainty=0.0,
         support_status="supported",
@@ -1294,7 +1294,7 @@ def assert_advanced_witnesses_product_integrity(
         "krylov_complexity",
         "otoc_probe",
         "classical_shadows",
-        "bl18_sync_compose",
+        "synchronisation_witness_compose",
     }
     found_required: set[str] = set()
     for index, row in enumerate(capabilities):
@@ -1425,7 +1425,7 @@ __all__ = [
     "list_witness_capability_ids",
     "list_witness_glossary_keys",
     "map_advanced_witnesses_public_surfaces",
-    "materialise_bl18_order_parameter_compose",
+    "materialise_harmonic_order_parameter_compose",
     "materialise_demo_krylov_probe",
     "materialise_demo_otoc_probe",
     "materialise_demo_shadow_probe",

@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — polyglot parity certificates product (BL-49 / P1)
-"""Fail-closed **bit-exact polyglot parity certificate** product surface (BL-49).
+# SCPN Quantum Control — polyglot parity certificates product
+"""Fail-closed **bit-exact polyglot parity certificate** product surface.
 
 Productises externally checkable certificate bundles for the Rust Program AD
 replay moat: versioned schema, family catalogue (scalar → spectral bounds),
@@ -14,7 +14,7 @@ unsupported Rust feature claims.
 
 Composes honesty from ambient ``program_ad_rust_bridge`` / inventory pointers
 without re-running the entire cargo matrix as the product façade. Residual
-CLI (S49.3), committed multi-family CI corpus (S49.4), and BL-38 decision feed
+CLI (S49.3), committed multi-family CI corpus (S49.4), and Rust-JIT decision decision feed
 (S49.6) remain open honestly.
 """
 
@@ -69,7 +69,7 @@ class ParityFamily:
         Support posture (sample bit-exact, boundary unsupported, catalogue only).
     module_path
         Primary ambient module pointer.
-    bl97_stability_class
+    api_stability_class
         Stability honesty class.
     as_of
         Inventory date label.
@@ -83,7 +83,7 @@ class ParityFamily:
     summary: str
     support: FamilySupport
     module_path: str
-    bl97_stability_class: str = "experimental_workbench"
+    api_stability_class: str = "experimental_workbench"
     as_of: str = "2026-07-24"
     claim_boundary: str = POLYGLOT_PARITY_CLAIM_BOUNDARY
 
@@ -103,8 +103,8 @@ class ParityFamily:
             raise ValueError(f"unknown support posture: {self.support!r}")
         if not self.module_path or not self.module_path.strip():
             raise ValueError("module_path must be non-empty")
-        if not self.bl97_stability_class or not self.bl97_stability_class.strip():
-            raise ValueError("bl97_stability_class must be non-empty")
+        if not self.api_stability_class or not self.api_stability_class.strip():
+            raise ValueError("api_stability_class must be non-empty")
         if not self.as_of or not self.as_of.strip():
             raise ValueError("as_of must be non-empty")
 
@@ -116,7 +116,7 @@ class ParityFamily:
             "summary": self.summary,
             "support": self.support,
             "module_path": self.module_path,
-            "bl97_stability_class": self.bl97_stability_class,
+            "api_stability_class": self.api_stability_class,
             "as_of": self.as_of,
             "claim_boundary": self.claim_boundary,
         }
@@ -819,7 +819,7 @@ def map_parity_public_surfaces() -> tuple[dict[str, object], ...]:
             {
                 "module_path": path,
                 "role": "polyglot_parity_certificate_surface",
-                "bl97_stability_class": family.bl97_stability_class,
+                "api_stability_class": family.api_stability_class,
                 "support": family.support,
                 "family_ids": [f.family_id for f in _CANONICAL_FAMILIES if f.module_path == path],
                 "claim_boundary": POLYGLOT_PARITY_CLAIM_BOUNDARY,

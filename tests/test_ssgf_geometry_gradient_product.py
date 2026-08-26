@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-70 SSGF geometry-gradient product tests
-"""Real-surface and fail-closed tests for the BL-70 product."""
+# SCPN Quantum Control — geometry-gradient SSGF geometry-gradient product tests
+"""Real-surface and fail-closed tests for the geometry-gradient product."""
 
 from __future__ import annotations
 
@@ -426,7 +426,7 @@ def test_registry_is_complete_and_fail_closed() -> None:
     assert registry["hardware_submit_allowed"] is False
     assert registry["analytic_ad_claim_allowed"] is False
     assert registry["parameter_shift_on_latent_z_allowed"] is False
-    assert registry["composition"]["bl50"]  # type: ignore[index]
+    assert registry["composition"]["geometric_control"]  # type: ignore[index]
     explicit = assert_ssgf_geometry_gradient_integrity(build_ssgf_geometry_gradient_registry())
     assert explicit == registry
 

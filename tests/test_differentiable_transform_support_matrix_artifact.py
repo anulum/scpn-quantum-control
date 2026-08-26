@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — transform support-matrix committed-artefact tests
-"""Tests for the transform-algebra support-matrix committed artefact (ST-03)."""
+"""Tests for the transform-algebra support-matrix committed artefact."""
 
 from __future__ import annotations
 

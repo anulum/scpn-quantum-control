@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — polyglot edge Program-AD product (BL-74 / P1)
-"""Fail-closed polyglot edge Program-AD product (BL-74).
+# SCPN Quantum Control — polyglot edge Program-AD product
+"""Fail-closed polyglot edge Program-AD product.
 
 This module governs the real bounded Rust replay and browser WASM kernel while
 keeping the optional Julia tier honest. The committed rational replay is the
@@ -567,7 +567,7 @@ def map_polyglot_edge_ad_public_surfaces() -> tuple[dict[str, object], ...]:
         },
         {
             "module_path": "scpn_quantum_control.polyglot_parity_certificate",
-            "role": "bl49_parity_subset_authority",
+            "role": "parity_certificate_subset_authority",
             "family_id": _WASM_SAFE_PARITY_FAMILY,
             "claim_boundary": POLYGLOT_EDGE_AD_CLAIM_BOUNDARY,
         },

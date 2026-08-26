@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-69 identity observer product tests
+# SCPN Quantum Control — identity-observer identity observer product tests
 """Real-surface tests for fail-closed identity control observers."""
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
 from scpn_quantum_control.identity_observer_product import (
-    BL48_SEAL_POINTER,
+    ATTESTED_RESULT_SEAL_POINTER,
     IDENTITY_OBSERVER_SCHEMA,
     IdentityObserverThresholds,
     evaluate_identity_safety,
@@ -100,7 +100,7 @@ def test_real_robustness_and_coherence_observers_allow() -> None:
     assert decision.observer.energy_gap > 0.1
     assert decision.observer.coherence_fidelity > 0.1
     assert decision.observer.witness_status == "not_requested"
-    assert decision.observer.seal_pointer == BL48_SEAL_POINTER
+    assert decision.observer.seal_pointer == ATTESTED_RESULT_SEAL_POINTER
     payload = decision.to_dict()
     assert payload["schema"] == IDENTITY_OBSERVER_SCHEMA
     assert payload["blockers"] == []

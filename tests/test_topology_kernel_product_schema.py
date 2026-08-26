@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Topology-kernel schema tests
-"""Contract and fail-closed tests for immutable BL-88 records."""
+"""Contract and fail-closed tests for immutable topology-kernel records."""
 
 from __future__ import annotations
 

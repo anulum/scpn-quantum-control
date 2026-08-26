@@ -93,7 +93,7 @@ Returns an `RLResearchDecision` without raising for a valid `RLResearchLane`.
 Passing any other lane value raises `ValueError`; `None` policy selects the
 disabled default. Witness discovery checks enablement, preregistration,
 iterations, and evaluation budget. Pulse optimisation additionally always
-adds `rl_pulse_optimizer_unimplemented` and `BL-58_pulse_boundary_open`.
+adds `rl_pulse_optimizer_unimplemented` and `pulse_boundary_open`.
 
 ### `assert_rl_research_allowed(policy, lane, *, spec=None)`
 

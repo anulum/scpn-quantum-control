@@ -1,4 +1,4 @@
-# KYMA / KYMA v2 mechanism benchmark product (BL-73)
+# KYMA / KYMA v2 mechanism benchmark product
 
 **Public, preregistered, mechanism-only** sync-learning honesty surface. Design
 constants come from **teacher dynamics only** (prereg §5) — never student

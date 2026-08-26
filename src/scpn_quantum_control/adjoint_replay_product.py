@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — adjoint reversible replay product surface (BL-39 / P1)
-"""Fail-closed **adjoint differentiation via reversible replay** product (BL-39).
+# SCPN Quantum Control — adjoint reversible replay product surface
+"""Fail-closed **adjoint differentiation via reversible replay** product.
 
 Productises reverse-mode adjoint-via-replay contracts over ambient Program AD
 adjoint generation and executable replay:

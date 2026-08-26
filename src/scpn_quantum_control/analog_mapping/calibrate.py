@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-35 differentiable calibration objective
+# SCPN Quantum Control — analog-mapping differentiable calibration objective
 """Analytic design-unit coupling-scale objective and drift sensitivity."""
 
 from __future__ import annotations

@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — co-design latency and safety policies
-"""Fail-closed latency and controller-envelope policies for BL-33."""
+"""Fail-closed latency and controller-envelope policies for co-design."""
 
 from __future__ import annotations
 

@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — PL/Qiskit migration guides product surface (BL-41 / P1)
-"""Fail-closed **PennyLane + Qiskit migration guides** product surface (BL-41).
+# SCPN Quantum Control — PL/Qiskit migration guides product surface
+"""Fail-closed **PennyLane + Qiskit migration guides** product surface.
 
 Productises adoption-path contracts for researchers leaving PL/Qiskit:
 

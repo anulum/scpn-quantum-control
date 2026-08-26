@@ -4,12 +4,12 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — bounded JAX neural-quantum-state baseline (BL-103)
+# SCPN Quantum Control — bounded JAX neural-quantum-state baseline
 """Build claim-bounded JAX NQS evidence against exact diagonalisation.
 
 This product composes the ambient exact-enumeration RBM runner with validated
 small-system inputs, an exact dense reference, environment provenance, and the
-BL-65 no-advantage default. It is a research baseline, not sampled VMC,
+advantage-language no-advantage default. It is a research baseline, not sampled VMC,
 scalable many-body evidence, a performance benchmark, or hardware execution.
 """
 

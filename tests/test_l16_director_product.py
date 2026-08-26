@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-85 bounded L16 director tests
-"""Real-simulator, policy, contract, and evidence tests for BL-85."""
+# SCPN Quantum Control — bounded-director bounded L16 director tests
+"""Real-simulator, policy, contract, and evidence tests for bounded-director."""
 
 from __future__ import annotations
 

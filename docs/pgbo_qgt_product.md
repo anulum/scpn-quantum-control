@@ -1,4 +1,4 @@
-# PGBO quantum geometric tensor product (BL-71)
+# PGBO quantum geometric tensor product
 
 **Metric + Berry curvature on coupling space** extracted from quantum ground
 states via ambient `compute_pgbo_tensor`. Small-system simulation only; fail-

@@ -4,17 +4,17 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — SSGF quantum-in-the-loop geometry gradient (BL-70)
+# SCPN Quantum Control — SSGF quantum-in-the-loop geometry gradient
 """Governed SSGF quantum-in-the-loop geometry-gradient product.
 
 This module freezes the public SSGF quantum surface, certifies the simulator
 cost ``C = 1 - R``, and exposes a bounded central-finite-difference gradient
 path over the latent geometry map ``W(z)``.  The latent map uses softplus, so a
 parameter-shift rule on circuit angles is not directly a derivative with
-respect to ``z``; that route is an explicit fail-closed BL-52 boundary.
+respect to ``z``; that route is an explicit fail-closed route-matrix boundary.
 
 All materialised evidence is local simulation.  This surface does not submit
-hardware jobs, claim analytic AD, or treat an optional BL-33 observer as an
+hardware jobs, claim analytic AD, or treat an optional co-design observer as an
 operational controller.
 """
 
@@ -651,10 +651,10 @@ def build_ssgf_geometry_gradient_registry() -> dict[str, object]:
         "gradient_routes": [asdict(fd), asdict(shift)],
         "unsuitable_scenarios": list(_UNSUITABLE_SCENARIOS),
         "composition": {
-            "bl50": "SsgfGeometryObserverRecord geometry observer",
-            "bl33": "optional evaluator telemetry only",
-            "bl46": "step-refinement and 2pi phase-periodicity laws",
-            "bl53": "unsupported z dimensions and latent parameter-shift fail closed",
+            "geometric_control": "SsgfGeometryObserverRecord geometry observer",
+            "codesign": "optional evaluator telemetry only",
+            "metamorphic_verification": "step-refinement and 2pi phase-periodicity laws",
+            "unsuitable_scenarios": "unsupported z dimensions and latent parameter-shift fail closed",
         },
     }
 

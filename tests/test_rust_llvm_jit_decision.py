@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-38 Rust LLVM/JIT decision tests
-"""Tests for the bounded BL-38 decision harness."""
+# SCPN Quantum Control — Rust-JIT-decision Rust LLVM/JIT decision tests
+"""Tests for the bounded Rust-JIT decision decision harness."""
 
 from __future__ import annotations
 
@@ -142,7 +142,7 @@ def test_capture_produces_valid_no_go_evidence(monkeypatch: pytest.MonkeyPatch) 
     assert criteria["parity_passed"] is True
     assert criteria["performance_claim_made"] is False
     assert criteria["product_role_proven"] is False
-    assert criteria["bl49_family_expansion"] is False
+    assert criteria["parity_certificate_family_expansion"] is False
     kernels = cast(list[dict[str, object]], payload["kernels"])
     assert len(kernels) == len(decision_kernels())
     assert all(row["rust_replay_supported"] is True for row in kernels)

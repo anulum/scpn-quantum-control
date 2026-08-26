@@ -86,8 +86,8 @@ budget refusal, and hardware refusal. It does **not** establish that executing a
 proposed batch would improve leakage or retention. Closed-loop efficacy remains
 untested.
 
-- [Evidence JSON](https://github.com/anulum/scpn-quantum-control/blob/main/data/adaptive_fim_product/bl80_adaptive_fim_evidence.json)
-- [Evidence summary](https://github.com/anulum/scpn-quantum-control/blob/main/data/adaptive_fim_product/bl80_adaptive_fim_evidence.md)
+- [Evidence JSON](https://github.com/anulum/scpn-quantum-control/blob/main/data/adaptive_fim_product/adaptive_fim_evidence.json)
+- [Evidence summary](https://github.com/anulum/scpn-quantum-control/blob/main/data/adaptive_fim_product/adaptive_fim_evidence.md)
 - [Historical protocol boundary](campaigns/adaptive_fim_qpu_protocol_2026-05-06.md)
 
 ## Scientific basis and limits

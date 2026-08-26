@@ -1,4 +1,4 @@
-# Circuit-cutting product boundary (BL-76)
+# Circuit-cutting product boundary
 
 `scpn_quantum_control.circuit_cutting_product` freezes and governs the existing
 circuit-cutting planner and partition-local simulator. It is a local,

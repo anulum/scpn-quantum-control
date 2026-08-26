@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for qpu_compute product (BL-95)
+# SCPN Quantum Control — tests for qpu_compute product
 """Real-surface tests for ``scpn_quantum_control.qpu_compute_product``."""
 
 from __future__ import annotations
@@ -68,7 +68,7 @@ def test_construct_and_dry_run_allowed() -> None:
     assert decision.outcome == "allowed_plan"
     assert decision.blockers == ()
     assert "no provider submission" in decision.reason
-    assert decision.bl47_policy_id == "default_no_submit"
+    assert decision.hardware_safety_policy_id == "default_no_submit"
 
 
 def test_refuse_would_live_and_hardware() -> None:
@@ -96,7 +96,7 @@ def test_ticketed_prep_requires_ticket() -> None:
         live_execution_ticket="ticket-demo-001",
     )
     assert ok.allowed is True
-    assert ok.bl47_policy_id == "owner_ticketed_prep"
+    assert ok.hardware_safety_policy_id == "owner_ticketed_prep"
 
 
 def test_unsupported_backend_and_kernel() -> None:
@@ -132,7 +132,7 @@ def test_audit_secret_free() -> None:
     audit = audit_compute_plan_decision(decision)
     assert audit["contains_secrets"] is False
     assert audit["audit_id"] == decision.audit_id
-    assert "bl47_audit" in audit
+    assert "hardware_safety_audit" in audit
 
 
 def test_module_exports() -> None:
@@ -498,7 +498,7 @@ def test_audit_would_live_and_ticketed() -> None:
         live_execution_ticket="t-1",
     )
     audit_t = audit_compute_plan_decision(ticketed)
-    assert "bl47_audit" in audit_t
+    assert "hardware_safety_audit" in audit_t
 
 
 def test_iter_plan_kinds_without_mode_returns_full_catalogue() -> None:
@@ -526,7 +526,7 @@ def test_dry_run_appends_unsupported_kernel_blocker(
 
 
 def test_audit_skips_bl47_when_policy_id_blank() -> None:
-    """Blank bl47_policy_id omits nested BL-47 audit payload."""
+    """Blank hardware_safety_policy_id omits nested BL-47 audit payload."""
     decision = ComputePlanDecision(
         plan_kind_id="dry_run_simulator",
         outcome="allowed_plan",
@@ -535,11 +535,11 @@ def test_audit_skips_bl47_when_policy_id_blank() -> None:
         reason="unit",
         blockers=(),
         audit_id="qcp:unit",
-        bl47_policy_id="",
+        hardware_safety_policy_id="",
     )
     audit = audit_compute_plan_decision(decision)
-    assert "bl47_audit" not in audit
-    assert audit["bl47_policy_id"] == ""
+    assert "hardware_safety_audit" not in audit
+    assert audit["hardware_safety_policy_id"] == ""
 
 
 def test_integrity_rejects_plan_kind_set_drift() -> None:

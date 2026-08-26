@@ -6,7 +6,7 @@
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
 <!-- SCPN Quantum Control — IQM Layout-Transfer Per-Size Preregistration -->
 
-# IQM Garnet Layout-Transfer Per-Size Powered Preregistration (FU-3)
+# IQM Garnet Layout-Transfer Per-Size Powered Preregistration
 
 Date: 2026-07-22
 

@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Partial-observation forecast objective tests
-"""Production-surface tests for BL-37 observed/physics objective evidence."""
+"""Production-surface tests for multimodal-forecasting observed/physics objective evidence."""
 
 from __future__ import annotations
 

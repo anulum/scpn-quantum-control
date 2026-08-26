@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for PGBO QGT product (BL-71)
+# SCPN Quantum Control — tests for PGBO QGT product
 """Real-surface tests for ``pgbo_qgt_product`` (one concern per test)."""
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ def test_list_capability_ids_covers_tensor_family_and_policy() -> None:
         "fubini_study_metric",
         "berry_curvature",
         "size_cap_policy",
-        "bl50_compose",
+        "geometric_control_compose",
     )
 
 

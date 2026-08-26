@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for adjoint reversible replay product (BL-39)
+# SCPN Quantum Control — tests for adjoint reversible replay product
 """Real-surface tests for ``scpn_quantum_control.adjoint_replay_product``."""
 
 from __future__ import annotations

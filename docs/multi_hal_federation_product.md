@@ -1,4 +1,4 @@
-# Multi-HAL provider federation product (BL-75)
+# Multi-HAL provider federation product
 
 **Capability-true federation matrix** over ambient `hardware/hal_*` adapters and
 backend descriptors. Default **no-submit dry-run** (BL-47). Never invent-green

@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-79 Entangled Initial-State Evidence Tests
-"""Evidence, replay, CLI, and fail-closed tests for BL-79."""
+# SCPN Quantum Control — entanglement-sync Entangled Initial-State Evidence Tests
+"""Evidence, replay, CLI, and fail-closed tests for entanglement-sync."""
 
 from __future__ import annotations
 

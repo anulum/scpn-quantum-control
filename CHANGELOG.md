@@ -100,6 +100,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced internal work-item-coded module headings, public symbols, data-model
+  fields, serialized keys, evidence identifiers and filenames, CI labels, and
+  documentation headings with descriptive domain names. Regenerated affected
+  deterministic evidence and added a preflight/CI audit that rejects future
+  task-code leakage into production naming. Direct consumers of the former
+  task-coded Python or serialized names must migrate to the descriptive names.
+
 ## [1.1.0] - 2026-07-29
 
 This backward-compatible minor release packages the evidence-governed product

@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — advantage / no-advantage language protocol (BL-65)
-"""Fail-closed advantage-language governance and protocol catalogue (BL-65).
+# SCPN Quantum Control — advantage / no-advantage language protocol
+"""Fail-closed advantage-language governance and protocol catalogue.
 
 Default posture is **no-advantage / research observation**. Decisive protocol
 modules that already exist in-tree are catalogued with claim-gated statuses; this
@@ -276,7 +276,7 @@ _CANONICAL_PROTOCOLS: Final[tuple[AdvantageProtocolRecord, ...]] = (
         ),
     ),
     _protocol(
-        "protocol:bl79.initial_state_observation",
+        "protocol:entanglement.initial_state_observation",
         "research_observation",
         "BL-79 initial-state coherence comparison with population-matched controls.",
         evidence_modules=(

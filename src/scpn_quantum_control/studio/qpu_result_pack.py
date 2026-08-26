@@ -24,7 +24,7 @@ The absent-signal is loud, never silently downgraded. A unit with no provider
 attestation :func:`present_qpu_result_pack` renders ``unverifiable`` and
 :func:`seal_qpu_result_pack` refuses to seal it — it is never emitted as
 ``verified`` on the studio signature alone. The committed hardware packs carry
-no live provider attestation yet (that is BL-29 territory), so their units are
+no live provider attestation yet (that requires provider-attestation integration), so their units are
 honestly ``unverifiable`` today; the shape and the fail-closed boundary are what
 this slice lands.
 """

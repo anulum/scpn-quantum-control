@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-88 evidence tests
+# SCPN Quantum Control — topology-kernel evidence tests
 """Evidence construction, custody, rendering, and fail-closed tests."""
 
 from __future__ import annotations
@@ -17,8 +17,8 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.topology_kernel_product import (
-    BL88_EVIDENCE_DATE,
-    BL88_EVIDENCE_SCHEMA,
+    TOPOLOGY_KERNEL_EVIDENCE_DATE,
+    TOPOLOGY_KERNEL_EVIDENCE_SCHEMA,
     KernelEvaluation,
     KernelSupportRow,
     TopologyKernelEvidence,
@@ -49,11 +49,11 @@ def _low_accuracy(name: str, labels: np.ndarray) -> KernelEvaluation:
 
 
 def test_frozen_evidence_matches_registered_metrics(evidence: TopologyKernelEvidence) -> None:
-    assert evidence.schema_version == BL88_EVIDENCE_SCHEMA
-    assert evidence.generated_on == BL88_EVIDENCE_DATE
+    assert evidence.schema_version == TOPOLOGY_KERNEL_EVIDENCE_SCHEMA
+    assert evidence.generated_on == TOPOLOGY_KERNEL_EVIDENCE_DATE
     assert (
         evidence.content_digest
-        == "e0f6fd8a5ed3a12c2da0edc2df9eaf9a9ae39148f87250726999c3ce32755306"
+        == "a6a346eb775cf4e1aeed5f607f061946141455cdef9f8e24d87d9d9d09e83c0f"
     )
     assert evidence.ring.accuracy == pytest.approx(1.0)
     assert evidence.path.accuracy == pytest.approx(0.25)

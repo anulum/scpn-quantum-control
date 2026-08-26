@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-35 bounded analog/digital comparison
+# SCPN Quantum Control — analog-mapping bounded analog/digital comparison
 """Bounded mathematical-model comparison against a Lie–Trotter reference."""
 
 from __future__ import annotations

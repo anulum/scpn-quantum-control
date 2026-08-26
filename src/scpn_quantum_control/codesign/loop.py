@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — quantum-classical co-design loop
-"""Thin deterministic orchestration over BL-33 estimator and policy ports."""
+"""Thin deterministic orchestration over co-design estimator and policy ports."""
 
 from __future__ import annotations
 

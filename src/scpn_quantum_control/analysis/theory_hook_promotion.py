@@ -7,7 +7,7 @@
 # SCPN Quantum Control — Theory-hook promotion registry
 """Evidence-gated promotion records for experimental theory hooks.
 
-This module is the BL-98 boundary between an importable research routine and a
+This module is the theory-hook boundary between an importable research routine and a
 promoted control or product capability.  The registry covers quantum speed
 limits, Hamiltonian learning, the finite Koopman closure, the legacy
 ``quantum_phi`` mutual-information diagnostic, stabilizer Rényi entropy, and

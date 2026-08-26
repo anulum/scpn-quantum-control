@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for campaign harness product (BL-99)
+# SCPN Quantum Control — tests for campaign harness product
 """Real-surface tests for ``campaign_harness_product``."""
 
 from __future__ import annotations
@@ -221,8 +221,8 @@ def test_integrity_rejects_drift_and_policy() -> None:
             "title": "t",
             "summary": "s",
             "ambient_pointer": "p",
-            "bl47_pointer": "b",
-            "bl65_pointer": "b",
+            "hardware_safety_pointer": "b",
+            "advantage_protocol_pointer": "b",
             "no_submit_default": True,
             "owner_ticket_required_for_live": True,
             "invent_green_live_submit": False,
@@ -352,8 +352,8 @@ def test_row_decision_probe_validation() -> None:
         "title": "t",
         "summary": "s",
         "ambient_pointer": "p",
-        "bl47_pointer": "b47",
-        "bl65_pointer": "b65",
+        "hardware_safety_pointer": "b47",
+        "advantage_protocol_pointer": "b65",
     }
     assert CampaignHarnessRow(**base).harness_id == "x"
     assert CampaignHarnessRow(**base).to_dict()["harness_id"] == "x"
@@ -367,10 +367,10 @@ def test_row_decision_probe_validation() -> None:
         CampaignHarnessRow(**{**base, "summary": ""})
     with pytest.raises(ValueError, match="ambient_pointer"):
         CampaignHarnessRow(**{**base, "ambient_pointer": ""})
-    with pytest.raises(ValueError, match="bl47_pointer"):
-        CampaignHarnessRow(**{**base, "bl47_pointer": ""})
-    with pytest.raises(ValueError, match="bl65_pointer"):
-        CampaignHarnessRow(**{**base, "bl65_pointer": ""})
+    with pytest.raises(ValueError, match="hardware_safety_pointer"):
+        CampaignHarnessRow(**{**base, "hardware_safety_pointer": ""})
+    with pytest.raises(ValueError, match="advantage_protocol_pointer"):
+        CampaignHarnessRow(**{**base, "advantage_protocol_pointer": ""})
     with pytest.raises(ValueError, match="no_submit_default"):
         CampaignHarnessRow(**{**base, "no_submit_default": False})
     with pytest.raises(ValueError, match="invent_green_live_submit"):
@@ -638,8 +638,8 @@ def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
         title="t",
         summary="s",
         ambient_pointer="p",
-        bl47_pointer="b",
-        bl65_pointer="b",
+        hardware_safety_pointer="b",
+        advantage_protocol_pointer="b",
     )
     object.__setattr__(blank, "harness_id", "  ")
     monkeypatch.setattr(campaign_product, "_HARNESSES", (blank,))
@@ -652,8 +652,8 @@ def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
         title="t",
         summary="s",
         ambient_pointer="p",
-        bl47_pointer="b",
-        bl65_pointer="b",
+        hardware_safety_pointer="b",
+        advantage_protocol_pointer="b",
     )
     monkeypatch.setattr(campaign_product, "_HARNESSES", (good, good))
     with pytest.raises(RuntimeError, match="duplicate harness_id"):

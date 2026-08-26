@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for stochastic estimators product (BL-93)
+# SCPN Quantum Control — tests for stochastic estimators product
 """Real-surface tests for ``scpn_quantum_control.stochastic_estimators_product``."""
 
 from __future__ import annotations
@@ -60,7 +60,10 @@ def test_get_known_and_unknown_fail_closed() -> None:
     row = get_stochastic_estimator("spsa_gradient")
     assert row.allows_hardware_shots is False
     assert row.claim_boundary == STOCHASTIC_ESTIMATORS_CLAIM_BOUNDARY
-    assert "bl47" in row.bl47_pointer or "hardware" in row.bl47_pointer
+    assert (
+        "hardware_safety_audit" in row.hardware_safety_pointer
+        or "hardware" in row.hardware_safety_pointer
+    )
     with pytest.raises(ValueError, match="non-empty"):
         get_stochastic_estimator("  ")
     with pytest.raises(ValueError, match="unknown estimator_id"):
@@ -152,7 +155,7 @@ def test_integrity_rejects_drift_and_hardware() -> None:
             "symbol_name": "x",
             "support_posture": "local_materialised",
             "allows_hardware_shots": False,
-            "bl47_pointer": "p",
+            "hardware_safety_pointer": "p",
             "as_of": "2026-07-24",
             "claim_boundary": STOCHASTIC_ESTIMATORS_CLAIM_BOUNDARY,
         }
@@ -273,8 +276,8 @@ def test_estimator_row_validation() -> None:
         StochasticEstimatorRow(**{**base, "allows_hardware_shots": True})
     with pytest.raises(ValueError, match="as_of"):
         StochasticEstimatorRow(**{**base, "as_of": ""})
-    with pytest.raises(ValueError, match="bl47_pointer"):
-        StochasticEstimatorRow(**{**base, "bl47_pointer": ""})
+    with pytest.raises(ValueError, match="hardware_safety_pointer"):
+        StochasticEstimatorRow(**{**base, "hardware_safety_pointer": ""})
 
 
 def test_decision_invariants() -> None:

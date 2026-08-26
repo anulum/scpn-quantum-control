@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — quantum-classical co-design package
-"""Public simulator-first quantum-classical co-design surface (BL-33)."""
+"""Public simulator-first quantum-classical co-design surface."""
 
 from .adapters import (
     ControlAdapterEvidence,

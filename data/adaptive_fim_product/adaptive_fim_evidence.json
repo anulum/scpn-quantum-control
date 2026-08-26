@@ -35,7 +35,7 @@
   },
   "claim_boundary": "uncertainty-aware batch-level next-experiment proposals under BL-47 dry-run budgets; offline replay is not closed-loop validation; no provider submission, live QPU feedback, FIM protection, optimal-policy, hardware-efficacy, realtime control, or quantum-advantage claim",
   "closed_loop_validated": false,
-  "content_digest": "f2201cce5697eab46c6217f5874b5268f521418f2a4dff393cd16122d961c23e",
+  "content_digest": "7aeeb99d94ca3979eed288d7c3d533ec56145ba58596f88933d2691f09107460",
   "decision_policy": {
     "config": {
       "confidence_z": 1.959963984540054,
@@ -294,7 +294,7 @@
         "interval_upper": 0.14794081953359148,
         "lambda_in": 4.0,
         "lambda_out": 3.8314569149830375,
-        "observer_id": "bl80:ci_dry_run_only:0",
+        "observer_id": "adaptive_fim:ci_dry_run_only:0",
         "shot_policy_id": "ci_dry_run_only",
         "shots": 512,
         "source": "synthetic"
@@ -307,7 +307,7 @@
         "interval_upper": 0.07108655145578816,
         "lambda_in": 3.8314569149830375,
         "lambda_out": 3.8314569149830375,
-        "observer_id": "bl80:ci_dry_run_only:1",
+        "observer_id": "adaptive_fim:ci_dry_run_only:1",
         "shot_policy_id": "ci_dry_run_only",
         "shots": 512,
         "source": "synthetic"
@@ -320,7 +320,7 @@
         "interval_upper": null,
         "lambda_in": 3.8314569149830375,
         "lambda_out": 3.8314569149830375,
-        "observer_id": "bl80:ci_dry_run_only:2",
+        "observer_id": "adaptive_fim:ci_dry_run_only:2",
         "shot_policy_id": "ci_dry_run_only",
         "shots": 32,
         "source": "synthetic"
@@ -351,7 +351,7 @@
         "rationale": "leakage Wilson lower bound exceeds target plus deadband",
         "schema": "adaptive_fim_feedback.v2",
         "witness": {
-          "artifact_id": "bl80.synthetic.high_leakage",
+          "artifact_id": "adaptive_fim.synthetic.high_leakage",
           "count_bound": true,
           "depth": 2,
           "leakage": 0.1171875,
@@ -382,7 +382,7 @@
         "rationale": "hold: harmful-direction interval does not clear the decision boundary",
         "schema": "adaptive_fim_feedback.v2",
         "witness": {
-          "artifact_id": "bl80.synthetic.boundary_hold",
+          "artifact_id": "adaptive_fim.synthetic.boundary_hold",
           "count_bound": true,
           "depth": 2,
           "leakage": 0.048828125,
@@ -406,7 +406,7 @@
         "rationale": "hold: shots 32 below min_shots 256; uncertainty gate not qualified",
         "schema": "adaptive_fim_feedback.v2",
         "witness": {
-          "artifact_id": "bl80.synthetic.underpowered_hold",
+          "artifact_id": "adaptive_fim.synthetic.underpowered_hold",
           "count_bound": true,
           "depth": 2,
           "leakage": 0.09375,

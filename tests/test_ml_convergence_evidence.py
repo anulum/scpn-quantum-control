@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-42 convergence evidence tests
-"""Unified suite, evidence-file, validator, and CLI tests for BL-42."""
+# SCPN Quantum Control — convergence-example convergence evidence tests
+"""Unified suite, evidence-file, validator, and CLI tests for convergence-example."""
 
 from __future__ import annotations
 

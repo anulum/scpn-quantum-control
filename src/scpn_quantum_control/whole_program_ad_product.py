@@ -4,17 +4,17 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Whole-program AD product surface (BL-91 / P1)
-"""Fail-closed whole-program AD **product** catalogue and journey map (BL-91).
+# SCPN Quantum Control — Whole-program AD product surface
+"""Fail-closed whole-program AD **product** catalogue and journey map.
 
 Productises whole-program AD as a versioned frontend → IR → adjoint/replay
 capability: public journey inventory, layered architecture map, dry-run
 journey posture, fail-closed unknown/blank ids, and refuse invent-green for
 unsupported frontends, hardware, polyglot certs, and edge WASM claims.
 
-Composes honesty from BL-97 (workbench not silently SemVer-stable), BL-53
-(unsupported frontend fail-closed), BL-46 (metamorphic/formal AD residual),
-BL-49 (polyglot parity residual), BL-74 (edge WASM residual), and BL-95
+Composes honesty from API-stability (workbench not silently SemVer-stable), unsuitable-scenario
+(unsupported frontend fail-closed), metamorphic-verification (metamorphic/formal AD residual),
+parity-certificate (polyglot parity residual), polyglot-edge-AD (edge WASM residual), and QPU-compute
 (no invent-green compute). Does **not** freeze every ``whole_program_*`` /
 ``program_ad_*`` symbol as a mega-contract and does not execute QPU jobs.
 """
@@ -73,9 +73,9 @@ class WholeProgramADJourney:
         Whether this journey claims hardware (product default false).
     architecture_layer
         Layered architecture label (frontend, ir, adjoint, product, residual).
-    bl53_pointer
+    unsuitable_scenario_pointer
         Optional BL-53 unsuitable/unsupported pointer.
-    bl97_stability_class
+    api_stability_class
         Stability honesty class (not invent-stable for workbench).
     as_of
         Inventory date label.
@@ -92,8 +92,8 @@ class WholeProgramADJourney:
     steps: tuple[str, ...]
     allows_hardware: bool = False
     architecture_layer: str = "frontend"
-    bl53_pointer: str = ""
-    bl97_stability_class: str = "experimental_workbench"
+    unsuitable_scenario_pointer: str = ""
+    api_stability_class: str = "experimental_workbench"
     as_of: str = "2026-07-24"
     claim_boundary: str = WHOLE_PROGRAM_AD_PRODUCT_CLAIM_BOUNDARY
 
@@ -125,8 +125,8 @@ class WholeProgramADJourney:
             raise ValueError("architecture_layer must be non-empty")
         if not self.as_of or not self.as_of.strip():
             raise ValueError("as_of must be non-empty")
-        if not self.bl97_stability_class or not self.bl97_stability_class.strip():
-            raise ValueError("bl97_stability_class must be non-empty")
+        if not self.api_stability_class or not self.api_stability_class.strip():
+            raise ValueError("api_stability_class must be non-empty")
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this journey."""
@@ -139,8 +139,8 @@ class WholeProgramADJourney:
             "steps": list(self.steps),
             "allows_hardware": self.allows_hardware,
             "architecture_layer": self.architecture_layer,
-            "bl53_pointer": self.bl53_pointer,
-            "bl97_stability_class": self.bl97_stability_class,
+            "unsuitable_scenario_pointer": self.unsuitable_scenario_pointer,
+            "api_stability_class": self.api_stability_class,
             "as_of": self.as_of,
             "claim_boundary": self.claim_boundary,
         }
@@ -229,8 +229,8 @@ def _journey(
     steps: tuple[str, ...],
     allows_hardware: bool = False,
     architecture_layer: str = "frontend",
-    bl53_pointer: str = "",
-    bl97_stability_class: str = "experimental_workbench",
+    unsuitable_scenario_pointer: str = "",
+    api_stability_class: str = "experimental_workbench",
 ) -> WholeProgramADJourney:
     """Build one catalogue journey."""
     return WholeProgramADJourney(
@@ -242,8 +242,8 @@ def _journey(
         steps=steps,
         allows_hardware=allows_hardware,
         architecture_layer=architecture_layer,
-        bl53_pointer=bl53_pointer,
-        bl97_stability_class=bl97_stability_class,
+        unsuitable_scenario_pointer=unsuitable_scenario_pointer,
+        api_stability_class=api_stability_class,
     )
 
 
@@ -314,12 +314,12 @@ _CANONICAL_JOURNEYS: Final[tuple[WholeProgramADJourney, ...]] = (
         module_path="scpn_quantum_control.whole_program_frontend_contracts",
         support_badge="frontend_boundary",
         architecture_layer="frontend",
-        bl53_pointer="unsuitable_scenario_registry.unsupported_frontend_semantics",
+        unsuitable_scenario_pointer="unsuitable_scenario_registry.unsupported_frontend_semantics",
         steps=(
             "detect_unsupported_semantic",
             "emit_hard_gap_diagnostic",
             "refuse_objective_execution",
-            "point_bl53_unsuitable_registry",
+            "point_unsuitable_scenario_registry",
         ),
     ),
     _journey(
@@ -335,7 +335,7 @@ _CANONICAL_JOURNEYS: Final[tuple[WholeProgramADJourney, ...]] = (
         steps=(
             "declare_parity_boundary",
             "refuse_invent_green_polyglot_cert",
-            "point_bl49_residual",
+            "point_parity_certificate_residual",
         ),
     ),
     _journey(
@@ -351,7 +351,7 @@ _CANONICAL_JOURNEYS: Final[tuple[WholeProgramADJourney, ...]] = (
         steps=(
             "declare_edge_boundary",
             "refuse_invent_green_wasm_edge",
-            "point_bl74_residual",
+            "point_edge_ad_residual",
         ),
     ),
 )
@@ -504,7 +504,7 @@ def dry_run_whole_program_ad_journey(
     ):
         blockers.append(
             "unsupported frontend execute refused; fail closed toward BL-53 "
-            f"(pointer={journey.bl53_pointer or 'unsuitable_scenario_registry'})"
+            f"(pointer={journey.unsuitable_scenario_pointer or 'unsuitable_scenario_registry'})"
         )
     # Frontend-boundary journeys refuse invent-green execute when asked to
     # "run" unsupported paths; dry-run without the flag still plans refuse steps.
@@ -547,7 +547,7 @@ def dry_run_whole_program_ad_journey(
         reason=(
             f"dry-run journey {journey.journey_id!r} allowed under product surface; "
             f"module={journey.module_path}; layer={journey.architecture_layer}; "
-            f"badge={journey.support_badge}; stability={journey.bl97_stability_class}; "
+            f"badge={journey.support_badge}; stability={journey.api_stability_class}; "
             "no QPU submission and no invent-green residual cert occurred"
         ),
         blockers=(),
@@ -576,7 +576,7 @@ def map_whole_program_ad_public_surfaces() -> tuple[dict[str, object], ...]:
                 "module_path": path,
                 "role": "whole_program_ad_product_surface",
                 "architecture_layer": journey.architecture_layer,
-                "bl97_stability_class": journey.bl97_stability_class,
+                "api_stability_class": journey.api_stability_class,
                 "support_badge": journey.support_badge,
                 "journey_ids": [
                     j.journey_id for j in _CANONICAL_JOURNEYS if j.module_path == path
@@ -722,9 +722,11 @@ def assert_whole_program_ad_product_integrity(
                 "set allows_hardware=False"
             )
         if jid == "unsupported_frontend_fail_closed":
-            pointer = row.get("bl53_pointer")
+            pointer = row.get("unsuitable_scenario_pointer")
             if not pointer or not str(pointer).strip():
-                raise ValueError("unsupported_frontend_fail_closed must carry bl53_pointer")
+                raise ValueError(
+                    "unsupported_frontend_fail_closed must carry unsuitable_scenario_pointer"
+                )
     if blank:
         raise ValueError(f"whole-program AD product registry has {blank} blank or invalid entries")
     if not default_found:

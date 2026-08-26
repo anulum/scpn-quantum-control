@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-87 ENAQT evidence
-"""Deterministic, digest-bound evidence for the bounded BL-87 ENAQT scan."""
+# SCPN Quantum Control — ENAQT ENAQT evidence
+"""Deterministic, digest-bound evidence for the bounded ENAQT ENAQT scan."""
 
 from __future__ import annotations
 
@@ -382,12 +382,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--json-output",
         type=Path,
-        default=Path("data/enaqt_product/bl87_enaqt_evidence.json"),
+        default=Path("data/enaqt_product/enaqt_evidence.json"),
     )
     parser.add_argument(
         "--markdown-output",
         type=Path,
-        default=Path("data/enaqt_product/bl87_enaqt_evidence.md"),
+        default=Path("data/enaqt_product/enaqt_evidence.md"),
     )
     args = parser.parse_args(argv)
     payload = write_enaqt_evidence(args.json_output, args.markdown_output)

@@ -1,4 +1,4 @@
-# Geometric quantum control product (BL-50)
+# Geometric quantum control product
 
 Geometry of quantum control for synchronisation: **QFI / McLachlan metric /
 QNG** catalogue, local metric spectrum diagnostics, and regularised natural-

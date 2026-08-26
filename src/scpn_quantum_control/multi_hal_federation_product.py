@@ -4,21 +4,21 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Multi-HAL provider federation product (BL-75 / P1)
-"""Fail-closed **Multi-HAL provider federation** product surface (BL-75).
+# SCPN Quantum Control — Multi-HAL provider federation product
+"""Fail-closed **Multi-HAL provider federation** product surface.
 
 Productises a **capability-true federation matrix** over ambient HAL adapters
 (``hardware/hal_*.py``, ``backends.list_hal_backend_descriptors``,
-``hal.built_in_backend_profiles``) with BL-47 no-submit default:
+``hal.built_in_backend_profiles``) with hardware-safety no-submit default:
 
 * versioned HAL inventory from live ambient descriptors/profiles (S75.0);
 * capability record schema (shots / mid-circuit / pulse / approval / IR) (S75.1);
 * federation matrix generation fail-closed on blank/unknown backend ids (S75.2);
 * dry-run path decision without network submission (S75.3);
-* refuse invent-green live submit without owner ticket (BL-47 compose).
+* refuse invent-green live submit without owner ticket (hardware-safety compose).
 
 Does **not** submit QPU jobs, invent online calibration, complete feedback_*
-depth (S75.4 residual), or ship BL-61 competitor-watch automation (S75.5).
+depth (S75.4 residual), or ship baseline-watch competitor-watch automation (S75.5).
 """
 
 from __future__ import annotations

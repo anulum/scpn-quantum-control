@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — co-design adapters over existing product ports
-"""BL-33 adapters over BL-67 control ports and BL-68/69/70 observers."""
+"""co-design adapters over control-stack control ports and active-sensing/69/70 observers."""
 
 from __future__ import annotations
 
@@ -98,7 +98,7 @@ def consume_realtime_feedback_port(
         seed=seed,
     )
     return ControlAdapterEvidence(
-        adapter_id="bl67.realtime_feedback",
+        adapter_id="control_stack.realtime_feedback",
         authorised=result.decision.authorised,
         values=tuple(float(step.r_live) for step in result.steps),
         samples=len(result.steps),
@@ -114,7 +114,7 @@ def consume_qaoa_mpc_port(
     """Consume the existing BL-67 abstract QAOA-MPC port under policy."""
     result = run_qaoa_mpc_adapter(controller, policy=policy, seed=seed)
     return ControlAdapterEvidence(
-        adapter_id="bl67.qaoa_mpc",
+        adapter_id="control_stack.qaoa_mpc",
         authorised=result.decision.authorised,
         values=tuple(float(action) for action in result.actions),
         samples=len(result.actions),
@@ -143,7 +143,7 @@ def consume_cosimulation_port(
     )
     telemetry = result.telemetry
     return ControlAdapterEvidence(
-        adapter_id="bl67.cosimulation_partition",
+        adapter_id="control_stack.cosimulation_partition",
         authorised=result.decision.authorised,
         values=(
             telemetry.final_quantum_order,

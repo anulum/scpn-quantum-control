@@ -100,7 +100,7 @@ The first row demonstrates the intended intermediate-noise effect on one frozen
 finite model. The second shows that dephasing can be strictly detrimental. The
 third checks that dephasing does not create a transport path absent from the
 Hamiltonian. Every row is replayed and digest-bound in
-`data/enaqt_product/bl87_enaqt_evidence.json`.
+`data/enaqt_product/enaqt_evidence.json`.
 
 ## Conclusion and control boundary
 

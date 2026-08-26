@@ -1,4 +1,4 @@
-# Cloud-native deployment boundary product (BL-101)
+# Cloud-native deployment boundary product
 
 Documented, fail-closed **cloud deploy patterns** for workers/batch. Dry-run
 manifest generation only (Kubernetes + Docker Compose). No secret leakage, no

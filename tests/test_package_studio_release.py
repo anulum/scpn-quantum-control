@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — studio release packaging tests (ST-36)
-"""Tests for the pull-deploy Release packaging tool (ST-36).
+# scpn-quantum-control — studio release packaging tests
+"""Tests for the pull-deploy Release packaging tool.
 
 The packer publishes the credential-free pull-deploy pair: a deterministic
 release tarball plus a standalone manifest carrying ``studio_version`` and

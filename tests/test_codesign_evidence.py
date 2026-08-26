@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — co-design evidence tests
-"""Measured workflow, artefact, and CLI tests for BL-33 evidence."""
+"""Measured workflow, artefact, and CLI tests for co-design evidence."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-# Studio executive + coverage frontier product (BL-62)
+# Studio executive + coverage frontier product
 
 Versioned **executive verb catalogue** with BL-52 route pointers and a
 **coverage-frontier** score (honesty × answer-rate). Never invent-green full

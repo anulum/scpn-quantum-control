@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Entangled Initial-State Synchronisation Study
-"""Real-surface tests for the BL-79 initial-state comparison API."""
+"""Real-surface tests for the entanglement-sync initial-state comparison API."""
 
 from __future__ import annotations
 
@@ -281,7 +281,7 @@ def test_matched_control_study_refuses_entanglement_specific_attribution() -> No
         assert comparison.language_status == "research_observation"
         certificate = comparison.no_advantage_certificate
         assert certificate["language_status"] == "no_advantage_default"
-        assert certificate["protocol_id"] == "protocol:bl79.initial_state_observation"
+        assert certificate["protocol_id"] == "protocol:entanglement.initial_state_observation"
         assert comparison.to_dict()["entanglement_specific_effect_supported"] is False
 
 

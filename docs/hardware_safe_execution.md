@@ -1,4 +1,4 @@
-# Hardware-safe gradient execution product (BL-47 / Axis 5)
+# Hardware-safe gradient execution product
 
 Fail-closed **no-submit default** execution policy surface for hardware-adjacent
 gradient planning. Dry-run plans estimate shot budgets and cost-model status
@@ -154,7 +154,7 @@ rate table, or promote hardware readiness.
 Shipped: S47.0–S47.1 policy catalogue · S47.2 shot budgets · S47.3 cost status ·
 S47.4 dry-run planner · S47.5 audit records · S47.6 enforce wrapper · docs.
 
-Open: S47.7 BL-33/BL-09 integration · S47.8 BL-29 ticket package template ·
+Open: S47.7 BL-33/BL-09 integration · S47.8 provider ticket-package template ·
 multi-file `execution_policy/` package split · live rate tables (owner data).
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

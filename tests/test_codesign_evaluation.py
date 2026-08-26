@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — co-design component tests
-"""Real phase-objective tests for BL-33 estimator, evaluator, and controller."""
+"""Real phase-objective tests for co-design estimator, evaluator, and controller."""
 
 from __future__ import annotations
 

@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-80 adaptive FIM evidence runner
-"""Run the public BL-80 evidence writer."""
+# SCPN Quantum Control — adaptive-FIM adaptive FIM evidence runner
+"""Run the public adaptive-FIM evidence writer."""
 
 from scpn_quantum_control.analysis.adaptive_fim_evidence import main
 

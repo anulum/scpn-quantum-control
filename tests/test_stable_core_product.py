@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for stable_core product surface (BL-81)
+# SCPN Quantum Control — tests for stable_core product surface
 """Real-surface tests for ``scpn_quantum_control.stable_core_product``."""
 
 from __future__ import annotations
@@ -71,10 +71,10 @@ def test_list_contracts_and_filters() -> None:
 def test_get_known_and_unknown_fail_closed() -> None:
     """Resolve known contracts and reject blank or unknown identifiers."""
     row = get_stable_core_contract("experiment_contract")
-    assert row.bl97_stability_class == "stable_core"
+    assert row.api_stability_class == "stable_core"
     assert row.claim_boundary == STABLE_CORE_PRODUCT_CLAIM_BOUNDARY
-    assert row.bl55_pointer
-    assert row.bl56_pointer
+    assert row.reproduction_kit_pointer
+    assert row.scorecard_pointer
     with pytest.raises(ValueError, match="non-empty"):
         get_stable_core_contract("  ")
     with pytest.raises(ValueError, match="unknown contract_id"):
@@ -268,7 +268,7 @@ def test_public_surfaces_and_registry() -> None:
     assert "Problem" in symbols
     assert "Experiment" in symbols
     for row in surfaces:
-        assert row["bl97_stability_class"] == "stable_core"
+        assert row["api_stability_class"] == "stable_core"
         assert row["role"] == "stable_core_product_surface"
 
     registry = build_stable_core_product_registry()
@@ -293,9 +293,9 @@ def test_integrity_rejects_drift() -> None:
             "summary": "s",
             "module_path": "m",
             "symbol_name": "X",
-            "bl97_stability_class": "stable_core",
-            "bl55_pointer": "a",
-            "bl56_pointer": "b",
+            "api_stability_class": "stable_core",
+            "reproduction_kit_pointer": "a",
+            "scorecard_pointer": "b",
             "as_of": "2026-07-24",
             "claim_boundary": STABLE_CORE_PRODUCT_CLAIM_BOUNDARY,
         }
@@ -408,8 +408,8 @@ def test_contract_row_validation() -> None:
         StableCoreContractRow(**{**base, "module_path": ""})
     with pytest.raises(ValueError, match="symbol_name"):
         StableCoreContractRow(**{**base, "symbol_name": ""})
-    with pytest.raises(ValueError, match="bl97_stability_class"):
-        StableCoreContractRow(**{**base, "bl97_stability_class": ""})
+    with pytest.raises(ValueError, match="api_stability_class"):
+        StableCoreContractRow(**{**base, "api_stability_class": ""})
     with pytest.raises(ValueError, match="as_of"):
         StableCoreContractRow(**{**base, "as_of": ""})
 

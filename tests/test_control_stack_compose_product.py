@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for control stack compose product (BL-67)
+# SCPN Quantum Control — tests for control stack compose product
 """Real-surface tests for ``scpn_quantum_control.control_stack_compose_product``."""
 
 from __future__ import annotations
@@ -341,7 +341,7 @@ def test_row_decision_probe_validation() -> None:
         "port_id": "realtime_feedback",
         "title": "t",
         "ambient_modules": ("pkg.x",),
-        "bl47_pointer": "p",
+        "hardware_safety_pointer": "p",
         "support_posture": "local_research",
         "requires_execution_policy": True,
     }
@@ -355,8 +355,8 @@ def test_row_decision_probe_validation() -> None:
         AdapterPortRow(**{**base_port, "ambient_modules": ()})
     with pytest.raises(ValueError, match="ambient_modules entries"):
         AdapterPortRow(**{**base_port, "ambient_modules": ("ok", "  ")})
-    with pytest.raises(ValueError, match="bl47_pointer"):
-        AdapterPortRow(**{**base_port, "bl47_pointer": ""})
+    with pytest.raises(ValueError, match="hardware_safety_pointer"):
+        AdapterPortRow(**{**base_port, "hardware_safety_pointer": ""})
     with pytest.raises(ValueError, match="support_posture"):
         AdapterPortRow(**{**base_port, "support_posture": cast(Any, "nope")})
     with pytest.raises(ValueError, match="invent_green_pcs"):
@@ -534,7 +534,7 @@ def test_catalogue_guards(monkeypatch: pytest.MonkeyPatch) -> None:
         port_id="realtime_feedback",
         title="t",
         ambient_modules=("pkg.x",),
-        bl47_pointer="p",
+        hardware_safety_pointer="p",
         support_posture="local_research",
         requires_execution_policy=True,
     )
@@ -556,7 +556,7 @@ def test_port_map_rejects_blank_port_id(monkeypatch: pytest.MonkeyPatch) -> None
         port_id="realtime_feedback",
         title="t",
         ambient_modules=("pkg.x",),
-        bl47_pointer="p",
+        hardware_safety_pointer="p",
         support_posture="local_research",
         requires_execution_policy=True,
     )

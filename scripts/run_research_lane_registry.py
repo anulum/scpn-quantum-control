@@ -6,7 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — BL-84 research-lane registry runner
-"""Generate or verify deterministic BL-84 research-lane registry evidence."""
+"""Generate or verify deterministic research-lane research-lane registry evidence."""
 
 from __future__ import annotations
 

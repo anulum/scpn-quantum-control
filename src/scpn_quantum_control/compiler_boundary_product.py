@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — QIR/CUDA-Q compiler boundary product (BL-66 / P1)
-"""Fail-closed **external compiler boundary register** product surface (BL-66).
+# SCPN Quantum Control — QIR/CUDA-Q compiler boundary product
+"""Fail-closed **external compiler boundary register** product surface.
 
 Productises first-class boundary rows for external compilers (QIR, CUDA-Q,
 Catalyst-as-external, in-tree MLIR/Enzyme, future TN) — not aspirational README
@@ -19,7 +19,7 @@ lists:
 * refuse invent-green full CUDA-Q runtime or live QIR provider submission.
 
 Does **not** ship full CUDA-Q runtime product, invent Verified-At-Source pins
-without terminal evidence, or complete BL-61 watch automation (S66.5 residual).
+without terminal evidence, or complete baseline-watch watch automation (S66.5 residual).
 """
 
 from __future__ import annotations
@@ -82,7 +82,7 @@ class CompilerBoundaryRow:
         Boundary status enum.
     ambient_pointer
         Ambient module or constant pointer for evidence.
-    bl52_route_pointer
+    route_matrix_pointer
         BL-52 governed-route matrix pointer when applicable.
     import_export_allowed
         Whether product allows import/export experiment (validate-only).
@@ -102,7 +102,7 @@ class CompilerBoundaryRow:
     summary: str
     status: BoundaryStatus
     ambient_pointer: str
-    bl52_route_pointer: str
+    route_matrix_pointer: str
     import_export_allowed: bool
     invent_green_runtime: bool = False
     support_posture: SupportPosture = "metadata_only"
@@ -126,8 +126,8 @@ class CompilerBoundaryRow:
             raise ValueError(f"unknown status: {self.status!r}")
         if not self.ambient_pointer or not self.ambient_pointer.strip():
             raise ValueError("ambient_pointer must be non-empty")
-        if not self.bl52_route_pointer or not self.bl52_route_pointer.strip():
-            raise ValueError("bl52_route_pointer must be non-empty")
+        if not self.route_matrix_pointer or not self.route_matrix_pointer.strip():
+            raise ValueError("route_matrix_pointer must be non-empty")
         if self.invent_green_runtime:
             raise ValueError("invent_green_runtime must be False")
         if self.status == "permanent_boundary" and self.import_export_allowed:
@@ -150,7 +150,7 @@ class CompilerBoundaryRow:
             "summary": self.summary,
             "status": self.status,
             "ambient_pointer": self.ambient_pointer,
-            "bl52_route_pointer": self.bl52_route_pointer,
+            "route_matrix_pointer": self.route_matrix_pointer,
             "import_export_allowed": self.import_export_allowed,
             "invent_green_runtime": self.invent_green_runtime,
             "support_posture": self.support_posture,
@@ -284,7 +284,7 @@ def _build_compiler_catalogue() -> tuple[CompilerBoundaryRow, ...]:
                 "scpn_quantum_control.compiler.mlir_llvm_jit_claim_gate."
                 "LLVM_JIT_CLAIM_GATE_BOUNDARY"
             ),
-            bl52_route_pointer="governed_route:compiler.mlir_enzyme.local",
+            route_matrix_pointer="governed_route:compiler.mlir_enzyme.local",
             import_export_allowed=True,
             support_posture="local_research",
         ),
@@ -300,7 +300,7 @@ def _build_compiler_catalogue() -> tuple[CompilerBoundaryRow, ...]:
                 "scpn_quantum_control.benchmarks.differentiable_catalyst_comparison."
                 "catalyst_compiler_workflow_comparison"
             ),
-            bl52_route_pointer="governed_route:compiler.catalyst.external",
+            route_matrix_pointer="governed_route:compiler.catalyst.external",
             import_export_allowed=True,
             support_posture="local_research",
         ),
@@ -313,7 +313,7 @@ def _build_compiler_catalogue() -> tuple[CompilerBoundaryRow, ...]:
             ),
             status="implementation_path",
             ambient_pointer="scpn_quantum_control.compiler (QIR validate residual)",
-            bl52_route_pointer="governed_route:compiler.qir.validate_only",
+            route_matrix_pointer="governed_route:compiler.qir.validate_only",
             import_export_allowed=True,
             support_posture="metadata_only",
         ),
@@ -326,7 +326,7 @@ def _build_compiler_catalogue() -> tuple[CompilerBoundaryRow, ...]:
             ),
             status="permanent_boundary",
             ambient_pointer="BL-66 pack: no invent-green CUDA-Q runtime",
-            bl52_route_pointer="governed_route:compiler.cudaq.permanent_boundary",
+            route_matrix_pointer="governed_route:compiler.cudaq.permanent_boundary",
             import_export_allowed=False,
             support_posture="policy_only",
         ),
@@ -339,7 +339,7 @@ def _build_compiler_catalogue() -> tuple[CompilerBoundaryRow, ...]:
             ),
             status="permanent_boundary",
             ambient_pointer="BL-57 / TN path residual",
-            bl52_route_pointer="governed_route:compiler.tn.future",
+            route_matrix_pointer="governed_route:compiler.tn.future",
             import_export_allowed=False,
             support_posture="policy_only",
         ),

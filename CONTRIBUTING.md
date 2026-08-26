@@ -43,6 +43,11 @@ python tools/preflight.py
 
 - Format Python with Ruff and type public APIs.
 - Format Rust with `cargo fmt`.
+- Name modules, symbols, APIs, serialized fields, evidence artefacts, workflow
+  jobs, and public documentation by their domain purpose. Internal work-item or
+  roadmap identifiers belong only in private traceability records, not product
+  names. Run `python tools/audit_descriptive_production_naming.py` to verify the
+  boundary.
 - Keep new dependencies justified and optional unless they are required by the
   core package.
 - Preserve scientific claim boundaries. Simulator output, generated fixtures,

@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multimodal forecast bridge ports
-"""Bounded BL-37 composition into BL-68 sensing and BL-33 proposals."""
+"""Bounded multimodal-forecasting composition into active-sensing sensing and co-design proposals."""
 
 from __future__ import annotations
 

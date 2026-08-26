@@ -3,7 +3,7 @@
 - Schema: `entanglement_initial_state_evidence.v1`
 - Functional passed: `true`
 - Deterministic replay: `true`
-- Content digest: `8edcf229addc96e6807bd3f4ff1090e0f323e9ddca3e17b708446257f20872cf`
+- Content digest: `6153f7bca9e47d46de759579fa9eea7497c6a2e3dd0ca9a09377e27f87c9eef9`
 - Execution: exact local statevector/density simulation; no provider, QPU, or hardware.
 
 ## Frozen state-family comparisons

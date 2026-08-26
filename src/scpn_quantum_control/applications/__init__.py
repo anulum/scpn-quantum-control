@@ -32,7 +32,7 @@ from .fmo_benchmark import FMOBenchmarkResult, fmo_benchmark, fmo_coupling_matri
 from .honesty_kits import (
     APPLICATION_HONESTY_CLAIM_BOUNDARY,
     APPLICATION_HONESTY_SCHEMA,
-    BL37_FORECASTING_DOMAIN_TAGS,
+    FORECASTING_DOMAIN_TAGS,
     ApplicationDataOrigin,
     ApplicationHonestyAuditReport,
     ApplicationSupportStatus,
@@ -88,7 +88,7 @@ __all__ = [
     "ApplicationBenchmarkPrivacyAudit",
     "APPLICATION_HONESTY_CLAIM_BOUNDARY",
     "APPLICATION_HONESTY_SCHEMA",
-    "BL37_FORECASTING_DOMAIN_TAGS",
+    "FORECASTING_DOMAIN_TAGS",
     "ApplicationDataOrigin",
     "ApplicationHonestyAuditReport",
     "ApplicationPluginBenchmark",

@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — IQM FU-3 per-size local readiness runner
-"""Prepare and analyse the frozen FU-3 matrix without provider access."""
+# SCPN Quantum Control — IQM IQM layout-transfer per-size local readiness runner
+"""Prepare and analyse the frozen IQM layout-transfer matrix without provider access."""
 
 from __future__ import annotations
 

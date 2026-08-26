@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-45 evidence reporting
-"""Deterministic JSON and Markdown evidence for the BL-45 product."""
+# SCPN Quantum Control — quantum-reservoir evidence reporting
+"""Deterministic JSON and Markdown evidence for the quantum-reservoir product."""
 
 from __future__ import annotations
 
@@ -22,8 +22,8 @@ from .fidelity import SurrogateFidelityCertificate, SurrogateGradientCertificate
 from .hybrid import ExactValidatedSurrogateProposal
 from .models import GaussianRBFSurrogate
 
-BL45_EVIDENCE_SCHEMA = "scpn.quantum_reservoir_surrogates.v1"
-BL45_EVIDENCE_BOUNDARY = (
+QUANTUM_RESERVOIR_EVIDENCE_SCHEMA = "scpn.quantum_reservoir_surrogates.v1"
+QUANTUM_RESERVOIR_EVIDENCE_BOUNDARY = (
     "Synthetic local exact-statevector and classical-reference evidence only. "
     "No hardware QRC, provider execution, unseen-domain generalisation, closed-loop "
     "control, optimisation advantage, publication, or deployment claim."
@@ -72,8 +72,8 @@ class QuantumReservoirSurrogateEvidence:
     gradient_fidelity: SurrogateGradientCertificate
     exact_validated_proposal: ExactValidatedSurrogateProposal
     support_rows: tuple[SurrogateSupportRow, ...]
-    schema: str = BL45_EVIDENCE_SCHEMA
-    claim_boundary: str = BL45_EVIDENCE_BOUNDARY
+    schema: str = QUANTUM_RESERVOIR_EVIDENCE_SCHEMA
+    claim_boundary: str = QUANTUM_RESERVOIR_EVIDENCE_BOUNDARY
 
     def __post_init__(self) -> None:
         """Require both task families and a complete support matrix."""
@@ -89,9 +89,9 @@ class QuantumReservoirSurrogateEvidence:
             "matched_esn_comparator",
             "gaussian_rbf_value_fidelity",
             "analytic_rbf_gradient_fidelity",
-            "bl33_exact_validated_proposal",
-            "bl37_multimodal_adapter",
-            "bl40_notebook",
+            "codesign_exact_validated_proposal",
+            "multimodal_forecasting_adapter",
+            "notebook_programme",
         }
         if {row.surface for row in self.support_rows} != required_surfaces:
             raise ValueError("support rows must cover the complete BL-45 bounded surface.")
@@ -226,8 +226,8 @@ def write_quantum_reservoir_surrogate_evidence(
 
 
 __all__ = [
-    "BL45_EVIDENCE_BOUNDARY",
-    "BL45_EVIDENCE_SCHEMA",
+    "QUANTUM_RESERVOIR_EVIDENCE_BOUNDARY",
+    "QUANTUM_RESERVOIR_EVIDENCE_SCHEMA",
     "QuantumReservoirSurrogateEvidence",
     "SurrogateSupportRow",
     "render_quantum_reservoir_surrogate_markdown",

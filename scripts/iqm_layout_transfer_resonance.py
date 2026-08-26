@@ -51,7 +51,7 @@ VAULT_PATH = Path.home() / ".config" / "scpn-quantum-control" / "credentials.md"
 _ADAPTER_PATH = (
     REPO_ROOT / "src" / "scpn_quantum_control" / "hardware" / "iqm_lattice_calibration.py"
 )
-FU3_CAMPAIGN = "iqm_layout_transfer_per_size_prereg_2026-07-22"
+IQM_LAYOUT_TRANSFER_CAMPAIGN = "iqm_layout_transfer_per_size_prereg_2026-07-22"
 
 
 def _load_adapter() -> ModuleType:
@@ -123,7 +123,7 @@ def _select_submission_matrix(
     if all_sizes:
         if only_n is not None:
             raise ValueError("--all-sizes and --only-n are mutually exclusive")
-        if plan.get("campaign") != FU3_CAMPAIGN:
+        if plan.get("campaign") != IQM_LAYOUT_TRANSFER_CAMPAIGN:
             raise ValueError("--all-sizes is restricted to the frozen FU-3 campaign")
         if not plan.get("all_gates_pass") or int(plan.get("circuit_count", 0)) != 42:
             raise ValueError("FU-3 requires a 42-circuit plan with every depth gate green")
@@ -153,7 +153,7 @@ def _two_qubit_depth(circuit: Any) -> int:
     return int(depth or 0)
 
 
-def _validate_fu3_live_depths(native: list[tuple[str, Any]]) -> dict[str, int]:
+def _validate_iqm_layout_transfer_live_depths(native: list[tuple[str, Any]]) -> dict[str, int]:
     """Enforce the frozen per-size depth-parity gate after live transpilation."""
     pattern = re.compile(r"main_n(8|12|16)_(optimised|default|naive)_rep[1-4]")
     depths: dict[str, int] = {}
@@ -298,7 +298,7 @@ def _submit(args: argparse.Namespace) -> int:
         ]
         prepared.append((shots, native))
     if args.all_sizes:
-        live_depths = _validate_fu3_live_depths(
+        live_depths = _validate_iqm_layout_transfer_live_depths(
             [entry for _shots, group in prepared for entry in group]
         )
         record["live_two_qubit_depths"] = live_depths

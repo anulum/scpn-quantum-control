@@ -4,14 +4,14 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Cloud-native deployment boundary product (BL-101 / P1)
-"""Fail-closed **cloud-native deployment boundary** product surface (BL-101).
+# SCPN Quantum Control — Cloud-native deployment boundary product
+"""Fail-closed **cloud-native deployment boundary** product surface.
 
 Productises documented, fail-closed cloud deploy patterns for workers/batch over
 ambient :mod:`scpn_quantum_control.deployment.cloud_native`:
 
 * versioned deployment-pattern catalogue (batch worker, stable-core gate,
-  offline research) with BL-47 / BL-95 no always-on QPU posture;
+  offline research) with hardware-safety / QPU-compute no always-on QPU posture;
 * threat-model rows (secret leakage, cost, live cluster create);
 * dry-run manifest generation via ambient
   :func:`~scpn_quantum_control.deployment.cloud_native.generate_cloud_manifests`;
@@ -103,9 +103,9 @@ class DeploymentPatternRow:
         Must remain False.
     live_cluster_create
         Must remain False.
-    bl47_pointer
+    hardware_safety_pointer
         BL-47 hardware-safe / no-submit honesty pointer.
-    bl95_pointer
+    compute_plan_pointer
         BL-95 QPU compute abstraction posture pointer.
     support_posture
         Support posture badge.
@@ -124,8 +124,8 @@ class DeploymentPatternRow:
     allows_always_on_qpu: bool = False
     secret_env_allowed: bool = False
     live_cluster_create: bool = False
-    bl47_pointer: str = "hardware_safe_execution.cloud_deploy_no_submit"
-    bl95_pointer: str = "qpu_compute.dry_run_default"
+    hardware_safety_pointer: str = "hardware_safe_execution.cloud_deploy_no_submit"
+    compute_plan_pointer: str = "qpu_compute.dry_run_default"
     support_posture: SupportPosture = "policy_only"
     as_of: str = "2026-07-24"
     claim_boundary: str = CLOUD_NATIVE_DEPLOYMENT_CLAIM_BOUNDARY
@@ -148,10 +148,10 @@ class DeploymentPatternRow:
             raise ValueError("secret_env_allowed must be False on product surface")
         if self.live_cluster_create:
             raise ValueError("live_cluster_create must be False on product surface")
-        if not self.bl47_pointer or not self.bl47_pointer.strip():
-            raise ValueError("bl47_pointer must be non-empty")
-        if not self.bl95_pointer or not self.bl95_pointer.strip():
-            raise ValueError("bl95_pointer must be non-empty")
+        if not self.hardware_safety_pointer or not self.hardware_safety_pointer.strip():
+            raise ValueError("hardware_safety_pointer must be non-empty")
+        if not self.compute_plan_pointer or not self.compute_plan_pointer.strip():
+            raise ValueError("compute_plan_pointer must be non-empty")
         if self.support_posture not in {
             "local_research",
             "live_hardware_gated",
@@ -173,8 +173,8 @@ class DeploymentPatternRow:
             "allows_always_on_qpu": self.allows_always_on_qpu,
             "secret_env_allowed": self.secret_env_allowed,
             "live_cluster_create": self.live_cluster_create,
-            "bl47_pointer": self.bl47_pointer,
-            "bl95_pointer": self.bl95_pointer,
+            "hardware_safety_pointer": self.hardware_safety_pointer,
+            "compute_plan_pointer": self.compute_plan_pointer,
             "support_posture": self.support_posture,
             "as_of": self.as_of,
             "claim_boundary": self.claim_boundary,

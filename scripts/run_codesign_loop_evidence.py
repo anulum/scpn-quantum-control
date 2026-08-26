@@ -6,7 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — co-design loop evidence runner
-"""Write functional non-isolated BL-33 co-design evidence."""
+"""Write functional non-isolated co-design co-design evidence."""
 
 from scpn_quantum_control.codesign.evidence import main
 

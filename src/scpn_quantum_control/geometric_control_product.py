@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Geometric quantum control product (BL-50 / P1)
-"""Fail-closed **geometric quantum control** product surface (BL-50).
+# SCPN Quantum Control — Geometric quantum control product
+"""Fail-closed **geometric quantum control** product surface.
 
 Productises a geometry glossary + inventory of QFI / McLachlan metric / QNG
 surfaces and local diagnostic probes over ambient
@@ -18,13 +18,13 @@ surfaces and local diagnostic probes over ambient
   :func:`~scpn_quantum_control.phase.variational_metric.mclachlan_metric`;
 * QNG direction probe via ambient
   :func:`~scpn_quantum_control.phase.natural_gradient.solve_natural_gradient_direction`
-  (BL-13 singular-metric regularisation compose);
+  (natural-gradient singular-metric regularisation compose);
 * hard-gap boundaries: invent-green experimental advantage at criticality,
   live QPU geometry claims, silent repair of indefinite metrics;
 * refuse invent-green.
 
 Does **not** claim experimental quantum advantage at criticality, submit to
-QPU hardware, or replace BL-13 regularisation policy.
+QPU hardware, or replace natural-gradient regularisation policy.
 """
 
 from __future__ import annotations
@@ -626,7 +626,7 @@ def list_geometry_ambient_inventory() -> tuple[dict[str, object], ...]:
                 "solve_natural_gradient_direction",
                 "parameter_shift_natural_gradient_descent",
             ),
-            "role": "qng_regularised_solve_bl13",
+            "role": "qng_regularised_solve_trainability_boundary",
         },
         {
             "module_path": "scpn_quantum_control.differentiable_fisher",
@@ -870,7 +870,7 @@ def map_geometric_control_public_surfaces() -> tuple[dict[str, object], ...]:
         {
             "surface_id": "natural_gradient",
             "module_path": "scpn_quantum_control.phase.natural_gradient",
-            "role": "ambient_qng_bl13",
+            "role": "ambient_qng_trainability_boundary",
             "claim_boundary": GEOMETRIC_CONTROL_CLAIM_BOUNDARY,
         },
         {

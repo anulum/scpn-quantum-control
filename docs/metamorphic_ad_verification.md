@@ -1,4 +1,4 @@
-# Metamorphic AD verification catalogue (BL-46)
+# Metamorphic AD verification catalogue
 
 This page is the operator-facing guide for **gradient correctness beyond
 one-off examples**: a versioned catalogue of metamorphic laws, fail-closed

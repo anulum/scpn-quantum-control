@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for Wirtinger + implicit product (BL-64)
+# SCPN Quantum Control — tests for Wirtinger + implicit product
 """Real-surface tests for ``scpn_quantum_control.wirtinger_implicit_product``."""
 
 from __future__ import annotations
@@ -15,8 +15,8 @@ import pytest
 
 import scpn_quantum_control.wirtinger_implicit_product as wirtinger_implicit_product
 from scpn_quantum_control.wirtinger_implicit_product import (
-    BL46_COMPLEX_WITHOUT_WIRTINGER_LAW,
-    BL53_COMPLEX_WITHOUT_WIRTINGER,
+    COMPLEX_OBJECTIVE_WIRTINGER_LAW,
+    COMPLEX_OBJECTIVE_WITHOUT_WIRTINGER_SCENARIO,
     WIRTINGER_IMPLICIT_CLAIM_BOUNDARY,
     WIRTINGER_IMPLICIT_PRODUCT_SCHEMA,
     ComplexContractDecision,
@@ -56,8 +56,8 @@ def test_get_known_and_unknown_fail_closed() -> None:
     """Resolve exact surfaces while rejecting blank and unknown identifiers."""
     row = get_wirtinger_implicit_surface("wirtinger_partials")
     assert row.claim_boundary == WIRTINGER_IMPLICIT_CLAIM_BOUNDARY
-    assert row.bl53_pointer == BL53_COMPLEX_WITHOUT_WIRTINGER
-    assert row.bl46_pointer == BL46_COMPLEX_WITHOUT_WIRTINGER_LAW
+    assert row.unsuitable_scenario_pointer == COMPLEX_OBJECTIVE_WITHOUT_WIRTINGER_SCENARIO
+    assert row.metamorphic_verification_pointer == COMPLEX_OBJECTIVE_WIRTINGER_LAW
     with pytest.raises(ValueError, match="non-empty"):
         get_wirtinger_implicit_surface("  ")
     with pytest.raises(ValueError, match="unknown surface_id"):
@@ -70,8 +70,8 @@ def test_complex_contract_refuse_and_allow() -> None:
     assert refused.allowed is False
     assert refused.blockers
     assert any("wirtinger" in item.lower() for item in refused.blockers)
-    assert BL53_COMPLEX_WITHOUT_WIRTINGER in refused.bl53_id
-    assert BL46_COMPLEX_WITHOUT_WIRTINGER_LAW in refused.bl46_id
+    assert COMPLEX_OBJECTIVE_WITHOUT_WIRTINGER_SCENARIO in refused.scenario_id
+    assert COMPLEX_OBJECTIVE_WIRTINGER_LAW in refused.metamorphic_law_id
 
     allowed = decide_complex_objective_contract(has_wirtinger_contract=True)
     assert allowed.allowed is True
@@ -135,7 +135,10 @@ def test_public_surfaces_and_registry() -> None:
     assert registry["schema"] == WIRTINGER_IMPLICIT_PRODUCT_SCHEMA
     assert registry["blank_entry_count"] == 0
     assert registry["default_surface_id"] == "wirtinger_partials"
-    assert registry["bl53_complex_without_wirtinger"] == BL53_COMPLEX_WITHOUT_WIRTINGER
+    assert (
+        registry["complex_objective_without_wirtinger"]
+        == COMPLEX_OBJECTIVE_WITHOUT_WIRTINGER_SCENARIO
+    )
     validated = assert_wirtinger_implicit_product_integrity(registry)
     assert validated["surface_count"] == len(list_wirtinger_implicit_surface_ids())
     assert assert_wirtinger_implicit_product_integrity()["blank_entry_count"] == 0
@@ -158,8 +161,8 @@ def test_integrity_rejects_drift() -> None:
             "module_path": "m",
             "symbol_name": "x",
             "support_posture": "local_materialised",
-            "bl53_pointer": BL53_COMPLEX_WITHOUT_WIRTINGER,
-            "bl46_pointer": BL46_COMPLEX_WITHOUT_WIRTINGER_LAW,
+            "unsuitable_scenario_pointer": COMPLEX_OBJECTIVE_WITHOUT_WIRTINGER_SCENARIO,
+            "metamorphic_verification_pointer": COMPLEX_OBJECTIVE_WIRTINGER_LAW,
             "as_of": "2026-07-24",
             "claim_boundary": WIRTINGER_IMPLICIT_CLAIM_BOUNDARY,
         }
@@ -212,9 +215,9 @@ def test_integrity_rejects_blank_invalid() -> None:
 
     no_bl53 = dict(registry)
     brows = [dict(row) for row in surfaces]
-    brows[0]["bl53_pointer"] = ""
+    brows[0]["unsuitable_scenario_pointer"] = ""
     no_bl53["surfaces"] = brows
-    with pytest.raises(ValueError, match="bl53_pointer"):
+    with pytest.raises(ValueError, match="unsuitable_scenario_pointer"):
         assert_wirtinger_implicit_product_integrity(no_bl53)
 
     no_default = dict(registry)
@@ -292,10 +295,10 @@ def test_surface_row_validation() -> None:
         WirtingerImplicitSurfaceRow(**{**base, "support_posture": cast(Any, "nope")})
     with pytest.raises(ValueError, match="as_of"):
         WirtingerImplicitSurfaceRow(**{**base, "as_of": ""})
-    with pytest.raises(ValueError, match="bl53_pointer"):
-        WirtingerImplicitSurfaceRow(**{**base, "bl53_pointer": ""})
-    with pytest.raises(ValueError, match="bl46_pointer"):
-        WirtingerImplicitSurfaceRow(**{**base, "bl46_pointer": ""})
+    with pytest.raises(ValueError, match="unsuitable_scenario_pointer"):
+        WirtingerImplicitSurfaceRow(**{**base, "unsuitable_scenario_pointer": ""})
+    with pytest.raises(ValueError, match="metamorphic_verification_pointer"):
+        WirtingerImplicitSurfaceRow(**{**base, "metamorphic_verification_pointer": ""})
 
 
 def test_probe_and_decision_validation() -> None:
@@ -439,8 +442,8 @@ def test_complex_contract_decision_to_dict() -> None:
     assert payload["allowed"] is False
     assert payload["has_wirtinger_contract"] is False
     assert payload["blockers"]
-    assert payload["bl53_id"] == BL53_COMPLEX_WITHOUT_WIRTINGER
-    assert payload["bl46_id"] == BL46_COMPLEX_WITHOUT_WIRTINGER_LAW
+    assert payload["scenario_id"] == COMPLEX_OBJECTIVE_WITHOUT_WIRTINGER_SCENARIO
+    assert payload["metamorphic_law_id"] == COMPLEX_OBJECTIVE_WIRTINGER_LAW
     assert payload["claim_boundary"] == WIRTINGER_IMPLICIT_CLAIM_BOUNDARY
 
 

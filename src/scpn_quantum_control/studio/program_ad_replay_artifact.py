@@ -7,7 +7,7 @@
 # SCPN Quantum Control — committed program-AD replay unit artefact
 """Committed-artefact emission for the browser-verifiable program-AD gradient replay.
 
-The Studio's gradient card (ST-12) recomputes a displayed gradient bit-exactly
+The Studio's gradient card recomputes a displayed gradient bit-exactly
 in the visitor's browser through the standalone
 ``scpn-quantum-studio-program-ad-wasm`` kernel. This module freezes the one
 committed unit that card replays: a canonical *rational* scalar program

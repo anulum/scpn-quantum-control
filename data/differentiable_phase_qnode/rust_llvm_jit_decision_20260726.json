@@ -1,8 +1,8 @@
 {
-  "artifact_id": "bl38-rust-llvm-jit-decision-20260726",
+  "artifact_id": "rust-llvm-jit-decision-20260726",
   "claim_boundary": "BL-38 decision evidence only: functional parity and non-isolated descriptive timings for the existing bounded Rust Program-AD replay and Python-owned llvmlite JIT. No Rust LLVM/JIT implementation, isolated performance, provider, hardware, GPU, or public performance claim.",
   "criteria": {
-    "bl49_family_expansion": false,
+    "parity_certificate_family_expansion": false,
     "dual_compiler_maintenance_burden": true,
     "isolated_performance_evidence": false,
     "max_observed_error": 3.552713678800501e-15,

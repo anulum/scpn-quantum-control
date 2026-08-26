@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for thermo readiness product (BL-100)
+# SCPN Quantum Control — tests for thermo readiness product
 """Real-surface tests for ``thermo_readiness_product``."""
 
 from __future__ import annotations
@@ -96,7 +96,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
     fep = get_fep_inventory_row("predictive_coding")
     assert fep.status == "research_only"
     assert fep.product_hook_proven is False
-    assert "bl84" in fep.bl84_pointer
+    assert "deep_analysis_research_lane_registry" in fep.research_lane_pointer
     with pytest.raises(ValueError, match="non-empty"):
         get_readiness_capability("  ")
     with pytest.raises(ValueError, match="unknown capability_id"):
@@ -445,14 +445,14 @@ def test_fep_row_rejects_unknown_status() -> None:
         )
 
 
-def test_fep_row_rejects_blank_bl84_pointer() -> None:
-    with pytest.raises(ValueError, match="bl84_pointer"):
+def test_fep_row_rejects_blank_research_lane_pointer() -> None:
+    with pytest.raises(ValueError, match="research_lane_pointer"):
         FepInventoryRow(
             module_id="x",
             module_path="m",
             title="t",
             summary="s",
-            bl84_pointer="",
+            research_lane_pointer="",
         )
 
 

@@ -1,4 +1,4 @@
-# Public API stability programme (BL-97 / W5)
+# Public API stability programme
 
 Fail-closed **public-vs-internal** stability catalogue for adopters. Declares a
 **narrow durable SemVer-intent surface** (`stable_core` + curated CLI entry

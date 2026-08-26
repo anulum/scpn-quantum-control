@@ -209,7 +209,7 @@ functions raise `ImportError`.
 }
 ```
 
-### BL-103 exact-reference baseline
+### JAX NQS exact-reference baseline
 
 Use the claim-bounded product for a validated `2 <= N <= 6` run with exact
 diagonalisation, variational-gap diagnostics, JAX environment provenance, a

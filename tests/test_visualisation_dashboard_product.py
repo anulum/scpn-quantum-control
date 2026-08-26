@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for visualisation dashboard product (BL-34)
+# SCPN Quantum Control — tests for visualisation dashboard product
 """Real-surface tests for ``scpn_quantum_control.visualisation_dashboard_product``."""
 
 from __future__ import annotations

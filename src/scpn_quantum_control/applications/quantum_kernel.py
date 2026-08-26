@@ -17,7 +17,7 @@ where U_K encodes features x into the XY Hamiltonian evolution:
     U_K(x) = exp(-i Σ_ij x_k K_ij (X_i X_j + Y_i Y_j) t)
 
 The legacy encoder also applies local feature rotations. The edge-aligned
-encoder added for BL-88 instead assigns one feature to every canonical
+encoder added for topology-kernel instead assigns one feature to every canonical
 undirected qubit pair and modulates only that coupling entry. Both paths use
 exact local statevectors. They are feature-map implementations, not evidence
 of quantum advantage, domain fitness, provider execution, or hardware results.

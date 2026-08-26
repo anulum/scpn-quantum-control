@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — public API stability programme (BL-97 / W5)
-"""Fail-closed public-vs-internal API stability catalogue (BL-97).
+# SCPN Quantum Control — public API stability programme
+"""Fail-closed public-vs-internal API stability catalogue.
 
 Productises a **narrow** SemVer-intent surface (``stable_core`` + curated
 entry points) and explicit workbench / internal classes so the entire research

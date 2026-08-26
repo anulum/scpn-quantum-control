@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Synthetic multimodal dataset tests
-"""Production-surface tests for BL-37 simulation-only trajectory custody."""
+"""Production-surface tests for multimodal-forecasting simulation-only trajectory custody."""
 
 from __future__ import annotations
 

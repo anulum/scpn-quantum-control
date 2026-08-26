@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — gradient-plan explanation artefact tests
-"""Tests for the committed gradient-plan explanation artefact (ST-17)."""
+"""Tests for the committed gradient-plan explanation artefact."""
 
 from __future__ import annotations
 

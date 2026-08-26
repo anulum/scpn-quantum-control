@@ -7,7 +7,7 @@
 # SCPN Quantum Control — differentiable reviewer-evidence catalogue
 """Typed immutable catalogue for differentiable reviewer evidence.
 
-This module owns the DP-015 criticism rows, DP-030 evidence-package rows,
+This module owns the reviewer-criticism rows and evidence-package rows,
 public open-gap definitions, and capability-manifest requirements. Validation,
 rendering, file access, and command-line behavior belong to
 ``differentiable_reviewer_evidence_page``.
@@ -129,12 +129,12 @@ class OpenEvidenceGap:
 
 @dataclass(frozen=True)
 class ReviewerEvidenceRow:
-    """One reviewer criticism or DP-030 evidence-package row.
+    """One reviewer criticism or evidence-package row.
 
     Parameters
     ----------
     row_id
-        Stable DP-015 or DP-030 row identifier.
+        Stable descriptive row identifier.
     category
         Whether the row answers a criticism or inventories the package.
     criticism
@@ -189,7 +189,9 @@ class ReviewerEvidenceRow:
             raise ValueError(f"unsupported reviewer-evidence category: {self.category}")
         if self.status not in allowed_statuses:
             raise ValueError(f"unsupported reviewer-evidence status: {self.status}")
-        prefix = "DP-015-" if self.category == "reviewer_criticism" else "DP-030-"
+        prefix = (
+            "reviewer-criticism-" if self.category == "reviewer_criticism" else "evidence-package-"
+        )
         if not self.row_id.startswith(prefix):
             raise ValueError(f"{self.category} row IDs must start with {prefix}")
         _require_unique_non_blank(self.commands, f"{self.row_id} commands")
@@ -340,7 +342,7 @@ OPEN_GAPS: Final[tuple[OpenEvidenceGap, ...]] = (
 
 REVIEWER_EVIDENCE_ROWS: Final[tuple[ReviewerEvidenceRow, ...]] = (
     ReviewerEvidenceRow(
-        "DP-015-01",
+        "reviewer-criticism-parameter-shift-implementation",
         "reviewer_criticism",
         "No parameter-shift implementation",
         "implemented",
@@ -366,7 +368,7 @@ REVIEWER_EVIDENCE_ROWS: Final[tuple[ReviewerEvidenceRow, ...]] = (
         "gate, provider, or hardware-gradient claim is implied.",
     ),
     ReviewerEvidenceRow(
-        "DP-015-02",
+        "reviewer-criticism-quantum-gradient-surface",
         "reviewer_criticism",
         "No quantum-gradient surface",
         "bounded",
@@ -390,7 +392,7 @@ REVIEWER_EVIDENCE_ROWS: Final[tuple[ReviewerEvidenceRow, ...]] = (
         "execution or unrestricted hardware gradients.",
     ),
     ReviewerEvidenceRow(
-        "DP-015-03",
+        "reviewer-criticism-changelog-autodiff-evidence",
         "reviewer_criticism",
         "No autodiff evidence in the changelog",
         "implemented",
@@ -412,7 +414,7 @@ REVIEWER_EVIDENCE_ROWS: Final[tuple[ReviewerEvidenceRow, ...]] = (
         "their recorded provider, hardware, or performance boundaries.",
     ),
     ReviewerEvidenceRow(
-        "DP-015-04",
+        "reviewer-criticism-vqe-gradient-optimisation",
         "reviewer_criticism",
         "VQE uses classical or gradient-free optimisation only",
         "implemented",
@@ -440,7 +442,7 @@ REVIEWER_EVIDENCE_ROWS: Final[tuple[ReviewerEvidenceRow, ...]] = (
         "establish global optimiser superiority.",
     ),
     ReviewerEvidenceRow(
-        "DP-015-05",
+        "reviewer-criticism-ml-framework-integration",
         "reviewer_criticism",
         "No ML-framework integration",
         "bounded",
@@ -467,7 +469,7 @@ REVIEWER_EVIDENCE_ROWS: Final[tuple[ReviewerEvidenceRow, ...]] = (
         "accelerator, provider, or hardware framework autodiff.",
     ),
     ReviewerEvidenceRow(
-        "DP-030-01",
+        "evidence-package-gradient-correctness-runtime",
         "evidence_package",
         "Finite-difference versus parameter-shift correctness and runtime",
         "bounded",
@@ -486,7 +488,7 @@ REVIEWER_EVIDENCE_ROWS: Final[tuple[ReviewerEvidenceRow, ...]] = (
         "speedup claim.",
     ),
     ReviewerEvidenceRow(
-        "DP-030-02",
+        "evidence-package-batched-shifted-circuits",
         "evidence_package",
         "Batched shifted-circuit execution",
         "implemented",
@@ -508,7 +510,7 @@ REVIEWER_EVIDENCE_ROWS: Final[tuple[ReviewerEvidenceRow, ...]] = (
         "or performance promotion.",
     ),
     ReviewerEvidenceRow(
-        "DP-030-03",
+        "evidence-package-optimiser-convergence-comparison",
         "evidence_package",
         "VQE and QNN optimiser convergence comparison",
         "bounded",
@@ -532,7 +534,7 @@ REVIEWER_EVIDENCE_ROWS: Final[tuple[ReviewerEvidenceRow, ...]] = (
         "application superiority.",
     ),
     ReviewerEvidenceRow(
-        "DP-030-04",
+        "evidence-package-framework-adapter-overhead",
         "evidence_package",
         "Framework adapter overhead benchmarks",
         "open",
@@ -554,7 +556,7 @@ REVIEWER_EVIDENCE_ROWS: Final[tuple[ReviewerEvidenceRow, ...]] = (
         "Functional overlay rows are not isolated overhead or accelerator performance claims.",
     ),
     ReviewerEvidenceRow(
-        "DP-030-05",
+        "evidence-package-compiler-ad-evidence",
         "evidence_package",
         "Compiler-backed AD benchmark evidence",
         "bounded",
@@ -578,7 +580,7 @@ REVIEWER_EVIDENCE_ROWS: Final[tuple[ReviewerEvidenceRow, ...]] = (
         "execution, LLVM/JIT, or performance claims.",
     ),
     ReviewerEvidenceRow(
-        "DP-030-06",
+        "evidence-package-noisy-gradient-shot-allocation",
         "evidence_package",
         "Noisy-gradient and shot-allocation evidence",
         "bounded",
@@ -603,7 +605,7 @@ REVIEWER_EVIDENCE_ROWS: Final[tuple[ReviewerEvidenceRow, ...]] = (
         "hardware robustness or performance promotion.",
     ),
     ReviewerEvidenceRow(
-        "DP-030-07",
+        "evidence-package-reviewer-evidence-synchronisation",
         "evidence_package",
         "Reviewer evidence page and synchronization gate",
         "implemented",

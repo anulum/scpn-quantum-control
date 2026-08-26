@@ -1,4 +1,4 @@
-# Bit-exact polyglot parity certificates (BL-49 / P1)
+# Bit-exact polyglot parity certificates
 
 Versioned **externally checkable certificate** product for the Rust Program AD
 replay moat: family catalogue (scalar → spectral bounds), certificate schema,

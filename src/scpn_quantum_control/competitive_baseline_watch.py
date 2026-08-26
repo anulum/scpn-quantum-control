@@ -4,12 +4,12 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — continuous competitive baseline watch (BL-61 / W1)
-"""Fail-closed continuous competitive-baseline watch surface (BL-61).
+# SCPN Quantum Control — continuous competitive baseline watch
+"""Fail-closed continuous competitive-baseline watch surface.
 
 Productises a versioned catalogue of competitor baseline rows with pin /
 version / source / refresh fields, plus structured feed probes toward
-BL-52 (route matrix) and BL-56 (scorecard engine).
+route-matrix (route matrix) and scorecard (scorecard engine).
 
 Composes :mod:`differentiable_competitive_baselines` snapshot inventory.
 Does **not** scrape vendors, invent Verified-At-Source pins, or promote
@@ -36,7 +36,7 @@ PinStatus = Literal["pinned_snapshot", "unpinned", "blocked"]
 RefreshState = Literal["fresh", "due", "blocked", "pending_verification"]
 """Refresh state for continuous watch (never invent live scrape wins)."""
 
-FeedTarget = Literal["bl52_route_matrix", "bl56_scorecard"]
+FeedTarget = Literal["governed_route_matrix", "scorecard_acceptance"]
 """Downstream feed targets for structured watch outputs."""
 
 FeedStatus = Literal["ready_pointer", "blocked", "pending"]
@@ -62,12 +62,12 @@ _DEFAULT_WATCH_BLOCKERS: Final[tuple[str, ...]] = (
     "Verified-At-Source re-pin not executed this watch cycle",
 )
 
-_FEED_BL52_BLOCKERS: Final[tuple[str, ...]] = (
+_ROUTE_MATRIX_FEED_BLOCKERS: Final[tuple[str, ...]] = (
     "BL-52 feed is pointer-only until route-boundary update package is accepted",
     "no invent-green competitor parity from watch alone",
 )
 
-_FEED_BL56_BLOCKERS: Final[tuple[str, ...]] = (
+_SCORECARD_FEED_BLOCKERS: Final[tuple[str, ...]] = (
     "BL-56 category remains behind_baseline until claim-ledger + external evidence",
     "watch feed must not invent at_baseline/exceeds_baseline promotion",
 )
@@ -99,9 +99,9 @@ class CompetitiveWatchRecord:
         Continuous-watch refresh classification at the inventory as-of date.
     scorecard_categories
         BL-56 category ids this competitor feeds.
-    feed_bl52_status
+    route_matrix_feed_status
         Structured feed readiness toward the route matrix.
-    feed_bl56_status
+    scorecard_feed_status
         Structured feed readiness toward the scorecard engine.
     blockers
         Non-empty when watch cannot claim green current / ready feeds.
@@ -122,8 +122,8 @@ class CompetitiveWatchRecord:
     refresh_due_on: str
     refresh_state: RefreshState
     scorecard_categories: tuple[str, ...]
-    feed_bl52_status: FeedStatus
-    feed_bl56_status: FeedStatus
+    route_matrix_feed_status: FeedStatus
+    scorecard_feed_status: FeedStatus
     blockers: tuple[str, ...]
     as_of: str = "2026-08-25"
     claim_boundary: str = COMPETITIVE_BASELINE_WATCH_CLAIM_BOUNDARY
@@ -136,10 +136,12 @@ class CompetitiveWatchRecord:
             raise ValueError(f"unknown pin_status: {self.pin_status!r}")
         if self.refresh_state not in {"fresh", "due", "blocked", "pending_verification"}:
             raise ValueError(f"unknown refresh_state: {self.refresh_state!r}")
-        if self.feed_bl52_status not in {"ready_pointer", "blocked", "pending"}:
-            raise ValueError(f"unknown feed_bl52_status: {self.feed_bl52_status!r}")
-        if self.feed_bl56_status not in {"ready_pointer", "blocked", "pending"}:
-            raise ValueError(f"unknown feed_bl56_status: {self.feed_bl56_status!r}")
+        if self.route_matrix_feed_status not in {"ready_pointer", "blocked", "pending"}:
+            raise ValueError(
+                f"unknown route_matrix_feed_status: {self.route_matrix_feed_status!r}"
+            )
+        if self.scorecard_feed_status not in {"ready_pointer", "blocked", "pending"}:
+            raise ValueError(f"unknown scorecard_feed_status: {self.scorecard_feed_status!r}")
         if not self.display_name or not self.display_name.strip():
             raise ValueError("display_name must be non-empty")
         if not self.source_url or not self.source_url.strip():
@@ -164,10 +166,10 @@ class CompetitiveWatchRecord:
             raise ValueError("unpinned rows cannot be refresh_state=fresh (refuse invent-green)")
         if self.refresh_state in {"due", "blocked", "pending_verification"} and not self.blockers:
             raise ValueError("non-green refresh_state requires at least one blocker")
-        if self.feed_bl56_status != "blocked":
+        if self.scorecard_feed_status != "blocked":
             # product honesty: never claim ready scorecard feed without BL-56 package
             raise ValueError(
-                "feed_bl56_status must be blocked until BL-56 evidence packages exist"
+                "scorecard_feed_status must be blocked until BL-56 evidence packages exist"
             )
 
     def to_dict(self) -> dict[str, object]:
@@ -183,8 +185,8 @@ class CompetitiveWatchRecord:
             "refresh_due_on": self.refresh_due_on,
             "refresh_state": self.refresh_state,
             "scorecard_categories": list(self.scorecard_categories),
-            "feed_bl52_status": self.feed_bl52_status,
-            "feed_bl56_status": self.feed_bl56_status,
+            "route_matrix_feed_status": self.route_matrix_feed_status,
+            "scorecard_feed_status": self.scorecard_feed_status,
             "blockers": list(self.blockers),
             "as_of": self.as_of,
             "claim_boundary": self.claim_boundary,
@@ -286,7 +288,7 @@ class FeedProbeResult:
         """Validate feed probe invariants."""
         if not self.competitor_id or not self.competitor_id.strip():
             raise ValueError("competitor_id must be non-empty")
-        if self.feed_target not in {"bl52_route_matrix", "bl56_scorecard"}:
+        if self.feed_target not in {"governed_route_matrix", "scorecard_acceptance"}:
             raise ValueError(f"unknown feed_target: {self.feed_target!r}")
         if self.status not in {"ready_pointer", "blocked", "pending"}:
             raise ValueError(f"unknown status: {self.status!r}")
@@ -300,7 +302,7 @@ class FeedProbeResult:
             raise ValueError("blockers entries must be non-empty")
         if any(not item or not item.strip() for item in self.pointers):
             raise ValueError("pointers entries must be non-empty when present")
-        if self.feed_target == "bl56_scorecard" and self.allowed:
+        if self.feed_target == "scorecard_acceptance" and self.allowed:
             raise ValueError("BL-56 feed must not allow invent-green promotion from watch alone")
 
     def to_dict(self) -> dict[str, object]:
@@ -358,8 +360,8 @@ def _from_baseline_row(row: CompetitiveBaselineRow, *, as_of: date) -> Competiti
         refresh_due_on=row.refresh_due_on.isoformat(),
         refresh_state=refresh_state,
         scorecard_categories=tuple(str(item) for item in row.scorecard_categories),
-        feed_bl52_status="pending",
-        feed_bl56_status="blocked",
+        route_matrix_feed_status="pending",
+        scorecard_feed_status="blocked",
         blockers=tuple(blockers),
         as_of=as_of.isoformat(),
     )
@@ -511,7 +513,7 @@ def probe_feed(
     competitor_id
         Competitor key.
     feed_target
-        ``bl52_route_matrix`` or ``bl56_scorecard``.
+        ``governed_route_matrix`` or ``scorecard_acceptance``.
 
     Returns
     -------
@@ -524,11 +526,11 @@ def probe_feed(
         If identifiers / targets are invalid.
 
     """
-    if feed_target not in {"bl52_route_matrix", "bl56_scorecard"}:
+    if feed_target not in {"governed_route_matrix", "scorecard_acceptance"}:
         raise ValueError(f"unknown feed_target: {feed_target!r}")
     record = get_competitive_watch(competitor_id)
 
-    if feed_target == "bl56_scorecard":
+    if feed_target == "scorecard_acceptance":
         pointers = tuple(
             f"scorecard_category:{category}" for category in record.scorecard_categories
         )
@@ -542,10 +544,10 @@ def probe_feed(
                 "require claim_ledger_promoted_row + external_baseline_comparison"
             ),
             pointers=pointers,
-            blockers=_FEED_BL56_BLOCKERS,
+            blockers=_SCORECARD_FEED_BLOCKERS,
         )
 
-    # bl52_route_matrix
+    # governed_route_matrix
     pointers = (
         f"competitor_id:{record.competitor_id}",
         f"source_url:{record.source_url}",
@@ -562,7 +564,7 @@ def probe_feed(
             "mutation requires an accepted boundary-update package"
         ),
         pointers=pointers,
-        blockers=_FEED_BL52_BLOCKERS,
+        blockers=_ROUTE_MATRIX_FEED_BLOCKERS,
     )
 
 
@@ -638,7 +640,7 @@ def assert_competitive_baseline_watch_integrity(
         competitor_id = row.get("competitor_id")
         pin_status = row.get("pin_status")
         refresh_state = row.get("refresh_state")
-        feed_bl56 = row.get("feed_bl56_status")
+        scorecard_feed = row.get("scorecard_feed_status")
         if not competitor_id or not str(competitor_id).strip():
             blank += 1
             continue
@@ -661,8 +663,10 @@ def assert_competitive_baseline_watch_integrity(
             raise ValueError(f"competitor {cid!r} pinned_snapshot without version")
         if pin_status == "unpinned" and version and str(version).strip():
             raise ValueError(f"competitor {cid!r} unpinned with non-empty version")
-        if feed_bl56 != "blocked":
-            raise ValueError(f"competitor {cid!r} invent-green BL-56 feed status {feed_bl56!r}")
+        if scorecard_feed != "blocked":
+            raise ValueError(
+                f"competitor {cid!r} invent-green BL-56 feed status {scorecard_feed!r}"
+            )
         blockers = row.get("blockers")
         if refresh_state != "fresh" and (not isinstance(blockers, list) or not blockers):
             raise ValueError(f"competitor {cid!r} non-green refresh without blockers")

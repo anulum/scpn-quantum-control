@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Studio baseline-scorecard bundle tests
-"""Tests for the schema-B baseline-scorecard bundle emitter (ST-02)."""
+"""Tests for the schema-B baseline-scorecard bundle emitter."""
 
 from __future__ import annotations
 

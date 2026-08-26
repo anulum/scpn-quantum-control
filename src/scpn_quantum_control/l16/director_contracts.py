@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-85 L16 director contracts
+# SCPN Quantum Control — bounded-director L16 director contracts
 """Immutable contracts for bounded L16 indicator evidence."""
 
 from __future__ import annotations

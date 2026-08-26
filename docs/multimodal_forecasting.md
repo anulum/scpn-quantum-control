@@ -119,8 +119,8 @@ PYTHONPATH=src python scripts/run_multimodal_forecasting_evidence.py --check
 
 Committed custody:
 
-- `data/multimodal_forecasting/bl37_evidence.json`
-- `data/multimodal_forecasting/bl37_evidence.md`
+- `data/multimodal_forecasting/multimodal_forecasting_evidence.json`
+- `data/multimodal_forecasting/multimodal_forecasting_evidence.md`
 - content digest
   `f7728c62a7fae64afd6b17fa900d1c733cf5616f9b87cedd25b4b440b6550c02`
 

@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-102 RL research-governance tests
+# SCPN Quantum Control — RL-governance RL research-governance tests
 """Tests for disabled-by-default, preregistered RL-adjacent research."""
 
 from __future__ import annotations
@@ -175,7 +175,7 @@ def test_assessment_names_episode_evaluation_and_pulse_blockers() -> None:
     assert pulse.estimated_evaluations_per_seed == 0
     assert pulse.blockers == (
         "rl_pulse_optimizer_unimplemented",
-        "BL-58_pulse_boundary_open",
+        "pulse_boundary_open",
     )
     assert RL_RESEARCH_CLAIM_BOUNDARY in pulse.as_dict()["claim_boundary"]
     with pytest.raises(ValueError, match="lane must be"):

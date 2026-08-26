@@ -1,4 +1,4 @@
-# PennyLane + Qiskit migration guides product (BL-41)
+# PennyLane + Qiskit migration guides product
 
 Versioned **adoption-path product** mapping PL/Qiskit concepts to SCPN APIs
 with materialised local round-trips and honest Runtime boundaries.

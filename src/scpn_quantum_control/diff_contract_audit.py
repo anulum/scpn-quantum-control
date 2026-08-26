@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Differentiable Circuit Contract Audit
-"""Executable DP-004 contract audit for differentiable circuit facades."""
+"""Executable differentiable-contract contract audit for differentiable circuit facades."""
 
 from __future__ import annotations
 
@@ -157,7 +157,7 @@ def _call_semantics_check() -> DifferentiableCircuitContractCheck:
     original = params.copy()
     circuit = differentiable_circuit(
         _mutating_scalar_objective,
-        name="dp004_call_semantics",
+        name="differentiable_contract_call_semantics",
         parameter_names=("theta", "bias"),
         gradient_method="finite_difference",
     )
@@ -177,7 +177,7 @@ def _call_semantics_check() -> DifferentiableCircuitContractCheck:
 def _transform_composition_check() -> DifferentiableCircuitContractCheck:
     circuit = differentiable_circuit(
         _scalar_objective,
-        name="dp004_transform_composition",
+        name="differentiable_contract_transform_composition",
         parameter_names=("theta", "bias"),
         gradient_method="finite_difference",
     )
@@ -200,19 +200,19 @@ def _transform_composition_check() -> DifferentiableCircuitContractCheck:
 def _backend_capability_check() -> DifferentiableCircuitContractCheck:
     statevector = differentiable_circuit(
         _scalar_objective,
-        name="dp004_statevector",
+        name="differentiable_contract_statevector",
         parameter_names=("theta", "bias"),
     )
     finite_shot = differentiable_circuit(
         _scalar_objective,
-        name="dp004_finite_shot",
+        name="differentiable_contract_finite_shot",
         parameter_names=("theta", "bias"),
         backend="qasm_simulator",
         shot_policy=ShotPolicy(shots=512, seed=7),
     )
     hardware_plan = differentiable_circuit(
         _scalar_objective,
-        name="dp004_hardware_plan_only",
+        name="differentiable_contract_hardware_plan_only",
         parameter_names=("theta", "bias"),
         backend="hardware",
         shot_policy=ShotPolicy(shots=512, seed=7, allow_hardware=False),
@@ -233,7 +233,7 @@ def _backend_capability_check() -> DifferentiableCircuitContractCheck:
 def _serialization_provenance_check() -> DifferentiableCircuitContractCheck:
     circuit = differentiable_circuit(
         _scalar_objective,
-        name="dp004_serialization",
+        name="differentiable_contract_serialization",
         parameter_names=("theta", "bias"),
         gradient_method="finite_difference",
         estimator_provenance=None,
@@ -259,7 +259,7 @@ def _serialization_provenance_check() -> DifferentiableCircuitContractCheck:
 def _parameter_container_fail_closed_check() -> DifferentiableCircuitContractCheck:
     circuit = differentiable_circuit(
         _scalar_objective,
-        name="dp004_parameter_container_boundary",
+        name="differentiable_contract_parameter_container_boundary",
         parameter_names=("theta", "bias"),
     )
     try:
@@ -279,7 +279,7 @@ def _parameter_container_fail_closed_check() -> DifferentiableCircuitContractChe
 def _objective_contract_fail_closed_check() -> DifferentiableCircuitContractCheck:
     circuit = differentiable_circuit(
         cast(ScalarObjective, _vector_objective),
-        name="dp004_objective_boundary",
+        name="differentiable_contract_objective_boundary",
         parameter_names=("theta", "bias"),
     )
     try:

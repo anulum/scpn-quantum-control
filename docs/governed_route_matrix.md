@@ -1,4 +1,4 @@
-# Governed multi-ecosystem route matrix (BL-52)
+# Governed multi-ecosystem route matrix
 
 This page is the operator-facing guide for the **fail-closed multi-ecosystem
 route matrix** productised under BL-52. It answers: *which differentiable route
@@ -180,7 +180,7 @@ Competitor rows are first-class catalogue cells, not prose footnotes:
 - Replace the generated planner/support-matrix page — this is the unified
   route-ID product layer that composes those assets.
 
-## Bounded product status (BL-52)
+## Bounded product status
 
 Shipped in this slice:
 

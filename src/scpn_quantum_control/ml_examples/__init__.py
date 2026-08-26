@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-42 ML convergence examples
+# SCPN Quantum Control — convergence-example ML convergence examples
 """Public bounded QNN/QGNN/QSNN convergence evidence surface."""
 
 from .contracts import (

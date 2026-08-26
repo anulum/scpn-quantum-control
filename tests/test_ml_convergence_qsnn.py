@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-42 QSNN convergence tests
+# SCPN Quantum Control — convergence-example QSNN convergence tests
 """Real parameter-shift and spike-readout tests for the QSNN example."""
 
 from scpn_quantum_control.ml_examples import (

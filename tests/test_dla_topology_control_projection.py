@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-54 topology differential tests
+# SCPN Quantum Control — topology-control topology differential tests
 """Fixed-active-set JVP/VJP and fail-closed branch tests."""
 
 from __future__ import annotations

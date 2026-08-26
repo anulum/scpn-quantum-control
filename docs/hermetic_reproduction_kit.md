@@ -1,4 +1,4 @@
-# Hermetic external reproduction kit (BL-55)
+# Hermetic external reproduction kit
 
 Skeptic-facing **command manifest + digest contract** so public numbers can be
 rebuilt without trusting narrative docs alone. The **core** kit is local-first

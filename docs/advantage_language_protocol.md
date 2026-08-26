@@ -1,4 +1,4 @@
-# Advantage / no-advantage language protocol (BL-65)
+# Advantage / no-advantage language protocol
 
 This page is the operator-facing guide for **when “advantage” language is
 allowed**. Default posture is **no-advantage / research observation**. Decisive
@@ -113,7 +113,7 @@ non-blank. `to_dict()` converts triggers to a list.
 | `iter_advantage_protocols(*, language_status=None)` | Optional status filter. | Stable tuple of matching records. | Returns an empty tuple when no row matches. |
 
 The catalogue also includes
-`protocol:bl79.initial_state_observation`, a research-observation row for
+`protocol:entanglement.initial_state_observation`, a research-observation row for
 population-matched initial-state comparisons. Catalogue evidence modules are
 pointers; their presence is not proof that their protocol gates passed.
 
@@ -184,7 +184,7 @@ non-default rows, or inconsistent blank/protocol counts.
 - `protocol:neural_operator.structural_surrogate` — classical surrogate research
 - `protocol:ungoverned.advantage_language` — refuse catch-all
 
-## Bounded product status (BL-65)
+## Bounded product status
 
 Shipped: S65.0 catalogue · S65.1 facade compose · S65.2 no-advantage certificate ·
 language-gate probe (partial S65.4).

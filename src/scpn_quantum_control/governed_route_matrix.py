@@ -4,10 +4,10 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — governed multi-ecosystem route matrix (BL-52)
+# SCPN Quantum Control — governed multi-ecosystem route matrix
 """Fail-closed multi-ecosystem differentiable route matrix and explain API.
 
-This module is the product surface for BL-52 (governed multi-ecosystem support
+This module is the product surface for route-matrix (governed multi-ecosystem support
 matrix). It unifies route identifiers across transform, adapter, compiler, and
 Rust families and refuses silent degradation: unknown or blank cells raise or
 resolve only to explicit ``permanent_boundary`` / ``implementation_path``
@@ -273,7 +273,10 @@ _CANONICAL_ROUTES: Final[tuple[GovernedRouteRecord, ...]] = (
         "transform",
         "supported",
         "Central finite difference on the bounded SSGF softplus latent geometry map.",
-        evidence=("bl70_cost_certificate", "bl70_metamorphic_certificate"),
+        evidence=(
+            "geometry_gradient_cost_certificate",
+            "geometry_gradient_metamorphic_certificate",
+        ),
         rejected=("transform:ssgf.latent_parameter_shift",),
     ),
     _route(
@@ -281,7 +284,7 @@ _CANONICAL_ROUTES: Final[tuple[GovernedRouteRecord, ...]] = (
         "transform",
         "permanent_boundary",
         "Circuit parameter-shift applied directly to the SSGF latent z vector.",
-        evidence=("bl70_nonlinear_latent_map_boundary", "bl53_anti_silent_wrong"),
+        evidence=("nonlinear_latent_map_boundary", "anti_silent_wrong_registry"),
         closure_reason=(
             "z enters Hamiltonian coefficients through the nonlinear softplus W(z) map; "
             "a circuit-angle parameter-shift is not directly dC/dz, so the supported "
@@ -350,7 +353,7 @@ _CANONICAL_ROUTES: Final[tuple[GovernedRouteRecord, ...]] = (
         "adapter",
         "supported",
         "Bounded local exact-simulator L16 indicator evaluation and heuristic safety routing.",
-        evidence=("bl85_functional_evidence", "bl85_codesign_interlock"),
+        evidence=("bounded_director_functional_evidence", "bounded_director_codesign_interlock"),
         rejected=("adapter:l16.autonomous_hardware_control",),
     ),
     _route(
@@ -358,7 +361,11 @@ _CANONICAL_ROUTES: Final[tuple[GovernedRouteRecord, ...]] = (
         "adapter",
         "permanent_boundary",
         "Autonomous hardware or plant actuation from the L16 weighted heuristic.",
-        evidence=("bl85_claim_boundary", "bl33_safety_policy", "bl67_execution_policy"),
+        evidence=(
+            "bounded_director_claim_boundary",
+            "codesign_safety_policy",
+            "control_stack_execution_policy",
+        ),
         closure_reason=(
             "weighted indicator composite is not a Lyapunov, PCS, or stability certificate; "
             "owner-ticketed hardware and partner control validation cannot be inferred"
@@ -430,7 +437,7 @@ _CANONICAL_ROUTES: Final[tuple[GovernedRouteRecord, ...]] = (
         "competitor_boundary",
         "permanent_boundary",
         "Catalyst boundary for adaptive finite-shot trainability without broadcast/vmap.",
-        evidence=("bl14_trainability_boundary", "catalyst_comparison"),
+        evidence=("finite_shot_trainability_boundary", "catalyst_comparison"),
         closure_reason=(
             "Catalyst comparison rows document no-broadcast/no-vmap limitations "
             "for adaptive finite-shot trainability dry-runs"

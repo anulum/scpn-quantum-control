@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — deterministic co-design replay
-"""Versioned trace recording and bit-stable replay verification for BL-33."""
+"""Versioned trace recording and bit-stable replay verification for co-design."""
 
 from __future__ import annotations
 

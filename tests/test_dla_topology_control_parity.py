@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-54 parity-projector tests
+# SCPN Quantum Control — topology-control parity-projector tests
 """Exact forward, JVP, VJP, leakage, and custody tests."""
 
 from __future__ import annotations

@@ -1,7 +1,7 @@
 {
   "accepted_steps": 40,
   "claim_boundary": "finite synthetic parity-sector and fixed-active-set topology derivatives only; no full-DLA, controllability, persistent-homology derivative, hardware-protection, error-correction, provider, QPU, or deployment claim",
-  "content_digest": "0db6000ec6307389ffc4ddeda2f5a065a8cc481e9fe2defdbae0e9a1c14c926e",
+  "content_digest": "bc88d19d4bbf4e23fe4780f22ae3002f056d0241956a1d2dcdc887101570c956",
   "existing_optimizer_final_violation": 0.0,
   "final_leakage_mass": 0.0,
   "final_objective": 8.65715781264813e-25,
@@ -11,7 +11,7 @@
   "n_qubits": 4,
   "parity_gradient_max_abs_error": 3.592330877211225e-10,
   "parity_jvp_max_abs_error": 9.984548843531556e-11,
-  "schema_version": "bl54_dla_topology_control_evidence_v1",
+  "schema_version": "topology_control_evidence_v1",
   "sector": "even",
   "support": [
     {

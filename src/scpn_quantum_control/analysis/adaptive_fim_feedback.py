@@ -4,17 +4,17 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — adaptive FIM next-experiment proposals (BL-80)
+# SCPN Quantum Control — adaptive FIM next-experiment proposals
 """Uncertainty-aware, policy-bounded adaptive FIM batch proposals.
 
 The product route consumes disjoint leakage/retention counts, applies a Wilson
 score interval and minimum-shot gate, and proposes only a bounded decrease or
-hold for a *future* static ``lambda_fim`` batch. BL-47 approves the complete
+hold for a *future* static ``lambda_fim`` batch. hardware-safety approves the complete
 paired-arm dry-run plan before any schedule is generated. Nothing here submits
 a provider job, applies a controller update, or validates closed-loop efficacy.
 
 The original point-estimate functions remain available as explicitly labelled
-compatibility helpers. They are not used by the BL-80 product or evidence lane.
+compatibility helpers. They are not used by the adaptive-FIM product or evidence lane.
 """
 
 from __future__ import annotations
@@ -575,7 +575,7 @@ def observer_record_from_step(
         raise ValueError("policy_id must be non-empty")
     interval = step.interval
     return AdaptiveFIMObserverRecord(
-        observer_id=f"bl80:{policy_id}:{step.index}",
+        observer_id=f"adaptive_fim:{policy_id}:{step.index}",
         action=step.decision,
         lambda_in=step.lambda_in,
         lambda_out=step.lambda_out,

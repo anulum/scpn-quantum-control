@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for custom derivatives product (BL-92)
+# SCPN Quantum Control — tests for custom derivatives product
 """Real-surface tests for ``scpn_quantum_control.custom_derivatives_product``."""
 
 from __future__ import annotations
@@ -56,7 +56,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
     """Resolve known contracts and reject blank or unknown identifiers."""
     row = get_custom_derivative_contract("registration_contract")
     assert row.claim_boundary == CUSTOM_DERIVATIVES_CLAIM_BOUNDARY
-    assert row.bl46_pointer
+    assert row.metamorphic_verification_pointer
     with pytest.raises(ValueError, match="non-empty"):
         get_custom_derivative_contract("  ")
     with pytest.raises(ValueError, match="unknown contract_id"):
@@ -69,7 +69,7 @@ def test_registration_policy() -> None:
     assert policy["fail_closed_duplicate_without_overwrite"] is True
     assert policy["require_jvp_or_vjp"] is True
     assert policy["transform_algebra_ci_residual"] == "S92.2"
-    assert policy["bl46_metamorphic_residual"] == "S92.4"
+    assert policy["metamorphic_verification_residual"] == "S92.4"
 
 
 def test_register_query_list_fail_closed_duplicate() -> None:
@@ -205,8 +205,8 @@ def test_integrity_rejects_drift() -> None:
             "summary": "s",
             "module_path": "m",
             "symbol_name": "X",
-            "bl46_pointer": "a",
-            "bl97_stability_class": "experimental_workbench",
+            "metamorphic_verification_pointer": "a",
+            "api_stability_class": "experimental_workbench",
             "as_of": "2026-07-24",
             "claim_boundary": CUSTOM_DERIVATIVES_CLAIM_BOUNDARY,
         }
@@ -322,8 +322,8 @@ def test_contract_row_validation() -> None:
         CustomDerivativeContractRow(**{**base, "module_path": ""})
     with pytest.raises(ValueError, match="symbol_name"):
         CustomDerivativeContractRow(**{**base, "symbol_name": ""})
-    with pytest.raises(ValueError, match="bl97"):
-        CustomDerivativeContractRow(**{**base, "bl97_stability_class": ""})
+    with pytest.raises(ValueError, match="api_stability_class"):
+        CustomDerivativeContractRow(**{**base, "api_stability_class": ""})
     with pytest.raises(ValueError, match="as_of"):
         CustomDerivativeContractRow(**{**base, "as_of": ""})
 
@@ -396,7 +396,7 @@ def test_contract_to_dict() -> None:
     row = get_custom_derivative_contract("metamorphic_boundary")
     payload = row.to_dict()
     assert payload["kind"] == "metamorphic_boundary"
-    assert "metamorphic" in str(payload["bl46_pointer"])
+    assert "metamorphic" in str(payload["metamorphic_verification_pointer"])
     assert payload["contract_id"] == "metamorphic_boundary"
 
 

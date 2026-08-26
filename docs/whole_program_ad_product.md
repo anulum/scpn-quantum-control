@@ -1,4 +1,4 @@
-# Whole-program AD product surface (BL-91 / P1)
+# Whole-program AD product surface
 
 Versioned **frontend → IR → adjoint/replay product** map for whole-program AD:
 public journeys, layered architecture map, support badges, and dry-run posture.

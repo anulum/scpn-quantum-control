@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — quantum-sync oracle product quality-gate tests
-"""Lock the BL-19 quantum-sync oracle quality gate into preflight and CI."""
+"""Lock the quantum-sync oracle quality gate into preflight and CI."""
 
 from __future__ import annotations
 

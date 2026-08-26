@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-42 convergence evidence writer
-"""Digest-bound JSON and Markdown evidence for the BL-42 convergence suite."""
+# SCPN Quantum Control — convergence-example convergence evidence writer
+"""Digest-bound JSON and Markdown evidence for the convergence-example convergence suite."""
 
 from __future__ import annotations
 
@@ -186,12 +186,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--json-output",
         type=Path,
-        default=Path("data/ml_convergence_examples/bl42_convergence_evidence.json"),
+        default=Path("data/ml_convergence_examples/convergence_evidence.json"),
     )
     parser.add_argument(
         "--markdown-output",
         type=Path,
-        default=Path("data/ml_convergence_examples/bl42_convergence_evidence.md"),
+        default=Path("data/ml_convergence_examples/convergence_evidence.md"),
     )
     parser.add_argument(
         "--require-qnn-framework",

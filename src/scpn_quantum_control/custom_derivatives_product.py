@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — custom derivatives product surface (BL-92 / P1)
-"""Fail-closed **custom / registered derivatives** product surface (BL-92).
+# SCPN Quantum Control — custom derivatives product surface
+"""Fail-closed **custom / registered derivatives** product surface.
 
 Productises the safe extension point for third-party and domain JVP/VJP rules:
 versioned registration contract, public register/query/list helpers, fail-closed
@@ -14,8 +14,8 @@ blank/unknown/duplicate paths, and an example linear rule.
 Composes ambient :class:`~scpn_quantum_control.program_ad_registry.CustomDerivativeRegistry`
 and :class:`~scpn_quantum_control.program_ad_registry.CustomDerivativeRule` —
 does **not** rewrite the full transform algebra stack or invent-green full
-BL-03/52 matrix CI. Residual S92.2 transform-algebra interaction CI and
-S92.4 full BL-46 metamorphic automation remain open honestly.
+transform-algebra/route-matrix CI. Residual S92.2 transform-algebra interaction CI and
+S92.4 full metamorphic-verification metamorphic automation remain open honestly.
 """
 
 from __future__ import annotations
@@ -76,9 +76,9 @@ class CustomDerivativeContractRow:
         Primary ambient module path.
     symbol_name
         Primary ambient symbol.
-    bl46_pointer
+    metamorphic_verification_pointer
         Optional BL-46 metamorphic honesty pointer.
-    bl97_stability_class
+    api_stability_class
         Stability honesty class.
     as_of
         Inventory date label.
@@ -93,8 +93,8 @@ class CustomDerivativeContractRow:
     summary: str
     module_path: str
     symbol_name: str
-    bl46_pointer: str = "metamorphic_ad_verification.custom_rule_residual"
-    bl97_stability_class: str = "experimental_workbench"
+    metamorphic_verification_pointer: str = "metamorphic_ad_verification.custom_rule_residual"
+    api_stability_class: str = "experimental_workbench"
     as_of: str = "2026-07-24"
     claim_boundary: str = CUSTOM_DERIVATIVES_CLAIM_BOUNDARY
 
@@ -118,8 +118,8 @@ class CustomDerivativeContractRow:
             raise ValueError("module_path must be non-empty")
         if not self.symbol_name or not self.symbol_name.strip():
             raise ValueError("symbol_name must be non-empty")
-        if not self.bl97_stability_class or not self.bl97_stability_class.strip():
-            raise ValueError("bl97_stability_class must be non-empty")
+        if not self.api_stability_class or not self.api_stability_class.strip():
+            raise ValueError("api_stability_class must be non-empty")
         if not self.as_of or not self.as_of.strip():
             raise ValueError("as_of must be non-empty")
 
@@ -132,8 +132,8 @@ class CustomDerivativeContractRow:
             "summary": self.summary,
             "module_path": self.module_path,
             "symbol_name": self.symbol_name,
-            "bl46_pointer": self.bl46_pointer,
-            "bl97_stability_class": self.bl97_stability_class,
+            "metamorphic_verification_pointer": self.metamorphic_verification_pointer,
+            "api_stability_class": self.api_stability_class,
             "as_of": self.as_of,
             "claim_boundary": self.claim_boundary,
         }
@@ -363,7 +363,7 @@ def registration_contract_policy() -> dict[str, object]:
         "fail_closed_duplicate_without_overwrite": True,
         "require_jvp_or_vjp": True,
         "transform_algebra_ci_residual": "S92.2",
-        "bl46_metamorphic_residual": "S92.4",
+        "metamorphic_verification_residual": "S92.4",
         "claim_boundary": CUSTOM_DERIVATIVES_CLAIM_BOUNDARY,
     }
 
@@ -652,7 +652,7 @@ def map_custom_derivatives_public_surfaces() -> tuple[dict[str, object], ...]:
             {
                 "module_path": path,
                 "role": "custom_derivatives_product_surface",
-                "bl97_stability_class": contract.bl97_stability_class,
+                "api_stability_class": contract.api_stability_class,
                 "kind": contract.kind,
                 "contract_ids": [
                     c.contract_id for c in _CANONICAL_CONTRACTS if c.module_path == path

@@ -1,4 +1,4 @@
-# Stochastic estimators & policies product (BL-93 / P1)
+# Stochastic estimators & policies product
 
 Versioned **finite-shot / stochastic gradient product** over ambient SPSA,
 score-function, parameter-shift shot allocation, and confidence-policy

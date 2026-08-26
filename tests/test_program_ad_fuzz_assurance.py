@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for Program AD fuzz assurance (BL-96)
+# SCPN Quantum Control — tests for Program AD fuzz assurance
 """Real-surface tests for ``scpn_quantum_control.program_ad_fuzz_assurance``."""
 
 from __future__ import annotations
@@ -171,8 +171,8 @@ def test_integrity_rejects_drift_and_invent_green_policy() -> None:
             "rust_path": "x.rs",
             "package": "p",
             "posture": "time_boxed_local",
-            "bl49_pointer": "a",
-            "bl97_stability_class": "experimental_workbench",
+            "parity_certificate_pointer": "a",
+            "api_stability_class": "experimental_workbench",
             "as_of": "2026-07-24",
             "claim_boundary": PROGRAM_AD_FUZZ_CLAIM_BOUNDARY,
         }
@@ -298,8 +298,8 @@ def test_target_validation() -> None:
         FuzzTarget(**{**base, "package": ""})
     with pytest.raises(ValueError, match="posture"):
         FuzzTarget(**{**base, "posture": cast(Any, "nope")})
-    with pytest.raises(ValueError, match="bl97"):
-        FuzzTarget(**{**base, "bl97_stability_class": ""})
+    with pytest.raises(ValueError, match="api_stability_class"):
+        FuzzTarget(**{**base, "api_stability_class": ""})
     with pytest.raises(ValueError, match="as_of"):
         FuzzTarget(**{**base, "as_of": ""})
 

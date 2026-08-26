@@ -7,7 +7,7 @@
 # SCPN Quantum Control — committed XY-compile recompute unit artefact.
 """Committed-artefact emission for a browser-verifiable XY-compile recompute unit.
 
-The studio panel's recompute card (ST-09) needs one committed, signed-shape
+The studio panel's recompute card needs one committed, signed-shape
 :class:`~scpn_quantum_control.studio.recompute_kernel.XYCompileRecomputeUnit`
 to replay in the browser through the WASM kernel. This module builds that unit
 from the provisional Paper-27 ``K_nm`` matrix and the Paper-27 ``omega``

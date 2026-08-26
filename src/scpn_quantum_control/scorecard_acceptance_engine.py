@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — scorecard acceptance engine (BL-56 / W1)
-"""Fail-closed baseline-scorecard acceptance / promotion engine (BL-56).
+# SCPN Quantum Control — scorecard acceptance engine
+"""Fail-closed baseline-scorecard acceptance / promotion engine.
 
 Productises the eleven differentiable baseline-scorecard categories as a
 versioned acceptance surface: list/query status, evidence pointers, and blockers;

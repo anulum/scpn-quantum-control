@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — FU-3 resumable fake-Garnet batch runner
-"""Execute FU-3 on IQMFakeGarnet in the two frozen circuit batches.
+# SCPN Quantum Control — IQM layout-transfer resumable fake-Garnet batch runner
+"""Execute IQM layout-transfer on IQMFakeGarnet in the two frozen circuit batches.
 
 This isolated-venv runner submits all 36 main circuits as one simulator batch
 at 2,048 shots, checkpoints their counts, then submits the six readout

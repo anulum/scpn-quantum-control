@@ -678,6 +678,21 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         "mypy-strict-module-size-policy",
         [_PY, "-m", "mypy", "--strict", "tools/audit_module_size_policy.py"],
     ),
+    (
+        "descriptive-production-naming",
+        [_PY, "tools/audit_descriptive_production_naming.py"],
+    ),
+    (
+        "mypy-strict-descriptive-production-naming",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "tools/audit_descriptive_production_naming.py",
+            "tests/test_audit_descriptive_production_naming.py",
+        ],
+    ),
     ("licence-readiness", [_PY, "tools/audit_license_readiness.py"]),
     (
         "mypy-strict-licence-readiness",

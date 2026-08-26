@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multimodal ridge forecaster tests
-"""Production-surface tests for the BL-37 classical reference forecaster."""
+"""Production-surface tests for the multimodal-forecasting classical reference forecaster."""
 
 from __future__ import annotations
 

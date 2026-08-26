@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Studio coupling-invariant bundle tests
-"""Tests for the schema-B effective-coupling invariant bundle emitter (ST-14)."""
+"""Tests for the schema-B effective-coupling invariant bundle emitter."""
 
 from __future__ import annotations
 

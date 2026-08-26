@@ -1,8 +1,8 @@
 # BL-54 DLA and Topology-Constrained Control Evidence
 
-- Schema: `bl54_dla_topology_control_evidence_v1`
+- Schema: `topology_control_evidence_v1`
 - Generated: `2026-07-29`
-- Content digest: `0db6000ec6307389ffc4ddeda2f5a065a8cc481e9fe2defdbae0e9a1c14c926e`
+- Content digest: `bc88d19d4bbf4e23fe4780f22ae3002f056d0241956a1d2dcdc887101570c956`
 - Claim boundary: finite synthetic parity-sector and fixed-active-set topology derivatives only; no full-DLA, controllability, persistent-homology derivative, hardware-protection, error-correction, provider, QPU, or deployment claim
 
 ## Synthetic parity-protected task

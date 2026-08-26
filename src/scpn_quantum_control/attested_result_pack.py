@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — attested result packs (BL-48)
-"""Strip-resistant attested result-pack digests and local envelopes (BL-48).
+# SCPN Quantum Control — attested result packs
+"""Strip-resistant attested result-pack digests and local envelopes.
 
 Bind digests to **inputs and claim axes**, not a self-asserted “validated” badge.
 Verification returns an explicit status:

@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-67 executable adapter tests
+# SCPN Quantum Control — control-stack executable adapter tests
 """Tests for policy-gated adapters over the existing control stack."""
 
 from __future__ import annotations
@@ -154,6 +154,6 @@ def test_pulse_boundary_is_explicitly_fail_closed_to_bl58() -> None:
     decision = decide_pulse_compose_boundary(policy=ClosedLoopExecutionPolicy())
 
     assert decision.allowed is False
-    assert decision.dependency == "BL-58/S58.4"
+    assert decision.dependency == "pulse-boundary/runtime-adapter"
     assert "outside BL-67" in decision.reason
     assert decision.schema == CONTROL_STACK_RUNTIME_ADAPTER_SCHEMA

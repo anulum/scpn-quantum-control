@@ -250,7 +250,7 @@ def test_ci_studio_program_ad_job_enforces_exact_polyglot_quality() -> None:
     assert "--data-file=.coverage.studio-program-ad" in workflow
     assert "Enforce Studio Program-AD exact coverage" in workflow
     assert "--include=*/program_ad_replay_artifact.py" in workflow
-    assert "Enforce Program-AD browser owner exact coverage (ST-12)" in workflow
+    assert "Enforce Program-AD browser owner exact coverage" in workflow
     assert "--coverage.include=src/panel/programAd.ts" in workflow
     assert "--coverage.include=src/panel/ProgramADReplayCard.tsx" in workflow
     assert workflow.count("--coverage.thresholds.branches=100") >= 1

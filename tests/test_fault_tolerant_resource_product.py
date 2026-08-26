@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-36 fault-tolerant resource product tests
+# SCPN Quantum Control — fault-tolerant-resource fault-tolerant resource product tests
 """Contract tests for conservative future-resource reporting."""
 
 from __future__ import annotations

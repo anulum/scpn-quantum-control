@@ -29,11 +29,11 @@
       "language_status": "research_observation",
       "mean_exchange_coherence": 0.132115673085,
       "no_advantage_certificate": {
-        "certificate_id": "no_advantage:bl79_initial_state_comparison:protocol:bl79.initial_state_observation",
+        "certificate_id": "no_advantage:entanglement_initial_state_comparison:protocol:entanglement.initial_state_observation",
         "claim_boundary": "advantage-language governance only; default is no-advantage / research observation; decisive or advantage wording requires an explicit protocol identity and never invents green quantum-advantage marketing claims",
         "language_status": "no_advantage_default",
-        "protocol_id": "protocol:bl79.initial_state_observation",
-        "statement": "No quantum-advantage marketing claim is authorised under this certificate. Default language status is no-advantage / research observation. Bound protocol='protocol:bl79.initial_state_observation'."
+        "protocol_id": "protocol:entanglement.initial_state_observation",
+        "statement": "No quantum-advantage marketing claim is authorised under this certificate. Default language status is no-advantage / research observation. Bound protocol='protocol:entanglement.initial_state_observation'."
       }
     },
     "ghz": {
@@ -53,11 +53,11 @@
       "language_status": "research_observation",
       "mean_exchange_coherence": 0.0,
       "no_advantage_certificate": {
-        "certificate_id": "no_advantage:bl79_initial_state_comparison:protocol:bl79.initial_state_observation",
+        "certificate_id": "no_advantage:entanglement_initial_state_comparison:protocol:entanglement.initial_state_observation",
         "claim_boundary": "advantage-language governance only; default is no-advantage / research observation; decisive or advantage wording requires an explicit protocol identity and never invents green quantum-advantage marketing claims",
         "language_status": "no_advantage_default",
-        "protocol_id": "protocol:bl79.initial_state_observation",
-        "statement": "No quantum-advantage marketing claim is authorised under this certificate. Default language status is no-advantage / research observation. Bound protocol='protocol:bl79.initial_state_observation'."
+        "protocol_id": "protocol:entanglement.initial_state_observation",
+        "statement": "No quantum-advantage marketing claim is authorised under this certificate. Default language status is no-advantage / research observation. Bound protocol='protocol:entanglement.initial_state_observation'."
       }
     },
     "product": {
@@ -77,11 +77,11 @@
       "language_status": "research_observation",
       "mean_exchange_coherence": 0.419481646767,
       "no_advantage_certificate": {
-        "certificate_id": "no_advantage:bl79_initial_state_comparison:protocol:bl79.initial_state_observation",
+        "certificate_id": "no_advantage:entanglement_initial_state_comparison:protocol:entanglement.initial_state_observation",
         "claim_boundary": "advantage-language governance only; default is no-advantage / research observation; decisive or advantage wording requires an explicit protocol identity and never invents green quantum-advantage marketing claims",
         "language_status": "no_advantage_default",
-        "protocol_id": "protocol:bl79.initial_state_observation",
-        "statement": "No quantum-advantage marketing claim is authorised under this certificate. Default language status is no-advantage / research observation. Bound protocol='protocol:bl79.initial_state_observation'."
+        "protocol_id": "protocol:entanglement.initial_state_observation",
+        "statement": "No quantum-advantage marketing claim is authorised under this certificate. Default language status is no-advantage / research observation. Bound protocol='protocol:entanglement.initial_state_observation'."
       }
     },
     "w_state": {
@@ -101,15 +101,15 @@
       "language_status": "research_observation",
       "mean_exchange_coherence": 0.366405311833,
       "no_advantage_certificate": {
-        "certificate_id": "no_advantage:bl79_initial_state_comparison:protocol:bl79.initial_state_observation",
+        "certificate_id": "no_advantage:entanglement_initial_state_comparison:protocol:entanglement.initial_state_observation",
         "claim_boundary": "advantage-language governance only; default is no-advantage / research observation; decisive or advantage wording requires an explicit protocol identity and never invents green quantum-advantage marketing claims",
         "language_status": "no_advantage_default",
-        "protocol_id": "protocol:bl79.initial_state_observation",
-        "statement": "No quantum-advantage marketing claim is authorised under this certificate. Default language status is no-advantage / research observation. Bound protocol='protocol:bl79.initial_state_observation'."
+        "protocol_id": "protocol:entanglement.initial_state_observation",
+        "statement": "No quantum-advantage marketing claim is authorised under this certificate. Default language status is no-advantage / research observation. Bound protocol='protocol:entanglement.initial_state_observation'."
       }
     }
   },
-  "content_digest": "8edcf229addc96e6807bd3f4ff1090e0f323e9ddca3e17b708446257f20872cf",
+  "content_digest": "6153f7bca9e47d46de759579fa9eea7497c6a2e3dd0ca9a09377e27f87c9eef9",
   "critical_coupling_claimed": false,
   "deterministic_replay": true,
   "entanglement_specific_effect_supported": false,

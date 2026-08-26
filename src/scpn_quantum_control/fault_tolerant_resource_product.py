@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — conservative fault-tolerant resource product (BL-36)
-"""Compose existing QEC resource primitives into a conservative BL-36 report.
+# SCPN Quantum Control — conservative fault-tolerant resource product
+"""Compose existing QEC resource primitives into a conservative fault-tolerant resource report.
 
 The estimator allocates precision across Trotter, logical-failure, and rotation-
 synthesis channels; selects an odd surface-code distance with a union bound;

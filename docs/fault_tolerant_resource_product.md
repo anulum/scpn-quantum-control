@@ -1,4 +1,4 @@
-# Fault-tolerant resource product (BL-36)
+# Fault-tolerant resource product
 
 `scpn_quantum_control.fault_tolerant_resource_product` turns the existing QEC
 resource primitives into one deterministic, digest-bound planning report for a

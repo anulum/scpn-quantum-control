@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-35 static analog platform profiles
+# SCPN Quantum Control — analog-mapping static analog platform profiles
 """Load and validate the packaged static analog platform catalogue."""
 
 from __future__ import annotations

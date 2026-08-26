@@ -1,4 +1,4 @@
-# Adjoint reversible simulator replay product (BL-39)
+# Adjoint reversible simulator replay product
 
 Versioned **reverse-mode adjoint-via-replay product** over ambient
 `program_ad_adjoint` generation and executable step replay. Materialised local

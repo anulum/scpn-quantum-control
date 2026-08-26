@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-54 deterministic evidence
+# SCPN Quantum Control — topology-control deterministic evidence
 """Deterministic evidence custody for DLA/topology constrained control."""
 
 from __future__ import annotations
@@ -40,8 +40,8 @@ from .schema import (
     ParitySector,
 )
 
-BL54_EVIDENCE_SCHEMA = "bl54_dla_topology_control_evidence_v1"
-BL54_EVIDENCE_DATE = "2026-07-29"
+TOPOLOGY_CONTROL_EVIDENCE_SCHEMA = "topology_control_evidence_v1"
+TOPOLOGY_CONTROL_EVIDENCE_DATE = "2026-07-29"
 
 ComplexArray = NDArray[np.complex128]
 
@@ -107,7 +107,7 @@ class DlaTopologyControlEvidence:
     content_digest: str
 
     def __post_init__(self) -> None:
-        if self.schema_version != BL54_EVIDENCE_SCHEMA:
+        if self.schema_version != TOPOLOGY_CONTROL_EVIDENCE_SCHEMA:
             raise ValueError("schema_version is unsupported")
         if not isinstance(self.generated_on, str) or not self.generated_on.strip():
             raise ValueError("generated_on must be a non-empty string")
@@ -429,8 +429,8 @@ def build_dla_topology_control_evidence(
     parity_gradient_error = _parity_gradient_error(objective, initial)
     parity_jvp_error = _parity_jvp_error(projector, initial, tangent)
     canonical: dict[str, object] = {
-        "schema_version": BL54_EVIDENCE_SCHEMA,
-        "generated_on": BL54_EVIDENCE_DATE,
+        "schema_version": TOPOLOGY_CONTROL_EVIDENCE_SCHEMA,
+        "generated_on": TOPOLOGY_CONTROL_EVIDENCE_DATE,
         "n_qubits": n_qubits,
         "sector": "even",
         "initial_objective": initial_evaluation.value,
@@ -453,8 +453,8 @@ def build_dla_topology_control_evidence(
         json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
     return DlaTopologyControlEvidence(
-        schema_version=BL54_EVIDENCE_SCHEMA,
-        generated_on=BL54_EVIDENCE_DATE,
+        schema_version=TOPOLOGY_CONTROL_EVIDENCE_SCHEMA,
+        generated_on=TOPOLOGY_CONTROL_EVIDENCE_DATE,
         n_qubits=n_qubits,
         sector="even",
         initial_objective=initial_evaluation.value,
@@ -595,8 +595,8 @@ def write_dla_topology_control_evidence(
 
 
 __all__ = [
-    "BL54_EVIDENCE_DATE",
-    "BL54_EVIDENCE_SCHEMA",
+    "TOPOLOGY_CONTROL_EVIDENCE_DATE",
+    "TOPOLOGY_CONTROL_EVIDENCE_SCHEMA",
     "DlaTopologyControlEvidence",
     "build_dla_topology_control_evidence",
     "render_dla_topology_control_markdown",

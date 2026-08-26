@@ -6,7 +6,7 @@
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
 <!-- SCPN Quantum Control — IQM FU-3 Per-Size Layout-Transfer Result -->
 
-# IQM Garnet FU-3 Per-Size Layout-Transfer Result
+# IQM Garnet IQM layout-transfer Per-Size Layout-Transfer Result
 
 Execution date: 2026-07-26
 

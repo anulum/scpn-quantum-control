@@ -1,4 +1,4 @@
-# Scorecard acceptance engine (BL-56 / W1)
+# Scorecard acceptance engine
 
 Fail-closed promotion surface for the **eleven differentiable baseline-scorecard
 categories**. Honest ``behind_baseline`` inventory is the default until claim-ledger

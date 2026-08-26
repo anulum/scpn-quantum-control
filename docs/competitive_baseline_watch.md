@@ -1,4 +1,4 @@
-# Continuous competitive baseline watch (BL-61 / W1)
+# Continuous competitive baseline watch
 
 Fail-closed **ops watch** over differentiable competitive baselines. Composes the
 committed refresh inventory (`differentiable_competitive_baselines`) into a
@@ -46,7 +46,7 @@ probe = probe_refresh("catalyst")
 assert probe.allowed_green_current is False
 assert probe.blockers
 
-feed = probe_feed("catalyst", feed_target="bl56_scorecard")
+feed = probe_feed("catalyst", feed_target="scorecard_acceptance")
 assert feed.allowed is False
 assert feed.status == "blocked"
 ```
@@ -59,7 +59,7 @@ The module exposes four closed string vocabularies:
 |---|---|---|
 | `PinStatus` | `pinned_snapshot`, `unpinned`, `blocked` | Whether the committed inventory declares a usable version label |
 | `RefreshState` | `fresh`, `due`, `blocked`, `pending_verification` | Classification against the deterministic inventory date |
-| `FeedTarget` | `bl52_route_matrix`, `bl56_scorecard` | Downstream surface receiving structured pointers |
+| `FeedTarget` | `governed_route_matrix`, `scorecard_acceptance` | Downstream surface receiving structured pointers |
 | `FeedStatus` | `ready_pointer`, `blocked`, `pending` | Readiness of the pointer payload, not permission to promote a claim |
 
 `CompetitiveWatchRecord` is the canonical immutable catalogue row. It carries
@@ -93,7 +93,7 @@ unrecognised competitor.
 ```python
 row = get_competitive_watch("jax")
 assert row.competitor_id == "jax"
-assert row.feed_bl56_status == "blocked"
+assert row.scorecard_feed_status == "blocked"
 ```
 
 ### `iter_competitive_watch(*, pin_status=None, refresh_state=None)`
@@ -126,9 +126,9 @@ inside its declared freshness window. Blank or unknown identifiers raise
 
 Builds structured pointers for one of the two explicit targets:
 
-- `bl52_route_matrix` returns competitor/category pointers with a pending,
+- `governed_route_matrix` returns competitor/category pointers with a pending,
   non-mutating decision; and
-- `bl56_scorecard` returns scorecard-category pointers with a blocked decision.
+- `scorecard_acceptance` returns scorecard-category pointers with a blocked decision.
 
 The result is advisory data. `allowed=False` means consumers must not mutate a
 route matrix, scorecard, claim ledger, or public comparison. Blank/unknown

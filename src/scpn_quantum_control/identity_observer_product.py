@@ -4,13 +4,13 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Identity / robustness control observers (BL-69)
+# SCPN Quantum Control — Identity / robustness control observers
 """Fail-closed control observers over the existing identity metrics.
 
 The product adapts the ambient robustness certificate, coherence budget, and
-optional CHSH witness into an immutable BL-33/BL-67 safety decision. Thresholds
+optional CHSH witness into an immutable co-design/control-stack safety decision. Thresholds
 are caller-supplied and explicit. No identity key is replaced or claimed
-unbreakable, and the BL-48 seal remains an optional pointer only.
+unbreakable, and the attested-result seal remains an optional pointer only.
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ IDENTITY_OBSERVER_CLAIM_BOUNDARY: Final[str] = (
     "explicit research controls; no unbreakable-identity, cryptographic-strength, "
     "hardware robustness, or universal consciousness claim"
 )
-BL48_SEAL_POINTER: Final[str] = "BL-48 optional attested-result seal"
+ATTESTED_RESULT_SEAL_POINTER: Final[str] = "BL-48 optional attested-result seal"
 ControlAction = Literal["continue", "hold", "abort"]
 WitnessStatus = Literal["not_requested", "supported", "unsupported"]
 
@@ -90,7 +90,7 @@ class IdentityObserverRecord:
     witness_status: WitnessStatus
     chsh_value: float | None
     witness_pair: tuple[int, int] | None
-    seal_pointer: str = BL48_SEAL_POINTER
+    seal_pointer: str = ATTESTED_RESULT_SEAL_POINTER
     claim_boundary: str = IDENTITY_OBSERVER_CLAIM_BOUNDARY
 
     def to_dict(self) -> dict[str, object]:
@@ -286,7 +286,7 @@ def evaluate_identity_safety(
 
 
 __all__ = [
-    "BL48_SEAL_POINTER",
+    "ATTESTED_RESULT_SEAL_POINTER",
     "IDENTITY_OBSERVER_CLAIM_BOUNDARY",
     "IDENTITY_OBSERVER_SCHEMA",
     "ControlAction",
