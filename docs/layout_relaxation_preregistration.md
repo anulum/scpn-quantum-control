@@ -123,6 +123,9 @@ discrete baseline's `n_evaluations`:
 
 Measured table and honest reading: `dynq_qubit_mapping.md` §8.5; artifact:
 `data/layout_relaxation_experiment/layout_relaxation_experiment_n4_seeds0-9.json`.
+The callable configuration, result, projection, surrogate, and search contracts
+are documented in the
+[layout-relaxation API reference](api/kuramoto_layout_relaxation.md).
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
 Seat: 7f6b

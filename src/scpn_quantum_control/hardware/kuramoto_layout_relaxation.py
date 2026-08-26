@@ -4,18 +4,16 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Sinkhorn continuous relaxation of layout search (KT-4)
+# SCPN Quantum Control — Sinkhorn continuous relaxation of layout search
 """RESEARCH: Sinkhorn continuous relaxation of the Kuramoto layout search.
 
-**Research label.** This module implements the KT-4 open question
-preregistered in
-``docs/layout_relaxation_preregistration.md``:
-does an annealed Sinkhorn relaxation over placement logits beat the KT-3
-discrete optimiser
+**Research label.** This module implements the continuous-relaxation question
+preregistered in ``docs/layout_relaxation_preregistration.md``: does an
+annealed Sinkhorn relaxation over placement logits beat the discrete optimiser
 (:func:`~scpn_quantum_control.hardware.kuramoto_layout_optimiser.optimise_kuramoto_layout`)
-on the *true* seeded KT-2 cost at a matched evaluation budget? The honest
+on the true seeded layout cost at a matched evaluation budget? The honest
 outcome may be "modest or no gain"; nothing here is promoted beyond a
-research result without the owner-gated KT-5 isolated benchmark.
+research result without owner-approved isolated-host confirmation.
 
 Method (Mena et al., arXiv:1802.08665; Jang et al., arXiv:1611.01144;
 Maddison et al., arXiv:1611.00712 — verified in the design doc):
@@ -28,7 +26,7 @@ Maddison et al., arXiv:1611.00712 — verified in the design doc):
    between candidates) with the closed-form gradient ``∇_P S = K P D``,
    applied straight-through to the logits (the Jang et al. estimator);
 3. anneal τ downward; after each temperature, round with the Hungarian
-   assignment and score the rounded layout with the **true seeded KT-2
+   assignment and score the rounded layout with the **true seeded layout
    cost** — the surrogate never enters the comparison;
 4. stop at the preregistered true-cost evaluation budget.
 
@@ -57,7 +55,7 @@ from .kuramoto_layout_cost import (
 from .kuramoto_layout_optimiser import _validate_search_inputs
 
 RESEARCH_LABEL = (
-    "RESEARCH (KT-4): relaxed-then-rounded layout search under a preregistered "
+    "RESEARCH: relaxed-then-rounded layout search under a preregistered "
     "protocol; results are research observations, not a promoted capability"
 )
 
@@ -82,7 +80,7 @@ class SinkhornRelaxationConfig:
     max_true_cost_evaluations
         Budget of distinct rounded layouts scored with the true cost;
         ``None`` allows one per anneal step. This is the preregistered
-        budget-match knob against the KT-3 baseline.
+        budget-match knob against the discrete-search baseline.
     seed
         Seed for the logit initialisation.
     weights
@@ -90,6 +88,7 @@ class SinkhornRelaxationConfig:
     t, reps, order
         Evolution time, Trotter repetitions, and product-formula order
         forwarded to the true cost.
+
     """
 
     tau_initial: float = 1.0
@@ -114,6 +113,7 @@ class SinkhornRelaxationConfig:
             If the temperatures are not positive and ordered, or any count
             or the learning rate is not positive, or the budget is not
             positive when set.
+
         """
         if not isfinite(self.tau_initial) or self.tau_initial <= 0.0:
             raise ValueError("tau_initial must be finite and positive")
@@ -198,6 +198,7 @@ def sinkhorn_normalise(logits: FloatArray, n_iterations: int) -> FloatArray:
     -------
     numpy.ndarray
         A (numerically) doubly-stochastic matrix of the same shape.
+
     """
     if logits.ndim != 2 or logits.shape[0] != logits.shape[1]:
         raise ValueError("logits must be a square matrix")
@@ -239,6 +240,7 @@ def coupling_graph_distances(coupling_map: Any, physical_qubits: tuple[int, ...]
     ValueError
         If any pair of candidates is disconnected in the coupling graph —
         the surrogate is undefined there (fail-closed).
+
     """
     edges = coupling_map.get_edges() if hasattr(coupling_map, "get_edges") else coupling_map
     adjacency: dict[int, set[int]] = {}
@@ -289,6 +291,7 @@ def swap_distance_surrogate(P: FloatArray, K: FloatArray, distances: FloatArray)
     -------
     float
         The surrogate value.
+
     """
     expected = P @ distances @ P.T
     return float(0.5 * np.sum(K * expected))
@@ -351,6 +354,7 @@ def relax_kuramoto_layout(
     ValueError
         If the search space, seed layout, or cost inputs are malformed, or
         the candidates are disconnected in the coupling graph.
+
     """
     config = config or SinkhornRelaxationConfig()
     n = _validate_search_inputs(K, physical_qubits, initial_layout)

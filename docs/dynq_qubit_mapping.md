@@ -768,6 +768,8 @@ verified literature, and comparison protocol are preregistered in
 the honest outcome may be "modest or no gain", and nothing is promoted
 without isolated-host confirmation. The preregistered seed-sweep experiment and its measured
 verdict are in §8.5.
+The callable surface and its evidence boundary are documented in the
+[layout-relaxation API reference](api/kuramoto_layout_relaxation.md).
 
 ---
 

@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Tests for the Sinkhorn layout relaxation (KT-4)
+# SCPN Quantum Control — Tests for the Sinkhorn layout relaxation
 """Multi-angle tests for hardware/kuramoto_layout_relaxation.py (RESEARCH).
 
 Dimensions: configuration invariants and the annealing schedule, the Sinkhorn
@@ -66,6 +66,8 @@ def _relax(**overrides: Any) -> RelaxationSearchResult:
 
 
 class TestSinkhornRelaxationConfig:
+    """Exercise configuration validation, schedules, and serialisation."""
+
     @pytest.mark.parametrize(
         ("kwargs", "match"),
         [
@@ -82,10 +84,12 @@ class TestSinkhornRelaxationConfig:
         ],
     )
     def test_invalid_configuration_rejected(self, kwargs: dict[str, Any], match: str) -> None:
+        """Reject non-positive, non-finite, or inconsistent controls."""
         with pytest.raises(ValueError, match=match):
             SinkhornRelaxationConfig(**kwargs)
 
     def test_temperature_schedule_geometric_and_ordered(self) -> None:
+        """Build a decreasing geometric schedule with exact endpoints."""
         schedule = SinkhornRelaxationConfig(
             tau_initial=1.0, tau_final=0.1, n_anneal_steps=5
         ).temperatures()
@@ -95,6 +99,7 @@ class TestSinkhornRelaxationConfig:
         assert np.all(np.diff(schedule) < 0)
 
     def test_to_dict_serialises_weights(self) -> None:
+        """Serialise default optional fields and annealing controls."""
         payload = SinkhornRelaxationConfig().to_dict()
         assert payload["weights"] is None
         assert payload["max_true_cost_evaluations"] is None
@@ -102,7 +107,10 @@ class TestSinkhornRelaxationConfig:
 
 
 class TestSinkhornOperator:
+    """Exercise the normalisation operator and its shape contract."""
+
     def test_output_is_doubly_stochastic(self) -> None:
+        """Converge row and column sums to one with non-negative entries."""
         logits = np.random.default_rng(0).standard_normal((5, 5))
         P = sinkhorn_normalise(logits, 60)
         # np.sum (not ndarray.sum) dodges the numpy-reload _NoValueType
@@ -112,40 +120,51 @@ class TestSinkhornOperator:
         assert np.all(P >= 0.0)
 
     def test_low_temperature_sharpens_to_permutation(self) -> None:
+        """Sharpen dominant logits into a permutation-like projection."""
         logits = np.array([[5.0, 0.0], [0.0, 5.0]])
         P = sinkhorn_normalise(logits / 0.05, 60)
         assert P[0, 0] == pytest.approx(1.0, abs=1e-6)
         assert P[1, 1] == pytest.approx(1.0, abs=1e-6)
 
     def test_non_square_rejected(self) -> None:
+        """Reject matrices that cannot represent a square assignment."""
         with pytest.raises(ValueError, match="square"):
             sinkhorn_normalise(np.zeros((2, 3)), 5)
 
 
 class TestCouplingGraphDistances:
+    """Exercise candidate distances over iterable and Qiskit graphs."""
+
     def test_line_graph_distances_are_index_gaps(self) -> None:
+        """Measure line-graph hop counts between sparse candidates."""
         distances = coupling_graph_distances(_LINE_EDGES, (0, 2, 4))
         expected = np.array([[0.0, 2.0, 4.0], [2.0, 0.0, 2.0], [4.0, 2.0, 0.0]])
         assert np.array_equal(distances, expected)
 
     def test_paths_may_leave_the_candidate_set(self) -> None:
+        """Allow shortest paths to traverse non-candidate device qubits."""
         # Candidates 0 and 4 connect only through non-candidate qubits.
         distances = coupling_graph_distances(_LINE_EDGES, (0, 4))
         assert distances[0, 1] == 4.0
 
     def test_qiskit_coupling_map_accepted(self) -> None:
+        """Accept Qiskit's coupling-map edge accessor."""
         from qiskit.transpiler import CouplingMap
 
         distances = coupling_graph_distances(CouplingMap(_LINE_EDGES), (0, 1, 2))
         assert distances[0, 2] == 2.0
 
     def test_disconnected_candidates_fail_closed(self) -> None:
+        """Reject candidate sets with no finite connecting path."""
         with pytest.raises(ValueError, match="disconnected"):
             coupling_graph_distances([(0, 1), (1, 0), (3, 4), (4, 3)], (0, 3))
 
 
 class TestSurrogate:
+    """Exercise surrogate ordering and the analytic gradient."""
+
     def test_surrogate_prefers_adjacent_strong_pairs(self) -> None:
+        """Assign lower load to adjacent strongly coupled logical pairs."""
         distances = coupling_graph_distances(_LINE_EDGES, (0, 1, 2, 3, 4))
         K2 = np.zeros((5, 5))
         K2[0, 1] = K2[1, 0] = 1.0
@@ -156,6 +175,7 @@ class TestSurrogate:
         )
 
     def test_gradient_matches_finite_differences(self) -> None:
+        """Match selected analytic-gradient entries to finite differences."""
         rng = np.random.default_rng(1)
         distances = coupling_graph_distances(_LINE_EDGES, (0, 1, 2, 3))
         K2 = np.zeros((4, 4))
@@ -174,7 +194,10 @@ class TestSurrogate:
 
 
 class TestRelaxedSearch:
+    """Exercise the complete relaxed-then-rounded search contract."""
+
     def test_finds_compact_layout_on_line(self) -> None:
+        """Find a compact placement under the injected line-distance cost."""
         result = _relax()
         assert result.best_cost.total > 0.0
         # Compact contiguous placements minimise the pairwise-distance depth.
@@ -184,6 +207,7 @@ class TestRelaxedSearch:
         assert len(result.surrogate_trajectory) == 4
 
     def test_warm_start_layout_biases_first_round(self) -> None:
+        """Use the supplied layout to bias the first rounded candidate."""
         result = _relax(
             initial_layout=(0, 1, 2),
             config=SinkhornRelaxationConfig(seed=3, n_anneal_steps=1, n_gradient_steps=1),
@@ -191,6 +215,7 @@ class TestRelaxedSearch:
         assert sorted(result.best_layout) == [0, 1, 2]
 
     def test_budget_is_enforced(self) -> None:
+        """Keep distinct true-cost calls within the configured budget."""
         result = _relax(
             config=SinkhornRelaxationConfig(
                 seed=5, n_anneal_steps=6, n_gradient_steps=5, max_true_cost_evaluations=2
@@ -199,11 +224,13 @@ class TestRelaxedSearch:
         assert result.n_true_evaluations <= 2
 
     def test_deterministic_for_fixed_seed(self) -> None:
+        """Reproduce layouts and surrogate trajectories for a fixed seed."""
         first, second = _relax(), _relax()
         assert first.best_layout == second.best_layout
         assert first.surrogate_trajectory == second.surrogate_trajectory
 
     def test_research_label_carried(self) -> None:
+        """Retain the research boundary in results and serialised output."""
         result = _relax()
         assert result.research_label == RESEARCH_LABEL
         payload = result.to_dict()
@@ -211,6 +238,7 @@ class TestRelaxedSearch:
         assert payload["best_layout"] == list(result.best_layout)
 
     def test_search_space_validation_shared_with_discrete_optimiser(self) -> None:
+        """Reuse discrete-search validation for duplicate candidates."""
         with pytest.raises(ValueError, match="duplicates"):
             relax_kuramoto_layout(
                 _K,
@@ -222,6 +250,7 @@ class TestRelaxedSearch:
             )
 
     def test_cost_validation_propagates(self) -> None:
+        """Propagate true-cost validation failures to callers."""
         with pytest.raises(ValueError, match="mean_gate_fidelity"):
             relax_kuramoto_layout(
                 _K,
@@ -235,7 +264,10 @@ class TestRelaxedSearch:
 
 
 class TestPackageExport:
+    """Exercise the public hardware-package exports."""
+
     def test_hardware_package_exports_relaxation(self) -> None:
+        """Export the search, configuration, and result record together."""
         from scpn_quantum_control import hardware
 
         assert hardware.relax_kuramoto_layout is relax_kuramoto_layout
