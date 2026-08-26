@@ -357,7 +357,7 @@
       "lines": 1129,
       "kind": "facade",
       "disposition": "facade",
-      "responsibility": "Fail-closed quantum sync challenge oracle product surface (BL-32).",
+      "responsibility": "Fail-closed quantum-sync challenge family, metric, baseline, and local oracle-probe surface.",
       "dependency_boundary": "Oracle catalogue and local probes over ambient sync/challenge helpers; no live QPU invent-green; paired tests own behaviour.",
       "reassess_when": "Challenge scoring engines with independent lifecycle are inlined here."
     },

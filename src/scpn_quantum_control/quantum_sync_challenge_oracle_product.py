@@ -19,8 +19,9 @@ sync witnesses, objectives, and coupling recovery — not a second solver stack:
 * refuse invent-green quantum advantage claims, live hardware without ticket,
   and ranking unvalidated submissions.
 
-Does **not** ship full ``challenge/`` package depth (S32.4–S32.12 residual),
-live leaderboard SaaS, or remote code execution for submissions.
+Full baseline runners, leaderboard/export surfaces, invitation tooling, and
+hardware-package depth remain explicit residual work. The product does not ship
+live leaderboard SaaS or remote code execution for submissions.
 """
 
 from __future__ import annotations
@@ -84,15 +85,14 @@ QUANTUM_SYNC_CHALLENGE_ORACLE_CLAIM_BOUNDARY: Final[str] = (
     "status; materialises ambient synchronisation_witness suite probes and "
     "order-parameter fixtures; refuse invent-green quantum advantage, live "
     "hardware without owner ticket, and ranking unvalidated submissions; does "
-    "not claim full challenge package depth or live leaderboard SaaS "
-    "(S32.4–S32.12 residual)"
+    "not claim full challenge-package depth or live leaderboard SaaS"
 )
 """Shared claim boundary for sync challenge oracle product payloads."""
 
 
 @dataclass(frozen=True, slots=True)
 class ProblemFamilyRow:
-    """One challenge problem family catalogue row (S32.0 / S32.2).
+    """One challenge problem-family catalogue row.
 
     Attributes
     ----------
@@ -111,9 +111,9 @@ class ProblemFamilyRow:
     ambient_pointer
         Ambient module pointer for composition.
     route_matrix_pointer
-        BL-52 governed-route matrix pointer.
+        Governed-route matrix pointer.
     unsuitable_scenario_pointer
-        BL-53 unsuitable / anti-silent-wrong pointer.
+        Unsuitable-scenario and anti-silent-wrong pointer.
     invent_green_advantage
         Must remain False.
     support_posture
@@ -202,7 +202,7 @@ class ProblemFamilyRow:
 
 @dataclass(frozen=True, slots=True)
 class MetricCatalogueRow:
-    """One oracle metric catalogue row (S32.3).
+    """One oracle metric catalogue row.
 
     Attributes
     ----------
@@ -270,7 +270,7 @@ class MetricCatalogueRow:
 
 @dataclass(frozen=True, slots=True)
 class BaselineCatalogueRow:
-    """One challenge baseline catalogue row (S32.4 / S32.5 / S32.10).
+    """One challenge baseline catalogue row.
 
     Attributes
     ----------
@@ -467,7 +467,7 @@ class MaterialisedOracleProbe:
 
 
 def _build_problem_families() -> tuple[ProblemFamilyRow, ...]:
-    """Build F1–F4 problem family catalogue (S32.2)."""
+    """Build the F1–F4 problem-family catalogue."""
     return (
         ProblemFamilyRow(
             family_id="F1_all_to_all_kuramoto",
@@ -527,13 +527,12 @@ def _build_problem_families() -> tuple[ProblemFamilyRow, ...]:
             family_id="FH_hardware_gated",
             title="Hardware-gated family (schema only)",
             summary=(
-                "Hardware family schema row with empty execution; owner ticket "
-                "required (S32.10 residual)."
+                "Hardware-family schema row with empty execution; an owner ticket is required."
             ),
             support_status="hardware_gated",
             default_seed=3299,
             n_nodes=4,
-            ambient_pointer="BL-47 hardware_safe_execution (no_submit default)",
+            ambient_pointer="hardware_safe_execution (no_submit default)",
             route_matrix_pointer="governed_route:challenge.FH.hardware_gated",
             unsuitable_scenario_pointer="unsuitable_scenario_registry.challenge_fh",
             support_posture="live_hardware_gated",
@@ -542,7 +541,7 @@ def _build_problem_families() -> tuple[ProblemFamilyRow, ...]:
 
 
 def _build_metrics() -> tuple[MetricCatalogueRow, ...]:
-    """Build metric catalogue (S32.3)."""
+    """Build the oracle metric catalogue."""
     return (
         MetricCatalogueRow(
             metric_id="order_parameter_r1",
@@ -589,7 +588,7 @@ def _build_metrics() -> tuple[MetricCatalogueRow, ...]:
 
 
 def _build_baselines() -> tuple[BaselineCatalogueRow, ...]:
-    """Build baseline catalogue (S32.4 / S32.5 / S32.10)."""
+    """Build the challenge baseline catalogue."""
     return (
         BaselineCatalogueRow(
             baseline_id="classical_numpy_cpu",
@@ -783,7 +782,7 @@ def decide_challenge_path(
     owner_ticket_present: bool = False,
     request_hardware_execution: bool = False,
 ) -> PathEligibilityDecision:
-    """Decide whether a challenge oracle path may proceed (S32.6 / S32.7).
+    """Decide whether a challenge-oracle path may proceed.
 
     Parameters
     ----------
@@ -810,12 +809,13 @@ def decide_challenge_path(
     blockers: list[str] = []
     if invent_green_advantage:
         blockers.append(
-            f"invent-green quantum advantage claim refused (family={row.family_id}; BL-32 honesty)"
+            "invent-green quantum advantage claim refused "
+            f"(family={row.family_id}; advantage-claim honesty policy)"
         )
     if request_leaderboard_rank and not submission_validated:
         blockers.append(
             "leaderboard ranking refuses unvalidated submissions "
-            f"(family={row.family_id}; S32.7 scoring purity)"
+            f"(family={row.family_id}; scoring-purity policy)"
         )
     if request_hardware_execution:
         if row.support_status != "hardware_gated":
@@ -826,12 +826,10 @@ def decide_challenge_path(
         if not owner_ticket_present:
             blockers.append(
                 "owner ticket required for hardware execution "
-                f"(family={row.family_id}; BL-47 no_submit default)"
+                f"(family={row.family_id}; no-submit default)"
             )
         # Product surface never auto-executes hardware even with ticket.
-        blockers.append(
-            "hardware execution residual on product surface (schema-only FH row; S32.10)"
-        )
+        blockers.append("hardware execution remains a schema-only residual on the product surface")
     if blockers:
         return PathEligibilityDecision(
             outcome="refused",
@@ -984,9 +982,9 @@ def build_quantum_sync_challenge_oracle_product_registry() -> dict[str, object]:
         "metrics": metrics,
         "baselines": baselines,
         "policy_note": (
-            "Challenge oracle product façade only; ambient witnesses/objectives/"
-            "coupling recovery remain the spine; no live leaderboard SaaS; "
-            "S32.4–S32.12 residual full challenge package depth open honestly."
+            "Challenge oracle product façade only; ambient witnesses, objectives, and "
+            "coupling recovery remain the spine; no live leaderboard SaaS; full baseline, "
+            "leaderboard, invitation, and hardware-package depth remains open honestly."
         ),
     }
 

@@ -15,7 +15,7 @@ Module: `scpn_quantum_control.quantum_sync_challenge_oracle_product`
 | Unknown family | Fail closed |
 | Advantage invent-green | Refuse |
 | Leaderboard rank without validation | Refuse |
-| Hardware execution | Schema residual (S32.10) |
+| Hardware execution | Schema-only residual; never automatic |
 | Anti-cheat | SHA-256 instance digests (family+seed+schema) |
 
 ## Problem families
@@ -95,15 +95,14 @@ construction time; their `to_dict()` methods return JSON-ready payloads.
 
 ## Residuals (honest)
 
-- **S32.4–S32.5** — full classical/quantum baseline runners
-- **S32.6–S32.7** — full anti-cheat recompute + leaderboard export depth
-- **S32.8–S32.9** — static HTML + CLI
-- **S32.10–S32.12** — hardware package template, invitation docs, seal design
+- Full classical and quantum baseline runners
+- Full anti-cheat recomputation and leaderboard export depth
+- Static HTML and CLI surfaces
+- Hardware-package template, invitation documentation, and seal design
 
 ## Related
 
-- Pack: `docs/internal/differentiable_programming/p3_strategic/bl32_quantum_sync_challenge_oracle.md`
 - Ambient: `phase.synchronisation_witness`, `synchronisation_objectives`, `coupling_time_series_recovery`
-- BL-34 dashboard, BL-47 no-submit, BL-52/53 honesty
+- Dashboard composition, no-submit safety, governed routing, and unsuitable-scenario honesty
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
