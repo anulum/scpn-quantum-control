@@ -195,6 +195,8 @@ def test_certificate_from_dict_fail_closed() -> None:
 
 def test_registry_and_integrity() -> None:
     """Build and validate both explicit and default product registries."""
+    assert POLYGLOT_PARITY_CERTIFICATE_SCHEMA == "polyglot_parity_certificate.v2"
+    assert POLYGLOT_PARITY_PRODUCT_SCHEMA == "polyglot_parity_certificate_product.v2"
     registry = build_polyglot_parity_product_registry()
     assert registry["schema"] == POLYGLOT_PARITY_PRODUCT_SCHEMA
     assert registry["certificate_schema"] == POLYGLOT_PARITY_CERTIFICATE_SCHEMA
@@ -298,6 +300,44 @@ def test_integrity_rejects_blank_invalid() -> None:
         assert_polyglot_parity_product_integrity(bad_schema)
 
 
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("schema", "polyglot_parity_certificate_product.v1", "product schema"),
+        ("claim_boundary", "drifted claim", "claim_boundary"),
+        ("policy_note", "drifted policy", "policy_note"),
+        ("default_family_id", "value_and_gradient_replay", "default_family_id"),
+        ("sample_bitexact_count", 0, "sample_bitexact_count"),
+    ],
+)
+def test_integrity_rejects_governed_metadata_drift(
+    field: str,
+    value: object,
+    message: str,
+) -> None:
+    """Reject stale or altered top-level registry contracts."""
+    registry = build_polyglot_parity_product_registry()
+    registry[field] = value
+    with pytest.raises(ValueError, match=message):
+        assert_polyglot_parity_product_integrity(registry)
+
+
+def test_integrity_rejects_canonical_row_and_surface_drift() -> None:
+    """Reject altered family metadata and public-surface inventories."""
+    registry = build_polyglot_parity_product_registry()
+    family_drift = dict(registry)
+    families = [dict(row) for row in cast(list[dict[str, object]], registry["families"])]
+    families[0]["claim_boundary"] = "drifted claim"
+    family_drift["families"] = families
+    with pytest.raises(ValueError, match="family row 0 drift"):
+        assert_polyglot_parity_product_integrity(family_drift)
+
+    surface_drift = dict(registry)
+    surface_drift["public_surfaces"] = []
+    with pytest.raises(ValueError, match="public_surfaces"):
+        assert_polyglot_parity_product_integrity(surface_drift)
+
+
 def test_module_exports() -> None:
     """Keep the documented catalogue, builder, and verifier APIs exported."""
     assert "build_sample_certificate" in polyglot_parity_certificate.__all__
@@ -329,6 +369,8 @@ def test_family_validation() -> None:
         ParityFamily(**{**base, "api_stability_class": ""})
     with pytest.raises(ValueError, match="as_of"):
         ParityFamily(**{**base, "as_of": ""})
+    with pytest.raises(ValueError, match="claim_boundary"):
+        ParityFamily(**{**base, "claim_boundary": "drifted claim"})
 
 
 def test_certificate_invariants() -> None:
@@ -353,6 +395,8 @@ def test_certificate_invariants() -> None:
         PolyglotParityCertificate(**{**good, "sample_id": ""})
     with pytest.raises(ValueError, match="input_digest"):
         PolyglotParityCertificate(**{**good, "input_digest": "short"})
+    with pytest.raises(ValueError, match="input_digest"):
+        PolyglotParityCertificate(**{**good, "input_digest": "g" * 64})
     with pytest.raises(ValueError, match="rust_digest"):
         PolyglotParityCertificate(**{**good, "rust_digest": "short"})
     with pytest.raises(ValueError, match="max_abs_error"):
@@ -372,6 +416,8 @@ def test_certificate_invariants() -> None:
                 "blocked_reasons": (),
             }
         )
+    with pytest.raises(ValueError, match="claim_boundary"):
+        PolyglotParityCertificate(**{**good, "claim_boundary": "drifted claim"})
 
 
 def test_decision_invariants() -> None:
@@ -426,6 +472,17 @@ def test_decision_invariants() -> None:
         observed_max_abs_error=0.0,
     )
     assert ok.to_dict()["passed"] is True
+    with pytest.raises(ValueError, match="claim_boundary"):
+        CertificateVerifyDecision(
+            family_id="f",
+            sample_id="s",
+            outcome="passed",
+            passed=True,
+            reason="r",
+            blockers=(),
+            observed_max_abs_error=0.0,
+            claim_boundary="drifted claim",
+        )
 
 
 def test_digest_and_canonical() -> None:
@@ -509,6 +566,10 @@ def test_certificate_from_dict_type_edges() -> None:
         certificate_from_dict({**base, "blocked_reasons": "x"})
     with pytest.raises(ValueError, match="claim_boundary must be a non-empty string"):
         certificate_from_dict({**base, "claim_boundary": ""})
+    with pytest.raises(ValueError, match="claim_boundary"):
+        certificate_from_dict({**base, "claim_boundary": "drifted claim"})
+    with pytest.raises(ValueError, match="unknown certificate schema"):
+        certificate_from_dict({**base, "schema": "polyglot_parity_certificate.v1"})
 
 
 def test_certificate_blank_blockers_entry() -> None:

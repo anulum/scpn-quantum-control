@@ -13,9 +13,9 @@ digest build/verify helpers, and refuse invent-green full NumPy parity or
 unsupported Rust feature claims.
 
 Composes honesty from ambient ``program_ad_rust_bridge`` / inventory pointers
-without re-running the entire cargo matrix as the product façade. Residual
-CLI (S49.3), committed multi-family CI corpus (S49.4), and Rust-JIT decision decision feed
-(S49.6) remain open honestly.
+without re-running the entire cargo matrix as the product façade. Command-line
+access, a committed multi-family CI corpus, and Rust-JIT decision evidence
+integration remain open.
 """
 
 from __future__ import annotations
@@ -36,26 +36,44 @@ FamilySupport = Literal[
 VerifyOutcome = Literal["passed", "failed", "refused"]
 """Structured verify outcomes."""
 
-POLYGLOT_PARITY_CERTIFICATE_SCHEMA: Final[str] = "polyglot_parity_certificate.v1"
+POLYGLOT_PARITY_CERTIFICATE_SCHEMA: Final[str] = "polyglot_parity_certificate.v2"
 """JSON schema identifier for serialised certificates and product registry."""
 
-POLYGLOT_PARITY_PRODUCT_SCHEMA: Final[str] = "polyglot_parity_certificate_product.v1"
+POLYGLOT_PARITY_PRODUCT_SCHEMA: Final[str] = "polyglot_parity_certificate_product.v2"
 """Product registry schema (family catalogue + policy)."""
 
 POLYGLOT_PARITY_CLAIM_BOUNDARY: Final[str] = (
-    "Polyglot parity certificate product only; digests prove sample bundle "
-    "identity for published families; does not claim full NumPy parity; "
-    "unsupported Rust/feature paths fail closed with typed blockers; ambient "
-    "program_ad_rust_bridge remains experimental_workbench under BL-97; "
-    "residual CLI (S49.3), committed CI corpus (S49.4), and BL-38 feed "
-    "(S49.6) open honestly"
+    "This polyglot parity certificate product proves only the identity of "
+    "published sample bundles through digests; it does not claim full NumPy "
+    "parity. Unsupported Rust and feature paths fail closed with typed blockers. "
+    "The Program AD Rust bridge remains an experimental workbench. A command-line "
+    "entry point, committed multi-family CI corpus, and Rust-JIT decision evidence "
+    "integration remain open."
 )
 """Shared claim boundary for families, certificates, and verify decisions."""
+
+_POLYGLOT_PARITY_POLICY_NOTE: Final[str] = (
+    "Digests prove only published sample bundle identity; full NumPy parity is "
+    "never claimed. The command-line entry point, committed multi-family CI "
+    "corpus, and Rust-JIT decision evidence integration remain open."
+)
+"""Canonical product-registry policy note."""
+
+
+def _require_exact_claim_boundary(claim_boundary: str) -> None:
+    """Reject records whose claim boundary differs from the governed contract."""
+    if claim_boundary != POLYGLOT_PARITY_CLAIM_BOUNDARY:
+        raise ValueError("claim_boundary must match POLYGLOT_PARITY_CLAIM_BOUNDARY exactly")
+
+
+def _is_sha256_digest(value: str) -> bool:
+    """Return whether a string is exactly one lowercase SHA-256 hex digest."""
+    return len(value) == 64 and all(character in "0123456789abcdef" for character in value)
 
 
 @dataclass(frozen=True, slots=True)
 class ParityFamily:
-    """One polyglot parity certificate family (S49.0).
+    """One polyglot parity certificate family.
 
     Attributes
     ----------
@@ -107,6 +125,7 @@ class ParityFamily:
             raise ValueError("api_stability_class must be non-empty")
         if not self.as_of or not self.as_of.strip():
             raise ValueError("as_of must be non-empty")
+        _require_exact_claim_boundary(self.claim_boundary)
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this family."""
@@ -124,7 +143,7 @@ class ParityFamily:
 
 @dataclass(frozen=True, slots=True)
 class PolyglotParityCertificate:
-    """One bit-exact polyglot parity certificate bundle (S49.1).
+    """One bit-exact polyglot parity certificate bundle.
 
     Attributes
     ----------
@@ -168,7 +187,7 @@ class PolyglotParityCertificate:
             raise ValueError("family_id must be non-empty")
         if not self.schema or not self.schema.strip():
             raise ValueError("schema must be non-empty")
-        if self.schema.strip() != POLYGLOT_PARITY_CERTIFICATE_SCHEMA:
+        if self.schema != POLYGLOT_PARITY_CERTIFICATE_SCHEMA:
             raise ValueError(
                 f"unknown certificate schema {self.schema!r}; refuse invent-green "
                 f"(expected {POLYGLOT_PARITY_CERTIFICATE_SCHEMA!r})"
@@ -179,10 +198,10 @@ class PolyglotParityCertificate:
             ("input_digest", self.input_digest),
             ("python_reference_digest", self.python_reference_digest),
         ):
-            if not digest or len(digest) != 64:
-                raise ValueError(f"{name} must be a 64-char hex digest")
-        if self.rust_digest and len(self.rust_digest) != 64:
-            raise ValueError("rust_digest must be empty or a 64-char hex digest")
+            if not _is_sha256_digest(digest):
+                raise ValueError(f"{name} must be a 64-char lowercase hex digest")
+        if self.rust_digest and not _is_sha256_digest(self.rust_digest):
+            raise ValueError("rust_digest must be empty or a 64-char lowercase hex digest")
         if self.max_abs_error < 0.0:
             raise ValueError("max_abs_error must be non-negative")
         if any(not item or not item.strip() for item in self.blocked_reasons):
@@ -195,6 +214,7 @@ class PolyglotParityCertificate:
             raise ValueError("supported bit-exact certificates require max_abs_error == 0.0")
         if not self.supported and not self.blocked_reasons:
             raise ValueError("unsupported certificates require blockers")
+        _require_exact_claim_boundary(self.claim_boundary)
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this certificate."""
@@ -266,6 +286,7 @@ class CertificateVerifyDecision:
             raise ValueError("blockers entries must be non-empty")
         if self.observed_max_abs_error < 0.0:
             raise ValueError("observed_max_abs_error must be non-negative")
+        _require_exact_claim_boundary(self.claim_boundary)
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this decision."""
@@ -532,7 +553,7 @@ def build_sample_certificate(
     *,
     sample_id: str = "sample-0",
 ) -> PolyglotParityCertificate:
-    """Build a deterministic sample certificate for a family (S49.1 / S49.2).
+    """Build a deterministic sample certificate for a family.
 
     Sample bit-exact families produce supported certificates with matching
     digests and ``max_abs_error == 0.0``. Boundary/catalogue families produce
@@ -600,8 +621,8 @@ def build_sample_certificate(
 
     # catalogue_only
     blockers = (
-        f"family {family.family_id!r} is catalogue_only; sample bit-exact corpus residual "
-        "(S49.4); refuse invent-green certificate pass",
+        f"family {family.family_id!r} is catalogue_only; sample bit-exact corpus "
+        "is not committed; refuse invent-green certificate pass",
     )
     return PolyglotParityCertificate(
         family_id=family.family_id,
@@ -645,7 +666,7 @@ def certificate_from_dict(payload: Mapping[str, Any]) -> PolyglotParityCertifica
     schema = payload.get("schema")
     if not isinstance(schema, str) or not schema.strip():
         raise ValueError("schema must be a non-empty string")
-    if schema.strip() != POLYGLOT_PARITY_CERTIFICATE_SCHEMA:
+    if schema != POLYGLOT_PARITY_CERTIFICATE_SCHEMA:
         raise ValueError(
             f"unknown certificate schema {schema!r}; refuse invent-green "
             f"(expected {POLYGLOT_PARITY_CERTIFICATE_SCHEMA!r})"
@@ -676,7 +697,7 @@ def certificate_from_dict(payload: Mapping[str, Any]) -> PolyglotParityCertifica
         raise ValueError("claim_boundary must be a non-empty string")
     return PolyglotParityCertificate(
         family_id=family_id.strip(),
-        schema=schema.strip(),
+        schema=schema,
         sample_id=sample_id.strip(),
         input_digest=input_digest,
         python_reference_digest=python_digest,
@@ -684,7 +705,7 @@ def certificate_from_dict(payload: Mapping[str, Any]) -> PolyglotParityCertifica
         max_abs_error=float(max_abs_error),
         supported=supported,
         blocked_reasons=tuple(str(item) for item in blockers_raw),
-        claim_boundary=claim.strip(),
+        claim_boundary=claim,
     )
 
 
@@ -693,7 +714,7 @@ def verify_certificate(
     *,
     expect_supported: bool | None = None,
 ) -> CertificateVerifyDecision:
-    """Verify a certificate bundle fail-closed (S49.1).
+    """Verify a certificate bundle fail-closed.
 
     For supported sample certificates, recomputes digests from the deterministic
     sample generators and requires exact match + ``max_abs_error == 0.0``.
@@ -719,7 +740,7 @@ def verify_certificate(
         else certificate_from_dict(certificate)
     )
     # Fail closed on unknown schema for object path as well as mapping path.
-    if not cert.schema or cert.schema.strip() != POLYGLOT_PARITY_CERTIFICATE_SCHEMA:
+    if not cert.schema or cert.schema != POLYGLOT_PARITY_CERTIFICATE_SCHEMA:
         return CertificateVerifyDecision(
             family_id=cert.family_id if cert.family_id.strip() else "unknown",
             sample_id=cert.sample_id if cert.sample_id.strip() else "unknown",
@@ -849,11 +870,7 @@ def build_polyglot_parity_product_registry() -> dict[str, object]:
         "default_family_id": "scalar_interpreter_replay",
         "public_surfaces": list(map_parity_public_surfaces()),
         "families": families,
-        "policy_note": (
-            "Polyglot parity certificate product only; digests prove sample "
-            "bundles; full NumPy parity is never claimed; S49.3 CLI, S49.4 CI "
-            "corpus, S49.6 BL-38 feed residual open honestly."
-        ),
+        "policy_note": _POLYGLOT_PARITY_POLICY_NOTE,
     }
 
 
@@ -924,6 +941,26 @@ def assert_polyglot_parity_product_integrity(
     cert_schema = registry.get("certificate_schema")
     if cert_schema != POLYGLOT_PARITY_CERTIFICATE_SCHEMA:
         raise ValueError("certificate_schema mismatch")
+    if registry.get("schema") != POLYGLOT_PARITY_PRODUCT_SCHEMA:
+        raise ValueError("product schema mismatch")
+    if registry.get("claim_boundary") != POLYGLOT_PARITY_CLAIM_BOUNDARY:
+        raise ValueError("claim_boundary mismatch")
+    if registry.get("policy_note") != _POLYGLOT_PARITY_POLICY_NOTE:
+        raise ValueError("policy_note mismatch")
+    if registry.get("default_family_id") != "scalar_interpreter_replay":
+        raise ValueError("default_family_id mismatch")
+    expected_sample_count = sum(
+        1 for row in _CANONICAL_FAMILIES if row.support == "sample_bitexact"
+    )
+    if registry.get("sample_bitexact_count") != expected_sample_count:
+        raise ValueError("sample_bitexact_count mismatch")
+    expected_rows = {row.family_id: row.to_dict() for row in _CANONICAL_FAMILIES}
+    for index, row in enumerate(families):
+        family_id = str(row["family_id"]).strip()
+        if dict(row) != expected_rows[family_id]:
+            raise ValueError(f"family row {index} drift for {family_id!r}")
+    if registry.get("public_surfaces") != list(map_parity_public_surfaces()):
+        raise ValueError("public_surfaces mismatch")
     return registry
 
 

@@ -11,8 +11,8 @@ Module: `scpn_quantum_control.polyglot_parity_certificate`
 
 | Rule | Behaviour |
 |---|---|
-| Certificate schema | `polyglot_parity_certificate.v1` |
-| Product schema | `polyglot_parity_certificate_product.v1` |
+| Certificate schema | `polyglot_parity_certificate.v2` |
+| Product schema | `polyglot_parity_certificate_product.v2` |
 | Default family | `scalar_interpreter_replay` |
 | Sample bit-exact | Supported cert with matching digests, `max_abs_error == 0.0` |
 | Boundary / catalogue families | Unsupported; typed blockers; verify refuses invent-green pass |
@@ -21,11 +21,12 @@ Module: `scpn_quantum_control.polyglot_parity_certificate`
 
 Claim boundary:
 
-> Polyglot parity certificate product only; digests prove sample bundle identity
-> for published families; does not claim full NumPy parity; unsupported
-> Rust/feature paths fail closed with typed blockers; ambient
-> program_ad_rust_bridge remains experimental_workbench under BL-97; residual
-> CLI (S49.3), committed CI corpus (S49.4), and BL-38 feed (S49.6) open honestly
+> This polyglot parity certificate product proves only the identity of published
+> sample bundles through digests; it does not claim full NumPy parity.
+> Unsupported Rust and feature paths fail closed with typed blockers. The
+> Program AD Rust bridge remains an experimental workbench. A command-line entry
+> point, committed multi-family CI corpus, and Rust-JIT decision evidence
+> integration remain open.
 
 ## Public API
 
@@ -49,7 +50,7 @@ boundary = build_sample_certificate("elementwise_primitive_parity")
 assert verify_certificate(boundary).passed is False
 ```
 
-## Families (S49.0)
+## Certificate families
 
 | Family | Support |
 |---|---|
@@ -69,9 +70,10 @@ creating a green result. `iter_parity_families(support=...)` returns immutable
 empty tuple.
 
 Each family record contains its identifier, title, summary, support posture,
-owning module path, BL-97 stability class, inventory date, and the shared claim
+owning module path, API stability class, inventory date, and the shared claim
 boundary. `ParityFamily.to_dict()` exposes the same fields as a JSON-ready
-mapping.
+mapping. Family construction rejects claim boundaries that differ from the
+exported governed boundary.
 
 ## Canonical payloads and digests
 
@@ -104,10 +106,11 @@ sample fixtures.
 `certificate_from_dict(payload)` validates a JSON-compatible mapping and
 returns an immutable `PolyglotParityCertificate`. It rejects non-mappings,
 unknown families or schemas, missing/blank identifiers, non-string digests,
-non-numeric errors, non-boolean support, non-sequence blockers, and blank claim
-boundaries. The resulting record additionally enforces 64-character lowercase
-hex digests, non-negative errors, supported/blocker consistency, and the
-zero-error requirement for supported certificates.
+non-numeric errors, non-boolean support, non-sequence blockers, and claim
+boundaries that differ from the governed boundary. The resulting record
+additionally enforces 64-character lowercase hex digests, non-negative errors,
+supported/blocker consistency, and the zero-error requirement for supported
+certificates.
 
 `PolyglotParityCertificate.to_dict()` returns every certificate field,
 including blockers and the claim boundary, in a serialisable mapping.
@@ -146,9 +149,10 @@ and policy note.
 `assert_polyglot_parity_product_integrity(payload=None)` validates either an
 explicit payload or a freshly built registry. It rejects missing/empty family
 lists, non-mapping rows, blank or duplicate identifiers, invalid support
-postures, missing default family, drift from the canonical family set,
-non-zero blank counts, inconsistent family counts, and certificate-schema
-drift. It returns a shallow registry mapping after validation.
+postures, schema or claim-boundary drift, non-canonical family and public-surface
+rows, policy drift, missing default family, drift from the canonical family set,
+non-zero blank counts, and inconsistent family or supported-sample counts. It
+returns a shallow registry mapping after validation.
 
 ## Exported schemas and types
 
@@ -163,17 +167,18 @@ decision, surface, and registry records. The exported literal vocabularies are
 
 Importing, listing, building, parsing, or verifying this product does not run a
 real Rust/PyO3 parity campaign, mutate the Program AD registry, publish a
-certificate, populate the open multi-family CI corpus, feed BL-38, or promote a
-compatibility/performance claim. Those actions require their own governed
-artefacts and evidence gates.
+certificate, populate the open multi-family CI corpus, integrate Rust-JIT
+decision evidence, or promote a compatibility/performance claim. Those actions
+require their own governed artefacts and evidence gates.
 
 ## Bounded product status
 
-Shipped: S49.0 family list · S49.1 certificate schema + digests · S49.2 product
-generator over sample harnesses · S49.5 public docs · fail-closed unsupported
-paths.
+Shipped: deterministic family catalogue · versioned certificate schema and
+digests · product registry over sample harnesses · public documentation ·
+fail-closed unsupported paths.
 
-Open: S49.3 `scpn-bench polyglot-parity-certificates` CLI · S49.4 committed
-multi-family sample CI corpus · S49.6 BL-38 decision pack feed.
+Open: `scpn-bench polyglot-parity-certificates` command-line entry point ·
+committed multi-family sample CI corpus · Rust-JIT decision evidence
+integration.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

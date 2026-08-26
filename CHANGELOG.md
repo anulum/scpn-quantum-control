@@ -350,13 +350,13 @@ control, or broad quantum-advantage claim is promoted by this release.
   that refuse continuous multi-hour cargo-fuzz claims without executing
   cargo-fuzz. Docs: `docs/program_ad_fuzz_assurance.md`. Fifth P1 A-product
   after BL-90/91/81/49.
-- 2026-07-24 — Bit-exact polyglot parity certificates (BL-49):
+- 2026-07-24 — Bit-exact polyglot parity certificates:
   `scpn_quantum_control.polyglot_parity_certificate` productises versioned
   certificate schema, family catalogue (scalar→spectral bounds), sample
   digest build/verify helpers, and refuse invent-green full NumPy parity or
-  unsupported families. Ambient program_ad_rust_bridge remains
-  experimental_workbench under BL-97. Docs: `docs/polyglot_parity_certificate.md`.
-  Fourth P1 A-product after BL-90/91/81.
+  unsupported families. The ambient Program AD Rust bridge remains an
+  experimental workbench. Docs: `docs/polyglot_parity_certificate.md`. Fourth
+  priority product in the original productisation sequence.
 - 2026-07-24 — stable_core experiment model product (BL-81):
   `scpn_quantum_control.stable_core_product` productises versioned schema
   policy, public contract catalogue over Problem/Backend/Experiment/Result,
