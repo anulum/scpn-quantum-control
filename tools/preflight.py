@@ -117,6 +117,9 @@ if TYPE_CHECKING:
         stochastic_estimators_product_quality_gates as _stochastic_estimators_product_quality_gates,
     )
     from tools import studio_executive_product_quality_gates as _studio_executive_quality_gates
+    from tools import (
+        synchronisation_witness_quality_gates as _synchronisation_witness_quality_gates,
+    )
     from tools import theory_hook_promotion_quality_gates as _theory_hook_promotion_quality_gates
     from tools import (
         thermo_readiness_product_quality_gates as _thermo_readiness_product_quality_gates,
@@ -171,6 +174,9 @@ else:
     _differentiable_quality_gates = import_module("tools.differentiable_quality_gates")
     _experiment_mitigation_quality_gates = import_module(
         "tools.experiment_mitigation_quality_gates"
+    )
+    _synchronisation_witness_quality_gates = import_module(
+        "tools.synchronisation_witness_quality_gates"
     )
     _governed_route_matrix_quality_gates = import_module(
         "tools.governed_route_matrix_quality_gates"
@@ -574,6 +580,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_layout_method_comparison_quality_gates.build_static_quality_gates(_PY),
     *_unsuitable_scenario_registry_quality_gates.build_static_quality_gates(_PY),
     *_scorecard_acceptance_engine_quality_gates.build_static_quality_gates(_PY),
+    *_synchronisation_witness_quality_gates.build_static_quality_gates(_PY),
     *_experiment_mitigation_quality_gates.build_static_quality_gates(_PY),
     *_research_lane_registry_quality_gates.build_static_quality_gates(_PY),
     *_theory_hook_promotion_quality_gates.build_static_quality_gates(_PY),
@@ -1019,6 +1026,9 @@ UNSUITABLE_SCENARIO_REGISTRY_COVERAGE_GATES = (
 SCORECARD_ACCEPTANCE_ENGINE_COVERAGE_GATES = (
     _scorecard_acceptance_engine_quality_gates.build_coverage_gates(_PY)
 )
+SYNCHRONISATION_WITNESS_COVERAGE_GATES = (
+    _synchronisation_witness_quality_gates.build_coverage_gates(_PY)
+)
 EXPERIMENT_MITIGATION_COVERAGE_GATES = _experiment_mitigation_quality_gates.build_coverage_gates(
     _PY
 )
@@ -1320,6 +1330,7 @@ def main() -> int:
             gates.extend(LAYOUT_METHOD_COMPARISON_COVERAGE_GATES)
             gates.extend(UNSUITABLE_SCENARIO_REGISTRY_COVERAGE_GATES)
             gates.extend(SCORECARD_ACCEPTANCE_ENGINE_COVERAGE_GATES)
+            gates.extend(SYNCHRONISATION_WITNESS_COVERAGE_GATES)
             gates.extend(EXPERIMENT_MITIGATION_COVERAGE_GATES)
             gates.extend(RESEARCH_LANE_REGISTRY_COVERAGE_GATES)
             gates.extend(THEORY_HOOK_PROMOTION_COVERAGE_GATES)

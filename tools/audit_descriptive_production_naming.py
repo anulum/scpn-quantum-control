@@ -9,20 +9,35 @@
 
 from __future__ import annotations
 
+import argparse
 import ast
+import hashlib
 import json
 import re
 import subprocess  # nosec B404
-from collections.abc import Iterable, Iterator
+from collections import Counter
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
 _TASK_CODE: Final[re.Pattern[str]] = re.compile(
-    r"(?i)(?<![A-Za-z0-9])(?:bl|st|dp|fu|rg|hg)[_-]?\d"
+    r"(?ix)(?<![A-Za-z0-9])(?:"
+    r"(?:bl|st|dp|rg|hg|qwc|ws|kt|lock|kimi|aud)[_-]?\d+"
+    r"|fu[_-](?:\d+|[a-z])"
+    r"|co\d+[_-][a-z]+[_-]\d+"
+    r"|sec[_-]?\d+"
+    r"|s\d+\.\d+"
+    r")(?![A-Za-z0-9])"
 )
 _PATH_TASK_CODE: Final[re.Pattern[str]] = re.compile(
-    r"(?i)(?:^|[/_.-])(?:bl|st|dp|fu|rg|hg)[_-]?\d"
+    r"(?ix)(?:^|[/_.-])(?:"
+    r"(?:bl|st|dp|rg|hg|qwc|ws|kt|lock|kimi|aud)[_-]?\d+"
+    r"|fu[_-](?:\d+|[a-z])"
+    r"|co\d+[_-][a-z]+[_-]\d+"
+    r"|sec[_-]?\d+"
+    r"|s\d+\.\d+"
+    r")(?![A-Za-z0-9])"
 )
 _MACHINE_NAME: Final[re.Pattern[str]] = re.compile(r"[A-Za-z0-9_.:/-]+")
 _IDENTIFIER: Final[re.Pattern[str]] = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
@@ -48,6 +63,8 @@ _GENERIC_CODE_SUFFIXES: Final[frozenset[str]] = frozenset(
         ".v",
     }
 )
+_BASELINE_SCHEMA: Final = "scpn_qc.descriptive_production_naming_baseline.v1"
+_BASELINE_PATH: Final = Path("tools/descriptive_production_naming_baseline.json")
 
 
 @dataclass(frozen=True, order=True)
@@ -85,15 +102,17 @@ def _docstring_nodes(tree: ast.AST) -> set[int]:
 
 
 def _python_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
-    """Yield task-coded Python identifiers, headings, and machine names."""
+    """Yield task-coded Python identifiers, docs, and runtime strings."""
     text = path.read_text(encoding="utf-8")
     tree = ast.parse(text, filename=display_path)
     lines = text.splitlines()
     if len(lines) >= 7 and _TASK_CODE.search(lines[6]):
         yield NamingFinding(display_path, 7, "module heading", lines[6].strip())
     module_doc = ast.get_docstring(tree, clean=False)
+    module_doc_node_id: int | None = None
     if module_doc and _TASK_CODE.search(module_doc):
         first = tree.body[0]
+        module_doc_node_id = id(first.value) if isinstance(first, ast.Expr) else None
         yield NamingFinding(
             display_path, first.lineno, "module description", module_doc.splitlines()[0]
         )
@@ -116,19 +135,29 @@ def _python_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
                     "Python identifier",
                     name,
                 )
-        if (
-            isinstance(node, ast.Constant)
-            and isinstance(node.value, str)
-            and id(node) not in docstrings
-            and not node.value.startswith("docs/internal/")
-            and _MACHINE_NAME.fullmatch(node.value)
-            and _TASK_CODE.search(node.value)
-        ):
-            yield NamingFinding(display_path, node.lineno, "machine-facing string", node.value)
+        if not isinstance(node, ast.Constant) or not isinstance(node.value, str):
+            continue
+        if id(node) in docstrings:
+            if id(node) != module_doc_node_id and _TASK_CODE.search(node.value):
+                yield NamingFinding(
+                    display_path,
+                    node.lineno,
+                    "production docstring",
+                    node.value,
+                )
+            continue
+        if node.value.startswith("docs/internal/") or not _TASK_CODE.search(node.value):
+            continue
+        kind = (
+            "machine-facing string"
+            if _MACHINE_NAME.fullmatch(node.value)
+            else "runtime or user-facing string"
+        )
+        yield NamingFinding(display_path, node.lineno, kind, node.value)
 
 
 def _json_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
-    """Yield task-coded JSON keys and identifier-like values."""
+    """Yield task-coded JSON keys and string values."""
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError):
@@ -137,15 +166,13 @@ def _json_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
     def walk(value: object) -> Iterator[str]:
         if isinstance(value, dict):
             for key, child in value.items():
-                if _MACHINE_NAME.fullmatch(key) and _TASK_CODE.search(key):
+                if _TASK_CODE.search(key):
                     yield key
                 yield from walk(child)
         elif isinstance(value, list):
             for child in value:
                 yield from walk(child)
-        elif (
-            isinstance(value, str) and _MACHINE_NAME.fullmatch(value) and _TASK_CODE.search(value)
-        ):
+        elif isinstance(value, str) and _TASK_CODE.search(value):
             yield value
 
     for value in walk(payload):
@@ -165,11 +192,13 @@ def _workflow_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
                 yield NamingFinding(display_path, line_number, "workflow job ID", job_id)
 
 
-def _documentation_headings(path: Path, display_path: str) -> Iterator[NamingFinding]:
-    """Yield public documentation headings that expose task codes."""
+def _documentation_text(path: Path, display_path: str) -> Iterator[NamingFinding]:
+    """Yield public documentation text that exposes internal task codes."""
     for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-        if line.startswith("#") and _TASK_CODE.search(line):
-            yield NamingFinding(display_path, line_number, "documentation heading", line)
+        if not _TASK_CODE.search(line):
+            continue
+        kind = "documentation heading" if line.startswith("#") else "public documentation text"
+        yield NamingFinding(display_path, line_number, kind, line)
 
 
 def _generic_code_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
@@ -202,8 +231,13 @@ def audit_paths(root: Path, relative_paths: Iterable[str]) -> tuple[NamingFindin
             and "internal" not in Path(relative).parts
             and path.suffix == ".md"
         ):
-            findings.update(_documentation_headings(path, relative))
-        if path.suffix == ".json":
+            findings.update(_documentation_text(path, relative))
+        public_json = (
+            first_part in _PRODUCTION_ROOTS
+            or first_part == "data"
+            or (first_part == "docs" and "internal" not in Path(relative).parts)
+        )
+        if public_json and path.suffix == ".json":
             findings.update(_json_names(path, relative))
     return tuple(sorted(findings))
 
@@ -224,16 +258,88 @@ def audit_repository(root: Path) -> tuple[NamingFinding, ...]:
     return audit_paths(root, tracked_paths(root))
 
 
+def finding_fingerprint(finding: NamingFinding) -> str:
+    """Return a line-number-independent identity for one naming violation."""
+    payload = "\0".join((finding.path, finding.kind, finding.value)).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def baseline_payload(findings: Iterable[NamingFinding]) -> dict[str, object]:
+    """Return a stable counted baseline for existing repository debt."""
+    counts = Counter(finding_fingerprint(finding) for finding in findings)
+    return {
+        "schema": _BASELINE_SCHEMA,
+        "known_finding_counts": dict(sorted(counts.items())),
+    }
+
+
+def load_baseline(path: Path) -> Counter[str]:
+    """Load and validate the counted naming-debt baseline."""
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict) or payload.get("schema") != _BASELINE_SCHEMA:
+        raise ValueError("unexpected descriptive production naming baseline schema")
+    raw_counts = payload.get("known_finding_counts")
+    if not isinstance(raw_counts, dict):
+        raise ValueError("known_finding_counts must be an object")
+    counts: Counter[str] = Counter()
+    for fingerprint, count in raw_counts.items():
+        if (
+            not isinstance(fingerprint, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", fingerprint)
+            or not isinstance(count, int)
+            or isinstance(count, bool)
+            or count < 1
+        ):
+            raise ValueError("baseline entries must map SHA-256 strings to positive integers")
+        counts[fingerprint] = count
+    return counts
+
+
+def unexpected_findings(
+    findings: Iterable[NamingFinding], known_counts: Mapping[str, int]
+) -> tuple[NamingFinding, ...]:
+    """Return findings that exceed the exact pre-existing debt allowance."""
+    seen: Counter[str] = Counter()
+    unexpected: list[NamingFinding] = []
+    for finding in findings:
+        fingerprint = finding_fingerprint(finding)
+        seen[fingerprint] += 1
+        if seen[fingerprint] > known_counts.get(fingerprint, 0):
+            unexpected.append(finding)
+    return tuple(unexpected)
+
+
 def main() -> int:
-    """Fail when an internal work-item code leaks into production naming."""
+    """Fail on new internal-code leakage or write an explicit debt baseline."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--write-baseline",
+        action="store_true",
+        help="replace the counted baseline with the current repository findings",
+    )
+    args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     findings = audit_repository(root)
-    if findings:
-        for finding in findings:
-            print(finding.render())
-        print(f"descriptive production naming audit failed: {len(findings)} finding(s)")
+    baseline_path = root / _BASELINE_PATH
+    if args.write_baseline:
+        baseline_path.write_text(
+            json.dumps(baseline_payload(findings), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        print(f"wrote {len(findings)} known findings to {baseline_path}")
+        return 0
+    try:
+        known_counts = load_baseline(baseline_path)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+        print(f"descriptive production naming baseline is invalid: {exc}")
         return 1
-    print("descriptive production naming audit passed")
+    unexpected = unexpected_findings(findings, known_counts)
+    if unexpected:
+        for finding in unexpected:
+            print(finding.render())
+        print(f"descriptive production naming audit failed: {len(unexpected)} new finding(s)")
+        return 1
+    print(f"descriptive production naming audit passed ({len(findings)} known finding(s))")
     return 0
 
 

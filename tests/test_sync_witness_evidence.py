@@ -26,14 +26,15 @@ from scpn_quantum_control.phase import run_sync_witness_suite
 
 @pytest.fixture(scope="module")
 def payload() -> dict[str, Any]:
-    """Build one real BL-18 evidence payload through the public facade."""
+    """Build one real evidence payload through the public facade."""
     suite = run_sync_witness_suite()
-    return sync_witness_evidence_payload(suite, artifact_id="pytest-bl18")
+    return sync_witness_evidence_payload(suite, artifact_id="pytest-sync-witness")
 
 
 def test_sync_witness_payload_carries_rows_and_boundaries(payload: dict[str, Any]) -> None:
+    """Preserve every row, boundary, and promotion-safety field."""
     assert payload["schema"] == SYNC_WITNESS_EVIDENCE_SCHEMA
-    assert payload["artifact_id"] == "pytest-bl18"
+    assert payload["artifact_id"] == "pytest-sync-witness"
     assert payload["artifact_date"] == "2026-07-09"
     assert payload["classification"] == "functional_non_isolated"
     assert payload["production_eligible"] is False
@@ -45,6 +46,7 @@ def test_sync_witness_payload_carries_rows_and_boundaries(payload: dict[str, Any
 
 
 def test_sync_witness_markdown_renders_evidence(payload: dict[str, Any]) -> None:
+    """Render scientific rows and fail-closed boundaries as Markdown."""
     markdown = render_sync_witness_evidence_markdown(payload)
 
     assert "# Synchronisation-Witness Evidence" in markdown
@@ -54,7 +56,18 @@ def test_sync_witness_markdown_renders_evidence(payload: dict[str, Any]) -> None
     assert "`hardware_phase_tomography_boundary`" in markdown
 
 
+def test_sync_witness_markdown_handles_no_boundary_rows(payload: dict[str, Any]) -> None:
+    """Render a valid payload whose optional boundary table is empty."""
+    payload_without_boundaries = dict(payload, boundary_rows=[])
+
+    markdown = render_sync_witness_evidence_markdown(payload_without_boundaries)
+
+    assert "## Executable Rows" in markdown
+    assert "## Boundary Rows" not in markdown
+
+
 def test_sync_witness_writer_creates_json_and_markdown(tmp_path: Path) -> None:
+    """Write matching JSON and Markdown artefacts through the public writer."""
     artifact = write_sync_witness_evidence_artifact(
         tmp_path / "sync_witness_evidence.json",
         artifact_id="pytest-writer",
@@ -72,6 +85,7 @@ def test_sync_witness_writer_creates_json_and_markdown(tmp_path: Path) -> None:
 
 
 def test_sync_witness_writer_rejects_invalid_paths(tmp_path: Path) -> None:
+    """Reject output destinations with incompatible filename suffixes."""
     with pytest.raises(ValueError, match="output_path must end with .json"):
         write_sync_witness_evidence_artifact(tmp_path / "artifact.txt")
 
@@ -83,11 +97,13 @@ def test_sync_witness_writer_rejects_invalid_paths(tmp_path: Path) -> None:
 
 
 def test_sync_witness_payload_rejects_blank_artifact_id() -> None:
+    """Reject an artifact identifier that contains only whitespace."""
     with pytest.raises(ValueError, match="artifact_id must be non-empty"):
         sync_witness_evidence_payload(artifact_id=" ")
 
 
 def test_sync_witness_payload_rejects_wrong_suite_classification() -> None:
+    """Refuse a suite whose evidence class exceeds the writer contract."""
     suite = run_sync_witness_suite()
     object.__setattr__(suite, "evidence_class", "isolated_affinity")
 

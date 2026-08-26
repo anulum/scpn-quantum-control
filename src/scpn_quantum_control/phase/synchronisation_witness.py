@@ -40,7 +40,7 @@ SYNC_WITNESS_CLAIM_BOUNDARY: Final[str] = (
     "hardware phase tomography, provider execution, isolated timing, or "
     "high-dimensional manifold inference"
 )
-"""Claim boundary attached to BL-18 synchronisation-witness records."""
+"""Claim boundary attached to synchronisation-witness records."""
 
 
 def _as_finite_scalar(name: str, value: object) -> float:
@@ -109,6 +109,7 @@ def harmonic_order_parameter(phases: ArrayLike, *, harmonic: int = 1) -> float:
     -------
     float
         The order-parameter magnitude in ``[0, 1]``.
+
     """
     vector = _as_phase_vector("phases", phases)
     if harmonic < 1:
@@ -130,6 +131,7 @@ def geodesic_phase_distance_matrix(phases: ArrayLike) -> FloatArray:
     numpy.ndarray
         Symmetric zero-diagonal matrix of arc distances in ``[0, pi]`` between
         phases wrapped onto the unit circle.
+
     """
     vector = _as_phase_vector("phases", phases)
     delta = vector[:, None] - vector[None, :]
@@ -183,6 +185,7 @@ def vietoris_rips_persistence(
     dict of int to numpy.ndarray
         Mapping from homology dimension to an ``(k, 2)`` array of
         ``(birth, death)`` pairs. Deaths may be ``inf`` for essential classes.
+
     """
     matrix = _as_distance_matrix("distance", distance)
     if max_dimension not in (0, 1):
@@ -261,6 +264,7 @@ def betti_curve(persistence_pairs: ArrayLike, thresholds: ArrayLike) -> NDArray[
     -------
     numpy.ndarray
         Integer Betti number alive at each threshold, ``birth <= t < death``.
+
     """
     grid = _as_threshold_vector("thresholds", thresholds)
     pairs = np.asarray(persistence_pairs, dtype=float)
@@ -320,6 +324,7 @@ class SyncWitnessCase:
         Lower bound on the dominant H1 persistence lifetime.
     max_dominant_h1 : float
         Upper bound on the dominant H1 persistence lifetime.
+
     """
 
     case_id: str
@@ -337,6 +342,7 @@ class SyncWitnessCase:
     max_dominant_h1: float
 
     def __post_init__(self) -> None:
+        """Validate and detach mutable arrays from the caller."""
         if not self.case_id:
             raise ValueError("case_id must be non-empty")
         if self.regime not in ("synchronised", "desynchronised", "clustered"):
@@ -417,6 +423,7 @@ class SyncWitnessRecord:
     claim_boundary: str = SYNC_WITNESS_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate the certificate and detach its array fields."""
         if not self.case_id:
             raise ValueError("case_id must be non-empty")
         if self.regime not in ("synchronised", "desynchronised", "clustered"):
@@ -523,6 +530,7 @@ class SyncWitnessBoundaryRow:
     claim_boundary: str = SYNC_WITNESS_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Reject incomplete or falsely closed boundary declarations."""
         if not self.boundary_id:
             raise ValueError("boundary_id must be non-empty")
         if self.status != "hard_gap":
@@ -544,7 +552,7 @@ class SyncWitnessBoundaryRow:
 
 @dataclass(frozen=True)
 class SyncWitnessSuiteResult:
-    """Suite result for BL-18 synchronisation-witness evidence."""
+    """Result of a bounded synchronisation-witness evidence suite."""
 
     records: tuple[SyncWitnessRecord, ...]
     boundary_rows: tuple[SyncWitnessBoundaryRow, ...]
@@ -552,6 +560,7 @@ class SyncWitnessSuiteResult:
     claim_boundary: str = SYNC_WITNESS_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Require records, explicit boundaries, and evidence metadata."""
         if not self.records:
             raise ValueError("records must be non-empty")
         if not self.boundary_rows:
@@ -641,6 +650,7 @@ def phase_cloud_synchronisation_witness(
     -------
     SyncWitnessRecord
         The order-parameter and persistent-homology witness certificate.
+
     """
     vector = _as_phase_vector("phases", phases)
     grid = _as_threshold_vector("thresholds", thresholds)
@@ -693,7 +703,7 @@ def _cluster_phases(centres: Sequence[float], spread: float, per_cluster: int) -
 
 
 def default_sync_witness_cases() -> tuple[SyncWitnessCase, ...]:
-    """Return the deterministic BL-18 synchronisation-witness reference cases."""
+    """Return deterministic synchronisation-witness reference cases."""
     two_pi = 2.0 * float(np.pi)
     thresholds = np.linspace(0.05, float(np.pi), 24, dtype=np.float64)
     synchronised = np.array(
@@ -751,7 +761,7 @@ def default_sync_witness_cases() -> tuple[SyncWitnessCase, ...]:
 
 
 def sync_witness_boundary_rows() -> tuple[SyncWitnessBoundaryRow, ...]:
-    """Return fail-closed BL-18 synchronisation-witness boundary rows."""
+    """Return fail-closed synchronisation-witness boundary rows."""
     return (
         SyncWitnessBoundaryRow(
             boundary_id="high_dimensional_manifold_boundary",
@@ -793,7 +803,7 @@ def _run_case(case: SyncWitnessCase) -> SyncWitnessRecord:
 def run_sync_witness_suite(
     cases: Sequence[SyncWitnessCase] | None = None,
 ) -> SyncWitnessSuiteResult:
-    """Run the deterministic BL-18 synchronisation-witness evidence suite."""
+    """Run the deterministic synchronisation-witness evidence suite."""
     selected_cases = tuple(default_sync_witness_cases() if cases is None else cases)
     if not selected_cases:
         raise ValueError("cases must be non-empty")

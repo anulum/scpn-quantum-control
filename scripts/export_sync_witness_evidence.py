@@ -19,7 +19,7 @@ DEFAULT_OUTPUT = Path("data/differentiable_phase_qnode/sync_witness_evidence_202
 
 
 def main() -> int:
-    """Write the committed BL-18 synchronisation-witness artifacts."""
+    """Write the committed synchronisation-witness artefacts."""
     artifact = write_sync_witness_evidence_artifact(DEFAULT_OUTPUT)
     print(f"wrote {artifact.json_path}")
     print(f"wrote {artifact.markdown_path}")

@@ -28,7 +28,7 @@ SYNC_WITNESS_EVIDENCE_SCHEMA = "scpn_qc_sync_witness_evidence_v1"
 
 @dataclass(frozen=True)
 class SyncWitnessEvidenceArtifact:
-    """Written BL-18 synchronisation-witness artifact metadata."""
+    """Metadata for written synchronisation-witness artefacts."""
 
     artifact_id: str
     json_path: Path
@@ -56,7 +56,7 @@ def sync_witness_evidence_payload(
     *,
     artifact_id: str = "sync-witness-evidence-local",
 ) -> dict[str, Any]:
-    """Return the BL-18 synchronisation-witness evidence payload."""
+    """Return a bounded synchronisation-witness evidence payload."""
     normalized_id = artifact_id.strip()
     if not normalized_id:
         raise ValueError("artifact_id must be non-empty")
@@ -111,7 +111,7 @@ def sync_witness_evidence_payload(
 
 
 def render_sync_witness_evidence_markdown(payload: dict[str, Any]) -> str:
-    """Render the BL-18 payload as bounded Markdown evidence."""
+    """Render a synchronisation-witness payload as bounded Markdown evidence."""
     rows = payload["rows"]
     boundary_rows = payload["boundary_rows"]
     lines = [
@@ -169,7 +169,7 @@ def write_sync_witness_evidence_artifact(
     suite: SyncWitnessSuiteResult | None = None,
     artifact_id: str = "sync-witness-evidence-local",
 ) -> SyncWitnessEvidenceArtifact:
-    """Write JSON and Markdown BL-18 synchronisation-witness artefacts."""
+    """Write JSON and Markdown synchronisation-witness artefacts."""
     json_destination = Path(output_path)
     if json_destination.suffix.lower() != ".json":
         raise ValueError("output_path must end with .json")

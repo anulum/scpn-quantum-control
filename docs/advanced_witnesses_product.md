@@ -17,7 +17,7 @@ Schema: `advanced_witnesses_product.v1`
 | `analysis.krylov_complexity.krylov_complexity` | Operator Lanczos Krylov complexity K(t) |
 | `analysis.otoc.compute_otoc` | OTOC F(t), Lyapunov / scrambling-time estimates |
 | `analysis.shadow_tomography.classical_shadow_estimation` | Classical-shadow Pauli estimators |
-| `phase.synchronisation_witness.harmonic_order_parameter` | BL-18 compose (order parameter) |
+| `phase.synchronisation_witness.harmonic_order_parameter` | Harmonic synchronisation order parameter |
 
 Do **not** reimplement these modules; the product is a thin façade.
 
@@ -28,7 +28,7 @@ Do **not** reimplement these modules; the product is a thin façade.
 - `classical_shadows` — Pauli shadow estimator with shadow-norm bound
 - `small_tomography_cap` — tomography only under product qubit cap
 - `ambient_inventory` — metadata inventory of ambient modules
-- `synchronisation_witness_compose` — compose harmonic order parameter (BL-18)
+- `synchronisation_witness_compose` — compose the harmonic order parameter
 
 ## Hard caps
 
@@ -69,10 +69,10 @@ s = materialise_demo_shadow_probe()
 r = materialise_harmonic_order_parameter_compose()
 ```
 
-## Residuals (honest)
+## Residuals
 
-- **S44.6** — full suite evidence artefact depth (beyond single probes)
-- **S44.7** — optional BL-32 metric registration + BL-34 panel hooks
+- Full-suite evidence artefacts beyond the individual demonstration probes.
+- Optional challenge-metric registration and dashboard panel integration.
 
 ## Claim boundary
 
@@ -80,6 +80,7 @@ Advanced witnesses product surface only; catalogues Krylov/OTOC/classical-shadow
 estimators with uncertainty and provenance over ambient `analysis/*`; small-system
 probes with hard qubit/shot caps; refuse invent-green OTOC advantage, topology
 certification, live QPU witness campaigns, and unrestricted shadow tomography;
-compose BL-18 order parameters; residual S44.7 / S44.6 open honestly.
+composes the harmonic synchronisation order parameter; the full-suite evidence
+and optional challenge/dashboard integrations remain open.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

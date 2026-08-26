@@ -1494,7 +1494,7 @@ and `.md`. These rows are local synthetic known-ground-truth recovery evidence
 only: hardware Hamiltonian learning, provider execution, isolated timing, and
 arbitrary partial-observation inference remain fail-closed boundary rows.
 
-For bounded synchronisation witnesses over phase clouds, use the BL-18
+For bounded synchronisation witnesses over phase clouds, use the descriptive
 sync-witness suite:
 
 ```python
@@ -1522,6 +1522,10 @@ The committed evidence lives at
 and `.md`. These rows are local synthetic reference-regime witness evidence
 only: hardware phase tomography, provider execution, isolated timing, and
 high-dimensional manifold inference remain fail-closed boundary rows.
+
+See [Synchronisation witnesses](synchronisation_witnesses.md) for the evidence
+contract and [Synchronisation witness API](api/synchronisation_witnesses.md)
+for exact signatures and result fields.
 
 ## Composed differentiable objectives
 
