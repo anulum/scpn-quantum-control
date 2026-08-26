@@ -74,7 +74,7 @@ Follow the evidence and claim gates linked by the relevant guide.
 | [Differentiable First Path](https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/49_differentiable_first_path.ipynb) | 1 text / 1 code | Local guided workflow; promotion requires the linked product or evidence gate. |
 | [Chimera and multiscale synchronisation control](https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/50_chimera_multiscale_control.ipynb) | 5 text / 4 code | Local guided workflow; promotion requires the linked product or evidence gate. |
 | [DLA and topology-constrained differentiable control](https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/51_dla_topology_constrained_control.ipynb) | 6 text / 5 code | Local guided workflow; promotion requires the linked product or evidence gate. |
-| [Topology-Aware Quantum Kernel (BL-88)](https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/52_topology_aware_quantum_kernel.ipynb) | 6 text / 5 code | Local guided workflow; promotion requires the linked product or evidence gate. |
+| [Topology-Aware Quantum Kernel](https://github.com/anulum/scpn-quantum-control/blob/main/notebooks/52_topology_aware_quantum_kernel.ipynb) | 6 text / 5 code | Local guided workflow; promotion requires the linked product or evidence gate. |
 
 ## Differentiable tutorials
 

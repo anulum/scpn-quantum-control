@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Literal, cast
 
@@ -39,11 +39,37 @@ from .synthetic import (
     zero_topology,
 )
 
-TOPOLOGY_KERNEL_EVIDENCE_SCHEMA = "topology_aware_quantum_kernel_evidence_v1"
+TOPOLOGY_KERNEL_EVIDENCE_SCHEMA = "topology_aware_quantum_kernel_evidence_v2"
 TOPOLOGY_KERNEL_EVIDENCE_DATE = "2026-07-29"
 
 SupportStatus = Literal["supported", "descoped"]
 _NUMERIC_CUSTODY_DECIMALS = 12
+_TOPOLOGY_KERNEL_SUPPORT_CONTRACT: tuple[tuple[str, SupportStatus, str, str], ...] = (
+    (
+        "edge-aligned feature mapping",
+        "supported",
+        "one feature modulates each canonical undirected XY coupling entry",
+        "exact local statevectors only; no provider or hardware execution",
+    ),
+    (
+        "topology-aware kernel classification",
+        "supported",
+        "custody-checked Gram/cross matrices and regularised kernel ridge fitting",
+        "teacher-aligned synthetic representability, not independent generalisation",
+    ),
+    (
+        "application-domain transfer",
+        "descoped",
+        "no typed application-domain kit or product consumer is implemented",
+        "no tokamak, EEG, grid, or other application-domain fitness claim",
+    ),
+    (
+        "controls and numerical invariants",
+        "supported",
+        "path, complete, zero-coupling, classical RBF, PSD, and relabeling checks",
+        "control separation does not establish computational or quantum advantage",
+    ),
+)
 
 
 def _canonicalise_evidence_numbers(value: object) -> object:
@@ -116,7 +142,7 @@ def _evaluation_dict(evaluation: KernelEvaluation) -> dict[str, object]:
 
 @dataclass(frozen=True, slots=True)
 class TopologyKernelEvidence:
-    """Frozen BL-88 synthetic result, numerical checks, and controls.
+    """Frozen teacher-aligned synthetic result, checks, and controls.
 
     Parameters
     ----------
@@ -210,12 +236,13 @@ class TopologyKernelEvidence:
             raise ValueError("ring representability gate requires at least 90% accuracy")
         if self.ring.accuracy <= max(item.accuracy for item in evaluations[1:]):
             raise ValueError("ring accuracy must strictly exceed every frozen control")
-        if not self.support or len({row.capability for row in self.support}) != len(self.support):
-            raise ValueError("support rows must be non-empty and capability-unique")
-        if not any(row.status == "descoped" for row in self.support):
-            raise ValueError("support ledger must retain the explicit descoped row")
-        if not isinstance(self.claim_boundary, str) or not self.claim_boundary.strip():
-            raise ValueError("claim_boundary must be a non-empty string")
+        actual_support = tuple(
+            (row.capability, row.status, row.evidence, row.boundary) for row in self.support
+        )
+        if actual_support != _TOPOLOGY_KERNEL_SUPPORT_CONTRACT:
+            raise ValueError("support rows must match the canonical evidence contract")
+        if self.claim_boundary != TOPOLOGY_KERNEL_CLAIM_BOUNDARY:
+            raise ValueError("claim_boundary must match the topology-kernel contract")
 
     def to_dict(self, *, include_content_digest: bool = True) -> dict[str, object]:
         """Return canonical JSON-compatible evidence fields.
@@ -253,6 +280,20 @@ class TopologyKernelEvidence:
         if include_content_digest:
             payload["content_digest"] = self.content_digest
         return cast(dict[str, object], _canonicalise_evidence_numbers(payload))
+
+
+def _content_digest(evidence: TopologyKernelEvidence) -> str:
+    canonical = json.dumps(
+        evidence.to_dict(include_content_digest=False),
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+    return hashlib.sha256(canonical).hexdigest()
+
+
+def _require_content_digest(evidence: TopologyKernelEvidence) -> None:
+    if evidence.content_digest != _content_digest(evidence):
+        raise ValueError("content_digest does not match the canonical evidence fields")
 
 
 def _evaluate_quantum_control(
@@ -313,7 +354,7 @@ def build_topology_kernel_evidence(
     config: TopologyKernelConfig | None = None,
     seed: int = 880,
 ) -> TopologyKernelEvidence:
-    """Build deterministic BL-88 evidence with four topology controls.
+    """Build deterministic topology-kernel evidence with four controls.
 
     The frozen defaults use four qubits, six canonical edge features, 32 train
     samples, 16 test samples, seed 880, and RBF gamma 0.2. The ring kernel is
@@ -386,68 +427,39 @@ def build_topology_kernel_evidence(
         column_ids=probe_ids,
     )
     permutation_error = float(np.max(np.abs(original.values - relabelled.values)))
-    support = (
-        KernelSupportRow(
-            "S88.1 edge-aligned feature map",
-            "supported",
-            "one feature modulates each canonical undirected XY coupling entry",
-            "exact local statevectors only; no provider or hardware execution",
-        ),
-        KernelSupportRow(
-            "S88.2 topology-aware kernel classifier",
-            "supported",
-            "custody-checked Gram/cross matrices and regularised kernel ridge fitting",
-            "teacher-aligned synthetic representability, not independent generalisation",
-        ),
-        KernelSupportRow(
-            "S88.3 BL-63 domain transfer",
-            "descoped",
-            "BL-63 domain kit is not implemented and no typed consumer exists",
-            "no tokamak, EEG, grid, or other application-domain fitness claim",
-        ),
-        KernelSupportRow(
-            "S88.4 controls and numerical invariants",
-            "supported",
-            "path, complete, zero-coupling, classical RBF, PSD, and relabeling checks",
-            "control separation does not establish computational or quantum advantage",
-        ),
+    support = tuple(KernelSupportRow(*row) for row in _TOPOLOGY_KERNEL_SUPPORT_CONTRACT)
+    provisional = TopologyKernelEvidence(
+        schema_version=TOPOLOGY_KERNEL_EVIDENCE_SCHEMA,
+        generated_on=TOPOLOGY_KERNEL_EVIDENCE_DATE,
+        seed=seed,
+        n_qubits=policy.n_qubits,
+        feature_dim=policy.feature_dim,
+        train_count=dataset.train_features.shape[0],
+        test_count=dataset.test_features.shape[0],
+        dataset_digest=dataset.content_digest,
+        ring_gram_digest=ring_gram_digest,
+        ring=ring,
+        path=path,
+        complete=complete,
+        zero=zero,
+        classical_rbf=classical_rbf,
+        minimum_teacher_margin=minimum_margin,
+        gram_symmetry_max_abs_error=symmetry_error,
+        gram_diagonal_max_abs_error=diagonal_error,
+        gram_minimum_eigenvalue=minimum_eigenvalue,
+        permutation_max_abs_error=permutation_error,
+        support=support,
+        claim_boundary=TOPOLOGY_KERNEL_CLAIM_BOUNDARY,
+        content_digest="0" * 64,
     )
-    fields: dict[str, object] = {
-        "schema_version": TOPOLOGY_KERNEL_EVIDENCE_SCHEMA,
-        "generated_on": TOPOLOGY_KERNEL_EVIDENCE_DATE,
-        "seed": seed,
-        "n_qubits": policy.n_qubits,
-        "feature_dim": policy.feature_dim,
-        "train_count": dataset.train_features.shape[0],
-        "test_count": dataset.test_features.shape[0],
-        "dataset_digest": dataset.content_digest,
-        "ring_gram_digest": ring_gram_digest,
-        "ring": ring,
-        "path": path,
-        "complete": complete,
-        "zero": zero,
-        "classical_rbf": classical_rbf,
-        "minimum_teacher_margin": minimum_margin,
-        "gram_symmetry_max_abs_error": symmetry_error,
-        "gram_diagonal_max_abs_error": diagonal_error,
-        "gram_minimum_eigenvalue": minimum_eigenvalue,
-        "permutation_max_abs_error": permutation_error,
-        "support": support,
-        "claim_boundary": TOPOLOGY_KERNEL_CLAIM_BOUNDARY,
-    }
-    provisional = TopologyKernelEvidence(content_digest="0" * 64, **fields)  # type: ignore[arg-type]
-    canonical = json.dumps(
-        provisional.to_dict(include_content_digest=False),
-        sort_keys=True,
-        separators=(",", ":"),
-    ).encode()
-    return TopologyKernelEvidence(content_digest=hashlib.sha256(canonical).hexdigest(), **fields)  # type: ignore[arg-type]
+    return replace(provisional, content_digest=_content_digest(provisional))
 
 
 def render_topology_kernel_markdown(evidence: TopologyKernelEvidence) -> str:
     """Render a concise human-readable companion to canonical JSON evidence."""
     if not isinstance(evidence, TopologyKernelEvidence):
         raise ValueError("evidence must be TopologyKernelEvidence")
+    _require_content_digest(evidence)
     rows = [
         "| Kernel | Correct | Total | Accuracy |",
         "|---|---:|---:|---:|",
@@ -473,7 +485,7 @@ def render_topology_kernel_markdown(evidence: TopologyKernelEvidence) -> str:
     )
     return "\n".join(
         [
-            "# BL-88 topology-aware quantum-kernel evidence",
+            "# Topology-aware quantum-kernel evidence",
             "",
             f"- Schema: `{evidence.schema_version}`",
             f"- Generated: `{evidence.generated_on}`",
@@ -538,6 +550,7 @@ def write_topology_kernel_evidence(
     """
     if not isinstance(evidence, TopologyKernelEvidence):
         raise ValueError("evidence must be TopologyKernelEvidence")
+    _require_content_digest(evidence)
     json_target = Path(json_path)
     markdown_target = Path(markdown_path)
     if json_target == markdown_target:

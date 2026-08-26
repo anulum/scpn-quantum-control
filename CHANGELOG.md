@@ -1,5 +1,11 @@
 # Changelog
 
+- 2026-08-26 — Topology-kernel descriptive evidence contract: advanced the
+  deterministic evidence payload to version 2, replaced internal planning
+  labels with implementation responsibilities, and made schema, support-row,
+  claim-boundary, and content-digest drift fail closed without compatibility
+  aliases. Frozen numerical results and the public mathematical API are
+  unchanged.
 - 2026-08-26 — JAX NQS exact-reference naming: removed internal work-item
   identifiers from the runtime contract, digest-bound no-advantage certificate,
   tests, and public documentation. The serialized product advances to
@@ -137,7 +143,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   public module-level symbols, all committed notebooks, and all public
   documentation pages; added an evidence-bounded solutions and market-value
   guide while preserving authored README content.
-- BL-54 DLA/topology differentiable-control boundaries, BL-88 topology-aware
+- BL-54 DLA/topology differentiable-control boundaries, topology-aware
   quantum-kernel product, BL-63 domain application honesty kits, BL-98 theory-
   hook promotion registry, BL-84 deep-analysis research-lane registry, and
   BL-102 preregistered deterministic RL-adjacent research governance.
@@ -440,7 +446,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   twelve decimal places, eliminating sub-precision BLAS/runtime drift across
   the supported Python 3.11-3.13 CI matrix without weakening claim boundaries.
 - Extended precision-bounded cross-runtime custody to six-decimal BL-45
-  surrogate and twelve-decimal BL-88 topology-kernel evidence, and reject
+  surrogate and twelve-decimal topology-kernel evidence, and reject
   NumPy scalar leakage from the BL-98 JSON evidence boundary.
 
 ### Changed

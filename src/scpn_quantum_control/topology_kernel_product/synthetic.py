@@ -74,7 +74,7 @@ def build_teacher_aligned_dataset(
     train_count: int = 32,
     test_count: int = 16,
 ) -> TopologyKernelDataset:
-    """Build the frozen balanced BL-88 representability task.
+    """Build the frozen balanced teacher-aligned representability task.
 
     Two prototype vectors and a candidate pool are drawn uniformly from
     ``[-pi, pi]``. Candidates are ranked by the difference between their ring
@@ -87,7 +87,7 @@ def build_teacher_aligned_dataset(
         Kernel configuration. ``train_count`` and ``test_count`` must each fit
         its sample budget.
     seed:
-        Non-negative NumPy generator seed. BL-88 evidence fixes this at 880.
+        Non-negative NumPy generator seed. Committed evidence fixes this at 880.
     candidate_count:
         Candidate pool size in ``[train_count + test_count, 256]``.
     train_count, test_count:

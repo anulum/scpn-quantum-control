@@ -1,6 +1,6 @@
 # Topology Kernel Product API
 
-`scpn_quantum_control.topology_kernel_product` is the public BL-88 facade for
+`scpn_quantum_control.topology_kernel_product` is the public facade for
 bounded topology-aware fidelity kernels, custody-checked kernel ridge
 classification, deterministic graph controls, and frozen synthetic evidence.
 

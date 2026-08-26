@@ -12,6 +12,12 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 
 ## Unreleased
 
+### Changed
+
+- Topology-kernel deterministic evidence now uses the version-2 descriptive
+  support ledger. Version-1 payloads, non-canonical support rows, claim-boundary
+  drift, and content-digest drift are rejected without compatibility aliases.
+
 ## [1.1.0] - 2026-07-29
 
 ### Added
@@ -21,7 +27,7 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
   evidence-bounded solutions and market-value guide.
 - Finite parity-sector and fixed-active-set topology JVP/VJP boundaries,
   projected synthetic optimisation, and complete API/evidence documentation.
-- BL-88 topology-aware exact-statevector fidelity-kernel product with matched
+- Topology-aware exact-statevector fidelity-kernel product with matched
   graph controls, custody-checked classification, and bounded synthetic
   representability evidence.
 - BL-63 power-grid, Josephson, EEG-like, and ITER-inspired application honesty
