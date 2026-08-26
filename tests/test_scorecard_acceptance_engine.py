@@ -16,12 +16,14 @@ import pytest
 import scpn_quantum_control.scorecard_acceptance_engine as scorecard_acceptance_engine
 from scpn_quantum_control.differentiable_baseline_scorecard import (
     REQUIRED_BASELINE_CATEGORIES,
+    DifferentiableBaselineCategory,
 )
 from scpn_quantum_control.scorecard_acceptance_engine import (
     SCORECARD_ACCEPTANCE_CLAIM_BOUNDARY,
     SCORECARD_ACCEPTANCE_ENGINE_SCHEMA,
     PromoteDecision,
     ScorecardCategoryRecord,
+    ScorecardEngineStatus,
     assert_scorecard_acceptance_integrity,
     build_scorecard_acceptance_registry,
     get_scorecard_category,
@@ -31,7 +33,21 @@ from scpn_quantum_control.scorecard_acceptance_engine import (
 )
 
 
+def _category_rows(registry: dict[str, object]) -> list[dict[str, object]]:
+    """Return explicitly narrowed mutable copies of registry category rows."""
+    raw_rows = registry["categories"]
+    if not isinstance(raw_rows, list):
+        raise AssertionError("registry categories must be a list")
+    rows: list[dict[str, object]] = []
+    for raw_row in raw_rows:
+        if not isinstance(raw_row, dict):
+            raise AssertionError("registry category rows must be dictionaries")
+        rows.append({str(key): value for key, value in raw_row.items()})
+    return rows
+
+
 def test_list_covers_all_required_categories() -> None:
+    """Cover every required category exactly once in stable order."""
     ids = list_scorecard_category_ids()
     assert len(ids) == len(REQUIRED_BASELINE_CATEGORIES)
     assert set(ids) == set(REQUIRED_BASELINE_CATEGORIES)
@@ -39,6 +55,7 @@ def test_list_covers_all_required_categories() -> None:
 
 
 def test_all_inventory_rows_honestly_behind_baseline() -> None:
+    """Keep the canonical inventory honestly behind baseline with blockers."""
     rows = iter_scorecard_categories()
     assert len(rows) == 11
     assert all(row.status == "behind_baseline" for row in rows)
@@ -48,6 +65,7 @@ def test_all_inventory_rows_honestly_behind_baseline() -> None:
 
 
 def test_get_known_and_unknown() -> None:
+    """Resolve known categories and reject blank or unknown identifiers."""
     row = get_scorecard_category("jax_native_transforms")
     assert row.category_id == "jax_native_transforms"
     assert row.claim_boundary == SCORECARD_ACCEPTANCE_CLAIM_BOUNDARY
@@ -59,6 +77,7 @@ def test_get_known_and_unknown() -> None:
 
 
 def test_build_registry_counts() -> None:
+    """Build a complete schema-tagged registry with consistent counts."""
     registry = build_scorecard_acceptance_registry()
     assert registry["schema"] == SCORECARD_ACCEPTANCE_ENGINE_SCHEMA
     assert registry["category_count"] == 11
@@ -70,6 +89,7 @@ def test_build_registry_counts() -> None:
 
 
 def test_promote_refuses_without_evidence() -> None:
+    """Refuse ready-state promotion when no evidence labels are supplied."""
     decision = promote_scorecard_category(
         "benchmark_promotion",
         target_status="exceeds_baseline",
@@ -81,6 +101,7 @@ def test_promote_refuses_without_evidence() -> None:
 
 
 def test_promote_refuses_partial_evidence_and_bad_language() -> None:
+    """Refuse partial evidence and unbounded promotional language."""
     partial = promote_scorecard_category(
         "jax_native_transforms",
         target_status="at_baseline",
@@ -104,6 +125,7 @@ def test_promote_refuses_partial_evidence_and_bad_language() -> None:
 
 
 def test_promote_allows_with_evidence_and_demote() -> None:
+    """Allow complete evidence, honest demotion, and evidenced non-comparison."""
     full_ids = (
         "claim_ledger_promoted_row:demo",
         "external_baseline_comparison:demo",
@@ -139,17 +161,19 @@ def test_promote_allows_with_evidence_and_demote() -> None:
 
 
 def test_promote_unknown_target_status() -> None:
+    """Reject target statuses outside the closed vocabulary."""
     with pytest.raises(ValueError, match="unknown target_status"):
         promote_scorecard_category(
             "jax_native_transforms",
-            target_status="green",  # type: ignore[arg-type]
+            target_status=cast(ScorecardEngineStatus, "green"),
         )
 
 
 def test_record_validation() -> None:
+    """Enforce every immutable scorecard-category record invariant."""
     with pytest.raises(ValueError, match="unknown scorecard category"):
         ScorecardCategoryRecord(
-            category_id="nope",  # type: ignore[arg-type]
+            category_id=cast(DifferentiableBaselineCategory, "nope"),
             status="behind_baseline",
             summary="s",
             evidence_ids=(),
@@ -159,7 +183,7 @@ def test_record_validation() -> None:
     with pytest.raises(ValueError, match="unknown scorecard status"):
         ScorecardCategoryRecord(
             category_id="jax_native_transforms",
-            status="green",  # type: ignore[arg-type]
+            status=cast(ScorecardEngineStatus, "green"),
             summary="s",
             evidence_ids=(),
             blockers=("b",),
@@ -241,6 +265,7 @@ def test_record_validation() -> None:
 
 
 def test_promote_decision_validation() -> None:
+    """Enforce non-empty and internally consistent promotion decisions."""
     with pytest.raises(ValueError, match="category_id"):
         PromoteDecision(
             category_id="",
@@ -278,6 +303,7 @@ def test_promote_decision_validation() -> None:
 
 
 def test_assert_integrity_rejects_invalid() -> None:
+    """Reject malformed, incomplete, blank, or unsupported registry rows."""
     with pytest.raises(ValueError, match="non-empty categories"):
         assert_scorecard_acceptance_integrity({"categories": []})
     with pytest.raises(ValueError, match="blank"):
@@ -312,10 +338,11 @@ def test_assert_integrity_rejects_invalid() -> None:
             }
         )
     full = build_scorecard_acceptance_registry()
+    full_rows = _category_rows(full)
     # mutate one row to promoted without evidence
-    cats = list(full["categories"])  # type: ignore[arg-type]
+    cats = [dict(row) for row in full_rows]
     cats[0] = {
-        **cats[0],  # type: ignore[dict-item]
+        **cats[0],
         "status": "at_baseline",
         "blockers": [],
         "evidence_ids": [],
@@ -329,9 +356,9 @@ def test_assert_integrity_rejects_invalid() -> None:
             }
         )
     # promoted with non-list evidence_ids
-    cats2 = list(full["categories"])  # type: ignore[arg-type]
+    cats2 = [dict(row) for row in full_rows]
     cats2[0] = {
-        **cats2[0],  # type: ignore[dict-item]
+        **cats2[0],
         "status": "exceeds_baseline",
         "blockers": [],
         "evidence_ids": "not-a-list",
@@ -384,10 +411,8 @@ def test_assert_integrity_rejects_invalid() -> None:
         assert_scorecard_acceptance_integrity(
             {
                 "categories": [
-                    bad_behind
-                    if row["category_id"] == "pytorch_autograd_compile"  # type: ignore[index]
-                    else row
-                    for row in full["categories"]  # type: ignore[union-attr]
+                    bad_behind if row["category_id"] == "pytorch_autograd_compile" else row
+                    for row in full_rows
                 ],
                 "blank_entry_count": 0,
                 "category_count": 11,
@@ -396,6 +421,7 @@ def test_assert_integrity_rejects_invalid() -> None:
 
 
 def test_catalogue_map_coverage_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject a canonical catalogue that omits required categories."""
     row = get_scorecard_category("jax_native_transforms")
     monkeypatch.setattr(
         scorecard_acceptance_engine,
@@ -407,6 +433,7 @@ def test_catalogue_map_coverage_runtime(monkeypatch: pytest.MonkeyPatch) -> None
 
 
 def test_to_dict_round_trips() -> None:
+    """Serialize category records and promotion decisions to public mappings."""
     row = get_scorecard_category("docs_api_maintainability")
     payload = row.to_dict()
     assert payload["category_id"] == "docs_api_maintainability"
@@ -421,8 +448,7 @@ def test_to_dict_round_trips() -> None:
 def test_integrity_accepts_promoted_rows_with_evidence() -> None:
     """Integrity accepts at_baseline / exceeds_baseline rows that carry evidence_ids."""
     registry = build_scorecard_acceptance_registry()
-    raw = list(registry["categories"])
-    rows = [dict(cast(dict[str, object], row)) for row in raw]
+    rows = _category_rows(registry)
     # Promote two rows with evidence so the evidence-present branch is covered.
     rows[0]["status"] = "at_baseline"
     rows[0]["blockers"] = []

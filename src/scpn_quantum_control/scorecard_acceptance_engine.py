@@ -71,6 +71,7 @@ class ScorecardCategoryRecord:
         Inventory date label (ISO-like string, not a runtime clock claim).
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     category_id: DifferentiableBaselineCategory
@@ -142,6 +143,7 @@ class PromoteDecision:
         Human-readable decision reason.
     missing_evidence
         Required evidence kinds still missing.
+
     """
 
     category_id: str
@@ -310,6 +312,7 @@ def list_scorecard_category_ids() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Ordered category identifiers.
+
     """
     return tuple(row.category_id for row in _CANONICAL_CATEGORIES)
 
@@ -331,6 +334,7 @@ def get_scorecard_category(category_id: str) -> ScorecardCategoryRecord:
     ------
     ValueError
         If ``category_id`` is blank or unknown.
+
     """
     if not category_id or not str(category_id).strip():
         raise ValueError("category_id must be a non-empty string")
@@ -359,6 +363,7 @@ def iter_scorecard_categories(
     -------
     tuple[ScorecardCategoryRecord, ...]
         Matching rows.
+
     """
     rows: Iterable[ScorecardCategoryRecord] = _CANONICAL_CATEGORIES
     if status is not None:
@@ -373,6 +378,7 @@ def build_scorecard_acceptance_registry() -> dict[str, object]:
     -------
     dict[str, object]
         Schema-tagged payload with every required category (no blanks).
+
     """
     rows = [row.to_dict() for row in _CANONICAL_CATEGORIES]
     behind = sum(1 for row in _CANONICAL_CATEGORIES if row.status == "behind_baseline")
@@ -426,6 +432,7 @@ def promote_scorecard_category(
     ------
     ValueError
         If ``category_id`` / ``target_status`` are invalid.
+
     """
     record = get_scorecard_category(category_id)
     if target_status not in {
@@ -537,6 +544,7 @@ def assert_scorecard_acceptance_integrity(
     ------
     ValueError
         If coverage, blanks, or invent-green ready rows without evidence appear.
+
     """
     registry = dict(payload) if payload is not None else build_scorecard_acceptance_registry()
     categories = registry.get("categories")
