@@ -13,9 +13,9 @@ Module: `scpn_quantum_control.error_mitigation_product`
 | Product schema | `error_mitigation_product.v1` |
 | Ambient ZNE | `mitigation.zne.zne_extrapolate` / `zne_uncertainty` |
 | Ambient readout | `mitigation.readout_matrix` |
-| Studio compose | BL-62 `executive_mitigate` claim boundary |
+| Studio composition | `executive_mitigate` claim boundary |
 | Ideal gradient restore | Refuse invent-green |
-| Live QPU mitigation | Refuse invent-green (BL-47) |
+| Live QPU mitigation | Refused by the no-submit safety policy |
 | mitiq | `optional_extra` only — not a hard dependency |
 
 ## Differentiability classes
@@ -56,13 +56,12 @@ assert readout.n_qubits == 1
 
 ## Residuals (honest)
 
-- **S59.5** — deeper open-system objective compose (BL-51) depth
-- **S59.6** — metamorphic registration (BL-46) for mitigated estimators depth
+- Deeper open-system objective integration
+- Metamorphic registration for mitigated estimators
 
 ## Related
 
-- Pack: `docs/internal/differentiable_programming/p3_strategic/bl59_differentiable_error_mitigation.md`
 - Ambient: `scpn_quantum_control.mitigation.*`
-- BL-47 hardware-safe · BL-62 Studio executive
+- No-submit hardware safety · Studio executive mitigation
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

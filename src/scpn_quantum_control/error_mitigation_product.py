@@ -30,11 +30,13 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-import subprocess
+import subprocess  # nosec B404
 import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Final, Literal
+
+# The subprocess module executes only a fixed interpreter argv and product-owned probe.
 
 # Product-local mirror of
 # :data:`scpn_quantum_control.studio.executive_mitigate.MITIGATE_CLAIM_BOUNDARY`.
@@ -117,15 +119,15 @@ ERROR_MITIGATION_CLAIM_BOUNDARY: Final[str] = (
     "and Studio executive_mitigate; local ZNE/readout probes on supplied values/"
     "calibration counts; refuse invent-green ideal-gradient restoration, live "
     "QPU mitigation claims, and mitiq hard-dependency without optional extra; "
-    "compose BL-47 no-submit; residual S59.5 open-system compose depth and "
-    "S59.6 metamorphic registration depth open honestly"
+    "compose the no-submit safety policy; deeper open-system objective "
+    "integration and metamorphic registration remain explicit residual work"
 )
 """Shared claim boundary for error-mitigation product payloads."""
 
 
 @dataclass(frozen=True, slots=True)
 class MitigatorTaxonomyRow:
-    """One mitigator taxonomy row (S59.0 / S59.1 / S59.4).
+    """One mitigator taxonomy row.
 
     Attributes
     ----------
@@ -151,6 +153,7 @@ class MitigatorTaxonomyRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     mitigator_id: str
@@ -227,7 +230,7 @@ class MitigatorTaxonomyRow:
 
 @dataclass(frozen=True, slots=True)
 class MitigationBoundaryRow:
-    """One hard-gap boundary row for mitigation honesty (S59.4).
+    """One hard-gap boundary row for mitigation honesty.
 
     Attributes
     ----------
@@ -245,6 +248,7 @@ class MitigationBoundaryRow:
         Must remain True.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     boundary_id: str
@@ -329,7 +333,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedZneProbe:
-    """Materialised ZNE extrapolation probe via ambient ``zne_extrapolate`` (S59.4)."""
+    """Materialised ZNE extrapolation probe through ambient ``zne_extrapolate``."""
 
     mitigator_id: str
     zero_noise_estimate: float
@@ -381,7 +385,7 @@ class MaterialisedZneProbe:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedReadoutProbe:
-    """Materialised readout mitigation probe via ambient confusion matrix (S59.2)."""
+    """Materialised readout-mitigation probe through an ambient confusion matrix."""
 
     mitigator_id: str
     n_qubits: int
@@ -424,7 +428,7 @@ class MaterialisedReadoutProbe:
 
 
 def _build_taxonomy() -> tuple[MitigatorTaxonomyRow, ...]:
-    """Build mitigator taxonomy catalogue (S59.0 / S59.1)."""
+    """Build the mitigator taxonomy catalogue."""
     return (
         MitigatorTaxonomyRow(
             mitigator_id="zne_richardson",
@@ -469,7 +473,7 @@ def _build_taxonomy() -> tuple[MitigatorTaxonomyRow, ...]:
             title="Readout confusion-matrix mitigation",
             summary=(
                 "Invert full-basis calibration confusion matrix on probability vectors; "
-                "linear map supports FD policy on mitigated estimators (S59.2)."
+                "linear map supports the finite-difference policy on mitigated estimators."
             ),
             differentiability="analytic_fd",
             ambient_module="scpn_quantum_control.mitigation.readout_matrix",
@@ -518,7 +522,7 @@ def _build_taxonomy() -> tuple[MitigatorTaxonomyRow, ...]:
             title="Optional mitiq integration",
             summary=(
                 "Optional-extra mitiq ZNE/DDD wrappers; product never treats "
-                "mitiq as a hard dependency (S59.0 out-of-scope)."
+                "mitiq as a hard dependency."
             ),
             differentiability="optional_extra",
             ambient_module="scpn_quantum_control.mitigation.mitiq_integration",
@@ -528,7 +532,7 @@ def _build_taxonomy() -> tuple[MitigatorTaxonomyRow, ...]:
         MitigatorTaxonomyRow(
             mitigator_id="studio_executive_mitigate",
             kind="studio_executive_mitigate",
-            title="Studio executive mitigate verb (BL-62)",
+            title="Studio executive mitigation verb",
             summary=(
                 "Read-only Studio mitigate handler: polynomial ZNE on given "
                 "measured values with uncertainty; does not run circuits."
@@ -560,7 +564,7 @@ def _build_boundaries() -> tuple[MitigationBoundaryRow, ...]:
             title="Live QPU mitigation submit",
             failure_class="live_qpu_mitigation_refused",
             summary=(
-                "Compose BL-47 no-submit; product probes use supplied values or "
+                "Compose the no-submit safety policy; product probes use supplied values or "
                 "local calibration counts only."
             ),
         ),
@@ -684,7 +688,7 @@ def decide_mitigation_path(
     invent_green_mitiq_hard_dep: bool = False,
     invent_green_non_diff_as_analytic: bool = False,
 ) -> PathEligibilityDecision:
-    """Decide whether a mitigation product path may proceed (S59.0–S59.4)."""
+    """Decide whether a mitigation-product path may proceed."""
     row = get_mitigator(mitigator_id)
     blockers: list[str] = []
     if invent_green_ideal_gradient_restore:
@@ -695,7 +699,7 @@ def decide_mitigation_path(
     if invent_green_live_qpu:
         blockers.append(
             "invent-green live QPU mitigation refused "
-            f"(mitigator={row.mitigator_id}; BL-47 no-submit compose)"
+            f"(mitigator={row.mitigator_id}; no-submit safety policy)"
         )
     if invent_green_mitiq_hard_dep:
         blockers.append(
@@ -801,7 +805,8 @@ else:
 print(json.dumps(out))
 """
     try:
-        completed = subprocess.run(
+        # No shell is used; argv and probe source are product-owned constants.
+        completed = subprocess.run(  # nosec B603
             [sys.executable, "-c", script],
             check=True,
             capture_output=True,
@@ -833,7 +838,7 @@ def materialise_zne_probe(
     invent_green_live_qpu: bool = False,
     demo_label: str = "zne_demo",
 ) -> MaterialisedZneProbe:
-    """Materialise a real ambient ZNE probe on supplied values (S59.4)."""
+    """Materialise a real ambient ZNE probe on supplied values."""
     decision = decide_mitigation_path(
         mitigator_id,
         invent_green_ideal_gradient_restore=invent_green_ideal_gradient_restore,
@@ -906,7 +911,7 @@ def materialise_readout_probe(
     invent_green_ideal_gradient_restore: bool = False,
     demo_label: str = "readout_demo",
 ) -> MaterialisedReadoutProbe:
-    """Materialise a one-qubit readout mitigation probe (S59.2)."""
+    """Materialise a one-qubit readout-mitigation probe."""
     decision = decide_mitigation_path(
         mitigator_id,
         invent_green_ideal_gradient_restore=invent_green_ideal_gradient_restore,
@@ -952,7 +957,7 @@ def materialise_readout_probe(
 
 
 def studio_mitigate_claim_boundary() -> str:
-    """Return ambient Studio executive_mitigate claim boundary (S59.7 compose)."""
+    """Return the ambient Studio ``executive_mitigate`` claim boundary."""
     text = _studio_mitigate_claim_boundary_text()
     if not text or not text.strip():
         raise ValueError("Studio MITIGATE_CLAIM_BOUNDARY must be non-empty")
@@ -1012,7 +1017,7 @@ def build_error_mitigation_product_registry() -> dict[str, object]:
         "policy_note": (
             "Mitigation taxonomy + local probes only; ZNE/readout on supplied "
             "values/calibration; no invent-green ideal AD restore or live QPU; "
-            "mitiq optional_extra; BL-47/BL-62 compose."
+            "mitiq optional_extra; compose no-submit safety and Studio execution boundaries."
         ),
     }
 

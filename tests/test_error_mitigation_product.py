@@ -9,7 +9,9 @@
 
 from __future__ import annotations
 
+import builtins
 import subprocess
+from types import ModuleType
 from typing import Any, cast
 
 import pytest
@@ -101,6 +103,7 @@ def _valid_readout_probe(**overrides: object) -> MaterialisedReadoutProbe:
 
 
 def test_list_and_filters() -> None:
+    """Exercise catalogue listing and differentiability filters."""
     ids = list_mitigator_ids()
     assert "zne_richardson" in ids
     assert "readout_confusion" in ids
@@ -126,6 +129,7 @@ def test_iter_mitigation_boundaries_without_kind_filter() -> None:
 
 
 def test_get_known_and_unknown() -> None:
+    """Resolve known rows and reject unknown identifiers."""
     row = get_mitigator("zne_richardson")
     assert row.claim_boundary == ERROR_MITIGATION_CLAIM_BOUNDARY
     assert row.hardware_submit_allowed is False
@@ -149,6 +153,7 @@ def test_get_mitigation_boundary_rejects_blank_id() -> None:
 
 
 def test_decide_mitigation_path() -> None:
+    """Enforce mitigation-path eligibility boundaries."""
     ok = decide_mitigation_path("zne_richardson")
     assert ok.allowed is True
     ideal = decide_mitigation_path("zne_richardson", invent_green_ideal_gradient_restore=True)
@@ -166,6 +171,7 @@ def test_decide_mitigation_path() -> None:
 
 
 def test_zne_probe_real_ambient() -> None:
+    """Materialise a ZNE probe through the ambient implementation."""
     probe = materialise_demo_zne_probe()
     assert probe.mitigator_id == "zne_richardson"
     assert probe.n_points == 3
@@ -185,6 +191,7 @@ def test_zne_probe_real_ambient() -> None:
 
 
 def test_zne_probe_refuses() -> None:
+    """Refuse unsupported ZNE promotion requests."""
     with pytest.raises(ValueError, match="ideal"):
         materialise_zne_probe("zne_richardson", invent_green_ideal_gradient_restore=True)
     with pytest.raises(ValueError, match="QPU|qpu|live"):
@@ -194,6 +201,7 @@ def test_zne_probe_refuses() -> None:
 
 
 def test_readout_probe() -> None:
+    """Materialise a local readout-mitigation probe."""
     probe = materialise_readout_probe()
     assert probe.n_qubits == 1
     assert probe.n_basis == 2
@@ -206,6 +214,7 @@ def test_readout_probe() -> None:
 
 
 def test_studio_boundary_and_registry() -> None:
+    """Expose the Studio boundary in the complete registry."""
     boundary = studio_mitigate_claim_boundary()
     assert "expectation" in boundary.lower() or "extrapol" in boundary.lower()
     surfaces = map_error_mitigation_public_surfaces()
@@ -224,6 +233,7 @@ def test_studio_boundary_and_registry() -> None:
 
 
 def test_integrity_rejects_extra_mitigator_drift() -> None:
+    """Reject undeclared mitigator catalogue drift."""
     registry = build_error_mitigation_product_registry()
     mitigators = cast(list[dict[str, object]], registry["mitigators"])
     broken = dict(registry)
@@ -248,6 +258,7 @@ def test_integrity_rejects_extra_mitigator_drift() -> None:
 
 
 def test_integrity_rejects_empty_mitigators() -> None:
+    """Reject an empty mitigator catalogue."""
     registry = build_error_mitigation_product_registry()
     empty: dict[str, object] = {
         "mitigators": [],
@@ -260,6 +271,7 @@ def test_integrity_rejects_empty_mitigators() -> None:
 
 
 def test_integrity_rejects_empty_boundaries() -> None:
+    """Reject an empty mitigation-boundary catalogue."""
     registry = build_error_mitigation_product_registry()
     no_b = dict(registry)
     no_b["boundaries"] = []
@@ -269,6 +281,7 @@ def test_integrity_rejects_empty_boundaries() -> None:
 
 
 def test_integrity_rejects_invent_green_policies() -> None:
+    """Reject enabled invent-green policies."""
     registry = build_error_mitigation_product_registry()
     for policy in (
         "hardware_submit_allowed_policy",
@@ -282,6 +295,7 @@ def test_integrity_rejects_invent_green_policies() -> None:
 
 
 def test_integrity_rejects_hardware_submit_on_mitigator_row() -> None:
+    """Reject hardware submission on mitigator rows."""
     registry = build_error_mitigation_product_registry()
     mitigators = cast(list[dict[str, object]], registry["mitigators"])
     hw = dict(registry)
@@ -293,6 +307,7 @@ def test_integrity_rejects_hardware_submit_on_mitigator_row() -> None:
 
 
 def test_integrity_rejects_nonzero_blank_entry_count() -> None:
+    """Reject a nonzero blank-entry count."""
     registry = build_error_mitigation_product_registry()
     blank = dict(registry)
     blank["blank_entry_count"] = 1
@@ -301,6 +316,7 @@ def test_integrity_rejects_nonzero_blank_entry_count() -> None:
 
 
 def test_integrity_rejects_blank_studio_claim_boundary() -> None:
+    """Reject a blank Studio claim boundary."""
     registry = build_error_mitigation_product_registry()
     no_studio = dict(registry)
     no_studio["studio_mitigate_claim_boundary"] = ""
@@ -309,6 +325,7 @@ def test_integrity_rejects_blank_studio_claim_boundary() -> None:
 
 
 def test_integrity_rejects_boundary_not_fail_closed() -> None:
+    """Require every mitigation boundary to fail closed."""
     registry = build_error_mitigation_product_registry()
     bounds = cast(list[dict[str, object]], registry["boundaries"])
     fc = dict(registry)
@@ -343,96 +360,115 @@ def test_integrity_rejects_boundary_set_drift() -> None:
 
 
 def test_mitigator_taxonomy_row_rejects_blank_mitigator_id() -> None:
+    """Reject blank mitigator identifiers."""
     with pytest.raises(ValueError, match="mitigator_id"):
         _valid_taxonomy_row(mitigator_id="")
 
 
 def test_mitigator_taxonomy_row_rejects_unknown_kind() -> None:
+    """Reject unknown mitigator kinds."""
     with pytest.raises(ValueError, match="unknown mitigator kind"):
         _valid_taxonomy_row(kind=cast(Any, "bogus"))
 
 
 def test_mitigator_taxonomy_row_rejects_blank_title() -> None:
+    """Reject blank mitigator titles."""
     with pytest.raises(ValueError, match="title"):
         _valid_taxonomy_row(title="")
 
 
 def test_mitigator_taxonomy_row_rejects_blank_summary() -> None:
+    """Reject blank mitigator summaries."""
     with pytest.raises(ValueError, match="summary"):
         _valid_taxonomy_row(summary="")
 
 
 def test_mitigator_taxonomy_row_rejects_unknown_differentiability() -> None:
+    """Reject unknown differentiability classes."""
     with pytest.raises(ValueError, match="differentiability"):
         _valid_taxonomy_row(differentiability=cast(Any, "bogus"))
 
 
 def test_mitigator_taxonomy_row_rejects_blank_ambient_module() -> None:
+    """Reject blank ambient-module paths."""
     with pytest.raises(ValueError, match="ambient_module"):
         _valid_taxonomy_row(ambient_module="")
 
 
 def test_mitigator_taxonomy_row_rejects_blank_ambient_symbol() -> None:
+    """Reject blank ambient symbols."""
     with pytest.raises(ValueError, match="ambient_symbol"):
         _valid_taxonomy_row(ambient_symbol="")
 
 
 def test_mitigator_taxonomy_row_rejects_hardware_submit_allowed() -> None:
+    """Reject hardware-enabled mitigator rows."""
     with pytest.raises(ValueError, match="hardware_submit_allowed"):
         _valid_taxonomy_row(hardware_submit_allowed=True)
 
 
 def test_mitigator_taxonomy_row_rejects_unknown_support_posture() -> None:
+    """Reject unknown support postures."""
     with pytest.raises(ValueError, match="support_posture"):
         _valid_taxonomy_row(support_posture=cast(Any, "bogus"))
 
 
 def test_mitigator_taxonomy_row_rejects_blank_as_of() -> None:
+    """Reject blank inventory dates."""
     with pytest.raises(ValueError, match="as_of"):
         _valid_taxonomy_row(as_of="")
 
 
 def test_mitigator_taxonomy_row_to_dict() -> None:
+    """Serialize mitigator taxonomy rows."""
     ok = _valid_taxonomy_row()
     assert ok.to_dict()["mitigator_id"] == "x"
 
 
 def test_mitigation_boundary_row_rejects_blank_boundary_id() -> None:
+    """Reject blank mitigation-boundary identifiers."""
     with pytest.raises(ValueError, match="boundary_id"):
         _valid_boundary_row(boundary_id="")
 
 
 def test_mitigation_boundary_row_rejects_unknown_kind() -> None:
+    """Reject unknown mitigation-boundary kinds."""
     with pytest.raises(ValueError, match="unknown boundary kind"):
         _valid_boundary_row(kind=cast(Any, "bogus"))
 
 
 def test_mitigation_boundary_row_rejects_fail_closed_false() -> None:
+    """Reject mitigation boundaries that do not fail closed."""
     with pytest.raises(ValueError, match="fail_closed"):
         _valid_boundary_row(fail_closed=False)
 
 
 def test_mitigation_boundary_row_rejects_blank_title() -> None:
+    """Reject blank mitigation-boundary titles."""
     with pytest.raises(ValueError, match="title"):
         _valid_boundary_row(title="")
 
 
 def test_mitigation_boundary_row_rejects_blank_failure_class() -> None:
+    """Reject blank mitigation failure classes."""
     with pytest.raises(ValueError, match="failure_class"):
         _valid_boundary_row(failure_class="")
 
 
 def test_mitigation_boundary_row_rejects_blank_summary() -> None:
+    """Reject blank mitigation-boundary summaries."""
     with pytest.raises(ValueError, match="summary"):
         _valid_boundary_row(summary="")
 
 
 def test_mitigation_boundary_row_to_dict() -> None:
+    """Serialize mitigation-boundary rows."""
     ok_b = _valid_boundary_row()
     assert ok_b.to_dict()["fail_closed"] is True
 
 
 def test_path_eligibility_rejects_refused_without_blockers() -> None:
+    """Require blockers on refused path decisions."""
     with pytest.raises(ValueError, match="blockers"):
         PathEligibilityDecision(
             outcome="refused",
@@ -443,6 +479,7 @@ def test_path_eligibility_rejects_refused_without_blockers() -> None:
 
 
 def test_path_eligibility_rejects_unknown_outcome() -> None:
+    """Reject unknown path-decision outcomes."""
     with pytest.raises(ValueError, match="outcome"):
         PathEligibilityDecision(
             outcome=cast(Any, "maybe"),
@@ -453,6 +490,7 @@ def test_path_eligibility_rejects_unknown_outcome() -> None:
 
 
 def test_path_eligibility_rejects_blank_reason() -> None:
+    """Reject blank path-decision reasons."""
     with pytest.raises(ValueError, match="reason"):
         PathEligibilityDecision(
             outcome="allowed",
@@ -463,6 +501,7 @@ def test_path_eligibility_rejects_blank_reason() -> None:
 
 
 def test_path_eligibility_rejects_allowed_flag_with_refused_outcome() -> None:
+    """Reject allowed flags on refused outcomes."""
     with pytest.raises(ValueError, match="outcome=allowed"):
         PathEligibilityDecision(
             outcome="refused",
@@ -473,6 +512,7 @@ def test_path_eligibility_rejects_allowed_flag_with_refused_outcome() -> None:
 
 
 def test_path_eligibility_rejects_refused_flag_with_allowed_outcome() -> None:
+    """Reject refused flags on allowed outcomes."""
     with pytest.raises(ValueError, match="outcome=refused"):
         PathEligibilityDecision(
             outcome="allowed",
@@ -483,6 +523,7 @@ def test_path_eligibility_rejects_refused_flag_with_allowed_outcome() -> None:
 
 
 def test_path_eligibility_rejects_allowed_with_blockers() -> None:
+    """Reject blockers on allowed path decisions."""
     with pytest.raises(ValueError, match="cannot list blockers"):
         PathEligibilityDecision(
             outcome="allowed",
@@ -493,6 +534,7 @@ def test_path_eligibility_rejects_allowed_with_blockers() -> None:
 
 
 def test_path_eligibility_rejects_blank_blocker_entries() -> None:
+    """Reject blank blocker entries."""
     with pytest.raises(ValueError, match="blockers entries"):
         PathEligibilityDecision(
             outcome="refused",
@@ -503,6 +545,7 @@ def test_path_eligibility_rejects_blank_blocker_entries() -> None:
 
 
 def test_path_eligibility_to_dict() -> None:
+    """Serialize mitigation path decisions."""
     ok_d = PathEligibilityDecision(
         outcome="allowed",
         allowed=True,
@@ -513,96 +556,115 @@ def test_path_eligibility_to_dict() -> None:
 
 
 def test_materialised_zne_probe_rejects_blank_mitigator_id() -> None:
+    """Reject blank mitigator IDs on ZNE probes."""
     with pytest.raises(ValueError, match="mitigator_id"):
         _valid_zne_probe(mitigator_id="")
 
 
 def test_materialised_zne_probe_rejects_non_finite_estimate() -> None:
+    """Reject non-finite zero-noise estimates."""
     with pytest.raises(ValueError, match="zero_noise_estimate"):
         _valid_zne_probe(zero_noise_estimate=float("nan"))
 
 
 def test_materialised_zne_probe_rejects_negative_residual() -> None:
+    """Reject negative ZNE fit residuals."""
     with pytest.raises(ValueError, match="fit_residual"):
         _valid_zne_probe(fit_residual=-1.0)
 
 
 def test_materialised_zne_probe_rejects_non_positive_order() -> None:
+    """Reject non-positive extrapolation orders."""
     with pytest.raises(ValueError, match="order"):
         _valid_zne_probe(order=0)
 
 
 def test_materialised_zne_probe_rejects_insufficient_points() -> None:
+    """Require enough ZNE sample points."""
     with pytest.raises(ValueError, match="n_points"):
         _valid_zne_probe(n_points=1)
 
 
 def test_materialised_zne_probe_rejects_bad_digest() -> None:
+    """Reject malformed ZNE probe digests."""
     with pytest.raises(ValueError, match="probe_digest"):
         _valid_zne_probe(probe_digest="x")
 
 
 def test_materialised_zne_probe_rejects_ideal_gradient_invent_green() -> None:
+    """Reject invented ideal-gradient restoration."""
     with pytest.raises(ValueError, match="invent_green_ideal_gradient_restore"):
         _valid_zne_probe(invent_green_ideal_gradient_restore=True)
 
 
 def test_materialised_zne_probe_rejects_live_qpu_invent_green() -> None:
+    """Reject invented live-QPU ZNE claims."""
     with pytest.raises(ValueError, match="invent_green_live_qpu"):
         _valid_zne_probe(invent_green_live_qpu=True)
 
 
 def test_materialised_zne_probe_rejects_blank_demo_label() -> None:
+    """Reject blank ZNE demo labels."""
     with pytest.raises(ValueError, match="demo_label"):
         _valid_zne_probe(demo_label="")
 
 
 def test_materialised_zne_probe_to_dict() -> None:
+    """Serialize materialised ZNE probes."""
     ok_z = _valid_zne_probe()
     assert ok_z.to_dict()["n_points"] == 3
 
 
 def test_materialised_readout_probe_rejects_non_positive_n_qubits() -> None:
+    """Reject non-positive readout qubit counts."""
     with pytest.raises(ValueError, match="n_qubits"):
         _valid_readout_probe(n_qubits=0, n_basis=1)
 
 
 def test_materialised_readout_probe_rejects_n_basis_mismatch() -> None:
+    """Reject readout basis-size mismatches."""
     with pytest.raises(ValueError, match="n_basis"):
         _valid_readout_probe(n_qubits=1, n_basis=3)
 
 
 def test_materialised_readout_probe_rejects_blank_mitigator_id() -> None:
+    """Reject blank mitigator IDs on readout probes."""
     with pytest.raises(ValueError, match="mitigator_id"):
         _valid_readout_probe(mitigator_id="")
 
 
 def test_materialised_readout_probe_rejects_non_finite_sum() -> None:
+    """Reject non-finite mitigated probability sums."""
     with pytest.raises(ValueError, match="mitigated_probability_sum"):
         _valid_readout_probe(mitigated_probability_sum=float("nan"))
 
 
 def test_materialised_readout_probe_rejects_bad_digest() -> None:
+    """Reject malformed readout probe digests."""
     with pytest.raises(ValueError, match="probe_digest"):
         _valid_readout_probe(probe_digest="x")
 
 
 def test_materialised_readout_probe_rejects_ideal_gradient_invent_green() -> None:
+    """Reject invented readout-gradient restoration."""
     with pytest.raises(ValueError, match="invent_green_ideal_gradient_restore"):
         _valid_readout_probe(invent_green_ideal_gradient_restore=True)
 
 
 def test_materialised_readout_probe_rejects_blank_demo_label() -> None:
+    """Reject blank readout demo labels."""
     with pytest.raises(ValueError, match="demo_label"):
         _valid_readout_probe(demo_label="")
 
 
 def test_materialised_readout_probe_to_dict() -> None:
+    """Serialize materialised readout probes."""
     ok_r = _valid_readout_probe()
     assert ok_r.to_dict()["n_basis"] == 2
 
 
 def test_integrity_rejects_non_mapping_mitigator_row() -> None:
+    """Reject non-mapping mitigator payload rows."""
     registry = build_error_mitigation_product_registry()
     not_map = dict(registry)
     not_map["mitigators"] = cast(list[dict[str, object]], ["x"])
@@ -611,6 +673,7 @@ def test_integrity_rejects_non_mapping_mitigator_row() -> None:
 
 
 def test_integrity_rejects_blank_mitigator_id_in_payload() -> None:
+    """Reject blank mitigator IDs in registry payloads."""
     registry = build_error_mitigation_product_registry()
     mitigators = cast(list[dict[str, object]], registry["mitigators"])
     blank_id = dict(registry)
@@ -622,6 +685,7 @@ def test_integrity_rejects_blank_mitigator_id_in_payload() -> None:
 
 
 def test_integrity_rejects_duplicate_mitigator_id() -> None:
+    """Reject duplicate mitigator IDs."""
     registry = build_error_mitigation_product_registry()
     mitigators = cast(list[dict[str, object]], registry["mitigators"])
     dup = dict(registry)
@@ -633,6 +697,7 @@ def test_integrity_rejects_duplicate_mitigator_id() -> None:
 
 
 def test_integrity_rejects_invalid_differentiability() -> None:
+    """Reject invalid registry differentiability classes."""
     registry = build_error_mitigation_product_registry()
     mitigators = cast(list[dict[str, object]], registry["mitigators"])
     bad_diff = dict(registry)
@@ -644,6 +709,7 @@ def test_integrity_rejects_invalid_differentiability() -> None:
 
 
 def test_integrity_rejects_blank_ambient_symbol() -> None:
+    """Reject blank registry ambient symbols."""
     registry = build_error_mitigation_product_registry()
     mitigators = cast(list[dict[str, object]], registry["mitigators"])
     no_sym = dict(registry)
@@ -655,6 +721,7 @@ def test_integrity_rejects_blank_ambient_symbol() -> None:
 
 
 def test_integrity_rejects_missing_zne_richardson() -> None:
+    """Require the Richardson ZNE catalogue row."""
     registry = build_error_mitigation_product_registry()
     mitigators = cast(list[dict[str, object]], registry["mitigators"])
     no_zne = dict(registry)
@@ -666,6 +733,7 @@ def test_integrity_rejects_missing_zne_richardson() -> None:
 
 
 def test_integrity_rejects_non_mapping_boundary_row() -> None:
+    """Reject non-mapping boundary payload rows."""
     registry = build_error_mitigation_product_registry()
     b_not = dict(registry)
     b_not["boundaries"] = cast(list[dict[str, object]], [1])
@@ -674,6 +742,7 @@ def test_integrity_rejects_non_mapping_boundary_row() -> None:
 
 
 def test_integrity_rejects_blank_boundary_id_in_payload() -> None:
+    """Reject blank boundary IDs in registry payloads."""
     registry = build_error_mitigation_product_registry()
     bounds = cast(list[dict[str, object]], registry["boundaries"])
     blank_b = dict(registry)
@@ -685,6 +754,7 @@ def test_integrity_rejects_blank_boundary_id_in_payload() -> None:
 
 
 def test_integrity_rejects_duplicate_boundary_id() -> None:
+    """Reject duplicate mitigation-boundary IDs."""
     registry = build_error_mitigation_product_registry()
     bounds = cast(list[dict[str, object]], registry["boundaries"])
     dup_b = dict(registry)
@@ -696,6 +766,7 @@ def test_integrity_rejects_duplicate_boundary_id() -> None:
 
 
 def test_integrity_rejects_mitigator_count_mismatch() -> None:
+    """Reject mitigator count mismatches."""
     registry = build_error_mitigation_product_registry()
     count_m = dict(registry)
     count_m["mitigator_count"] = 99
@@ -704,6 +775,7 @@ def test_integrity_rejects_mitigator_count_mismatch() -> None:
 
 
 def test_integrity_rejects_boundary_count_mismatch() -> None:
+    """Reject mitigation-boundary count mismatches."""
     registry = build_error_mitigation_product_registry()
     count_b = dict(registry)
     count_b["boundary_count"] = 99
@@ -712,6 +784,8 @@ def test_integrity_rejects_boundary_count_mismatch() -> None:
 
 
 def test_zne_probe_rejects_missing_ambient_fields(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject incomplete ambient ZNE results."""
+
     def _bad_zne(*_a: object, **_k: object) -> dict[str, object]:
         return {"not": "enough"}
 
@@ -721,6 +795,8 @@ def test_zne_probe_rejects_missing_ambient_fields(monkeypatch: pytest.MonkeyPatc
 
 
 def test_zne_probe_rejects_non_finite_ambient_result(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject non-finite ambient ZNE estimates."""
+
     def _nan_zne(*_a: object, **_k: object) -> dict[str, object]:
         return {
             "zero_noise_estimate": float("nan"),
@@ -735,6 +811,8 @@ def test_zne_probe_rejects_non_finite_ambient_result(monkeypatch: pytest.MonkeyP
 
 
 def test_zne_probe_rejects_negative_ambient_residual(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject negative ambient ZNE residuals."""
+
     def _neg_res(*_a: object, **_k: object) -> dict[str, object]:
         return {
             "zero_noise_estimate": 1.0,
@@ -749,6 +827,8 @@ def test_zne_probe_rejects_negative_ambient_residual(monkeypatch: pytest.MonkeyP
 
 
 def test_zne_probe_rejects_insufficient_ambient_points(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject insufficient ambient ZNE points."""
+
     def _few_pts(*_a: object, **_k: object) -> dict[str, object]:
         return {
             "zero_noise_estimate": 1.0,
@@ -763,6 +843,8 @@ def test_zne_probe_rejects_insufficient_ambient_points(monkeypatch: pytest.Monke
 
 
 def test_readout_probe_rejects_missing_ambient_fields(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject incomplete ambient readout results."""
+
     def _bad_ro(*_a: object, **_k: object) -> dict[str, object]:
         return {"n_qubits": 1}
 
@@ -772,6 +854,8 @@ def test_readout_probe_rejects_missing_ambient_fields(monkeypatch: pytest.Monkey
 
 
 def test_readout_probe_rejects_non_finite_ambient_sum(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject non-finite ambient readout sums."""
+
     def _nan_ro(*_a: object, **_k: object) -> dict[str, object]:
         return {
             "n_qubits": 1,
@@ -787,6 +871,7 @@ def test_readout_probe_rejects_non_finite_ambient_sum(monkeypatch: pytest.Monkey
 def test_studio_mitigate_claim_boundary_rejects_blank(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Reject a blank ambient Studio mitigation boundary."""
     monkeypatch.setattr(mit_product, "_studio_mitigate_claim_boundary_text", lambda: "")
     with pytest.raises(ValueError, match="non-empty"):
         studio_mitigate_claim_boundary()
@@ -795,6 +880,7 @@ def test_studio_mitigate_claim_boundary_rejects_blank(
 def test_studio_mitigate_claim_boundary_rejects_missing_honesty(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Require honesty language in the Studio boundary."""
     monkeypatch.setattr(
         mit_product,
         "_studio_mitigate_claim_boundary_text",
@@ -802,6 +888,54 @@ def test_studio_mitigate_claim_boundary_rejects_missing_honesty(
     )
     with pytest.raises(ValueError, match="honesty"):
         studio_mitigate_claim_boundary()
+
+
+def test_studio_boundary_loader_uses_importable_ambient_constant(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Use the ambient Studio constant when its module is importable."""
+    ambient = ModuleType("scpn_quantum_control.studio.executive_mitigate")
+    boundary = "measured expectation extrapolation; does not run circuits"
+    ambient.__dict__["MITIGATE_CLAIM_BOUNDARY"] = boundary
+
+    def import_ambient(name: str, *_args: object, **_kwargs: object) -> ModuleType:
+        assert name.endswith("studio.executive_mitigate")
+        return ambient
+
+    monkeypatch.setattr(builtins, "__import__", import_ambient)
+    assert mit_product._studio_mitigate_claim_boundary_text() == boundary
+
+
+def test_studio_boundary_loader_uses_mirror_when_import_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Use the local honesty mirror when Studio cannot import."""
+
+    def reject_import(name: str, *_args: object, **_kwargs: object) -> ModuleType:
+        assert name.endswith("studio.executive_mitigate")
+        raise ImportError("Studio unavailable")
+
+    monkeypatch.setattr(builtins, "__import__", reject_import)
+    assert (
+        mit_product._studio_mitigate_claim_boundary_text()
+        == mit_product._STUDIO_MITIGATE_CLAIM_BOUNDARY_MIRROR
+    )
+
+
+def test_studio_boundary_loader_rejects_blank_ambient_constant(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Reject a blank constant from an importable Studio module."""
+    ambient = ModuleType("scpn_quantum_control.studio.executive_mitigate")
+    ambient.__dict__["MITIGATE_CLAIM_BOUNDARY"] = "  "
+
+    def import_ambient(name: str, *_args: object, **_kwargs: object) -> ModuleType:
+        assert name.endswith("studio.executive_mitigate")
+        return ambient
+
+    monkeypatch.setattr(builtins, "__import__", import_ambient)
+    with pytest.raises(ValueError, match="must be non-empty"):
+        mit_product._studio_mitigate_claim_boundary_text()
 
 
 def test_studio_mitigate_claim_boundary_mirror_matches_ambient_when_importable() -> None:
@@ -826,6 +960,7 @@ def test_taxonomy_map_rejects_blank_mitigator_id(monkeypatch: pytest.MonkeyPatch
 
 
 def test_taxonomy_map_rejects_duplicate_mitigator_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject duplicate IDs while building the taxonomy map."""
     row = get_mitigator("zne_richardson")
     monkeypatch.setattr(mit_product, "_TAXONOMY", (row, row))
     with pytest.raises(RuntimeError, match="duplicate mitigator_id"):
@@ -833,6 +968,7 @@ def test_taxonomy_map_rejects_duplicate_mitigator_id(monkeypatch: pytest.MonkeyP
 
 
 def test_taxonomy_map_rejects_empty_catalogue(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject an empty taxonomy map source."""
     monkeypatch.setattr(mit_product, "_TAXONOMY", ())
     with pytest.raises(RuntimeError, match="non-empty"):
         mit_product._taxonomy_map()
@@ -895,6 +1031,7 @@ def test_ambient_subprocess_non_object_json(monkeypatch: pytest.MonkeyPatch) -> 
 
 
 def test_module_exports_stable() -> None:
+    """Keep the public mitigation exports stable."""
     assert "assert_error_mitigation_product_integrity" in mit_product.__all__
     assert "materialise_demo_zne_probe" in mit_product.__all__
     assert ERROR_MITIGATION_PRODUCT_SCHEMA == "error_mitigation_product.v1"

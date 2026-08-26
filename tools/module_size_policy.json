@@ -195,7 +195,7 @@
       "lines": 1138,
       "kind": "facade",
       "disposition": "facade",
-      "responsibility": "Fail-closed differentiable error-mitigation taxonomy product (BL-59).",
+      "responsibility": "Fail-closed differentiable error-mitigation taxonomy and local ZNE/readout probe surface.",
       "dependency_boundary": "Registers mitigation strategies and fail-closed routes over ambient mitigation/differentiable helpers; product tests consume this surface only.",
       "reassess_when": "A mitigation backend lifecycle or unrelated optimizer lands in this product file."
     },
