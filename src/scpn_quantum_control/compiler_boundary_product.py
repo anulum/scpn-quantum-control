@@ -11,15 +11,15 @@ Productises first-class boundary rows for external compilers (QIR, CUDA-Q,
 Catalyst-as-external, in-tree MLIR/Enzyme, future TN) — not aspirational README
 lists:
 
-* versioned boundary schema with status enum (S66.0 / S66.1);
-* catalogue populated from ambient LLVM/JIT claim gate + Catalyst workflow
-  comparison artefacts (S66.2);
-* optional QIR export spike is validate-only / fail-closed (S66.3);
-* CUDA-Q remains permanent_boundary without owner GPU programme (S66.4);
+* versioned boundary schema with explicit support statuses;
+* catalogue populated from the ambient LLVM/JIT claim gate and Catalyst
+  workflow comparison artefacts;
+* optional QIR import/export remains validate-only and fail-closed;
+* CUDA-Q remains ``permanent_boundary`` without an owner GPU programme;
 * refuse invent-green full CUDA-Q runtime or live QIR provider submission.
 
 Does **not** ship full CUDA-Q runtime product, invent Verified-At-Source pins
-without terminal evidence, or complete baseline-watch watch automation (S66.5 residual).
+without terminal evidence, or complete governed-route and watch automation.
 """
 
 from __future__ import annotations
@@ -52,7 +52,7 @@ SupportPosture = Literal[
 PathDecisionOutcome = Literal["allowed", "refused"]
 """Structured path-eligibility outcomes."""
 
-COMPILER_BOUNDARY_PRODUCT_SCHEMA: Final[str] = "compiler_boundary_product.v1"
+COMPILER_BOUNDARY_PRODUCT_SCHEMA: Final[str] = "compiler_boundary_product.v2"
 """JSON schema identifier for serialised product payloads."""
 
 COMPILER_BOUNDARY_CLAIM_BOUNDARY: Final[str] = (
@@ -60,15 +60,34 @@ COMPILER_BOUNDARY_CLAIM_BOUNDARY: Final[str] = (
     "CUDA-Q, Catalyst-as-external, in-tree MLIR/Enzyme, and future TN compilers "
     "with status enum supported|adapter|implementation_path|permanent_boundary; "
     "composes ambient LLVM/JIT claim gate + Catalyst workflow comparison; refuse "
-    "invent-green full CUDA-Q runtime and live QIR provider submission; residual "
-    "S66.5 BL-52/61 wire and S66.6 BL-38 cite remain open"
+    "invent-green full CUDA-Q runtime and live QIR provider submission; governed-route "
+    "and watch automation plus Rust LLVM/JIT decision citation remain unresolved"
 )
 """Shared claim boundary for compiler boundary product payloads."""
+
+_COMPILER_BOUNDARY_POLICY_NOTE: Final[str] = (
+    "External compiler boundary register only; not a marketing tick list; CUDA-Q "
+    "permanent_boundary without owner GPU programme; QIR validate-only; governed-route "
+    "and watch automation plus Rust LLVM/JIT decision citation remain unresolved."
+)
+_COMPILER_BOUNDARY_REGISTRY_KEYS: Final[frozenset[str]] = frozenset(
+    {
+        "schema",
+        "claim_boundary",
+        "compiler_count",
+        "blank_entry_count",
+        "invent_green_runtime_policy",
+        "invent_green_qir_provider_submit_policy",
+        "public_surfaces",
+        "compilers",
+        "policy_note",
+    }
+)
 
 
 @dataclass(frozen=True, slots=True)
 class CompilerBoundaryRow:
-    """One external-compiler boundary register row (S66.0 / S66.1).
+    """One external-compiler boundary register row.
 
     Attributes
     ----------
@@ -83,7 +102,7 @@ class CompilerBoundaryRow:
     ambient_pointer
         Ambient module or constant pointer for evidence.
     route_matrix_pointer
-        BL-52 governed-route matrix pointer when applicable.
+        Governed-route matrix pointer when applicable.
     import_export_allowed
         Whether product allows import/export experiment (validate-only).
     invent_green_runtime
@@ -214,7 +233,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedCompilerBoundaryProbe:
-    """Materialised probe over ambient Catalyst + LLVM claim gate (S66.2 / S66.3).
+    """Materialised probe over the ambient Catalyst and LLVM claim gates.
 
     Attributes
     ----------
@@ -270,7 +289,7 @@ class MaterialisedCompilerBoundaryProbe:
 
 
 def _build_compiler_catalogue() -> tuple[CompilerBoundaryRow, ...]:
-    """Build the fixed external-compiler boundary catalogue (S66.0–S66.4)."""
+    """Build the fixed external-compiler boundary catalogue."""
     return (
         CompilerBoundaryRow(
             compiler_id="mlir_enzyme_in_tree",
@@ -325,7 +344,7 @@ def _build_compiler_catalogue() -> tuple[CompilerBoundaryRow, ...]:
                 "runtime product is out of scope for this surface."
             ),
             status="permanent_boundary",
-            ambient_pointer="BL-66 pack: no invent-green CUDA-Q runtime",
+            ambient_pointer="CUDA-Q runtime policy: unsupported runtime promotion refused",
             route_matrix_pointer="governed_route:compiler.cudaq.permanent_boundary",
             import_export_allowed=False,
             support_posture="policy_only",
@@ -338,7 +357,7 @@ def _build_compiler_catalogue() -> tuple[CompilerBoundaryRow, ...]:
                 "marketing tick list."
             ),
             status="permanent_boundary",
-            ambient_pointer="BL-57 / TN path residual",
+            ambient_pointer="tensor-network compiler integration remains unsupported",
             route_matrix_pointer="governed_route:compiler.tn.future",
             import_export_allowed=False,
             support_posture="policy_only",
@@ -465,8 +484,7 @@ def decide_compiler_path(
     blockers: list[str] = []
     if invent_green_full_runtime:
         blockers.append(
-            f"invent-green full runtime refused for {row.compiler_id!r} "
-            f"(status={row.status}; BL-66)"
+            f"invent-green full runtime refused for {row.compiler_id!r} (status={row.status})"
         )
     if invent_green_provider_submit:
         blockers.append(
@@ -591,11 +609,7 @@ def build_compiler_boundary_product_registry() -> dict[str, object]:
         "invent_green_qir_provider_submit_policy": False,
         "public_surfaces": list(map_compiler_boundary_public_surfaces()),
         "compilers": compilers,
-        "policy_note": (
-            "External compiler boundary register only; not a marketing tick list; "
-            "CUDA-Q permanent_boundary without owner GPU programme; QIR validate-only; "
-            "S66.5 BL-52/61 wire residual; S66.6 BL-38 cite residual."
-        ),
+        "policy_note": _COMPILER_BOUNDARY_POLICY_NOTE,
     }
 
 
@@ -621,6 +635,16 @@ def assert_compiler_boundary_product_integrity(
 
     """
     registry = dict(payload) if payload is not None else build_compiler_boundary_product_registry()
+    if registry.get("schema") != COMPILER_BOUNDARY_PRODUCT_SCHEMA:
+        raise ValueError("unexpected compiler boundary product schema")
+    if set(registry) != _COMPILER_BOUNDARY_REGISTRY_KEYS:
+        raise ValueError("compiler boundary product registry keys drift")
+    if registry.get("claim_boundary") != COMPILER_BOUNDARY_CLAIM_BOUNDARY:
+        raise ValueError("compiler boundary product claim boundary drift")
+    if registry.get("public_surfaces") != list(map_compiler_boundary_public_surfaces()):
+        raise ValueError("compiler boundary product public surface map drift")
+    if registry.get("policy_note") != _COMPILER_BOUNDARY_POLICY_NOTE:
+        raise ValueError("compiler boundary product policy note drift")
     compilers = registry.get("compilers")
     if not isinstance(compilers, list) or not compilers:
         raise ValueError(
@@ -658,12 +682,17 @@ def assert_compiler_boundary_product_integrity(
             raise ValueError(f"compiler {cid!r} has unknown status: {status!r}")
         if invent is not False:
             raise ValueError(f"compiler {cid!r} invent_green_runtime must be False")
+        if row.get("claim_boundary") != COMPILER_BOUNDARY_CLAIM_BOUNDARY:
+            raise ValueError(f"compiler {cid!r} claim boundary drift")
         if not ambient or not str(ambient).strip():
             raise ValueError(f"compiler {cid!r} must have ambient_pointer")
         if status == "permanent_boundary" and import_export is not False:
             raise ValueError(
                 f"compiler {cid!r} permanent_boundary must set import_export_allowed=False"
             )
+        canonical = _BY_ID.get(cid)
+        if canonical is not None and dict(row) != canonical.to_dict():
+            raise ValueError(f"compiler {cid!r} catalogue row drift")
     if blank:
         raise ValueError(
             f"compiler boundary product registry has {blank} blank or invalid entries"

@@ -120,6 +120,7 @@ def test_public_surfaces_and_registry() -> None:
 
     registry = build_compiler_boundary_product_registry()
     assert registry["schema"] == COMPILER_BOUNDARY_PRODUCT_SCHEMA
+    assert registry["schema"] == "compiler_boundary_product.v2"
     assert registry["invent_green_runtime_policy"] is False
     validated = assert_compiler_boundary_product_integrity(registry)
     assert validated["compiler_count"] == 5
@@ -151,11 +152,34 @@ def test_integrity_rejects_drift_and_policy() -> None:
     with pytest.raises(ValueError, match="drift"):
         assert_compiler_boundary_product_integrity(broken)
 
-    empty: dict[str, object] = {
-        "compilers": [],
-        "blank_entry_count": 0,
-        "compiler_count": 0,
-    }
+    stale_schema = dict(registry)
+    stale_schema["schema"] = "compiler_boundary_product.v1"
+    with pytest.raises(ValueError, match="unexpected compiler boundary product schema"):
+        assert_compiler_boundary_product_integrity(stale_schema)
+
+    unexpected_key = dict(registry)
+    unexpected_key["legacy_alias"] = "deprecated"
+    with pytest.raises(ValueError, match="registry keys drift"):
+        assert_compiler_boundary_product_integrity(unexpected_key)
+
+    claim_drift = dict(registry)
+    claim_drift["claim_boundary"] = "legacy planning label"
+    with pytest.raises(ValueError, match="claim boundary drift"):
+        assert_compiler_boundary_product_integrity(claim_drift)
+
+    surface_drift = dict(registry)
+    surface_drift["public_surfaces"] = []
+    with pytest.raises(ValueError, match="public surface map drift"):
+        assert_compiler_boundary_product_integrity(surface_drift)
+
+    note_drift = dict(registry)
+    note_drift["policy_note"] = "legacy planning label"
+    with pytest.raises(ValueError, match="policy note drift"):
+        assert_compiler_boundary_product_integrity(note_drift)
+
+    empty = dict(registry)
+    empty["compilers"] = []
+    empty["compiler_count"] = 0
     with pytest.raises(ValueError, match="non-empty compilers"):
         assert_compiler_boundary_product_integrity(empty)
 
@@ -207,6 +231,20 @@ def test_integrity_rejects_blank_invalid() -> None:
     no_ambient["compilers"] = arows
     with pytest.raises(ValueError, match="ambient_pointer"):
         assert_compiler_boundary_product_integrity(no_ambient)
+
+    claim_drift = dict(registry)
+    crows = [dict(row) for row in compilers]
+    crows[0]["claim_boundary"] = "legacy planning label"
+    claim_drift["compilers"] = crows
+    with pytest.raises(ValueError, match="claim boundary drift"):
+        assert_compiler_boundary_product_integrity(claim_drift)
+
+    pointer_drift = dict(registry)
+    pointer_rows = [dict(row) for row in compilers]
+    pointer_rows[0]["ambient_pointer"] = "legacy planning pointer"
+    pointer_drift["compilers"] = pointer_rows
+    with pytest.raises(ValueError, match="catalogue row drift"):
+        assert_compiler_boundary_product_integrity(pointer_drift)
 
     perm_export = dict(registry)
     prows = [dict(row) for row in compilers]

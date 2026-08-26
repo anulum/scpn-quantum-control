@@ -264,13 +264,12 @@ control, or broad quantum-advantage claim is promoted by this release.
   invent-green advantage, unvalidated leaderboard ranks, hardware auto-exec.
   Docs: `docs/quantum_sync_challenge_oracle_product.md`. Seventeenth P1
   A-product after BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66.
-- 2026-07-24 — QIR / CUDA-Q compiler boundary product (BL-66):
+- 2026-07-24 — QIR / CUDA-Q compiler boundary product:
   `scpn_quantum_control.compiler_boundary_product` productises external-compiler
   boundary register (QIR, CUDA-Q, Catalyst, MLIR/Enzyme, future TN) with status
   enum; composes ambient LLVM/JIT claim gate + Catalyst comparison; refuse
   invent-green CUDA-Q runtime and QIR provider submit. Docs:
-  `docs/compiler_boundary_product.md`. Sixteenth P1 A-product after
-  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75.
+  `docs/compiler_boundary_product.md`.
 - 2026-07-24 — Multi-HAL provider federation product:
   `scpn_quantum_control.multi_hal_federation_product` productises capability-true
   federation matrix over ambient hardware/hal_* descriptors and profiles with

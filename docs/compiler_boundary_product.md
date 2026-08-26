@@ -9,7 +9,7 @@ Module: `scpn_quantum_control.compiler_boundary_product`
 
 | Rule | Behaviour |
 |---|---|
-| Product schema | `compiler_boundary_product.v1` |
+| Product schema | `compiler_boundary_product.v2` |
 | Unknown compiler | Fail closed |
 | CUDA-Q full runtime invent-green | Refuse |
 | QIR provider submit invent-green | Refuse |
@@ -62,7 +62,7 @@ strings, booleans, and integers.
 | `BoundaryStatus` | Literal status: `supported`, `adapter`, `implementation_path`, or `permanent_boundary`. |
 | `SupportPosture` | Literal evidence posture: `local_research`, `live_hardware_gated`, `policy_only`, or `metadata_only`. |
 | `PathDecisionOutcome` | Literal decision outcome: `allowed` or `refused`. |
-| `COMPILER_BOUNDARY_PRODUCT_SCHEMA` | Stable serialisation schema identifier, currently `compiler_boundary_product.v1`. |
+| `COMPILER_BOUNDARY_PRODUCT_SCHEMA` | Stable serialisation schema identifier, currently `compiler_boundary_product.v2`. |
 | `COMPILER_BOUNDARY_CLAIM_BOUNDARY` | Shared non-promotional boundary copied into rows, decisions, probes, and registries. |
 
 ### Data models
@@ -131,9 +131,10 @@ status to `runtime_gap` for deterministic examples and tests.
 metadata. `build_compiler_boundary_product_registry()` assembles the schema,
 claim boundary, policy flags, public surfaces, and canonical rows.
 `assert_compiler_boundary_product_integrity(payload=None)` validates a supplied
-registry or builds the canonical one. It raises `ValueError` for malformed or
-duplicate rows, catalogue drift, missing QIR/CUDA-Q boundaries, inconsistent
-counts, blanks, or invent-green policy flags.
+registry or builds the canonical one. It raises `ValueError` for stale schemas,
+unexpected top-level keys, claim or policy drift, malformed or duplicate rows,
+canonical-row drift, missing QIR/CUDA-Q boundaries, inconsistent counts, blanks,
+or invent-green policy flags.
 
 ```python
 from scpn_quantum_control.compiler_boundary_product import (
@@ -153,18 +154,17 @@ assert validated["blank_entry_count"] == 0
   hardware execution, network I/O, or filesystem writes.
 - A `success` Catalyst runner status is an input observation, not release,
   hardware, provider, or scientific-promotion evidence.
-- Callers must preserve the BL-52 governed route and separate authorization
+- Callers must preserve governed-route and separate authorization
   gates before any external compiler or provider action.
 
 ## Residuals (honest)
 
-- **S66.5** — BL-52 route IDs + BL-61 watch feeds automation
-- **S66.6** — BL-38 decision must cite this register
+- Governed-route identifiers and competitive-watch feeds still require automation
+- The Rust LLVM/JIT decision must cite this register
 - Full CUDA-Q runtime remains out of scope without owner GPU programme
 
 ## Related
 
-- Pack: `docs/internal/differentiable_programming/p3_strategic/bl66_qir_cudaq_compiler_boundary_register.md`
 - Ambient: `compiler.mlir_llvm_jit_claim_gate`, `benchmarks.differentiable_catalyst_comparison`
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
