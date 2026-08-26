@@ -21,9 +21,9 @@ import pytest
 
 def _load_runner(repo: Path) -> ModuleType:
     path = repo / "scripts/run_dla_topology_control_evidence.py"
-    spec = importlib.util.spec_from_file_location("bl54_evidence_runner", path)
+    spec = importlib.util.spec_from_file_location("dla_topology_evidence_runner", path)
     if spec is None or spec.loader is None:
-        raise RuntimeError("cannot load BL-54 evidence runner")
+        raise RuntimeError("cannot load DLA/topology evidence runner")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -69,7 +69,7 @@ def test_evidence_runner_writes_then_byte_checks_real_outputs(tmp_path: Path) ->
     assert "content_digest=" in checked.stdout
     assert json_path.stat().st_size > 1500
     assert markdown_path.read_text(encoding="utf-8").startswith(
-        "# BL-54 DLA and Topology-Constrained Control Evidence"
+        "# DLA and Topology-Constrained Control Evidence"
     )
 
 

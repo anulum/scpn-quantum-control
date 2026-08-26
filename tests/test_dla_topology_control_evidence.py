@@ -56,8 +56,8 @@ def test_frozen_support_rows_descoped_qgnn_and_name_exact_blockers(
 ) -> None:
     """Keep optional QGNN wiring descoped and list non-smooth blockers."""
     statuses = {row.capability: row.status for row in frozen_evidence.support}
-    assert statuses["S54.5 BL-42 QGNN wiring"] == "descoped"
-    assert statuses["S54.2 penalties and projections"] == "supported"
+    assert statuses["optional QGNN wiring"] == "descoped"
+    assert statuses["penalties and projections"] == "supported"
     assert frozen_evidence.unsupported_blockers == (
         "sign_policy",
         "uniform_bounds",

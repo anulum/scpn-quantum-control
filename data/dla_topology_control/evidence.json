@@ -1,7 +1,7 @@
 {
   "accepted_steps": 40,
   "claim_boundary": "finite synthetic parity-sector and fixed-active-set topology derivatives only; no full-DLA, controllability, persistent-homology derivative, hardware-protection, error-correction, provider, QPU, or deployment claim",
-  "content_digest": "bc88d19d4bbf4e23fe4780f22ae3002f056d0241956a1d2dcdc887101570c956",
+  "content_digest": "b97043be4bb4b5d3060d30c61f3afc25b290bd18520c60410e6eed4c887e4c5b",
   "existing_optimizer_final_violation": 0.0,
   "final_leakage_mass": 0.0,
   "final_objective": 8.65715781264813e-25,
@@ -11,54 +11,54 @@
   "n_qubits": 4,
   "parity_gradient_max_abs_error": 3.592330877211225e-10,
   "parity_jvp_max_abs_error": 9.984548843531556e-11,
-  "schema_version": "topology_control_evidence_v1",
+  "schema_version": "topology_control_evidence_v2",
   "sector": "even",
   "support": [
     {
       "boundary": "classification is exact-local rather than a universal smoothness claim",
-      "capability": "S54.0 differentiability boundary",
+      "capability": "differentiability boundary",
       "differentiability": "affine",
       "evidence": "linear/affine branches are separated from non-smooth and discrete branches",
       "status": "supported"
     },
     {
       "boundary": "inventory is not new mathematical evidence",
-      "capability": "S54.1 existing contract inventory",
+      "capability": "existing contract inventory",
       "differentiability": "not_applicable",
       "evidence": "the facade composes DLA parity and topology_control owners",
       "status": "supported"
     },
     {
       "boundary": "PH, connectivity, kinks, and active budget rescaling fail closed",
-      "capability": "S54.2 penalties and projections",
+      "capability": "penalties and projections",
       "differentiability": "piecewise_smooth",
       "evidence": "parity JVP/VJP is exact and topology JVP/VJP is fixed-active-set only",
       "status": "supported"
     },
     {
       "boundary": "no physical Hamiltonian, controller, or hardware is actuated",
-      "capability": "S54.3 constrained optimiser",
+      "capability": "constrained optimiser",
       "differentiability": "affine",
       "evidence": "synthetic parity projection occurs inside every strict-decrease proposal",
       "status": "supported"
     },
     {
       "boundary": "one finite configuration is not generalisation evidence",
-      "capability": "S54.4 deterministic evidence",
+      "capability": "deterministic evidence",
       "differentiability": "not_applicable",
       "evidence": "central differences, adjoint identity, custody digests, and blockers are frozen",
       "status": "supported"
     },
     {
       "boundary": "parity and graph topology are not conflated without a typed consumer",
-      "capability": "S54.5 BL-42 QGNN wiring",
+      "capability": "optional QGNN wiring",
       "differentiability": "not_applicable",
       "evidence": "no current QGNN consumer maps Hilbert-space parity onto graph-message topology",
       "status": "descoped"
     },
     {
       "boundary": "documentation does not promote hardware DLA protection",
-      "capability": "S54.6 constraint versus witness docs",
+      "capability": "constraint versus witness documentation",
       "differentiability": "not_applicable",
       "evidence": "public docs distinguish projected constraints, diagnostics, and non-claims",
       "status": "supported"

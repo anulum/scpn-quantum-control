@@ -53,7 +53,7 @@ biological-data dependency enters this package. See
 
 ## DLA and topology-constrained control composition
 
-`scpn_quantum_control.dla_topology_control` isolates BL-54 into six
+`scpn_quantum_control.dla_topology_control` separates the surface into six
 responsibility modules plus a public facade. Parity projection delegates its
 forward map to `analysis.dla_parity_theorem`; topology sensitivity calls the
 production `TopologyConstraintLedger.project` and supplies local JVP/VJP rules

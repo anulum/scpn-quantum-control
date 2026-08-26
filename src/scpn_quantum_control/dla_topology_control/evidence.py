@@ -40,7 +40,7 @@ from .schema import (
     ParitySector,
 )
 
-TOPOLOGY_CONTROL_EVIDENCE_SCHEMA = "topology_control_evidence_v1"
+TOPOLOGY_CONTROL_EVIDENCE_SCHEMA = "topology_control_evidence_v2"
 TOPOLOGY_CONTROL_EVIDENCE_DATE = "2026-07-29"
 
 ComplexArray = NDArray[np.complex128]
@@ -78,11 +78,12 @@ class DlaTopologyControlEvidence:
     unsupported_blockers:
         Ordered unique names of deliberately refused topology branches.
     support:
-        Ordered BL-54 slice decisions, including the descoped QGNN wiring row.
+        Ordered capability decisions, including the optional QGNN wiring row.
     claim_boundary:
         Finite synthetic, no-hardware interpretation boundary.
     content_digest:
         SHA-256 of every preceding canonical evidence field.
+
     """
 
     schema_version: str
@@ -170,6 +171,7 @@ class DlaTopologyControlEvidence:
         dict[str, object]
             Ordered semantic fields whose nested support rows contain only
             JSON-native values.
+
         """
         payload: dict[str, object] = {
             "schema_version": self.schema_version,
@@ -253,49 +255,49 @@ def _parity_jvp_error(
 def _support_rows() -> tuple[ConstraintSupportRow, ...]:
     return (
         ConstraintSupportRow(
-            "S54.0 differentiability boundary",
+            "differentiability boundary",
             "supported",
             DifferentiabilityKind.AFFINE,
             "linear/affine branches are separated from non-smooth and discrete branches",
             "classification is exact-local rather than a universal smoothness claim",
         ),
         ConstraintSupportRow(
-            "S54.1 existing contract inventory",
+            "existing contract inventory",
             "supported",
             DifferentiabilityKind.NOT_APPLICABLE,
             "the facade composes DLA parity and topology_control owners",
             "inventory is not new mathematical evidence",
         ),
         ConstraintSupportRow(
-            "S54.2 penalties and projections",
+            "penalties and projections",
             "supported",
             DifferentiabilityKind.PIECEWISE_SMOOTH,
             "parity JVP/VJP is exact and topology JVP/VJP is fixed-active-set only",
             "PH, connectivity, kinks, and active budget rescaling fail closed",
         ),
         ConstraintSupportRow(
-            "S54.3 constrained optimiser",
+            "constrained optimiser",
             "supported",
             DifferentiabilityKind.AFFINE,
             "synthetic parity projection occurs inside every strict-decrease proposal",
             "no physical Hamiltonian, controller, or hardware is actuated",
         ),
         ConstraintSupportRow(
-            "S54.4 deterministic evidence",
+            "deterministic evidence",
             "supported",
             DifferentiabilityKind.NOT_APPLICABLE,
             "central differences, adjoint identity, custody digests, and blockers are frozen",
             "one finite configuration is not generalisation evidence",
         ),
         ConstraintSupportRow(
-            "S54.5 BL-42 QGNN wiring",
+            "optional QGNN wiring",
             "descoped",
             DifferentiabilityKind.NOT_APPLICABLE,
             "no current QGNN consumer maps Hilbert-space parity onto graph-message topology",
             "parity and graph topology are not conflated without a typed consumer",
         ),
         ConstraintSupportRow(
-            "S54.6 constraint versus witness docs",
+            "constraint versus witness documentation",
             "supported",
             DifferentiabilityKind.NOT_APPLICABLE,
             "public docs distinguish projected constraints, diagnostics, and non-claims",
@@ -309,7 +311,7 @@ def build_dla_topology_control_evidence(
     n_qubits: int = 4,
     seed: int = 540,
 ) -> DlaTopologyControlEvidence:
-    """Build the deterministic finite synthetic BL-54 evidence bundle.
+    """Build the deterministic finite synthetic DLA/topology evidence bundle.
 
     The builder checks parity objective gradients and projector JVPs against
     central differences, a topology-ledger JVP against the production forward
@@ -332,6 +334,7 @@ def build_dla_topology_control_evidence(
     ------
     ValueError
         If ``n_qubits`` or ``seed`` violates the bounded public contract.
+
     """
     if isinstance(n_qubits, bool) or not isinstance(n_qubits, int) or not 2 <= n_qubits <= 8:
         raise ValueError("evidence n_qubits must be an integer in [2, 8]")
@@ -489,9 +492,10 @@ def render_dla_topology_control_markdown(evidence: DlaTopologyControlEvidence) -
     str
         Newline-terminated report with endpoint metrics, derivative errors,
         blockers, support rows, digest, and non-claims.
+
     """
     lines = [
-        "# BL-54 DLA and Topology-Constrained Control Evidence",
+        "# DLA and Topology-Constrained Control Evidence",
         "",
         f"- Schema: `{evidence.schema_version}`",
         f"- Generated: `{evidence.generated_on}`",
@@ -575,6 +579,7 @@ def write_dla_topology_control_evidence(
         In check mode when either file is absent or differs byte-for-byte.
     OSError
         If filesystem reads, directory creation, or writes fail.
+
     """
     json_target = Path(json_path)
     markdown_target = Path(markdown_path)
@@ -586,7 +591,7 @@ def write_dla_topology_control_evidence(
     if check:
         for path, expected in targets:
             if not path.exists() or path.read_bytes() != expected:
-                raise RuntimeError(f"BL-54 evidence drift: {path}")
+                raise RuntimeError(f"DLA/topology evidence drift: {path}")
         return json_target, markdown_target
     for path, content in targets:
         path.parent.mkdir(parents=True, exist_ok=True)

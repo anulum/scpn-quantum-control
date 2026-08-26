@@ -1,7 +1,7 @@
 # DLA Topology Control API
 
-The `scpn_quantum_control.dla_topology_control` package is the public BL-54
-facade for finite parity-sector derivatives, fixed-active-set topology-ledger
+The `scpn_quantum_control.dla_topology_control` package is the public facade for
+finite parity-sector derivatives, fixed-active-set topology-ledger
 sensitivities, a synthetic projected-gradient task, and deterministic evidence
 custody.
 

@@ -19,7 +19,7 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 - Complete deterministic documentation catalogs for all Python modules and
   public module-level symbols, notebooks, and public Markdown pages, plus an
   evidence-bounded solutions and market-value guide.
-- BL-54 finite parity-sector and fixed-active-set topology JVP/VJP boundaries,
+- Finite parity-sector and fixed-active-set topology JVP/VJP boundaries,
   projected synthetic optimisation, and complete API/evidence documentation.
 - BL-88 topology-aware exact-statevector fidelity-kernel product with matched
   graph controls, custody-checked classification, and bounded synthetic
