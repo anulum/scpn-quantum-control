@@ -249,14 +249,51 @@ def test_assert_integrity_accepts_explicit_payload() -> None:
     assert validated["schema"] == PGBO_QGT_PRODUCT_SCHEMA
 
 
+def test_integrity_rejects_stale_schema() -> None:
+    """Reject the exact superseded serialized contract."""
+    registry = build_pgbo_qgt_product_registry()
+    registry["schema"] = "pgbo_qgt_product.v1"
+    with pytest.raises(ValueError, match="unexpected PGBO QGT product schema"):
+        assert_pgbo_qgt_product_integrity(registry)
+
+
+def test_integrity_rejects_unexpected_registry_key() -> None:
+    """Reject compatibility aliases outside the canonical registry shape."""
+    registry = build_pgbo_qgt_product_registry()
+    registry["legacy_alias"] = "deprecated"
+    with pytest.raises(ValueError, match="registry keys drift"):
+        assert_pgbo_qgt_product_integrity(registry)
+
+
+def test_integrity_rejects_claim_boundary_drift() -> None:
+    """Reject a top-level claim boundary that diverges from the product."""
+    registry = build_pgbo_qgt_product_registry()
+    registry["claim_boundary"] = "legacy planning label"
+    with pytest.raises(ValueError, match="claim boundary drift"):
+        assert_pgbo_qgt_product_integrity(registry)
+
+
+def test_integrity_rejects_public_surface_drift() -> None:
+    """Reject public-surface metadata that diverges from the live mapper."""
+    registry = build_pgbo_qgt_product_registry()
+    registry["public_surfaces"] = []
+    with pytest.raises(ValueError, match="public surface map drift"):
+        assert_pgbo_qgt_product_integrity(registry)
+
+
+def test_integrity_rejects_policy_note_drift() -> None:
+    """Reject stale serialized policy language."""
+    registry = build_pgbo_qgt_product_registry()
+    registry["policy_note"] = "legacy planning label"
+    with pytest.raises(ValueError, match="policy note drift"):
+        assert_pgbo_qgt_product_integrity(registry)
+
+
 def test_integrity_rejects_empty_capabilities() -> None:
     registry = build_pgbo_qgt_product_registry()
-    empty: dict[str, object] = {
-        "capabilities": [],
-        "boundaries": registry["boundaries"],
-        "blank_entry_count": 0,
-        "capability_count": 0,
-    }
+    empty = dict(registry)
+    empty["capabilities"] = []
+    empty["capability_count"] = 0
     with pytest.raises(ValueError, match="non-empty capabilities"):
         assert_pgbo_qgt_product_integrity(empty)
 
@@ -372,6 +409,14 @@ def test_integrity_rejects_wrong_max_oscillators() -> None:
         assert_pgbo_qgt_product_integrity(bad_max)
 
 
+def test_integrity_rejects_default_epsilon_drift() -> None:
+    """Reject a registry epsilon that differs from the runtime default."""
+    registry = build_pgbo_qgt_product_registry()
+    registry["default_epsilon"] = 0.1
+    with pytest.raises(ValueError, match="default_epsilon"):
+        assert_pgbo_qgt_product_integrity(registry)
+
+
 def test_integrity_rejects_boundary_fail_closed_false() -> None:
     registry = build_pgbo_qgt_product_registry()
     bounds = cast(list[dict[str, object]], registry["boundaries"])
@@ -381,6 +426,18 @@ def test_integrity_rejects_boundary_fail_closed_false() -> None:
     fc["boundaries"] = mut_b
     with pytest.raises(ValueError, match="fail_closed"):
         assert_pgbo_qgt_product_integrity(fc)
+
+
+def test_integrity_rejects_boundary_row_drift() -> None:
+    """Reject non-canonical serialized boundary content."""
+    registry = build_pgbo_qgt_product_registry()
+    bounds = cast(list[dict[str, object]], registry["boundaries"])
+    drift = dict(registry)
+    rows = [dict(row) for row in bounds]
+    rows[0]["summary"] = "legacy planning label"
+    drift["boundaries"] = rows
+    with pytest.raises(ValueError, match="catalogue row drift"):
+        assert_pgbo_qgt_product_integrity(drift)
 
 
 def test_integrity_rejects_capability_row_not_mapping() -> None:
@@ -422,6 +479,18 @@ def test_integrity_rejects_empty_ambient_symbol() -> None:
     no_sym["capabilities"] = ns
     with pytest.raises(ValueError, match="ambient_symbol"):
         assert_pgbo_qgt_product_integrity(no_sym)
+
+
+def test_integrity_rejects_capability_row_drift() -> None:
+    """Reject non-canonical serialized capability content."""
+    registry = build_pgbo_qgt_product_registry()
+    caps = cast(list[dict[str, object]], registry["capabilities"])
+    drift = dict(registry)
+    rows = [dict(row) for row in caps]
+    rows[0]["summary"] = "legacy planning label"
+    drift["capabilities"] = rows
+    with pytest.raises(ValueError, match="catalogue row drift"):
+        assert_pgbo_qgt_product_integrity(drift)
 
 
 def test_integrity_rejects_missing_pgbo_tensor() -> None:
@@ -1308,5 +1377,5 @@ def test_capability_map_rejects_duplicate_id(monkeypatch: pytest.MonkeyPatch) ->
 def test_module_exports_stable() -> None:
     assert "assert_pgbo_qgt_product_integrity" in qgt_product.__all__
     assert "materialise_demo_pgbo_tensor_probe" in qgt_product.__all__
-    assert PGBO_QGT_PRODUCT_SCHEMA == "pgbo_qgt_product.v1"
+    assert PGBO_QGT_PRODUCT_SCHEMA == "pgbo_qgt_product.v2"
     assert MAX_OSCILLATORS == 6

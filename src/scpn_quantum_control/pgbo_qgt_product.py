@@ -63,7 +63,7 @@ BoundaryKind = Literal[
 ]
 """Hard-gap boundary kinds for PGBO QGT honesty."""
 
-PGBO_QGT_PRODUCT_SCHEMA: Final[str] = "pgbo_qgt_product.v1"
+PGBO_QGT_PRODUCT_SCHEMA: Final[str] = "pgbo_qgt_product.v2"
 """JSON schema identifier for serialised product payloads."""
 
 PGBO_QGT_CLAIM_BOUNDARY: Final[str] = (
@@ -72,12 +72,38 @@ PGBO_QGT_CLAIM_BOUNDARY: Final[str] = (
     "pgbo.quantum_bridge.compute_pgbo_tensor; small-system probes with "
     "fail-closed N caps; parameter-shift FD derivatives on K (not exact "
     "analytic AD); refuse invent-green experimental geometry and live QPU; "
-    "compose BL-50; residual S71.3 dashboard panel and S71.4 metamorphic "
-    "depth open honestly"
+    "compose the geometric-control catalogue; dashboard integration and "
+    "metamorphic registration depth remain unresolved"
 )
 """Shared claim boundary for PGBO QGT product payloads."""
 
-# Fail-closed dense ground-state size cap (S71.1). Ambient exact-diag is O(2^n).
+_PGBO_QGT_POLICY_NOTE: Final[str] = (
+    "PGBO QGT is small-system simulation geometry on K-space with finite-difference "
+    "state derivatives; experimental geometry and live-QPU claims remain refused; "
+    "system size is capped; geometric-control catalogue composition is metadata-only; "
+    "dashboard integration and metamorphic registration depth remain unresolved."
+)
+_PGBO_QGT_REGISTRY_KEYS: Final[frozenset[str]] = frozenset(
+    {
+        "schema",
+        "claim_boundary",
+        "capability_count",
+        "boundary_count",
+        "blank_entry_count",
+        "max_oscillators",
+        "default_epsilon",
+        "hardware_submit_allowed_policy",
+        "experimental_geometry_claim_policy",
+        "unbounded_system_size_policy",
+        "fd_derivative_as_exact_policy",
+        "public_surfaces",
+        "capabilities",
+        "boundaries",
+        "policy_note",
+    }
+)
+
+# Fail-closed dense ground-state size cap. Ambient exact diagonalisation is O(2^n).
 MAX_OSCILLATORS: Final[int] = 6
 """Maximum oscillators allowed on product probes (fail closed above)."""
 
@@ -87,7 +113,7 @@ DEFAULT_EPSILON: Final[float] = 0.005
 
 @dataclass(frozen=True, slots=True)
 class QgtCapabilityRow:
-    """One PGBO QGT capability catalogue row (S71.0 / S71.1).
+    """One PGBO QGT capability catalogue row.
 
     Attributes
     ----------
@@ -111,6 +137,7 @@ class QgtCapabilityRow:
         Inventory date label.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     capability_id: str
@@ -257,7 +284,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedPgboTensorProbe:
-    """Materialised ambient ``compute_pgbo_tensor`` probe (S71.1 / S71.2)."""
+    """Materialised ambient ``compute_pgbo_tensor`` probe."""
 
     capability_id: str
     n_oscillators: int
@@ -327,7 +354,7 @@ class MaterialisedPgboTensorProbe:
 
 
 def _build_capabilities() -> tuple[QgtCapabilityRow, ...]:
-    """Build QGT capability catalogue (S71.0 / S71.1)."""
+    """Build the QGT capability catalogue."""
     return (
         QgtCapabilityRow(
             capability_id="pgbo_tensor",
@@ -377,7 +404,7 @@ def _build_capabilities() -> tuple[QgtCapabilityRow, ...]:
         QgtCapabilityRow(
             capability_id="geometric_control_compose",
             kind="geometric_control_compose",
-            title="Compose BL-50 geometric control",
+            title="Geometric-control catalogue composition",
             summary=(
                 "Pairs with geometric_control_product (McLachlan/QNG on ansatz "
                 "params); this product owns QGT on coupling K-space."
@@ -408,8 +435,8 @@ def _build_boundaries() -> tuple[QgtBoundaryRow, ...]:
             title="Live QPU QGT submit",
             failure_class="live_qpu_qgt_refused",
             summary=(
-                "Compose BL-47 no-submit; probes use local classical exact-diag "
-                "ground states only."
+                "Compose the hardware-safe no-submit policy; probes use local "
+                "classical exact-diagonalisation ground states only."
             ),
         ),
         QgtBoundaryRow(
@@ -530,7 +557,7 @@ def decide_qgt_path(
     if invent_green_live_qpu:
         blockers.append(
             "invent-green live QPU QGT refused "
-            f"(capability={row.capability_id}; BL-47 no-submit compose)"
+            f"(capability={row.capability_id}; hardware-safe no-submit policy)"
         )
     if invent_green_unbounded_n:
         blockers.append(
@@ -652,7 +679,7 @@ def materialise_pgbo_tensor_probe(
     invent_green_fd_as_exact: bool = False,
     demo_label: str = "pgbo_tensor_demo",
 ) -> MaterialisedPgboTensorProbe:
-    """Materialise a real ambient PGBO QGT probe (S71.1 / S71.2)."""
+    """Materialise a real ambient PGBO QGT probe."""
     decision = decide_qgt_path(
         capability_id,
         invent_green_experimental_geometry=invent_green_experimental_geometry,
@@ -775,11 +802,7 @@ def build_pgbo_qgt_product_registry() -> dict[str, object]:
         "public_surfaces": list(map_pgbo_qgt_public_surfaces()),
         "capabilities": capabilities,
         "boundaries": boundaries,
-        "policy_note": (
-            "PGBO QGT is small-system simulation geometry on K-space; FD "
-            "state derivatives; no invent-green experimental geometry or live "
-            "QPU; N capped; BL-50 compose; S71.3/S71.4 residual depth honest."
-        ),
+        "policy_note": _PGBO_QGT_POLICY_NOTE,
     }
 
 
@@ -788,6 +811,16 @@ def assert_pgbo_qgt_product_integrity(
 ) -> dict[str, object]:
     """Assert registry covers capabilities/boundaries without invent-green policies."""
     registry = dict(payload) if payload is not None else build_pgbo_qgt_product_registry()
+    if registry.get("schema") != PGBO_QGT_PRODUCT_SCHEMA:
+        raise ValueError("unexpected PGBO QGT product schema")
+    if set(registry) != _PGBO_QGT_REGISTRY_KEYS:
+        raise ValueError("PGBO QGT product registry keys drift")
+    if registry.get("claim_boundary") != PGBO_QGT_CLAIM_BOUNDARY:
+        raise ValueError("PGBO QGT product claim boundary drift")
+    if registry.get("public_surfaces") != list(map_pgbo_qgt_public_surfaces()):
+        raise ValueError("PGBO QGT product public surface map drift")
+    if registry.get("policy_note") != _PGBO_QGT_POLICY_NOTE:
+        raise ValueError("PGBO QGT product policy note drift")
     capabilities = registry.get("capabilities")
     boundaries = registry.get("boundaries")
     if not isinstance(capabilities, list) or not capabilities:
@@ -816,6 +849,9 @@ def assert_pgbo_qgt_product_integrity(
             raise ValueError(f"capability {cid!r} hardware_submit_allowed must be False")
         if not symbol or not str(symbol).strip():
             raise ValueError(f"capability {cid!r} must have non-empty ambient_symbol")
+        canonical = _CAPABILITY_BY_ID.get(cid)
+        if canonical is not None and dict(row) != canonical.to_dict():
+            raise ValueError(f"capability {cid!r} catalogue row drift")
     if blank:
         raise ValueError(f"PGBO QGT product registry has {blank} blank or invalid entries")
     if not tensor_found:
@@ -840,6 +876,12 @@ def assert_pgbo_qgt_product_integrity(
         seen_b.add(bid)
         if fail_closed is not True:
             raise ValueError(f"boundary {bid!r} fail_closed must be True")
+        canonical_boundary = next(
+            (candidate for candidate in _BOUNDARIES if candidate.boundary_id == bid),
+            None,
+        )
+        if canonical_boundary is not None and dict(row) != canonical_boundary.to_dict():
+            raise ValueError(f"boundary {bid!r} catalogue row drift")
     expected_b = set(list_qgt_boundary_ids())
     if seen_b != expected_b:
         raise ValueError(
@@ -858,6 +900,8 @@ def assert_pgbo_qgt_product_integrity(
     max_n = registry.get("max_oscillators", -1)
     if not isinstance(max_n, int) or max_n != MAX_OSCILLATORS:
         raise ValueError(f"max_oscillators must equal {MAX_OSCILLATORS}")
+    if registry.get("default_epsilon") != DEFAULT_EPSILON:
+        raise ValueError(f"default_epsilon must equal {DEFAULT_EPSILON}")
     if registry.get("hardware_submit_allowed_policy", True) is not False:
         raise ValueError("hardware_submit_allowed_policy must be False")
     if registry.get("experimental_geometry_claim_policy", True) is not False:

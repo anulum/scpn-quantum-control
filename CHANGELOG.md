@@ -201,13 +201,12 @@ control, or broad quantum-advantage claim is promoted by this release.
   topology certification / live QPU / unrestricted shadows. Docs:
   `docs/advanced_witnesses_product.md`. Twenty-sixth P1 A-product after
   BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73/99/101/100/51/59/50/71.
-- 2026-07-24 — PGBO quantum geometric tensor product (BL-71):
+- 2026-07-24 — PGBO quantum geometric tensor product:
   `scpn_quantum_control.pgbo_qgt_product` productises QGT/Fubini–Study/Berry
   curvature catalogue and small-system `compute_pgbo_tensor` probes with
   fail-closed N caps over ambient `pgbo.quantum_bridge`; refuse invent-green
   experimental geometry / live QPU / unbounded N / FD-as-exact-AD. Docs:
-  `docs/pgbo_qgt_product.md`. Twenty-fifth P1 A-product after
-  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73/99/101/100/51/59/50.
+  `docs/pgbo_qgt_product.md`.
 - 2026-07-24 — Geometric quantum control product (BL-50):
   `scpn_quantum_control.geometric_control_product` productises QFI/McLachlan/QNG
   taxonomy, metric spectrum diagnostics, and regularised natural-gradient

@@ -10,12 +10,12 @@ Module: `scpn_quantum_control.pgbo_qgt_product`
 
 | Rule | Behaviour |
 |---|---|
-| Product schema | `pgbo_qgt_product.v1` |
+| Product schema | `pgbo_qgt_product.v2` |
 | Ambient | `pgbo.quantum_bridge.compute_pgbo_tensor` |
 | Max oscillators | `MAX_OSCILLATORS = 6` (fail closed) |
 | Derivatives | Central FD on K with phase alignment (not exact AD) |
 | Experimental geometry | Refuse invent-green |
-| Live QPU | Refuse invent-green (BL-47) |
+| Live QPU | Refuse under the hardware-safe no-submit policy |
 
 ## Quick start
 
@@ -39,15 +39,23 @@ assert probe.n_parameters == 1
 assert probe.invent_green_live_qpu is False
 ```
 
+## Registry integrity
+
+Schema v2 accepts only the canonical registry keys, claim boundary, public
+surface map, policy note, capability rows, boundary rows, size cap, and default
+finite-difference epsilon. Schema v1 and drifted serialized content fail closed;
+no planning-code compatibility aliases are retained. The product schema remains
+part of each deterministic probe digest, while the QGT observables and numerical
+method are unchanged.
+
 ## Residuals (honest)
 
-- **S71.3** — BL-50 dashboard panel depth
-- **S71.4** — BL-46 metamorphic registration depth
+- Dashboard integration depth remains open
+- Metamorphic registration depth remains open
 
 ## Related
 
-- Pack: `docs/internal/differentiable_programming/p3_strategic/bl71_pgbo_quantum_geometric_tensor.md`
 - Ambient: `scpn_quantum_control.pgbo.quantum_bridge`
-- BL-50 geometric control · BL-47 hardware-safe
+- Geometric-control catalogue · hardware-safe no-submit policy
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

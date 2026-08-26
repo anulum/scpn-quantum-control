@@ -453,10 +453,10 @@
     },
     {
       "path": "tests/test_pgbo_qgt_product.py",
-      "lines": 1312,
+      "lines": 1381,
       "kind": "test",
       "disposition": "cohesive",
-      "responsibility": "Real-surface regression suite for pgbo_qgt_product (BL-71).",
+      "responsibility": "Real-surface regression suite for the PGBO quantum geometric tensor product.",
       "dependency_boundary": "Owns pgbo_qgt_product through its public API; no other test imports this module.",
       "reassess_when": "The product splits into independently versioned PGBO/QGT packages."
     },
