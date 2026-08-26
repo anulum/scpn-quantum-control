@@ -63,16 +63,16 @@ ThreatKind = Literal[
 ]
 """Threat-model kinds for cloud deploy boundary."""
 
-CLOUD_NATIVE_DEPLOYMENT_PRODUCT_SCHEMA: Final[str] = "cloud_native_deployment_product.v1"
+CLOUD_NATIVE_DEPLOYMENT_PRODUCT_SCHEMA: Final[str] = "cloud_native_deployment_product.v2"
 """JSON schema identifier for serialised product payloads."""
 
 CLOUD_NATIVE_DEPLOYMENT_CLAIM_BOUNDARY: Final[str] = (
     "Cloud-native deployment boundary product surface only; catalogues batch/"
     "worker deploy patterns and threat-model rows; dry-run manifest generation "
     "via ambient deployment.cloud_native; refuse secret-like env, always-on QPU "
-    "deploy claims, live cluster create, and credential loading; composes BL-47/"
-    "BL-95 no-submit posture; residual S101.3 full enterprise packaging docs depth "
-    "open honestly"
+    "deploy claims, live cluster create, and credential loading; composes "
+    "hardware-safe execution with dry-run compute planning; fuller enterprise "
+    "packaging and operations runbooks remain open"
 )
 """Shared claim boundary for cloud-native deployment product payloads."""
 
@@ -83,7 +83,7 @@ _DEMO_NAME: Final[str] = "scpn-batch-worker"
 
 @dataclass(frozen=True, slots=True)
 class DeploymentPatternRow:
-    """One cloud-native deployment pattern catalogue row (S101.0 / S101.1).
+    """One cloud-native deployment pattern catalogue row.
 
     Attributes
     ----------
@@ -104,9 +104,9 @@ class DeploymentPatternRow:
     live_cluster_create
         Must remain False.
     hardware_safety_pointer
-        BL-47 hardware-safe / no-submit honesty pointer.
+        Hardware-safe no-submit policy pointer.
     compute_plan_pointer
-        BL-95 QPU compute abstraction posture pointer.
+        Dry-run QPU compute-plan posture pointer.
     support_posture
         Support posture badge.
     as_of
@@ -183,7 +183,7 @@ class DeploymentPatternRow:
 
 @dataclass(frozen=True, slots=True)
 class ThreatModelRow:
-    """One threat-model row for cloud deploy boundary (S101.0).
+    """One threat-model row for the cloud deployment boundary.
 
     Attributes
     ----------
@@ -369,7 +369,7 @@ class MaterialisedDeployDryRunProbe:
 
 
 def _build_patterns() -> tuple[DeploymentPatternRow, ...]:
-    """Build deployment pattern catalogue (S101.1)."""
+    """Build the deployment pattern catalogue."""
     return (
         DeploymentPatternRow(
             pattern_id="batch_worker",
@@ -388,7 +388,7 @@ def _build_patterns() -> tuple[DeploymentPatternRow, ...]:
             title="Stable-core contract gate job",
             summary=(
                 "One-shot stable-core contract gate container; offline research "
-                "posture; BL-47/95 compose."
+                "posture; hardware-safe no-submit and dry-run compute planning."
             ),
             default_command=("scpn-bench", "stable-core-contract-gate"),
             support_posture="local_research",
@@ -408,7 +408,7 @@ def _build_patterns() -> tuple[DeploymentPatternRow, ...]:
 
 
 def _build_threats() -> tuple[ThreatModelRow, ...]:
-    """Build threat-model catalogue (S101.0)."""
+    """Build the fail-closed threat-model catalogue."""
     return (
         ThreatModelRow(
             threat_id="secret_leakage",
@@ -424,8 +424,8 @@ def _build_threats() -> tuple[ThreatModelRow, ...]:
             kind="always_on_qpu",
             title="Always-on QPU deploy claims",
             mitigation=(
-                "Product patterns set allows_always_on_qpu=False; compose BL-47/"
-                "BL-95 no-submit / dry-run posture."
+                "Product patterns set allows_always_on_qpu=False and compose "
+                "hardware-safe no-submit with dry-run compute planning."
             ),
         ),
         ThreatModelRow(
@@ -563,7 +563,7 @@ def decide_deploy_path(
     inject_secret_env: bool = False,
     load_credentials: bool = False,
 ) -> PathEligibilityDecision:
-    """Decide whether a cloud deploy product path may proceed (S101.0 / S101.2).
+    """Decide whether a cloud deployment path may proceed.
 
     Parameters
     ----------
@@ -594,7 +594,7 @@ def decide_deploy_path(
     if invent_green_always_on_qpu:
         blockers.append(
             "invent-green always-on QPU deploy refused "
-            f"(pattern={row.pattern_id}; BL-47/BL-95 no-submit posture)"
+            f"(pattern={row.pattern_id}; hardware-safe no-submit posture)"
         )
     if inject_secret_env:
         blockers.append(
@@ -632,7 +632,7 @@ def materialise_deploy_dry_run_probe(
     replicas: int = 1,
     env: Mapping[str, str] | None = None,
 ) -> MaterialisedDeployDryRunProbe:
-    """Materialise dry-run manifests via ambient generate_cloud_manifests (S101.2).
+    """Materialise dry-run manifests via the ambient manifest generator.
 
     Parameters
     ----------
@@ -758,7 +758,8 @@ def build_cloud_native_deployment_product_registry() -> dict[str, object]:
         "policy_note": (
             "Cloud-native dry-run packaging only; ambient deployment.cloud_native "
             "generates K8s/Compose files without cluster create or secrets; "
-            "BL-47/BL-95 no always-on QPU; S101.3 residual docs depth honest."
+            "hardware-safe execution and dry-run compute planning prohibit an "
+            "always-on QPU; enterprise operations runbooks remain open."
         ),
     }
 
@@ -787,6 +788,8 @@ def assert_cloud_native_deployment_product_integrity(
     registry = (
         dict(payload) if payload is not None else build_cloud_native_deployment_product_registry()
     )
+    if registry.get("schema") != CLOUD_NATIVE_DEPLOYMENT_PRODUCT_SCHEMA:
+        raise ValueError("cloud-native deployment product schema mismatch")
     patterns = registry.get("patterns")
     threats = registry.get("threats")
     if not isinstance(patterns, list) or not patterns:

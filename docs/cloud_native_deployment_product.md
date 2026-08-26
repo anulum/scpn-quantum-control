@@ -10,10 +10,10 @@ Module: `scpn_quantum_control.cloud_native_deployment_product`
 
 | Rule | Behaviour |
 |---|---|
-| Product schema | `cloud_native_deployment_product.v1` |
+| Product schema | `cloud_native_deployment_product.v2` |
 | Ambient generator | `deployment.cloud_native.generate_cloud_manifests` |
 | Secret-like env | Refuse (ambient + product pre-check) |
-| Always-on QPU | Refuse (BL-47 / BL-95 compose) |
+| Always-on QPU | Refuse (hardware-safe no-submit and dry-run compute planning) |
 | Live cluster create | Refuse |
 | Credential loading | Refuse |
 | Unknown pattern | Fail closed |
@@ -96,15 +96,14 @@ These APIs generate and validate deployment files only. They do not create a
 cluster, load credentials, submit QPU work, expose secrets, apply manifests, or
 claim enterprise operations evidence.
 
-## Residuals (honest)
+## Open operations depth
 
-- **S101.3** — fuller enterprise packaging / ops runbooks depth
+- Fuller enterprise packaging and operations runbooks remain open
 - Ambient generator remains the implementation spine
 
 ## Related
 
-- Pack: `docs/internal/differentiable_programming/p3_strategic/bl101_cloud_native_deployment_boundary.md`
 - Ambient: `scpn_quantum_control.deployment.cloud_native`
-- BL-47 hardware-safe · BL-95 QPU compute · BL-99 campaign harness
+- Hardware-safe execution · dry-run QPU compute planning · campaign harness
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

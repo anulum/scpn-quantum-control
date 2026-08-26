@@ -168,6 +168,11 @@ def test_integrity_rejects_drift_and_policy() -> None:
     registry = build_cloud_native_deployment_product_registry()
     patterns = cast(list[dict[str, object]], registry["patterns"])
 
+    wrong_schema = dict(registry)
+    wrong_schema["schema"] = "cloud_native_deployment_product.v1"
+    with pytest.raises(ValueError, match="schema mismatch"):
+        assert_cloud_native_deployment_product_integrity(wrong_schema)
+
     broken = dict(registry)
     broken["patterns"] = patterns + [
         {
@@ -191,6 +196,7 @@ def test_integrity_rejects_drift_and_policy() -> None:
         assert_cloud_native_deployment_product_integrity(broken)
 
     empty: dict[str, object] = {
+        "schema": CLOUD_NATIVE_DEPLOYMENT_PRODUCT_SCHEMA,
         "patterns": [],
         "threats": registry["threats"],
         "blank_entry_count": 0,
