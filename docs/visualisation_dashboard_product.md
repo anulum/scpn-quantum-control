@@ -40,7 +40,8 @@ is not proof of a live UI, general data compatibility, or hardware execution.
 
 | Rule | Behaviour |
 |---|---|
-| Product schema | `visualisation_dashboard_product.v1` |
+| Product schema | `visualisation_dashboard_product.v2` |
+| Demo fixture schema | `visualisation_demo_fixture.v2` |
 | Default panel | `order_parameter_energy_loss` |
 | Live QPU stream | Refused |
 | Always-on SaaS | Refused |
@@ -61,11 +62,12 @@ not as a complete data-loss-prevention system.
 
 Claim boundary:
 
-> Fixture-driven visualisation dashboard product surface only; catalogues
-> static panel families and materialises local report probes from synthetic
-> or allowed fixtures; live_qpu=false honesty; refuses invent-green live QPU
-> streaming and always-on SaaS dashboard; does not claim full multi-panel
-> CLI suite or BL-32 embeds (S34.3–S34.10 residual)
+> This fixture-driven visualisation dashboard product catalogues static panel
+> families and materialises local report probes from synthetic or explicitly
+> allowed fixtures. It sets live_qpu=false and refuses live QPU streaming and
+> always-on SaaS dashboard claims. Remaining panel bodies, a command-line
+> bundle writer, challenge-result embeds, and notebook widgets remain outside
+> the current product.
 
 ## Public API
 
@@ -96,15 +98,15 @@ assert scan_export_for_secrets('{"x":1}').clean is True
 
 `materialise_demo_static_report_probe()` builds order-parameter, energy/loss,
 and gradient-norm series from the module's deterministic synthetic fixture. It
-requires non-empty equal-length order/energy lists and non-empty gradient
-norms, serialises the fixture as canonical sorted compact JSON, computes its
-SHA-256 digest, and refuses a dirty export scan.
+requires the exact v2 fixture schema, non-empty equal-length order/energy lists,
+and non-empty gradient norms, serialises the fixture as canonical sorted compact
+JSON, computes its lowercase SHA-256 digest, and refuses a dirty export scan.
 
 The returned bundle names only the two materialised demo panels. Catalogue-only
 coupling, witness, and saved-bitstring rows do not become implemented panel
 bodies through this probe.
 
-## Catalogue (S34.0)
+## Panel catalogue
 
 | ID | Kind |
 |---|---|
@@ -118,7 +120,7 @@ bodies through this probe.
 ## Registry integrity
 
 `build_visualisation_dashboard_product_registry()` emits schema
-`visualisation_dashboard_product.v1`, the full panel catalogue, public surface
+`visualisation_dashboard_product.v2`, the full panel catalogue, public surface
 map, default id, counts, policy note, and shared claim boundary.
 
 Always validate transported or stored payloads through
@@ -128,7 +130,8 @@ Always validate transported or stored payloads through
 - unknown panel kinds or missing symbol names;
 - any row with `live_qpu=True` or a relaxed registry policy;
 - loss of the default or explicit refuse panel; and
-- `blank_entry_count` or `panel_count` drift.
+- schema, claim-boundary, policy, canonical-row, public-surface, default-id, or
+  count drift.
 
 ## Failure handling and operational non-effects
 
@@ -143,11 +146,11 @@ write, browser launch, notebook mutation, or evidence promotion. The ambient
 
 ## Bounded product status
 
-Shipped: S34.0 design freeze · S34.1 panel models + secrets scan · S34.2
-order-parameter/energy + gradient-norm materialised demo · refuse live QPU/SaaS ·
-docs / API map.
+Shipped: design freeze · panel models and secrets scan · order-parameter/energy
+and gradient-norm materialised demo · live QPU/SaaS refusal · documentation and
+API map.
 
-Open residual: S34.3–S34.6 remaining panel bodies · S34.7 CLI bundle writer ·
-S34.8 BL-32 embeds · S34.10 notebook widgets.
+Open product work: remaining panel bodies · command-line bundle writer ·
+challenge-result embeds · notebook widgets.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

@@ -18,7 +18,7 @@ allowed fixtures only:
 
 Composes ambient :func:`differentiable_dashboard_status` only as a status
 pointer — does **not** grow ``differentiable_dashboard.py`` into a god-file or
-claim full multi-panel CLI/SaaS (S34.3–S34.10 residual).
+claim a full multi-panel command-line or SaaS product.
 """
 
 from __future__ import annotations
@@ -49,17 +49,44 @@ SupportPosture = Literal[
 PathDecisionOutcome = Literal["allowed", "refused"]
 """Structured path-eligibility outcomes."""
 
-VISUALISATION_DASHBOARD_PRODUCT_SCHEMA: Final[str] = "visualisation_dashboard_product.v1"
+VISUALISATION_DASHBOARD_PRODUCT_SCHEMA: Final[str] = "visualisation_dashboard_product.v2"
 """JSON schema identifier for serialised product payloads."""
 
+_VISUALISATION_DEMO_FIXTURE_SCHEMA: Final[str] = "visualisation_demo_fixture.v2"
+"""Schema identifier for the deterministic local demonstration fixture."""
+
 VISUALISATION_DASHBOARD_CLAIM_BOUNDARY: Final[str] = (
-    "Fixture-driven visualisation dashboard product surface only; catalogues "
-    "static panel families and materialises local report probes from synthetic "
-    "or allowed fixtures; live_qpu=false honesty; refuses invent-green live QPU "
-    "streaming and always-on SaaS dashboard; does not claim full multi-panel "
-    "CLI suite or BL-32 embeds (S34.3–S34.10 residual)"
+    "This fixture-driven visualisation dashboard product catalogues static panel "
+    "families and materialises local report probes from synthetic or explicitly "
+    "allowed fixtures. It sets live_qpu=false and refuses live QPU streaming and "
+    "always-on SaaS dashboard claims. Remaining panel bodies, a command-line "
+    "bundle writer, challenge-result embeds, and notebook widgets remain outside "
+    "the current product."
 )
 """Shared claim boundary for visualisation product payloads."""
+
+_VISUALISATION_DASHBOARD_POLICY_NOTE: Final[str] = (
+    "Use only fixture-driven static panels. live_qpu remains false; live QPU "
+    "streaming and always-on SaaS are refused. Additional panel bodies, a "
+    "command-line bundle writer, challenge-result embeds, and notebook widgets "
+    "remain outside this product. differentiable_dashboard remains a status-only "
+    "facade."
+)
+"""Canonical product-registry policy note."""
+
+
+def _require_exact_claim_boundary(claim_boundary: str) -> None:
+    """Reject records whose claim boundary differs from the governed contract."""
+    if claim_boundary != VISUALISATION_DASHBOARD_CLAIM_BOUNDARY:
+        raise ValueError(
+            "claim_boundary must match VISUALISATION_DASHBOARD_CLAIM_BOUNDARY exactly"
+        )
+
+
+def _is_sha256_digest(value: str) -> bool:
+    """Return whether a string is exactly one lowercase SHA-256 hex digest."""
+    return len(value) == 64 and all(character in "0123456789abcdef" for character in value)
+
 
 _SECRET_PATTERNS: Final[tuple[re.Pattern[str], ...]] = (
     re.compile(r"(?i)api[_-]?key\s*[:=]\s*\S+"),
@@ -72,7 +99,7 @@ _SECRET_PATTERNS: Final[tuple[re.Pattern[str], ...]] = (
 
 @dataclass(frozen=True, slots=True)
 class VisualisationPanelRow:
-    """One product catalogue row for a static visualisation panel (S34.0/S34.1).
+    """One product catalogue row for a static visualisation panel.
 
     Attributes
     ----------
@@ -142,6 +169,7 @@ class VisualisationPanelRow:
             )
         if not self.as_of or not self.as_of.strip():
             raise ValueError("as_of must be non-empty")
+        _require_exact_claim_boundary(self.claim_boundary)
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this row."""
@@ -198,6 +226,7 @@ class PathEligibilityDecision:
             raise ValueError("refused decisions require blockers")
         if any(not item or not item.strip() for item in self.blockers):
             raise ValueError("blockers entries must be non-empty")
+        _require_exact_claim_boundary(self.claim_boundary)
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this decision."""
@@ -212,7 +241,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class SecretsScanResult:
-    """Result of scanning export text for secrets/tokens (S34.1).
+    """Result of scanning export text for secrets or tokens.
 
     Attributes
     ----------
@@ -235,6 +264,7 @@ class SecretsScanResult:
             raise ValueError("dirty scans require findings")
         if any(not item or not item.strip() for item in self.findings):
             raise ValueError("findings entries must be non-empty")
+        _require_exact_claim_boundary(self.claim_boundary)
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this scan result."""
@@ -247,7 +277,7 @@ class SecretsScanResult:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedStaticReportProbe:
-    """Materialised static fixture-driven report probe (S34.2).
+    """Materialised static fixture-driven report probe.
 
     Attributes
     ----------
@@ -287,14 +317,15 @@ class MaterialisedStaticReportProbe:
             raise ValueError("series_point_count must be positive")
         if self.gradient_norm_count <= 0:
             raise ValueError("gradient_norm_count must be positive")
-        if not self.fixture_digest_sha256 or len(self.fixture_digest_sha256) != 64:
-            raise ValueError("fixture_digest_sha256 must be a 64-char hex digest")
+        if not _is_sha256_digest(self.fixture_digest_sha256):
+            raise ValueError("fixture_digest_sha256 must be a lowercase SHA-256 hex digest")
         if self.live_qpu:
             raise ValueError("static report probe must set live_qpu=False")
         if not self.secrets_clean:
             raise ValueError("static report probe requires secrets_clean=True")
         if not self.demo_label or not self.demo_label.strip():
             raise ValueError("demo_label must be non-empty")
+        _require_exact_claim_boundary(self.claim_boundary)
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this probe."""
@@ -498,7 +529,7 @@ def iter_visualisation_panels(
 
 
 def scan_export_for_secrets(text: str) -> SecretsScanResult:
-    """Scan export text for secret/token patterns (S34.1 / H2).
+    """Scan export text for secret or token patterns.
 
     Parameters
     ----------
@@ -588,7 +619,7 @@ def decide_visualisation_path(
 def _demo_fixture_payload() -> dict[str, object]:
     """Return a deterministic synthetic fixture for static demos."""
     return {
-        "schema": "visualisation_demo_fixture.v1",
+        "schema": _VISUALISATION_DEMO_FIXTURE_SCHEMA,
         "order_parameter": [0.1, 0.35, 0.62, 0.81, 0.9],
         "energy_loss": [1.2, 0.95, 0.7, 0.55, 0.48],
         "gradient_norms": [0.8, 0.45, 0.3, 0.18, 0.1],
@@ -598,7 +629,7 @@ def _demo_fixture_payload() -> dict[str, object]:
 
 
 def materialise_demo_static_report_probe() -> MaterialisedStaticReportProbe:
-    """Materialise a deterministic static report probe from demo fixtures (S34.2).
+    """Materialise a deterministic static report probe from demo fixtures.
 
     Builds order-parameter/energy and gradient-norm series from a synthetic
     fixture, digests the fixture JSON, and scans the export text for secrets.
@@ -619,6 +650,12 @@ def materialise_demo_static_report_probe() -> MaterialisedStaticReportProbe:
         raise ValueError(f"static report probe refused: {decision.reason}")
 
     fixture = _demo_fixture_payload()
+    if fixture.get("schema") != _VISUALISATION_DEMO_FIXTURE_SCHEMA:
+        raise ValueError("demo fixture schema mismatch")
+    if fixture.get("claim_boundary") != VISUALISATION_DASHBOARD_CLAIM_BOUNDARY:
+        raise ValueError("demo fixture claim_boundary mismatch")
+    if fixture.get("live_qpu") is not False:
+        raise ValueError("demo fixture must set live_qpu=False")
     order = fixture["order_parameter"]
     energy = fixture["energy_loss"]
     grads = fixture["gradient_norms"]
@@ -695,12 +732,7 @@ def build_visualisation_dashboard_product_registry() -> dict[str, object]:
         "live_qpu_policy": False,
         "public_surfaces": list(map_visualisation_dashboard_public_surfaces()),
         "panels": panels,
-        "policy_note": (
-            "Visualisation dashboard product catalogue only; fixture-driven "
-            "static panels; live_qpu=false; full multi-panel CLI/SaaS and "
-            "BL-32 embeds residual S34.3–S34.10; ambient differentiable_dashboard "
-            "remains status/capability facade only."
-        ),
+        "policy_note": _VISUALISATION_DASHBOARD_POLICY_NOTE,
     }
 
 
@@ -788,6 +820,21 @@ def assert_visualisation_dashboard_product_integrity(
     live_policy = registry.get("live_qpu_policy", True)
     if live_policy is not False:
         raise ValueError("live_qpu_policy must be False")
+    if registry.get("schema") != VISUALISATION_DASHBOARD_PRODUCT_SCHEMA:
+        raise ValueError("product schema mismatch")
+    if registry.get("claim_boundary") != VISUALISATION_DASHBOARD_CLAIM_BOUNDARY:
+        raise ValueError("claim_boundary mismatch")
+    if registry.get("policy_note") != _VISUALISATION_DASHBOARD_POLICY_NOTE:
+        raise ValueError("policy_note mismatch")
+    if registry.get("default_panel_id") != "order_parameter_energy_loss":
+        raise ValueError("default_panel_id mismatch")
+    expected_rows = {row.panel_id: row.to_dict() for row in _CANONICAL_PANELS}
+    for index, row in enumerate(panels):
+        panel_id = str(row["panel_id"]).strip()
+        if dict(row) != expected_rows[panel_id]:
+            raise ValueError(f"panel row {index} drift for {panel_id!r}")
+    if registry.get("public_surfaces") != list(map_visualisation_dashboard_public_surfaces()):
+        raise ValueError("public_surfaces mismatch")
     return registry
 
 

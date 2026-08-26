@@ -225,6 +225,44 @@ def test_integrity_rejects_blank_invalid() -> None:
         assert_visualisation_dashboard_product_integrity(count_mismatch)
 
 
+@pytest.mark.parametrize(
+    ("field", "value", "error"),
+    (
+        ("schema", "visualisation_dashboard_product.v1", "product schema"),
+        ("claim_boundary", "drifted claim", "claim_boundary"),
+        ("policy_note", "drifted policy", "policy_note"),
+        ("default_panel_id", "gradient_norm", "default_panel_id"),
+    ),
+)
+def test_integrity_rejects_governed_metadata_drift(
+    field: str,
+    value: str,
+    error: str,
+) -> None:
+    """Reject stale schemas and drifted governed registry metadata."""
+    registry = build_visualisation_dashboard_product_registry()
+    broken = dict(registry)
+    broken[field] = value
+    with pytest.raises(ValueError, match=error):
+        assert_visualisation_dashboard_product_integrity(broken)
+
+
+def test_integrity_rejects_canonical_row_and_surface_drift() -> None:
+    """Reject transported panel and public-surface mutations exactly."""
+    registry = build_visualisation_dashboard_product_registry()
+    panels = [dict(row) for row in _registry_panels(registry)]
+    panels[0]["summary"] = "drifted summary"
+    row_drift = dict(registry)
+    row_drift["panels"] = panels
+    with pytest.raises(ValueError, match="panel row 0 drift"):
+        assert_visualisation_dashboard_product_integrity(row_drift)
+
+    surface_drift = dict(registry)
+    surface_drift["public_surfaces"] = []
+    with pytest.raises(ValueError, match="public_surfaces"):
+        assert_visualisation_dashboard_product_integrity(surface_drift)
+
+
 def test_module_exports() -> None:
     """Keep every documented dashboard product entry point public."""
     assert "materialise_demo_static_report_probe" in visualisation_dashboard_product.__all__
@@ -244,6 +282,8 @@ def test_row_decision_probe_validation() -> None:
         "support_posture": "fixture_materialised",
     }
     assert VisualisationPanelRow(**base).panel_id == "x"
+    with pytest.raises(ValueError, match="claim_boundary"):
+        VisualisationPanelRow(**{**base, "claim_boundary": "drifted claim"})
     with pytest.raises(ValueError, match="panel_id"):
         VisualisationPanelRow(**{**base, "panel_id": ""})
     with pytest.raises(ValueError, match="kind"):
@@ -313,6 +353,14 @@ def test_row_decision_probe_validation() -> None:
             blockers=("",),
         )
     assert decide_visualisation_path().to_dict()["allowed"] is True
+    with pytest.raises(ValueError, match="claim_boundary"):
+        PathEligibilityDecision(
+            outcome="allowed",
+            allowed=True,
+            reason="fixture-driven static path",
+            blockers=(),
+            claim_boundary="drifted claim",
+        )
 
     with pytest.raises(ValueError, match="clean scans cannot list findings"):
         SecretsScanResult(clean=True, findings=("x",))
@@ -320,6 +368,8 @@ def test_row_decision_probe_validation() -> None:
         SecretsScanResult(clean=False, findings=())
     with pytest.raises(ValueError, match="findings entries"):
         SecretsScanResult(clean=False, findings=("",))
+    with pytest.raises(ValueError, match="claim_boundary"):
+        SecretsScanResult(clean=True, findings=(), claim_boundary="drifted claim")
 
     with pytest.raises(ValueError, match="panel_ids must be non-empty"):
         MaterialisedStaticReportProbe(
@@ -361,6 +411,16 @@ def test_row_decision_probe_validation() -> None:
             secrets_clean=True,
             demo_label="d",
         )
+    with pytest.raises(ValueError, match="fixture_digest"):
+        MaterialisedStaticReportProbe(
+            panel_ids=("a",),
+            series_point_count=1,
+            gradient_norm_count=1,
+            fixture_digest_sha256="G" * 64,
+            live_qpu=False,
+            secrets_clean=True,
+            demo_label="d",
+        )
     with pytest.raises(ValueError, match="live_qpu"):
         MaterialisedStaticReportProbe(
             panel_ids=("a",),
@@ -390,6 +450,17 @@ def test_row_decision_probe_validation() -> None:
             live_qpu=False,
             secrets_clean=True,
             demo_label="",
+        )
+    with pytest.raises(ValueError, match="claim_boundary"):
+        MaterialisedStaticReportProbe(
+            panel_ids=("a",),
+            series_point_count=1,
+            gradient_norm_count=1,
+            fixture_digest_sha256="a" * 64,
+            live_qpu=False,
+            secrets_clean=True,
+            demo_label="d",
+            claim_boundary="drifted claim",
         )
 
 
@@ -486,16 +557,70 @@ def test_catalogue_map_accepts_valid_row(monkeypatch: pytest.MonkeyPatch) -> Non
     assert mapped[good.panel_id].panel_id == good.panel_id
 
 
+def test_materialise_rejects_stale_fixture_schema(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject the superseded deterministic fixture schema without an alias."""
+
+    def _stale_fixture() -> dict[str, object]:
+        return {
+            "schema": "visualisation_demo_fixture.v1",
+            "order_parameter": [0.1],
+            "energy_loss": [1.0],
+            "gradient_norms": [0.1],
+            "live_qpu": False,
+        }
+
+    monkeypatch.setattr(visualisation_dashboard_product, "_demo_fixture_payload", _stale_fixture)
+    with pytest.raises(ValueError, match="fixture schema"):
+        materialise_demo_static_report_probe()
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "error"),
+    (
+        ("claim_boundary", "drifted claim", "claim_boundary"),
+        ("live_qpu", True, "live_qpu"),
+    ),
+)
+def test_materialise_rejects_fixture_governance_drift(
+    monkeypatch: pytest.MonkeyPatch,
+    field: str,
+    value: object,
+    error: str,
+) -> None:
+    """Reject drift in governed fields of the deterministic fixture."""
+
+    def _drifted_fixture() -> dict[str, object]:
+        fixture: dict[str, object] = {
+            "schema": "visualisation_demo_fixture.v2",
+            "order_parameter": [0.1],
+            "energy_loss": [1.0],
+            "gradient_norms": [0.1],
+            "live_qpu": False,
+            "claim_boundary": VISUALISATION_DASHBOARD_CLAIM_BOUNDARY,
+        }
+        fixture[field] = value
+        return fixture
+
+    monkeypatch.setattr(
+        visualisation_dashboard_product,
+        "_demo_fixture_payload",
+        _drifted_fixture,
+    )
+    with pytest.raises(ValueError, match=error):
+        materialise_demo_static_report_probe()
+
+
 def test_materialise_rejects_non_list_series(monkeypatch: pytest.MonkeyPatch) -> None:
     """materialise_demo_static_report_probe refuses non-list series fields."""
 
     def _bad_fixture() -> dict[str, object]:
         return {
-            "schema": "visualisation_demo_fixture.v1",
+            "schema": "visualisation_demo_fixture.v2",
             "order_parameter": "not-a-list",
             "energy_loss": [1.0],
             "gradient_norms": [0.1],
             "live_qpu": False,
+            "claim_boundary": VISUALISATION_DASHBOARD_CLAIM_BOUNDARY,
         }
 
     monkeypatch.setattr(visualisation_dashboard_product, "_demo_fixture_payload", _bad_fixture)
@@ -510,11 +635,12 @@ def test_materialise_rejects_mismatched_order_energy_lengths(
 
     def _bad_fixture() -> dict[str, object]:
         return {
-            "schema": "visualisation_demo_fixture.v1",
+            "schema": "visualisation_demo_fixture.v2",
             "order_parameter": [0.1, 0.2],
             "energy_loss": [1.0],
             "gradient_norms": [0.1],
             "live_qpu": False,
+            "claim_boundary": VISUALISATION_DASHBOARD_CLAIM_BOUNDARY,
         }
 
     monkeypatch.setattr(visualisation_dashboard_product, "_demo_fixture_payload", _bad_fixture)
@@ -527,11 +653,12 @@ def test_materialise_rejects_empty_order_series(monkeypatch: pytest.MonkeyPatch)
 
     def _bad_fixture() -> dict[str, object]:
         return {
-            "schema": "visualisation_demo_fixture.v1",
+            "schema": "visualisation_demo_fixture.v2",
             "order_parameter": [],
             "energy_loss": [],
             "gradient_norms": [0.1],
             "live_qpu": False,
+            "claim_boundary": VISUALISATION_DASHBOARD_CLAIM_BOUNDARY,
         }
 
     monkeypatch.setattr(visualisation_dashboard_product, "_demo_fixture_payload", _bad_fixture)
@@ -546,11 +673,12 @@ def test_materialise_rejects_empty_gradient_norms(
 
     def _bad_fixture() -> dict[str, object]:
         return {
-            "schema": "visualisation_demo_fixture.v1",
+            "schema": "visualisation_demo_fixture.v2",
             "order_parameter": [0.1],
             "energy_loss": [1.0],
             "gradient_norms": [],
             "live_qpu": False,
+            "claim_boundary": VISUALISATION_DASHBOARD_CLAIM_BOUNDARY,
         }
 
     monkeypatch.setattr(visualisation_dashboard_product, "_demo_fixture_payload", _bad_fixture)

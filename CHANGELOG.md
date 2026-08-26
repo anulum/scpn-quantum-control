@@ -295,13 +295,13 @@ control, or broad quantum-advantage claim is promoted by this release.
   invent-green full-coverage refuses, and honesty×answer-rate coverage-frontier
   probes. Docs: `docs/studio_executive_product.md`. Thirteenth P1 A-product after
   BL-90/91/81/49/96/92/93/64/39/41/40/34.
-- 2026-07-24 — Fixture-driven visualisation dashboard product (BL-34):
+- 2026-07-24 — Fixture-driven visualisation dashboard product:
   `scpn_quantum_control.visualisation_dashboard_product` productises static
   panel catalogue rows, secrets/token export scanning, materialised
   order-parameter/energy and gradient-norm fixture probes, and refuse
   invent-green live QPU streaming or always-on SaaS. Docs:
-  `docs/visualisation_dashboard_product.md`. Twelfth P1 A-product after
-  BL-90/91/81/49/96/92/93/64/39/41/40.
+  `docs/visualisation_dashboard_product.md`. The bounded facade delegates only
+  to local fixture and ambient capability-status surfaces.
 - 2026-07-24 — Differentiable notebook programme product (BL-40):
   `scpn_quantum_control.notebook_programme_product` productises the core-six
   onboarding curriculum under `notebooks/differentiable/` with versioned
