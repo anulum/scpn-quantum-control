@@ -528,7 +528,7 @@
       "docs/thermo_readiness_product.md",
       "docs/tier_benchmarks.md",
       "docs/tn_mps_baseline_design.md",
-      "docs/tn_mps_crossover_stage1.md",
+      "docs/tn_mps_crossover_admission.md",
       "docs/topology_aware_quantum_kernel.md",
       "docs/triage.md",
       "docs/tutorials.md",
@@ -5871,20 +5871,20 @@
         "path": "src/scpn_quantum_control/benchmarks/tn_mps_baseline_design.py"
       },
       {
+        "name": "TNMPSCrossoverAdmissionReport",
+        "path": "src/scpn_quantum_control/benchmarks/tn_mps_crossover_admission.py"
+      },
+      {
         "name": "TNMPSCrossoverGate",
-        "path": "src/scpn_quantum_control/benchmarks/tn_mps_crossover_stage1.py"
+        "path": "src/scpn_quantum_control/benchmarks/tn_mps_crossover_admission.py"
       },
       {
         "name": "TNMPSCrossoverRowSchema",
-        "path": "src/scpn_quantum_control/benchmarks/tn_mps_crossover_stage1.py"
+        "path": "src/scpn_quantum_control/benchmarks/tn_mps_crossover_admission.py"
       },
       {
         "name": "TNMPSCrossoverRowValidation",
-        "path": "src/scpn_quantum_control/benchmarks/tn_mps_crossover_stage1.py"
-      },
-      {
-        "name": "TNMPSCrossoverStage1Report",
-        "path": "src/scpn_quantum_control/benchmarks/tn_mps_crossover_stage1.py"
+        "path": "src/scpn_quantum_control/benchmarks/tn_mps_crossover_admission.py"
       },
       {
         "name": "TapeGradientRecord",
@@ -6423,7 +6423,7 @@
       "src/scpn_quantum_control/benchmarks/s3_design_protocol.py",
       "src/scpn_quantum_control/benchmarks/sync_witness_evidence.py",
       "src/scpn_quantum_control/benchmarks/tn_mps_baseline_design.py",
-      "src/scpn_quantum_control/benchmarks/tn_mps_crossover_stage1.py",
+      "src/scpn_quantum_control/benchmarks/tn_mps_crossover_admission.py",
       "src/scpn_quantum_control/bridge/control_plasma_knm.py",
       "src/scpn_quantum_control/bridge/fusion_core_frc.py",
       "src/scpn_quantum_control/bridge/knm_hamiltonian.py",
@@ -9256,7 +9256,7 @@
       "tests/test_tn_baseline_flagship_workloads.py",
       "tests/test_tn_mps_baseline_design.py",
       "tests/test_tn_mps_baseline_design_quality_gate.py",
-      "tests/test_tn_mps_crossover_stage1.py",
+      "tests/test_tn_mps_crossover_admission.py",
       "tests/test_topological_coupling_guard.py",
       "tests/test_topological_optimizer.py",
       "tests/test_topology_auth_edge.py",

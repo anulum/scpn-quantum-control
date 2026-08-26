@@ -1411,15 +1411,15 @@ Design a CPU-first tensor-network MPS scaling baseline.
 
 **Functions:** `build_tn_mps_baseline_design()`, `render_tn_mps_baseline_design_markdown()`
 
-### `scpn_quantum_control.benchmarks.tn_mps_crossover_stage1`
+### `scpn_quantum_control.benchmarks.tn_mps_crossover_admission`
 
-QWC-5.1 stage-1 gate for larger-than-16 TN/MPS crossover rows.
+Admission contract for larger-than-16-node TN/MPS crossover rows.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/tn_mps_crossover_stage1.py) · Public symbols: **7**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/tn_mps_crossover_admission.py) · Public symbols: **7**
 
-**Classes:** `TNMPSCrossoverRowSchema`, `TNMPSCrossoverGate`, `TNMPSCrossoverStage1Report`, `TNMPSCrossoverRowValidation`
+**Classes:** `TNMPSCrossoverRowSchema`, `TNMPSCrossoverGate`, `TNMPSCrossoverAdmissionReport`, `TNMPSCrossoverRowValidation`
 
-**Functions:** `build_tn_mps_crossover_stage1()`, `validate_tn_mps_crossover_rows()`, `render_tn_mps_crossover_stage1_markdown()`
+**Functions:** `build_tn_mps_crossover_admission()`, `validate_tn_mps_crossover_rows()`, `render_tn_mps_crossover_admission_markdown()`
 
 ## `bridge`
 

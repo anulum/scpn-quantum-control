@@ -8,8 +8,9 @@
     "GPU tensor-network comparison",
     "Julia/ITensor parity"
   ],
-  "claim_boundary": "Stage-1 schema and admission evidence for N=30-40 tensor-network crossover rows only; no N=30-40 solver row, hardware advantage, tensor-network hardness, or broad quantum-advantage claim is established.",
-  "design_schema": "scpn_qc_tn_mps_baseline_design_v1",
+  "claim_boundary": "Admission schema and evidence for N=30-40 tensor-network crossover rows only; no N=30-40 solver row, hardware advantage, tensor-network hardness, or broad quantum-advantage claim is established.",
+  "compute_owner_gated": true,
+  "design_schema": "scpn_qc_tn_mps_baseline_design_v2",
   "gates": [
     {
       "blocker": "target sizes must all exceed the 16-node exact-simulation boundary",
@@ -25,8 +26,8 @@
     },
     {
       "blocker": "",
-      "evidence": "stage-2 N=30-40 execution remains owner-gated",
-      "gate_id": "stage2_compute_owner_gated",
+      "evidence": "N=30-40 compute execution remains owner-gated",
+      "gate_id": "compute_owner_gated",
       "passed": true
     },
     {
@@ -48,8 +49,8 @@
       "skipped",
       "failed"
     ],
-    "claim_boundary": "Stage-1 schema and admission evidence for N=30-40 tensor-network crossover rows only; no N=30-40 solver row, hardware advantage, tensor-network hardness, or broad quantum-advantage claim is established.",
-    "protocol_id": "qwc_5_1_tn_mps_crossover_stage1",
+    "claim_boundary": "Admission schema and evidence for N=30-40 tensor-network crossover rows only; no N=30-40 solver row, hardware advantage, tensor-network hardness, or broad quantum-advantage claim is established.",
+    "protocol_id": "tn_mps_crossover_admission",
     "required_baselines": [
       "classical_ode",
       "mps_tensor_network",
@@ -82,6 +83,5 @@
       40
     ]
   },
-  "schema": "scpn_qc_tn_mps_crossover_stage1_v1",
-  "stage2_compute_owner_gated": true
+  "schema": "scpn_qc_tn_mps_crossover_admission_v2"
 }

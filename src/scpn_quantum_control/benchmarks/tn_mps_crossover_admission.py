@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — TN/MPS crossover stage-1 gate
-"""QWC-5.1 stage-1 gate for larger-than-16 TN/MPS crossover rows."""
+# SCPN Quantum Control — TN/MPS crossover admission contract
+"""Admission contract for larger-than-16-node TN/MPS crossover rows."""
 
 from __future__ import annotations
 
@@ -15,10 +15,10 @@ from math import isfinite
 
 from .tn_mps_baseline_design import TNBaselineDesign, build_tn_mps_baseline_design
 
-TN_MPS_CROSSOVER_STAGE1_SCHEMA = "scpn_qc_tn_mps_crossover_stage1_v1"
-TN_MPS_CROSSOVER_PROTOCOL_ID = "qwc_5_1_tn_mps_crossover_stage1"
+TN_MPS_CROSSOVER_ADMISSION_SCHEMA = "scpn_qc_tn_mps_crossover_admission_v2"
+TN_MPS_CROSSOVER_PROTOCOL_ID = "tn_mps_crossover_admission"
 TN_MPS_CROSSOVER_CLAIM_BOUNDARY = (
-    "Stage-1 schema and admission evidence for N=30-40 tensor-network crossover "
+    "Admission schema and evidence for N=30-40 tensor-network crossover "
     "rows only; no N=30-40 solver row, hardware advantage, tensor-network "
     "hardness, or broad quantum-advantage claim is established."
 )
@@ -46,7 +46,7 @@ TN_MPS_CROSSOVER_REQUIRED_FIELDS = (
 
 @dataclass(frozen=True)
 class TNMPSCrossoverRowSchema:
-    """Schema required before QWC-5.1 N=30-40 TN/MPS rows can be admitted."""
+    """Schema required before N=30-40 TN/MPS rows can be admitted."""
 
     protocol_id: str
     target_sizes: tuple[int, ...]
@@ -77,7 +77,7 @@ class TNMPSCrossoverRowSchema:
 
 @dataclass(frozen=True)
 class TNMPSCrossoverGate:
-    """One pass/fail admission gate for the QWC-5.1 stage-1 report."""
+    """One pass/fail gate for the TN/MPS crossover admission report."""
 
     gate_id: str
     passed: bool
@@ -101,8 +101,8 @@ class TNMPSCrossoverGate:
 
 
 @dataclass(frozen=True)
-class TNMPSCrossoverStage1Report:
-    """Complete QWC-5.1 stage-1 crossover admission report."""
+class TNMPSCrossoverAdmissionReport:
+    """Complete TN/MPS crossover admission report."""
 
     schema: str
     row_schema: TNMPSCrossoverRowSchema
@@ -111,12 +111,13 @@ class TNMPSCrossoverStage1Report:
     blocked_claims: tuple[str, ...]
     owner_gated_followups: tuple[str, ...]
     claim_boundary: str
-    stage2_compute_owner_gated: bool
+    compute_owner_gated: bool
     benchmark_execution_performed: bool
     advantage_claim_allowed: bool
 
     def __post_init__(self) -> None:
-        _require_text(self.schema, "schema")
+        if self.schema != TN_MPS_CROSSOVER_ADMISSION_SCHEMA:
+            raise ValueError("TN/MPS crossover admission schema mismatch")
         _require_text(self.design_schema, "design_schema")
         if not self.gates:
             raise ValueError("gates must be non-empty")
@@ -126,7 +127,7 @@ class TNMPSCrossoverStage1Report:
 
     @property
     def passed(self) -> bool:
-        """Whether every stage-1 admission gate passed."""
+        """Whether every admission gate passed."""
         return all(gate.passed for gate in self.gates)
 
     def to_dict(self) -> dict[str, object]:
@@ -139,7 +140,7 @@ class TNMPSCrossoverStage1Report:
             "blocked_claims": list(self.blocked_claims),
             "owner_gated_followups": list(self.owner_gated_followups),
             "claim_boundary": self.claim_boundary,
-            "stage2_compute_owner_gated": self.stage2_compute_owner_gated,
+            "compute_owner_gated": self.compute_owner_gated,
             "benchmark_execution_performed": self.benchmark_execution_performed,
             "advantage_claim_allowed": self.advantage_claim_allowed,
             "passed": self.passed,
@@ -148,7 +149,7 @@ class TNMPSCrossoverStage1Report:
 
 @dataclass(frozen=True)
 class TNMPSCrossoverRowValidation:
-    """Validation result for future QWC-5.1 measured or skipped rows."""
+    """Validation result for future measured or skipped crossover rows."""
 
     valid: bool
     invalid_rows: tuple[str, ...]
@@ -158,10 +159,10 @@ class TNMPSCrossoverRowValidation:
         return {"valid": self.valid, "invalid_rows": list(self.invalid_rows)}
 
 
-def build_tn_mps_crossover_stage1(
+def build_tn_mps_crossover_admission(
     design: TNBaselineDesign | None = None,
-) -> TNMPSCrossoverStage1Report:
-    """Build the QWC-5.1 N=30-40 TN/MPS crossover stage-1 report.
+) -> TNMPSCrossoverAdmissionReport:
+    """Build the N=30-40 TN/MPS crossover admission report.
 
     Parameters
     ----------
@@ -171,9 +172,10 @@ def build_tn_mps_crossover_stage1(
 
     Returns
     -------
-    TNMPSCrossoverStage1Report
+    TNMPSCrossoverAdmissionReport
         Deterministic admission report for schema, claim, and owner-gate
-        readiness. It does not execute the stage-2 compute rows.
+        readiness. It does not execute the N=30-40 compute rows.
+
     """
     source_design = design if design is not None else build_tn_mps_baseline_design()
     row_schema = TNMPSCrossoverRowSchema(
@@ -198,9 +200,9 @@ def build_tn_mps_crossover_stage1(
             blocker="row schema is missing required provenance or TN diagnostic fields",
         ),
         TNMPSCrossoverGate(
-            gate_id="stage2_compute_owner_gated",
+            gate_id="compute_owner_gated",
             passed=True,
-            evidence="stage-2 N=30-40 execution remains owner-gated",
+            evidence="N=30-40 compute execution remains owner-gated",
             blocker="",
         ),
         TNMPSCrossoverGate(
@@ -211,8 +213,8 @@ def build_tn_mps_crossover_stage1(
             blocker="design must not promote broad advantage or imply measured N=30-40 rows",
         ),
     )
-    return TNMPSCrossoverStage1Report(
-        schema=TN_MPS_CROSSOVER_STAGE1_SCHEMA,
+    return TNMPSCrossoverAdmissionReport(
+        schema=TN_MPS_CROSSOVER_ADMISSION_SCHEMA,
         row_schema=row_schema,
         design_schema=source_design.schema,
         gates=gates,
@@ -229,7 +231,7 @@ def build_tn_mps_crossover_stage1(
             "add maintained Julia/ITensor parity only after Julia toolchain ownership exists",
         ),
         claim_boundary=TN_MPS_CROSSOVER_CLAIM_BOUNDARY,
-        stage2_compute_owner_gated=True,
+        compute_owner_gated=True,
         benchmark_execution_performed=False,
         advantage_claim_allowed=False,
     )
@@ -237,10 +239,10 @@ def build_tn_mps_crossover_stage1(
 
 def validate_tn_mps_crossover_rows(
     rows: Sequence[Mapping[str, object]],
-    report: TNMPSCrossoverStage1Report | None = None,
+    report: TNMPSCrossoverAdmissionReport | None = None,
 ) -> TNMPSCrossoverRowValidation:
-    """Validate future QWC-5.1 TN/MPS rows against the stage-1 schema."""
-    active_report = report if report is not None else build_tn_mps_crossover_stage1()
+    """Validate future TN/MPS rows against the admission schema."""
+    active_report = report if report is not None else build_tn_mps_crossover_admission()
     schema = active_report.row_schema
     invalid: list[str] = []
     seen: set[tuple[int, str]] = set()
@@ -254,12 +256,12 @@ def validate_tn_mps_crossover_rows(
     return TNMPSCrossoverRowValidation(valid=not invalid, invalid_rows=tuple(invalid))
 
 
-def render_tn_mps_crossover_stage1_markdown(report: TNMPSCrossoverStage1Report) -> str:
-    """Render the QWC-5.1 stage-1 report for public documentation."""
+def render_tn_mps_crossover_admission_markdown(report: TNMPSCrossoverAdmissionReport) -> str:
+    """Render the TN/MPS crossover admission report for public documentation."""
     lines = [
-        "# TN/MPS Crossover Stage-1 Gate",
+        "# TN/MPS Crossover Admission Contract",
         "",
-        "This QWC-5.1 artifact admits the larger-than-16-node N=30-40",
+        "This admission contract admits the larger-than-16-node N=30-40",
         "tensor-network crossover row format before any owner-gated compute run.",
         "",
         "## Boundary",
@@ -277,7 +279,7 @@ def render_tn_mps_crossover_stage1_markdown(report: TNMPSCrossoverStage1Report) 
     ]
     lines.extend(f"| `{field}` |" for field in report.row_schema.required_fields)
     lines.extend(
-        ["", "## Stage-1 Gates", "", "| gate | passed | evidence |", "| --- | --- | --- |"]
+        ["", "## Admission Contracts", "", "| gate | passed | evidence |", "| --- | --- | --- |"]
     )
     lines.extend(
         f"| `{gate.gate_id}` | `{gate.passed}` | {gate.evidence} |" for gate in report.gates
@@ -292,7 +294,7 @@ def render_tn_mps_crossover_stage1_markdown(report: TNMPSCrossoverStage1Report) 
             "## Regeneration",
             "",
             "```bash",
-            "scpn-bench s2-tn-crossover-stage1",
+            "scpn-bench tn-mps-crossover-admission",
             "```",
         ]
     )
@@ -401,12 +403,12 @@ __all__ = [
     "TN_MPS_CROSSOVER_CLAIM_BOUNDARY",
     "TN_MPS_CROSSOVER_PROTOCOL_ID",
     "TN_MPS_CROSSOVER_REQUIRED_FIELDS",
-    "TN_MPS_CROSSOVER_STAGE1_SCHEMA",
+    "TN_MPS_CROSSOVER_ADMISSION_SCHEMA",
     "TNMPSCrossoverGate",
     "TNMPSCrossoverRowSchema",
     "TNMPSCrossoverRowValidation",
-    "TNMPSCrossoverStage1Report",
-    "build_tn_mps_crossover_stage1",
-    "render_tn_mps_crossover_stage1_markdown",
+    "TNMPSCrossoverAdmissionReport",
+    "build_tn_mps_crossover_admission",
+    "render_tn_mps_crossover_admission_markdown",
     "validate_tn_mps_crossover_rows",
 ]

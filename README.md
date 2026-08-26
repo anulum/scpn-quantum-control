@@ -914,7 +914,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Domain Application Honesty Kits](docs/application_honesty_kits.md) — typed claim boundaries and packaged-data privacy audit
 - [Classical Baselines](docs/classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
 - [TN/MPS Baseline Design](docs/tn_mps_baseline_design.md) — CPU-first N=30-40 tensor-network baseline plan
-- [TN/MPS Crossover Stage-1 Gate](docs/tn_mps_crossover_stage1.md) — QWC-5.1 N=30-40 row schema and claim boundary
+- [TN/MPS Crossover Admission Contract](docs/tn_mps_crossover_admission.md) — TN/MPS crossover admission N=30-40 row schema and claim boundary
 - [Josephson K_nm Magnitude Study](docs/josephson_knm_magnitude_study.md) — N=14 rho=0.990 topology candidate plus N=20/30/40 measured-magnitude gates
 - [p_h1 Open-Claim Guard](docs/p_h1_open_guard.md) — public wording guard that keeps the 0.72 threshold open until reproduced
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup

@@ -76,22 +76,22 @@ until measured rows exist.
 See [TN/MPS Baseline Design](tn_mps_baseline_design.md) for the generated
 artifact and regeneration command.
 
-### 1c. `tn_mps_crossover_stage1` — QWC-5.1 Crossover Gate
+### 1c. `tn_mps_crossover_admission` — TN/MPS crossover admission Crossover Gate
 
-Builds the QWC-5.1 stage-1 gate for larger-than-16-node N=30-40
+Builds the TN/MPS crossover admission contract for larger-than-16-node N=30-40
 tensor-network crossover rows:
 
-- `build_tn_mps_crossover_stage1` — deterministic row-schema and admission
+- `build_tn_mps_crossover_admission` — deterministic row-schema and admission
   report.
 - `validate_tn_mps_crossover_rows` — future measured or skipped row validator.
-- `render_tn_mps_crossover_stage1_markdown` — human-reviewable report.
+- `render_tn_mps_crossover_admission_markdown` — human-reviewable report.
 
 The gate pins required fields for wall time, memory, max bond, discarded
 weight, entropy proxy, truncation policy, omitted coupling mass, command,
 machine, dependency, commit, host-load, claim-boundary, and notes. It keeps
-stage-2 N=30-40 compute owner-gated and leaves `advantage_claim_allowed=false`.
+N=30-40 compute owner-gated and leaves `advantage_claim_allowed=false`.
 
-See [TN/MPS Crossover Stage-1 Gate](tn_mps_crossover_stage1.md) for the
+See [TN/MPS Crossover Admission Contract](tn_mps_crossover_admission.md) for the
 generated artifact and regeneration command.
 
 ### 1d. `josephson_magnitude_study` — Josephson K_nm Magnitude Study

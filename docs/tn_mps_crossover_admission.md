@@ -1,15 +1,15 @@
-# TN/MPS Crossover Stage-1 Gate
+# TN/MPS Crossover Admission Contract
 
-This QWC-5.1 artifact admits the larger-than-16-node N=30-40
+This admission contract admits the larger-than-16-node N=30-40
 tensor-network crossover row format before any owner-gated compute run.
 
 ## Boundary
 
-Stage-1 schema and admission evidence for N=30-40 tensor-network crossover rows only; no N=30-40 solver row, hardware advantage, tensor-network hardness, or broad quantum-advantage claim is established.
+Admission schema and evidence for N=30-40 tensor-network crossover rows only; no N=30-40 solver row, hardware advantage, tensor-network hardness, or broad quantum-advantage claim is established.
 
 ## Row Schema
 
-- protocol: `qwc_5_1_tn_mps_crossover_stage1`
+- protocol: `tn_mps_crossover_admission`
 - target sizes: `30, 32, 36, 40`
 - required baselines: `classical_ode, mps_tensor_network, aer_statevector_or_skip`
 
@@ -34,13 +34,13 @@ Stage-1 schema and admission evidence for N=30-40 tensor-network crossover rows 
 | `claim_boundary` |
 | `notes` |
 
-## Stage-1 Gates
+## Admission Contracts
 
 | gate | passed | evidence |
 | --- | --- | --- |
 | `target_sizes_exceed_sixteen` | `True` | target_sizes=(30, 32, 36, 40) |
 | `row_schema_pinned` | `True` | 18 required row fields pinned |
-| `stage2_compute_owner_gated` | `True` | stage-2 N=30-40 execution remains owner-gated |
+| `compute_owner_gated` | `True` | N=30-40 compute execution remains owner-gated |
 | `claim_boundary_closed` | `True` | design keeps advantage_claim_allowed=false and benchmark_execution_performed=false |
 
 ## Blocked Claims
@@ -60,5 +60,5 @@ Stage-1 schema and admission evidence for N=30-40 tensor-network crossover rows 
 ## Regeneration
 
 ```bash
-scpn-bench s2-tn-crossover-stage1
+scpn-bench tn-mps-crossover-admission
 ```

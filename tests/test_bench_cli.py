@@ -123,14 +123,14 @@ def test_s2_tn_mps_design_selection_is_design_harness() -> None:
     ]
 
 
-def test_s2_tn_crossover_stage1_selection_is_design_harness() -> None:
-    harnesses = bench_cli._selected_harnesses("s2-tn-stage1", include_gpu=False)
+def test_tn_mps_crossover_admission_selection_is_design_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("tn-mps-admission", include_gpu=False)
 
     assert harnesses == [
         bench_cli.Harness(
-            "s2-tn-crossover-stage1",
-            "scripts/export_tn_mps_crossover_stage1.py",
-            frozenset({"s2-tn-stage1"}),
+            "tn-mps-crossover-admission",
+            "scripts/export_tn_mps_crossover_admission.py",
+            frozenset({"tn-mps-admission"}),
         )
     ]
 
@@ -467,15 +467,15 @@ def test_s2_tn_mps_design_dry_run_selects_design_harness(
     assert "scripts/export_tn_mps_baseline_design.py" in captured.out
 
 
-def test_s2_tn_crossover_stage1_dry_run_selects_stage1_harness(
+def test_tn_mps_crossover_admission_dry_run_selects_admission_harness(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    rc = bench_cli.run(["s2-tn-crossover-stage1", "--dry-run"])
+    rc = bench_cli.run(["tn-mps-crossover-admission", "--dry-run"])
 
     captured = capsys.readouterr()
     assert rc == 0
-    assert "s2-tn-crossover-stage1" in captured.out
-    assert "scripts/export_tn_mps_crossover_stage1.py" in captured.out
+    assert "tn-mps-crossover-admission" in captured.out
+    assert "scripts/export_tn_mps_crossover_admission.py" in captured.out
 
 
 def test_ground_state_optimizer_convergence_dry_run_selects_harness(

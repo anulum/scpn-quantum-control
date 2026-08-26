@@ -146,9 +146,9 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         frozenset({"s2-tn-design"}),
     ),
     Harness(
-        "s2-tn-crossover-stage1",
-        "scripts/export_tn_mps_crossover_stage1.py",
-        frozenset({"s2-tn-stage1"}),
+        "tn-mps-crossover-admission",
+        "scripts/export_tn_mps_crossover_admission.py",
+        frozenset({"tn-mps-admission"}),
     ),
     Harness(
         "s3-design-readiness",
@@ -450,11 +450,11 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
     )
     _add_run_options(s2_tn_design, default_group="s2-tn-design")
 
-    s2_tn_stage1 = subparsers.add_parser(
-        "s2-tn-crossover-stage1",
-        help="Regenerate the no-claim QWC-5.1 TN/MPS crossover stage-1 artifacts.",
+    tn_mps_admission = subparsers.add_parser(
+        "tn-mps-crossover-admission",
+        help="Regenerate the no-claim TN/MPS crossover admission artifacts.",
     )
-    _add_run_options(s2_tn_stage1, default_group="s2-tn-stage1")
+    _add_run_options(tn_mps_admission, default_group="tn-mps-admission")
 
     s3 = subparsers.add_parser(
         "s3-design-ready",
