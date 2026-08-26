@@ -1,8 +1,8 @@
 # Campaign harness productisation
 
-Reusable **hardware-campaign harness templates** with prereg digests and BL-47
-no-submit default. Dry-run probes only. Refuse invent-green live QPU submit and
-unattested claim promotion.
+Reusable **hardware-campaign harness templates** with preregistration digests
+and a no-submit default. Dry-run probes only. Refuse unsupported live QPU
+submission and unattested claim promotion.
 
 Module: `scpn_quantum_control.campaign_harness_product`
 
@@ -13,7 +13,7 @@ Module: `scpn_quantum_control.campaign_harness_product`
 | Product schema | `campaign_harness_product.v1` |
 | Default mode | dry_run / no_submit |
 | Live submit | Owner ticket residual; would_live refused |
-| Unattested claims | Refuse (S99.4 residual) |
+| Unattested claims | Refuse until attestation integration exists |
 | Prereg mutation after freeze | Refuse |
 | Unknown harness | Fail closed |
 
@@ -95,15 +95,14 @@ These APIs package reusable dry-run campaign evidence only. They do not submit
 to a QPU, spend provider credits, seal an attestation, promote a scientific
 claim, or substitute for ticketed multi-size campaign execution.
 
-## Residuals (honest)
+## Residuals
 
-- **S99.4** — BL-55 hermetic kit + BL-48 attestation sealing slots
+- Hermetic reproduction-kit integration and attestation sealing slots
 - Full multi-size IQM campaign execution remains ticketed residual
 
 ## Related
 
-- Pack: `docs/internal/differentiable_programming/p3_strategic/bl99_campaign_harness_productisation.md`
 - Ambient: appqsim, iqm_layout_transfer, closed_loop_publication, benchmark_harness
-- BL-47 no-submit · BL-65 advantage protocol · BL-67 control compose
+- No-submit hardware safety · advantage-language policy · control-stack composition
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

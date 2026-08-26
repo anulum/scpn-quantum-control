@@ -23,7 +23,7 @@ digests, and hardware-safety / advantage-language integration over ambient campa
   post-hoc prereg mutation.
 
 Does **not** complete full reproduction-kit hermetic kit export or attested-result attestation
-sealing (S99.4 residual).
+sealing; both integrations remain explicit residual work.
 """
 
 from __future__ import annotations
@@ -51,7 +51,7 @@ HarnessKind = Literal[
     "closed_loop_publication",
     "benchmark_harness_registry",
 ]
-"""Campaign harness kinds productised under BL-99."""
+"""Productised campaign-harness kind vocabulary."""
 
 SupportPosture = Literal[
     "local_research",
@@ -70,17 +70,16 @@ CAMPAIGN_HARNESS_PRODUCT_SCHEMA: Final[str] = "campaign_harness_product.v1"
 CAMPAIGN_HARNESS_CLAIM_BOUNDARY: Final[str] = (
     "Campaign harness productisation surface only; catalogues reusable AppQSim, "
     "IQM layout-transfer, closed-loop publication, and ambient benchmark_harness "
-    "registry templates with prereg digests and BL-47 no-submit default; dry-run "
-    "probes only; refuse invent-green live QPU submit and unattested claim "
-    "promotion; residual S99.4 BL-55 hermetic + BL-48 attestation slots open "
-    "honestly"
+    "registry templates with preregistration digests and a no-submit default; "
+    "dry-run probes only; refuse unsupported live QPU submission and unattested "
+    "claim promotion; hermetic reproduction and attestation slots remain open"
 )
 """Shared claim boundary for campaign harness product payloads."""
 
 
 @dataclass(frozen=True, slots=True)
 class CampaignHarnessRow:
-    """One campaign harness catalogue row (S99.0–S99.3).
+    """One campaign-harness catalogue row.
 
     Attributes
     ----------
@@ -95,9 +94,9 @@ class CampaignHarnessRow:
     ambient_pointer
         Ambient module / entrypoint pointer.
     hardware_safety_pointer
-        BL-47 hardware-safe / no-submit honesty pointer.
+        Hardware-safe no-submit policy pointer.
     advantage_protocol_pointer
-        BL-65 advantage-protocol honesty pointer.
+        Advantage-language policy pointer.
     no_submit_default
         Always True on product surface.
     owner_ticket_required_for_live
@@ -242,7 +241,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedCampaignProbe:
-    """Materialised dry-run campaign probe (S99.1–S99.3).
+    """Materialised dry-run campaign probe.
 
     Attributes
     ----------
@@ -261,9 +260,9 @@ class MaterialisedCampaignProbe:
     invent_green_live_submit
         Always False.
     attestation_slot_present
-        False until S99.4 residual lands.
+        False until attestation integration lands.
     hermetic_kit_slot_present
-        False until S99.4 residual lands.
+        False until hermetic reproduction integration lands.
     demo_label
         Demo fixture label.
     claim_boundary
@@ -302,9 +301,13 @@ class MaterialisedCampaignProbe:
         if self.invent_green_live_submit:
             raise ValueError("invent_green_live_submit must be False")
         if self.attestation_slot_present:
-            raise ValueError("attestation_slot_present must be False until S99.4 residual")
+            raise ValueError(
+                "attestation_slot_present must be False until attestation integration lands"
+            )
         if self.hermetic_kit_slot_present:
-            raise ValueError("hermetic_kit_slot_present must be False until S99.4 residual")
+            raise ValueError(
+                "hermetic_kit_slot_present must be False until hermetic integration lands"
+            )
         if not self.demo_label or not self.demo_label.strip():
             raise ValueError("demo_label must be non-empty")
 
@@ -332,7 +335,7 @@ def _digest_payload(payload: Mapping[str, object]) -> str:
 
 
 def _build_harness_catalogue() -> tuple[CampaignHarnessRow, ...]:
-    """Build campaign harness catalogue from ambient modules (S99.0–S99.3)."""
+    """Build the campaign-harness catalogue from ambient modules."""
     return (
         CampaignHarnessRow(
             harness_id="appqsim_protocol",
@@ -511,7 +514,7 @@ def decide_campaign_path(
     invent_green_unattested_claim: bool = False,
     mutate_prereg_after_freeze: bool = False,
 ) -> PathEligibilityDecision:
-    """Decide whether a campaign harness path may proceed (S99.0 / BL-47/65).
+    """Decide whether a campaign-harness path may proceed.
 
     Parameters
     ----------
@@ -524,7 +527,7 @@ def decide_campaign_path(
     invent_green_live_submit
         If true, refuse.
     invent_green_unattested_claim
-        If true, refuse (S99.4 attestation residual).
+        If true, refuse an unattested promotion claim.
     mutate_prereg_after_freeze
         If true, refuse post-hoc prereg mutation.
 
@@ -538,13 +541,12 @@ def decide_campaign_path(
     blockers: list[str] = []
     if invent_green_live_submit:
         blockers.append(
-            "invent-green live QPU submit refused "
-            f"(harness={row.harness_id}; BL-47 no_submit default)"
+            f"invent-green live QPU submit refused (harness={row.harness_id}; no-submit default)"
         )
     if invent_green_unattested_claim:
         blockers.append(
             "invent-green unattested claim promotion refused "
-            f"(harness={row.harness_id}; S99.4 BL-48 residual)"
+            f"(harness={row.harness_id}; attestation integration remains residual)"
         )
     if mutate_prereg_after_freeze:
         blockers.append(
@@ -586,7 +588,7 @@ def materialise_appqsim_probe(
     coupling: float = 0.5,
     seed: int = 0,
 ) -> MaterialisedCampaignProbe:
-    """Materialise AppQSim dry-run probe via ambient appqsim_benchmark (S99.1).
+    """Materialise an AppQSim dry-run probe through the ambient benchmark.
 
     Parameters
     ----------
@@ -648,7 +650,7 @@ def materialise_iqm_layout_probe(
     num_qubits: int = 8,
     seed: int = 20260721,
 ) -> MaterialisedCampaignProbe:
-    """Materialise IQM layout-transfer plan probe (S99.2).
+    """Materialise an IQM layout-transfer plan probe.
 
     Parameters
     ----------
@@ -713,7 +715,7 @@ def materialise_closed_loop_probe(
     n_rounds: int = 3,
     seed: int = 0,
 ) -> MaterialisedCampaignProbe:
-    """Materialise closed-loop publication dry-run probe (S99.3).
+    """Materialise a closed-loop publication dry-run probe.
 
     Parameters
     ----------
@@ -861,8 +863,8 @@ def build_campaign_harness_product_registry() -> dict[str, object]:
         "harnesses": harnesses,
         "policy_note": (
             "Reusable campaign harness templates only; dry-run default; "
-            "live submit residual ticketed; S99.4 BL-55 hermetic + BL-48 "
-            "attestation slots residual open honestly."
+            "live submission remains ticketed; hermetic reproduction and "
+            "attestation slots remain explicit residual work."
         ),
     }
 
@@ -947,10 +949,12 @@ def assert_campaign_harness_product_integrity(
         raise ValueError("invent_green_live_submit_policy must be False")
     attestation = registry.get("attestation_slot_policy", True)
     if attestation is not False:
-        raise ValueError("attestation_slot_policy must be False until S99.4")
+        raise ValueError(
+            "attestation_slot_policy must be False until attestation integration lands"
+        )
     hermetic = registry.get("hermetic_kit_slot_policy", True)
     if hermetic is not False:
-        raise ValueError("hermetic_kit_slot_policy must be False until S99.4")
+        raise ValueError("hermetic_kit_slot_policy must be False until hermetic integration lands")
     return registry
 
 
