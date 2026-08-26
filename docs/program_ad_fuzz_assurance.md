@@ -1,6 +1,6 @@
 # Rust Program AD fuzz assurance
 
-Versioned **fuzz trust-moat product** over ambient
+Versioned **fuzz-assurance product** over ambient
 `scpn_quantum_engine/fuzz` cargo-fuzz bins: target catalogue, time-boxed
 CI-optional policy, and dry-run probe helpers. Does **not** execute cargo-fuzz
 or invent-green continuous multi-hour coverage.
@@ -11,7 +11,7 @@ Module: `scpn_quantum_control.program_ad_fuzz_assurance`
 
 | Rule | Behaviour |
 |---|---|
-| Product schema | `program_ad_fuzz_assurance.v1` |
+| Product schema | `program_ad_fuzz_assurance.v2` |
 | Default target | `program_ad_ir` |
 | Default time box | 300 s |
 | Max time box | 3600 s (hard product bound) |
@@ -24,9 +24,9 @@ Claim boundary:
 
 > Rust Program AD fuzz assurance product only; catalogues ambient
 > scpn_quantum_engine/fuzz targets and time-boxed CI-optional policy; does not
-> execute cargo-fuzz or invent-green continuous multi-hour coverage; residual
-> corpus retention ops (S96.2), crash→regression pipeline (S96.3), and BL-49
-> fuzz-case feed (S96.4) open honestly
+> execute cargo-fuzz or invent-green continuous multi-hour coverage; multi-day
+> corpus retention, automated crash-to-regression conversion, and
+> parity-certificate fuzz-case ingestion remain unimplemented
 
 ## Public API
 
@@ -53,7 +53,7 @@ refused = dry_run_fuzz_target("program_ad_ir", request_continuous=True)
 assert refused.allowed is False
 ```
 
-## Targets (S96.0)
+## Targets
 
 | Target | Cargo bin path |
 |---|---|
@@ -70,9 +70,9 @@ applies optional posture and target-kind filters and returns immutable
 `FuzzTarget` records. A query with no matches returns an empty tuple.
 
 Each target record contains the identifier, title, summary, kind, ambient Rust
-path, owning package, execution posture, BL-49 pointer, BL-97 stability class,
-inventory date, and shared claim boundary. `FuzzTarget.to_dict()` exposes the
-same fields as a JSON-ready mapping.
+path, owning package, execution posture, parity-certificate pointer, API
+stability class, inventory date, and shared claim boundary.
+`FuzzTarget.to_dict()` exposes the same fields as a JSON-ready mapping.
 
 ## Policy and time bounds
 
@@ -107,11 +107,13 @@ allow flag, reason, blocker tuple, selected time box, and claim boundary.
 ## Corpus and crash boundaries
 
 `corpus_governance_policy()` identifies the ambient corpus and artifact paths,
-sets `retention_ops_implemented=False`, and records S96.2 as residual.
+sets `retention_ops_implemented=False`, and records
+`open_capability="multi_day_corpus_retention"`.
 `crash_pipeline_policy()` sets `automated_pipeline_implemented=False` and
-records S96.3 as residual. These mappings are honest capability declarations;
-they do not create directories, retain artifacts, triage crashes, or generate
-regression tests.
+records
+`open_capability="automated_crash_to_regression_conversion"`. These mappings
+are honest capability declarations; they do not create directories, retain
+artifacts, triage crashes, or generate regression tests.
 
 ## Registry and integrity
 
@@ -142,16 +144,17 @@ are `TargetKind`, `TargetPosture`, and `ProbeOutcome`; the immutable records are
 
 Importing, listing, validating, dry-running, or building this registry does not
 invoke cargo-fuzz, execute Rust/PyO3 code, run a long-lived CI job, mutate a
-corpus, ingest a crash, create a regression, feed BL-49, contact a provider, or
-promote a coverage/security claim. Those actions require their own governed
-implementation and evidence.
+corpus, ingest a crash, create a regression, feed a parity certificate, contact
+a provider, or promote a coverage/security claim. Those actions require their
+own governed implementation and evidence.
 
 ## Bounded product status
 
-Shipped: S96.0 target list · S96.1 time-boxed CI-optional policy · dry-run
-probe · corpus/crash residual honesty policies · docs.
+Shipped: target catalogue · time-boxed CI-optional policy · dry-run probe ·
+corpus/crash capability-boundary policies · docs.
 
-Open: S96.2 corpus retention ops · S96.3 crash→regression pipeline · S96.4
-BL-49 fuzz-case feed · live multi-hour CI cargo-fuzz job wiring.
+Open: multi-day corpus retention · automated crash-to-regression conversion ·
+parity-certificate fuzz-case ingestion · live multi-hour CI cargo-fuzz job
+wiring.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

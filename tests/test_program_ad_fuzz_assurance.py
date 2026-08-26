@@ -128,13 +128,15 @@ def test_dry_run_invalid_time_box_raises() -> None:
 
 
 def test_corpus_and_crash_policies() -> None:
-    """Report corpus retention and crash automation as honest residuals."""
+    """Report unimplemented corpus and crash-automation capabilities."""
     corpus = corpus_governance_policy()
     assert corpus["retention_ops_implemented"] is False
-    assert corpus["residual_slice"] == "S96.2"
+    assert corpus["open_capability"] == "multi_day_corpus_retention"
+    assert "residual_slice" not in corpus
     crash = crash_pipeline_policy()
     assert crash["automated_pipeline_implemented"] is False
-    assert crash["residual_slice"] == "S96.3"
+    assert crash["open_capability"] == "automated_crash_to_regression_conversion"
+    assert "residual_slice" not in crash
 
 
 def test_public_surfaces_and_registry() -> None:
@@ -146,6 +148,7 @@ def test_public_surfaces_and_registry() -> None:
     assert "scpn_quantum_engine.fuzz" in paths
 
     registry = build_fuzz_assurance_registry()
+    assert PROGRAM_AD_FUZZ_ASSURANCE_SCHEMA == "program_ad_fuzz_assurance.v2"
     assert registry["schema"] == PROGRAM_AD_FUZZ_ASSURANCE_SCHEMA
     assert registry["blank_entry_count"] == 0
     assert registry["default_target_id"] == "program_ad_ir"

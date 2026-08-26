@@ -7,14 +7,14 @@
 # SCPN Quantum Control — Rust Program AD fuzz assurance product
 """Fail-closed **Rust Program AD fuzz assurance** product surface.
 
-Productises fuzzing as a trust moat for bit-exact Program AD replay: versioned
+Provides fuzz assurance for bit-exact Program AD replay: a versioned
 fuzz target catalogue over ambient ``scpn_quantum_engine/fuzz`` bins, time-boxed
 CI-optional policy, dry-run / probe helpers that refuse invent-green continuous
 multi-hour cargo-fuzz coverage claims.
 
 Does **not** execute cargo-fuzz or invent continuous corpus green status.
-Residual S96.2 corpus retention ops, S96.3 crash→regression pipeline, and
-S96.4 parity-certificate fuzz-case feed remain open honestly.
+Multi-day corpus retention, automated crash-to-regression conversion, and
+parity-certificate fuzz-case ingestion remain unimplemented.
 """
 
 from __future__ import annotations
@@ -42,7 +42,7 @@ TargetPosture = Literal[
 ProbeOutcome = Literal["allowed_dry_run", "refused"]
 """Structured dry-run / probe outcomes."""
 
-PROGRAM_AD_FUZZ_ASSURANCE_SCHEMA: Final[str] = "program_ad_fuzz_assurance.v1"
+PROGRAM_AD_FUZZ_ASSURANCE_SCHEMA: Final[str] = "program_ad_fuzz_assurance.v2"
 """JSON schema identifier for serialised product payloads."""
 
 DEFAULT_TIME_BOX_SECONDS: Final[int] = 300
@@ -55,15 +55,15 @@ PROGRAM_AD_FUZZ_CLAIM_BOUNDARY: Final[str] = (
     "Rust Program AD fuzz assurance product only; catalogues ambient "
     "scpn_quantum_engine/fuzz targets and time-boxed CI-optional policy; "
     "does not execute cargo-fuzz or invent-green continuous multi-hour "
-    "coverage; residual corpus retention ops (S96.2), crash→regression "
-    "pipeline (S96.3), and BL-49 fuzz-case feed (S96.4) open honestly"
+    "coverage; multi-day corpus retention, automated crash-to-regression "
+    "conversion, and parity-certificate fuzz-case ingestion remain unimplemented"
 )
 """Shared claim boundary for targets, policy, and probe decisions."""
 
 
 @dataclass(frozen=True, slots=True)
 class FuzzTarget:
-    """One ambient cargo-fuzz target in the product catalogue (S96.0).
+    """One ambient cargo-fuzz target in the product catalogue.
 
     Attributes
     ----------
@@ -82,7 +82,7 @@ class FuzzTarget:
     posture
         Declared execution posture.
     parity_certificate_pointer
-        Optional BL-49 certificate feed pointer (residual when empty feed).
+        Optional parity-certificate feed pointer (residual when empty feed).
     api_stability_class
         Stability honesty class.
     as_of
@@ -154,7 +154,7 @@ class FuzzTarget:
 
 @dataclass(frozen=True, slots=True)
 class FuzzPolicy:
-    """Time-boxed / CI-optional fuzz policy (S96.1).
+    """Time-boxed / CI-optional fuzz policy.
 
     Attributes
     ----------
@@ -443,7 +443,7 @@ def iter_fuzz_targets(
 
 
 def fuzz_assurance_policy() -> FuzzPolicy:
-    """Return the default time-boxed / CI-optional fuzz policy (S96.1).
+    """Return the default time-boxed / CI-optional fuzz policy.
 
     Returns
     -------
@@ -564,12 +564,12 @@ def dry_run_fuzz_target(
 
 
 def corpus_governance_policy() -> dict[str, object]:
-    """Return corpus governance honesty policy (S96.2 product boundary).
+    """Return the corpus-governance implementation boundary.
 
     Returns
     -------
     dict[str, object]
-        Policy describing residual corpus retention ops (not invent-green ops).
+        Policy describing the unimplemented corpus-retention automation.
 
     """
     return {
@@ -577,30 +577,30 @@ def corpus_governance_policy() -> dict[str, object]:
         "ambient_corpus_path": "scpn_quantum_engine/fuzz/corpus",
         "ambient_artifacts_path": "scpn_quantum_engine/fuzz/artifacts",
         "retention_ops_implemented": False,
-        "residual_slice": "S96.2",
+        "open_capability": "multi_day_corpus_retention",
         "claim_boundary": (
             "Corpus paths are ambient inventory pointers only; multi-day "
-            "retention ops remain residual (S96.2); product does not invent "
+            "retention automation remains unimplemented; product does not invent "
             "retention green status"
         ),
     }
 
 
 def crash_pipeline_policy() -> dict[str, object]:
-    """Return crash→regression pipeline honesty policy (S96.3 boundary).
+    """Return the crash-to-regression implementation boundary.
 
     Returns
     -------
     dict[str, object]
-        Policy describing residual crash automation.
+        Policy describing the unimplemented crash automation.
 
     """
     return {
         "policy_id": "crash_regression_pipeline_boundary_v1",
         "automated_pipeline_implemented": False,
-        "residual_slice": "S96.3",
+        "open_capability": "automated_crash_to_regression_conversion",
         "claim_boundary": (
-            "Crash→regression automation is residual (S96.3); product does "
+            "Crash-to-regression automation remains unimplemented; product does "
             "not invent-green a live crash triage pipeline"
         ),
     }
@@ -658,7 +658,8 @@ def build_fuzz_assurance_registry() -> dict[str, object]:
         "policy_note": (
             "Fuzz assurance product catalogue only; ambient cargo-fuzz bins "
             "are not executed by this module; continuous multi-hour invent-green "
-            "coverage is forbidden; S96.2–S96.4 residual open honestly."
+            "coverage is forbidden; corpus retention, crash conversion, and "
+            "parity-certificate ingestion remain unimplemented."
         ),
     }
 
