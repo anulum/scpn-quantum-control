@@ -4,14 +4,15 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — WS-3 reference-validation registry
-"""WS-3 per-claim reference-validation certifications for the Studio frontier.
+# scpn-quantum-control — claim-ledger reference-validation registry
+"""Per-claim reference-validation certifications for the Studio frontier.
 
 The differentiable claim ledger carries research maturity. It is not itself a
-validated-grade source. This module is the missing WS-3 bridge: it loads a small,
-committed registry of per-claim reference-validation certifications and validates
-that every certified claim is known, unique, and already ``promoted`` before its ID
-is fed into :func:`scpn_quantum_control.studio.coverage_frontier.measure_coverage_frontier`.
+validated-grade source. This module provides the certification bridge: it loads
+a small, committed registry of per-claim reference-validation certifications
+and validates that every certified claim is known, unique, and already
+``promoted`` before its ID is fed into
+:func:`scpn_quantum_control.studio.coverage_frontier.measure_coverage_frontier`.
 
 An empty registry is valid and means the honest answer rate remains zero. A bad
 registry fails closed rather than allowing a candidate to be laundered into
@@ -30,22 +31,22 @@ from typing import Any, Literal
 from ..differentiable_claim_ledger import REPO_ROOT, ClaimLedger, ClaimLedgerRow
 
 REFERENCE_VALIDATION_SCHEMA = "studio.reference-validation-certifications.v1"
-"""Wire schema for committed WS-3 per-claim reference-validation certifications."""
+"""Wire schema for committed per-claim reference-validation certifications."""
 
 DEFAULT_REFERENCE_VALIDATION_PATH = (
     REPO_ROOT / "data" / "differentiable_phase_qnode" / "reference_validation_certifications.json"
 )
-"""Default committed WS-3 certification registry path."""
+"""Default committed reference-validation certification registry path."""
 
 ReferenceValidationStatus = Literal["reference-validated"]
-"""Allowed status for a per-claim WS-3 certification."""
+"""Allowed status for a per-claim reference-validation certification."""
 
 _SHA256_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 
 @dataclass(frozen=True, slots=True)
 class ReferenceValidationCertification:
-    """One WS-3 certification that a promoted claim has reference evidence attached."""
+    """Certify that a promoted claim has attached reference evidence."""
 
     claim_id: str
     certificate_ref: str
@@ -103,7 +104,7 @@ class ReferenceValidationCertification:
 
 @dataclass(frozen=True, slots=True)
 class ReferenceValidationRegistryValidation:
-    """Validation result for a WS-3 certification registry against a claim ledger."""
+    """Validation result for a certification registry against a claim ledger."""
 
     passed: bool
     errors: tuple[str, ...]
@@ -122,7 +123,7 @@ class ReferenceValidationRegistryValidation:
 
 @dataclass(frozen=True, slots=True)
 class ReferenceValidationRegistry:
-    """Committed WS-3 registry of per-claim reference-validation certifications."""
+    """Committed registry of per-claim reference-validation certifications."""
 
     schema: str
     certifications: tuple[ReferenceValidationCertification, ...]
@@ -178,6 +179,7 @@ class ReferenceValidationRegistry:
         ReferenceValidationRegistryValidation
             Result carrying all errors and the certified IDs that are safe to pass
             into ``measure_coverage_frontier`` when validation succeeds.
+
         """
         rows = _rows_tuple(rows_or_ledger)
         rows_by_id = {row.claim_id: row for row in rows}
@@ -186,7 +188,9 @@ class ReferenceValidationRegistry:
         certified: list[str] = []
         for certification in self.certifications:
             if certification.claim_id in seen:
-                errors.append(f"{certification.claim_id}: duplicate WS-3 certification")
+                errors.append(
+                    f"{certification.claim_id}: duplicate reference-validation certification"
+                )
                 continue
             seen.add(certification.claim_id)
             row = rows_by_id.get(certification.claim_id)
@@ -195,7 +199,7 @@ class ReferenceValidationRegistry:
                 continue
             if row.promotion_status != "promoted":
                 errors.append(
-                    f"{certification.claim_id}: WS-3 reference validation requires "
+                    f"{certification.claim_id}: reference validation requires "
                     f"promotion_status='promoted', got {row.promotion_status!r}"
                 )
                 continue
@@ -220,7 +224,7 @@ class ReferenceValidationRegistry:
 def load_reference_validation_registry(
     path: Path = DEFAULT_REFERENCE_VALIDATION_PATH,
 ) -> ReferenceValidationRegistry:
-    """Load the committed WS-3 reference-validation registry."""
+    """Load the committed reference-validation registry."""
     payload = json.loads(path.read_text(encoding="utf-8"))
     return ReferenceValidationRegistry.from_dict(payload)
 

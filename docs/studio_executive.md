@@ -195,7 +195,7 @@ statement about any generating model. The action feeds the informative
 
 ## Validating the claim ledger
 
-The read-only `validate` verb checks the committed WS-3 reference-validation
+The read-only `validate` verb checks the committed reference-validation
 registry against the committed differentiable claim ledger — every
 certification must be unique, point at a ledger claim, and certify a promoted
 claim — then measures the reference-validated coverage frontier.
@@ -214,7 +214,7 @@ registry.register(ValidateActionHandler())
 request = ExecutiveRequest(verb="validate", action_id="validate-ledger", parameters={})
 record = run_action(request, registry=registry)
 record.result.outputs["validation_passed"]    # registry-consistency verdict
-record.result.outputs["certificate_count"]    # WS-3 certifications on file
+record.result.outputs["certificate_count"]    # certifications on file
 record.result.outputs["total_claims"]         # ledger claims measured
 record.result.outputs["answer_rate"]          # reference-validated fraction
 ```

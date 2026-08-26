@@ -132,7 +132,7 @@ def test_certification_registry_feeds_reference_validated_claim_ids() -> None:
         certifications=(
             ReferenceValidationCertification(
                 claim_id="p1",
-                certificate_ref="studio.ws3/p1",
+                certificate_ref="studio.reference-validation/p1",
                 reference_artifact_digest="sha256:" + "a" * 64,
                 adjudicated_at="2026-06-26T00:00:00Z",
             ),

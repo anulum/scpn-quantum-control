@@ -245,8 +245,8 @@ def build_claim_ledger_bundle(
     row
         A committed differentiable claim-ledger row.
     reference_validated
-        Whether an external WS-3 process has attached reference-validation
-        evidence to this promoted row.
+        Whether an external certification process has attached
+        reference-validation evidence to this promoted row.
     activity_timestamp
         Deterministic PROV timestamp for the source-tree emission.
 

@@ -219,10 +219,11 @@ The packer itself fails closed on a missing or stale bundle: every artefact
 row of the in-bundle deploy manifest is re-hashed before anything is
 packaged.
 
-## WS-3 reference-validation feed
+## Reference-validation feed
 
-WS-6 coverage must advance from attached reference-validation evidence, not from
-claim relabelling. QUANTUM therefore keeps a separate WS-3 registry:
+Coverage-frontier status must advance from attached reference-validation
+evidence, not from claim relabelling. QUANTUM therefore keeps a separate
+certification registry:
 
 ```text
 data/differentiable_phase_qnode/reference_validation_certifications.json
@@ -242,12 +243,13 @@ report = measure_coverage_frontier_from_certifications(registry=registry)
 ```
 
 The committed registry is currently empty. That is intentional: no per-claim
-WS-3 certifications are committed yet, so the real differentiable claim ledger
+reference-validation certifications are committed yet, so the real
+differentiable claim ledger
 still reports `0.0` answer rate across its 16 candidate rows (emitted as
 curated `bounded-model` bundles). A future
 certification row must name a known ledger claim whose `promotion_status` is
 already `promoted`; candidate, unknown, or duplicate certification rows fail
-closed before they can reach the WS-6 measurement.
+closed before they can reach the coverage-frontier measurement.
 
 ## SPO `knm.scpn-upde` edge
 
@@ -403,8 +405,8 @@ The local emitter maps source classes through `evidence_axes(...)`:
 
 - Current differentiable claim-ledger rows remain bounded model evidence until
   isolated benchmark artefacts and external comparison rows are attached.
-- WS-3 reference-validation certifications are the only committed feed that can
-  move a promoted ledger row to `reference-validated` in the WS-6 frontier.
+- Reference-validation certifications are the only committed feed that can
+  move a promoted ledger row to `reference-validated` in the coverage frontier.
 - Hardware result packs preserve committed raw-count artefacts and reproduction
   commands; they do not submit QPU jobs and do not create broader hardware claims.
 - Blocked or dependency-gated rows retain explicit upstream blockers in the

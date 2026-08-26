@@ -4997,7 +4997,7 @@ Recompute-verifiable Studio units for deterministic compile claims.
 
 ### `scpn_quantum_control.studio.reference_validation`
 
-WS-3 per-claim reference-validation certifications for the Studio frontier.
+Per-claim reference-validation certifications for the Studio frontier.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/reference_validation.py) · Public symbols: **4**
 

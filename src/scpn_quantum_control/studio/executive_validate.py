@@ -8,7 +8,7 @@
 """The ``validate`` executive action handler — claim-ledger reference validation.
 
 The read-only ``validate`` verb checks the committed differentiable claim
-ledger against the committed WS-3 reference-validation registry
+ledger against the committed reference-validation registry
 (:mod:`scpn_quantum_control.studio.reference_validation`): every certification
 must be unique, point at a ledger claim, and certify a promoted claim. It then
 measures the coverage frontier (how many ledger claims are reference-validated)
@@ -43,7 +43,7 @@ _DEFAULT_BACKEND: Final[str] = "python"
 _MAX_MINIMUM_CLAIMS: Final[int] = 4096
 
 VALIDATE_CLAIM_BOUNDARY: Final[str] = (
-    "consistency of the committed WS-3 reference-validation registry against "
+    "consistency of the committed reference-validation registry against "
     "the committed claim ledger plus the measured coverage frontier; it does "
     "not prove any physics claim itself, run a simulation, or touch hardware"
 )
@@ -92,13 +92,14 @@ class ValidateActionHandler(ActionHandler):
         -------
         ExecutionPlan
             The normalised, inspectable plan.
+
         """
         backend = request.backend or _DEFAULT_BACKEND
         if backend not in contract.backends:
             raise ValueError(f"backend {backend!r} is not declared for the validate verb")
         validate_spec = _normalise_validate(request.parameters)
         steps = (
-            "load the committed WS-3 reference-validation registry",
+            "load the committed reference-validation registry",
             "load the committed differentiable claim ledger",
             "validate every certification against the ledger",
             "measure the reference-validated coverage frontier",
@@ -126,6 +127,7 @@ class ValidateActionHandler(ActionHandler):
         -------
         ExecutionResult
             A succeeded result carrying the validation verdict and frontier.
+
         """
         validate_spec: dict[str, Any] = dict(plan.parameters)
         registry = load_reference_validation_registry()
@@ -162,6 +164,7 @@ class ValidateActionHandler(ActionHandler):
         -------
         GeneratedScript
             The reproduction script, digest attached.
+
         """
         source = _render_script(
             action_id=plan.action_id,
@@ -193,7 +196,7 @@ def _render_script(
         '"""Standalone reproduction of a SCPN-QUANTUM-CONTROL studio validate action.\n'
         "\n"
         f"Action id: {action_id}\n"
-        "Reloads the committed WS-3 reference-validation registry and claim\n"
+        "Reloads the committed reference-validation registry and claim\n"
         "ledger, revalidates the certifications, and checks the verdict the\n"
         "studio sealed.\n"
         '"""\n\n'
