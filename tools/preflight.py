@@ -45,6 +45,7 @@ if TYPE_CHECKING:
     from tools import (
         advantage_language_protocol_quality_gates as _advantage_language_protocol_quality_gates,
     )
+    from tools import attested_result_pack_quality_gates as _attested_result_pack_quality_gates
     from tools import (
         campaign_harness_product_quality_gates as _campaign_harness_product_quality_gates,
     )
@@ -122,6 +123,7 @@ else:
     _repo_root = str(Path(__file__).resolve().parents[1])
     if _repo_root not in sys.path:
         sys.path.insert(0, _repo_root)
+    _attested_result_pack_quality_gates = import_module("tools.attested_result_pack_quality_gates")
     _advantage_language_protocol_quality_gates = import_module(
         "tools.advantage_language_protocol_quality_gates"
     )
@@ -532,6 +534,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_whole_program_ad_product_quality_gates.build_static_quality_gates(_PY),
     *_neural_operator_cost_model_quality_gates.build_static_quality_gates(_PY),
     *_governed_route_matrix_quality_gates.build_static_quality_gates(_PY),
+    *_attested_result_pack_quality_gates.build_static_quality_gates(_PY),
     *_resource_budget_gate_quality_gates.build_static_quality_gates(_PY),
     *_advantage_language_protocol_quality_gates.build_static_quality_gates(_PY),
     *_metamorphic_ad_verification_quality_gates.build_static_quality_gates(_PY),
@@ -947,6 +950,7 @@ NEURAL_OPERATOR_COST_MODEL_COVERAGE_GATES = (
 GOVERNED_ROUTE_MATRIX_COVERAGE_GATES = _governed_route_matrix_quality_gates.build_coverage_gates(
     _PY
 )
+ATTESTED_RESULT_PACK_COVERAGE_GATES = _attested_result_pack_quality_gates.build_coverage_gates(_PY)
 RESOURCE_BUDGET_GATE_COVERAGE_GATES = _resource_budget_gate_quality_gates.build_coverage_gates(_PY)
 ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES = (
     _advantage_language_protocol_quality_gates.build_coverage_gates(_PY)
@@ -1233,6 +1237,7 @@ def main() -> int:
             gates.extend(WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_GATES)
             gates.extend(NEURAL_OPERATOR_COST_MODEL_COVERAGE_GATES)
             gates.extend(GOVERNED_ROUTE_MATRIX_COVERAGE_GATES)
+            gates.extend(ATTESTED_RESULT_PACK_COVERAGE_GATES)
             gates.extend(RESOURCE_BUDGET_GATE_COVERAGE_GATES)
             gates.extend(ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES)
             gates.extend(METAMORPHIC_AD_VERIFICATION_COVERAGE_GATES)

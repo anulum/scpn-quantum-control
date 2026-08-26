@@ -67,6 +67,7 @@ class AttestedEnvelope:
         Optional signature token; empty means unsigned.
     claim_boundary
         Non-promotional claim boundary.
+
     """
 
     claim_id: str
@@ -120,6 +121,7 @@ class AttestationVerdict:
         Digest carried by the envelope.
     claim_id
         Claim unit under verification.
+
     """
 
     status: AttestationStatus
@@ -192,6 +194,7 @@ def canonical_content_digest(
         If either argument is not a mapping.
     ValueError
         If values are not JSON-serialisable under the canonical policy.
+
     """
     if not isinstance(content, Mapping):
         raise TypeError("content must be a mapping")
@@ -225,6 +228,7 @@ def build_unsigned_envelope(
     -------
     AttestedEnvelope
         Unsigned envelope with computed ``content_digest``.
+
     """
     if not claim_id or not str(claim_id).strip():
         raise ValueError("claim_id must be a non-empty string")
@@ -277,6 +281,7 @@ def verify_attested_envelope(
     ------
     TypeError
         If ``envelope`` is neither an :class:`AttestedEnvelope` nor a mapping.
+
     """
     if isinstance(envelope, AttestedEnvelope):
         env = envelope
@@ -399,6 +404,7 @@ def refuse_invent_green_hardware_attestation(
     AttestationVerdict
         ``UNGRADED`` when digest is missing; otherwise a reason that hardware
         attestation still requires a verified envelope (never invent-green).
+
     """
     if not claim_id or not str(claim_id).strip():
         raise ValueError("claim_id must be a non-empty string")
@@ -440,6 +446,7 @@ def build_attestation_report(
     -------
     dict[str, object]
         Counts by status plus individual verdict mappings.
+
     """
     if not isinstance(verdicts, (list, tuple)):
         raise TypeError("verdicts must be a list or tuple of AttestationVerdict")
@@ -486,6 +493,7 @@ def default_claim_axes(
     -------
     dict[str, object]
         Mapping suitable for :func:`build_unsigned_envelope`.
+
     """
     if not claim_unit or not str(claim_unit).strip():
         raise ValueError("claim_unit must be non-empty")
@@ -522,6 +530,7 @@ def envelope_from_mapping(payload: Mapping[str, Any]) -> AttestedEnvelope:
     -------
     AttestedEnvelope
         Validated envelope instance.
+
     """
     if not isinstance(payload, Mapping):
         raise TypeError("payload must be a mapping")

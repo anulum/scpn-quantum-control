@@ -1007,6 +1007,8 @@ def test_main_uses_coverage_pytest_by_default(
         "neural-operator-cost-model exact coverage threshold",
         "governed-route-matrix focused coverage",
         "governed-route-matrix exact coverage threshold",
+        "attested-result-pack focused coverage",
+        "attested-result-pack exact coverage threshold",
         "resource-budget-gate focused coverage",
         "resource-budget-gate exact coverage threshold",
         "advantage-language-protocol focused coverage",

@@ -33,6 +33,7 @@ def _axes() -> dict[str, object]:
 
 
 def test_build_and_verify_unsigned_envelope() -> None:
+    """Build and verify a digest-bound unsigned local envelope."""
     content = {"metric": 0.5, "n_shots": 0, "backend": "statevector"}
     env = build_unsigned_envelope(
         claim_id="claim.local.demo",
@@ -49,6 +50,7 @@ def test_build_and_verify_unsigned_envelope() -> None:
 
 
 def test_stripped_missing_axes() -> None:
+    """Classify an envelope with missing required axes as stripped."""
     env = build_unsigned_envelope(
         claim_id="claim.x",
         claim_axes={"claim_unit": "u"},  # incomplete
@@ -61,6 +63,7 @@ def test_stripped_missing_axes() -> None:
 
 
 def test_forged_tampered_content() -> None:
+    """Classify content changed after digesting as forged."""
     axes = _axes()
     env = build_unsigned_envelope(
         claim_id="claim.y",
@@ -74,6 +77,7 @@ def test_forged_tampered_content() -> None:
 
 
 def test_ungraded_blank_digest_and_require_signature() -> None:
+    """Leave blank digests and missing required signatures ungraded."""
     axes = _axes()
     content = {"v": 1}
     env = build_unsigned_envelope(claim_id="claim.z", claim_axes=axes, content=content)
@@ -88,6 +92,7 @@ def test_ungraded_blank_digest_and_require_signature() -> None:
 
 
 def test_signature_present_without_keyring_is_ungraded() -> None:
+    """Refuse to verify an opaque signature without a keyring."""
     env = build_unsigned_envelope(
         claim_id="claim.sig",
         claim_axes=_axes(),
@@ -100,6 +105,7 @@ def test_signature_present_without_keyring_is_ungraded() -> None:
 
 
 def test_refuse_invent_green_hardware() -> None:
+    """Keep hardware attestation ungraded with or without a digest."""
     no_digest = refuse_invent_green_hardware_attestation(
         claim_id="claim.hw",
         has_content_digest=False,
@@ -119,6 +125,7 @@ def test_refuse_invent_green_hardware() -> None:
 
 
 def test_canonical_digest_stable_and_bound_to_axes() -> None:
+    """Canonicalise mapping order while binding the claim axes."""
     content = {"a": 1, "b": 2}
     axes = _axes()
     d1 = canonical_content_digest(content, axes)
@@ -129,6 +136,7 @@ def test_canonical_digest_stable_and_bound_to_axes() -> None:
 
 
 def test_verify_from_mapping_and_report() -> None:
+    """Verify a mapping envelope and aggregate its verdict."""
     env = build_unsigned_envelope(
         claim_id="claim.map",
         claim_axes=_axes(),
@@ -138,11 +146,14 @@ def test_verify_from_mapping_and_report() -> None:
     assert verdict.status == "VERIFIED"
     report = build_attestation_report((verdict,))
     assert report["verdict_count"] == 1
-    assert report["status_counts"]["VERIFIED"] == 1
+    status_counts = report["status_counts"]
+    assert isinstance(status_counts, dict)
+    assert status_counts["VERIFIED"] == 1
     assert report["schema"] == ATTESTED_RESULT_PACK_SCHEMA
 
 
 def test_default_claim_axes_validation() -> None:
+    """Build complete default axes and reject blank axis labels."""
     axes = default_claim_axes()
     assert axes["claim_unit"]
     assert axes["honesty_axes"]
@@ -155,6 +166,7 @@ def test_default_claim_axes_validation() -> None:
 
 
 def test_envelope_and_verdict_validation() -> None:
+    """Enforce envelope and verdict construction invariants."""
     with pytest.raises(ValueError, match="claim_id"):
         AttestedEnvelope(
             claim_id="",
@@ -203,20 +215,23 @@ def test_envelope_and_verdict_validation() -> None:
 
 
 def test_build_unsigned_requires_claim_id() -> None:
+    """Reject a blank claim identifier when building an envelope."""
     with pytest.raises(ValueError, match="claim_id"):
         build_unsigned_envelope(claim_id="  ", claim_axes=_axes(), content={"v": 1})
 
 
 def test_canonical_digest_rejects_non_mapping_and_non_json() -> None:
+    """Reject non-mapping inputs and non-canonical JSON values."""
     with pytest.raises(TypeError, match="content"):
         canonical_content_digest("x", _axes())  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="claim_axes"):
         canonical_content_digest({"a": 1}, "x")  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="JSON"):
-        canonical_content_digest({"a": {1, 2}}, _axes())  # type: ignore[dict-item]
+        canonical_content_digest({"a": {1, 2}}, _axes())
 
 
 def test_verify_type_errors_and_undigestable_mapping() -> None:
+    """Reject invalid envelope types and leave NaN content ungraded."""
     with pytest.raises(TypeError, match="envelope"):
         verify_attested_envelope(123)  # type: ignore[arg-type]
     # undigestable content via mapping path with bad nested type after construction
@@ -234,6 +249,7 @@ def test_verify_type_errors_and_undigestable_mapping() -> None:
 
 
 def test_build_attestation_report_type_checks() -> None:
+    """Reject invalid report containers and verdict elements."""
     with pytest.raises(TypeError, match="list or tuple"):
         build_attestation_report("nope")  # type: ignore[arg-type]
     with pytest.raises(TypeError, match="AttestationVerdict"):
@@ -241,6 +257,7 @@ def test_build_attestation_report_type_checks() -> None:
 
 
 def test_envelope_from_mapping_round_trip() -> None:
+    """Round-trip nested mapping content through envelope construction."""
     env = build_unsigned_envelope(
         claim_id="claim.round",
         claim_axes=_axes(),
@@ -258,6 +275,7 @@ def test_envelope_from_mapping_round_trip() -> None:
 
 
 def test_stripped_empty_honesty_axes_list() -> None:
+    """Classify an empty honesty-axis list as stripped."""
     axes = {
         "claim_unit": "u",
         "honesty_axes": [],
@@ -268,6 +286,7 @@ def test_stripped_empty_honesty_axes_list() -> None:
 
 
 def test_stripped_none_and_blank_string_axes() -> None:
+    """Classify null and blank required axis values as stripped."""
     axes_none = {
         "claim_unit": None,
         "honesty_axes": ["inputs_digest"],
@@ -275,7 +294,7 @@ def test_stripped_none_and_blank_string_axes() -> None:
     }
     env_none = build_unsigned_envelope(
         claim_id="claim.none",
-        claim_axes=axes_none,  # type: ignore[arg-type]
+        claim_axes=axes_none,
         content={"v": 1},
     )
     assert verify_attested_envelope(env_none).status == "STRIPPED"
@@ -294,6 +313,7 @@ def test_stripped_none_and_blank_string_axes() -> None:
 
 
 def test_content_must_be_mapping() -> None:
+    """Reject non-mapping envelope content."""
     with pytest.raises(TypeError, match="content"):
         AttestedEnvelope(
             claim_id="c",
@@ -304,6 +324,7 @@ def test_content_must_be_mapping() -> None:
 
 
 def test_verify_mapping_bad_axes_type() -> None:
+    """Reject mapping envelopes whose claim axes are not mappings."""
     with pytest.raises(TypeError, match="claim_axes and content"):
         verify_attested_envelope(
             {
@@ -316,6 +337,7 @@ def test_verify_mapping_bad_axes_type() -> None:
 
 
 def test_verdict_to_dict() -> None:
+    """Serialise every verdict field and the shared claim boundary."""
     v = AttestationVerdict(
         status="VERIFIED",
         reason="ok",
