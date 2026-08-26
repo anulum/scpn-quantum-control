@@ -10,14 +10,14 @@
 Productises complex-valued Wirtinger contracts and real-valued implicit
 sensitivity helpers as a first-class product: versioned surface catalogue,
 materialised scalar demo probes, and refuse-complex-without-Wirtinger paths
-composing unsuitable-scenario unsuitable scenario
-``unsuitable:complex.objective_without_wirtinger`` plus metamorphic-verification metamorphic law
+composing unsuitable scenario
+``unsuitable:complex.objective_without_wirtinger`` with metamorphic law
 ``law:anti_silent.complex_without_wirtinger``.
 
 Composes ambient :mod:`scpn_quantum_control.wirtinger_calculus` and
 :mod:`scpn_quantum_control.differentiable_implicit_sensitivity` — does **not**
 re-architect engines or invent-green full holomorphic QFT AD or planner-matrix
-rows (S64.4/S64.5 residual).
+rows; both remain explicit product boundaries.
 """
 
 from __future__ import annotations
@@ -53,24 +53,24 @@ WIRTINGER_IMPLICIT_CLAIM_BOUNDARY: Final[str] = (
     "Wirtinger + implicit differentiation product surface only; catalogues "
     "Wirtinger partials / holomorphic / CR real-objective gradients and "
     "implicit stationary/fixed-point sensitivity; materialised local scalar "
-    "demos only; composes BL-53 complex-without-Wirtinger refuse and BL-46 "
+    "demos only; composes the complex-without-Wirtinger unsuitable scenario and "
     "anti-silent metamorphic law; does not invent-green full holomorphic QFT "
-    "AD, planner matrix rows, or hardware gradients (S64.4/S64.5 residual)"
+    "AD, planner matrix rows, or hardware gradients"
 )
 """Shared claim boundary for Wirtinger / implicit product payloads."""
 
 COMPLEX_OBJECTIVE_WITHOUT_WIRTINGER_SCENARIO: Final[str] = (
     "unsuitable:complex.objective_without_wirtinger"
 )
-"""BL-53 unsuitable scenario id for complex objective without Wirtinger."""
+"""Unsuitable-scenario id for a complex objective without Wirtinger."""
 
 COMPLEX_OBJECTIVE_WIRTINGER_LAW: Final[str] = "law:anti_silent.complex_without_wirtinger"
-"""BL-46 metamorphic law id pairing the BL-53 complex refuse."""
+"""Metamorphic-law id paired with the complex-objective refusal."""
 
 
 @dataclass(frozen=True, slots=True)
 class WirtingerImplicitSurfaceRow:
-    """One product catalogue row for a Wirtinger or implicit surface (S64.0).
+    """One product catalogue row for a Wirtinger or implicit surface.
 
     Attributes
     ----------
@@ -89,9 +89,9 @@ class WirtingerImplicitSurfaceRow:
     support_posture
         Support posture badge.
     unsuitable_scenario_pointer
-        BL-53 unsuitable-scenario pointer (required for complex paths).
+        Unsuitable-scenario pointer required for complex paths.
     metamorphic_verification_pointer
-        BL-46 metamorphic-law pointer (anti-silent complex).
+        Anti-silent complex metamorphic-law pointer.
     as_of
         Inventory date label.
     claim_boundary
@@ -167,7 +167,7 @@ class WirtingerImplicitSurfaceRow:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedWirtingerProbe:
-    """Materialised local Wirtinger probe result (S64.1).
+    """Materialised local Wirtinger probe result.
 
     Attributes
     ----------
@@ -222,7 +222,7 @@ class MaterialisedWirtingerProbe:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedImplicitProbe:
-    """Materialised local implicit sensitivity probe (S64.2).
+    """Materialised local implicit-sensitivity probe.
 
     Attributes
     ----------
@@ -276,7 +276,7 @@ class MaterialisedImplicitProbe:
 
 @dataclass(frozen=True, slots=True)
 class ComplexContractDecision:
-    """Fail-closed decision for complex objectives without Wirtinger (S64.3).
+    """Fail-closed decision for complex objectives without Wirtinger.
 
     Attributes
     ----------
@@ -289,9 +289,9 @@ class ComplexContractDecision:
     blockers
         Non-empty when refused.
     scenario_id
-        BL-53 scenario id.
+        Unsuitable-scenario id.
     metamorphic_law_id
-        BL-46 law id.
+        Anti-silent metamorphic-law id.
 
     """
 
@@ -417,8 +417,8 @@ _CANONICAL_SURFACES: Final[tuple[WirtingerImplicitSurfaceRow, ...]] = (
         kind="complex_without_contract_refuse",
         title="Refuse complex objective without Wirtinger contract",
         summary=(
-            "Product refuse path composing BL-53 unsuitable scenario and BL-46 "
-            "anti-silent metamorphic law; forbids silent real-gradient substitution."
+            "Product refuse path composing the unsuitable scenario and anti-silent "
+            "metamorphic law; forbids silent real-gradient substitution."
         ),
         module_path="scpn_quantum_control.unsuitable_scenario_registry",
         symbol_name="unsuitable:complex.objective_without_wirtinger",
@@ -520,7 +520,7 @@ def decide_complex_objective_contract(
     *,
     has_wirtinger_contract: bool,
 ) -> ComplexContractDecision:
-    """Decide whether a complex objective path may proceed (S64.3 / BL-53).
+    """Decide whether a complex objective path may proceed.
 
     Parameters
     ----------
@@ -531,7 +531,8 @@ def decide_complex_objective_contract(
     -------
     ComplexContractDecision
         Allowed only when a Wirtinger contract is declared; otherwise refuse
-        with BL-53 / BL-46 pointers (silent real-gradient substitution forbidden).
+        with unsuitable-scenario and metamorphic-law pointers; silent
+        real-gradient substitution is forbidden.
 
     """
     if has_wirtinger_contract:
@@ -567,7 +568,7 @@ def materialise_demo_wirtinger_probe(
     step: float = 1e-6,
     tolerance: float = 1e-6,
 ) -> MaterialisedWirtingerProbe:
-    """Run a deterministic local Wirtinger probe on a scalar demo (S64.1 / S64.6).
+    """Run a deterministic local Wirtinger probe on a scalar demo.
 
     Demos:
 
@@ -633,7 +634,7 @@ def materialise_demo_implicit_stationary_probe(
     hessian_scale: float = 2.0,
     cross_scale: float = 1.0,
 ) -> MaterialisedImplicitProbe:
-    """Materialise a 1-D stationary sensitivity demo (S64.2 / S64.6).
+    """Materialise a one-dimensional stationary-sensitivity demo.
 
     Uses ``H = [[hessian_scale]]`` and ``B = [[cross_scale]]`` so
     ``dx*/dalpha = -cross_scale / hessian_scale`` when ``hessian_scale > 0``.
@@ -737,7 +738,7 @@ def build_wirtinger_implicit_product_registry() -> dict[str, object]:
             "Wirtinger + implicit product catalogue only; ambient "
             "wirtinger_calculus / differentiable_implicit_sensitivity remain the "
             "implementation; full metamorphic expansion and planner-matrix rows "
-            "residual S64.4/S64.5; no invent-green holomorphic QFT AD."
+            "remain open boundaries; no invent-green holomorphic QFT AD."
         ),
     }
 

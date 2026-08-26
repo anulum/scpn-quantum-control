@@ -2,8 +2,8 @@
 
 Versioned **complex Wirtinger + real implicit sensitivity product** over ambient
 `wirtinger_calculus` and `differentiable_implicit_sensitivity`. Materialised
-local scalar demos only; composes BL-53 complex-without-Wirtinger refuse and
-BL-46 anti-silent metamorphic law.
+local scalar demos only; composes the complex-without-Wirtinger unsuitable
+scenario and anti-silent metamorphic law.
 
 Module: `scpn_quantum_control.wirtinger_implicit_product`
 
@@ -27,7 +27,7 @@ metadata only; it does not execute a numerical probe.
 ## Public value objects
 
 - `WirtingerImplicitSurfaceRow` binds a stable id to its kind, ambient module
-  and symbol, support posture, BL-53/BL-46 pointers, and claim boundary.
+  and symbol, support posture, governance pointers, and claim boundary.
 - `MaterialisedWirtingerProbe` carries the complex evaluation point,
   `df/dz`, `df/dconj_z`, local residual, and thresholded holomorphic flag.
 - `MaterialisedImplicitProbe` carries a flattened real sensitivity matrix,
@@ -45,16 +45,16 @@ evidence; it is not a general theorem or provider result.
 |---|---|
 | Product schema | `wirtinger_implicit_product.v1` |
 | Default surface | `wirtinger_partials` |
-| Complex without Wirtinger | Refused (BL-53 / BL-46) |
+| Complex without Wirtinger | Refused by unsuitable-scenario and metamorphic-law policy |
 | Blank/unknown surface | Fail closed |
 | Full holomorphic QFT AD | Not claimed (out of scope) |
-| Planner matrix rows | Residual S64.5 |
+| Planner matrix rows | Open product boundary |
 
 ## Complex-objective decision
 
 `decide_complex_objective_contract()` is intentionally fail closed. A caller
-that declares no Wirtinger contract receives `allowed=False`, both the BL-53
-unsuitable-scenario id and BL-46 anti-silent-law id, and non-empty blockers.
+that declares no Wirtinger contract receives `allowed=False`, both the
+unsuitable-scenario id and anti-silent-law id, and non-empty blockers.
 The facade never silently substitutes an ordinary real gradient for a complex
 objective.
 
@@ -92,9 +92,9 @@ Claim boundary:
 > Wirtinger + implicit differentiation product surface only; catalogues
 > Wirtinger partials / holomorphic / CR real-objective gradients and implicit
 > stationary/fixed-point sensitivity; materialised local scalar demos only;
-> composes BL-53 complex-without-Wirtinger refuse and BL-46 anti-silent
+> composes the complex-without-Wirtinger unsuitable scenario and anti-silent
 > metamorphic law; does not invent-green full holomorphic QFT AD, planner
-> matrix rows, or hardware gradients (S64.4/S64.5 residual)
+> matrix rows, or hardware gradients
 
 ## Public API
 
@@ -133,7 +133,7 @@ imp = materialise_demo_implicit_stationary_probe(hessian_scale=2.0, cross_scale=
 assert abs(imp.sensitivity[0] + 0.5) < 1e-9
 ```
 
-## Catalogue (S64.0)
+## Surface catalogue
 
 | ID | Kind |
 |---|---|
@@ -142,7 +142,7 @@ assert abs(imp.sensitivity[0] + 0.5) < 1e-9
 | `real_objective_cr_gradient` | CR real-loss gradient |
 | `implicit_stationary_sensitivity` | stationary dx*/dalpha |
 | `implicit_fixed_point_sensitivity` | fixed-point sensitivity |
-| `complex_without_wirtinger_refuse` | BL-53/BL-46 refuse |
+| `complex_without_wirtinger_refuse` | unsuitable-scenario and metamorphic-law refusal |
 
 ## Registry integrity
 
@@ -155,11 +155,11 @@ Always validate transported or stored payloads with
 
 - an absent, empty, or non-list `surfaces` value;
 - non-mapping, blank, duplicate, missing, or extra surface rows;
-- unknown kinds or missing symbol and BL-53 pointers;
+- unknown kinds or missing symbol and governance pointers;
 - loss of either the default partials row or the explicit refuse row; and
 - drift in `blank_entry_count` or `surface_count`.
 
-## Worked scalar examples (S64.6)
+## Worked scalar examples
 
 ### Holomorphic square
 
@@ -193,11 +193,11 @@ existing NumPy-based ambient implementations.
 
 ## Bounded product status
 
-Shipped: S64.0 surface catalogue · S64.1 Wirtinger contracts + tests · S64.2
-implicit stationary demo + tests · S64.3 BL-53 complex refuse compose · S64.6
-worked scalar docs / API map rows.
+Shipped: surface catalogue · Wirtinger contracts and tests · implicit stationary
+demo and tests · complex-objective refusal composition · worked scalar docs and
+API map rows.
 
-Open: S64.4 full BL-46 metamorphic expansion beyond the registered anti-silent
-law pointer · S64.5 planner / support-matrix rows (BL-52).
+Open: full metamorphic expansion beyond the registered anti-silent law pointer ·
+planner and governed support-matrix rows.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
