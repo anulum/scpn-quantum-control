@@ -5,8 +5,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-98 theory-hook evidence runner
-"""Generate or verify deterministic theory-hook theory-hook promotion evidence."""
+# SCPN Quantum Control — theory-hook promotion evidence runner
+"""Generate or verify deterministic theory-hook promotion evidence."""
 
 from __future__ import annotations
 

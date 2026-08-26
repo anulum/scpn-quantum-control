@@ -115,6 +115,7 @@ if TYPE_CHECKING:
         stochastic_estimators_product_quality_gates as _stochastic_estimators_product_quality_gates,
     )
     from tools import studio_executive_product_quality_gates as _studio_executive_quality_gates
+    from tools import theory_hook_promotion_quality_gates as _theory_hook_promotion_quality_gates
     from tools import (
         thermo_readiness_product_quality_gates as _thermo_readiness_product_quality_gates,
     )
@@ -220,6 +221,9 @@ else:
     _studio_executive_quality_gates = import_module("tools.studio_executive_product_quality_gates")
     _thermo_readiness_product_quality_gates = import_module(
         "tools.thermo_readiness_product_quality_gates"
+    )
+    _theory_hook_promotion_quality_gates = import_module(
+        "tools.theory_hook_promotion_quality_gates"
     )
     _visualisation_dashboard_product_quality_gates = import_module(
         "tools.visualisation_dashboard_product_quality_gates"
@@ -562,6 +566,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_layout_method_comparison_quality_gates.build_static_quality_gates(_PY),
     *_unsuitable_scenario_registry_quality_gates.build_static_quality_gates(_PY),
     *_scorecard_acceptance_engine_quality_gates.build_static_quality_gates(_PY),
+    *_theory_hook_promotion_quality_gates.build_static_quality_gates(_PY),
     *_resource_budget_gate_quality_gates.build_static_quality_gates(_PY),
     *_advantage_language_protocol_quality_gates.build_static_quality_gates(_PY),
     *_metamorphic_ad_verification_quality_gates.build_static_quality_gates(_PY),
@@ -1004,6 +1009,9 @@ UNSUITABLE_SCENARIO_REGISTRY_COVERAGE_GATES = (
 SCORECARD_ACCEPTANCE_ENGINE_COVERAGE_GATES = (
     _scorecard_acceptance_engine_quality_gates.build_coverage_gates(_PY)
 )
+THEORY_HOOK_PROMOTION_COVERAGE_GATES = _theory_hook_promotion_quality_gates.build_coverage_gates(
+    _PY
+)
 RESOURCE_BUDGET_GATE_COVERAGE_GATES = _resource_budget_gate_quality_gates.build_coverage_gates(_PY)
 ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES = (
     _advantage_language_protocol_quality_gates.build_coverage_gates(_PY)
@@ -1296,6 +1304,7 @@ def main() -> int:
             gates.extend(LAYOUT_METHOD_COMPARISON_COVERAGE_GATES)
             gates.extend(UNSUITABLE_SCENARIO_REGISTRY_COVERAGE_GATES)
             gates.extend(SCORECARD_ACCEPTANCE_ENGINE_COVERAGE_GATES)
+            gates.extend(THEORY_HOOK_PROMOTION_COVERAGE_GATES)
             gates.extend(RESOURCE_BUDGET_GATE_COVERAGE_GATES)
             gates.extend(ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_GATES)
             gates.extend(METAMORPHIC_AD_VERIFICATION_COVERAGE_GATES)

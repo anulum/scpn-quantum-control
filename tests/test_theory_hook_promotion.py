@@ -14,6 +14,7 @@ import json
 from dataclasses import replace
 from pathlib import Path
 from types import ModuleType
+from typing import cast
 
 import numpy as np
 import pytest
@@ -78,7 +79,7 @@ def _load_runner() -> ModuleType:
 
 
 def test_registry_has_one_fail_closed_record_per_reviewed_hook() -> None:
-    """The canonical registry covers all six BL-98 theory families."""
+    """The canonical registry covers all six reviewed theory families."""
     records = list_theory_hook_promotions()
 
     assert tuple(record.hook_id for record in records) == (
@@ -150,7 +151,7 @@ def test_promotion_record_rejects_blank_and_duplicate_policy_entries() -> None:
 
 
 def test_promotion_record_rejects_unsupported_derivative_and_tier_combinations() -> None:
-    """BL-98 cannot imply differentiability or promote a tier-D hook."""
+    """The policy cannot imply differentiability or promote a tier-D hook."""
     with pytest.raises(ValueError, match="no admitted differentiable contract"):
         replace(_sample_record(), differentiable=True)
     with pytest.raises(ValueError, match="tier-D hooks must remain research_only"):
@@ -202,7 +203,10 @@ def test_evidence_record_serialization_preserves_named_maps() -> None:
 def test_evidence_record_rejects_numpy_scalar_metrics() -> None:
     """Evidence custody requires JSON-native scalars at construction time."""
     with pytest.raises(ValueError, match="JSON-native"):
-        replace(_sample_evidence(), metrics=(("value", np.int64(5)),))
+        replace(
+            _sample_evidence(),
+            metrics=(("value", cast(bool | float | int | str, np.int64(5))),),
+        )
 
 
 def test_all_real_local_fixtures_pass_without_granting_promotion() -> None:

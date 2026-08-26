@@ -69,7 +69,7 @@ Immutable policy record with these fields:
 | `hook_id` | `str` | Stable unique identifier |
 | `title` | `str` | Human-readable label |
 | `module` | `str` | Owning import path |
-| `tier` | `TheoryHookTier` | BL-98 evidence tier |
+| `tier` | `TheoryHookTier` | Reviewed evidence tier |
 | `role` | `TheoryHookRole` | Only permitted role |
 | `status` | `TheoryHookStatus` | Current promotion state |
 | `differentiable` | `bool` | Always false in schema v1 |

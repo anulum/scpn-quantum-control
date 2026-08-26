@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 
-# BL-98 Theory-Hook Promotion Evidence
+# Theory-Hook Promotion Evidence
 
 Schema: `scpn.theory-hook-promotion.v1`
 

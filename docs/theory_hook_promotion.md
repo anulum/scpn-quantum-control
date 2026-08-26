@@ -2,10 +2,10 @@
 
 # Theory-Hook Promotion Matrix
 
-BL-98 distinguishes a useful research routine from an admitted product or
-control capability. Importability is not promotion. Every reviewed hook has a
-machine-readable tier, one permitted role, explicit forbidden claims, and a
-small local fixture that proves only the bounded software path.
+The promotion matrix distinguishes a useful research routine from an admitted
+product or control capability. Importability is not promotion. Every reviewed
+hook has a machine-readable tier, one permitted role, explicit forbidden claims,
+and a small local fixture that proves only the bounded software path.
 
 The current matrix is fail-closed: no hook is admitted for actuation,
 publication claims, hardware performance, or differentiable execution. A
@@ -85,7 +85,7 @@ Primary mathematical context: Levitin and Toffoli,
 ground-state `XX+YY` correlators. The current objective repeatedly performs
 dense exact diagonalization and reports an in-sample residual.
 
-The BL-98 fixture deliberately starts the optimizer at the generating
+The bounded fixture deliberately starts the optimizer at the generating
 two-qubit coupling. It proves end-to-end wiring and self-consistency, not
 identifiability. Distinct couplings may yield similar observables, and the
 current routine has no shot-noise model, calibration model, posterior,

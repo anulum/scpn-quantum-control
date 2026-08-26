@@ -63,7 +63,7 @@ class TheoryHookRole(str, Enum):
 
 
 class TheoryHookStatus(str, Enum):
-    """Promotion state after applying the BL-98 checklist."""
+    """Promotion state after applying the theory-hook evidence checklist."""
 
     BOUNDED_CANDIDATE = "bounded_candidate"
     DIAGNOSTIC_ONLY = "diagnostic_only"
@@ -83,11 +83,11 @@ class TheoryHookPromotionRecord:
     module
         Import path containing the bounded implementation.
     tier
-        Evidence tier after BL-98 review.
+        Evidence tier after theory-hook review.
     role
         Only role for which the current implementation may be used.
     status
-        Current promotion state.  None of the BL-98 records is a production
+        Current promotion state. None of the reviewed records is a production
         control capability.
     differentiable
         Whether a documented, tested derivative contract exists.  This is
@@ -107,6 +107,7 @@ class TheoryHookPromotionRecord:
     -----
     The record is policy metadata, not scientific evidence by itself.  Pair it
     with a passing :class:`TheoryHookEvidenceRecord` from the same schema.
+
     """
 
     hook_id: str
@@ -143,7 +144,7 @@ class TheoryHookPromotionRecord:
             if len(set(values)) != len(values):
                 raise ValueError(f"{name} must not contain duplicates")
         if self.differentiable:
-            raise ValueError("BL-98 hooks have no admitted differentiable contract")
+            raise ValueError("theory hooks have no admitted differentiable contract")
         if (
             self.tier is TheoryHookTier.RESEARCH_ONLY
             and self.status is not TheoryHookStatus.RESEARCH_ONLY
@@ -152,7 +153,7 @@ class TheoryHookPromotionRecord:
 
     @property
     def admitted_for_control(self) -> bool:
-        """Return ``False``; BL-98 does not admit any hook for actuation."""
+        """Return ``False``; this registry admits no hook for actuation."""
         return False
 
     @property
@@ -197,6 +198,7 @@ class TheoryHookEvidenceRecord:
     metrics
         Small JSON-ready numerical or categorical observations.  These values
         describe the fixture only and are not extrapolation claims.
+
     """
 
     hook_id: str
@@ -237,7 +239,7 @@ class TheoryHookEvidenceRecord:
 
 @dataclass(frozen=True, slots=True)
 class TheoryHookPromotionReport:
-    """Complete BL-98 registry plus its local evidence results.
+    """Complete theory-hook registry plus its local evidence results.
 
     Parameters
     ----------
@@ -251,6 +253,7 @@ class TheoryHookPromotionReport:
         One local evidence result for each promotion decision.
     content_digest
         SHA-256 digest over the report payload excluding the digest itself.
+
     """
 
     schema: str
@@ -431,12 +434,13 @@ _RECORDS = (
 
 
 def list_theory_hook_promotions() -> tuple[TheoryHookPromotionRecord, ...]:
-    """Return all BL-98 promotion decisions in stable canonical order.
+    """Return all theory-hook promotion decisions in stable canonical order.
 
     Returns
     -------
     tuple[TheoryHookPromotionRecord, ...]
         Immutable registry containing exactly one record per reviewed hook.
+
     """
     return _RECORDS
 
@@ -458,6 +462,7 @@ def get_theory_hook_promotion(hook_id: str) -> TheoryHookPromotionRecord:
     ------
     KeyError
         If ``hook_id`` is not registered.
+
     """
     for record in _RECORDS:
         if record.hook_id == hook_id:
@@ -612,7 +617,7 @@ def _spectral_evidence() -> TheoryHookEvidenceRecord:
 
 
 def run_theory_hook_evidence() -> tuple[TheoryHookEvidenceRecord, ...]:
-    """Execute every BL-98 local fixture in canonical registry order.
+    """Execute every theory-hook local fixture in canonical registry order.
 
     Returns
     -------
@@ -624,6 +629,7 @@ def run_theory_hook_evidence() -> tuple[TheoryHookEvidenceRecord, ...]:
     The fixtures use exact local simulators and tiny deterministic arrays.  The
     function does not read credentials, connect to a provider, submit hardware
     work, or grant control/publication authority.
+
     """
     evidence = (
         _qsl_evidence(),
@@ -639,13 +645,14 @@ def run_theory_hook_evidence() -> tuple[TheoryHookEvidenceRecord, ...]:
 
 
 def build_theory_hook_promotion_report() -> TheoryHookPromotionReport:
-    """Build the digest-locked BL-98 promotion and evidence report.
+    """Build the digest-locked theory-hook promotion and evidence report.
 
     Returns
     -------
     TheoryHookPromotionReport
         Complete registry, freshly executed local evidence, and a SHA-256
         content digest over the report payload.
+
     """
     evidence = run_theory_hook_evidence()
     payload = {
@@ -677,12 +684,13 @@ def render_theory_hook_promotion_markdown(report: TheoryHookPromotionReport) -> 
     -------
     str
         Deterministic Markdown ending in a newline.
+
     """
     spdx_header = "<!-- SPDX-License-" + "Identifier: AGPL-3.0-or-later -->"
     lines = [
         spdx_header,
         "",
-        "# BL-98 Theory-Hook Promotion Evidence",
+        "# Theory-Hook Promotion Evidence",
         "",
         f"Schema: `{report.schema}`",
         "",
