@@ -40,7 +40,7 @@ FeedTarget = Literal["governed_route_matrix", "scorecard_acceptance"]
 """Downstream feed targets for structured watch outputs."""
 
 FeedStatus = Literal["ready_pointer", "blocked", "pending"]
-"""Feed readiness toward BL-52 / BL-56 (blocked is honest, not invent-green)."""
+"""Feed readiness toward route and scorecard governance targets."""
 
 COMPETITIVE_BASELINE_WATCH_SCHEMA: Final[str] = "competitive_baseline_watch.v1"
 """JSON schema identifier for serialised watch payloads."""
@@ -49,7 +49,7 @@ COMPETITIVE_BASELINE_WATCH_CLAIM_BOUNDARY: Final[str] = (
     "competitive baseline watch only; pinned_snapshot records declared "
     "comparison coverage from the committed refresh inventory; refresh/feed "
     "probes never invent live scrape wins or promote scorecard categories to "
-    "at_baseline/exceeds_baseline without BL-56 evidence packages"
+    "at_baseline/exceeds_baseline without accepted scorecard evidence packages"
 )
 """Shared claim boundary for watch rows and probe results."""
 
@@ -58,17 +58,17 @@ _WATCH_AS_OF: Final[date] = date(2026, 8, 25)
 
 # Explicit blockers when continuous re-verification / CI harness is not landed.
 _DEFAULT_WATCH_BLOCKERS: Final[tuple[str, ...]] = (
-    "S61.1+ continuous re-verification schedule not automated in CI",
+    "continuous re-verification schedule not automated in CI",
     "Verified-At-Source re-pin not executed this watch cycle",
 )
 
 _ROUTE_MATRIX_FEED_BLOCKERS: Final[tuple[str, ...]] = (
-    "BL-52 feed is pointer-only until route-boundary update package is accepted",
+    "route-matrix feed is pointer-only until a boundary update package is accepted",
     "no invent-green competitor parity from watch alone",
 )
 
 _SCORECARD_FEED_BLOCKERS: Final[tuple[str, ...]] = (
-    "BL-56 category remains behind_baseline until claim-ledger + external evidence",
+    "scorecard category remains behind_baseline until claim-ledger and external evidence",
     "watch feed must not invent at_baseline/exceeds_baseline promotion",
 )
 
@@ -98,7 +98,7 @@ class CompetitiveWatchRecord:
     refresh_state
         Continuous-watch refresh classification at the inventory as-of date.
     scorecard_categories
-        BL-56 category ids this competitor feeds.
+        Scorecard category identifiers this competitor feeds.
     route_matrix_feed_status
         Structured feed readiness toward the route matrix.
     scorecard_feed_status
@@ -167,10 +167,8 @@ class CompetitiveWatchRecord:
         if self.refresh_state in {"due", "blocked", "pending_verification"} and not self.blockers:
             raise ValueError("non-green refresh_state requires at least one blocker")
         if self.scorecard_feed_status != "blocked":
-            # product honesty: never claim ready scorecard feed without BL-56 package
-            raise ValueError(
-                "scorecard_feed_status must be blocked until BL-56 evidence packages exist"
-            )
+            # Product honesty: never claim a ready feed without scorecard evidence.
+            raise ValueError("scorecard_feed_status must be blocked until evidence packages exist")
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this watch record."""
@@ -254,7 +252,7 @@ class RefreshProbeResult:
 
 @dataclass(frozen=True, slots=True)
 class FeedProbeResult:
-    """Structured feed probe toward BL-52 or BL-56.
+    """Structured feed probe toward route-matrix or scorecard governance.
 
     Attributes
     ----------
@@ -303,7 +301,9 @@ class FeedProbeResult:
         if any(not item or not item.strip() for item in self.pointers):
             raise ValueError("pointers entries must be non-empty when present")
         if self.feed_target == "scorecard_acceptance" and self.allowed:
-            raise ValueError("BL-56 feed must not allow invent-green promotion from watch alone")
+            raise ValueError(
+                "scorecard feed must not allow invent-green promotion from watch alone"
+            )
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready mapping for this feed probe."""
@@ -503,10 +503,11 @@ def probe_feed(
     *,
     feed_target: FeedTarget,
 ) -> FeedProbeResult:
-    """Probe structured feed readiness toward BL-52 or BL-56.
+    """Probe structured feed readiness toward route or scorecard governance.
 
-    Feed is always fail-closed for invent-green scorecard promotion. BL-52 may
-    return category/route pointers while still blocked for automatic mutation.
+    Feed is always fail-closed for invent-green scorecard promotion. The route
+    matrix may return category/route pointers while still blocking automatic
+    mutation.
 
     Parameters
     ----------
@@ -540,7 +541,7 @@ def probe_feed(
             status="blocked",
             allowed=False,
             reason=(
-                "refuse invent-green BL-56 promotion from watch alone; "
+                "refuse invent-green scorecard promotion from watch alone; "
                 "require claim_ledger_promoted_row + external_baseline_comparison"
             ),
             pointers=pointers,
@@ -560,7 +561,7 @@ def probe_feed(
         status="pending",
         allowed=False,
         reason=(
-            "BL-52 feed emits structured pointers only; automatic route-matrix "
+            "route-matrix feed emits structured pointers only; automatic matrix "
             "mutation requires an accepted boundary-update package"
         ),
         pointers=pointers,
@@ -598,7 +599,7 @@ def build_competitive_baseline_watch_registry() -> dict[str, object]:
         "policy_note": (
             "Composes differentiable_competitive_baselines snapshot inventory; "
             "does not scrape vendors or invent Verified-At-Source pins; "
-            "BL-56 feeds stay blocked without scorecard evidence packages."
+            "scorecard feeds stay blocked without accepted evidence packages."
         ),
     }
 
@@ -665,7 +666,7 @@ def assert_competitive_baseline_watch_integrity(
             raise ValueError(f"competitor {cid!r} unpinned with non-empty version")
         if scorecard_feed != "blocked":
             raise ValueError(
-                f"competitor {cid!r} invent-green BL-56 feed status {scorecard_feed!r}"
+                f"competitor {cid!r} invent-green scorecard feed status {scorecard_feed!r}"
             )
         blockers = row.get("blockers")
         if refresh_state != "fresh" and (not isinstance(blockers, list) or not blockers):

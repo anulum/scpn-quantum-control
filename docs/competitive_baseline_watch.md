@@ -3,7 +3,7 @@
 Fail-closed **ops watch** over differentiable competitive baselines. Composes the
 committed refresh inventory (`differentiable_competitive_baselines`) into a
 queryable catalogue with pin / version / refresh honesty and structured feed
-probes toward BL-52 (route matrix) and BL-56 (scorecard engine).
+probes toward the governed route matrix and scorecard acceptance engine.
 
 Module: `scpn_quantum_control.competitive_baseline_watch`
 
@@ -15,15 +15,15 @@ Module: `scpn_quantum_control.competitive_baseline_watch`
 | `pin_status=unpinned` | Blank version — **cannot** be green/current |
 | `refresh_state` | `pending_verification` / `due` / `blocked` with blockers |
 | `allowed_green_current` | Always false until continuous re-pin automation lands |
-| BL-56 feed | Always **blocked** (no invent-green promotion from watch alone) |
-| BL-52 feed | Pointer-only / pending; no automatic matrix mutation |
+| Scorecard feed | Always **blocked** (no invent-green promotion from watch alone) |
+| Route-matrix feed | Pointer-only / pending; no automatic matrix mutation |
 
 Claim boundary:
 
 > competitive baseline watch only; pinned_snapshot records declared comparison
 > coverage from the committed refresh inventory; refresh/feed probes never invent
 > live scrape wins or promote scorecard categories to at_baseline/exceeds_baseline
-> without BL-56 evidence packages
+> without accepted scorecard evidence packages
 
 ## Public API
 
@@ -71,7 +71,7 @@ closed vocabulary and non-empty field. In particular:
 - an unpinned row cannot be `fresh` or carry an upstream version;
 - a pinned snapshot must carry a non-empty upstream version;
 - every non-green refresh state must explain itself with blockers; and
-- BL-56 remains blocked until a separate evidence package exists.
+- Scorecard promotion remains blocked until a separate evidence package exists.
 
 `RefreshProbeResult` and `FeedProbeResult` are likewise frozen, slot-backed
 records. Their `to_dict()` methods return JSON-ready mappings: tuple fields are
@@ -151,7 +151,7 @@ and raises `ValueError` for:
 - missing required competitors or inconsistent count fields;
 - unpinned/fresh or pinned/blank-version contradictions;
 - non-green rows without blockers; or
-- any invented BL-56-ready state.
+- any invented scorecard-ready state.
 
 Integrity validation is deliberately stricter than JSON shape validation: it
 protects the evidence and non-promotion semantics carried by the payload.
@@ -170,7 +170,7 @@ Importing or calling this module does **not**:
 - access vendor endpoints, repositories, credentials, or provider hardware;
 - claim that a declared snapshot was verified live;
 - execute Catalyst, JAX, PennyLane, Qiskit, or another competitor runtime;
-- modify BL-52 routes, BL-56 scorecards, claim ledgers, changelogs, or releases;
+- modify governed routes, scorecards, claim ledgers, changelogs, or releases;
 - establish performance, feature parity, scientific superiority, or market
   advantage.
 
@@ -178,11 +178,10 @@ Those actions require their own governed evidence and acceptance boundaries.
 
 ## Bounded product status
 
-Shipped: S61.0 competitor set + cadence fields · S61.1 snapshot schema fields ·
-S61.2 compose from competitive_baselines · S61.4/S61.5 feed **probes** (fail-closed
-pointers/blockers).
+Shipped: competitor set and cadence fields · snapshot schema fields · composition
+from `competitive_baselines` · fail-closed feed probes with pointers and blockers.
 
-Open: S61.3 Catalyst harness CI job · automated continuous re-pin · accepted
-BL-52 boundary-update packages · S61.6 human changelog automation.
+Open: Catalyst harness CI job · automated continuous re-pin · accepted
+route-boundary update packages · human changelog automation.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

@@ -104,7 +104,7 @@ def test_probe_refresh_never_invent_green() -> None:
 
 
 def test_probe_feed_bl56_blocked() -> None:
-    """Keep BL-56 scorecard feeds blocked without accepted evidence packages."""
+    """Keep scorecard feeds blocked without accepted evidence packages."""
     feed = probe_feed("pennylane", feed_target="scorecard_acceptance")
     assert feed.allowed is False
     assert feed.status == "blocked"
@@ -114,7 +114,7 @@ def test_probe_feed_bl56_blocked() -> None:
 
 
 def test_probe_feed_bl52_pending_pointers() -> None:
-    """Expose bounded BL-52 pointers without mutating the route matrix."""
+    """Expose bounded route pointers without mutating the route matrix."""
     feed = probe_feed("catalyst", feed_target="governed_route_matrix")
     assert feed.allowed is False
     assert feed.status == "pending"
@@ -122,7 +122,7 @@ def test_probe_feed_bl52_pending_pointers() -> None:
     assert any("competitor_id:catalyst" in pointer for pointer in feed.pointers)
     assert feed.blockers
     with pytest.raises(ValueError, match="unknown feed_target"):
-        probe_feed("catalyst", feed_target=cast(Any, "bl99"))
+        probe_feed("catalyst", feed_target=cast(Any, "unknown_feed"))
 
 
 def test_iter_filters() -> None:
@@ -410,7 +410,7 @@ def test_integrity_rejects_blank_and_invent_green() -> None:
         invent_row if row["competitor_id"] == invent_row["competitor_id"] else row
         for row in symbols
     ]
-    with pytest.raises(ValueError, match="invent-green BL-56"):
+    with pytest.raises(ValueError, match="invent-green scorecard"):
         assert_competitive_baseline_watch_integrity(invent)
 
     unpinned_fresh = dict(good)
