@@ -26,7 +26,8 @@ assert certificate.estimated_total_shots == 256
 The planner uses the ambient cut count and computes
 `fragment_evaluations = 4**n_cuts` and
 `estimated_total_shots = fragment_evaluations * shots_per_fragment`. The
-selected BL-47 policy supplies the per-fragment and total-shot ceilings. A
+selected hardware-safe execution policy supplies the per-fragment and
+total-shot ceilings. A
 non-finite `4**n_cuts` estimate, an over-budget plan, an oversized partition,
 or a would-submit request is refused.
 
@@ -60,6 +61,6 @@ manufacture a reconstruction or convert simulation data into hardware evidence.
 - Partition-local energy requires explicit caller acceptance.
 - Dense large-N all-to-all plans usually have prohibitive or non-finite
   `4**n_cuts` overhead and are refused, not promoted as feasible.
-- BL-32 large-N family registration remains optional and is not implied by this
-  product.
+- Large-system benchmark-family registration remains optional and is not
+  implied by this product.
 - No product path submits a provider job or claims hardware advantage.

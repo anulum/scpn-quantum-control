@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for the circuit-cutting circuit-cutting product
+# SCPN Quantum Control — tests for the circuit-cutting product
 """Real-surface tests for ``circuit_cutting_product``."""
 
 from __future__ import annotations
@@ -65,7 +65,7 @@ def test_surface_lookup_fails_closed() -> None:
 
 
 def test_bounded_single_partition_resource_certificate() -> None:
-    """A no-cut local plan has one fragment and exact BL-47 shot accounting."""
+    """A no-cut local plan has one fragment and exact execution-policy accounting."""
     certificate = build_cutting_resource_certificate(
         build_knm_paper27(L=4),
         max_partition_size=4,
@@ -85,7 +85,7 @@ def test_bounded_single_partition_resource_certificate() -> None:
 
 
 def test_small_partitioned_resource_certificate_and_budget_refusal() -> None:
-    """Finite cuts are costed exactly and refused when the BL-47 budget is exceeded."""
+    """Finite cuts are costed exactly and refused when the execution budget is exceeded."""
     coupling = np.zeros((4, 4), dtype=np.float64)
     coupling[0, 2] = coupling[2, 0] = 0.5
     allowed = build_cutting_resource_certificate(
@@ -123,7 +123,7 @@ def test_small_partitioned_resource_certificate_and_budget_refusal() -> None:
 def test_resource_certificate_requires_no_submit_policy(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A drifted BL-47 policy cannot open a submission-capable cutting plan."""
+    """A drifted hardware-safe policy cannot open a submission-capable cutting plan."""
     policy = get_execution_policy("default_no_submit")
     monkeypatch.setattr(
         cutting,
@@ -303,7 +303,7 @@ def test_dataclass_invariants_and_integrity_failures(
         blockers=(),
     )
     with pytest.raises(ValueError, match="schema"):
-        replace(base, schema="bad")
+        replace(base, schema="circuit_cutting_resource.v1")
     with pytest.raises(ValueError, match="policy_id"):
         replace(base, policy_id="")
     with pytest.raises(ValueError, match="dimensions"):
@@ -328,7 +328,9 @@ def test_dataclass_invariants_and_integrity_failures(
         replace(base, no_submit=False)
 
     with pytest.raises(ValueError, match="schema"):
-        SyntheticReconstructionCertificate("bad", "R", 0, 0, 0, 0, True)
+        SyntheticReconstructionCertificate(
+            "circuit_cutting_reconstruction.v1", "R", 0, 0, 0, 0, True
+        )
     with pytest.raises(ValueError, match="finite"):
         SyntheticReconstructionCertificate(
             CIRCUIT_CUTTING_RECONSTRUCTION_SCHEMA, "R", 0, 0, np.inf, 0, True
@@ -414,7 +416,7 @@ def test_integrity_rejects_submit_and_registry_drift(
     monkeypatch.setattr(
         cutting,
         "build_circuit_cutting_product_registry",
-        lambda: {**original_registry(), "schema": "drift"},
+        lambda: {**original_registry(), "schema": "circuit_cutting_product.v1"},
     )
     with pytest.raises(RuntimeError, match="schema drift"):
         assert_circuit_cutting_product_integrity()

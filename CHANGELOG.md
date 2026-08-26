@@ -172,12 +172,13 @@ control, or broad quantum-advantage claim is promoted by this release.
   binds BL-65's default no-advantage certificate, and refuses unclassified or
   unsafe-path datasets. BL-32 registration and BL-37 multimodal wiring remain
   explicit fail-closed residuals. Docs: `docs/neural_operator_baseline_product.md`.
-- 2026-07-25 — Circuit-cutting large-sync product (BL-76):
+- 2026-07-25 — Circuit-cutting large-sync product:
   `scpn_quantum_control.circuit_cutting_product` freezes the ambient planner
   and partition-local simulator, adds synthetic reconstruction-error
-  certificates, and accounts for `4^cuts * shots_per_fragment` under BL-47.
-  Non-finite or over-budget plans, omitted-coupling full-energy claims, and
-  live submission fail closed. Docs: `docs/circuit_cutting_product.md`.
+  certificates, and accounts for `4^cuts * shots_per_fragment` under the
+  hardware-safe no-submit execution policy. Non-finite or over-budget plans,
+  omitted-coupling full-energy claims, and live submission fail closed. Docs:
+  `docs/circuit_cutting_product.md`.
 - 2026-07-25 — Polyglot edge Program-AD product (BL-74):
   `scpn_quantum_control.polyglot_edge_ad_product` governs the real bounded
   native Rust replay and committed rational browser-WASM replay, composes the

@@ -2087,11 +2087,11 @@ Every new differentiable API must document:
 
 ## Circuit cutting for large synchronisation workloads
 
-The BL-76 product is documented in
+The circuit-cutting product is documented in
 [`circuit_cutting_product.md`](circuit_cutting_product.md). Its public surface
 provides a frozen planner inventory, exact `4^cuts * shots_per_fragment`
-preflight accounting under the BL-47 no-submit policy, synthetic observable
-error certificates, and structured path decisions. It does not expose a
-differentiable general reconstruction primitive: the ambient simulator remains
-partition-local, and multi-partition full-system energy, infeasible dense
-large-N plans, and live submission are refused.
+preflight accounting under the hardware-safe no-submit execution policy,
+synthetic observable error certificates, and structured path decisions. It
+does not expose a differentiable general reconstruction primitive: the ambient
+simulator remains partition-local, and multi-partition full-system energy,
+infeasible dense large-N plans, and live submission are refused.

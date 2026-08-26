@@ -39,21 +39,21 @@ CuttingPath = Literal[
 DecisionOutcome = Literal["allowed", "refused"]
 """Structured circuit-cutting decision outcome."""
 
-CIRCUIT_CUTTING_PRODUCT_SCHEMA: Final[str] = "circuit_cutting_product.v1"
+CIRCUIT_CUTTING_PRODUCT_SCHEMA: Final[str] = "circuit_cutting_product.v2"
 """Schema identifier for the public product registry."""
 
-CIRCUIT_CUTTING_RESOURCE_SCHEMA: Final[str] = "circuit_cutting_resource.v1"
+CIRCUIT_CUTTING_RESOURCE_SCHEMA: Final[str] = "circuit_cutting_resource.v2"
 """Schema identifier for resource certificates."""
 
-CIRCUIT_CUTTING_RECONSTRUCTION_SCHEMA: Final[str] = "circuit_cutting_reconstruction.v1"
+CIRCUIT_CUTTING_RECONSTRUCTION_SCHEMA: Final[str] = "circuit_cutting_reconstruction.v2"
 """Schema identifier for synthetic reconstruction certificates."""
 
 CIRCUIT_CUTTING_CLAIM_BOUNDARY: Final[str] = (
-    "BL-76 bounded local planning and synthetic certification only; cut cost is "
-    "4^cuts times shots_per_fragment under a BL-47 no-submit policy; the ambient "
-    "runner reports partition-local diagnostics and does not reconstruct omitted "
-    "cross-partition energy; no general reconstruction, live QPU result, hardware "
-    "advantage, or feasible dense large-N claim"
+    "bounded local circuit-cutting planning and synthetic certification only; cut cost "
+    "is 4^cuts times shots_per_fragment under a hardware-safe no-submit execution "
+    "policy; the ambient runner reports partition-local diagnostics and does not "
+    "reconstruct omitted cross-partition energy; no general reconstruction, live QPU "
+    "result, hardware advantage, or feasible dense large-N claim"
 )
 """Shared non-promotional claim boundary."""
 
@@ -101,7 +101,7 @@ class CuttingSurfaceRow:
 
 @dataclass(frozen=True, slots=True)
 class CuttingResourceCertificate:
-    """BL-47-bounded fragment and shot-cost certificate."""
+    """Hardware-safe fragment and shot-cost certificate."""
 
     schema: str
     policy_id: str
@@ -215,7 +215,7 @@ class SyntheticReconstructionCertificate:
         if self.within_bound != (self.absolute_error <= self.declared_error_bound):
             raise ValueError("within_bound must agree with the declared error bound")
         if not self.synthetic_only or self.hardware_result:
-            raise ValueError("BL-76 reconstruction certificates are synthetic-only")
+            raise ValueError("reconstruction certificates must remain synthetic-only")
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready reconstruction certificate."""
@@ -331,7 +331,7 @@ def build_cutting_resource_certificate(
     policy_id: str = "default_no_submit",
     would_submit: bool = False,
 ) -> CuttingResourceCertificate:
-    """Build a finite fragment×shots certificate under a BL-47 policy."""
+    """Build a finite fragment×shots certificate under a hardware-safe policy."""
     if not isinstance(shots_per_fragment, int):
         raise TypeError("shots_per_fragment must be an integer")
     if shots_per_fragment <= 0:
@@ -348,21 +348,21 @@ def build_cutting_resource_certificate(
     total_shots = None if fragments is None else fragments * shots_per_fragment
     blockers: list[str] = []
     if would_submit:
-        blockers.append("live submit is outside the BL-76 product boundary")
+        blockers.append("live submit is outside the bounded local circuit-cutting boundary")
     if not policy.no_submit:
-        blockers.append("BL-76 requires a BL-47 no-submit policy")
+        blockers.append("bounded circuit cutting requires a hardware-safe no-submit policy")
     if not plan.fits_on_heron:
         blockers.append("largest partition exceeds the target-qubit capacity")
     if fragments is None:
         blockers.append("4^cuts overhead is outside the finite planner bound")
     if shots_per_fragment > policy.max_shots_per_evaluation:
         blockers.append(
-            f"shots_per_fragment {shots_per_fragment} exceeds BL-47 policy maximum "
+            f"shots_per_fragment {shots_per_fragment} exceeds execution-policy maximum "
             f"{policy.max_shots_per_evaluation}"
         )
     if total_shots is not None and total_shots > policy.max_total_shots:
         blockers.append(
-            f"estimated_total_shots {total_shots} exceeds BL-47 policy maximum "
+            f"estimated_total_shots {total_shots} exceeds execution-policy maximum "
             f"{policy.max_total_shots}"
         )
     feasible = not blockers
@@ -425,7 +425,7 @@ def decide_cutting_path(
     """Decide whether a bounded cutting path may proceed without submission."""
     blockers = list(resource.blockers)
     if path == "live_submit":
-        blockers.append("BL-76 is no-submit and never executes provider jobs")
+        blockers.append("bounded circuit cutting is no-submit and never executes provider jobs")
     elif path == "full_system_energy" and resource.n_partitions > 1:
         blockers.append(
             "partitioned runner omits cross-partition coupling energy; full-system "
@@ -459,7 +459,7 @@ def decide_cutting_path(
 
 
 def build_circuit_cutting_product_registry() -> dict[str, object]:
-    """Return the versioned, JSON-ready BL-76 product registry."""
+    """Return the versioned, JSON-ready circuit-cutting product registry."""
     return {
         "schema": CIRCUIT_CUTTING_PRODUCT_SCHEMA,
         "surfaces": [row.to_dict() for row in _SURFACES],
