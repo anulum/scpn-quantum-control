@@ -57,7 +57,7 @@ from .evidence_bundle import (
 from .verbs import ANALYSE, COUPLING_INVARIANT_SCHEMA, STUDIO_ID
 
 COUPLING_INVARIANT_ID: Final[str] = "knm.kuramoto.effective-coupling"
-"""Logical invariant emitted by the ST-14 producer."""
+"""Logical invariant emitted by the Studio coupling-invariant producer."""
 
 COUPLING_INVARIANT_ARTIFACT_ID: Final[str] = "coupling-invariant-effective-20260708"
 """Stable Studio entity suffix for the effective-coupling invariant producer."""
@@ -141,7 +141,7 @@ def _source_from_class(
 
 
 def build_coupling_invariant_payload() -> CouplingInvariantPayload:
-    """Build the ST-14 effective-coupling invariant payload.
+    """Build the Studio effective-coupling invariant payload.
 
     Returns
     -------
@@ -189,7 +189,7 @@ def build_coupling_invariant_payload() -> CouplingInvariantPayload:
 
 
 def validate_coupling_invariant_payload(payload: CouplingInvariantPayload) -> bool:
-    """Return whether ``payload`` satisfies the ST-14 coupling-invariant contract.
+    """Return whether ``payload`` satisfies the Studio coupling-invariant contract.
 
     Raises
     ------

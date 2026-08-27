@@ -31,7 +31,7 @@ from scpn_quantum_control.studio.verbs import (  # noqa: E402
 
 
 def test_payload_names_exact_effective_coupling_invariant() -> None:
-    """The payload is the ST-14 `knm.kuramoto.effective-coupling` invariant."""
+    """The payload is the Studio `knm.kuramoto.effective-coupling` invariant."""
     payload = coupling_invariant.build_coupling_invariant_payload()
     assert coupling_invariant.validate_coupling_invariant_payload(payload)
     assert payload.schema == "studio.coupling-invariant.v1"
@@ -94,7 +94,7 @@ def test_bundle_cases_cover_estimators_then_uncertainty_sources() -> None:
 
 
 def test_coupling_invariant_schema_is_not_the_dla_schema() -> None:
-    """ST-14 is an analyse schema but remains separate from DLA parity."""
+    """The coupling invariant is an analyse schema but remains separate from DLA parity."""
     assert COUPLING_INVARIANT_SCHEMA != DLA_PARITY_SCHEMA
     assert COUPLING_INVARIANT_SCHEMA in ANALYSE.produces
     assert DLA_PARITY_SCHEMA in ANALYSE.produces
