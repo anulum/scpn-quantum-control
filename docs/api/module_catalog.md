@@ -3157,7 +3157,7 @@ Representative trapped-ion noise model for cross-platform benchmarking.
 
 ### `scpn_quantum_control.identity.binding_spec`
 
-Arcane Sapience identity binding spec: 6-layer, 18-oscillator Kuramoto topology.
+Six-layer, 18-oscillator Arcane Sapience identity binding topology.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/identity/binding_spec.py) · Public symbols: **4**
 

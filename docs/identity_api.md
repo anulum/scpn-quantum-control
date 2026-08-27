@@ -55,7 +55,7 @@ The canonical binding specification:
 
 | Layer | Name | Oscillators | Natural Frequency (rad/s) |
 |-------|------|-------------|--------------------------|
-| 0 | working_style | ws_0, ws_1, ws_2 | 1.2 |
+| 0 | working_style | working_style_action_verification, working_style_delivery_preflight, working_style_single_task | 1.2 |
 | 1 | reasoning | rs_0, rs_1, rs_2 | 2.1 |
 | 2 | relationship | rl_0, rl_1, rl_2 | 0.8 |
 | 3 | aesthetics | ae_0, ae_1, ae_2 | 1.5 |
@@ -78,9 +78,9 @@ Maps each of the 18 quantum oscillators to its corresponding sub-group
 in the `identity_coherence` domainpack (35 orchestrator oscillators total).
 
 ```python
-"ws_0" → ["ws_action_first", "ws_verify_before_claim"]
-"ws_1" → ["ws_commit_incremental", "ws_preflight_push"]
-"ws_2" → ["ws_one_at_a_time"]
+"working_style_action_verification" → ["ws_action_first", "ws_verify_before_claim"]
+"working_style_delivery_preflight" → ["ws_commit_incremental", "ws_preflight_push"]
+"working_style_single_task" → ["ws_one_at_a_time"]
 "rs_0" → ["rp_simplest_design", "rp_verify_audits"]
 "ae_0" → ["aes_antislop", "aes_honest_naming"]
 "dk_0" → ["dk_director", "dk_neurocore", "dk_fusion"]

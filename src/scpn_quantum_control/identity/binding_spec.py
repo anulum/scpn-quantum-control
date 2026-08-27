@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Binding Spec
-"""Arcane Sapience identity binding spec: 6-layer, 18-oscillator Kuramoto topology.
+# SCPN Quantum Control — Identity Binding Spec
+"""Six-layer, 18-oscillator Arcane Sapience identity binding topology.
 
 Quantum-side spec maps to the identity_coherence domainpack in
 scpn-phase-orchestrator (35 oscillators, 6 layers). The quantum spec
@@ -15,7 +15,8 @@ NISQ simulation; the orchestrator spec uses the full set.
 
 from __future__ import annotations
 
-from typing import Any
+import re
+from typing import Any, Final
 
 import numpy as np
 from numpy.typing import NDArray
@@ -28,7 +29,11 @@ ARCANE_SAPIENCE_SPEC: dict[str, Any] = {
     "layers": [
         {
             "name": "working_style",
-            "oscillator_ids": ["ws_0", "ws_1", "ws_2"],
+            "oscillator_ids": [
+                "working_style_action_verification",
+                "working_style_delivery_preflight",
+                "working_style_single_task",
+            ],
             "natural_frequency": 1.2,
         },
         {
@@ -64,12 +69,12 @@ ARCANE_SAPIENCE_SPEC: dict[str, Any] = {
     },
 }
 
-# Mapping between quantum spec (18 osc) and orchestrator domainpack (36 osc).
+# Mapping between quantum spec (18 osc) and orchestrator domainpack (35 osc).
 # Each quantum oscillator represents the centroid of its orchestrator sub-group.
 ORCHESTRATOR_MAPPING: dict[str, list[str]] = {
-    "ws_0": ["ws_action_first", "ws_verify_before_claim"],
-    "ws_1": ["ws_commit_incremental", "ws_preflight_push"],
-    "ws_2": ["ws_one_at_a_time"],
+    "working_style_action_verification": ["ws_action_first", "ws_verify_before_claim"],
+    "working_style_delivery_preflight": ["ws_commit_incremental", "ws_preflight_push"],
+    "working_style_single_task": ["ws_one_at_a_time"],
     "rs_0": ["rp_simplest_design", "rp_verify_audits"],
     "rs_1": ["rp_change_problem", "rp_multi_signal"],
     "rs_2": ["rp_measure_first"],
@@ -87,6 +92,16 @@ ORCHESTRATOR_MAPPING: dict[str, list[str]] = {
     "cp_2": ["cp_resolution", "cp_claims_evidence"],
 }
 
+_STALE_WORKING_STYLE_ID: Final[re.Pattern[str]] = re.compile(r"^ws_[0-2]$")
+
+
+def _oscillator_ids(spec: dict[str, Any]) -> list[str]:
+    """Return ordered oscillator IDs and reject the stale abbreviated contract."""
+    oscillator_ids = [oid for layer in spec["layers"] for oid in layer["oscillator_ids"]]
+    if any(_STALE_WORKING_STYLE_ID.fullmatch(oscillator_id) for oscillator_id in oscillator_ids):
+        raise ValueError("stale abbreviated working-style oscillator IDs are not supported")
+    return oscillator_ids
+
 
 def _build_knm_from_spec(
     spec: dict[str, Any],
@@ -94,7 +109,7 @@ def _build_knm_from_spec(
     """Compile binding spec into (K, omega) arrays."""
     layers = spec["layers"]
     coupling = spec["coupling"]
-    n = sum(len(lay["oscillator_ids"]) for lay in layers)
+    n = len(_oscillator_ids(spec))
     K: NDArray[np.float64] = np.zeros((n, n), dtype=np.float64)
     omega: NDArray[np.float64] = np.zeros(n, dtype=np.float64)
 
@@ -134,7 +149,26 @@ def build_identity_attractor(
     spec: dict[str, Any] | None = None,
     ansatz_reps: int = 2,
 ) -> IdentityAttractor:
-    """Build IdentityAttractor from binding spec (defaults to ARCANE_SAPIENCE_SPEC)."""
+    """Build an identity attractor from a binding specification.
+
+    Parameters
+    ----------
+    spec : dict[str, Any] or None
+        Binding specification. ``None`` selects ``ARCANE_SAPIENCE_SPEC``.
+    ansatz_reps : int
+        Repetition count for the attractor ansatz.
+
+    Returns
+    -------
+    IdentityAttractor
+        Attractor compiled from the specification's coupling and frequency data.
+
+    Raises
+    ------
+    ValueError
+        If the specification uses the stale abbreviated working-style IDs.
+
+    """
     if spec is None:
         spec = ARCANE_SAPIENCE_SPEC
     K, omega = _build_knm_from_spec(spec)
@@ -146,7 +180,23 @@ def solve_identity(
     maxiter: int = 200,
     seed: int | None = None,
 ) -> dict[str, Any]:
-    """Build + solve identity attractor in one call."""
+    """Build and solve an identity attractor.
+
+    Parameters
+    ----------
+    spec : dict[str, Any] or None
+        Binding specification. ``None`` selects ``ARCANE_SAPIENCE_SPEC``.
+    maxiter : int
+        Maximum optimiser iterations.
+    seed : int or None
+        Optional deterministic optimiser seed.
+
+    Returns
+    -------
+    dict[str, Any]
+        Identity-attractor solve result.
+
+    """
     attractor = build_identity_attractor(spec)
     return attractor.solve(maxiter=maxiter, seed=seed)
 
@@ -155,15 +205,34 @@ def quantum_to_orchestrator_phases(
     quantum_theta: NDArray[np.float64],
     spec: dict[str, Any] | None = None,
 ) -> dict[str, float]:
-    """Map 18 quantum phases to 35 orchestrator oscillator phases.
+    """Map reduced quantum phases to orchestrator oscillator phases.
 
     Each quantum oscillator's phase is broadcast to its orchestrator sub-group.
-    Returns {orchestrator_osc_id: phase} dict for injection into the
-    identity_coherence domainpack simulation.
+
+    Parameters
+    ----------
+    quantum_theta : NDArray[np.float64]
+        One phase per reduced oscillator, in specification order.
+    spec : dict[str, Any] or None
+        Binding specification. ``None`` selects ``ARCANE_SAPIENCE_SPEC``.
+
+    Returns
+    -------
+    dict[str, float]
+        Orchestrator oscillator ID to phase mapping for domainpack injection.
+
+    Raises
+    ------
+    ValueError
+        If the specification uses stale abbreviated working-style IDs or the
+        phase vector length differs from the reduced oscillator count.
+
     """
     if spec is None:
         spec = ARCANE_SAPIENCE_SPEC
-    all_ids = [oid for lay in spec["layers"] for oid in lay["oscillator_ids"]]
+    all_ids = _oscillator_ids(spec)
+    if quantum_theta.shape != (len(all_ids),):
+        raise ValueError(f"expected {len(all_ids)} quantum phases, got {quantum_theta.shape}")
     result: dict[str, float] = {}
     for i, qid in enumerate(all_ids):
         phase = float(quantum_theta[i])
@@ -176,13 +245,31 @@ def orchestrator_to_quantum_phases(
     orchestrator_phases: dict[str, float],
     spec: dict[str, Any] | None = None,
 ) -> NDArray[np.float64]:
-    """Map 35 orchestrator phases back to 18 quantum oscillator phases.
+    """Map orchestrator phases back to reduced quantum oscillator phases.
 
     Each quantum oscillator gets the circular mean of its sub-group phases.
+
+    Parameters
+    ----------
+    orchestrator_phases : dict[str, float]
+        Orchestrator oscillator ID to phase mapping.
+    spec : dict[str, Any] or None
+        Binding specification. ``None`` selects ``ARCANE_SAPIENCE_SPEC``.
+
+    Returns
+    -------
+    NDArray[np.float64]
+        Circular-mean phase for each reduced oscillator in specification order.
+
+    Raises
+    ------
+    ValueError
+        If the specification uses stale abbreviated working-style IDs.
+
     """
     if spec is None:
         spec = ARCANE_SAPIENCE_SPEC
-    all_ids = [oid for lay in spec["layers"] for oid in lay["oscillator_ids"]]
+    all_ids = _oscillator_ids(spec)
     theta = np.zeros(len(all_ids))
     for i, qid in enumerate(all_ids):
         sub_ids = ORCHESTRATOR_MAPPING.get(qid, [qid])

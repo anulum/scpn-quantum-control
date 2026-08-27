@@ -163,7 +163,7 @@ class TestOrchestratorMapping:
         # Two sub-oscillators at 0 and pi/2 -> circular mean at pi/4
         orch_phases = {"ws_action_first": 0.0, "ws_verify_before_claim": np.pi / 2}
         for key in ORCHESTRATOR_MAPPING:
-            if key != "ws_0":
+            if key != "working_style_action_verification":
                 for sub_key in ORCHESTRATOR_MAPPING[key]:
                     orch_phases[sub_key] = 0.0
         theta = orchestrator_to_quantum_phases(orch_phases)
