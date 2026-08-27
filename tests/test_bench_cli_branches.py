@@ -14,6 +14,7 @@ diff-summary clean and error paths and the console entry point.
 from __future__ import annotations
 
 import dataclasses
+import runpy
 import subprocess
 from typing import Any
 
@@ -100,6 +101,32 @@ def test_main_delegates_to_run(monkeypatch: pytest.MonkeyPatch) -> None:
     """The console entry point delegates to run()."""
     monkeypatch.setattr(bench, "run", lambda: 0)
     assert main() == 0
+
+
+def test_module_help_uses_descriptive_command_contract(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """The real module entry point exposes descriptive public help."""
+    assert bench.__file__ is not None
+    monkeypatch.setattr("sys.argv", ["scpn-bench", "--help"])
+
+    with pytest.raises(SystemExit) as exc_info:
+        runpy.run_path(bench.__file__, run_name="__main__")
+
+    assert exc_info.value.code == 0
+    help_text = " ".join(capsys.readouterr().out.split())
+    for description in (
+        "Josephson K_nm magnitude-study artifacts",
+        "ground-state optimizer convergence artifacts",
+        "open-system objective evidence artifacts",
+        "coupling-recovery evidence artifacts",
+        "synchronisation-witness evidence artifacts",
+        "p_h1 open-claim guard report",
+    ):
+        assert description in help_text
+    for internal_code in ("QWC-5.2", "BL-15", "BL-16", "BL-17", "BL-18", "QWC-5.3"):
+        assert internal_code not in help_text
 
 
 def test_registry_scripts_exist_for_offline_harnesses() -> None:

@@ -48,6 +48,7 @@ if TYPE_CHECKING:
     )
     from tools import application_honesty_quality_gates as _application_honesty_quality_gates
     from tools import attested_result_pack_quality_gates as _attested_result_pack_quality_gates
+    from tools import bench_cli_quality_gates as _bench_cli_quality_gates
     from tools import (
         campaign_harness_product_quality_gates as _campaign_harness_product_quality_gates,
     )
@@ -220,6 +221,7 @@ else:
     _entanglement_sync_evidence_quality_gates = import_module(
         "tools.entanglement_sync_evidence_quality_gates"
     )
+    _bench_cli_quality_gates = import_module("tools.bench_cli_quality_gates")
     _synchronisation_witness_quality_gates = import_module(
         "tools.synchronisation_witness_quality_gates"
     )
@@ -638,6 +640,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_whole_program_ad_product_quality_gates.build_static_quality_gates(_PY),
     *_neural_operator_baseline_product_quality_gates.build_static_quality_gates(_PY),
     *_entanglement_sync_evidence_quality_gates.build_static_quality_gates(_PY),
+    *_bench_cli_quality_gates.build_static_quality_gates(_PY),
     *_neural_operator_cost_model_quality_gates.build_static_quality_gates(_PY),
     *_governed_route_matrix_quality_gates.build_static_quality_gates(_PY),
     *_attested_result_pack_quality_gates.build_static_quality_gates(_PY),
@@ -1101,6 +1104,7 @@ NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_GATES = (
 ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_GATES = (
     _entanglement_sync_evidence_quality_gates.build_coverage_gates(_PY)
 )
+BENCH_CLI_COVERAGE_GATES = _bench_cli_quality_gates.build_coverage_gates(_PY)
 GOVERNED_ROUTE_MATRIX_COVERAGE_GATES = _governed_route_matrix_quality_gates.build_coverage_gates(
     _PY
 )
@@ -1428,6 +1432,7 @@ def main() -> int:
             gates.extend(WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_GATES)
             gates.extend(NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_GATES)
             gates.extend(ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_GATES)
+            gates.extend(BENCH_CLI_COVERAGE_GATES)
             gates.extend(NEURAL_OPERATOR_COST_MODEL_COVERAGE_GATES)
             gates.extend(GOVERNED_ROUTE_MATRIX_COVERAGE_GATES)
             gates.extend(ATTESTED_RESULT_PACK_COVERAGE_GATES)

@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1209
+    "test_files": 1210
   },
   "documentation": {
     "examples": [
@@ -8208,6 +8208,7 @@
       "tests/test_behavioural_test_audit.py",
       "tests/test_bench_cli.py",
       "tests/test_bench_cli_branches.py",
+      "tests/test_bench_cli_quality_gate.py",
       "tests/test_bench_kuramoto_competitive.py",
       "tests/test_bench_kuramoto_tiers.py",
       "tests/test_bench_s2_scaling_lite.py",

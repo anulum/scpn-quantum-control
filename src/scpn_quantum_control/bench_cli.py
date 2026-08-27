@@ -566,37 +566,37 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
 
     josephson_knm = subparsers.add_parser(
         "knm-josephson-magnitude-study",
-        help="Regenerate the QWC-5.2 Josephson K_nm magnitude-study artifacts.",
+        help="Regenerate the Josephson K_nm magnitude-study artifacts.",
     )
     _add_run_options(josephson_knm, default_group="knm-josephson-study")
 
     optimizer_convergence = subparsers.add_parser(
         "ground-state-optimizer-convergence",
-        help="Regenerate BL-15 ground-state optimizer convergence artifacts.",
+        help="Regenerate ground-state optimizer convergence artifacts.",
     )
     _add_run_options(optimizer_convergence, default_group="diff-optimizer-convergence")
 
     open_system_objectives = subparsers.add_parser(
         "open-system-objective-evidence",
-        help="Regenerate BL-16 open-system objective evidence artifacts.",
+        help="Regenerate open-system objective evidence artifacts.",
     )
     _add_run_options(open_system_objectives, default_group="diff-open-system-objectives")
 
     coupling_recovery = subparsers.add_parser(
         "coupling-recovery-evidence",
-        help="Regenerate BL-17 coupling-recovery evidence artifacts.",
+        help="Regenerate coupling-recovery evidence artifacts.",
     )
     _add_run_options(coupling_recovery, default_group="diff-coupling-recovery")
 
     sync_witness = subparsers.add_parser(
         "sync-witness-evidence",
-        help="Regenerate BL-18 synchronisation-witness evidence artifacts.",
+        help="Regenerate synchronisation-witness evidence artifacts.",
     )
     _add_run_options(sync_witness, default_group="diff-sync-witness")
 
     p_h1_open_guard = subparsers.add_parser(
         "p-h1-open-guard",
-        help="Regenerate the QWC-5.3 p_h1 open-claim guard report.",
+        help="Regenerate the p_h1 open-claim guard report.",
     )
     _add_run_options(p_h1_open_guard, default_group="p-h1-open-guard")
 
@@ -691,17 +691,11 @@ def _selected_harnesses(
 
 def _resolve_executable(command: str) -> str | None:
     """Resolve a command name or absolute path to an executable file."""
-    try:
-        command_path = Path(command)
-    except (OSError, ValueError):
-        return None
+    command_path = Path(command)
     located = command if command_path.is_absolute() else shutil.which(command)
     if located is None:
         return None
-    try:
-        admitted = Path(located)
-    except (OSError, ValueError):
-        return None
+    admitted = Path(located)
     if not admitted.is_file() or not os.access(admitted, os.X_OK):
         return None
     return str(admitted)
@@ -714,23 +708,18 @@ def _run_admitted_process(
     capture_output: bool = False,
 ) -> subprocess.CompletedProcess[str]:
     """Run a fixed command after executable admission."""
-    if not command:
-        raise ValueError("command must contain an executable")
     executable = _resolve_executable(command[0])
     if executable is None:
         return subprocess.CompletedProcess(command, 127, stdout="", stderr="executable not found")
     admitted = (executable, *command[1:])
-    try:
-        return subprocess.run(  # nosec B603
-            admitted,
-            cwd=cwd,
-            check=False,
-            capture_output=capture_output,
-            text=True,
-            shell=False,
-        )
-    except OSError as exc:
-        return subprocess.CompletedProcess(admitted, 127, stdout="", stderr=str(exc))
+    return subprocess.run(  # nosec B603
+        admitted,
+        cwd=cwd,
+        check=False,
+        capture_output=capture_output,
+        text=True,
+        shell=False,
+    )
 
 
 def _run_harness(harness: Harness) -> int:
