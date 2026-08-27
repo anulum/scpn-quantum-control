@@ -26,8 +26,13 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
 def test_coverage_gate_is_isolated_and_exact() -> None:
     """Require branch execution and exact source-only coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["qpu-compute-product focused coverage"]
-    assert "--fail-under=100" in gates["qpu-compute-product exact coverage threshold"]
+    run = gates["qpu-compute-product focused coverage"]
+    report = gates["qpu-compute-product exact coverage threshold"]
+    assert "--branch" in run
+    assert run[-1:] == quality_gates.QPU_COMPUTE_PRODUCT_COVERAGE_COHORT
+    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert "--fail-under=100" in report
+    assert "--include=*/qpu_compute_product.py" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:

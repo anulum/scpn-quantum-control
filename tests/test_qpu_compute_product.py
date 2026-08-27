@@ -15,6 +15,7 @@ import pytest
 
 import scpn_quantum_control.qpu_compute_product as qpu_compute_product
 from scpn_quantum_control.qpu_compute_product import (
+    QPU_COMPUTE_AUDIT_SCHEMA,
     QPU_COMPUTE_PRODUCT_CLAIM_BOUNDARY,
     QPU_COMPUTE_PRODUCT_SCHEMA,
     ComputePlanDecision,
@@ -127,10 +128,11 @@ def test_registry_and_integrity() -> None:
 
 
 def test_audit_secret_free() -> None:
-    """Emit a secret-free audit payload with the composed BL-47 record."""
+    """Emit a secret-free audit payload with the composed safety record."""
     decision = dry_run_compute_plan("dry_run_simulator")
     audit = audit_compute_plan_decision(decision)
     assert audit["contains_secrets"] is False
+    assert audit["schema"] == QPU_COMPUTE_AUDIT_SCHEMA
     assert audit["audit_id"] == decision.audit_id
     assert "hardware_safety_audit" in audit
 
@@ -362,6 +364,11 @@ def test_integrity_rejects_drift() -> None:
     good = build_qpu_compute_product_registry()
     assert_qpu_compute_product_integrity(good)
 
+    stale_schema = dict(good)
+    stale_schema["schema"] = "qpu_compute_product.v1"
+    with pytest.raises(ValueError, match="registry schema must be qpu_compute_product.v2"):
+        assert_qpu_compute_product_integrity(stale_schema)
+
     bad_blank = dict(good)
     bad_blank["blank_entry_count"] = 1
     with pytest.raises(ValueError, match="blank_entry_count"):
@@ -525,8 +532,8 @@ def test_dry_run_appends_unsupported_kernel_blocker(
     assert any("unsupported kernel" in item for item in decision.blockers)
 
 
-def test_audit_skips_bl47_when_policy_id_blank() -> None:
-    """Blank hardware_safety_policy_id omits nested BL-47 audit payload."""
+def test_audit_skips_nested_safety_record_when_policy_id_blank() -> None:
+    """Blank hardware-safety policy ids omit the nested safety audit."""
     decision = ComputePlanDecision(
         plan_kind_id="dry_run_simulator",
         outcome="allowed_plan",

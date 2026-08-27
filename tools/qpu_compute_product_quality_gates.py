@@ -21,7 +21,7 @@ QPU_COMPUTE_PRODUCT_QUALITY_RATCHET = [
 """Ordered strict-typing and NumPy-docstring cohort."""
 QPU_COMPUTE_PRODUCT_COVERAGE_COHORT = ["tests/test_qpu_compute_product.py"]
 """Tests that own exact qpu-compute product coverage."""
-QPU_COMPUTE_PRODUCT_COVERAGE_DATA_FILE = ".coverage.qpu-compute-product-quality"
+QPU_COMPUTE_PRODUCT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-qpu-compute-product-quality.coverage"  # nosec B108
 """Isolated coverage database for the qpu-compute product owner."""
 
 

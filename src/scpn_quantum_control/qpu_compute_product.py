@@ -36,13 +36,16 @@ PlanMode = Literal["dry_run", "would_live", "ticketed_prep"]
 ValidationOutcome = Literal["allowed_plan", "refused"]
 """Structured validation outcomes."""
 
-QPU_COMPUTE_PRODUCT_SCHEMA: Final[str] = "qpu_compute_product.v1"
+QPU_COMPUTE_PRODUCT_SCHEMA: Final[str] = "qpu_compute_product.v2"
 """JSON schema identifier for serialised product payloads."""
+
+QPU_COMPUTE_AUDIT_SCHEMA: Final[str] = "qpu_compute_product_audit.v2"
+"""JSON schema identifier for secret-free plan-decision audits."""
 
 QPU_COMPUTE_PRODUCT_CLAIM_BOUNDARY: Final[str] = (
     "qpu_compute product only; default posture is dry-run / no-submit; "
     "would_live and hardware_enabled plans are refused without owner gate; "
-    "composes qpu_compute_types kernels and BL-47 hardware-safe audit posture; "
+    "composes qpu_compute_types kernels and hardware-safe audit posture; "
     "never executes QPU jobs or invents hardware results"
 )
 """Shared claim boundary for plan kinds, validations, and audits."""
@@ -206,7 +209,7 @@ class ComputePlanDecision:
     audit_id
         Deterministic audit identifier.
     hardware_safety_policy_id
-        BL-47 policy used for compose (if any).
+        Hardware-safety policy composed into the decision, if any.
 
     """
 
@@ -284,7 +287,7 @@ _CANONICAL_KINDS: Final[tuple[ComputePlanKind, ...]] = (
         mode="dry_run",
         summary=(
             "Default product plan: local simulator_statevector dry-run; "
-            "hardware_enabled=False; no-submit posture (BL-47 aligned)."
+            "hardware_enabled=False; hardware-safe no-submit posture."
         ),
         default_backend_policy="simulator_statevector",
         default_hardware_enabled=False,
@@ -543,7 +546,7 @@ def dry_run_compute_plan(
     if plan.no_submit and plan.mode == "would_live":
         blockers.append("plan kind no_submit=True refuses would_live execution")
 
-    # Compose BL-47 enforce for dry_run / would_submit mapping
+    # Compose hardware-safety enforcement for dry-run / would-submit mapping.
     hardware_safety_mode_raw: str
     if plan.mode == "ticketed_prep":
         hardware_safety_mode_raw = "ticketed_prep"
@@ -602,7 +605,7 @@ def dry_run_compute_plan(
 def audit_compute_plan_decision(decision: ComputePlanDecision) -> dict[str, object]:
     """Build a secret-free audit payload for a compute plan decision.
 
-    Aligns with BL-47 audit posture when a BL-47 policy was composed.
+    Includes the hardware-safety audit when a policy was composed.
 
     Parameters
     ----------
@@ -616,7 +619,7 @@ def audit_compute_plan_decision(decision: ComputePlanDecision) -> dict[str, obje
 
     """
     payload: dict[str, object] = {
-        "schema": "qpu_compute_product_audit.v1",
+        "schema": QPU_COMPUTE_AUDIT_SCHEMA,
         "audit_id": decision.audit_id,
         "plan_kind_id": decision.plan_kind_id,
         "outcome": decision.outcome,
@@ -629,7 +632,7 @@ def audit_compute_plan_decision(decision: ComputePlanDecision) -> dict[str, obje
         "hardware_safety_claim_boundary": HARDWARE_SAFE_EXECUTION_CLAIM_BOUNDARY,
         "contains_secrets": False,
     }
-    # Optional structured BL-47 audit when policy present
+    # Add the structured hardware-safety audit when a policy is present.
     if decision.hardware_safety_policy_id:
         if decision.mode == "would_live":
             hardware_safety_mode_raw = "would_submit"
@@ -675,9 +678,9 @@ def build_qpu_compute_product_registry() -> dict[str, object]:
         "blank_entry_count": 0,
         "plan_kinds": rows,
         "policy_note": (
-            "Composes qpu_compute_types kernels/backend policies and BL-47 "
-            "hardware-safe no-submit posture; S95.3 full runtime audit wiring "
-            "and mass algorithm migration remain residual."
+            "Composes qpu_compute_types kernels/backend policies and a "
+            "hardware-safe no-submit posture; full runtime audit wiring and "
+            "mass algorithm migration remain outside this bounded registry."
         ),
     }
 
@@ -704,6 +707,8 @@ def assert_qpu_compute_product_integrity(
 
     """
     registry = dict(payload) if payload is not None else build_qpu_compute_product_registry()
+    if registry.get("schema") != QPU_COMPUTE_PRODUCT_SCHEMA:
+        raise ValueError(f"registry schema must be {QPU_COMPUTE_PRODUCT_SCHEMA}")
     kinds = registry.get("plan_kinds")
     if not isinstance(kinds, list) or not kinds:
         raise ValueError("qpu_compute product registry must contain a non-empty plan_kinds list")
@@ -759,6 +764,7 @@ def assert_qpu_compute_product_integrity(
 
 
 __all__ = [
+    "QPU_COMPUTE_AUDIT_SCHEMA",
     "QPU_COMPUTE_PRODUCT_CLAIM_BOUNDARY",
     "QPU_COMPUTE_PRODUCT_SCHEMA",
     "ComputePlanDecision",

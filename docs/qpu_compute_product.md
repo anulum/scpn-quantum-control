@@ -3,7 +3,7 @@
 Fail-closed typed **compute plan** product between algorithms and HALs. Default
 posture is **dry-run / no-submit**; would-live and hardware_enabled plans are
 refused without inventing QPU spend. Composes `qpu_compute_types` kernels and
-BL-47 `hardware_safe_execution` audit posture.
+the `hardware_safe_execution` no-submit audit posture.
 
 Module: `scpn_quantum_control.qpu_compute_product`
 
@@ -35,7 +35,7 @@ The facade exposes three immutable, slot-backed dataclasses:
 - `ComputePlanKind` describes a versioned catalogue row and its defaults.
 - `ComputePlanRecord` captures a constructed request before policy validation.
 - `ComputePlanDecision` records the fail-closed outcome, blockers, audit id,
-  and composed BL-47 policy id.
+  and composed hardware-safety policy id.
 
 Each object validates itself at construction and provides `to_dict()` for a
 JSON-ready mapping. The mapping is a transport representation, not an approval
@@ -51,7 +51,7 @@ continue; it never means that a QPU job ran.
 | Ticketed prep | Requires non-empty ticket; plan-only (no live submit) |
 | Kernels | `sync_witness`, `dla_parity`, `sync_dla` from `qpu_compute_types` |
 | Blank/unknown plan kind | Fail closed |
-| Audit | Secret-free; composes BL-47 audit fields |
+| Audit | Secret-free; composes hardware-safety audit fields |
 
 ## Constructing a plan
 
@@ -81,7 +81,7 @@ can return a structured refusal with an auditable blocker.
 
 ## Validating a dry run
 
-`dry_run_compute_plan()` constructs the record and composes the BL-47
+`dry_run_compute_plan()` constructs the record and composes the
 hardware-safe policy. Outcomes are deliberately asymmetric:
 
 | Request | Result |
@@ -100,8 +100,8 @@ provider job id.
 ## Audit records
 
 `audit_compute_plan_decision()` emits a secret-free dictionary under schema
-`qpu_compute_product_audit.v1`. It includes the decision, claim boundary,
-`contains_secrets=False`, and—when a BL-47 policy id is present—a nested
+`qpu_compute_product_audit.v2`. It includes the decision, claim boundary,
+`contains_secrets=False`, and—when a hardware-safety policy id is present—a nested
 hardware-safe audit record. Ticketed audit composition uses a fixed placeholder
 and never copies the caller's ticket into the audit payload.
 
@@ -112,12 +112,13 @@ or scientific validity.
 ## Registry and integrity
 
 `build_qpu_compute_product_registry()` produces the complete serialisable
-catalogue under schema `qpu_compute_product.v1`. The registry reports plan-kind,
+catalogue under schema `qpu_compute_product.v2`. The registry reports plan-kind,
 dry-run, and no-submit counts plus the supported kernel and backend vocabularies.
 
 Always pass stored or transported registries through
 `assert_qpu_compute_product_integrity()`. Validation fails closed on:
 
+- a stale or unknown registry schema;
 - a missing or empty `plan_kinds` list;
 - non-mapping, blank, duplicate, missing, or extra catalogue rows;
 - invalid modes or non-boolean `no_submit` values;
@@ -129,7 +130,7 @@ Claim boundary:
 
 > qpu_compute product only; default posture is dry-run / no-submit; would_live
 > and hardware_enabled plans are refused without owner gate; composes
-> qpu_compute_types kernels and BL-47 hardware-safe audit posture; never
+> qpu_compute_types kernels and hardware-safe audit posture; never
 > executes QPU jobs or invents hardware results
 
 ## Public API
@@ -182,8 +183,8 @@ boundaries require their own contracts and approvals.
 
 ## Bounded product status
 
-Shipped: S95.0 type inventory · S95.1 public plan kinds + validation ·
-S95.2 dry-run path · S95.3 BL-47 audit compose · S95.4 docs.
+Shipped: typed inventory, public plan-kind discovery and validation, the
+dry-run decision path, composed hardware-safety audits, and this operator guide.
 
 Open: mass algorithm call-site migration onto this layer · live HAL wiring ·
 full runtime simulator integration in the product façade (existing
