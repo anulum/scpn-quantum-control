@@ -357,7 +357,7 @@ class OpenSystemObjectiveBoundaryRow:
 
 @dataclass(frozen=True)
 class OpenSystemObjectiveSuiteResult:
-    """BL-16 open-system objective suite result."""
+    """Bounded open-system objective suite result."""
 
     cases: tuple[BoundedOpenSystemObjectiveCase, ...]
     records: tuple[OpenSystemObjectiveRecord, ...]
@@ -636,7 +636,7 @@ def _record_for_backend(
 
 
 def open_system_objective_boundary_rows() -> tuple[OpenSystemObjectiveBoundaryRow, ...]:
-    """Return approximation and promotion boundary rows for BL-16."""
+    """Return approximation and promotion rows for open-system objectives."""
     return (
         OpenSystemObjectiveBoundaryRow(
             case_id="adjoint_lindblad_gradient_boundary",

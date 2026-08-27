@@ -38,13 +38,14 @@ from scpn_quantum_control.phase.open_system_objectives import BoundaryStatus, Op
 
 @pytest.fixture(scope="module")
 def suite() -> OpenSystemObjectiveSuiteResult:
-    """Run the default BL-16 open-system suite once."""
+    """Run the default bounded open-system suite once."""
     return run_open_system_objective_suite()
 
 
 def test_default_open_system_objective_suite_passes(
     suite: OpenSystemObjectiveSuiteResult,
 ) -> None:
+    """Validate default case, backend, certificate, and boundary evidence."""
     assert suite.passed
     assert suite.case_count == 2
     assert suite.record_count == 4
@@ -72,6 +73,7 @@ def test_default_open_system_objective_suite_passes(
 def test_open_system_suite_serializes_cases_records_and_boundaries(
     suite: OpenSystemObjectiveSuiteResult,
 ) -> None:
+    """Serialize the complete case, record, and boundary inventory."""
     payload = suite.to_dict()
 
     assert payload["passed"] is True
@@ -88,6 +90,7 @@ def test_open_system_suite_serializes_cases_records_and_boundaries(
 def test_open_system_records_for_case_contract(
     suite: OpenSystemObjectiveSuiteResult,
 ) -> None:
+    """Select records by case and reject unknown case identifiers."""
     case_id = suite.cases[0].case_id
 
     records = suite.records_for_case(case_id)
@@ -98,6 +101,7 @@ def test_open_system_records_for_case_contract(
 
 
 def test_custom_open_system_suite_subset_omits_boundary_rows() -> None:
+    """Run a deduplicated backend subset without promotion boundaries."""
     suite = run_open_system_objective_suite(
         cases=default_open_system_objective_cases()[:1],
         backends=("mcwf_ensemble", "mcwf_ensemble"),
@@ -112,6 +116,7 @@ def test_custom_open_system_suite_subset_omits_boundary_rows() -> None:
 
 
 def test_open_system_objective_evaluators_return_certificates() -> None:
+    """Return bounded Lindblad and MCWF values with valid certificates."""
     case = default_open_system_objective_cases()[0]
 
     lindblad_value, lindblad_r, invariant = evaluate_lindblad_objective(case, case.initial_params)
@@ -126,6 +131,7 @@ def test_open_system_objective_evaluators_return_certificates() -> None:
 
 
 def test_open_system_case_validates_and_scales_inputs() -> None:
+    """Scale valid case inputs and reject unsupported parameter vectors."""
     case = default_open_system_objective_cases()[0]
     scaled_k, gamma_amp, gamma_deph = case.scaled_inputs(np.array([2.0, 3.0]))
 
@@ -183,6 +189,7 @@ def _case(
 
 
 def test_open_system_case_rejects_invalid_metadata() -> None:
+    """Reject malformed shapes, rates, targets, controls, and numerics."""
     with pytest.raises(ValueError, match="case_id must be non-empty"):
         _case(case_id="")
     with pytest.raises(ValueError, match="n_oscillators"):
@@ -232,6 +239,7 @@ def test_open_system_case_rejects_invalid_metadata() -> None:
 
 
 def test_density_matrix_invariant_certificate_rejects_wrong_shape() -> None:
+    """Reject density matrices outside the configured Hilbert-space shape."""
     case = default_open_system_objective_cases()[0]
 
     with pytest.raises(ValueError, match="rho shape"):
@@ -239,6 +247,7 @@ def test_density_matrix_invariant_certificate_rejects_wrong_shape() -> None:
 
 
 def test_density_matrix_invariant_certificate_detects_invalid_matrix() -> None:
+    """Detect a finite density matrix with a negative eigenvalue."""
     case = default_open_system_objective_cases()[0]
     rho = np.diag(np.array([1.1, -0.1, 0.0, 0.0], dtype=np.complex128))
 
@@ -251,6 +260,7 @@ def test_density_matrix_invariant_certificate_detects_invalid_matrix() -> None:
 
 
 def test_mcwf_reproducibility_certificate_rejects_bad_batches() -> None:
+    """Reject inconsistent MCWF replay batches and jump metadata."""
     case = _case()
     valid = {
         "R_trajectories": np.zeros((4, 3), dtype=np.float64),
@@ -292,6 +302,7 @@ def test_mcwf_reproducibility_certificate_rejects_bad_batches() -> None:
 
 
 def test_boundary_rows_validate_and_serialize() -> None:
+    """Serialize canonical hard gaps and reject malformed boundary rows."""
     rows = open_system_objective_boundary_rows()
 
     assert rows[0].to_dict()["status"] == "hard_gap"
@@ -314,6 +325,7 @@ def test_boundary_rows_validate_and_serialize() -> None:
 
 
 def test_record_passed_property_requires_backend_certificate() -> None:
+    """Require the backend-specific certificate for record passage."""
     bad_invariant = DensityMatrixInvariantCertificate(
         trace_error=1.0,
         hermiticity_error=0.0,
@@ -363,6 +375,7 @@ def test_record_passed_property_requires_backend_certificate() -> None:
 
 
 def test_open_system_suite_rejects_invalid_controls() -> None:
+    """Reject empty cases, empty backends, and unknown backend names."""
     with pytest.raises(ValueError, match="at least one open-system objective case"):
         run_open_system_objective_suite(cases=())
     with pytest.raises(ValueError, match="at least one backend"):

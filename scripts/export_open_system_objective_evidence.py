@@ -21,7 +21,7 @@ DEFAULT_OUTPUT = Path(
 
 
 def main() -> int:
-    """Write the committed BL-16 open-system objective artifacts."""
+    """Write the committed open-system objective artifacts."""
     artifact = write_open_system_objective_evidence_artifact(DEFAULT_OUTPUT)
     print(f"wrote {artifact.json_path}")
     print(f"wrote {artifact.markdown_path}")

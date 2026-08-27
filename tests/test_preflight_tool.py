@@ -1051,6 +1051,8 @@ def test_main_uses_coverage_pytest_by_default(
         "governed-route-matrix exact coverage threshold",
         "attested-result-pack focused coverage",
         "attested-result-pack exact coverage threshold",
+        "open-system-objective focused coverage",
+        "open-system-objective exact coverage threshold",
         "external-validation focused coverage",
         "external-validation exact coverage threshold",
         "gradient-tape focused coverage",

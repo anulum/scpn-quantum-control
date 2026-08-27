@@ -126,6 +126,9 @@ if TYPE_CHECKING:
     from tools import (
         open_system_completeness_quality_gates as _open_system_completeness_quality_gates,
     )
+    from tools import (
+        open_system_objective_quality_gates as _open_system_objective_quality_gates,
+    )
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import phase_qnode_product_quality_gates as _phase_qnode_product_quality_gates
     from tools import phase_trainability_quality_gates as _phase_trainability_quality_gates
@@ -291,6 +294,9 @@ else:
     )
     _open_system_completeness_quality_gates = import_module(
         "tools.open_system_completeness_quality_gates"
+    )
+    _open_system_objective_quality_gates = import_module(
+        "tools.open_system_objective_quality_gates"
     )
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
     _phase_qnode_product_quality_gates = import_module("tools.phase_qnode_product_quality_gates")
@@ -678,6 +684,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_neural_operator_cost_model_quality_gates.build_static_quality_gates(_PY),
     *_governed_route_matrix_quality_gates.build_static_quality_gates(_PY),
     *_attested_result_pack_quality_gates.build_static_quality_gates(_PY),
+    *_open_system_objective_quality_gates.build_static_quality_gates(_PY),
     *_external_validation_quality_gates.build_static_quality_gates(_PY),
     *_gradient_tape_quality_gates.build_static_quality_gates(_PY),
     *_fault_tolerant_resource_product_quality_gates.build_static_quality_gates(_PY),
@@ -1156,6 +1163,9 @@ GOVERNED_ROUTE_MATRIX_COVERAGE_GATES = _governed_route_matrix_quality_gates.buil
     _PY
 )
 ATTESTED_RESULT_PACK_COVERAGE_GATES = _attested_result_pack_quality_gates.build_coverage_gates(_PY)
+OPEN_SYSTEM_OBJECTIVE_COVERAGE_GATES = _open_system_objective_quality_gates.build_coverage_gates(
+    _PY
+)
 EXTERNAL_VALIDATION_COVERAGE_GATES = _external_validation_quality_gates.build_coverage_gates(_PY)
 GRADIENT_TAPE_COVERAGE_GATES = _gradient_tape_quality_gates.build_coverage_gates(_PY)
 FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_GATES = (
@@ -1494,6 +1504,7 @@ def main() -> int:
             gates.extend(NEURAL_OPERATOR_COST_MODEL_COVERAGE_GATES)
             gates.extend(GOVERNED_ROUTE_MATRIX_COVERAGE_GATES)
             gates.extend(ATTESTED_RESULT_PACK_COVERAGE_GATES)
+            gates.extend(OPEN_SYSTEM_OBJECTIVE_COVERAGE_GATES)
             gates.extend(EXTERNAL_VALIDATION_COVERAGE_GATES)
             gates.extend(GRADIENT_TAPE_COVERAGE_GATES)
             gates.extend(FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_GATES)

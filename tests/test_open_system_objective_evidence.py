@@ -26,12 +26,13 @@ from scpn_quantum_control.phase import run_open_system_objective_suite
 
 @pytest.fixture(scope="module")
 def payload() -> dict[str, Any]:
-    """Build one real BL-16 evidence payload through the public facade."""
+    """Build one real open-system evidence payload through the public facade."""
     suite = run_open_system_objective_suite()
     return open_system_objective_evidence_payload(suite, artifact_id="pytest-bl16")
 
 
 def test_open_system_payload_carries_rows_and_boundaries(payload: dict[str, Any]) -> None:
+    """Expose bounded rows, metadata, and hard-gap boundaries."""
     assert payload["schema"] == OPEN_SYSTEM_OBJECTIVE_EVIDENCE_SCHEMA
     assert payload["artifact_id"] == "pytest-bl16"
     assert payload["artifact_date"] == "2026-07-09"
@@ -45,7 +46,12 @@ def test_open_system_payload_carries_rows_and_boundaries(payload: dict[str, Any]
 
 
 def test_open_system_markdown_renders_evidence(payload: dict[str, Any]) -> None:
+    """Render bounded evidence with and without boundary rows."""
     markdown = render_open_system_objective_evidence_markdown(payload)
+    without_boundaries = {**payload, "boundary_rows": []}
+    markdown_without_boundaries = render_open_system_objective_evidence_markdown(
+        without_boundaries
+    )
 
     assert "# Open-System Objective Evidence" in markdown
     assert "`functional_non_isolated`" in markdown
@@ -53,9 +59,11 @@ def test_open_system_markdown_renders_evidence(payload: dict[str, Any]) -> None:
     assert "`lindblad_density`" in markdown
     assert "`mcwf_ensemble`" in markdown
     assert "`hardware_open_system_gradient_boundary`" in markdown
+    assert "## Boundary Rows" not in markdown_without_boundaries
 
 
 def test_open_system_writer_creates_json_and_markdown(tmp_path: Path) -> None:
+    """Write paired JSON and Markdown evidence through the public writer."""
     artifact = write_open_system_objective_evidence_artifact(
         tmp_path / "open_system_objective_evidence.json",
         artifact_id="pytest-writer",
@@ -73,6 +81,7 @@ def test_open_system_writer_creates_json_and_markdown(tmp_path: Path) -> None:
 
 
 def test_open_system_writer_rejects_invalid_paths(tmp_path: Path) -> None:
+    """Reject output paths with invalid JSON or Markdown suffixes."""
     with pytest.raises(ValueError, match="output_path must end with .json"):
         write_open_system_objective_evidence_artifact(tmp_path / "artifact.txt")
 
@@ -84,11 +93,13 @@ def test_open_system_writer_rejects_invalid_paths(tmp_path: Path) -> None:
 
 
 def test_open_system_payload_rejects_blank_artifact_id() -> None:
+    """Reject blank artifact identifiers before payload construction."""
     with pytest.raises(ValueError, match="artifact_id must be non-empty"):
         open_system_objective_evidence_payload(artifact_id=" ")
 
 
 def test_open_system_payload_rejects_wrong_suite_classification() -> None:
+    """Reject suites that claim an unsupported evidence classification."""
     suite = run_open_system_objective_suite()
     object.__setattr__(suite, "evidence_class", "isolated_affinity")
 

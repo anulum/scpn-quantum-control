@@ -28,7 +28,7 @@ OPEN_SYSTEM_OBJECTIVE_EVIDENCE_SCHEMA = "scpn_qc_open_system_objective_evidence_
 
 @dataclass(frozen=True)
 class OpenSystemObjectiveEvidenceArtifact:
-    """Written BL-16 open-system objective artifact metadata."""
+    """Written open-system objective artifact metadata."""
 
     artifact_id: str
     json_path: Path
@@ -56,7 +56,7 @@ def open_system_objective_evidence_payload(
     *,
     artifact_id: str = "open-system-objective-evidence-local",
 ) -> dict[str, Any]:
-    """Return the BL-16 open-system objective evidence payload."""
+    """Return the bounded open-system objective evidence payload."""
     normalized_id = artifact_id.strip()
     if not normalized_id:
         raise ValueError("artifact_id must be non-empty")
@@ -107,7 +107,7 @@ def open_system_objective_evidence_payload(
 
 
 def render_open_system_objective_evidence_markdown(payload: dict[str, Any]) -> str:
-    """Render the BL-16 payload as bounded Markdown evidence."""
+    """Render the open-system objective payload as bounded Markdown evidence."""
     suite = payload["suite"]
     rows = payload["rows"]
     boundary_rows = payload["boundary_rows"]
@@ -177,7 +177,7 @@ def write_open_system_objective_evidence_artifact(
     suite: OpenSystemObjectiveSuiteResult | None = None,
     artifact_id: str = "open-system-objective-evidence-local",
 ) -> OpenSystemObjectiveEvidenceArtifact:
-    """Write JSON and Markdown BL-16 open-system objective artefacts."""
+    """Write JSON and Markdown open-system objective artefacts."""
     json_destination = Path(output_path)
     if json_destination.suffix.lower() != ".json":
         raise ValueError("output_path must end with .json")
