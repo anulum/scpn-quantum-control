@@ -2532,6 +2532,8 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/benchmarks/layout_method_comparison.py
           tests/test_layout_method_comparison.py
+          scripts/run_layout_method_comparison.py
+          tests/test_run_layout_method_comparison.py
           tools/layout_method_comparison_quality_gates.py
           tests/test_layout_method_comparison_quality_gate.py
       - run: >-
@@ -2539,15 +2541,18 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/benchmarks/layout_method_comparison.py
           tests/test_layout_method_comparison.py
+          scripts/run_layout_method_comparison.py
+          tests/test_run_layout_method_comparison.py
           tools/layout_method_comparison_quality_gates.py
           tests/test_layout_method_comparison_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
-          --data-file=.coverage.layout-method-comparison-quality --branch
+          --data-file=/tmp/scpn-qc-layout-method-comparison-quality.coverage --branch
           -m pytest -q tests/test_layout_method_comparison.py
+          tests/test_run_layout_method_comparison.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
-          --data-file=.coverage.layout-method-comparison-quality
+          --data-file=/tmp/scpn-qc-layout-method-comparison-quality.coverage
           --precision=2 --fail-under=100 --include=*/benchmarks/layout_method_comparison.py
 
   phase-trainability-quality:

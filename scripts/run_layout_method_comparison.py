@@ -5,7 +5,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — layout-method comparison run script (KT-3)
+# SCPN Quantum Control — layout-method comparison run script
 """Run the layout-method comparison benchmark and emit an artifact.
 
 Compares DynQ, DynQ + Kuramoto discrete optimiser, and SABRE on the synthetic
@@ -47,6 +47,7 @@ def two_cluster_gate_errors() -> GateErrors:
     -------
     GateErrors
         Per-edge two-qubit gate errors.
+
     """
     return {
         (0, 1): 0.002,
@@ -80,6 +81,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     -------
     argparse.Namespace
         Parsed options controlling the run.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
@@ -108,6 +110,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     -------
     int
         Process exit code (``0`` on success).
+
     """
     args = _parse_args(argv)
     out_dir = Path(args.out_dir)

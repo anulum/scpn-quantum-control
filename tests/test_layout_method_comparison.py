@@ -16,6 +16,7 @@ readiness so the assembly logic is exercised without heavy transpilation.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any
 
 import numpy as np
@@ -154,12 +155,16 @@ class TestSerialisation:
         """Render complete artifacts as mappings and readable tables."""
         artifact = _run_stubbed()
         payload = artifact.to_dict()
-        assert payload["schema_version"] == "1.1"
+        assert payload["schema_version"] == "1.2"
         assert len(payload["rows"]) == 3
         table = artifact.render_markdown_table()
         assert table.splitlines()[0].startswith("| Method ")
         assert "dynq+kuramoto_opt" in table
         assert "sabre" in table
+
+        for stale_schema in ("1.0", "1.1"):
+            with pytest.raises(ValueError, match="schema_version must be 1.2"):
+                replace(artifact, schema_version=stale_schema)
 
 
 class TestLayoutComparisonConfig:
@@ -519,7 +524,7 @@ class TestRunComparison:
 
 
 class TestRelaxationRow:
-    """The KT-4 research row: budget bind, labelling, and candidate regions."""
+    """Verify research-row budget binding, labelling, and candidate regions."""
 
     @staticmethod
     def _small_relaxation(seed: int = 7) -> SinkhornRelaxationConfig:
@@ -544,7 +549,7 @@ class TestRelaxationRow:
         ]
         research_row = artifact.rows[-1]
         assert RESEARCH_LABEL in research_row.notes
-        assert any("RESEARCH row (KT-4)" in note for note in artifact.notes)
+        assert any("RESEARCH row:" in note for note in artifact.notes)
 
     def test_budget_bound_to_discrete_baseline(self) -> None:
         """Bind relaxation true-cost work to the discrete search budget."""

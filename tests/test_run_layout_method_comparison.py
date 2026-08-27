@@ -22,6 +22,7 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.benchmarks.layout_method_comparison import (
+    SCHEMA_VERSION,
     LayoutComparisonArtifact,
     MethodRow,
 )
@@ -52,20 +53,27 @@ def _canned_artifact() -> LayoutComparisonArtifact:
 
 
 class TestSyntheticTopology:
+    """Verify the deterministic synthetic calibration topology."""
+
     def test_two_cluster_gate_errors_shape(self) -> None:
+        """Expose eleven bounded gate errors with one worst bridge edge."""
         errors = script.two_cluster_gate_errors()
         assert len(errors) == 11
         assert all(0.0 < error < 1.0 for error in errors.values())
         assert errors[(3, 4)] == max(errors.values())  # the high-error bridge
 
     def test_two_cluster_readout_errors_cover_all_qubits(self) -> None:
+        """Assign bounded readout errors to every synthetic device qubit."""
         readout = script.two_cluster_readout_errors()
         assert sorted(readout) == list(range(8))
         assert all(0.0 < error < 1.0 for error in readout.values())
 
 
 class TestArgumentParsing:
+    """Verify default and explicitly supplied command-line options."""
+
     def test_defaults(self) -> None:
+        """Parse the reproducible default comparison configuration."""
         args = script._parse_args([])
         assert args.n == 4
         assert args.seed == 7
@@ -73,6 +81,7 @@ class TestArgumentParsing:
         assert Path(args.out_dir) == script.DEFAULT_OUT_DIR
 
     def test_custom_arguments(self) -> None:
+        """Propagate custom problem, evolution, seed, and host controls."""
         args = script._parse_args(
             ["--n", "3", "--t", "0.2", "--reps", "2", "--seed", "1", "--reserved-core", "2"]
         )
@@ -80,12 +89,15 @@ class TestArgumentParsing:
 
 
 class TestMain:
+    """Verify public runner output without executing transpilation."""
+
     def test_writes_artifact_and_prints_table(
         self,
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Write JSON and print the comparison summary through the runner."""
         captured: dict[str, Any] = {}
 
         def fake_run(gate_errors: Any, K: Any, omega: Any, **kwargs: Any) -> Any:
@@ -121,6 +133,7 @@ class TestMain:
         tmp_path: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Forward CLI evolution and reserved-core settings to the run."""
         captured: dict[str, Any] = {}
 
         def fake_run(gate_errors: Any, K: Any, omega: Any, **kwargs: Any) -> Any:
@@ -143,3 +156,15 @@ class TestMain:
         assert code == 0
         config = captured["config"]
         assert (config.t, config.reps, config.reserved_core) == (0.3, 2, 1)
+
+
+class TestCommittedArtifact:
+    """Verify the checked-in default artifact migration."""
+
+    def test_schema_is_current_and_internal_labels_are_absent(self) -> None:
+        """Keep the committed artifact on the descriptive current schema."""
+        artifact_path = script.DEFAULT_OUT_DIR / "layout_method_comparison_n4_seed7.json"
+        payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+
+        assert payload["schema_version"] == SCHEMA_VERSION
+        assert "KT-" not in json.dumps(payload, sort_keys=True)

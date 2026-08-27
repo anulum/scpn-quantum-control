@@ -15,13 +15,20 @@ Gate = tuple[str, list[str]]
 LAYOUT_METHOD_COMPARISON_QUALITY_RATCHET = [
     "src/scpn_quantum_control/benchmarks/layout_method_comparison.py",
     "tests/test_layout_method_comparison.py",
+    "scripts/run_layout_method_comparison.py",
+    "tests/test_run_layout_method_comparison.py",
     "tools/layout_method_comparison_quality_gates.py",
     "tests/test_layout_method_comparison_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-LAYOUT_METHOD_COMPARISON_COVERAGE_COHORT = ["tests/test_layout_method_comparison.py"]
+LAYOUT_METHOD_COMPARISON_COVERAGE_COHORT = [
+    "tests/test_layout_method_comparison.py",
+    "tests/test_run_layout_method_comparison.py",
+]
 """Tests that own exact layout-method-comparison coverage."""
-LAYOUT_METHOD_COMPARISON_COVERAGE_DATA_FILE = ".coverage.layout-method-comparison-quality"
+LAYOUT_METHOD_COMPARISON_COVERAGE_DATA_FILE = (
+    "/tmp/scpn-qc-layout-method-comparison-quality.coverage"  # nosec B108
+)
 """Isolated coverage database for layout-method-comparison diagnostics."""
 
 

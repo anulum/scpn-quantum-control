@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Layout-method comparison benchmark (KT-3)
+# SCPN Quantum Control — Layout-method comparison benchmark
 """Honest comparison of layout methods for the Kuramoto XY-Trotter circuit.
 
 Benchmarks three layout methods on the same problem, coupling map, and
@@ -13,7 +13,7 @@ calibration data:
 * ``dynq`` — the DynQ community-detection layout from
   :func:`~scpn_quantum_control.hardware.qubit_mapper.dynq_initial_layout`,
   routed as-is;
-* ``dynq+kuramoto_opt`` — the KT-3 discrete optimiser
+* ``dynq+kuramoto_opt`` — the discrete Kuramoto layout optimiser
   (:func:`~scpn_quantum_control.hardware.kuramoto_layout_optimiser.optimise_kuramoto_layout`)
   seeded by the DynQ layout and searching the candidate region;
 * ``sabre`` — Qiskit's SABRE layout + routing.
@@ -21,17 +21,17 @@ calibration data:
 With ``LayoutComparisonConfig.include_relaxation`` a fourth, **research** row
 is added:
 
-* ``dynq+sinkhorn_relaxation`` — the KT-4 annealed Sinkhorn relaxation
+* ``dynq+sinkhorn_relaxation`` — the annealed Sinkhorn relaxation
   (:func:`~scpn_quantum_control.hardware.kuramoto_layout_relaxation.relax_kuramoto_layout`),
   seeded by the DynQ layout, searching the same candidate region, and with
   its true-cost evaluation budget **bound to the discrete optimiser's
   ``n_evaluations`` on the same instance** — the preregistered budget match
-  of the KT-4 protocol. The row carries the research label; it is an
-  experiment observation, never a promoted capability.
+  defined by the relaxation preregistration. The row carries the research
+  label; it is an experiment observation, never a promoted capability.
 
 Both search arms share the candidate region selected by
 ``LayoutComparisonConfig.candidate_region``: the DynQ selected region
-(default, the KT-3 baseline setting) or the full calibrated device (the
+(default baseline setting) or the full calibrated device (the
 preregistered ``m ≥ 2n`` setting where relocations dominate).
 
 Metrics and their honest labels
@@ -85,7 +85,7 @@ from .isolated_host_readiness import HostReadiness, capture_host_readiness
 FloatArray = NDArray[np.float64]
 GateErrors = dict[tuple[int, int], float]
 
-SCHEMA_VERSION = "1.1"
+SCHEMA_VERSION = "1.2"
 
 #: Transpilation basis shared by every compared method.
 _BASIS_GATES: tuple[str, ...] = ("cx", "rz", "rx", "ry")
@@ -99,7 +99,7 @@ _PROXY_NOTE = (
 )
 _R_IDEAL_NOTE = "r_ideal is method-independent: every layout routes the same logical unitary"
 _RELAXATION_NOTE = (
-    "dynq+sinkhorn_relaxation is a RESEARCH row (KT-4): its true-cost budget is "
+    "dynq+sinkhorn_relaxation is a RESEARCH row: its true-cost budget is "
     "bound to the discrete optimiser's n_evaluations on this instance (the "
     "preregistered budget match); no gain over the discrete baseline is a valid outcome"
 )
@@ -201,12 +201,12 @@ class LayoutComparisonConfig:
         Optimiser search configuration; ``None`` derives one from ``t``,
         ``reps``, ``order``, and ``seed``.
     include_relaxation
-        Add the ``dynq+sinkhorn_relaxation`` research row (KT-4). Off by
+        Add the ``dynq+sinkhorn_relaxation`` research row. Off by
         default so the promoted comparison surface never silently carries a
         research arm.
     candidate_region
         Candidate set searched by both search arms: ``"dynq_region"`` (the
-        KT-3 baseline setting) or ``"full_device"`` (every calibrated qubit;
+        default baseline setting) or ``"full_device"`` (every calibrated qubit;
         the preregistered ``m ≥ 2n`` setting).
     relaxation
         Relaxation configuration; ``None`` derives one from ``t``, ``reps``,
@@ -288,6 +288,11 @@ class LayoutComparisonArtifact:
     provenance: dict[str, Any]
     notes: tuple[str, ...]
     schema_version: str = SCHEMA_VERSION
+
+    def __post_init__(self) -> None:
+        """Reject artifacts that use a stale serialized schema."""
+        if self.schema_version != SCHEMA_VERSION:
+            raise ValueError(f"schema_version must be {SCHEMA_VERSION}")
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serialisable mapping of the artifact."""
@@ -517,7 +522,7 @@ def run_layout_method_comparison(
     With ``config.include_relaxation`` a fourth, research-labelled
     ``dynq+sinkhorn_relaxation`` row is added, its true-cost budget bound to
     the discrete optimiser's ``n_evaluations`` on this instance (the
-    preregistered KT-4 budget match).
+    preregistered relaxation budget match).
 
     Parameters
     ----------
