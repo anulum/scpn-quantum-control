@@ -70,6 +70,7 @@ if TYPE_CHECKING:
         custom_derivatives_product_quality_gates as _custom_derivatives_product_quality_gates,
     )
     from tools import decisive_advantage_quality_gates as _decisive_advantage_quality_gates
+    from tools import diff_contract_audit_quality_gates as _diff_contract_audit_quality_gates
     from tools import (
         differentiable_notebook_curriculum_quality_gates as _differentiable_notebook_curriculum_quality_gates,
     )
@@ -220,6 +221,7 @@ else:
         "tools.custom_derivatives_product_quality_gates"
     )
     _decisive_advantage_quality_gates = import_module("tools.decisive_advantage_quality_gates")
+    _diff_contract_audit_quality_gates = import_module("tools.diff_contract_audit_quality_gates")
     _differentiable_quality_gates = import_module("tools.differentiable_quality_gates")
     _experiment_mitigation_quality_gates = import_module(
         "tools.experiment_mitigation_quality_gates"
@@ -655,6 +657,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_neural_operator_baseline_product_quality_gates.build_static_quality_gates(_PY),
     *_entanglement_sync_evidence_quality_gates.build_static_quality_gates(_PY),
     *_enaqt_evidence_quality_gates.build_static_quality_gates(_PY),
+    *_diff_contract_audit_quality_gates.build_static_quality_gates(_PY),
     *_bench_cli_quality_gates.build_static_quality_gates(_PY),
     *_identity_binding_spec_quality_gates.build_static_quality_gates(_PY),
     *_ssgf_geometry_gradient_quality_gates.build_static_quality_gates(_PY),
@@ -1123,6 +1126,7 @@ ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_GATES = (
     _entanglement_sync_evidence_quality_gates.build_coverage_gates(_PY)
 )
 ENAQT_EVIDENCE_COVERAGE_GATES = _enaqt_evidence_quality_gates.build_coverage_gates(_PY)
+DIFF_CONTRACT_AUDIT_COVERAGE_GATES = _diff_contract_audit_quality_gates.build_coverage_gates(_PY)
 BENCH_CLI_COVERAGE_GATES = _bench_cli_quality_gates.build_coverage_gates(_PY)
 IDENTITY_BINDING_SPEC_COVERAGE_GATES = _identity_binding_spec_quality_gates.build_coverage_gates(
     _PY
@@ -1459,6 +1463,7 @@ def main() -> int:
             gates.extend(NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_GATES)
             gates.extend(ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_GATES)
             gates.extend(ENAQT_EVIDENCE_COVERAGE_GATES)
+            gates.extend(DIFF_CONTRACT_AUDIT_COVERAGE_GATES)
             gates.extend(BENCH_CLI_COVERAGE_GATES)
             gates.extend(IDENTITY_BINDING_SPEC_COVERAGE_GATES)
             gates.extend(SSGF_GEOMETRY_GRADIENT_COVERAGE_GATES)

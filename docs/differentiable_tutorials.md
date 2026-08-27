@@ -47,7 +47,7 @@ simulator kernels are framework-native differentiable.
 | Compiler report | `differentiable_compile_report(...)` | Primitive-level compiler-AD planning and MLIR evidence for a selected registered primitive. |
 | Training evidence | `train_parameter_shift_qnn_classifier(...)`, `verify_parameter_shift_qnn_classifier_gradient(...)` | Tiny bounded phase-QNN training run plus finite-difference gradient verification. |
 | Benchmark reproduction | `write_differentiable_benchmark_evidence_bundle(...)` | Temporary local benchmark evidence bundle with explicit `functional_non_isolated` classification unless run under the isolated benchmark CI contract. |
-| Canonical namespace | `scpn_quantum_control.diff`, `scpn.diff`, `DifferentiableCircuit`, `jit_or_explain(...)`, `run_differentiable_circuit_contract_audit()` | No-credential first-path value/gradient execution, serializable diagnostics, bound gradient method, shot policy, estimator provenance, DP-004 contract checks, and explicit fail-closed JIT metadata. |
+| Canonical namespace | `scpn_quantum_control.diff`, `scpn.diff`, `DifferentiableCircuit`, `jit_or_explain(...)`, `run_differentiable_circuit_contract_audit()` | No-credential first-path value/gradient execution, serializable diagnostics, bound gradient method, shot policy, estimator provenance, differentiable-circuit contract checks, and explicit fail-closed JIT metadata. |
 | QFI/FSS evidence | `differentiable_qfi_fss_report()`, `differentiable_api("qfi_fss_report")` | Small local Kuramoto-XY finite-size gap scan with BKT and inverse-size residual diagnostics plus non-hardware, non-performance, and non-thermodynamic-limit claim boundaries. |
 
 ## Canonical Differentiable Namespace

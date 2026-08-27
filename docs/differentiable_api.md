@@ -1857,8 +1857,8 @@ print(diff.run_differentiable_circuit_contract_audit().to_dict()["passed"])
 bound gradient method, and estimator provenance, but it does not serialize
 executable Python code. The serialized payload includes a deterministic metadata
 digest under `serialization_provenance`. Unsupported routes fail closed through
-`DifferentiableCircuitDiagnostics`, `JITExplanation`, and the DP-004 contract
-audit instead of falling back silently.
+`DifferentiableCircuitDiagnostics`, `JITExplanation`, and the
+differentiable-circuit contract audit instead of falling back silently.
 
 ## Minimal gradient tape
 

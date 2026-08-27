@@ -262,7 +262,7 @@ def test_jit_or_explain_returns_fail_closed_diagnostics() -> None:
 
 
 def test_differentiable_circuit_contract_audit_covers_differentiable_contract_boundaries() -> None:
-    """The DP-004 audit records supported and fail-closed public contracts."""
+    """The circuit audit records supported and fail-closed public contracts."""
     result = diff.run_differentiable_circuit_contract_audit()
 
     assert result.passed is True

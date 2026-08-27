@@ -143,9 +143,9 @@ python examples/30_diff_first_path.py
 ```
 
 The short compatibility import `scpn.diff` exposes the same surface for
-notebooks and external examples. The contract audit is the DP-004 evidence path
-for call semantics, backend capability metadata, and serialization provenance;
-it does not promote hardware execution or JIT compilation.
+notebooks and external examples. The differentiable-circuit audit records call
+semantics, backend capability metadata, and serialization provenance; it does
+not promote hardware execution or JIT compilation.
 
 ## 3. Run a hardware experiment on simulator
 

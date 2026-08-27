@@ -5335,7 +5335,7 @@ Canonical first-path namespace for differentiable quantum-control workflows.
 
 ### `scpn_quantum_control.diff_contract_audit`
 
-Executable differentiable-contract contract audit for differentiable circuit facades.
+Executable contract audit for differentiable-circuit facades.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/diff_contract_audit.py) · Public symbols: **3**
 

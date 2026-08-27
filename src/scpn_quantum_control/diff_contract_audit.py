@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Differentiable Circuit Contract Audit
-"""Executable differentiable-contract contract audit for differentiable circuit facades."""
+# SCPN Quantum Control — differentiable-circuit contract audit
+"""Executable contract audit for differentiable-circuit facades."""
 
 from __future__ import annotations
 
@@ -30,18 +30,18 @@ DifferentiableCircuitContractStatus = Literal["supported", "fail_closed"]
 ScalarObjective = Callable[[NDArray[np.float64]], float | int | np.floating[Any]]
 
 DIFFERENTIABLE_CIRCUIT_CONTRACT_CLAIM_BOUNDARY = (
-    "DP-004 DifferentiableCircuit/QuantumFunction contract audit only; supported "
+    "DifferentiableCircuit/QuantumFunction contract audit only; supported "
     "checks cover local simulator call semantics, transform composition, backend "
     "capability metadata, and deterministic metadata serialization, while "
     "dataclass parameter containers, live hardware execution, provider submission, "
     "and JIT compilation remain fail-closed unless separate evidence promotes them"
 )
-"""Claim boundary for the executable DP-004 differentiable-circuit audit."""
+"""Claim boundary for the executable differentiable-circuit audit."""
 
 
 @dataclass(frozen=True)
 class DifferentiableCircuitContractCheck:
-    """One DP-004 contract check.
+    """One differentiable-circuit contract check.
 
     Parameters
     ----------
@@ -55,6 +55,7 @@ class DifferentiableCircuitContractCheck:
     blocked_reason:
         Rejection reason for fail-closed checks, or ``None`` for supported
         checks.
+
     """
 
     name: str
@@ -86,7 +87,7 @@ class DifferentiableCircuitContractCheck:
 
 @dataclass(frozen=True)
 class DifferentiableCircuitContractAuditResult:
-    """Executable audit result for the DP-004 circuit abstraction contract."""
+    """Executable result for the differentiable-circuit abstraction audit."""
 
     checks: tuple[DifferentiableCircuitContractCheck, ...]
     claim_boundary: str = DIFFERENTIABLE_CIRCUIT_CONTRACT_CLAIM_BOUNDARY
@@ -133,13 +134,14 @@ class _NamedParameters:
 
 
 def run_differentiable_circuit_contract_audit() -> DifferentiableCircuitContractAuditResult:
-    """Run the executable DP-004 audit through public diff namespace surfaces.
+    """Run the executable audit through public diff namespace surfaces.
 
     Returns
     -------
     DifferentiableCircuitContractAuditResult
         Supported and fail-closed checks for call semantics, transform
         composition, backend capability metadata, and serialization provenance.
+
     """
     checks = (
         _call_semantics_check(),
