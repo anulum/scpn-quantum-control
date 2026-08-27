@@ -32,7 +32,7 @@ from .qec.logical_dla_parity import (
 SupportPosture = Literal["supported", "research", "boundary"]
 SensitivityStatus = Literal["estimated", "refused"]
 
-FT_RESOURCE_PRODUCT_SCHEMA: Final[str] = "fault_tolerant_resource_product.v1"
+FT_RESOURCE_PRODUCT_SCHEMA: Final[str] = "fault_tolerant_resource_product.v2"
 FT_RESOURCE_CLAIM_BOUNDARY: Final[str] = (
     "Conservative future-resource planning only: rotated-patch register counts, "
     "phenomenological logical-error ansatz, union-bound opportunities, and "
@@ -201,7 +201,7 @@ class ResourceEstimate:
             raise ValueError("total_t_count arithmetic mismatch")
         if self.hardware_availability_claim_allowed or self.fault_tolerant_execution_claim_allowed:
             raise ValueError(
-                "BL-36 resource estimates must keep hardware and execution claims blocked"
+                "conservative resource estimates must keep hardware and execution claims blocked"
             )
 
     def to_dict(self) -> dict[str, object]:
@@ -266,7 +266,7 @@ class RegimeComparisonRow:
 
 @dataclass(frozen=True, slots=True)
 class FaultTolerantResourceProduct:
-    """Complete deterministic BL-36 report."""
+    """Complete deterministic fault-tolerant resource report."""
 
     schema: str
     request: SyncProblemResourceRequest
@@ -282,7 +282,7 @@ class FaultTolerantResourceProduct:
         if self.schema != FT_RESOURCE_PRODUCT_SCHEMA:
             raise ValueError(f"unknown product schema: {self.schema!r}")
         if len(self.sensitivity) < 3 or len(self.regimes) != 6 or len(self.references) != 4:
-            raise ValueError("BL-36 report inventory is incomplete")
+            raise ValueError("fault-tolerant resource report inventory is incomplete")
         if len(self.payload_sha256) != 64:
             raise ValueError("payload_sha256 must be a SHA-256 hex digest")
 
@@ -430,7 +430,7 @@ def build_regime_comparison(
             "analog_mapping",
             "boundary",
             None,
-            "BL-35 feasibility dependency; no digital-qubit equivalence invented.",
+            "Bounded analog-feasibility dependency; no digital-qubit equivalence invented.",
             "No named analog platform capacity or execution claim.",
         ),
         RegimeComparisonRow(
@@ -446,7 +446,7 @@ def build_regime_comparison(
 def build_fault_tolerant_resource_product(
     request: SyncProblemResourceRequest,
 ) -> FaultTolerantResourceProduct:
-    """Build the deterministic BL-36 product and bind its payload digest."""
+    """Build the deterministic resource product and bind its payload digest."""
     estimate = estimate_ft_resources(request)
     sensitivity = build_ft_sensitivity(request)
     regimes = build_regime_comparison(request, estimate)

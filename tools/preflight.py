@@ -85,6 +85,9 @@ if TYPE_CHECKING:
     )
     from tools import experiment_mitigation_quality_gates as _experiment_mitigation_quality_gates
     from tools import (
+        fault_tolerant_resource_product_quality_gates as _fault_tolerant_resource_product_quality_gates,
+    )
+    from tools import (
         geometric_control_product_quality_gates as _geometric_control_product_quality_gates,
     )
     from tools import governed_route_matrix_quality_gates as _governed_route_matrix_quality_gates
@@ -227,6 +230,9 @@ else:
     _differentiable_quality_gates = import_module("tools.differentiable_quality_gates")
     _experiment_mitigation_quality_gates = import_module(
         "tools.experiment_mitigation_quality_gates"
+    )
+    _fault_tolerant_resource_product_quality_gates = import_module(
+        "tools.fault_tolerant_resource_product_quality_gates"
     )
     _entanglement_sync_evidence_quality_gates = import_module(
         "tools.entanglement_sync_evidence_quality_gates"
@@ -668,6 +674,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_neural_operator_cost_model_quality_gates.build_static_quality_gates(_PY),
     *_governed_route_matrix_quality_gates.build_static_quality_gates(_PY),
     *_attested_result_pack_quality_gates.build_static_quality_gates(_PY),
+    *_fault_tolerant_resource_product_quality_gates.build_static_quality_gates(_PY),
     *_phase_qnode_product_quality_gates.build_static_quality_gates(_PY),
     *_phase_trainability_quality_gates.build_static_quality_gates(_PY),
     *_kuramoto_layout_cost_quality_gates.build_static_quality_gates(_PY),
@@ -1143,6 +1150,9 @@ GOVERNED_ROUTE_MATRIX_COVERAGE_GATES = _governed_route_matrix_quality_gates.buil
     _PY
 )
 ATTESTED_RESULT_PACK_COVERAGE_GATES = _attested_result_pack_quality_gates.build_coverage_gates(_PY)
+FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_GATES = (
+    _fault_tolerant_resource_product_quality_gates.build_coverage_gates(_PY)
+)
 PHASE_QNODE_PRODUCT_COVERAGE_GATES = _phase_qnode_product_quality_gates.build_coverage_gates(_PY)
 PHASE_TRAINABILITY_COVERAGE_GATES = _phase_trainability_quality_gates.build_coverage_gates(_PY)
 KURAMOTO_LAYOUT_COST_COVERAGE_GATES = _kuramoto_layout_cost_quality_gates.build_coverage_gates(_PY)
@@ -1476,6 +1486,7 @@ def main() -> int:
             gates.extend(NEURAL_OPERATOR_COST_MODEL_COVERAGE_GATES)
             gates.extend(GOVERNED_ROUTE_MATRIX_COVERAGE_GATES)
             gates.extend(ATTESTED_RESULT_PACK_COVERAGE_GATES)
+            gates.extend(FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_PRODUCT_COVERAGE_GATES)
             gates.extend(PHASE_TRAINABILITY_COVERAGE_GATES)
             gates.extend(KURAMOTO_LAYOUT_COST_COVERAGE_GATES)

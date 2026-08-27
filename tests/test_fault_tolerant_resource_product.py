@@ -45,6 +45,7 @@ def _request(**overrides: object) -> SyncProblemResourceRequest:
 
 
 def test_product_is_deterministic_complete_and_claim_bounded() -> None:
+    """Keep repeated reports deterministic, complete, and claim bounded."""
     product = build_fault_tolerant_resource_product(_request())
     repeated = build_fault_tolerant_resource_product(_request())
     assert isinstance(product, FaultTolerantResourceProduct)
@@ -58,6 +59,7 @@ def test_product_is_deterministic_complete_and_claim_bounded() -> None:
 
 
 def test_estimate_arithmetic_and_existing_qec_formula_reuse() -> None:
+    """Reuse the QEC formulas while preserving exact resource arithmetic."""
     request = _request(coupling_density=0.5, trotter_steps=10)
     estimate = estimate_ft_resources(request)
     assert estimate.logical_qubits == 4
@@ -73,6 +75,7 @@ def test_estimate_arithmetic_and_existing_qec_formula_reuse() -> None:
 
 
 def test_zero_density_still_counts_local_rotations() -> None:
+    """Count local rotations even when pairwise coupling density is zero."""
     request = _request(coupling_density=0.0, trotter_steps=3)
     estimate = estimate_ft_resources(request)
     assert estimate.interacting_pairs == 0
@@ -80,6 +83,7 @@ def test_zero_density_still_counts_local_rotations() -> None:
 
 
 def test_sensitivity_has_estimates_and_threshold_refusal() -> None:
+    """Report bounded sensitivity estimates and refuse the threshold edge."""
     rows = build_ft_sensitivity(_request())
     assert [row.status for row in rows] == ["estimated", "estimated", "estimated", "refused"]
     assert rows[-1].code_distance is None
@@ -88,6 +92,7 @@ def test_sensitivity_has_estimates_and_threshold_refusal() -> None:
 
 
 def test_distance_and_empty_sensitivity_fail_closed() -> None:
+    """Refuse infeasible code distances and empty sensitivity requests."""
     with pytest.raises(FaultTolerantResourceBoundaryError, match="at or above"):
         estimate_ft_resources(_request(physical_error_rate=0.02))
     with pytest.raises(FaultTolerantResourceBoundaryError, match="no code distance"):
@@ -99,6 +104,7 @@ def test_distance_and_empty_sensitivity_fail_closed() -> None:
 
 
 def test_regime_table_keeps_non_equivalent_boundaries() -> None:
+    """Keep the six resource regimes explicitly non-equivalent."""
     request = _request()
     estimate = estimate_ft_resources(request)
     rows = build_regime_comparison(request, estimate)
@@ -117,6 +123,7 @@ def test_regime_table_keeps_non_equivalent_boundaries() -> None:
 
 
 def test_markdown_contains_digest_boundaries_and_sources() -> None:
+    """Render the digest, claim boundaries, and primary-source pins."""
     product = build_fault_tolerant_resource_product(_request())
     markdown = render_ft_resource_markdown(product)
     assert product.payload_sha256 in markdown
@@ -144,11 +151,13 @@ def test_markdown_contains_digest_boundaries_and_sources() -> None:
     ],
 )
 def test_request_validation(overrides: dict[str, object], message: str) -> None:
+    """Reject each invalid bounded-request field."""
     with pytest.raises(ValueError, match=message):
         _request(**overrides)
 
 
 def test_record_invariants_reject_inconsistent_evidence() -> None:
+    """Reject inconsistent immutable records and stale product schemas."""
     with pytest.raises(ValueError):
         FormulaReference("", "title", "authors", 2020, "https://example.test", "now")
     with pytest.raises(ValueError):
@@ -171,8 +180,8 @@ def test_record_invariants_reject_inconsistent_evidence() -> None:
     with pytest.raises(ValueError):
         RegimeComparisonRow("x", "boundary", 0, "label", "boundary")
     product = build_fault_tolerant_resource_product(_request())
-    with pytest.raises(ValueError):
-        replace(product, schema="bad")
+    with pytest.raises(ValueError, match="unknown product schema"):
+        replace(product, schema="fault_tolerant_resource_product.v1")
     with pytest.raises(ValueError):
         replace(product, sensitivity=())
     with pytest.raises(ValueError):

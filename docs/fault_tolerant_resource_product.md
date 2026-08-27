@@ -5,6 +5,10 @@ resource primitives into one deterministic, digest-bound planning report for a
 bounded Kuramoto/XY request. It does not build another decoder or surface-code
 circuit.
 
+Serialized reports use schema `fault_tolerant_resource_product.v2`. Stored
+reports with stale or unknown schema identifiers are refused by the immutable
+product contract.
+
 The request pins oscillator count, evolution time, target precision, coupling
 density, Trotter steps, assumed physical error rate, syndrome-cycle duration,
 NISQ shots, and maximum odd code distance. The estimator then:
@@ -44,7 +48,8 @@ markdown = render_ft_resource_markdown(product)
 
 The report keeps six regimes non-equivalent: classical reference, NISQ
 sampling, bit-flip-only repetition scaffold, unmeasured surface-code-shaped
-scaffold, BL-35 analog dependency, and the fault-tolerant planning model.
+scaffold, bounded analog-feasibility dependency, and the fault-tolerant
+planning model.
 Register size never means a named device can execute the workload. The reported
 syndrome time is a floor for the assumed number of syndrome cycles; it excludes
 decoding, routing, feed-forward, magic-state factories, and logical-gate
