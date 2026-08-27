@@ -990,7 +990,9 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/control_stack_compose_product.py
+          src/scpn_quantum_control/control_stack_runtime_adapters.py
           tests/test_control_stack_compose_product.py
+          tests/test_control_stack_runtime_adapters.py
           tools/control_stack_compose_product_quality_gates.py
           tests/test_control_stack_compose_product_quality_gate.py
       - name: Ruff NumPy docstrings for control-stack compose quality cohort
@@ -998,7 +1000,9 @@ jobs:
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/control_stack_compose_product.py
+          src/scpn_quantum_control/control_stack_runtime_adapters.py
           tests/test_control_stack_compose_product.py
+          tests/test_control_stack_runtime_adapters.py
           tools/control_stack_compose_product_quality_gates.py
           tests/test_control_stack_compose_product_quality_gate.py
       - name: Run control-stack compose focused coverage
@@ -1009,6 +1013,7 @@ jobs:
           --branch
           -m pytest -q
           tests/test_control_stack_compose_product.py
+          tests/test_control_stack_runtime_adapters.py
       - name: Enforce control-stack compose exact coverage
         run: >-
           python -m coverage report
@@ -1016,7 +1021,7 @@ jobs:
           --data-file=.coverage.control-stack-compose-quality
           --precision=2
           --fail-under=100
-          --include=*/control_stack_compose_product.py
+          --include=*/control_stack_compose_product.py,*/control_stack_runtime_adapters.py
 
   public-api-stability-quality:
     needs: lint

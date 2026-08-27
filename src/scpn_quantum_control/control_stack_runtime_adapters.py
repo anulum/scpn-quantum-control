@@ -31,7 +31,7 @@ from .control.realtime_feedback import FeedbackStep
 from .cosimulation.knm_partition import KnmPartition
 from .cosimulation.quantum_classical import CoSimulationResult, cosimulate
 
-CONTROL_STACK_RUNTIME_ADAPTER_SCHEMA = "control_stack_runtime_adapters.v1"
+CONTROL_STACK_RUNTIME_ADAPTER_SCHEMA = "control_stack_runtime_adapters.v2"
 CONTROL_STACK_RUNTIME_ADAPTER_CLAIM_BOUNDARY = (
     "local simulator adapters over existing control/* and cosimulation modules; "
     "ClosedLoopExecutionPolicy is mandatory; no hardware submission, PCS claim, "
@@ -44,7 +44,7 @@ class PolicyGatedAdapterError(RuntimeError):
 
 
 class RealtimeFeedbackPort(Protocol):
-    """Existing realtime-feedback controller surface consumed by BL-67."""
+    """Existing realtime-feedback controller surface adapted by this module."""
 
     def run(self, n_steps: int, seed: int | None = None) -> list[FeedbackStep]:
         """Run existing feedback steps without changing controller ownership."""
@@ -52,7 +52,7 @@ class RealtimeFeedbackPort(Protocol):
 
 
 class QaoaMpcPort(Protocol):
-    """Existing QAOA-MPC optimisation surface consumed by BL-67."""
+    """Existing QAOA-MPC optimisation surface adapted by this module."""
 
     def optimize(self, seed: int | None = None) -> NDArray[np.int64]:
         """Return the existing controller's binary action schedule."""
@@ -68,6 +68,10 @@ class RealtimeFeedbackAdapterResult:
     schema: str = CONTROL_STACK_RUNTIME_ADAPTER_SCHEMA
     claim_boundary: str = CONTROL_STACK_RUNTIME_ADAPTER_CLAIM_BOUNDARY
 
+    def __post_init__(self) -> None:
+        """Reject stale schemas and altered claim boundaries."""
+        _validate_result_contract(self.schema, self.claim_boundary)
+
 
 @dataclass(frozen=True, slots=True)
 class QaoaMpcAdapterResult:
@@ -77,6 +81,10 @@ class QaoaMpcAdapterResult:
     actions: tuple[int, ...]
     schema: str = CONTROL_STACK_RUNTIME_ADAPTER_SCHEMA
     claim_boundary: str = CONTROL_STACK_RUNTIME_ADAPTER_CLAIM_BOUNDARY
+
+    def __post_init__(self) -> None:
+        """Reject stale schemas and altered claim boundaries."""
+        _validate_result_contract(self.schema, self.claim_boundary)
 
 
 @dataclass(frozen=True, slots=True)
@@ -104,16 +112,32 @@ class CosimulationPartitionAdapterResult:
     schema: str = CONTROL_STACK_RUNTIME_ADAPTER_SCHEMA
     claim_boundary: str = CONTROL_STACK_RUNTIME_ADAPTER_CLAIM_BOUNDARY
 
+    def __post_init__(self) -> None:
+        """Reject stale schemas and altered claim boundaries."""
+        _validate_result_contract(self.schema, self.claim_boundary)
+
 
 @dataclass(frozen=True, slots=True)
 class PulseComposeBoundaryDecision:
-    """Fail-closed hand-off from BL-67 to the optional BL-58 pulse product."""
+    """Fail-closed hand-off to the optional pulse-execution product."""
 
     allowed: bool
     reason: str
     dependency: str
     schema: str = CONTROL_STACK_RUNTIME_ADAPTER_SCHEMA
     claim_boundary: str = CONTROL_STACK_RUNTIME_ADAPTER_CLAIM_BOUNDARY
+
+    def __post_init__(self) -> None:
+        """Reject stale schemas and altered claim boundaries."""
+        _validate_result_contract(self.schema, self.claim_boundary)
+
+
+def _validate_result_contract(schema: str, claim_boundary: str) -> None:
+    """Require the current exact serialized adapter contract."""
+    if schema != CONTROL_STACK_RUNTIME_ADAPTER_SCHEMA:
+        raise ValueError("unexpected control-stack runtime-adapter schema")
+    if claim_boundary != CONTROL_STACK_RUNTIME_ADAPTER_CLAIM_BOUNDARY:
+        raise ValueError("unexpected control-stack runtime-adapter claim boundary")
 
 
 def _authorise_local_adapter(
@@ -136,7 +160,7 @@ def _authorise_local_adapter(
         raise PolicyGatedAdapterError(f"execution policy refused adapter: {decision.reason}")
     if decision.mode is not ExecutionMode.SIMULATION:
         raise PolicyGatedAdapterError(
-            "BL-67 runtime adapters are local-simulator only; hardware mode is refused"
+            "control-stack runtime adapters are local-simulator only; hardware mode is refused"
         )
     return decision
 
@@ -168,7 +192,7 @@ def run_qaoa_mpc_adapter(
     seed: int | None = None,
     backend: str | None = None,
 ) -> QaoaMpcAdapterResult:
-    """Run the existing abstract QAOA-MPC optimiser under the BL-47 policy gate."""
+    """Run the existing abstract QAOA-MPC optimiser under hardware-safe policy."""
     decision = _authorise_local_adapter(policy, requested_rounds=1, backend=backend)
     actions = np.asarray(controller.optimize(seed=seed), dtype=np.int64)
     if actions.ndim != 1 or actions.size == 0:
@@ -235,13 +259,13 @@ def run_cosimulation_partition_adapter(
 def decide_pulse_compose_boundary(
     *, policy: ClosedLoopExecutionPolicy | None
 ) -> PulseComposeBoundaryDecision:
-    """Refuse pulse execution and point to the optional BL-58 implementation lane."""
+    """Refuse pulse execution and point to the optional execution adapter."""
     _authorise_local_adapter(policy, requested_rounds=1, backend=None)
     return PulseComposeBoundaryDecision(
         allowed=False,
         reason=(
-            "pulse execution is outside BL-67; use BL-58 S58.4 after its pulse "
-            "contracts and export validation are complete"
+            "pulse execution is outside control-stack adapter ownership; use the optional "
+            "pulse-execution adapter after its contracts and export validation are complete"
         ),
         dependency="pulse-boundary/runtime-adapter",
     )

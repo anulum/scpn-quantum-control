@@ -120,12 +120,13 @@
   information-gain ranking with hardware-safe shot-budget enforcement, the real
   analytic ansatz/pulse evidence harness, and co-design observer telemetry. Hardware-adaptive
   requests fail before evaluation; NV 20 T remains research-only.
-- 2026-07-25 — Complete compose-existing-control-stack adapters (BL-67):
+- 2026-07-25 — Complete compose-existing-control-stack adapters:
   `scpn_quantum_control.control_stack_runtime_adapters` now runs ambient realtime
   feedback, abstract QAOA-MPC, and quantum/classical partition paths only after a
   concrete `ClosedLoopExecutionPolicy` authorises local simulation. Pulse
-  execution fails closed to optional BL-58; hardware submission and PCS claims
-  remain refused. The BL-33 architecture is amended to ports over BL-67 adapters.
+  execution fails closed to the optional pulse-execution adapter; hardware
+  submission and PCS claims remain refused. The co-design architecture uses
+  ports over the existing policy-gated control-stack adapters.
 
 Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
@@ -300,13 +301,12 @@ control, or broad quantum-advantage claim is promoted by this release.
   federation matrix over ambient hardware/hal_* descriptors and profiles with
   hardware-safe no-submit dry-run default; refuse invent-green live submit and
   network dry-run probes. Docs: `docs/multi_hal_federation_product.md`.
-- 2026-07-24 — Compose existing control/* stack product (BL-67):
+- 2026-07-24 — Compose existing control/* stack product:
   `scpn_quantum_control.control_stack_compose_product` productises ownership map
   and typed adapter ports over ambient control/* (realtime feedback, closed-loop
   ExecutionPolicy telemetry, hardware feedback dry-run); refuse evaluate without
   policy, invent-green PCS, and realtime_runtime rewrites. Docs:
-  `docs/control_stack_compose_product.md`. Fourteenth P1 A-product after
-  BL-90/91/81/49/96/92/93/64/39/41/40/34/62.
+  `docs/control_stack_compose_product.md`.
 - 2026-07-24 — Studio executive + coverage frontier product:
   `scpn_quantum_control.studio_executive_product` productises executive verb
   catalogue with governed-route pointers, fail-closed unsupported-route and

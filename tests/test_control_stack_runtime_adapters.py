@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import numpy as np
 import pytest
 from numpy.typing import NDArray
@@ -49,6 +51,7 @@ class _ActionPort:
 
 
 def test_realtime_adapter_uses_existing_controller() -> None:
+    """Run feedback through the existing simulation controller."""
     controller = RealtimeSyncFeedbackController(
         np.array([[0.0, 0.4], [0.4, 0.0]], dtype=np.float64),
         np.array([0.1, -0.1], dtype=np.float64),
@@ -68,6 +71,7 @@ def test_realtime_adapter_uses_existing_controller() -> None:
 
 
 def test_absent_or_refused_policy_never_calls_port() -> None:
+    """Keep the execution port untouched when policy admission fails."""
     port = _CountingFeedbackPort()
     with pytest.raises(PolicyGatedAdapterError, match="ExecutionPolicy is required"):
         run_realtime_feedback_adapter(port, policy=None, n_rounds=2)
@@ -80,6 +84,7 @@ def test_absent_or_refused_policy_never_calls_port() -> None:
 
 
 def test_hardware_authorisation_is_still_local_adapter_refused() -> None:
+    """Refuse hardware routing even when a policy admits its backend."""
     port = _CountingFeedbackPort()
     policy = ClosedLoopExecutionPolicy(
         allow_hardware=True,
@@ -97,6 +102,7 @@ def test_hardware_authorisation_is_still_local_adapter_refused() -> None:
 
 
 def test_qaoa_mpc_adapter_uses_existing_optimizer() -> None:
+    """Run the ambient optimizer through the policy-gated adapter."""
     controller = QAOA_MPC(
         np.array([[1.0]], dtype=np.float64),
         np.array([0.5], dtype=np.float64),
@@ -124,6 +130,7 @@ def test_qaoa_mpc_adapter_uses_existing_optimizer() -> None:
 def test_qaoa_adapter_rejects_invalid_ambient_schedule(
     actions: NDArray[np.int64], message: str
 ) -> None:
+    """Reject empty, non-vector, and non-binary optimizer schedules."""
     port = _ActionPort(actions)
     with pytest.raises(ValueError, match=message):
         run_qaoa_mpc_adapter(port, policy=ClosedLoopExecutionPolicy())
@@ -131,6 +138,7 @@ def test_qaoa_adapter_rejects_invalid_ambient_schedule(
 
 
 def test_cosimulation_partition_adapter_maps_ambient_result() -> None:
+    """Map the ambient co-simulation result into bounded telemetry."""
     K = np.array([[0.0, 0.5], [0.5, 0.0]], dtype=np.float64)
     omega = np.array([0.1, -0.1], dtype=np.float64)
     adapted = run_cosimulation_partition_adapter(
@@ -150,10 +158,25 @@ def test_cosimulation_partition_adapter_maps_ambient_result() -> None:
     assert "not exact, not hardware" in adapted.telemetry.claim_boundary
 
 
-def test_pulse_boundary_is_explicitly_fail_closed_to_bl58() -> None:
+def test_pulse_boundary_is_explicitly_fail_closed_to_execution_adapter() -> None:
+    """Keep pulse composition outside the executable adapter boundary."""
     decision = decide_pulse_compose_boundary(policy=ClosedLoopExecutionPolicy())
 
     assert decision.allowed is False
     assert decision.dependency == "pulse-boundary/runtime-adapter"
-    assert "outside BL-67" in decision.reason
+    assert "outside control-stack adapter ownership" in decision.reason
     assert decision.schema == CONTROL_STACK_RUNTIME_ADAPTER_SCHEMA
+
+
+def test_result_contract_rejects_stale_schema_and_claim_drift() -> None:
+    """Reject stale schemas and altered result claim boundaries."""
+    result = run_realtime_feedback_adapter(
+        _CountingFeedbackPort(),
+        policy=ClosedLoopExecutionPolicy(),
+        n_rounds=1,
+    )
+
+    with pytest.raises(ValueError, match="runtime-adapter schema"):
+        replace(result, schema="control_stack_runtime_adapters.v1")
+    with pytest.raises(ValueError, match="claim boundary"):
+        replace(result, claim_boundary="altered")

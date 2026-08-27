@@ -15,13 +15,18 @@ Gate = tuple[str, list[str]]
 
 CONTROL_STACK_COMPOSE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/control_stack_compose_product.py",
+    "src/scpn_quantum_control/control_stack_runtime_adapters.py",
     "tests/test_control_stack_compose_product.py",
+    "tests/test_control_stack_runtime_adapters.py",
     "tools/control_stack_compose_product_quality_gates.py",
     "tests/test_control_stack_compose_product_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
 
-CONTROL_STACK_COMPOSE_COVERAGE_COHORT = ["tests/test_control_stack_compose_product.py"]
+CONTROL_STACK_COMPOSE_COVERAGE_COHORT = [
+    "tests/test_control_stack_compose_product.py",
+    "tests/test_control_stack_runtime_adapters.py",
+]
 """Tests that own exact control-stack compose product coverage."""
 
 CONTROL_STACK_COMPOSE_COVERAGE_DATA_FILE = ".coverage.control-stack-compose-quality"
@@ -114,7 +119,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={CONTROL_STACK_COMPOSE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/control_stack_compose_product.py",
+                "--include=*/control_stack_compose_product.py,*/control_stack_runtime_adapters.py",
             ],
         ),
     ]

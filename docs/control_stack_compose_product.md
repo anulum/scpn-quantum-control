@@ -12,6 +12,7 @@ Modules: `scpn_quantum_control.control_stack_compose_product` and
 | Rule | Behaviour |
 |---|---|
 | Product schema | `control_stack_compose_product.v1` |
+| Runtime-adapter result schema | `control_stack_runtime_adapters.v2` |
 | Ownership | Ambient `control/*`, cosimulation, hardware feedback ports |
 | Unknown module/port | Fail closed |
 | Evaluate without policy | Refuse |
@@ -127,6 +128,7 @@ hardware-safe execution policy, or promote PCS claims.
 
 All executable adapters are local-simulator only. Even a hardware-authorising
 policy is refused because this compose product does not own provider submission.
+Serialized adapter results reject stale schemas and altered claim boundaries.
 
 ## Related
 

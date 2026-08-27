@@ -35,9 +35,14 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     report = gates["control-stack-compose exact coverage threshold"]
     assert f"--data-file={quality_gates.CONTROL_STACK_COMPOSE_COVERAGE_DATA_FILE}" in run
     assert "--branch" in run
-    assert run[-1:] == quality_gates.CONTROL_STACK_COMPOSE_COVERAGE_COHORT
+    assert run[-len(quality_gates.CONTROL_STACK_COMPOSE_COVERAGE_COHORT) :] == (
+        quality_gates.CONTROL_STACK_COMPOSE_COVERAGE_COHORT
+    )
     assert "--fail-under=100" in report
-    assert "--include=*/control_stack_compose_product.py" in report
+    assert (
+        "--include=*/control_stack_compose_product.py,*/control_stack_runtime_adapters.py"
+        in report
+    )
 
 
 def test_preflight_uses_the_helper_defined_gates() -> None:
@@ -58,5 +63,8 @@ def test_ci_runs_and_aggregates_the_product_gate() -> None:
     for path in quality_gates.CONTROL_STACK_COMPOSE_QUALITY_RATCHET:
         assert path in block
     assert "--fail-under=100" in block
-    assert "--include=*/control_stack_compose_product.py" in block
+    assert "tests/test_control_stack_runtime_adapters.py" in block
+    assert (
+        "--include=*/control_stack_compose_product.py,*/control_stack_runtime_adapters.py" in block
+    )
     assert "control-stack-compose-quality" in workflow[workflow.index("  ci-gate:") :]
