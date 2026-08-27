@@ -77,7 +77,7 @@ def test_evidence_writer_refuses_failed_required_framework(
         lambda dependency: None if dependency == "tensorflow" else actual_find_spec(dependency),
     )
 
-    with pytest.raises(RuntimeError, match="invalid BL-42 evidence"):
+    with pytest.raises(RuntimeError, match="invalid ML convergence evidence"):
         write_ml_convergence_evidence(
             json_path,
             markdown_path,

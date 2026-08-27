@@ -90,7 +90,7 @@
   and digest-bound evidence. The legacy weighted score remains a heuristic;
   Lyapunov, PCS, stability, causal, autonomous-actuation, provider, and QPU
   claims are refused.
-- 2026-07-28 — QNN/QGNN/QSNN convergence examples (BL-42):
+- 2026-07-28 — QNN/QGNN/QSNN convergence examples:
   `scpn_quantum_control.ml_examples` composes the existing phase-QNN, QGNN,
   and QSNN trainers into three frozen deterministic convergence certificates,
   a complete framework-status matrix, and digest-bound JSON/Markdown evidence.
@@ -186,7 +186,7 @@ control, or broad quantum-advantage claim is promoted by this release.
 - 2026-07-28 — Bounded L16 indicator suite, conservative co-design
   interlock, governed routes, public guide, evidence CLI, and committed
   functional evidence with promotion blockers.
-- 2026-07-28 — BL-42 QNN/QGNN/QSNN local convergence suite, complete
+- 2026-07-28 — QNN/QGNN/QSNN local convergence suite, complete
   framework-status matrix, public guide, evidence CLI, and canonical committed
   evidence artefacts.
 - 2026-07-28 — BL-33 simulator-first quantum-classical co-design package,

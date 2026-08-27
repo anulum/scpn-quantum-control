@@ -42,7 +42,7 @@ def render_evidence_markdown(payload: Mapping[str, object]) -> str:
     certificates = cast(list[dict[str, object]], payload["certificates"])
     rows = cast(list[dict[str, object]], payload["framework_rows"])
     lines = [
-        "# BL-42 QNN/QGNN/QSNN convergence evidence",
+        "# QNN/QGNN/QSNN convergence evidence",
         "",
         f"- Schema: `{payload['schema']}`",
         f"- Passed: `{str(payload['passed']).lower()}`",
@@ -107,7 +107,7 @@ def write_ml_convergence_evidence(
     payload = evidence_payload(suite)
     findings = validate_ml_convergence_evidence(payload)
     if findings:
-        raise RuntimeError("invalid BL-42 evidence: " + "; ".join(findings))
+        raise RuntimeError("invalid ML convergence evidence: " + "; ".join(findings))
     json_path.parent.mkdir(parents=True, exist_ok=True)
     markdown_path.parent.mkdir(parents=True, exist_ok=True)
     _atomic_write(json_path, json.dumps(payload, indent=2, sort_keys=True) + "\n")
@@ -116,7 +116,7 @@ def write_ml_convergence_evidence(
 
 
 def validate_ml_convergence_evidence(payload: object) -> tuple[str, ...]:
-    """Return fail-closed findings for one committed BL-42 payload."""
+    """Return fail-closed findings for one committed ML convergence payload."""
     if not isinstance(payload, dict):
         return ("payload must be a JSON object",)
     data = cast(dict[str, object], payload)

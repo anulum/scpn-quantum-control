@@ -1,4 +1,4 @@
-# BL-42 QNN/QGNN/QSNN convergence evidence
+# QNN/QGNN/QSNN convergence evidence
 
 - Schema: `ml_convergence_examples.v1`
 - Passed: `true`

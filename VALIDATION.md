@@ -188,7 +188,7 @@ synchronisation, advantage, provider, or hardware claim.
 
 ### QNN, QGNN, and QSNN Convergence Tests
 
-The BL-42 focused lane validates immutable task and evidence contracts, exact
+The focused ML convergence lane validates immutable task and evidence contracts, exact
 certificate arithmetic, deterministic replay, one real convergence task for
 each QNN/QGNN/QSNN family, all framework-status cells, digest drift, atomic
 evidence writing, and the repository CLI. Installed QNN adapters execute real

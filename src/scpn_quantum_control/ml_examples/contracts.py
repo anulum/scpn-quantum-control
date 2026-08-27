@@ -23,7 +23,7 @@ ML_CONVERGENCE_CLAIM_BOUNDARY: Final[str] = (
 
 
 class ModelFamily(str, Enum):
-    """Model families covered by the BL-42 evidence suite."""
+    """Model families covered by the ML convergence evidence suite."""
 
     QNN = "qnn"
     QGNN = "qgnn"
@@ -67,7 +67,7 @@ class ConvergenceExampleSpec:
         _non_negative_finite("target_loss", self.target_loss)
         _non_negative_finite("min_loss_drop", self.min_loss_drop)
         if self.hardware:
-            raise ValueError("BL-42 convergence examples must remain simulator-only")
+            raise ValueError("ML convergence examples must remain simulator-only")
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready task specification."""
@@ -221,7 +221,7 @@ class FrameworkEvidenceRow:
 
 @dataclass(frozen=True, slots=True)
 class ConvergenceSuiteEvidence:
-    """Unified BL-42 certificates, framework rows, and notebook pointers."""
+    """Unified ML convergence certificates, framework rows, and notebook pointers."""
 
     certificates: tuple[ConvergenceCertificate, ...]
     framework_rows: tuple[FrameworkEvidenceRow, ...]
@@ -252,7 +252,9 @@ class ConvergenceSuiteEvidence:
         ):
             raise ValueError("suite schema and claim boundary are fixed")
         if self.provider_execution or self.hardware_execution:
-            raise ValueError("BL-42 evidence must not record provider or hardware execution")
+            raise ValueError(
+                "ML convergence evidence must not record provider or hardware execution"
+            )
 
     @property
     def passed(self) -> bool:
