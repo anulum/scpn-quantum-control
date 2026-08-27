@@ -389,14 +389,14 @@ control, or broad quantum-advantage claim is promoted by this release.
   unknown ids, unsupported-frontend→BL-53 refuse, and refuse invent-green for
   hardware, polyglot parity-certificate, and edge/WASM runtime residuals.
   Ambient `whole_program_*`/`program_ad_*` remains experimental_workbench under
-  BL-97 honesty. Docs: `docs/whole_program_ad_product.md`. Second P1 A-product
+  public API stability policy. Docs: `docs/whole_program_ad_product.md`. Second P1 A-product
   after BL-90.
 - 2026-07-24 — Phase-QNode product surface (BL-90):
   `scpn_quantum_control.phase_qnode_product` productises versioned Phase-QNode
   user journeys (build→differentiate→dry-run and related), support badges,
   public module map, fail-closed unknown journey ids, and refuse invent-green
   hardware requests. Ambient `phase/qnode_*` remains experimental_workbench
-  under BL-97 honesty. Docs: `docs/phase_qnode_product.md`. First P1 A-product
+  under public API stability policy. Docs: `docs/phase_qnode_product.md`. First P1 A-product
   item after completed P0 integrity spine.
 - 2026-07-24 — qpu_compute product surface (BL-95):
   `scpn_quantum_control.qpu_compute_product` productises typed compute plan
@@ -426,7 +426,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   and `probe_feed` toward BL-52 (pointer/pending) and BL-56 (always blocked
   without scorecard evidence) are fail-closed on blank/unknown ids. Docs:
   `docs/competitive_baseline_watch.md`. Does not scrape vendors or invent pins.
-- 2026-07-23 — Public API stability programme (BL-97):
+- 2026-07-23 — Public API stability programme:
   `scpn_quantum_control.public_api_stability` productises a **narrow**
   public-vs-internal catalogue (`semver_stable` for `stable_core` + curated
   CLI entry points; experimental workbench and private paths are **not**

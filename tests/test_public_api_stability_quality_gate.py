@@ -34,6 +34,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     run = gates["public-api-stability focused coverage"]
     report = gates["public-api-stability exact coverage threshold"]
     assert f"--data-file={quality_gates.PUBLIC_API_STABILITY_COVERAGE_DATA_FILE}" in run
+    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--branch" in run
     assert run[-1:] == quality_gates.PUBLIC_API_STABILITY_COVERAGE_COHORT
     assert "--fail-under=100" in report

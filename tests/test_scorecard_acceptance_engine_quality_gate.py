@@ -26,7 +26,9 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
 def test_coverage_gate_is_isolated_and_exact() -> None:
     """Require branch execution and exact source-only coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["scorecard-acceptance-engine focused coverage"]
+    run = gates["scorecard-acceptance-engine focused coverage"]
+    assert "--branch" in run
+    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in gates["scorecard-acceptance-engine exact coverage threshold"]
 
 

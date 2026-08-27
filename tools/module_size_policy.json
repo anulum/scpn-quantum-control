@@ -348,7 +348,7 @@
       "lines": 1013,
       "kind": "facade",
       "disposition": "facade",
-      "responsibility": "Public API stability programme surface (BL-97): freeze catalogue, drift checks, and fail-closed policy.",
+      "responsibility": "Public API stability programme surface: freeze catalogue, drift checks, and fail-closed policy.",
       "dependency_boundary": "Depends on package public export inventory and pure stability probes; no compute kernels; tests own the paired suite.",
       "reassess_when": "Export generation or packaging logic is implemented inside this module instead of leaves."
     },

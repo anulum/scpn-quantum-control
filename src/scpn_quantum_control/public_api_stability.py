@@ -482,7 +482,7 @@ _CANONICAL_SYMBOLS: Final[tuple[PublicApiSymbolRecord, ...]] = (
     _workbench(
         "scpn_quantum_control.public_api_stability",
         owner_surface="workbench",
-        summary="BL-97 public API stability programme surface (this module).",
+        summary="Public API stability programme surface (this module).",
     ),
     _deprecated(
         "scpn_quantum_control.kuramoto",

@@ -21,7 +21,9 @@ SCORECARD_ACCEPTANCE_ENGINE_QUALITY_RATCHET = [
 """Ordered strict-typing and NumPy-docstring cohort."""
 SCORECARD_ACCEPTANCE_ENGINE_COVERAGE_COHORT = ["tests/test_scorecard_acceptance_engine.py"]
 """Tests that own exact scorecard-acceptance-engine coverage."""
-SCORECARD_ACCEPTANCE_ENGINE_COVERAGE_DATA_FILE = ".coverage.scorecard-acceptance-engine-quality"
+SCORECARD_ACCEPTANCE_ENGINE_COVERAGE_DATA_FILE = (
+    "/tmp/scpn-qc-scorecard-acceptance-engine.coverage"  # nosec B108
+)
 """Isolated coverage database for scorecard-acceptance-engine diagnostics."""
 
 

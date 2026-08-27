@@ -1055,7 +1055,7 @@ jobs:
         run: >-
           python -m coverage run
           --rcfile=/dev/null
-          --data-file=.coverage.public-api-stability-quality
+          --data-file=/tmp/scpn-qc-public-api-stability.coverage
           --branch
           -m pytest -q
           tests/test_public_api_stability.py
@@ -1063,7 +1063,7 @@ jobs:
         run: >-
           python -m coverage report
           --rcfile=/dev/null
-          --data-file=.coverage.public-api-stability-quality
+          --data-file=/tmp/scpn-qc-public-api-stability.coverage
           --precision=2
           --fail-under=100
           --include=*/public_api_stability.py
@@ -2519,11 +2519,11 @@ jobs:
           tests/test_scorecard_acceptance_engine_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
-          --data-file=.coverage.scorecard-acceptance-engine-quality --branch
+          --data-file=/tmp/scpn-qc-scorecard-acceptance-engine.coverage --branch
           -m pytest -q tests/test_scorecard_acceptance_engine.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
-          --data-file=.coverage.scorecard-acceptance-engine-quality
+          --data-file=/tmp/scpn-qc-scorecard-acceptance-engine.coverage
           --precision=2 --fail-under=100 --include=*/scorecard_acceptance_engine.py
 
   unsuitable-scenario-registry-quality:

@@ -24,7 +24,7 @@ PUBLIC_API_STABILITY_QUALITY_RATCHET = [
 PUBLIC_API_STABILITY_COVERAGE_COHORT = ["tests/test_public_api_stability.py"]
 """Tests that own exact public API stability coverage."""
 
-PUBLIC_API_STABILITY_COVERAGE_DATA_FILE = ".coverage.public-api-stability-quality"
+PUBLIC_API_STABILITY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-public-api-stability.coverage"  # nosec B108
 """Isolated coverage database for the public API stability owner."""
 
 

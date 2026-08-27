@@ -271,18 +271,18 @@ _CANONICAL_CATEGORIES: Final[tuple[ScorecardCategoryRecord, ...]] = (
     ),
     _behind(
         "docs_api_maintainability",
-        "Public docs / API maintainability scorecard row (BL-97 evidence).",
+        "Public docs / API maintainability scorecard evidence.",
         blockers=(
             "promoted claim-ledger row absent",
-            "BL-97 public API stability package incomplete",
+            "public API stability package incomplete",
         ),
     ),
     _behind(
         "adoption_licensing",
-        "Adoption / licensing clarity scorecard row (BL-97 evidence).",
+        "Adoption / licensing clarity scorecard evidence.",
         blockers=(
             "promoted claim-ledger row absent",
-            "BL-97 adoption licensing evidence incomplete",
+            "adoption licensing evidence incomplete",
         ),
     ),
 )
