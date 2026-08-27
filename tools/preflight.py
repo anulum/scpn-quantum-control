@@ -104,6 +104,9 @@ if TYPE_CHECKING:
     )
     from tools import multi_hal_federation_product_quality_gates as _multi_hal_quality_gates
     from tools import (
+        neural_operator_baseline_product_quality_gates as _neural_operator_baseline_product_quality_gates,
+    )
+    from tools import (
         neural_operator_cost_model_quality_gates as _neural_operator_cost_model_quality_gates,
     )
     from tools import (
@@ -243,6 +246,9 @@ else:
     _multi_hal_quality_gates = import_module("tools.multi_hal_federation_product_quality_gates")
     _neural_operator_cost_model_quality_gates = import_module(
         "tools.neural_operator_cost_model_quality_gates"
+    )
+    _neural_operator_baseline_product_quality_gates = import_module(
+        "tools.neural_operator_baseline_product_quality_gates"
     )
     _differentiable_notebook_curriculum_quality_gates = import_module(
         "tools.differentiable_notebook_curriculum_quality_gates"
@@ -624,6 +630,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_compiler_boundary_product_quality_gates.build_static_quality_gates(_PY),
     *_competitive_baseline_watch_quality_gates.build_static_quality_gates(_PY),
     *_whole_program_ad_product_quality_gates.build_static_quality_gates(_PY),
+    *_neural_operator_baseline_product_quality_gates.build_static_quality_gates(_PY),
     *_neural_operator_cost_model_quality_gates.build_static_quality_gates(_PY),
     *_governed_route_matrix_quality_gates.build_static_quality_gates(_PY),
     *_attested_result_pack_quality_gates.build_static_quality_gates(_PY),
@@ -1081,6 +1088,9 @@ WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_GATES = (
 NEURAL_OPERATOR_COST_MODEL_COVERAGE_GATES = (
     _neural_operator_cost_model_quality_gates.build_coverage_gates(_PY)
 )
+NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_GATES = (
+    _neural_operator_baseline_product_quality_gates.build_coverage_gates(_PY)
+)
 GOVERNED_ROUTE_MATRIX_COVERAGE_GATES = _governed_route_matrix_quality_gates.build_coverage_gates(
     _PY
 )
@@ -1406,6 +1416,7 @@ def main() -> int:
             gates.extend(COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES)
             gates.extend(COMPETITIVE_BASELINE_WATCH_COVERAGE_GATES)
             gates.extend(WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_GATES)
+            gates.extend(NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_GATES)
             gates.extend(NEURAL_OPERATOR_COST_MODEL_COVERAGE_GATES)
             gates.extend(GOVERNED_ROUTE_MATRIX_COVERAGE_GATES)
             gates.extend(ATTESTED_RESULT_PACK_COVERAGE_GATES)

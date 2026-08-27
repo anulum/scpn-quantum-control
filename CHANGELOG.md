@@ -199,12 +199,13 @@ control, or broad quantum-advantage claim is promoted by this release.
   surface-scaffold, analog, simulator, and FT-planning boundaries. It does not
   claim available fault-tolerant hardware or execution. Docs:
   `docs/fault_tolerant_resource_product.md`.
-- 2026-07-26 — Neural-operator forecast baseline product (BL-78):
+- 2026-07-26 — Neural-operator forecast baseline product:
   `scpn_quantum_control.neural_operator_baseline_product` verifies the existing
   committed evidence and cost arithmetic, separates training/inference labels,
-  binds BL-65's default no-advantage certificate, and refuses unclassified or
-  unsafe-path datasets. BL-32 registration and BL-37 multimodal wiring remain
-  explicit fail-closed residuals. Docs: `docs/neural_operator_baseline_product.md`.
+  binds the governed default no-advantage certificate, and refuses unclassified
+  or unsafe-path datasets. Challenge-oracle registration and multimodal wiring
+  remain explicit fail-closed residuals. Docs:
+  `docs/neural_operator_baseline_product.md`.
 - 2026-07-25 — Circuit-cutting large-sync product:
   `scpn_quantum_control.circuit_cutting_product` freezes the ambient planner
   and partition-local simulator, adds synthetic reconstruction-error

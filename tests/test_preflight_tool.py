@@ -1027,6 +1027,8 @@ def test_main_uses_coverage_pytest_by_default(
         "competitive-baseline-watch exact coverage threshold",
         "whole-program-ad-product focused coverage",
         "whole-program-ad-product exact coverage threshold",
+        "neural-operator-baseline-product focused coverage",
+        "neural-operator-baseline-product exact coverage threshold",
         "neural-operator-cost-model focused coverage",
         "neural-operator-cost-model exact coverage threshold",
         "governed-route-matrix focused coverage",

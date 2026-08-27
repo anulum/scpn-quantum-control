@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1207
+    "test_files": 1208
   },
   "documentation": {
     "examples": [
@@ -8718,6 +8718,7 @@
       "tests/test_negative_inputs.py",
       "tests/test_neural_operator_advantage.py",
       "tests/test_neural_operator_baseline_product.py",
+      "tests/test_neural_operator_baseline_product_quality_gate.py",
       "tests/test_neural_operator_cost_model.py",
       "tests/test_neural_operator_cost_model_quality_gate.py",
       "tests/test_new_module_properties.py",

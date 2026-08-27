@@ -35,12 +35,12 @@ SupportPosture = Literal["supported", "research", "boundary"]
 DataClassification = Literal["public_measurement", "public_replay", "synthetic", "refused"]
 IntegrationStatus = Literal["wired", "descoped_fail_closed", "design_dependency"]
 
-NEURAL_OPERATOR_BASELINE_PRODUCT_SCHEMA: Final[str] = "neural_operator_baseline_product.v1"
+NEURAL_OPERATOR_BASELINE_PRODUCT_SCHEMA: Final[str] = "neural_operator_baseline_product.v2"
 NEURAL_OPERATOR_BASELINE_CLAIM_BOUNDARY: Final[str] = (
     "Classical forecast-baseline composition only: verified committed artifact, separate "
-    "training/inference estimates, BL-65 no-advantage default, and public-or-synthetic data "
-    "admission; no quantum advantage, private-data acceptance, hardware forecast, BL-32 rank, "
-    "or completed BL-37 multimodal product claim"
+    "training/inference estimates, governed no-advantage default, and public-or-synthetic "
+    "data admission; no quantum advantage, private-data acceptance, hardware forecast, "
+    "challenge-oracle rank, or completed multimodal forecasting claim"
 )
 
 
@@ -161,7 +161,7 @@ class IntegrationDisposition:
 
 @dataclass(frozen=True, slots=True)
 class NeuralOperatorBaselineProduct:
-    """Complete bounded BL-78 product report."""
+    """Complete bounded classical forecast-baseline report."""
 
     schema: str
     surfaces: tuple[BaselineSurfaceRow, ...]
@@ -177,9 +177,11 @@ class NeuralOperatorBaselineProduct:
         if self.schema != NEURAL_OPERATOR_BASELINE_PRODUCT_SCHEMA:
             raise ValueError(f"unknown product schema: {self.schema!r}")
         if len(self.surfaces) != 4 or len(self.datasets) < 2 or len(self.integrations) != 2:
-            raise ValueError("BL-78 product inventory is incomplete")
+            raise ValueError("neural-operator baseline product inventory is incomplete")
         if self.no_advantage.language_status != "no_advantage_default":
-            raise ValueError("BL-78 must retain the BL-65 no-advantage default")
+            raise ValueError("neural-operator baseline must retain no-advantage default")
+        if self.claim_boundary != NEURAL_OPERATOR_BASELINE_CLAIM_BOUNDARY:
+            raise ValueError("neural-operator baseline claim boundary has drifted")
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready product report."""
@@ -346,12 +348,12 @@ def assess_forecast_dataset(dataset: SynchronisationForecastDataset) -> DatasetA
 def build_neural_operator_baseline_product(
     artifact_path: str | Path,
 ) -> NeuralOperatorBaselineProduct:
-    """Build the bounded BL-78 composition report from live ambient surfaces."""
+    """Build the bounded baseline composition from live ambient surfaces."""
     return NeuralOperatorBaselineProduct(
         schema=NEURAL_OPERATOR_BASELINE_PRODUCT_SCHEMA,
         surfaces=_SURFACES,
         artifact=verify_neural_operator_artifact(artifact_path),
-        no_advantage=issue_no_advantage_certificate(context="BL78 neural operator baseline"),
+        no_advantage=issue_no_advantage_certificate(context="neural-operator forecast baseline"),
         cost_labels={
             "training_flops": "one_time_training_estimate",
             "surrogate_flops_per_query": "per_inference_estimate",
@@ -370,7 +372,7 @@ def build_neural_operator_baseline_product(
             IntegrationDisposition(
                 "multimodal_forecasting",
                 "design_dependency",
-                "BL-78 supplies a baseline dependency; multimodal product wiring remains BL-37 scope.",
+                "The classical baseline is a dependency; multimodal product wiring remains separate.",
             ),
         ),
     )
