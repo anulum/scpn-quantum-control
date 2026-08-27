@@ -5583,6 +5583,16 @@ Natural-gradient preconditioning and scalar line-search helpers.
 
 **Functions:** `armijo_backtracking_line_search()`, `weighted_gradient_sum()`, `natural_gradient()`
 
+### `scpn_quantum_control.differentiable_notebook_curriculum`
+
+Fail-closed differentiable notebook curriculum registry and probe.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/differentiable_notebook_curriculum.py) · Public symbols: **12**
+
+**Classes:** `CurriculumNotebookRow`, `PathEligibilityDecision`, `MaterialisedCurriculumProbe`
+
+**Functions:** `list_curriculum_notebook_ids()`, `get_curriculum_notebook()`, `iter_curriculum_notebooks()`, `decide_differentiable_curriculum_path()`, `resolve_curriculum_directory()`, `materialise_curriculum_probe()`, `map_differentiable_curriculum_public_surfaces()`, `build_differentiable_curriculum_registry()`, `assert_differentiable_curriculum_integrity()`
+
 ### `scpn_quantum_control.differentiable_parameter_contracts`
 
 Parameter metadata and validation contracts for differentiable objectives.
@@ -5908,16 +5918,6 @@ Compose existing neural-operator baselines under fail-closed governance.
 **Classes:** `BaselineSurfaceRow`, `ArtifactVerification`, `DatasetAdmission`, `IntegrationDisposition`, `NeuralOperatorBaselineProduct`
 
 **Functions:** `verify_neural_operator_artifact()`, `assess_forecast_dataset()`, `build_neural_operator_baseline_product()`
-
-### `scpn_quantum_control.notebook_programme_product`
-
-Fail-closed **differentiable notebook programme** product surface.
-
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/notebook_programme_product.py) · Public symbols: **12**
-
-**Classes:** `CurriculumNotebookRow`, `PathEligibilityDecision`, `MaterialisedCurriculumProbe`
-
-**Functions:** `list_curriculum_notebook_ids()`, `get_curriculum_notebook()`, `iter_curriculum_notebooks()`, `decide_notebook_programme_path()`, `resolve_curriculum_directory()`, `materialise_curriculum_probe()`, `map_notebook_programme_public_surfaces()`, `build_notebook_programme_registry()`, `assert_notebook_programme_product_integrity()`
 
 ### `scpn_quantum_control.open_system_mcwf_product`
 

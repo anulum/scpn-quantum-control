@@ -68,6 +68,9 @@ if TYPE_CHECKING:
         custom_derivatives_product_quality_gates as _custom_derivatives_product_quality_gates,
     )
     from tools import decisive_advantage_quality_gates as _decisive_advantage_quality_gates
+    from tools import (
+        differentiable_notebook_curriculum_quality_gates as _differentiable_notebook_curriculum_quality_gates,
+    )
     from tools import differentiable_quality_gates as _differentiable_quality_gates
     from tools import (
         error_mitigation_product_quality_gates as _error_mitigation_product_quality_gates,
@@ -102,9 +105,6 @@ if TYPE_CHECKING:
     from tools import multi_hal_federation_product_quality_gates as _multi_hal_quality_gates
     from tools import (
         neural_operator_cost_model_quality_gates as _neural_operator_cost_model_quality_gates,
-    )
-    from tools import (
-        notebook_programme_product_quality_gates as _notebook_programme_product_quality_gates,
     )
     from tools import (
         open_system_completeness_quality_gates as _open_system_completeness_quality_gates,
@@ -244,8 +244,8 @@ else:
     _neural_operator_cost_model_quality_gates = import_module(
         "tools.neural_operator_cost_model_quality_gates"
     )
-    _notebook_programme_product_quality_gates = import_module(
-        "tools.notebook_programme_product_quality_gates"
+    _differentiable_notebook_curriculum_quality_gates = import_module(
+        "tools.differentiable_notebook_curriculum_quality_gates"
     )
     _open_system_completeness_quality_gates = import_module(
         "tools.open_system_completeness_quality_gates"
@@ -617,7 +617,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_migration_guides_product_quality_gates.build_static_quality_gates(_PY),
     *_visualisation_dashboard_product_quality_gates.build_static_quality_gates(_PY),
     *_stochastic_estimators_product_quality_gates.build_static_quality_gates(_PY),
-    *_notebook_programme_product_quality_gates.build_static_quality_gates(_PY),
+    *_differentiable_notebook_curriculum_quality_gates.build_static_quality_gates(_PY),
     *_studio_executive_quality_gates.build_static_quality_gates(_PY),
     *_advanced_witnesses_quality_gates.build_static_quality_gates(_PY),
     *_coverage_frontier_quality_gates.build_static_quality_gates(_PY),
@@ -1063,8 +1063,8 @@ VISUALISATION_DASHBOARD_PRODUCT_COVERAGE_GATES = (
 STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_GATES = (
     _stochastic_estimators_product_quality_gates.build_coverage_gates(_PY)
 )
-NOTEBOOK_PROGRAMME_PRODUCT_COVERAGE_GATES = (
-    _notebook_programme_product_quality_gates.build_coverage_gates(_PY)
+DIFFERENTIABLE_NOTEBOOK_CURRICULUM_COVERAGE_GATES = (
+    _differentiable_notebook_curriculum_quality_gates.build_coverage_gates(_PY)
 )
 STUDIO_EXECUTIVE_PRODUCT_COVERAGE_GATES = _studio_executive_quality_gates.build_coverage_gates(_PY)
 ADVANCED_WITNESSES_COVERAGE_GATES = _advanced_witnesses_quality_gates.build_coverage_gates(_PY)
@@ -1399,7 +1399,7 @@ def main() -> int:
             gates.extend(MIGRATION_GUIDES_PRODUCT_COVERAGE_GATES)
             gates.extend(VISUALISATION_DASHBOARD_PRODUCT_COVERAGE_GATES)
             gates.extend(STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_GATES)
-            gates.extend(NOTEBOOK_PROGRAMME_PRODUCT_COVERAGE_GATES)
+            gates.extend(DIFFERENTIABLE_NOTEBOOK_CURRICULUM_COVERAGE_GATES)
             gates.extend(STUDIO_EXECUTIVE_PRODUCT_COVERAGE_GATES)
             gates.extend(ADVANCED_WITNESSES_COVERAGE_GATES)
             gates.extend(COVERAGE_FRONTIER_COVERAGE_GATES)

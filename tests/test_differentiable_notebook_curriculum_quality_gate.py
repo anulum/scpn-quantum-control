@@ -4,12 +4,12 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — notebook-programme quality-gate tests
-"""Lock the notebook-programme product gate into preflight and CI."""
+# SCPN Quantum Control — differentiable-notebook-curriculum quality-gate tests
+"""Lock the differentiable notebook curriculum gate into preflight and CI."""
 
 from pathlib import Path
 
-from tools import notebook_programme_product_quality_gates as quality_gates
+from tools import differentiable_notebook_curriculum_quality_gates as quality_gates
 from tools import preflight
 
 
@@ -17,22 +17,24 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
     """Require strict typing and isolated NumPy docstrings."""
     gates = dict(quality_gates.build_static_quality_gates("/python"))
     assert (
-        gates["mypy-strict-notebook-programme-product-quality"][5:]
-        == quality_gates.NOTEBOOK_PROGRAMME_PRODUCT_QUALITY_RATCHET
+        gates["mypy-strict-differentiable-notebook-curriculum"][5:]
+        == quality_gates.DIFFERENTIABLE_NOTEBOOK_CURRICULUM_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D notebook-programme-product quality ratchet"]
+    assert "D,D413" in gates["ruff D differentiable-notebook-curriculum ratchet"]
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
     """Require branch execution and exact source-only coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["notebook-programme-product focused coverage"]
-    assert "--fail-under=100" in gates["notebook-programme-product exact coverage threshold"]
+    assert "--branch" in gates["differentiable-notebook-curriculum focused coverage"]
+    assert (
+        "--fail-under=100" in gates["differentiable-notebook-curriculum exact coverage threshold"]
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
     """Keep helper commands verbatim in preflight."""
-    assert dict(preflight.NOTEBOOK_PROGRAMME_PRODUCT_COVERAGE_GATES) == dict(
+    assert dict(preflight.DIFFERENTIABLE_NOTEBOOK_CURRICULUM_COVERAGE_GATES) == dict(
         quality_gates.build_coverage_gates(preflight._PY)
     )
     for name, command in quality_gates.build_static_quality_gates(preflight._PY):
@@ -42,8 +44,10 @@ def test_preflight_uses_helper_defined_gates() -> None:
 def test_ci_runs_and_aggregates_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
     workflow = Path(".github/workflows/ci.yml").read_text()
-    start = workflow.index("  notebook-programme-product-quality:")
+    start = workflow.index("  differentiable-notebook-curriculum-quality:")
     end = workflow.index("\n\n  decisive-advantage-quality:", start)
     block = workflow[start:end]
-    assert all(path in block for path in quality_gates.NOTEBOOK_PROGRAMME_PRODUCT_QUALITY_RATCHET)
-    assert "notebook-programme-product-quality" in workflow[workflow.index("  ci-gate:") :]
+    assert all(
+        path in block for path in quality_gates.DIFFERENTIABLE_NOTEBOOK_CURRICULUM_QUALITY_RATCHET
+    )
+    assert "differentiable-notebook-curriculum-quality" in workflow[workflow.index("  ci-gate:") :]

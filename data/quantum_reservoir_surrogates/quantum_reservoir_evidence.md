@@ -1,7 +1,7 @@
-# BL-45 Quantum Reservoir and Surrogate Evidence
+# Quantum Reservoir and Surrogate Evidence
 
 Schema: `scpn.quantum_reservoir_surrogates.v1`
-Content digest: `9db8f66f5f930cc06b67e0a2a9cd04fdd77393f0f60a256efab6ee49da2244bc`
+Content digest: `e08bae2ba437f0ab4ab479ffc81d5afd1915e3feb86bcdf59b8018e14e166328`
 
 ## Held-out reservoir certificates
 
@@ -14,7 +14,7 @@ Content digest: `9db8f66f5f930cc06b67e0a2a9cd04fdd77393f0f60a256efab6ee49da2244b
 
 - Held-out value fidelity: `passed=True`, RMSE `0.000423`, maximum error `0.000792`, R² `0.999995`.
 - Analytic-gradient fidelity: `passed=True`, RMSE `0.000525`, maximum error `0.000894` against exact local central differences.
-- Exact proposal validation: `exact_local_improvement`; the BL-33 proposal remains unapplied.
+- Exact proposal validation: `exact_local_improvement`; the controller proposal remains unapplied.
 
 ## Support matrix
 
@@ -25,8 +25,8 @@ Content digest: `9db8f66f5f930cc06b67e0a2a9cd04fdd77393f0f60a256efab6ee49da2244b
 | `gaussian_rbf_value_fidelity` | `local_exact_supported` | Disjoint held-out values pass frozen thresholds. One frozen two-parameter simulator objective. |
 | `analytic_rbf_gradient_fidelity` | `local_exact_supported` | Analytic RBF gradients match exact central differences. Finite-difference reference, not hardware gradients. |
 | `codesign_exact_validated_proposal` | `bounded_supported` | Surrogate proposal followed by exact local objective query. ControllerProposal remains unapplied. |
-| `multimodal_forecasting_adapter` | `blocked_dependency` | BL-37 multimodal schema is not implemented. No invented domain adapter or operational data. |
-| `notebook_programme` | `blocked_dependency` | BL-40 notebook stretch is outside the BL-45 product. No notebook is represented as complete. |
+| `multimodal_forecasting_adapter` | `blocked_dependency` | The multimodal forecasting adapter is not implemented. No invented domain adapter or operational data. |
+| `differentiable_notebook_curriculum` | `blocked_dependency` | Differentiable notebook curriculum expansion is outside the quantum-reservoir surrogate evidence scope. No notebook is represented as complete. |
 
 ## Claim boundary
 

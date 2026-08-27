@@ -103,7 +103,7 @@ def test_evidence_bundle_rejects_missing_or_failed_required_surfaces(
             evidence,
             value_fidelity=dataclasses.replace(evidence.value_fidelity, passed=False),
         )
-    with pytest.raises(ValueError, match="complete BL-45"):
+    with pytest.raises(ValueError, match="complete bounded quantum-reservoir"):
         dataclasses.replace(evidence, support_rows=evidence.support_rows[:-1])
 
 

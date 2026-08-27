@@ -57,7 +57,7 @@ def _stale_evidence_message(path: Path, actual: str, expected: str) -> str:
 
 
 def build_evidence() -> QuantumReservoirSurrogateEvidence:
-    """Build the complete deterministic BL-45 evidence bundle."""
+    """Build the complete deterministic quantum-reservoir evidence bundle."""
     coupling = np.array([[0.0, 0.65], [0.65, 0.0]], dtype=np.float64)
     frequencies = np.array([0.15, -0.1], dtype=np.float64)
     reservoir_certificates = tuple(
@@ -169,13 +169,16 @@ def build_evidence() -> QuantumReservoirSurrogateEvidence:
         SurrogateSupportRow(
             surface="multimodal_forecasting_adapter",
             status="blocked_dependency",
-            evidence="BL-37 multimodal schema is not implemented.",
+            evidence="The multimodal forecasting adapter is not implemented.",
             boundary="No invented domain adapter or operational data.",
         ),
         SurrogateSupportRow(
-            surface="notebook_programme",
+            surface="differentiable_notebook_curriculum",
             status="blocked_dependency",
-            evidence="BL-40 notebook stretch is outside the BL-45 product.",
+            evidence=(
+                "Differentiable notebook curriculum expansion is outside the "
+                "quantum-reservoir surrogate evidence scope."
+            ),
             boundary="No notebook is represented as complete.",
         ),
     )

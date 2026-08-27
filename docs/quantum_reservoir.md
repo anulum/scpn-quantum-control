@@ -146,8 +146,8 @@ isolated-core production benchmark.
 - BL-37 now supplies a bounded simulation-only multimodal schema and classical
   forecasting product, but no QRC-to-BL-37 adapter was added in BL-45. No real
   clinical, grid, or plasma data is admitted by either product.
-- The BL-40 notebook is a blocked stretch dependency and is not represented as
-  complete.
+- Differentiable notebook curriculum expansion is outside the reservoir
+  evidence scope and is not represented as complete.
 - No hardware QRC, provider execution, unseen-domain generalisation, closed-loop
   control, optimisation advantage, publication, or deployment claim is made.
 

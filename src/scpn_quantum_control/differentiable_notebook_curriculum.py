@@ -4,18 +4,18 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — differentiable notebook programme product
-"""Fail-closed **differentiable notebook programme** product surface.
+# SCPN Quantum Control — differentiable notebook curriculum
+"""Fail-closed differentiable notebook curriculum registry and probe.
 
 Productises the core-six differentiable-lane onboarding curriculum:
 
 * versioned catalogue / manifest over ``notebooks/differentiable/``;
 * runtime-class badges and mandatory ``hardware_execution: false`` honesty;
-* integrity asserts refusing blanks, unknown ids, and invent-green QPU notebooks;
+* integrity checks refusing blanks, unknown ids, and invent-green QPU notebooks;
 * materialised curriculum probe with finite primary observables (counts, ids).
 
 Does **not** convert the full historical notebook archive, invent live QPU
-notebooks, or claim full nbclient CI matrix green (S40.8 residual).
+notebooks, or claim a full nbclient CI matrix green.
 """
 
 from __future__ import annotations
@@ -35,17 +35,17 @@ RuntimeClass = Literal[
 PathDecisionOutcome = Literal["allowed", "refused"]
 """Structured path-eligibility outcomes."""
 
-NOTEBOOK_PROGRAMME_PRODUCT_SCHEMA: Final[str] = "notebook_programme_product.v1"
-"""JSON schema identifier for serialised product payloads."""
+DIFFERENTIABLE_NOTEBOOK_CURRICULUM_SCHEMA: Final[str] = "differentiable_notebook_curriculum.v2"
+"""JSON schema identifier for serialised curriculum payloads."""
 
-NOTEBOOK_PROGRAMME_CLAIM_BOUNDARY: Final[str] = (
-    "Differentiable notebook programme product surface only; catalogues the "
+DIFFERENTIABLE_NOTEBOOK_CURRICULUM_CLAIM_BOUNDARY: Final[str] = (
+    "Differentiable notebook curriculum registry only; catalogues the "
     "core-six onboarding curriculum under notebooks/differentiable with "
     "hardware_execution=false honesty; materialised manifest/probe only; "
     "refuses invent-green live QPU notebooks and full archive conversion; "
-    "does not claim full nbclient CI matrix green (S40.8 residual)"
+    "does not claim a full nbclient CI matrix green"
 )
-"""Shared claim boundary for notebook programme product payloads."""
+"""Shared claim boundary for differentiable curriculum payloads."""
 
 _CURRICULUM_DIR_REL: Final[str] = "notebooks/differentiable"
 """Repository-relative curriculum directory."""
@@ -53,7 +53,7 @@ _CURRICULUM_DIR_REL: Final[str] = "notebooks/differentiable"
 
 @dataclass(frozen=True, slots=True)
 class CurriculumNotebookRow:
-    """One core curriculum notebook catalogue row (S40.0 / S40.1).
+    """One core curriculum notebook catalogue row.
 
     Attributes
     ----------
@@ -89,7 +89,7 @@ class CurriculumNotebookRow:
     hardware_execution: bool = False
     order: int = 1
     as_of: str = "2026-07-24"
-    claim_boundary: str = NOTEBOOK_PROGRAMME_CLAIM_BOUNDARY
+    claim_boundary: str = DIFFERENTIABLE_NOTEBOOK_CURRICULUM_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
         """Validate curriculum notebook row invariants."""
@@ -141,7 +141,7 @@ class CurriculumNotebookRow:
 
 @dataclass(frozen=True, slots=True)
 class PathEligibilityDecision:
-    """Fail-closed path eligibility for notebook programme use.
+    """Fail-closed path eligibility for differentiable curriculum use.
 
     Attributes
     ----------
@@ -160,7 +160,7 @@ class PathEligibilityDecision:
     allowed: bool
     reason: str
     blockers: tuple[str, ...]
-    claim_boundary: str = NOTEBOOK_PROGRAMME_CLAIM_BOUNDARY
+    claim_boundary: str = DIFFERENTIABLE_NOTEBOOK_CURRICULUM_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
         """Validate path eligibility invariants."""
@@ -192,7 +192,7 @@ class PathEligibilityDecision:
 
 @dataclass(frozen=True, slots=True)
 class MaterialisedCurriculumProbe:
-    """Materialised curriculum catalogue probe with primary observables (S40.1).
+    """Materialised curriculum catalogue probe with primary observables.
 
     Attributes
     ----------
@@ -214,7 +214,7 @@ class MaterialisedCurriculumProbe:
     hardware_execution_any: bool
     default_notebook_id: str
     missing_path_count: int
-    claim_boundary: str = NOTEBOOK_PROGRAMME_CLAIM_BOUNDARY
+    claim_boundary: str = DIFFERENTIABLE_NOTEBOOK_CURRICULUM_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
         """Validate materialised curriculum probe invariants."""
@@ -312,7 +312,7 @@ _CANONICAL_CURRICULUM: Final[tuple[CurriculumNotebookRow, ...]] = (
         title="Fail-closed boundaries / unsupported scenarios",
         runtime_class="cpu_local_fast",
         summary=(
-            "Teach BL-53 unsuitable scenarios and anti-silent-wrong refuse paths "
+            "Teach unsuitable-scenario safeguards and anti-silent-wrong refusal paths "
             "without invent-green success."
         ),
         required_packages=("numpy", "scpn_quantum_control"),
@@ -389,7 +389,7 @@ def get_curriculum_notebook(notebook_id: str) -> CurriculumNotebookRow:
     except KeyError as exc:
         raise ValueError(
             f"unknown notebook_id {key!r}; refuse invent-green notebook "
-            f"programme claim (known_count={len(_NOTEBOOK_BY_ID)})"
+            f"curriculum claim (known_count={len(_NOTEBOOK_BY_ID)})"
         ) from exc
 
 
@@ -416,12 +416,12 @@ def iter_curriculum_notebooks(
     return tuple(rows)
 
 
-def decide_notebook_programme_path(
+def decide_differentiable_curriculum_path(
     *,
     request_hardware_execution: bool = False,
     request_full_archive_conversion: bool = False,
 ) -> PathEligibilityDecision:
-    """Decide whether a notebook programme path may proceed.
+    """Decide whether a differentiable curriculum path may proceed.
 
     Parameters
     ----------
@@ -440,7 +440,7 @@ def decide_notebook_programme_path(
     if request_hardware_execution:
         blockers.append(
             "live QPU / hardware_execution notebooks refused on notebook "
-            "programme product (hardware_execution must remain false)"
+            "curriculum registry (hardware_execution must remain false)"
         )
     if request_full_archive_conversion:
         blockers.append(
@@ -452,14 +452,14 @@ def decide_notebook_programme_path(
         return PathEligibilityDecision(
             outcome="refused",
             allowed=False,
-            reason="notebook programme product refuse: " + "; ".join(unique),
+            reason="differentiable notebook curriculum refusal: " + "; ".join(unique),
             blockers=unique,
         )
     return PathEligibilityDecision(
         outcome="allowed",
         allowed=True,
         reason=(
-            "notebook programme product path allowed for core-six CPU curriculum "
+            "differentiable notebook curriculum path allowed for the core-six CPU set "
             "(hardware_execution=false; no full-archive conversion claim)"
         ),
         blockers=(),
@@ -492,7 +492,7 @@ def materialise_curriculum_probe(
     *,
     repo_root: str | Path | None = None,
 ) -> MaterialisedCurriculumProbe:
-    """Materialise curriculum catalogue primary observables (S40.1).
+    """Materialise curriculum catalogue primary observables.
 
     Parameters
     ----------
@@ -510,7 +510,7 @@ def materialise_curriculum_probe(
         If path is refused or catalogue invariants fail.
 
     """
-    decision = decide_notebook_programme_path()
+    decision = decide_differentiable_curriculum_path()
     if not decision.allowed:
         raise ValueError(f"curriculum probe refused: {decision.reason}")
 
@@ -529,8 +529,8 @@ def materialise_curriculum_probe(
     )
 
 
-def map_notebook_programme_public_surfaces() -> tuple[dict[str, object], ...]:
-    """Return a public API map of notebook programme product modules.
+def map_differentiable_curriculum_public_surfaces() -> tuple[dict[str, object], ...]:
+    """Return the public API map for the differentiable curriculum owner.
 
     Returns
     -------
@@ -540,19 +540,19 @@ def map_notebook_programme_public_surfaces() -> tuple[dict[str, object], ...]:
     """
     return (
         {
-            "module_path": "scpn_quantum_control.notebook_programme_product",
-            "role": "notebook_programme_product_surface",
+            "module_path": "scpn_quantum_control.differentiable_notebook_curriculum",
+            "role": "differentiable_notebook_curriculum_registry",
             "support_posture": "curriculum_manifest",
             "notebook_ids": list(list_curriculum_notebook_ids()),
             "curriculum_dir": _CURRICULUM_DIR_REL,
             "hardware_execution": False,
-            "claim_boundary": NOTEBOOK_PROGRAMME_CLAIM_BOUNDARY,
+            "claim_boundary": DIFFERENTIABLE_NOTEBOOK_CURRICULUM_CLAIM_BOUNDARY,
         },
     )
 
 
-def build_notebook_programme_registry() -> dict[str, object]:
-    """Build the full serialisable notebook programme product registry.
+def build_differentiable_curriculum_registry() -> dict[str, object]:
+    """Build the full serialisable differentiable curriculum registry.
 
     Returns
     -------
@@ -562,25 +562,25 @@ def build_notebook_programme_registry() -> dict[str, object]:
     """
     notebooks = [row.to_dict() for row in _CANONICAL_CURRICULUM]
     return {
-        "schema": NOTEBOOK_PROGRAMME_PRODUCT_SCHEMA,
-        "claim_boundary": NOTEBOOK_PROGRAMME_CLAIM_BOUNDARY,
+        "schema": DIFFERENTIABLE_NOTEBOOK_CURRICULUM_SCHEMA,
+        "claim_boundary": DIFFERENTIABLE_NOTEBOOK_CURRICULUM_CLAIM_BOUNDARY,
         "notebook_count": len(notebooks),
         "blank_entry_count": 0,
         "default_notebook_id": "01_parameter_shift_kuramoto_xy",
         "curriculum_dir": _CURRICULUM_DIR_REL,
         "hardware_execution_policy": False,
-        "public_surfaces": list(map_notebook_programme_public_surfaces()),
+        "public_surfaces": list(map_differentiable_curriculum_public_surfaces()),
         "notebooks": notebooks,
         "policy_note": (
-            "Notebook programme product catalogue only; core-six curriculum under "
-            "notebooks/differentiable; hardware_execution=false; full historical "
-            "archive conversion and nbclient CI matrix residual S40.8–S40.10; "
-            "no invent-green live QPU notebooks."
+            "Differentiable notebook curriculum catalogue only; core-six set under "
+            "notebooks/differentiable; hardware_execution=false; long-form archive "
+            "conversion, a full nbclient CI matrix, and framework companion notebooks "
+            "remain outside this bounded registry; no invent-green live QPU notebooks."
         ),
     }
 
 
-def assert_notebook_programme_product_integrity(
+def assert_differentiable_curriculum_integrity(
     payload: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
     """Assert the registry covers curriculum without blanks or invent-QPU.
@@ -588,7 +588,7 @@ def assert_notebook_programme_product_integrity(
     Parameters
     ----------
     payload
-        Optional payload from :func:`build_notebook_programme_registry`.
+        Optional payload from :func:`build_differentiable_curriculum_registry`.
 
     Returns
     -------
@@ -601,10 +601,16 @@ def assert_notebook_programme_product_integrity(
         If coverage, blanks, or invent-green hardware flags appear.
 
     """
-    registry = dict(payload) if payload is not None else build_notebook_programme_registry()
+    registry = dict(payload) if payload is not None else build_differentiable_curriculum_registry()
+    if registry.get("schema") != DIFFERENTIABLE_NOTEBOOK_CURRICULUM_SCHEMA:
+        raise ValueError("unexpected differentiable notebook curriculum schema")
+    if registry.get("claim_boundary") != DIFFERENTIABLE_NOTEBOOK_CURRICULUM_CLAIM_BOUNDARY:
+        raise ValueError("unexpected differentiable notebook curriculum claim boundary")
     notebooks = registry.get("notebooks")
     if not isinstance(notebooks, list) or not notebooks:
-        raise ValueError("notebook programme registry must contain a non-empty notebooks list")
+        raise ValueError(
+            "differentiable curriculum registry must contain a non-empty notebooks list"
+        )
     seen: set[str] = set()
     blank = 0
     default_found = False
@@ -635,13 +641,17 @@ def assert_notebook_programme_product_integrity(
             raise ValueError(f"notebook {nid!r} must have relative_path")
         if hardware is True:
             raise ValueError(
-                f"notebook {nid!r} invent-green hardware_execution: product "
+                f"notebook {nid!r} invent-green hardware_execution: curriculum "
                 "rows must set hardware_execution=False"
             )
     if blank:
-        raise ValueError(f"notebook programme registry has {blank} blank or invalid entries")
+        raise ValueError(
+            f"differentiable curriculum registry has {blank} blank or invalid entries"
+        )
     if not default_found:
-        raise ValueError("notebook programme registry missing 01_parameter_shift_kuramoto_xy")
+        raise ValueError(
+            "differentiable curriculum registry missing 01_parameter_shift_kuramoto_xy"
+        )
     expected = set(list_curriculum_notebook_ids())
     if seen != expected:
         raise ValueError(
@@ -660,20 +670,20 @@ def assert_notebook_programme_product_integrity(
 
 
 __all__ = [
-    "NOTEBOOK_PROGRAMME_CLAIM_BOUNDARY",
-    "NOTEBOOK_PROGRAMME_PRODUCT_SCHEMA",
+    "DIFFERENTIABLE_NOTEBOOK_CURRICULUM_CLAIM_BOUNDARY",
+    "DIFFERENTIABLE_NOTEBOOK_CURRICULUM_SCHEMA",
     "CurriculumNotebookRow",
     "MaterialisedCurriculumProbe",
     "PathDecisionOutcome",
     "PathEligibilityDecision",
     "RuntimeClass",
-    "assert_notebook_programme_product_integrity",
-    "build_notebook_programme_registry",
-    "decide_notebook_programme_path",
+    "assert_differentiable_curriculum_integrity",
+    "build_differentiable_curriculum_registry",
+    "decide_differentiable_curriculum_path",
     "get_curriculum_notebook",
     "iter_curriculum_notebooks",
     "list_curriculum_notebook_ids",
-    "map_notebook_programme_public_surfaces",
+    "map_differentiable_curriculum_public_surfaces",
     "materialise_curriculum_probe",
     "resolve_curriculum_directory",
 ]

@@ -350,6 +350,7 @@
       "docs/datasets.md",
       "docs/differentiable_api.md",
       "docs/differentiable_external_validation_report.md",
+      "docs/differentiable_notebook_curriculum.md",
       "docs/differentiable_programming.md",
       "docs/differentiable_reviewer_evidence.md",
       "docs/differentiable_roadmap.md",
@@ -431,7 +432,6 @@
       "docs/neural_quantum_states.md",
       "docs/new_modules.md",
       "docs/notebook_catalog.md",
-      "docs/notebook_programme_product.md",
       "docs/notebooks.md",
       "docs/nv_magnetometry_20T.md",
       "docs/onboarding.md",
@@ -1604,7 +1604,7 @@
       },
       {
         "name": "CurriculumNotebookRow",
-        "path": "src/scpn_quantum_control/notebook_programme_product.py"
+        "path": "src/scpn_quantum_control/differentiable_notebook_curriculum.py"
       },
       {
         "name": "CustomDerivativeCheckResult",
@@ -3292,7 +3292,7 @@
       },
       {
         "name": "MaterialisedCurriculumProbe",
-        "path": "src/scpn_quantum_control/notebook_programme_product.py"
+        "path": "src/scpn_quantum_control/differentiable_notebook_curriculum.py"
       },
       {
         "name": "MaterialisedDeployDryRunProbe",
@@ -3920,6 +3920,10 @@
       },
       {
         "name": "PathEligibilityDecision",
+        "path": "src/scpn_quantum_control/differentiable_notebook_curriculum.py"
+      },
+      {
+        "name": "PathEligibilityDecision",
         "path": "src/scpn_quantum_control/error_mitigation_product.py"
       },
       {
@@ -3937,10 +3941,6 @@
       {
         "name": "PathEligibilityDecision",
         "path": "src/scpn_quantum_control/multi_hal_federation_product.py"
-      },
-      {
-        "name": "PathEligibilityDecision",
-        "path": "src/scpn_quantum_control/notebook_programme_product.py"
       },
       {
         "name": "PathEligibilityDecision",
@@ -6544,6 +6544,7 @@
       "src/scpn_quantum_control/differentiable_levenberg_marquardt.py",
       "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
       "src/scpn_quantum_control/differentiable_natural_gradient.py",
+      "src/scpn_quantum_control/differentiable_notebook_curriculum.py",
       "src/scpn_quantum_control/differentiable_parameter_contracts.py",
       "src/scpn_quantum_control/differentiable_parameter_shift.py",
       "src/scpn_quantum_control/differentiable_registered_custom.py",
@@ -6716,7 +6717,6 @@
       "src/scpn_quantum_control/ml_examples/suite.py",
       "src/scpn_quantum_control/multi_hal_federation_product.py",
       "src/scpn_quantum_control/neural_operator_baseline_product.py",
-      "src/scpn_quantum_control/notebook_programme_product.py",
       "src/scpn_quantum_control/open_system_mcwf_product.py",
       "src/scpn_quantum_control/pgbo/quantum_bridge.py",
       "src/scpn_quantum_control/pgbo_qgt_product.py",
@@ -8381,6 +8381,8 @@
       "tests/test_differentiable_module_hardening_audit.py",
       "tests/test_differentiable_natural_gradient.py",
       "tests/test_differentiable_natural_gradient_line_search.py",
+      "tests/test_differentiable_notebook_curriculum.py",
+      "tests/test_differentiable_notebook_curriculum_quality_gate.py",
       "tests/test_differentiable_optimizer_convergence.py",
       "tests/test_differentiable_package_exports.py",
       "tests/test_differentiable_parameter_contracts.py",
@@ -8721,8 +8723,6 @@
       "tests/test_new_module_properties.py",
       "tests/test_nist_sp800_22_guards.py",
       "tests/test_noise_model.py",
-      "tests/test_notebook_programme_product.py",
-      "tests/test_notebook_programme_product_quality_gate.py",
       "tests/test_notebook_workflows.py",
       "tests/test_nqs_ansatz.py",
       "tests/test_nv_magnetometry.py",

@@ -1409,7 +1409,7 @@ jobs:
           --data-file=.coverage.stochastic-estimators-quality
           --precision=2 --fail-under=100 --include=*/stochastic_estimators_product.py
 
-  notebook-programme-product-quality:
+  differentiable-notebook-curriculum-quality:
     needs: lint
     runs-on: ubuntu-latest
     env:
@@ -1421,25 +1421,25 @@ jobs:
       - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
-          src/scpn_quantum_control/notebook_programme_product.py
-          tests/test_notebook_programme_product.py
-          tools/notebook_programme_product_quality_gates.py
-          tests/test_notebook_programme_product_quality_gate.py
+          src/scpn_quantum_control/differentiable_notebook_curriculum.py
+          tests/test_differentiable_notebook_curriculum.py
+          tools/differentiable_notebook_curriculum_quality_gates.py
+          tests/test_differentiable_notebook_curriculum_quality_gate.py
       - run: >-
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
-          src/scpn_quantum_control/notebook_programme_product.py
-          tests/test_notebook_programme_product.py
-          tools/notebook_programme_product_quality_gates.py
-          tests/test_notebook_programme_product_quality_gate.py
+          src/scpn_quantum_control/differentiable_notebook_curriculum.py
+          tests/test_differentiable_notebook_curriculum.py
+          tools/differentiable_notebook_curriculum_quality_gates.py
+          tests/test_differentiable_notebook_curriculum_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
-          --data-file=.coverage.notebook-programme-quality --branch
-          -m pytest -q tests/test_notebook_programme_product.py
+          --data-file=.coverage.differentiable-notebook-curriculum --branch
+          -m pytest -q tests/test_differentiable_notebook_curriculum.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
-          --data-file=.coverage.notebook-programme-quality
-          --precision=2 --fail-under=100 --include=*/notebook_programme_product.py
+          --data-file=.coverage.differentiable-notebook-curriculum
+          --precision=2 --fail-under=100 --include=*/differentiable_notebook_curriculum.py
 
   studio-executive-product-quality:
     needs: lint
@@ -3362,7 +3362,7 @@ jobs:
           EOF
 
   ci-gate:
-    needs: [lint, stable-core-product-quality, open-system-completeness-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, custom-derivatives-product-quality, kyma-mechanism-product-quality, campaign-harness-product-quality, geometric-control-product-quality, tn-mps-baseline-design-quality, error-mitigation-product-quality, cloud-native-deployment-quality, control-stack-compose-quality, public-api-stability-quality, polyglot-parity-certificate-quality, program-ad-fuzz-assurance-quality, multi-hal-federation-quality, hermetic-reproduction-kit-quality, hardware-safe-execution-quality, qpu-compute-product-quality, wirtinger-implicit-product-quality, migration-guides-product-quality, visualisation-dashboard-product-quality, stochastic-estimators-product-quality, notebook-programme-product-quality, studio-executive-product-quality, advanced-witnesses-quality, coverage-frontier-quality, compiler-boundary-product-quality, resource-budget-gate-quality, advantage-language-protocol-quality, metamorphic-ad-verification-quality, competitive-baseline-watch-quality, whole-program-ad-product-quality, neural-operator-cost-model-quality, governed-route-matrix-quality, attested-result-pack-quality, phase-qnode-product-quality, phase-trainability-quality, kuramoto-layout-cost-quality, kuramoto-layout-relaxation-quality, application-honesty-quality, layout-method-comparison-quality, unsuitable-scenario-registry-quality, scorecard-acceptance-engine-quality, studio-executive-benchmark-quality, synchronisation-witness-quality, experiment-mitigation-quality, research-lane-registry-quality, theory-hook-promotion-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
+    needs: [lint, stable-core-product-quality, open-system-completeness-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, custom-derivatives-product-quality, kyma-mechanism-product-quality, campaign-harness-product-quality, geometric-control-product-quality, tn-mps-baseline-design-quality, error-mitigation-product-quality, cloud-native-deployment-quality, control-stack-compose-quality, public-api-stability-quality, polyglot-parity-certificate-quality, program-ad-fuzz-assurance-quality, multi-hal-federation-quality, hermetic-reproduction-kit-quality, hardware-safe-execution-quality, qpu-compute-product-quality, wirtinger-implicit-product-quality, migration-guides-product-quality, visualisation-dashboard-product-quality, stochastic-estimators-product-quality, differentiable-notebook-curriculum-quality, studio-executive-product-quality, advanced-witnesses-quality, coverage-frontier-quality, compiler-boundary-product-quality, resource-budget-gate-quality, advantage-language-protocol-quality, metamorphic-ad-verification-quality, competitive-baseline-watch-quality, whole-program-ad-product-quality, neural-operator-cost-model-quality, governed-route-matrix-quality, attested-result-pack-quality, phase-qnode-product-quality, phase-trainability-quality, kuramoto-layout-cost-quality, kuramoto-layout-relaxation-quality, application-honesty-quality, layout-method-comparison-quality, unsuitable-scenario-registry-quality, scorecard-acceptance-engine-quality, studio-executive-benchmark-quality, synchronisation-witness-quality, experiment-mitigation-quality, research-lane-registry-quality, theory-hook-promotion-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -3392,7 +3392,7 @@ jobs:
              [[ "${{ needs['migration-guides-product-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['visualisation-dashboard-product-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['stochastic-estimators-product-quality'].result }}" != "success" ]] || \
-             [[ "${{ needs['notebook-programme-product-quality'].result }}" != "success" ]] || \
+             [[ "${{ needs['differentiable-notebook-curriculum-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['studio-executive-product-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['advanced-witnesses-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['coverage-frontier-quality'].result }}" != "success" ]] || \

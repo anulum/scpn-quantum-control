@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — tests for notebook programme product
-"""Real-surface tests for ``scpn_quantum_control.notebook_programme_product``."""
+# SCPN Quantum Control — differentiable notebook curriculum tests
+"""Real-surface tests for the differentiable notebook curriculum registry."""
 
 from __future__ import annotations
 
@@ -14,20 +14,20 @@ from typing import Any, cast
 
 import pytest
 
-import scpn_quantum_control.notebook_programme_product as notebook_programme_product
-from scpn_quantum_control.notebook_programme_product import (
-    NOTEBOOK_PROGRAMME_CLAIM_BOUNDARY,
-    NOTEBOOK_PROGRAMME_PRODUCT_SCHEMA,
+import scpn_quantum_control.differentiable_notebook_curriculum as curriculum
+from scpn_quantum_control.differentiable_notebook_curriculum import (
+    DIFFERENTIABLE_NOTEBOOK_CURRICULUM_CLAIM_BOUNDARY,
+    DIFFERENTIABLE_NOTEBOOK_CURRICULUM_SCHEMA,
     CurriculumNotebookRow,
     MaterialisedCurriculumProbe,
     PathEligibilityDecision,
-    assert_notebook_programme_product_integrity,
-    build_notebook_programme_registry,
-    decide_notebook_programme_path,
+    assert_differentiable_curriculum_integrity,
+    build_differentiable_curriculum_registry,
+    decide_differentiable_curriculum_path,
     get_curriculum_notebook,
     iter_curriculum_notebooks,
     list_curriculum_notebook_ids,
-    map_notebook_programme_public_surfaces,
+    map_differentiable_curriculum_public_surfaces,
     materialise_curriculum_probe,
     resolve_curriculum_directory,
 )
@@ -60,7 +60,7 @@ def test_get_known_and_unknown_fail_closed() -> None:
     """Resolve known notebooks while rejecting blank and unknown ids."""
     row = get_curriculum_notebook("01_parameter_shift_kuramoto_xy")
     assert row.hardware_execution is False
-    assert row.claim_boundary == NOTEBOOK_PROGRAMME_CLAIM_BOUNDARY
+    assert row.claim_boundary == DIFFERENTIABLE_NOTEBOOK_CURRICULUM_CLAIM_BOUNDARY
     with pytest.raises(ValueError, match="non-empty"):
         get_curriculum_notebook("  ")
     with pytest.raises(ValueError, match="unknown notebook_id"):
@@ -69,15 +69,15 @@ def test_get_known_and_unknown_fail_closed() -> None:
 
 def test_path_eligibility_refuse_and_allow() -> None:
     """Allow the bounded curriculum and refuse hardware or archive expansion."""
-    allowed = decide_notebook_programme_path()
+    allowed = decide_differentiable_curriculum_path()
     assert allowed.allowed is True
     assert allowed.outcome == "allowed"
 
-    hw = decide_notebook_programme_path(request_hardware_execution=True)
+    hw = decide_differentiable_curriculum_path(request_hardware_execution=True)
     assert hw.allowed is False
     assert any("qpu" in b.lower() or "hardware" in b.lower() for b in hw.blockers)
 
-    archive = decide_notebook_programme_path(request_full_archive_conversion=True)
+    archive = decide_differentiable_curriculum_path(request_full_archive_conversion=True)
     assert archive.allowed is False
     assert any("archive" in b.lower() for b in archive.blockers)
 
@@ -101,23 +101,23 @@ def test_materialise_curriculum_probe_and_paths() -> None:
 
 def test_public_surfaces_and_registry() -> None:
     """Map the public owner and validate the complete curriculum registry."""
-    surfaces = map_notebook_programme_public_surfaces()
+    surfaces = map_differentiable_curriculum_public_surfaces()
     assert surfaces
     assert surfaces[0]["hardware_execution"] is False
     assert surfaces[0]["curriculum_dir"] == "notebooks/differentiable"
 
-    registry = build_notebook_programme_registry()
-    assert registry["schema"] == NOTEBOOK_PROGRAMME_PRODUCT_SCHEMA
+    registry = build_differentiable_curriculum_registry()
+    assert registry["schema"] == DIFFERENTIABLE_NOTEBOOK_CURRICULUM_SCHEMA
     assert registry["blank_entry_count"] == 0
     assert registry["hardware_execution_policy"] is False
-    validated = assert_notebook_programme_product_integrity(registry)
+    validated = assert_differentiable_curriculum_integrity(registry)
     assert validated["notebook_count"] == 6
-    assert assert_notebook_programme_product_integrity()["blank_entry_count"] == 0
+    assert assert_differentiable_curriculum_integrity()["blank_entry_count"] == 0
 
 
 def test_integrity_rejects_drift_and_hardware() -> None:
     """Reject notebook-set drift and hardware-execution relaxation."""
-    registry = build_notebook_programme_registry()
+    registry = build_differentiable_curriculum_registry()
     notebooks = _registry_notebooks(registry)
 
     broken = dict(registry)
@@ -132,64 +132,60 @@ def test_integrity_rejects_drift_and_hardware() -> None:
             "hardware_execution": False,
             "order": 99,
             "as_of": "2026-07-24",
-            "claim_boundary": NOTEBOOK_PROGRAMME_CLAIM_BOUNDARY,
+            "claim_boundary": DIFFERENTIABLE_NOTEBOOK_CURRICULUM_CLAIM_BOUNDARY,
         }
     ]
     broken["notebook_count"] = len(cast(list[object], broken["notebooks"]))
     with pytest.raises(ValueError, match="drift"):
-        assert_notebook_programme_product_integrity(broken)
+        assert_differentiable_curriculum_integrity(broken)
 
-    empty: dict[str, object] = {
-        "notebooks": [],
-        "blank_entry_count": 0,
-        "notebook_count": 0,
-    }
+    empty = {**registry, "notebooks": [], "notebook_count": 0}
     with pytest.raises(ValueError, match="non-empty notebooks"):
-        assert_notebook_programme_product_integrity(empty)
+        assert_differentiable_curriculum_integrity(empty)
 
     hw = dict(registry)
     hw_rows = [dict(row) for row in notebooks]
     hw_rows[0]["hardware_execution"] = True
     hw["notebooks"] = hw_rows
     with pytest.raises(ValueError, match="hardware_execution|invent-green"):
-        assert_notebook_programme_product_integrity(hw)
+        assert_differentiable_curriculum_integrity(hw)
 
     policy = dict(registry)
     policy["hardware_execution_policy"] = True
     with pytest.raises(ValueError, match="hardware_execution_policy"):
-        assert_notebook_programme_product_integrity(policy)
+        assert_differentiable_curriculum_integrity(policy)
 
 
 def test_integrity_rejects_blank_invalid() -> None:
     """Reject malformed rows, missing defaults, duplicates, and count drift."""
-    registry = build_notebook_programme_registry()
+    registry = build_differentiable_curriculum_registry()
     notebooks = _registry_notebooks(registry)
 
     non_map = dict(registry)
     non_map["notebooks"] = [cast(Any, "nope")]
     with pytest.raises(ValueError, match="must be a mapping"):
-        assert_notebook_programme_product_integrity(non_map)
+        assert_differentiable_curriculum_integrity(non_map)
 
     blank_id = dict(registry)
     rows = [dict(row) for row in notebooks]
     rows[0]["notebook_id"] = "  "
     blank_id["notebooks"] = rows
     with pytest.raises(ValueError, match="blank or invalid"):
-        assert_notebook_programme_product_integrity(blank_id)
+        assert_differentiable_curriculum_integrity(blank_id)
 
     bad_rt = dict(registry)
     rrows = [dict(row) for row in notebooks]
     rrows[1]["runtime_class"] = "nope"
     bad_rt["notebooks"] = rrows
     with pytest.raises(ValueError, match="blank or invalid"):
-        assert_notebook_programme_product_integrity(bad_rt)
+        assert_differentiable_curriculum_integrity(bad_rt)
 
     no_path = dict(registry)
     prows = [dict(row) for row in notebooks]
     prows[0]["relative_path"] = ""
     no_path["notebooks"] = prows
     with pytest.raises(ValueError, match="relative_path"):
-        assert_notebook_programme_product_integrity(no_path)
+        assert_differentiable_curriculum_integrity(no_path)
 
     no_default = dict(registry)
     renamed = [dict(row) for row in notebooks]
@@ -198,7 +194,7 @@ def test_integrity_rejects_blank_invalid() -> None:
             row["notebook_id"] = "renamed"
     no_default["notebooks"] = renamed
     with pytest.raises(ValueError, match="missing 01_parameter_shift|drift"):
-        assert_notebook_programme_product_integrity(no_default)
+        assert_differentiable_curriculum_integrity(no_default)
 
     dup = dict(registry)
     drows = [dict(row) for row in notebooks]
@@ -206,24 +202,38 @@ def test_integrity_rejects_blank_invalid() -> None:
     dup["notebooks"] = drows
     dup["notebook_count"] = len(drows)
     with pytest.raises(ValueError, match="duplicate notebook_id"):
-        assert_notebook_programme_product_integrity(dup)
+        assert_differentiable_curriculum_integrity(dup)
 
     blank_count = dict(registry)
     blank_count["blank_entry_count"] = 1
     with pytest.raises(ValueError, match="blank_entry_count"):
-        assert_notebook_programme_product_integrity(blank_count)
+        assert_differentiable_curriculum_integrity(blank_count)
 
     count_mismatch = dict(registry)
     count_mismatch["notebook_count"] = 0
     with pytest.raises(ValueError, match="notebook_count"):
-        assert_notebook_programme_product_integrity(count_mismatch)
+        assert_differentiable_curriculum_integrity(count_mismatch)
+
+
+def test_integrity_rejects_stale_contract_metadata() -> None:
+    """Reject stale schemas and altered claim boundaries without aliases."""
+    registry = build_differentiable_curriculum_registry()
+    stale_schema = dict(registry)
+    stale_schema["schema"] = "notebook_programme_product.v1"
+    with pytest.raises(ValueError, match="schema"):
+        assert_differentiable_curriculum_integrity(stale_schema)
+
+    altered_claim = dict(registry)
+    altered_claim["claim_boundary"] = "broader claim"
+    with pytest.raises(ValueError, match="claim boundary"):
+        assert_differentiable_curriculum_integrity(altered_claim)
 
 
 def test_module_exports() -> None:
     """Keep every documented notebook product entry point public."""
-    assert "materialise_curriculum_probe" in notebook_programme_product.__all__
-    assert "list_curriculum_notebook_ids" in notebook_programme_product.__all__
-    assert "decide_notebook_programme_path" in notebook_programme_product.__all__
+    assert "materialise_curriculum_probe" in curriculum.__all__
+    assert "list_curriculum_notebook_ids" in curriculum.__all__
+    assert "decide_differentiable_curriculum_path" in curriculum.__all__
 
 
 def test_row_decision_probe_validation() -> None:
@@ -310,7 +320,7 @@ def test_row_decision_probe_validation() -> None:
             reason="r",
             blockers=("",),
         )
-    assert decide_notebook_programme_path().to_dict()["allowed"] is True
+    assert decide_differentiable_curriculum_path().to_dict()["allowed"] is True
 
     with pytest.raises(ValueError, match="notebook_ids must be non-empty"):
         MaterialisedCurriculumProbe(
@@ -373,7 +383,7 @@ def test_probe_refused_when_path_blocked(monkeypatch: pytest.MonkeyPatch) -> Non
             blockers=("forced",),
         )
 
-    monkeypatch.setattr(notebook_programme_product, "decide_notebook_programme_path", _refuse)
+    monkeypatch.setattr(curriculum, "decide_differentiable_curriculum_path", _refuse)
     with pytest.raises(ValueError, match="refused"):
         materialise_curriculum_probe(repo_root=_REPO_ROOT)
 
@@ -403,9 +413,9 @@ def test_resolve_curriculum_directory_default_repo_root() -> None:
 
 def test_catalogue_map_rejects_empty(monkeypatch: pytest.MonkeyPatch) -> None:
     """``_catalogue_map`` refuses an empty curriculum catalogue."""
-    monkeypatch.setattr(notebook_programme_product, "_CANONICAL_CURRICULUM", ())
+    monkeypatch.setattr(curriculum, "_CANONICAL_CURRICULUM", ())
     with pytest.raises(RuntimeError, match="catalogue must be non-empty"):
-        notebook_programme_product._catalogue_map()
+        curriculum._catalogue_map()
 
 
 def test_catalogue_map_rejects_blank_notebook_id(
@@ -416,9 +426,9 @@ def test_catalogue_map_rejects_blank_notebook_id(
 
     blank = replace(get_curriculum_notebook(list_curriculum_notebook_ids()[0]))
     object.__setattr__(blank, "notebook_id", "  ")
-    monkeypatch.setattr(notebook_programme_product, "_CANONICAL_CURRICULUM", (blank,))
+    monkeypatch.setattr(curriculum, "_CANONICAL_CURRICULUM", (blank,))
     with pytest.raises(RuntimeError, match="blank notebook_id"):
-        notebook_programme_product._catalogue_map()
+        curriculum._catalogue_map()
 
 
 def test_catalogue_map_rejects_duplicate_notebook_id(
@@ -429,9 +439,9 @@ def test_catalogue_map_rejects_duplicate_notebook_id(
 
     good = replace(get_curriculum_notebook(list_curriculum_notebook_ids()[0]))
     monkeypatch.setattr(
-        notebook_programme_product,
+        curriculum,
         "_CANONICAL_CURRICULUM",
         (good, good),
     )
     with pytest.raises(RuntimeError, match="duplicate notebook_id"):
-        notebook_programme_product._catalogue_map()
+        curriculum._catalogue_map()

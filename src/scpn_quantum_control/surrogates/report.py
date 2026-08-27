@@ -45,7 +45,7 @@ def _canonicalise_evidence_numbers(value: object) -> object:
 
 @dataclass(frozen=True, slots=True)
 class SurrogateSupportRow:
-    """One executable or explicitly blocked BL-45 support-matrix row."""
+    """One executable or explicitly blocked surrogate support-matrix row."""
 
     surface: str
     status: Literal["local_exact_supported", "bounded_supported", "blocked_dependency"]
@@ -64,7 +64,7 @@ class SurrogateSupportRow:
 
 @dataclass(frozen=True, slots=True)
 class QuantumReservoirSurrogateEvidence:
-    """Complete deterministic BL-45 evidence bundle."""
+    """Complete deterministic quantum-reservoir and surrogate evidence bundle."""
 
     reservoir_certificates: tuple[ReservoirTrainingCertificate, ...]
     surrogate_model: GaussianRBFSurrogate
@@ -91,10 +91,12 @@ class QuantumReservoirSurrogateEvidence:
             "analytic_rbf_gradient_fidelity",
             "codesign_exact_validated_proposal",
             "multimodal_forecasting_adapter",
-            "notebook_programme",
+            "differentiable_notebook_curriculum",
         }
         if {row.surface for row in self.support_rows} != required_surfaces:
-            raise ValueError("support rows must cover the complete BL-45 bounded surface.")
+            raise ValueError(
+                "support rows must cover the complete bounded quantum-reservoir surface."
+            )
 
     def to_dict(self) -> dict[str, object]:
         """Return a canonical digest-bound evidence mapping."""
@@ -136,7 +138,7 @@ def render_quantum_reservoir_surrogate_markdown(
     """Render a concise human-readable view of the deterministic evidence."""
     payload = evidence.to_dict()
     lines = [
-        "# BL-45 Quantum Reservoir and Surrogate Evidence",
+        "# Quantum Reservoir and Surrogate Evidence",
         "",
         f"Schema: `{evidence.schema}`",
         f"Content digest: `{payload['content_digest']}`",
@@ -179,7 +181,7 @@ def render_quantum_reservoir_surrogate_markdown(
             f"`{cast(float, gradient_fidelity['max_absolute_error']):.9g}` against exact local "
             "central differences.",
             f"- Exact proposal validation: `{evidence.exact_validated_proposal.reason}`; "
-            "the BL-33 proposal remains unapplied.",
+            "the controller proposal remains unapplied.",
             "",
             "## Support matrix",
             "",

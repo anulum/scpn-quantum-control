@@ -105,10 +105,10 @@ surfaces.
 
 ## Bounded product status
 
-Shipped: S90.0 public API map · S90.1 journey catalogue · S90.2 badge fields
-(product catalogue) · S90.4 BL-97 stability pointers · docs.
+Shipped: public API map, journey catalogue, product-catalogue badge fields,
+stability pointers, and documentation.
 
-Open: S90.2 full badge CI job · S90.3 full ≤15 min notebook curriculum (BL-40) ·
-S90.4 mass deprecation application across all qnode exports.
+Open: full badge CI job, complete ≤15 minute notebook curriculum, and mass
+deprecation application across all QNode exports.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

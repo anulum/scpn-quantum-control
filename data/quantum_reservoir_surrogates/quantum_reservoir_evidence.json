@@ -1,6 +1,6 @@
 {
   "claim_boundary": "Synthetic local exact-statevector and classical-reference evidence only. No hardware QRC, provider execution, unseen-domain generalisation, closed-loop control, optimisation advantage, publication, or deployment claim.",
-  "content_digest": "9db8f66f5f930cc06b67e0a2a9cd04fdd77393f0f60a256efab6ee49da2244bc",
+  "content_digest": "e08bae2ba437f0ab4ab479ffc81d5afd1915e3feb86bcdf59b8018e14e166328",
   "exact_validated_proposal": {
     "accepted_by_exact_objective": true,
     "applied": false,
@@ -137,15 +137,15 @@
     },
     {
       "boundary": "No invented domain adapter or operational data.",
-      "evidence": "BL-37 multimodal schema is not implemented.",
+      "evidence": "The multimodal forecasting adapter is not implemented.",
       "status": "blocked_dependency",
       "surface": "multimodal_forecasting_adapter"
     },
     {
       "boundary": "No notebook is represented as complete.",
-      "evidence": "BL-40 notebook stretch is outside the BL-45 product.",
+      "evidence": "Differentiable notebook curriculum expansion is outside the quantum-reservoir surrogate evidence scope.",
       "status": "blocked_dependency",
-      "surface": "notebook_programme"
+      "surface": "differentiable_notebook_curriculum"
     }
   ],
   "surrogate_model": {

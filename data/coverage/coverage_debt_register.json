@@ -1321,7 +1321,7 @@
       "covered_lines": null,
       "line_percent": null,
       "missing_lines": null,
-      "path": "src/scpn_quantum_control/notebook_programme_product.py",
+      "path": "src/scpn_quantum_control/differentiable_notebook_curriculum.py",
       "priority": "P2_unmeasured",
       "priority_reason": "No current executable-line baseline; refresh from remote CI.",
       "status": "unmeasured_since_baseline",

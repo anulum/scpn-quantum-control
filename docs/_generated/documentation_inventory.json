@@ -1,6 +1,6 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
-  "content_digest": "23983caffef56b00792ae5df4dbb43f9fe8fe026dcf45b4ba37a0f41aea00fba",
+  "content_digest": "43032a3c0cf40afe03cd56ef36d50fa0eecd89d4517f44b8239c3ad79fa00efd",
   "counts": {
     "module_docstring_gaps": 0,
     "notebooks": 109,

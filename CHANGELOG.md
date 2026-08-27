@@ -320,12 +320,11 @@ control, or broad quantum-advantage claim is promoted by this release.
   invent-green live QPU streaming or always-on SaaS. Docs:
   `docs/visualisation_dashboard_product.md`. The bounded facade delegates only
   to local fixture and ambient capability-status surfaces.
-- 2026-07-24 — Differentiable notebook programme product (BL-40):
-  `scpn_quantum_control.notebook_programme_product` productises the core-six
+- 2026-07-24 — Differentiable notebook curriculum:
+  `scpn_quantum_control.differentiable_notebook_curriculum` exposes the core-six
   onboarding curriculum under `notebooks/differentiable/` with versioned
   manifest, hardware_execution=false honesty, and refuse invent-green live QPU
-  notebooks or full archive conversion. Docs: `docs/notebook_programme_product.md`.
-  Eleventh P1 A-product after BL-90/91/81/49/96/92/93/64/39/41.
+  notebooks or full archive conversion. Docs: `docs/differentiable_notebook_curriculum.md`.
 - 2026-07-24 — PennyLane + Qiskit migration guides product:
   `scpn_quantum_control.migration_guides_product` productises concept-map
   rows, materialised local PL→Phase-QNode round-trip and Qiskit Statevector

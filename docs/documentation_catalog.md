@@ -170,13 +170,13 @@ are still built, link-checked, searchable, and public.
 
 | Page | Surface | Purpose |
 |---|---|---|
+| [Differentiable notebook curriculum](differentiable_notebook_curriculum.md) | catalog | Versioned **core-six onboarding curriculum** under notebooks/differentiable/ with mandatory hardware_execution: false honesty. |
 | [Differentiable Tutorials](differentiable_tutorials.md) | primary nav | This page is the practical differentiable-programming path. It connects the physics object, support diagnostics, framework boundaries, compiler report, and training evidence without requiring provider credentials or hardware access. |
 | [Example Gallery](examples_gallery.md) | primary nav | Thirty task-shaped entry points, ordered from the fastest no-credential run to hardware-evidence, integration, and release-readiness surfaces. Each entry states what it does, when to reach for it, and the fastest safe command. Every command |
 | [Hardware Execution Guide](hardware_guide.md) | primary nav | The hardware package provides the full stack from circuit compilation to QPU execution, noise modelling, classical reference computation, and multi-backend support. 17 modules (April 2026: added qubit_mapper.py for DynQ topology-agnostic pl |
 | [PennyLane + Qiskit migration guides product](migration_guides_product.md) | catalog | Versioned **adoption-path product** mapping PL/Qiskit concepts to SCPN APIs with materialised local round-trips and honest Runtime boundaries. |
 | [QNN, QGNN, and QSNN convergence examples](ml_convergence_examples.md) | primary nav | scpn_quantum_control.ml_examples provides one deterministic, simulator-only training example for each of the repository's QNN, QGNN, and QSNN model families. The suite composes the existing trainers; it does not introduce a second optimisat |
 | [Complete notebook catalog](notebook_catalog.md) | primary nav | This page indexes every committed notebook without rewriting notebook cells. Use the curated interactive notebook guide for the recommended learning sequence and this catalog when you need a specific experiment. |
-| [Differentiable notebook programme product](notebook_programme_product.md) | catalog | Versioned **core-six onboarding curriculum** under notebooks/differentiable/ with mandatory hardware_execution: false honesty. |
 | [Interactive Notebooks](notebooks.md) | primary nav | *109 tracked Jupyter notebooks covering the full journey from basic Kuramoto dynamics to frontier research. Notebooks 01-13 cover core quantum simulation. Notebooks 14-47 document the FIM (Fisher Information Metric) strange loop investigati |
 | [Tutorials and Learning Path](tutorials.md) | primary nav | This page guides you from your first simulation to publishing-quality research results. Each section builds on the previous, progressing from conceptual understanding through hands-on computation to original research. |
 
