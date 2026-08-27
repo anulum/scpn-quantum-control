@@ -1031,6 +1031,8 @@ def test_main_uses_coverage_pytest_by_default(
         "neural-operator-baseline-product exact coverage threshold",
         "entanglement-sync-evidence focused coverage",
         "entanglement-sync-evidence exact coverage threshold",
+        "enaqt-evidence focused coverage",
+        "enaqt-evidence exact coverage threshold",
         "bench-cli focused coverage",
         "bench-cli exact coverage threshold",
         "identity-binding-spec focused coverage",

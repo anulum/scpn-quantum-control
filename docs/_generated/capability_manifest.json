@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1213
+    "test_files": 1214
   },
   "documentation": {
     "examples": [
@@ -8449,6 +8449,7 @@
       "tests/test_eeg_classification_validation.py",
       "tests/test_enaqt.py",
       "tests/test_enaqt_evidence.py",
+      "tests/test_enaqt_evidence_quality_gate.py",
       "tests/test_enforce_main_branch_policy.py",
       "tests/test_entanglement_enhanced_sync.py",
       "tests/test_entanglement_entropy.py",

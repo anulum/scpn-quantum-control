@@ -1,4 +1,4 @@
-# BL-87 ENAQT bounded transport evidence
+# ENAQT bounded transport evidence
 
 - Schema: `enaqt_transport_evidence.v1`
 - Functional passed: `true`

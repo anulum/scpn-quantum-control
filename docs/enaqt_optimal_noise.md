@@ -2,7 +2,7 @@
 
 ## Abstract
 
-BL-87 provides a bounded local simulator for environment-assisted quantum
+This module provides a bounded local simulator for environment-assisted quantum
 transport (ENAQT). It scans a finite set of local dephasing rates and maximises
 the population irreversibly transferred into a target sink by a fixed time.
 The committed evidence contains one disordered-chain intermediate optimum and
@@ -104,9 +104,9 @@ Hamiltonian. Every row is replayed and digest-bound in
 
 ## Conclusion and control boundary
 
-BL-87 closes a local simulator and evidence lane. It does not expose a noise
-setpoint controller: an optimum depends on the network, horizon, sink/loss
-rates, dephasing model, and sampled grid. Using a simulated γ* to alter
+The implementation closes a local simulator and evidence lane. It does not
+expose a noise setpoint controller: an optimum depends on the network, horizon,
+sink/loss rates, dephasing model, and sampled grid. Using a simulated γ* to alter
 a provider, QPU, laboratory noise source, biological system, or plant requires
 a separately authorised and calibrated control protocol. No such protocol is
 implemented here.

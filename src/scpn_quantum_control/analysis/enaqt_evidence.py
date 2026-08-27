@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — ENAQT ENAQT evidence
-"""Deterministic, digest-bound evidence for the bounded ENAQT ENAQT scan."""
+# SCPN Quantum Control — bounded ENAQT evidence
+"""Deterministic, digest-bound evidence for a bounded ENAQT scan."""
 
 from __future__ import annotations
 
@@ -234,7 +234,7 @@ def enaqt_evidence_payload() -> dict[str, object]:
 
 
 def validate_enaqt_evidence(payload: object) -> tuple[str, ...]:
-    """Return fail-closed findings for one BL-87 evidence payload."""
+    """Return fail-closed findings for one bounded ENAQT evidence payload."""
     if not isinstance(payload, dict):
         return ("payload must be a JSON object",)
     data = cast(dict[str, object], payload)
@@ -296,10 +296,10 @@ def validate_enaqt_evidence(payload: object) -> tuple[str, ...]:
 
 
 def render_enaqt_evidence_markdown(payload: Mapping[str, object]) -> str:
-    """Render a compact human-readable view of validated BL-87 evidence."""
+    """Render a compact human-readable view of validated ENAQT evidence."""
     scenarios = cast(list[dict[str, object]], payload["scenarios"])
     lines = [
-        "# BL-87 ENAQT bounded transport evidence",
+        "# ENAQT bounded transport evidence",
         "",
         f"- Schema: `{payload['schema']}`",
         f"- Functional passed: `{str(payload['functional_passed']).lower()}`",
@@ -350,11 +350,11 @@ def write_enaqt_evidence(
     *,
     payload: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
-    """Validate and atomically write generated or supplied BL-87 evidence."""
+    """Validate and atomically write generated or supplied ENAQT evidence."""
     selected = dict(payload) if payload is not None else enaqt_evidence_payload()
     findings = validate_enaqt_evidence(selected)
     if findings:
-        raise RuntimeError("invalid BL-87 evidence: " + "; ".join(findings))
+        raise RuntimeError("invalid ENAQT evidence: " + "; ".join(findings))
     json_path.parent.mkdir(parents=True, exist_ok=True)
     markdown_path.parent.mkdir(parents=True, exist_ok=True)
     _atomic_write(json_path, json.dumps(selected, indent=2, sort_keys=True) + "\n")
@@ -377,7 +377,7 @@ def _as_float(value: object, name: str) -> float:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Run the BL-87 evidence CLI."""
+    """Run the bounded ENAQT evidence CLI."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--json-output",

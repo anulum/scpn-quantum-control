@@ -193,7 +193,7 @@ Bounded environment-assisted quantum transport (ENAQT) simulation.
 
 ### `scpn_quantum_control.analysis.enaqt_evidence`
 
-Deterministic, digest-bound evidence for the bounded ENAQT ENAQT scan.
+Deterministic, digest-bound evidence for a bounded ENAQT scan.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/analysis/enaqt_evidence.py) · Public symbols: **8**
 

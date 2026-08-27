@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — ENAQT ENAQT evidence tests
+# SCPN Quantum Control — bounded ENAQT evidence tests
 """Evidence contracts, replay, CLI, and negative tests for ENAQT."""
 
 from __future__ import annotations
@@ -122,7 +122,9 @@ def test_writer_and_cli_emit_valid_atomic_files(
     written = write_enaqt_evidence(json_path, markdown_path, payload=payload)
     assert written == payload
     assert json.loads(json_path.read_text(encoding="utf-8")) == payload
-    assert markdown_path.read_text(encoding="utf-8").startswith("# BL-87")
+    assert markdown_path.read_text(encoding="utf-8").startswith(
+        "# ENAQT bounded transport evidence"
+    )
     assert not json_path.with_suffix(".json.tmp").exists()
 
     generated_json = tmp_path / "generated.json"
@@ -254,7 +256,7 @@ def test_writer_rejects_invalid_supplied_payload(
     """Refuse to write evidence whose digest or boundary was altered."""
     changed = copy.deepcopy(payload)
     changed["bounded_claim_ready"] = False
-    with pytest.raises(RuntimeError, match="invalid BL-87 evidence"):
+    with pytest.raises(RuntimeError, match="invalid ENAQT evidence"):
         write_enaqt_evidence(tmp_path / "bad.json", tmp_path / "bad.md", payload=changed)
 
 

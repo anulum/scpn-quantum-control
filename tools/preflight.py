@@ -74,6 +74,7 @@ if TYPE_CHECKING:
         differentiable_notebook_curriculum_quality_gates as _differentiable_notebook_curriculum_quality_gates,
     )
     from tools import differentiable_quality_gates as _differentiable_quality_gates
+    from tools import enaqt_evidence_quality_gates as _enaqt_evidence_quality_gates
     from tools import (
         entanglement_sync_evidence_quality_gates as _entanglement_sync_evidence_quality_gates,
     )
@@ -226,6 +227,7 @@ else:
     _entanglement_sync_evidence_quality_gates = import_module(
         "tools.entanglement_sync_evidence_quality_gates"
     )
+    _enaqt_evidence_quality_gates = import_module("tools.enaqt_evidence_quality_gates")
     _bench_cli_quality_gates = import_module("tools.bench_cli_quality_gates")
     _codesign_components_quality_gates = import_module("tools.codesign_components_quality_gates")
     _synchronisation_witness_quality_gates = import_module(
@@ -652,6 +654,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_whole_program_ad_product_quality_gates.build_static_quality_gates(_PY),
     *_neural_operator_baseline_product_quality_gates.build_static_quality_gates(_PY),
     *_entanglement_sync_evidence_quality_gates.build_static_quality_gates(_PY),
+    *_enaqt_evidence_quality_gates.build_static_quality_gates(_PY),
     *_bench_cli_quality_gates.build_static_quality_gates(_PY),
     *_identity_binding_spec_quality_gates.build_static_quality_gates(_PY),
     *_ssgf_geometry_gradient_quality_gates.build_static_quality_gates(_PY),
@@ -1119,6 +1122,7 @@ NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_GATES = (
 ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_GATES = (
     _entanglement_sync_evidence_quality_gates.build_coverage_gates(_PY)
 )
+ENAQT_EVIDENCE_COVERAGE_GATES = _enaqt_evidence_quality_gates.build_coverage_gates(_PY)
 BENCH_CLI_COVERAGE_GATES = _bench_cli_quality_gates.build_coverage_gates(_PY)
 IDENTITY_BINDING_SPEC_COVERAGE_GATES = _identity_binding_spec_quality_gates.build_coverage_gates(
     _PY
@@ -1454,6 +1458,7 @@ def main() -> int:
             gates.extend(WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_GATES)
             gates.extend(NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_GATES)
             gates.extend(ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_GATES)
+            gates.extend(ENAQT_EVIDENCE_COVERAGE_GATES)
             gates.extend(BENCH_CLI_COVERAGE_GATES)
             gates.extend(IDENTITY_BINDING_SPEC_COVERAGE_GATES)
             gates.extend(SSGF_GEOMETRY_GRADIENT_COVERAGE_GATES)

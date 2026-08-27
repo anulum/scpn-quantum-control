@@ -671,7 +671,7 @@ analysis/                                  ← 67 modules: probes of the sync tr
 ├── monte_carlo_xy.py                          Classical XY MC (Rust-accelerated)
 ├── vortex_binding.py                          Kosterlitz RG flow
 ├── enaqt.py                                   Site-basis Lindblad transport scan
-└── enaqt_evidence.py                          BL-87 replay + digest-bound evidence
+└── enaqt_evidence.py                          bounded replay + digest-bound evidence
 
 phase/                                     ← 92 modules: time evolution + variational
 ├── xy_kuramoto.py                             Trotterised XY solver
