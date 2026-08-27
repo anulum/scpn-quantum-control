@@ -106,7 +106,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.phase.transform_nesting` | Fail-closed transform-nesting planner for local, tape, ML-adapter, vectorized, and hardware gradient routes. |
 | `scpn_quantum_control.phase.provider_gradient_audit` | Executable provider-gradient readiness audit for deterministic, finite-shot, multi-frequency, hardware-blocked, unknown-backend, and malformed-sample routes. |
 | `scpn_quantum_control.phase.provider_hardware_safety_audit` | Aggregate differentiable provider/hardware safety gate over provider-gradient readiness, provider hardware-gradient preparation, provider QNode transforms, QNode tape records, and hardware-gradient campaign readiness. It verifies zero hardware execution and zero hardware-gradient production, then keeps promotion blocked until a freshness-bounded `DifferentiableProviderHardwareEvidenceChain` binds live-ticket, provider/backend/job/circuit metadata, allowlist, shot budget, raw-count replay, calibration snapshot, statevector comparison, and isolated benchmark artefacts into one validated chain. |
-| `scpn_quantum_control.phase.gradient_tape` | Context-managed recording of supported deterministic and finite-shot quantum-gradient evaluations, replay fingerprints, mutation guards, nested/persistent tape contract checks, and DP-003 fail-closed audit evidence. |
+| `scpn_quantum_control.phase.gradient_tape` | Context-managed recording of supported deterministic and finite-shot quantum-gradient evaluations, replay fingerprints, mutation guards, nested/persistent tape contract checks, and fail-closed audit evidence. |
 | `scpn_quantum_control.phase.qnode_tape` | QNode-style differentiable tape records for supported phase objectives, seeded finite-shot replay with serialized plus/minus shifted-sample provenance, and provider-boundary routes that fail closed before hardware submission. |
 | `scpn_quantum_control.phase.qnode_circuit_contracts` | NumPy/stdlib-only shared declaration leaf for the 21 Phase-QNode circuit, observable, support, execution, gradient, metric, and Fisher classes plus registered gate/observable/template/decomposition/noise constants and constructor validation. The executable facade and phase package re-export the same public class objects. |
 | `scpn_quantum_control.phase.qnode_circuit_builders` | One-way construction leaf for registered gate/observable/template/decomposition/noise vocabulary, sparse Ising-chain Hamiltonians, exact controlled-gate operation-list decompositions, and registered GHZ/hardware-efficient multi-qubit templates. It depends only on the shared contract leaf. |
@@ -1883,7 +1883,7 @@ hardware routes fail closed through the same backend planner. Deterministic
 tape records copy watched parameter vectors, attach parameter and replay
 fingerprints, reject objectives that mutate replay inputs, and fail closed when
 the same parameter vector produces unstable values. Use
-`run_gradient_tape_contract_audit()` to verify the DP-003 hardening cycles for
+`run_gradient_tape_contract_audit()` to verify the contract checks for
 independent nested tapes, same-tape re-entry rejection, persistent clear/reuse,
 external alias snapshots, objective mutation, and control-flow replay drift.
 

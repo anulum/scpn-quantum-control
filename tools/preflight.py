@@ -91,6 +91,7 @@ if TYPE_CHECKING:
         geometric_control_product_quality_gates as _geometric_control_product_quality_gates,
     )
     from tools import governed_route_matrix_quality_gates as _governed_route_matrix_quality_gates
+    from tools import gradient_tape_quality_gates as _gradient_tape_quality_gates
     from tools import hardware_safe_execution_quality_gates as _hardware_safe_quality_gates
     from tools import (
         hermetic_reproduction_kit_quality_gates as _hermetic_reproduction_kit_quality_gates,
@@ -234,6 +235,7 @@ else:
     _fault_tolerant_resource_product_quality_gates = import_module(
         "tools.fault_tolerant_resource_product_quality_gates"
     )
+    _gradient_tape_quality_gates = import_module("tools.gradient_tape_quality_gates")
     _entanglement_sync_evidence_quality_gates = import_module(
         "tools.entanglement_sync_evidence_quality_gates"
     )
@@ -674,6 +676,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_neural_operator_cost_model_quality_gates.build_static_quality_gates(_PY),
     *_governed_route_matrix_quality_gates.build_static_quality_gates(_PY),
     *_attested_result_pack_quality_gates.build_static_quality_gates(_PY),
+    *_gradient_tape_quality_gates.build_static_quality_gates(_PY),
     *_fault_tolerant_resource_product_quality_gates.build_static_quality_gates(_PY),
     *_phase_qnode_product_quality_gates.build_static_quality_gates(_PY),
     *_phase_trainability_quality_gates.build_static_quality_gates(_PY),
@@ -1150,6 +1153,7 @@ GOVERNED_ROUTE_MATRIX_COVERAGE_GATES = _governed_route_matrix_quality_gates.buil
     _PY
 )
 ATTESTED_RESULT_PACK_COVERAGE_GATES = _attested_result_pack_quality_gates.build_coverage_gates(_PY)
+GRADIENT_TAPE_COVERAGE_GATES = _gradient_tape_quality_gates.build_coverage_gates(_PY)
 FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_GATES = (
     _fault_tolerant_resource_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -1486,6 +1490,7 @@ def main() -> int:
             gates.extend(NEURAL_OPERATOR_COST_MODEL_COVERAGE_GATES)
             gates.extend(GOVERNED_ROUTE_MATRIX_COVERAGE_GATES)
             gates.extend(ATTESTED_RESULT_PACK_COVERAGE_GATES)
+            gates.extend(GRADIENT_TAPE_COVERAGE_GATES)
             gates.extend(FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_PRODUCT_COVERAGE_GATES)
             gates.extend(PHASE_TRAINABILITY_COVERAGE_GATES)

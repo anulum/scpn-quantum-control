@@ -1051,6 +1051,8 @@ def test_main_uses_coverage_pytest_by_default(
         "governed-route-matrix exact coverage threshold",
         "attested-result-pack focused coverage",
         "attested-result-pack exact coverage threshold",
+        "gradient-tape focused coverage",
+        "gradient-tape exact coverage threshold",
         "fault-tolerant-resource-product focused coverage",
         "fault-tolerant-resource-product exact coverage threshold",
         "phase-qnode-product focused coverage",

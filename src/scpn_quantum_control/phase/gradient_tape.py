@@ -36,7 +36,7 @@ TapeContractStatus = Literal["supported", "fail_closed"]
 
 
 GRADIENT_TAPE_CONTRACT_CLAIM_BOUNDARY = (
-    "DP-003 gradient-tape contract audit only; supported records are local phase "
+    "Phase gradient-tape contract audit only; supported records are local phase "
     "parameter-shift or materialised finite-shot replay, while arbitrary Python "
     "mutation semantics, provider execution, hardware gradients, and benchmark "
     "promotion remain outside this tape contract"
@@ -125,7 +125,7 @@ class TapeGradientRecord:
 
 @dataclass(frozen=True)
 class GradientTapeContractCheck:
-    """One DP-003 gradient-tape contract check.
+    """One phase gradient-tape contract check.
 
     Parameters
     ----------
@@ -139,6 +139,7 @@ class GradientTapeContractCheck:
     blocked_reason
         Rejection reason for fail-closed checks, or ``None`` for supported
         checks.
+
     """
 
     name: str
@@ -164,7 +165,7 @@ class GradientTapeContractCheck:
 
 @dataclass(frozen=True)
 class GradientTapeContractAuditResult:
-    """Executable DP-003 contract audit for the phase gradient tape.
+    """Executable contract audit for the phase gradient tape.
 
     Parameters
     ----------
@@ -174,6 +175,7 @@ class GradientTapeContractAuditResult:
         Whether every expected contract check produced evidence.
     claim_boundary
         Boundary text limiting the audit to local tape replay semantics.
+
     """
 
     checks: tuple[GradientTapeContractCheck, ...]
@@ -444,6 +446,7 @@ class QuantumGradientTape:
         -------
         TapeGradientRecord
             Tape record containing the stochastic gradient result.
+
         """
         self._require_active()
         record_name = self._validate_name(name)
@@ -530,13 +533,14 @@ class QuantumGradientTape:
 
 
 def run_gradient_tape_contract_audit() -> GradientTapeContractAuditResult:
-    """Run executable DP-003 checks for the phase gradient tape contract.
+    """Run executable checks for the phase gradient-tape contract.
 
     Returns
     -------
     GradientTapeContractAuditResult
         Ordered evidence for nested tape isolation, persistent reuse,
         mutation/alias protection, and replay-stability fail-closed behaviour.
+
     """
     checks = [
         _audit_independent_nested_tapes(),
