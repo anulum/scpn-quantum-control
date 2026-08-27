@@ -28,7 +28,7 @@ COUPLING_RECOVERY_EVIDENCE_SCHEMA = "scpn_qc_coupling_recovery_evidence_v1"
 
 @dataclass(frozen=True)
 class CouplingRecoveryEvidenceArtifact:
-    """Written BL-17 coupling-recovery artifact metadata."""
+    """Metadata for written bounded coupling-recovery artifacts."""
 
     artifact_id: str
     json_path: Path
@@ -56,7 +56,7 @@ def coupling_recovery_evidence_payload(
     *,
     artifact_id: str = "coupling-recovery-evidence-local",
 ) -> dict[str, Any]:
-    """Return the BL-17 coupling-recovery evidence payload."""
+    """Return a bounded coupling-recovery evidence payload."""
     normalized_id = artifact_id.strip()
     if not normalized_id:
         raise ValueError("artifact_id must be non-empty")
@@ -108,7 +108,7 @@ def coupling_recovery_evidence_payload(
 
 
 def render_coupling_recovery_evidence_markdown(payload: dict[str, Any]) -> str:
-    """Render the BL-17 payload as bounded Markdown evidence."""
+    """Render the bounded payload as Markdown evidence."""
     rows = payload["rows"]
     boundary_rows = payload["boundary_rows"]
     lines = [
@@ -167,7 +167,7 @@ def write_coupling_recovery_evidence_artifact(
     suite: CouplingRecoverySuiteResult | None = None,
     artifact_id: str = "coupling-recovery-evidence-local",
 ) -> CouplingRecoveryEvidenceArtifact:
-    """Write JSON and Markdown BL-17 coupling-recovery artefacts."""
+    """Write bounded coupling-recovery JSON and Markdown artifacts."""
     json_destination = Path(output_path)
     if json_destination.suffix.lower() != ".json":
         raise ValueError("output_path must end with .json")

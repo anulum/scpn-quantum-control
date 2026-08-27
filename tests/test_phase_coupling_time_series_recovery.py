@@ -41,11 +41,12 @@ from scpn_quantum_control.phase.coupling_time_series_recovery import (
 
 @pytest.fixture(scope="module")
 def ground_truth() -> NDArray[np.float64]:
-    """Return the default BL-17 ground-truth coupling matrix."""
+    """Return the default known-ground-truth coupling matrix."""
     return default_coupling_recovery_cases()[0].true_couplings
 
 
 def test_default_coupling_recovery_suite_passes() -> None:
+    """Accept every deterministic default case within its tolerance."""
     suite = run_coupling_recovery_suite()
 
     assert suite.passed
@@ -59,6 +60,7 @@ def test_default_coupling_recovery_suite_passes() -> None:
 
 
 def test_coupling_recovery_suite_serializes_records_and_boundaries() -> None:
+    """Serialize executable records and fail-closed boundary rows."""
     payload = run_coupling_recovery_suite().to_dict()
 
     assert payload["passed"] is True
@@ -74,6 +76,7 @@ def test_coupling_recovery_suite_serializes_records_and_boundaries() -> None:
 def test_kuramoto_clean_time_series_recovers_ground_truth(
     ground_truth: NDArray[np.float64],
 ) -> None:
+    """Recover clean Kuramoto couplings from the public time-series API."""
     case = default_coupling_recovery_cases()[0]
     phases = simulate_kuramoto_phase_time_series(
         ground_truth,
@@ -99,6 +102,7 @@ def test_kuramoto_clean_time_series_recovers_ground_truth(
 
 
 def test_noisy_missing_kuramoto_and_xy_cases_pass() -> None:
+    """Recover both model families despite bounded noise and missing data."""
     records = run_coupling_recovery_suite().records
 
     noisy_kuramoto = next(
@@ -116,6 +120,7 @@ def test_noisy_missing_kuramoto_and_xy_cases_pass() -> None:
 def test_xy_pair_energy_recovery_supports_edge_subsets(
     ground_truth: NDArray[np.float64],
 ) -> None:
+    """Recover a selected XY edge subset and ignore invalid time rows."""
     case = default_coupling_recovery_cases()[2]
     phases = simulate_kuramoto_phase_time_series(
         ground_truth,
@@ -152,6 +157,7 @@ def test_xy_pair_energy_recovery_supports_edge_subsets(
 
 
 def test_noise_and_missing_injection_is_deterministic() -> None:
+    """Replay seeded noise and missing-value masks exactly."""
     values = np.arange(12, dtype=np.float64).reshape(3, 4)
 
     first = inject_time_series_noise_and_missing(
@@ -173,6 +179,7 @@ def test_noise_and_missing_injection_is_deterministic() -> None:
 
 
 def test_public_case_and_record_to_dict_contract() -> None:
+    """Expose stable JSON-ready case and record fields."""
     case = default_coupling_recovery_cases()[0]
     record = run_coupling_recovery_suite(cases=(case,)).records[0]
 
@@ -183,6 +190,7 @@ def test_public_case_and_record_to_dict_contract() -> None:
 
 
 def test_boundary_row_contracts() -> None:
+    """Serialize valid hard gaps and reject malformed boundary metadata."""
     row = CouplingRecoveryBoundaryRow(
         boundary_id="manual-boundary",
         status="hard_gap",
@@ -280,6 +288,7 @@ def _record(
 
 
 def test_case_validation_rejects_bad_inputs() -> None:
+    """Reject invalid case identifiers, arrays, and numerical controls."""
     with pytest.raises(ValueError, match="case_id"):
         _case(case_id="")
     with pytest.raises(ValueError, match="family"):
@@ -336,6 +345,7 @@ def test_case_validation_rejects_bad_inputs() -> None:
 def test_recovery_record_validation_rejects_bad_inputs(
     ground_truth: NDArray[np.float64],
 ) -> None:
+    """Reject inconsistent recovery matrices, metrics, and metadata."""
     valid = run_coupling_recovery_suite().records[0]
     with pytest.raises(ValueError, match="case_id"):
         _record(valid, case_id="")
@@ -368,6 +378,7 @@ def test_recovery_record_validation_rejects_bad_inputs(
 
 
 def test_suite_validation_rejects_empty_records_and_boundaries() -> None:
+    """Require records, boundary rows, and non-empty suite metadata."""
     record = run_coupling_recovery_suite().records[0]
     boundary = coupling_recovery_boundary_rows()[0]
 
@@ -388,6 +399,7 @@ def test_suite_validation_rejects_empty_records_and_boundaries() -> None:
 def test_simulators_and_recovery_reject_invalid_shapes(
     ground_truth: NDArray[np.float64],
 ) -> None:
+    """Reject invalid simulator shapes and injection controls."""
     case = default_coupling_recovery_cases()[0]
     phases = simulate_kuramoto_phase_time_series(
         ground_truth,
@@ -434,6 +446,7 @@ def test_simulators_and_recovery_reject_invalid_shapes(
 def test_recovery_rejects_invalid_metadata_and_missing_rows(
     ground_truth: NDArray[np.float64],
 ) -> None:
+    """Reject invalid recovery metadata, edges, and unusable observations."""
     case = default_coupling_recovery_cases()[0]
     phases = simulate_kuramoto_phase_time_series(
         ground_truth,
@@ -522,6 +535,7 @@ def test_recovery_rejects_invalid_metadata_and_missing_rows(
 
 
 def test_internal_fail_closed_helpers_cover_unreachable_branches() -> None:
+    """Keep defensive normalization and ridge-solver failures closed."""
     with pytest.raises(ValueError, match="n_nodes"):
         _normalise_edges(None, 1)
     with pytest.raises(ValueError, match="dimensions"):

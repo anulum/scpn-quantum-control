@@ -31,7 +31,7 @@ COUPLING_RECOVERY_CLAIM_BOUNDARY: Final[str] = (
     "with known ground truth; not hardware Hamiltonian learning, provider "
     "execution, isolated timing, or arbitrary partial-observation inference"
 )
-"""Claim boundary attached to BL-17 coupling-recovery records."""
+"""Claim boundary attached to bounded coupling-recovery records."""
 
 
 def _as_finite_scalar(name: str, value: object) -> float:
@@ -135,6 +135,7 @@ class CouplingRecoveryCase:
         Seed used for the noise/missing mask.
     tolerance:
         Maximum allowed absolute coupling error for the case.
+
     """
 
     case_id: str
@@ -150,6 +151,7 @@ class CouplingRecoveryCase:
     tolerance: float
 
     def __post_init__(self) -> None:
+        """Validate and normalize the synthetic recovery case."""
         if not self.case_id:
             raise ValueError("case_id must be non-empty")
         if self.family not in ("kuramoto_phase", "xy_pair_energy"):
@@ -221,6 +223,7 @@ class CouplingRecoveryRecord:
     claim_boundary: str = COUPLING_RECOVERY_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate and normalize the recovery certificate."""
         if not self.case_id:
             raise ValueError("case_id must be non-empty")
         if self.family not in ("kuramoto_phase", "xy_pair_energy"):
@@ -297,6 +300,7 @@ class CouplingRecoveryBoundaryRow:
     claim_boundary: str = COUPLING_RECOVERY_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate the fail-closed boundary row."""
         if not self.boundary_id:
             raise ValueError("boundary_id must be non-empty")
         if self.status != "hard_gap":
@@ -318,7 +322,7 @@ class CouplingRecoveryBoundaryRow:
 
 @dataclass(frozen=True)
 class CouplingRecoverySuiteResult:
-    """Suite result for BL-17 coupling recovery evidence."""
+    """Result of the bounded coupling-recovery evidence suite."""
 
     records: tuple[CouplingRecoveryRecord, ...]
     boundary_rows: tuple[CouplingRecoveryBoundaryRow, ...]
@@ -326,6 +330,7 @@ class CouplingRecoverySuiteResult:
     claim_boundary: str = COUPLING_RECOVERY_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate the evidence rows and suite metadata."""
         if not self.records:
             raise ValueError("records must be non-empty")
         if not self.boundary_rows:
@@ -637,7 +642,7 @@ def recover_xy_couplings_from_pair_energy_series(
 
 
 def coupling_recovery_boundary_rows() -> tuple[CouplingRecoveryBoundaryRow, ...]:
-    """Return fail-closed BL-17 boundary rows."""
+    """Return fail-closed boundaries for unsupported recovery routes."""
     return (
         CouplingRecoveryBoundaryRow(
             boundary_id="partial_observation_inference_boundary",
@@ -659,7 +664,7 @@ def coupling_recovery_boundary_rows() -> tuple[CouplingRecoveryBoundaryRow, ...]
 
 
 def default_coupling_recovery_cases() -> tuple[CouplingRecoveryCase, ...]:
-    """Return deterministic BL-17 recovery cases."""
+    """Return deterministic known-ground-truth recovery cases."""
     true = np.array(
         [
             [0.0, 0.42, 0.18],
@@ -759,7 +764,7 @@ def _run_case(case: CouplingRecoveryCase) -> CouplingRecoveryRecord:
 def run_coupling_recovery_suite(
     cases: Sequence[CouplingRecoveryCase] | None = None,
 ) -> CouplingRecoverySuiteResult:
-    """Run the deterministic BL-17 coupling-recovery evidence suite."""
+    """Run the deterministic bounded coupling-recovery evidence suite."""
     selected_cases = tuple(default_coupling_recovery_cases() if cases is None else cases)
     if not selected_cases:
         raise ValueError("cases must be non-empty")

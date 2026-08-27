@@ -1466,7 +1466,7 @@ adjoint Lindblad sensitivities, unbiased stochastic-gradient estimators,
 provider execution, hardware gradients, and isolated timing promotion remain
 hard-gap boundary rows.
 
-For bounded coupling recovery from time series, use the BL-17 recovery suite:
+For bounded coupling recovery from time series, use the deterministic recovery suite:
 
 ```python
 from scpn_quantum_control.phase import run_coupling_recovery_suite

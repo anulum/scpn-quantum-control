@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Coupling-Recovery Evidence Tests
-"""Tests for coupling-recovery coupling-recovery artifact writing."""
+"""Tests for bounded coupling-recovery artifact writing."""
 
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ from scpn_quantum_control.phase import run_coupling_recovery_suite
 
 @pytest.fixture(scope="module")
 def payload() -> dict[str, Any]:
-    """Build one real BL-17 evidence payload through the public facade."""
+    """Build one real bounded evidence payload through the public facade."""
     suite = run_coupling_recovery_suite()
     return coupling_recovery_evidence_payload(suite, artifact_id="pytest-bl17")
 
@@ -34,6 +34,7 @@ def payload() -> dict[str, Any]:
 def test_coupling_recovery_payload_carries_rows_and_boundaries(
     payload: dict[str, Any],
 ) -> None:
+    """Carry executable rows, boundaries, and conservative classifications."""
     assert payload["schema"] == COUPLING_RECOVERY_EVIDENCE_SCHEMA
     assert payload["artifact_id"] == "pytest-bl17"
     assert payload["artifact_date"] == "2026-07-09"
@@ -47,6 +48,7 @@ def test_coupling_recovery_payload_carries_rows_and_boundaries(
 
 
 def test_coupling_recovery_markdown_renders_evidence(payload: dict[str, Any]) -> None:
+    """Render executable and boundary rows in the Markdown report."""
     markdown = render_coupling_recovery_evidence_markdown(payload)
 
     assert "# Coupling-Recovery Evidence" in markdown
@@ -56,7 +58,20 @@ def test_coupling_recovery_markdown_renders_evidence(payload: dict[str, Any]) ->
     assert "`hardware_hamiltonian_learning_boundary`" in markdown
 
 
+def test_coupling_recovery_markdown_omits_empty_boundary_section(
+    payload: dict[str, Any],
+) -> None:
+    """Omit the boundary table when a supplied payload has no boundaries."""
+    payload_without_boundaries = {**payload, "boundary_rows": []}
+
+    markdown = render_coupling_recovery_evidence_markdown(payload_without_boundaries)
+
+    assert "## Executable Rows" in markdown
+    assert "## Boundary Rows" not in markdown
+
+
 def test_coupling_recovery_writer_creates_json_and_markdown(tmp_path: Path) -> None:
+    """Write matching JSON and Markdown through the public artifact API."""
     artifact = write_coupling_recovery_evidence_artifact(
         tmp_path / "coupling_recovery_evidence.json",
         artifact_id="pytest-writer",
@@ -74,6 +89,7 @@ def test_coupling_recovery_writer_creates_json_and_markdown(tmp_path: Path) -> N
 
 
 def test_coupling_recovery_writer_rejects_invalid_paths(tmp_path: Path) -> None:
+    """Reject output paths whose extensions do not match their formats."""
     with pytest.raises(ValueError, match="output_path must end with .json"):
         write_coupling_recovery_evidence_artifact(tmp_path / "artifact.txt")
 
@@ -85,11 +101,13 @@ def test_coupling_recovery_writer_rejects_invalid_paths(tmp_path: Path) -> None:
 
 
 def test_coupling_recovery_payload_rejects_blank_artifact_id() -> None:
+    """Reject blank artifact identifiers before suite execution."""
     with pytest.raises(ValueError, match="artifact_id must be non-empty"):
         coupling_recovery_evidence_payload(artifact_id=" ")
 
 
 def test_coupling_recovery_payload_rejects_wrong_suite_classification() -> None:
+    """Reject suites that claim an unsupported evidence classification."""
     suite = run_coupling_recovery_suite()
     object.__setattr__(suite, "evidence_class", "isolated_affinity")
 

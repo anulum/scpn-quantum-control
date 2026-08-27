@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Coupling-Recovery Evidence Export
-"""Export coupling-recovery coupling-recovery evidence rows."""
+"""Export bounded coupling-recovery evidence rows."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ DEFAULT_OUTPUT = Path("data/differentiable_phase_qnode/coupling_recovery_evidenc
 
 
 def main() -> int:
-    """Write the committed BL-17 coupling-recovery artifacts."""
+    """Write the committed bounded coupling-recovery artifacts."""
     artifact = write_coupling_recovery_evidence_artifact(DEFAULT_OUTPUT)
     print(f"wrote {artifact.json_path}")
     print(f"wrote {artifact.markdown_path}")

@@ -65,6 +65,7 @@ if TYPE_CHECKING:
     from tools import (
         control_stack_compose_product_quality_gates as _control_stack_compose_quality_gates,
     )
+    from tools import coupling_recovery_quality_gates as _coupling_recovery_quality_gates
     from tools import coverage_frontier_quality_gates as _coverage_frontier_quality_gates
     from tools import (
         custom_derivatives_product_quality_gates as _custom_derivatives_product_quality_gates,
@@ -221,6 +222,7 @@ else:
         "tools.custom_derivatives_product_quality_gates"
     )
     _decisive_advantage_quality_gates = import_module("tools.decisive_advantage_quality_gates")
+    _coupling_recovery_quality_gates = import_module("tools.coupling_recovery_quality_gates")
     _diff_contract_audit_quality_gates = import_module("tools.diff_contract_audit_quality_gates")
     _differentiable_quality_gates = import_module("tools.differentiable_quality_gates")
     _experiment_mitigation_quality_gates = import_module(
@@ -658,6 +660,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_entanglement_sync_evidence_quality_gates.build_static_quality_gates(_PY),
     *_enaqt_evidence_quality_gates.build_static_quality_gates(_PY),
     *_diff_contract_audit_quality_gates.build_static_quality_gates(_PY),
+    *_coupling_recovery_quality_gates.build_static_quality_gates(_PY),
     *_bench_cli_quality_gates.build_static_quality_gates(_PY),
     *_identity_binding_spec_quality_gates.build_static_quality_gates(_PY),
     *_ssgf_geometry_gradient_quality_gates.build_static_quality_gates(_PY),
@@ -1127,6 +1130,7 @@ ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_GATES = (
 )
 ENAQT_EVIDENCE_COVERAGE_GATES = _enaqt_evidence_quality_gates.build_coverage_gates(_PY)
 DIFF_CONTRACT_AUDIT_COVERAGE_GATES = _diff_contract_audit_quality_gates.build_coverage_gates(_PY)
+COUPLING_RECOVERY_COVERAGE_GATES = _coupling_recovery_quality_gates.build_coverage_gates(_PY)
 BENCH_CLI_COVERAGE_GATES = _bench_cli_quality_gates.build_coverage_gates(_PY)
 IDENTITY_BINDING_SPEC_COVERAGE_GATES = _identity_binding_spec_quality_gates.build_coverage_gates(
     _PY
@@ -1464,6 +1468,7 @@ def main() -> int:
             gates.extend(ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_GATES)
             gates.extend(ENAQT_EVIDENCE_COVERAGE_GATES)
             gates.extend(DIFF_CONTRACT_AUDIT_COVERAGE_GATES)
+            gates.extend(COUPLING_RECOVERY_COVERAGE_GATES)
             gates.extend(BENCH_CLI_COVERAGE_GATES)
             gates.extend(IDENTITY_BINDING_SPEC_COVERAGE_GATES)
             gates.extend(SSGF_GEOMETRY_GRADIENT_COVERAGE_GATES)
