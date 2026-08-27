@@ -249,6 +249,11 @@ def test_integrity_rejects_drift() -> None:
     good = build_phase_qnode_product_registry()
     assert_phase_qnode_product_integrity(good)
 
+    stale_schema = dict(good)
+    stale_schema["schema"] = "phase_qnode_product.v1"
+    with pytest.raises(ValueError, match="registry schema must be phase_qnode_product.v2"):
+        assert_phase_qnode_product_integrity(stale_schema)
+
     bad_blank = dict(good)
     bad_blank["blank_entry_count"] = 1
     with pytest.raises(ValueError, match="blank_entry_count"):

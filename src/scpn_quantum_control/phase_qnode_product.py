@@ -34,14 +34,14 @@ SupportBadge = Literal[
 JourneyOutcome = Literal["allowed_dry_run", "refused"]
 """Structured dry-run journey outcomes."""
 
-PHASE_QNODE_PRODUCT_SCHEMA: Final[str] = "phase_qnode_product.v1"
+PHASE_QNODE_PRODUCT_SCHEMA: Final[str] = "phase_qnode_product.v2"
 """JSON schema identifier for serialised product payloads."""
 
 PHASE_QNODE_PRODUCT_CLAIM_BOUNDARY: Final[str] = (
     "Phase-QNode product surface only; catalogues public journeys and support "
-    "badges; ambient phase/qnode_* workbench is not a frozen SemVer mega-contract "
-    "(BL-97); dry-run journeys refuse invent-green hardware/QPU spend "
-    "(BL-47/BL-95); does not replace full circuit engines"
+    "badges; ambient phase/qnode_* workbench remains experimental rather than a "
+    "frozen SemVer mega-contract; dry-run journeys refuse hardware/QPU spend under "
+    "the no-submit policy; does not replace full circuit engines"
 )
 """Shared claim boundary for journeys and decisions."""
 
@@ -67,7 +67,7 @@ class PhaseQNodeJourney:
     allows_hardware
         Whether this journey claims hardware (product default false).
     route_matrix_pointer
-        Optional BL-52 route family pointer.
+        Optional governed route-family pointer.
     api_stability_class
         Stability honesty class (not invent-stable for workbench).
     as_of
@@ -439,7 +439,7 @@ def dry_run_phase_qnode_journey(
     if request_hardware or journey.allows_hardware:
         blockers.append(
             "hardware/QPU request refused on Phase-QNode product surface "
-            "(compose BL-47/BL-95 no-submit posture)"
+            "(composed hardware-safe no-submit posture)"
         )
     if journey.support_badge == "provider_boundary" and request_hardware:
         blockers.append("provider_boundary journeys fail closed before hardware submission")
@@ -478,7 +478,7 @@ def dry_run_phase_qnode_journey(
 
 
 def map_phase_qnode_public_surfaces() -> tuple[dict[str, object], ...]:
-    """Return a public API map of Phase-QNode product modules (S90.0).
+    """Return a public API map of Phase-QNode product modules.
 
     Returns
     -------
@@ -531,8 +531,9 @@ def build_phase_qnode_product_registry() -> dict[str, object]:
         "journeys": journeys,
         "policy_note": (
             "Phase-QNode product catalogue only; ambient phase/qnode_* exports "
-            "remain experimental_workbench under BL-97 unless promoted; "
-            "S90.3 full 15-minute notebook and S90.2 badge CI residual open."
+            "remain experimental_workbench unless explicitly promoted through "
+            "public API stability; the complete tutorial and badge automation "
+            "remain residual."
         ),
     }
 
@@ -559,6 +560,8 @@ def assert_phase_qnode_product_integrity(
 
     """
     registry = dict(payload) if payload is not None else build_phase_qnode_product_registry()
+    if registry.get("schema") != PHASE_QNODE_PRODUCT_SCHEMA:
+        raise ValueError(f"registry schema must be {PHASE_QNODE_PRODUCT_SCHEMA}")
     journeys = registry.get("journeys")
     if not isinstance(journeys, list) or not journeys:
         raise ValueError("Phase-QNode product registry must contain a non-empty journeys list")

@@ -21,7 +21,7 @@ PHASE_QNODE_PRODUCT_QUALITY_RATCHET = [
 """Ordered strict-typing and NumPy-docstring cohort."""
 PHASE_QNODE_PRODUCT_COVERAGE_COHORT = ["tests/test_phase_qnode_product.py"]
 """Tests that own exact Phase-QNode product coverage."""
-PHASE_QNODE_PRODUCT_COVERAGE_DATA_FILE = ".coverage.phase-qnode-product-quality"
+PHASE_QNODE_PRODUCT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-phase-qnode-product-quality.coverage"  # nosec B108
 """Isolated coverage database for the Phase-QNode product."""
 
 

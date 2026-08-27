@@ -2,7 +2,7 @@
 
 Versioned **primary quantum programming product** map for Phase-QNode: public
 journeys, support badges, and dry-run posture. Ambient `phase/qnode_*` workbench
-modules remain experimental under BL-97 honesty (not a frozen SemVer mega-contract).
+modules remain experimental rather than a frozen SemVer mega-contract.
 
 Module: `scpn_quantum_control.phase_qnode_product`
 
@@ -12,16 +12,16 @@ Module: `scpn_quantum_control.phase_qnode_product`
 |---|---|
 | Default journey | `build_differentiate_dry_run` |
 | Dry-run | Structured allowed plan; no QPU submission |
-| Hardware request | Refused (BL-47/BL-95 no-submit posture) |
-| Stability | `experimental_workbench` (BL-97) |
+| Hardware request | Refused under the hardware-safe no-submit posture |
+| Stability | `experimental_workbench` |
 | Blank/unknown journey | Fail closed |
 
 Claim boundary:
 
 > Phase-QNode product surface only; catalogues public journeys and support badges;
-> ambient phase/qnode_* workbench is not a frozen SemVer mega-contract (BL-97);
-> dry-run journeys refuse invent-green hardware/QPU spend (BL-47/BL-95); does not
-> replace full circuit engines
+> ambient phase/qnode_* workbench remains experimental rather than a frozen SemVer
+> mega-contract; dry-run journeys refuse hardware/QPU spend under the no-submit
+> policy; does not replace full circuit engines
 
 ## Public API
 
@@ -49,8 +49,8 @@ assert refused.allowed is False
 
 ## Closed vocabularies and immutable records
 
-`SupportBadge` distinguishes `local_dry_run`, `simulator_local`,
-`hardware_boundary`, and `experimental_workbench`. `JourneyOutcome` contains
+`SupportBadge` distinguishes `local_dry_run`, `framework_bridge`,
+`provider_boundary`, and `experimental_workbench`. `JourneyOutcome` contains
 only `allowed_dry_run` and `refused`. These labels describe catalogue posture,
 not provider or hardware validation.
 
@@ -74,9 +74,9 @@ an immutable tuple.
 
 `dry_run_phase_qnode_journey()` acknowledges the catalogue steps as a plan. A
 hardware request, or a journey that would claim hardware permission, returns a
-refused decision under BL-47/BL-95. An allowed result means only that the local
-plan can be inspected; it does not build a circuit, differentiate an objective,
-submit a QPU job, or spend provider credit.
+refused decision under the hardware-safe no-submit posture. An allowed result
+means only that the local plan can be inspected; it does not build a circuit,
+differentiate an objective, submit a QPU job, or spend provider credit.
 
 ## Public-surface map and registry integrity
 
@@ -84,12 +84,14 @@ submit a QPU job, or spend provider credit.
 its badge, stability class, journey IDs, role, and claim boundary. Duplicate
 module paths are collapsed in catalogue order.
 
-`build_phase_qnode_product_registry()` returns the schema, counts, default
+`build_phase_qnode_product_registry()` returns schema
+`phase_qnode_product.v2`, counts, default
 journey, public map, catalogue rows, policy note, and zero blank-entry count.
 Use `assert_phase_qnode_product_integrity()` at storage and transport
 boundaries. It rejects empty/non-mapping rows, blank or duplicate IDs, unknown
 badges, empty steps, invented hardware permission, missing default or required
-journeys, catalogue drift, and inconsistent count metadata.
+journeys, catalogue drift, inconsistent count metadata, and stale or unknown
+schema identifiers.
 
 An integrity `ValueError` is a stop condition, not permission to assume support.
 An internal blank, duplicate, or empty canonical catalogue raises
