@@ -44,6 +44,7 @@ def _problem() -> tuple[
 
 
 def test_inventory_freezes_real_ssgf_surfaces() -> None:
+    """Keep the public simulator and bridge inventory complete."""
     rows = list_ssgf_public_surfaces()
     ids = {row.surface_id for row in rows}
 
@@ -64,6 +65,7 @@ def test_inventory_freezes_real_ssgf_surfaces() -> None:
     ],
 )
 def test_surface_row_validation(kwargs: dict[str, object], message: str) -> None:
+    """Reject incomplete or hardware-enabled public surface rows."""
     values: dict[str, object] = {
         "surface_id": "x",
         "module_path": "m",
@@ -76,6 +78,7 @@ def test_surface_row_validation(kwargs: dict[str, object], message: str) -> None
 
 
 def test_unsuitable_scenarios_cover_negative_space() -> None:
+    """Expose the documented unsupported-use boundaries."""
     scenarios = ssgf_gradient_unsuitable_scenarios()
 
     assert len(scenarios) == 6
@@ -85,6 +88,7 @@ def test_unsuitable_scenarios_cover_negative_space() -> None:
 
 
 def test_route_policy_supports_fd_and_refuses_latent_parameter_shift() -> None:
+    """Allow finite differences and refuse the invalid latent shift route."""
     finite_difference = decide_ssgf_gradient_route(" Finite_Difference ")
     parameter_shift = decide_ssgf_gradient_route("parameter_shift")
 
@@ -99,6 +103,7 @@ def test_route_policy_supports_fd_and_refuses_latent_parameter_shift() -> None:
 def test_route_policy_rejects_unknown_and_detects_matrix_drift(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Reject unknown methods and drift from the governed route matrix."""
     with pytest.raises(ValueError, match="method"):
         decide_ssgf_gradient_route("adjoint")
     with pytest.raises(ValueError, match="method"):
@@ -118,6 +123,7 @@ def test_route_policy_rejects_unknown_and_detects_matrix_drift(
 
 
 def test_real_quantum_cost_certificate_cross_checks_c_equals_one_minus_r() -> None:
+    """Cross-check the real cost bundle against its complement law."""
     z, theta = _problem()
     certificate = certify_quantum_cost(z, 3, theta, trotter_reps=1)
 
@@ -133,6 +139,7 @@ def test_real_quantum_cost_certificate_cross_checks_c_equals_one_minus_r() -> No
 
 
 def test_cost_certificate_digest_is_deterministic_and_omega_aware() -> None:
+    """Keep the cost digest deterministic for explicit frequencies."""
     z, theta = _problem()
     omega = np.array([-0.1, 0.0, 0.1])
     first = certify_quantum_cost(z, 3, theta, omega=omega, trotter_reps=1)
@@ -167,6 +174,7 @@ def test_problem_contract_fails_before_ambient_evaluation(
     kwargs: dict[str, object],
     message: str,
 ) -> None:
+    """Reject invalid bounded-problem inputs before simulator evaluation."""
     with pytest.raises((TypeError, ValueError), match=message):
         certify_quantum_cost(z, n, theta, omega=omega, **kwargs)  # type: ignore[arg-type]
 
@@ -174,6 +182,7 @@ def test_problem_contract_fails_before_ambient_evaluation(
 def test_cost_certificate_rejects_bad_atol_and_ambient_contracts(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Reject invalid tolerance and malformed ambient cost results."""
     z = np.array([0.0])
     theta = np.array([0.1, 0.2])
     with pytest.raises(ValueError, match="atol"):
@@ -203,6 +212,7 @@ def test_cost_certificate_rejects_bad_atol_and_ambient_contracts(
 
 
 def test_cost_certificate_rejects_invalid_geometry(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject asymmetric or negative latent geometry."""
     monkeypatch.setattr(product, "_w_from_z", lambda *_args: np.array([[0.0, -1.0], [0.0, 0.0]]))
     monkeypatch.setattr(product, "quantum_cost", lambda *_args: 0.5)
     monkeypatch.setattr(
@@ -215,6 +225,7 @@ def test_cost_certificate_rejects_invalid_geometry(monkeypatch: pytest.MonkeyPat
 
 
 def test_real_gradient_certificate_enforces_metamorphic_laws() -> None:
+    """Certify refinement and phase-periodicity on the real gradient path."""
     z, theta = _problem()
     certificate = certify_geometry_gradient(z, 3, theta, trotter_reps=1)
 
@@ -232,6 +243,7 @@ def test_real_gradient_certificate_enforces_metamorphic_laws() -> None:
 
 
 def test_gradient_certificate_rejects_parameter_shift_and_bad_tolerances() -> None:
+    """Reject the unsupported derivative route and invalid tolerances."""
     z, theta = _problem()
     with pytest.raises(ValueError, match="refused"):
         certify_geometry_gradient(z, 3, theta, method="parameter_shift")
@@ -272,6 +284,7 @@ def test_gradient_certificate_rejects_ambient_contract_drift(
     results: list[QuantumGradientResult],
     message: str,
 ) -> None:
+    """Reject malformed gradient results from the ambient simulator."""
     iterator = iter(results)
     monkeypatch.setattr(
         product, "compute_quantum_gradient", lambda *_args, **_kwargs: next(iterator)
@@ -283,6 +296,7 @@ def test_gradient_certificate_rejects_ambient_contract_drift(
 def test_gradient_certificate_rejects_refinement_and_periodicity_drift(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Reject failed refinement and periodicity metamorphic laws."""
     primary = _gradient_result(np.array([0.0]))
     refined = _gradient_result(np.array([1.0]))
     periodic = _gradient_result(np.array([0.0]))
@@ -302,7 +316,8 @@ def test_gradient_certificate_rejects_refinement_and_periodicity_drift(
         certify_geometry_gradient(np.zeros(1), 2, np.array([0.1, 0.2]))
 
 
-def test_geometry_observer_composes_bl50_and_bl33() -> None:
+def test_geometry_observer_composes_control_and_codesign_telemetry() -> None:
+    """Map a certificate into non-operational observer telemetry."""
     z, theta = _problem()
     certificate = certify_geometry_gradient(z, 3, theta, trotter_reps=1)
     observer = geometry_observer_from_certificate(certificate)
@@ -317,6 +332,7 @@ def test_geometry_observer_composes_bl50_and_bl33() -> None:
 
 
 def test_real_outer_cycle_evidence_is_functional_and_deterministic() -> None:
+    """Keep the bounded outer-cycle evidence deterministic and functional."""
     z, theta = _problem()
     first = materialise_outer_cycle_evidence(
         n_oscillators=3,
@@ -342,6 +358,7 @@ def test_real_outer_cycle_evidence_is_functional_and_deterministic() -> None:
 
 
 def test_outer_cycle_defaults_are_bounded() -> None:
+    """Keep the default outer-cycle probe small and bounded."""
     evidence = materialise_outer_cycle_evidence(max_iterations=1)
 
     assert evidence.n_oscillators == 2
@@ -363,6 +380,7 @@ def test_outer_cycle_defaults_are_bounded() -> None:
     ],
 )
 def test_outer_cycle_input_guards(kwargs: dict[str, object], message: str) -> None:
+    """Reject invalid outer-cycle inputs before execution."""
     with pytest.raises(ValueError, match=message):
         materialise_outer_cycle_evidence(**kwargs)  # type: ignore[arg-type]
 
@@ -413,12 +431,14 @@ def test_outer_cycle_rejects_ambient_contract_drift(
     result: SimpleNamespace,
     message: str,
 ) -> None:
+    """Reject malformed histories and geometry from the ambient cycle."""
     monkeypatch.setattr(product, "quantum_outer_cycle", lambda **_kwargs: result)
     with pytest.raises(ValueError, match=message):
         materialise_outer_cycle_evidence()
 
 
 def test_registry_is_complete_and_fail_closed() -> None:
+    """Keep the public registry complete and fail closed."""
     registry = assert_ssgf_geometry_gradient_integrity()
 
     assert registry["schema"] == SSGF_GEOMETRY_GRADIENT_SCHEMA
@@ -483,6 +503,7 @@ def test_registry_integrity_rejects_drift(
     mutator: Any,
     message: str,
 ) -> None:
+    """Reject registry inventory and policy drift."""
     registry = build_ssgf_geometry_gradient_registry()
     mutator(registry)
     with pytest.raises(ValueError, match=message):
@@ -490,6 +511,7 @@ def test_registry_integrity_rejects_drift(
 
 
 def test_public_exports_are_explicit() -> None:
+    """Keep the public exports, schema, and observer boundary explicit."""
     assert "certify_geometry_gradient" in product.__all__
     assert "materialise_outer_cycle_evidence" in product.__all__
     assert SSGF_GEOMETRY_GRADIENT_SCHEMA == "ssgf_geometry_gradient_product.v1"

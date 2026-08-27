@@ -1915,6 +1915,38 @@ jobs:
           --data-file=/tmp/scpn-qc-identity-binding-spec-quality.coverage
           --precision=2 --fail-under=100 --include=*/identity/binding_spec.py
 
+  ssgf-geometry-gradient-quality:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/ssgf_geometry_gradient_product.py
+          tests/test_ssgf_geometry_gradient_product.py
+          tools/ssgf_geometry_gradient_quality_gates.py
+          tests/test_ssgf_geometry_gradient_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/ssgf_geometry_gradient_product.py
+          tests/test_ssgf_geometry_gradient_product.py
+          tools/ssgf_geometry_gradient_quality_gates.py
+          tests/test_ssgf_geometry_gradient_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-ssgf-geometry-gradient-quality.coverage --branch
+          -m pytest -q tests/test_ssgf_geometry_gradient_product.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-ssgf-geometry-gradient-quality.coverage
+          --precision=2 --fail-under=100 --include=*/ssgf_geometry_gradient_product.py
+
   governed-route-matrix-quality:
     needs: lint
     runs-on: ubuntu-latest
@@ -3508,7 +3540,7 @@ jobs:
           EOF
 
   ci-gate:
-    needs: [lint, stable-core-product-quality, open-system-completeness-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, custom-derivatives-product-quality, kyma-mechanism-product-quality, campaign-harness-product-quality, geometric-control-product-quality, tn-mps-baseline-design-quality, error-mitigation-product-quality, cloud-native-deployment-quality, control-stack-compose-quality, public-api-stability-quality, polyglot-parity-certificate-quality, program-ad-fuzz-assurance-quality, multi-hal-federation-quality, hermetic-reproduction-kit-quality, hardware-safe-execution-quality, qpu-compute-product-quality, wirtinger-implicit-product-quality, migration-guides-product-quality, visualisation-dashboard-product-quality, stochastic-estimators-product-quality, differentiable-notebook-curriculum-quality, studio-executive-product-quality, advanced-witnesses-quality, coverage-frontier-quality, compiler-boundary-product-quality, resource-budget-gate-quality, advantage-language-protocol-quality, metamorphic-ad-verification-quality, competitive-baseline-watch-quality, whole-program-ad-product-quality, neural-operator-cost-model-quality, neural-operator-baseline-product-quality, entanglement-sync-evidence-quality, bench-cli-quality, identity-binding-spec-quality, governed-route-matrix-quality, attested-result-pack-quality, phase-qnode-product-quality, phase-trainability-quality, kuramoto-layout-cost-quality, kuramoto-layout-relaxation-quality, application-honesty-quality, layout-method-comparison-quality, unsuitable-scenario-registry-quality, scorecard-acceptance-engine-quality, studio-executive-benchmark-quality, synchronisation-witness-quality, experiment-mitigation-quality, research-lane-registry-quality, theory-hook-promotion-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
+    needs: [lint, stable-core-product-quality, open-system-completeness-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, custom-derivatives-product-quality, kyma-mechanism-product-quality, campaign-harness-product-quality, geometric-control-product-quality, tn-mps-baseline-design-quality, error-mitigation-product-quality, cloud-native-deployment-quality, control-stack-compose-quality, public-api-stability-quality, polyglot-parity-certificate-quality, program-ad-fuzz-assurance-quality, multi-hal-federation-quality, hermetic-reproduction-kit-quality, hardware-safe-execution-quality, qpu-compute-product-quality, wirtinger-implicit-product-quality, migration-guides-product-quality, visualisation-dashboard-product-quality, stochastic-estimators-product-quality, differentiable-notebook-curriculum-quality, studio-executive-product-quality, advanced-witnesses-quality, coverage-frontier-quality, compiler-boundary-product-quality, resource-budget-gate-quality, advantage-language-protocol-quality, metamorphic-ad-verification-quality, competitive-baseline-watch-quality, whole-program-ad-product-quality, neural-operator-cost-model-quality, neural-operator-baseline-product-quality, entanglement-sync-evidence-quality, bench-cli-quality, identity-binding-spec-quality, ssgf-geometry-gradient-quality, governed-route-matrix-quality, attested-result-pack-quality, phase-qnode-product-quality, phase-trainability-quality, kuramoto-layout-cost-quality, kuramoto-layout-relaxation-quality, application-honesty-quality, layout-method-comparison-quality, unsuitable-scenario-registry-quality, scorecard-acceptance-engine-quality, studio-executive-benchmark-quality, synchronisation-witness-quality, experiment-mitigation-quality, research-lane-registry-quality, theory-hook-promotion-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -3553,6 +3585,7 @@ jobs:
              [[ "${{ needs['entanglement-sync-evidence-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['bench-cli-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['identity-binding-spec-quality'].result }}" != "success" ]] || \
+             [[ "${{ needs['ssgf-geometry-gradient-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['governed-route-matrix-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['attested-result-pack-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['phase-qnode-product-quality'].result }}" != "success" ]] || \

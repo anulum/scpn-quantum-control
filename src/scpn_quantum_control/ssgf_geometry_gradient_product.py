@@ -85,7 +85,7 @@ class SsgfPublicSurfaceRow:
 
 @dataclass(frozen=True, slots=True)
 class GradientRouteDecision:
-    """Governed BL-52 route decision for a latent-geometry gradient."""
+    """Governed route decision for a latent-geometry gradient."""
 
     method: GradientMethod
     route_id: str
@@ -147,7 +147,7 @@ class GeometryGradientCertificate:
 
 @dataclass(frozen=True, slots=True)
 class SsgfGeometryObserverRecord:
-    """Optional BL-50 geometry / BL-33 evaluator telemetry record."""
+    """Optional geometric-control and co-design evaluator telemetry record."""
 
     cost: float
     r_global: float
@@ -251,7 +251,7 @@ _UNSUITABLE_SCENARIOS: Final[tuple[str, ...]] = (
     "treating finite-difference agreement as analytic or exact automatic differentiation",
     "promoting local statevector evidence to live-QPU or hardware robustness evidence",
     "claiming outer-cycle convergence or advantage from a bounded functional trace",
-    "using optional BL-33 observer telemetry as an operational controller decision",
+    "using optional co-design observer telemetry as an operational controller decision",
 )
 
 
@@ -261,7 +261,7 @@ def list_ssgf_public_surfaces() -> tuple[SsgfPublicSurfaceRow, ...]:
 
 
 def ssgf_gradient_unsuitable_scenarios() -> tuple[str, ...]:
-    """Return explicit BL-53 anti-silent-wrong scenarios."""
+    """Return explicit anti-silent-wrong scenarios."""
     return _UNSUITABLE_SCENARIOS
 
 
@@ -526,7 +526,7 @@ def certify_geometry_gradient(
 def geometry_observer_from_certificate(
     certificate: GeometryGradientCertificate,
 ) -> SsgfGeometryObserverRecord:
-    """Map certified geometry evidence into optional BL-50/BL-33 telemetry."""
+    """Map certified geometry evidence into optional observer telemetry."""
     return SsgfGeometryObserverRecord(
         cost=certificate.cost,
         r_global=certificate.r_global,
@@ -662,7 +662,7 @@ def build_ssgf_geometry_gradient_registry() -> dict[str, object]:
 def assert_ssgf_geometry_gradient_integrity(
     payload: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
-    """Assert inventory, policy, and BL-52 route integrity."""
+    """Assert inventory, policy, and governed route integrity."""
     registry = dict(payload) if payload is not None else build_ssgf_geometry_gradient_registry()
     surfaces = registry.get("surfaces")
     routes = registry.get("gradient_routes")

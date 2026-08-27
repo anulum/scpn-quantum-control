@@ -138,6 +138,9 @@ if TYPE_CHECKING:
     from tools import (
         scorecard_acceptance_engine_quality_gates as _scorecard_acceptance_engine_quality_gates,
     )
+    from tools import (
+        ssgf_geometry_gradient_quality_gates as _ssgf_geometry_gradient_quality_gates,
+    )
     from tools import stable_core_product_quality_gates as _stable_core_product_quality_gates
     from tools import (
         stochastic_estimators_product_quality_gates as _stochastic_estimators_product_quality_gates,
@@ -235,6 +238,9 @@ else:
     _hardware_safe_quality_gates = import_module("tools.hardware_safe_execution_quality_gates")
     _identity_binding_spec_quality_gates = import_module(
         "tools.identity_binding_spec_quality_gates"
+    )
+    _ssgf_geometry_gradient_quality_gates = import_module(
+        "tools.ssgf_geometry_gradient_quality_gates"
     )
     _metamorphic_ad_verification_quality_gates = import_module(
         "tools.metamorphic_ad_verification_quality_gates"
@@ -646,6 +652,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_entanglement_sync_evidence_quality_gates.build_static_quality_gates(_PY),
     *_bench_cli_quality_gates.build_static_quality_gates(_PY),
     *_identity_binding_spec_quality_gates.build_static_quality_gates(_PY),
+    *_ssgf_geometry_gradient_quality_gates.build_static_quality_gates(_PY),
     *_neural_operator_cost_model_quality_gates.build_static_quality_gates(_PY),
     *_governed_route_matrix_quality_gates.build_static_quality_gates(_PY),
     *_attested_result_pack_quality_gates.build_static_quality_gates(_PY),
@@ -1113,6 +1120,9 @@ BENCH_CLI_COVERAGE_GATES = _bench_cli_quality_gates.build_coverage_gates(_PY)
 IDENTITY_BINDING_SPEC_COVERAGE_GATES = _identity_binding_spec_quality_gates.build_coverage_gates(
     _PY
 )
+SSGF_GEOMETRY_GRADIENT_COVERAGE_GATES = _ssgf_geometry_gradient_quality_gates.build_coverage_gates(
+    _PY
+)
 GOVERNED_ROUTE_MATRIX_COVERAGE_GATES = _governed_route_matrix_quality_gates.build_coverage_gates(
     _PY
 )
@@ -1442,6 +1452,7 @@ def main() -> int:
             gates.extend(ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_GATES)
             gates.extend(BENCH_CLI_COVERAGE_GATES)
             gates.extend(IDENTITY_BINDING_SPEC_COVERAGE_GATES)
+            gates.extend(SSGF_GEOMETRY_GRADIENT_COVERAGE_GATES)
             gates.extend(NEURAL_OPERATOR_COST_MODEL_COVERAGE_GATES)
             gates.extend(GOVERNED_ROUTE_MATRIX_COVERAGE_GATES)
             gates.extend(ATTESTED_RESULT_PACK_COVERAGE_GATES)

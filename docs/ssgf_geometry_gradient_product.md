@@ -14,7 +14,7 @@ trace to convergence or advantage evidence.
 
 ## Gradient-method policy
 
-| BL-52 route | Status | Reason |
+| Governed route | Status | Reason |
 |---|---|---|
 | `transform:ssgf.latent_finite_difference` | `supported` | Central finite difference evaluates the complete nonlinear latent path. |
 | `transform:ssgf.latent_parameter_shift` | `permanent_boundary` | Circuit parameter-shift does not directly compute `dC/dz` because `z` enters Hamiltonian coefficients through `softplus(W(z))`. |
@@ -59,17 +59,18 @@ The cost certificate cross-checks the public `quantum_cost` result against
 `compute_quantum_costs().c_micro` and the complement law `C + R = 1`. The
 gradient certificate checks the expected evaluation count, step refinement
 from `epsilon` to `epsilon / 2`, and invariance under a global `2*pi` phase
-shift. These are BL-46 metamorphic checks, not a proof of analytic AD.
+shift. These are metamorphic checks, not a proof of analytic AD.
 
 ## Composition boundaries
 
-- BL-50 consumes `SsgfGeometryObserverRecord` as geometry diagnostics.
-- BL-33 may consume the same immutable record as optional evaluator telemetry;
-  it is not an operational controller decision.
-- BL-53 owns the negative space: wrong latent dimensions, latent
+- Geometric-control consumers use `SsgfGeometryObserverRecord` as geometry
+  diagnostics.
+- Co-design evaluators may consume the same immutable record as optional
+  telemetry; it is not an operational controller decision.
+- The negative-space registry keeps wrong latent dimensions, latent
   parameter-shift, analytic-AD promotion, hardware promotion, and convergence
-  promotion all remain explicit refusals.
-- BL-47 remains authoritative for any future hardware execution policy. This
-  BL-70 product performs no hardware submission.
+  promotion as explicit refusals.
+- The hardware-safe execution policy remains authoritative for any future
+  hardware execution. This SSGF product performs no hardware submission.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1211
+    "test_files": 1212
   },
   "documentation": {
     "examples": [
@@ -9156,6 +9156,7 @@
       "tests/test_ssgf_16osc.py",
       "tests/test_ssgf_adapter.py",
       "tests/test_ssgf_geometry_gradient_product.py",
+      "tests/test_ssgf_geometry_gradient_quality_gate.py",
       "tests/test_ssgf_quantum_gradient.py",
       "tests/test_ssgf_quantum_spectral_branches.py",
       "tests/test_ssgf_spectral.py",
