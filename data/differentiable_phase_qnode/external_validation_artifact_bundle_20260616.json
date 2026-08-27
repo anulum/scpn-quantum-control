@@ -6,32 +6,32 @@
     {
       "path": "data/differentiable_phase_qnode/claim_ledger.json",
       "role": "Claim-ledger source of truth",
-      "sha256": "d6aaed9cff78809c95c6911f07e6252bcadc86cef8085553835d5ea14669f2c4",
-      "size_bytes": 25778
+      "sha256": "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
+      "size_bytes": 25810
     },
     {
       "path": "data/differentiable_phase_qnode/claim_ledger.md",
       "role": "Reviewer claim-ledger summary",
-      "sha256": "ccbae9dec5f34bed8516563eee04eec079f66d9e73930012c5f5cf3040b6da3f",
-      "size_bytes": 6859
+      "sha256": "80009055ea7aaccc543d27cf662c4878241a3d46c6adebe17bd00eca467c6c18",
+      "size_bytes": 6887
     },
     {
       "path": "data/differentiable_phase_qnode/public_claim_table_20260616.md",
       "role": "Public-safe claim wording table",
-      "sha256": "537512d5c20c893d63cd044e51772c0c638b9ae579b9561ddb12c7fb0c0434b1",
-      "size_bytes": 15308
+      "sha256": "52333f2348da5e2021e722d60442743f9c3ad2960a8d73c1dfb4b4f48cebe916",
+      "size_bytes": 15336
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json",
       "role": "Differentiable support-surface alignment rerun artefact",
-      "sha256": "dfd96e8047d7ce28e5c10846f28734f91ffbddccc2ca7dd2d5ec9d8b65c81529",
-      "size_bytes": 4757
+      "sha256": "7357e56e690c02a8a01248bb7b7d5fc159b8f300ed4a817ca9cdde841e0549d8",
+      "size_bytes": 4761
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md",
       "role": "Differentiable support-surface alignment reviewer summary",
-      "sha256": "612a6f0f5d463228698df608a44d12ee28400cc2f602092e472c3b001843dd72",
-      "size_bytes": 5058
+      "sha256": "f79671152273e1c3d8310461ee569379e79b96f65bcac2d5e1a98441c5467a53",
+      "size_bytes": 5062
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.json",
@@ -84,8 +84,8 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
       "role": "Differentiable dependency and environment evidence map artefact",
-      "sha256": "1d1de41dd2afc6237109337182b1aafe039ad100cc672f7a52af2d7c12ad5897",
-      "size_bytes": 20488
+      "sha256": "625322f74dee84ae0cba6712797e93e727626698bbd3701889339a729e055f75",
+      "size_bytes": 20492
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md",
@@ -154,16 +154,16 @@
       "size_bytes": 3785
     },
     {
-      "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
+      "path": "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json",
       "role": "Exact environment-lock manifest",
-      "sha256": "6427a11f60da9ade36cb87d860bca93c933e32439b4e7b4cf109e5b7e318b7c8",
-      "size_bytes": 3226
+      "sha256": "5c0dc2fedde6ddd4609941fbd6c9aec716c57dbcede6505f3b7cea205f15c642",
+      "size_bytes": 3240
     },
     {
-      "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md",
+      "path": "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.md",
       "role": "Environment-lock reviewer summary",
-      "sha256": "f1e97487517f7b0ce06b7144612c8f835aa78c51c0753bf0fcbaa293b4910fc6",
-      "size_bytes": 2373
+      "sha256": "f3f057b438e8d0f59c0b0e9244ddadfda89bbe113551b1f87cdab20de8362393",
+      "size_bytes": 2387
     },
     {
       "path": "data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json",
@@ -256,5 +256,5 @@
       "size_bytes": 424
     }
   ],
-  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1"
+  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v2"
 }

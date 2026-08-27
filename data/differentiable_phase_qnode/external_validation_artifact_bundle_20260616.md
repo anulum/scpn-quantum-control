@@ -16,11 +16,11 @@ SCPN Quantum Control — Differentiable external-validation artefact bundle
 
 | Artefact | Role | SHA-256 | Size bytes |
 |---|---|---|---:|
-| `data/differentiable_phase_qnode/claim_ledger.json` | Claim-ledger source of truth | `d6aaed9cff78809c95c6911f07e6252bcadc86cef8085553835d5ea14669f2c4` | 25778 |
-| `data/differentiable_phase_qnode/claim_ledger.md` | Reviewer claim-ledger summary | `ccbae9dec5f34bed8516563eee04eec079f66d9e73930012c5f5cf3040b6da3f` | 6859 |
-| `data/differentiable_phase_qnode/public_claim_table_20260616.md` | Public-safe claim wording table | `537512d5c20c893d63cd044e51772c0c638b9ae579b9561ddb12c7fb0c0434b1` | 15308 |
-| `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json` | Differentiable support-surface alignment rerun artefact | `dfd96e8047d7ce28e5c10846f28734f91ffbddccc2ca7dd2d5ec9d8b65c81529` | 4757 |
-| `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md` | Differentiable support-surface alignment reviewer summary | `612a6f0f5d463228698df608a44d12ee28400cc2f602092e472c3b001843dd72` | 5058 |
+| `data/differentiable_phase_qnode/claim_ledger.json` | Claim-ledger source of truth | `0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05` | 25810 |
+| `data/differentiable_phase_qnode/claim_ledger.md` | Reviewer claim-ledger summary | `80009055ea7aaccc543d27cf662c4878241a3d46c6adebe17bd00eca467c6c18` | 6887 |
+| `data/differentiable_phase_qnode/public_claim_table_20260616.md` | Public-safe claim wording table | `52333f2348da5e2021e722d60442743f9c3ad2960a8d73c1dfb4b4f48cebe916` | 15336 |
+| `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json` | Differentiable support-surface alignment rerun artefact | `7357e56e690c02a8a01248bb7b7d5fc159b8f300ed4a817ca9cdde841e0549d8` | 4761 |
+| `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md` | Differentiable support-surface alignment reviewer summary | `f79671152273e1c3d8310461ee569379e79b96f65bcac2d5e1a98441c5467a53` | 5062 |
 | `data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.json` | Differentiable baseline category scorecard artefact | `8739fd4383ba751facc2bdf53d02b390fdd178b527cf53cac00bd63d42aa34e6` | 31829 |
 | `data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md` | Differentiable baseline category scorecard reviewer summary | `e560e1ddc4e136aa0e2ef5a17c74d8f57c5634cccec3f60974006f53c0ed6ea4` | 9720 |
 | `data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260825.json` | Differentiable competitive-baseline freshness artefact | `e366ca9949f4ebcf7b9ad4f3a7760edb020726f567d6e484326ad63f0798c990` | 10154 |
@@ -29,7 +29,7 @@ SCPN Quantum Control — Differentiable external-validation artefact bundle
 | `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md` | Differentiable Rust/Python rustification surface inventory reviewer summary | `d0f31309df39dc28dcda11af645fad77e184c09594e5a1767473e9f69750a647` | 3573 |
 | `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json` | Differentiable architecture and Rustification routing map artefact | `6906ca0efa111139ce99f6493c8e6c2f366aa3db3f0aa6b3967c65c4948d25d3` | 22849 |
 | `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md` | Differentiable architecture and Rustification routing map reviewer summary | `b411987fbbd70b1b4b537162a1afbafdc9e2cca4b186f2743f46f567c318165a` | 4015 |
-| `data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json` | Differentiable dependency and environment evidence map artefact | `1d1de41dd2afc6237109337182b1aafe039ad100cc672f7a52af2d7c12ad5897` | 20488 |
+| `data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json` | Differentiable dependency and environment evidence map artefact | `625322f74dee84ae0cba6712797e93e727626698bbd3701889339a729e055f75` | 20492 |
 | `data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md` | Differentiable dependency and environment evidence map reviewer summary | `7c66aaa75841e0731bdb203445e31ca49d97b9321614bb08926fdbad6464abc9` | 4763 |
 | `data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.json` | Reserved-host isolated benchmark batch plan artefact | `70ba4edc586e8c882614ab120e1abad6d6f2128ed26bdcd02243eaa4f1293266` | 16002 |
 | `data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.md` | Reserved-host isolated benchmark batch plan reviewer summary | `f37d16a7a8a3b0b474f43a326e7cbb9a3ebc5b21bdbc8f96b6579a325e076526` | 5978 |
@@ -41,8 +41,8 @@ SCPN Quantum Control — Differentiable external-validation artefact bundle
 | `data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.md` | Program AD compiler alias-activity evidence reviewer summary | `93e71c273495508e86ca1ed0a116c243f58c2ccdf3ed81e18287bf8d89fd67ce` | 3253 |
 | `data/differentiable_phase_qnode/compiler_promotion_batch_20260706.json` | Non-promotional compiler evidence promotion-batch artefact | `0a05287c32e27198ecfc52e0477f054ea88e9586d775290eddf9509611b10b56` | 5850 |
 | `data/differentiable_phase_qnode/compiler_promotion_batch_20260706.md` | Non-promotional compiler evidence promotion-batch reviewer summary | `7a7658b7f2bda7bd6d7f6438038a614f37b6564842b6e0c066ff258c7ae4edcc` | 3785 |
-| `data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json` | Exact environment-lock manifest | `6427a11f60da9ade36cb87d860bca93c933e32439b4e7b4cf109e5b7e318b7c8` | 3226 |
-| `data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md` | Environment-lock reviewer summary | `f1e97487517f7b0ce06b7144612c8f835aa78c51c0753bf0fcbaa293b4910fc6` | 2373 |
+| `data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json` | Exact environment-lock manifest | `5c0dc2fedde6ddd4609941fbd6c9aec716c57dbcede6505f3b7cea205f15c642` | 3240 |
+| `data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.md` | Environment-lock reviewer summary | `f3f057b438e8d0f59c0b0e9244ddadfda89bbe113551b1f87cdab20de8362393` | 2387 |
 | `data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json` | Exact-answer domain dataset closure artefact | `f776e02d745652e122bfb41e30088a6515a53821f02cce30a5fcc35b7f52a5b3` | 13589 |
 | `data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json` | Identical-circuit Qiskit/PennyLane gradient comparison artefact | `9bda8b96ec64aa5d5740862db7873a961315dab22d855a445677c4bad99d9529` | 3498 |
 | `data/differentiable_phase_qnode/torch_maturity_audit_20260616.json` | PyTorch maturity audit artefact | `77b59dea1ede83e4441aadcab51af59267a44de32c437eee45cd06614b0da295` | 11209 |

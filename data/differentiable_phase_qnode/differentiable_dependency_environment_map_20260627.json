@@ -119,14 +119,14 @@
         "requirements-ci-py311-linux.txt",
         "requirements-ci-py312-linux.txt",
         "requirements-ci-py313-linux.txt",
-        "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json"
+        "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json"
       ],
       "evidence_sha256": [
         "35660e01a5aa20c65e54a1d892675f78aaf37fd2204232587aadee07a43dd986",
         "e4184396cf87e2c22905bccd199ac12d078930ff783ff1b8eec740c9408f4cd8",
         "d7c95a30ff728d3fcea5f7739d48c5b10446503c153b7773038a992f73bc9756",
         "3d912d4ef65e5f20965e05abc3861c8222e220a43fde3690279237734e22c81b",
-        "6427a11f60da9ade36cb87d860bca93c933e32439b4e7b4cf109e5b7e318b7c8"
+        "5c0dc2fedde6ddd4609941fbd6c9aec716c57dbcede6505f3b7cea205f15c642"
       ],
       "evidence_status": "locked",
       "blockers": [],
@@ -371,7 +371,7 @@
       "evidence_sha256": [
         "8c32c988ed2a1acdf5b7ad9d37dcd258167abc130bca6f3fb2cdc4e898cb97b5",
         "f335a8ccd0bce75945caf8e243846f796cc26d68bbb8c01d296722db3da62e21",
-        "80a506bffa8d8b455cd86008769b4659c6cd67186e18a6310fa6bf390e59919c"
+        "a2bf4d674baba9ecb5125941013e695a80c19bb593b51c75aae531ca035c0df1"
       ],
       "evidence_status": "hard_gap",
       "blockers": [
@@ -392,7 +392,7 @@
       ],
       "evidence_sha256": [
         "877f6203165da422a4995d1877d72bd58178271b39389ead8598b5aa5dd76b06",
-        "864d1b7fda5a4f8a90bf9a0da7660cb2d4bab0b16da59dc606a293189d850dc2"
+        "942bad539a7a009eb6c6851b572a3f9d136e74d07d79acbffcda25661b4106a0"
       ],
       "evidence_status": "hard_gap",
       "blockers": [
@@ -413,7 +413,7 @@
       ],
       "evidence_sha256": [
         "877f6203165da422a4995d1877d72bd58178271b39389ead8598b5aa5dd76b06",
-        "864d1b7fda5a4f8a90bf9a0da7660cb2d4bab0b16da59dc606a293189d850dc2"
+        "942bad539a7a009eb6c6851b572a3f9d136e74d07d79acbffcda25661b4106a0"
       ],
       "evidence_status": "hard_gap",
       "blockers": [
@@ -434,7 +434,7 @@
       ],
       "evidence_sha256": [
         "8c32c988ed2a1acdf5b7ad9d37dcd258167abc130bca6f3fb2cdc4e898cb97b5",
-        "864d1b7fda5a4f8a90bf9a0da7660cb2d4bab0b16da59dc606a293189d850dc2"
+        "942bad539a7a009eb6c6851b572a3f9d136e74d07d79acbffcda25661b4106a0"
       ],
       "evidence_status": "hard_gap",
       "blockers": [
@@ -454,7 +454,7 @@
         "data/differentiable_phase_qnode/ml350_full_framework_catalyst_baseline_20260705/phase_qnode_affinity_validation_isolated_required.json"
       ],
       "evidence_sha256": [
-        "612baf246572d484d889afb92d07d985990569a74713676e501b3ed1aa927c09",
+        "b902db9103dedcb8ae9a35f04577cf0c5199c66bd317a858e2f74f73b6961c75",
         "5f7e7a344dd6a1bf2cabb4775d645c2c3603ead0c3afa862031011ec67314072"
       ],
       "evidence_status": "hard_gap",

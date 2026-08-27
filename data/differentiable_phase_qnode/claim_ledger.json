@@ -215,7 +215,7 @@
     },
     {
       "benchmark_artifact_ids": [
-        "diff-external-validation-environment-lock-20260616"
+        "differentiable-external-validation-environment-manifest-20260616"
       ],
       "claim_boundary": "External-validation environment lockfiles support reviewer reproduction only; they do not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.",
       "claim_id": "external_validation_environment_lock",
@@ -223,11 +223,11 @@
       "docs_surface": [
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
-        "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md",
+        "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.md",
         "data/differentiable_phase_qnode/claim_ledger.md"
       ],
       "evidence_artifact_ids": [
-        "diff-external-validation-environment-lock-20260616"
+        "differentiable-external-validation-environment-manifest-20260616"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/differentiable_external_validation.py"

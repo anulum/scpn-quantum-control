@@ -1,5 +1,5 @@
 {
-  "artifact_id": "diff-external-validation-environment-lock-20260616",
+  "artifact_id": "differentiable-external-validation-environment-manifest-20260616",
   "claim_boundary": "Exact environment lockfile manifest for reviewer reproduction only; it does not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.",
   "classification": "functional_non_isolated",
   "lockfiles": [
@@ -78,5 +78,5 @@
   ],
   "platform": "Linux-7.0.0-28-generic-x86_64-with-glibc2.39",
   "python_version": "3.12.3",
-  "schema": "scpn_qc_differentiable_external_validation_environment_lock_v1"
+  "schema": "scpn_qc_differentiable_external_validation_environment_lock_v2"
 }

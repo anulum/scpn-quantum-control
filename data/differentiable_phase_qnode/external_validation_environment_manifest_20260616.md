@@ -10,7 +10,7 @@ SCPN Quantum Control — Differentiable external-validation environment lock
 
 # Differentiable External-Validation Environment Lock
 
-- Artefact ID: `diff-external-validation-environment-lock-20260616`
+- Artefact ID: `differentiable-external-validation-environment-manifest-20260616`
 - Classification: `functional_non_isolated`
 - Python: `3.12.3`
 - Platform: `Linux-7.0.0-28-generic-x86_64-with-glibc2.39`

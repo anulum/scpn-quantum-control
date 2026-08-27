@@ -151,6 +151,25 @@ def test_environment_lock_validation_rejects_contract_drift(tmp_path: Path) -> N
     )
 
 
+def test_external_validation_rejects_stale_v1_schemas() -> None:
+    """Reject stale environment and bundle schemas without compatibility aliases."""
+    environment = replace(
+        build_external_validation_environment_lock(),
+        schema="scpn_qc_differentiable_external_validation_environment_lock_v1",
+    )
+    bundle = replace(
+        build_external_validation_artifact_bundle(),
+        schema="scpn_qc_differentiable_external_validation_artifact_bundle_v1",
+    )
+
+    assert validate_external_validation_environment_lock(environment).errors == (
+        "unexpected schema: scpn_qc_differentiable_external_validation_environment_lock_v1",
+    )
+    assert validate_external_validation_artifact_bundle(bundle).errors == (
+        "unexpected schema: scpn_qc_differentiable_external_validation_artifact_bundle_v1",
+    )
+
+
 def test_summarize_environment_lockfile_counts_pinned_packages(tmp_path: Path) -> None:
     """Lockfile summaries must count pinned requirements and file metadata."""
     lockfile = tmp_path / "requirements.txt"

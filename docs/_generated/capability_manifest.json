@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1218
+    "test_files": 1219
   },
   "documentation": {
     "examples": [
@@ -8484,6 +8484,7 @@
       "tests/test_export_s8_adaptive_branching_readiness.py",
       "tests/test_export_s9_quantum_thermo_readiness.py",
       "tests/test_export_ultrascale_hls_artifact.py",
+      "tests/test_external_validation_quality_gate.py",
       "tests/test_fast_classical.py",
       "tests/test_fault_tolerant.py",
       "tests/test_fault_tolerant_resource_product.py",

@@ -388,9 +388,9 @@ targets before invoking `pip`; use an absolute directory path on the working
 ext4 disk for reproducible framework-overlay evidence.
 
 The external-validation package also has an exact environment lock manifest at
-`data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json`
+`data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json`
 with a reviewer summary at
-`data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md`.
+`data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.md`.
 `build_external_validation_environment_lock()` records SHA-256 digests, byte
 sizes, line counts, and pinned-package counts for the runtime, development,
 Python 3.11-3.13 CI, CPU framework overlay, and Python 3.9 Enzyme runner

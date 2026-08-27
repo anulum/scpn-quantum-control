@@ -21,7 +21,7 @@ ledger is `data/differentiable_phase_qnode/claim_ledger.md`.
 | Artefact | Role | Boundary |
 |---|---|---|
 | `data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.json` | SHA-256 manifest over committed differentiable evidence files. | Checksum provenance only. |
-| `data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json` | Exact runtime, developer, CI, framework-overlay, and Enzyme-runner lockfile manifest. | Reviewer reproduction only. |
+| `data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json` | Exact runtime, developer, CI, framework-overlay, and Enzyme-runner lockfile manifest. | Reviewer reproduction only. |
 | `data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json` | Bounded JAX, PyTorch, PennyLane, Enzyme, TensorFlow, and Catalyst comparison rows, including the dedicated Catalyst compiler-workflow profile added during the 2026-07-04 schema refresh. | Functional non-isolated comparison evidence. |
 | `data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json` | Same-circuit gradient comparison artefact for Qiskit and PennyLane routes. | Correctness comparison, not hardware execution. |
 | `data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json` | Exact-answer domain dataset closure artefact. | Dataset validation, not production benchmark promotion. |

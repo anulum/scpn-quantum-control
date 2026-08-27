@@ -216,7 +216,7 @@ def build_differentiable_dependency_environment_evidence(
                 "requirements-ci-py311-linux.txt",
                 "requirements-ci-py312-linux.txt",
                 "requirements-ci-py313-linux.txt",
-                "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
+                "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json",
             ),
             "locked",
         ),

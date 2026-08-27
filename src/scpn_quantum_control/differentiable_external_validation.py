@@ -20,13 +20,13 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_SCHEMA = (
-    "scpn_qc_differentiable_external_validation_environment_lock_v1"
+    "scpn_qc_differentiable_external_validation_environment_lock_v2"
 )
 EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_ARTIFACT_ID = (
-    "diff-external-validation-environment-lock-20260616"
+    "differentiable-external-validation-environment-manifest-20260616"
 )
 EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_SCHEMA = (
-    "scpn_qc_differentiable_external_validation_artifact_bundle_v1"
+    "scpn_qc_differentiable_external_validation_artifact_bundle_v2"
 )
 EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_ARTIFACT_ID = (
     "diff-external-validation-artifact-bundle-20260616"
@@ -35,7 +35,7 @@ DEFAULT_EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_PATH = (
     REPO_ROOT
     / "data"
     / "differentiable_phase_qnode"
-    / "external_validation_environment_lock_20260616.json"
+    / "external_validation_environment_manifest_20260616.json"
 )
 DEFAULT_EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_PATH = (
     REPO_ROOT
@@ -157,11 +157,11 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "Non-promotional compiler evidence promotion-batch reviewer summary",
     ),
     (
-        "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
+        "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json",
         "Exact environment-lock manifest",
     ),
     (
-        "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md",
+        "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.md",
         "Environment-lock reviewer summary",
     ),
     (
