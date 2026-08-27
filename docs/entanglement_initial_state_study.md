@@ -1,6 +1,6 @@
 # Entangled initial-state coherence study
 
-BL-79 is a bounded four-qubit simulation study of how four pure initial-state
+This is a bounded four-qubit simulation study of how four pure initial-state
 families evolve under one frozen Kuramoto-XY Hamiltonian. It does **not** show
 that entanglement lowers a synchronisation threshold. The model is closed and
 unitary: it has no drive, dissipation, limit cycle, coupling scan, provider, or
@@ -111,8 +111,8 @@ comparisons = compare_initial_states_with_dephased_controls(
 `simulate_sync_trajectory(...)` and `compare_all_initial_states(...)` expose
 both observables and the phase-defined flags. The legacy
 `entanglement_advantage(...)` name remains for compatibility, but returns only
-a descriptive comparison with a BL-65 no-advantage certificate. It no longer
-reports a convergence speedup.
+a descriptive comparison with a governed no-advantage certificate. It no
+longer reports a convergence speedup.
 
 ## Literature boundary
 

@@ -123,7 +123,7 @@ def test_writer_and_main_emit_atomic_valid_files(
     )
     assert written == payload
     assert json.loads(supplied_json.read_text(encoding="utf-8")) == payload
-    assert supplied_markdown.read_text(encoding="utf-8").startswith("# BL-79")
+    assert supplied_markdown.read_text(encoding="utf-8").startswith("# Bounded entanglement-sync")
     assert not supplied_json.with_suffix(".json.tmp").exists()
 
     generated_json = tmp_path / "generated.json"
@@ -208,6 +208,16 @@ def test_validator_rejects_top_level_drift(
     assert any(message in finding for finding in validate_entanglement_sync_evidence(changed))
 
 
+def test_validator_rejects_stale_coded_schema(payload: dict[str, object]) -> None:
+    """Reject the superseded schema instead of retaining a compatibility alias."""
+    stale = copy.deepcopy(payload)
+    stale["schema"] = "entanglement_initial_state_evidence.v1"
+    assert validate_entanglement_sync_evidence(stale) == (
+        f"schema must equal {ENTANGLEMENT_SYNC_EVIDENCE_SCHEMA!r}",
+        "content_digest does not match canonical payload bytes",
+    )
+
+
 def test_validator_rejects_malformed_and_reclassified_comparisons(
     payload: dict[str, object],
 ) -> None:
@@ -252,7 +262,7 @@ def test_writer_rejects_invalid_payload(payload: dict[str, object], tmp_path: Pa
     """Refuse to persist evidence after a claim-boundary mutation."""
     changed = copy.deepcopy(payload)
     changed["entanglement_specific_effect_supported"] = True
-    with pytest.raises(RuntimeError, match="invalid BL-79 evidence"):
+    with pytest.raises(RuntimeError, match="invalid entanglement-sync evidence"):
         write_entanglement_sync_evidence(
             tmp_path / "bad.json",
             tmp_path / "bad.md",

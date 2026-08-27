@@ -1,9 +1,9 @@
-# BL-79 bounded initial-state coherence evidence
+# Bounded entanglement-sync initial-state coherence evidence
 
-- Schema: `entanglement_initial_state_evidence.v1`
+- Schema: `entanglement_initial_state_evidence.v2`
 - Functional passed: `true`
 - Deterministic replay: `true`
-- Content digest: `6153f7bca9e47d46de759579fa9eea7497c6a2e3dd0ca9a09377e27f87c9eef9`
+- Content digest: `5aee67e29fe577332b38a36a229bd9a705d9aca49b80ac3e534467bb50665628`
 - Execution: exact local statevector/density simulation; no provider, QPU, or hardware.
 
 ## Frozen state-family comparisons

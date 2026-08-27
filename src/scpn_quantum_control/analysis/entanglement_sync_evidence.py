@@ -21,7 +21,7 @@ import numpy as np
 
 from .entanglement_enhanced_sync import compare_initial_states_with_dephased_controls
 
-ENTANGLEMENT_SYNC_EVIDENCE_SCHEMA: Final[str] = "entanglement_initial_state_evidence.v1"
+ENTANGLEMENT_SYNC_EVIDENCE_SCHEMA: Final[str] = "entanglement_initial_state_evidence.v2"
 ENTANGLEMENT_SYNC_CLAIM_BOUNDARY: Final[str] = (
     "bounded deterministic closed-system statevector study for one frozen four-qubit "
     "Kuramoto-XY Hamiltonian and finite time grid; exchange coherence is a custom "
@@ -68,7 +68,7 @@ _N_STEPS: Final[int] = 20
 
 
 def frozen_entanglement_sync_scenario() -> dict[str, object]:
-    """Return the immutable finite BL-79 simulation specification."""
+    """Return the immutable finite entanglement-sync simulation specification."""
     return {
         "scenario_id": "paper27_four_qubit_initial_state_controls",
         "coupling": [list(row) for row in _COUPLING],
@@ -176,7 +176,7 @@ def entanglement_sync_evidence_payload() -> dict[str, object]:
 
 
 def validate_entanglement_sync_evidence(payload: object) -> tuple[str, ...]:
-    """Return fail-closed findings for one BL-79 evidence payload."""
+    """Return fail-closed findings for one entanglement-sync evidence payload."""
     if not isinstance(payload, dict):
         return ("payload must be a JSON object",)
     data = cast(dict[str, object], payload)
@@ -232,10 +232,10 @@ def validate_entanglement_sync_evidence(payload: object) -> tuple[str, ...]:
 
 
 def render_entanglement_sync_evidence_markdown(payload: Mapping[str, object]) -> str:
-    """Render a compact human-readable BL-79 evidence report."""
+    """Render a compact human-readable entanglement-sync evidence report."""
     comparisons = cast(dict[str, dict[str, object]], payload["comparisons"])
     lines = [
-        "# BL-79 bounded initial-state coherence evidence",
+        "# Bounded entanglement-sync initial-state coherence evidence",
         "",
         f"- Schema: `{payload['schema']}`",
         f"- Functional passed: `{str(payload['functional_passed']).lower()}`",
@@ -285,7 +285,7 @@ def write_entanglement_sync_evidence(
     *,
     payload: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
-    """Validate and atomically write generated or supplied BL-79 evidence."""
+    """Validate and atomically write generated or supplied entanglement-sync evidence."""
     selected = (
         copy.deepcopy(dict(payload))
         if payload is not None
@@ -293,7 +293,7 @@ def write_entanglement_sync_evidence(
     )
     findings = validate_entanglement_sync_evidence(selected)
     if findings:
-        raise RuntimeError("invalid BL-79 evidence: " + "; ".join(findings))
+        raise RuntimeError("invalid entanglement-sync evidence: " + "; ".join(findings))
     json_path.parent.mkdir(parents=True, exist_ok=True)
     markdown_path.parent.mkdir(parents=True, exist_ok=True)
     _atomic_write(json_path, json.dumps(selected, indent=2, sort_keys=True) + "\n")
@@ -317,7 +317,7 @@ def _number(row: Mapping[str, object], field: str) -> float:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Run the deterministic BL-79 evidence CLI."""
+    """Run the deterministic entanglement-sync evidence CLI."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--json-output",

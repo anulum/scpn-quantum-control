@@ -36,6 +36,7 @@ References
     Mukherjee et al., PRA 110 (2024): QSL as QPT probe.
     Impens & Guery-Odelin, arXiv:2210.05848: shortcut to synchronization.
     Wei et al., Sci. Rep. (2016): QSL anomalies at criticality.
+
 """
 
 from __future__ import annotations
@@ -82,6 +83,7 @@ class QSLResult:
         Exact finite-system ground energy.
     n_qubits
         Number of simulated qubits.
+
     """
 
     tau_MT: float
@@ -144,10 +146,12 @@ def compute_qsl(
 
     Notes
     -----
-    Evolves the same frequency-encoded product state used by the BL-79
-    initial-state study. The returned threshold time is a bounded numerical
-    diagnostic, not a spontaneous-synchronisation or BKT certificate. The
-    result is not admitted as a control constraint by this function alone.
+    Evolves the same frequency-encoded product state used by the bounded
+    entanglement-sync initial-state study. The returned threshold time is a
+    bounded numerical diagnostic, not a spontaneous-synchronisation or BKT
+    certificate. The result is not admitted as a control constraint by this
+    function alone.
+
     """
     _validate_qsl_parameters(t_target, dt, R_threshold)
     n = K.shape[0]

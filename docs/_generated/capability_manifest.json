@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1208
+    "test_files": 1209
   },
   "documentation": {
     "examples": [
@@ -8454,6 +8454,7 @@
       "tests/test_entanglement_spectrum.py",
       "tests/test_entanglement_spectrum_branches.py",
       "tests/test_entanglement_sync_evidence.py",
+      "tests/test_entanglement_sync_evidence_quality_gate.py",
       "tests/test_entanglement_tomography_readiness.py",
       "tests/test_entropy_qrng.py",
       "tests/test_enzyme_toolchain_execution_evidence.py",

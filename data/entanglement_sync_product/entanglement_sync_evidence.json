@@ -109,7 +109,7 @@
       }
     }
   },
-  "content_digest": "6153f7bca9e47d46de759579fa9eea7497c6a2e3dd0ca9a09377e27f87c9eef9",
+  "content_digest": "5aee67e29fe577332b38a36a229bd9a705d9aca49b80ac3e534467bb50665628",
   "critical_coupling_claimed": false,
   "deterministic_replay": true,
   "entanglement_specific_effect_supported": false,
@@ -186,7 +186,7 @@
     "scenario_id": "paper27_four_qubit_initial_state_controls",
     "t_max": 2.0
   },
-  "schema": "entanglement_initial_state_evidence.v1",
+  "schema": "entanglement_initial_state_evidence.v2",
   "separable_attribution_control_present": true,
   "state_family_count": 4
 }

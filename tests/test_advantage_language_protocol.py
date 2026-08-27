@@ -50,10 +50,12 @@ def test_get_default_and_decisive_protocols() -> None:
     assert decisive.reason
     assert any("decisive_advantage_protocol" in m for m in decisive.evidence_modules)
 
-    bl79 = get_advantage_protocol("protocol:entanglement.initial_state_observation")
-    assert bl79.language_status == "research_observation"
-    assert "entanglement-specific" in bl79.reason
-    assert any("entanglement_enhanced_sync" in module for module in bl79.evidence_modules)
+    entanglement_sync = get_advantage_protocol("protocol:entanglement.initial_state_observation")
+    assert entanglement_sync.language_status == "research_observation"
+    assert "entanglement-specific" in entanglement_sync.reason
+    assert any(
+        "entanglement_enhanced_sync" in module for module in entanglement_sync.evidence_modules
+    )
 
 
 def test_get_rejects_blank_and_unknown() -> None:
@@ -96,12 +98,12 @@ def test_issue_no_advantage_certificate_default() -> None:
     payload = cert.to_dict()
     assert payload["claim_boundary"] == ADVANTAGE_LANGUAGE_CLAIM_BOUNDARY
 
-    bl79 = issue_no_advantage_certificate(
-        context="bl79 initial-state study",
+    entanglement_sync = issue_no_advantage_certificate(
+        context="entanglement-sync initial-state study",
         protocol_id="protocol:entanglement.initial_state_observation",
     )
-    assert bl79.protocol_id == "protocol:entanglement.initial_state_observation"
-    assert bl79.language_status == "no_advantage_default"
+    assert entanglement_sync.protocol_id == "protocol:entanglement.initial_state_observation"
+    assert entanglement_sync.language_status == "no_advantage_default"
 
 
 def test_issue_certificate_rejects_blank_and_refuse_protocol() -> None:

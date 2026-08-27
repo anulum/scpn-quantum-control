@@ -173,15 +173,16 @@ physical noise-setpoint claim.
 
 ### Entangled Initial-State Coherence Tests
 
-BL-79 validates visibility-aware local phase order, bounded transverse-exchange
-coherence, all four state-preparation families, population-matched dephased
-controls, and pure-state one-qubit linear entropy. The frozen four-qubit suite
+The entanglement-sync evidence lane validates visibility-aware local phase
+order, bounded transverse-exchange coherence, all four state-preparation
+families, population-matched dephased controls, and pure-state one-qubit linear
+entropy. The frozen four-qubit suite
 requires Bell/W coherence differences, a GHZ zero-difference negative control,
 and a separable product attribution control. Deterministic replay, digest
-validation, the real CLI, atomic writing, BL-65 language governance, dense
-budgets, and malformed inputs are covered. The focused lane requires 100%
-statement and branch coverage over `analysis/entanglement_enhanced_sync.py` and
-`analysis/entanglement_sync_evidence.py`; it does not validate an
+validation, the real CLI, atomic writing, no-advantage language governance,
+dense budgets, and malformed inputs are covered. The focused lane requires 100%
+statement and branch coverage over `analysis/entanglement_sync_evidence.py`;
+it does not validate an
 entanglement-specific cause, shifted critical coupling, spontaneous
 synchronisation, advantage, provider, or hardware claim.
 

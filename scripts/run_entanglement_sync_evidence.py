@@ -5,7 +5,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — BL-79 Entangled Initial-State Evidence Runner
+# SCPN Quantum Control — entanglement-sync initial-state evidence runner
 """Run the deterministic entanglement-sync initial-state evidence suite."""
 
 from scpn_quantum_control.analysis.entanglement_sync_evidence import main

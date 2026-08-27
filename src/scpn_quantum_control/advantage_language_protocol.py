@@ -278,7 +278,7 @@ _CANONICAL_PROTOCOLS: Final[tuple[AdvantageProtocolRecord, ...]] = (
     _protocol(
         "protocol:entanglement.initial_state_observation",
         "research_observation",
-        "BL-79 initial-state coherence comparison with population-matched controls.",
+        "Entanglement-sync initial-state coherence comparison with population-matched controls.",
         evidence_modules=(
             "scpn_quantum_control.analysis.entanglement_enhanced_sync",
             "scpn_quantum_control.analysis.entanglement_sync_evidence",

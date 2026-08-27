@@ -73,6 +73,9 @@ if TYPE_CHECKING:
     )
     from tools import differentiable_quality_gates as _differentiable_quality_gates
     from tools import (
+        entanglement_sync_evidence_quality_gates as _entanglement_sync_evidence_quality_gates,
+    )
+    from tools import (
         error_mitigation_product_quality_gates as _error_mitigation_product_quality_gates,
     )
     from tools import experiment_mitigation_quality_gates as _experiment_mitigation_quality_gates
@@ -213,6 +216,9 @@ else:
     _differentiable_quality_gates = import_module("tools.differentiable_quality_gates")
     _experiment_mitigation_quality_gates = import_module(
         "tools.experiment_mitigation_quality_gates"
+    )
+    _entanglement_sync_evidence_quality_gates = import_module(
+        "tools.entanglement_sync_evidence_quality_gates"
     )
     _synchronisation_witness_quality_gates = import_module(
         "tools.synchronisation_witness_quality_gates"
@@ -631,6 +637,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_competitive_baseline_watch_quality_gates.build_static_quality_gates(_PY),
     *_whole_program_ad_product_quality_gates.build_static_quality_gates(_PY),
     *_neural_operator_baseline_product_quality_gates.build_static_quality_gates(_PY),
+    *_entanglement_sync_evidence_quality_gates.build_static_quality_gates(_PY),
     *_neural_operator_cost_model_quality_gates.build_static_quality_gates(_PY),
     *_governed_route_matrix_quality_gates.build_static_quality_gates(_PY),
     *_attested_result_pack_quality_gates.build_static_quality_gates(_PY),
@@ -1091,6 +1098,9 @@ NEURAL_OPERATOR_COST_MODEL_COVERAGE_GATES = (
 NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_GATES = (
     _neural_operator_baseline_product_quality_gates.build_coverage_gates(_PY)
 )
+ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_GATES = (
+    _entanglement_sync_evidence_quality_gates.build_coverage_gates(_PY)
+)
 GOVERNED_ROUTE_MATRIX_COVERAGE_GATES = _governed_route_matrix_quality_gates.build_coverage_gates(
     _PY
 )
@@ -1417,6 +1427,7 @@ def main() -> int:
             gates.extend(COMPETITIVE_BASELINE_WATCH_COVERAGE_GATES)
             gates.extend(WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_GATES)
             gates.extend(NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_GATES)
+            gates.extend(ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_GATES)
             gates.extend(NEURAL_OPERATOR_COST_MODEL_COVERAGE_GATES)
             gates.extend(GOVERNED_ROUTE_MATRIX_COVERAGE_GATES)
             gates.extend(ATTESTED_RESULT_PACK_COVERAGE_GATES)

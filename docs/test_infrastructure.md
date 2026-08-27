@@ -103,8 +103,8 @@ mechanical annotations with intentional invalid-input tests and hide ownership.
 consists of the 16-file `repository_policy` cohort covering coverage,
 coverage debt, licence, release, generated-surface, commit, secret, TODO, version,
 branch, module-responsibility, CI/pre-push, local preflight, and built-wheel
-publication gate tests, plus the 2-file `claim_release_contracts` BL-79 scientific
-and evidence slice.
+publication gate tests, plus the 2-file `claim_release_contracts`
+entanglement-sync scientific and evidence slice.
 `tools/audit_test_typing_policy.py`
 validates that every enforced path is tracked and runs strict mypy over the
 exact cohort; CI and the no-test local preflight execute the same command.

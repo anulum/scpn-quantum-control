@@ -70,7 +70,7 @@
   and digest-bound offline replay of committed repeated-FIM counts. Hardware,
   closed-loop efficacy, FIM protection, optimal-policy, and advantage claims
   remain refused.
-- 2026-07-28 — Bounded entangled initial-state coherence study (BL-79):
+- 2026-07-28 — Bounded entangled initial-state coherence study:
   replaced the `atan2(0, 0) -> R=1` phase proxy with visibility-aware local
   phase order, added a separate transverse-exchange-coherence diagnostic,
   population-matched dephased controls, a separable attribution control, and
@@ -176,8 +176,8 @@ control, or broad quantum-advantage claim is promoted by this release.
   and co-design observer composition, primary-source boundary, evidence CLI,
   public guide, and deterministic JSON/Markdown calibration and custody-replay
   artefacts.
-- 2026-07-28 — BL-79 visibility-aware phase/coherence observables,
-  dephased-control comparison API, BL-65 research-observation certificate,
+- 2026-07-28 — Visibility-aware phase/coherence observables,
+  dephased-control comparison API, governed research-observation certificate,
   evidence CLI, public scientific-boundary guide, and committed deterministic
   JSON/Markdown evidence.
 - 2026-07-28 — BL-87 site-basis ENAQT scanner, explicit transfer-efficiency
