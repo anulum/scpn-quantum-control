@@ -116,8 +116,8 @@ plus active-sensing, identity, and geometry observer records. It does not import
 repository or move plant-model ownership into this codebase.
 
 The evaluator reuses the existing synchronisation objective and exact analytic
-gradient, attaches the existing BL-09 capability explanation, and can compose
-one explicit BL-16 bounded open-system case. A `ClosedLoopExecutionPolicy` is
+gradient, attaches the existing governed capability explanation, and can
+compose one explicit bounded open-system case. A `ClosedLoopExecutionPolicy` is
 required, but hardware execution remains refused even when that policy carries
 a ticket. Logical timestamps make replay deterministic; measured workstation
 timings live only in a separately labelled `functional_non_isolated` evidence

@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 1212
+    "test_files": 1213
   },
   "documentation": {
     "examples": [
@@ -8275,6 +8275,7 @@
       "tests/test_cloud_native_deployment_product.py",
       "tests/test_cloud_native_deployment_product_quality_gate.py",
       "tests/test_codesign_adapters.py",
+      "tests/test_codesign_components_quality_gate.py",
       "tests/test_codesign_contracts.py",
       "tests/test_codesign_evaluation.py",
       "tests/test_codesign_evidence.py",

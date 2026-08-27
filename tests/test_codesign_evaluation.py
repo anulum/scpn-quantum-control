@@ -71,7 +71,7 @@ def test_estimator_uses_explicit_prior_and_validates_inputs() -> None:
 
 
 def test_simulator_matches_existing_phase_objective_and_planner() -> None:
-    """Match the existing objective while attaching a local BL-09 plan."""
+    """Match the existing objective while attaching a local governed plan."""
     step_input = _input()
     simulator = PhaseObjectiveSimulator(policy=ClosedLoopExecutionPolicy())
     result = simulator.evaluate(step_input)
@@ -102,7 +102,7 @@ def test_simulator_models_missing_updates_deterministically() -> None:
 
 
 def test_simulator_refuses_an_unsupported_planner_route() -> None:
-    """Refuse a BL-09 route that is diagnostic rather than promoted."""
+    """Refuse a governed route that is diagnostic rather than promoted."""
     simulator = PhaseObjectiveSimulator(
         policy=ClosedLoopExecutionPolicy(),
         planner_method="finite_difference",
@@ -142,8 +142,8 @@ def test_simulator_refuses_hardware_and_invalid_capabilities() -> None:
         PhaseObjectiveSimulator(policy=hardware_policy).evaluate(_input())
 
 
-def test_optional_open_system_path_reuses_bounded_bl16_suite() -> None:
-    """Compose the actual bounded BL-16 Lindblad objective at current inputs."""
+def test_optional_open_system_path_reuses_bounded_objective_suite() -> None:
+    """Compose the actual bounded Lindblad objective at current inputs."""
     case = default_open_system_objective_cases()[0]
     simulator = PhaseObjectiveSimulator(
         policy=ClosedLoopExecutionPolicy(),
@@ -162,7 +162,7 @@ def test_optional_open_system_path_reuses_bounded_bl16_suite() -> None:
 
 
 def test_zero_weight_open_system_path_remains_inactive() -> None:
-    """Leave the optional BL-16 augmentation inactive at zero weight."""
+    """Leave the optional open-system augmentation inactive at zero weight."""
     case = default_open_system_objective_cases()[0]
     simulator = PhaseObjectiveSimulator(
         policy=ClosedLoopExecutionPolicy(),
@@ -176,7 +176,7 @@ def test_zero_weight_open_system_path_remains_inactive() -> None:
 
 
 def test_open_system_width_mismatch_fails_closed() -> None:
-    """Reject dimensional drift between BL-16 and loop parameters."""
+    """Reject dimensional drift between open-system and loop parameters."""
     case = default_open_system_objective_cases()[0]
     simulator = PhaseObjectiveSimulator(
         policy=ClosedLoopExecutionPolicy(),

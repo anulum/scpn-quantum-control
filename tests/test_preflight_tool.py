@@ -1037,6 +1037,8 @@ def test_main_uses_coverage_pytest_by_default(
         "identity-binding-spec exact coverage threshold",
         "ssgf-geometry-gradient focused coverage",
         "ssgf-geometry-gradient exact coverage threshold",
+        "codesign-components focused coverage",
+        "codesign-components exact coverage threshold",
         "neural-operator-cost-model focused coverage",
         "neural-operator-cost-model exact coverage threshold",
         "governed-route-matrix focused coverage",

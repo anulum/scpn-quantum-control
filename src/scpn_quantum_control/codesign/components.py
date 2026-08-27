@@ -95,7 +95,7 @@ class ExponentialOrderEstimator:
 
 @dataclass(frozen=True, slots=True)
 class OpenSystemObjectiveConfig:
-    """Optional BL-16 objective augmentation over a bounded published case."""
+    """Optional open-system objective augmentation over a bounded published case."""
 
     case: BoundedOpenSystemObjectiveCase
     backend: OpenSystemBackend
@@ -113,7 +113,7 @@ class PhaseObjectiveSimulator:
 
     The primary objective is built by
     :func:`scpn_quantum_control.phase.synchronisation_objectives.build_synchronisation_objective`.
-    An optional BL-16 bounded open-system record may be added with an explicit
+    An optional bounded open-system record may be added with an explicit
     weight. Logical latency is configured rather than measured so replay bytes
     remain stable.
     """
@@ -133,7 +133,7 @@ class PhaseObjectiveSimulator:
     def __post_init__(self) -> None:
         """Refuse hardware capabilities and invalid logical latency."""
         if self.capabilities.hardware:
-            raise ValueError("BL-33 evaluator capabilities must remain simulator-only")
+            raise ValueError("co-design evaluator capabilities must remain simulator-only")
         if not np.isfinite(self.logical_latency_ms) or self.logical_latency_ms < 0.0:
             raise ValueError("logical_latency_ms must be finite and non-negative")
         if self.logical_latency_ms > self.capabilities.max_latency_ms:
@@ -149,7 +149,7 @@ class PhaseObjectiveSimulator:
             requested_rounds=1,
         )
         if decision.mode is not ExecutionMode.SIMULATION:
-            raise PermissionError("BL-33 evaluation refuses hardware execution")
+            raise PermissionError("co-design evaluation refuses hardware execution")
         if step_input.step in self.missing_gradient_steps:
             return None
 
@@ -188,7 +188,7 @@ class PhaseObjectiveSimulator:
         )
         plan = explanation.selected_plan
         if not explanation.supported:
-            raise RuntimeError("BL-09 gradient planner did not produce a local supported plan")
+            raise RuntimeError("governed gradient planner did not produce a local supported plan")
         plan_record = GradientPlanRecord(
             backend=plan.backend,
             requested_method=explanation.requested_method,
@@ -256,7 +256,7 @@ class GradientFeedbackController:
 
 
 def component_claim_boundary() -> str:
-    """Return the shared BL-33 claim boundary for component registries."""
+    """Return the shared co-design claim boundary for component registries."""
     return CODESIGN_CLAIM_BOUNDARY
 
 
