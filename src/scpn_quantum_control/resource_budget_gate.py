@@ -13,7 +13,7 @@ and dense Hilbert-space allocations. Composes the low-level guards in
 use the same formulas (no silent diverging budget math).
 
 Does **not** invent host-RAM enterprise capacity claims or rewrite all
-compiler/linalg call sites (S94.1 residual hooks remain open).
+compiler/linalg call sites (full call-site enforcement remains open).
 """
 
 from __future__ import annotations
@@ -696,7 +696,7 @@ def build_resource_budget_registry() -> dict[str, object]:
         "policy_note": (
             "Composes compile_budget.estimate_pauli_operator and "
             "dense_budget.estimate_dense_allocation with explicit product GiB caps; "
-            "S94.1 full call-site hooks remain residual."
+            "Full compiler/linalg call-site enforcement remains residual."
         ),
     }
 

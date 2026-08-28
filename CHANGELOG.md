@@ -417,7 +417,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   `dry_run_compute_plan` validation without provider submission, and
   secret-free audit composed with BL-47 hardware-safe posture. Docs:
   `docs/qpu_compute_product.md`. Completes tier-A P0 integrity spine.
-- 2026-07-23 — Compile & dense resource budget gate (BL-94):
+- 2026-07-23 — Compile & dense resource budget gate:
   `scpn_quantum_control.resource_budget_gate` productises fail-closed budgets
   for sparse Pauli/compile construction and dense Hilbert allocations.
   Catalogue dimensions, `estimate_resource_budget` / `check_resource_budget` /

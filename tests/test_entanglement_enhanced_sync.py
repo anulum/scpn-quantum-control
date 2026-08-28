@@ -200,7 +200,7 @@ def test_simulation_returns_bounded_observables_and_defined_flags() -> None:
 
 
 def test_simulation_budget_fails_before_dense_hamiltonian() -> None:
-    """Keep the BL-94 dense-allocation guard on the real entry point."""
+    """Keep the dense-allocation guard on the real entry point."""
     with pytest.raises(DenseAllocationError, match="entangled initial-state dense"):
         simulate_sync_trajectory(
             build_knm_paper27(L=12),

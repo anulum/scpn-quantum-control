@@ -175,15 +175,15 @@ inconsistent counts.
   network I/O, accesses credentials, or runs a compiler/provider/hardware job.
 - An allowed decision means only that the composed estimate fits the explicit
   cap. It is not runtime, performance, production-capacity, or release proof.
-- Callers remain responsible for the open S94.1 enforcement hooks at every
+- Callers remain responsible for the open enforcement hooks at every
   compiler and linear-algebra allocation boundary.
 
 ## Bounded product status
 
-Shipped: S94.0 budget dimensions · S94.2 exceed → typed refuse · S94.3 docs
-product surface.
+Shipped: budget dimensions · exceed → typed refuse · documentation product
+surface.
 
-Open: S94.1 full enforce hooks in every compiler/linalg call site · studio
+Open: full enforce hooks in every compiler/linalg call site · studio
 execute preflight wiring beyond this catalogue.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
