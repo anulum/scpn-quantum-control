@@ -158,6 +158,7 @@ def classical_esn_feature_matrix(
     -------
     numpy.ndarray
         Feature matrix with shape ``(n_samples, reservoir_size)``.
+
     """
     x_array = _validated_training_matrix(X)
     n_reservoir = _validated_reservoir_size(reservoir_size)
@@ -220,6 +221,7 @@ def classical_esn_ridge_regression(
     -------
     ClassicalESNReadoutResult
         Features, readout weights, training predictions, and MSE.
+
     """
     x_array = _validated_training_matrix(X_train)
     y_array = _validated_targets(y_train, x_array.shape[0])
@@ -291,6 +293,7 @@ def compare_quantum_reservoir_to_esn(
     -------
     QRCBaselineComparison
         Matched-feature predictions and MSE values for the two readouts.
+
     """
     x_array = _validated_training_matrix(X_train)
     y_array = _validated_targets(y_train, x_array.shape[0])
@@ -376,6 +379,7 @@ def compare_quantum_reservoir_to_esn_holdout(
     -------
     QRCHoldoutComparison
         Train and validation predictions and MSE values for both systems.
+
     """
     x_train = _validated_training_matrix(X_train)
     x_validation = _validated_training_matrix(X_validation)

@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — QRC-baseline documentation quality: completed the
+  preview-inclusive NumPy docstring contract across the deterministic
+  classical-ESN and matched QRC comparison owner, and wired permanent strict
+  typing, real offline QRC/ESN execution, complete owner documentation, and
+  exact source coverage into preflight and CI. Validation, state evolution,
+  ridge arithmetic, feature matching, held-out evaluation, immutable results,
+  public APIs, and bounded comparison claims are unchanged.
+
 - 2026-08-28 — Kuramoto layout-optimiser documentation quality: completed the
   preview-inclusive NumPy docstring contract across the discrete search owner
   and its direct tests, and wired permanent strict typing, offline optimiser

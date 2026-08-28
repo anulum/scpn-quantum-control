@@ -214,6 +214,7 @@ if TYPE_CHECKING:
     from tools import qpu_compute_product_quality_gates as _qpu_compute_product_quality_gates
     from tools import qpu_compute_types_quality_gates as _qpu_compute_types_quality_gates
     from tools import qpu_result_pack_quality_gates as _qpu_result_pack_quality_gates
+    from tools import qrc_baseline_quality_gates as _qrc_baseline_quality_gates
     from tools import (
         quantum_neuromorphic_bridge_quality_gates as _quantum_neuromorphic_bridge_quality_gates,
     )
@@ -328,6 +329,7 @@ else:
     )
     _public_api_stability_quality_gates = import_module("tools.public_api_stability_quality_gates")
     _qpu_compute_product_quality_gates = import_module("tools.qpu_compute_product_quality_gates")
+    _qrc_baseline_quality_gates = import_module("tools.qrc_baseline_quality_gates")
     _wirtinger_implicit_product_quality_gates = import_module(
         "tools.wirtinger_implicit_product_quality_gates"
     )
@@ -873,6 +875,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_mlir_whole_program_native_quality_gates.build_static_quality_gates(_PY),
     *_closed_loop_publication_quality_gates.build_static_quality_gates(_PY),
     *_kuramoto_layout_optimiser_quality_gates.build_static_quality_gates(_PY),
+    *_qrc_baseline_quality_gates.build_static_quality_gates(_PY),
     *_quantum_phi_quality_gates.build_static_quality_gates(_PY),
     *_qpu_result_pack_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
@@ -1400,6 +1403,7 @@ CLOSED_LOOP_PUBLICATION_COVERAGE_GATES = (
 KURAMOTO_LAYOUT_OPTIMISER_COVERAGE_GATES = (
     _kuramoto_layout_optimiser_quality_gates.build_coverage_gates(_PY)
 )
+QRC_BASELINE_COVERAGE_GATES = _qrc_baseline_quality_gates.build_coverage_gates(_PY)
 QUANTUM_PHI_COVERAGE_GATES = _quantum_phi_quality_gates.build_coverage_gates(_PY)
 QPU_RESULT_PACK_COVERAGE_GATES = _qpu_result_pack_quality_gates.build_coverage_gates(_PY)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
@@ -1831,6 +1835,7 @@ def main() -> int:
             gates.extend(MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_GATES)
             gates.extend(CLOSED_LOOP_PUBLICATION_COVERAGE_GATES)
             gates.extend(KURAMOTO_LAYOUT_OPTIMISER_COVERAGE_GATES)
+            gates.extend(QRC_BASELINE_COVERAGE_GATES)
             gates.extend(QUANTUM_PHI_COVERAGE_GATES)
             gates.extend(QPU_RESULT_PACK_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
