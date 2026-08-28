@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1255
+    "test_files": 1256
   },
   "documentation": {
     "examples": [
@@ -8704,6 +8704,7 @@
       "tests/test_magic_nonstabilizerness.py",
       "tests/test_magnetisation_sectors.py",
       "tests/test_magnetisation_sectors_empty_guard.py",
+      "tests/test_magnetisation_sectors_quality_gate.py",
       "tests/test_metamorphic_ad_verification.py",
       "tests/test_metamorphic_ad_verification_quality_gate.py",
       "tests/test_migration_guides_product.py",

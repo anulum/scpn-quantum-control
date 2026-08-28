@@ -151,6 +151,9 @@ def build_sector_hamiltonian(
         Natural frequencies.
     M : int
         Target magnetisation. Must be in {-N, -N+2, ..., N}.
+    max_dense_gib : float or None, optional
+        Maximum permitted dense-sector workspace in GiB. ``None`` uses the
+        configured process limit.
 
     Returns
     -------
@@ -163,6 +166,7 @@ def build_sector_hamiltonian(
     ------
     ValueError
         If M is not a valid magnetisation value.
+
     """
     n = K.shape[0]
     sectors = basis_by_magnetisation(n)
@@ -192,8 +196,15 @@ def eigh_by_magnetisation(
 
     Parameters
     ----------
-    K, omega : coupling and frequencies
-    sectors : list of M values to diagonalise. Default: all sectors.
+    K : numpy.ndarray
+        Square coupling matrix.
+    omega : numpy.ndarray
+        Natural-frequency vector aligned with ``K``.
+    sectors : list of int or None, optional
+        Magnetisation values to diagonalise. ``None`` selects every sector.
+    max_dense_gib : float or None, optional
+        Maximum permitted dense eigensolver workspace in GiB. ``None`` uses
+        the configured process limit.
 
     Returns
     -------
@@ -203,6 +214,7 @@ def eigh_by_magnetisation(
         ground_energy: float
         ground_sector: int (M value of ground state), or None if no
             requested sector is valid
+
     """
     n = K.shape[0]
     all_sectors = basis_by_magnetisation(n)
@@ -286,8 +298,17 @@ def level_spacing_by_magnetisation(
 
     Parameters
     ----------
-    K, omega : coupling and frequencies
-    M : magnetisation sector. Default: M=0 (largest sector for even N).
+    K : numpy.ndarray
+        Square coupling matrix.
+    omega : numpy.ndarray
+        Natural-frequency vector aligned with ``K``.
+    M : int or None, optional
+        Magnetisation sector. ``None`` selects zero for even systems and one
+        for odd systems.
+    max_dense_gib : float or None, optional
+        Maximum permitted dense eigensolver workspace in GiB. ``None`` uses
+        the configured process limit.
+
     """
     n = K.shape[0]
     if M is None:

@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Magnetisation-sector documentation quality: completed the
+  preview-inclusive NumPy docstring contract across sector construction,
+  eigensolvers, level-spacing analysis, and owning tests, and wired permanent
+  strict typing, connected sparse/workflow execution, complete documentation,
+  and exact source coverage into preflight and CI. U(1) sector arithmetic,
+  dense-budget refusal, accelerator fallback, public APIs, and bounded local
+  simulation claims are unchanged.
+
 - 2026-08-28 — DLA topology-projection documentation quality: completed the
   NumPy docstring contract across fixed-active-set projection JVP/VJP custody,
   support classification, and validation, and wired permanent strict typing,

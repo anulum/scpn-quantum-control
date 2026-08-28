@@ -153,6 +153,9 @@ if TYPE_CHECKING:
         layout_method_comparison_quality_gates as _layout_method_comparison_quality_gates,
     )
     from tools import (
+        magnetisation_sectors_quality_gates as _magnetisation_sectors_quality_gates,
+    )
+    from tools import (
         metamorphic_ad_verification_quality_gates as _metamorphic_ad_verification_quality_gates,
     )
     from tools import (
@@ -395,6 +398,9 @@ else:
     )
     _migration_guides_product_quality_gates = import_module(
         "tools.migration_guides_product_quality_gates"
+    )
+    _magnetisation_sectors_quality_gates = import_module(
+        "tools.magnetisation_sectors_quality_gates"
     )
     _ml_dsa_seal_quality_gates = import_module("tools.ml_dsa_seal_quality_gates")
     _multi_hal_quality_gates = import_module("tools.multi_hal_federation_product_quality_gates")
@@ -806,6 +812,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_dla_topology_objectives_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_parity_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_projection_quality_gates.build_static_quality_gates(_PY),
+    *_magnetisation_sectors_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_baseline_design_quality_gates.build_static_quality_gates(_PY),
     *_error_mitigation_product_quality_gates.build_static_quality_gates(_PY),
@@ -1306,6 +1313,9 @@ DLA_TOPOLOGY_PARITY_COVERAGE_GATES = _dla_topology_parity_quality_gates.build_co
 DLA_TOPOLOGY_PROJECTION_COVERAGE_GATES = (
     _dla_topology_projection_quality_gates.build_coverage_gates(_PY)
 )
+MAGNETISATION_SECTORS_COVERAGE_GATES = _magnetisation_sectors_quality_gates.build_coverage_gates(
+    _PY
+)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
     _geometric_control_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -1722,6 +1732,7 @@ def main() -> int:
             gates.extend(DLA_TOPOLOGY_OBJECTIVES_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_PARITY_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_PROJECTION_COVERAGE_GATES)
+            gates.extend(MAGNETISATION_SECTORS_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
             gates.extend(TN_MPS_BASELINE_DESIGN_COVERAGE_GATES)
             gates.extend(ERROR_MITIGATION_PRODUCT_COVERAGE_GATES)
