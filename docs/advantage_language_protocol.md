@@ -9,7 +9,7 @@ Related surfaces:
 - Existing runners (compose, do not fork):  
   `benchmarks.advantage_protocol`, `benchmarks.decisive_advantage_protocol`,  
   `forecasting.neural_operator_advantage`
-- BL-52 / BL-53 governance: [Governed route matrix](governed_route_matrix.md),  
+- Route and refusal governance: [Governed route matrix](governed_route_matrix.md),
   [Unsuitable scenario registry](unsuitable_scenario_registry.md)
 - Module: `scpn_quantum_control.advantage_language_protocol`
 

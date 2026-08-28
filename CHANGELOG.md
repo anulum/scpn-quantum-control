@@ -119,9 +119,9 @@
 - 2026-07-25 — SSGF quantum-in-the-loop geometry gradient (BL-70):
   `scpn_quantum_control.ssgf_geometry_gradient_product` freezes the ambient
   SSGF surface, cross-certifies `C=1-R`, checks finite-difference refinement and
-  phase periodicity, and emits bounded functional outer-cycle evidence. BL-52
-  now supports latent finite difference and permanently refuses direct latent
-  parameter-shift through the nonlinear softplus geometry map.
+  phase periodicity, and emits bounded functional outer-cycle evidence. The
+  governed route matrix now supports latent finite difference and permanently
+  refuses direct latent parameter-shift through the nonlinear softplus geometry map.
 - 2026-07-25 — Identity / robustness control observers:
   `scpn_quantum_control.identity_observer_product` adapts real robustness,
   coherence-budget, and optional CHSH metrics into explicit control-stack safety
@@ -435,8 +435,9 @@ control, or broad quantum-advantage claim is promoted by this release.
   watch catalogue over the committed competitive-baseline refresh inventory
   (nine competitors). Inventory query, pin/version honesty
   (`pinned_snapshot` vs unpinned), `probe_refresh` (never invent-green current),
-  and `probe_feed` toward BL-52 (pointer/pending) and BL-56 (always blocked
-  without scorecard evidence) are fail-closed on blank/unknown ids. Docs:
+  and `probe_feed` toward the governed route matrix (pointer/pending) and the
+  scorecard acceptance engine (always blocked without scorecard evidence) are
+  fail-closed on blank/unknown ids. Docs:
   `docs/competitive_baseline_watch.md`. Does not scrape vendors or invent pins.
 - 2026-07-23 — Public API stability programme:
   `scpn_quantum_control.public_api_stability` productises a **narrow**

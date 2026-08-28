@@ -65,7 +65,7 @@ class UnsuitableScenarioRecord:
     evidence
         Evidence labels or deep-link pointers (not performance claims).
     related_route_ids
-        Optional BL-52 governed route IDs linked to this scenario.
+        Optional governed route IDs linked to this scenario.
     test_id
         Stable test identifier expected to exercise the refuse path.
     citation

@@ -1,9 +1,9 @@
 # Governed multi-ecosystem route matrix
 
 This page is the operator-facing guide for the **fail-closed multi-ecosystem
-route matrix** productised under BL-52. It answers: *which differentiable route
-IDs exist, what their closure status is, and why alternatives were rejected* —
-without inventing green support for blank cells.
+route matrix**. It answers: *which differentiable route IDs exist, what their
+closure status is, and why alternatives were rejected* — without inventing
+green support for blank cells.
 
 Related surfaces:
 
