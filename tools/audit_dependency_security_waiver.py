@@ -88,6 +88,12 @@ class _YamlMappingKeyAuditModule(Protocol):
     def has_escaped_double_quoted_mapping_key(self, source: str) -> bool:
         """Inspect mapping-key spelling in one YAML document."""
 
+    def unsafe_unescaped_protected_mapping_keys(
+        self,
+        source: str,
+    ) -> tuple[str, ...]:
+        """Return noncanonical protected keys and every YAML merge key."""
+
 
 class _YamlComposer(Protocol):
     """Minimal typed PyYAML compose surface used for duplicate-safe validation."""
@@ -691,11 +697,19 @@ def audit_ci_workflow(workflow_text: str) -> tuple[str, ...]:
         )
     try:
         escaped_mapping_key = _YAML_KEY_AUDIT.has_escaped_double_quoted_mapping_key(workflow_text)
+        unsafe_mapping_keys = _YAML_KEY_AUDIT.unsafe_unescaped_protected_mapping_keys(
+            workflow_text,
+        )
     except ValueError:
         errors.append("CI workflow must be valid YAML for semantic mapping-key audit")
     else:
         if escaped_mapping_key:
             errors.append("CI must not encode mapping keys with YAML escapes")
+        if unsafe_mapping_keys:
+            errors.append(
+                "CI protected mapping keys must use canonical block syntax; "
+                "YAML merges are forbidden: " + ", ".join(unsafe_mapping_keys)
+            )
     if any(_TOP_LEVEL_DEFAULTS_RE.match(line) for line in workflow_text.splitlines()):
         errors.append("CI must not override run defaults at workflow scope")
 

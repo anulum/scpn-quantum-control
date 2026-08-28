@@ -720,11 +720,18 @@ commented explicit (`?`), tagged, anchored, and aliased forms. Source marks
 distinguish escaped keys from escaped values without collapsing duplicate
 mapping nodes. This closes the decode-after-scan forms `"\u0069f"`,
 `"continue-on-\u0065rror"`, and `"d\u0065faults"`, which standard YAML resolves
-to `if`, `continue-on-error`, and `defaults`. Escapes in ordinary scalar values remain
-valid, including multiline sequence values. Malformed YAML fails the semantic
-audit closed. The raw structural pass remains an independent duplicate-key
-and canonical-ownership defence, while workflow, job, and step mapping keys
-must use their canonical unescaped spellings.
+to `if`, `continue-on-error`, and `defaults`. The same duplicate-preserving
+graph resolves the protected `jobs`, `security`, `steps`, `run`, `if`,
+`continue-on-error`, `shell`, `defaults`, and merge-key values. Those names
+must use plain implicit block-map syntax (`key:` or `- key:`); explicit
+mapping keys such as `? "if"` / `: false` and `? "defaults"` / `:`, as well as
+quoted, tagged, anchored, aliased, or flow-style variants, fail closed even
+when their decoded value is otherwise valid. YAML merge keys fail closed at
+every workflow depth, including a plain root `<<:` that would inherit hidden
+workflow defaults. Escapes in ordinary scalar
+values remain valid, including multiline sequence values. Malformed YAML
+fails the semantic audit closed. The raw structural pass remains an
+independent duplicate-key and canonical-ownership defence.
 
 Remove the waiver as one dependency-lock change when neither Braket pin owner
 requires `setuptools<83.0.0`, whether the dependency disappears or its allowed

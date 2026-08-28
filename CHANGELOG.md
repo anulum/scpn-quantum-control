@@ -684,6 +684,22 @@ land on live surfaces or new Zenodo versions.
   benchmark claims are unchanged.
 
 ### Fixed
+- 2026-07-15 — Closed the remaining semantic YAML execution-control bypass in
+  the constrained Braket advisory waiver audit. The duplicate-preserving
+  compose-tree boundary now resolves protected workflow, job, and step key
+  values and accepts only plain implicit block-map spelling. Explicit
+  `? "if"` / `: false` and root `? "defaults"` payloads, as well as quoted,
+  tagged, anchored, aliased, and flow-style protected keys, fail closed before
+  the dependency scan. Workflow-wide YAML merge keys also fail closed, so a
+  root merge cannot inherit hidden execution defaults. Twenty-four focused
+  tests cover all 577 statements and 238 branches across the two policy
+  modules at exact 100%. The 920-line waiver owner remains an approved
+  responsibility boundary, the 279-line semantic helper remains
+  single-purpose, and the repository module-responsibility policy reports 58
+  reviewed files with zero open refactors. Dependency locks, runtime APIs,
+  quantum execution, numerical kernels, native/polyglot compute, provider
+  behavior, benchmark inputs, and performance claims are unchanged, so no
+  counterpart or comparison-benchmark refresh applies.
 - 2026-07-15 — Made the Phase-QNode JAX strict-typing cohort stable across the
   locked CI and developer NumPy typing surfaces. The shared fake-Hessian helper
   now binds its symmetrized array to the declared `FloatArray` contract instead

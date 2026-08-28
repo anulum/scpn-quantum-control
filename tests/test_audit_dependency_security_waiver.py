@@ -432,6 +432,7 @@ def test_ci_workflow_audit_rejects_nonblocking_execution_controls() -> None:
         )
     )
     assert waiver.audit_ci_workflow(job_controls) == (
+        "CI protected mapping keys must use canonical block syntax; YAML merges are forbidden: <<",
         "jobs.security must not define execution control: if",
         "jobs.security must not define execution control: defaults",
         "jobs.security must not define execution control: shell",
@@ -447,6 +448,7 @@ def test_ci_workflow_audit_rejects_nonblocking_execution_controls() -> None:
         'nonblocking: &nonblocking {}\n"defaults" : *nonblocking\n' + _workflow()
     )
     assert waiver.audit_ci_workflow(quoted_workflow_defaults) == (
+        "CI protected mapping keys must use canonical block syntax; YAML merges are forbidden: defaults",
         "CI must not override run defaults at workflow scope",
     )
 
@@ -455,6 +457,7 @@ def test_ci_workflow_audit_rejects_nonblocking_execution_controls() -> None:
         "  security:\n    'if' : false\n",
     )
     assert waiver.audit_ci_workflow(quoted_condition) == (
+        "CI protected mapping keys must use canonical block syntax; YAML merges are forbidden: if",
         "jobs.security must not define execution control: if",
     )
 
@@ -513,12 +516,99 @@ def test_ci_workflow_audit_rejects_escaped_double_quoted_mapping_keys() -> None:
     assert waiver.audit_ci_workflow(flow_style_step) == (
         f"CI pip-audit command must scan the full lock and ignore only {waiver.ADVISORY_ID}",
         *expected,
+        "CI protected mapping keys must use canonical block syntax; YAML merges are forbidden: run",
     )
 
     malformed = live_workflow.replace("jobs:\n", '"unterminated\\q\njobs:\n')
     assert "CI workflow must be valid YAML for semantic mapping-key audit" in (
         waiver.audit_ci_workflow(malformed)
     )
+
+
+def test_ci_workflow_audit_rejects_explicit_protected_mapping_keys() -> None:
+    """Explicit semantic controls must not bypass raw workflow ownership."""
+    live_workflow = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    pip_audit_command = _shlex_join(waiver.EXPECTED_PIP_AUDIT_COMMAND)
+    pip_audit_step = f"      - run: {pip_audit_command}\n"
+    assert live_workflow.count(pip_audit_step) == 1
+
+    explicit_condition = live_workflow.replace(
+        pip_audit_step,
+        f'      - ? "if"\n        : false\n        run: {pip_audit_command}\n',
+    )
+    assert waiver.audit_ci_workflow(explicit_condition) == (
+        "CI protected mapping keys must use canonical block syntax; YAML merges are forbidden: if",
+    )
+
+    explicit_defaults = '? "defaults"\n:\n  run:\n    shell: bash {0} || true\n' + live_workflow
+    assert waiver.audit_ci_workflow(explicit_defaults) == (
+        "CI protected mapping keys must use canonical block syntax; YAML merges are forbidden: defaults",
+    )
+
+    inherited_defaults = (
+        "shared: &shared\n"
+        "  defaults:\n"
+        "    run:\n"
+        "      shell: bash {0} || true\n"
+        "<<: *shared\n" + live_workflow
+    )
+    assert waiver.audit_ci_workflow(inherited_defaults) == (
+        "CI protected mapping keys must use canonical block syntax; YAML merges are forbidden: <<",
+    )
+
+
+def test_semantic_mapping_key_audit_requires_plain_block_protected_keys() -> None:
+    """Protected semantic names allow only plain implicit block-map syntax."""
+    for key in sorted(yaml_mapping_key_audit.PROTECTED_WORKFLOW_MAPPING_KEYS):
+        assert yaml_mapping_key_audit.unsafe_unescaped_protected_mapping_keys(
+            f"{key}: value\n"
+        ) == ((key,) if key == "<<" else ())
+        assert yaml_mapping_key_audit.unsafe_unescaped_protected_mapping_keys(
+            f'"{key}": value\n'
+        ) == (key,)
+        assert yaml_mapping_key_audit.unsafe_unescaped_protected_mapping_keys(
+            f'? "{key}"\n: value\n'
+        ) == (key,)
+
+    assert (
+        yaml_mapping_key_audit.unsafe_unescaped_protected_mapping_keys(
+            "if: false\nsteps:\n  - run: command\n",
+        )
+        == ()
+    )
+    assert (
+        yaml_mapping_key_audit.unsafe_unescaped_protected_mapping_keys(
+            "if: false",
+        )
+        == ()
+    )
+    assert (
+        yaml_mapping_key_audit.unsafe_unescaped_protected_mapping_keys(
+            '"\\u0069f": false\n',
+        )
+        == ()
+    )
+    assert yaml_mapping_key_audit.unsafe_unescaped_protected_mapping_keys("") == ()
+
+    noncanonical_sources = (
+        ("? if\n: false\n", ("if",)),
+        ('? "if"\n: false\n', ("if",)),
+        ('"if": false\n', ("if",)),
+        ("!!str if: false\n", ("if",)),
+        ("&control if: false\n", ("if",)),
+        ("label: &control if\n? *control\n: false\n", ("if",)),
+        ("{if: false, run: command}\n", ("if", "run")),
+        ("? {if: false}\n: value\n", ("if",)),
+        ('"if": false\n? if\n: false\n', ("if",)),
+        ("? # execution control\n  if\n: false\n", ("if",)),
+    )
+    for source, expected in noncanonical_sources:
+        assert (
+            yaml_mapping_key_audit.unsafe_unescaped_protected_mapping_keys(
+                source,
+            )
+            == expected
+        )
 
 
 def test_semantic_mapping_key_audit_handles_aliases_and_empty_documents() -> None:
@@ -584,6 +674,10 @@ def test_semantic_mapping_key_audit_fails_closed_on_invalid_composer_contracts(
     )
     with pytest.raises(ValueError, match="not valid composable YAML"):
         yaml_mapping_key_audit.has_escaped_double_quoted_mapping_key("safe: value\n")
+    with pytest.raises(ValueError, match="not valid composable YAML"):
+        yaml_mapping_key_audit.unsafe_unescaped_protected_mapping_keys(
+            "safe: value\n",
+        )
 
     invalid_roots = (
         Node(kind=None),
@@ -597,12 +691,26 @@ def test_semantic_mapping_key_audit_fails_closed_on_invalid_composer_contracts(
         install(root)
         with pytest.raises(ValueError, match="composed YAML"):
             yaml_mapping_key_audit.has_escaped_double_quoted_mapping_key("safe: value\n")
+        with pytest.raises(ValueError, match="composed YAML"):
+            yaml_mapping_key_audit.unsafe_unescaped_protected_mapping_keys(
+                "safe: value\n",
+            )
 
     for start, end in ((True, 1), (-1, 1), (1, 0), (0, 99)):
-        key = Node(style='"', start=start, end=end)
+        key = Node(value="if", style='"', start=start, end=end)
         install(Node(kind="mapping", value=[(key, Node())]))
         with pytest.raises(ValueError, match="composed YAML"):
-            yaml_mapping_key_audit.has_escaped_double_quoted_mapping_key('"safe": value\n')
+            yaml_mapping_key_audit.has_escaped_double_quoted_mapping_key('"if": value\n')
+        with pytest.raises(ValueError, match="composed YAML"):
+            yaml_mapping_key_audit.unsafe_unescaped_protected_mapping_keys(
+                '"if": value\n',
+            )
+
+    install(Node(kind="mapping", value=[(Node(value=object()), Node())]))
+    with pytest.raises(ValueError, match="no string value"):
+        yaml_mapping_key_audit.unsafe_unescaped_protected_mapping_keys(
+            "safe: value\n",
+        )
 
 
 def test_ci_workflow_audit_rejects_ambiguous_or_replaced_steps() -> None:
@@ -621,6 +729,7 @@ def test_ci_workflow_audit_rejects_ambiguous_or_replaced_steps() -> None:
         f'      - run: {_shlex_join(waiver.EXPECTED_PIP_AUDIT_COMMAND)}\n        "run": true\n',
     )
     assert waiver.audit_ci_workflow(duplicate_pip_run_key) == (
+        "CI protected mapping keys must use canonical block syntax; YAML merges are forbidden: run",
         "pip-audit must own a standalone jobs.security run step",
     )
 
