@@ -138,6 +138,7 @@ if TYPE_CHECKING:
         hls_cosimulation_evidence_quality_gates as _hls_cosimulation_evidence_quality_gates,
     )
     from tools import identity_binding_spec_quality_gates as _identity_binding_spec_quality_gates
+    from tools import koopman_quality_gates as _koopman_quality_gates
     from tools import (
         kuramoto_layout_cost_quality_gates as _kuramoto_layout_cost_quality_gates,
     )
@@ -387,6 +388,7 @@ else:
     _kyma_mechanism_product_quality_gates = import_module(
         "tools.kyma_mechanism_benchmark_product_quality_gates"
     )
+    _koopman_quality_gates = import_module("tools.koopman_quality_gates")
     _kyma_dynamics_quality_gates = import_module("tools.kyma_dynamics_quality_gates")
     _kyma_v2_dynamics_quality_gates = import_module("tools.kyma_v2_dynamics_quality_gates")
     _layout_method_comparison_quality_gates = import_module(
@@ -820,6 +822,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_dla_topology_projection_quality_gates.build_static_quality_gates(_PY),
     *_magnetisation_sectors_quality_gates.build_static_quality_gates(_PY),
     *_quantum_neuromorphic_bridge_quality_gates.build_static_quality_gates(_PY),
+    *_koopman_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_baseline_design_quality_gates.build_static_quality_gates(_PY),
     *_error_mitigation_product_quality_gates.build_static_quality_gates(_PY),
@@ -1326,6 +1329,7 @@ MAGNETISATION_SECTORS_COVERAGE_GATES = _magnetisation_sectors_quality_gates.buil
 QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_GATES = (
     _quantum_neuromorphic_bridge_quality_gates.build_coverage_gates(_PY)
 )
+KOOPMAN_COVERAGE_GATES = _koopman_quality_gates.build_coverage_gates(_PY)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
     _geometric_control_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -1744,6 +1748,7 @@ def main() -> int:
             gates.extend(DLA_TOPOLOGY_PROJECTION_COVERAGE_GATES)
             gates.extend(MAGNETISATION_SECTORS_COVERAGE_GATES)
             gates.extend(QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_GATES)
+            gates.extend(KOOPMAN_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
             gates.extend(TN_MPS_BASELINE_DESIGN_COVERAGE_GATES)
             gates.extend(ERROR_MITIGATION_PRODUCT_COVERAGE_GATES)

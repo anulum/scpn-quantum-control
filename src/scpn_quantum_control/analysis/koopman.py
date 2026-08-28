@@ -110,6 +110,7 @@ class KoopmanResult:
         Number of input oscillators.
     observable_labels
         Labels for identity, cosine-pair, and sine-pair coordinates.
+
     """
 
     generator: NDArray[np.float64]  # L_K matrix
@@ -164,6 +165,7 @@ def build_koopman_generator(
     ------
     ValueError
         If shapes, finiteness, or the allocation cap are invalid.
+
     """
     _validate_inputs(K, omega, theta_ref, max_oscillators)
     n = K.shape[0]
@@ -293,6 +295,7 @@ def koopman_analysis(
     Notes
     -----
     The returned spectrum characterizes this finite local closure only.
+
     """
     n = K.shape[0]
     L, labels = build_koopman_generator(K, omega, theta_ref, max_oscillators)
@@ -315,6 +318,7 @@ def koopman_dimension(n_osc: int) -> int:
     ----------
     n_osc
         Number of oscillators.
+
     """
     return n_osc * n_osc
 
@@ -338,6 +342,7 @@ def koopman_to_hamiltonian(L: NDArray[np.float64]) -> NDArray[np.complex128]:
     -----
     The projection discards the symmetric part of ``L``. It is not a proof of
     dynamical equivalence to the nonlinear Kuramoto system.
+
     """
     H: NDArray[np.complex128] = (1j * (L - L.conj().T) / 2.0).astype(np.complex128)
     # Ensure exact Hermiticity

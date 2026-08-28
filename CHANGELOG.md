@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Koopman-analysis documentation quality: completed the
+  preview-inclusive NumPy docstring contract across finite local closure,
+  Python/native generation, dense spectra, Hermitian projection, and owning
+  tests, and wired permanent strict typing, connected offline execution,
+  complete documentation, and exact source coverage into preflight and CI.
+  Closure arithmetic, allocation caps, public APIs, and explicit
+  non-equivalence/non-advantage claims are unchanged.
+
 - 2026-08-28 — Quantum-neuromorphic bridge documentation quality: completed
   the preview-inclusive NumPy docstring contract across LIF, exponential STDP,
   recurrent coupling, topology projection, quantum-circuit construction, and

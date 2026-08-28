@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1257
+    "test_files": 1258
   },
   "documentation": {
     "examples": [
@@ -8642,6 +8642,7 @@
       "tests/test_knm_physical_validation_audit.py",
       "tests/test_knm_properties.py",
       "tests/test_koopman.py",
+      "tests/test_koopman_quality_gate.py",
       "tests/test_koopman_rust_generator_branches.py",
       "tests/test_krylov_complexity.py",
       "tests/test_kuramoto_competitive_benchmark.py",
