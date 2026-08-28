@@ -995,6 +995,8 @@ def test_main_uses_coverage_pytest_by_default(
         "feedback-loop exact coverage threshold",
         "hardware-hal focused coverage",
         "hardware-hal exact coverage threshold",
+        "dla-topology-parity focused coverage",
+        "dla-topology-parity exact coverage threshold",
         "geometric-control-product focused coverage",
         "geometric-control-product exact coverage threshold",
         "tn-mps-baseline-design focused coverage",

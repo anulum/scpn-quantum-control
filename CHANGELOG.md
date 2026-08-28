@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — DLA topology parity documentation quality: completed the NumPy
+  docstring contract for the parity projector and wired permanent strict
+  typing, documentation, connected execution, and exact source-coverage gates
+  into preflight and CI. Sector projection, immutable custody, size and input
+  refusals, JVP/VJP identities, leakage gradients, public symbols, and
+  scientific claim boundaries are unchanged.
+
 - 2026-08-28 — Provider-neutral HAL documentation quality: completed the
   NumPy docstring contract for the HAL and its direct offline tests, and wired
   permanent strict typing, documentation, and exact source-coverage gates into

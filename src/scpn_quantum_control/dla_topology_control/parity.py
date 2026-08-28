@@ -47,6 +47,7 @@ class ParityLeakageEvaluation:
         Whether ``value`` is divided by total state norm squared.
     state_norm_squared:
         Positive total squared norm used by the evaluation.
+
     """
 
     value: float
@@ -55,6 +56,7 @@ class ParityLeakageEvaluation:
     state_norm_squared: float
 
     def __post_init__(self) -> None:
+        """Validate scalar values and take immutable gradient custody."""
         if not np.isfinite(self.value) or self.value < 0.0:
             raise ValueError("value must be finite and non-negative")
         if not np.isfinite(self.state_norm_squared) or self.state_norm_squared <= 0.0:
@@ -83,6 +85,7 @@ class ParitySectorProjector:
     fixed self-adjoint linear map, so its JVP and VJP are the same projection.
     This does not prove that an arbitrary Hamiltonian or ansatz preserves the
     selected sector.
+
     """
 
     n_qubits: int
@@ -91,6 +94,7 @@ class ParitySectorProjector:
     _mask: BoolArray = field(init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
+        """Validate the sector contract and construct its immutable mask."""
         if isinstance(self.n_qubits, bool) or not isinstance(self.n_qubits, int):
             raise ValueError("n_qubits must be an integer")
         if self.n_qubits < 1 or self.n_qubits > 20:
@@ -139,6 +143,7 @@ class ParitySectorProjector:
         ------
         ValueError
             If rank, length, or finiteness violates the dense-state contract.
+
         """
         value = np.asarray(state, dtype=np.complex128)
         if value.ndim != 1 or value.shape != (self.dimension,):
@@ -162,6 +167,7 @@ class ParitySectorProjector:
         -------
         numpy.ndarray
             Read-only projected complex vector of the same shape.
+
         """
         value = self.as_state(state)
         projected = project_to_parity_sector(value, self.sector.value, self.n_qubits)
@@ -210,6 +216,7 @@ class ParitySectorProjector:
         ParityLeakageEvaluation
             Leakage value, exact Euclidean complex gradient, normalisation
             mode, and the positive total norm used by the calculation.
+
         """
         value = self.as_state(state)
         norm_squared = float(np.vdot(value, value).real)
