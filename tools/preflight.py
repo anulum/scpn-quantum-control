@@ -196,6 +196,7 @@ if TYPE_CHECKING:
     )
     from tools import qpu_compute_product_quality_gates as _qpu_compute_product_quality_gates
     from tools import qpu_compute_types_quality_gates as _qpu_compute_types_quality_gates
+    from tools import qpu_result_pack_quality_gates as _qpu_result_pack_quality_gates
     from tools import (
         quantum_neuromorphic_bridge_quality_gates as _quantum_neuromorphic_bridge_quality_gates,
     )
@@ -431,6 +432,7 @@ else:
         "tools.quantum_neuromorphic_bridge_quality_gates"
     )
     _quantum_phi_quality_gates = import_module("tools.quantum_phi_quality_gates")
+    _qpu_result_pack_quality_gates = import_module("tools.qpu_result_pack_quality_gates")
     _open_system_completeness_quality_gates = import_module(
         "tools.open_system_completeness_quality_gates"
     )
@@ -826,6 +828,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_quantum_neuromorphic_bridge_quality_gates.build_static_quality_gates(_PY),
     *_koopman_quality_gates.build_static_quality_gates(_PY),
     *_quantum_phi_quality_gates.build_static_quality_gates(_PY),
+    *_qpu_result_pack_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_baseline_design_quality_gates.build_static_quality_gates(_PY),
     *_error_mitigation_product_quality_gates.build_static_quality_gates(_PY),
@@ -1334,6 +1337,7 @@ QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_GATES = (
 )
 KOOPMAN_COVERAGE_GATES = _koopman_quality_gates.build_coverage_gates(_PY)
 QUANTUM_PHI_COVERAGE_GATES = _quantum_phi_quality_gates.build_coverage_gates(_PY)
+QPU_RESULT_PACK_COVERAGE_GATES = _qpu_result_pack_quality_gates.build_coverage_gates(_PY)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
     _geometric_control_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -1754,6 +1758,7 @@ def main() -> int:
             gates.extend(QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_GATES)
             gates.extend(KOOPMAN_COVERAGE_GATES)
             gates.extend(QUANTUM_PHI_COVERAGE_GATES)
+            gates.extend(QPU_RESULT_PACK_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
             gates.extend(TN_MPS_BASELINE_DESIGN_COVERAGE_GATES)
             gates.extend(ERROR_MITIGATION_PRODUCT_COVERAGE_GATES)

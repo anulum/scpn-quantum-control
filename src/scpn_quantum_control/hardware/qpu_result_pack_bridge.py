@@ -83,6 +83,7 @@ def raw_results_digest(counts: Mapping[str, int]) -> str:
     ------
     ValueError
         If ``counts`` is empty.
+
     """
     if not counts:
         raise ValueError("counts must be non-empty to digest a QPU result")
@@ -149,6 +150,7 @@ def job_result_provenance(
     ValueError
         If ``title``, ``executed_utc``, or ``claim_scope`` is blank, or if
         ``non_claims`` is empty.
+
     """
     if not title.strip():
         raise ValueError("title must be non-empty")
@@ -239,6 +241,7 @@ def qpu_result_pack_from_job(
     ValueError
         If the returned counts are empty, the provenance claim scoping is blank,
         or a supplied ``attestation`` does not sign the computed counts digest.
+
     """
     digest = raw_results_digest(result.counts)
     provenance = job_result_provenance(

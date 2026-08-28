@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — QPU result-pack documentation quality: completed the
+  preview-inclusive NumPy docstring contract across the attestation-bound unit,
+  provider-neutral bridge, and owning tests; and wired permanent strict typing,
+  connected offline execution with the current zeroizing Rust signer, complete
+  documentation, and exact source coverage into preflight and CI. Schema,
+  provenance, digest binding, fail-closed presentation/sealing, public APIs,
+  and the no-provider-authenticity-verification boundary are unchanged.
+
 - 2026-08-28 — Quantum-QMI compatibility documentation quality: completed the
   preview-inclusive NumPy docstring contract across entropy, partial trace,
   bipartite QMI, compatibility result/scan surfaces, and owning tests; replaced

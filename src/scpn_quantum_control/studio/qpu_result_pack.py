@@ -76,6 +76,7 @@ class QpuResultPackPresentation:
         attestation binds the returned counts; ``"unverifiable"`` otherwise.
     reason
         Human-readable explanation, always present for ``"unverifiable"``.
+
     """
 
     status: QpuPresentationStatus
@@ -134,6 +135,7 @@ def build_qpu_result_pack_unit(
     ValueError
         If the pack has no ``id``, ``raw_results_digest`` is empty, or a
         supplied ``attestation`` is malformed or does not sign the raw results.
+
     """
     pack_id = str(pack.get("id", "")).strip()
     if not pack_id:
@@ -169,6 +171,7 @@ def _validated_attestation(
         If a field is empty or the attestation signs a different digest than the
         unit's ``raw_results_digest`` — a mismatched attestation is not an
         attestation for this result.
+
     """
     for field in _ATTESTATION_FIELDS:
         value = attestation.get(field, "")
@@ -193,6 +196,7 @@ def present_qpu_result_pack(unit: Mapping[str, Any]) -> QpuResultPackPresentatio
         ``"attestation-verifiable"`` only when a well-formed provider
         attestation binds the returned counts; ``"unverifiable"`` otherwise,
         with the reason spelled out.
+
     """
     if unit.get("schema") != QPU_RESULT_PACK_SCHEMA:
         return QpuResultPackPresentation("unverifiable", "unknown qpu result-pack schema")
@@ -253,6 +257,7 @@ def seal_qpu_result_pack(
     ValueError
         If the unit renders ``unverifiable`` (no well-formed provider
         attestation) — an unverifiable unit is never sealed as verified.
+
     """
     presentation = present_qpu_result_pack(unit)
     if presentation.status != "attestation-verifiable":
