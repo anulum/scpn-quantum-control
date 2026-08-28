@@ -134,6 +134,8 @@ def _run_stubbed(*, ready: bool = True) -> ClosedLoopPublicationArtifact:
 
 
 class TestClosedLoopRunConfig:
+    """Verify closed-loop run configuration validation and serialization."""
+
     @pytest.mark.parametrize(
         ("kwargs", "match"),
         [
@@ -147,15 +149,18 @@ class TestClosedLoopRunConfig:
         ],
     )
     def test_invalid_configuration_rejected(self, kwargs: dict[str, Any], match: str) -> None:
+        """Reject every invalid bounded-run configuration."""
         with pytest.raises(ValueError, match=match):
             ClosedLoopRunConfig(**kwargs)
 
     def test_to_dict_default_budget(self) -> None:
+        """Serialize the default implicit latency budget as null."""
         payload = ClosedLoopRunConfig().to_dict()
         assert payload["budget"] is None
         assert payload["n_rounds"] == 32
 
     def test_to_dict_serialises_budget(self) -> None:
+        """Serialize an explicit latency budget into the config payload."""
         config = ClosedLoopRunConfig(budget=ClosedLoopLatencyBudget(max_round_latency_s=0.01))
         payload = config.to_dict()
         assert payload["budget"]["max_round_latency_s"] == pytest.approx(0.01)
@@ -163,7 +168,10 @@ class TestClosedLoopRunConfig:
 
 @pytest.mark.usefixtures("stub_circuit_builders")
 class TestDynamicCircuitTemplates:
+    """Verify deterministic, honestly labelled dynamic-circuit templates."""
+
     def test_exports_both_templates_with_digests(self) -> None:
+        """Export monitored and open-loop templates with content digests."""
         templates = dynamic_circuit_templates(_SMALL)
         assert "un-run" in templates["claim_note"]
         for key in ("monitored_feedback", "open_loop_control"):
@@ -175,6 +183,7 @@ class TestDynamicCircuitTemplates:
             assert entry["program"].startswith("OPENQASM 3")
 
     def test_monitored_template_carries_conditionals_and_open_loop_does_not(self) -> None:
+        """Keep conditionals exclusive to the monitored feedback template."""
         templates = dynamic_circuit_templates(_SMALL)
         assert templates["monitored_feedback"]["conditional_blocks"] == (
             _SMALL.dynamic_circuit_rounds
@@ -182,6 +191,7 @@ class TestDynamicCircuitTemplates:
         assert templates["open_loop_control"]["conditional_blocks"] == 0
 
     def test_export_is_deterministic_for_fixed_config(self) -> None:
+        """Keep template digests deterministic for a fixed configuration."""
         first = dynamic_circuit_templates(_SMALL)
         second = dynamic_circuit_templates(_SMALL)
         assert first["monitored_feedback"]["sha256"] == second["monitored_feedback"]["sha256"]
@@ -189,7 +199,10 @@ class TestDynamicCircuitTemplates:
 
 @pytest.mark.usefixtures("stub_circuit_builders")
 class TestArtifactAssembly:
+    """Verify software-in-the-loop artifact assembly and claim boundaries."""
+
     def test_schema_and_sections(self) -> None:
+        """Expose the complete versioned artifact schema."""
         artifact = _run_stubbed()
         payload = artifact.to_dict()
         assert payload["schema_version"] == "1.0"
@@ -211,6 +224,7 @@ class TestArtifactAssembly:
         assert payload["package_markdown"].startswith("# Closed-Loop")
 
     def test_claim_ledger_never_promotes(self) -> None:
+        """Keep provider and live-QPU claim rows blocked or unpromoted."""
         artifact = _run_stubbed()
         rows = {
             row["claim_id"]: row["promotion_status"]
@@ -223,27 +237,32 @@ class TestArtifactAssembly:
         }
 
     def test_non_hardware_notes_always_present(self) -> None:
+        """Retain explicit non-hardware and un-run-template notes."""
         artifact = _run_stubbed()
         assert any("not a hardware measurement" in note for note in artifact.notes)
         assert any("un-run" in note for note in artifact.notes)
 
     def test_isolated_host_grades_timings(self) -> None:
+        """Grade timings as measured when host isolation is ready."""
         artifact = _run_stubbed(ready=True)
         assert artifact.timing_grade == "isolated_measured"
         assert not any("advisory" in note for note in artifact.notes)
 
     def test_shared_host_labels_timings_advisory(self) -> None:
+        """Label shared-host wall-clock samples as advisory."""
         artifact = _run_stubbed(ready=False)
         assert artifact.timing_grade == "advisory_shared_host"
         assert any("advisory" in note for note in artifact.notes)
         assert artifact.host["ready"] is False
 
     def test_provenance_stamps_present(self) -> None:
+        """Stamp command, dependency, and revision provenance."""
         artifact = _run_stubbed()
         assert sorted(artifact.provenance) == ["command", "dependencies", "git_commit"]
         assert artifact.provenance["dependencies"]["python"]
 
     def test_injected_latency_measurer_used(self) -> None:
+        """Forward configuration into an injected latency measurer."""
         captured: dict[str, Any] = {}
 
         def fake_measurer(
@@ -273,15 +292,19 @@ class TestArtifactAssembly:
         assert artifact.latency_report["clock_source"] == "replayed_observed_round_latencies_s"
 
     def test_live_host_captured_when_not_injected(self) -> None:
+        """Capture live host readiness when no verdict is injected."""
         artifact = run_closed_loop_publication(_SMALL, controller_factory=_FakeController)
         assert artifact.timing_grade in {"isolated_measured", "advisory_shared_host"}
         assert "ready" in artifact.host
 
 
 class TestDefaultFactories:
+    """Verify default factory wiring without running the heavy solver."""
+
     def test_default_controller_factory_builds_real_controller_class(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Construct the configured controller class through the default factory."""
         # The real controller's statevector solver trips the qiskit×coverage
         # tracer bug, so the class is substituted; the factory wiring is real.
         monkeypatch.setattr(module, "RealtimeSyncFeedbackController", _FakeController)

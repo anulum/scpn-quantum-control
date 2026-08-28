@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1269
+    "test_files": 1270
   },
   "documentation": {
     "examples": [
@@ -8278,6 +8278,7 @@
       "tests/test_classical_reference_regression.py",
       "tests/test_closed_loop_analysis.py",
       "tests/test_closed_loop_analysis_wall_clock.py",
+      "tests/test_closed_loop_publication_quality_gate.py",
       "tests/test_closed_loop_publication_run.py",
       "tests/test_cloud_native.py",
       "tests/test_cloud_native_branches.py",

@@ -41,12 +41,16 @@ def _canned_artifact() -> ClosedLoopPublicationArtifact:
 
 
 class TestArgumentParsing:
+    """Verify closed-loop publication CLI argument parsing."""
+
     def test_defaults(self) -> None:
+        """Expose the documented bounded-run defaults."""
         args = script._parse_args([])
         assert (args.n, args.rounds, args.template_rounds, args.seed) == (4, 32, 3, 0)
         assert Path(args.out_dir) == script.DEFAULT_OUT_DIR
 
     def test_custom_arguments(self) -> None:
+        """Preserve explicit numeric CLI settings."""
         args = script._parse_args(
             ["--n", "3", "--coupling", "0.4", "--target-r", "0.5", "--rounds", "8", "--seed", "2"]
         )
@@ -60,12 +64,15 @@ class TestArgumentParsing:
 
 
 class TestMain:
+    """Verify the artifact-writing CLI entry point."""
+
     def test_writes_artifact_and_prints_summary(
         self,
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Write JSON and print the honest artifact summary."""
         captured: dict[str, Any] = {}
 
         def fake_run(config: Any) -> Any:
@@ -98,6 +105,7 @@ class TestMain:
         tmp_path: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Forward all artifact configuration flags into the run owner."""
         captured: dict[str, Any] = {}
 
         def fake_run(config: Any) -> Any:

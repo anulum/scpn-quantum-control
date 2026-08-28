@@ -141,6 +141,7 @@ class ClosedLoopRunConfig:
         Latency budget; ``None`` selects the
         :class:`~scpn_quantum_control.control.closed_loop_analysis.ClosedLoopLatencyBudget`
         defaults.
+
     """
 
     n_oscillators: int = 4
@@ -162,6 +163,7 @@ class ClosedLoopRunConfig:
             If the ring is smaller than two oscillators, the coupling or
             target is not finite and positive, fewer than two rounds are
             requested, or the template round count is not positive.
+
         """
         if self.n_oscillators < 2:
             raise ValueError("n_oscillators must be at least two")
@@ -256,6 +258,7 @@ def dynamic_circuit_templates(config: ClosedLoopRunConfig) -> dict[str, Any]:
     -------
     dict of str to Any
         Mapping with the claim note and one OpenQASM 3 entry per template.
+
     """
     K, omega = build_kuramoto_ring(
         config.n_oscillators, coupling=config.coupling, rng_seed=config.seed
@@ -335,6 +338,7 @@ def run_closed_loop_publication(
     ClosedLoopPublicationArtifact
         The publication scaffold, the measured latency report, the exported
         dynamic-circuit templates, provenance, and the honest labels.
+
     """
     config = config or ClosedLoopRunConfig()
 

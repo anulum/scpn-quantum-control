@@ -1,5 +1,14 @@
 # Changelog
 
+- 2026-08-28 — Closed-loop publication-run documentation quality: completed
+  the preview-inclusive NumPy docstring contract across the software-in-the-loop
+  artifact owner and both direct test surfaces, and wired permanent strict
+  typing, offline artifact assembly, complete owner documentation, and exact
+  source coverage into preflight and CI. Configuration validation, latency
+  measurement, deterministic template export, host grading, provenance,
+  fail-closed claim labels, public APIs, and no-hardware/provider boundaries
+  are unchanged.
+
 - 2026-08-28 — MLIR whole-program native documentation and exact quality:
   documented all validation magic methods, removed direct-test layout drift,
   eliminated a duplicate unreachable replay-signature check, and added real

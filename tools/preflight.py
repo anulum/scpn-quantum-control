@@ -54,6 +54,9 @@ if TYPE_CHECKING:
     )
     from tools import chimera_control_quality_gates as _chimera_control_quality_gates
     from tools import (
+        closed_loop_publication_quality_gates as _closed_loop_publication_quality_gates,
+    )
+    from tools import (
         cloud_native_deployment_product_quality_gates as _cloud_native_deployment_quality_gates,
     )
     from tools import codesign_components_quality_gates as _codesign_components_quality_gates
@@ -277,6 +280,9 @@ else:
     )
     _campaign_harness_product_quality_gates = import_module(
         "tools.campaign_harness_product_quality_gates"
+    )
+    _closed_loop_publication_quality_gates = import_module(
+        "tools.closed_loop_publication_quality_gates"
     )
     _chimera_control_quality_gates = import_module("tools.chimera_control_quality_gates")
     _whole_program_frontend_contracts_quality_gates = import_module(
@@ -859,6 +865,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_gradient_backend_quality_gates.build_static_quality_gates(_PY),
     *_differentiable_exact_modes_quality_gates.build_static_quality_gates(_PY),
     *_mlir_whole_program_native_quality_gates.build_static_quality_gates(_PY),
+    *_closed_loop_publication_quality_gates.build_static_quality_gates(_PY),
     *_quantum_phi_quality_gates.build_static_quality_gates(_PY),
     *_qpu_result_pack_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
@@ -1380,6 +1387,9 @@ DIFFERENTIABLE_EXACT_MODES_COVERAGE_GATES = (
 MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_GATES = (
     _mlir_whole_program_native_quality_gates.build_coverage_gates(_PY)
 )
+CLOSED_LOOP_PUBLICATION_COVERAGE_GATES = (
+    _closed_loop_publication_quality_gates.build_coverage_gates(_PY)
+)
 QUANTUM_PHI_COVERAGE_GATES = _quantum_phi_quality_gates.build_coverage_gates(_PY)
 QPU_RESULT_PACK_COVERAGE_GATES = _qpu_result_pack_quality_gates.build_coverage_gates(_PY)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
@@ -1809,6 +1819,7 @@ def main() -> int:
             gates.extend(GRADIENT_BACKEND_COVERAGE_GATES)
             gates.extend(DIFFERENTIABLE_EXACT_MODES_COVERAGE_GATES)
             gates.extend(MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_GATES)
+            gates.extend(CLOSED_LOOP_PUBLICATION_COVERAGE_GATES)
             gates.extend(QUANTUM_PHI_COVERAGE_GATES)
             gates.extend(QPU_RESULT_PACK_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
