@@ -17,8 +17,8 @@ curated, bounded model bundles unless a separate reference-validation certificat
 is supplied. Hardware result packs become measured hardware-unmitigated bundles;
 they do not become hardware-validated or reference-validated solely because raw
 counts exist. Falsified rows must use the platform's ``falsified``/``refuted``
-pair, preserving the LOCK-4 rule that negative findings are explicit and never
-laundered into validation.
+pair so negative findings remain explicit and are never laundered into
+validation.
 """
 
 from __future__ import annotations
