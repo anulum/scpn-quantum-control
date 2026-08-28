@@ -146,7 +146,7 @@ class StateEstimate:
 
 @dataclass(frozen=True, slots=True)
 class GradientPlanRecord:
-    """Bounded BL-09 planner decision attached to an evaluation."""
+    """Bounded gradient-planner decision attached to an evaluation."""
 
     backend: str
     requested_method: str
