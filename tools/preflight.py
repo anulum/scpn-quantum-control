@@ -111,6 +111,7 @@ if TYPE_CHECKING:
     from tools import (
         kyma_mechanism_benchmark_product_quality_gates as _kyma_mechanism_product_quality_gates,
     )
+    from tools import kyma_v2_dynamics_quality_gates as _kyma_v2_dynamics_quality_gates
     from tools import (
         layout_method_comparison_quality_gates as _layout_method_comparison_quality_gates,
     )
@@ -302,6 +303,7 @@ else:
     _kyma_mechanism_product_quality_gates = import_module(
         "tools.kyma_mechanism_benchmark_product_quality_gates"
     )
+    _kyma_v2_dynamics_quality_gates = import_module("tools.kyma_v2_dynamics_quality_gates")
     _layout_method_comparison_quality_gates = import_module(
         "tools.layout_method_comparison_quality_gates"
     )
@@ -682,6 +684,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_quantum_sync_oracle_product_quality_gates.build_static_quality_gates(_PY),
     *_custom_derivatives_product_quality_gates.build_static_quality_gates(_PY),
     *_kyma_mechanism_product_quality_gates.build_static_quality_gates(_PY),
+    *_kyma_v2_dynamics_quality_gates.build_static_quality_gates(_PY),
     *_campaign_harness_product_quality_gates.build_static_quality_gates(_PY),
     *_chimera_control_quality_gates.build_static_quality_gates(_PY),
     *_whole_program_frontend_contracts_quality_gates.build_static_quality_gates(_PY),
@@ -1125,6 +1128,7 @@ CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_GATES = (
 KYMA_MECHANISM_PRODUCT_COVERAGE_GATES = _kyma_mechanism_product_quality_gates.build_coverage_gates(
     _PY
 )
+KYMA_V2_DYNAMICS_COVERAGE_GATES = _kyma_v2_dynamics_quality_gates.build_coverage_gates(_PY)
 CAMPAIGN_HARNESS_PRODUCT_COVERAGE_GATES = (
     _campaign_harness_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -1530,6 +1534,7 @@ def main() -> int:
             gates.extend(QUANTUM_SYNC_ORACLE_COVERAGE_GATES)
             gates.extend(CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_GATES)
             gates.extend(KYMA_MECHANISM_PRODUCT_COVERAGE_GATES)
+            gates.extend(KYMA_V2_DYNAMICS_COVERAGE_GATES)
             gates.extend(CAMPAIGN_HARNESS_PRODUCT_COVERAGE_GATES)
             gates.extend(CHIMERA_CONTROL_COVERAGE_GATES)
             gates.extend(WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_GATES)

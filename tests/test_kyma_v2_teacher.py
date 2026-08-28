@@ -23,6 +23,7 @@ def _cfg() -> task.ProbeConfigV2:
 
 
 def test_teacher_gates_shape_and_symmetry() -> None:
+    """Construct symmetric zero-diagonal gates for every relation and pair."""
     gates = teacher.teacher_gates(0.5)
     assert gates.shape == (task.N_RELATIONS, task.N_PAIRS, task.N_OSC, task.N_OSC)
     for r in range(task.N_RELATIONS):
@@ -32,12 +33,14 @@ def test_teacher_gates_shape_and_symmetry() -> None:
 
 
 def test_r1_gate_is_attractive_intra_pair() -> None:
+    """Use attractive coupling on every first-relation intra-pair edge."""
     gates = teacher.teacher_gates(0.5)
     mask = task.in_phase_mask(0)
     assert np.all(gates[0, 0][mask] > 0)  # attractive on every intra-pair edge
 
 
 def test_r2_gate_attracts_within_and_frustrates_between() -> None:
+    """Combine within-cluster attraction with between-cluster frustration."""
     gates = teacher.teacher_gates(0.5)
     within, between = task.anti_phase_masks(0)
     assert np.all(gates[1, 0][within] > 0)  # attractive inside each cluster
@@ -45,6 +48,7 @@ def test_r2_gate_attracts_within_and_frustrates_between() -> None:
 
 
 def test_teacher_realises_single_relation_motifs() -> None:
+    """Realise the registered in-phase and anti-phase single motifs."""
     cfg = _cfg()
     batch = task.build_trials(cfg, seed=0)
     finals = teacher.teacher_final_phases(batch.theta0, batch.code, cfg)
@@ -59,6 +63,7 @@ def test_teacher_realises_single_relation_motifs() -> None:
 
 
 def test_teacher_labels_in_range_and_deterministic() -> None:
+    """Produce deterministic labels inside the configured class range."""
     cfg = _cfg()
     batch = task.build_trials(cfg, seed=1)
     a = teacher.label_batch(batch, cfg)
@@ -69,6 +74,7 @@ def test_teacher_labels_in_range_and_deterministic() -> None:
 
 
 def test_teacher_label_depends_on_theta0() -> None:
+    """Retain the intended data dependence for a fixed relation code."""
     # Same code, different θ0 → labels not all identical (data-dependent readout).
     cfg = _cfg()
     code = task.encode(0, 5)[None].repeat(64, axis=0)

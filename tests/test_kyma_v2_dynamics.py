@@ -20,6 +20,7 @@ from scpn_quantum_control.benchmarks.kyma_v2 import dynamics  # noqa: E402
 
 
 def test_rhs_zero_coupling_is_pure_drive() -> None:
+    """Reduce zero-coupling dynamics to the natural-frequency drive."""
     theta = jnp.zeros((3, 4))
     omega = jnp.asarray(np.arange(12.0).reshape(3, 4))
     coupling = jnp.zeros((3, 4, 4))
@@ -28,6 +29,7 @@ def test_rhs_zero_coupling_is_pure_drive() -> None:
 
 
 def test_rhs_per_trial_coupling_is_independent() -> None:
+    """Apply each trial's coupling matrix without cross-batch leakage."""
     # Two trials, different couplings → different interaction terms.
     theta = jnp.asarray([[0.0, np.pi / 2], [0.0, np.pi / 2]])
     omega = jnp.zeros((2, 2))
@@ -38,6 +40,7 @@ def test_rhs_per_trial_coupling_is_independent() -> None:
 
 
 def test_attractive_coupling_synchronises() -> None:
+    """Synchronise an all-to-all system under attractive coupling."""
     rng = np.random.default_rng(0)
     theta0 = jnp.asarray(rng.uniform(-np.pi, np.pi, size=(1, 6)))
     omega = jnp.zeros((1, 6))
@@ -48,6 +51,7 @@ def test_attractive_coupling_synchronises() -> None:
 
 
 def test_zero_coupling_preserves_relative_phases() -> None:
+    """Preserve phases when both drive and coupling vanish."""
     theta0 = jnp.asarray([[0.0, 1.0, 2.0]])
     omega = jnp.zeros((1, 3))
     coupling = jnp.zeros((1, 3, 3))
@@ -58,6 +62,7 @@ def test_zero_coupling_preserves_relative_phases() -> None:
 
 
 def test_order_parameter_in_and_anti_phase() -> None:
+    """Distinguish fully aligned from balanced anti-phase states."""
     in_phase = jnp.zeros((1, 4))
     anti = jnp.asarray([[0.0, 0.0, np.pi, np.pi]])
     assert np.asarray(dynamics.order_parameter(in_phase, jnp.arange(4)))[0] == pytest.approx(1.0)
@@ -68,6 +73,7 @@ def test_order_parameter_in_and_anti_phase() -> None:
 
 @pytest.mark.parametrize("n_bins", [2, 4, 8])
 def test_phase_label_range_and_binning(n_bins: int) -> None:
+    """Keep quantised phase labels inside each configured class range."""
     # Phases spread across the circle → labels cover the full range and stay in bounds.
     phi = jnp.asarray([np.linspace(-np.pi + 0.01, np.pi - 0.01, 32)]).T.reshape(1, 32)
     labels = np.asarray(dynamics.phase_label(phi, readout_oscillator=0, n_bins=n_bins))
@@ -77,6 +83,7 @@ def test_phase_label_range_and_binning(n_bins: int) -> None:
 
 
 def test_phase_label_specific_bins() -> None:
+    """Map representative positive phases to their exact four-bin labels."""
     # 4 bins of width π/2; φ = π/4 → bin 0, φ = 3π/4 → bin 1, φ = 5π/4 → bin 2.
     theta = jnp.asarray([[np.pi / 4], [3 * np.pi / 4], [5 * np.pi / 4]])
     labels = np.asarray(dynamics.phase_label(theta, readout_oscillator=0, n_bins=4))
@@ -84,6 +91,7 @@ def test_phase_label_specific_bins() -> None:
 
 
 def test_phase_label_wraps_negative_angles() -> None:
+    """Wrap a negative phase into the final angular bin."""
     # −π/4 mod 2π = 7π/4 → bin 3 (last) of 4.
     theta = jnp.asarray([[-np.pi / 4]])
     label = int(np.asarray(dynamics.phase_label(theta, readout_oscillator=0, n_bins=4))[0])

@@ -32,8 +32,10 @@ def kuramoto_rhs_batched(theta: jax.Array, omega: jax.Array, coupling: jax.Array
         omega: ``(batch, n)`` natural-frequency drive.
         coupling: ``(batch, n, n)`` per-trial symmetric coupling, zero diagonal.
 
-    Returns:
+    Returns
+    -------
         ``(batch, n)`` phase velocities.
+
     """
     # diff[b, i, j] = θ_j − θ_i  → (batch, n_i, n_j)
     diff = theta[:, None, :] - theta[:, :, None]
@@ -57,8 +59,10 @@ def integrate_kuramoto_batched(
         dt: fixed step size.
         steps: number of RK4 steps (horizon ``T = steps * dt``).
 
-    Returns:
+    Returns
+    -------
         ``(batch, n)`` final phases wrapped to ``(-π, π]``.
+
     """
 
     def rk4_step(theta: jax.Array, _: None) -> tuple[jax.Array, None]:
@@ -79,8 +83,10 @@ def order_parameter(theta: jax.Array, members: jax.Array) -> jax.Array:
         theta: ``(batch, n)`` phases.
         members: ``(m,)`` integer indices of the oscillators in the set.
 
-    Returns:
+    Returns
+    -------
         ``(batch,)`` order parameter per trial (1 in-phase, ~0 anti-phase).
+
     """
     selected = theta[:, members]
     return jnp.abs(jnp.mean(jnp.exp(1j * selected), axis=1))
@@ -98,8 +104,10 @@ def phase_label(theta: jax.Array, readout_oscillator: int, n_bins: int) -> jax.A
         readout_oscillator: index of the oscillator whose phase is read.
         n_bins: number of equal angular bins (chance = ``1 / n_bins``).
 
-    Returns:
+    Returns
+    -------
         ``(batch,)`` integer class labels.
+
     """
     phi = jnp.mod(theta[:, readout_oscillator], 2.0 * jnp.pi)
     width = (2.0 * jnp.pi) / n_bins
