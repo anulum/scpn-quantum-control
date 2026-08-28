@@ -30,7 +30,7 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 - Topology-aware exact-statevector fidelity-kernel product with matched
   graph controls, custody-checked classification, and bounded synthetic
   representability evidence.
-- BL-63 power-grid, Josephson, EEG-like, and ITER-inspired application honesty
+- Power-grid, Josephson, EEG-like, and ITER-inspired application honesty
   kits with privacy/provenance metadata and explicit domain non-claims.
 - BL-98 theory-hook promotion registry with corrected QSL, Hamiltonian-
   learning, Koopman, QMI, magic, SFF, and IIT-proxy boundaries.

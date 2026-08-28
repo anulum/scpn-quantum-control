@@ -41,7 +41,7 @@ synchronisation, and FEP predictive-coding workflows. The loader path is
 and the plugin suite is documented in
 [`docs/application_benchmarks.md`](application_benchmarks.md).
 
-The BL-63 `audit_application_benchmark_privacy()` API additionally binds each
+The `audit_application_benchmark_privacy()` API additionally binds each
 packaged application artifact to its exact curated source mode, privacy class,
 licence boundary, personal-data flag, and embedded array hashes. Its
 deterministic aggregate report is described in
