@@ -192,8 +192,8 @@ Shipped in this slice:
 
 Still open by design (not falsely completed):
 
-- Continuous CI drift gate vs capability manifest (S52.4)
-- Scheduled refresh job (S52.5)
-- Notebook / Sync Challenge baseline wiring to route IDs (S52.7)
+- Continuous CI drift gate vs capability manifest
+- Scheduled refresh job
+- Notebook / Sync Challenge baseline wiring to route IDs
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
