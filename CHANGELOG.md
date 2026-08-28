@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Finite-size scaling documentation quality: completed the
+  NumPy docstring contract across the local dense gap/extrapolation owner and
+  its direct tests, covered non-integer system-size refusal, and wired
+  permanent strict typing, connected execution, documentation, and exact
+  source coverage into preflight and CI. Dense-budget ordering, Hamiltonian
+  and gap arithmetic, validation, fit diagnostics, public APIs, and bounded
+  local-extrapolation claims are unchanged.
+
 - 2026-08-28 — Gradient-plan explanation artefact documentation quality:
   completed the NumPy docstring contract, covered the package module entry
   point, and wired permanent strict typing, committed JSON/Markdown drift,

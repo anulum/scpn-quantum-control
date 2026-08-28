@@ -71,6 +71,7 @@ class FSSFitDiagnostics:
         Number of finite-size points used in the fit.
     claim_boundary:
         Claim boundary attached to the diagnostic evidence.
+
     """
 
     model: str
@@ -92,6 +93,7 @@ class FSSFitDiagnostics:
         dict[str, object]
             Primitive mapping suitable for dashboards, documentation manifests,
             and persisted audit artifacts.
+
         """
         return {
             "model": self.model,
@@ -140,6 +142,7 @@ class FSSResult:
     claim_boundary:
         Claim boundary describing what this exact local scan does and does not
         establish.
+
     """
 
     system_sizes: list[int]
@@ -159,6 +162,7 @@ class FSSResult:
         dict[str, Any]
             Mapping containing raw scan outputs, legacy scalar extrapolations,
             rich fit diagnostics, and the attached claim boundary.
+
         """
         return {
             "system_sizes": self.system_sizes,
@@ -271,6 +275,7 @@ def finite_size_scaling(
     FSSResult
         Local exact finite-size evidence with raw gap minima, extrapolated
         scalar fields, fit diagnostics, and claim boundaries.
+
     """
     sizes = _validate_system_sizes(system_sizes)
     scan_values = _validate_k_range(k_range)

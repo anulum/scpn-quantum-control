@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import pytest
 from numpy.typing import NDArray
@@ -33,7 +35,10 @@ def _array(values: object) -> NDArray[np.float64]:
 
 
 class TestFiniteSizeScaling:
+    """Exercise the public finite-size scaling analysis contract."""
+
     def test_returns_result(self) -> None:
+        """Return the typed result with one entry per requested system size."""
         result = finite_size_scaling(
             system_sizes=[2, 3],
             k_range=_linspace(0.5, 4.0, 10),
@@ -42,6 +47,7 @@ class TestFiniteSizeScaling:
         assert len(result.k_c_values) == 2
 
     def test_k_c_positive(self) -> None:
+        """Report positive critical-coupling estimates for the local scan."""
         result = finite_size_scaling(
             system_sizes=[2, 3, 4],
             k_range=_linspace(0.5, 5.0, 12),
@@ -50,6 +56,7 @@ class TestFiniteSizeScaling:
             assert kc > 0
 
     def test_gap_min_positive(self) -> None:
+        """Report positive minimum gaps for each scanned system size."""
         result = finite_size_scaling(
             system_sizes=[2, 3],
             k_range=_linspace(0.5, 4.0, 10),
@@ -58,6 +65,7 @@ class TestFiniteSizeScaling:
             assert g > 0
 
     def test_extrapolation_exists(self) -> None:
+        """Produce at least one extrapolation for a three-size scan."""
         result = finite_size_scaling(
             system_sizes=[2, 3, 4],
             k_range=_linspace(0.5, 5.0, 12),
@@ -66,6 +74,7 @@ class TestFiniteSizeScaling:
         assert result.k_c_extrapolated_bkt is not None or result.k_c_extrapolated_power is not None
 
     def test_extrapolated_values_finite(self) -> None:
+        """Keep every available extrapolated coupling finite."""
         result = finite_size_scaling(
             system_sizes=[2, 3, 4],
             k_range=_linspace(0.5, 5.0, 12),
@@ -84,10 +93,12 @@ class TestFiniteSizeScaling:
         assert len(result.k_c_values) == 1
 
     def test_result_has_system_sizes(self) -> None:
+        """Retain the requested system-size ordering in the result."""
         result = finite_size_scaling(system_sizes=[2, 3], k_range=_linspace(0.5, 4.0, 6))
         assert result.system_sizes == [2, 3]
 
     def test_k_c_values_finite(self) -> None:
+        """Keep every sampled critical-coupling estimate finite."""
         result = finite_size_scaling(system_sizes=[2, 3], k_range=_linspace(0.5, 4.0, 8))
         for kc in result.k_c_values:
             assert np.isfinite(kc)
@@ -99,6 +110,7 @@ class TestFiniteSizeScaling:
         assert len(result.k_c_values) == 3
 
     def test_gap_min_matches_k_c_count(self) -> None:
+        """Align gap minima one-to-one with critical-coupling estimates."""
         result = finite_size_scaling(system_sizes=[2, 4], k_range=_linspace(0.5, 4.0, 8))
         assert len(result.gap_min_values) == len(result.k_c_values)
 
@@ -106,6 +118,7 @@ class TestFiniteSizeScaling:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Reject an undersized dense budget before Hamiltonian allocation."""
         omega = _array([1.0, 1.0, 1.0, 1.0])
         topology = _array(np.eye(4))
         k_range = _array([1.0, 2.0])
@@ -137,6 +150,7 @@ class TestFiniteSizeScaling:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Forward the caller's dense-memory budget to every size scan."""
         seen_budgets: list[float | None] = []
 
         def fake_find_kc(
@@ -198,6 +212,15 @@ class TestFiniteSizeScaling:
         with pytest.raises(ValueError, match=match):
             finite_size_scaling(system_sizes=system_sizes, k_range=_array([0.5, 1.0]))
 
+    @pytest.mark.parametrize("invalid_sizes", [[True], ["2"]])
+    def test_rejects_non_integer_system_sizes(self, invalid_sizes: list[object]) -> None:
+        """Reject booleans and non-integer values as system sizes."""
+        with pytest.raises(TypeError, match="integer qubit counts"):
+            finite_size_scaling(
+                system_sizes=cast("list[int]", invalid_sizes),
+                k_range=_array([0.5, 1.0]),
+            )
+
     @pytest.mark.parametrize(
         ("k_range", "match"),
         [
@@ -214,6 +237,8 @@ class TestFiniteSizeScaling:
 
 
 class TestFSSPipeline:
+    """Exercise finite-size scaling through its public pipeline boundary."""
+
     def test_pipeline_fss_to_kc(self) -> None:
         """Full pipeline: system sizes → FSS → K_c extraction."""
         import time

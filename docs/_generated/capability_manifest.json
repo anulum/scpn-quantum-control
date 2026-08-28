@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1243
+    "test_files": 1244
   },
   "documentation": {
     "examples": [
@@ -8519,6 +8519,7 @@
       "tests/test_fim_hamiltonian.py",
       "tests/test_fim_mechanism.py",
       "tests/test_finite_size_scaling.py",
+      "tests/test_finite_size_scaling_quality_gate.py",
       "tests/test_fips_140_2_branches.py",
       "tests/test_floquet_kuramoto.py",
       "tests/test_floquet_kuramoto_strict_surface.py",
