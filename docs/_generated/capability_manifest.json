@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1236
+    "test_files": 1237
   },
   "documentation": {
     "examples": [
@@ -8356,6 +8356,7 @@
       "tests/test_differentiable_api.py",
       "tests/test_differentiable_api_contracts.py",
       "tests/test_differentiable_architecture_map.py",
+      "tests/test_differentiable_audit_contracts_quality_gate.py",
       "tests/test_differentiable_baseline_scorecard.py",
       "tests/test_differentiable_batch_helpers.py",
       "tests/test_differentiable_benchmark_evidence.py",

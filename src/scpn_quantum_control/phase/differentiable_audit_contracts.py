@@ -92,6 +92,7 @@ class ParameterShiftAnalyticAgreement:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate gradients, scalar evidence, and immutable array custody."""
         parameters = _as_finite_vector("parameters", self.parameters)
         parameter_shift = _as_finite_vector(
             "parameter_shift_gradient",
@@ -190,6 +191,7 @@ class PhaseGradientBenchmarkSuiteResult:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate benchmark labels, reports, and claim metadata."""
         if not self.benchmark_names:
             raise ValueError("benchmark_names must be non-empty")
         if len(self.benchmark_names) != len(self.reports):
@@ -245,6 +247,7 @@ class DifferentiableWorkflowAuditSuiteResult:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate workflow labels, unsupported cases, and claim metadata."""
         if not self.workflow_names:
             raise ValueError("workflow_names must be non-empty")
         if any(not name for name in self.workflow_names):
@@ -310,6 +313,7 @@ class FiniteShotGradientAuditResult:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate uncertainty evidence and copy caller-owned arrays."""
         deterministic = _as_finite_vector(
             "deterministic_gradient",
             self.deterministic_gradient,
@@ -389,6 +393,7 @@ class MLFrameworkGradientAuditRecord:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate framework status, numerical evidence, and array custody."""
         if not self.framework:
             raise ValueError("framework must be non-empty")
         if not isinstance(self.available, bool) or not isinstance(self.executed, bool):
@@ -455,6 +460,7 @@ class MLFrameworkGradientAuditSuiteResult:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate framework uniqueness and aggregate claim metadata."""
         if not self.records:
             raise ValueError("records must be non-empty")
         frameworks = [record.framework for record in self.records]

@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Differentiable audit-contract documentation quality: completed
+  the NumPy docstring contract across immutable audit evidence and its facade
+  tests, added exhaustive invariant and serialization coverage, and wired
+  permanent strict typing, connected execution, documentation, and exact
+  source coverage into preflight and CI. Record identities, fields, defensive
+  array custody, validation order, facade aliases, numerics, and bounded claim
+  semantics are unchanged.
+
 - 2026-08-28 — Legacy KYMA dynamics documentation quality: completed the
   NumPy docstring contract across Kuramoto dynamics and dynamics/model/probe
   tests, and wired permanent strict typing, connected JAX execution,

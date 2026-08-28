@@ -39,6 +39,7 @@ class _FakeAdapterResult:
 
 
 def test_run_known_phase_gradient_audit_passes_all_evidence_checks() -> None:
+    """Verify the known phase audit returns complete passing evidence."""
     report = run_known_phase_gradient_audit(np.array([0.8, -0.5, 0.3], dtype=float))
 
     assert isinstance(report, DifferentiableQuantumAuditReport)
@@ -56,6 +57,8 @@ def test_run_known_phase_gradient_audit_passes_all_evidence_checks() -> None:
 
 
 def test_verify_parameter_shift_analytic_gradient_matches_closed_form() -> None:
+    """Verify parameter-shift gradients against a closed-form derivative."""
+
     def objective(values: np.ndarray) -> float:
         return float(np.cos(values[0]) + 0.25 * np.sin(values[1]))
 
@@ -76,6 +79,8 @@ def test_verify_parameter_shift_analytic_gradient_matches_closed_form() -> None:
 
 
 def test_run_finite_shot_gradient_uncertainty_audit_contains_errors() -> None:
+    """Verify finite-shot confidence radii contain deterministic errors."""
+
     def objective(values: np.ndarray) -> float:
         return float(np.mean(1.0 - np.cos(values)))
 
@@ -99,6 +104,8 @@ def test_run_finite_shot_gradient_uncertainty_audit_contains_errors() -> None:
 
 
 def test_run_finite_shot_gradient_uncertainty_audit_rejects_negative_variance() -> None:
+    """Reject negative shot-variance evidence before audit execution."""
+
     def objective(values: np.ndarray) -> float:
         return float(np.mean(1.0 - np.cos(values)))
 
@@ -111,6 +118,7 @@ def test_run_finite_shot_gradient_uncertainty_audit_rejects_negative_variance() 
 
 
 def test_run_differentiable_workflow_audit_suite_passes_supported_lanes() -> None:
+    """Verify the aggregate audit passes every supported workflow lane."""
     suite = run_differentiable_workflow_audit_suite()
 
     assert isinstance(suite, DifferentiableWorkflowAuditSuiteResult)
@@ -135,6 +143,7 @@ def test_run_differentiable_workflow_audit_suite_passes_supported_lanes() -> Non
 def test_run_ml_framework_gradient_audit_records_unavailable_dependencies(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Record unavailable optional frameworks without claiming execution."""
     monkeypatch.setattr(audit_module, "is_phase_jax_available", lambda: False)
     monkeypatch.setattr(audit_module, "is_phase_torch_available", lambda: False)
     monkeypatch.setattr(audit_module, "is_phase_tensorflow_available", lambda: False)
@@ -155,6 +164,7 @@ def test_run_ml_framework_gradient_audit_records_unavailable_dependencies(
 def test_run_ml_framework_gradient_audit_executes_available_adapter(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Execute and validate an injected available framework adapter."""
     monkeypatch.setattr(audit_module, "is_phase_jax_available", lambda: True)
     monkeypatch.setattr(audit_module, "is_phase_torch_available", lambda: False)
     monkeypatch.setattr(audit_module, "is_phase_tensorflow_available", lambda: False)
@@ -184,6 +194,7 @@ def test_run_ml_framework_gradient_audit_executes_available_adapter(
 
 
 def test_run_phase_gradient_benchmark_suite_passes_all_cases() -> None:
+    """Verify every built-in phase-gradient benchmark passes."""
     suite = run_phase_gradient_benchmark_suite()
 
     assert isinstance(suite, PhaseGradientBenchmarkSuiteResult)
@@ -207,6 +218,8 @@ def test_run_phase_gradient_benchmark_suite_passes_all_cases() -> None:
 
 
 def test_run_parameter_shift_audit_suite_rejects_bad_analytic_shape() -> None:
+    """Reject analytic gradients whose shape differs from parameters."""
+
     def objective(values: np.ndarray) -> float:
         return float(np.mean(1.0 - np.cos(values)))
 
