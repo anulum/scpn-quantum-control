@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Gradient-plan explanation artefact documentation quality:
+  completed the NumPy docstring contract, covered the package module entry
+  point, and wired permanent strict typing, committed JSON/Markdown drift,
+  connected execution, documentation, and exact source coverage into preflight
+  and CI. Schema, identifiers, paths, audit admission, supported/blocked
+  contrast, explanation ordering, method classification, rendering, public
+  APIs, and bounded fail-closed claims are unchanged.
+
 - 2026-08-28 — Transform support-matrix artefact documentation quality:
   completed the NumPy docstring contract, closed the remaining executable CLI
   branches, and wired permanent strict typing, committed JSON/Markdown drift,

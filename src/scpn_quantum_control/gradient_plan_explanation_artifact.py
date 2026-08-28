@@ -75,6 +75,7 @@ class GradientPlanExplanationArtifactValidation:
         Whether the committed payload and markdown match a fresh planner audit.
     errors
         Human-readable mismatch descriptions, empty when ``passed``.
+
     """
 
     passed: bool
@@ -109,6 +110,7 @@ def build_gradient_plan_explanation_artifact(
     ValueError
         If the planner audit is not passing, or no supported/blocked contrast
         exists for the Studio explanation view.
+
     """
     resolved = run_gradient_support_matrix_audit() if audit is None else audit
     if not resolved.passed:
@@ -155,6 +157,7 @@ def validate_gradient_plan_explanation_artifact(
     -------
     GradientPlanExplanationArtifactValidation
         Verdict with per-field mismatch descriptions.
+
     """
     errors: list[str] = []
     reference = build_gradient_plan_explanation_artifact(audit)
@@ -176,6 +179,7 @@ def render_gradient_plan_explanation_markdown(payload: dict[str, object]) -> str
     -------
     str
         Markdown document with artefact metadata and one row per planner case.
+
     """
     rows = _explanation_rows(payload)
     lines = [
@@ -216,6 +220,7 @@ def main(argv: list[str] | None = None) -> int:
     int
         ``0`` when the requested operation succeeds, ``1`` when check mode
         detects drift.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write", action="store_true", help="write the JSON and markdown files")

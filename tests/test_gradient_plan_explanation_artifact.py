@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import runpy
+import sys
 from pathlib import Path
 from typing import cast
 
@@ -32,6 +34,7 @@ from scpn_quantum_control.phase import run_gradient_support_matrix_audit
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMITTED_JSON = REPO_ROOT / DEFAULT_GRADIENT_PLAN_EXPLANATION_JSON_PATH
 COMMITTED_MARKDOWN = REPO_ROOT / DEFAULT_GRADIENT_PLAN_EXPLANATION_MARKDOWN_PATH
+MODULE_NAME = "scpn_quantum_control.gradient_plan_explanation_artifact"
 
 
 def test_payload_explains_supported_and_blocked_planner_cells() -> None:
@@ -218,3 +221,27 @@ def test_main_default_mode_prints_payload(capsys: pytest.CaptureFixture[str]) ->
     payload = json.loads(capsys.readouterr().out)
     assert payload["schema"] == GRADIENT_PLAN_EXPLANATION_SCHEMA
     assert len(payload["explanations"]) == 10
+
+
+def test_module_entry_point_returns_main_status(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Execute the package module entry point and propagate its status."""
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            MODULE_NAME,
+            "--check",
+            "--json-path",
+            str(COMMITTED_JSON),
+            "--markdown-path",
+            str(COMMITTED_MARKDOWN),
+        ],
+    )
+    with (
+        pytest.warns(RuntimeWarning, match="found in sys.modules"),
+        pytest.raises(SystemExit) as raised,
+    ):
+        runpy.run_module(MODULE_NAME, run_name="__main__", alter_sys=True)
+    assert raised.value.code == 0
