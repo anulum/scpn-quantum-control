@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
@@ -39,8 +40,11 @@ _CIRCUIT_DIGEST = "sha256:" + "22" * 32
 _GRADER = {"name": "honesty-bridge", "version": "0.8.0"}
 
 
-def _real_pack() -> dict:
-    return json.loads(_MANIFEST.read_text(encoding="utf-8"))["packs"][0]
+def _real_pack() -> dict[str, Any]:
+    return cast(
+        dict[str, Any],
+        json.loads(_MANIFEST.read_text(encoding="utf-8"))["packs"][0],
+    )
 
 
 def _signer() -> MLDSASigner:
@@ -122,7 +126,7 @@ def test_provider_attestation_round_trips() -> None:
         ("ibm", _RAW_DIGEST, ""),
     ],
 )
-def test_provider_attestation_rejects_missing_field(provider, digest, sig) -> None:
+def test_provider_attestation_rejects_missing_field(provider: str, digest: str, sig: str) -> None:
     """An attestation missing any part is not an attestation and is refused."""
     with pytest.raises(ValueError, match="must be non-empty"):
         build_provider_attestation(provider=provider, result_pack_digest=digest, provider_sig=sig)

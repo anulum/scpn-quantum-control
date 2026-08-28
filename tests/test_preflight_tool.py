@@ -1059,6 +1059,8 @@ def test_main_uses_coverage_pytest_by_default(
         "NQS-ansatz exact coverage threshold",
         "sparse-Hamiltonian focused coverage",
         "sparse-Hamiltonian exact coverage threshold",
+        "result-pack-seal focused coverage",
+        "result-pack-seal exact coverage threshold",
         "synchronisation-uncertainty focused coverage",
         "synchronisation-uncertainty exact coverage threshold",
         "coupling-invariant focused coverage",

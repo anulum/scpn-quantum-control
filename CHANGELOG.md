@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Result-pack seal documentation and exact quality: completed the
+  preview-inclusive NumPy docstring and strict typing contracts across the
+  attestation-envelope owner and direct test surface, and wired permanent real
+  offline seal/verify/forgery execution plus exact source coverage into
+  preflight and CI. Provenance, provider attestation, honesty axes, digests,
+  ML-DSA test verification, refusal behavior, public APIs, and bounded
+  non-reproducible hardware-evidence claims are unchanged.
+
 - 2026-08-28 — Sparse-Hamiltonian documentation and exact quality: completed
   the preview-inclusive NumPy docstring and strict typing contracts across the
   sparse XY/sector/eigensolver owner and both direct test surfaces, documented

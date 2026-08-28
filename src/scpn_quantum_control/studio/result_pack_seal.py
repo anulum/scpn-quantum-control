@@ -109,6 +109,7 @@ def build_result_pack_unit(
     ------
     ValueError
         If the pack has no ``id`` or ``raw_results_digest`` is empty.
+
     """
     pack_id = str(pack.get("id", "")).strip()
     if not pack_id:
@@ -158,6 +159,7 @@ def build_provider_attestation(
     ValueError
         If any field is empty — an attestation with a missing part is not an
         attestation, and must not masquerade as one.
+
     """
     for name, value in (
         ("provider", provider),
@@ -213,6 +215,7 @@ def seal_result_pack(
     ValueError
         If ``attestation`` is empty (no provider attestation to stand behind the
         counts).
+
     """
     if not attestation:
         raise ValueError(
