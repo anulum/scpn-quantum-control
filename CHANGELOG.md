@@ -374,7 +374,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   example rule over ambient CustomDerivativeRegistry. Docs:
   `docs/custom_derivatives_product.md`. Sixth P1 A-product after
   BL-90/91/81/49/96.
-- 2026-07-24 — Rust Program AD fuzz assurance product (BL-96):
+- 2026-07-24 — Rust Program AD fuzz assurance product:
   `scpn_quantum_control.program_ad_fuzz_assurance` productises ambient
   `scpn_quantum_engine/fuzz` target catalogue, time-boxed CI-optional policy
   (continuous default false; invent-green forbidden), and dry-run probe helpers
