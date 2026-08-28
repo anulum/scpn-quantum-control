@@ -178,6 +178,9 @@ if TYPE_CHECKING:
     from tools import (
         tn_mps_baseline_design_quality_gates as _tn_mps_baseline_design_quality_gates,
     )
+    from tools import (
+        topology_kernel_evidence_quality_gates as _topology_kernel_evidence_quality_gates,
+    )
     from tools import topology_kernel_schema_quality_gates as _topology_kernel_schema_quality_gates
     from tools import (
         unsuitable_scenario_registry_quality_gates as _unsuitable_scenario_registry_quality_gates,
@@ -218,6 +221,9 @@ else:
     )
     _topology_kernel_schema_quality_gates = import_module(
         "tools.topology_kernel_schema_quality_gates"
+    )
+    _topology_kernel_evidence_quality_gates = import_module(
+        "tools.topology_kernel_evidence_quality_gates"
     )
     _geometric_control_product_quality_gates = import_module(
         "tools.geometric_control_product_quality_gates"
@@ -680,6 +686,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_variational_metric_quality_gates.build_static_quality_gates(_PY),
     *_qnode_circuit_contracts_quality_gates.build_static_quality_gates(_PY),
     *_topology_kernel_schema_quality_gates.build_static_quality_gates(_PY),
+    *_topology_kernel_evidence_quality_gates.build_static_quality_gates(_PY),
     *_feedback_loop_quality_gates.build_static_quality_gates(_PY),
     *_hardware_hal_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_parity_quality_gates.build_static_quality_gates(_PY),
@@ -1129,6 +1136,9 @@ QNODE_CIRCUIT_CONTRACTS_COVERAGE_GATES = (
 TOPOLOGY_KERNEL_SCHEMA_COVERAGE_GATES = _topology_kernel_schema_quality_gates.build_coverage_gates(
     _PY
 )
+TOPOLOGY_KERNEL_EVIDENCE_COVERAGE_GATES = (
+    _topology_kernel_evidence_quality_gates.build_coverage_gates(_PY)
+)
 FEEDBACK_LOOP_COVERAGE_GATES = _feedback_loop_quality_gates.build_coverage_gates(_PY)
 HARDWARE_HAL_COVERAGE_GATES = _hardware_hal_quality_gates.build_coverage_gates(_PY)
 DLA_TOPOLOGY_PARITY_COVERAGE_GATES = _dla_topology_parity_quality_gates.build_coverage_gates(_PY)
@@ -1522,6 +1532,7 @@ def main() -> int:
             gates.extend(VARIATIONAL_METRIC_COVERAGE_GATES)
             gates.extend(QNODE_CIRCUIT_CONTRACTS_COVERAGE_GATES)
             gates.extend(TOPOLOGY_KERNEL_SCHEMA_COVERAGE_GATES)
+            gates.extend(TOPOLOGY_KERNEL_EVIDENCE_COVERAGE_GATES)
             gates.extend(FEEDBACK_LOOP_COVERAGE_GATES)
             gates.extend(HARDWARE_HAL_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_PARITY_COVERAGE_GATES)

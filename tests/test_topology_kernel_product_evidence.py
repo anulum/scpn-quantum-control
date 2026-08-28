@@ -53,6 +53,7 @@ def _low_accuracy(name: str, labels: NDArray[np.int64]) -> KernelEvaluation:
 
 
 def test_frozen_evidence_matches_registered_metrics(evidence: TopologyKernelEvidence) -> None:
+    """Match the frozen schema, digest, controls, and numerical invariants."""
     assert evidence.schema_version == TOPOLOGY_KERNEL_EVIDENCE_SCHEMA
     assert evidence.generated_on == TOPOLOGY_KERNEL_EVIDENCE_DATE
     assert (
@@ -73,6 +74,7 @@ def test_frozen_evidence_matches_registered_metrics(evidence: TopologyKernelEvid
 def test_evidence_payload_normalises_subprecision_runtime_drift(
     evidence: TopologyKernelEvidence,
 ) -> None:
+    """Canonicalise numerical drift below the declared custody precision."""
     perturbed = replace(
         evidence,
         gram_minimum_eigenvalue=evidence.gram_minimum_eigenvalue + 1.0e-14,
@@ -83,6 +85,7 @@ def test_evidence_payload_normalises_subprecision_runtime_drift(
 def test_evidence_rejects_stale_schema_and_claim_contract_drift(
     evidence: TopologyKernelEvidence,
 ) -> None:
+    """Reject stale schemas and support or claim-boundary substitutions."""
     with pytest.raises(ValueError, match="schema_version is unsupported"):
         replace(evidence, schema_version="topology_aware_quantum_kernel_evidence_v1")
     with pytest.raises(ValueError, match="canonical evidence contract"):
@@ -99,6 +102,7 @@ def test_render_and_write_reject_content_digest_drift(
     evidence: TopologyKernelEvidence,
     tmp_path: Path,
 ) -> None:
+    """Refuse rendering and writing after canonical-content drift."""
     drifted = replace(evidence, content_digest="b" * 64)
     with pytest.raises(ValueError, match="canonical evidence fields"):
         render_topology_kernel_markdown(drifted)
@@ -111,6 +115,7 @@ def test_render_and_write_reject_content_digest_drift(
 
 
 def test_support_row_normalises_and_serialises() -> None:
+    """Normalise support-row text into deterministic JSON fields."""
     row = KernelSupportRow(" cap ", "supported", " evidence ", " boundary ")
     assert row.to_dict() == {
         "capability": "cap",
@@ -137,6 +142,7 @@ def test_support_row_normalises_and_serialises() -> None:
 def test_support_row_rejects_invalid_fields(
     constructor: Callable[[], KernelSupportRow],
 ) -> None:
+    """Reject empty support text and statuses outside the closed contract."""
     with pytest.raises(ValueError):
         constructor()
 
@@ -145,6 +151,7 @@ def test_evidence_markdown_and_json_are_deterministic(
     evidence: TopologyKernelEvidence,
     tmp_path: Path,
 ) -> None:
+    """Render, write, and byte-check deterministic evidence companions."""
     markdown = render_topology_kernel_markdown(evidence)
     assert "representability, not independent generalisation" in markdown
     assert "| `ring` | 16 | 16 | 1.000000 |" in markdown
@@ -167,6 +174,7 @@ def test_evidence_helpers_reject_wrong_types_and_equal_paths(
     evidence: TopologyKernelEvidence,
     tmp_path: Path,
 ) -> None:
+    """Fail closed on invalid public-helper inputs and output aliases."""
     with pytest.raises(ValueError):
         build_topology_kernel_evidence(config=cast(TopologyKernelConfig, object()))
     with pytest.raises(ValueError):
@@ -213,6 +221,7 @@ def test_evidence_rejects_invalid_scalar_contract(
     evidence: TopologyKernelEvidence,
     mutate: Callable[[TopologyKernelEvidence], TopologyKernelEvidence],
 ) -> None:
+    """Reject every invalid scalar, digest, support, and boundary mutation."""
     with pytest.raises(ValueError):
         mutate(evidence)
 
@@ -220,6 +229,7 @@ def test_evidence_rejects_invalid_scalar_contract(
 def test_evidence_rejects_evaluation_name_count_and_accuracy_gates(
     evidence: TopologyKernelEvidence,
 ) -> None:
+    """Require canonical evaluation order, split size, and accuracy gates."""
     with pytest.raises(ValueError, match="names or order"):
         replace(evidence, ring=replace(evidence.ring, name="wrong"))
     with pytest.raises(ValueError, match="entire test split"):
@@ -235,6 +245,7 @@ def test_evidence_rejects_evaluation_name_count_and_accuracy_gates(
 def test_evidence_requires_unique_support_and_descoped_row(
     evidence: TopologyKernelEvidence,
 ) -> None:
+    """Require the exact support ledger including its descoped capability."""
     duplicate = evidence.support + (evidence.support[0],)
     with pytest.raises(ValueError, match="canonical evidence contract"):
         replace(evidence, support=duplicate)

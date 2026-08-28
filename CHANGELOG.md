@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — Topology-kernel evidence documentation quality: completed the
+  NumPy docstring contract across deterministic evidence custody and its
+  fail-closed tests, and wired permanent strict typing, documentation, and
+  exact source-coverage gates into preflight and CI. Frozen evidence bytes,
+  metrics, controls, support ledger, public symbols, and scientific claim
+  boundaries are unchanged.
+
 - 2026-08-28 — DLA topology parity documentation quality: completed the NumPy
   docstring contract for the parity projector and wired permanent strict
   typing, documentation, connected execution, and exact source-coverage gates

@@ -102,6 +102,7 @@ class KernelSupportRow:
         Exact implementation or verification fact.
     boundary:
         Interpretation the row does not establish.
+
     """
 
     capability: str
@@ -110,6 +111,7 @@ class KernelSupportRow:
     boundary: str
 
     def __post_init__(self) -> None:
+        """Normalise support text and validate the closed status set."""
         for name in ("capability", "evidence", "boundary"):
             value = getattr(self, name)
             if not isinstance(value, str) or not value.strip():
@@ -169,6 +171,7 @@ class TopologyKernelEvidence:
         Mandatory limit on scientific and operational interpretation.
     content_digest:
         SHA-256 of every preceding canonical evidence field.
+
     """
 
     schema_version: str
@@ -195,6 +198,7 @@ class TopologyKernelEvidence:
     content_digest: str
 
     def __post_init__(self) -> None:
+        """Validate frozen evidence fields and scientific claim custody."""
         if self.schema_version != TOPOLOGY_KERNEL_EVIDENCE_SCHEMA:
             raise ValueError("schema_version is unsupported")
         if self.generated_on != TOPOLOGY_KERNEL_EVIDENCE_DATE:
@@ -251,6 +255,7 @@ class TopologyKernelEvidence:
         ----------
         include_content_digest:
             Exclude only the outer digest when recomputing custody.
+
         """
         payload: dict[str, object] = {
             "schema_version": self.schema_version,
@@ -366,6 +371,7 @@ def build_topology_kernel_evidence(
     -------
     TopologyKernelEvidence
         Custody-bound metrics, predictions, invariants, and support ledger.
+
     """
     policy = TopologyKernelConfig() if config is None else config
     if not isinstance(policy, TopologyKernelConfig):
@@ -547,6 +553,7 @@ def write_topology_kernel_evidence(
         If evidence is the wrong type or paths are equal.
     RuntimeError
         In check mode when a file is absent or its bytes differ.
+
     """
     if not isinstance(evidence, TopologyKernelEvidence):
         raise ValueError("evidence must be TopologyKernelEvidence")
