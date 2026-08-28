@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1253
+    "test_files": 1254
   },
   "documentation": {
     "examples": [
@@ -8449,6 +8449,7 @@
       "tests/test_dla_topology_control_parity.py",
       "tests/test_dla_topology_control_projection.py",
       "tests/test_dla_topology_control_schema.py",
+      "tests/test_dla_topology_objectives_quality_gate.py",
       "tests/test_dla_topology_optimizer_quality_gate.py",
       "tests/test_dla_topology_parity_quality_gate.py",
       "tests/test_dla_topology_schema_quality_gate.py",

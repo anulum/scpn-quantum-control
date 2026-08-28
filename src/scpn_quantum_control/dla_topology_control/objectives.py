@@ -45,6 +45,7 @@ class ParityProtectedObjectiveEvaluation:
         Read-only exact Euclidean complex gradient.
     claim_boundary:
         Limit on physical and operational interpretation.
+
     """
 
     value: float
@@ -55,6 +56,7 @@ class ParityProtectedObjectiveEvaluation:
     claim_boundary: str = DLA_TOPOLOGY_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Normalize and validate objective values, arrays, and claim custody."""
         for name in ("value", "target_distance", "leakage_mass"):
             value = float(getattr(self, name))
             if not np.isfinite(value) or value < 0.0:
@@ -92,6 +94,7 @@ class ParityProtectedQuadraticObjective:
     ``0.5 * ||psi - tau||^2 + leakage_weight * ||Q psi||^2`` where
     ``Q = I - P``. This is a synthetic differentiable task, not a physical
     control Hamiltonian or a controllability certificate.
+
     """
 
     projector: ParitySectorProjector
@@ -100,6 +103,7 @@ class ParityProtectedQuadraticObjective:
     claim_boundary: str = DLA_TOPOLOGY_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Normalize and validate the parity-protected quadratic objective."""
         if not isinstance(self.projector, ParitySectorProjector):
             raise ValueError("projector must be a ParitySectorProjector")
         target = self.projector.as_state(self.target_state, name="target_state")
@@ -134,6 +138,7 @@ class ParityProtectedQuadraticObjective:
         ------
         ValueError
             If ``state`` has the wrong shape or contains non-finite values.
+
         """
         value = self.projector.as_state(state)
         difference = value - self.target_state

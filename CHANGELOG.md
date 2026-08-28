@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — DLA topology-objective documentation quality: completed the
+  NumPy docstring contract across parity-protected evaluation and quadratic
+  objective validation, and wired permanent strict typing, connected
+  objective/optimizer execution, complete documentation, and exact source
+  coverage into preflight and CI. Objective decomposition, exact complex
+  gradients, leakage penalty, immutable array custody, public APIs, and bounded
+  synthetic-control claims are unchanged.
+
 - 2026-08-28 — HLS cosimulation-evidence documentation quality: completed
   the NumPy docstring contract across host compiler identity, deterministic
   bit-true cosimulation, handoff evidence, CLI custody, UltraScale bundle and
