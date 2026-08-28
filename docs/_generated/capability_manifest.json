@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1228
+    "test_files": 1229
   },
   "documentation": {
     "examples": [
@@ -9298,6 +9298,7 @@
       "tests/test_topology_kernel_product_kernels.py",
       "tests/test_topology_kernel_product_schema.py",
       "tests/test_topology_kernel_product_synthetic.py",
+      "tests/test_topology_kernel_schema_quality_gate.py",
       "tests/test_topology_objectives_branches.py",
       "tests/test_topology_optimizers_branches.py",
       "tests/test_transform_algebra.py",

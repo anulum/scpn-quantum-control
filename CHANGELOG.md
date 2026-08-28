@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — Topology-kernel schema documentation quality: completed the
+  NumPy docstring contract for all immutable records and their fail-closed
+  tests, and wired permanent strict typing, documentation, and exact
+  source-coverage gates into preflight and CI. Fields, defensive copies,
+  digest and identifier validation, resource limits, accuracy invariants,
+  failure ordering, and scientific claim boundaries are unchanged.
+
 - 2026-08-28 — QNode circuit-contract documentation quality: documented every
   public validation constructor in the NumPy/stdlib contract leaf, added
   exhaustive public invariant and serialization tests, and wired permanent

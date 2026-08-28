@@ -50,6 +50,7 @@ def _dataset() -> TopologyKernelDataset:
 
 
 def test_config_defaults_and_feature_dimension_are_explicit() -> None:
+    """Expose bounded defaults and the canonical edge-feature dimension."""
     config = TopologyKernelConfig()
     assert config.feature_dim == 6
     assert config.n_qubits == 4
@@ -75,11 +76,13 @@ def test_config_defaults_and_feature_dimension_are_explicit() -> None:
     ],
 )
 def test_config_rejects_invalid_resource_policy(field: str, value: object) -> None:
+    """Reject each resource-policy value outside its bounded contract."""
     with pytest.raises(ValueError):
         TopologyKernelConfig(**{field: value})  # type: ignore[arg-type]
 
 
 def test_kernel_matrix_is_read_only_and_normalises_identifiers() -> None:
+    """Freeze matrix custody and normalize surrounding identifier whitespace."""
     matrix = TopologyKernelMatrix(
         values=np.eye(2),
         row_ids=(" a ", "b"),
@@ -112,11 +115,13 @@ def test_kernel_matrix_is_read_only_and_normalises_identifiers() -> None:
     ],
 )
 def test_kernel_matrix_rejects_invalid_contract(changes: dict[str, object]) -> None:
+    """Reject malformed matrix values, custody metadata, and claim bounds."""
     with pytest.raises(ValueError):
         replace(_matrix(), **changes)
 
 
 def test_dataset_is_balanced_disjoint_and_read_only() -> None:
+    """Preserve balanced split custody through immutable defensive copies."""
     dataset = _dataset()
     assert dataset.train_features.shape == (4, 3)
     assert not dataset.train_features.flags.writeable
@@ -143,11 +148,13 @@ def test_dataset_is_balanced_disjoint_and_read_only() -> None:
     ],
 )
 def test_dataset_rejects_invalid_contract(changes: dict[str, object]) -> None:
+    """Reject malformed split geometry, labels, identifiers, and custody."""
     with pytest.raises(ValueError):
         replace(_dataset(), **changes)
 
 
 def test_kernel_evaluation_recomputes_accuracy_and_freezes_arrays() -> None:
+    """Normalize evaluation identity and freeze prediction evidence."""
     evaluation = KernelEvaluation(
         name=" ring ",
         predictions=np.array([1, -1]),
@@ -177,6 +184,7 @@ def test_kernel_evaluation_recomputes_accuracy_and_freezes_arrays() -> None:
     ],
 )
 def test_kernel_evaluation_rejects_invalid_contract(changes: dict[str, object]) -> None:
+    """Reject inconsistent evaluation identity, vectors, counts, and digest."""
     valid = KernelEvaluation(
         name="ring",
         predictions=np.array([1, -1]),

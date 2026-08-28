@@ -175,6 +175,7 @@ if TYPE_CHECKING:
     from tools import (
         tn_mps_baseline_design_quality_gates as _tn_mps_baseline_design_quality_gates,
     )
+    from tools import topology_kernel_schema_quality_gates as _topology_kernel_schema_quality_gates
     from tools import (
         unsuitable_scenario_registry_quality_gates as _unsuitable_scenario_registry_quality_gates,
     )
@@ -211,6 +212,9 @@ else:
     _variational_metric_quality_gates = import_module("tools.variational_metric_quality_gates")
     _qnode_circuit_contracts_quality_gates = import_module(
         "tools.qnode_circuit_contracts_quality_gates"
+    )
+    _topology_kernel_schema_quality_gates = import_module(
+        "tools.topology_kernel_schema_quality_gates"
     )
     _geometric_control_product_quality_gates = import_module(
         "tools.geometric_control_product_quality_gates"
@@ -669,6 +673,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_whole_program_frontend_contracts_quality_gates.build_static_quality_gates(_PY),
     *_variational_metric_quality_gates.build_static_quality_gates(_PY),
     *_qnode_circuit_contracts_quality_gates.build_static_quality_gates(_PY),
+    *_topology_kernel_schema_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_baseline_design_quality_gates.build_static_quality_gates(_PY),
     *_error_mitigation_product_quality_gates.build_static_quality_gates(_PY),
@@ -1112,6 +1117,9 @@ VARIATIONAL_METRIC_COVERAGE_GATES = _variational_metric_quality_gates.build_cove
 QNODE_CIRCUIT_CONTRACTS_COVERAGE_GATES = (
     _qnode_circuit_contracts_quality_gates.build_coverage_gates(_PY)
 )
+TOPOLOGY_KERNEL_SCHEMA_COVERAGE_GATES = _topology_kernel_schema_quality_gates.build_coverage_gates(
+    _PY
+)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
     _geometric_control_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -1501,6 +1509,7 @@ def main() -> int:
             gates.extend(WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_GATES)
             gates.extend(VARIATIONAL_METRIC_COVERAGE_GATES)
             gates.extend(QNODE_CIRCUIT_CONTRACTS_COVERAGE_GATES)
+            gates.extend(TOPOLOGY_KERNEL_SCHEMA_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
             gates.extend(TN_MPS_BASELINE_DESIGN_COVERAGE_GATES)
             gates.extend(ERROR_MITIGATION_PRODUCT_COVERAGE_GATES)

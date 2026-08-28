@@ -68,6 +68,7 @@ class TopologyKernelConfig:
         Maximum rows or columns accepted by a single kernel call.
     ridge:
         Positive diagonal regularisation for kernel ridge classification.
+
     """
 
     n_qubits: int = 4
@@ -77,6 +78,7 @@ class TopologyKernelConfig:
     ridge: float = 1.0e-3
 
     def __post_init__(self) -> None:
+        """Validate finite resource and numerical limits."""
         if (
             isinstance(self.n_qubits, bool)
             or not isinstance(self.n_qubits, int)
@@ -123,6 +125,7 @@ class TopologyKernelMatrix:
         SHA-256 binding values, identifiers, and topology digest.
     claim_boundary:
         Explicit interpretation limit propagated with the result.
+
     """
 
     values: FloatArray
@@ -133,6 +136,7 @@ class TopologyKernelMatrix:
     claim_boundary: str = TOPOLOGY_KERNEL_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate custody metadata and freeze a defensive matrix copy."""
         values = np.asarray(self.values, dtype=np.float64)
         if values.ndim != 2 or min(values.shape) < 1 or not np.all(np.isfinite(values)):
             raise ValueError("values must be a finite non-empty 2-D matrix")
@@ -179,6 +183,7 @@ class TopologyKernelDataset:
         SHA-256 of the ring topology used to generate labels.
     content_digest:
         SHA-256 binding all dataset contents and identifiers.
+
     """
 
     train_features: FloatArray
@@ -193,6 +198,7 @@ class TopologyKernelDataset:
     claim_boundary: str = TOPOLOGY_KERNEL_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate the balanced split and freeze defensive array copies."""
         train = np.asarray(self.train_features, dtype=np.float64)
         test = np.asarray(self.test_features, dtype=np.float64)
         prototypes = np.asarray(self.teacher_prototypes, dtype=np.float64)
@@ -253,6 +259,7 @@ class KernelEvaluation:
         Internally consistent classification counts and ratio.
     kernel_digest:
         SHA-256 of the evaluated cross-kernel matrix.
+
     """
 
     name: str
@@ -264,6 +271,7 @@ class KernelEvaluation:
     kernel_digest: str
 
     def __post_init__(self) -> None:
+        """Validate predictions, counts, accuracy, and digest custody."""
         if not isinstance(self.name, str) or not self.name.strip():
             raise ValueError("name must be a non-empty string")
         predictions = np.asarray(self.predictions, dtype=np.int64)
