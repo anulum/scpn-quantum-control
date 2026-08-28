@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1227
+    "test_files": 1228
   },
   "documentation": {
     "examples": [
@@ -9034,6 +9034,7 @@
       "tests/test_qiskit_compat.py",
       "tests/test_qlayer.py",
       "tests/test_qlif.py",
+      "tests/test_qnode_circuit_contracts_quality_gate.py",
       "tests/test_qpetri.py",
       "tests/test_qpetri_branches.py",
       "tests/test_qpetri_superposition.py",

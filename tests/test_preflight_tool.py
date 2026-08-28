@@ -987,6 +987,8 @@ def test_main_uses_coverage_pytest_by_default(
         "whole-program-frontend-contracts exact coverage threshold",
         "variational-metric focused coverage",
         "variational-metric exact coverage threshold",
+        "qnode-circuit-contracts focused coverage",
+        "qnode-circuit-contracts exact coverage threshold",
         "geometric-control-product focused coverage",
         "geometric-control-product exact coverage threshold",
         "tn-mps-baseline-design focused coverage",

@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — QNode circuit-contract documentation quality: documented every
+  public validation constructor in the NumPy/stdlib contract leaf, added
+  exhaustive public invariant and serialization tests, and wired permanent
+  strict typing, documentation, and exact source-coverage gates into preflight
+  and CI. Record identities and fields, registries, validation order,
+  normalization, facade aliases, numerics, and claim boundaries are unchanged.
+
 - 2026-08-28 — Variational-metric documentation quality: completed the NumPy
   docstring contract for the analytic metric/force owner and its real
   Qiskit-backed tests, and wired permanent strict typing, documentation, and

@@ -128,6 +128,7 @@ class PhaseQNodeOperation:
     parameter_index: int | None = None
 
     def __post_init__(self) -> None:
+        """Normalize and validate one gate application."""
         gate = str(self.gate).strip().lower()
         if not gate:
             raise ValueError("gate must be non-empty")
@@ -155,6 +156,7 @@ class PhaseQNodeNoiseChannel:
     probability: float
 
     def __post_init__(self) -> None:
+        """Normalize and validate one local noise channel."""
         channel = str(self.channel).strip().lower()
         if not channel:
             raise ValueError("noise channel must be non-empty")
@@ -179,6 +181,7 @@ class PauliTerm:
     factors: tuple[tuple[int, str], ...]
 
     def __post_init__(self) -> None:
+        """Normalize and validate a weighted Pauli product."""
         coefficient = _as_finite_scalar("coefficient", self.coefficient)
         factors: list[tuple[int, str]] = []
         seen: set[int] = set()
@@ -214,6 +217,7 @@ class SparsePauliHamiltonian:
     terms: tuple[PauliTerm, ...]
 
     def __post_init__(self) -> None:
+        """Require at least one immutable Pauli term."""
         if not self.terms:
             raise ValueError("SparsePauliHamiltonian terms must be non-empty")
         object.__setattr__(self, "terms", tuple(self.terms))
@@ -231,6 +235,7 @@ class DenseHermitianObservable:
     label: str = "dense_hermitian"
 
     def __post_init__(self) -> None:
+        """Normalize and validate a finite Hermitian power-of-two matrix."""
         matrix = np.asarray(self.matrix, dtype=np.complex128)
         if matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1]:
             raise ValueError("DenseHermitianObservable matrix must be square")
@@ -312,6 +317,7 @@ class PhaseQNodeSupportError(ValueError):
     """Raised when a Phase-QNode route is outside the registered local subset."""
 
     def __init__(self, report: PhaseQNodeSupportReport) -> None:
+        """Attach the structured report to its failure reason."""
         super().__init__(report.failure_reason)
         self.report = report
 
@@ -331,6 +337,7 @@ class PhaseQNodeCircuit:
     )
 
     def __post_init__(self) -> None:
+        """Normalize and validate a bounded statevector circuit."""
         if isinstance(self.n_qubits, bool) or self.n_qubits < 1:
             raise ValueError("n_qubits must be a positive integer")
         parsed = tuple(_parse_operation(operation) for operation in self.operations)
@@ -359,6 +366,7 @@ class PhaseQNodeDensityCircuit:
     )
 
     def __post_init__(self) -> None:
+        """Normalize and validate a bounded noisy density circuit."""
         if isinstance(self.n_qubits, bool) or self.n_qubits < 1:
             raise ValueError("n_qubits must be a positive integer")
         parsed = tuple(_parse_density_operation(operation) for operation in self.operations)

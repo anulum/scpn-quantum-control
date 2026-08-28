@@ -142,6 +142,9 @@ if TYPE_CHECKING:
     )
     from tools import program_ad_quality_gates as _program_ad_quality_gates
     from tools import public_api_stability_quality_gates as _public_api_stability_quality_gates
+    from tools import (
+        qnode_circuit_contracts_quality_gates as _qnode_circuit_contracts_quality_gates,
+    )
     from tools import qpu_compute_product_quality_gates as _qpu_compute_product_quality_gates
     from tools import (
         quantum_sync_oracle_product_quality_gates as _quantum_sync_oracle_product_quality_gates,
@@ -206,6 +209,9 @@ else:
         "tools.whole_program_frontend_contracts_quality_gates"
     )
     _variational_metric_quality_gates = import_module("tools.variational_metric_quality_gates")
+    _qnode_circuit_contracts_quality_gates = import_module(
+        "tools.qnode_circuit_contracts_quality_gates"
+    )
     _geometric_control_product_quality_gates = import_module(
         "tools.geometric_control_product_quality_gates"
     )
@@ -662,6 +668,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_chimera_control_quality_gates.build_static_quality_gates(_PY),
     *_whole_program_frontend_contracts_quality_gates.build_static_quality_gates(_PY),
     *_variational_metric_quality_gates.build_static_quality_gates(_PY),
+    *_qnode_circuit_contracts_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_baseline_design_quality_gates.build_static_quality_gates(_PY),
     *_error_mitigation_product_quality_gates.build_static_quality_gates(_PY),
@@ -1102,6 +1109,9 @@ WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_GATES = (
     _whole_program_frontend_contracts_quality_gates.build_coverage_gates(_PY)
 )
 VARIATIONAL_METRIC_COVERAGE_GATES = _variational_metric_quality_gates.build_coverage_gates(_PY)
+QNODE_CIRCUIT_CONTRACTS_COVERAGE_GATES = (
+    _qnode_circuit_contracts_quality_gates.build_coverage_gates(_PY)
+)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
     _geometric_control_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -1490,6 +1500,7 @@ def main() -> int:
             gates.extend(CHIMERA_CONTROL_COVERAGE_GATES)
             gates.extend(WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_GATES)
             gates.extend(VARIATIONAL_METRIC_COVERAGE_GATES)
+            gates.extend(QNODE_CIRCUIT_CONTRACTS_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
             gates.extend(TN_MPS_BASELINE_DESIGN_COVERAGE_GATES)
             gates.extend(ERROR_MITIGATION_PRODUCT_COVERAGE_GATES)
