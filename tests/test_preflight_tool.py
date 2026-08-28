@@ -1049,6 +1049,8 @@ def test_main_uses_coverage_pytest_by_default(
         "quantum-neuromorphic-bridge exact coverage threshold",
         "Koopman focused coverage",
         "Koopman exact coverage threshold",
+        "quantum-Phi focused coverage",
+        "quantum-Phi exact coverage threshold",
         "geometric-control-product focused coverage",
         "geometric-control-product exact coverage threshold",
         "tn-mps-baseline-design focused coverage",

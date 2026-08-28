@@ -1,5 +1,14 @@
 # Changelog
 
+- 2026-08-28 — Quantum-QMI compatibility documentation quality: completed the
+  preview-inclusive NumPy docstring contract across entropy, partial trace,
+  bipartite QMI, compatibility result/scan surfaces, and owning tests; replaced
+  one vacuous scan assertion with a real separated-endpoint check; and wired
+  permanent strict typing, connected offline execution, complete documentation,
+  and exact source coverage into preflight and CI. Numerical semantics, legacy
+  field names, public APIs, and explicit non-IIT/non-consciousness claims are
+  unchanged.
+
 - 2026-08-28 — Koopman-analysis documentation quality: completed the
   preview-inclusive NumPy docstring contract across finite local closure,
   Python/native generation, dense spectra, Hermitian projection, and owning

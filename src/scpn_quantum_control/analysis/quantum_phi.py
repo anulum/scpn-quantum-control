@@ -63,6 +63,7 @@ class PhiResult:
         QMI value in bits for each enumerated partition.
     total_entropy
         Von Neumann entropy of the full ground-state density matrix.
+
     """
 
     phi_quantum: float  # minimum mutual information over bipartitions
@@ -87,6 +88,7 @@ def von_neumann_entropy(rho: NDArray[np.complex128]) -> float:
     -------
     float
         Base-2 entropy in bits. Eigenvalues at or below ``1e-15`` are omitted.
+
     """
     eigenvalues = np.linalg.eigvalsh(rho)
     eigenvalues = eigenvalues[eigenvalues > 1e-15]
@@ -111,6 +113,7 @@ def partial_trace(
     -------
     numpy.ndarray
         Reduced density matrix in the retained subsystem ordering.
+
     """
     dims = [2] * n_qubits
     rho_tensor = rho.reshape(dims + dims)
@@ -149,6 +152,7 @@ def mutual_information(
     -------
     float
         Quantum mutual information in bits.
+
     """
     rho_a = partial_trace(rho, subsystem_a, n_qubits)
     rho_b = partial_trace(rho, subsystem_b, n_qubits)
@@ -195,6 +199,7 @@ def compute_quantum_phi(
     PhiResult
         Minimum/maximum bipartite QMI and partition metadata. Despite the
         compatibility type name, the result is not IIT Φ.
+
     """
     n = K.shape[0]
     exact = classical_exact_diag(n, K=K, omega=omega)

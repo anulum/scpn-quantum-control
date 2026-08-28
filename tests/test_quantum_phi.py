@@ -24,24 +24,32 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestVonNeumannEntropy:
+    """Verify base-2 entropy for pure and mixed density matrices."""
+
     def test_pure_state_zero_entropy(self):
+        """Give zero entropy for a pure one-qubit state."""
         rho = np.array([[1, 0], [0, 0]], dtype=complex)
         assert von_neumann_entropy(rho) == pytest.approx(0.0, abs=1e-10)
 
     def test_maximally_mixed_one_bit(self):
+        """Give one bit for the maximally mixed qubit."""
         rho = np.eye(2) / 2.0
         assert von_neumann_entropy(rho) == pytest.approx(1.0, abs=1e-10)
 
     def test_maximally_mixed_two_bits(self):
+        """Give two bits for the maximally mixed two-qubit state."""
         rho = np.eye(4) / 4.0
         assert von_neumann_entropy(rho) == pytest.approx(2.0, abs=1e-10)
 
     def test_entropy_non_negative(self):
+        """Keep entropy non-negative for a normalized diagonal state."""
         rho = np.diag([0.7, 0.2, 0.1])
         assert von_neumann_entropy(rho) >= 0
 
 
 class TestPartialTrace:
+    """Verify reduced-state construction by partial trace."""
+
     def test_product_state(self):
         """Partial trace of |00><00| over qubit 1 = |0><0|."""
         psi = np.array([1, 0, 0, 0], dtype=complex)
@@ -58,6 +66,7 @@ class TestPartialTrace:
         np.testing.assert_allclose(rho_0, np.eye(2) / 2.0, atol=1e-12)
 
     def test_trace_preserving(self):
+        """Preserve unit trace in a reduced Bell-state density matrix."""
         psi = np.array([1, 0, 0, 1], dtype=complex) / np.sqrt(2)
         rho = np.outer(psi, psi.conj())
         rho_0 = partial_trace(rho, keep=[0], n_qubits=2)
@@ -74,6 +83,8 @@ class TestPartialTrace:
 
 
 class TestMutualInformation:
+    """Verify bipartite quantum mutual information values."""
+
     def test_product_state_zero_mi(self):
         """Product state |00> has zero mutual information."""
         psi = np.array([1, 0, 0, 0], dtype=complex)
@@ -89,6 +100,7 @@ class TestMutualInformation:
         assert mi == pytest.approx(2.0, abs=1e-10)
 
     def test_mi_non_negative(self):
+        """Keep pure-state bipartite QMI numerically non-negative."""
         psi = np.random.default_rng(42).normal(size=4) + 0j
         psi /= np.linalg.norm(psi)
         rho = np.outer(psi, psi.conj())
@@ -100,30 +112,35 @@ class TestComputeQuantumPhi:
     """Retain import compatibility while enforcing mutual-information semantics."""
 
     def test_returns_phi_result(self):
+        """Return the legacy-compatible QMI result record."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_quantum_phi(K, omega)
         assert isinstance(result, PhiResult)
 
     def test_phi_non_negative(self):
+        """Keep the minimum bipartite QMI numerically non-negative."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_quantum_phi(K, omega)
         assert result.phi_quantum >= -1e-10
 
     def test_phi_max_geq_phi_min(self):
+        """Order the extrema of the enumerated partition QMI values."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_quantum_phi(K, omega)
         assert result.phi_max >= result.phi_quantum - 1e-10
 
     def test_n_qubits(self):
+        """Record the exact-state qubit count in the result."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_quantum_phi(K, omega)
         assert result.n_qubits == 4
 
     def test_mip_partition_valid(self):
+        """Return a non-empty exhaustive minimum-information bipartition."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_quantum_phi(K, omega)
@@ -146,7 +163,10 @@ class TestComputeQuantumPhi:
 
 
 class TestPhiVsCouplingScan:
+    """Verify bounded legacy-QMI coupling scans."""
+
     def test_scan_returns_keys(self):
+        """Return aligned compatibility-key series for each coupling point."""
         omega = OMEGA_N_16[:3]
         k_vals = np.array([0.1, 0.5, 1.0])
         results = phi_vs_coupling_scan(omega, k_vals)
@@ -155,8 +175,8 @@ class TestPhiVsCouplingScan:
         assert len(results["k_base"]) == 3
 
     def test_phi_changes_with_coupling(self):
+        """Distinguish the selected weak and strong coupling endpoints."""
         omega = OMEGA_N_16[:3]
         k_vals = np.array([0.01, 2.0])
         results = phi_vs_coupling_scan(omega, k_vals)
-        # Stronger coupling should generally increase entanglement
-        assert results["phi_quantum"][0] != results["phi_quantum"][1] or True  # measurement
+        assert results["phi_quantum"][0] != pytest.approx(results["phi_quantum"][1])
