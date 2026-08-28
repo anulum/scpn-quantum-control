@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — DLA topology schema documentation quality: completed the NumPy
+  docstring contract for immutable derivative-support records and wired
+  permanent strict typing, connected execution, documentation, and exact
+  source coverage into preflight and CI. Enums, fields, normalisation, blocker
+  ordering, digest serialization, refusal semantics, public APIs, and finite
+  synthetic/no-actuation boundaries are unchanged.
+
 - 2026-08-28 — DLA topology optimiser documentation quality: completed the
   NumPy docstring contract for the parity-projected optimiser and wired
   permanent strict typing, connected execution, documentation, and exact

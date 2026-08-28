@@ -62,6 +62,7 @@ class ConstraintSupportRow:
         Concrete reason or implemented derivative rule.
     boundary:
         What the row does not establish.
+
     """
 
     capability: str
@@ -71,6 +72,7 @@ class ConstraintSupportRow:
     boundary: str
 
     def __post_init__(self) -> None:
+        """Validate and normalize support metadata against closed enums."""
         for name in ("capability", "evidence", "boundary"):
             value = getattr(self, name)
             if not isinstance(value, str) or not value.strip():
@@ -89,6 +91,7 @@ class ConstraintSupportRow:
         dict[str, str]
             Stable capability, status, derivative class, evidence, and
             boundary fields.
+
         """
         return {
             "capability": self.capability,
@@ -115,12 +118,14 @@ class DifferentiabilityReport:
     ``derivative_supported`` is true only when every row is supported. A
     descoped row therefore blocks JVP/VJP execution just like an unsupported
     row; callers cannot accidentally treat omitted mathematics as identity.
+
     """
 
     rows: tuple[ConstraintSupportRow, ...]
     claim_boundary: str = DLA_TOPOLOGY_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate row presence, capability uniqueness, and claim metadata."""
         if not self.rows:
             raise ValueError("rows must contain at least one support decision")
         capabilities = tuple(row.capability for row in self.rows)
@@ -158,6 +163,7 @@ class DifferentiabilityReport:
         UnsupportedDifferentiableConstraintError
             If one or more capabilities are unsupported or descoped. The
             exception message preserves blocker order from ``rows``.
+
         """
         if self.derivative_supported:
             return

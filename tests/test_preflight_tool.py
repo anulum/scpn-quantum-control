@@ -1007,6 +1007,8 @@ def test_main_uses_coverage_pytest_by_default(
         "hardware-hal exact coverage threshold",
         "dla-topology-optimizer focused coverage",
         "dla-topology-optimizer exact coverage threshold",
+        "dla-topology-schema focused coverage",
+        "dla-topology-schema exact coverage threshold",
         "dla-topology-parity focused coverage",
         "dla-topology-parity exact coverage threshold",
         "geometric-control-product focused coverage",
