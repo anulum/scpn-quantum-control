@@ -25,17 +25,24 @@ from scpn_quantum_control.phase.mps_evolution import (
 
 
 class TestQuimbAvailable:
+    """Check the optional quimb runtime probe."""
+
     def test_quimb_installed(self):
+        """Report quimb available in the owning runtime cohort."""
         assert is_quimb_available()
 
 
 class TestDMRG:
+    """Exercise real DMRG ground-state searches and result custody."""
+
     def setup_method(self):
+        """Build a deterministic four-site long-range test problem."""
         self.n = 4
         self.K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(self.n), range(self.n))))
         self.omega = np.linspace(0.8, 1.2, self.n)
 
     def test_dmrg_returns_energy(self):
+        """Return a scalar energy from the bounded DMRG search."""
         result = dmrg_ground_state(
             self.K, self.omega, bond_dim=16, max_sweeps=5, allow_long_range_truncation=True
         )
@@ -43,12 +50,14 @@ class TestDMRG:
         assert isinstance(result["energy"], float)
 
     def test_dmrg_energy_below_zero(self):
+        """Find a negative ground-state energy for the test Hamiltonian."""
         result = dmrg_ground_state(
             self.K, self.omega, bond_dim=16, max_sweeps=10, allow_long_range_truncation=True
         )
         assert result["energy"] < 0, "Ground state energy should be negative"
 
     def test_dmrg_energy_reasonable(self):
+        """Keep truncated-model energy finite and label omitted coupling."""
         # MPS uses NN-only coupling (long-range dropped), so won't match full ED exactly.
         # Just verify energy is negative and finite.
         result = dmrg_ground_state(
@@ -60,6 +69,7 @@ class TestDMRG:
         assert result["omitted_coupling_l1"] > 0.0
 
     def test_dmrg_bond_dims(self):
+        """Report one positive bond dimension per adjacent site pair."""
         result = dmrg_ground_state(
             self.K, self.omega, bond_dim=16, max_sweeps=5, allow_long_range_truncation=True
         )
@@ -67,6 +77,7 @@ class TestDMRG:
         assert all(d >= 1 for d in result["bond_dims"])
 
     def test_dmrg_output_keys(self):
+        """Keep the ground-state result schema explicit and complete."""
         result = dmrg_ground_state(
             self.K, self.omega, bond_dim=8, max_sweeps=3, allow_long_range_truncation=True
         )
@@ -80,14 +91,42 @@ class TestDMRG:
             "omitted_coupling_l1",
         }
 
+    def test_dmrg_accepts_zero_onsite_fields(self):
+        """Build and solve a nearest-neighbour model without onsite fields."""
+        K = np.zeros((self.n, self.n), dtype=np.float64)
+        K[0, 1] = K[1, 0] = 0.45
+        K[1, 2] = K[2, 1] = 0.35
+        K[2, 3] = K[3, 2] = 0.25
+
+        result = dmrg_ground_state(K, np.zeros(self.n), bond_dim=8, max_sweeps=2)
+
+        assert np.isfinite(result["energy"])
+        assert result["coupling_scope"] == "nearest_neighbour"
+
+    def test_dmrg_reports_a_genuine_one_sweep_nonconvergence(self):
+        """Expose an exhausted one-sweep search without inventing convergence."""
+        K = np.zeros((self.n, self.n), dtype=np.float64)
+        K[0, 1] = K[1, 0] = 0.45
+        K[1, 2] = K[2, 1] = 0.35
+        K[2, 3] = K[3, 2] = 0.25
+
+        result = dmrg_ground_state(K, self.omega, bond_dim=8, max_sweeps=1)
+
+        assert result["converged"] is False
+        assert result["energy"] < 0.0
+
 
 class TestTEBD:
+    """Exercise real TEBD trajectories and result custody."""
+
     def setup_method(self):
+        """Build a deterministic four-site long-range test problem."""
         self.n = 4
         self.K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(self.n), range(self.n))))
         self.omega = np.linspace(0.8, 1.2, self.n)
 
     def test_tebd_returns_R(self):
+        """Return one order-parameter value for every requested time."""
         result = tebd_evolution(
             self.K, self.omega, t_max=0.2, dt=0.05, bond_dim=16, allow_long_range_truncation=True
         )
@@ -95,12 +134,14 @@ class TestTEBD:
         assert len(result["R"]) == 5  # 0.0, 0.05, 0.10, 0.15, 0.20
 
     def test_tebd_R_bounded(self):
+        """Keep the measured order parameter inside its physical range."""
         result = tebd_evolution(
             self.K, self.omega, t_max=0.5, dt=0.1, bond_dim=16, allow_long_range_truncation=True
         )
         assert all(0 <= r <= 1.01 for r in result["R"])
 
     def test_tebd_output_keys(self):
+        """Keep the evolution result schema explicit and complete."""
         result = tebd_evolution(
             self.K, self.omega, t_max=0.1, dt=0.05, bond_dim=8, allow_long_range_truncation=True
         )
@@ -114,6 +155,7 @@ class TestTEBD:
         }
 
     def test_tebd_bond_dims(self):
+        """Report one final bond dimension per adjacent site pair."""
         result = tebd_evolution(
             self.K, self.omega, t_max=0.2, dt=0.05, bond_dim=16, allow_long_range_truncation=True
         )
@@ -126,6 +168,8 @@ class TestTEBD:
 
 
 class TestMPSPhysics:
+    """Check bounded tensor-network variational and temporal behavior."""
+
     def test_higher_bond_dim_lower_energy(self):
         """More bond dim → better variational energy (more entanglement captured)."""
         n = 4
@@ -140,6 +184,7 @@ class TestMPSPhysics:
         assert r32["energy"] <= r8["energy"] + 0.1  # generous tolerance
 
     def test_tebd_times_monotonic(self):
+        """Advance the TEBD output grid strictly forward in time."""
         n = 4
         K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
         omega = np.linspace(0.8, 1.2, n)
@@ -187,6 +232,7 @@ class TestMPSImportErrors:
             importlib.reload(mps_mod)
 
     def test_build_mpo_raises_without_quimb(self):
+        """Refuse MPO construction when the optional runtime is disabled."""
         import scpn_quantum_control.phase.mps_evolution as mps_mod
 
         orig = mps_mod._QUIMB_AVAILABLE
@@ -198,6 +244,7 @@ class TestMPSImportErrors:
             mps_mod._QUIMB_AVAILABLE = orig
 
     def test_dmrg_raises_without_quimb(self):
+        """Refuse DMRG execution when the optional runtime is disabled."""
         import scpn_quantum_control.phase.mps_evolution as mps_mod
 
         orig = mps_mod._QUIMB_AVAILABLE
@@ -209,6 +256,7 @@ class TestMPSImportErrors:
             mps_mod._QUIMB_AVAILABLE = orig
 
     def test_tebd_raises_without_quimb(self):
+        """Refuse TEBD execution when the optional runtime is disabled."""
         import scpn_quantum_control.phase.mps_evolution as mps_mod
 
         orig = mps_mod._QUIMB_AVAILABLE
@@ -258,8 +306,11 @@ class TestMPSZeroCoupling:
 
 
 class TestMPSPipeline:
+    """Exercise the public coupling-to-DMRG integration pipeline."""
+
     def test_pipeline_knm_to_dmrg(self):
-        """Full pipeline: Knm → DMRG ground state → energy.
+        """Run the full Knm to DMRG ground-state energy pipeline.
+
         Verifies MPS backend is wired and produces physical energies.
         """
         import time
@@ -283,6 +334,7 @@ class TestMPSPipeline:
 
 
 def test_dmrg_rejects_implicit_long_range_truncation():
+    """Refuse DMRG long-range coupling loss without explicit consent."""
     n = 4
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     omega = np.linspace(0.8, 1.2, n)
@@ -291,6 +343,7 @@ def test_dmrg_rejects_implicit_long_range_truncation():
 
 
 def test_tebd_rejects_implicit_long_range_truncation():
+    """Refuse TEBD long-range coupling loss without explicit consent."""
     n = 4
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     omega = np.linspace(0.8, 1.2, n)

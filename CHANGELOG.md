@@ -1,5 +1,14 @@
 # Changelog
 
+- 2026-08-28 — MPS-evolution documentation quality: completed the
+  preview-inclusive NumPy docstring contract across real quimb DMRG/TEBD and
+  its owning tests; added genuine zero-onsite-field and exhausted-sweep DMRG
+  coverage; and wired permanent strict typing, pinned real-quimb execution,
+  complete documentation, and exact source coverage into preflight and CI.
+  Tensor-network arithmetic, nearest-neighbour truncation custody, public APIs,
+  optional-dependency behavior, and bounded local-simulation claims are
+  unchanged.
+
 - 2026-08-28 — Kuramoto-variant documentation quality: documented immutable
   higher-order, monitored, and PT-symmetric specifications plus their direct
   and mixed-owner contract tests; added explicit missing-native-export fallback

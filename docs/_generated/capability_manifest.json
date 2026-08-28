@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1261
+    "test_files": 1262
   },
   "documentation": {
     "examples": [
@@ -8745,6 +8745,7 @@
       "tests/test_monte_carlo_xy.py",
       "tests/test_mps_baseline.py",
       "tests/test_mps_evolution.py",
+      "tests/test_mps_evolution_quality_gate.py",
       "tests/test_multi_hal_federation_product.py",
       "tests/test_multi_hal_federation_product_quality_gate.py",
       "tests/test_multicircuit_qec_readiness.py",

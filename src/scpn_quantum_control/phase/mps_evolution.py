@@ -124,7 +124,10 @@ def dmrg_ground_state(
 
     Returns
     -------
-    dict with keys: energy, mps, converged, bond_dims
+    dict[str, Any]
+        Ground-state energy, MPS, convergence, bond dimensions, oscillator
+        count, and the explicit coupling-scope diagnostics.
+
     """
     if not _QUIMB_AVAILABLE:
         raise ImportError("quimb not installed: pip install quimb")
@@ -177,16 +180,30 @@ def tebd_evolution(
 
     Parameters
     ----------
-    K, omega : coupling and frequencies
-    t_max : total evolution time
-    dt : Trotter step size
-    bond_dim : maximum bond dimension
-    cutoff : SVD truncation
-    order : Trotter order (2 or 4)
-    allow_long_range_truncation : bool
+    K
+        Coupling matrix.
+    omega
+        Natural frequencies.
+    t_max
+        Total evolution time.
+    dt
+        Trotter step size.
+    bond_dim
+        Maximum MPS bond dimension.
+    cutoff
+        SVD truncation cutoff.
+    order
+        Trotter order, either two or four.
+    allow_long_range_truncation
         Explicitly allow the nearest-neighbour TEBD local Hamiltonian to
         omit non-adjacent K[i, j] couplings. Defaults to False so full
         K_nm inputs cannot be truncated silently.
+
+    Returns
+    -------
+    dict[str, Any]
+        Times, order-parameter history, final bond dimensions and MPS, and the
+        explicit coupling-scope diagnostics.
 
     Notes
     -----
@@ -194,9 +211,6 @@ def tebd_evolution(
     zero local terms because quimb's TEBD sweeps request a local
     Hamiltonian for every adjacent bond.
 
-    Returns
-    -------
-    dict with keys: times, R, bond_dims_final, mps_final
     """
     if not _QUIMB_AVAILABLE:
         raise ImportError("quimb not installed: pip install quimb")
