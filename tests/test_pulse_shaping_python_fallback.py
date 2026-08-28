@@ -46,6 +46,8 @@ def _with_python_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 class TestIciMixingAnglePythonFallback:
+    """Exercise the Python ICI mixing-angle implementation."""
+
     @_NEEDS_RUST
     @pytest.mark.parametrize("theta_jump", [0.1, 0.3, 0.5, np.pi / 5])
     @pytest.mark.parametrize("t_total", [0.1, 1.0, 7.5])
@@ -55,6 +57,7 @@ class TestIciMixingAnglePythonFallback:
         t_total: float,
         theta_jump: float,
     ) -> None:
+        """Match Rust mixing angles across durations and jumps."""
         t = np.linspace(0.0, t_total, 64)
         rust_result = pulse_shaping.ici_mixing_angle(t, t_total, theta_jump)
         _with_python_fallback(monkeypatch)
@@ -65,6 +68,7 @@ class TestIciMixingAnglePythonFallback:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Preserve exact boundary angles in the Python fallback."""
         _with_python_fallback(monkeypatch)
         t = np.linspace(0.0, 1.0, 101)
         theta = pulse_shaping.ici_mixing_angle(t, 1.0, theta_jump=0.3)
@@ -77,6 +81,7 @@ class TestIciMixingAnglePythonFallback:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Preserve the input grid shape in the Python fallback."""
         _with_python_fallback(monkeypatch)
         t = np.linspace(0.0, 2.0, 32)
         theta = pulse_shaping.ici_mixing_angle(t, 2.0, theta_jump=0.25)
@@ -89,6 +94,8 @@ class TestIciMixingAnglePythonFallback:
 
 
 class TestIciThreeLevelEvolutionPythonFallback:
+    """Exercise the Python three-level evolution implementation."""
+
     @_NEEDS_RUST
     @pytest.mark.parametrize("gamma", [0.0, 0.05, 0.2])
     def test_parity_with_rust(
@@ -96,6 +103,7 @@ class TestIciThreeLevelEvolutionPythonFallback:
         monkeypatch: pytest.MonkeyPatch,
         gamma: float,
     ) -> None:
+        """Match Rust evolution within first-order integration tolerance."""
         pulse = pulse_shaping.build_ici_pulse(
             t_total=1.0,
             omega_0=10.0,
@@ -114,6 +122,7 @@ class TestIciThreeLevelEvolutionPythonFallback:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Start the Python evolution entirely in the ground state."""
         _with_python_fallback(monkeypatch)
         pulse = pulse_shaping.build_ici_pulse(
             t_total=0.5,
@@ -129,6 +138,7 @@ class TestIciThreeLevelEvolutionPythonFallback:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Renormalize finite Python evolution states to unit trace."""
         _with_python_fallback(monkeypatch)
         pulse = pulse_shaping.build_ici_pulse(
             t_total=1.0,
@@ -146,6 +156,25 @@ class TestIciThreeLevelEvolutionPythonFallback:
         sums = populations.sum(axis=1)
         np.testing.assert_allclose(sums, np.ones_like(sums), atol=1e-9)
 
+    def test_fallback_leaves_nonfinite_trace_unnormalised(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Avoid normalizing a nonfinite state produced by malformed pulse data."""
+        _with_python_fallback(monkeypatch)
+        pulse = pulse_shaping.ICIPulse(
+            times=np.array([0.0, 1.0]),
+            omega_p=np.array([0.0, np.nan]),
+            omega_s=np.array([0.0, np.nan]),
+            theta=np.zeros(2),
+            omega_total=1.0,
+            gamma_decay=0.0,
+            fidelity=0.0,
+        )
+        with np.errstate(invalid="ignore"):
+            populations = pulse_shaping.ici_three_level_evolution(pulse)
+        assert np.isnan(populations[1]).all()
+
 
 # ---------------------------------------------------------------------------
 # hypergeometric_envelope — Python fallback vs Rust parity
@@ -153,11 +182,14 @@ class TestIciThreeLevelEvolutionPythonFallback:
 
 
 class TestHypergeometricEnvelopePythonFallback:
+    """Exercise the Python hypergeometric-envelope implementation."""
+
     @_NEEDS_RUST
     def test_parity_with_rust_pure_sech(
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Match Rust exactly for the pure-sech special case."""
         # α = β = 0: both paths reduce to pure sech, agreement is bit-exact.
         t = np.linspace(-1.0, 1.0, 64)
         rust = pulse_shaping.hypergeometric_envelope(t, 0.0, 0.0, gamma_width=3.0)
@@ -173,6 +205,7 @@ class TestHypergeometricEnvelopePythonFallback:
         alpha: float,
         beta: float,
     ) -> None:
+        """Produce finite positive envelopes for nontrivial parameters."""
         # For non-zero α, β the Rust and scipy hyp2f1 implementations
         # follow different truncation schemes; they agree on the overall
         # shape but not bit-for-bit. We assert the Python path produces a
@@ -192,6 +225,7 @@ class TestHypergeometricEnvelopePythonFallback:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Reduce zero hypergeometric parameters to a pure sech."""
         _with_python_fallback(monkeypatch)
         t = np.linspace(-2.0, 2.0, 41)
         env = pulse_shaping.hypergeometric_envelope(t, 0.0, 0.0, gamma_width=1.5)
@@ -206,7 +240,10 @@ class TestHypergeometricEnvelopePythonFallback:
 
 
 class TestBuildHypergeometricPulseValidators:
+    """Exercise remaining hypergeometric pulse validators."""
+
     def test_rejects_nonpositive_omega_0(self) -> None:
+        """Reject a zero Rabi frequency."""
         with pytest.raises(ValueError, match="omega_0 must be finite and positive"):
             pulse_shaping.build_hypergeometric_pulse(
                 t_total=1.0,
@@ -214,6 +251,7 @@ class TestBuildHypergeometricPulseValidators:
             )
 
     def test_rejects_negative_omega_0(self) -> None:
+        """Reject a negative Rabi frequency."""
         with pytest.raises(ValueError, match="omega_0 must be finite and positive"):
             pulse_shaping.build_hypergeometric_pulse(
                 t_total=1.0,
@@ -222,7 +260,10 @@ class TestBuildHypergeometricPulseValidators:
 
 
 class TestBuildTrotterPulseScheduleZeroK:
+    """Exercise a Trotter schedule with no active couplings."""
+
     def test_zero_k_matrix_does_not_divide_by_zero(self) -> None:
+        """Avoid division by zero for an all-zero coupling matrix."""
         # k_max < 1e-15 triggers the `k_max = 1.0` safety branch at line 406.
         # Behaviour: every |K[i,j]| < 1e-10 is skipped, so no pulses are
         # produced and the schedule is empty.

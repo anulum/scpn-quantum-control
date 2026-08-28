@@ -108,6 +108,7 @@ def ici_mixing_angle(
         t: time array (0 to t_total)
         t_total: total pulse duration
         theta_jump: jump angle at boundaries (controls speed vs. loss)
+
     """
     if _HAS_RUST and _ici_mixing_rust is not None:
         result: NDArray[np.float64] = np.asarray(
@@ -158,6 +159,7 @@ def build_ici_pulse(
         gamma_decay: Lindblad decay rate from excited state (MHz)
         n_points: time grid resolution
         theta_jump: ICI jump angle (0 → π/4 range)
+
     """
     if not np.isfinite(t_total) or t_total <= 0:
         raise ValueError("t_total must be finite and positive")
@@ -293,6 +295,7 @@ def hypergeometric_envelope(
         alpha: first hypergeometric parameter
         beta: second hypergeometric parameter
         gamma_width: pulse width parameter γ (MHz)
+
     """
     if not np.all(np.isfinite(t)):
         raise ValueError("t must contain only finite values")
@@ -335,6 +338,7 @@ def build_hypergeometric_pulse(
         beta: hypergeometric parameter β (default: 0.5 = STIRAP)
         gamma_width: pulse width (default: 3/t_total for ~3σ coverage)
         n_points: time grid resolution
+
     """
     if not np.isfinite(t_total) or t_total <= 0:
         raise ValueError("t_total must be finite and positive")
@@ -407,6 +411,7 @@ def build_trotter_pulse_schedule(
         omega_0: base peak Rabi frequency (MHz)
         alpha: hypergeometric α parameter
         beta: hypergeometric β parameter
+
     """
     pulses: list[HypergeometricPulse] = []
     k_max = np.max(np.abs(k_matrix))

@@ -35,7 +35,10 @@ from scpn_quantum_control.phase.pulse_shaping import (
 
 
 class TestEmptyNull:
+    """Exercise minimal and zero-valued pulse inputs."""
+
     def test_ici_minimal_duration(self) -> None:
+        """Build an ICI pulse at a small positive duration."""
         pulse = build_ici_pulse(t_total=0.001, omega_0=1.0, gamma_decay=0.0)
         assert isinstance(pulse, ICIPulse)
         assert len(pulse.times) == 200
@@ -58,31 +61,40 @@ class TestEmptyNull:
 
 
 class TestErrorHandling:
+    """Reject nonphysical pulse parameters at public boundaries."""
+
     def test_ici_negative_duration(self) -> None:
+        """Reject a negative ICI duration."""
         with pytest.raises(ValueError, match="t_total must be finite and positive"):
             build_ici_pulse(t_total=-1.0, omega_0=10.0, gamma_decay=0.1)
 
     def test_ici_zero_omega(self) -> None:
+        """Reject a zero ICI Rabi frequency."""
         with pytest.raises(ValueError, match="omega_0 must be finite and positive"):
             build_ici_pulse(t_total=1.0, omega_0=0.0, gamma_decay=0.1)
 
     def test_ici_negative_gamma(self) -> None:
+        """Reject a negative ICI decay rate."""
         with pytest.raises(ValueError, match="gamma_decay must be finite and non-negative"):
             build_ici_pulse(t_total=1.0, omega_0=10.0, gamma_decay=-0.1)
 
     def test_ici_bad_theta_jump(self) -> None:
+        """Reject an ICI mixing-angle jump outside its domain."""
         with pytest.raises(ValueError, match="theta_jump"):
             build_ici_pulse(t_total=1.0, omega_0=10.0, gamma_decay=0.1, theta_jump=1.0)
 
     def test_hypergeometric_negative_alpha(self) -> None:
+        """Reject a negative hypergeometric parameter."""
         with pytest.raises(ValueError, match="alpha, beta must be >= 0"):
             build_hypergeometric_pulse(t_total=1.0, omega_0=10.0, alpha=-0.5, beta=0.5)
 
     def test_hypergeometric_zero_gamma(self) -> None:
+        """Reject a zero hypergeometric pulse width."""
         with pytest.raises(ValueError, match="gamma_width must be finite and positive"):
             hypergeometric_envelope(np.array([0.0]), alpha=0.5, beta=0.5, gamma_width=0.0)
 
     def test_hypergeometric_negative_duration(self) -> None:
+        """Reject a nonpositive hypergeometric pulse duration."""
         with pytest.raises(ValueError, match="t_total must be finite and positive"):
             build_hypergeometric_pulse(t_total=0.0, omega_0=10.0)
 
@@ -96,6 +108,7 @@ class TestErrorHandling:
         ],
     )
     def test_ici_rejects_nonphysical_grid_and_rate_parameters(self, kwargs, match) -> None:
+        """Reject invalid ICI grids and rates."""
         params = {"t_total": 1.0, "omega_0": 10.0, "gamma_decay": 0.1}
         params.update(kwargs)
         with pytest.raises(ValueError, match=match):
@@ -113,16 +126,32 @@ class TestErrorHandling:
     def test_hypergeometric_rejects_nonphysical_grid_and_rate_parameters(
         self, kwargs, match
     ) -> None:
+        """Reject invalid hypergeometric grids and rates."""
         params = {"t_total": 1.0, "omega_0": 10.0}
         params.update(kwargs)
         with pytest.raises(ValueError, match=match):
             build_hypergeometric_pulse(**params)
+
+    @pytest.mark.parametrize("n_points", [True, "200"])
+    def test_builders_reject_non_integer_grid_points(self, n_points: object) -> None:
+        """Reject Boolean and string grid sizes through both public builders."""
+        with pytest.raises(ValueError, match="n_points must be an integer"):
+            build_ici_pulse(1.0, 10.0, 0.1, n_points=n_points)  # type: ignore[arg-type]
+        with pytest.raises(ValueError, match="n_points must be an integer"):
+            build_hypergeometric_pulse(1.0, 10.0, n_points=n_points)  # type: ignore[arg-type]
+
+    def test_hypergeometric_rejects_nonfinite_time_grid(self) -> None:
+        """Reject a nonfinite time grid at the envelope boundary."""
+        with pytest.raises(ValueError, match="t must contain only finite values"):
+            hypergeometric_envelope(np.array([0.0, np.nan]), alpha=0.5, beta=0.5, gamma_width=1.0)
 
 
 # ===== 3. Negative Cases =====
 
 
 class TestNegativeCases:
+    """Exercise physical invariants and comparative pulse behavior."""
+
     def test_ici_power_constraint(self) -> None:
         """Ω_P² + Ω_S² = Ω₀² at all times."""
         pulse = build_ici_pulse(t_total=1.0, omega_0=5.0, gamma_decay=0.1)
@@ -156,7 +185,10 @@ class TestNegativeCases:
 
 
 class TestPipelineIntegration:
+    """Exercise pulse shaping through integrated public workflows."""
+
     def test_trotter_schedule_creates_pulses(self) -> None:
+        """Create one shaped pulse per nonzero unique coupling."""
         n = 4
         k = 0.5 * np.ones((n, n))
         np.fill_diagonal(k, 0.0)
@@ -189,6 +221,7 @@ class TestPipelineIntegration:
         assert f2 < f1
 
     def test_top_level_import(self) -> None:
+        """Expose pulse builders from the phase package facade."""
         from scpn_quantum_control.phase import (
             build_hypergeometric_pulse,
             build_ici_pulse,
@@ -209,7 +242,10 @@ class TestPipelineIntegration:
 
 
 class TestRoundtrip:
+    """Preserve pulse values across public construction boundaries."""
+
     def test_ici_dataclass_fields(self) -> None:
+        """Populate all ICI pulse data fields."""
         pulse = build_ici_pulse(t_total=1.0, omega_0=5.0, gamma_decay=0.1)
         assert isinstance(pulse.times, np.ndarray)
         assert isinstance(pulse.omega_p, np.ndarray)
@@ -219,13 +255,24 @@ class TestRoundtrip:
         assert pulse.gamma_decay == 0.1
 
     def test_hypergeometric_dataclass_fields(self) -> None:
+        """Populate all hypergeometric pulse data fields."""
         pulse = build_hypergeometric_pulse(t_total=1.0, omega_0=10.0, alpha=0.3, beta=0.7)
         assert pulse.alpha == 0.3
         assert pulse.beta == 0.7
         assert pulse.omega_0 == 10.0
         assert len(pulse.times) == 200
 
+    def test_hypergeometric_explicit_width_roundtrips(self) -> None:
+        """Preserve an explicit valid hypergeometric width."""
+        pulse = build_hypergeometric_pulse(
+            t_total=1.0,
+            omega_0=10.0,
+            gamma_width=2.0,
+        )
+        assert pulse.gamma_width == 2.0
+
     def test_infidelity_bound_positive(self) -> None:
+        """Return a finite fractional infidelity bound."""
         bound = infidelity_bound(0.5, 0.5, gamma_width=1.0, omega_0=10.0)
         assert bound > 0
         assert bound < 1
@@ -235,6 +282,8 @@ class TestRoundtrip:
 
 
 class TestPerformance:
+    """Keep pulse construction within lightweight performance budgets."""
+
     def test_hypergeometric_envelope_fast(self) -> None:
         """1000 evaluations of 200-point envelope < 2s."""
         t = np.linspace(-3, 3, 200)

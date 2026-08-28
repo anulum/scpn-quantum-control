@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Phase pulse-shaping documentation quality: completed the NumPy
+  docstring contract across ICI and hypergeometric pulse shaping and its
+  connected fallback tests, covered invalid public grids, explicit pulse
+  widths, and the non-normalizable fallback guard, and wired permanent strict
+  typing, connected execution, documentation, and exact source coverage into
+  preflight and CI. Pulse arithmetic, accelerator selection, public APIs, and
+  no-provider/no-hardware boundaries are unchanged.
+
 - 2026-08-28 — Hardware experiment-control documentation quality: completed
   the NumPy docstring contract across the offline QAOA/UPDE/Bell/correlator/
   QBER owner and wired permanent strict typing, connected execution,
