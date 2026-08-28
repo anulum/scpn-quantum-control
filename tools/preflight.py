@@ -107,6 +107,7 @@ if TYPE_CHECKING:
     from tools import (
         error_mitigation_product_quality_gates as _error_mitigation_product_quality_gates,
     )
+    from tools import experiment_dynamics_quality_gates as _experiment_dynamics_quality_gates
     from tools import experiment_mitigation_quality_gates as _experiment_mitigation_quality_gates
     from tools import external_validation_quality_gates as _external_validation_quality_gates
     from tools import (
@@ -333,6 +334,7 @@ else:
         "tools.experiment_mitigation_quality_gates"
     )
     _external_validation_quality_gates = import_module("tools.external_validation_quality_gates")
+    _experiment_dynamics_quality_gates = import_module("tools.experiment_dynamics_quality_gates")
     _fault_tolerant_resource_product_quality_gates = import_module(
         "tools.fault_tolerant_resource_product_quality_gates"
     )
@@ -836,6 +838,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_kuramoto_variants_quality_gates.build_static_quality_gates(_PY),
     *_mps_evolution_quality_gates.build_static_quality_gates(_PY),
     *_sync_uncertainty_quality_gates.build_static_quality_gates(_PY),
+    *_experiment_dynamics_quality_gates.build_static_quality_gates(_PY),
     *_quantum_phi_quality_gates.build_static_quality_gates(_PY),
     *_qpu_result_pack_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
@@ -1348,6 +1351,7 @@ KOOPMAN_COVERAGE_GATES = _koopman_quality_gates.build_coverage_gates(_PY)
 KURAMOTO_VARIANTS_COVERAGE_GATES = _kuramoto_variants_quality_gates.build_coverage_gates(_PY)
 MPS_EVOLUTION_COVERAGE_GATES = _mps_evolution_quality_gates.build_coverage_gates(_PY)
 SYNC_UNCERTAINTY_COVERAGE_GATES = _sync_uncertainty_quality_gates.build_coverage_gates(_PY)
+EXPERIMENT_DYNAMICS_COVERAGE_GATES = _experiment_dynamics_quality_gates.build_coverage_gates(_PY)
 QUANTUM_PHI_COVERAGE_GATES = _quantum_phi_quality_gates.build_coverage_gates(_PY)
 QPU_RESULT_PACK_COVERAGE_GATES = _qpu_result_pack_quality_gates.build_coverage_gates(_PY)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
@@ -1772,6 +1776,7 @@ def main() -> int:
             gates.extend(KURAMOTO_VARIANTS_COVERAGE_GATES)
             gates.extend(MPS_EVOLUTION_COVERAGE_GATES)
             gates.extend(SYNC_UNCERTAINTY_COVERAGE_GATES)
+            gates.extend(EXPERIMENT_DYNAMICS_COVERAGE_GATES)
             gates.extend(QUANTUM_PHI_COVERAGE_GATES)
             gates.extend(QPU_RESULT_PACK_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)

@@ -34,19 +34,24 @@ def kuramoto_4osc_experiment(
     Measures order parameter R(t) via X, Y, Z basis shots at each time step.
     Compares against exact matrix-exponential evolution.
 
+    Parameters
+    ----------
+    runner
+        Approved runner used to submit the batched basis circuits and persist
+        the first job receipt.
+    shots
+        Sampler shots per basis circuit.
+    n_time_steps
+        Number of positive evolution times.
+    dt
+        Evolution-time spacing.
+
     Returns
     -------
-        dict with keys:
-            experiment (str): Experiment name identifier.
-            n_oscillators (int): Number of oscillators.
-            dt (float): Time step size.
-            hw_times (list[float]): Hardware measurement times.
-            hw_R (list[float]): Hardware order parameter per step.
-            hw_R_std (list[float]): Shot-noise std of R per step.
-            classical_times (list[float]): Exact evolution times.
-            classical_R (list[float]): Exact order parameter per step.
-            classical_R_std (float): Always 0.0 (exact).
-            hw_expectations (list[dict]): Per-step exp_x, exp_y, exp_z.
+    dict[str, Any]
+        Hardware and exact-reference times, order parameters, shot-noise
+        estimates, per-axis expectations, and experiment metadata.
+
     """
     n = 4
     K = build_knm_paper27(L=n)
@@ -104,18 +109,24 @@ def kuramoto_8osc_experiment(
 ) -> dict[str, Any]:
     """8-oscillator Kuramoto XY dynamics.
 
+    Parameters
+    ----------
+    runner
+        Approved runner used to submit the batched basis circuits and persist
+        the first job receipt.
+    shots
+        Sampler shots per basis circuit.
+    n_time_steps
+        Number of positive evolution times.
+    dt
+        Evolution-time spacing.
+
     Returns
     -------
-        dict with keys:
-            experiment (str): Experiment name identifier.
-            n_oscillators (int): Number of oscillators.
-            dt (float): Time step size.
-            hw_times (list[float]): Hardware measurement times.
-            hw_R (list[float]): Hardware order parameter per step.
-            hw_R_std (list[float]): Shot-noise std of R per step.
-            classical_times (list[float]): Exact evolution times.
-            classical_R (list[float]): Exact order parameter per step.
-            classical_R_std (float): Always 0.0 (exact).
+    dict[str, Any]
+        Hardware and exact-reference times, order parameters, shot-noise
+        estimates, and experiment metadata.
+
     """
     n = 8
     K = build_knm_paper27(L=n)
@@ -173,20 +184,23 @@ def kuramoto_4osc_trotter2_experiment(
     Same structure as kuramoto_4osc_experiment but uses SuzukiTrotter(order=2).
     Produces order-1 vs order-2 comparison data.
 
+    Parameters
+    ----------
+    runner
+        Approved runner used to submit the batched basis circuits.
+    shots
+        Sampler shots per basis circuit.
+    n_time_steps
+        Number of positive evolution times.
+    dt
+        Evolution-time spacing.
+
     Returns
     -------
-        dict with keys:
-            experiment (str): Experiment name identifier.
-            n_oscillators (int): Number of oscillators.
-            trotter_order (int): Suzuki-Trotter order (2).
-            dt (float): Time step size.
-            hw_times (list[float]): Hardware measurement times.
-            hw_R (list[float]): Hardware order parameter per step.
-            hw_R_std (list[float]): Shot-noise std of R per step.
-            classical_times (list[float]): Exact evolution times.
-            classical_R (list[float]): Exact order parameter per step.
-            classical_R_std (float): Always 0.0 (exact).
-            hw_expectations (list[dict]): Per-step exp_x, exp_y, exp_z.
+    dict[str, Any]
+        Second-order experiment metadata, hardware and exact-reference order
+        parameters, shot-noise estimates, and per-axis expectations.
+
     """
     n = 4
     K = build_knm_paper27(L=n)
@@ -249,18 +263,26 @@ def sync_threshold_experiment(
     Maps the bifurcation: below K_c, R~0 (incoherent); above K_c,
     R grows (synchronised). K_c depends on frequency spread.
 
-    Science: first measurement of Kuramoto phase transition on
-    superconducting qubits. Validates quantum XY <-> classical Kuramoto
-    correspondence at the critical point.
+    This is an execution protocol for comparing supplied sampler results with
+    the local exact reference. It does not by itself establish a first
+    measurement, a phase transition, or critical-point correspondence.
+
+    Parameters
+    ----------
+    runner
+        Approved runner used to submit each three-basis circuit batch.
+    shots
+        Sampler shots per basis circuit.
+    k_values
+        Coupling strengths to evaluate, or ``None`` for the bounded default
+        sweep.
 
     Returns
     -------
-        dict with keys:
-            experiment (str): Experiment name identifier.
-            n_oscillators (int): Number of oscillators.
-            dt (float): Time step size.
-            k_values (list[float]): Coupling strengths swept.
-            results (list[dict]): Per-K dicts with K_base, hw_R, classical_R.
+    dict[str, Any]
+        Experiment metadata, evaluated coupling strengths, and per-coupling
+        hardware/reference order-parameter rows.
+
     """
     if k_values is None:
         k_values = [0.05, 0.15, 0.30, 0.45, 0.60, 0.80]

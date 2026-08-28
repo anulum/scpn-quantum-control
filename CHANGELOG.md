@@ -1,5 +1,14 @@
 # Changelog
 
+- 2026-08-28 — Hardware experiment-dynamics documentation quality: completed
+  the preview-inclusive NumPy docstring contract across the four- and
+  eight-oscillator, second-order, and coupling-sweep protocols; replaced an
+  unsubstantiated first-measurement statement with the bounded execution
+  boundary; added custom-sweep branch coverage; and wired permanent strict
+  typing, offline sampler execution, complete owner documentation, and exact
+  source coverage into preflight and CI. Circuit arithmetic, batching, result
+  schemas, public APIs, and hardware-approval boundaries are unchanged.
+
 - 2026-08-28 — Synchronisation-uncertainty documentation quality: completed
   the preview-inclusive NumPy docstring contract across finite-shot analytic
   and seeded-bootstrap intervals, and wired permanent strict typing, connected

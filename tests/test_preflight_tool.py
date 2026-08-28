@@ -1055,6 +1055,8 @@ def test_main_uses_coverage_pytest_by_default(
         "MPS-evolution exact coverage threshold",
         "synchronisation-uncertainty focused coverage",
         "synchronisation-uncertainty exact coverage threshold",
+        "experiment-dynamics focused coverage",
+        "experiment-dynamics exact coverage threshold",
         "quantum-Phi focused coverage",
         "quantum-Phi exact coverage threshold",
         "QPU result-pack focused coverage",
