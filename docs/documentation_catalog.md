@@ -162,7 +162,7 @@ are still built, link-checked, searchable, and public.
 | [SCPN/FIM repeated IBM follow-up protocol](campaigns/scpn_fim_repeated_followup_protocol_2026-05-05.md) | catalog | Date: 2026-05-05 |
 | [SCPN/FIM Hamiltonian Paper Submission Checklist](campaigns/scpn_fim_submission_checklist_2026-05-06.md) | catalog | Date: 2026-05-06 |
 | [SCPN/FIM Validation Protocol](campaigns/scpn_fim_validation_protocol_2026-05-05.md) | primary nav | Date: 2026-05-05 |
-| [Two-edge-colour width-2 schedule for the XY-Trotter chain — 2026-07-21](campaigns/two_colour_width2_schedule_2026-07-21.md) | catalog | **Status:** design + classical evidence complete. Addresses audit AUD-7 (B-5): hand-scheduled, genuinely width-2 chain dynamics instead of a deep serial synthesis. The hardware submission remains an owner-gated QPU run (AUD-5/7). **Code:** |
+| [Two-edge-colour width-2 schedule for the XY-Trotter chain — 2026-07-21](campaigns/two_colour_width2_schedule_2026-07-21.md) | catalog | **Status:** design + classical evidence complete: hand-scheduled, genuinely width-2 chain dynamics instead of a deep serial synthesis. The hardware submission remains an owner-gated QPU run. **Code:** src/scpn_quantum_control/analysis/two_c |
 | [Validation Readiness Gate — 2026-05-05](campaigns/validation_readiness_2026-05-05.md) | catalog | This gate records what is ready for new validation runs and what remains blocked. It exists to prevent aggregate-only, placeholder, queued-job, or fallback-count artefacts from being promoted as hardware validation. |
 | [Variational Quantum Simulation Alternative Preregistration](campaigns/vqs_alternative_prereg_2026-05-06.md) | catalog | Date: 2026-05-06 |
 

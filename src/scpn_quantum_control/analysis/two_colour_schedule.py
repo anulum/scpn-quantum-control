@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Two-edge-colour hand schedule for the XY-Trotter chain
-"""Genuine width-2 hand scheduling of the 1-D XY-Trotter chain (audit AUD-7).
+"""Genuine width-2 hand scheduling of the 1-D XY-Trotter chain.
 
 The campaign circuits emit the nearest-neighbour XY chain edge-by-edge, so the
 transpiler lays every Trotter step out sequentially and the two-qubit depth
@@ -24,7 +24,7 @@ width-2 dynamics** rather than a scheduling artefact of a deep serial synthesis.
 
 This module supplies the scheduler and the classical evidence (depth reduction +
 excitation-number conservation). Submitting it to hardware is an owner-gated QPU
-run (AUD-5/7).
+run.
 """
 
 from __future__ import annotations

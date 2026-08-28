@@ -1,8 +1,8 @@
 # Two-edge-colour width-2 schedule for the XY-Trotter chain — 2026-07-21
 
-**Status:** design + classical evidence complete. Addresses audit AUD-7 (B-5):
-hand-scheduled, genuinely width-2 chain dynamics instead of a deep serial
-synthesis. The hardware submission remains an owner-gated QPU run (AUD-5/7).
+**Status:** design + classical evidence complete: hand-scheduled, genuinely
+width-2 chain dynamics instead of a deep serial synthesis. The hardware
+submission remains an owner-gated QPU run.
 **Code:** `src/scpn_quantum_control/analysis/two_colour_schedule.py`, tests
 `tests/test_two_colour_schedule.py` (24).
 

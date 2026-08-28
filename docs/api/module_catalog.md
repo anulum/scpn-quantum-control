@@ -701,7 +701,7 @@ Translation symmetry exploitation for homogeneous Kuramoto-XY chains.
 
 ### `scpn_quantum_control.analysis.two_colour_schedule`
 
-Genuine width-2 hand scheduling of the 1-D XY-Trotter chain (audit AUD-7).
+Genuine width-2 hand scheduling of the 1-D XY-Trotter chain.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/analysis/two_colour_schedule.py) · Public symbols: **6**
 
