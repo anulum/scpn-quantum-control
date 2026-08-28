@@ -8,7 +8,7 @@ band checks.
 Related surfaces:
 
 - Transform algebra suite: `scpn_quantum_control.differentiable_transform_algebra`
-- BL-53 unsuitable / anti-silent fixtures: [Unsuitable scenario registry](unsuitable_scenario_registry.md)
+- Unsuitable / anti-silent fixtures: [Unsuitable scenario registry](unsuitable_scenario_registry.md)
 - Module: `scpn_quantum_control.metamorphic_ad_verification`
 
 ## Outcomes

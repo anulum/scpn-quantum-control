@@ -279,7 +279,7 @@ _CANONICAL_LAWS: Final[tuple[MetamorphicLawRecord, ...]] = (
         ),
         reason=(
             "Silent real-gradient substitution on complex objectives is refused; "
-            "pairs BL-53 unsuitable:complex.objective_without_wirtinger"
+            "pairs the unsuitable:complex.objective_without_wirtinger scenario"
         ),
     ),
     _law(
