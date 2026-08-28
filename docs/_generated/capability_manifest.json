@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1249
+    "test_files": 1250
   },
   "documentation": {
     "examples": [
@@ -8420,6 +8420,7 @@
       "tests/test_differentiable_scalar_kernels.py",
       "tests/test_differentiable_score_function.py",
       "tests/test_differentiable_sparse_derivatives.py",
+      "tests/test_differentiable_sparse_derivatives_quality_gate.py",
       "tests/test_differentiable_spsa.py",
       "tests/test_differentiable_stochastic_estimators.py",
       "tests/test_differentiable_support_matrix_page.py",

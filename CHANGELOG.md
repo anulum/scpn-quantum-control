@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — Differentiable sparse-derivative documentation quality:
+  completed the NumPy docstring contract across sparse Jacobian, Hessian, and
+  empirical-Fisher conversion and direct tests, and wired permanent strict
+  typing, connected execution, documentation, and exact source coverage into
+  preflight and CI. Sparse arithmetic, metadata, public APIs, and derivative
+  provenance are unchanged.
+
 - 2026-08-28 — Differentiable parameter-shift documentation quality:
   completed the NumPy docstring contract across scalar, batched,
   multi-frequency, and finite-shot parameter-shift transforms and their direct

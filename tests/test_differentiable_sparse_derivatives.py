@@ -44,13 +44,11 @@ from scpn_quantum_control.differentiable_sparse_derivatives import (
 
 def _assert_allclose(actual: object, expected: object) -> None:
     """Assert NumPy-close equality while preserving strict test typing."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected)
 
 
 def test_sparse_derivative_helpers_preserve_facade_identity() -> None:
     """Extracted sparse helpers should keep facade and package-root imports stable."""
-
     import scpn_quantum_control as scpn
     from scpn_quantum_control import differentiable as differentiable_facade
 
@@ -71,7 +69,6 @@ def test_sparse_derivative_helpers_preserve_facade_identity() -> None:
 
 def test_sparse_matrix_result_round_trips_dense_derivatives() -> None:
     """Sparse coordinate derivatives should preserve dense values and metadata."""
-
     dense = np.array([[1.0, 0.0, 2.0e-8], [0.0, 0.0, -3.0]])
     sparse = dense_to_sparse_matrix(
         dense,
@@ -90,7 +87,6 @@ def test_sparse_matrix_result_round_trips_dense_derivatives() -> None:
 
 def test_dense_to_sparse_matrix_defaults_metadata() -> None:
     """Dense sparse conversion should supply deterministic default metadata."""
-
     sparse = dense_to_sparse_matrix([[0.0, 2.0], [3.0, 0.0]])
 
     assert sparse.parameter_names == ("p0", "p1")
@@ -101,7 +97,6 @@ def test_dense_to_sparse_matrix_defaults_metadata() -> None:
 
 def test_sparse_jacobian_hessian_and_fisher_preserve_provenance() -> None:
     """Sparse helpers should convert derivative result objects without metadata loss."""
-
     jacobian_result = JacobianResult(
         value=np.array([1.0, -2.0]),
         jacobian=np.array([[1.0, 0.0], [2.0, 0.0]]),
@@ -137,7 +132,6 @@ def test_sparse_jacobian_hessian_and_fisher_preserve_provenance() -> None:
 
 def test_sparse_empirical_fisher_metric_accepts_dense_jacobian() -> None:
     """Sparse empirical Fisher conversion should work without result metadata."""
-
     sparse = sparse_empirical_fisher_metric(
         np.array([[1.0, 2.0], [0.5, 0.0]], dtype=np.float64),
         weights=np.array([2.0, 4.0], dtype=np.float64),
@@ -152,7 +146,6 @@ def test_sparse_empirical_fisher_metric_accepts_dense_jacobian() -> None:
 
 def test_empirical_fisher_metric_rejects_invalid_dense_inputs() -> None:
     """Dense Fisher metrics should fail closed on malformed arrays."""
-
     with pytest.raises(ValueError, match="two-dimensional"):
         empirical_fisher_metric(np.array([1.0, 2.0]))
     with pytest.raises(ValueError, match="finite values"):
@@ -167,7 +160,6 @@ def test_empirical_fisher_metric_rejects_invalid_dense_inputs() -> None:
 
 def test_sparse_matrix_result_rejects_invalid_contracts() -> None:
     """Sparse derivative containers must fail closed on malformed coordinates."""
-
     with pytest.raises(ValueError, match="duplicate"):
         SparseMatrixResult(
             row_indices=np.array([0, 0]),
