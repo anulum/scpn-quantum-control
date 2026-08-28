@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Topology-kernel classifier documentation and typing quality:
+  completed the preview-inclusive NumPy docstring contract across immutable
+  model custody, fitting/evaluation, and direct tests; repaired precise test
+  array and replacement typing; and wired permanent strict typing, real
+  classifier execution, complete owner documentation, and exact source
+  coverage into preflight and CI. Digests, alignment, binary labels, ridge
+  arithmetic, tie handling, public APIs, and bounded claims are unchanged.
+
 - 2026-08-28 — QRC-baseline documentation quality: completed the
   preview-inclusive NumPy docstring contract across the deterministic
   classical-ESN and matched QRC comparison owner, and wired permanent strict

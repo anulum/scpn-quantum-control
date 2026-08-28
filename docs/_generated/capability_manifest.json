@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1272
+    "test_files": 1273
   },
   "documentation": {
     "examples": [
@@ -9334,6 +9334,7 @@
       "tests/test_topology_constraints_guards.py",
       "tests/test_topology_control_core.py",
       "tests/test_topology_control_integration.py",
+      "tests/test_topology_kernel_classifier_quality_gate.py",
       "tests/test_topology_kernel_evidence_quality_gate.py",
       "tests/test_topology_kernel_product_classifier.py",
       "tests/test_topology_kernel_product_e2e.py",

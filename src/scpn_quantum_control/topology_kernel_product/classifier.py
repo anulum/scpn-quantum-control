@@ -52,6 +52,7 @@ class KernelRidgeClassifier:
         Content digest of the exact square training kernel.
     content_digest:
         SHA-256 binding identifiers, coefficients, alpha, and kernel custody.
+
     """
 
     train_ids: tuple[str, ...]
@@ -62,6 +63,7 @@ class KernelRidgeClassifier:
     content_digest: str
 
     def __post_init__(self) -> None:
+        """Validate custody fields and freeze a private coefficient copy."""
         coefficients = np.asarray(self.coefficients, dtype=np.float64)
         if coefficients.ndim != 1 or coefficients.shape != (len(self.train_ids),):
             raise ValueError("coefficients must match train_ids")
@@ -105,6 +107,7 @@ def fit_kernel_ridge(
     ValueError
         If identifiers are misaligned, labels are not binary, regularisation
         is invalid, or the solve produces non-finite coefficients.
+
     """
     if not isinstance(kernel, TopologyKernelMatrix):
         raise ValueError("kernel must be a TopologyKernelMatrix")
@@ -176,6 +179,7 @@ def evaluate_kernel_ridge(
         Test-by-train kernel with matching custody and training identifiers.
     labels:
         Expected binary test labels, one per cross-kernel row.
+
     """
     predictions = predict_kernel_ridge(model, cross_kernel)
     label_array = np.asarray(labels, dtype=np.int64)

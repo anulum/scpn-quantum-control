@@ -10,9 +10,11 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from typing import Any
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.topology_kernel_product import (
     KernelRidgeClassifier,
@@ -27,7 +29,7 @@ OTHER_DIGEST = "b" * 64
 
 
 def _kernel(
-    values: np.ndarray | None = None,
+    values: NDArray[np.float64] | None = None,
     *,
     row_ids: tuple[str, ...] = ("a", "b"),
     column_ids: tuple[str, ...] = ("a", "b"),
@@ -54,6 +56,7 @@ def _model() -> KernelRidgeClassifier:
 
 
 def test_kernel_ridge_fit_predict_and_evaluate() -> None:
+    """Fit, predict, evaluate, and preserve read-only result custody."""
     labels = np.array([1, -1])
     model = fit_kernel_ridge(_kernel(), labels, alpha=0.1)
     predictions = predict_kernel_ridge(model, _kernel())
@@ -66,6 +69,7 @@ def test_kernel_ridge_fit_predict_and_evaluate() -> None:
 
 
 def test_prediction_tie_maps_deterministically_to_positive() -> None:
+    """Map an exactly zero decision score deterministically to positive."""
     model = replace(_model(), coefficients=np.zeros(2))
     assert predict_kernel_ridge(model, _kernel()).tolist() == [1, 1]
 
@@ -84,12 +88,14 @@ def test_prediction_tie_maps_deterministically_to_positive() -> None:
         {"content_digest": "bad"},
     ],
 )
-def test_model_rejects_invalid_contract(changes: dict[str, object]) -> None:
+def test_model_rejects_invalid_contract(changes: dict[str, Any]) -> None:
+    """Reject malformed immutable classifier fields."""
     with pytest.raises(ValueError):
         replace(_model(), **changes)
 
 
 def test_fit_rejects_wrong_type_nonsquare_misalignment_labels_and_alpha() -> None:
+    """Reject invalid kernel, label, alignment, and regularization inputs."""
     with pytest.raises(ValueError):
         fit_kernel_ridge(object(), np.array([1]), alpha=0.1)  # type: ignore[arg-type]
     with pytest.raises(ValueError):
@@ -113,12 +119,14 @@ def test_fit_rejects_wrong_type_nonsquare_misalignment_labels_and_alpha() -> Non
 
 
 def test_fit_rejects_nonfinite_solver_output(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject a non-finite coefficient vector from the numerical solver."""
     monkeypatch.setattr(np.linalg, "solve", lambda *_args: np.array([np.nan, 1.0]))
     with pytest.raises(ValueError, match="non-finite"):
         fit_kernel_ridge(_kernel(), np.array([1, -1]), alpha=0.1)
 
 
 def test_predict_rejects_wrong_types_identifiers_and_topology() -> None:
+    """Reject prediction inputs with broken type or custody alignment."""
     with pytest.raises(ValueError):
         predict_kernel_ridge(object(), _kernel())  # type: ignore[arg-type]
     with pytest.raises(ValueError):
@@ -130,6 +138,7 @@ def test_predict_rejects_wrong_types_identifiers_and_topology() -> None:
 
 
 def test_evaluate_rejects_bad_test_labels() -> None:
+    """Reject evaluation labels with the wrong shape or vocabulary."""
     for labels in (np.array([1]), np.array([1, 0])):
         with pytest.raises(ValueError):
             evaluate_kernel_ridge("bad", _model(), _kernel(), labels)
