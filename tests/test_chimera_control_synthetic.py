@@ -27,7 +27,6 @@ from scpn_quantum_control.chimera_control.synthetic import (
 
 def test_reference_regime_factories_freeze_published_couplings() -> None:
     """Freeze the finite reference parameters for both synthetic regimes."""
-
     chimera = SyntheticChimeraConfig.for_regime(
         SyntheticRegime.CHIMERA_TRANSIENT,
         population_size=8,
@@ -77,14 +76,12 @@ def test_reference_regime_factories_freeze_published_couplings() -> None:
 )
 def test_synthetic_config_rejects_invalid_values(kwargs: dict[str, object], message: str) -> None:
     """Reject invalid configuration values at the public construction boundary."""
-
     with pytest.raises(ValueError, match=message):
         SyntheticChimeraConfig(**kwargs)
 
 
 def test_block_coupling_is_symmetric_normalised_and_read_only() -> None:
     """Build an immutable symmetric two-population coupling matrix."""
-
     config = SyntheticChimeraConfig(population_size=3, steps=2, settle_steps=0)
     coupling = build_two_population_coupling(config)
 
@@ -98,7 +95,6 @@ def test_block_coupling_is_symmetric_normalised_and_read_only() -> None:
 
 def test_generator_is_deterministic_immutable_and_digest_bound() -> None:
     """Bind deterministic trajectory custody to immutable arrays and a digest."""
-
     config = SyntheticChimeraConfig(
         population_size=4,
         steps=12,
@@ -125,7 +121,6 @@ def test_generator_is_deterministic_immutable_and_digest_bound() -> None:
 
 def test_default_generator_uses_reference_chimera_configuration() -> None:
     """Use the bounded chimera transient as the explicit default regime."""
-
     run = generate_two_population_chimera(
         SyntheticChimeraConfig(population_size=2, steps=1, settle_steps=0)
     )
@@ -147,7 +142,6 @@ def test_run_contract_rejects_inconsistent_custody(
     changes: dict[str, object], message: str
 ) -> None:
     """Reject custody objects whose arrays or digest contradict the configuration."""
-
     valid = generate_two_population_chimera(
         SyntheticChimeraConfig(population_size=2, steps=2, settle_steps=0)
     )
@@ -168,7 +162,6 @@ def test_run_contract_rejects_inconsistent_custody(
 
 def test_run_contract_rejects_non_finite_or_wrong_rank_arrays() -> None:
     """Reject malformed trajectory arrays and inconsistent diagnostic custody."""
-
     valid = generate_two_population_chimera(
         SyntheticChimeraConfig(population_size=2, steps=2, settle_steps=0)
     )

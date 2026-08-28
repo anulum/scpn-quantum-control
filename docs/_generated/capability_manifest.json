@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1224
+    "test_files": 1225
   },
   "documentation": {
     "examples": [
@@ -8259,6 +8259,7 @@
       "tests/test_chimera_control_evidence.py",
       "tests/test_chimera_control_objectives.py",
       "tests/test_chimera_control_observables.py",
+      "tests/test_chimera_control_quality_gate.py",
       "tests/test_chimera_control_schema.py",
       "tests/test_chimera_control_synthetic.py",
       "tests/test_chimera_control_topology.py",

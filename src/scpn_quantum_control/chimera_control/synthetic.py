@@ -80,6 +80,7 @@ class SyntheticChimeraConfig:
         ``population_size``.
     seed
         NumPy generator seed for the publication-style initial condition.
+
     """
 
     regime: SyntheticRegime = SyntheticRegime.CHIMERA_TRANSIENT
@@ -93,6 +94,7 @@ class SyntheticChimeraConfig:
     seed: int = 20260702
 
     def __post_init__(self) -> None:
+        """Validate the finite synthetic integration configuration."""
         if not isinstance(self.regime, SyntheticRegime):
             raise ValueError("regime must be a SyntheticRegime value")
         if (
@@ -137,7 +139,6 @@ class SyntheticChimeraConfig:
         synchronised contrast uses ``mu=0.6``, ``nu=0.4`` and 700 steps. Both
         use ``dt=0.05``, ``beta=0.1``, and 200 settle steps.
         """
-
         if regime is SyntheticRegime.CHIMERA_TRANSIENT:
             return cls(regime=regime, population_size=population_size, seed=seed)
         if regime is SyntheticRegime.SYNCHRONISED_CONTROL:
@@ -154,7 +155,6 @@ class SyntheticChimeraConfig:
     @property
     def frustration(self) -> float:
         """Return Sakaguchi phase lag ``alpha = pi/2 - beta``."""
-
         return float(math.pi / 2.0 - self.beta)
 
 
@@ -178,6 +178,7 @@ class SyntheticChimeraRun:
     content_digest: str
 
     def __post_init__(self) -> None:
+        """Validate and freeze trajectory, coupling, and diagnostic custody."""
         phases = _immutable_float(self.phases, name="phases", ndim=2)
         times = _immutable_float(self.times, name="times", ndim=1)
         coupling = _immutable_float(self.coupling, name="coupling", ndim=2)
@@ -223,7 +224,6 @@ class SyntheticChimeraRun:
     @property
     def settled_phases(self) -> FloatArray:
         """Return a read-only view of the post-settle trajectory."""
-
         settled = self.phases[self.config.settle_steps :]
         settled.setflags(write=False)
         return settled
@@ -236,7 +236,6 @@ def build_two_population_coupling(config: SyntheticChimeraConfig) -> FloatArray:
     between-population entries are ``inter_coupling / N``. The diagonal is
     exactly zero because self-coupling is excluded by the force definition.
     """
-
     size = config.population_size
     total = 2 * size
     coupling = np.empty((total, total), dtype=np.float64)
@@ -269,8 +268,8 @@ def generate_two_population_chimera(
     The first population starts near coherence and the second uniformly on the
     circle. Natural frequencies are identical and zero. A generated row is a
     finite synthetic regression fixture, not a physical or biological model.
-    """
 
+    """
     resolved = config or SyntheticChimeraConfig()
     hierarchy = two_population_hierarchy(resolved.population_size)
     coupling = build_two_population_coupling(resolved)

@@ -50,6 +50,7 @@ class LevelOrderParameterSummary:
         Shanahan's chimera index. It is zero for a single community.
     community_metastability
         Mean across-community population variance through time.
+
     """
 
     level_name: str
@@ -59,6 +60,7 @@ class LevelOrderParameterSummary:
     community_metastability: float
 
     def __post_init__(self) -> None:
+        """Validate and freeze one hierarchy-level diagnostic summary."""
         if not self.level_name.strip():
             raise ValueError("level_name must be non-empty")
         values = _immutable(
@@ -95,6 +97,7 @@ class MultiscaleOrderParameterReport:
     content_digest: str
 
     def __post_init__(self) -> None:
+        """Validate and freeze the complete multiscale diagnostic report."""
         global_order = _immutable(
             self.global_order_parameter,
             name="global_order_parameter",
@@ -112,7 +115,6 @@ class MultiscaleOrderParameterReport:
 
     def level(self, name: str) -> LevelOrderParameterSummary:
         """Return the report row named ``name`` or raise ``KeyError``."""
-
         for level in self.levels:
             if level.level_name == name:
                 return level
@@ -138,8 +140,8 @@ def measure_multiscale_order_parameters(
     MultiscaleOrderParameterReport
         Read-only global coherence plus per-level Shanahan chimera and
         community-metastability summaries.
-    """
 
+    """
     trajectory = _immutable(phases, name="phases", ndim=2)
     if trajectory.shape[1] != hierarchy.node_count:
         raise ValueError("phases node width must match hierarchy.node_count")

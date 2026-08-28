@@ -23,7 +23,6 @@ from scpn_quantum_control.chimera_control.schema import (
 
 def test_two_population_hierarchy_is_complete_nested_and_lookup_is_exact() -> None:
     """Build the canonical hierarchy and require case-sensitive level lookup."""
-
     hierarchy = two_population_hierarchy(3)
 
     assert hierarchy.node_count == 6
@@ -37,14 +36,12 @@ def test_two_population_hierarchy_is_complete_nested_and_lookup_is_exact() -> No
 @pytest.mark.parametrize("size", [0, 1, True])
 def test_two_population_hierarchy_rejects_small_or_boolean_sizes(size: int) -> None:
     """Reject population sizes that cannot represent two real communities."""
-
     with pytest.raises(ValueError, match="greater than one"):
         two_population_hierarchy(size)
 
 
 def test_hierarchy_level_normalises_names_and_indices() -> None:
     """Normalise harmless whitespace and community index ordering."""
-
     level = HierarchyLevel("  fine  ", ((2, 0, 1), (5, 4, 3)))
     assert level.name == "fine"
     assert level.communities == ((0, 1, 2), (3, 4, 5))
@@ -66,7 +63,6 @@ def test_hierarchy_level_rejects_malformed_communities(
     message: str,
 ) -> None:
     """Reject blank, empty, repeated, overlapping, or non-integer communities."""
-
     with pytest.raises(ValueError, match=message):
         HierarchyLevel(name, communities)
 
@@ -76,7 +72,6 @@ def test_hierarchy_level_rejects_malformed_communities(
 
 def test_multiscale_hierarchy_rejects_invalid_node_count_and_empty_levels() -> None:
     """Reject invalid node counts and hierarchies without any scale."""
-
     fine = HierarchyLevel("fine", ((0,), (1,)))
     with pytest.raises(ValueError, match="greater than one"):
         MultiscaleHierarchy(1, (fine,))
@@ -88,7 +83,6 @@ def test_multiscale_hierarchy_rejects_invalid_node_count_and_empty_levels() -> N
 
 def test_multiscale_hierarchy_rejects_duplicate_names_and_incomplete_partition() -> None:
     """Require unique scale names and a complete partition at every scale."""
-
     fine = HierarchyLevel("fine", ((0,), (1,)))
     duplicate = HierarchyLevel("fine", ((0, 1),))
     with pytest.raises(ValueError, match="names must be unique"):
@@ -100,7 +94,6 @@ def test_multiscale_hierarchy_rejects_duplicate_names_and_incomplete_partition()
 
 def test_multiscale_hierarchy_rejects_non_nested_partitions() -> None:
     """Reject crossed partitions that violate the fine-to-coarse contract."""
-
     fine = HierarchyLevel("fine", ((0, 1), (2, 3)))
     crossed = HierarchyLevel("crossed", ((0, 2), (1, 3)))
     with pytest.raises(ValueError, match="not nested"):
@@ -109,7 +102,6 @@ def test_multiscale_hierarchy_rejects_non_nested_partitions() -> None:
 
 def test_hierarchy_target_validates_values_weight_and_name() -> None:
     """Validate target names, bounded order parameters, and finite weights."""
-
     target = HierarchyTarget(" population ", (1, 0.4), weight=2)
     assert target.level_name == "population"
     assert target.order_parameters == (1.0, 0.4)
@@ -125,7 +117,6 @@ def test_hierarchy_target_validates_values_weight_and_name() -> None:
 
 def test_control_specification_validates_target_binding() -> None:
     """Bind each unique target row to an existing hierarchy scale."""
-
     hierarchy = two_population_hierarchy(2)
     specification = ChimeraControlSpecification(
         hierarchy,

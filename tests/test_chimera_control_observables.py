@@ -22,7 +22,6 @@ from scpn_quantum_control.chimera_control.schema import two_population_hierarchy
 
 def test_multiscale_measurement_resolves_partial_and_global_synchrony() -> None:
     """Resolve partial population coherence and ensemble coherence separately."""
-
     hierarchy = two_population_hierarchy(2)
     phases = np.array(
         [
@@ -56,7 +55,6 @@ def test_multiscale_measurement_resolves_partial_and_global_synchrony() -> None:
 
 def test_measurement_rejects_wrong_rank_width_and_non_finite_phases() -> None:
     """Reject phase arrays with invalid rank, width, or finite-value custody."""
-
     hierarchy = two_population_hierarchy(2)
     with pytest.raises(ValueError, match="2-dimensional"):
         measure_multiscale_order_parameters(np.zeros(4), hierarchy)
@@ -70,7 +68,6 @@ def test_measurement_rejects_wrong_rank_width_and_non_finite_phases() -> None:
 
 def test_level_summary_contract_rejects_invalid_shapes_and_scalars() -> None:
     """Reject level summaries with inconsistent shapes or invalid diagnostics."""
-
     values = np.ones((2, 2))
     with pytest.raises(ValueError, match="level_name"):
         LevelOrderParameterSummary(" ", values, np.ones(2), 0.0, 0.0)
@@ -84,7 +81,6 @@ def test_level_summary_contract_rejects_invalid_shapes_and_scalars() -> None:
 
 def test_report_contract_rejects_misaligned_levels_time_and_digest() -> None:
     """Reject reports whose scales, time axis, or digest are inconsistent."""
-
     hierarchy = two_population_hierarchy(2)
     phases = np.zeros((2, 4))
     valid = measure_multiscale_order_parameters(phases, hierarchy)

@@ -44,6 +44,7 @@ class PhaseControlProposal:
         Read-only vectors. No external or persistent system is mutated.
     claim_boundary
         Explicit synthetic and non-actuating interpretation boundary.
+
     """
 
     original_value: float
@@ -56,6 +57,7 @@ class PhaseControlProposal:
     claim_boundary: str = CHIMERA_CONTROL_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate proposal scalars, vectors, and acceptance consistency."""
         for name, value in (
             ("original_value", self.original_value),
             ("proposed_value", self.proposed_value),
@@ -120,8 +122,8 @@ def build_chimera_control_objective(
     ValueError
         If the threshold is not finite and positive or every target weight is
         zero.
-    """
 
+    """
     threshold = float(min_order_parameter)
     if not np.isfinite(threshold) or threshold <= 0.0:
         raise ValueError("min_order_parameter must be a finite positive value")
@@ -175,8 +177,8 @@ def propose_phase_control_step(
         Finite positive first backtracking step.
     max_backtracks
         Number of candidate evaluations after the initial point; at least one.
-    """
 
+    """
     step = float(initial_step_size)
     if not np.isfinite(step) or step <= 0.0:
         raise ValueError("initial_step_size must be a finite positive value")

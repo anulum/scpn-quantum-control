@@ -50,6 +50,7 @@ class HierarchyCouplingSummary:
     mean_between: float | None
 
     def __post_init__(self) -> None:
+        """Validate the level identifier and optional finite means."""
         if not self.level_name.strip():
             raise ValueError("level_name must be non-empty")
         if self.mean_within is not None and not np.isfinite(self.mean_within):
@@ -78,6 +79,7 @@ class TopologyProjectionReport:
     claim_boundary: str = CHIMERA_CONTROL_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate and freeze the topology projection report."""
         candidate = np.array(self.candidate, dtype=np.float64, copy=True)
         projected = np.array(self.projected, dtype=np.float64, copy=True)
         if (
@@ -152,8 +154,8 @@ def project_chimera_coupling(
     TopologyProjectionReport
         Read-only original/projected matrices, ledger violation magnitudes,
         multiscale coupling summaries, and a SHA-256 digest.
-    """
 
+    """
     original = _matrix(candidate, node_count=hierarchy.node_count)
     projected = ledger.project(original)
     before = ledger.violations(original)

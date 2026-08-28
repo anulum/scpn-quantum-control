@@ -63,6 +63,7 @@ class ChimeraSupportRow:
     non_claim: str
 
     def __post_init__(self) -> None:
+        """Validate the support status and descriptive evidence fields."""
         if self.status not in {"supported", "bounded", "descoped"}:
             raise ValueError("status must be supported, bounded, or descoped")
         for name, value in (
@@ -109,6 +110,7 @@ class SyntheticRegimeEvidence:
     proposal_accepted: bool
 
     def __post_init__(self) -> None:
+        """Validate trajectory custody, statistics, and proposal evidence."""
         if not _is_sha256(self.trajectory_digest):
             raise ValueError("trajectory_digest must be a SHA-256 hexadecimal digest")
         if (
@@ -197,6 +199,7 @@ class ChimeraMultiscaleEvidence:
     content_digest: str
 
     def __post_init__(self) -> None:
+        """Validate the complete evidence payload and its digest fields."""
         if self.schema_version != CHIMERA_CONTROL_EVIDENCE_SCHEMA:
             raise ValueError("schema_version mismatch")
         if not self.generated_on.strip():

@@ -31,7 +31,6 @@ from scpn_quantum_control.chimera_control.schema import SyntheticRegime
 @pytest.fixture(scope="module")
 def frozen_evidence() -> ChimeraMultiscaleEvidence:
     """Build the committed 64-per-population evidence once."""
-
     return build_chimera_multiscale_evidence()
 
 
@@ -39,7 +38,6 @@ def test_frozen_regimes_separate_chimera_transient_from_sync_control(
     frozen_evidence: ChimeraMultiscaleEvidence,
 ) -> None:
     """Distinguish the frozen chimera transient from its synchronised control."""
-
     chimera = frozen_evidence.chimera
     synchronised = frozen_evidence.synchronised_control
 
@@ -64,7 +62,6 @@ def test_frozen_gradient_projection_and_scope_rows_are_fail_closed(
     frozen_evidence: ChimeraMultiscaleEvidence,
 ) -> None:
     """Require bounded gradients, projected topology, and fail-closed support."""
-
     assert frozen_evidence.gradient_max_abs_error < 1.0e-8
     assert frozen_evidence.topology_violation_before > 100.0
     assert frozen_evidence.topology_violation_after < 1.0e-10
@@ -78,7 +75,6 @@ def test_evidence_serialisation_and_markdown_expose_exact_claim_boundary(
     frozen_evidence: ChimeraMultiscaleEvidence,
 ) -> None:
     """Expose deterministic custody and non-claims in both evidence formats."""
-
     payload = frozen_evidence.to_dict()
     markdown = render_chimera_multiscale_markdown(frozen_evidence)
 
@@ -96,7 +92,6 @@ def test_writer_round_trips_and_fails_closed_on_drift(
     frozen_evidence: ChimeraMultiscaleEvidence,
 ) -> None:
     """Write reproducible evidence and fail closed on missing or changed bytes."""
-
     json_path = tmp_path / "nested/evidence.json"
     markdown_path = tmp_path / "nested/evidence.md"
     written = write_chimera_multiscale_evidence(
@@ -134,7 +129,6 @@ def test_writer_round_trips_and_fails_closed_on_drift(
 
 def test_support_row_contract_rejects_invalid_status_and_blank_fields() -> None:
     """Reject unsupported status values and blank support-row fields."""
-
     with pytest.raises(ValueError, match="status"):
         ChimeraSupportRow("cap", cast(object, "invalid"), "evidence", "non-claim")
     for key in ("capability", "evidence", "non_claim"):
@@ -151,7 +145,6 @@ def test_support_row_contract_rejects_invalid_status_and_blank_fields() -> None:
 
 def test_regime_evidence_contract_rejects_invalid_custody() -> None:
     """Reject malformed regime metrics, digests, and objective claims."""
-
     valid: dict[str, object] = {
         "regime": SyntheticRegime.CHIMERA_TRANSIENT,
         "trajectory_digest": "a" * 64,
@@ -203,7 +196,6 @@ def test_complete_evidence_contract_rejects_invalid_top_level_fields(
     frozen_evidence: ChimeraMultiscaleEvidence,
 ) -> None:
     """Reject invalid top-level schema, metric, support, and digest fields."""
-
     values = {
         "schema_version": frozen_evidence.schema_version,
         "generated_on": frozen_evidence.generated_on,

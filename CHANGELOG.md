@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — Chimera-control documentation quality: completed the NumPy
+  docstring contract across the finite synthetic Chimera package and all seven
+  owning test surfaces, and added permanent strict typing, documentation, and
+  exact package-coverage gates to preflight and CI. Public symbols, schemas,
+  numerical behaviour, evidence custody, and scientific claim boundaries are
+  unchanged.
+
 - 2026-08-28 — Zeroizing ML-DSA signing custody: added a bit-true native
   ML-DSA-65 keygen/signing backend whose expanded secret key, decoded secret,
   and designated work buffers are owned by Rust `zeroize` guards, never

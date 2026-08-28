@@ -50,12 +50,14 @@ class HierarchyLevel:
         Disjoint non-empty oscillator-index groups. Coverage and index bounds
         are validated by :class:`MultiscaleHierarchy` because they depend on
         the hierarchy's node count.
+
     """
 
     name: str
     communities: tuple[tuple[int, ...], ...]
 
     def __post_init__(self) -> None:
+        """Validate, normalise, and freeze the community partition."""
         if not self.name.strip():
             raise ValueError("hierarchy level name must be non-empty")
         if not self.communities:
@@ -100,12 +102,14 @@ class MultiscaleHierarchy:
     ValueError
         If names repeat, a level omits or adds a node, an index is negative,
         or adjacent levels are not nested partitions.
+
     """
 
     node_count: int
     levels: tuple[HierarchyLevel, ...]
 
     def __post_init__(self) -> None:
+        """Validate complete coverage and nesting across hierarchy levels."""
         if (
             isinstance(self.node_count, bool)
             or not isinstance(self.node_count, int)
@@ -140,7 +144,6 @@ class MultiscaleHierarchy:
         The lookup is exact and case-sensitive so evidence records cannot
         silently bind a target to a different scale.
         """
-
         for level in self.levels:
             if level.name == name:
                 return level
@@ -149,7 +152,6 @@ class MultiscaleHierarchy:
     @property
     def level_names(self) -> tuple[str, ...]:
         """Return fine-to-coarse level names."""
-
         return tuple(level.name for level in self.levels)
 
 
@@ -165,6 +167,7 @@ class HierarchyTarget:
         One desired Kuramoto coherence magnitude in ``[0, 1]`` per community.
     weight
         Non-negative multiplier used by the composed objective.
+
     """
 
     level_name: str
@@ -172,6 +175,7 @@ class HierarchyTarget:
     weight: float = 1.0
 
     def __post_init__(self) -> None:
+        """Validate and normalise the target row and its weight."""
         if not self.level_name.strip():
             raise ValueError("target level_name must be non-empty")
         targets = tuple(float(value) for value in self.order_parameters)
@@ -201,6 +205,7 @@ class ChimeraControlSpecification:
     claim_boundary: str = CHIMERA_CONTROL_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate target uniqueness, widths, and the claim boundary."""
         if not self.targets:
             raise ValueError("control specification must contain at least one target")
         names = tuple(target.level_name for target in self.targets)
@@ -230,8 +235,8 @@ def two_population_hierarchy(population_size: int) -> MultiscaleHierarchy:
     MultiscaleHierarchy
         A ``population`` level with two equally sized communities followed by
         an ``ensemble`` level containing every oscillator.
-    """
 
+    """
     if (
         isinstance(population_size, bool)
         or not isinstance(population_size, int)

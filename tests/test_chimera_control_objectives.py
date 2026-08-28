@@ -38,7 +38,6 @@ def _specification() -> ChimeraControlSpecification:
 
 def test_composed_hierarchy_objective_has_analytic_finite_difference_gradient() -> None:
     """Match the composed analytic hierarchy gradient to finite differences."""
-
     objective = build_chimera_control_objective(_specification())
     phases = np.array([0.1, 0.2, -0.1, -1.0, 0.7, 2.1])
     evaluation = objective.evaluate(phases)
@@ -61,7 +60,6 @@ def test_composed_hierarchy_objective_has_analytic_finite_difference_gradient() 
 
 def test_objective_skips_zero_weight_and_rejects_invalid_threshold_or_empty_weight() -> None:
     """Skip zero-weight rows while rejecting unusable objective specifications."""
-
     hierarchy = two_population_hierarchy(2)
     mixed = ChimeraControlSpecification(
         hierarchy,
@@ -84,7 +82,6 @@ def test_objective_skips_zero_weight_and_rejects_invalid_threshold_or_empty_weig
 
 def test_backtracking_proposal_strictly_reduces_real_objective_without_mutation() -> None:
     """Propose an immutable phase step that strictly decreases the objective."""
-
     objective = build_chimera_control_objective(_specification())
     phases = np.array([0.1, 0.2, -0.1, -1.0, 0.7, 2.1])
     original = phases.copy()
@@ -100,7 +97,6 @@ def test_backtracking_proposal_strictly_reduces_real_objective_without_mutation(
 
 def test_zero_gradient_and_no_decrease_return_unchanged_unapplied_proposals() -> None:
     """Return an unchanged rejected proposal when no strict decrease exists."""
-
     constant = ObjectiveTerm(
         name="constant",
         kind="test_contract",
@@ -150,7 +146,6 @@ def test_phase_proposal_rejects_invalid_search_arguments(
     kwargs: dict[str, object], message: str
 ) -> None:
     """Reject invalid backtracking arguments and malformed phase vectors."""
-
     objective = build_chimera_control_objective(_specification())
     with pytest.raises(ValueError, match=message):
         propose_phase_control_step(objective, np.zeros(6), **kwargs)
@@ -162,7 +157,6 @@ def test_phase_proposal_rejects_invalid_search_arguments(
 
 def test_phase_control_proposal_contract_rejects_invalid_custody() -> None:
     """Reject proposal records with contradictory scalar or array custody."""
-
     valid = dict(
         original_value=1.0,
         proposed_value=0.5,

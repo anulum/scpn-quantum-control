@@ -52,6 +52,7 @@ if TYPE_CHECKING:
     from tools import (
         campaign_harness_product_quality_gates as _campaign_harness_product_quality_gates,
     )
+    from tools import chimera_control_quality_gates as _chimera_control_quality_gates
     from tools import (
         cloud_native_deployment_product_quality_gates as _cloud_native_deployment_quality_gates,
     )
@@ -196,6 +197,7 @@ else:
     _campaign_harness_product_quality_gates = import_module(
         "tools.campaign_harness_product_quality_gates"
     )
+    _chimera_control_quality_gates = import_module("tools.chimera_control_quality_gates")
     _geometric_control_product_quality_gates = import_module(
         "tools.geometric_control_product_quality_gates"
     )
@@ -649,6 +651,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_custom_derivatives_product_quality_gates.build_static_quality_gates(_PY),
     *_kyma_mechanism_product_quality_gates.build_static_quality_gates(_PY),
     *_campaign_harness_product_quality_gates.build_static_quality_gates(_PY),
+    *_chimera_control_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_baseline_design_quality_gates.build_static_quality_gates(_PY),
     *_error_mitigation_product_quality_gates.build_static_quality_gates(_PY),
@@ -1084,6 +1087,7 @@ KYMA_MECHANISM_PRODUCT_COVERAGE_GATES = _kyma_mechanism_product_quality_gates.bu
 CAMPAIGN_HARNESS_PRODUCT_COVERAGE_GATES = (
     _campaign_harness_product_quality_gates.build_coverage_gates(_PY)
 )
+CHIMERA_CONTROL_COVERAGE_GATES = _chimera_control_quality_gates.build_coverage_gates(_PY)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
     _geometric_control_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -1469,6 +1473,7 @@ def main() -> int:
             gates.extend(CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_GATES)
             gates.extend(KYMA_MECHANISM_PRODUCT_COVERAGE_GATES)
             gates.extend(CAMPAIGN_HARNESS_PRODUCT_COVERAGE_GATES)
+            gates.extend(CHIMERA_CONTROL_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
             gates.extend(TN_MPS_BASELINE_DESIGN_COVERAGE_GATES)
             gates.extend(ERROR_MITIGATION_PRODUCT_COVERAGE_GATES)

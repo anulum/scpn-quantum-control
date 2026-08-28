@@ -30,7 +30,6 @@ from scpn_quantum_control.topology_control.constraints import (
 
 def test_projection_uses_existing_ledger_and_reports_multiscale_means() -> None:
     """Delegate projection to the ledger and report each hierarchy scale."""
-
     hierarchy = two_population_hierarchy(2)
     candidate = np.array(
         [
@@ -69,7 +68,6 @@ def test_projection_uses_existing_ledger_and_reports_multiscale_means() -> None:
 
 def test_projection_rejects_wrong_shape_and_non_finite_candidate() -> None:
     """Reject coupling candidates with the wrong shape or non-finite entries."""
-
     hierarchy = two_population_hierarchy(2)
     ledger = TopologyConstraintLedger()
     with pytest.raises(ValueError, match="shape"):
@@ -82,7 +80,6 @@ def test_projection_rejects_wrong_shape_and_non_finite_candidate() -> None:
 
 def test_coupling_summary_contract_validates_fields() -> None:
     """Validate named within- and between-community coupling summaries."""
-
     assert HierarchyCouplingSummary("singletons", None, 0.2).mean_within is None
     with pytest.raises(ValueError, match="level_name"):
         HierarchyCouplingSummary(" ", 0.1, 0.2)
@@ -94,7 +91,6 @@ def test_coupling_summary_contract_validates_fields() -> None:
 
 def test_projection_report_contract_rejects_inconsistent_custody() -> None:
     """Reject projection reports with inconsistent arrays, levels, or digests."""
-
     hierarchy = two_population_hierarchy(2)
     valid = project_chimera_coupling(np.ones((4, 4)), hierarchy, TopologyConstraintLedger())
     values: dict[str, object] = {
@@ -126,7 +122,6 @@ def test_projection_report_contract_rejects_inconsistent_custody() -> None:
 
 def test_projection_supports_a_valid_singleton_fine_level() -> None:
     """Represent singleton fine scales without inventing within-node edges."""
-
     hierarchy = MultiscaleHierarchy(
         3,
         (

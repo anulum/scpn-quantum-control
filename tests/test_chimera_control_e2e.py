@@ -31,7 +31,6 @@ def _load_runner(repo: Path) -> ModuleType:
 
 def test_evidence_runner_writes_then_byte_checks_real_outputs(tmp_path: Path) -> None:
     """Exercise write and byte-check modes through the real subprocess boundary."""
-
     repo = Path(__file__).resolve().parents[1]
     json_path = tmp_path / "evidence.json"
     markdown_path = tmp_path / "evidence.md"
@@ -79,7 +78,6 @@ def test_evidence_runner_main_and_parser_execute_in_process(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """Exercise parser and main entry points in-process without bypassing writes."""
-
     repo = Path(__file__).resolve().parents[1]
     runner = _load_runner(repo)
     json_path = tmp_path / "direct.json"
