@@ -38,7 +38,7 @@ RouteClosureStatus = Literal[
     "permanent_boundary",
     "implementation_path",
 ]
-"""Closure status for one route cell (BL-12 vocabulary)."""
+"""Closure status for one governed route cell."""
 
 GOVERNED_ROUTE_MATRIX_CLAIM_BOUNDARY: Final[str] = (
     "governed multi-ecosystem route matrix only; supported rows are local "
