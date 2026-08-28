@@ -20,6 +20,30 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ANALYSIS_SCRIPT = REPO_ROOT / "scripts" / "analyse_iqm_dla_window_variability.py"
+DATA_ROOT = REPO_ROOT / "data" / "iqm_paper_replication"
+WINDOW_COUNTS = (
+    DATA_ROOT / "iqm_dla_window_variability_hw_counts_w1_2026-07-22.json",
+    DATA_ROOT / "iqm_dla_window_variability_hw_counts_w2_2026-07-26.json",
+    DATA_ROOT / "iqm_dla_window_variability_hw_counts_w3_2026-07-26.json",
+    DATA_ROOT / "iqm_dla_window_variability_hw_counts_w4_2026-07-27.json",
+    DATA_ROOT / "iqm_dla_window_variability_hw_counts_w5_2026-07-28.json",
+    DATA_ROOT / "iqm_dla_window_variability_hw_counts_w6_2026-07-28.json",
+)
+CALIBRATIONS = (
+    DATA_ROOT / "iqm_dla_window_variability_calibration_w1_2026-07-22.json",
+    DATA_ROOT / "iqm_dla_window_variability_calibration_w2_2026-07-26.json",
+    DATA_ROOT / "iqm_dla_window_variability_calibration_w3_2026-07-26.json",
+    DATA_ROOT / "iqm_dla_window_variability_calibration_w4_2026-07-27.json",
+    DATA_ROOT / "iqm_dla_window_variability_calibration_w5_2026-07-28.json",
+    DATA_ROOT / "iqm_dla_window_variability_calibration_w6_2026-07-28.json",
+)
+INTERIM_REPORTS = (
+    DATA_ROOT / "iqm_dla_window_variability_interim_analysis_w2_2026-07-26.json",
+    DATA_ROOT / "iqm_dla_window_variability_interim_analysis_w3_2026-07-26.json",
+    DATA_ROOT / "iqm_dla_window_variability_interim_analysis_w4_2026-07-27.json",
+    DATA_ROOT / "iqm_dla_window_variability_interim_analysis_w5_2026-07-28.json",
+    DATA_ROOT / "iqm_dla_window_variability_interim_analysis_w6_2026-07-28.json",
+)
 
 
 def _load_analysis_script() -> ModuleType:
@@ -35,6 +59,51 @@ def _load_analysis_script() -> ModuleType:
 
 
 analysis = _load_analysis_script()
+
+
+def _calibration_covariates() -> dict[str, dict[str, Any]]:
+    covariates: dict[str, dict[str, Any]] = {}
+    for index, (counts_path, calibration_path) in enumerate(
+        zip(WINDOW_COUNTS, CALIBRATIONS, strict=True), start=1
+    ):
+        layout = json.loads(counts_path.read_text(encoding="utf-8"))["layout"]
+        payload = json.loads(calibration_path.read_text(encoding="utf-8"))
+        calibration = payload["calibration"]
+        edge_keys = [f"{left}-{right}" for left, right in zip(layout, layout[1:])]
+        cz_fidelity = {key: calibration["edge_fidelity"][key] for key in edge_keys}
+        readout_error = {str(qubit): calibration["readout_error"][str(qubit)] for qubit in layout}
+        covariates[str(index)] = {
+            "calibration_set_id": payload["calibration_set_id"],
+            "cz_fidelity_by_edge": cz_fidelity,
+            "date": payload["date"],
+            "layout": layout,
+            "mean_cz_fidelity": sum(cz_fidelity.values()) / len(cz_fidelity),
+            "mean_readout_error": sum(readout_error.values()) / len(readout_error),
+            "readout_error_by_qubit": readout_error,
+        }
+    return covariates
+
+
+def test_real_windows_reproduce_every_committed_interim_report(tmp_path: Path) -> None:
+    """Each cumulative real window set reproduces its exact committed report."""
+    covariates_path = tmp_path / "covariates.json"
+    covariates_path.write_text(json.dumps(_calibration_covariates()), encoding="utf-8")
+
+    for achieved, committed in enumerate(INTERIM_REPORTS, start=2):
+        output = tmp_path / f"window-{achieved}.json"
+        argv = [
+            "--window-counts",
+            *(str(path) for path in WINDOW_COUNTS[:achieved]),
+            "--out",
+            str(output),
+        ]
+        if achieved == analysis.MINIMUM_WINDOWS:
+            argv.extend(("--covariates", str(covariates_path)))
+
+        assert analysis.main(argv) == 0
+        assert json.loads(output.read_text(encoding="utf-8")) == json.loads(
+            committed.read_text(encoding="utf-8")
+        )
 
 
 def _counts(window: int) -> dict[str, dict[str, int]]:

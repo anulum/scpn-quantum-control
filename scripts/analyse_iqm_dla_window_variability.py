@@ -268,7 +268,7 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "interpretation_boundary": (
             "device-noise statement only: exact statevector baseline fixes "
-            "noiseless parity leakage at zero (AUD-6); S4 is descriptive, "
+            "noiseless parity leakage at zero; S4 is descriptive, "
             "no causal attribution of drift"
         ),
     }
