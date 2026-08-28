@@ -142,7 +142,7 @@ class ExternalComparisonRow:
 
     @property
     def closure_status(self) -> ComparisonClosureStatus:
-        """Return how the row is closed for BL-12 audit purposes."""
+        """Return the row's implementation or permanent-boundary classification."""
         if self.status == "success":
             return "implemented"
         if self.failure_class in PERMANENT_EXTERNAL_COMPARISON_BOUNDARIES:
