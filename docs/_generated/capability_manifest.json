@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1244
+    "test_files": 1245
   },
   "documentation": {
     "examples": [
@@ -9222,6 +9222,7 @@
       "tests/test_studio_executive_cli.py",
       "tests/test_studio_executive_compile.py",
       "tests/test_studio_executive_differentiate.py",
+      "tests/test_studio_executive_differentiate_quality_gate.py",
       "tests/test_studio_executive_execute.py",
       "tests/test_studio_executive_mitigate.py",
       "tests/test_studio_executive_product.py",

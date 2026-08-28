@@ -1019,6 +1019,8 @@ def test_main_uses_coverage_pytest_by_default(
         "gradient-plan-explanation-artifact exact coverage threshold",
         "finite-size-scaling focused coverage",
         "finite-size-scaling exact coverage threshold",
+        "studio-executive-differentiate focused coverage",
+        "studio-executive-differentiate exact coverage threshold",
         "dla-topology-parity focused coverage",
         "dla-topology-parity exact coverage threshold",
         "geometric-control-product focused coverage",

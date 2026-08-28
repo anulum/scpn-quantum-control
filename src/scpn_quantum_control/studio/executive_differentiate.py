@@ -153,6 +153,7 @@ def build_effect_ir(program: _NormalisedProgram) -> tuple[str, tuple[str, ...], 
         ``(effect_ir_json, parameter_targets, input_values)`` — the serialised
         effect-IR the engine parses, the ordered parameter SSA targets, and the
         ordered input values.
+
     """
     inputs: list[tuple[str, float]] = program["inputs"]
     operations: list[dict[str, Any]] = program["operations"]
@@ -257,6 +258,7 @@ class DifferentiateActionHandler(ActionHandler):
         -------
         ExecutionPlan
             The normalised, inspectable plan.
+
         """
         backend = request.backend or _DEFAULT_BACKEND
         if backend not in contract.backends:
@@ -292,6 +294,7 @@ class DifferentiateActionHandler(ActionHandler):
             A succeeded result carrying the value, reverse-mode gradient, the
             finite-difference gradient, the maximum absolute disagreement, and
             the verification verdict.
+
         """
         program: _NormalisedProgram = dict(plan.parameters)
         ir, parameter_targets, values = build_effect_ir(program)
@@ -330,6 +333,7 @@ class DifferentiateActionHandler(ActionHandler):
         -------
         GeneratedScript
             The reproduction script, digest attached.
+
         """
         program: _NormalisedProgram = dict(plan.parameters)
         _ir, _targets, values = build_effect_ir(program)
@@ -399,6 +403,7 @@ def default_registry() -> ActionRegistry:
     -------
     ActionRegistry
         A fresh registry ready to run ``differentiate`` actions.
+
     """
     registry = ActionRegistry()
     registry.register(DifferentiateActionHandler())

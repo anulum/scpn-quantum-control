@@ -54,6 +54,7 @@ def _request(program: dict[str, Any], *, backend: str | None = None) -> Executiv
 # end-to-end through the spine
 # --------------------------------------------------------------------------- #
 def test_bilinear_gradient_is_the_swapped_inputs() -> None:
+    """Differentiate a bilinear program through the executive spine."""
     record = run_action(_request(_BILINEAR), registry=default_registry())
     assert record.result.status == "succeeded"
     assert record.result.outputs["value"] == pytest.approx(15.0)
@@ -62,6 +63,7 @@ def test_bilinear_gradient_is_the_swapped_inputs() -> None:
 
 
 def test_quadratic_plus_linear_gradient() -> None:
+    """Differentiate a composed quadratic-plus-linear program."""
     program = _program(
         [
             {"op": "mul", "inputs": ["x", "x"], "into": "x2"},
@@ -77,6 +79,7 @@ def test_quadratic_plus_linear_gradient() -> None:
 
 
 def test_generated_script_embeds_sealed_values_and_compiles() -> None:
+    """Compile the reproduction script with its sealed expected outputs."""
     record = run_action(_request(_BILINEAR), registry=default_registry())
     assert record.script is not None
     compile(record.script.source, record.script.filename, "exec")
@@ -86,10 +89,12 @@ def test_generated_script_embeds_sealed_values_and_compiles() -> None:
 
 
 def test_default_registry_registers_differentiate() -> None:
+    """Register only the differentiate verb in a fresh default registry."""
     assert default_registry().verbs() == ("differentiate",)
 
 
 def test_preview_plan_uses_default_backend_and_read_only_contract() -> None:
+    """Preview a read-only plan on the default Python backend."""
     plan = preview_action(_request(_BILINEAR), registry=default_registry())
     assert plan.backend == "python"
     assert plan.requires_approval is False
@@ -97,11 +102,13 @@ def test_preview_plan_uses_default_backend_and_read_only_contract() -> None:
 
 
 def test_explicit_rust_backend_is_accepted() -> None:
+    """Accept the explicitly declared Rust execution backend."""
     plan = preview_action(_request(_BILINEAR, backend="rust"), registry=default_registry())
     assert plan.backend == "rust"
 
 
 def test_unknown_backend_is_rejected() -> None:
+    """Reject an undeclared execution backend before program execution."""
     handler = DifferentiateActionHandler()
     contract = resolve_verb_contract(DIFFERENTIATE_VERB)
     with pytest.raises(ValueError, match="is not declared for the differentiate verb"):
@@ -112,6 +119,7 @@ def test_unknown_backend_is_rejected() -> None:
 # build_effect_ir
 # --------------------------------------------------------------------------- #
 def test_build_effect_ir_targets_and_values() -> None:
+    """Build stable parameter targets, values, and effect-IR format."""
     program = _normalise_program(_BILINEAR)
     ir, targets, values = build_effect_ir(program)
     assert targets == ("%0", "%1")
@@ -124,11 +132,13 @@ def test_build_effect_ir_targets_and_values() -> None:
 # --------------------------------------------------------------------------- #
 @pytest.mark.parametrize("bad", [True, "3", None, float("inf"), float("nan")])
 def test_as_float_rejects_non_finite_or_non_numbers(bad: Any) -> None:
+    """Reject non-numeric and non-finite rational-program inputs."""
     with pytest.raises(ValueError):
         _as_float("v", bad)
 
 
 def test_as_float_accepts_int_and_float() -> None:
+    """Normalize finite integer and floating-point inputs to floats."""
     assert _as_float("v", 3) == 3.0
     assert _as_float("v", 2.5) == 2.5
 
@@ -137,6 +147,7 @@ def test_as_float_accepts_int_and_float() -> None:
 # _safe_slug
 # --------------------------------------------------------------------------- #
 def test_safe_slug_normal_and_empty() -> None:
+    """Sanitize action identifiers and provide a non-empty fallback."""
     assert _safe_slug("demo-Action.1") == "demo_Action_1"
     assert _safe_slug("***") == "action"
 
@@ -179,6 +190,7 @@ def test_safe_slug_normal_and_empty() -> None:
     ],
 )
 def test_normalise_program_rejects_invalid(parameters: dict[str, Any]) -> None:
+    """Reject malformed inputs, operations, and output references."""
     with pytest.raises(ValueError):
         _normalise_program(parameters)
 
@@ -199,12 +211,14 @@ def test_normalise_program_rejects_invalid(parameters: dict[str, Any]) -> None:
     ],
 )
 def test_normalise_operation_rejects_invalid(operation: Any) -> None:
+    """Reject malformed operations and unresolved input references."""
     parameters = {"inputs": [["x", 1.0]], "operations": [operation], "output": "f"}
     with pytest.raises(ValueError):
         _normalise_program(parameters)
 
 
 def test_numeric_literal_reference_is_accepted() -> None:
+    """Accept a numeric literal as an operation input reference."""
     program = _program(
         [{"op": "mul", "inputs": ["x", "2.0"], "into": "f"}], "f", inputs=[["x", 4.0]]
     )
@@ -216,6 +230,7 @@ def test_numeric_literal_reference_is_accepted() -> None:
 def test_execute_fails_closed_on_unsupported_engine_result(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Fail closed when the engine refuses the bounded rational replay."""
     import scpn_quantum_engine as engine
 
     monkeypatch.setattr(

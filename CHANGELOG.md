@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Studio executive differentiate documentation quality:
+  completed the NumPy docstring contract across the read-only rational-program
+  handler and its direct tests, and wired permanent strict typing, connected
+  execution, documentation, and exact source coverage into preflight and CI.
+  Request normalization, effect-IR, backend admission, gradient arithmetic,
+  verification/refusal behavior, reproduction scripts, public APIs, and
+  bounded claims are unchanged.
+
 - 2026-08-28 — Finite-size scaling documentation quality: completed the
   NumPy docstring contract across the local dense gap/extrapolation owner and
   its direct tests, covered non-integer system-size refusal, and wired
