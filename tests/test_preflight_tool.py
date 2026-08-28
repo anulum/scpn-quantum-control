@@ -1059,6 +1059,8 @@ def test_main_uses_coverage_pytest_by_default(
         "experiment-dynamics exact coverage threshold",
         "typed phase-result focused coverage",
         "typed phase-result exact coverage threshold",
+        "gradient-backend focused coverage",
+        "gradient-backend exact coverage threshold",
         "quantum-Phi focused coverage",
         "quantum-Phi exact coverage threshold",
         "QPU result-pack focused coverage",

@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Gradient-backend planner documentation quality: completed the
+  preview-inclusive NumPy docstring contract across capability declarations,
+  method explanations, shot policy, and owning planner/finite-shot tests; and
+  wired permanent strict typing, offline execution, complete owner
+  documentation, and exact source coverage into preflight and CI. Backend
+  normalisation, method selection, accounting, safe fallbacks, uncertainty,
+  public APIs, and hardware fail-closed boundaries are unchanged.
+
 - 2026-08-28 — Typed phase-result documentation quality: documented immutable
   post-initialisation and legacy mapping magic methods, removed direct-test
   docstring-layout drift, and wired permanent strict typing, connected

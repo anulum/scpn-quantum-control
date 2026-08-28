@@ -75,6 +75,7 @@ class QuantumGradientRejectedMethod:
     supported_if_requested
         Whether the candidate would be executable if requested directly with
         the same backend capability and shot controls.
+
     """
 
     method: str
@@ -110,6 +111,7 @@ class QuantumGradientShotPolicy:
         Optional deterministic seed for stochastic planners.
     reasons
         Human-readable shot-policy explanation.
+
     """
 
     finite_shot: bool
@@ -154,6 +156,7 @@ class QuantumGradientMethodExplanation:
         Normalised method requested by the caller.
     claim_boundary
         Claim boundary for this explanation object.
+
     """
 
     capability: QuantumGradientBackendCapability
@@ -556,6 +559,7 @@ def explain_quantum_gradient_method(
     QuantumGradientMethodExplanation
         Deterministic selected method, rejected alternatives, shot policy, and
         fallback path for the requested backend capability combination.
+
     """
     selected_plan = plan_quantum_gradient_backend(
         backend,

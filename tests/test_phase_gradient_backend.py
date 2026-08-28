@@ -38,6 +38,7 @@ SAMPLE_PROVENANCE = {
 
 
 def test_statevector_backend_auto_selects_deterministic_parameter_shift() -> None:
+    """Select deterministic parameter shift for local statevector execution."""
     plan = plan_quantum_gradient_backend("statevector", n_params=3)
 
     assert plan.supported
@@ -49,6 +50,7 @@ def test_statevector_backend_auto_selects_deterministic_parameter_shift() -> Non
 
 
 def test_method_explanation_describes_statevector_decision_and_rejections() -> None:
+    """Explain statevector selection, rejections, and deterministic shot policy."""
     explanation = explain_quantum_gradient_method("statevector", n_params=3)
     payload = explanation.to_dict()
 
@@ -83,6 +85,7 @@ def test_method_explanation_describes_statevector_decision_and_rejections() -> N
 
 
 def test_backend_plan_accounts_for_multi_frequency_shift_terms() -> None:
+    """Scale planned evaluations by every multi-frequency shift term."""
     plan = plan_quantum_gradient_backend("statevector", n_params=3, shift_terms=4)
 
     assert plan.supported
@@ -91,6 +94,7 @@ def test_backend_plan_accounts_for_multi_frequency_shift_terms() -> None:
 
 
 def test_finite_shot_backend_auto_selects_stochastic_parameter_shift() -> None:
+    """Select stochastic parameter shift for a finite-shot simulator."""
     plan = plan_quantum_gradient_backend(
         "qasm_simulator",
         n_params=4,
@@ -107,6 +111,7 @@ def test_finite_shot_backend_auto_selects_stochastic_parameter_shift() -> None:
 
 
 def test_method_explanation_records_finite_shot_default_policy() -> None:
+    """Expose defaulted shots, uncertainty metadata, and safe alternatives."""
     explanation = explain_quantum_gradient_method(
         "qasm_simulator",
         n_params=2,
@@ -130,6 +135,7 @@ def test_method_explanation_records_finite_shot_default_policy() -> None:
 
 
 def test_method_explanation_respects_explicit_spsa_request() -> None:
+    """Honor an explicit SPSA diagnostic request and explain rejections."""
     explanation = explain_quantum_gradient_method(
         "qasm_simulator",
         n_params=5,
@@ -151,6 +157,7 @@ def test_method_explanation_respects_explicit_spsa_request() -> None:
 
 
 def test_hardware_backend_fails_closed_without_policy_approval() -> None:
+    """Refuse hardware planning without explicit policy approval."""
     plan = plan_quantum_gradient_backend("ibm_quantum", n_params=2, shots=1024)
 
     assert plan.fail_closed
@@ -160,6 +167,7 @@ def test_hardware_backend_fails_closed_without_policy_approval() -> None:
 
 
 def test_method_explanation_preserves_hardware_fail_closed_fallbacks() -> None:
+    """Explain hardware refusal with only safe simulator fallbacks."""
     explanation = explain_quantum_gradient_method("ibm_quantum", n_params=2, shots=1024)
 
     assert not explanation.supported
@@ -175,6 +183,7 @@ def test_method_explanation_preserves_hardware_fail_closed_fallbacks() -> None:
 
 
 def test_unknown_backend_is_unsupported_with_safe_alternatives() -> None:
+    """Classify unknown backends as unsupported and retain safe alternatives."""
     capability = quantum_gradient_backend_capability("new_vendor_backend")
     plan = plan_quantum_gradient_backend("new_vendor_backend", n_params=2)
 
@@ -185,6 +194,7 @@ def test_unknown_backend_is_unsupported_with_safe_alternatives() -> None:
 
 
 def test_method_explanation_preserves_unknown_backend_boundaries() -> None:
+    """Preserve unknown-backend refusal, seed, confidence, and fallbacks."""
     explanation = explain_quantum_gradient_method(
         "new_vendor_backend",
         n_params=2,
@@ -205,6 +215,7 @@ def test_method_explanation_preserves_unknown_backend_boundaries() -> None:
 
 
 def test_planner_rejects_invalid_method_and_shape_controls() -> None:
+    """Reject invalid method, shape, shot, seed, and confidence controls."""
     with pytest.raises(ValueError, match="method must be one of"):
         plan_quantum_gradient_backend("statevector", n_params=2, method="adjoint")
     with pytest.raises(ValueError, match="n_params"):
@@ -224,6 +235,8 @@ def test_planner_rejects_invalid_method_and_shape_controls() -> None:
 def test_planner_records_explicitly_unsupported_and_unavailable_routes(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Record explicit disablement and unavailable registered capabilities."""
+
     def no_parameter_shift_capability(_backend: str) -> QuantumGradientBackendCapability:
         return QuantumGradientBackendCapability(
             backend="custom_backend",
@@ -268,6 +281,7 @@ def test_planner_records_explicitly_unsupported_and_unavailable_routes(
 
 
 def test_internal_explanation_helpers_cover_future_supported_rejection_edges() -> None:
+    """Keep deterministic helper behavior for future supported methods."""
     selected_parameter_shift = QuantumGradientPlan(
         backend="future_backend",
         family="future",
@@ -364,6 +378,7 @@ def test_internal_explanation_helpers_cover_future_supported_rejection_edges() -
 
 
 def test_parameter_shift_uncertainty_propagates_finite_shot_noise() -> None:
+    """Propagate finite-shot variances and provenance through shift gradients."""
     result = parameter_shift_gradient_with_uncertainty(
         plus_values=np.array([1.2, -0.3], dtype=float),
         minus_values=np.array([0.8, -0.7], dtype=float),
@@ -385,6 +400,7 @@ def test_parameter_shift_uncertainty_propagates_finite_shot_noise() -> None:
 
 
 def test_phase_uncertainty_wrapper_accepts_multi_frequency_records() -> None:
+    """Accept multi-frequency shift records in the phase uncertainty facade."""
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
     result = parameter_shift_gradient_with_uncertainty(
         plus_values=np.array([[1.2], [0.8]], dtype=float),
@@ -413,6 +429,7 @@ def test_phase_uncertainty_wrapper_accepts_multi_frequency_records() -> None:
 
 
 def test_parameter_shift_uncertainty_fails_closed_for_hardware_backend() -> None:
+    """Refuse finite-shot hardware gradients without approval."""
     with pytest.raises(ValueError, match="hardware gradient execution requires"):
         parameter_shift_gradient_with_uncertainty(
             plus_values=np.array([1.0], dtype=float),
@@ -425,6 +442,7 @@ def test_parameter_shift_uncertainty_fails_closed_for_hardware_backend() -> None
 
 
 def test_parameter_shift_shot_allocation_bounds_variance_target() -> None:
+    """Allocate bounded shots that meet the requested standard error."""
     allocation = plan_parameter_shift_shots(
         plus_variances=np.array([0.04, 0.09], dtype=float),
         minus_variances=np.array([0.04, 0.09], dtype=float),
@@ -440,6 +458,7 @@ def test_parameter_shift_shot_allocation_bounds_variance_target() -> None:
 
 
 def test_phase_shot_allocation_accepts_multi_frequency_rule() -> None:
+    """Allocate shots across every term of a multi-frequency rule."""
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
     allocation = plan_parameter_shift_shots(
         plus_variances=np.array([[0.04], [0.09]], dtype=float),
