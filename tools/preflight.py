@@ -225,6 +225,7 @@ if TYPE_CHECKING:
         studio_executive_differentiate_quality_gates as _studio_executive_differentiate_quality_gates,
     )
     from tools import studio_executive_product_quality_gates as _studio_executive_quality_gates
+    from tools import sync_uncertainty_quality_gates as _sync_uncertainty_quality_gates
     from tools import (
         synchronisation_witness_quality_gates as _synchronisation_witness_quality_gates,
     )
@@ -395,6 +396,7 @@ else:
     _koopman_quality_gates = import_module("tools.koopman_quality_gates")
     _kuramoto_variants_quality_gates = import_module("tools.kuramoto_variants_quality_gates")
     _mps_evolution_quality_gates = import_module("tools.mps_evolution_quality_gates")
+    _sync_uncertainty_quality_gates = import_module("tools.sync_uncertainty_quality_gates")
     _kyma_dynamics_quality_gates = import_module("tools.kyma_dynamics_quality_gates")
     _kyma_v2_dynamics_quality_gates = import_module("tools.kyma_v2_dynamics_quality_gates")
     _layout_method_comparison_quality_gates = import_module(
@@ -833,6 +835,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_koopman_quality_gates.build_static_quality_gates(_PY),
     *_kuramoto_variants_quality_gates.build_static_quality_gates(_PY),
     *_mps_evolution_quality_gates.build_static_quality_gates(_PY),
+    *_sync_uncertainty_quality_gates.build_static_quality_gates(_PY),
     *_quantum_phi_quality_gates.build_static_quality_gates(_PY),
     *_qpu_result_pack_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
@@ -1344,6 +1347,7 @@ QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_GATES = (
 KOOPMAN_COVERAGE_GATES = _koopman_quality_gates.build_coverage_gates(_PY)
 KURAMOTO_VARIANTS_COVERAGE_GATES = _kuramoto_variants_quality_gates.build_coverage_gates(_PY)
 MPS_EVOLUTION_COVERAGE_GATES = _mps_evolution_quality_gates.build_coverage_gates(_PY)
+SYNC_UNCERTAINTY_COVERAGE_GATES = _sync_uncertainty_quality_gates.build_coverage_gates(_PY)
 QUANTUM_PHI_COVERAGE_GATES = _quantum_phi_quality_gates.build_coverage_gates(_PY)
 QPU_RESULT_PACK_COVERAGE_GATES = _qpu_result_pack_quality_gates.build_coverage_gates(_PY)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
@@ -1767,6 +1771,7 @@ def main() -> int:
             gates.extend(KOOPMAN_COVERAGE_GATES)
             gates.extend(KURAMOTO_VARIANTS_COVERAGE_GATES)
             gates.extend(MPS_EVOLUTION_COVERAGE_GATES)
+            gates.extend(SYNC_UNCERTAINTY_COVERAGE_GATES)
             gates.extend(QUANTUM_PHI_COVERAGE_GATES)
             gates.extend(QPU_RESULT_PACK_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)

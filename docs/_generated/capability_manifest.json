@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1262
+    "test_files": 1263
   },
   "documentation": {
     "examples": [
@@ -9292,6 +9292,7 @@
       "tests/test_sync_order_parameter_branch.py",
       "tests/test_sync_order_proxy_contract.py",
       "tests/test_sync_uncertainty.py",
+      "tests/test_sync_uncertainty_quality_gate.py",
       "tests/test_sync_witness.py",
       "tests/test_sync_witness_evidence.py",
       "tests/test_synchronisation_benchmark_compare.py",

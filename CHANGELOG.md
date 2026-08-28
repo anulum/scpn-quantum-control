@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Synchronisation-uncertainty documentation quality: completed
+  the preview-inclusive NumPy docstring contract across finite-shot analytic
+  and seeded-bootstrap intervals, and wired permanent strict typing, connected
+  sync/studio/ZNE execution, complete owner documentation, and exact source
+  coverage into preflight and CI. Statistical arithmetic, deterministic seed
+  custody, public APIs, and the explicit Z-magnetisation-proxy rather than
+  XY-Kuramoto claim boundary are unchanged.
+
 - 2026-08-28 — MPS-evolution documentation quality: completed the
   preview-inclusive NumPy docstring contract across real quimb DMRG/TEBD and
   its owning tests; added genuine zero-onsite-field and exhausted-sweep DMRG

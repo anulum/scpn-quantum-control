@@ -69,6 +69,7 @@ class UncertaintyInterval:
         Total measurement shots backing the estimate.
     n_resamples:
         Bootstrap resamples used (``0`` for the analytic method).
+
     """
 
     point: float
@@ -197,6 +198,7 @@ def order_parameter_shot_noise(
     ValueError
         If ``coverage`` is outside ``(0, 1)``, the counts are empty/malformed, or
         fewer than two shots are present (a variance needs at least two samples).
+
     """
     _validate_coverage(coverage)
     bitstrings, weights, n_shots = _counts_arrays(counts)
@@ -250,6 +252,7 @@ def order_parameter_bootstrap(
     -------
     UncertaintyInterval
         Method ``"bootstrap-percentile"``.
+
     """
     _validate_coverage(coverage)
     _validate_resamples(n_resamples)
@@ -309,6 +312,7 @@ def metric_bootstrap(
     -------
     UncertaintyInterval
         Method ``"bootstrap-percentile"``; ``point`` is ``metric(counts)``.
+
     """
     _validate_coverage(coverage)
     _validate_resamples(n_resamples)
