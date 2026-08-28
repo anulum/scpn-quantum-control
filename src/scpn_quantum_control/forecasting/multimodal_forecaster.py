@@ -23,7 +23,7 @@ _NUMERIC_CUSTODY_DECIMALS = 12
 
 
 def _canonical_digest_array_bytes(values: FloatArray) -> bytes:
-    """Return platform-stable bytes at the BL-37 numeric-custody precision."""
+    """Return platform-stable bytes at the forecasting custody precision."""
     rounded = np.round(np.asarray(values, dtype=np.float64), _NUMERIC_CUSTODY_DECIMALS)
     canonical = np.where(rounded == 0.0, 0.0, rounded).astype("<f8", copy=False)
     return canonical.tobytes(order="C")
@@ -238,7 +238,7 @@ def fit_multimodal_ridge_forecaster(
     ridge: float = 1.0e-3,
     max_dense_gib: float = 0.25,
 ) -> MultimodalRidgeForecaster:
-    """Fit the classical BL-37 reference model from train-only custody."""
+    """Fit the classical forecasting reference model from train-only custody."""
     if train.split != "train":
         raise ValueError("forecaster fitting requires a train batch")
     if not np.isfinite(ridge) or ridge <= 0.0:

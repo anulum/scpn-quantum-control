@@ -86,7 +86,7 @@ class SyntheticMultimodalConfig:
 
 @dataclass(frozen=True, slots=True)
 class SyntheticMultimodalDataset:
-    """Disjoint train, calibration, and test custody for BL-37."""
+    """Disjoint train, calibration, and test multimodal forecasting custody."""
 
     train: MultimodalObservationBatch
     calibration: MultimodalObservationBatch
@@ -241,7 +241,7 @@ def _make_batch(
 def generate_synthetic_multimodal_dataset(
     config: SyntheticMultimodalConfig | None = None,
 ) -> SyntheticMultimodalDataset:
-    """Generate deterministic disjoint BL-37 trajectory custody."""
+    """Generate deterministic disjoint forecasting trajectory custody."""
     resolved = SyntheticMultimodalConfig() if config is None else config
     seed_sequence = np.random.SeedSequence(resolved.seed)
     child_seeds = seed_sequence.spawn(3)

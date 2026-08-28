@@ -25,13 +25,33 @@ from scpn_quantum_control.forecasting.multimodal_report import (
     render_multimodal_forecasting_markdown,
     write_multimodal_forecasting_evidence,
 )
-from scripts.run_multimodal_forecasting_evidence import build_evidence
+from scripts import run_multimodal_forecasting_evidence as evidence_runner
 
 
 @pytest.fixture(scope="module")
 def evidence() -> MultimodalForecastingEvidence:
     """Build the real deterministic synthetic evidence once."""
-    return build_evidence()
+    return evidence_runner.build_evidence()
+
+
+def _set_runner_arguments(
+    monkeypatch: pytest.MonkeyPatch,
+    json_path: Path,
+    markdown_path: Path,
+    *,
+    check: bool = False,
+) -> None:
+    """Point the real evidence entry point at task-local files."""
+    arguments = [
+        "run_multimodal_forecasting_evidence.py",
+        "--json",
+        str(json_path),
+        "--markdown",
+        str(markdown_path),
+    ]
+    if check:
+        arguments.append("--check")
+    monkeypatch.setattr(sys, "argv", arguments)
 
 
 def test_evidence_payload_and_markdown_are_deterministic(
@@ -90,6 +110,55 @@ def test_evidence_writer_atomically_writes_matching_files(
     )
     assert hashlib.sha256(json_path.read_bytes()).hexdigest() == json_digest
     assert hashlib.sha256(markdown_path.read_bytes()).hexdigest() == markdown_digest
+
+
+def test_evidence_runner_writes_and_checks_canonical_files(
+    evidence: MultimodalForecastingEvidence,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Exercise both write and successful exact-check CLI modes."""
+    json_path = tmp_path / "evidence.json"
+    markdown_path = tmp_path / "evidence.md"
+    _set_runner_arguments(monkeypatch, json_path, markdown_path)
+
+    assert evidence_runner.main() == 0
+    written = json.loads(capsys.readouterr().out)
+    assert written["content_digest"] == evidence.to_dict()["content_digest"]
+    assert len(str(written["json_sha256"])) == 64
+    assert len(str(written["markdown_sha256"])) == 64
+
+    _set_runner_arguments(monkeypatch, json_path, markdown_path, check=True)
+    assert evidence_runner.main() == 0
+    checked = json.loads(capsys.readouterr().out)
+    assert checked == {
+        "check": "passed",
+        "content_digest": evidence.to_dict()["content_digest"],
+    }
+
+
+@pytest.mark.parametrize("stale_target", ["json", "markdown"])
+def test_evidence_runner_refuses_each_stale_output(
+    evidence: MultimodalForecastingEvidence,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    stale_target: str,
+) -> None:
+    """Fail closed when either committed evidence representation drifts."""
+    json_path = tmp_path / "evidence.json"
+    markdown_path = tmp_path / "evidence.md"
+    write_multimodal_forecasting_evidence(
+        evidence,
+        json_path=json_path,
+        markdown_path=markdown_path,
+    )
+    stale_path = json_path if stale_target == "json" else markdown_path
+    stale_path.write_text("stale\n", encoding="utf-8")
+    _set_runner_arguments(monkeypatch, json_path, markdown_path, check=True)
+
+    with pytest.raises(SystemExit, match=f"stale or missing evidence: {stale_path}"):
+        evidence_runner.main()
 
 
 @pytest.mark.parametrize(

@@ -143,9 +143,10 @@ isolated-core production benchmark.
   simulator.
 - The ESN baseline is a deterministic NumPy reference comparator, not an
   accelerated service path.
-- BL-37 now supplies a bounded simulation-only multimodal schema and classical
-  forecasting product, but no QRC-to-BL-37 adapter was added in BL-45. No real
-  clinical, grid, or plasma data is admitted by either product.
+- The bounded simulation-only multimodal schema now supplies a classical
+  forecasting product, but the quantum-reservoir evidence owner adds no
+  adapter to it. No real clinical, grid, or plasma data is admitted by either
+  product.
 - Differentiable notebook curriculum expansion is outside the reservoir
   evidence scope and is not represented as complete.
 - No hardware QRC, provider execution, unseen-domain generalisation, closed-loop

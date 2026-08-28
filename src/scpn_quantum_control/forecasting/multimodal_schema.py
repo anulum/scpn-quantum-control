@@ -23,7 +23,7 @@ DatasetSplit = Literal["train", "calibration", "test"]
 
 
 class SyntheticDomainTag(str, Enum):
-    """Allowed simulation-only domain tags for BL-37."""
+    """Allowed simulation-only domain tags for multimodal forecasting."""
 
     SYNTHETIC = "synthetic"
     GRID_LIKE_SIM = "grid_like_sim"

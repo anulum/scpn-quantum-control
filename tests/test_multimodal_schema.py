@@ -53,8 +53,8 @@ def _batch(
     )
 
 
-def test_public_forecasting_facade_exports_bl37_entry_points() -> None:
-    """The documented facade reaches every BL-37 product stage."""
+def test_public_forecasting_facade_exports_product_entry_points() -> None:
+    """The documented facade reaches every multimodal forecasting stage."""
     assert forecasting.MultimodalObservationBatch is MultimodalObservationBatch
     assert forecasting.SyntheticDomainTag is SyntheticDomainTag
     assert callable(forecasting.generate_synthetic_multimodal_dataset)

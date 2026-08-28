@@ -47,7 +47,7 @@ DEFAULT_MARKDOWN = Path("data/multimodal_forecasting/multimodal_forecasting_evid
 
 
 def _support_rows() -> tuple[MultimodalSupportRow, ...]:
-    """Return the exact supported and blocked BL-37 surface matrix."""
+    """Return the exact supported and blocked forecasting surface matrix."""
     return (
         MultimodalSupportRow(
             surface="synthetic_multimodal_schema",
@@ -113,7 +113,7 @@ def _support_rows() -> tuple[MultimodalSupportRow, ...]:
 
 
 def build_evidence() -> MultimodalForecastingEvidence:
-    """Build the complete deterministic BL-37 evidence bundle."""
+    """Build the complete deterministic multimodal forecasting evidence bundle."""
     dataset = generate_synthetic_multimodal_dataset(
         SyntheticMultimodalConfig(
             train_samples=64,
@@ -181,7 +181,7 @@ def build_evidence() -> MultimodalForecastingEvidence:
 
 
 def main() -> int:
-    """Write or exact-check the deterministic BL-37 evidence files."""
+    """Write or exact-check the deterministic forecasting evidence files."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--json", type=Path, default=DEFAULT_JSON)
     parser.add_argument("--markdown", type=Path, default=DEFAULT_MARKDOWN)

@@ -467,7 +467,7 @@ control, or broad quantum-advantage claim is promoted by this release.
 
 ### Fixed
 
-- Canonicalised BL-37 floating-point evidence and parameter-digest custody to
+- Canonicalised multimodal forecasting evidence and parameter-digest custody to
   twelve decimal places, eliminating sub-precision BLAS/runtime drift across
   the supported Python 3.11-3.13 CI matrix without weakening claim boundaries.
 - Extended precision-bounded cross-runtime custody to six-decimal BL-45

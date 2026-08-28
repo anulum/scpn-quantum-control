@@ -23,7 +23,7 @@ _NUMERIC_CUSTODY_DECIMALS = 12
 
 
 def _canonical_digest_float_bytes(value: float) -> bytes:
-    """Return platform-stable bytes at the BL-37 numeric-custody precision."""
+    """Return platform-stable bytes at the forecasting custody precision."""
     rounded = round(float(value), _NUMERIC_CUSTODY_DECIMALS)
     canonical = 0.0 if rounded == 0.0 else rounded
     return np.asarray(canonical, dtype="<f8").tobytes()
