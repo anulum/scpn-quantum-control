@@ -145,6 +145,7 @@ if TYPE_CHECKING:
     from tools import (
         kuramoto_layout_relaxation_quality_gates as _kuramoto_layout_relaxation_quality_gates,
     )
+    from tools import kuramoto_variants_quality_gates as _kuramoto_variants_quality_gates
     from tools import kyma_dynamics_quality_gates as _kyma_dynamics_quality_gates
     from tools import (
         kyma_mechanism_benchmark_product_quality_gates as _kyma_mechanism_product_quality_gates,
@@ -391,6 +392,7 @@ else:
         "tools.kyma_mechanism_benchmark_product_quality_gates"
     )
     _koopman_quality_gates = import_module("tools.koopman_quality_gates")
+    _kuramoto_variants_quality_gates = import_module("tools.kuramoto_variants_quality_gates")
     _kyma_dynamics_quality_gates = import_module("tools.kyma_dynamics_quality_gates")
     _kyma_v2_dynamics_quality_gates = import_module("tools.kyma_v2_dynamics_quality_gates")
     _layout_method_comparison_quality_gates = import_module(
@@ -827,6 +829,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_magnetisation_sectors_quality_gates.build_static_quality_gates(_PY),
     *_quantum_neuromorphic_bridge_quality_gates.build_static_quality_gates(_PY),
     *_koopman_quality_gates.build_static_quality_gates(_PY),
+    *_kuramoto_variants_quality_gates.build_static_quality_gates(_PY),
     *_quantum_phi_quality_gates.build_static_quality_gates(_PY),
     *_qpu_result_pack_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
@@ -1336,6 +1339,7 @@ QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_GATES = (
     _quantum_neuromorphic_bridge_quality_gates.build_coverage_gates(_PY)
 )
 KOOPMAN_COVERAGE_GATES = _koopman_quality_gates.build_coverage_gates(_PY)
+KURAMOTO_VARIANTS_COVERAGE_GATES = _kuramoto_variants_quality_gates.build_coverage_gates(_PY)
 QUANTUM_PHI_COVERAGE_GATES = _quantum_phi_quality_gates.build_coverage_gates(_PY)
 QPU_RESULT_PACK_COVERAGE_GATES = _qpu_result_pack_quality_gates.build_coverage_gates(_PY)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
@@ -1757,6 +1761,7 @@ def main() -> int:
             gates.extend(MAGNETISATION_SECTORS_COVERAGE_GATES)
             gates.extend(QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_GATES)
             gates.extend(KOOPMAN_COVERAGE_GATES)
+            gates.extend(KURAMOTO_VARIANTS_COVERAGE_GATES)
             gates.extend(QUANTUM_PHI_COVERAGE_GATES)
             gates.extend(QPU_RESULT_PACK_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)

@@ -9,6 +9,9 @@
 
 from __future__ import annotations
 
+import sys
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
 
@@ -41,6 +44,7 @@ def _ring_problem() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
 
 def test_triadic_ring_terms_are_anchored_and_periodic() -> None:
+    """Build immutable anchored triples with periodic neighbours."""
     hyperedges, weights = build_triadic_ring_terms(5, weight=0.12)
 
     assert hyperedges.shape == (5, 3)
@@ -52,6 +56,7 @@ def test_triadic_ring_terms_are_anchored_and_periodic() -> None:
 
 
 def test_higher_order_numpy_and_rust_paths_match_when_rust_is_available() -> None:
+    """Keep the preferred native trajectory aligned with the NumPy reference."""
     K_nm, omega, theta0 = _ring_problem()
     hyperedges, weights = build_triadic_ring_terms(4, weight=0.25)
     spec = HigherOrderKuramotoSpec(K_nm, omega, hyperedges, weights, theta0=theta0)
@@ -68,7 +73,40 @@ def test_higher_order_numpy_and_rust_paths_match_when_rust_is_available() -> Non
     assert preferred_result.diagnostics["n_hyperedges"] == 4
 
 
+def test_missing_native_exports_fall_back_to_numpy(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fall back honestly when an installed extension lacks variant exports."""
+    K_nm, omega, theta0 = _ring_problem()
+    hyperedges, weights = build_triadic_ring_terms(4, weight=0.15)
+    monkeypatch.setitem(sys.modules, "scpn_quantum_engine", SimpleNamespace())
+
+    higher = simulate_higher_order_kuramoto(
+        HigherOrderKuramotoSpec(K_nm, omega, hyperedges, weights, theta0=theta0),
+        dt=0.02,
+        n_steps=3,
+    )
+    monitored = simulate_monitored_kuramoto(
+        MonitoredKuramotoSpec(K_nm, omega, theta0=theta0),
+        dt=0.02,
+        n_steps=3,
+    )
+    pt_result = simulate_pt_symmetric_kuramoto(
+        PTSymmetricKuramotoSpec(
+            K_nm,
+            omega,
+            gain_loss=np.array([0.08, -0.08, 0.04, -0.04], dtype=np.float64),
+            theta0=theta0,
+        ),
+        dt=0.02,
+        n_steps=3,
+    )
+
+    assert higher.backend == "numpy:higher_order_kuramoto_trajectory"
+    assert monitored.backend == "numpy:monitored_kuramoto_trajectory"
+    assert pt_result.backend == "numpy:pt_symmetric_kuramoto_trajectory"
+
+
 def test_higher_order_terms_change_the_pairwise_trajectory() -> None:
+    """Show that nonzero triadic weights change the pairwise reference."""
     K_nm, omega, theta0 = _ring_problem()
     hyperedges, weights = build_triadic_ring_terms(4, weight=0.35)
     with_terms = simulate_higher_order_kuramoto(
@@ -89,6 +127,7 @@ def test_higher_order_terms_change_the_pairwise_trajectory() -> None:
 
 
 def test_monitored_feedback_records_readout_and_feedback_channels() -> None:
+    """Expose readout and feedback channels consistent with the monitor law."""
     K_nm, omega, theta0 = _ring_problem()
     spec = MonitoredKuramotoSpec(
         K_nm,
@@ -117,6 +156,7 @@ def test_monitored_feedback_records_readout_and_feedback_channels() -> None:
 
 
 def test_monitored_feedback_with_zero_gain_matches_uncontrolled_readout() -> None:
+    """Keep a zero-gain monitor dynamically uncontrolled."""
     K_nm, omega, theta0 = _ring_problem()
     spec = MonitoredKuramotoSpec(
         K_nm,
@@ -136,6 +176,7 @@ def test_monitored_feedback_with_zero_gain_matches_uncontrolled_readout() -> Non
 
 
 def test_pt_symmetric_balanced_gain_loss_tracks_norm_and_imbalance() -> None:
+    """Track normalized PT trajectories and nontrivial gain/loss imbalance."""
     K_nm, omega, theta0 = _ring_problem()
     spec = PTSymmetricKuramotoSpec(
         K_nm,
@@ -160,6 +201,7 @@ def test_pt_symmetric_balanced_gain_loss_tracks_norm_and_imbalance() -> None:
 
 
 def test_pt_symmetric_rejects_unbalanced_gain_loss() -> None:
+    """Reject gain/loss channels that violate the balanced PT contract."""
     K_nm, omega, theta0 = _ring_problem()
 
     with pytest.raises(ValueError, match="sum to zero"):
@@ -172,6 +214,7 @@ def test_pt_symmetric_rejects_unbalanced_gain_loss() -> None:
 
 
 def test_stable_facade_dispatches_all_three_variants() -> None:
+    """Dispatch every variant through the stable public facade."""
     K_nm, omega, theta0 = _ring_problem()
     problem = build_kuramoto_problem(K_nm, omega, metadata={"case": "variant-dispatch"})
     hyperedges, weights = build_triadic_ring_terms(4, weight=0.1)
@@ -215,6 +258,7 @@ def test_stable_facade_dispatches_all_three_variants() -> None:
 
 
 def test_specs_defensively_copy_inputs_and_expose_readonly_arrays() -> None:
+    """Defend specifications against caller mutation after construction."""
     K_nm, omega, theta0 = _ring_problem()
     hyperedges, weights = build_triadic_ring_terms(4, weight=0.2)
     spec = HigherOrderKuramotoSpec(K_nm, omega, hyperedges, weights, theta0=theta0)
@@ -230,6 +274,7 @@ def test_specs_defensively_copy_inputs_and_expose_readonly_arrays() -> None:
 
 
 def test_invalid_shapes_are_rejected_before_simulation() -> None:
+    """Fail before integration when variant array contracts are invalid."""
     K_nm, omega, theta0 = _ring_problem()
 
     with pytest.raises(ValueError, match="hyperedges must have shape"):

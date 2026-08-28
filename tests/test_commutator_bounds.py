@@ -244,7 +244,10 @@ class TestCommutatorPhysics:
 
 
 class TestKuramotoVariantContracts:
+    """Exercise fail-closed and native-path Kuramoto variant contracts."""
+
     def test_variant_result_rejects_invalid_trajectory_and_diagnostics(self):
+        """Reject malformed trajectory axes, bounds, and diagnostics."""
         times = np.array([0.0, 0.1], dtype=np.float64)
         with pytest.raises(ValueError, match="one-dimensional"):
             KuramotoVariantResult(KuramotoVariant.MONITORED, times[:, None], times, "numpy")
@@ -280,6 +283,7 @@ class TestKuramotoVariantContracts:
             )
 
     def test_variant_specs_reject_metadata_and_shape_errors(self):
+        """Reject invalid specification shapes, metadata, and scalar ranges."""
         K_nm, omega, theta0 = _variant_problem()
         hyperedges, weights = build_triadic_ring_terms(4, weight=0.15)
 
@@ -310,6 +314,7 @@ class TestKuramotoVariantContracts:
             )
 
     def test_default_theta_initialisation_follows_frequency_phases(self):
+        """Derive immutable default phases from oscillator frequencies."""
         K_nm, omega, _theta0 = _variant_problem()
         hyperedges, weights = build_triadic_ring_terms(4, weight=0.15)
 
@@ -319,10 +324,12 @@ class TestKuramotoVariantContracts:
         assert spec.theta0.flags.writeable is False
 
     def test_missing_initial_state_guard_is_explicit(self):
+        """Fail explicitly if an internal trajectory lacks initial phases."""
         with pytest.raises(ValueError, match="theta0 was not initialised"):
             kuramoto_variant_mod._required_theta0(None)
 
     def test_variant_time_grid_and_ring_weight_validation(self):
+        """Reject nonfinite ring weights and invalid integration grids."""
         K_nm, omega, theta0 = _variant_problem()
         hyperedges, weights = build_triadic_ring_terms(4, weight=0.15)
         spec = HigherOrderKuramotoSpec(K_nm, omega, hyperedges, weights, theta0=theta0)
@@ -335,6 +342,7 @@ class TestKuramotoVariantContracts:
             simulate_higher_order_kuramoto(spec, dt=0.1, n_steps=0, prefer_rust=False)
 
     def test_hyperedge_bounds_are_checked_before_simulation(self):
+        """Reject hyperedges that reference absent oscillators."""
         K_nm, omega, theta0 = _variant_problem()
 
         with pytest.raises(ValueError, match="hyperedge indices"):
@@ -347,6 +355,7 @@ class TestKuramotoVariantContracts:
             )
 
     def test_preferred_rust_backends_preserve_metadata(self, monkeypatch):
+        """Preserve variant identity and diagnostics across native results."""
         K_nm, omega, theta0 = _variant_problem()
         hyperedges, weights = build_triadic_ring_terms(4, weight=0.15)
         times = np.array([0.0, 0.1, 0.2], dtype=np.float64)

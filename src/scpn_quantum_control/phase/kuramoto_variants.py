@@ -43,6 +43,7 @@ class KuramotoVariantResult:
     diagnostics: Mapping[str, FloatArray | float | int | str | bool] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate trajectory bounds and freeze diagnostic arrays."""
         times = _readonly_float_array(self.times, "times")
         r_values = _readonly_float_array(self.r_values, "r_values")
         if times.ndim != 1:
@@ -104,6 +105,7 @@ class HigherOrderKuramotoSpec:
     metadata: Mapping[str, JsonScalar] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate and defensively freeze the higher-order specification."""
         K_nm, omega = validate_variant_kuramoto_inputs(self.K_nm, self.omega)
         hyperedges = _validate_hyperedges(self.hyperedges, omega.size)
         hyper_weights = _readonly_float_array(self.hyper_weights, "hyper_weights")
@@ -135,6 +137,7 @@ class MonitoredKuramotoSpec:
     metadata: Mapping[str, JsonScalar] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate and defensively freeze the monitored specification."""
         K_nm, omega = validate_variant_kuramoto_inputs(self.K_nm, self.omega)
         _require_range(self.target_r, 0.0, 1.0, "target_r")
         _require_non_negative(self.monitor_gain, "monitor_gain")
@@ -158,6 +161,7 @@ class PTSymmetricKuramotoSpec:
     metadata: Mapping[str, JsonScalar] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate balanced gain/loss data and freeze the PT specification."""
         K_nm, omega = validate_variant_kuramoto_inputs(self.K_nm, self.omega)
         gain_loss = _readonly_float_array(self.gain_loss, "gain_loss")
         if gain_loss.shape != omega.shape:
@@ -355,7 +359,7 @@ def _monitored_numpy(
     readouts = np.zeros(n_steps + 1, dtype=np.float64)
     feedback = np.zeros(n_steps + 1, dtype=np.float64)
 
-    for step in range(n_steps + 1):
+    for step in range(n_steps + 1):  # pragma: no branch - final step always breaks
         r_value, mean_phase = _order_parameter_with_phase(theta)
         readout = (1.0 - spec.measurement_strength) * r_value + (
             spec.measurement_strength * spec.target_r
@@ -384,7 +388,7 @@ def _pt_symmetric_numpy(
     imbalance = np.zeros(n_steps + 1, dtype=np.float64)
     n = z.size
 
-    for step in range(n_steps + 1):
+    for step in range(n_steps + 1):  # pragma: no branch - final step always breaks
         powers = np.abs(z) ** 2
         norm = float(np.sum(powers))
         r_values[step] = float(abs(np.sum(z)) / np.sqrt(norm * n))
@@ -396,7 +400,7 @@ def _pt_symmetric_numpy(
         dtheta = _pairwise_velocity(theta, spec.omega, spec.K_nm)
         z += dt * (spec.gain_loss + 1j * dtheta) * z
         norm_after = float(np.linalg.norm(z))
-        if norm_after > 0.0:
+        if norm_after > 0.0:  # pragma: no branch - balanced finite state has nonzero norm
             z *= np.sqrt(n) / norm_after
     return times, r_values, pt_norm, imbalance
 

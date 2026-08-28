@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Kuramoto-variant documentation quality: documented immutable
+  higher-order, monitored, and PT-symmetric specifications plus their direct
+  and mixed-owner contract tests; added explicit missing-native-export fallback
+  coverage; and wired permanent strict typing, current Rust/NumPy execution,
+  complete owning documentation, and exact source coverage into preflight and
+  CI. Integration arithmetic, diagnostics, facade dispatch, public APIs, and
+  bounded classical-simulation claims are unchanged.
+
 - 2026-08-28 — QPU result-pack documentation quality: completed the
   preview-inclusive NumPy docstring contract across the attestation-bound unit,
   provider-neutral bridge, and owning tests; and wired permanent strict typing,

@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1260
+    "test_files": 1261
   },
   "documentation": {
     "examples": [
@@ -8661,6 +8661,7 @@
       "tests/test_kuramoto_relocation_shims.py",
       "tests/test_kuramoto_standalone_package_decision.py",
       "tests/test_kuramoto_variants.py",
+      "tests/test_kuramoto_variants_quality_gate.py",
       "tests/test_kyma_dynamics.py",
       "tests/test_kyma_dynamics_quality_gate.py",
       "tests/test_kyma_mechanism_benchmark_product.py",
