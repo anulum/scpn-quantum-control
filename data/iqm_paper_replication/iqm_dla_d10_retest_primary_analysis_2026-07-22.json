@@ -98,5 +98,5 @@
     }
   ],
   "batching_disclosure": "8 repetitions are execution-order replicates inside one batched job (frozen in the preregistration); cross-window independence comes from the 2026-07-21 arms",
-  "interpretation_boundary": "device-noise statement only: exact statevector baseline fixes noiseless parity leakage at zero (AUD-6)"
+  "interpretation_boundary": "device-noise statement only: exact statevector baseline fixes noiseless parity leakage at zero"
 }

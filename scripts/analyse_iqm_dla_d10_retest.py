@@ -36,17 +36,38 @@ def _parity(bitstring: str) -> int:
 
 def _leak(counts: dict[str, int], initial: str) -> tuple[int, int]:
     total = sum(int(v) for v in counts.values())
+    if total <= 0:
+        raise ValueError("empty count block")
     expected = _parity(initial)
     leaked = sum(int(v) for k, v in counts.items() if _parity(k) != expected)
     return leaked, total
 
 
 def _wilson(successes: int, total: int, z: float = 1.959963984540054) -> tuple[float, float]:
+    if total <= 0:
+        raise ValueError("empty sample")
     p = successes / total
     denominator = 1.0 + z * z / total
     centre = (p + z * z / (2 * total)) / denominator
     margin = z * math.sqrt(p * (1 - p) / total + z * z / (4 * total * total)) / denominator
     return centre - margin, centre + margin
+
+
+def _relative_asymmetry(leak_even: float, leak_odd: float) -> float:
+    """Return the preregistered relative asymmetry, refusing a zero denominator."""
+    if leak_odd == 0.0:
+        raise ValueError("relative asymmetry requires nonzero odd-sector leakage")
+    return (leak_even - leak_odd) / leak_odd
+
+
+def _sector_proportions(
+    pooled: dict[str, tuple[int, int]], *, window: str
+) -> tuple[int, int, int, int, float, float]:
+    """Return nonempty even/odd totals and proportions for one window."""
+    (le, ne), (lo, no) = pooled["even"], pooled["odd"]
+    if not ne or not no:
+        raise ValueError(f"{window} lacks a nonempty sector")
+    return le, ne, lo, no, le / ne, lo / no
 
 
 def _pooled(
@@ -80,9 +101,14 @@ def main(argv: list[str] | None = None) -> int:
 
     payload = json.loads(Path(args.counts).read_text(encoding="utf-8"))
     counts = payload["counts"]
+    layouts = {tuple(payload.get("layout", ()))}
     prior_counts: dict[str, dict[str, int]] = {}
     for path in args.prior_counts:
-        prior_counts.update(json.loads(Path(path).read_text(encoding="utf-8"))["counts"])
+        prior_payload = json.loads(Path(path).read_text(encoding="utf-8"))
+        prior_counts.update(prior_payload["counts"])
+        layouts.add(tuple(prior_payload.get("layout", ())))
+    if len(layouts) != 1:
+        raise ValueError(f"count blocks disagree on layout: {sorted(layouts)}")
 
     missing = [
         f"main_d{DEPTH}_{s}_rep{r}"
@@ -93,10 +119,11 @@ def main(argv: list[str] | None = None) -> int:
     complete = not missing
 
     pooled = _pooled(counts, REPETITIONS)
-    (le, ne), (lo, no) = pooled["even"], pooled["odd"]
-    p_e, p_o = le / ne, lo / no
+    le, ne, lo, no, p_e, p_o = _sector_proportions(pooled, window="retest window")
     pooled_p = (le + lo) / (ne + no)
     se = math.sqrt(pooled_p * (1 - pooled_p) * (1 / ne + 1 / no))
+    if se == 0.0:
+        raise ValueError("degenerate pooled proportion")
     # Primary is one-sided for the NEGATIVE asymmetry: leak_even < leak_odd.
     z_negative = (p_o - p_e) / se
     p_negative = 0.5 * math.erfc(z_negative / math.sqrt(2))
@@ -106,7 +133,7 @@ def main(argv: list[str] | None = None) -> int:
         "leak_even": p_e,
         "leak_odd": p_o,
         "difference_even_minus_odd": p_e - p_o,
-        "relative_asymmetry": (p_e - p_o) / p_o,
+        "relative_asymmetry": _relative_asymmetry(p_e, p_o),
         "one_sided_z_for_negative": z_negative,
         "one_sided_p_for_negative": p_negative,
         "alpha": ALPHA,
@@ -121,12 +148,14 @@ def main(argv: list[str] | None = None) -> int:
     }
 
     prior = _pooled(prior_counts, PRIOR_REPETITIONS)
-    (ple, pne), (plo, pno) = prior["even"], prior["odd"]
-    pp_e, pp_o = ple / pne, plo / pno
+    ple, pne, plo, pno, pp_e, pp_o = _sector_proportions(prior, window="prior window")
     diff_now, diff_prior = p_e - p_o, pp_e - pp_o
     var_now = p_e * (1 - p_e) / ne + p_o * (1 - p_o) / no
     var_prior = pp_e * (1 - pp_e) / pne + pp_o * (1 - pp_o) / pno
-    z_cross = (diff_now - diff_prior) / math.sqrt(var_now + var_prior)
+    cross_variance = var_now + var_prior
+    if cross_variance <= 0.0:
+        raise ValueError("degenerate cross-window variance")
+    z_cross = (diff_now - diff_prior) / math.sqrt(cross_variance)
     s2 = {
         "difference_this_window": diff_now,
         "difference_prior_window": diff_prior,
@@ -170,7 +199,7 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "interpretation_boundary": (
             "device-noise statement only: exact statevector baseline fixes "
-            "noiseless parity leakage at zero (AUD-6)"
+            "noiseless parity leakage at zero"
         ),
     }
     out_path = Path(args.out)
@@ -180,7 +209,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"analysis: {out_path}")
     print(
         f"PRIMARY d10: leak_even {p_e:.4f} vs leak_odd {p_o:.4f} "
-        f"(diff {p_e - p_o:+.4f}, rel {(p_e - p_o) / p_o:+.4f}); "
+        f"(diff {p_e - p_o:+.4f}, rel {_relative_asymmetry(p_e, p_o):+.4f}); "
         f"one-sided-negative z {z_negative:.3f} p {p_negative:.3e} -> "
         f"negative_sign_replicates={primary['negative_sign_replicates']}"
     )

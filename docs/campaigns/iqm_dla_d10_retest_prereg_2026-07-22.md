@@ -12,8 +12,9 @@ Date: 2026-07-22
 
 Committed BEFORE any of its own hardware data exist. Execution requires the
 readiness gates below plus an explicit owner per-submit GO (granted in
-session for this campaign, recorded here for the audit trail: owner
-directive "priprav a zadokumentuj všetky dokonale a následne spusti FU-1").
+session for this campaign, recorded here for the audit trail: prepare and
+document the complete campaign, then execute the declared depth-10
+sign-replication run).
 
 ## Motivating (already-collected) evidence
 
@@ -84,7 +85,7 @@ campaign's 4,096-shot arms could not resolve this).
 - Raw-count treatment identical to the executed powered-block primary;
   readout calibration circuits committed alongside.
 - No coherent-dynamics claim in any branch (exact statevector baseline
-  pins noiseless leakage at zero; AUD-6).
+  pins noiseless leakage at zero).
 
 ## Live Readiness Gates (block submission until all pass)
 
