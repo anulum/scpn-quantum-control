@@ -234,6 +234,7 @@ if TYPE_CHECKING:
     from tools import (
         scorecard_acceptance_engine_quality_gates as _scorecard_acceptance_engine_quality_gates,
     )
+    from tools import sparse_hamiltonian_quality_gates as _sparse_hamiltonian_quality_gates
     from tools import (
         ssgf_geometry_gradient_quality_gates as _ssgf_geometry_gradient_quality_gates,
     )
@@ -518,6 +519,7 @@ else:
     _scorecard_acceptance_engine_quality_gates = import_module(
         "tools.scorecard_acceptance_engine_quality_gates"
     )
+    _sparse_hamiltonian_quality_gates = import_module("tools.sparse_hamiltonian_quality_gates")
     _stable_core_product_quality_gates = import_module("tools.stable_core_product_quality_gates")
     _stochastic_estimators_product_quality_gates = import_module(
         "tools.stochastic_estimators_product_quality_gates"
@@ -889,6 +891,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_kuramoto_variants_quality_gates.build_static_quality_gates(_PY),
     *_mps_evolution_quality_gates.build_static_quality_gates(_PY),
     *_nqs_ansatz_quality_gates.build_static_quality_gates(_PY),
+    *_sparse_hamiltonian_quality_gates.build_static_quality_gates(_PY),
     *_sync_uncertainty_quality_gates.build_static_quality_gates(_PY),
     *_coupling_invariant_quality_gates.build_static_quality_gates(_PY),
     *_experiment_dynamics_quality_gates.build_static_quality_gates(_PY),
@@ -1415,6 +1418,7 @@ KOOPMAN_COVERAGE_GATES = _koopman_quality_gates.build_coverage_gates(_PY)
 KURAMOTO_VARIANTS_COVERAGE_GATES = _kuramoto_variants_quality_gates.build_coverage_gates(_PY)
 MPS_EVOLUTION_COVERAGE_GATES = _mps_evolution_quality_gates.build_coverage_gates(_PY)
 NQS_ANSATZ_COVERAGE_GATES = _nqs_ansatz_quality_gates.build_coverage_gates(_PY)
+SPARSE_HAMILTONIAN_COVERAGE_GATES = _sparse_hamiltonian_quality_gates.build_coverage_gates(_PY)
 SYNC_UNCERTAINTY_COVERAGE_GATES = _sync_uncertainty_quality_gates.build_coverage_gates(_PY)
 COUPLING_INVARIANT_COVERAGE_GATES = _coupling_invariant_quality_gates.build_coverage_gates(_PY)
 EXPERIMENT_DYNAMICS_COVERAGE_GATES = _experiment_dynamics_quality_gates.build_coverage_gates(_PY)
@@ -1865,6 +1869,7 @@ def main() -> int:
             gates.extend(KURAMOTO_VARIANTS_COVERAGE_GATES)
             gates.extend(MPS_EVOLUTION_COVERAGE_GATES)
             gates.extend(NQS_ANSATZ_COVERAGE_GATES)
+            gates.extend(SPARSE_HAMILTONIAN_COVERAGE_GATES)
             gates.extend(SYNC_UNCERTAINTY_COVERAGE_GATES)
             gates.extend(COUPLING_INVARIANT_COVERAGE_GATES)
             gates.extend(EXPERIMENT_DYNAMICS_COVERAGE_GATES)

@@ -106,6 +106,7 @@ def build_sparse_hamiltonian(
     -------
     scipy.sparse.csc_matrix
         Sparse Hamiltonian, shape (2^n, 2^n).
+
     """
     K, omega = _canonical_xy_inputs(K, omega)
     n = K.shape[0]
@@ -212,7 +213,7 @@ def build_sparse_sector_hamiltonian(
                 bj = (int(k) >> j) & 1
                 if bi != bj:
                     k_flip = int(k) ^ ((1 << i) | (1 << j))
-                    if k_flip in inv_map:
+                    if k_flip in inv_map:  # pragma: no branch - flip preserves M
                         sj = inv_map[k_flip]
                         rows.append(si)
                         cols.append(sj)
@@ -238,14 +239,23 @@ def sparse_eigsh(
 
     Parameters
     ----------
-    K, omega : coupling and frequencies
-    k : number of eigenvalues to compute
-    which : "SA" (smallest algebraic), "LA" (largest), "SM" (smallest magnitude)
-    M : if specified, compute within magnetisation sector M
+    K : numpy.ndarray
+        Coupling matrix for the XY Hamiltonian.
+    omega : numpy.ndarray
+        Natural-frequency vector.
+    k : int
+        Maximum number of eigenvalues to compute.
+    which : str
+        ARPACK selection mode, such as ``"SA"``, ``"LA"``, or ``"SM"``.
+    M : int or None
+        Optional magnetisation sector in which to solve.
 
     Returns
     -------
-    dict with keys: eigvals, eigvecs, nnz, dim, sector
+    dict
+        Eigenpairs, sparse-matrix statistics, solution method, and sector
+        metadata.
+
     """
     if M is not None:
         H, indices = build_sparse_sector_hamiltonian(K, omega, M)

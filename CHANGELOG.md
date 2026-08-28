@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Sparse-Hamiltonian documentation and exact quality: completed
+  the preview-inclusive NumPy docstring and strict typing contracts across the
+  sparse XY/sector/eigensolver owner and both direct test surfaces, documented
+  the sector-preserving bit-flip coverage invariant, and wired permanent real
+  sparse execution plus exact source coverage into preflight and CI. Hermitian
+  canonicalisation, CSC numerics, Rust fallback, resource refusal, ARPACK,
+  sector ordering, public APIs, and bounded sparse-memory claims are unchanged.
+
 - 2026-08-28 — NQS-ansatz documentation and exact quality: completed the
   preview-inclusive NumPy docstring and strict typing contracts across the
   exact-enumeration RBM owner and its direct tests, and wired permanent real
