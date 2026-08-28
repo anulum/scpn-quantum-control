@@ -1,5 +1,14 @@
 # Changelog
 
+- 2026-08-28 — MLIR whole-program native documentation and exact quality:
+  documented all validation magic methods, removed direct-test layout drift,
+  eliminated a duplicate unreachable replay-signature check, and added real
+  public constructor/input plus defensive FFI/cache/compiler edge coverage.
+  Permanent strict typing, native/JIT execution, complete owner documentation,
+  and exact source coverage are wired into preflight and CI. Lowering,
+  numerical parity, cache behavior, public APIs, failure ordering, and bounded
+  local-native claims are unchanged.
+
 - 2026-08-28 — Differentiable exact-mode documentation quality: completed the
   preview-inclusive NumPy docstring contract across the forward-mode dual and
   reverse-mode tape wrappers and their owning tests, and wired permanent

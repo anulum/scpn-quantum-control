@@ -42,7 +42,6 @@ FloatArray = NDArray[np.float64]
 
 def _dense_determinant_offsets(size: int) -> FloatArray:
     """Return a deterministic non-diagonal perturbation for native determinant tests."""
-
     rows = np.arange(size, dtype=np.float64).reshape(size, 1) + 1.0
     cols = np.arange(size, dtype=np.float64).reshape(1, size) + 1.0
     offsets = 0.011 * np.sin(rows * (cols + 0.5)) + 0.007 * np.cos(rows + 2.0 * cols)
@@ -52,7 +51,6 @@ def _dense_determinant_offsets(size: int) -> FloatArray:
 
 def _dense_solve_values(size: int, *, shift: float) -> FloatArray:
     """Return deterministic nonsingular matrix and vector entries for solve tests."""
-
     matrix = np.diag(np.linspace(1.7 + shift, 2.5 + shift, size))
     matrix = matrix + _dense_determinant_offsets(size) * (1.0 + shift)
     rhs = np.linspace(0.25 + shift, 0.95 + shift, size)
@@ -61,7 +59,6 @@ def _dense_solve_values(size: int, *, shift: float) -> FloatArray:
 
 def _dense_solve_matrix_values(size: int, rhs_cols: int, *, shift: float) -> FloatArray:
     """Return deterministic nonsingular matrix and matrix RHS entries for solve tests."""
-
     matrix = np.diag(np.linspace(1.8 + shift, 2.6 + shift, size))
     matrix = matrix + _dense_determinant_offsets(size) * (1.0 + 0.5 * shift)
     rhs_rows = np.arange(size, dtype=np.float64).reshape(size, 1) + 1.0
@@ -368,7 +365,6 @@ def test_whole_program_ad_trace_native_llvm_jit_executes_branchless_scalar_ir() 
 
 def test_whole_program_ad_trace_native_llvm_jit_reuses_verified_cache() -> None:
     """Native program AD should reuse verified compile artefacts deterministically."""
-
     clear_native_whole_program_ad_compile_cache()
     assert native_whole_program_ad_compile_cache_stats()["entries"] == 0
 
@@ -447,7 +443,6 @@ def test_whole_program_ad_native_lowering_report_blocks_unsupported_ops() -> Non
 
 def test_whole_program_ad_trace_native_llvm_jit_lowers_wide_determinants() -> None:
     """Native program AD should lower helper-backed 6x6 through 19x19 determinants."""
-
     for size in range(6, 20):
 
         def objective(
@@ -522,7 +517,6 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_wide_determinants() -> No
 
 def test_whole_program_ad_native_linalg_support_contract_reports_dense_det_boundary() -> None:
     """Native linalg support contracts should expose exact fail-closed determinant limits."""
-
     support = native_whole_program_ad_linalg_support()
 
     assert scpn.native_whole_program_ad_linalg_support is native_whole_program_ad_linalg_support
@@ -554,7 +548,6 @@ def test_whole_program_ad_native_linalg_support_contract_reports_dense_det_bound
 
 def test_whole_program_ad_trace_native_llvm_jit_lowers_dense_wide_determinants() -> None:
     """Native wide determinant helpers should match replay AD on non-diagonal matrices."""
-
     for size in (7, 9, 11, 13, 15, 16, 17, 18, 19):
         offsets = _dense_determinant_offsets(size)
 
@@ -1247,7 +1240,6 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_2x2_linalg_scalar_ops() -
 
 def test_whole_program_ad_trace_native_llvm_jit_lowers_static_inverse_ops() -> None:
     """Native program AD should lower bounded static dense inverse nodes."""
-
     for size in (3, 4, 5, 6):
         weights = np.linspace(0.15, 0.85, size * size, dtype=np.float64).reshape(size, size)
 
@@ -1347,7 +1339,6 @@ def test_whole_program_ad_native_lowering_report_blocks_wider_inverse_ops() -> N
 
 def test_whole_program_ad_trace_native_llvm_jit_lowers_static_solve_vector_ops() -> None:
     """Native program AD should lower bounded static dense vector solve nodes."""
-
     for size in (3, 4, 5, 6):
         weights = np.linspace(0.2, 0.8, size, dtype=np.float64)
 
@@ -1424,7 +1415,6 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_static_solve_vector_ops()
 
 def test_whole_program_ad_trace_native_llvm_jit_lowers_static_solve_matrix_ops() -> None:
     """Native program AD should lower bounded static dense matrix-RHS solve nodes."""
-
     for size, rhs_cols in ((2, 2), (3, 2), (4, 3), (5, 2), (6, 2)):
         weights = np.linspace(0.12, 0.72, size * rhs_cols, dtype=np.float64).reshape(
             size,

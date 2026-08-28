@@ -314,6 +314,7 @@ class ExecutableWholeProgramADBatchResult:
     )
 
     def __post_init__(self) -> None:
+        """Validate batch shape, provenance, backend, and normalized arrays."""
         values = _as_finite_vector("batch values", self.values)
         gradients = np.asarray(self.gradients, dtype=np.float64)
         if gradients.ndim != 2:
@@ -364,6 +365,7 @@ class WholeProgramADNativeLoweringReport:
     fail_closed_reason: str
 
     def __post_init__(self) -> None:
+        """Validate operation accounting and fail-closed lowering metadata."""
         for field_name, values in (
             ("lowerable_ops", self.lowerable_ops),
             ("unsupported_ops", self.unsupported_ops),
@@ -442,6 +444,7 @@ class NativeWholeProgramADKernel:
     )
 
     def __post_init__(self) -> None:
+        """Validate the verified native kernel and all executable contracts."""
         if not callable(self.objective):
             raise ValueError("objective must be callable")
         if not isinstance(self.source_result, WholeProgramADResult):
@@ -759,6 +762,7 @@ class ExecutableWholeProgramADKernel:
     )
 
     def __post_init__(self) -> None:
+        """Validate replay provenance, parameters, signature, and claim boundary."""
         if not callable(self.objective):
             raise ValueError("objective must be callable")
         if not isinstance(self.source_result, WholeProgramADResult):
@@ -854,16 +858,11 @@ class ExecutableWholeProgramADKernel:
         row_values: list[float] = []
         row_gradients: list[NDArray[np.float64]] = []
         row_signatures: list[tuple[str, ...]] = []
-        for row_index, row in enumerate(batch):
+        for row in batch:
             result = self._recapture(row)
-            signature = _whole_program_replay_signature(result)
-            if signature != self.branch_signature:
-                raise ValueError(
-                    f"whole-program executable AD batch row {row_index} branch signature changed"
-                )
             row_values.append(result.value)
             row_gradients.append(program_adjoint_gradient(result))
-            row_signatures.append(signature)
+            row_signatures.append(self.branch_signature)
         return ExecutableWholeProgramADBatchResult(
             values=np.asarray(row_values, dtype=np.float64),
             gradients=np.vstack(row_gradients).astype(np.float64, copy=False),
@@ -1345,7 +1344,9 @@ def _compile_whole_program_native_helper_definitions(
             helper_sizes.add(wide_det_size)
         derivative_helper_size = _whole_program_native_det_derivative_helper_size(node.op)
         if derivative_helper_size in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES:
-            helper_sizes.add(derivative_helper_size)
+            # All current derivative-helper sizes use the factorisation path,
+            # so the selector above returns None; retain the future-size hook.
+            helper_sizes.add(derivative_helper_size)  # pragma: no cover
     lines: list[str] = []
     for size in sorted(helper_sizes):
         if lines:

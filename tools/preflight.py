@@ -169,6 +169,9 @@ if TYPE_CHECKING:
         migration_guides_product_quality_gates as _migration_guides_product_quality_gates,
     )
     from tools import ml_dsa_seal_quality_gates as _ml_dsa_seal_quality_gates
+    from tools import (
+        mlir_whole_program_native_quality_gates as _mlir_whole_program_native_quality_gates,
+    )
     from tools import mps_evolution_quality_gates as _mps_evolution_quality_gates
     from tools import multi_hal_federation_product_quality_gates as _multi_hal_quality_gates
     from tools import (
@@ -343,6 +346,9 @@ else:
     _gradient_backend_quality_gates = import_module("tools.gradient_backend_quality_gates")
     _differentiable_exact_modes_quality_gates = import_module(
         "tools.differentiable_exact_modes_quality_gates"
+    )
+    _mlir_whole_program_native_quality_gates = import_module(
+        "tools.mlir_whole_program_native_quality_gates"
     )
     _fault_tolerant_resource_product_quality_gates = import_module(
         "tools.fault_tolerant_resource_product_quality_gates"
@@ -852,6 +858,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_phase_results_quality_gates.build_static_quality_gates(_PY),
     *_gradient_backend_quality_gates.build_static_quality_gates(_PY),
     *_differentiable_exact_modes_quality_gates.build_static_quality_gates(_PY),
+    *_mlir_whole_program_native_quality_gates.build_static_quality_gates(_PY),
     *_quantum_phi_quality_gates.build_static_quality_gates(_PY),
     *_qpu_result_pack_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
@@ -1370,6 +1377,9 @@ GRADIENT_BACKEND_COVERAGE_GATES = _gradient_backend_quality_gates.build_coverage
 DIFFERENTIABLE_EXACT_MODES_COVERAGE_GATES = (
     _differentiable_exact_modes_quality_gates.build_coverage_gates(_PY)
 )
+MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_GATES = (
+    _mlir_whole_program_native_quality_gates.build_coverage_gates(_PY)
+)
 QUANTUM_PHI_COVERAGE_GATES = _quantum_phi_quality_gates.build_coverage_gates(_PY)
 QPU_RESULT_PACK_COVERAGE_GATES = _qpu_result_pack_quality_gates.build_coverage_gates(_PY)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
@@ -1798,6 +1808,7 @@ def main() -> int:
             gates.extend(PHASE_RESULTS_COVERAGE_GATES)
             gates.extend(GRADIENT_BACKEND_COVERAGE_GATES)
             gates.extend(DIFFERENTIABLE_EXACT_MODES_COVERAGE_GATES)
+            gates.extend(MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_GATES)
             gates.extend(QUANTUM_PHI_COVERAGE_GATES)
             gates.extend(QPU_RESULT_PACK_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)

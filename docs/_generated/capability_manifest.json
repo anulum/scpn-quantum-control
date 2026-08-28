@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1267
+    "test_files": 1269
   },
   "documentation": {
     "examples": [
@@ -8743,6 +8743,8 @@
       "tests/test_mlir_vector_native_compilation_integration.py",
       "tests/test_mlir_whole_program_emitter.py",
       "tests/test_mlir_whole_program_native.py",
+      "tests/test_mlir_whole_program_native_quality_edges.py",
+      "tests/test_mlir_whole_program_native_quality_gate.py",
       "tests/test_mlir_workload_compilation.py",
       "tests/test_module_size_policy.py",
       "tests/test_monte_carlo_xy.py",
