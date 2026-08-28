@@ -608,8 +608,8 @@ def _catalyst_trainability_boundary_row() -> ExternalComparisonRow:
             "shot-allocation dry-runs, or dry-run cost estimates."
         ),
         claim_boundary=(
-            "Catalyst boundary row for BL-14 only; no runtime, hardware, provider, "
-            "or performance promotion claim."
+            "Catalyst adaptive finite-shot trainability boundary only; no runtime, "
+            "hardware, provider, or performance promotion claim."
         ),
         dependency_versions=_backend_dependency_versions("catalyst"),
         catalyst_comparison=catalyst_compiler_workflow_comparison(runner_status="dependency_gap"),

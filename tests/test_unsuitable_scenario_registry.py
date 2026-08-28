@@ -215,6 +215,12 @@ def test_probe_competitor_anti_silent_fixtures() -> None:
         catalyst.selected.reason.lower()
     )
 
+    adaptive_shots = probe_unsuitable_scenario("anti_silent:catalyst.no_broadcast_adaptive_shots")
+    assert adaptive_shots.refused is True
+    assert adaptive_shots.selected.citation == (
+        "Catalyst adaptive finite-shot trainability boundary"
+    )
+
 
 def test_probe_unknown_fail_closed_policies() -> None:
     """Fail closed for unknown identifiers under both public policies."""

@@ -348,7 +348,7 @@ _CANONICAL_SCENARIOS: Final[tuple[UnsuitableScenarioRecord, ...]] = (
         evidence=("finite_shot_trainability_boundary", "catalyst_comparison"),
         related_route_ids=("competitor:catalyst.no_broadcast_adaptive_shots",),
         test_id="test_probe_catalyst_adaptive_shots_fixture",
-        citation="BL-14 / Catalyst adaptive finite-shot trainability boundary",
+        citation="Catalyst adaptive finite-shot trainability boundary",
     ),
 )
 

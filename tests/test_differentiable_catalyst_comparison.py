@@ -157,6 +157,10 @@ def test_external_suite_records_catalyst_workflow_hard_gap(
     assert trainability.closure_status == "permanent_boundary"
     assert trainability.batching_support == "no_broadcast_no_vmap"
     assert "adaptive finite-shot trainability" in str(trainability.setup_instructions)
+    assert trainability.claim_boundary == (
+        "Catalyst adaptive finite-shot trainability boundary only; no runtime, "
+        "hardware, provider, or performance promotion claim."
+    )
     assert "broadcast/vmap trainability" in cast(
         str, trainability_payload["finite_shot_limitations"]
     )
