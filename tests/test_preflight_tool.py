@@ -1011,6 +1011,8 @@ def test_main_uses_coverage_pytest_by_default(
         "dla-topology-schema exact coverage threshold",
         "fusion-core-frc-bridge focused coverage",
         "fusion-core-frc-bridge exact coverage threshold",
+        "hardware-experiment-vqe focused coverage",
+        "hardware-experiment-vqe exact coverage threshold",
         "dla-topology-parity focused coverage",
         "dla-topology-parity exact coverage threshold",
         "geometric-control-product focused coverage",

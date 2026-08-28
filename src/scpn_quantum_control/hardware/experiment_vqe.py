@@ -90,6 +90,7 @@ def vqe_4q_experiment(
             n_iterations (int): COBYLA function evaluations.
             converged (bool): Whether optimizer converged.
             energy_history (list[float]): Energy at each iteration.
+
     """
     return _run_vqe(4, maxiter)
 
@@ -110,6 +111,7 @@ def vqe_8q_experiment(
             n_iterations (int): COBYLA function evaluations.
             converged (bool): Whether optimizer converged.
             energy_history (list[float]): Energy at each iteration.
+
     """
     return _run_vqe(8, maxiter)
 
@@ -135,6 +137,7 @@ def vqe_8q_hardware_experiment(
             sim_gap (float): sim_energy - exact_energy.
             hw_gap (float): hw_energy - exact_energy.
             n_iterations (int): COBYLA function evaluations.
+
     """
     n = 8
     K = build_knm_paper27(L=n)
@@ -198,6 +201,7 @@ def ansatz_comparison_hw_experiment(
             comparison (list[dict]): Per-ansatz dicts with ansatz, n_params,
                 sim_energy, hw_energy, exact_energy, sim_gap, hw_gap,
                 n_iterations.
+
     """
     from qiskit.circuit.library import efficient_su2, n_local
 
@@ -280,6 +284,7 @@ def vqe_landscape_experiment(
             exact_ground_energy (float): Exact diagonalization ground energy.
             landscapes (dict): Per-ansatz dicts with n_params, mean_energy,
                 std_energy, min_energy, max_energy.
+
     """
     from qiskit.circuit.library import n_local
 

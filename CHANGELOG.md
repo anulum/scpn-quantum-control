@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Hardware experiment VQE documentation quality: completed the
+  NumPy docstring contract across the statevector/injected-runner experiment
+  owner and its connected offline tests, and wired permanent strict typing,
+  connected execution, documentation, and exact source coverage into preflight
+  and CI. Hamiltonian and ansatz construction, seeded COBYLA arithmetic,
+  reference comparisons, estimator injection, landscape statistics, exports,
+  public APIs, and simulator/provider boundaries are unchanged.
+
 - 2026-08-28 — Fusion-core FRC bridge documentation quality: completed the
   NumPy docstring contract across surrogate calibration and its offline tests,
   and wired permanent strict typing, connected execution, documentation, and

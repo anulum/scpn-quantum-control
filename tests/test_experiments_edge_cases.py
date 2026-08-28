@@ -132,6 +132,7 @@ def test_vqe_landscape_has_samples():
 
 
 def test_R_from_xyz_returns_tuple():
+    """Return the complete order-parameter tuple for correlated counts."""
     from scpn_quantum_control.hardware.experiments import _R_from_xyz
 
     counts = {"00": 500, "11": 500}

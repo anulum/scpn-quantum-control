@@ -21,11 +21,13 @@ from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
 
 
 def test_connect_simulator(sim_runner):
+    """Connect the runner to its local simulator backend."""
     assert sim_runner.backend is not None
     assert "aer" in sim_runner.backend_name.lower() or sim_runner.use_simulator
 
 
 def test_connect_simulator_exposes_non_submit_descriptor(sim_runner):
+    """Expose a simulator descriptor that cannot submit work."""
     descriptor = sim_runner.backend_descriptor
     assert descriptor.name == "qiskit_aer"
     assert descriptor.provider == "local_qiskit_aer"
@@ -35,6 +37,7 @@ def test_connect_simulator_exposes_non_submit_descriptor(sim_runner):
 
 
 def test_transpile_simple_circuit(sim_runner):
+    """Transpile a measured Bell circuit for the local backend."""
     from qiskit import QuantumCircuit
 
     qc = QuantumCircuit(2)
@@ -46,6 +49,7 @@ def test_transpile_simple_circuit(sim_runner):
 
 
 def test_run_sampler_bell(sim_runner):
+    """Sample a Bell circuit for exactly the requested shot count."""
     from qiskit import QuantumCircuit
 
     qc = QuantumCircuit(2)
@@ -60,6 +64,7 @@ def test_run_sampler_bell(sim_runner):
 
 
 def test_save_result(sim_runner):
+    """Persist a job result with its identity and counts intact."""
     jr = JobResult(
         job_id="test_123",
         backend_name="test",
@@ -100,6 +105,7 @@ def test_retrieve_job_requires_connect():
 
 
 def test_run_sampler_simulator_rejects_dense_budget_before_backend_run(tmp_path):
+    """Reject an oversized sampler allocation before backend execution."""
     from qiskit import QuantumCircuit
 
     class FakePassManager:
@@ -129,6 +135,7 @@ def test_run_sampler_simulator_rejects_dense_budget_before_backend_run(tmp_path)
 
 
 def test_run_estimator_simulator_rejects_dense_budget_before_statevector(tmp_path):
+    """Reject an oversized estimator allocation before statevector creation."""
     from qiskit import QuantumCircuit
     from qiskit.quantum_info import SparsePauliOp
 
@@ -151,6 +158,7 @@ def test_run_estimator_simulator_rejects_dense_budget_before_statevector(tmp_pat
 
 
 def test_circuit_stats(sim_runner):
+    """Report basic transpiled-circuit resource statistics."""
     from qiskit import QuantumCircuit
 
     qc = QuantumCircuit(2)
@@ -168,12 +176,14 @@ def test_circuit_stats(sim_runner):
 
 
 def test_classical_kuramoto():
+    """Return bounded samples from the classical Kuramoto reference."""
     ref = classical_kuramoto_reference(4, t_max=0.5, dt=0.1)
     assert len(ref["R"]) == 6
     assert all(0.0 <= r <= 1.5 for r in ref["R"])
 
 
 def test_classical_exact_diag():
+    """Return the complete four-qubit eigenspectrum and positive gap."""
     ref = classical_exact_diag(4)
     assert ref["ground_energy"] < 0  # XY Hamiltonian should have negative ground
     assert ref["spectral_gap"] > 0
@@ -181,6 +191,7 @@ def test_classical_exact_diag():
 
 
 def test_classical_exact_evolution():
+    """Return finite samples from classical exact evolution."""
     ref = classical_exact_evolution(3, 0.3, 0.1)
     assert len(ref["R"]) == 4
     assert all(np.isfinite(r) for r in ref["R"])
@@ -202,6 +213,7 @@ def test_classical_exact_diag_n1():
 
 
 def test_classical_brute_mpc():
+    """Enumerate the complete binary horizon and retain its optimum."""
     B = np.eye(2)
     target = np.array([0.8, 0.6])
     ref = classical_brute_mpc(B, target, horizon=4)
@@ -214,6 +226,7 @@ def test_classical_brute_mpc():
 
 
 def test_kuramoto_4osc_on_simulator(sim_runner):
+    """Run the four-oscillator experiment through the local simulator."""
     from scpn_quantum_control.hardware.experiments import kuramoto_4osc_experiment
 
     result = kuramoto_4osc_experiment(sim_runner, shots=500, n_time_steps=3, dt=0.05)
@@ -589,7 +602,6 @@ def test_classical_evolution_matches_qiskit():
     This verifies that _build_initial_state and _expectation_pauli use
     Qiskit's little-endian convention consistently with knm_to_hamiltonian.
     """
-
     from qiskit.circuit.library import PauliEvolutionGate
     from qiskit.quantum_info import Statevector
     from qiskit.synthesis import LieTrotter

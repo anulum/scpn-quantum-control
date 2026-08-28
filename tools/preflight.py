@@ -104,6 +104,9 @@ if TYPE_CHECKING:
     )
     from tools import governed_route_matrix_quality_gates as _governed_route_matrix_quality_gates
     from tools import gradient_tape_quality_gates as _gradient_tape_quality_gates
+    from tools import (
+        hardware_experiment_vqe_quality_gates as _hardware_experiment_vqe_quality_gates,
+    )
     from tools import hardware_hal_quality_gates as _hardware_hal_quality_gates
     from tools import hardware_safe_execution_quality_gates as _hardware_safe_quality_gates
     from tools import (
@@ -286,6 +289,9 @@ else:
     _feedback_loop_quality_gates = import_module("tools.feedback_loop_quality_gates")
     _fusion_core_frc_bridge_quality_gates = import_module(
         "tools.fusion_core_frc_bridge_quality_gates"
+    )
+    _hardware_experiment_vqe_quality_gates = import_module(
+        "tools.hardware_experiment_vqe_quality_gates"
     )
     _gradient_tape_quality_gates = import_module("tools.gradient_tape_quality_gates")
     _hardware_hal_quality_gates = import_module("tools.hardware_hal_quality_gates")
@@ -720,6 +726,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_dla_topology_optimizer_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_schema_quality_gates.build_static_quality_gates(_PY),
     *_fusion_core_frc_bridge_quality_gates.build_static_quality_gates(_PY),
+    *_hardware_experiment_vqe_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_parity_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_baseline_design_quality_gates.build_static_quality_gates(_PY),
@@ -1185,6 +1192,9 @@ DLA_TOPOLOGY_SCHEMA_COVERAGE_GATES = _dla_topology_schema_quality_gates.build_co
 FUSION_CORE_FRC_BRIDGE_COVERAGE_GATES = _fusion_core_frc_bridge_quality_gates.build_coverage_gates(
     _PY
 )
+HARDWARE_EXPERIMENT_VQE_COVERAGE_GATES = (
+    _hardware_experiment_vqe_quality_gates.build_coverage_gates(_PY)
+)
 DLA_TOPOLOGY_PARITY_COVERAGE_GATES = _dla_topology_parity_quality_gates.build_coverage_gates(_PY)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
     _geometric_control_product_quality_gates.build_coverage_gates(_PY)
@@ -1586,6 +1596,7 @@ def main() -> int:
             gates.extend(DLA_TOPOLOGY_OPTIMIZER_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_SCHEMA_COVERAGE_GATES)
             gates.extend(FUSION_CORE_FRC_BRIDGE_COVERAGE_GATES)
+            gates.extend(HARDWARE_EXPERIMENT_VQE_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_PARITY_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
             gates.extend(TN_MPS_BASELINE_DESIGN_COVERAGE_GATES)
