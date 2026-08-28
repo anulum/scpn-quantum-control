@@ -111,7 +111,7 @@ claim-boundary, and notes. N=30-40 compute remains owner-gated, and the
 artifact does not support tensor-network-hardness or broad quantum-advantage
 claims.
 
-The QWC-5.2 Josephson K_nm magnitude-study design is regenerated with:
+The Josephson K_nm magnitude-study design is regenerated with:
 
 ```bash
 scpn-bench knm-josephson-magnitude-study

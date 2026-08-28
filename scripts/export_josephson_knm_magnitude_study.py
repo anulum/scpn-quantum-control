@@ -6,7 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Josephson K_nm Magnitude Study Export
-"""Export the QWC-5.2 Josephson K_nm magnitude-study artifacts."""
+"""Export the Josephson K_nm magnitude-study artifacts."""
 
 from __future__ import annotations
 
@@ -55,7 +55,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
-    """Write the QWC-5.2 Josephson K_nm magnitude-study artifacts."""
+    """Write the Josephson K_nm magnitude-study artifacts."""
     args = parse_args()
     design = build_josephson_knm_magnitude_study_design()
     json_path = args.out_dir / f"josephson_knm_magnitude_study_{DATE}.json"

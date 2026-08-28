@@ -96,7 +96,7 @@ generated artifact and regeneration command.
 
 ### 1d. `josephson_magnitude_study` — Josephson K_nm Magnitude Study
 
-Builds the QWC-5.2 no-claim preregistration artifact for the Josephson
+Builds the no-claim preregistration artifact for the Josephson
 K_nm measured-magnitude follow-up:
 
 - `build_josephson_knm_magnitude_study_design` — deterministic design manifest

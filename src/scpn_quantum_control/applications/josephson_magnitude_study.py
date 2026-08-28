@@ -254,7 +254,7 @@ def render_josephson_knm_magnitude_study_markdown(
     lines = [
         "# Josephson K_nm Magnitude Study",
         "",
-        "This QWC-5.2 artifact records the Josephson topology-correlation",
+        "This preregistration records the Josephson topology-correlation",
         "candidate and the measured-magnitude gates required before any",
         "physical K_nm coupling claim.",
         "",

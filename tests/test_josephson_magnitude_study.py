@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Josephson K_nm Magnitude Study
-"""Tests for the QWC-5.2 Josephson K_nm magnitude-study design."""
+"""Tests for the Josephson K_nm magnitude-study design."""
 
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ export_script = _load_export_script()
 
 
 def test_design_records_rounded_rho_candidate_without_magnitude_claim() -> None:
-    """The QWC-5.2 manifest pins the rounded rho candidate and blocks promotion."""
+    """The manifest pins the rounded rho candidate and blocks promotion."""
     design = build_josephson_knm_magnitude_study_design()
     payload = design.to_dict()
 
@@ -224,11 +224,36 @@ def test_markdown_report_and_public_exports_are_wired() -> None:
     assert "build_josephson_knm_magnitude_study_design" in applications.__all__
 
 
+def test_export_parser_accepts_explicit_artifact_paths(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The public exporter accepts explicit JSON-directory and Markdown paths."""
+    out_dir = tmp_path / "data"
+    doc_path = tmp_path / "report.md"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            str(EXPORT_SCRIPT_PATH),
+            "--out-dir",
+            str(out_dir),
+            "--doc-path",
+            str(doc_path),
+        ],
+    )
+
+    args = export_script.parse_args()
+
+    assert args.out_dir == out_dir
+    assert args.doc_path == doc_path
+
+
 def test_export_script_writes_json_and_markdown(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """The QWC-5.2 artifacts regenerate through the export script."""
+    """The magnitude-study artifacts regenerate through the export script."""
     out_dir = tmp_path / "data"
     doc_path = tmp_path / "josephson_knm_magnitude_study.md"
     monkeypatch.setattr(
