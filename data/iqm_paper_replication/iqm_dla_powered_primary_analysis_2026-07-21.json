@@ -163,5 +163,5 @@
       "relative_asymmetry": -0.05122950819672131
     }
   ],
-  "interpretation_boundary": "device-noise statement only: exact statevector baseline fixes noiseless parity leakage at zero (AUD-6)"
+  "interpretation_boundary": "device-noise statement only: exact statevector baseline fixes noiseless parity leakage at zero"
 }

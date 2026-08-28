@@ -168,7 +168,7 @@ def main(argv: list[str] | None = None) -> int:
         "per_repetition_drift": drift_table,
         "interpretation_boundary": (
             "device-noise statement only: exact statevector baseline fixes "
-            "noiseless parity leakage at zero (AUD-6)"
+            "noiseless parity leakage at zero"
         ),
     }
     out_path = Path(args.out)
@@ -180,10 +180,11 @@ def main(argv: list[str] | None = None) -> int:
         f"pooled: leak_even {leak_even:.4f} leak_odd {leak_odd:.4f} "
         f"rel {primary['relative_asymmetry']:+.4f} z {z:.3f} p {p:.3e}"
     )
-    for depth, row in per_depth.items():
+    for depth_label, summary_row in per_depth.items():
         print(
-            f"d{depth}: rel {row['relative_asymmetry']:+.4f} p {row['one_sided_p']:.3e} "
-            f"sign+ {row['sign_matches_ibm_positive']}"
+            f"d{depth_label}: rel {summary_row['relative_asymmetry']:+.4f} "
+            f"p {summary_row['one_sided_p']:.3e} "
+            f"sign+ {summary_row['sign_matches_ibm_positive']}"
         )
     print(f"PRIMARY REJECTS H0 (backend-universal direction): {primary['rejects_h0']}")
     return 0

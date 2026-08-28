@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1221
+    "test_files": 1222
   },
   "documentation": {
     "examples": [
@@ -8167,6 +8167,7 @@
       "tests/test_analog_native_readiness_branches.py",
       "tests/test_analyse_ibm_v2_recovered.py",
       "tests/test_analyse_iqm_dla_parity.py",
+      "tests/test_analyse_iqm_dla_powered_primary.py",
       "tests/test_analyse_iqm_dla_window_variability.py",
       "tests/test_analyse_iqm_layout_campaign.py",
       "tests/test_analyse_iqm_layout_pinned_repeat.py",
