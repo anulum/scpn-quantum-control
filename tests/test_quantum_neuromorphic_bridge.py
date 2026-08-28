@@ -24,6 +24,7 @@ from scpn_quantum_control.qsnn.quantum_neuromorphic_bridge import (
 
 
 def test_bridge_step_returns_complete_finite_state():
+    """Return finite bounded spike, membrane, weight, circuit, and claim state."""
     bridge = QuantumNeuromorphicBridge(
         n_inputs=2,
         n_neurons=3,
@@ -48,6 +49,7 @@ def test_bridge_step_returns_complete_finite_state():
 
 
 def test_bridge_is_exported_from_public_api():
+    """Expose the bridge, result record, and claim boundary through the facade."""
     bridge = sqc.QuantumNeuromorphicBridge(n_inputs=1, n_neurons=1, seed=1)
     result = bridge.step(np.array([1.0]))
 
@@ -56,6 +58,7 @@ def test_bridge_is_exported_from_public_api():
 
 
 def test_trace_stdp_potentiates_causal_pre_before_post_input_weight():
+    """Potentiate an input weight for causal pre-before-post spike timing."""
     bridge = QuantumNeuromorphicBridge(
         n_inputs=1,
         n_neurons=1,
@@ -74,6 +77,7 @@ def test_trace_stdp_potentiates_causal_pre_before_post_input_weight():
 
 
 def test_trace_stdp_depresses_anti_causal_post_before_pre_input_weight():
+    """Depress an input weight for anti-causal post-before-pre timing."""
     bridge = QuantumNeuromorphicBridge(
         n_inputs=1,
         n_neurons=1,
@@ -92,6 +96,7 @@ def test_trace_stdp_depresses_anti_causal_post_before_pre_input_weight():
 
 
 def test_dynamic_coupling_updates_recurrent_weights_without_self_loops():
+    """Update bounded recurrent coupling while retaining a zero diagonal."""
     bridge = QuantumNeuromorphicBridge(
         n_inputs=2,
         n_neurons=3,
@@ -112,6 +117,7 @@ def test_dynamic_coupling_updates_recurrent_weights_without_self_loops():
 
 
 def test_seeded_stochastic_bridge_is_reproducible():
+    """Reproduce finite-shot spike sequences from the same seed."""
     kwargs = dict(
         n_inputs=2,
         n_neurons=2,
@@ -129,6 +135,7 @@ def test_seeded_stochastic_bridge_is_reproducible():
 
 
 def test_bridge_rejects_invalid_shapes_and_nonfinite_inputs():
+    """Reject malformed weight/current shapes and non-finite drive values."""
     with pytest.raises(ValueError, match="input_weights shape"):
         QuantumNeuromorphicBridge(n_inputs=2, n_neurons=3, input_weights=np.ones((2, 3)))
 
@@ -142,6 +149,7 @@ def test_bridge_rejects_invalid_shapes_and_nonfinite_inputs():
 
 
 def test_trace_state_decay_is_bounded_and_finite():
+    """Keep exponentially decayed traces finite and strictly bounded."""
     state = TraceSTDPState(n_pre=2, n_post=2)
     state.pre_trace[:] = 1.0
     state.post_trace[:] = 1.0

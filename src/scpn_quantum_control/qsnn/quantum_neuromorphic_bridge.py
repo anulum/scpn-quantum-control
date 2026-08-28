@@ -87,6 +87,7 @@ class QuantumLIFConfig:
     refractory_steps: int = 0
 
     def __post_init__(self) -> None:
+        """Validate LIF thresholds, time constants, shots, and refractory time."""
         if self.v_threshold <= self.v_rest:
             raise ValueError("v_threshold must exceed v_rest")
         if self.tau_mem <= 0.0:
@@ -111,6 +112,7 @@ class TraceSTDPConfig:
     enabled: bool = True
 
     def __post_init__(self) -> None:
+        """Validate STDP amplitudes, time constants, and integration step."""
         if self.a_plus < 0.0 or self.a_minus < 0.0:
             raise ValueError("STDP amplitudes must be non-negative")
         if self.tau_pre <= 0.0 or self.tau_post <= 0.0:
@@ -131,6 +133,7 @@ class DynamicCouplingConfig:
     enabled: bool = True
 
     def __post_init__(self) -> None:
+        """Validate recurrent learning, decay, coherence, and weight bounds."""
         if self.learning_rate < 0.0:
             raise ValueError("learning_rate must be non-negative")
         if not 0.0 <= self.decay_rate <= 1.0:
@@ -151,6 +154,7 @@ class TraceSTDPState:
     post_trace: NDArray[np.float64] | None = None
 
     def __post_init__(self) -> None:
+        """Validate dimensions and initialize finite pre/post trace buffers."""
         if self.n_pre <= 0 or self.n_post <= 0:
             raise ValueError("trace dimensions must be positive")
         if self.pre_trace is None:
@@ -227,6 +231,7 @@ class QuantumNeuromorphicBridge:
         topology_policy: RecurrentCouplingPolicy | None = None,
         topology_policy_interval: int = 1,
     ) -> None:
+        """Initialize bounded LIF, STDP, coupling, topology, and spike state."""
         if n_inputs <= 0:
             raise ValueError("n_inputs must be positive")
         if n_neurons <= 0:

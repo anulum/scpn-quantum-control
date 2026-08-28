@@ -196,6 +196,9 @@ if TYPE_CHECKING:
     from tools import qpu_compute_product_quality_gates as _qpu_compute_product_quality_gates
     from tools import qpu_compute_types_quality_gates as _qpu_compute_types_quality_gates
     from tools import (
+        quantum_neuromorphic_bridge_quality_gates as _quantum_neuromorphic_bridge_quality_gates,
+    )
+    from tools import (
         quantum_sync_oracle_product_quality_gates as _quantum_sync_oracle_product_quality_gates,
     )
     from tools import research_lane_registry_quality_gates as _research_lane_registry_quality_gates
@@ -421,6 +424,9 @@ else:
     )
     _program_ad_adjoint_quality_gates = import_module("tools.program_ad_adjoint_quality_gates")
     _qpu_compute_types_quality_gates = import_module("tools.qpu_compute_types_quality_gates")
+    _quantum_neuromorphic_bridge_quality_gates = import_module(
+        "tools.quantum_neuromorphic_bridge_quality_gates"
+    )
     _open_system_completeness_quality_gates = import_module(
         "tools.open_system_completeness_quality_gates"
     )
@@ -813,6 +819,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_dla_topology_parity_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_projection_quality_gates.build_static_quality_gates(_PY),
     *_magnetisation_sectors_quality_gates.build_static_quality_gates(_PY),
+    *_quantum_neuromorphic_bridge_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_baseline_design_quality_gates.build_static_quality_gates(_PY),
     *_error_mitigation_product_quality_gates.build_static_quality_gates(_PY),
@@ -1316,6 +1323,9 @@ DLA_TOPOLOGY_PROJECTION_COVERAGE_GATES = (
 MAGNETISATION_SECTORS_COVERAGE_GATES = _magnetisation_sectors_quality_gates.build_coverage_gates(
     _PY
 )
+QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_GATES = (
+    _quantum_neuromorphic_bridge_quality_gates.build_coverage_gates(_PY)
+)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
     _geometric_control_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -1733,6 +1743,7 @@ def main() -> int:
             gates.extend(DLA_TOPOLOGY_PARITY_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_PROJECTION_COVERAGE_GATES)
             gates.extend(MAGNETISATION_SECTORS_COVERAGE_GATES)
+            gates.extend(QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
             gates.extend(TN_MPS_BASELINE_DESIGN_COVERAGE_GATES)
             gates.extend(ERROR_MITIGATION_PRODUCT_COVERAGE_GATES)

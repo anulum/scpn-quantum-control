@@ -1045,6 +1045,8 @@ def test_main_uses_coverage_pytest_by_default(
         "DLA topology-projection exact coverage threshold",
         "magnetisation-sectors focused coverage",
         "magnetisation-sectors exact coverage threshold",
+        "quantum-neuromorphic-bridge focused coverage",
+        "quantum-neuromorphic-bridge exact coverage threshold",
         "geometric-control-product focused coverage",
         "geometric-control-product exact coverage threshold",
         "tn-mps-baseline-design focused coverage",

@@ -62,6 +62,7 @@ def _drive(bridge: QuantumNeuromorphicBridge, steps: int) -> None:
 
 
 def test_policy_is_applied_every_step_by_default() -> None:
+    """Apply a configured recurrent topology policy after every step."""
     policy = _RecordingPolicy()
     bridge = _bridge(topology_policy=policy)
     _drive(bridge, 3)
@@ -69,6 +70,7 @@ def test_policy_is_applied_every_step_by_default() -> None:
 
 
 def test_policy_interval_throttles_application() -> None:
+    """Apply topology projection only when its step interval elapses."""
     policy = _RecordingPolicy()
     bridge = _bridge(topology_policy=policy, topology_policy_interval=3)
     _drive(bridge, 7)
@@ -76,6 +78,7 @@ def test_policy_interval_throttles_application() -> None:
 
 
 def test_no_policy_means_no_projection_state_change() -> None:
+    """Leave topology projection counters untouched when no policy is set."""
     bridge = _bridge()
     _drive(bridge, 2)
     assert bridge.topology_policy is None
@@ -83,11 +86,13 @@ def test_no_policy_means_no_projection_state_change() -> None:
 
 
 def test_interval_below_one_is_rejected() -> None:
+    """Reject non-positive topology-policy intervals."""
     with pytest.raises(ValueError, match="topology_policy_interval"):
         _bridge(topology_policy=_RecordingPolicy(), topology_policy_interval=0)
 
 
 def test_policy_output_keeps_bridge_invariants() -> None:
+    """Clip projected weights and preserve finite zero-diagonal coupling."""
     bridge = _bridge(topology_policy=_RecordingPolicy(factor=100.0))
     _drive(bridge, 1)
     weights = bridge.recurrent_weights
@@ -98,18 +103,21 @@ def test_policy_output_keeps_bridge_invariants() -> None:
 
 
 def test_malformed_policy_shape_fails_closed() -> None:
+    """Reject a topology policy returning the wrong matrix shape."""
     bridge = _bridge(topology_policy=_MalformedShapePolicy())
     with pytest.raises(ValueError, match="topology_policy output shape"):
         _drive(bridge, 1)
 
 
 def test_non_finite_policy_output_fails_closed() -> None:
+    """Reject a topology policy returning non-finite coupling weights."""
     bridge = _bridge(topology_policy=_NonFinitePolicy())
     with pytest.raises(ValueError, match="topology_policy output must contain only finite"):
         _drive(bridge, 1)
 
 
 def test_topological_policy_satisfies_the_protocol_and_records_a_trace() -> None:
+    """Run the production topology policy and retain its optimization trace."""
     objective = CouplingTopologyObjective(
         ph_backend=NetworkCycleBackend(threshold=0.02),
         ledger=TopologyConstraintLedger(),

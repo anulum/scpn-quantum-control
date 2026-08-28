@@ -45,6 +45,7 @@ def _square_coupling() -> NDArray[np.float64]:
 
 
 def test_artifact_export_round_trips_with_stable_digest() -> None:
+    """Round-trip a topology optimization artifact with a stable digest."""
     K0 = _square_coupling()
     objective = CouplingTopologyObjective(
         ph_backend=NetworkCycleBackend(threshold=0.2),
@@ -67,6 +68,7 @@ def test_artifact_export_round_trips_with_stable_digest() -> None:
 
 
 def test_topological_policy_projects_qsnn_recurrent_weights() -> None:
+    """Project QSNN recurrent weights through the production topology policy."""
     bridge = QuantumNeuromorphicBridge(
         n_inputs=2,
         n_neurons=4,
@@ -97,6 +99,7 @@ def test_topological_policy_projects_qsnn_recurrent_weights() -> None:
 
 
 def test_hardware_manifest_rejects_missing_preregistration_and_budget() -> None:
+    """Reject a hardware manifest lacking preregistration and a spend bound."""
     manifest = TopologyHardwareManifest(
         backend_name="ibm_fez",
         qubits=(21, 22, 23, 24),
@@ -113,6 +116,7 @@ def test_hardware_manifest_rejects_missing_preregistration_and_budget() -> None:
 
 
 def test_hardware_manifest_accepts_provider_neutral_descriptor() -> None:
+    """Validate a no-submit manifest against a provider-neutral descriptor."""
     descriptor = SimpleNamespace(
         name="local_aer",
         capabilities=SimpleNamespace(n_qubits=8, coupling_map=[(0, 1), (1, 2), (2, 3)]),
@@ -135,6 +139,7 @@ def test_hardware_manifest_accepts_provider_neutral_descriptor() -> None:
 
 
 def test_hardware_manifest_rejects_live_submission_flag() -> None:
+    """Reject any manifest that enables live submission."""
     manifest = TopologyHardwareManifest(
         backend_name="local_aer",
         qubits=(0, 1, 2, 3),
@@ -152,6 +157,7 @@ def test_hardware_manifest_rejects_live_submission_flag() -> None:
 
 
 def test_legacy_wrapper_has_no_cross_repo_dependency() -> None:
+    """Keep the legacy topology wrapper free of cross-repository imports."""
     legacy_source = inspect.getsource(legacy_topology)
 
     forbidden = (

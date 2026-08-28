@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Quantum-neuromorphic bridge documentation quality: completed
+  the preview-inclusive NumPy docstring contract across LIF, exponential STDP,
+  recurrent coupling, topology projection, quantum-circuit construction, and
+  connected tests, and wired permanent strict typing, offline execution,
+  complete documentation, and exact source coverage into preflight and CI.
+  Spike-domain temporal state, numerical behaviour, public APIs, simulator
+  claims, and the no-neuromorphic-hardware boundary are unchanged.
+
 - 2026-08-28 — Magnetisation-sector documentation quality: completed the
   preview-inclusive NumPy docstring contract across sector construction,
   eigensolvers, level-spacing analysis, and owning tests, and wired permanent
