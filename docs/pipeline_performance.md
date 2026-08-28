@@ -83,7 +83,7 @@ state, and the protocol claim boundary for the current rows.
 baseline rows, allowed claims, forbidden claims, full-campaign blockers, and
 hardware boundary.
 
-The QWC-4.2 TN/MPS baseline design is regenerated with:
+The N=30-40 TN/MPS baseline design is regenerated with:
 
 ```bash
 scpn-bench s2-tn-mps-baseline-design
