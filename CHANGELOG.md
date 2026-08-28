@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — Josephson magnitude-study documentation quality: completed the
+  preview-inclusive NumPy docstring contract across the fail-closed design
+  owner, and wired permanent strict typing, real offline study/export
+  execution, complete owner documentation, and exact source coverage into
+  preflight and CI. Candidate metrics, validation, evidence gates, artifact
+  rendering, public APIs, and bounded non-promotion claims are unchanged.
+
 - 2026-08-28 — Studio coupling-invariant documentation and exact quality:
   completed the preview-inclusive NumPy docstring contract across the schema-B
   evidence-bundle owner, added real public module execution, and wired

@@ -1073,6 +1073,8 @@ def test_main_uses_coverage_pytest_by_default(
         "Kuramoto layout-optimiser exact coverage threshold",
         "QRC-baseline focused coverage",
         "QRC-baseline exact coverage threshold",
+        "Josephson magnitude-study focused coverage",
+        "Josephson magnitude-study exact coverage threshold",
         "topology-kernel classifier focused coverage",
         "topology-kernel classifier exact coverage threshold",
         "quantum-Phi focused coverage",

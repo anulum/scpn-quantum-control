@@ -56,6 +56,7 @@ class JosephsonKnmCandidate:
     claim_status: str
 
     def __post_init__(self) -> None:
+        """Validate candidate dimensions, provenance, and bounded metrics."""
         _require_positive_int(self.n_junctions, "n_junctions")
         _require_text(self.topology, "topology")
         _require_unit_interval(self.topology_correlation, "topology_correlation")
@@ -97,6 +98,7 @@ class JosephsonMagnitudeGate:
     evidence_required: tuple[str, ...]
 
     def __post_init__(self) -> None:
+        """Validate the gate identity, state, and required evidence."""
         _require_text(self.name, "name")
         _require_text(self.current_status, "current_status")
         _require_nonempty_texts(self.evidence_required, "evidence_required")
@@ -129,6 +131,7 @@ class JosephsonMagnitudeStudyDesign:
     hardware_submission_required: bool = False
 
     def __post_init__(self) -> None:
+        """Validate the complete fail-closed preregistration manifest."""
         _require_text(self.schema, "schema")
         _require_text(self.calibration_artifact_schema, "calibration_artifact_schema")
         _validate_extension_targets(self.extension_targets)
@@ -187,6 +190,7 @@ def build_josephson_knm_magnitude_study_design(
     JosephsonMagnitudeStudyDesign
         Design manifest with topology evidence, required calibration fields,
         and fail-closed promotion gates.
+
     """
     _require_positive_int(n_junctions, "n_junctions")
     _require_text(topology, "topology")
