@@ -144,7 +144,7 @@ Route identifiers use `family:ecosystem.or.surface` keys:
 | `provider` | `provider:hardware.gradient_live` |
 | `competitor_boundary` | `competitor:differentiation_interface.silent_wrong_grads`, `competitor:catalyst.no_broadcast_adaptive_shots` |
 
-BL-70 adds two explicit SSGF latent-geometry transform cells:
+The SSGF geometry-gradient product adds two explicit latent-geometry transform cells:
 
 - `transform:ssgf.latent_finite_difference` is supported for bounded local
   simulation of the complete nonlinear `z -> softplus(W) -> H -> C` path.

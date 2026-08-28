@@ -116,7 +116,7 @@
   deterministic latency and safety policies.
   Digest-bound replay and functional non-isolated evidence are included;
   hardware, provider submission, and operational plasma control remain refused.
-- 2026-07-25 — SSGF quantum-in-the-loop geometry gradient (BL-70):
+- 2026-07-25 — SSGF quantum-in-the-loop geometry gradient:
   `scpn_quantum_control.ssgf_geometry_gradient_product` freezes the ambient
   SSGF surface, cross-certifies `C=1-R`, checks finite-difference refinement and
   phase periodicity, and emits bounded functional outer-cycle evidence. The
