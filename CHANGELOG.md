@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — ML-DSA honesty-seal documentation quality: completed the NumPy
+  docstring contract for the signer/verifier and wired permanent strict typing,
+  connected seal/result-pack execution, documentation, and exact source
+  coverage into preflight and CI. Public APIs, deterministic vectors, domain
+  separation, native secret custody and destruction, fail-closed behaviour,
+  and research-assurance boundaries are unchanged.
+
 - 2026-08-28 — Topology-kernel evidence documentation quality: completed the
   NumPy docstring contract across deterministic evidence custody and its
   fail-closed tests, and wired permanent strict typing, documentation, and

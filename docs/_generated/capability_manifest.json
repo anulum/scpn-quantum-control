@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1233
+    "test_files": 1234
   },
   "documentation": {
     "examples": [
@@ -8701,6 +8701,7 @@
       "tests/test_ml_dsa_branches.py",
       "tests/test_ml_dsa_pqc.py",
       "tests/test_ml_dsa_seal.py",
+      "tests/test_ml_dsa_seal_quality_gate.py",
       "tests/test_mlir_enzyme_audit.py",
       "tests/test_mlir_enzyme_evidence_contracts.py",
       "tests/test_mlir_enzyme_evidence_docstrings.py",

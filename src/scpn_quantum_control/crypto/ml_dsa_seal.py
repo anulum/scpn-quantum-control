@@ -116,6 +116,7 @@ class MLDSAVerifier:
     ------
     ValueError
         If ``public_key`` is not exactly :data:`PUBLIC_KEY_BYTES` long.
+
     """
 
     alg: Final = ALG
@@ -138,6 +139,7 @@ class MLDSAVerifier:
             The canonical bytes the signature is taken over.
         signature
             The detached ML-DSA-65 signature to check.
+
         """
         if len(signature) != SIGNATURE_BYTES:
             return False
@@ -168,6 +170,7 @@ class MLDSASigner:
     ------
     ValueError
         If ``key_id`` is empty or whitespace.
+
     """
 
     alg: Final = ALG
@@ -213,6 +216,7 @@ class MLDSASigner:
             If ``seed`` is not exactly 32 bytes long or ``key_id`` is empty.
         RuntimeError
             If the compiled zeroizing signing-key backend is unavailable.
+
         """
         if not key_id.strip():
             raise ValueError("key_id must be a non-empty identifier")
@@ -230,6 +234,7 @@ class MLDSASigner:
         ----------
         message
             The canonical bytes to sign.
+
         """
         if self._native_key is not None:
             return bytes(self._native_key.sign(message, SEAL_CONTEXT))

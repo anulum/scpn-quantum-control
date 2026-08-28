@@ -993,6 +993,8 @@ def test_main_uses_coverage_pytest_by_default(
         "topology-kernel-schema exact coverage threshold",
         "topology-kernel-evidence focused coverage",
         "topology-kernel-evidence exact coverage threshold",
+        "ml-dsa-seal focused coverage",
+        "ml-dsa-seal exact coverage threshold",
         "feedback-loop focused coverage",
         "feedback-loop exact coverage threshold",
         "hardware-hal focused coverage",
