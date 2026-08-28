@@ -219,6 +219,15 @@ def test_spectral_diagnostics_marks_empty_rows_unavailable():
 
 def test_load_measured_couplings_requires_couplings_list(tmp_path):
     path = tmp_path / "bad.json"
+    path.write_text("[]", encoding="utf-8")
+
+    try:
+        load_measured_couplings(path)
+    except ValueError as exc:
+        assert "JSON object" in str(exc)
+    else:
+        raise AssertionError("Expected non-object measured coupling payload to fail")
+
     path.write_text(
         json.dumps({"system": "bad", "unit": "dimensionless", "normalisation": "bad"}),
         encoding="utf-8",
@@ -235,6 +244,16 @@ def test_load_measured_couplings_requires_couplings_list(tmp_path):
 def test_evaluate_candidate_systems_marks_curated_topology_as_non_closing(tmp_path):
     candidate_dir = tmp_path / "candidates"
     candidate_dir.mkdir()
+    candidate_path = candidate_dir / "unit_candidate.json"
+    candidate_path.write_text("[]", encoding="utf-8")
+
+    try:
+        evaluate_candidate_systems(candidate_dir, k_base=0.45, alpha=0.3)
+    except ValueError as exc:
+        assert "JSON object" in str(exc)
+    else:
+        raise AssertionError("Expected non-object candidate artifact to fail")
+
     canonical = np.asarray(audit_module.build_knm_paper27(L=4, K_base=0.45, K_alpha=0.3))
     measured = canonical * 2.0
     np.fill_diagonal(measured, 0.0)
@@ -249,7 +268,7 @@ def test_evaluate_candidate_systems_marks_curated_topology_as_non_closing(tmp_pa
         "source_mode": "curated",
         "source_name": "unit_candidate",
     }
-    (candidate_dir / "unit_candidate.json").write_text(json.dumps(artifact), encoding="utf-8")
+    candidate_path.write_text(json.dumps(artifact), encoding="utf-8")
 
     scan = evaluate_candidate_systems(candidate_dir, k_base=0.45, alpha=0.3)
 

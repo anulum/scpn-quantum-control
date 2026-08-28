@@ -682,7 +682,7 @@
   "parameters": {
     "alpha": 0.3,
     "anchor_source_label": "Paper 27 Table 2 constants in code",
-    "cross_boost_source_label": "Paper 27 S4.3 constants in code",
+    "cross_boost_source_label": "Paper 27 cross-hierarchy constants in code",
     "k_base": 0.45,
     "n_layers": 5
   },

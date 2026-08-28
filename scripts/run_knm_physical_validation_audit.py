@@ -23,11 +23,14 @@ import subprocess
 import sys
 from itertools import permutations
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
+from numpy.typing import NDArray
 
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
+
+FloatArray = NDArray[np.float64]
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CODEBASE: Path | None = None
@@ -118,7 +121,7 @@ def _jsonable(value: Any) -> Any:
     return value
 
 
-def _matrix_stats(K: np.ndarray) -> dict[str, Any]:
+def _matrix_stats(K: FloatArray) -> dict[str, Any]:
     offdiag = K[~np.eye(K.shape[0], dtype=bool)]
     return {
         "shape": list(K.shape),
@@ -132,15 +135,15 @@ def _matrix_stats(K: np.ndarray) -> dict[str, Any]:
     }
 
 
-def _offdiag_values(matrix: np.ndarray) -> np.ndarray:
-    return matrix[~np.eye(matrix.shape[0], dtype=bool)]
+def _offdiag_values(matrix: FloatArray) -> FloatArray:
+    return np.asarray(matrix[~np.eye(matrix.shape[0], dtype=bool)], dtype=np.float64)
 
 
-def _upper_triangle_values(matrix: np.ndarray) -> np.ndarray:
-    return matrix[np.triu_indices(matrix.shape[0], k=1)]
+def _upper_triangle_values(matrix: FloatArray) -> FloatArray:
+    return np.asarray(matrix[np.triu_indices(matrix.shape[0], k=1)], dtype=np.float64)
 
 
-def _pearson_corr(left: np.ndarray, right: np.ndarray) -> float | None:
+def _pearson_corr(left: FloatArray, right: FloatArray) -> float | None:
     if left.size == 0 or right.size == 0:
         return None
     if float(np.std(left)) == 0.0 or float(np.std(right)) == 0.0:
@@ -148,7 +151,7 @@ def _pearson_corr(left: np.ndarray, right: np.ndarray) -> float | None:
     return float(np.corrcoef(left, right)[0, 1])
 
 
-def _rankdata(values: np.ndarray) -> np.ndarray:
+def _rankdata(values: FloatArray) -> FloatArray:
     order = np.argsort(values, kind="mergesort")
     ranks = np.empty(values.size, dtype=np.float64)
     start = 0
@@ -162,13 +165,13 @@ def _rankdata(values: np.ndarray) -> np.ndarray:
     return ranks
 
 
-def _spearman_corr(left: np.ndarray, right: np.ndarray) -> float | None:
+def _spearman_corr(left: FloatArray, right: FloatArray) -> float | None:
     if left.size == 0 or right.size == 0:
         return None
     return _pearson_corr(_rankdata(left), _rankdata(right))
 
 
-def _fit_through_origin(canonical: np.ndarray, observed: np.ndarray) -> dict[str, float]:
+def _fit_through_origin(canonical: FloatArray, observed: FloatArray) -> dict[str, float]:
     denom = float(np.dot(canonical, canonical))
     scale = float(np.dot(canonical, observed) / denom) if denom else 0.0
     scaled = scale * canonical
@@ -184,7 +187,7 @@ def _fit_through_origin(canonical: np.ndarray, observed: np.ndarray) -> dict[str
     }
 
 
-def _matrix_from_comparison_rows(rows: list[dict[str, Any]], *, key: str) -> np.ndarray:
+def _matrix_from_comparison_rows(rows: list[dict[str, Any]], *, key: str) -> FloatArray:
     n = max(max(row["edge_1_indexed"]) for row in rows) if rows else 0
     matrix = np.zeros((n, n), dtype=np.float64)
     for row in rows:
@@ -195,7 +198,7 @@ def _matrix_from_comparison_rows(rows: list[dict[str, Any]], *, key: str) -> np.
     return matrix
 
 
-def _rmse(left: np.ndarray, right: np.ndarray) -> float:
+def _rmse(left: FloatArray, right: FloatArray) -> float:
     return float(np.sqrt(np.mean((left - right) ** 2))) if left.size else 0.0
 
 
@@ -239,13 +242,13 @@ def _coupling_unit_promotion_status(unit: Any) -> dict[str, Any]:
     }
 
 
-def _weighted_laplacian(matrix: np.ndarray) -> np.ndarray:
-    return np.diag(np.sum(matrix, axis=1)) - matrix
+def _weighted_laplacian(matrix: FloatArray) -> FloatArray:
+    return np.asarray(np.diag(np.sum(matrix, axis=1)) - matrix, dtype=np.float64)
 
 
-def _spectrum_summary(left: np.ndarray, right: np.ndarray) -> dict[str, Any]:
-    left_eigs = np.linalg.eigvalsh(left)
-    right_eigs = np.linalg.eigvalsh(right)
+def _spectrum_summary(left: FloatArray, right: FloatArray) -> dict[str, Any]:
+    left_eigs = np.asarray(np.linalg.eigvalsh(left), dtype=np.float64)
+    right_eigs = np.asarray(np.linalg.eigvalsh(right), dtype=np.float64)
     diff = right_eigs - left_eigs
     return {
         "canonical": left_eigs.tolist(),
@@ -257,8 +260,8 @@ def _spectrum_summary(left: np.ndarray, right: np.ndarray) -> dict[str, Any]:
 
 
 def _critical_coupling_response_summary(
-    canonical_matrix: np.ndarray,
-    measured_matrix: np.ndarray,
+    canonical_matrix: FloatArray,
+    measured_matrix: FloatArray,
 ) -> dict[str, Any]:
     canonical_radius = float(np.max(np.abs(np.linalg.eigvalsh(canonical_matrix))))
     measured_radius = float(np.max(np.abs(np.linalg.eigvalsh(measured_matrix))))
@@ -305,7 +308,7 @@ def _spectral_diagnostics(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def _null_summary(
-    values: np.ndarray,
+    values: FloatArray,
     *,
     observed: float,
     alternative: str,
@@ -464,7 +467,7 @@ def _null_model_diagnostics(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _edge_values(K: np.ndarray, edges: dict[tuple[int, int], float]) -> list[dict[str, Any]]:
+def _edge_values(K: FloatArray, edges: dict[tuple[int, int], float]) -> list[dict[str, Any]]:
     rows = []
     for (i_1, j_1), expected in edges.items():
         if i_1 <= K.shape[0] and j_1 <= K.shape[1]:
@@ -480,7 +483,7 @@ def _edge_values(K: np.ndarray, edges: dict[tuple[int, int], float]) -> list[dic
     return rows
 
 
-def _max_diff_entry(a: np.ndarray, b: np.ndarray, *, offdiag_only: bool) -> dict[str, Any]:
+def _max_diff_entry(a: FloatArray, b: FloatArray, *, offdiag_only: bool) -> dict[str, Any]:
     diff = np.abs(a - b)
     if offdiag_only:
         diff = diff.copy()
@@ -510,7 +513,10 @@ def load_measured_couplings(path: Path | None) -> dict[str, Any] | None:
 
     if path is None or not path.exists():
         return None
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        raise ValueError(f"Measured coupling file must contain a JSON object: {path}")
+    payload = cast(dict[str, Any], raw)
     for key in ("system", "unit", "normalisation"):
         if key not in payload:
             raise ValueError(f"Measured coupling file lacks required key {key!r}: {path}")
@@ -520,7 +526,10 @@ def load_measured_couplings(path: Path | None) -> dict[str, Any] | None:
 
 
 def _load_candidate_artifact(path: Path) -> dict[str, Any]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        raise ValueError(f"Candidate artifact must contain a JSON object: {path}")
+    payload = cast(dict[str, Any], raw)
     matrix = payload.get("K_nm")
     if not isinstance(matrix, list):
         raise ValueError(f"Candidate artifact lacks K_nm matrix: {path}")
@@ -641,7 +650,7 @@ def evaluate_candidate_systems(
     }
 
 
-def compare_measured_couplings(K: np.ndarray, measured: dict[str, Any] | None) -> dict[str, Any]:
+def compare_measured_couplings(K: FloatArray, measured: dict[str, Any] | None) -> dict[str, Any]:
     """Compare expected K_nm entries against a measured coupling dataset."""
     if measured is None:
         return {
@@ -831,11 +840,12 @@ def _load_codebase_knm(codebase_path: Path | None, n_layers: int) -> dict[str, A
     try:
         params = importlib.import_module("optimizations.scpn_params")
         matrix = np.asarray(params.build_knm_matrix(n_layers=n_layers), dtype=np.float64)
+        module_file = cast(str, params.__file__)
         return {
             "available": True,
             "matrix": matrix,
             "module": "optimizations.scpn_params",
-            "file": str(Path(params.__file__).resolve()),
+            "file": str(Path(module_file).resolve()),
         }
     except (ImportError, AttributeError, IndexError, ValueError) as exc:
         return {"available": False, "matrix": None, "error": str(exc)}
@@ -864,7 +874,7 @@ def build_audit_payload(
     }
 
     if rust["available"]:
-        rust_k = rust["matrix"]
+        rust_k = np.asarray(rust["matrix"], dtype=np.float64)
         parity["rust"] = {
             "available": True,
             "stats": _matrix_stats(rust_k),
@@ -880,8 +890,8 @@ def build_audit_payload(
     else:
         parity["rust"] = {"available": False, "error": rust.get("error")}
 
-    if codebase["available"]:
-        codebase_k = codebase["matrix"]
+    if codebase["available"] and codebase_path is not None:
+        codebase_k = np.asarray(codebase["matrix"], dtype=np.float64)
         parity["sibling_scpn_codebase"] = {
             "available": True,
             "authority": "legacy_context_only",
@@ -948,7 +958,7 @@ def build_audit_payload(
             "k_base": k_base,
             "alpha": alpha,
             "anchor_source_label": "Paper 27 Table 2 constants in code",
-            "cross_boost_source_label": "Paper 27 S4.3 constants in code",
+            "cross_boost_source_label": "Paper 27 cross-hierarchy constants in code",
         },
         "implementation_parity": _jsonable(parity),
         "measured_system_comparison": _jsonable(measured_comparison),

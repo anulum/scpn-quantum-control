@@ -92,7 +92,7 @@ Builds the canonical K_nm matrix. Three-layer construction:
 
 1. **Base kernel**: `K[i,j] = K_base * exp(-K_alpha * |i-j|)` (Eq. 3)
 2. **Calibration anchors**: Table 2 overrides for (0,1), (1,2), (2,3), (3,4)
-3. **Cross-hierarchy boosts**: S4.3 long-range couplings L1-L16, L5-L7
+3. **Cross-hierarchy boosts**: long-range couplings L1-L16, L5-L7
 
 Returns symmetric (L, L) float64 array. Always positive, zero diagonal implicit
 from the exponential decay (K[i,i] = K_base, but never used as self-coupling

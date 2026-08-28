@@ -97,7 +97,7 @@ def build_knm_paper27(
     """Build the canonical Knm coupling matrix from Paper 27.
 
     K[i,j] = K_base * exp(-K_alpha * |i - j|)   (Paper 27, Eq. 3)
-    with calibration anchors from Table 2 and cross-hierarchy boosts from S4.3.
+    with calibration anchors from Table 2 and cross-hierarchy boost constants.
     """
     idx = np.arange(L)
     K: NDArray[np.float64] = K_base * np.exp(-K_alpha * np.abs(idx[:, None] - idx[None, :]))
@@ -108,7 +108,7 @@ def build_knm_paper27(
         if i < L and j < L:
             K[i, j] = K[j, i] = val
 
-    # Paper 27 S4.3 cross-hierarchy boosts
+    # Paper 27 cross-hierarchy boosts
     if L > 15:
         K[0, 15] = K[15, 0] = max(K[0, 15], 0.05)  # L1-L16
     if L > 6:

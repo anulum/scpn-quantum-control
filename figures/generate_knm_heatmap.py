@@ -16,7 +16,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
 
-def generate_knm_heatmap():
+def generate_knm_heatmap() -> None:
+    """Write the canonical K_nm heatmap with calibration annotations."""
     K = build_knm_paper27(L=16)
 
     fig, ax = plt.subplots(figsize=(8, 7), dpi=150)
@@ -56,7 +57,7 @@ def generate_knm_heatmap():
             fontweight="bold",
         )
 
-    # Annotate cross-hierarchy boosts — Paper 27 S4.3
+    # Annotate Paper 27 cross-hierarchy boosts
     boosts = {(0, 15): 0.05, (4, 6): 0.15}
     for (i, j), val in boosts.items():
         ax.text(j, i, f"{val:.2f}", ha="center", va="center", fontsize=6, color="cyan")
