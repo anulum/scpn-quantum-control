@@ -48,17 +48,28 @@ def _parity(bitstring: str) -> int:
 
 def _leak(counts: dict[str, int], initial: str) -> tuple[int, int]:
     total = sum(int(v) for v in counts.values())
+    if total <= 0:
+        raise ValueError("empty count block")
     expected = _parity(initial)
     leaked = sum(int(v) for k, v in counts.items() if _parity(k) != expected)
     return leaked, total
 
 
 def _wilson(successes: int, total: int, z: float = 1.959963984540054) -> tuple[float, float]:
+    if total <= 0:
+        raise ValueError("empty sample")
     p = successes / total
     denominator = 1.0 + z * z / total
     centre = (p + z * z / (2 * total)) / denominator
     margin = z * math.sqrt(p * (1 - p) / total + z * z / (4 * total * total)) / denominator
     return centre - margin, centre + margin
+
+
+def _relative_asymmetry(leak_even: float, leak_odd: float) -> float:
+    """Return the preregistered relative asymmetry, refusing a zero denominator."""
+    if leak_odd == 0.0:
+        raise ValueError("relative asymmetry requires nonzero odd-sector leakage")
+    return (leak_even - leak_odd) / leak_odd
 
 
 def _pooled(counts: dict[str, dict[str, int]], depth: int) -> dict[str, tuple[int, int]]:
@@ -93,16 +104,21 @@ def main(argv: list[str] | None = None) -> int:
 
     counts: dict[str, dict[str, int]] = {}
     job_ids: list[str] = []
+    layouts: set[tuple[int, ...]] = set()
     for path in args.counts:
         payload = json.loads(Path(path).read_text(encoding="utf-8"))
         counts.update(payload["counts"])
         job_ids.extend(payload.get("job_ids", []))
+        layouts.add(tuple(payload.get("layout", ())))
     prior_counts: dict[str, dict[str, int]] = {}
     prior_jobs: list[str] = []
     for path in args.powered_counts:
         payload = json.loads(Path(path).read_text(encoding="utf-8"))
         prior_counts.update(payload["counts"])
         prior_jobs.extend(payload.get("job_ids", []))
+        layouts.add(tuple(payload.get("layout", ())))
+    if len(layouts) != 1:
+        raise ValueError(f"count blocks disagree on layout: {sorted(layouts)}")
 
     missing = [
         f"main_d{d}_{s}_rep{r}"
@@ -119,10 +135,15 @@ def main(argv: list[str] | None = None) -> int:
     variances: dict[int, float] = {}
     for depth in NEW_DEPTHS:
         (le, ne), (lo, no) = pooled[depth]["even"], pooled[depth]["odd"]
+        if not ne or not no:
+            raise ValueError(f"depth {depth} lacks a nonempty sector")
         p_e, p_o = le / ne, lo / no
         deltas[depth] = p_e - p_o
         variances[depth] = p_e * (1 - p_e) / ne + p_o * (1 - p_o) / no
-    z = (deltas[8] - deltas[12]) / math.sqrt(variances[8] + variances[12])
+    decay_variance = variances[8] + variances[12]
+    if decay_variance <= 0.0:
+        raise ValueError("degenerate decay-ordering variance")
+    z = (deltas[8] - deltas[12]) / math.sqrt(decay_variance)
     p_value = 0.5 * math.erfc(z / math.sqrt(2))
     primary = {
         "delta_8": deltas[8],
@@ -151,7 +172,7 @@ def main(argv: list[str] | None = None) -> int:
                 "source": source,
                 "leak_even": p_e,
                 "leak_odd": p_o,
-                "relative_asymmetry": (p_e - p_o) / p_o,
+                "relative_asymmetry": _relative_asymmetry(p_e, p_o),
                 "wilson95_even": _wilson(le, ne),
                 "wilson95_odd": _wilson(lo, no),
                 "sign_positive": p_e > p_o,
@@ -192,7 +213,7 @@ def main(argv: list[str] | None = None) -> int:
         "per_repetition_drift": drift_table,
         "interpretation_boundary": (
             "device-noise statement only: exact statevector baseline fixes "
-            "noiseless parity leakage at zero (AUD-6)"
+            "noiseless parity leakage at zero"
         ),
     }
     out_path = Path(args.out)
