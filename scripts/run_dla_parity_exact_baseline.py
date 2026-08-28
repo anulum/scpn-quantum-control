@@ -94,7 +94,7 @@ def build_comparison() -> dict[str, Any]:
             "readout mitigation self-reports full_confusion_matrix_available=false "
             "(approximation, not inversion). This exact baseline supplies the ideal "
             "leakage=0 reference such a ZNE/DD ablation needs; running the ablation "
-            "on real hardware is a separate owner-gated QPU submission (AUD-5/7)."
+            "on real hardware is a separate owner-gated QPU submission."
         ),
     }
 

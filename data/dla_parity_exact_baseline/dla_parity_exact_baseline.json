@@ -1,5 +1,5 @@
 {
-  "ablation_note": "The promoted packs ran resilience_level=0 (no ZNE/DD) and the phase-2 readout mitigation self-reports full_confusion_matrix_available=false (approximation, not inversion). This exact baseline supplies the ideal leakage=0 reference such a ZNE/DD ablation needs; running the ablation on real hardware is a separate owner-gated QPU submission (AUD-5/7).",
+  "ablation_note": "The promoted packs ran resilience_level=0 (no ZNE/DD) and the phase-2 readout mitigation self-reports full_confusion_matrix_available=false (approximation, not inversion). This exact baseline supplies the ideal leakage=0 reference such a ZNE/DD ablation needs; running the ablation on real hardware is a separate owner-gated QPU submission.",
   "conclusion": "The exact noiseless XY-Trotter parity leakage is 0 at every measured depth (excitation-number conservation), while the hardware leakage grows monotonically with depth up to 42.2%. All observed leakage is therefore device noise, and the even/odd DLA-parity asymmetry sits within the noise floor rather than reflecting coherent parity-selective dynamics.",
   "even_init": "0011",
   "exact_leakage_all_zero": true,

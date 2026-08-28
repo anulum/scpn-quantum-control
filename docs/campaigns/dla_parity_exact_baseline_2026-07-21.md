@@ -54,7 +54,7 @@ The promoted packs ran `resilience_level = 0` (no ZNE/DD) and the Phase-2 readou
 mitigation self-reports `full_confusion_matrix_available = false` (an
 approximation, not a full inversion). This exact baseline supplies the ideal
 `leakage = 0` reference that a ZNE/DD ablation compares against; running the
-ablation on real hardware is a separate owner-gated QPU submission (AUD-5/7),
+ablation on real hardware is a separate owner-gated QPU submission,
 now unblocked with a rigorous classical reference in place.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
