@@ -56,7 +56,7 @@ def ground_state_optimizer_convergence_payload(
     *,
     artifact_id: str = "ground-state-optimizer-convergence-local",
 ) -> dict[str, Any]:
-    """Return the BL-15 optimizer convergence artifact payload."""
+    """Return the ground-state optimizer convergence artifact payload."""
     normalized_id = artifact_id.strip()
     if not normalized_id:
         raise ValueError("artifact_id must be non-empty")
@@ -177,7 +177,7 @@ def write_ground_state_optimizer_convergence_artifact(
     suite: GroundStateOptimizerConvergenceSuiteResult | None = None,
     artifact_id: str = "ground-state-optimizer-convergence-local",
 ) -> GroundStateOptimizerConvergenceArtifact:
-    """Write JSON and Markdown BL-15 optimizer convergence artefacts."""
+    """Write JSON and Markdown ground-state optimizer convergence artefacts."""
     json_destination = Path(output_path)
     if json_destination.suffix.lower() != ".json":
         raise ValueError("output_path must end with .json")

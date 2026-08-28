@@ -8,7 +8,7 @@
       "evidence_class": "functional_non_isolated",
       "failure_class": "unsupported_qjit_metric_fusion",
       "optimizer": "qng_qjit_class_boundary",
-      "setup_instructions": "The local BL-15 suite exposes Python parameter-shift natural-gradient evidence only. A QNG-QJIT-class route needs a compiler-owned metric fusion and executable lowering contract before it can be compared.",
+      "setup_instructions": "The local ground-state optimizer convergence suite exposes Python parameter-shift natural-gradient evidence only. A QNG-QJIT-class route needs a compiler-owned metric fusion and executable lowering contract before it can be compared.",
       "status": "hard_gap"
     }
   ],
@@ -422,7 +422,7 @@
         "evidence_class": "functional_non_isolated",
         "failure_class": "unsupported_qjit_metric_fusion",
         "optimizer": "qng_qjit_class_boundary",
-        "setup_instructions": "The local BL-15 suite exposes Python parameter-shift natural-gradient evidence only. A QNG-QJIT-class route needs a compiler-owned metric fusion and executable lowering contract before it can be compared.",
+        "setup_instructions": "The local ground-state optimizer convergence suite exposes Python parameter-shift natural-gradient evidence only. A QNG-QJIT-class route needs a compiler-owned metric fusion and executable lowering contract before it can be compared.",
         "status": "hard_gap"
       }
     ],

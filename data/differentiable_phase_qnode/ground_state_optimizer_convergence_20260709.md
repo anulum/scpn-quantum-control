@@ -32,4 +32,4 @@
 
 | Case | Optimizer | Failure class | Boundary |
 | --- | --- | --- | --- |
-| `qng_qjit_class_metric_fusion` | `qng_qjit_class_boundary` | `unsupported_qjit_metric_fusion` | The local BL-15 suite exposes Python parameter-shift natural-gradient evidence only. A QNG-QJIT-class route needs a compiler-owned metric fusion and executable lowering contract before it can be compared. |
+| `qng_qjit_class_metric_fusion` | `qng_qjit_class_boundary` | `unsupported_qjit_metric_fusion` | The local ground-state optimizer convergence suite exposes Python parameter-shift natural-gradient evidence only. A QNG-QJIT-class route needs a compiler-owned metric fusion and executable lowering contract before it can be compared. |

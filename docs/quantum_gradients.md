@@ -1426,7 +1426,7 @@ tolerance. Its claim boundary is intentionally narrow: local smooth phase
 objectives, functional convergence evidence, no hardware execution, no
 throughput statement, and no global optimality proof.
 
-`run_ground_state_optimizer_convergence_suite()` is the BL-15 companion for
+`run_ground_state_optimizer_convergence_suite()` is the companion for
 known small ground states. It compares natural-gradient, Adam, L-BFGS-B, seeded
 SPSA, and COBYLA on deterministic exact-energy objectives, emits one
 certificate per executable row, and writes local benchmark evidence through

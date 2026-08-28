@@ -316,7 +316,7 @@ class _OptimizerState:
 
 
 def default_ground_state_optimizer_objectives() -> tuple[KnownGroundStateObjective, ...]:
-    """Return deterministic small ground-state objectives used by BL-15."""
+    """Return deterministic small ground-state optimizer objectives."""
     return (
         KnownGroundStateObjective(
             case_id="single_qubit_z_rotation_ground",
@@ -353,7 +353,7 @@ def run_ground_state_optimizer_convergence_suite(
     parameters: Sequence[Parameter] | None = None,
     rule: ParameterShiftRule | None = None,
 ) -> GroundStateOptimizerConvergenceSuiteResult:
-    """Run BL-15 optimizer convergence evidence on known small ground states."""
+    """Run optimizer convergence evidence on known small ground states."""
     objective_cases = (
         tuple(objectives)
         if objectives is not None
@@ -723,9 +723,10 @@ def _qng_qjit_boundary_row() -> GroundStateOptimizerBoundaryRow:
         status="hard_gap",
         failure_class="unsupported_qjit_metric_fusion",
         setup_instructions=(
-            "The local BL-15 suite exposes Python parameter-shift natural-gradient "
-            "evidence only. A QNG-QJIT-class route needs a compiler-owned metric "
-            "fusion and executable lowering contract before it can be compared."
+            "The local ground-state optimizer convergence suite exposes Python "
+            "parameter-shift natural-gradient evidence only. A QNG-QJIT-class route "
+            "needs a compiler-owned metric fusion and executable lowering contract "
+            "before it can be compared."
         ),
         evidence_class=GROUND_STATE_OPTIMIZER_EVIDENCE_CLASS,
         claim_boundary=GROUND_STATE_OPTIMIZER_CLAIM_BOUNDARY,

@@ -38,7 +38,7 @@ class _GradientStub:
 
 @pytest.fixture(scope="module")
 def suite() -> GroundStateOptimizerConvergenceSuiteResult:
-    """Run the default BL-15 optimizer convergence suite once."""
+    """Run the default ground-state optimizer convergence suite once."""
     return run_ground_state_optimizer_convergence_suite()
 
 
@@ -109,6 +109,45 @@ def test_custom_optimizer_subset_deduplicates_and_omits_boundary() -> None:
     assert suite.record_count == 2
     assert suite.optimizer_names == ("adam", "lbfgs")
     assert suite.boundary_rows == ()
+
+
+def test_short_adam_and_spsa_runs_exhaust_their_step_budgets() -> None:
+    """Keep non-converged one-step public optimizer runs explicit."""
+    short = run_ground_state_optimizer_convergence_suite(
+        objectives=default_ground_state_optimizer_objectives()[:1],
+        optimizers=("adam", "spsa"),
+        max_steps=1,
+        include_qng_qjit_boundary=False,
+    )
+
+    assert len(short.records) == 2
+    assert all(record.iterations == 1 for record in short.records)
+    assert all(not record.passed for record in short.records)
+
+
+def test_spsa_preserves_an_initial_exact_ground_state() -> None:
+    """Exercise seeded SPSA when no candidate can improve the exact minimum."""
+    exact = KnownGroundStateObjective(
+        case_id="initial-exact-ground",
+        ground_state_label="initial exact ground",
+        initial_params=np.array([0.0], dtype=np.float64),
+        target_params=np.array([0.0], dtype=np.float64),
+        weights=np.array([1.0], dtype=np.float64),
+        exact_ground_energy=-1.0,
+        target_energy_tolerance=1.0e-12,
+        target_parameter_tolerance=1.0e-12,
+    )
+
+    exact_suite = run_ground_state_optimizer_convergence_suite(
+        objectives=(exact,),
+        optimizers=("spsa",),
+        max_steps=1,
+        include_qng_qjit_boundary=False,
+    )
+
+    record = exact_suite.records[0]
+    assert record.best_value == record.initial_value
+    assert record.passed
 
 
 def test_ground_state_objective_validates_and_reports_distances() -> None:

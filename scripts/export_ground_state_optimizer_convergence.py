@@ -21,7 +21,7 @@ DEFAULT_OUTPUT = Path(
 
 
 def main() -> int:
-    """Write the committed BL-15 optimizer convergence artifacts."""
+    """Write the committed ground-state optimizer convergence artifacts."""
     artifact = write_ground_state_optimizer_convergence_artifact(DEFAULT_OUTPUT)
     print(f"wrote {artifact.json_path}")
     print(f"wrote {artifact.markdown_path}")

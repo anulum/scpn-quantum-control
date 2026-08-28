@@ -26,16 +26,19 @@ from scpn_quantum_control.phase import run_ground_state_optimizer_convergence_su
 
 @pytest.fixture(scope="module")
 def payload() -> dict[str, Any]:
-    """Build one real BL-15 convergence payload through the public facade."""
+    """Build one real ground-state convergence payload through the public facade."""
     suite = run_ground_state_optimizer_convergence_suite()
-    return ground_state_optimizer_convergence_payload(suite, artifact_id="pytest-bl15")
+    return ground_state_optimizer_convergence_payload(
+        suite,
+        artifact_id="pytest-ground-state-optimizer",
+    )
 
 
 def test_optimizer_convergence_payload_carries_rows_and_boundary(
     payload: dict[str, Any],
 ) -> None:
     assert payload["schema"] == GROUND_STATE_OPTIMIZER_CONVERGENCE_SCHEMA
-    assert payload["artifact_id"] == "pytest-bl15"
+    assert payload["artifact_id"] == "pytest-ground-state-optimizer"
     assert payload["artifact_date"] == "2026-07-09"
     assert payload["classification"] == "functional_non_isolated"
     assert payload["production_eligible"] is False
@@ -56,6 +59,17 @@ def test_optimizer_convergence_markdown_renders_evidence(
     assert "`qng_qjit_class_boundary`" in markdown
     assert "`single_qubit_z_rotation_ground`" in markdown
     assert "`two_qubit_product_ising_ground`" in markdown
+
+
+def test_optimizer_convergence_markdown_omits_empty_boundary_section(
+    payload: dict[str, Any],
+) -> None:
+    """Render a valid payload without optional hard-gap boundary rows."""
+    without_boundaries = payload | {"boundary_rows": []}
+
+    markdown = render_ground_state_optimizer_convergence_markdown(without_boundaries)
+
+    assert "## Boundary Rows" not in markdown
 
 
 def test_optimizer_convergence_writer_creates_json_and_markdown(
