@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — tests for KYMA v2 gated-coupling assembly
-"""Tests for the base coupling, readout bridge, and gated assembly (fix 1)."""
+"""Tests for the base coupling, readout bridge, and gated assembly."""
 
 from __future__ import annotations
 
@@ -40,6 +40,7 @@ def test_readout_bridge_is_symmetric_and_sparse() -> None:
 
 def test_bridge_partners_span_both_held_out_relations() -> None:
     partners = coupling.partners_for()
+    assert coupling.partners_for(bridge_mode="r1_only") == partners[:1]
     r1_clusters = set(task.PAIRS[task.HELD_OUT_R1_PAIR])
     r2_clusters = set(task.PAIRS[task.HELD_OUT_R2_PAIR])
     clusters_of = [next(c for c, m in enumerate(task.CLUSTERS) if p in m) for p in partners]

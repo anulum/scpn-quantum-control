@@ -7,8 +7,8 @@
 # scpn-quantum-control — KYMA v2 Kuramoto dynamics with per-trial gated coupling
 """Differentiable Kuramoto RK4 integrator with a **per-trial** coupling matrix.
 
-v2 gates the coupling by the control code (audit AUD-7 / KYMA v2 fix 1), so each
-trial integrates under its own ``K_eff`` rather than a single shared matrix::
+The coupling is gated by the control code, so each trial integrates under its
+own ``K_eff`` rather than a single shared matrix::
 
     dθ_i/dt = ω_i + Σ_j K_ij(trial) sin(θ_j − θ_i)
 

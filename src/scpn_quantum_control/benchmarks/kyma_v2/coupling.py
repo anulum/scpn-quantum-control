@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — KYMA v2 gated-coupling assembly (fix 1)
-"""Assemble the per-trial gated coupling ``K_eff(code)`` (KYMA v2 fix 1).
+# scpn-quantum-control — KYMA v2 gated-coupling assembly
+"""Assemble the per-trial gated coupling ``K_eff(code)``.
 
 The control code gates a set of per-``(relation, pair)`` coupling perturbations
 on top of a fixed **base coupling**::
@@ -18,7 +18,7 @@ pair ``p``. The *teacher* uses hand-set gates (:mod:`.teacher`); the *student*
 learns them (:mod:`.models`).
 
 The base coupling is fixed and shared so neither model can remove the interaction
-that makes the readout non-separable (fix 2). It has two terms:
+that makes the readout non-separable. It has two terms:
 
 * an optional small **uniform ambient** coupling, and
 * a **readout bridge** — sparse fixed edges from the readout oscillator to one

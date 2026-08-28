@@ -1255,7 +1255,7 @@ Stronger non-oscillator baselines for the v2 task (KYMA v2.1 #2).
 
 ### `scpn_quantum_control.benchmarks.kyma_v2.coupling`
 
-Assemble the per-trial gated coupling ``K_eff(code)`` (KYMA v2 fix 1).
+Assemble the per-trial gated coupling ``K_eff(code)``.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/kyma_v2/coupling.py) · Public symbols: **6**
 
