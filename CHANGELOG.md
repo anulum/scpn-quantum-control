@@ -450,7 +450,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   Version-compatibility / migration note links `DEPRECATIONS.md` Kuramoto→
   oscillatools staging. Docs: `docs/public_api_stability.md`. Does **not**
   freeze the full ~717/1900 workbench export surface (see internal v1 gate).
-- 2026-07-18 — March flagship job-id full disclosure (KIMI audit, AUD-10): the 24
+- 2026-07-18 — March flagship job-id full disclosure: the 24
   nonce-blinded March 2026 job-id commitments are now OPENED for everyone.
   `data/march_flagship_verifiability/march_job_id_disclosure_2026-07-18.json` publishes
   each `(raw IBM job id, nonce)` pair, and `scripts/disclose_ibm_job_ids.py` (100% covered,
@@ -598,7 +598,7 @@ surfaces or new Zenodo versions.
   now actually implemented (first-party `gh issue create`, no
   third-party action) for both the core and batch jobs.
 - 2026-07-17 — March 2026 campaign job identifiers are externally
-  verifiable (KIMI-7): `scripts/build_march_job_id_commitments.py`
+  verifiable: `scripts/build_march_job_id_commitments.py`
   publishes a nonce-blinded SHA-256 commitment for each of the 24 raw IBM
   job identifiers behind the March artefact labels (raw identifiers and
   nonces stay in a private, git-ignored sidecar; a disclosed
