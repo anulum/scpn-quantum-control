@@ -64,7 +64,8 @@ and DOPRI rows are the trustworthy ones.)
 ## Axis 2 — differentiability
 
 oscillatools ships exact reverse-mode adjoint gradients of a trajectory objective as a first-class
-operation (`kuramoto_rk4_vjp`), witnessed against JAX autodiff to `~1e-9` (RG1). Measured per-call
+operation (`kuramoto_rk4_vjp`), witnessed against JAX autodiff to `~1e-9` in the
+committed reverse-mode gradient evidence. Measured per-call
 throughput of the forward map and its adjoint (Rust tier, 32 steps):
 
 | operation | N=64 | N=256 | N=512 |
