@@ -1025,6 +1025,8 @@ def test_main_uses_coverage_pytest_by_default(
         "hardware-experiment-control exact coverage threshold",
         "pulse-shaping focused coverage",
         "pulse-shaping exact coverage threshold",
+        "openpulse-control focused coverage",
+        "openpulse-control exact coverage threshold",
         "dla-topology-parity focused coverage",
         "dla-topology-parity exact coverage threshold",
         "geometric-control-product focused coverage",

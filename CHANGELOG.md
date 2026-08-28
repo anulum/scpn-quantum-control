@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Hardware OpenPulse-control documentation quality: completed
+  the NumPy docstring contract across provider-neutral schedules, calibration
+  dossiers, Rabi estimation, and direct tests; added exhaustive public
+  validation and optional Qiskit-adapter coverage; and wired permanent strict
+  typing, connected execution, documentation, and exact source coverage into
+  preflight and CI. Pulse arithmetic, no-submit boundaries, public APIs, and
+  provider/hardware behavior are unchanged.
+
 - 2026-08-28 — Phase pulse-shaping documentation quality: completed the NumPy
   docstring contract across ICI and hypergeometric pulse shaping and its
   connected fallback tests, covered invalid public grids, explicit pulse

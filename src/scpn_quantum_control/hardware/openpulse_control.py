@@ -36,6 +36,7 @@ class OpenPulseWaveform:
     samples: NDArray[np.float64]
 
     def __post_init__(self) -> None:
+        """Validate waveform identity and finite one-dimensional samples."""
         if not self.name:
             raise ValueError("waveform name must be non-empty")
         if self.samples.ndim != 1 or self.samples.size == 0:
@@ -61,6 +62,7 @@ class OpenPulseInstruction:
     waveform: str
 
     def __post_init__(self) -> None:
+        """Validate instruction identity, channel, timing, and waveform."""
         if not self.name:
             raise ValueError("instruction name must be non-empty")
         if not self.channel:
@@ -92,6 +94,7 @@ class OpenPulseSchedule:
     metadata: dict[str, object]
 
     def __post_init__(self) -> None:
+        """Validate schedule identity, timing, target, and contents."""
         if not self.name:
             raise ValueError("schedule name must be non-empty")
         if self.dt <= 0.0:
@@ -124,6 +127,7 @@ class RabiCalibrationPoint:
     shots: int
 
     def __post_init__(self) -> None:
+        """Validate amplitude bounds and positive shot count."""
         if not np.isfinite(self.amplitude):
             raise ValueError("amplitude must be finite")
         if not 0.0 <= self.amplitude <= 1.0:
@@ -146,6 +150,7 @@ class OpenPulseCalibrationWorkflow:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate workflow identity, target, timing, and sweep contents."""
         if not self.workflow_id:
             raise ValueError("workflow_id must be non-empty")
         if not self.backend_name:
@@ -315,12 +320,17 @@ def estimate_rabi_pi_amplitude(
         h0 = x0 - x1
         h2 = x2 - x1
         denom = (h0 * h2) * (h0 - h2)
-        if abs(float(denom)) > 1e-15:
+        # Strictly increasing amplitudes make the three abscissae distinct.
+        if abs(float(denom)) > 1e-15:  # pragma: no branch
             a = (h2 * (y0 - y1) - h0 * (y2 - y1)) / denom
             b = (h2**2 * (y1 - y0) + h0**2 * (y2 - y1)) / denom
-            if abs(float(a)) > 1e-15:
+            # An interior argmax cannot be locally affine unless the maximum
+            # starts at an edge, which the enclosing condition excludes.
+            if abs(float(a)) > 1e-15:  # pragma: no branch
                 vertex = x1 - b / (2.0 * a)
-                if x0 <= vertex <= x2:
+                # A concave interpolant through an interior local maximum has
+                # its vertex between the adjacent strictly ordered samples.
+                if x0 <= vertex <= x2:  # pragma: no branch
                     pi_amp = float(vertex)
     edge_mean = 0.5 * float(pop[0] + pop[-1])
     contrast = max(0.0, peak - edge_mean)

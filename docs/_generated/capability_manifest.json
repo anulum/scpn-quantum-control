@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1247
+    "test_files": 1248
   },
   "documentation": {
     "examples": [
@@ -8769,6 +8769,7 @@
       "tests/test_open_system_objective_quality_gate.py",
       "tests/test_open_system_workflow.py",
       "tests/test_openpulse_control.py",
+      "tests/test_openpulse_control_quality_gate.py",
       "tests/test_optional_torch_export_contracts.py",
       "tests/test_orchestrator_adapter.py",
       "tests/test_orchestrator_adapter_errors.py",

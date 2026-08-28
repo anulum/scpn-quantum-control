@@ -157,6 +157,7 @@ if TYPE_CHECKING:
     from tools import (
         open_system_objective_quality_gates as _open_system_objective_quality_gates,
     )
+    from tools import openpulse_control_quality_gates as _openpulse_control_quality_gates
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import phase_qnode_product_quality_gates as _phase_qnode_product_quality_gates
     from tools import phase_trainability_quality_gates as _phase_trainability_quality_gates
@@ -319,6 +320,7 @@ else:
     )
     _gradient_tape_quality_gates = import_module("tools.gradient_tape_quality_gates")
     _hardware_hal_quality_gates = import_module("tools.hardware_hal_quality_gates")
+    _openpulse_control_quality_gates = import_module("tools.openpulse_control_quality_gates")
     _pulse_shaping_quality_gates = import_module("tools.pulse_shaping_quality_gates")
     _dla_topology_optimizer_quality_gates = import_module(
         "tools.dla_topology_optimizer_quality_gates"
@@ -761,6 +763,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_studio_executive_differentiate_quality_gates.build_static_quality_gates(_PY),
     *_hardware_experiment_control_quality_gates.build_static_quality_gates(_PY),
     *_pulse_shaping_quality_gates.build_static_quality_gates(_PY),
+    *_openpulse_control_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_parity_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_baseline_design_quality_gates.build_static_quality_gates(_PY),
@@ -1243,6 +1246,7 @@ HARDWARE_EXPERIMENT_CONTROL_COVERAGE_GATES = (
     _hardware_experiment_control_quality_gates.build_coverage_gates(_PY)
 )
 PULSE_SHAPING_COVERAGE_GATES = _pulse_shaping_quality_gates.build_coverage_gates(_PY)
+OPENPULSE_CONTROL_COVERAGE_GATES = _openpulse_control_quality_gates.build_coverage_gates(_PY)
 DLA_TOPOLOGY_PARITY_COVERAGE_GATES = _dla_topology_parity_quality_gates.build_coverage_gates(_PY)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
     _geometric_control_product_quality_gates.build_coverage_gates(_PY)
@@ -1651,6 +1655,7 @@ def main() -> int:
             gates.extend(STUDIO_EXECUTIVE_DIFFERENTIATE_COVERAGE_GATES)
             gates.extend(HARDWARE_EXPERIMENT_CONTROL_COVERAGE_GATES)
             gates.extend(PULSE_SHAPING_COVERAGE_GATES)
+            gates.extend(OPENPULSE_CONTROL_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_PARITY_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
             gates.extend(TN_MPS_BASELINE_DESIGN_COVERAGE_GATES)
