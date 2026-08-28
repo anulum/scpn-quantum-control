@@ -1055,6 +1055,8 @@ def test_main_uses_coverage_pytest_by_default(
         "Kuramoto-variants exact coverage threshold",
         "MPS-evolution focused coverage",
         "MPS-evolution exact coverage threshold",
+        "NQS-ansatz focused coverage",
+        "NQS-ansatz exact coverage threshold",
         "synchronisation-uncertainty focused coverage",
         "synchronisation-uncertainty exact coverage threshold",
         "coupling-invariant focused coverage",

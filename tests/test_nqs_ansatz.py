@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.phase.nqs_ansatz as nqs_module
 from scpn_quantum_control.dense_budget import DenseAllocationError
@@ -28,13 +29,14 @@ from scpn_quantum_control.phase.nqs_ansatz import RBMWavefunction, vmc_ground_st
 class TestRBMWavefunction:
     """RBM wavefunction structure and mathematical properties."""
 
-    def test_log_psi_returns_complex(self):
+    def test_log_psi_returns_complex(self) -> None:
+        """Return a scalar complex log-amplitude."""
         rbm = RBMWavefunction(4, seed=42)
         sigma = np.array([1, -1, 1, -1], dtype=np.float64)
         val = rbm.log_psi(sigma)
         assert isinstance(val, complex)
 
-    def test_psi_nonzero_for_all_configs(self):
+    def test_psi_nonzero_for_all_configs(self) -> None:
         """RBM should give nonzero amplitude for every configuration."""
         rbm = RBMWavefunction(3, seed=42)
         for k in range(2**3):
@@ -42,7 +44,7 @@ class TestRBMWavefunction:
             assert abs(rbm.psi(sigma)) > 0
 
     @pytest.mark.parametrize("n", [2, 3, 4, 5, 6])
-    def test_all_amplitudes_normalised(self, n):
+    def test_all_amplitudes_normalised(self, n: int) -> None:
         """Sum |ψ(σ)|² = 1 — fundamental QM normalisation."""
         rbm = RBMWavefunction(n, seed=42)
         amps = rbm.all_amplitudes()
@@ -50,36 +52,40 @@ class TestRBMWavefunction:
         np.testing.assert_allclose(norm, 1.0, atol=1e-10)
 
     @pytest.mark.parametrize("n", [2, 3, 4, 6])
-    def test_all_amplitudes_correct_size(self, n):
+    def test_all_amplitudes_correct_size(self, n: int) -> None:
+        """Enumerate exactly one amplitude per spin configuration."""
         rbm = RBMWavefunction(n, seed=42)
         amps = rbm.all_amplitudes()
         assert len(amps) == 2**n
 
-    def test_amplitudes_all_finite(self):
+    def test_amplitudes_all_finite(self) -> None:
+        """Keep every enumerated amplitude finite."""
         rbm = RBMWavefunction(4, seed=42)
         amps = rbm.all_amplitudes()
         assert all(np.isfinite(amps))
 
     @pytest.mark.parametrize("n_hidden", [None, 2, 4, 8, 16])
-    def test_n_params_formula(self, n_hidden):
+    def test_n_params_formula(self, n_hidden: int | None) -> None:
         """n_params = n_visible + n_hidden + n_visible * n_hidden."""
         n = 4
         rbm = RBMWavefunction(n, n_hidden=n_hidden, seed=42)
         nh = n_hidden if n_hidden is not None else 2 * n
         assert rbm.n_params() == n + nh + n * nh
 
-    def test_reproducible_with_seed(self):
+    def test_reproducible_with_seed(self) -> None:
+        """Reproduce RBM parameters from the same seed."""
         rbm1 = RBMWavefunction(3, seed=123)
         rbm2 = RBMWavefunction(3, seed=123)
         np.testing.assert_array_equal(rbm1.a, rbm2.a)
         np.testing.assert_array_equal(rbm1.W, rbm2.W)
 
-    def test_different_seeds_give_different_params(self):
+    def test_different_seeds_give_different_params(self) -> None:
+        """Produce distinct RBM parameters from distinct seeds."""
         rbm1 = RBMWavefunction(3, seed=1)
         rbm2 = RBMWavefunction(3, seed=2)
         assert not np.array_equal(rbm1.a, rbm2.a)
 
-    def test_psi_equals_exp_log_psi(self):
+    def test_psi_equals_exp_log_psi(self) -> None:
         """ψ(σ) = exp(log ψ(σ))."""
         rbm = RBMWavefunction(3, seed=42)
         sigma = np.array([1, -1, 1], dtype=np.float64)
@@ -94,11 +100,16 @@ class TestRBMWavefunction:
 class TestVMCGroundState:
     """Variational Monte Carlo optimisation tests."""
 
-    def test_vmc_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
-        K = np.zeros((10, 10))
-        omega = np.linspace(0.8, 1.2, 10)
+    def test_vmc_rejects_dense_budget_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Refuse an undersized dense budget before requesting a Hamiltonian."""
+        K = np.zeros((10, 10), dtype=np.float64)
+        omega = np.linspace(0.8, 1.2, 10, dtype=np.float64)
 
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(
+            *args: object, **kwargs: object
+        ) -> NDArray[np.complex128]:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(
@@ -108,14 +119,20 @@ class TestVMCGroundState:
         with pytest.raises(DenseAllocationError, match="NQS dense"):
             vmc_ground_state(K, omega, n_iterations=1, max_dense_gib=1e-12)
 
-    def test_vmc_passes_dense_budget_to_bridge(self, monkeypatch):
-        K = np.array([[0, 0.3], [0.3, 0]])
-        omega = np.array([1.0, 1.1])
+    def test_vmc_passes_dense_budget_to_bridge(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Forward the dense-memory ceiling to the Hamiltonian bridge."""
+        K = np.array([[0, 0.3], [0.3, 0]], dtype=np.float64)
+        omega = np.array([1.0, 1.1], dtype=np.float64)
         seen_budgets: list[float | None] = []
 
-        def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
-            seen_budgets.append(kwargs.get("max_dense_gib"))
-            return np.zeros((4, 4), dtype=complex)
+        def fake_dense_matrix(
+            K_arg: NDArray[np.float64],
+            omega_arg: NDArray[np.float64],
+            *,
+            max_dense_gib: float | None = None,
+        ) -> NDArray[np.complex128]:  # noqa: ARG001
+            seen_budgets.append(max_dense_gib)
+            return np.zeros((4, 4), dtype=np.complex128)
 
         monkeypatch.setattr(nqs_module, "knm_to_dense_matrix", fake_dense_matrix)
 
@@ -123,24 +140,27 @@ class TestVMCGroundState:
 
         assert seen_budgets == [0.25]
 
-    def test_vmc_returns_valid_result(self):
-        K = np.array([[0, 0.5], [0.5, 0]])
-        omega = np.array([1.0, 1.2])
+    def test_vmc_returns_valid_result(self) -> None:
+        """Return a finite scalar energy in the result mapping."""
+        K = np.array([[0, 0.5], [0.5, 0]], dtype=np.float64)
+        omega = np.array([1.0, 1.2], dtype=np.float64)
         result = vmc_ground_state(K, omega, n_iterations=10, seed=42)
         assert "energy" in result
         assert isinstance(result["energy"], float)
         assert np.isfinite(result["energy"])
 
-    def test_vmc_energy_decreases_over_iterations(self):
-        K = np.array([[0, 0.5], [0.5, 0]])
-        omega = np.array([1.0, 1.2])
+    def test_vmc_energy_decreases_over_iterations(self) -> None:
+        """Avoid an appreciable energy increase during bounded optimisation."""
+        K = np.array([[0, 0.5], [0.5, 0]], dtype=np.float64)
+        omega = np.array([1.0, 1.2], dtype=np.float64)
         result = vmc_ground_state(K, omega, n_iterations=50, learning_rate=0.005, seed=42)
         # Last energy should be ≤ first (allowing small fluctuations)
         assert result["energy_history"][-1] <= result["energy_history"][0] + 0.1
 
-    def test_vmc_output_keys(self):
-        K = np.array([[0, 0.3], [0.3, 0]])
-        omega = np.array([1.0, 1.1])
+    def test_vmc_output_keys(self) -> None:
+        """Expose the complete exact-enumeration result contract."""
+        K = np.array([[0, 0.3], [0.3, 0]], dtype=np.float64)
+        omega = np.array([1.0, 1.1], dtype=np.float64)
         result = vmc_ground_state(K, omega, n_iterations=5, seed=42)
         assert set(result.keys()) == {
             "energy",
@@ -155,26 +175,28 @@ class TestVMCGroundState:
         assert result["n_samples_used"] == 2 ** len(omega)
         assert result["gradient_method"] == "central_finite_difference"
 
-    def test_vmc_rejects_explicit_n_samples_in_exact_mode(self):
-        K = np.array([[0, 0.3], [0.3, 0]])
-        omega = np.array([1.0, 1.1])
+    def test_vmc_rejects_explicit_n_samples_in_exact_mode(self) -> None:
+        """Reject a sampling budget unsupported by exact enumeration."""
+        K = np.array([[0, 0.3], [0.3, 0]], dtype=np.float64)
+        omega = np.array([1.0, 1.1], dtype=np.float64)
         with pytest.raises(ValueError, match="n_samples"):
             vmc_ground_state(K, omega, n_iterations=1, n_samples=10, seed=42)
 
-    def test_vmc_rejects_large_n(self):
-        K = np.eye(14)
-        omega = np.ones(14)
+    def test_vmc_rejects_large_n(self) -> None:
+        """Reject systems beyond the bounded exact-enumeration surface."""
+        K = np.eye(14, dtype=np.float64)
+        omega = np.ones(14, dtype=np.float64)
         with pytest.raises(ValueError, match="Exact NQS only for n<=12"):
             vmc_ground_state(K, omega, n_iterations=1)
 
     @pytest.mark.parametrize("n", [2, 3, 4])
-    def test_vmc_variational_upper_bound(self, n):
+    def test_vmc_variational_upper_bound(self, n: int) -> None:
         """VMC energy ≥ exact ground energy (variational principle)."""
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 
         K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
         np.fill_diagonal(K, 0.0)
-        omega = np.linspace(0.8, 1.2, n)
+        omega = np.linspace(0.8, 1.2, n, dtype=np.float64)
 
         H = knm_to_dense_matrix(K, omega)
         E_exact = np.linalg.eigvalsh(H)[0]
@@ -185,25 +207,27 @@ class TestVMCGroundState:
             f"VMC {result['energy']:.4f} suspiciously below exact {E_exact:.4f}"
         )
 
-    def test_vmc_reproducible_with_seed(self):
-        K = np.array([[0, 0.3], [0.3, 0]])
-        omega = np.array([1.0, 1.1])
+    def test_vmc_reproducible_with_seed(self) -> None:
+        """Reproduce the optimised energy from the same seed."""
+        K = np.array([[0, 0.3], [0.3, 0]], dtype=np.float64)
+        omega = np.array([1.0, 1.1], dtype=np.float64)
         r1 = vmc_ground_state(K, omega, n_iterations=10, seed=42)
         r2 = vmc_ground_state(K, omega, n_iterations=10, seed=42)
         np.testing.assert_allclose(r1["energy"], r2["energy"])
 
-    def test_vmc_wavefunction_is_normalised(self):
+    def test_vmc_wavefunction_is_normalised(self) -> None:
         """Returned wavefunction should give normalised amplitudes."""
-        K = np.array([[0, 0.3], [0.3, 0]])
-        omega = np.array([1.0, 1.1])
+        K = np.array([[0, 0.3], [0.3, 0]], dtype=np.float64)
+        omega = np.array([1.0, 1.1], dtype=np.float64)
         result = vmc_ground_state(K, omega, n_iterations=10, seed=42)
         wf = result["wavefunction"]
         amps = wf.all_amplitudes()
         norm = np.sum(np.abs(amps) ** 2)
         np.testing.assert_allclose(norm, 1.0, atol=1e-10)
 
-    def test_vmc_n_params_matches_wavefunction(self):
-        K = np.array([[0, 0.3], [0.3, 0]])
-        omega = np.array([1.0, 1.1])
+    def test_vmc_n_params_matches_wavefunction(self) -> None:
+        """Report the parameter count of the returned wavefunction."""
+        K = np.array([[0, 0.3], [0.3, 0]], dtype=np.float64)
+        omega = np.array([1.0, 1.1], dtype=np.float64)
         result = vmc_ground_state(K, omega, n_iterations=5, seed=42)
         assert result["n_params"] == result["wavefunction"].n_params()

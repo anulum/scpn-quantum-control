@@ -39,6 +39,7 @@ class RBMWavefunction:
         Number of hidden units. More = more expressive. Typical: 2*n_visible.
     seed : int or None
         RNG seed for reproducibility.
+
     """
 
     def __init__(self, n_visible: int, n_hidden: int | None = None, seed: int | None = None):
@@ -94,18 +95,30 @@ def vmc_ground_state(
 
     Parameters
     ----------
-    K, omega : coupling matrix and frequencies
-    n_hidden : hidden units (default 2*n)
-    learning_rate : gradient descent step
-    n_iterations : optimisation steps
-    n_samples : unsupported
+    K : numpy.ndarray
+        Symmetric Kuramoto coupling matrix.
+    omega : numpy.ndarray
+        Natural frequencies for the coupled oscillators.
+    n_hidden : int or None
+        Hidden-unit count, defaulting to twice the visible-unit count.
+    learning_rate : float
+        Gradient-descent step size.
+    n_iterations : int
+        Number of exact finite-difference optimisation steps.
+    n_samples : int or None
         Must be None. Passing a value raises instead of silently ignoring a
         caller-requested sampling budget.
-    seed : RNG seed
+    seed : int or None
+        RNG seed for reproducibility.
+    max_dense_gib : float or None
+        Optional GiB ceiling for each dense exact-enumeration workspace.
 
     Returns
     -------
-    dict with keys: energy, energy_history, wavefunction, n_params
+    dict
+        Final energy, energy history, wavefunction, parameter count, and
+        exact-enumeration provenance.
+
     """
     if n_samples is not None:
         raise ValueError(

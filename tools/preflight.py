@@ -191,6 +191,7 @@ if TYPE_CHECKING:
     from tools import (
         neural_operator_cost_model_quality_gates as _neural_operator_cost_model_quality_gates,
     )
+    from tools import nqs_ansatz_quality_gates as _nqs_ansatz_quality_gates
     from tools import (
         open_system_completeness_quality_gates as _open_system_completeness_quality_gates,
     )
@@ -471,6 +472,7 @@ else:
     _neural_operator_baseline_product_quality_gates = import_module(
         "tools.neural_operator_baseline_product_quality_gates"
     )
+    _nqs_ansatz_quality_gates = import_module("tools.nqs_ansatz_quality_gates")
     _differentiable_notebook_curriculum_quality_gates = import_module(
         "tools.differentiable_notebook_curriculum_quality_gates"
     )
@@ -886,6 +888,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_koopman_quality_gates.build_static_quality_gates(_PY),
     *_kuramoto_variants_quality_gates.build_static_quality_gates(_PY),
     *_mps_evolution_quality_gates.build_static_quality_gates(_PY),
+    *_nqs_ansatz_quality_gates.build_static_quality_gates(_PY),
     *_sync_uncertainty_quality_gates.build_static_quality_gates(_PY),
     *_coupling_invariant_quality_gates.build_static_quality_gates(_PY),
     *_experiment_dynamics_quality_gates.build_static_quality_gates(_PY),
@@ -1411,6 +1414,7 @@ QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_GATES = (
 KOOPMAN_COVERAGE_GATES = _koopman_quality_gates.build_coverage_gates(_PY)
 KURAMOTO_VARIANTS_COVERAGE_GATES = _kuramoto_variants_quality_gates.build_coverage_gates(_PY)
 MPS_EVOLUTION_COVERAGE_GATES = _mps_evolution_quality_gates.build_coverage_gates(_PY)
+NQS_ANSATZ_COVERAGE_GATES = _nqs_ansatz_quality_gates.build_coverage_gates(_PY)
 SYNC_UNCERTAINTY_COVERAGE_GATES = _sync_uncertainty_quality_gates.build_coverage_gates(_PY)
 COUPLING_INVARIANT_COVERAGE_GATES = _coupling_invariant_quality_gates.build_coverage_gates(_PY)
 EXPERIMENT_DYNAMICS_COVERAGE_GATES = _experiment_dynamics_quality_gates.build_coverage_gates(_PY)
@@ -1860,6 +1864,7 @@ def main() -> int:
             gates.extend(KOOPMAN_COVERAGE_GATES)
             gates.extend(KURAMOTO_VARIANTS_COVERAGE_GATES)
             gates.extend(MPS_EVOLUTION_COVERAGE_GATES)
+            gates.extend(NQS_ANSATZ_COVERAGE_GATES)
             gates.extend(SYNC_UNCERTAINTY_COVERAGE_GATES)
             gates.extend(COUPLING_INVARIANT_COVERAGE_GATES)
             gates.extend(EXPERIMENT_DYNAMICS_COVERAGE_GATES)

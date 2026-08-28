@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1277
+    "test_files": 1278
   },
   "documentation": {
     "examples": [
@@ -8779,6 +8779,7 @@
       "tests/test_noise_model.py",
       "tests/test_notebook_workflows.py",
       "tests/test_nqs_ansatz.py",
+      "tests/test_nqs_ansatz_quality_gate.py",
       "tests/test_nv_magnetometry.py",
       "tests/test_nv_magnetometry_high_field.py",
       "tests/test_observables.py",

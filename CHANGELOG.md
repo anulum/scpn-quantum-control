@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — NQS-ansatz documentation and exact quality: completed the
+  preview-inclusive NumPy docstring and strict typing contracts across the
+  exact-enumeration RBM owner and its direct tests, and wired permanent real
+  variational execution plus exact source coverage into preflight and CI. RBM
+  amplitudes, seeded parameters, finite-difference optimisation, dense-budget
+  refusal, bridge propagation, public APIs, and bounded `n<=12` claims are
+  unchanged.
+
 - 2026-08-28 — Phase-artifact documentation and strict-quality closure:
   completed the preview-inclusive NumPy docstring and strict typing contracts
   across the portable artifact owner and all three direct test surfaces, and
