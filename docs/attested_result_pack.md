@@ -117,10 +117,10 @@ digest checks only.
 
 ## Bounded product status
 
-Shipped: S48.0 policy (unsigned-first) · S48.1 canonical digest · S48.2 local
-envelope · S48.4 verify statuses · S48.6 strip-resistance battery (tests).
+Shipped: unsigned-first policy · canonical digest · local envelope · four-state
+verification · strip-resistance test battery.
 
-Open: S48.3 optional signed path/keyring · S48.5 BL-32 wiring · S48.7 hermetic
-kit verify step.
+Open: optional signed path/keyring · challenge-oracle wiring · hermetic-kit
+verification step.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
