@@ -496,15 +496,15 @@ control, or broad quantum-advantage claim is promoted by this release.
 ## [1.0.0] - 2026-07-17
 
 First stable release. Consolidates the post-0.10.0 control-surface,
-hardware-runner, analysis-stack, and differentiable-programming work
-(KIMI-7 through KIMI-12 and the KT/FA/RC campaign series) behind an
-explicit stable public-API commitment. Public claims are evidence-governed
-with dated amendments; published-record sources are frozen and corrections
-land on live surfaces or new Zenodo versions.
+hardware-runner, analysis-stack, and differentiable-programming work from the
+July reliability, security, and campaign series behind an explicit stable
+public-API commitment. Public claims are evidence-governed with dated
+amendments; published-record sources are frozen and corrections land on live
+surfaces or new Zenodo versions.
 
 ### Security
-- 2026-07-17 — Torch graph-artifact deserialisation is digest-gated
-  (KIMI-12): `torch.load(..., weights_only=False)` in the AOTAutograd
+- 2026-07-17 — Torch graph-artifact deserialisation is digest-gated:
+  `torch.load(..., weights_only=False)` in the AOTAutograd
   export replay (`phase/torch_aot_autograd_export.py`) and
   `torch.export.load` in the dynamic-shape export replay
   (`phase/torch_dynamic_shape_export.py`) are now reached only after the

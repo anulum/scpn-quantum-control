@@ -57,7 +57,7 @@ First stable release. The version carriers move to `1.0.0` and the public
 API is placed under an explicit stable-contract commitment.
 
 ### Security
-- Torch graph-artifact deserialisation is digest-gated (KIMI-12): the
+- Torch graph-artifact deserialisation is digest-gated: the
   AOTAutograd and dynamic-shape export replays reach
   `torch.load(..., weights_only=False)` / `torch.export.load` only after the
   on-disk artefact re-hashes to the SHA-256 recorded at save time, and the

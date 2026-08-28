@@ -37,7 +37,7 @@ APPROVED_WRAPPER_FUNCTIONS = {
         "qpy.load",
     },
     # Digest-gated reviewed wrapper: the artifact bytes must re-hash to the
-    # SHA-256 recorded at save time before torch.load is reached (KIMI-12).
+    # SHA-256 recorded at save time before torch.load is reached.
     ("src/scpn_quantum_control/phase/torch_aot_autograd_export.py", "_torch_load_graph"): {
         WEIGHTS_ONLY_FALSE_SYMBOL,
     },
