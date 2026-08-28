@@ -554,7 +554,7 @@ land on live surfaces or new Zenodo versions.
 
 ### Added
 - 2026-07-17 — Committed tensor-network classical baselines for the
-  flagship workloads (KIMI-11, `scripts/tn_baseline_flagship_workloads.py`,
+  flagship workloads (`scripts/tn_baseline_flagship_workloads.py`,
   100% line+branch tested, pure classical): bounded-χ Aer MPS on the
   identical logical Trotter bodies of the 16-qubit UPDE and 8-oscillator
   Kuramoto workloads versus the exact statevector reference. UPDE-16

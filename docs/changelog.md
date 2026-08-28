@@ -66,7 +66,7 @@ API is placed under an explicit stable-contract commitment.
 ### Added
 - Verifiability and evidence: March job-id commitments with IBM retrieval
   receipts, committed tensor-network classical baselines for the flagship
-  workloads, and the preregistered matched-basis QBER re-run (KIMI-7/8/11).
+  workloads, and the preregistered matched-basis QBER re-run.
 
 ### Changed
 - Public claims are evidence-governed with dated amendments; published-record

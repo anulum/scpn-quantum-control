@@ -8,11 +8,10 @@
 # SCPN Quantum Control — Tensor-network baselines for the flagship workloads
 """Bounded-bond-dimension MPS baselines for the March flagship workloads.
 
-The gPEPS-rebuttal defence (KIMI-11): instead of waiting for an external
-reviewer to demonstrate that the flagship 16-qubit UPDE and 8-oscillator
-Kuramoto workloads are classically simulable, this script quantifies it
-ourselves and commits the numbers. For each workload it rebuilds the exact
-logical Trotter body the hardware campaign executed, computes the exact
+The gPEPS-rebuttal defence quantifies the classical simulability of the flagship
+16-qubit UPDE and 8-oscillator Kuramoto workloads instead of waiting for an
+external reviewer to demonstrate it. For each workload this script rebuilds the
+exact logical Trotter body the hardware campaign executed, computes the exact
 statevector reference for the order parameter R = |Σ⟨X⟩ + iΣ⟨Y⟩|/n, then
 sweeps an Aer matrix-product-state simulation of the *identical circuit*
 over bounded bond dimensions χ and reports R(χ), the absolute R error, the
