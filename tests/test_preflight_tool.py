@@ -1033,6 +1033,8 @@ def test_main_uses_coverage_pytest_by_default(
         "differentiable-sparse-derivatives exact coverage threshold",
         "Program AD adjoint focused coverage",
         "Program AD adjoint exact coverage threshold",
+        "QPU compute-types focused coverage",
+        "QPU compute-types exact coverage threshold",
         "dla-topology-parity focused coverage",
         "dla-topology-parity exact coverage threshold",
         "geometric-control-product focused coverage",

@@ -57,6 +57,7 @@ def _artifact(source_mode: str = "curated"):
 
 
 def test_request_hash_round_trip_is_stable():
+    """Preserve request identity across mapping serialization."""
     artifact = _artifact()
     request = make_compute_request(artifact, shots=128, trotter_depth=1)
     loaded = QPUComputeRequest.from_dict(request.to_dict())
@@ -67,11 +68,13 @@ def test_request_hash_round_trip_is_stable():
 
 
 def test_request_rejects_unsupported_kernel():
+    """Reject request kernels outside the bounded compute registry."""
     with pytest.raises(ValueError, match="kernel"):
         QPUComputeRequest(qpu_data_artifact_sha256="abc", kernel="unsupported")
 
 
 def test_request_rejects_empty_hash_backend_policy_and_shots():
+    """Reject incomplete identity, live backend policy, and zero shots."""
     with pytest.raises(ValueError, match="qpu_data_artifact_sha256"):
         QPUComputeRequest(qpu_data_artifact_sha256=" ", kernel="sync_dla")
     with pytest.raises(ValueError, match="backend_policy"):
@@ -85,6 +88,7 @@ def test_request_rejects_empty_hash_backend_policy_and_shots():
 
 
 def test_request_rejects_tampered_request_hash():
+    """Reject a serialized request whose recorded digest was changed."""
     request = QPUComputeRequest(qpu_data_artifact_sha256="abc", kernel="sync_dla")
     payload = request.to_dict()
     payload["request_sha256"] = "0" * 64
@@ -94,6 +98,7 @@ def test_request_rejects_tampered_request_hash():
 
 
 def test_simulator_compute_result_contains_counts_and_observables():
+    """Return audited counts and observables from local deterministic execution."""
     artifact = _artifact()
     request = make_compute_request(
         artifact,
@@ -119,6 +124,7 @@ def test_simulator_compute_result_contains_counts_and_observables():
 
 
 def test_simulator_rejects_mismatched_artifact_hash():
+    """Refuse execution when request and data-artifact identities diverge."""
     artifact = _artifact()
     request = make_compute_request(artifact)
     other = _artifact(source_mode="replay")
@@ -128,6 +134,7 @@ def test_simulator_rejects_mismatched_artifact_hash():
 
 
 def test_run_simulator_from_artifact_writes_request_and_result(tmp_path):
+    """Persist replayable request and result records for a local run."""
     artifact_path = tmp_path / "artifact.json"
     request_path = tmp_path / "request.json"
     result_path = tmp_path / "result.json"
@@ -148,6 +155,7 @@ def test_run_simulator_from_artifact_writes_request_and_result(tmp_path):
 
 
 def test_publication_gate_rejects_synthetic_without_explicit_opt_in(tmp_path):
+    """Require explicit opt-in before executing a synthetic data artifact."""
     artifact_path = tmp_path / "artifact.json"
     write_qpu_data_artifact(artifact_path, _artifact(source_mode="synthetic"))
 
@@ -163,6 +171,7 @@ def test_publication_gate_rejects_synthetic_without_explicit_opt_in(tmp_path):
 
 
 def test_cli_run_simulator(tmp_path):
+    """Exercise the public simulator CLI without provider or hardware access."""
     from scpn_quantum_control.qpu_compute import main
 
     artifact_path = tmp_path / "artifact.json"
@@ -192,6 +201,7 @@ def test_cli_run_simulator(tmp_path):
 
 
 def test_node_descriptor_round_trip_and_file_io(tmp_path):
+    """Preserve node capability metadata and digest through file I/O."""
     descriptor = QPUNodeDescriptor(
         node_id="local.statevector",
         access_route="local",
@@ -217,6 +227,7 @@ def test_node_descriptor_round_trip_and_file_io(tmp_path):
 
 
 def test_node_descriptor_rejects_unknown_modality():
+    """Reject node modalities outside the provider-neutral vocabulary."""
     with pytest.raises(ValueError, match="modality"):
         QPUNodeDescriptor(
             node_id="bad",
@@ -239,6 +250,7 @@ def test_node_descriptor_rejects_unknown_modality():
     ],
 )
 def test_node_descriptor_rejects_unknown_routing_metadata(field, value, match):
+    """Reject unsupported access, execution, and latency classifications."""
     kwargs = {
         "node_id": "node",
         "access_route": "local",
@@ -256,6 +268,7 @@ def test_node_descriptor_rejects_unknown_routing_metadata(field, value, match):
 
 
 def test_node_descriptor_rejects_empty_kernel_capabilities():
+    """Require every routable node to declare at least one kernel."""
     with pytest.raises(ValueError, match="kernel_capabilities"):
         QPUNodeDescriptor(
             node_id="node",
@@ -270,6 +283,7 @@ def test_node_descriptor_rejects_empty_kernel_capabilities():
 
 
 def test_node_descriptor_rejects_tampered_descriptor_hash():
+    """Reject serialized node metadata whose digest no longer matches."""
     descriptor = QPUNodeDescriptor(
         node_id="local.statevector",
         access_route="local",
@@ -288,6 +302,7 @@ def test_node_descriptor_rejects_tampered_descriptor_hash():
 
 
 def test_stream_delta_round_trip_and_validation(tmp_path):
+    """Round-trip a valid stream delta and reject invalid confidence."""
     artifact = _artifact()
     delta = QPUStreamDelta(
         stream_id="plasma.loop",
@@ -322,6 +337,7 @@ def test_stream_delta_round_trip_and_validation(tmp_path):
 
 
 def test_stream_delta_rejects_negative_sequence():
+    """Reject stream updates with a negative sequence number."""
     with pytest.raises(ValueError, match="sequence_id"):
         QPUStreamDelta(
             stream_id="stream",
@@ -334,6 +350,7 @@ def test_stream_delta_rejects_negative_sequence():
 
 
 def test_fuse_compute_results_uses_shot_weighting_and_round_trips(tmp_path):
+    """Fuse local results by shot count and preserve the fusion digest."""
     artifact = _artifact()
     request = make_compute_request(artifact, shots=128, trotter_depth=1)
     first = execute_simulator_request(artifact, request)
@@ -366,6 +383,7 @@ def test_fuse_compute_results_uses_shot_weighting_and_round_trips(tmp_path):
 
 
 def test_compute_result_rejects_negative_counts():
+    """Reject compute results containing a negative outcome count."""
     with pytest.raises(ValueError, match="counts"):
         QPUComputeResult(
             request_sha256="request",
@@ -380,6 +398,7 @@ def test_compute_result_rejects_negative_counts():
 
 
 def test_compute_result_rejects_empty_identity_fields_and_unsupported_kernel():
+    """Reject incomplete result identity and unsupported kernel metadata."""
     base = {
         "request_sha256": "request",
         "qpu_data_artifact_sha256": "artifact",
@@ -402,6 +421,7 @@ def test_compute_result_rejects_empty_identity_fields_and_unsupported_kernel():
 
 
 def test_compute_result_rejects_tampered_count_hash():
+    """Reject a serialized result whose count digest was changed."""
     result = QPUComputeResult(
         request_sha256="request",
         qpu_data_artifact_sha256="artifact",
@@ -420,6 +440,7 @@ def test_compute_result_rejects_tampered_count_hash():
 
 
 def test_compute_result_rejects_tampered_result_hash():
+    """Reject a serialized result whose full digest was changed."""
     result = QPUComputeResult(
         request_sha256="request",
         qpu_data_artifact_sha256="artifact",
@@ -438,6 +459,7 @@ def test_compute_result_rejects_tampered_result_hash():
 
 
 def test_serialised_contracts_reject_wrong_schema_versions():
+    """Reject request and result payloads from unknown schema versions."""
     request = QPUComputeRequest(qpu_data_artifact_sha256="abc", kernel="sync_dla").to_dict()
     request["schema_version"] = "wrong"
     with pytest.raises(ValueError, match="request schema"):
@@ -458,6 +480,7 @@ def test_serialised_contracts_reject_wrong_schema_versions():
 
 
 def test_fusion_result_rejects_empty_and_mismatched_contributors():
+    """Require aligned non-empty result and node provenance in fusion."""
     with pytest.raises(ValueError, match="contributing_result_sha256"):
         QPUFusionResult(
             fused_observables={},
@@ -476,6 +499,7 @@ def test_fusion_result_rejects_empty_and_mismatched_contributors():
 
 
 def test_fusion_result_rejects_tampered_hash_and_unsupported_weighting():
+    """Reject corrupted fusion identity and unsupported weighting rules."""
     fusion = QPUFusionResult(
         fused_observables={"sync_order": 0.5},
         contributing_result_sha256=["abc"],

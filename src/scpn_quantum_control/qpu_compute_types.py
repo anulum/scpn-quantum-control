@@ -94,6 +94,7 @@ class QPUComputeRequest:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Normalize and validate the provider-neutral compute request."""
         artifact_hash = str(self.qpu_data_artifact_sha256).strip()
         kernel = str(self.kernel).strip()
         backend_policy = str(self.backend_policy).strip()
@@ -208,6 +209,7 @@ class QPUComputeResult:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Normalize and validate the provider-neutral compute result."""
         if not str(self.request_sha256).strip():
             raise ValueError("request_sha256 must be non-empty")
         if not str(self.qpu_data_artifact_sha256).strip():
@@ -327,6 +329,7 @@ class QPUNodeDescriptor:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Normalize and validate one routable node descriptor."""
         node_id = require_non_empty(self.node_id, "node_id")
         access_route = require_non_empty(self.access_route, "access_route")
         provider = require_non_empty(self.provider, "provider")
@@ -452,6 +455,7 @@ class QPUStreamDelta:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Normalize and validate one incremental stream update."""
         stream_id = require_non_empty(self.stream_id, "stream_id")
         event_time = require_non_empty(self.event_time, "event_time")
         ingest_time = require_non_empty(self.ingest_time, "ingest_time")
@@ -543,6 +547,7 @@ class QPUFusionResult:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Normalize and validate one multi-node fusion result."""
         weighting_rule = require_non_empty(self.weighting_rule, "weighting_rule")
         result_hashes = [
             require_non_empty(item, "contributing_result_sha256")
@@ -663,12 +668,11 @@ def fuse_compute_results(
             if name in result.observables and isinstance(result.observables[name], int | float)
         ]
         denominator = sum(value_weights)
-        if denominator > 0:
-            fused[name] = (
-                sum(value * weight for value, weight in zip(values, value_weights, strict=True))
-                / denominator
-            )
-            agreement[f"{name}_max_minus_min"] = max(values) - min(values)
+        fused[name] = (
+            sum(value * weight for value, weight in zip(values, value_weights, strict=True))
+            / denominator
+        )
+        agreement[f"{name}_max_minus_min"] = max(values) - min(values)
 
     return QPUFusionResult(
         fused_observables=fused,

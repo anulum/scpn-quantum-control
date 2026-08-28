@@ -1,5 +1,14 @@
 # Changelog
 
+- 2026-08-28 — QPU compute-type documentation quality: documented every
+  request, result, node, stream, and fusion validator and the connected
+  provider-neutral tests; removed a denominator guard dominated by positive
+  admitted fusion weights; and wired permanent strict typing, offline
+  execution, complete documentation, and exact source coverage into preflight
+  and CI. Serialization, hashing, routing vocabularies, local fusion
+  arithmetic, public APIs, and no-provider/no-hardware boundaries are
+  unchanged.
+
 - 2026-08-28 — Program AD adjoint documentation quality: completed the NumPy
   docstring contract across adjoint result access, generated replay, public
   gradients, and their connected tests; added exhaustive public replay
