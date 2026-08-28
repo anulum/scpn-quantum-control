@@ -470,14 +470,14 @@ _CANONICAL_SYMBOLS: Final[tuple[PublicApiSymbolRecord, ...]] = (
         "scpn_quantum_control.scorecard_acceptance_engine",
         owner_surface="workbench",
         summary=(
-            "BL-56 scorecard acceptance engine — documented public module, "
+            "Scorecard acceptance engine — documented public module, "
             "not SemVer-guaranteed until CEO v1 scope freezes it."
         ),
     ),
     _workbench(
         "scpn_quantum_control.governed_route_matrix",
         owner_surface="workbench",
-        summary="BL-52 governed route matrix — experimental workbench surface.",
+        summary="Governed route matrix — experimental workbench surface.",
     ),
     _workbench(
         "scpn_quantum_control.public_api_stability",
@@ -974,7 +974,7 @@ def assert_public_api_stability_integrity(
 
 
 def version_compatibility_note() -> dict[str, object]:
-    """Return a structured version-compatibility / migration note (S97.3/S97.4).
+    """Return a structured version-compatibility and migration note.
 
     Returns
     -------

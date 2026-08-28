@@ -175,11 +175,11 @@ evidence gates.
 
 ## Bounded product status
 
-Shipped: S97.0 public-vs-internal catalogue · inventory query · S97.2
-deprecation decorator + probe · fail-closed unknown/blank · breaking-change
-refuse without deprecation · S97.3/S97.4 version-compatibility note + docs.
+Shipped: public-vs-internal catalogue · inventory query · deprecation decorator
++ probe · fail-closed unknown/blank · breaking-change refusal without
+deprecation · version-compatibility note + docs.
 
-Open: S97.1 full inventory generator + CI drift job against live package
+Open: full inventory generator + CI drift job against live package
 `__all__` · CEO v1.0 scope decision / tag · rewrite of DEPRECATIONS.md public
 surface section to match the narrow freeze.
 
