@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1241
+    "test_files": 1242
   },
   "documentation": {
     "examples": [
@@ -8425,6 +8425,7 @@
       "tests/test_differentiable_transform_algebra.py",
       "tests/test_differentiable_transform_helpers.py",
       "tests/test_differentiable_transform_support_matrix_artifact.py",
+      "tests/test_differentiable_transform_support_matrix_artifact_quality_gate.py",
       "tests/test_differentiable_vmap.py",
       "tests/test_disclose_ibm_job_ids.py",
       "tests/test_disruption_classifier.py",

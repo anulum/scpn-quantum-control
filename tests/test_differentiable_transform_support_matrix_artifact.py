@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import runpy
+import sys
 from pathlib import Path
 
 import pytest
@@ -38,6 +40,7 @@ from scpn_quantum_control.differentiable_transform_support_matrix_artifact impor
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMITTED_JSON = REPO_ROOT / DEFAULT_TRANSFORM_SUPPORT_MATRIX_JSON_PATH
 COMMITTED_MARKDOWN = REPO_ROOT / DEFAULT_TRANSFORM_SUPPORT_MATRIX_MARKDOWN_PATH
+MODULE_NAME = "scpn_quantum_control.differentiable_transform_support_matrix_artifact"
 
 
 def _failed_audit() -> TransformAlgebraAudit:
@@ -206,3 +209,58 @@ def test_main_default_mode_prints_the_payload(capsys: pytest.CaptureFixture[str]
     payload = json.loads(capsys.readouterr().out)
     assert payload["schema"] == TRANSFORM_SUPPORT_MATRIX_ARTIFACT_SCHEMA
     assert len(payload["support_matrix"]) == len(REQUIRED_TRANSFORM_ALGEBRA_SUPPORT_ROWS)
+
+
+def test_main_check_reports_payload_drift_with_current_markdown(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Report payload drift without inventing a Markdown-drift diagnostic."""
+    payload = build_transform_support_matrix_artifact()
+    payload["row_count"] = 99
+    json_path = tmp_path / "matrix.json"
+    markdown_path = tmp_path / "matrix.md"
+    json_path.write_text(json.dumps(payload), encoding="utf-8")
+    markdown_path.write_text(
+        render_transform_support_matrix_markdown(payload),
+        encoding="utf-8",
+    )
+    assert (
+        main(
+            [
+                "--check",
+                "--json-path",
+                str(json_path),
+                "--markdown-path",
+                str(markdown_path),
+            ]
+        )
+        == 1
+    )
+    captured = capsys.readouterr()
+    assert "row_count" in captured.err
+    assert "markdown rendering" not in captured.err
+
+
+def test_module_entry_point_returns_main_status(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Execute the package module entry point and propagate its status."""
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            MODULE_NAME,
+            "--check",
+            "--json-path",
+            str(COMMITTED_JSON),
+            "--markdown-path",
+            str(COMMITTED_MARKDOWN),
+        ],
+    )
+    with (
+        pytest.warns(RuntimeWarning, match="found in sys.modules"),
+        pytest.raises(SystemExit) as raised,
+    ):
+        runpy.run_module(MODULE_NAME, run_name="__main__", alter_sys=True)
+    assert raised.value.code == 0

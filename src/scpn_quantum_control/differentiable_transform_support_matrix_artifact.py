@@ -82,6 +82,7 @@ class TransformSupportMatrixArtifactValidation:
         Whether the committed payload matches a fresh audit regeneration.
     errors
         Human-readable mismatch descriptions, empty when ``passed``.
+
     """
 
     passed: bool
@@ -116,6 +117,7 @@ def build_transform_support_matrix_artifact(
     ValueError
         If the audit did not pass — failed cases, missing categories, or
         missing support rows are never serialised into a committed artefact.
+
     """
     resolved = run_transform_algebra_audit() if audit is None else audit
     if not resolved.passed:
@@ -170,6 +172,7 @@ def validate_transform_support_matrix_artifact(
     -------
     TransformSupportMatrixArtifactValidation
         The verdict with per-field mismatch descriptions.
+
     """
     errors: list[str] = []
     reference = build_transform_support_matrix_artifact(audit)
@@ -240,6 +243,7 @@ def render_transform_support_matrix_markdown(payload: dict[str, object]) -> str:
     -------
     str
         Markdown document with artefact metadata and one row per support row.
+
     """
     rows = _row_list(payload)
     lines = [
@@ -313,6 +317,7 @@ def main(argv: list[str] | None = None) -> int:
     -------
     int
         ``0`` on success; ``1`` when ``--check`` finds committed-artefact drift.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

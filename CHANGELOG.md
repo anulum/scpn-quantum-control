@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Transform support-matrix artefact documentation quality:
+  completed the NumPy docstring contract, closed the remaining executable CLI
+  branches, and wired permanent strict typing, committed JSON/Markdown drift,
+  connected Studio execution, documentation, and exact source coverage into
+  preflight and CI. Schema, identifiers, paths, fail-closed audit admission,
+  row order/content, tolerance semantics, rendering, federation status, public
+  APIs, and bounded claims are unchanged.
+
 - 2026-08-28 — Hardware experiment VQE documentation quality: completed the
   NumPy docstring contract across the statevector/injected-runner experiment
   owner and its connected offline tests, and wired permanent strict typing,
