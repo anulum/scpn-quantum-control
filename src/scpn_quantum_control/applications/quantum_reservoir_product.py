@@ -37,7 +37,7 @@ def _array_digest(values: FloatArray) -> str:
 
 
 class ReservoirTaskKind(str, Enum):
-    """Synthetic task families admitted by the BL-45 certificate suite."""
+    """Synthetic task families admitted by the reservoir certificate suite."""
 
     CLASSIFICATION = "classification"
     FORECAST = "forecast"
@@ -64,7 +64,7 @@ class SyntheticReservoirDataset:
         if not self.task_id.strip():
             raise ValueError("task_id must be non-empty.")
         if self.domain_tag != "synthetic":
-            raise ValueError("BL-45 datasets must use the synthetic domain tag.")
+            raise ValueError("reservoir datasets must use the synthetic domain tag.")
         if x_train.ndim != 2 or x_validation.ndim != 2:
             raise ValueError("reservoir inputs must be 2-D arrays.")
         if x_train.shape[0] < 2 or x_validation.shape[0] < 2:

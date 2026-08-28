@@ -67,7 +67,7 @@
   unapplied controller proposal, and deterministic digest-bound evidence. Real
   EEG/clinical/grid/SCADA/plasma/plant, hidden-state inference, provider,
   hardware, safety, control-performance, and deployment claims are refused.
-- 2026-07-29 — Quantum reservoir and differentiable surrogate product (BL-45):
+- 2026-07-29 — Quantum reservoir and differentiable surrogate product:
   hardened exact-statevector allocation/input boundaries; added disjoint
   synthetic QRC versus matched-feature ESN certificates, Gaussian-RBF value and
   analytic-gradient fidelity gates, exact local validation of an unapplied
@@ -180,7 +180,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   deterministic synthetic generator, missingness-aware ridge comparator,
   partial-observation and uncertainty certificates, bounded active-sensing/controller ports,
   public guide, evidence CLI, and canonical JSON/Markdown artefacts.
-- 2026-07-29 — BL-45 held-out QRC/ESN certificate suite, differentiable
+- 2026-07-29 — Held-out QRC/ESN certificate suite, differentiable
   Gaussian-RBF surrogate and disjoint exact-simulator fidelity gates,
   exact-validated unapplied co-design proposal, public guide, evidence CLI, and
   deterministic JSON/Markdown artefacts.
@@ -472,7 +472,7 @@ control, or broad quantum-advantage claim is promoted by this release.
 - Canonicalised multimodal forecasting evidence and parameter-digest custody to
   twelve decimal places, eliminating sub-precision BLAS/runtime drift across
   the supported Python 3.11-3.13 CI matrix without weakening claim boundaries.
-- Extended precision-bounded cross-runtime custody to six-decimal BL-45
+- Extended precision-bounded cross-runtime custody to six-decimal reservoir
   surrogate and twelve-decimal topology-kernel evidence, and reject
   NumPy scalar leakage from the BL-98 JSON evidence boundary.
 

@@ -2228,7 +2228,7 @@ certify_surrogate_gradient(model, validation_inputs, exact_objective, ...) -> Su
 propose_and_validate_surrogate_step(model, current_parameters, exact_objective, fidelity, ...) -> ExactValidatedSurrogateProposal
 ```
 
-BL-45 held-out synthetic certificates, differentiable Gaussian-RBF classical
+Held-out synthetic reservoir certificates, differentiable Gaussian-RBF classical
 surrogate, train/validation leakage rejection, and exact local validation of an
 unapplied co-design proposal. See [Quantum Reservoir Computing and Classical
 Surrogates](quantum_reservoir.md). No hardware, provider, generalisation,

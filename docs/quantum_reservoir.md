@@ -1,6 +1,6 @@
 # Quantum Reservoir Computing and Classical Surrogates
 
-This page defines the bounded BL-45 quantum reservoir computing (QRC), matched
+This page defines the bounded quantum reservoir computing (QRC), matched
 classical baseline, and differentiable classical-surrogate surfaces.
 
 ## Production Surfaces
@@ -75,12 +75,12 @@ direct negative control against presenting QRC as the default winner.
 - leaky state update;
 - ridge readout through `classical_esn_ridge_regression`.
 
-Callers can request a deliberately unmatched `reservoir_size`, but BL-45
+Callers can request a deliberately unmatched `reservoir_size`, but certificate
 evidence requires equal feature count and reports the capacity match explicitly.
 
 ## Differentiable classical surrogate
 
-The BL-45 surrogate is a regularised Gaussian radial-basis model. Fitting stores
+The bounded surrogate is a regularised Gaussian radial-basis model. Fitting stores
 SHA-256 identities for every training row and the target vector. Certification
 rejects any validation row that overlaps the training set.
 

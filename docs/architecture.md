@@ -750,7 +750,7 @@ surrogates/                                ← Differentiable classical quantum-
 ├── train.py                                   Deterministic regularised fitting + row digests
 ├── fidelity.py                                Disjoint value/gradient exact-simulator gates
 ├── hybrid.py                                  Unapplied co-design proposal + exact validation
-└── report.py                                  Digest-bound BL-45 JSON/Markdown evidence
+└── report.py                                  Digest-bound reservoir JSON/Markdown evidence
 
 forecasting/                               ← Forecast benchmarks + bounded multimodal product
 ├── kuramoto_neural_operator.py                Backward-compatible oscillatools re-export
