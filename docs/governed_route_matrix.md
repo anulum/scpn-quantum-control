@@ -151,7 +151,7 @@ The SSGF geometry-gradient product adds two explicit latent-geometry transform c
 - `transform:ssgf.latent_parameter_shift` is a permanent boundary. A circuit
   parameter-shift is not directly `dC/dz` through the nonlinear latent map.
 
-BL-85 adds two explicit L16 director adapter cells:
+The bounded L16 director adds two explicit adapter cells:
 
 - `adapter:l16.local_indicator` supports bounded local exact-simulator
   indicator evaluation and heuristic co-design safety routing.

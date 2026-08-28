@@ -150,7 +150,7 @@ execution occurs.
 
 ### Bounded L16 Director Tests
 
-BL-85 runs three frozen small-system scenarios through the real exact-simulator
+The bounded L16 director runs three frozen small-system scenarios through the real exact-simulator
 indicator path, verifies deterministic replay, and tests the co-design mappings
 `continue -> allow`, `adjust -> hold`, and `halt -> abort`. BL-67 policy tests
 refuse both incomplete and otherwise ticketed hardware modes. Contract,

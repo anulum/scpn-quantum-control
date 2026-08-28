@@ -183,7 +183,7 @@ def test_evaluation_validation_and_optional_serialisation() -> None:
 
 
 def test_l16_observer_serialisation_preserves_legacy_payloads() -> None:
-    """Expose BL-85 fields only when the bounded L16 observer is present."""
+    """Expose bounded-director fields only when the L16 observer is present."""
     legacy = ObserverInputs(active_sensing_id="candidate-1").to_dict()
     l16 = ObserverInputs(
         geometry_gradient_norm=0.2,
