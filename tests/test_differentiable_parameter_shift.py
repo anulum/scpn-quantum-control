@@ -52,7 +52,6 @@ SAMPLE_PROVENANCE = {
 
 def test_facade_and_package_root_reuse_extracted_parameter_shift_helpers() -> None:
     """Facade and package-root exports should reuse the extracted helpers."""
-
     moved_helpers = (
         "parameter_shift_gradient",
         "batch_parameter_shift_gradient",
@@ -73,7 +72,6 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across differentiable parameter-shift payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
@@ -84,7 +82,6 @@ def _single_parameter_shift_record(
     variance_contribution: float = 0.001,
 ) -> ParameterShiftSampleRecord:
     """Build a one-parameter shifted-sample record with known shot variance."""
-
     return ParameterShiftSampleRecord(
         term_index=0,
         parameter_index=0,
@@ -108,7 +105,6 @@ def _single_parameter_shift_record(
 
 def test_parameter_shift_matches_sine_derivative() -> None:
     """Single-parameter shift should recover the exact derivative of sin."""
-
     theta = 0.37
     rule = ParameterShiftRule()
 
@@ -123,7 +119,6 @@ def test_parameter_shift_matches_sine_derivative() -> None:
 
 def test_value_and_parameter_shift_grad_returns_metadata() -> None:
     """The public helper should return value, gradient, and explicit provenance."""
-
     result = value_and_parameter_shift_grad(
         lambda values: math.sin(values[0]) + math.cos(values[1]),
         [0.1, -0.2],
@@ -151,7 +146,6 @@ def test_parameter_shift_rejects_non_scalar_objective() -> None:
 
 def test_parameter_shift_rejects_implicit_parameter_coercion() -> None:
     """Differentiable parameters must be explicit real numeric values."""
-
     with pytest.raises(ValueError, match="parameters must contain real numeric scalars"):
         parameter_shift_gradient(lambda values: math.sin(values[0]), cast(Any, ["0.1"]))
 
@@ -177,7 +171,6 @@ def test_parameter_shift_rejects_non_real_objective_scalar() -> None:
 
 def test_parameter_metadata_validation_and_custom_rule() -> None:
     """Parameter metadata and custom rules should fail closed."""
-
     with pytest.raises(ValueError, match="non-empty"):
         Parameter("")
     with pytest.raises(ValueError, match="boolean"):
@@ -204,7 +197,6 @@ def test_parameter_metadata_validation_and_custom_rule() -> None:
 
 def test_parameter_shift_consistency_passes_for_shift_compatible_objective() -> None:
     """Gradient checks should pass for a standard sinusoidal generator rule."""
-
     result = check_parameter_shift_consistency(
         lambda values: math.sin(values[0]) + math.cos(values[1]),
         [0.3, -0.2],
@@ -221,7 +213,6 @@ def test_parameter_shift_consistency_passes_for_shift_compatible_objective() -> 
 
 def test_parameter_shift_consistency_detects_wrong_rule_coefficient() -> None:
     """Gradient checks should fail closed when a rule coefficient is invalid."""
-
     result = check_parameter_shift_consistency(
         lambda values: math.sin(values[0]),
         [0.3],
@@ -235,7 +226,6 @@ def test_parameter_shift_consistency_detects_wrong_rule_coefficient() -> None:
 
 def test_parameter_shift_consistency_rejects_invalid_tolerance() -> None:
     """Gradient-check tolerances must be explicit non-negative real scalars."""
-
     with pytest.raises(ValueError, match="gradient check tolerance must be a real numeric scalar"):
         check_parameter_shift_consistency(
             lambda values: math.sin(values[0]), [0.3], tolerance=cast(Any, "1e-5")
@@ -250,7 +240,6 @@ def test_parameter_shift_consistency_rejects_invalid_tolerance() -> None:
 
 def test_multi_frequency_parameter_shift_rule_matches_analytic_reference() -> None:
     """Multi-frequency rules should differentiate wider generator spectra exactly."""
-
     theta = 0.23
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0, 3.0])
 
@@ -274,7 +263,6 @@ def test_multi_frequency_parameter_shift_rule_matches_analytic_reference() -> No
 
 def test_multi_frequency_parameter_shift_preserves_trainable_metadata() -> None:
     """Multi-term rules should skip frozen parameters without spending probes."""
-
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
     result = value_and_parameter_shift_grad(
         lambda values: math.sin(values[0]) + math.sin(2.0 * values[1]),
@@ -291,7 +279,6 @@ def test_multi_frequency_parameter_shift_preserves_trainable_metadata() -> None:
 
 def test_multi_frequency_parameter_shift_rule_rejects_invalid_systems() -> None:
     """Multi-frequency rule construction must fail closed for ambiguous systems."""
-
     with pytest.raises(ValueError, match="positive"):
         multi_frequency_parameter_shift_rule([0.0, 1.0])
     with pytest.raises(ValueError, match="unique"):
@@ -304,7 +291,6 @@ def test_multi_frequency_parameter_shift_rule_rejects_invalid_systems() -> None:
 
 def test_multi_frequency_parameter_shift_propagates_per_term_shot_noise() -> None:
     """Multi-frequency shot noise should propagate independent per-term records."""
-
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
     plus = np.array([[1.4, 10.0], [0.9, 20.0]], dtype=np.float64)
     minus = np.array([[0.2, 11.0], [0.1, 19.0]], dtype=np.float64)
@@ -356,7 +342,6 @@ def test_multi_frequency_parameter_shift_propagates_per_term_shot_noise() -> Non
 
 def test_multi_frequency_parameter_shift_allocates_per_term_shots() -> None:
     """Shot allocation should support all multi-frequency plus/minus terms."""
-
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
     allocation = allocate_parameter_shift_shots(
         [[0.20, 0.30], [0.40, 0.50]],
@@ -377,7 +362,6 @@ def test_multi_frequency_parameter_shift_allocates_per_term_shots() -> None:
 
 def test_multi_frequency_parameter_shift_rejects_ambiguous_shot_tensors() -> None:
     """Multi-frequency shot-noise inputs must expose the term dimension."""
-
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
 
     with pytest.raises(ValueError, match="shape"):
@@ -400,7 +384,6 @@ def test_multi_frequency_parameter_shift_rejects_ambiguous_shot_tensors() -> Non
 
 def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> None:
     """Independent plus/minus shot noise should propagate into gradient variance."""
-
     result = parameter_shift_gradient_with_uncertainty(
         plus_values=[0.8, 0.1],
         minus_values=[0.2, -0.3],
@@ -457,7 +440,6 @@ def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> No
 
 def test_parameter_shift_uncertainty_requires_sample_provenance() -> None:
     """Materialised finite-shot gradients must identify the sample source."""
-
     with pytest.raises(ValueError, match="sample provenance"):
         parameter_shift_gradient_with_uncertainty(
             plus_values=[0.8],
@@ -471,7 +453,6 @@ def test_parameter_shift_uncertainty_requires_sample_provenance() -> None:
 
 def test_parameter_shift_uncertainty_accepts_typed_sample_provenance() -> None:
     """Typed finite-shot provenance should normalise integer seed tokens."""
-
     result = parameter_shift_gradient_with_uncertainty(
         plus_values=[0.8],
         minus_values=[0.2],
@@ -494,7 +475,6 @@ def test_parameter_shift_uncertainty_accepts_typed_sample_provenance() -> None:
 
 def test_parameter_shift_sample_record_rejects_inconsistent_shift_math() -> None:
     """Shifted-sample records must match their finite-shot contribution math."""
-
     with pytest.raises(ValueError, match="gradient_contribution"):
         _single_parameter_shift_record(gradient_contribution=0.25)
     with pytest.raises(ValueError, match="variance_contribution"):
@@ -509,7 +489,6 @@ def test_parameter_shift_sample_record_rejects_inconsistent_shift_math() -> None
 
 def test_stochastic_gradient_records_must_reconstruct_result() -> None:
     """Parameter-shift evidence must be reconstructable from shifted records."""
-
     record = _single_parameter_shift_record()
     standard_error = np.array([math.sqrt(0.001)], dtype=np.float64)
 
@@ -551,7 +530,6 @@ def test_stochastic_gradient_records_must_reconstruct_result() -> None:
 
 def test_parameter_shift_uncertainty_reuses_plus_shots_when_minus_shots_omitted() -> None:
     """Shot-noise gradients should default minus shots to plus shots."""
-
     result = parameter_shift_gradient_with_uncertainty(
         plus_values=[0.8],
         minus_values=[0.2],
@@ -570,7 +548,6 @@ def test_parameter_shift_uncertainty_reuses_plus_shots_when_minus_shots_omitted(
 
 def test_parameter_shift_gradient_with_uncertainty_rejects_invalid_inputs() -> None:
     """Shot-noise gradients must fail closed on impossible measurement contracts."""
-
     with pytest.raises(ValueError, match="minus_values shape"):
         parameter_shift_gradient_with_uncertainty([1.0], [0.0, 0.0], [0.1], [0.1], [10])
     with pytest.raises(ValueError, match="variance shapes"):
@@ -642,7 +619,6 @@ def test_parameter_shift_gradient_with_uncertainty_rejects_invalid_inputs() -> N
 
 def test_allocate_parameter_shift_shots_meets_target_standard_error() -> None:
     """Shot allocation should conservatively meet target gradient uncertainty."""
-
     allocation = allocate_parameter_shift_shots(
         plus_variances=[0.36, 0.25],
         minus_variances=[0.16, 0.09],
@@ -667,7 +643,6 @@ def test_allocate_parameter_shift_shots_meets_target_standard_error() -> None:
 
 def test_allocate_parameter_shift_shots_respects_caps() -> None:
     """Shot allocation should report capped uncertainty when budgets are bounded."""
-
     allocation = allocate_parameter_shift_shots(
         plus_variances=[1.0],
         minus_variances=[1.0],
@@ -682,7 +657,6 @@ def test_allocate_parameter_shift_shots_respects_caps() -> None:
 
 def test_allocate_parameter_shift_shots_rejects_invalid_inputs() -> None:
     """Shot allocation must fail closed on impossible planning contracts."""
-
     with pytest.raises(ValueError, match="minus_variances shape"):
         allocate_parameter_shift_shots([0.1], [0.1, 0.2], target_standard_error=0.1)
     with pytest.raises(ValueError, match="shot variances"):
@@ -703,7 +677,6 @@ def test_allocate_parameter_shift_shots_rejects_invalid_inputs() -> None:
 
 def test_batch_parameter_shift_gradient_stacks_independent_objectives() -> None:
     """Batch helper should produce one gradient row per scalar objective."""
-
     gradients = batch_parameter_shift_gradient(
         [
             lambda values: math.sin(values[0]),
@@ -720,7 +693,6 @@ def test_batch_parameter_shift_gradient_stacks_independent_objectives() -> None:
 
 def test_batch_value_gradient_results_preserve_metadata() -> None:
     """Batch value APIs should preserve objective values and provenance."""
-
     parameter_shift_results = batch_value_and_parameter_shift_grad(
         [
             lambda values: math.sin(values[0]),
@@ -769,7 +741,6 @@ def test_batch_value_gradient_results_preserve_metadata() -> None:
 
 def test_batch_value_gradient_results_reject_empty_objectives() -> None:
     """Batch value APIs must fail closed on empty objective lists."""
-
     with pytest.raises(ValueError, match="objectives"):
         batch_value_and_parameter_shift_grad([], [0.25])
     with pytest.raises(ValueError, match="objectives"):
@@ -780,7 +751,6 @@ def test_batch_value_gradient_results_reject_empty_objectives() -> None:
 
 def test_batch_complex_step_gradient_matches_analytic_derivatives() -> None:
     """Batched complex-step gradients should stack analytic scalar results."""
-
     gradients = batch_complex_step_gradient(
         [
             lambda values: np.sin(values[0]) + values[1] ** 2,

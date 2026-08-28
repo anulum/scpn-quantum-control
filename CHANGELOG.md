@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Differentiable parameter-shift documentation quality:
+  completed the NumPy docstring contract across scalar, batched,
+  multi-frequency, and finite-shot parameter-shift transforms and their direct
+  tests, and wired permanent strict typing, connected execution,
+  documentation, and exact source coverage into preflight and CI. Gradient
+  arithmetic, provenance, failure policy, public APIs, and bounded stochastic
+  claims are unchanged.
+
 - 2026-08-28 — Hardware OpenPulse-control documentation quality: completed
   the NumPy docstring contract across provider-neutral schedules, calibration
   dossiers, Rabi estimation, and direct tests; added exhaustive public

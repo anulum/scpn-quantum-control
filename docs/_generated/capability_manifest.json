@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1248
+    "test_files": 1249
   },
   "documentation": {
     "examples": [
@@ -8401,6 +8401,7 @@
       "tests/test_differentiable_package_exports.py",
       "tests/test_differentiable_parameter_contracts.py",
       "tests/test_differentiable_parameter_shift.py",
+      "tests/test_differentiable_parameter_shift_quality_gate.py",
       "tests/test_differentiable_programming_benchmark_alias_edges.py",
       "tests/test_differentiable_programming_benchmark_metadata_edges.py",
       "tests/test_differentiable_programming_benchmark_program_ir_edges.py",
