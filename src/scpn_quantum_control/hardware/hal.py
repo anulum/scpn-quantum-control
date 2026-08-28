@@ -66,6 +66,7 @@ class BackendCapabilities:
     supports_cost_estimate: bool = False
 
     def __post_init__(self) -> None:
+        """Validate an optional positive qubit capacity."""
         if self.max_qubits is not None and self.max_qubits <= 0:
             raise ValueError("max_qubits must be positive when provided")
 
@@ -88,6 +89,7 @@ class BackendProfile:
     notes: Sequence[str] = ()
 
     def __post_init__(self) -> None:
+        """Normalize profile tokens and enforce cloud approval policy."""
         _validate_token(self.backend_id, "backend_id")
         _validate_token(self.provider, "provider")
         _validate_token(self.broker, "broker")
@@ -115,6 +117,7 @@ class QuantumWorkload:
     metadata: Mapping[str, object] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate workload identity, program, resources, and metadata."""
         _validate_token(self.workload_id, "workload_id")
         _validate_token(self.ir_format, "ir_format")
         if not isinstance(self.program, str) or not self.program.strip():
@@ -137,6 +140,7 @@ class QuantumJobRef:
     metadata: Mapping[str, object] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate job identity and freeze metadata custody."""
         _validate_token(self.job_id, "job_id")
         _validate_token(self.backend_id, "backend_id")
         _validate_token(self.workload_id, "workload_id")
@@ -155,6 +159,7 @@ class QuantumJobResult:
     metadata: Mapping[str, object] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate result counts and freeze result custody."""
         _validate_token(self.status, "status")
         if self.shots < 0:
             raise ValueError("shots must be non-negative")
@@ -196,6 +201,7 @@ class LocalDeterministicSimulator:
     """Offline simulator adapter used to verify the HAL execution contract."""
 
     def __init__(self, profile: BackendProfile) -> None:
+        """Bind a non-cloud profile to an isolated local job store."""
         if profile.is_cloud:
             raise ValueError("LocalDeterministicSimulator requires a non-cloud profile")
         self.profile = profile
@@ -283,6 +289,7 @@ class HardwareAbstractionLayer:
     """Profile registry plus approval-gated execution router."""
 
     def __init__(self, profiles: Sequence[BackendProfile]) -> None:
+        """Register unique profiles without creating provider adapters."""
         by_id: dict[str, BackendProfile] = {}
         for profile in profiles:
             if profile.backend_id in by_id:

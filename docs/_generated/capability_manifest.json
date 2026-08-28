@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1230
+    "test_files": 1231
   },
   "documentation": {
     "examples": [
@@ -8563,6 +8563,7 @@
       "tests/test_hardware_hal_provider_id_contract.py",
       "tests/test_hardware_hal_qbraid_adapters.py",
       "tests/test_hardware_hal_qiskit_adapters.py",
+      "tests/test_hardware_hal_quality_gate.py",
       "tests/test_hardware_hal_quandela_adapters.py",
       "tests/test_hardware_hal_quantinuum_adapters.py",
       "tests/test_hardware_hal_quera_bloqade_adapters.py",

@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — Provider-neutral HAL documentation quality: completed the
+  NumPy docstring contract for the HAL and its direct offline tests, and wired
+  permanent strict typing, documentation, and exact source-coverage gates into
+  preflight and CI. Profiles, immutable custody, approval gating, validation,
+  deterministic simulation, injected-adapter behavior, public symbols, and
+  provider non-execution boundaries are unchanged.
+
 - 2026-08-28 — Cross-shot feedback-loop documentation quality: completed the
   NumPy docstring contract across the offline runtime and its simulator/double
   tests, and wired permanent strict typing, documentation, and exact

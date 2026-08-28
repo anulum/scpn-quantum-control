@@ -95,6 +95,7 @@ if TYPE_CHECKING:
     )
     from tools import governed_route_matrix_quality_gates as _governed_route_matrix_quality_gates
     from tools import gradient_tape_quality_gates as _gradient_tape_quality_gates
+    from tools import hardware_hal_quality_gates as _hardware_hal_quality_gates
     from tools import hardware_safe_execution_quality_gates as _hardware_safe_quality_gates
     from tools import (
         hermetic_reproduction_kit_quality_gates as _hermetic_reproduction_kit_quality_gates,
@@ -263,6 +264,7 @@ else:
     )
     _feedback_loop_quality_gates = import_module("tools.feedback_loop_quality_gates")
     _gradient_tape_quality_gates = import_module("tools.gradient_tape_quality_gates")
+    _hardware_hal_quality_gates = import_module("tools.hardware_hal_quality_gates")
     _entanglement_sync_evidence_quality_gates = import_module(
         "tools.entanglement_sync_evidence_quality_gates"
     )
@@ -677,6 +679,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_qnode_circuit_contracts_quality_gates.build_static_quality_gates(_PY),
     *_topology_kernel_schema_quality_gates.build_static_quality_gates(_PY),
     *_feedback_loop_quality_gates.build_static_quality_gates(_PY),
+    *_hardware_hal_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_baseline_design_quality_gates.build_static_quality_gates(_PY),
     *_error_mitigation_product_quality_gates.build_static_quality_gates(_PY),
@@ -1124,6 +1127,7 @@ TOPOLOGY_KERNEL_SCHEMA_COVERAGE_GATES = _topology_kernel_schema_quality_gates.bu
     _PY
 )
 FEEDBACK_LOOP_COVERAGE_GATES = _feedback_loop_quality_gates.build_coverage_gates(_PY)
+HARDWARE_HAL_COVERAGE_GATES = _hardware_hal_quality_gates.build_coverage_gates(_PY)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
     _geometric_control_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -1515,6 +1519,7 @@ def main() -> int:
             gates.extend(QNODE_CIRCUIT_CONTRACTS_COVERAGE_GATES)
             gates.extend(TOPOLOGY_KERNEL_SCHEMA_COVERAGE_GATES)
             gates.extend(FEEDBACK_LOOP_COVERAGE_GATES)
+            gates.extend(HARDWARE_HAL_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
             gates.extend(TN_MPS_BASELINE_DESIGN_COVERAGE_GATES)
             gates.extend(ERROR_MITIGATION_PRODUCT_COVERAGE_GATES)

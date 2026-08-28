@@ -993,6 +993,8 @@ def test_main_uses_coverage_pytest_by_default(
         "topology-kernel-schema exact coverage threshold",
         "feedback-loop focused coverage",
         "feedback-loop exact coverage threshold",
+        "hardware-hal focused coverage",
+        "hardware-hal exact coverage threshold",
         "geometric-control-product focused coverage",
         "geometric-control-product exact coverage threshold",
         "tn-mps-baseline-design focused coverage",

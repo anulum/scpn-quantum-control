@@ -27,7 +27,6 @@ from scpn_quantum_control.hardware.hal import (
 
 def test_hal_profiles_export_backend_descriptors_for_selector_metadata() -> None:
     """Every built-in HAL route should have offline selector metadata."""
-
     from scpn_quantum_control.hardware import (
         describe_hal_backend_profile as exported_describe_hal_backend_profile,
     )
@@ -92,7 +91,6 @@ def test_hal_profiles_export_backend_descriptors_for_selector_metadata() -> None
 
 def test_builtin_hal_profiles_cover_major_current_provider_routes() -> None:
     """Built-in profiles should cover the current major provider families."""
-
     profiles = built_in_backend_profiles()
     ids = {profile.backend_id for profile in profiles}
 
@@ -147,7 +145,6 @@ def test_builtin_hal_profiles_cover_major_current_provider_routes() -> None:
 
 def test_dynamic_aggregator_profiles_are_first_class_catalog_routes() -> None:
     """Provider-agnostic aggregators should not collapse to one provider."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
 
     qbraid = hal.profile("qbraid_runtime")
@@ -179,7 +176,6 @@ def test_dynamic_aggregator_profiles_are_first_class_catalog_routes() -> None:
 
 def test_hal_discovery_is_deterministic_and_does_not_require_sdk_imports() -> None:
     """HAL construction should be metadata-only and offline."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
 
     first = [profile.backend_id for profile in hal.list_profiles()]
@@ -194,7 +190,6 @@ def test_hal_discovery_is_deterministic_and_does_not_require_sdk_imports() -> No
 
 def test_local_deterministic_simulator_round_trip() -> None:
     """The HAL should execute local simulator workloads through the common API."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     backend = LocalDeterministicSimulator(hal.profile("local_statevector"))
     hal.register_backend(backend)
@@ -221,7 +216,6 @@ def test_local_deterministic_simulator_round_trip() -> None:
 
 def test_cloud_profile_fails_closed_without_injected_backend() -> None:
     """Cloud routes must not silently submit or fake results."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     workload = QuantumWorkload(
         workload_id="cloud",
@@ -237,7 +231,6 @@ def test_cloud_profile_fails_closed_without_injected_backend() -> None:
 
 def test_cloud_backend_requires_explicit_approval_before_submit() -> None:
     """Injected cloud adapters should still require approval tokens."""
-
     profile = BackendProfile(
         backend_id="test_cloud",
         provider="test_provider",
@@ -311,7 +304,6 @@ def test_cloud_backend_requires_explicit_approval_before_submit() -> None:
 
 def test_workload_validation_rejects_bad_ir_qubits_and_shots() -> None:
     """Workload validation should fail before reaching provider code."""
-
     with pytest.raises(ValueError, match="ir_format"):
         QuantumWorkload(workload_id="bad", ir_format="quil 2", program="x", n_qubits=1)
     with pytest.raises(ValueError, match="n_qubits"):
@@ -322,7 +314,6 @@ def test_workload_validation_rejects_bad_ir_qubits_and_shots() -> None:
 
 def test_profile_validation_rejects_unsupported_resource_shapes() -> None:
     """Backend profiles should reject inconsistent production metadata."""
-
     with pytest.raises(ValueError, match="backend_id"):
         BackendProfile(
             backend_id="",
@@ -355,7 +346,6 @@ def test_profile_validation_rejects_unsupported_resource_shapes() -> None:
 
 def test_hal_protocol_runtime_check() -> None:
     """Registered backends should satisfy the runtime protocol."""
-
     hal = HardwareAbstractionLayer.with_builtin_profiles()
     backend = LocalDeterministicSimulator(hal.profile("local_statevector"))
 
@@ -367,7 +357,6 @@ def test_hal_protocol_runtime_check() -> None:
 
 def test_hal_rejects_workload_that_backend_cannot_accept() -> None:
     """Routing should validate IR format and qubit limits before submit."""
-
     profile = BackendProfile(
         backend_id="limited",
         provider="local",
