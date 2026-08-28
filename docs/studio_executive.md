@@ -104,7 +104,7 @@ record.result.outputs["verified"]       # True (unit matches its own reference)
 
 The claim boundary is the bit-exact XY compile decision path only: the input
 digest is recompute-verifiable in a browser through the WASM kernel (see
-[Studio Federation](studio_federation.md) → WS-1 recompute kernel). It is not a
+[Studio Federation](studio_federation.md) → browser recompute kernel). It is not a
 physical `K_nm` claim, a continuous simulator value, or QPU execution.
 
 ## Simulating an evolution

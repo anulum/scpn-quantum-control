@@ -4,7 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
-// scpn-quantum-control — studio-web browser recompute path (WS-1)
+// scpn-quantum-control — studio-web browser recompute path
 
 /**
  * Browser-side recompute verifier for the committed XY-compile unit.

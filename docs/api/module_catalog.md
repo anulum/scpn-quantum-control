@@ -2077,7 +2077,7 @@ ML-DSA-65 module-lattice digital signatures, implemented from FIPS 204.
 
 ### `scpn_quantum_control.crypto.ml_dsa_seal`
 
-Post-quantum signing back-end for the studio honesty seal (WS-1).
+Post-quantum signing back-end for the studio honesty seal.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/crypto/ml_dsa_seal.py) · Public symbols: **2**
 
@@ -5007,7 +5007,7 @@ Per-claim reference-validation certifications for the Studio frontier.
 
 ### `scpn_quantum_control.studio.result_pack_seal`
 
-Seal a QUANTUM hardware result pack into a verifiable honesty envelope (WS-1).
+Seal a QUANTUM hardware result pack into a verifiable honesty envelope.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/studio/result_pack_seal.py) · Public symbols: **3**
 

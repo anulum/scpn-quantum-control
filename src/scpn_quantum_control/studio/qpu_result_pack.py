@@ -4,21 +4,22 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — WS-1 attestation-verifiable QPU result-pack unit
+# scpn-quantum-control — attestation-verifiable QPU result-pack unit
 """Emit and present the attestation-verifiable ``studio.qpu-result-pack.v1`` unit.
 
-WS-1 grants two verification modes. Compile-path claims are **recompute**-
-verifiable (:mod:`scpn_quantum_control.studio.recompute_kernel`): a visitor
-replays the digest in the browser. A QPU result cannot be replayed — the shot
-statistics are irreproducible — so it is **attestation**-verifiable: the trust
-rests on a hardware provider's own signed record, not on a recompute.
+The verifiable-result contract grants two verification modes. Compile-path claims
+are **recompute**-verifiable
+(:mod:`scpn_quantum_control.studio.recompute_kernel`): a visitor replays the
+digest in the browser. A QPU result cannot be replayed — the shot statistics are
+irreproducible — so it is **attestation**-verifiable: the trust rests on a
+hardware provider's own signed record, not on a recompute.
 
-This module emits the richer WS-1 unit that carries that axis explicitly. Every
-unit declares ``verifiability_mode = attestation`` and binds four things a
-verifier checks: the raw-results digest (the returned counts), the calibration
-snapshot reference, the bit-exact circuit digest (the link back to a
-recompute-verifiable compile), and — when a real device run exists — the
-provider attestation.
+This module emits the richer attestation-verifiable unit that carries that axis
+explicitly. Every unit declares ``verifiability_mode = attestation`` and binds
+four things a verifier checks: the raw-results digest (the returned counts), the
+calibration snapshot reference, the bit-exact circuit digest (the link back to
+a recompute-verifiable compile), and — when a real device run exists — the provider
+attestation.
 
 The absent-signal is loud, never silently downgraded. A unit with no provider
 attestation :func:`present_qpu_result_pack` renders ``unverifiable`` and

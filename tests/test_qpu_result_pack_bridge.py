@@ -8,7 +8,7 @@
 """Tests for the provider-neutral ``studio.qpu-result-pack.v1`` emission bridge.
 
 These lock the bridge that turns a live :class:`QuantumJobResult` — the neutral
-result every one of the sixteen HAL adapters returns — into a WS-1
+result every one of the sixteen HAL adapters returns — into an
 attestation-verifiable unit. The end-to-end path is exercised through the offline
 :class:`LocalDeterministicSimulator`, an ungated real execution, and the counts
 digest is pinned byte-for-byte against the executive deploy template so the

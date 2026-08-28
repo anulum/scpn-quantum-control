@@ -44,7 +44,7 @@ cargo build --release --target wasm32-unknown-unknown \
 
 The exported `scpn_xy_compile_digest` ABI consumes the canonical
 little-endian `studio.xy-compile-recompute.v1` byte payload and writes a
-32-byte SHA-256 digest over the structural XY compile terms. This is the WS-1
+32-byte SHA-256 digest over the structural XY compile terms. This is the
 bit-exact recompute path for compile claims only; it does not execute QPU jobs
 or grade continuous simulator values.
 

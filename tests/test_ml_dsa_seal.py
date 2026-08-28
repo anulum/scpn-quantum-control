@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Tests for the ML-DSA-65 honesty-seal back-end (WS-1)
+# SCPN Quantum Control — Tests for the ML-DSA-65 honesty-seal back-end
 """Tests for crypto/ml_dsa_seal.py — the post-quantum seal back-end.
 
 Two layers: the back-end in isolation (protocol shape, key custody, signature

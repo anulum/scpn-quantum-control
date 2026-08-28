@@ -11,7 +11,7 @@ The hardware abstraction layer normalises every provider — all sixteen HAL
 adapters (IBM, IonQ, IQM, Rigetti, Quantinuum, QuEra, Pasqal, OQC, D-Wave,
 Braket, Azure, Cirq, PennyLane, qBraid, Quandela, Strangeworks) — onto a single
 :class:`~scpn_quantum_control.hardware.hal.QuantumJobResult`. This module is the
-one bridge from that neutral result to the WS-1 attestation-verifiable
+one bridge from that neutral result to the attestation-verifiable
 ``studio.qpu-result-pack.v1`` unit, so wiring it once wires *every* adapter's run
 path at the same time — there is no per-provider copy of the emission logic to
 drift.

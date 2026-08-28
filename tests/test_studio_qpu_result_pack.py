@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — WS-1 QPU result-pack unit tests
+# scpn-quantum-control — attestation-verifiable QPU result-pack unit tests
 """Tests for the attestation-verifiable ``studio.qpu-result-pack.v1`` unit."""
 
 from __future__ import annotations
@@ -54,7 +54,7 @@ def _attestation(digest: str = _RAW_DIGEST) -> dict[str, str]:
 
 
 def test_unit_declares_the_attestation_verifiability_mode() -> None:
-    """Every unit carries the WS-1 attestation mode and pack provenance."""
+    """Every unit carries the attestation mode and pack provenance."""
     unit = build_qpu_result_pack_unit(
         _real_pack(),
         raw_results_digest=_RAW_DIGEST,

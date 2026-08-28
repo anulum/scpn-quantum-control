@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Tests for WS-1 attestation-mode result-pack sealing
+# scpn-quantum-control — Tests for attestation-mode result-pack sealing
 """Tests for studio/result_pack_seal.py — sealing a hardware result pack.
 
 Covers the claim-unit build from a real committed pack, the provider-attestation

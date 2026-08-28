@@ -4,15 +4,15 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — ML-DSA-65 back-end for the verifiable-honesty seal (WS-1)
-"""Post-quantum signing back-end for the studio honesty seal (WS-1).
+# SCPN Quantum Control — ML-DSA-65 back-end for the verifiable-honesty seal
+"""Post-quantum signing back-end for the studio honesty seal.
 
 The SCPN-STUDIO honesty seal (``scpn_studio_platform.seal``) is algorithm-agnostic:
 a producer signs the canonical bytes of a claim unit with any back-end that exposes
 ``sign(message) -> bytes`` plus ``key_id`` / ``alg``, and a verifier holding the
 public key checks it. The platform ships **Ed25519** as the reference back-end and
-names **ML-DSA-65** (FIPS 204, post-quantum) as the WS-1 target, to slot in behind
-the same protocol *once a vetted library is selected*.
+names **ML-DSA-65** (FIPS 204, post-quantum) as the post-quantum target, to slot
+in behind the same protocol *once a vetted library is selected*.
 
 This module is that back-end. It wraps :mod:`scpn_quantum_control.crypto.ml_dsa`
 — a from-specification ML-DSA-65 implementation reproducing the official NIST ACVP

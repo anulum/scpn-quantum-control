@@ -181,7 +181,7 @@ EXECUTE = Verb(
 """Run on a QPU through the approval-gated provider HAL; emits raw counts + provenance.
 
 Emits two claim families: ``studio.hardware-result-pack.v1`` (the committed
-raw-count pack) and ``studio.qpu-result-pack.v1`` (the WS-1 attestation-verifiable
+raw-count pack) and ``studio.qpu-result-pack.v1`` (the attestation-verifiable
 unit that binds the raw-results digest, calibration snapshot, and the bit-exact
 circuit digest to a provider attestation). Both are ``verifiability_mode =
 attestation``: a QPU result cannot be recomputed in a verifier's browser."""

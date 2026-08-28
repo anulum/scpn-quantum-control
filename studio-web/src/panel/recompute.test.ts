@@ -4,7 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
-// scpn-quantum-control — browser recompute + strip-detection tests (WS-1)
+// scpn-quantum-control — browser recompute + strip-detection tests
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";

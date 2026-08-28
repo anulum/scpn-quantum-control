@@ -288,7 +288,7 @@ is only for QUANTUM/SPO computational agreement and reviewable compiler handoff.
 It is not physical validation, not a canonical `K_nm` claim, and not live
 actuation authority.
 
-## WS-1 recompute kernel
+## Browser recompute kernel
 
 Compile-path claims can now be emitted as recompute-verifiable units:
 
@@ -326,7 +326,7 @@ signed unit construction; browser verification uses the Rust/WASM kernel. This
 covers the bit-exact compile decision path only. Continuous simulator values
 and QPU counts remain separate tolerance or attestation evidence.
 
-### Committed browser-verifiable unit (WS-1)
+### Committed browser-verifiable unit
 
 One committed unit lets the studio panel replay the compile digest in the
 visitor's browser:
@@ -346,13 +346,14 @@ grade, wrong schema, malformed input, or a kernel-level rejection render
 boundary is the bit-exact compile decision path only — never a physical
 `K_nm` claim, QPU execution, or actuation authority.
 
-## WS-1 attestation-verifiable QPU results
+## Attestation-verifiable QPU results
 
-WS-1 grants two verification modes, and every evidence unit declares which one
-it stands on. Compile-path claims are **recompute**-verifiable (above). A QPU
-result cannot be replayed — the shot statistics are irreproducible — so it is
-**attestation**-verifiable: the trust rests on a hardware provider's own signed
-record. The `execute` verb therefore produces a second claim family,
+The verifiable-result contract grants two verification modes, and every
+evidence unit declares which one it stands on. Compile-path claims are
+**recompute**-verifiable (above). A QPU result cannot be replayed — the shot
+statistics are irreproducible — so it is **attestation**-verifiable: the trust
+rests on a hardware provider's own signed record. The `execute` verb therefore
+produces a second claim family,
 `studio.qpu-result-pack.v1`, alongside `studio.hardware-result-pack.v1`:
 
 ```python

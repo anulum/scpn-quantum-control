@@ -4,11 +4,12 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — WS-1 attestation-mode sealing for hardware result packs
-"""Seal a QUANTUM hardware result pack into a verifiable honesty envelope (WS-1).
+# scpn-quantum-control — attestation-mode sealing for hardware result packs
+"""Seal a QUANTUM hardware result pack into a verifiable honesty envelope.
 
 A QPU result cannot be re-run in a verifier's browser — the shot statistics are
-irreproducible — so WS-1 grants it **attestation-verifiable** trust rather than
+irreproducible — so the verifiable-result contract grants it
+**attestation-verifiable** trust rather than
 **recompute-verifiable** trust (the platform's Mode B). The chain of custody is:
 
 1. the studio publishes a ``studio.hardware-result-pack.v1`` claim unit carrying the
