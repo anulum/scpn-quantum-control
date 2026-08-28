@@ -39,7 +39,7 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
   replay, explicit dense-reward gaming boundaries, no-preregistration
   unsuitable-scenario refusal, and current unimplemented pulse-execution
   blockers.
-- BL-84 initial deep-analysis research-lane registry: 73 immutable human-reviewed
+- Initial deep-analysis research-lane registry: 73 immutable human-reviewed
   `analysis/` and `gauge/` rows, explicit maturity/differentiable-hook/claim
   classifications, deterministic evidence, and an exact inventory gate that
   rejects unregistered new modules. Registry membership grants no product,

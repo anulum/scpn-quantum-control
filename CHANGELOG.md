@@ -170,7 +170,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   guide while preserving authored README content.
 - BL-54 DLA/topology differentiable-control boundaries, topology-aware
   quantum-kernel product, domain application honesty kits, BL-98 theory-
-  hook promotion registry, BL-84 deep-analysis research-lane registry, and
+  hook promotion registry, deep-analysis research-lane registry, and
   preregistered deterministic RL-adjacent research governance.
 - 2026-07-29 — BL-60 finite synthetic chimera and multiscale control facade,
   exact generator, nested observables, analytic target/proposal surfaces,
@@ -272,7 +272,8 @@ control, or broad quantum-advantage claim is promoted by this release.
   `scpn_quantum_control.thermo_readiness_product` productises S9 claim-bounded
   readiness over ambient `thermodynamics.readiness` (K-sweep probe,
   machine-checked CLAIM_BOUNDARY) and inventories FEP modules as research-only
-  (BL-84 / tier C); refuse invent-green peak claim, hardware submit, and FEP
+  (deep-analysis research lane / tier C); refuse invent-green peak claim,
+  hardware submit, and FEP
   product promotion. Docs: `docs/thermo_readiness_product.md`. Twenty-first P1
   A-product after BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73/99/101.
 - 2026-07-24 — Cloud-native deployment boundary product (BL-101):

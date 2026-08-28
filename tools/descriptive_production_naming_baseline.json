@@ -1,7 +1,6 @@
 {
   "known_finding_counts": {
-    "584a33781bbfb8d395ddb46cfd0f92705b3abbb1bb16ae2d624db679205867e9": 1,
-    "9d3abd2fc5bd80ca820714337c2c9ac8454dadc5eec2c6fff8803532ac8d31a1": 1
+    "584a33781bbfb8d395ddb46cfd0f92705b3abbb1bb16ae2d624db679205867e9": 1
   },
   "schema": "scpn_qc.descriptive_production_naming_baseline.v1"
 }
