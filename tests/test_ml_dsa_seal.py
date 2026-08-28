@@ -16,6 +16,8 @@ lattice with an ML-DSA-65 key).
 from __future__ import annotations
 
 import base64
+import builtins
+from typing import Any, Callable
 
 import pytest
 
@@ -67,6 +69,66 @@ def test_sign_is_deterministic_and_round_trips() -> None:
     assert sig1 == sig2
     assert len(sig1) == ml_dsa.SIGNATURE_BYTES
     assert signer.verifier().verify(message, sig1) is True
+
+
+def test_generated_signer_exposes_native_lifecycle() -> None:
+    """The production constructor starts with an active native custody scope."""
+    signer = _signer()
+    assert signer.is_destroyed is False
+
+
+def test_destroy_is_fail_closed_and_idempotent() -> None:
+    """Explicit destruction permanently disables signing without hiding public data."""
+    signer = _signer()
+    public_key = signer.public_bytes()
+    signer.destroy()
+    signer.destroy()
+    assert signer.is_destroyed is True
+    assert signer.public_bytes() == public_key
+    with pytest.raises(ValueError, match="has been destroyed"):
+        signer.sign(b"after-destroy")
+
+
+def test_context_manager_destroys_native_key() -> None:
+    """A bounded custody scope wipes the key even when signing raises."""
+    signer = _signer()
+    with pytest.raises(RuntimeError, match="custody-scope failure"), signer as scoped:
+        assert scoped.sign(b"inside-scope")
+        raise RuntimeError("custody-scope failure")
+    assert signer.is_destroyed is True
+
+
+def test_python_reference_backend_refuses_false_destroy_claim() -> None:
+    """The compatibility constructor never labels immutable Python bytes as wiped."""
+    signer = MLDSASigner(_KEY_ID, ml_dsa.key_gen(_SEED_A))
+    signature = signer.sign(b"reference-path")
+    assert signer.verifier().verify(b"reference-path", signature)
+    assert signer.is_destroyed is False
+    with pytest.raises(RuntimeError, match="cannot be reliably zeroized"):
+        signer.destroy()
+
+
+def test_generate_fails_closed_when_engine_import_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Missing compiled code never silently falls back to immutable secret bytes."""
+    real_import: Callable[..., object] = builtins.__import__
+
+    def deny_engine_import(name: str, *args: object, **kwargs: object) -> object:
+        if name == "scpn_quantum_engine":
+            raise ImportError("engine deliberately hidden")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", deny_engine_import)
+    with pytest.raises(RuntimeError, match="requires the compiled"):
+        MLDSASigner.generate(_KEY_ID, seed=_SEED_A)
+
+
+def test_generate_fails_closed_when_engine_is_stale(monkeypatch: pytest.MonkeyPatch) -> None:
+    """An installed pre-zeroize engine is rejected with an actionable error."""
+    import scpn_quantum_engine as engine
+
+    monkeypatch.delattr(engine, "MlDsaSigningKey")
+    with pytest.raises(RuntimeError, match="lacks the zeroizing"):
+        MLDSASigner.generate(_KEY_ID, seed=_SEED_A)
 
 
 def test_verify_rejects_a_tampered_message() -> None:
@@ -153,7 +215,7 @@ def test_key_id_is_recorded() -> None:
 _seal_mod = pytest.importorskip("scpn_studio_platform.seal", reason="studio extra not installed")
 
 
-def _keyring(signer: MLDSASigner):
+def _keyring(signer: MLDSASigner) -> Any:
     from scpn_studio_platform.seal import Keyring
 
     ring = Keyring()
@@ -174,7 +236,7 @@ _ATTESTATION = {
 }
 
 
-def _grade(_unit) -> str:
+def _grade(_unit: object) -> str:
     return "noise-limited"
 
 

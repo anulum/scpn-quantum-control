@@ -31,23 +31,63 @@ every run, which is what makes the seal independently recomputable.
 
 This is *signing* assurance (the grade is the studio's own, unforged); it is not a
 FIPS-140-validated module and carries no side-channel-resistance guarantee — the same
-boundary :mod:`scpn_quantum_control.crypto.ml_dsa` states. Secret keys are held in
-ordinary Python ``bytes`` with no memory zeroisation, so they must be assumed to
-persist in process memory until interpreter exit.
+boundary :mod:`scpn_quantum_control.crypto.ml_dsa` states. :meth:`MLDSASigner.generate`
+fails closed unless the Rust engine's non-exporting key owner is installed. That owner
+uses ``zeroize`` for the expanded key, decoded secret, and designated work buffers and
+supports explicit destruction; the caller-supplied Python seed remains under caller
+custody.
 """
 
 from __future__ import annotations
 
-from typing import Final
+from typing import TYPE_CHECKING, Final, cast
 
 from .ml_dsa import (
     PUBLIC_KEY_BYTES,
     SIGNATURE_BYTES,
     MLDSAKeyPair,
-    key_gen,
+    _warn_research_boundary,
     sign,
     verify,
 )
+
+if TYPE_CHECKING:
+    from types import TracebackType
+    from typing import Protocol
+
+    class _NativeSigningKey(Protocol):
+        """Structural type of the non-exporting Rust ML-DSA key owner."""
+
+        def sign(self, message: bytes, context: bytes) -> bytes:
+            """Sign without exporting the native secret key."""
+            ...
+
+        def public_key(self) -> bytes:
+            """Return the public key bytes."""
+            ...
+
+        def destroy(self) -> None:
+            """Zeroize the native secret allocation."""
+            ...
+
+        def is_destroyed(self) -> bool:
+            """Report whether native secret custody ended."""
+            ...
+
+
+def _native_signing_key(seed: bytes) -> _NativeSigningKey:
+    """Build the compiled signing key or fail closed without a secret copy."""
+    try:
+        import scpn_quantum_engine as engine
+    except ImportError as exc:
+        raise RuntimeError(
+            "MLDSASigner.generate requires the compiled scpn_quantum_engine zeroizing signer"
+        ) from exc
+    signing_key_type = getattr(engine, "MlDsaSigningKey", None)
+    if signing_key_type is None:
+        raise RuntimeError("installed scpn_quantum_engine lacks the zeroizing MlDsaSigningKey")
+    return cast("_NativeSigningKey", signing_key_type(seed))
+
 
 ALG: Final = "ML-DSA-65"
 """The signature-algorithm name recorded in every envelope this back-end seals."""
@@ -121,7 +161,8 @@ class MLDSASigner:
         The stable identifier recorded in every envelope this signer seals, by
         convention ``"<studio>:<keyid>"`` (e.g. ``"scpn-quantum-control:2026-q2"``).
     keypair
-        The ML-DSA-65 key pair backing the signer.
+        An explicit pure-Python reference key pair. This compatibility path cannot
+        promise memory zeroisation; production code uses :meth:`generate`.
 
     Raises
     ------
@@ -135,7 +176,17 @@ class MLDSASigner:
         if not key_id.strip():
             raise ValueError("key_id must be a non-empty identifier")
         self._key_id = key_id
-        self._keypair = keypair
+        self._keypair: MLDSAKeyPair | None = keypair
+        self._native_key: _NativeSigningKey | None = None
+
+    @classmethod
+    def _from_native(cls, key_id: str, native_key: _NativeSigningKey) -> MLDSASigner:
+        """Create the production form without accepting injectable public backends."""
+        signer = cls.__new__(cls)
+        signer._key_id = key_id
+        signer._keypair = None
+        signer._native_key = native_key
+        return signer
 
     @property
     def key_id(self) -> str:
@@ -159,10 +210,15 @@ class MLDSASigner:
         Raises
         ------
         ValueError
-            If ``seed`` is not exactly 32 bytes long (``key_gen`` enforces this) or
-            ``key_id`` is empty.
+            If ``seed`` is not exactly 32 bytes long or ``key_id`` is empty.
+        RuntimeError
+            If the compiled zeroizing signing-key backend is unavailable.
         """
-        return cls(key_id, key_gen(seed))
+        if not key_id.strip():
+            raise ValueError("key_id must be a non-empty identifier")
+        _warn_research_boundary(False)
+        native_key = _native_signing_key(seed)
+        return cls._from_native(key_id, native_key)
 
     def sign(self, message: bytes) -> bytes:
         """Return the detached ML-DSA-65 seal signature over ``message``.
@@ -175,15 +231,48 @@ class MLDSASigner:
         message
             The canonical bytes to sign.
         """
-        return sign(self._keypair.secret_key, message, context=SEAL_CONTEXT)
+        if self._native_key is not None:
+            return bytes(self._native_key.sign(message, SEAL_CONTEXT))
+        keypair = cast(MLDSAKeyPair, self._keypair)
+        return sign(keypair.secret_key, message, context=SEAL_CONTEXT)
+
+    def destroy(self) -> None:
+        """Zeroize and permanently disable the native signing key.
+
+        A signer constructed directly with a Python :class:`MLDSAKeyPair` has
+        no reliable wipe operation and therefore fails instead of claiming one.
+        """
+        if self._native_key is None:
+            raise RuntimeError("ordinary Python bytes cannot be reliably zeroized")
+        self._native_key.destroy()
+
+    @property
+    def is_destroyed(self) -> bool:
+        """Whether the native secret-key allocation has been destroyed."""
+        return self._native_key is not None and self._native_key.is_destroyed()
+
+    def __enter__(self) -> MLDSASigner:
+        """Return this signer for a bounded native-key custody scope."""
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        """Destroy native secret material when leaving the custody scope."""
+        self.destroy()
 
     def verifier(self) -> MLDSAVerifier:
         """Return the public :class:`MLDSAVerifier` for this signer's key."""
-        return MLDSAVerifier(self._keypair.public_key)
+        return MLDSAVerifier(self.public_bytes())
 
     def public_bytes(self) -> bytes:
         """Return the raw 1952-byte ML-DSA-65 public key (for keyring publication)."""
-        return self._keypair.public_key
+        if self._native_key is not None:
+            return bytes(self._native_key.public_key())
+        return cast(MLDSAKeyPair, self._keypair).public_key
 
 
 __all__ = [

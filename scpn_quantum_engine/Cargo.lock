@@ -1564,6 +1564,7 @@ dependencies = [
  "scpn-quantum-program-ad-replay",
  "serde",
  "serde_json",
+ "zeroize",
 ]
 
 [[package]]

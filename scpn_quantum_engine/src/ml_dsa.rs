@@ -55,7 +55,7 @@ fn zetas() -> [i64; N] {
 }
 
 #[inline]
-fn rem_q(x: i64) -> i64 {
+pub(crate) fn rem_q(x: i64) -> i64 {
     x.rem_euclid(Q)
 }
 

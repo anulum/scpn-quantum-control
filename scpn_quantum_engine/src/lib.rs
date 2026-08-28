@@ -58,6 +58,9 @@ pub mod kuramoto_observables;
 pub mod kuramoto_symplectic_inertial;
 pub mod lindblad;
 pub mod ml_dsa;
+mod ml_dsa_codec;
+mod ml_dsa_key;
+mod ml_dsa_signing;
 pub mod monte_carlo;
 pub mod mpc;
 pub mod otoc;
@@ -587,6 +590,7 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // ML-DSA number-theoretic transform
     m.add_function(wrap_pyfunction!(ml_dsa::ml_dsa_ntt, m)?)?;
     m.add_function(wrap_pyfunction!(ml_dsa::ml_dsa_intt, m)?)?;
+    m.add_class::<ml_dsa_key::MlDsaSigningKey>()?;
 
     // UltraScale+ HLS Q-format quantisation
     m.add_function(wrap_pyfunction!(hls_quantise::quantise_q_format, m)?)?;

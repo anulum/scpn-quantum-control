@@ -1,5 +1,17 @@
 # Changelog
 
+- 2026-08-28 — Zeroizing ML-DSA signing custody: added a bit-true native
+  ML-DSA-65 keygen/signing backend whose expanded secret key, decoded secret,
+  and designated work buffers are owned by Rust `zeroize` guards, never
+  exported to Python, and
+  explicitly destroyable. The honesty-seal production constructor now fails
+  closed without that backend; the pure-Python FIPS 204 implementation remains
+  an explicitly non-zeroizing reference surface. FIPS-202 vectors, ACVP
+  key-generation parity, Python-reference signature parity, destruction,
+  stale-engine, and seal integration are tested.
+  This is memory-lifetime hardening, not a constant-time, side-channel-resistant,
+  or FIPS-140 validation claim.
+
 - 2026-08-26 — Stable-core descriptive contract hardening:
   advanced the product registry and model envelope schemas to v2 without
   aliases, removed internal planning codes from the public product narrative,

@@ -22,9 +22,11 @@ try:
     import scpn_quantum_engine as _engine
 
     _HAS_RUST = hasattr(_engine, "ml_dsa_ntt")
+    _HAS_NATIVE_SIGNER = hasattr(_engine, "MlDsaSigningKey")
 except ImportError:  # pragma: no cover - engine optional
     _engine = None
     _HAS_RUST = False
+    _HAS_NATIVE_SIGNER = False
 
 _KAT = json.loads((Path(__file__).parent / "data" / "ml_dsa_65_kat.json").read_text())
 
@@ -81,6 +83,41 @@ def test_ntt_rust_parity(coeffs):
 def test_ntt_rust_rejects_wrong_length():
     with pytest.raises(ValueError):
         _engine.ml_dsa_ntt([0] * 255)
+
+
+@pytest.mark.skipif(not _HAS_NATIVE_SIGNER, reason="zeroizing ML-DSA signer not built")
+def test_native_signer_matches_reference_and_destroys() -> None:
+    """The non-exporting Rust key is bit-true and fails closed after wiping."""
+    seed = bytes(range(32))
+    message = b"native-zeroize-parity"
+    context = b"scpn.test.v1"
+    pair = ml_dsa.key_gen(seed, suppress_research_warning=True)
+    native = _engine.MlDsaSigningKey(seed)
+
+    assert bytes(native.public_key()) == pair.public_key
+    signature = bytes(native.sign(message, context))
+    assert signature == ml_dsa.sign(
+        pair.secret_key,
+        message,
+        context=context,
+        suppress_research_warning=True,
+    )
+    assert ml_dsa.verify(pair.public_key, message, signature, context=context)
+
+    native.destroy()
+    assert native.is_destroyed() is True
+    with pytest.raises(ValueError, match="has been destroyed"):
+        native.sign(message, context)
+
+
+@pytest.mark.skipif(not _HAS_NATIVE_SIGNER, reason="zeroizing ML-DSA signer not built")
+def test_native_signer_rejects_invalid_boundaries() -> None:
+    """Seed and context boundaries fail before native signing work begins."""
+    with pytest.raises(ValueError, match="seed must be 32 bytes"):
+        _engine.MlDsaSigningKey(b"short")
+    native = _engine.MlDsaSigningKey(bytes(32))
+    with pytest.raises(ValueError, match="context must be at most 255 bytes"):
+        native.sign(b"message", bytes(256))
 
 
 # --------------------------------------------------------------------------- #

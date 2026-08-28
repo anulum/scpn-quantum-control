@@ -429,6 +429,32 @@ Measured speedups:
 | `pec_coefficients` | exact parity |
 | `build_xy_hamiltonian_dense` | exact parity with Qiskit |
 
+#### ML-DSA native key-custody gate
+
+`MLDSASigner.generate(...)` is the production honesty-seal constructor. It
+requires the current compiled engine and creates `MlDsaSigningKey`, whose
+expanded 4,032-byte secret key stays in a Rust `Zeroizing<Vec<u8>>`; signing
+does not export that key to Python. `destroy()` and the signer context manager
+drop the guarded allocation, and every later signing attempt fails closed.
+Missing and pre-feature engine builds also fail closed instead of silently
+returning to immutable Python secret bytes.
+
+The caller-provided seed remains an ordinary caller-owned Python object. The
+raw `crypto.ml_dsa` functions and direct `MLDSASigner(keypair=...)`
+construction remain bit-true reference/compatibility surfaces and explicitly
+cannot promise memory wiping. Native custody is memory-lifetime hardening only:
+it is not a constant-time, side-channel-resistance, FIPS-140, hardware, or
+production-key-management claim.
+
+The focused gate combines FIPS-202 SHAKE vectors in the Rust crate with NIST
+ACVP key-generation/signature parity, explicit destruction, stale/missing
+engine refusal, and end-to-end seal verification:
+
+```bash
+cargo test --locked ml_dsa --lib
+python -m pytest -q tests/test_ml_dsa_pqc.py tests/test_ml_dsa_seal.py
+```
+
 ### 3. Module-Specific Tests (217 files)
 
 Each test file covers one source module with multi-angle tests:
