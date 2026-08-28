@@ -198,6 +198,7 @@ if TYPE_CHECKING:
         open_system_objective_quality_gates as _open_system_objective_quality_gates,
     )
     from tools import openpulse_control_quality_gates as _openpulse_control_quality_gates
+    from tools import phase_artifact_quality_gates as _phase_artifact_quality_gates
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import phase_qnode_product_quality_gates as _phase_qnode_product_quality_gates
     from tools import phase_results_quality_gates as _phase_results_quality_gates
@@ -492,6 +493,7 @@ else:
     _open_system_objective_quality_gates = import_module(
         "tools.open_system_objective_quality_gates"
     )
+    _phase_artifact_quality_gates = import_module("tools.phase_artifact_quality_gates")
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
     _phase_results_quality_gates = import_module("tools.phase_results_quality_gates")
     _phase_qnode_product_quality_gates = import_module("tools.phase_qnode_product_quality_gates")
@@ -887,6 +889,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_sync_uncertainty_quality_gates.build_static_quality_gates(_PY),
     *_coupling_invariant_quality_gates.build_static_quality_gates(_PY),
     *_experiment_dynamics_quality_gates.build_static_quality_gates(_PY),
+    *_phase_artifact_quality_gates.build_static_quality_gates(_PY),
     *_phase_results_quality_gates.build_static_quality_gates(_PY),
     *_gradient_backend_quality_gates.build_static_quality_gates(_PY),
     *_differentiable_exact_modes_quality_gates.build_static_quality_gates(_PY),
@@ -1411,6 +1414,7 @@ MPS_EVOLUTION_COVERAGE_GATES = _mps_evolution_quality_gates.build_coverage_gates
 SYNC_UNCERTAINTY_COVERAGE_GATES = _sync_uncertainty_quality_gates.build_coverage_gates(_PY)
 COUPLING_INVARIANT_COVERAGE_GATES = _coupling_invariant_quality_gates.build_coverage_gates(_PY)
 EXPERIMENT_DYNAMICS_COVERAGE_GATES = _experiment_dynamics_quality_gates.build_coverage_gates(_PY)
+PHASE_ARTIFACT_COVERAGE_GATES = _phase_artifact_quality_gates.build_coverage_gates(_PY)
 PHASE_RESULTS_COVERAGE_GATES = _phase_results_quality_gates.build_coverage_gates(_PY)
 GRADIENT_BACKEND_COVERAGE_GATES = _gradient_backend_quality_gates.build_coverage_gates(_PY)
 DIFFERENTIABLE_EXACT_MODES_COVERAGE_GATES = (
@@ -1859,6 +1863,7 @@ def main() -> int:
             gates.extend(SYNC_UNCERTAINTY_COVERAGE_GATES)
             gates.extend(COUPLING_INVARIANT_COVERAGE_GATES)
             gates.extend(EXPERIMENT_DYNAMICS_COVERAGE_GATES)
+            gates.extend(PHASE_ARTIFACT_COVERAGE_GATES)
             gates.extend(PHASE_RESULTS_COVERAGE_GATES)
             gates.extend(GRADIENT_BACKEND_COVERAGE_GATES)
             gates.extend(DIFFERENTIABLE_EXACT_MODES_COVERAGE_GATES)

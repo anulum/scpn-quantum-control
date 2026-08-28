@@ -34,6 +34,7 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.numpy import arrays
+from numpy.typing import NDArray
 
 from scpn_quantum_control.bridge.phase_artifact import (
     LayerStateArtifact,
@@ -74,6 +75,8 @@ _GLOBAL_SETTINGS = settings(
 
 
 class TestLockSignatureArtifactFuzz:
+    """Fuzz lock-signature construction, rejection, and round trips."""
+
     @_GLOBAL_SETTINGS
     @given(
         src=non_negative_int,
@@ -88,6 +91,7 @@ class TestLockSignatureArtifactFuzz:
         plv: float,
         mean_lag: float,
     ) -> None:
+        """Every finite valid lock-signature tuple constructs unchanged."""
         sig = LockSignatureArtifact(
             source_layer=src,
             target_layer=tgt,
@@ -102,24 +106,28 @@ class TestLockSignatureArtifactFuzz:
     @_GLOBAL_SETTINGS
     @given(src=negative_int, tgt=non_negative_int)
     def test_rejects_negative_source_layer(self, src: int, tgt: int) -> None:
+        """Every negative source-layer index is rejected."""
         with pytest.raises(ValueError, match=">="):
             LockSignatureArtifact(source_layer=src, target_layer=tgt, plv=0.5, mean_lag=0.0)
 
     @_GLOBAL_SETTINGS
     @given(src=non_negative_int, tgt=negative_int)
     def test_rejects_negative_target_layer(self, src: int, tgt: int) -> None:
+        """Every negative target-layer index is rejected."""
         with pytest.raises(ValueError, match=">="):
             LockSignatureArtifact(source_layer=src, target_layer=tgt, plv=0.5, mean_lag=0.0)
 
     @_GLOBAL_SETTINGS
     @given(bad=non_finite)
     def test_rejects_non_finite_plv(self, bad: float) -> None:
+        """Every non-finite phase-locking value is rejected."""
         with pytest.raises(ValueError, match="finite"):
             LockSignatureArtifact(source_layer=0, target_layer=1, plv=bad, mean_lag=0.0)
 
     @_GLOBAL_SETTINGS
     @given(bad=non_finite)
     def test_rejects_non_finite_mean_lag(self, bad: float) -> None:
+        """Every non-finite mean phase lag is rejected."""
         with pytest.raises(ValueError, match="finite"):
             LockSignatureArtifact(source_layer=0, target_layer=1, plv=0.5, mean_lag=bad)
 
@@ -137,6 +145,7 @@ class TestLockSignatureArtifactFuzz:
         plv: float,
         mean_lag: float,
     ) -> None:
+        """Every valid lock signature round-trips through a dictionary."""
         sig = LockSignatureArtifact(
             source_layer=src,
             target_layer=tgt,
@@ -153,9 +162,12 @@ class TestLockSignatureArtifactFuzz:
 
 
 class TestLayerStateArtifactFuzz:
+    """Fuzz layer-state construction, rejection, and round trips."""
+
     @_GLOBAL_SETTINGS
     @given(R=R_strategy, psi=finite_floats)
     def test_valid_R_psi_construct(self, R: float, psi: float) -> None:
+        """Every finite phase and unit-interval coherence constructs."""
         layer = LayerStateArtifact(R=R, psi=psi)
         assert layer.R == R
         assert layer.psi == psi
@@ -169,24 +181,28 @@ class TestLayerStateArtifactFuzz:
         )
     )
     def test_rejects_R_out_of_range(self, R: float) -> None:
+        """Every finite coherence outside the unit interval is rejected."""
         with pytest.raises(ValueError, match=r"R must be"):
             LayerStateArtifact(R=R, psi=0.0)
 
     @_GLOBAL_SETTINGS
     @given(bad=non_finite)
     def test_rejects_non_finite_R(self, bad: float) -> None:
+        """Every non-finite coherence is rejected."""
         with pytest.raises(ValueError, match="finite"):
             LayerStateArtifact(R=bad, psi=0.0)
 
     @_GLOBAL_SETTINGS
     @given(bad=non_finite)
     def test_rejects_non_finite_psi(self, bad: float) -> None:
+        """Every non-finite mean phase is rejected."""
         with pytest.raises(ValueError, match="finite"):
             LayerStateArtifact(R=0.5, psi=bad)
 
     @_GLOBAL_SETTINGS
     @given(R=R_strategy, psi=finite_floats)
     def test_roundtrip_without_locks(self, R: float, psi: float) -> None:
+        """Every valid lock-free layer round-trips through a dictionary."""
         layer = LayerStateArtifact(R=R, psi=psi)
         restored = LayerStateArtifact.from_dict(layer.to_dict())
         assert restored.R == layer.R
@@ -207,7 +223,7 @@ def _layer_strategy() -> st.SearchStrategy[LayerStateArtifact]:
     )
 
 
-def _finite_matrix(n: int) -> st.SearchStrategy[np.ndarray]:
+def _finite_matrix(n: int) -> st.SearchStrategy[NDArray[np.float64]]:
     return arrays(
         dtype=np.float64,
         shape=(n, n),
@@ -221,6 +237,8 @@ def _finite_matrix(n: int) -> st.SearchStrategy[np.ndarray]:
 
 
 class TestUPDEPhaseArtifactFuzz:
+    """Fuzz complete UPDE artifact construction and rejection boundaries."""
+
     @_GLOBAL_SETTINGS
     @given(
         n_layers=st.integers(min_value=1, max_value=6),
@@ -235,6 +253,7 @@ class TestUPDEPhaseArtifactFuzz:
         regime: str,
         data: st.DataObject,
     ) -> None:
+        """Every valid finite square multi-layer artifact constructs."""
         layers = data.draw(st.lists(_layer_strategy(), min_size=n_layers, max_size=n_layers))
         alignment = data.draw(_finite_matrix(n_layers))
         art = UPDEPhaseArtifact(
@@ -250,6 +269,7 @@ class TestUPDEPhaseArtifactFuzz:
     @_GLOBAL_SETTINGS
     @given(regime=st.sampled_from(["", "   ", "\t\n"]))
     def test_rejects_empty_regime_id(self, regime: str) -> None:
+        """Every empty or whitespace-only regime identifier is rejected."""
         with pytest.raises(ValueError, match="regime_id"):
             UPDEPhaseArtifact(
                 layers=[LayerStateArtifact(R=0.5, psi=0.0)],
@@ -270,6 +290,7 @@ class TestUPDEPhaseArtifactFuzz:
         wrong_n: int,
         data: st.DataObject,
     ) -> None:
+        """Every non-matching square alignment dimension is rejected."""
         if n == wrong_n:
             return  # trivially matching case
         layers = [LayerStateArtifact(R=0.5, psi=0.0) for _ in range(n)]
@@ -285,6 +306,7 @@ class TestUPDEPhaseArtifactFuzz:
     @_GLOBAL_SETTINGS
     @given(n=st.integers(min_value=1, max_value=4), bad=non_finite)
     def test_rejects_non_finite_alignment_entries(self, n: int, bad: float) -> None:
+        """Every non-finite alignment entry is rejected."""
         layers = [LayerStateArtifact(R=0.5, psi=0.0) for _ in range(n)]
         alignment = np.zeros((n, n))
         alignment[0, 0] = bad
@@ -299,6 +321,7 @@ class TestUPDEPhaseArtifactFuzz:
     @_GLOBAL_SETTINGS
     @given(n=st.integers(min_value=1, max_value=4))
     def test_rejects_non_2d_alignment(self, n: int) -> None:
+        """Every one-dimensional alignment vector is rejected."""
         layers = [LayerStateArtifact(R=0.5, psi=0.0) for _ in range(n)]
         # 1-D array of the right total length — still not a matrix.
         alignment_1d = np.zeros(n * n)
@@ -324,6 +347,7 @@ class TestShrinkingSanity:
     """
 
     def test_plv_boundary_both_inclusive(self) -> None:
+        """Zero and one are inclusive phase-locking boundaries."""
         lower = LockSignatureArtifact(source_layer=0, target_layer=0, plv=0.0, mean_lag=0.0)
         upper = LockSignatureArtifact(source_layer=0, target_layer=0, plv=1.0, mean_lag=0.0)
 
@@ -331,6 +355,7 @@ class TestShrinkingSanity:
         assert upper.plv == 1.0
 
     def test_R_boundary_both_inclusive(self) -> None:
+        """Zero and one are inclusive layer-coherence boundaries."""
         lower = LayerStateArtifact(R=0.0, psi=0.0)
         upper = LayerStateArtifact(R=1.0, psi=0.0)
 

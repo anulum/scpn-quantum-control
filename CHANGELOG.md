@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — Phase-artifact documentation and strict-quality closure:
+  completed the preview-inclusive NumPy docstring and strict typing contracts
+  across the portable artifact owner and all three direct test surfaces, and
+  wired permanent real round-trip/fuzz execution plus exact source coverage
+  into preflight and CI. Validation, coercion, serialization, immutable
+  custody, public APIs, and bounded interoperability claims are unchanged.
+
 - 2026-08-28 — KYMA v2 coupling documentation and exact quality: completed the
   preview-inclusive NumPy docstring contract across base/readout/gated coupling
   assembly and its direct tests, added explicit-partner public-path coverage,

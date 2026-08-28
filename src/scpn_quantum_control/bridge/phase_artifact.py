@@ -40,6 +40,7 @@ class LockSignatureArtifact:
     mean_lag: float
 
     def __post_init__(self) -> None:
+        """Normalize and validate layer indices and finite lock metrics."""
         object.__setattr__(self, "source_layer", int(self.source_layer))
         object.__setattr__(self, "target_layer", int(self.target_layer))
         object.__setattr__(self, "plv", _as_finite_float("plv", self.plv))
@@ -80,6 +81,7 @@ class LayerStateArtifact:
     lock_signatures: dict[str, LockSignatureArtifact] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Normalize coherence values and validate lock-signature keys."""
         object.__setattr__(self, "R", _as_finite_float("R", self.R))
         object.__setattr__(self, "psi", _as_finite_float("psi", self.psi))
         if not 0.0 <= self.R <= 1.0:
@@ -124,6 +126,7 @@ class UPDEPhaseArtifact:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Normalize and validate the complete portable phase-state artifact."""
         layers = list(self.layers)
         alignment = np.asarray(self.cross_layer_alignment, dtype=np.float64)
         stability = _as_finite_float("stability_proxy", self.stability_proxy)

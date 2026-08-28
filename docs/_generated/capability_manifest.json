@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1276
+    "test_files": 1277
   },
   "documentation": {
     "examples": [
@@ -8831,6 +8831,7 @@
       "tests/test_phase_artifact.py",
       "tests/test_phase_artifact_errors.py",
       "tests/test_phase_artifact_fuzz.py",
+      "tests/test_phase_artifact_quality_gate.py",
       "tests/test_phase_coupling_learning.py",
       "tests/test_phase_coupling_time_series_recovery.py",
       "tests/test_phase_diagram.py",

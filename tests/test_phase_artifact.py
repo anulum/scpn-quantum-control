@@ -26,17 +26,22 @@ from scpn_quantum_control.bridge.phase_artifact import (
 
 
 class TestLockSignature:
-    def test_to_dict(self):
+    """Exercise lock-signature serialization and immutability."""
+
+    def test_to_dict(self) -> None:
+        """Dictionary serialization preserves every lock metric."""
         lock = LockSignatureArtifact(source_layer=0, target_layer=1, plv=0.91, mean_lag=0.2)
         d = lock.to_dict()
         assert d == {"source_layer": 0, "target_layer": 1, "plv": 0.91, "mean_lag": 0.2}
 
-    def test_from_dict_roundtrip(self):
+    def test_from_dict_roundtrip(self) -> None:
+        """Dictionary reconstruction round-trips a lock signature."""
         lock = LockSignatureArtifact(source_layer=2, target_layer=5, plv=0.75, mean_lag=0.05)
         restored = LockSignatureArtifact.from_dict(lock.to_dict())
         assert restored == lock
 
-    def test_frozen(self):
+    def test_frozen(self) -> None:
+        """Frozen lock-signature fields reject mutation."""
         lock = LockSignatureArtifact(source_layer=0, target_layer=1, plv=0.5, mean_lag=0.1)
         with pytest.raises(AttributeError):
             lock.plv = 0.9  # type: ignore[misc]
@@ -48,18 +53,23 @@ class TestLockSignature:
 
 
 class TestLayerState:
-    def test_defaults_empty_locks(self):
+    """Exercise layer-state defaults and dictionary round trips."""
+
+    def test_defaults_empty_locks(self) -> None:
+        """Layer states default to an empty lock-signature mapping."""
         layer = LayerStateArtifact(R=0.5, psi=1.0)
         assert layer.lock_signatures == {}
 
-    def test_to_dict(self):
+    def test_to_dict(self) -> None:
+        """Dictionary serialization retains coherence and nested locks."""
         lock = LockSignatureArtifact(source_layer=0, target_layer=1, plv=0.8, mean_lag=0.1)
         layer = LayerStateArtifact(R=0.7, psi=1.5, lock_signatures={"0_1": lock})
         d = layer.to_dict()
         assert d["R"] == 0.7
         assert "0_1" in d["lock_signatures"]
 
-    def test_from_dict_roundtrip(self):
+    def test_from_dict_roundtrip(self) -> None:
+        """Dictionary reconstruction restores nested lock signatures."""
         lock = LockSignatureArtifact(source_layer=0, target_layer=1, plv=0.8, mean_lag=0.1)
         layer = LayerStateArtifact(R=0.65, psi=2.0, lock_signatures={"0_1": lock})
         restored = LayerStateArtifact.from_dict(layer.to_dict())
@@ -73,7 +83,10 @@ class TestLayerState:
 
 
 class TestUPDEDictRoundtrip:
-    def test_full_roundtrip(self):
+    """Exercise full and default-metadata dictionary round trips."""
+
+    def test_full_roundtrip(self) -> None:
+        """A multi-layer artifact round-trips through its dictionary form."""
         layer0 = LayerStateArtifact(
             R=0.72,
             psi=1.1,
@@ -94,7 +107,8 @@ class TestUPDEDictRoundtrip:
         assert restored.layers[0].lock_signatures["0_1"].plv == pytest.approx(0.91)
         np.testing.assert_allclose(restored.cross_layer_alignment, artifact.cross_layer_alignment)
 
-    def test_empty_metadata(self):
+    def test_empty_metadata(self) -> None:
+        """Omitted metadata serializes as an empty mapping."""
         layer = LayerStateArtifact(R=0.5, psi=0.0)
         artifact = UPDEPhaseArtifact(
             layers=[layer],
@@ -112,7 +126,10 @@ class TestUPDEDictRoundtrip:
 
 
 class TestUPDEJSONRoundtrip:
-    def test_json_roundtrip(self):
+    """Exercise canonical JSON serialization and reconstruction."""
+
+    def test_json_roundtrip(self) -> None:
+        """JSON reconstruction retains metadata and regime identity."""
         layer = LayerStateArtifact(R=0.6, psi=0.5)
         artifact = UPDEPhaseArtifact(
             layers=[layer],
@@ -126,7 +143,8 @@ class TestUPDEJSONRoundtrip:
         assert restored.metadata["origin"] == "test"
         assert restored.regime_id == "NOMINAL"
 
-    def test_json_is_valid(self):
+    def test_json_is_valid(self) -> None:
+        """Serialized artifacts are valid JSON objects."""
         layer = LayerStateArtifact(R=0.5, psi=0.0)
         artifact = UPDEPhaseArtifact(
             layers=[layer],
@@ -137,7 +155,8 @@ class TestUPDEJSONRoundtrip:
         parsed = json.loads(artifact.to_json())
         assert "regime_id" in parsed
 
-    def test_json_indent(self):
+    def test_json_indent(self) -> None:
+        """The indent option selects pretty or compact JSON output."""
         layer = LayerStateArtifact(R=0.5, psi=0.0)
         artifact = UPDEPhaseArtifact(
             layers=[layer],
@@ -157,7 +176,10 @@ class TestUPDEJSONRoundtrip:
 
 
 class TestUPDEValidation:
-    def test_rejects_mismatched_alignment_shape(self):
+    """Exercise alignment and layer-coherence validation boundaries."""
+
+    def test_rejects_mismatched_alignment_shape(self) -> None:
+        """Alignment dimensions must equal the number of layers."""
         with pytest.raises(ValueError, match="shape must match"):
             UPDEPhaseArtifact(
                 layers=[LayerStateArtifact(R=0.5, psi=0.0)],
@@ -166,7 +188,8 @@ class TestUPDEValidation:
                 regime_id="X",
             )
 
-    def test_rejects_nonfinite_alignment(self):
+    def test_rejects_nonfinite_alignment(self) -> None:
+        """Alignment matrices reject non-finite values."""
         with pytest.raises(ValueError, match="must contain only finite"):
             UPDEPhaseArtifact(
                 layers=[LayerStateArtifact(R=0.5, psi=0.0)],
@@ -175,11 +198,13 @@ class TestUPDEValidation:
                 regime_id="X",
             )
 
-    def test_rejects_R_out_of_bounds(self):
+    def test_rejects_R_out_of_bounds(self) -> None:
+        """Layer coherence remains bounded to the unit interval."""
         with pytest.raises(ValueError, match="R must be in"):
             LayerStateArtifact(R=1.2, psi=0.0)
 
-    def test_multiple_layers_alignment(self):
+    def test_multiple_layers_alignment(self) -> None:
+        """A square alignment matrix supports multiple layer records."""
         layers = [LayerStateArtifact(R=0.5, psi=i * 0.1) for i in range(3)]
         alignment = np.eye(3)
         artifact = UPDEPhaseArtifact(
@@ -198,7 +223,10 @@ class TestUPDEValidation:
 
 
 class TestExports:
-    def test_all_exports(self):
+    """Exercise the phase-artifact public export declaration."""
+
+    def test_all_exports(self) -> None:
+        """The module exports exactly the three portable artifact classes."""
         from scpn_quantum_control.bridge import phase_artifact
 
         assert set(phase_artifact.__all__) == {

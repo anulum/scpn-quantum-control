@@ -1061,6 +1061,8 @@ def test_main_uses_coverage_pytest_by_default(
         "coupling-invariant exact coverage threshold",
         "experiment-dynamics focused coverage",
         "experiment-dynamics exact coverage threshold",
+        "phase-artifact focused coverage",
+        "phase-artifact exact coverage threshold",
         "typed phase-result focused coverage",
         "typed phase-result exact coverage threshold",
         "gradient-backend focused coverage",
