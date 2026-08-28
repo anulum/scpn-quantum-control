@@ -186,10 +186,10 @@ non-default rows, or inconsistent blank/protocol counts.
 
 ## Bounded product status
 
-Shipped: S65.0 catalogue · S65.1 facade compose · S65.2 no-advantage certificate ·
-language-gate probe (partial S65.4).
+Shipped: protocol catalogue · facade composition · default no-advantage
+certificate · partially integrated language-gate probe.
 
-Open: S65.3 full decisive evidence schema wiring · S65.5 BL-32 scoring hook ·
-S65.6 BL-55 reproduction fixtures · fuller promotion-tool hooks.
+Open: full decisive-evidence schema wiring · scorecard-acceptance scoring hook ·
+hermetic reproduction fixtures · fuller promotion-tool hooks.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)

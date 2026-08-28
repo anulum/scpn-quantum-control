@@ -304,7 +304,7 @@ _CANONICAL_ENTRIES: Final[tuple[HermeticKitEntry, ...]] = (
     _entry(
         "kit:core.no_advantage_certificate",
         "core_local",
-        "Default no-advantage certificate posture fixture (BL-65).",
+        "Default no-advantage certificate posture fixture.",
         argv=(
             "python",
             "-c",

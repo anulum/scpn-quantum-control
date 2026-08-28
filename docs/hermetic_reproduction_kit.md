@@ -149,11 +149,11 @@ mutate fixtures, or promote a hardware claim. Stored argv values are data only.
 
 ## Bounded product status
 
-Shipped: S55.0 kit contract · S55.1 command/digest schema · S55.4 digest-check mode
-(pure) · core local-only catalogue · public docs.
+Shipped: versioned kit contract · command and digest schema · pure digest-check
+mode · core local-only catalogue · public docs.
 
-Open: S55.2 generator from BL-25 · S55.3 one-command runner · S55.5 CI job ·
-S55.7 BL-48/49 verify steps. S55.6 API and external-reviewer contract
+Open: generator from the scorecard evidence catalogue · one-command runner ·
+CI job · attested-result verification steps. API and external-reviewer contract
 documentation is covered here; independent external reproduction evidence is
 still separate from documentation completeness.
 

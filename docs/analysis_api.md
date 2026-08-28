@@ -872,7 +872,7 @@ uses one budgeted exact propagator for all pure states.
 `compare_initial_states_with_dephased_controls(...)` adds population-matched
 computational-basis-dephased controls and retains the separable product row as
 an attribution control. `entanglement_advantage(...)` is a compatibility name
-that now returns descriptive differences with a BL-65 no-advantage
+that now returns descriptive differences with a default no-advantage
 certificate; it does not report speedup or an entanglement-specific effect.
 
 See [Entangled initial-state coherence study](entanglement_initial_state_study.md)

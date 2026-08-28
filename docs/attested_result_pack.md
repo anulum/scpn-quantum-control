@@ -5,7 +5,7 @@ Strip-resistant **content digests bound to claim axes** — never a self-asserte
 **UNGRADED**, never silent-validated.
 
 Module: `scpn_quantum_control.attested_result_pack`  
-Related: BL-55 hermetic digests, hardware result packs (compose).
+Related: hermetic reproduction digests, hardware result packs (compose).
 
 ## Verification statuses
 
