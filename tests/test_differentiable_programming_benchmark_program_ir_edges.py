@@ -28,7 +28,6 @@ def test_program_ad_case_records_adjoint_error_when_supported(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Generic Program AD rows should include adjoint error when replay is supported."""
-
     gradient = _gradient(2)
     result = _whole_program_result(
         program_ir=_program_ir(),
@@ -70,7 +69,6 @@ def test_program_ad_ir_roundtrip_fails_closed_for_missing_and_mismatched_ir(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """IR round-trip benchmark should reject missing or non-round-tripping IR."""
-
     monkeypatch.setattr(
         dp,
         "whole_program_value_and_grad",
@@ -97,7 +95,6 @@ def test_program_ad_control_phi_metadata_fails_closed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Control/phi metadata benchmark should reject missing or incomplete IR."""
-
     monkeypatch.setattr(
         dp,
         "whole_program_value_and_grad",
@@ -135,7 +132,6 @@ def test_program_ad_mlir_interchange_fails_closed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """MLIR interchange benchmark should reject missing IR or incomplete metadata."""
-
     monkeypatch.setattr(
         dp,
         "whole_program_value_and_grad",
@@ -183,7 +179,6 @@ def test_program_ad_registry_dispatch_fails_closed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Registry-dispatch benchmark should reject incomplete coverage reports."""
-
     monkeypatch.setattr(
         dp,
         "program_ad_registry_dispatch_coverage_report",
@@ -225,7 +220,6 @@ def test_program_ad_adjoint_replay_provenance_fails_closed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Adjoint replay provenance benchmark should reject missing or inconsistent IR."""
-
     invalid_adjoint = SimpleNamespace(adjoint_steps=(), replay_node_count=0)
     monkeypatch.setattr(dp, "program_adjoint_result", lambda _result: invalid_adjoint)
     monkeypatch.setattr(

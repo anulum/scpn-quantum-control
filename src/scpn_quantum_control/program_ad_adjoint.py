@@ -396,6 +396,7 @@ def program_adjoint_result(result: object) -> ProgramADAdjointResult:
     ValueError
         If ``result`` is not a whole-program AD result or has no attached
         adjoint metadata.
+
     """
     from .whole_program_ad_result import WholeProgramADResult
 
@@ -425,6 +426,7 @@ def program_adjoint_gradient(result: object) -> NDArray[np.float64]:
     ValueError
         If no adjoint metadata is attached or the captured IR has unsupported
         operations.
+
     """
     adjoint = program_adjoint_result(result)
     if not adjoint.supported:
@@ -457,6 +459,7 @@ def program_adjoint_replay_gradient(result: object) -> NDArray[np.float64]:
         unsupported, the generated step stream is missing or not bound to the
         captured stabilized IR, or executable replay diverges from the attached
         adjoint gradient.
+
     """
     from .whole_program_ad_result import WholeProgramADResult
 
@@ -515,6 +518,7 @@ def program_adjoint_grad(
     ValueError
         If the objective does not produce a scalar Program AD result or if the
         captured IR contains unsupported adjoint-generation operations.
+
     """
     from .differentiable import whole_program_value_and_grad
 
@@ -559,6 +563,7 @@ def program_adjoint_value_and_grad(
     ValueError
         If the objective does not produce a scalar Program AD result or if the
         captured IR contains unsupported adjoint-generation operations.
+
     """
     from .differentiable import whole_program_value_and_grad
 

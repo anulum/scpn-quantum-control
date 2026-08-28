@@ -64,7 +64,6 @@ Contribution = tuple[tuple[str, float], ...]
 
 def _value_node(index: int, value: float) -> WholeProgramIRNode:
     """Build a leaf IR value node carrying one primal scalar."""
-
     return WholeProgramIRNode(
         index=index, op="parameter", inputs=(), value=float(value), tangent=np.zeros(1)
     )
@@ -74,7 +73,6 @@ def _flat_inputs(
     values: ArrayLike,
 ) -> tuple[tuple[str, ...], dict[str, WholeProgramIRNode]]:
     """Return SSA input tokens and a name table for a flattened value array."""
-
     flat = np.asarray(values, dtype=np.float64).reshape(-1)
     names = tuple(f"%{i}" for i in range(flat.size))
     table = {name: _value_node(i, float(flat[i])) for i, name in enumerate(names)}
@@ -83,7 +81,6 @@ def _flat_inputs(
 
 def _node(op: str, inputs: Sequence[str]) -> WholeProgramIRNode:
     """Build an operation IR node with the given label and input tokens."""
-
     return WholeProgramIRNode(
         index=99, op=op, inputs=tuple(inputs), value=0.0, tangent=np.zeros(1)
     )
@@ -93,7 +90,6 @@ def _contribution_vector(
     contributions: Contribution, names: tuple[str, ...]
 ) -> NDArray[np.float64]:
     """Project named contributions back onto the input-token order."""
-
     accumulator = dict.fromkeys(names, 0.0)
     for name, partial in contributions:
         accumulator[name] += partial
@@ -107,7 +103,6 @@ def _fd_gradient(
     eps: float = 1.0e-6,
 ) -> NDArray[np.float64]:
     """Central finite-difference gradient of ``scalar`` over a flattened matrix."""
-
     array = np.asarray(matrix, dtype=np.float64)
     shape = array.shape
     flat = array.reshape(-1)
@@ -1010,7 +1005,6 @@ def test_multi_dot_output_metadata_rejects_degenerate_shape(
 
 def _op_node(op: str, inputs: Sequence[str], value: float = 0.0) -> WholeProgramIRNode:
     """Build an operation IR node carrying a primal value for adjoint rules."""
-
     return WholeProgramIRNode(
         index=7, op=op, inputs=tuple(inputs), value=float(value), tangent=np.zeros(1)
     )
@@ -1095,7 +1089,6 @@ def test_dispatch_abs_undefined_at_zero() -> None:
 
 def _linalg_dispatch_case(op: str) -> tuple[WholeProgramIRNode, dict[str, WholeProgramIRNode]]:
     """Build a valid IR node and table for one linear-algebra dispatch route."""
-
     symmetric = _symmetric(np.array([[3.0, 1.0], [1.0, 2.0]]))
     general = np.array([[2.0, 0.3], [0.1, 3.0]])
     rect = np.array([[3.0, 1.0], [0.5, 2.0], [1.0, 0.2]])
@@ -1325,7 +1318,6 @@ def test_where_predicate_truth_rejects_unrecorded_branch() -> None:
 
 def _parameter_node(index: int, name: str, value: float) -> WholeProgramIRNode:
     """Build a captured parameter IR node bound to one trainable name."""
-
     return WholeProgramIRNode(
         index=index, op="parameter", inputs=(name,), value=float(value), tangent=np.zeros(1)
     )
@@ -1422,7 +1414,6 @@ def _effect_ir(
     phi_nodes: tuple[ProgramADPhiNode, ...] = (),
 ) -> ProgramADEffectIR:
     """Assemble a minimal stabilised effect IR for replay-step tests."""
-
     return ProgramADEffectIR(
         ssa_values=ssa,
         effects=effects,
@@ -1435,7 +1426,6 @@ def _effect_ir(
 
 def _ssa(name: str, *, effect: int | None = None) -> ProgramADSSAValue:
     """Build a scalar SSA value record for one IR node."""
-
     return ProgramADSSAValue(
         name=name, producer=None, version=0, shape=(), dtype="float64", effect=effect
     )
@@ -1465,7 +1455,6 @@ def test_steps_missing_effect_fails_closed_on_inconsistent_ir() -> None:
     current behaviour of the defensive branch; consistent capture IR never
     produces a primal effect without its effect record.
     """
-
     node = _parameter_node(0, "x", 1.0)
     with pytest.raises(ValueError, match="effect_kind must be non-empty"):
         _program_adjoint_steps_from_ir(
@@ -1494,7 +1483,6 @@ def test_steps_unsupported_contribution_records_reason() -> None:
 
 def _branch_node(index: int = 0) -> WholeProgramIRNode:
     """Build a runtime branch IR node."""
-
     return WholeProgramIRNode(
         index=index, op="branch:cond", inputs=("p",), value=0.0, tangent=np.zeros(1)
     )
@@ -1502,7 +1490,6 @@ def _branch_node(index: int = 0) -> WholeProgramIRNode:
 
 def _runtime_region(index: int = 0) -> ProgramADControlRegion:
     """Build a runtime (non-source) control region for the branch predicate."""
-
     return ProgramADControlRegion(
         index=index, kind="if", predicate="branch:cond", entered=True, source_line=None
     )
@@ -1510,7 +1497,6 @@ def _runtime_region(index: int = 0) -> ProgramADControlRegion:
 
 def _runtime_phi(index: int, region: int) -> ProgramADPhiNode:
     """Build a runtime (non-source) phi node bound to a control region."""
-
     return ProgramADPhiNode(
         index=index,
         target=f"%phi{index}",

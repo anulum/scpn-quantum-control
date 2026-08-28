@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Program AD adjoint documentation quality: completed the NumPy
+  docstring contract across adjoint result access, generated replay, public
+  gradients, and their connected tests; added exhaustive public replay
+  refusal coverage for corrupted persisted metadata; and wired permanent
+  strict typing, connected execution, documentation, and exact source
+  coverage into preflight and CI. Reverse-mode arithmetic, stabilized-IR
+  binding, public APIs, and fail-closed replay semantics are unchanged.
+
 - 2026-08-28 — Differentiable sparse-derivative documentation quality:
   completed the NumPy docstring contract across sparse Jacobian, Hessian, and
   empirical-Fisher conversion and direct tests, and wired permanent strict

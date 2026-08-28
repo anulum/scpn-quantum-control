@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1250
+    "test_files": 1251
   },
   "documentation": {
     "examples": [
@@ -8955,6 +8955,7 @@
       "tests/test_probe_s1_ibm_metadata.py",
       "tests/test_program_ad_adjoint_generation.py",
       "tests/test_program_ad_adjoint_generation_docstrings.py",
+      "tests/test_program_ad_adjoint_quality_gate.py",
       "tests/test_program_ad_alias_contracts.py",
       "tests/test_program_ad_alias_effects.py",
       "tests/test_program_ad_array_indexing_quality.py",

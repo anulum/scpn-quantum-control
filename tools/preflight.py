@@ -170,6 +170,7 @@ if TYPE_CHECKING:
     from tools import (
         polyglot_parity_certificate_quality_gates as _polyglot_parity_certificate_quality_gates,
     )
+    from tools import program_ad_adjoint_quality_gates as _program_ad_adjoint_quality_gates
     from tools import program_ad_array_indexing_quality_gates as _array_indexing_quality_gates
     from tools import (
         program_ad_fuzz_assurance_quality_gates as _program_ad_fuzz_assurance_quality_gates,
@@ -393,6 +394,7 @@ else:
     _differentiable_sparse_derivatives_quality_gates = import_module(
         "tools.differentiable_sparse_derivatives_quality_gates"
     )
+    _program_ad_adjoint_quality_gates = import_module("tools.program_ad_adjoint_quality_gates")
     _open_system_completeness_quality_gates = import_module(
         "tools.open_system_completeness_quality_gates"
     )
@@ -778,6 +780,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_openpulse_control_quality_gates.build_static_quality_gates(_PY),
     *_differentiable_parameter_shift_quality_gates.build_static_quality_gates(_PY),
     *_differentiable_sparse_derivatives_quality_gates.build_static_quality_gates(_PY),
+    *_program_ad_adjoint_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_parity_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_baseline_design_quality_gates.build_static_quality_gates(_PY),
@@ -1267,6 +1270,7 @@ DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_GATES = (
 DIFFERENTIABLE_SPARSE_DERIVATIVES_COVERAGE_GATES = (
     _differentiable_sparse_derivatives_quality_gates.build_coverage_gates(_PY)
 )
+PROGRAM_AD_ADJOINT_COVERAGE_GATES = _program_ad_adjoint_quality_gates.build_coverage_gates(_PY)
 DLA_TOPOLOGY_PARITY_COVERAGE_GATES = _dla_topology_parity_quality_gates.build_coverage_gates(_PY)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
     _geometric_control_product_quality_gates.build_coverage_gates(_PY)
@@ -1678,6 +1682,7 @@ def main() -> int:
             gates.extend(OPENPULSE_CONTROL_COVERAGE_GATES)
             gates.extend(DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_GATES)
             gates.extend(DIFFERENTIABLE_SPARSE_DERIVATIVES_COVERAGE_GATES)
+            gates.extend(PROGRAM_AD_ADJOINT_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_PARITY_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
             gates.extend(TN_MPS_BASELINE_DESIGN_COVERAGE_GATES)

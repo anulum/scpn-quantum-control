@@ -65,20 +65,17 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def _dict_payload(value: object) -> dict[str, Any]:
     """Return a JSON-like dictionary payload for dynamic result assertions."""
-
     assert isinstance(value, dict)
     return cast(dict[str, Any], value)
 
 
 def _list_payload(value: object) -> list[Any]:
     """Return a JSON-like list payload for dynamic result assertions."""
-
     assert isinstance(value, list)
     return value
 
@@ -87,7 +84,6 @@ def _minimal_whole_program_result(
     adjoint_result: ProgramADAdjointResult | None,
 ) -> WholeProgramADResult:
     """Build a minimal whole-program result for adjoint accessor tests."""
-
     return WholeProgramADResult(
         value=1.0,
         gradient=np.array([1.0], dtype=np.float64),
@@ -106,9 +102,45 @@ def _minimal_whole_program_result(
     )
 
 
+def _supported_replay_result() -> WholeProgramADResult:
+    """Build a supported two-parameter result for public replay refusal tests."""
+    return whole_program_value_and_grad(
+        lambda values: (values[0] * values[1]) + values[0],
+        np.array([2.0, 3.0], dtype=np.float64),
+        parameters=(Parameter("x"), Parameter("y")),
+        trace=False,
+    )
+
+
+def _tamper_replay_contract(result: WholeProgramADResult, case: str) -> None:
+    """Simulate one corrupted persisted replay contract without reconstructing it."""
+    adjoint = program_adjoint_result(result)
+    if case == "gradient":
+        object.__setattr__(adjoint, "gradient", adjoint.gradient + 1.0)
+    elif case == "format":
+        object.__setattr__(adjoint, "replay_ir_format", "program_ad_effect_ir.v0")
+    elif case == "nodes-missing":
+        object.__setattr__(result, "ir_nodes", ())
+    elif case == "node-count":
+        object.__setattr__(adjoint, "replay_node_count", adjoint.replay_node_count + 1)
+    elif case == "duplicate-parameters":
+        object.__setattr__(result, "parameter_names", ("x", "x"))
+    elif case == "primal-binding":
+        object.__setattr__(adjoint.adjoint_steps[0], "primal_value", "%999")
+    elif case == "operation-binding":
+        object.__setattr__(adjoint.adjoint_steps[0], "operation", "tampered")
+    elif case == "unsupported-step":
+        object.__setattr__(adjoint.adjoint_steps[0], "supported", False)
+    else:
+        parameter_step = next(
+            step for step in adjoint.adjoint_steps if step.operation == "parameter"
+        )
+        parameter_inputs = () if case == "parameter-arity" else ("missing",)
+        object.__setattr__(parameter_step, "input_values", parameter_inputs)
+
+
 def test_program_adjoint_input_token_helpers_resolve_literals_and_ir_values() -> None:
     """Program adjoint token helpers should resolve SSA and literal input tokens."""
-
     node = WholeProgramIRNode(
         index=0,
         op="parameter",
@@ -136,7 +168,6 @@ def test_program_adjoint_input_token_helpers_resolve_literals_and_ir_values() ->
 
 def test_program_adjoint_accessors_fail_closed_for_invalid_or_unsupported_results() -> None:
     """Extracted adjoint accessors should reject invalid or unsupported inputs."""
-
     unsupported_adjoint = ProgramADAdjointResult(
         gradient=np.array([0.0], dtype=np.float64),
         supported=False,
@@ -155,7 +186,6 @@ def test_program_adjoint_accessors_fail_closed_for_invalid_or_unsupported_result
 
 def test_program_adjoint_input_token_helpers_fail_closed_for_missing_or_bad_tokens() -> None:
     """Program adjoint token helpers should reject missing SSA and malformed literals."""
-
     with pytest.raises(ValueError, match="missing from IR"):
         adjoint_module._program_adjoint_input_value("%2", {})
     with pytest.raises(ValueError, match="not numeric"):
@@ -164,7 +194,6 @@ def test_program_adjoint_input_token_helpers_fail_closed_for_missing_or_bad_toke
 
 def test_whole_program_grad_respects_trainable_mask() -> None:
     """Whole-program gradients should preserve frozen parameters."""
-
     gradient = whole_program_grad(
         lambda values: values[0] ** 2 + values[1] ** 2,
         np.array([2.0, 3.0], dtype=np.float64),
@@ -177,7 +206,6 @@ def test_whole_program_grad_respects_trainable_mask() -> None:
 
 def test_whole_program_ad_is_exported_from_package_root() -> None:
     """Whole-program AD should be stable as a package-root API."""
-
     import scpn_quantum_control as scpn
 
     assert ProgramADAdjointResult is adjoint_module.ProgramADAdjointResult
@@ -265,7 +293,6 @@ def test_program_adjoint_value_and_grad_api_returns_reverse_replay_gradient() ->
 
 def test_program_adjoint_grad_api_respects_trainable_mask() -> None:
     """Program adjoint gradient API should preserve frozen-parameter semantics."""
-
     gradient = program_adjoint_grad(
         lambda values: values[0] ** 2 + values[1] ** 2 + values[0] * values[1],
         np.array([2.0, 3.0], dtype=np.float64),
@@ -460,7 +487,6 @@ def test_whole_program_result_contract_rejects_forward_gradient_divergence() -> 
 
 def test_program_adjoint_executable_replay_fails_closed_without_step_stream() -> None:
     """Executable replay should require a generated stabilized-IR step stream."""
-
     unsupported_adjoint = ProgramADAdjointResult(
         gradient=np.array([0.0], dtype=np.float64),
         supported=False,
@@ -480,6 +506,39 @@ def test_program_adjoint_executable_replay_fails_closed_without_step_stream() ->
         program_adjoint_replay_gradient(_minimal_whole_program_result(unsupported_adjoint))
     with pytest.raises(ValueError, match="requires generated adjoint steps"):
         _minimal_whole_program_result(empty_supported_adjoint)
+
+
+def test_program_adjoint_replay_public_api_rejects_non_result_input() -> None:
+    """Public executable replay should reject values without a Program AD result contract."""
+    with pytest.raises(ValueError, match="replay input must be a WholeProgramADResult"):
+        program_adjoint_replay_gradient(object())
+
+
+@pytest.mark.parametrize(
+    ("case", "message"),
+    (
+        ("gradient", "diverged from attached gradient"),
+        ("format", "requires program_ad_effect_ir.v1"),
+        ("nodes-missing", "requires captured IR nodes"),
+        ("node-count", "node count does not match captured IR"),
+        ("duplicate-parameters", "requires unique parameters"),
+        ("primal-binding", "step stream is not bound to captured IR"),
+        ("operation-binding", "operations do not match captured IR"),
+        ("unsupported-step", "cannot execute unsupported step"),
+        ("parameter-arity", "parameter step must name one parameter"),
+        ("parameter-name", "parameter step is not in result parameter names"),
+    ),
+)
+def test_program_adjoint_replay_public_api_rejects_corrupted_contracts(
+    case: str,
+    message: str,
+) -> None:
+    """Public executable replay should fail closed for corrupted persisted metadata."""
+    result = _supported_replay_result()
+    _tamper_replay_contract(result, case)
+
+    with pytest.raises(ValueError, match=message):
+        program_adjoint_replay_gradient(result)
 
 
 @pytest.mark.parametrize(
