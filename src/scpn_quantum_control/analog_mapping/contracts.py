@@ -289,7 +289,9 @@ class FeasibilityReport:
             or self.hardware_support_claim_allowed
             or self.analog_advantage_claim_allowed
         ):
-            raise ValueError("BL-35 reports must keep hardware and advantage claims blocked")
+            raise ValueError(
+                "analog-mapping reports must keep hardware and advantage claims blocked"
+            )
 
     def to_dict(self) -> dict[str, Any]:
         """Return a deterministic JSON-ready feasibility report."""

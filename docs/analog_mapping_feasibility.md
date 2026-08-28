@@ -1,6 +1,7 @@
 # Analog Oscillator Mapping Feasibility
 
-BL-35 provides a fail-closed answer to a deliberately narrow question:
+The analog-mapping feasibility contract provides a fail-closed answer to a
+deliberately narrow question:
 
 > Can the existing internal analog compiler represent this coupling matrix,
 > topology, detuning, and measurement contract in its mathematical design
@@ -81,7 +82,7 @@ bundle = build_analog_mapping_evidence(
     "scpn_circuit_qed_design_v1",
     trotter_steps=32,
 )
-write_analog_mapping_evidence("results/bl35_mapping.json", bundle)
+write_analog_mapping_evidence("results/analog_mapping_evidence.json", bundle)
 ```
 
 `bundle.report.supported` refers only to the internal compiler model. The three
@@ -151,10 +152,10 @@ closed-loop calibration.
 
 The earlier [analog-native readiness](analog_native_readiness.md) surface counts
 native compiler primitives against a digital Trotter count and prepares
-non-submitting export plans. BL-35 adds the missing request-level mappability
-contract, source-dated capability profiles, fail-closed diagnostics, bounded
-model comparison, and calibration objective. Neither surface establishes
-analog advantage.
+non-submitting export plans. The feasibility package adds the missing
+request-level mappability contract, source-dated capability profiles,
+fail-closed diagnostics, bounded model comparison, and calibration objective.
+Neither surface establishes analog advantage.
 
 ## Current official source pins
 

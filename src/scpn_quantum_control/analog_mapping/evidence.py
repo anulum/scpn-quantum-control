@@ -51,7 +51,7 @@ class AnalogMappingEvidenceBundle:
             or self.hardware_support_claim_allowed
             or self.analog_advantage_claim_allowed
         ):
-            raise ValueError("BL-35 evidence must remain local and non-promotional")
+            raise ValueError("analog-mapping evidence must remain local and non-promotional")
 
     @property
     def digest(self) -> str:

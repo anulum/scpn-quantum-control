@@ -381,7 +381,10 @@ def test_report_and_bundle_invariants_refuse_promotion() -> None:
         source_url="https://example.test",
         verified_at_source_utc="2026-07-25T00:00:00Z",
     )
-    with pytest.raises(ValueError, match="hardware"):
+    with pytest.raises(
+        ValueError,
+        match="analog-mapping reports must keep hardware and advantage claims blocked",
+    ):
         replace(report, hardware_support_claim_allowed=True)
     with pytest.raises(ValueError, match="match report support"):
         AnalogMappingEvidenceBundle(
@@ -392,5 +395,14 @@ def test_report_and_bundle_invariants_refuse_promotion() -> None:
             calibration=None,
             profile_ledger_ref="docs/qpu_provider_readiness.md",
         )
+    bundle = build_analog_mapping_evidence(
+        _ring_request(tolerance=5e-3),
+        "scpn_circuit_qed_design_v1",
+    )
+    with pytest.raises(
+        ValueError,
+        match="analog-mapping evidence must remain local and non-promotional",
+    ):
+        replace(bundle, no_provider_contact=False)
     evaluation = CalibrationEvaluation(scale=1.0, loss=0.0, gradient=0.0)
     assert cast(dict[str, Any], evaluation.to_dict())["scale"] == pytest.approx(1.0)
