@@ -12,7 +12,7 @@
 | Domain package families | 38 |
 | API documentation pages | 14 |
 | Rust PyO3 function bindings | 177 |
-| Rust source modules | 49 |
+| Rust source modules | 53 |
 | Notebook files | 109 |
 | Example files | 37 |
 | Optional extras | 43 |

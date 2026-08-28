@@ -12,7 +12,7 @@
     "python_model_classes": 1374,
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
-    "rust_source_modules": 49,
+    "rust_source_modules": 53,
     "test_files": 1220
   },
   "documentation": {
@@ -7185,6 +7185,10 @@
       "scpn_quantum_engine/src/lib.rs",
       "scpn_quantum_engine/src/lindblad.rs",
       "scpn_quantum_engine/src/ml_dsa.rs",
+      "scpn_quantum_engine/src/ml_dsa_codec/tests.rs",
+      "scpn_quantum_engine/src/ml_dsa_codec.rs",
+      "scpn_quantum_engine/src/ml_dsa_key.rs",
+      "scpn_quantum_engine/src/ml_dsa_signing.rs",
       "scpn_quantum_engine/src/monte_carlo.rs",
       "scpn_quantum_engine/src/mpc.rs",
       "scpn_quantum_engine/src/otoc.rs",
