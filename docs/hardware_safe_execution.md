@@ -151,8 +151,8 @@ rate table, or promote hardware readiness.
 
 ## Bounded product status
 
-Shipped: S47.0–S47.1 policy catalogue · S47.2 shot budgets · S47.3 cost status ·
-S47.4 dry-run planner · S47.5 audit records · S47.6 enforce wrapper · docs.
+Shipped: policy catalogue · shot budgets · cost status · dry-run planner ·
+secret-free audit records · enforcement wrapper · public docs.
 
 Open: co-design/planner integration · provider ticket-package template ·
 multi-file `execution_policy/` package split · live rate tables (owner data).

@@ -285,7 +285,7 @@ control, or broad quantum-advantage claim is promoted by this release.
 - 2026-07-24 — Campaign harness productisation (BL-99):
   `scpn_quantum_control.campaign_harness_product` productises reusable AppQSim,
   IQM layout-transfer, closed-loop publication, and ambient benchmark_harness
-  registry templates with prereg digests and BL-47 no-submit dry-run probes;
+  registry templates with prereg digests and hardware-safe no-submit dry-run probes;
   refuse invent-green live submit and unattested claims. Docs:
   `docs/campaign_harness_product.md`. Nineteenth P1 A-product after
   BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73.
@@ -415,7 +415,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   `scpn_quantum_control.qpu_compute_product` productises typed compute plan
   kinds (dry-run simulator default, would-live refuse, ticketed prep),
   `dry_run_compute_plan` validation without provider submission, and
-  secret-free audit composed with BL-47 hardware-safe posture. Docs:
+  secret-free audit composed with the hardware-safe no-submit posture. Docs:
   `docs/qpu_compute_product.md`. Completes tier-A P0 integrity spine.
 - 2026-07-23 — Compile & dense resource budget gate:
   `scpn_quantum_control.resource_budget_gate` productises fail-closed budgets
@@ -424,7 +424,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   `enforce_resource_budget` compose existing `compile_budget` and
   `dense_budget` formulas with explicit GiB caps; exceed-budget raises
   `ResourceBudgetExceededError`. Docs: `docs/resource_budget_gate.md`.
-- 2026-07-23 — Hardware-safe gradient execution product (BL-47):
+- 2026-07-23 — Hardware-safe gradient execution product:
   `scpn_quantum_control.hardware_safe_execution` productises Axis-5 safety with
   a **no-submit default** policy catalogue, shot budgets, honest cost-model
   status, `dry_run_execution_plan`, `enforce_execution_request` (refuses
