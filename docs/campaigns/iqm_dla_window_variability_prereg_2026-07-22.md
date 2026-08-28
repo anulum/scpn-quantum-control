@@ -6,7 +6,7 @@
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
 <!-- SCPN Quantum Control — IQM DLA Window-Variability Preregistration -->
 
-# IQM Garnet Parity-Asymmetry Window-Variability Preregistration (FU-W)
+# IQM Garnet Parity-Asymmetry Window-Variability Preregistration
 
 Date: 2026-07-22
 

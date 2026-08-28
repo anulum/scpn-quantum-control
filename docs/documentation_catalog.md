@@ -71,7 +71,7 @@ are still built, link-checked, searchable, and public.
 | [IQM Garnet Depth-10 Sign-Replication Preregistration](campaigns/iqm_dla_d10_retest_prereg_2026-07-22.md) | catalog | Date: 2026-07-22 |
 | [IQM Garnet Parity-Asymmetry Depth-Profile Preregistration](campaigns/iqm_dla_depth_profile_prereg_2026-07-22.md) | catalog | Date: 2026-07-22 |
 | [IQM DLA Submission-Journal Runbook](campaigns/iqm_dla_submission_journal_runbook_2026-07-26.md) | catalog | Date: 2026-07-26 |
-| [IQM Garnet Parity-Asymmetry Window-Variability Preregistration (FU-W)](campaigns/iqm_dla_window_variability_prereg_2026-07-22.md) | catalog | Date: 2026-07-22 |
+| [IQM Garnet Parity-Asymmetry Window-Variability Preregistration](campaigns/iqm_dla_window_variability_prereg_2026-07-22.md) | catalog | Date: 2026-07-22 |
 | [IQM Garnet Layout-Transfer Per-Size Powered Preregistration](campaigns/iqm_layout_transfer_per_size_prereg_2026-07-22.md) | catalog | Date: 2026-07-22 |
 | [IQM Garnet Per-Size Layout-Transfer Readiness](campaigns/iqm_layout_transfer_per_size_readiness_2026-07-26.md) | catalog | This package implements the provider-free gates frozen in iqm_layout_transfer_per_size_prereg_2026-07-22.md. It does not authorize a provider call or hardware execution. |
 | [IQM Garnet Per-Size Layout-Transfer Result](campaigns/iqm_layout_transfer_per_size_result_2026-07-26.md) | catalog | Execution date: 2026-07-26 |

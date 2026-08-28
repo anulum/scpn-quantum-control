@@ -41,7 +41,7 @@ The last case is intentionally fail-closed. A timeout can occur after the
 provider accepted a job but before the client received its ID. Retrying that
 call would risk a duplicate paid job.
 
-## Normal FU-W submission
+## Normal window-variability submission
 
 After the preregistered wall-clock, calibration, layout, depth, budget, and
 owner-GO gates pass, use the existing campaign command and a new output path:
@@ -57,7 +57,8 @@ owner-GO gates pass, use the existing campaign command and a new output path:
   --i-have-owner-go
 ```
 
-For FU-W, `--window` is restricted to the frozen range 1–10. A pre-existing
+For the window-variability campaign, `--window` is restricted to the frozen
+range 1–10. A pre-existing
 legacy record, mismatched campaign identity, altered payload, duplicate job ID,
 or malformed journal is never overwritten.
 

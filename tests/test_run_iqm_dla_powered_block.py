@@ -243,7 +243,7 @@ def hardware_boundary(
 
 
 def submit_args(path: Path, *extra: str) -> list[str]:
-    """Return the exact FU-W submission CLI arguments used by the tests."""
+    """Return the exact window-variability submission arguments used by the tests."""
     return [
         "submit",
         "--campaign",

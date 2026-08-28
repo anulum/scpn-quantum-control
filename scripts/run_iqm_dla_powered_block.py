@@ -151,7 +151,7 @@ CAMPAIGNS: dict[str, dict[str, Any]] = {
         "repetitions": 8,
         "batch_all": True,
     },
-    # Window-variability (FU-W): every window submits the full 36-circuit
+    # Window variability: every window submits the full 36-circuit
     # matrix in one pass (mains one job + a per-window readout job); the
     # WINDOW is the independent unit and `--window` stamps the artefacts.
     "window-variability": {

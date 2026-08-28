@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — window-variability frozen analysis
-"""Frozen analysis for the window-variability campaign (FU-W).
+"""Frozen analysis for the preregistered window-variability campaign.
 
 Implements ``docs/campaigns/iqm_dla_window_variability_prereg_2026-07-22.md``
 verbatim. Per window ``w`` and depth ``d`` the four repetitions pool into
