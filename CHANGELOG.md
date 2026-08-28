@@ -355,7 +355,8 @@ control, or broad quantum-advantage claim is promoted by this release.
   `scpn_quantum_control.wirtinger_implicit_product` productises the Wirtinger
   partials / holomorphic / CR real-objective gradient catalogue, implicit
   stationary/fixed-point sensitivity demos, and refuse complex objectives
-  without a Wirtinger contract (BL-53 + BL-46). Docs:
+  without a Wirtinger contract (unsuitable-scenario registry plus metamorphic
+  AD verification). Docs:
   `docs/wirtinger_implicit_product.md`. Eighth P1 A-product after
   BL-90/91/81/49/96/92/93.
 - 2026-07-24 — Stochastic estimators & policies product:

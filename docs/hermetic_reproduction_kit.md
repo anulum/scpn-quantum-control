@@ -5,7 +5,7 @@ rebuilt without trusting narrative docs alone. The **core** kit is local-first
 and must not require cloud GPUs or QPUs.
 
 Module: `scpn_quantum_control.hermetic_reproduction_kit`  
-Related: BL-46 metamorphic checks, BL-65 no-advantage posture, BL-25 reviewer
+Related: metamorphic checks, no-advantage posture, and reviewer
 commands (compose).
 
 ## Rules

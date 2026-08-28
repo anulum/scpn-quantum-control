@@ -283,7 +283,7 @@ _CANONICAL_ENTRIES: Final[tuple[HermeticKitEntry, ...]] = (
     _entry(
         "kit:core.metamorphic_linearity",
         "core_local",
-        "Local metamorphic linearity residual fixture (BL-46 pure check).",
+        "Local metamorphic linearity residual fixture (pure check).",
         argv=(
             "python",
             "-c",
