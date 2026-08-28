@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1266
+    "test_files": 1267
   },
   "documentation": {
     "examples": [
@@ -8373,6 +8373,7 @@
       "tests/test_differentiable_dependency_environment_evidence.py",
       "tests/test_differentiable_dependency_environment_map.py",
       "tests/test_differentiable_exact_modes.py",
+      "tests/test_differentiable_exact_modes_quality_gate.py",
       "tests/test_differentiable_external_comparison_framework_edges.py",
       "tests/test_differentiable_external_comparison_row_edges.py",
       "tests/test_differentiable_external_comparison_runner_edges.py",

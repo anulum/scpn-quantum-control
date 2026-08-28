@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Differentiable exact-mode documentation quality: completed the
+  preview-inclusive NumPy docstring contract across the forward-mode dual and
+  reverse-mode tape wrappers and their owning tests, and wired permanent
+  strict typing, public offline execution, complete owner documentation, and
+  exact source coverage into preflight and CI. Scalar AD numerics, parameter
+  metadata, trainable masks, evaluation accounting, public APIs, and bounded
+  exact-local differentiation claims are unchanged.
+
 - 2026-08-28 — Gradient-backend planner documentation quality: completed the
   preview-inclusive NumPy docstring contract across capability declarations,
   method explanations, shot policy, and owning planner/finite-shot tests; and

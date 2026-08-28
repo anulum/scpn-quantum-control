@@ -50,6 +50,7 @@ def value_and_forward_mode_grad(
     GradientResult
         Objective value, exact forward-mode gradient, parameter metadata, and
         evaluation count.
+
     """
     parameter_values = _as_parameter_array(values)
     parameter_meta = _normalise_parameters(parameter_values, parameters)
@@ -101,6 +102,7 @@ def forward_mode_gradient(
     -------
     numpy.ndarray
         One exact gradient entry per input parameter.
+
     """
     return value_and_forward_mode_grad(
         objective,
@@ -132,6 +134,7 @@ def value_and_reverse_mode_grad(
     GradientResult
         Objective value, exact reverse-mode gradient, parameter metadata, and
         evaluation count.
+
     """
     parameter_values = _as_parameter_array(values)
     parameter_meta = _normalise_parameters(parameter_values, parameters)
@@ -184,6 +187,7 @@ def reverse_mode_gradient(
     -------
     numpy.ndarray
         One exact gradient entry per input parameter.
+
     """
     return value_and_reverse_mode_grad(
         objective,

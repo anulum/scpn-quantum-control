@@ -1061,6 +1061,8 @@ def test_main_uses_coverage_pytest_by_default(
         "typed phase-result exact coverage threshold",
         "gradient-backend focused coverage",
         "gradient-backend exact coverage threshold",
+        "differentiable-exact-modes focused coverage",
+        "differentiable-exact-modes exact coverage threshold",
         "quantum-Phi focused coverage",
         "quantum-Phi exact coverage threshold",
         "QPU result-pack focused coverage",

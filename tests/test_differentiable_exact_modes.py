@@ -45,13 +45,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-14, atol: float = 1.0e-14
 ) -> None:
     """Assert NumPy-close equality while preserving strict test typing."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_facade_and_package_root_reuse_extracted_exact_mode_helpers() -> None:
     """Facade and package-root exports should point at the extracted wrappers."""
-
     assert differentiable.value_and_forward_mode_grad is value_and_forward_mode_grad
     assert differentiable.forward_mode_gradient is forward_mode_gradient
     assert differentiable.value_and_reverse_mode_grad is value_and_reverse_mode_grad
@@ -91,7 +89,6 @@ def test_forward_mode_dual_gradient_matches_analytic_derivative() -> None:
 
 def test_forward_mode_dual_gradient_respects_frozen_parameters() -> None:
     """Forward-mode gradients should keep frozen tangent lanes zeroed."""
-
     result = value_and_forward_mode_grad(
         lambda values: values[0] ** 2 + values[0] * values[1],
         [3.0, 5.0],
@@ -150,7 +147,6 @@ def test_reverse_mode_tape_gradient_matches_analytic_derivative() -> None:
 
 def test_reverse_mode_tape_gradient_respects_frozen_parameters() -> None:
     """Reverse-mode gradients should backpropagate once and mask frozen outputs."""
-
     result = value_and_reverse_mode_grad(
         lambda values: values[0] ** 2 + values[0] * values[1],
         [3.0, 5.0],
