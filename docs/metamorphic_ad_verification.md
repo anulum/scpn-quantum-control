@@ -144,8 +144,8 @@ inconsistent counts.
 
 ## Bounded product status
 
-Shipped: S46.0 catalogue · pure residual checks · fail-closed probe · public docs.
+Shipped: versioned catalogue · pure residual checks · fail-closed probe · public docs.
 
-Open: S46.1 claim-ledger map generator · S46.2–S46.5 full suites wiring · S46.6 CI drift job.
+Open: claim-ledger map generator · four full-suite integrations · CI drift job.
 
 Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)
