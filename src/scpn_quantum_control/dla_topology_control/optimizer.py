@@ -46,6 +46,7 @@ class ProjectedGradientConfig:
         Non-negative norm threshold for convergence.
     minimum_step_size:
         Smallest positive step size eligible for evaluation.
+
     """
 
     max_steps: int = 32
@@ -56,6 +57,7 @@ class ProjectedGradientConfig:
     minimum_step_size: float = 1.0e-12
 
     def __post_init__(self) -> None:
+        """Validate step, contraction, backtracking, and tolerance limits."""
         if isinstance(self.max_steps, bool) or not isinstance(self.max_steps, int):
             raise ValueError("max_steps must be an integer")
         if self.max_steps < 1:
@@ -97,6 +99,7 @@ class ProjectedGradientStep:
     state: ComplexArray
 
     def __post_init__(self) -> None:
+        """Validate proposal scalars and retain an immutable state copy."""
         if isinstance(self.index, bool) or not isinstance(self.index, int) or self.index < 0:
             raise ValueError("index must be a non-negative integer")
         if (
@@ -145,6 +148,7 @@ class ParityProjectedOptimisationTrace:
         SHA-256 binding the initial/final arrays and every scalar/state record.
     claim_boundary:
         Explicit finite synthetic and no-actuation boundary.
+
     """
 
     initial_state: ComplexArray
@@ -154,6 +158,7 @@ class ParityProjectedOptimisationTrace:
     claim_boundary: str = DLA_TOPOLOGY_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate trace alignment, custody digest, and claim metadata."""
         initial = np.asarray(self.initial_state, dtype=np.complex128)
         final = np.asarray(self.final_state, dtype=np.complex128)
         if initial.ndim != 1 or initial.size == 0 or not np.all(np.isfinite(initial)):
@@ -232,6 +237,7 @@ def optimise_parity_protected_state(
     ------
     ValueError
         If the objective, config, or initial state violates its public contract.
+
     """
     if not isinstance(objective, ParityProtectedQuadraticObjective):
         raise ValueError("objective must be a ParityProtectedQuadraticObjective")

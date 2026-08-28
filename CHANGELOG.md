@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — DLA topology optimiser documentation quality: completed the
+  NumPy docstring contract for the parity-projected optimiser and wired
+  permanent strict typing, connected execution, documentation, and exact
+  source coverage into preflight and CI. Projected-gradient arithmetic,
+  backtracking, strict decrease, immutable custody, trace digests, public APIs,
+  and finite synthetic/no-actuation boundaries are unchanged.
+
 - 2026-08-28 — Differentiable audit-contract documentation quality: completed
   the NumPy docstring contract across immutable audit evidence and its facade
   tests, added exhaustive invariant and serialization coverage, and wired
