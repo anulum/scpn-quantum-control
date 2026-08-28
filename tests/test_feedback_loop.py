@@ -33,20 +33,25 @@ from scpn_quantum_control.hardware.feedback_loop import (
 
 @dataclass
 class DummyScheduler:
+    """Deterministic local scheduler used by feedback-loop contract tests."""
+
     metrics: list[float]
     is_hardware: bool = False
     qpu_seconds: float = 0.0
 
     def __post_init__(self) -> None:
+        """Initialize command-custody state."""
         self.submitted: list[FeedbackCommand] = []
 
     def submit(self, command: FeedbackCommand) -> FeedbackResult:
+        """Record a command and return the next deterministic metric."""
         self.submitted.append(command)
         metric = self.metrics[min(len(self.submitted) - 1, len(self.metrics) - 1)]
         return FeedbackResult(metrics={"r": metric}, qpu_seconds=self.qpu_seconds)
 
 
 def test_feedback_runner_rejects_unapproved_hardware_scheduler():
+    """Refuse hardware-marked schedulers without explicit approval."""
     scheduler = DummyScheduler(metrics=[0.0], is_hardware=True)
     observer = ProportionalMetricObserver(initial_value=0.1, metric_name="r", target=0.5, gain=1.0)
 
@@ -55,6 +60,7 @@ def test_feedback_runner_rejects_unapproved_hardware_scheduler():
 
 
 def test_feedback_runner_records_steps_until_observer_converges():
+    """Record each local step until the observer requests termination."""
     scheduler = DummyScheduler(metrics=[0.2, 0.5])
     observer = ProportionalMetricObserver(
         initial_value=0.1,
@@ -81,6 +87,7 @@ def test_feedback_runner_records_steps_until_observer_converges():
 
 
 def test_feedback_runner_enforces_qpu_budget_before_submission():
+    """Refuse estimated QPU spend before scheduler submission."""
     scheduler = DummyScheduler(metrics=[0.0])
 
     class CostlyObserver(ProportionalMetricObserver):
@@ -100,6 +107,7 @@ def test_feedback_runner_enforces_qpu_budget_before_submission():
 
 
 def test_feedback_runner_allows_hardware_only_when_approval_flag_is_explicit():
+    """Admit a hardware-marked double only with explicit approval."""
     scheduler = DummyScheduler(metrics=[0.5], is_hardware=True)
     observer = ProportionalMetricObserver(
         initial_value=0.1,
@@ -124,6 +132,7 @@ def test_feedback_runner_allows_hardware_only_when_approval_flag_is_explicit():
 
 
 def test_feedback_runner_enforces_qpu_budget_after_result():
+    """Refuse observed QPU spend that exceeds the configured budget."""
     scheduler = DummyScheduler(metrics=[0.0], qpu_seconds=2.0)
     observer = ProportionalMetricObserver(initial_value=0.1, metric_name="r", target=0.5, gain=1.0)
     runner = FeedbackRunner(
@@ -137,6 +146,7 @@ def test_feedback_runner_enforces_qpu_budget_after_result():
 
 
 def test_proportional_observer_clips_and_requires_metric():
+    """Clip proportional updates and require the configured metric."""
     observer = ProportionalMetricObserver(
         initial_value=0.9,
         metric_name="r",
@@ -155,6 +165,7 @@ def test_proportional_observer_clips_and_requires_metric():
 
 
 def test_realtime_controller_scheduler_runs_deterministic_simulator_steps():
+    """Run seeded simulator steps with complete provenance metadata."""
     controller = RealtimeSyncFeedbackController(
         K_coupling=np.array([[0.0, 0.2], [0.2, 0.0]], dtype=np.float64),
         omega_natural=np.array([0.1, 0.3], dtype=np.float64),
@@ -176,6 +187,7 @@ def test_realtime_controller_scheduler_runs_deterministic_simulator_steps():
 
 
 def test_realtime_controller_scheduler_rejects_invalid_payloads():
+    """Reject malformed simulator payload, seed, and coupling values."""
     controller = RealtimeSyncFeedbackController(
         K_coupling=np.array([[0.0, 0.2], [0.2, 0.0]], dtype=np.float64),
         omega_natural=np.array([0.1, 0.3], dtype=np.float64),
@@ -191,6 +203,7 @@ def test_realtime_controller_scheduler_rejects_invalid_payloads():
 
 
 def test_realtime_controller_scheduler_payload_seed_overrides_base_seed_provenance():
+    """Prefer an explicit payload seed over the scheduler seed stream."""
     controller = RealtimeSyncFeedbackController(
         K_coupling=np.array([[0.0, 0.2], [0.2, 0.0]], dtype=np.float64),
         omega_natural=np.array([0.1, 0.3], dtype=np.float64),
@@ -207,6 +220,7 @@ def test_realtime_controller_scheduler_payload_seed_overrides_base_seed_provenan
 
 
 def test_feedback_loop_value_objects_reject_invalid_runtime_boundaries():
+    """Reject invalid loop, command, count, and metric values."""
     with pytest.raises(ValueError, match="max_steps"):
         FeedbackLoopConfig(max_steps=0)
     with pytest.raises(ValueError, match="estimated_qpu_seconds"):
@@ -218,6 +232,7 @@ def test_feedback_loop_value_objects_reject_invalid_runtime_boundaries():
 
 
 def test_realtime_controller_scheduler_accepts_empty_payload_without_seed_provenance():
+    """Run an unseeded simulator step from an empty payload."""
     controller = RealtimeSyncFeedbackController(
         K_coupling=np.array([[0.0, 0.2], [0.2, 0.0]], dtype=np.float64),
         omega_natural=np.array([0.1, 0.3], dtype=np.float64),
@@ -233,6 +248,7 @@ def test_realtime_controller_scheduler_accepts_empty_payload_without_seed_proven
 
 
 def test_proportional_observer_rejects_invalid_bounds() -> None:
+    """Reject an observer whose maximum is below its minimum."""
     with pytest.raises(ValueError, match="max_value"):
         ProportionalMetricObserver(
             initial_value=0.5,
@@ -245,6 +261,7 @@ def test_proportional_observer_rejects_invalid_bounds() -> None:
 
 
 def test_feedback_runner_latency_sla_accepts_sub_millisecond_profile(monkeypatch) -> None:
+    """Accept a deterministic local profile within every SLA bound."""
     scheduler = DummyScheduler(metrics=[0.1, 0.2, 0.3])
     observer = ProportionalMetricObserver(
         initial_value=0.1,
@@ -287,6 +304,7 @@ def test_feedback_runner_latency_sla_accepts_sub_millisecond_profile(monkeypatch
 
 
 def test_feedback_runner_latency_sla_rejects_p99_breach(monkeypatch) -> None:
+    """Reject a deterministic local profile that breaches its p99 bound."""
     scheduler = DummyScheduler(metrics=[0.1, 0.2, 0.3, 0.4])
     observer = ProportionalMetricObserver(
         initial_value=0.1,

@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — Cross-shot feedback-loop documentation quality: completed the
+  NumPy docstring contract across the offline runtime and its simulator/double
+  tests, and wired permanent strict typing, documentation, and exact
+  source-coverage gates into preflight and CI. Budgets, approval refusal,
+  latency SLA, observer/controller updates, seed provenance, public symbols,
+  and the provider-side dynamic-circuit boundary are unchanged.
+
 - 2026-08-28 — Topology-kernel schema documentation quality: completed the
   NumPy docstring contract for all immutable records and their fail-closed
   tests, and wired permanent strict typing, documentation, and exact

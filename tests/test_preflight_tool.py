@@ -991,6 +991,8 @@ def test_main_uses_coverage_pytest_by_default(
         "qnode-circuit-contracts exact coverage threshold",
         "topology-kernel-schema focused coverage",
         "topology-kernel-schema exact coverage threshold",
+        "feedback-loop focused coverage",
+        "feedback-loop exact coverage threshold",
         "geometric-control-product focused coverage",
         "geometric-control-product exact coverage threshold",
         "tn-mps-baseline-design focused coverage",

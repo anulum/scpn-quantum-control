@@ -38,6 +38,7 @@ class FeedbackLoopConfig:
     latency_sla: FeedbackLoopLatencySLA | None = None
 
     def __post_init__(self) -> None:
+        """Validate loop limits and the optional latency envelope."""
         if not isinstance(self.max_steps, int) or self.max_steps < 1:
             raise ValueError("max_steps must be a positive integer")
         _require_non_negative(self.max_total_latency_s, "max_total_latency_s")
@@ -58,6 +59,7 @@ class FeedbackLoopLatencySLA:
     p99_latency_s: float | None = None
 
     def __post_init__(self) -> None:
+        """Validate non-negative maximum and percentile latency bounds."""
         _require_non_negative(self.max_latency_s, "max_latency_s")
         if self.p95_latency_s is not None:
             _require_non_negative(self.p95_latency_s, "p95_latency_s")
@@ -75,6 +77,7 @@ class FeedbackCommand:
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate the command's estimated QPU consumption."""
         _require_non_negative(self.estimated_qpu_seconds, "estimated_qpu_seconds")
 
 
@@ -89,6 +92,7 @@ class FeedbackResult:
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate observed counts, metrics, and QPU consumption."""
         _require_non_negative(self.qpu_seconds, "qpu_seconds")
         for bitstring, count in self.counts.items():
             if count < 0:
@@ -156,6 +160,7 @@ class FeedbackRunner:
         *,
         hardware_approved: bool = False,
     ) -> None:
+        """Bind loop participants and enforce explicit hardware approval."""
         self.scheduler = scheduler
         self.observer = observer
         self.config = config
@@ -225,6 +230,7 @@ class RealtimeControllerScheduler:
         *,
         base_seed: int | None = None,
     ) -> None:
+        """Bind a realtime controller and optional deterministic seed stream."""
         if not isinstance(controller, RealtimeSyncFeedbackController):
             raise TypeError("controller must be a RealtimeSyncFeedbackController")
         if base_seed is not None and (not isinstance(base_seed, int) or base_seed < 0):
@@ -265,6 +271,7 @@ class ProportionalMetricObserver:
         tolerance: float = 0.0,
         label: str = "proportional",
     ) -> None:
+        """Validate and store proportional-observer bounds and gain."""
         _require_finite(initial_value, "initial_value")
         _require_finite(target, "target")
         _require_finite(gain, "gain")
