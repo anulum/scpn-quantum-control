@@ -126,6 +126,7 @@ class HLSCosimulationConfig:
         Host compiler executable name.
     reserved_core
         CPU core whose isolation state grades the measured wall-clock times.
+
     """
 
     n_samples: int = 256
@@ -146,6 +147,7 @@ class HLSCosimulationConfig:
         ValueError
             If the sample count is not positive, or the amplitude is not
             finite and positive, or the compiler name is empty.
+
         """
         if self.n_samples < 1:
             raise ValueError("n_samples must be a positive integer")
@@ -255,6 +257,7 @@ def host_compiler_identity(compiler: str = "g++") -> tuple[str, str]:
     RuntimeError
         If the compiler is not on ``PATH`` — no co-simulation evidence can be
         produced, and none is fabricated.
+
     """
     path = shutil.which(compiler)
     if path is None:
@@ -296,6 +299,7 @@ def run_hls_cosimulation(bundle: HLSBundle, *, compiler: str = "g++") -> Cosimul
     ------
     RuntimeError
         If the host compiler is missing (fail-closed).
+
     """
     compiler_path, compiler_version = host_compiler_identity(compiler)
     sources = _source_records(bundle, HOST_SHIM_DIR)
@@ -390,6 +394,7 @@ def run_hls_cosimulation_handoff(
     HLSCosimulationHandoff
         The hash-bound evidence, bundle metadata, provenance, and the
         explicit no-synthesis boundary notes.
+
     """
     config = config or HLSCosimulationConfig()
 

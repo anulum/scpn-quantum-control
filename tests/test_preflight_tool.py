@@ -1035,6 +1035,8 @@ def test_main_uses_coverage_pytest_by_default(
         "Program AD adjoint exact coverage threshold",
         "QPU compute-types focused coverage",
         "QPU compute-types exact coverage threshold",
+        "HLS cosimulation-evidence focused coverage",
+        "HLS cosimulation-evidence exact coverage threshold",
         "dla-topology-parity focused coverage",
         "dla-topology-parity exact coverage threshold",
         "geometric-control-product focused coverage",

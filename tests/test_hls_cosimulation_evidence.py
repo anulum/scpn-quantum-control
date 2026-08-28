@@ -74,6 +74,8 @@ def _ready_host(ready: bool) -> HostReadiness:
 
 
 class TestHLSCosimulationConfig:
+    """Validate deterministic host-side cosimulation configuration."""
+
     @pytest.mark.parametrize(
         ("kwargs", "match"),
         [
@@ -84,10 +86,12 @@ class TestHLSCosimulationConfig:
         ],
     )
     def test_invalid_configuration_rejected(self, kwargs: dict[str, Any], match: str) -> None:
+        """Reject sample and fixed-point settings outside supported bounds."""
         with pytest.raises(ValueError, match=match):
             HLSCosimulationConfig(**kwargs)
 
     def test_waveform_is_deterministic_half_sine(self) -> None:
+        """Generate the same bounded half-sine waveform for a fixed config."""
         waveform = _SMALL.waveform()
         assert waveform.shape == (8,)
         assert waveform[0] == pytest.approx(0.0)
@@ -95,6 +99,7 @@ class TestHLSCosimulationConfig:
         assert np.array_equal(waveform, _SMALL.waveform())
 
     def test_to_dict_round_trip(self) -> None:
+        """Serialize every configuration field without loss."""
         payload = HLSCosimulationConfig().to_dict()
         assert payload["target_sku"] == "zu3eg"
         assert payload["compiler"] == "g++"
@@ -102,12 +107,16 @@ class TestHLSCosimulationConfig:
 
 
 class TestHostCompilerIdentity:
+    """Validate fail-closed discovery of the local host compiler."""
+
     def test_missing_compiler_fails_closed(self) -> None:
+        """Refuse cosimulation when the requested compiler is unavailable."""
         with pytest.raises(RuntimeError, match="refusing to fabricate"):
             host_compiler_identity("definitely-not-a-real-compiler-xyz")
 
     @requires_gpp
     def test_resolves_real_compiler(self) -> None:
+        """Resolve a real compiler path and non-empty version identity."""
         path, version = host_compiler_identity("g++")
         assert path.endswith("g++")
         assert "g++" in version or "GCC" in version.upper()
@@ -115,7 +124,10 @@ class TestHostCompilerIdentity:
 
 @requires_gpp
 class TestRealCosimulation:
+    """Exercise the generated HLS bundle through bounded host compilation."""
+
     def test_bit_true_pass_on_tiny_bundle(self) -> None:
+        """Match fixed-point host output bit-for-bit on a tiny bundle."""
         evidence = run_hls_cosimulation(_tiny_bundle())
         assert evidence.passed is True
         assert evidence.exit_code == 0
@@ -124,6 +136,7 @@ class TestRealCosimulation:
         assert evidence.duration_s > 0.0
 
     def test_sources_hash_bind_bundle_and_shim(self) -> None:
+        """Bind evidence digests to generated sources and compatibility shims."""
         evidence = run_hls_cosimulation(_tiny_bundle())
         roles = [source["role"] for source in evidence.sources]
         assert roles.count("hls_header") == 1
@@ -133,6 +146,7 @@ class TestRealCosimulation:
         assert all(len(source["sha256"]) == 64 for source in evidence.sources)
 
     def test_compile_failure_recorded_as_failure_evidence(self) -> None:
+        """Return auditable failure evidence when host compilation fails."""
         broken = replace(_tiny_bundle(), cpp_testbench="int main() { this does not compile }")
         evidence = run_hls_cosimulation(broken)
         assert evidence.passed is False
@@ -141,6 +155,7 @@ class TestRealCosimulation:
         assert evidence.stderr  # compiler diagnostics captured
 
     def test_bit_mismatch_recorded_as_run_failure(self) -> None:
+        """Record a host run failure when emitted samples do not match."""
         # Header streams a DIFFERENT envelope than the testbench expects.
         other = pulse_to_vivado_hls(0.5 * _SMALL.waveform() + 0.1, 250e6, "zu3eg")
         mismatched = replace(_tiny_bundle(), cpp_source=other.cpp_source)
@@ -151,6 +166,7 @@ class TestRealCosimulation:
         assert evidence.samples_streamed == 0
 
     def test_evidence_serialises(self) -> None:
+        """Serialize cosimulation status, provenance, and measurements."""
         payload = run_hls_cosimulation(_tiny_bundle()).to_dict()
         assert payload["passed"] is True
         assert isinstance(payload["compile_command"], list)
@@ -158,6 +174,8 @@ class TestRealCosimulation:
 
 
 class TestHandoffAssembly:
+    """Validate bounded handoff assembly for downstream evidence consumers."""
+
     @staticmethod
     def _stub_runner(passed: bool) -> Any:
         def runner(bundle: Any, *, compiler: str) -> CosimulationEvidence:
@@ -166,6 +184,7 @@ class TestHandoffAssembly:
         return runner
 
     def test_schema_and_consumer_contract(self) -> None:
+        """Expose the stable handoff schema and intended consumer contract."""
         artifact = run_hls_cosimulation_handoff(
             _SMALL,
             host_readiness=_ready_host(True),
@@ -180,6 +199,7 @@ class TestHandoffAssembly:
         assert payload["evidence"]["passed"] is True
 
     def test_boundary_notes_always_present(self) -> None:
+        """Retain explicit host-only and no-synthesis boundary notes."""
         artifact = run_hls_cosimulation_handoff(
             _SMALL,
             host_readiness=_ready_host(True),
@@ -193,6 +213,7 @@ class TestHandoffAssembly:
         assert artifact.evidence["passed"] is False  # failure evidence preserved
 
     def test_isolated_host_grades_timings(self) -> None:
+        """Grade timing evidence only when the host is declared isolated."""
         artifact = run_hls_cosimulation_handoff(
             _SMALL,
             host_readiness=_ready_host(True),
@@ -202,6 +223,7 @@ class TestHandoffAssembly:
         assert not any("advisory" in note for note in artifact.notes)
 
     def test_shared_host_labels_timings_advisory(self) -> None:
+        """Label shared-host timing observations as advisory."""
         artifact = run_hls_cosimulation_handoff(
             _SMALL,
             host_readiness=_ready_host(False),
@@ -212,6 +234,7 @@ class TestHandoffAssembly:
         assert artifact.host["ready"] is False
 
     def test_provenance_stamps_present(self) -> None:
+        """Stamp generated source, compiler, and repository provenance."""
         artifact = run_hls_cosimulation_handoff(
             _SMALL,
             host_readiness=_ready_host(True),
@@ -221,6 +244,7 @@ class TestHandoffAssembly:
 
     @requires_gpp
     def test_default_runner_and_live_host_end_to_end(self) -> None:
+        """Assemble a real host-only handoff with the default runner."""
         artifact = run_hls_cosimulation_handoff(_SMALL)
         assert artifact.evidence["passed"] is True
         assert artifact.evidence["samples_streamed"] == 8

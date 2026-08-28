@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1252
+    "test_files": 1253
   },
   "documentation": {
     "examples": [
@@ -8595,6 +8595,7 @@
       "tests/test_hermetic_reproduction_kit.py",
       "tests/test_hermetic_reproduction_kit_quality_gate.py",
       "tests/test_hls_cosimulation_evidence.py",
+      "tests/test_hls_cosimulation_evidence_quality_gate.py",
       "tests/test_hybrid_digital_analog.py",
       "tests/test_hybrid_digital_analog_branches.py",
       "tests/test_hypothesis_properties.py",

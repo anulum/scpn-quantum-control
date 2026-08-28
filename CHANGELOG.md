@@ -1,5 +1,14 @@
 # Changelog
 
+- 2026-08-28 — HLS cosimulation-evidence documentation quality: completed
+  the NumPy docstring contract across host compiler identity, deterministic
+  bit-true cosimulation, handoff evidence, CLI custody, UltraScale bundle and
+  manifest tests, and the explicitly gated synthesis test; and wired permanent
+  strict typing, connected execution, complete documentation, and exact source
+  coverage into preflight and CI. Generated HLS sources, fixed-point
+  arithmetic, hashes, handoff schemas, public APIs, and the no-synthesis/
+  no-board boundary are unchanged.
+
 - 2026-08-28 — QPU compute-type documentation quality: documented every
   request, result, node, stream, and fusion validator and the connected
   provider-neutral tests; removed a denominator guard dominated by positive

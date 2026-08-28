@@ -42,12 +42,16 @@ def _canned_artifact(passed: bool) -> HLSCosimulationHandoff:
 
 
 class TestArgumentParsing:
+    """Validate the host-side HLS evidence CLI arguments."""
+
     def test_defaults(self) -> None:
+        """Use bounded defaults for output, compiler, and host isolation."""
         args = script._parse_args([])
         assert (args.samples, args.target_sku, args.compiler) == (256, "zu3eg", "g++")
         assert Path(args.out_dir) == script.DEFAULT_OUT_DIR
 
     def test_custom_arguments(self) -> None:
+        """Preserve explicit output, compiler, samples, and isolation values."""
         args = script._parse_args(
             ["--samples", "64", "--amplitude", "0.5", "--target-sku", "zu9eg", "--compiler", "cc"]
         )
@@ -60,12 +64,15 @@ class TestArgumentParsing:
 
 
 class TestMain:
+    """Exercise CLI artifact custody without invoking a vendor toolchain."""
+
     def test_writes_artifact_and_reports_pass(
         self,
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Write passing evidence and return a successful process status."""
         captured: dict[str, Any] = {}
 
         def fake_run(config: Any) -> Any:
@@ -96,6 +103,7 @@ class TestMain:
         tmp_path: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Persist failure evidence before returning a nonzero status."""
         monkeypatch.setattr(
             script, "run_hls_cosimulation_handoff", lambda config: _canned_artifact(False)
         )
@@ -111,6 +119,7 @@ class TestMain:
         tmp_path: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Forward CLI sample and fixed-point settings into the runner."""
         captured: dict[str, Any] = {}
 
         def fake_run(config: Any) -> Any:
