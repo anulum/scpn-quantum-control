@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — DLA topology-projection documentation quality: completed the
+  NumPy docstring contract across fixed-active-set projection JVP/VJP custody,
+  support classification, and validation, and wired permanent strict typing,
+  connected execution, complete documentation, and exact source coverage into
+  preflight and CI. Projection arithmetic, branch refusal, immutable custody,
+  public APIs, and bounded topology-control claims are unchanged.
+
 - 2026-08-28 — DLA topology-objective documentation quality: completed the
   NumPy docstring contract across parity-protected evaluation and quadratic
   objective validation, and wired permanent strict typing, connected

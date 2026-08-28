@@ -1041,6 +1041,8 @@ def test_main_uses_coverage_pytest_by_default(
         "DLA topology-objectives exact coverage threshold",
         "dla-topology-parity focused coverage",
         "dla-topology-parity exact coverage threshold",
+        "DLA topology-projection focused coverage",
+        "DLA topology-projection exact coverage threshold",
         "geometric-control-product focused coverage",
         "geometric-control-product exact coverage threshold",
         "tn-mps-baseline-design focused coverage",

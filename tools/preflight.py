@@ -96,6 +96,9 @@ if TYPE_CHECKING:
         dla_topology_optimizer_quality_gates as _dla_topology_optimizer_quality_gates,
     )
     from tools import dla_topology_parity_quality_gates as _dla_topology_parity_quality_gates
+    from tools import (
+        dla_topology_projection_quality_gates as _dla_topology_projection_quality_gates,
+    )
     from tools import dla_topology_schema_quality_gates as _dla_topology_schema_quality_gates
     from tools import enaqt_evidence_quality_gates as _enaqt_evidence_quality_gates
     from tools import (
@@ -343,6 +346,9 @@ else:
         "tools.dla_topology_objectives_quality_gates"
     )
     _dla_topology_parity_quality_gates = import_module("tools.dla_topology_parity_quality_gates")
+    _dla_topology_projection_quality_gates = import_module(
+        "tools.dla_topology_projection_quality_gates"
+    )
     _dla_topology_schema_quality_gates = import_module("tools.dla_topology_schema_quality_gates")
     _entanglement_sync_evidence_quality_gates = import_module(
         "tools.entanglement_sync_evidence_quality_gates"
@@ -799,6 +805,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_hls_cosimulation_evidence_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_objectives_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_parity_quality_gates.build_static_quality_gates(_PY),
+    *_dla_topology_projection_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_baseline_design_quality_gates.build_static_quality_gates(_PY),
     *_error_mitigation_product_quality_gates.build_static_quality_gates(_PY),
@@ -1296,6 +1303,9 @@ DLA_TOPOLOGY_OBJECTIVES_COVERAGE_GATES = (
     _dla_topology_objectives_quality_gates.build_coverage_gates(_PY)
 )
 DLA_TOPOLOGY_PARITY_COVERAGE_GATES = _dla_topology_parity_quality_gates.build_coverage_gates(_PY)
+DLA_TOPOLOGY_PROJECTION_COVERAGE_GATES = (
+    _dla_topology_projection_quality_gates.build_coverage_gates(_PY)
+)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
     _geometric_control_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -1711,6 +1721,7 @@ def main() -> int:
             gates.extend(HLS_COSIMULATION_EVIDENCE_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_OBJECTIVES_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_PARITY_COVERAGE_GATES)
+            gates.extend(DLA_TOPOLOGY_PROJECTION_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
             gates.extend(TN_MPS_BASELINE_DESIGN_COVERAGE_GATES)
             gates.extend(ERROR_MITIGATION_PRODUCT_COVERAGE_GATES)

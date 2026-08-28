@@ -84,6 +84,7 @@ class TopologyProjectionDifferential:
         SHA-256 binding arrays and support decisions.
     claim_boundary:
         Limit on discrete, physical, and operational interpretation.
+
     """
 
     matrix: FloatArray
@@ -95,6 +96,7 @@ class TopologyProjectionDifferential:
     claim_boundary: str = DLA_TOPOLOGY_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate array custody, support, digest, and claim boundary."""
         arrays = {
             "matrix": self.matrix,
             "tangent": self.tangent,
@@ -151,6 +153,7 @@ def topology_projection_support(
     ------
     ValueError
         If the ledger, matrix, margin, or configured reference is invalid.
+
     """
     if not isinstance(ledger, TopologyConstraintLedger):
         raise ValueError("ledger must be a TopologyConstraintLedger")
@@ -371,6 +374,7 @@ def topology_projection_jvp(
     TopologyProjectionDifferential
         Production forward projection, exact supported local JVP, immutable
         input custody, support report, and content digest.
+
     """
     primal = _square_finite(matrix, "matrix")
     direction = _square_finite(tangent, "tangent")
@@ -428,6 +432,7 @@ def topology_projection_vjp(
         If any active operation has no supported derivative.
     ValueError
         If matrices, ledger configuration, or ``margin`` is invalid.
+
     """
     primal = _square_finite(matrix, "matrix")
     dual = _square_finite(cotangent, "cotangent")
