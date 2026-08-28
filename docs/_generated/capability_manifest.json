@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1264
+    "test_files": 1265
   },
   "documentation": {
     "examples": [
@@ -8908,6 +8908,7 @@
       "tests/test_phase_qnode_transforms.py",
       "tests/test_phase_qnode_vector_transforms.py",
       "tests/test_phase_results.py",
+      "tests/test_phase_results_quality_gate.py",
       "tests/test_phase_synchronisation_objectives.py",
       "tests/test_phase_synchronisation_witness.py",
       "tests/test_phase_tensorflow_bridge_contracts.py",

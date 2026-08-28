@@ -27,6 +27,7 @@ class TrajectoryResult(Mapping[str, NDArray[np.float64]]):
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate and freeze copied trajectory arrays and metadata."""
         times = np.asarray(self.times, dtype=np.float64)
         order_parameter = np.asarray(self.R, dtype=np.float64)
         if times.ndim != 1:
@@ -50,6 +51,7 @@ class TrajectoryResult(Mapping[str, NDArray[np.float64]]):
         object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
 
     def __getitem__(self, key: str) -> NDArray[np.float64]:
+        """Return a legacy trajectory array or reject an unknown key."""
         if key == "times":
             return self.times
         if key == "R":
@@ -57,10 +59,12 @@ class TrajectoryResult(Mapping[str, NDArray[np.float64]]):
         raise KeyError(key)
 
     def __iter__(self) -> Iterator[str]:
+        """Yield the legacy mapping keys in stable order."""
         yield "times"
         yield "R"
 
     def __len__(self) -> int:
+        """Return the fixed number of legacy trajectory keys."""
         return 2
 
     def to_dict(self) -> dict[str, NDArray[np.float64]]:

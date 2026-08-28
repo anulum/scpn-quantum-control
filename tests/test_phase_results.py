@@ -20,7 +20,6 @@ from scpn_quantum_control.phase.results import TrajectoryResult
 
 def test_trajectory_result_preserves_legacy_mapping_contract_and_metadata() -> None:
     """TrajectoryResult should expose immutable arrays through the legacy mapping API."""
-
     times = np.array([0.0, 0.5, 1.0], dtype=np.float64)
     order_parameter = np.array([0.25, 0.5, 0.75], dtype=np.float64)
     result = TrajectoryResult(times=times, R=order_parameter, metadata={"source": "unit"})
@@ -39,7 +38,6 @@ def test_trajectory_result_preserves_legacy_mapping_contract_and_metadata() -> N
 
 def test_trajectory_result_copies_inputs_and_exposes_read_only_arrays() -> None:
     """Input mutation after construction must not affect stored phase trajectories."""
-
     times = np.array([0.0, 1.0], dtype=np.float64)
     order_parameter = np.array([0.1, 0.9], dtype=np.float64)
     result = TrajectoryResult(times=times, R=order_parameter)
@@ -73,14 +71,12 @@ def test_trajectory_result_rejects_invalid_phase_trajectory_inputs(
     message: str,
 ) -> None:
     """Typed phase results should fail closed on malformed trajectory arrays."""
-
     with pytest.raises(ValueError, match=message):
         TrajectoryResult(times=times, R=order_parameter)
 
 
 def test_trajectory_result_rejects_unknown_legacy_mapping_keys() -> None:
     """Legacy mapping compatibility should remain limited to documented keys."""
-
     result = TrajectoryResult(
         times=np.array([0.0], dtype=np.float64),
         R=np.array([1.0], dtype=np.float64),

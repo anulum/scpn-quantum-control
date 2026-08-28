@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Typed phase-result documentation quality: documented immutable
+  post-initialisation and legacy mapping magic methods, removed direct-test
+  docstring-layout drift, and wired permanent strict typing, connected
+  trajectory-producer execution, complete owner documentation, and exact
+  source coverage into preflight and CI. Copy-on-construction, read-only array
+  custody, immutable metadata, mapping order, public APIs, and validation
+  semantics are unchanged.
+
 - 2026-08-28 — Hardware experiment-dynamics documentation quality: completed
   the preview-inclusive NumPy docstring contract across the four- and
   eight-oscillator, second-order, and coupling-sweep protocols; replaced an
