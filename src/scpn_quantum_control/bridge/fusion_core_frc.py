@@ -81,6 +81,7 @@ class FRCEquilibriumLike(Protocol):
         Field-null radius of the equilibrium [m].
     target_separatrix_radius_m : float
         Requested separatrix radius ``R_s`` of the equilibrium [m].
+
     """
 
     @property
@@ -150,6 +151,7 @@ class FusionCoreFRCCalibration:
         Provenance tag; always ``"scpn-fusion-core"``.
     metadata : dict[str, Any]
         Free-form provenance metadata (e.g. fusion-core version, grid size).
+
     """
 
     reference_field_T: float
@@ -165,6 +167,7 @@ class FusionCoreFRCCalibration:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate physical scalars and copy caller-owned provenance metadata."""
         object.__setattr__(
             self,
             "reference_field_T",
@@ -286,6 +289,7 @@ def calibrate_frc_surrogate_from_equilibrium(
     ValueError
         If the equilibrium is unconverged (and ``require_converged``), or a derived
         quantity is not finite and positive.
+
     """
     from ..control.qaoa_pulsed_cost import FRCPlasmaSurrogate
 
@@ -425,6 +429,7 @@ def calibrate_frc_surrogate_from_inputs(
     ------
     ImportError
         If fusion-core cannot be imported and no usable ``repo_src`` is given.
+
     """
     module = _import_frc_module(repo_src=repo_src)
     grid = (

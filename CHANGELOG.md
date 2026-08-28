@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — Fusion-core FRC bridge documentation quality: completed the
+  NumPy docstring contract across surrogate calibration and its offline tests,
+  and wired permanent strict typing, connected execution, documentation, and
+  exact source coverage into preflight and CI. Calibration arithmetic,
+  retained defaults, immutable provenance, serialization, lazy imports, path
+  cleanup, public APIs, and no-provider/no-actuation boundaries are unchanged.
+
 - 2026-08-28 — DLA topology schema documentation quality: completed the NumPy
   docstring contract for immutable derivative-support records and wired
   permanent strict typing, connected execution, documentation, and exact
