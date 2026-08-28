@@ -62,7 +62,10 @@ def _weighted_depth(
 
 
 class TestLayoutSearchConfig:
+    """Verify discrete layout-search configuration contracts."""
+
     def test_defaults_valid_and_serialisable(self) -> None:
+        """Expose valid deterministic defaults as a serializable payload."""
         config = LayoutSearchConfig()
         assert config.to_dict() == {
             "n_restarts": 4,
@@ -75,6 +78,7 @@ class TestLayoutSearchConfig:
         }
 
     def test_weights_serialised_when_set(self) -> None:
+        """Serialize explicit cost weights into the configuration payload."""
         config = LayoutSearchConfig(weights=CostWeights(depth=2.0))
         assert config.to_dict()["weights"] == {
             "depth": 2.0,
@@ -93,12 +97,16 @@ class TestLayoutSearchConfig:
         ],
     )
     def test_invalid_configuration_rejected(self, kwargs: dict[str, Any], match: str) -> None:
+        """Reject non-positive or non-finite search controls."""
         with pytest.raises(ValueError, match=match):
             LayoutSearchConfig(**kwargs)
 
 
 class TestLayoutSearchResult:
+    """Verify immutable layout-search result serialization."""
+
     def test_to_dict_shape(self) -> None:
+        """Serialize the complete result and nested cost breakdown."""
         result = optimise_kuramoto_layout(
             _K,
             _OMEGA,
@@ -122,6 +130,8 @@ class TestLayoutSearchResult:
 
 
 class TestSearchSpaceValidation:
+    """Verify fail-closed physical search-space admission."""
+
     @pytest.mark.parametrize(
         ("physical_qubits", "initial_layout", "match"),
         [
@@ -139,6 +149,7 @@ class TestSearchSpaceValidation:
         initial_layout: tuple[int, ...] | None,
         match: str,
     ) -> None:
+        """Reject malformed candidate sets and initial layouts."""
         with pytest.raises(ValueError, match=match):
             optimise_kuramoto_layout(
                 _K,
@@ -151,6 +162,7 @@ class TestSearchSpaceValidation:
             )
 
     def test_cost_validation_propagates(self) -> None:
+        """Propagate invalid cost inputs through the optimizer boundary."""
         with pytest.raises(ValueError, match="mean_gate_fidelity"):
             optimise_kuramoto_layout(
                 _K,
@@ -163,12 +175,16 @@ class TestSearchSpaceValidation:
 
 
 class TestNeighbourhood:
+    """Verify swap and relocate neighborhood construction."""
+
     def test_swap_only_when_candidates_exhausted(self) -> None:
+        """Generate only pairwise swaps when every candidate is occupied."""
         moves = _neighbours((0, 1, 2), (0, 1, 2))
         assert len(moves) == 3  # C(3, 2) swaps, no relocations
         assert all(sorted(move) == [0, 1, 2] for move in moves)
 
     def test_relocations_added_for_unused_candidates(self) -> None:
+        """Generate injective relocations for every unused candidate."""
         moves = _neighbours((0, 1), (0, 1, 5, 7))
         swaps = [move for move in moves if sorted(move) == [0, 1]]
         relocations = [move for move in moves if sorted(move) != [0, 1]]
@@ -178,7 +194,10 @@ class TestNeighbourhood:
 
 
 class TestHillClimbing:
+    """Verify deterministic best-improvement hill-climbing behavior."""
+
     def test_finds_known_optimum_via_relocations(self) -> None:
+        """Reach the controlled optimum through relocate moves."""
         result = optimise_kuramoto_layout(
             _K,
             _OMEGA,
@@ -194,6 +213,7 @@ class TestHillClimbing:
         assert result.converged is True
 
     def test_never_worse_than_seed_layout(self) -> None:
+        """Never regress relative to the admitted seeded layout."""
         seed_layout = (2, 1, 0)
         seed_cost = kuramoto_layout_cost(
             seed_layout,
@@ -218,6 +238,7 @@ class TestHillClimbing:
         assert result.best_layout == (2, 1, 0)
 
     def test_deterministic_for_fixed_seed(self) -> None:
+        """Return identical outcomes for repeated fixed-seed searches."""
         outcomes = [
             optimise_kuramoto_layout(
                 _K,
@@ -234,6 +255,7 @@ class TestHillClimbing:
         assert outcomes[0].n_evaluations == outcomes[1].n_evaluations
 
     def test_sweep_cap_reports_non_convergence(self) -> None:
+        """Report non-convergence when the sweep cap stops improvement."""
         result = optimise_kuramoto_layout(
             _K,
             _OMEGA,
@@ -248,6 +270,7 @@ class TestHillClimbing:
         assert result.best_cost.routed_depth < 50 + 60 + 70
 
     def test_memoisation_counts_distinct_layouts_once(self) -> None:
+        """Evaluate each distinct layout no more than once."""
         calls: list[tuple[int, ...]] = []
 
         def counting_depth(
@@ -275,6 +298,7 @@ class TestHillClimbing:
         assert len(set(calls)) == len(calls)
 
     def test_later_restart_can_improve_on_seeded_first(self) -> None:
+        """Allow later deterministic restarts to improve the seeded run."""
         result = optimise_kuramoto_layout(
             _K,
             _OMEGA,
@@ -291,7 +315,10 @@ class TestHillClimbing:
 
 
 class TestRoutedDepthIntegration:
+    """Verify integration with the real routed-depth adapter."""
+
     def test_real_depth_provider_on_line_coupling(self) -> None:
+        """Route a bounded three-qubit problem on a line coupling map."""
         coupling = CouplingMap([(0, 1), (1, 0), (1, 2), (2, 1)])
         result = optimise_kuramoto_layout(
             _K,
@@ -306,7 +333,10 @@ class TestRoutedDepthIntegration:
 
 
 class TestPackageExport:
+    """Verify stable hardware-package exports."""
+
     def test_hardware_package_exports_optimiser(self) -> None:
+        """Re-export the optimizer function and immutable record types."""
         from scpn_quantum_control import hardware
 
         assert hardware.optimise_kuramoto_layout is optimise_kuramoto_layout

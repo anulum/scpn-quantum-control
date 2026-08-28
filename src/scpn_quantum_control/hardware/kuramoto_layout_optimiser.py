@@ -70,6 +70,7 @@ class LayoutSearchConfig:
     t, reps, order
         Evolution time, Trotter repetitions, and product-formula order
         forwarded to the cost function.
+
     """
 
     n_restarts: int = 4
@@ -88,6 +89,7 @@ class LayoutSearchConfig:
         ValueError
             If ``n_restarts`` or ``max_sweeps`` is not positive, or ``t`` is
             not finite and positive, or ``reps`` is not positive.
+
         """
         if self.n_restarts < 1:
             raise ValueError("n_restarts must be a positive integer")
@@ -150,6 +152,7 @@ def _validate_search_inputs(
         If the candidate set is too small, contains duplicates or negative
         indices, or the seed layout is not an injective placement of the right
         length drawn from the candidate set.
+
     """
     n = int(K.shape[0])
     if len(set(physical_qubits)) != len(physical_qubits):
@@ -238,6 +241,7 @@ def optimise_kuramoto_layout(
     ValueError
         If the search space or the seed layout is malformed (see
         :func:`_validate_search_inputs`), or the cost inputs are invalid.
+
     """
     config = config or LayoutSearchConfig()
     n = _validate_search_inputs(K, physical_qubits, initial_layout)

@@ -1067,6 +1067,8 @@ def test_main_uses_coverage_pytest_by_default(
         "MLIR whole-program native exact coverage threshold",
         "closed-loop publication focused coverage",
         "closed-loop publication exact coverage threshold",
+        "Kuramoto layout-optimiser focused coverage",
+        "Kuramoto layout-optimiser exact coverage threshold",
         "quantum-Phi focused coverage",
         "quantum-Phi exact coverage threshold",
         "QPU result-pack focused coverage",

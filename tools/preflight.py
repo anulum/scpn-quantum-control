@@ -151,6 +151,9 @@ if TYPE_CHECKING:
         kuramoto_layout_cost_quality_gates as _kuramoto_layout_cost_quality_gates,
     )
     from tools import (
+        kuramoto_layout_optimiser_quality_gates as _kuramoto_layout_optimiser_quality_gates,
+    )
+    from tools import (
         kuramoto_layout_relaxation_quality_gates as _kuramoto_layout_relaxation_quality_gates,
     )
     from tools import kuramoto_variants_quality_gates as _kuramoto_variants_quality_gates
@@ -417,6 +420,9 @@ else:
         "tools.kyma_mechanism_benchmark_product_quality_gates"
     )
     _koopman_quality_gates = import_module("tools.koopman_quality_gates")
+    _kuramoto_layout_optimiser_quality_gates = import_module(
+        "tools.kuramoto_layout_optimiser_quality_gates"
+    )
     _kuramoto_variants_quality_gates = import_module("tools.kuramoto_variants_quality_gates")
     _mps_evolution_quality_gates = import_module("tools.mps_evolution_quality_gates")
     _sync_uncertainty_quality_gates = import_module("tools.sync_uncertainty_quality_gates")
@@ -866,6 +872,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_differentiable_exact_modes_quality_gates.build_static_quality_gates(_PY),
     *_mlir_whole_program_native_quality_gates.build_static_quality_gates(_PY),
     *_closed_loop_publication_quality_gates.build_static_quality_gates(_PY),
+    *_kuramoto_layout_optimiser_quality_gates.build_static_quality_gates(_PY),
     *_quantum_phi_quality_gates.build_static_quality_gates(_PY),
     *_qpu_result_pack_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
@@ -1390,6 +1397,9 @@ MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_GATES = (
 CLOSED_LOOP_PUBLICATION_COVERAGE_GATES = (
     _closed_loop_publication_quality_gates.build_coverage_gates(_PY)
 )
+KURAMOTO_LAYOUT_OPTIMISER_COVERAGE_GATES = (
+    _kuramoto_layout_optimiser_quality_gates.build_coverage_gates(_PY)
+)
 QUANTUM_PHI_COVERAGE_GATES = _quantum_phi_quality_gates.build_coverage_gates(_PY)
 QPU_RESULT_PACK_COVERAGE_GATES = _qpu_result_pack_quality_gates.build_coverage_gates(_PY)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
@@ -1820,6 +1830,7 @@ def main() -> int:
             gates.extend(DIFFERENTIABLE_EXACT_MODES_COVERAGE_GATES)
             gates.extend(MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_GATES)
             gates.extend(CLOSED_LOOP_PUBLICATION_COVERAGE_GATES)
+            gates.extend(KURAMOTO_LAYOUT_OPTIMISER_COVERAGE_GATES)
             gates.extend(QUANTUM_PHI_COVERAGE_GATES)
             gates.extend(QPU_RESULT_PACK_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)

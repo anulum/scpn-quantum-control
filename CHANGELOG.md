@@ -1,5 +1,14 @@
 # Changelog
 
+- 2026-08-28 — Kuramoto layout-optimiser documentation quality: completed the
+  preview-inclusive NumPy docstring contract across the discrete search owner
+  and its direct tests, and wired permanent strict typing, offline optimiser
+  execution, complete owner documentation, and exact source coverage into
+  preflight and CI. Search-space validation, deterministic restarts,
+  neighbourhood construction, memoisation, convergence, seed non-regression,
+  routed-depth integration, public APIs, and hardware/provider boundaries are
+  unchanged.
+
 - 2026-08-28 — Closed-loop publication-run documentation quality: completed
   the preview-inclusive NumPy docstring contract across the software-in-the-loop
   artifact owner and both direct test surfaces, and wired permanent strict

@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1270
+    "test_files": 1271
   },
   "documentation": {
     "examples": [
@@ -8659,6 +8659,7 @@
       "tests/test_kuramoto_layout_cost.py",
       "tests/test_kuramoto_layout_cost_quality_gate.py",
       "tests/test_kuramoto_layout_optimiser.py",
+      "tests/test_kuramoto_layout_optimiser_quality_gate.py",
       "tests/test_kuramoto_layout_relaxation.py",
       "tests/test_kuramoto_layout_relaxation_quality_gate.py",
       "tests/test_kuramoto_public_face_hygiene.py",
