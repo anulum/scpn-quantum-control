@@ -23,7 +23,7 @@ FloatArray = NDArray[np.float64]
 
 HYBRID_SURROGATE_CLAIM_BOUNDARY = (
     CLASSICAL_SURROGATE_CLAIM_BOUNDARY
-    + " The BL-33 ControllerProposal remains unapplied; exact local validation "
+    + " The co-design ControllerProposal remains unapplied; exact local validation "
     "is an acceptance observation, not a safety decision or actuator command."
 )
 
@@ -61,7 +61,7 @@ def propose_and_validate_surrogate_step(
     learning_rate: float,
     max_step_norm: float,
 ) -> ExactValidatedSurrogateProposal:
-    """Create a bounded BL-33 proposal and query the exact local objective.
+    """Create a bounded co-design proposal and query the exact local objective.
 
     The surrogate may suggest the candidate, but it cannot accept itself. A
     passing disjoint value-fidelity certificate is required first, and the

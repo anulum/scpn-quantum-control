@@ -1,7 +1,7 @@
 # Quantum Reservoir and Surrogate Evidence
 
 Schema: `scpn.quantum_reservoir_surrogates.v1`
-Content digest: `e08bae2ba437f0ab4ab479ffc81d5afd1915e3feb86bcdf59b8018e14e166328`
+Content digest: `2e9f2503f940425310f6b81bbead09be762697a157f467b74d0314eadeca43c2`
 
 ## Held-out reservoir certificates
 

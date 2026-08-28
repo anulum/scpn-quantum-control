@@ -2230,7 +2230,7 @@ propose_and_validate_surrogate_step(model, current_parameters, exact_objective, 
 
 BL-45 held-out synthetic certificates, differentiable Gaussian-RBF classical
 surrogate, train/validation leakage rejection, and exact local validation of an
-unapplied BL-33 proposal. See [Quantum Reservoir Computing and Classical
+unapplied co-design proposal. See [Quantum Reservoir Computing and Classical
 Surrogates](quantum_reservoir.md). No hardware, provider, generalisation,
 closed-loop, or advantage claim is implied.
 

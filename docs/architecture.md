@@ -749,7 +749,7 @@ surrogates/                                ← Differentiable classical quantum-
 ├── models.py                                  Gaussian-RBF values + analytic input gradients
 ├── train.py                                   Deterministic regularised fitting + row digests
 ├── fidelity.py                                Disjoint value/gradient exact-simulator gates
-├── hybrid.py                                  Unapplied BL-33 proposal + exact validation
+├── hybrid.py                                  Unapplied co-design proposal + exact validation
 └── report.py                                  Digest-bound BL-45 JSON/Markdown evidence
 
 forecasting/                               ← Forecast benchmarks + bounded multimodal product

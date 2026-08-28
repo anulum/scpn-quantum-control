@@ -300,7 +300,7 @@ Computes quantum-informed feedback using `compute_l16_lyapunov` from the
 L16 quantum director module. The returned `stability_score` and `l16_action`
 are legacy heuristic values. They are not a Lyapunov exponent, PCS/stability
 certificate, causal diagnosis, or autonomous-actuation authority. Use the
-[bounded L16 director](l16_director_product.md) for BL-33 safety mapping and
+[bounded L16 director](l16_director_product.md) for co-design safety mapping and
 digest-bound functional evidence.
 
 Decision logic:

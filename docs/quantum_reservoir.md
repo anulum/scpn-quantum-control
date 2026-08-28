@@ -105,7 +105,7 @@ a norm-bounded, unapplied `ControllerProposal`, then evaluates both current and
 candidate parameters through the caller's exact local objective. The frozen
 evidence candidate improved the exact objective from `0.0123150159` to
 `-0.0490886919`. The acceptance flag records that exact local observation only;
-the function does not emit a BL-33 safety decision or apply an update.
+the function does not emit a co-design safety decision or apply an update.
 
 Regenerate and byte-check the evidence with:
 

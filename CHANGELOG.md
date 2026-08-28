@@ -71,7 +71,7 @@
   hardened exact-statevector allocation/input boundaries; added disjoint
   synthetic QRC versus matched-feature ESN certificates, Gaussian-RBF value and
   analytic-gradient fidelity gates, exact local validation of an unapplied
-  BL-33 proposal, and digest-bound deterministic evidence. The classification
+  co-design proposal, and digest-bound deterministic evidence. The classification
   row favours QRC while the forecast row strongly favours ESN; no general,
   hardware, provider, control, optimisation-advantage, or deployment claim is
   made.
@@ -182,7 +182,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   public guide, evidence CLI, and canonical JSON/Markdown artefacts.
 - 2026-07-29 — BL-45 held-out QRC/ESN certificate suite, differentiable
   Gaussian-RBF surrogate and disjoint exact-simulator fidelity gates,
-  exact-validated unapplied BL-33 proposal, public guide, evidence CLI, and
+  exact-validated unapplied co-design proposal, public guide, evidence CLI, and
   deterministic JSON/Markdown artefacts.
 - 2026-07-29 — Uncertainty-aware adaptive FIM proposal API, hardware-safe budget
   and co-design observer composition, primary-source boundary, evidence CLI,
@@ -201,7 +201,7 @@ control, or broad quantum-advantage claim is promoted by this release.
 - 2026-07-28 — QNN/QGNN/QSNN local convergence suite, complete
   framework-status matrix, public guide, evidence CLI, and canonical committed
   evidence artefacts.
-- 2026-07-28 — BL-33 simulator-first quantum-classical co-design package,
+- 2026-07-28 — Simulator-first quantum-classical co-design package,
   versioned replay format, policy-gated control/observer adapters, public guide,
   and measured functional non-isolated evidence artefact.
 - 2026-07-26 — Fault-tolerant synchronisation resource product (BL-36):

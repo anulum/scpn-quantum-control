@@ -47,7 +47,7 @@ class ReplayTrace:
         if self.product_schema != CODESIGN_SCHEMA:
             raise ValueError(f"replay product_schema must equal {CODESIGN_SCHEMA}")
         if self.claim_boundary != CODESIGN_CLAIM_BOUNDARY:
-            raise ValueError("replay claim_boundary must match the BL-33 claim boundary")
+            raise ValueError("replay claim_boundary must match the co-design claim boundary")
         if not self.inputs or len(self.inputs) != len(self.observers):
             raise ValueError("replay inputs and observers must be non-empty and aligned")
         if not self.output_json or len(self.output_json) > len(self.inputs):

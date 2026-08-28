@@ -1,10 +1,10 @@
 {
   "claim_boundary": "Synthetic local exact-statevector and classical-reference evidence only. No hardware QRC, provider execution, unseen-domain generalisation, closed-loop control, optimisation advantage, publication, or deployment claim.",
-  "content_digest": "e08bae2ba437f0ab4ab479ffc81d5afd1915e3feb86bcdf59b8018e14e166328",
+  "content_digest": "2e9f2503f940425310f6b81bbead09be762697a157f467b74d0314eadeca43c2",
   "exact_validated_proposal": {
     "accepted_by_exact_objective": true,
     "applied": false,
-    "claim_boundary": "Local Gaussian-RBF interpolation with an analytic input gradient only; not exact quantum differentiation, hardware execution, generalisation, closed-loop control, or quantum-advantage evidence. The BL-33 ControllerProposal remains unapplied; exact local validation is an acceptance observation, not a safety decision or actuator command.",
+    "claim_boundary": "Local Gaussian-RBF interpolation with an analytic input gradient only; not exact quantum differentiation, hardware execution, generalisation, closed-loop control, or quantum-advantage evidence. The co-design ControllerProposal remains unapplied; exact local validation is an acceptance observation, not a safety decision or actuator command.",
     "exact_candidate": -0.049089,
     "exact_current": 0.012315,
     "exact_observed_improvement": 0.061404,

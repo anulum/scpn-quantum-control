@@ -195,7 +195,7 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
   `eeg_classification` (structured-ansatz VQE), `q_disruption` (PQC + parameter-shift).
   `surrogates/` adds a differentiable Gaussian-RBF classical proxy whose held-out
   values and analytic gradients are gated against exact local statevector queries;
-  its BL-33 proposal remains unapplied.
+  its co-design proposal remains unapplied.
 
 ### 4.8 Control — `control/`
 - QAOA-MPC, residual VQLS-GS proxy, Petri-net supervisor, ITER disruption, realtime/closed-loop.

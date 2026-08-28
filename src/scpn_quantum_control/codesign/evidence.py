@@ -79,7 +79,7 @@ class FunctionalEvidence:
 
 
 def build_demo_loop() -> CoDesignLoop:
-    """Build a fresh deterministic, simulation-only BL-33 loop."""
+    """Build a fresh deterministic, simulation-only co-design loop."""
     return CoDesignLoop(
         estimator=ExponentialOrderEstimator(alpha=0.5),
         evaluator=PhaseObjectiveSimulator(policy=ClosedLoopExecutionPolicy(round_budget=8)),
@@ -164,7 +164,7 @@ def write_functional_evidence(path: Path, *, iterations: int = 20) -> Functional
 
 
 def validate_functional_evidence(payload: object) -> tuple[str, ...]:
-    """Return fail-closed findings for a BL-33 functional evidence payload."""
+    """Return fail-closed findings for a co-design functional evidence payload."""
     if not isinstance(payload, dict):
         return ("payload must be a JSON object",)
     findings: list[str] = []

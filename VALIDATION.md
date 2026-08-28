@@ -151,12 +151,13 @@ execution occurs.
 ### Bounded L16 Director Tests
 
 BL-85 runs three frozen small-system scenarios through the real exact-simulator
-indicator path, verifies deterministic replay, and tests the BL-33 mappings
+indicator path, verifies deterministic replay, and tests the co-design mappings
 `continue -> allow`, `adjust -> hold`, and `halt -> abort`. BL-67 policy tests
 refuse both incomplete and otherwise ticketed hardware modes. Contract,
 evidence-validation, route-matrix, CLI, and atomic-write tests provide 100%
-line and branch coverage over the new director modules and touched BL-33/52
-surfaces. No provider, QPU, plant, or realtime-hardware execution occurs.
+line and branch coverage over the new director modules and touched co-design
+and route-matrix surfaces. No provider, QPU, plant, or realtime-hardware
+execution occurs.
 
 ### ENAQT Transport Tests
 
