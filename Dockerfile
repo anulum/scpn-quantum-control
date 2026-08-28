@@ -65,7 +65,7 @@ COPY .github/workflows/ .github/workflows/
 COPY .github/dependabot.yml .github/dependabot.yml
 # The static Rust-inventory, dependency-evidence, and kernel-execution audits
 # read the engine crate manifest, its locked dependency graph, and every
-# in-tree pyo3-featured member crate the ST-12 program-AD replay extraction
+# in-tree pyo3-featured member crate the bounded program-AD replay extraction
 # introduced. Ship those inputs alongside the primary crate.
 COPY scpn_quantum_engine/Cargo.toml scpn_quantum_engine/Cargo.toml
 COPY scpn_quantum_engine/Cargo.lock scpn_quantum_engine/Cargo.lock

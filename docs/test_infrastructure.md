@@ -181,7 +181,7 @@ python -m coverage report --rcfile=/dev/null \
 
 ## Studio Program-AD replay quality ratchet
 
-The ST-12 replay is gated as one polyglot owner. Python emission and validation
+The Studio Program-AD replay is gated as one polyglot owner. Python emission and validation
 must remain strict-MyPy clean, fully NumPy-documented, and exactly covered. The
 test cohort uses strict JSON files and a separate module subprocess. In the
 aggregate Python matrix, where the compiled engine is intentionally absent, a

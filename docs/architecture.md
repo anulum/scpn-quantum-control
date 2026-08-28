@@ -142,7 +142,7 @@ See [QNN, QGNN, and QSNN convergence examples](ml_convergence_examples.md).
 
 ## Studio Program-AD replay trust chain
 
-The Studio ST-12 card is an end-to-end verification chain, not a JavaScript
+The Studio Program-AD replay card is an end-to-end verification chain, not a JavaScript
 reimplementation of automatic differentiation. The v2 committed unit at
 `data/studio/program_ad_replay_rational_20260714.json` freezes a rational
 effect-IR program, finite scalar inputs, the Rust engine's exact value and

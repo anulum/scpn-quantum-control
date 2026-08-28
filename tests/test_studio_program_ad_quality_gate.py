@@ -187,6 +187,6 @@ def test_local_studio_program_ad_runtime_gates_match_ci() -> None:
     assert "--coverage.thresholds.branches=100" in browser_coverage
     assert "--coverage.thresholds.functions=100" in browser_coverage
     assert "--coverage.thresholds.lines=100" in browser_coverage
-    assert "Enforce Program-AD browser owner exact coverage (ST-12)" in workflow
+    assert "Enforce Program-AD browser owner exact coverage" in workflow
     assert "--coverage.include=src/panel/programAd.ts" in workflow
     assert "--coverage.include=src/panel/ProgramADReplayCard.tsx" in workflow

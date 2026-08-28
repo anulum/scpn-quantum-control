@@ -4,7 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
-// scpn-quantum-control — studio-web program-AD gradient replay card (ST-12)
+// scpn-quantum-control — studio-web program-AD gradient replay card
 
 import { useState } from "react";
 
@@ -55,7 +55,7 @@ export function ProgramADReplayCard({
 
   return (
     <section className="qsp-program-ad">
-      <h3>Program-AD gradient replay (ST-12)</h3>
+      <h3>Program-AD gradient replay</h3>
       <p className="qsp-meta">
         Reverse-mode gradient of the committed rational program, recomputed in
         your browser through the shipped Rust replay. Claimed value{" "}
