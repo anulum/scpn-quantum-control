@@ -32,7 +32,7 @@ IDENTITY_OBSERVER_CLAIM_BOUNDARY: Final[str] = (
     "explicit research controls; no unbreakable-identity, cryptographic-strength, "
     "hardware robustness, or universal consciousness claim"
 )
-ATTESTED_RESULT_SEAL_POINTER: Final[str] = "BL-48 optional attested-result seal"
+ATTESTED_RESULT_SEAL_POINTER: Final[str] = "optional attested-result seal"
 ControlAction = Literal["continue", "hold", "abort"]
 WitnessStatus = Literal["not_requested", "supported", "unsupported"]
 
@@ -100,7 +100,7 @@ class IdentityObserverRecord:
 
 @dataclass(frozen=True, slots=True)
 class IdentitySafetyDecision:
-    """BL-33/BL-67 control decision derived from identity observers."""
+    """Control decision derived from identity observers."""
 
     allowed: bool
     action: ControlAction
@@ -168,7 +168,7 @@ _UNSUITABLE_SCENARIOS: Final[tuple[str, ...]] = (
 
 
 def identity_metric_inventory() -> tuple[IdentityMetricInventoryRow, ...]:
-    """Return the frozen BL-69 identity ownership inventory."""
+    """Return the frozen identity-observer ownership inventory."""
     return _INVENTORY
 
 

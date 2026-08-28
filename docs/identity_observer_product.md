@@ -2,7 +2,7 @@
 
 `scpn_quantum_control.identity_observer_product` maps the existing identity
 robustness certificate, coherence budget, and optional CHSH witness into one
-fail-closed BL-33/BL-67 control decision.
+fail-closed co-design and control-stack safety decision.
 
 ## Safety contract
 
@@ -11,7 +11,7 @@ fail-closed BL-33/BL-67 control decision.
 | Energy gap / transition probability | `identity.robustness` | Hold outside explicit thresholds |
 | Planned-depth fidelity | `identity.coherence_budget` | Hold below fidelity or beyond budget |
 | Optional CHSH witness | `identity.entanglement_witness` | Hold below threshold; abort if requested but unsupported |
-| Cryptographic seal | BL-48 pointer only | No key or strength claim |
+| Cryptographic seal | Optional attested-result pointer only | No key or strength claim |
 
 Thresholds are always supplied by the caller; this product does not invent a
 universal identity criterion.

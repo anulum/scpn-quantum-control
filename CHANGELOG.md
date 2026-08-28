@@ -110,9 +110,9 @@
   phase periodicity, and emits bounded functional outer-cycle evidence. BL-52
   now supports latent finite difference and permanently refuses direct latent
   parameter-shift through the nonlinear softplus geometry map.
-- 2026-07-25 — Identity / robustness control observers (BL-69):
+- 2026-07-25 — Identity / robustness control observers:
   `scpn_quantum_control.identity_observer_product` adapts real robustness,
-  coherence-budget, and optional CHSH metrics into explicit BL-33/67 safety
+  coherence-budget, and optional CHSH metrics into explicit control-stack safety
   decisions. Threshold violations hold; missing or invalid requested witnesses
   abort; identity-key and universal-identity claims remain out of scope.
 - 2026-07-25 — Active sensing / experimental design product:

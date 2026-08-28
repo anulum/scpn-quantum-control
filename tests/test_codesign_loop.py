@@ -127,7 +127,7 @@ def test_stale_gradient_holds_previous_parameters() -> None:
 
 
 def test_identity_observer_aborts_controller_application() -> None:
-    """Give a BL-69 abort decision precedence over the proposal."""
+    """Give an identity-observer abort decision precedence over the proposal."""
     output = _loop().step(
         _input(0, CoDesignMode.CLASSICAL_TO_QUANTUM),
         observers=ObserverInputs(identity_action="abort", identity_reason="threshold trip"),
