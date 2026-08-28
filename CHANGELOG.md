@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — Legacy KYMA dynamics documentation quality: completed the
+  NumPy docstring contract across Kuramoto dynamics and dynamics/model/probe
+  tests, and wired permanent strict typing, connected JAX execution,
+  documentation, and exact source coverage into preflight and CI. Dynamics,
+  gradients, consumers, public APIs, and mechanism-only boundaries are
+  unchanged.
+
 - 2026-08-28 — KYMA v2 dynamics documentation quality: completed the NumPy
   docstring contract across per-trial Kuramoto dynamics and its direct/teacher
   tests, and wired permanent strict typing, connected JAX execution,

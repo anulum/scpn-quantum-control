@@ -1,0 +1,111 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — legacy KYMA dynamics quality gates
+"""Build strict documentation, typing, and exact coverage gates."""
+
+from __future__ import annotations
+
+from os import devnull
+
+Gate = tuple[str, list[str]]
+KYMA_DYNAMICS_SOURCE = "src/scpn_quantum_control/benchmarks/kyma/dynamics.py"
+KYMA_DYNAMICS_COVERAGE_COHORT = [
+    "tests/test_kyma_dynamics.py",
+    "tests/test_kyma_models.py",
+    "tests/test_kyma_probe.py",
+]
+KYMA_DYNAMICS_TYPING_RATCHET = [
+    KYMA_DYNAMICS_SOURCE,
+    "tools/kyma_dynamics_quality_gates.py",
+    "tests/test_kyma_dynamics_quality_gate.py",
+]
+KYMA_DYNAMICS_DOCSTRING_RATCHET = [
+    KYMA_DYNAMICS_SOURCE,
+    *KYMA_DYNAMICS_COVERAGE_COHORT,
+    "tools/kyma_dynamics_quality_gates.py",
+    "tests/test_kyma_dynamics_quality_gate.py",
+]
+KYMA_DYNAMICS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-kyma-dynamics-quality.coverage"  # nosec B108
+
+
+def build_static_quality_gates(python: str) -> list[Gate]:
+    """Build strict typing and NumPy-docstring gates."""
+    return [
+        (
+            "mypy-strict-kyma-dynamics-quality",
+            [
+                python,
+                "-m",
+                "mypy",
+                "--strict",
+                "--explicit-package-bases",
+                *KYMA_DYNAMICS_TYPING_RATCHET,
+            ],
+        ),
+        (
+            "ruff D kyma-dynamics quality ratchet",
+            [
+                python,
+                "-m",
+                "ruff",
+                "check",
+                "--isolated",
+                "--select",
+                "D,D413",
+                "--config",
+                'lint.pydocstyle.convention = "numpy"',
+                *KYMA_DYNAMICS_DOCSTRING_RATCHET,
+            ],
+        ),
+    ]
+
+
+def build_coverage_gates(python: str) -> list[Gate]:
+    """Build focused execution and exact source coverage gates."""
+    return [
+        (
+            "kyma-dynamics focused coverage",
+            [
+                python,
+                "-m",
+                "coverage",
+                "run",
+                f"--rcfile={devnull}",
+                f"--data-file={KYMA_DYNAMICS_COVERAGE_DATA_FILE}",
+                "--branch",
+                "-m",
+                "pytest",
+                "-q",
+                *KYMA_DYNAMICS_COVERAGE_COHORT,
+            ],
+        ),
+        (
+            "kyma-dynamics exact coverage threshold",
+            [
+                python,
+                "-m",
+                "coverage",
+                "report",
+                f"--rcfile={devnull}",
+                f"--data-file={KYMA_DYNAMICS_COVERAGE_DATA_FILE}",
+                "--precision=2",
+                "--fail-under=100",
+                "--include=*/benchmarks/kyma/dynamics.py",
+            ],
+        ),
+    ]
+
+
+__all__ = [
+    "KYMA_DYNAMICS_COVERAGE_COHORT",
+    "KYMA_DYNAMICS_COVERAGE_DATA_FILE",
+    "KYMA_DYNAMICS_DOCSTRING_RATCHET",
+    "KYMA_DYNAMICS_SOURCE",
+    "KYMA_DYNAMICS_TYPING_RATCHET",
+    "build_coverage_gates",
+    "build_static_quality_gates",
+]

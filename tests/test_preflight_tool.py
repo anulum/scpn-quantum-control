@@ -979,6 +979,8 @@ def test_main_uses_coverage_pytest_by_default(
         "custom-derivatives-product exact coverage threshold",
         "kyma-mechanism-product focused coverage",
         "kyma-mechanism-product exact coverage threshold",
+        "kyma-dynamics focused coverage",
+        "kyma-dynamics exact coverage threshold",
         "kyma-v2-dynamics focused coverage",
         "kyma-v2-dynamics exact coverage threshold",
         "campaign-harness-product focused coverage",

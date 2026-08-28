@@ -31,6 +31,7 @@ def _fast(monkeypatch) -> None:  # noqa: ANN001
 
 
 def test_run_seed_reports_all_fields(monkeypatch) -> None:  # noqa: ANN001
+    """Report every registered field for one deterministic seed."""
     _fast(monkeypatch)
     result = probe.run_seed(0, _TINY)
     assert result.seed == 0
@@ -45,6 +46,7 @@ def test_run_seed_reports_all_fields(monkeypatch) -> None:  # noqa: ANN001
 
 
 def test_run_probe_evaluates_frozen_contract(monkeypatch) -> None:  # noqa: ANN001
+    """Evaluate the complete frozen probe contract."""
     _fast(monkeypatch)
     out = probe.run_probe((0, 1), _TINY)
     assert out["verdict"] in {"PASS", "NEGATIVE"}
@@ -59,6 +61,7 @@ def test_run_probe_evaluates_frozen_contract(monkeypatch) -> None:  # noqa: ANN0
 
 
 def test_verdict_pass_requires_all_conditions(monkeypatch) -> None:  # noqa: ANN001
+    """Require every preregistered condition for a passing verdict."""
     # A hand-built result where the substrate beats the bar → PASS wiring.
     _fast(monkeypatch)
     out = probe.run_probe((0,), _TINY)

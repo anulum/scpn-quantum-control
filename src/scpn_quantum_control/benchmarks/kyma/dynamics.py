@@ -35,8 +35,10 @@ def kuramoto_rhs(theta: jax.Array, omega: jax.Array, coupling: jax.Array) -> jax
         omega: ``(batch, n)`` natural-frequency drive.
         coupling: ``(n, n)`` symmetric coupling matrix, zero diagonal.
 
-    Returns:
+    Returns
+    -------
         ``(batch, n)`` phase velocities.
+
     """
     # pairwise phase differences θ_j − θ_i → (batch, n_i, n_j)
     diff = theta[:, None, :] - theta[:, :, None]
@@ -60,8 +62,10 @@ def integrate_kuramoto(
         dt: fixed step size.
         steps: number of RK4 steps (horizon ``T = steps * dt``).
 
-    Returns:
+    Returns
+    -------
         ``(batch, n)`` final phases wrapped to ``(-π, π]``.
+
     """
 
     def rk4_step(theta: jax.Array, _: None) -> tuple[jax.Array, None]:
@@ -85,8 +89,10 @@ def cluster_order_parameter(theta: jax.Array, members: jax.Array) -> jax.Array:
         theta: ``(batch, n)`` phases.
         members: ``(m,)`` integer indices of the oscillators in the set.
 
-    Returns:
+    Returns
+    -------
         ``(batch,)`` order parameter per trial.
+
     """
     selected = theta[:, members]
     z = jnp.mean(jnp.exp(1j * selected), axis=1)

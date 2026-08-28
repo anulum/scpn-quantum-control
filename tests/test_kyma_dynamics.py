@@ -26,18 +26,21 @@ from scpn_quantum_control.benchmarks.kyma.dynamics import (
 
 
 def test_order_parameter_in_phase_is_one() -> None:
+    """Return unit order for a fully aligned oscillator state."""
     theta = jnp.array([[0.3, 0.3, 0.3, 0.3]])
     r = cluster_order_parameter(theta, jnp.array([0, 1, 2, 3]))
     assert float(r[0]) == pytest.approx(1.0, abs=1e-5)
 
 
 def test_order_parameter_balanced_anti_phase_is_zero() -> None:
+    """Return zero order for a balanced anti-phase state."""
     theta = jnp.array([[0.0, jnp.pi, 0.0, jnp.pi]])
     r = cluster_order_parameter(theta, jnp.array([0, 1, 2, 3]))
     assert float(r[0]) == pytest.approx(0.0, abs=1e-5)
 
 
 def test_order_parameter_bounded_unit_interval() -> None:
+    """Keep the order parameter inside its physical unit interval."""
     rng = np.random.default_rng(1)
     theta = jnp.asarray(rng.uniform(-np.pi, np.pi, size=(32, 8)))
     r = np.asarray(cluster_order_parameter(theta, jnp.arange(8)))
@@ -45,6 +48,7 @@ def test_order_parameter_bounded_unit_interval() -> None:
 
 
 def test_two_oscillators_synchronise_under_positive_coupling() -> None:
+    """Synchronise two oscillators under positive coupling."""
     theta0 = jnp.array([[0.0, 2.0]])
     omega = jnp.array([[1.0, 1.0]])
     coupling = jnp.array([[0.0, 2.0], [2.0, 0.0]])
@@ -54,6 +58,7 @@ def test_two_oscillators_synchronise_under_positive_coupling() -> None:
 
 
 def test_uncoupled_oscillators_drift_by_omega_t() -> None:
+    """Match analytic frequency drift when coupling vanishes."""
     # Zero coupling → pure phase accrual ω·T (RK4 exact for a constant RHS).
     theta0 = jnp.array([[0.0, 0.0]])
     omega = jnp.array([[1.0, -0.5]])
@@ -65,6 +70,7 @@ def test_uncoupled_oscillators_drift_by_omega_t() -> None:
 
 
 def test_rhs_zero_when_aligned_and_no_drive() -> None:
+    """Return zero velocity for aligned phases without drive."""
     theta = jnp.array([[0.7, 0.7, 0.7]])
     coupling = jnp.array([[0.0, 1.0, 1.0], [1.0, 0.0, 1.0], [1.0, 1.0, 0.0]])
     rhs = kuramoto_rhs(theta, jnp.zeros((1, 3)), coupling)
@@ -72,6 +78,7 @@ def test_rhs_zero_when_aligned_and_no_drive() -> None:
 
 
 def test_final_phases_wrapped_to_pi_interval() -> None:
+    """Wrap integrated phases into the declared principal interval."""
     theta0 = jnp.array([[0.0]])
     omega = jnp.array([[10.0]])  # large drift → must wrap
     final = np.asarray(integrate_kuramoto(theta0, omega, jnp.zeros((1, 1)), dt=0.1, steps=50))

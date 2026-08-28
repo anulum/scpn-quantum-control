@@ -28,6 +28,7 @@ _TINY = ProbeConfig(steps=10, trials_per_single=2, trials_per_conjunction=2, tes
 
 
 def test_symmetric_zero_diagonal_coupling() -> None:
+    """Construct a symmetric coupling matrix with a zero diagonal."""
     k_raw = jnp.asarray(np.arange(models._N_K, dtype=float))
     coupling = np.asarray(models._coupling(k_raw))
     assert np.allclose(coupling, coupling.T)
@@ -35,6 +36,7 @@ def test_symmetric_zero_diagonal_coupling() -> None:
 
 
 def test_mlp_param_match_within_ten_percent() -> None:
+    """Keep the MLP parameter count within the registered match band."""
     target = models.substrate_param_count()
     hidden = models.mlp_hidden_for_match(target)
     count = models.mlp_param_count(hidden)
@@ -42,6 +44,7 @@ def test_mlp_param_match_within_ten_percent() -> None:
 
 
 def test_drive_is_additive_over_active_relations() -> None:
+    """Compose the teacher drive additively over active relations."""
     drive = jnp.asarray(np.arange(2 * models._N_PAIRS * N_OSC, dtype=float)).reshape(
         2, models._N_PAIRS, N_OSC
     )
@@ -57,6 +60,7 @@ def test_drive_is_additive_over_active_relations() -> None:
 
 
 def test_mlp_forward_in_unit_interval() -> None:
+    """Bound MLP outputs to the unit interval."""
     batch = build_trials(_TINY, seed=0)
     params = models.mlp_init(0, hidden=4)
     feats = models._mlp_features(batch.theta0, batch.code)
@@ -65,6 +69,7 @@ def test_mlp_forward_in_unit_interval() -> None:
 
 
 def test_substrate_readout_shapes_and_bounds() -> None:
+    """Preserve substrate readout shapes and probability bounds."""
     batch = build_trials(_TINY, seed=1)
     params = models.substrate_init(1)
     r1m, r2m, _, _ = models._member_tables(batch)
@@ -77,6 +82,7 @@ def test_substrate_readout_shapes_and_bounds() -> None:
 
 
 def test_substrate_training_reduces_loss() -> None:
+    """Reduce the registered substrate objective during local training."""
     batch = build_trials(_TINY, seed=2)
     train = ~batch.is_test
     from scpn_quantum_control.benchmarks.kyma.task import TrialBatch
@@ -98,6 +104,7 @@ def test_substrate_training_reduces_loss() -> None:
 
 
 def test_chance_floor_is_low_and_measured() -> None:
+    """Measure a low finite-sample chance floor."""
     batch = build_trials(_TINY, seed=0)
     floor = models.chance_floor_accuracy(batch, epsilon=0.15, seed=0)
     # Random (R1,R2)~U[0,1]²; success needs both in a 0.15-wide band → ~0.0225.
@@ -105,6 +112,7 @@ def test_chance_floor_is_low_and_measured() -> None:
 
 
 def test_substrate_training_deterministic_for_seed() -> None:
+    """Reproduce substrate training exactly for a fixed seed."""
     batch = build_trials(_TINY, seed=4)
     a = models.train_substrate(batch, _TINY, seed=4, epochs=20)
     b = models.train_substrate(batch, _TINY, seed=4, epochs=20)
