@@ -169,7 +169,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   documentation pages; added an evidence-bounded solutions and market-value
   guide while preserving authored README content.
 - BL-54 DLA/topology differentiable-control boundaries, topology-aware
-  quantum-kernel product, domain application honesty kits, BL-98 theory-
+  quantum-kernel product, domain application honesty kits, theory-
   hook promotion registry, deep-analysis research-lane registry, and
   preregistered deterministic RL-adjacent research governance.
 - 2026-07-29 — BL-60 finite synthetic chimera and multiscale control facade,
@@ -475,7 +475,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   the supported Python 3.11-3.13 CI matrix without weakening claim boundaries.
 - Extended precision-bounded cross-runtime custody to six-decimal reservoir
   surrogate and twelve-decimal topology-kernel evidence, and reject
-  NumPy scalar leakage from the BL-98 JSON evidence boundary.
+  NumPy scalar leakage from the theory-hook JSON evidence boundary.
 
 ### Changed
 - 2026-07-22 — The differentiable dependency/environment map is now a

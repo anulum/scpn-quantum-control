@@ -1,6 +1,4 @@
 {
-  "known_finding_counts": {
-    "584a33781bbfb8d395ddb46cfd0f92705b3abbb1bb16ae2d624db679205867e9": 1
-  },
+  "known_finding_counts": {},
   "schema": "scpn_qc.descriptive_production_naming_baseline.v1"
 }

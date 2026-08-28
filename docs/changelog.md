@@ -32,7 +32,7 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
   representability evidence.
 - Power-grid, Josephson, EEG-like, and ITER-inspired application honesty
   kits with privacy/provenance metadata and explicit domain non-claims.
-- BL-98 theory-hook promotion registry with corrected QSL, Hamiltonian-
+- Theory-hook promotion registry with corrected QSL, Hamiltonian-
   learning, Koopman, QMI, magic, SFF, and IIT-proxy boundaries.
 - RL research governance: disabled-by-default preregistration, fixed
   multi-seed suites, iteration/evaluation budgets, deterministic zero-noise
