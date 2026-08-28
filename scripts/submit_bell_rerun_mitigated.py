@@ -5,8 +5,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — mitigated Bell re-run submission (KIMI-9)
-"""Approval-gated mitigated Bell re-run submitter (KIMI-9 preregistration).
+# SCPN Quantum Control — approval-gated mitigated Bell re-run submission
+"""Submit the preregistered mitigated Bell re-run behind an approval gate.
 
 Executes the campaign preregistered in
 ``docs/campaigns/bell_rerun_mitigated_prereg_2026-07-16.md``: two independent

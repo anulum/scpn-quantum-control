@@ -6,7 +6,7 @@
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
 <!-- SCPN Quantum Control — Mitigated Bell Re-Run Preregistration -->
 
-# Mitigated Bell Re-Run Preregistration (KIMI-9)
+# Mitigated Bell Re-Run Preregistration
 
 Date: 2026-07-16
 

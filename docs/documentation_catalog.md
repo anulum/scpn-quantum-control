@@ -53,7 +53,7 @@ are still built, link-checked, searchable, and public.
 |---|---|---|
 | [Campaign Artefacts](campaigns/README.md) | primary nav | This directory contains dated experiment planning, preregistration, readiness, manifest, and result notes for hardware and simulation campaigns. |
 | [Adaptive FIM QPU Protocol Boundary](campaigns/adaptive_fim_qpu_protocol_2026-05-06.md) | catalog | Date: 2026-05-06 |
-| [Mitigated Bell Re-Run Preregistration (KIMI-9)](campaigns/bell_rerun_mitigated_prereg_2026-07-16.md) | catalog | Date: 2026-07-16 |
+| [Mitigated Bell Re-Run Preregistration](campaigns/bell_rerun_mitigated_prereg_2026-07-16.md) | catalog | Date: 2026-07-16 |
 | [S5 Phase 1 Benchmark Harness](campaigns/benchmark_harness_phase1_2026-05-06.md) | catalog | This artefact records a no-QPU open-data reproduction of the Phase 1 DLA-parity dataset. |
 | [Benchmark Harness Registry](campaigns/benchmark_harness_registry_2026-05-06.md) | catalog | This registry distinguishes implemented public benchmark harnesses from planned entries. Planned rows are visible so the roadmap is transparent, but they are not treated as available benchmark results. |
 | [Depth-Optimal Native Decomposition Preregistration](campaigns/depth_optimal_native_decomposition_prereg_2026-05-06.md) | catalog | Date: 2026-05-06 |

@@ -642,7 +642,7 @@ land on live surfaces or new Zenodo versions.
   on a green readiness document.
 - 2026-07-16 — Approval-gated mitigated Bell re-run submitter
   (`scripts/submit_bell_rerun_mitigated.py`, 100% line+branch tested):
-  executes the preregistered KIMI-9 campaign — two Bell pairs, four
+  executes the preregistered mitigated Bell re-run — two Bell pairs, four
   per-setting CHSH circuits at the recompute-script conventions, full-basis
   readout calibration, fail-closed count coercion, and hash-bound
   readiness / raw-counts / analysis documents carrying the preregistered

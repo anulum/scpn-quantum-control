@@ -59,7 +59,7 @@ Blocked even after a positive result:
 
 | Field | Value |
 |-------|-------|
-| Pairs | 2 independent Bell pairs (4 qubits), fresh layout from calibration (same selector as the KIMI-9 Bell re-run) |
+| Pairs | 2 independent Bell pairs (4 qubits), fresh layout from calibration (same selector as the mitigated Bell re-run) |
 | Main pubs | 2: matched ZZ (direct measurement) and matched XX (H on all four qubits before measurement), each a separate committed transpiled circuit with explicit `alice_basis`/`bob_basis` metadata |
 | Main shots | 4096 per pub |
 | Readout calibration | 16 full-basis circuits, 8192 shots (exact 2^n correction, `mitigation/readout_matrix.py`) |
