@@ -86,6 +86,7 @@ class RelaxationExperimentInstance:
     candidate_region
         Candidate set searched by both arms: ``"dynq_region"`` or
         ``"full_device"``.
+
     """
 
     label: str
@@ -123,6 +124,7 @@ def preregistered_instances(
     ------
     ValueError
         If ``seeds`` is empty — an empty sweep has no preregistered meaning.
+
     """
     if not seeds:
         raise ValueError("seeds must not be empty")
@@ -348,6 +350,7 @@ def run_layout_relaxation_experiment(
         If ``base_config`` pins an explicit search or relaxation
         configuration (the sweep could then not bind the per-instance seed),
         or ``instances`` is empty, or any comparison run fails closed.
+
     """
     base = base_config or LayoutComparisonConfig()
     if base.search is not None or base.relaxation is not None:

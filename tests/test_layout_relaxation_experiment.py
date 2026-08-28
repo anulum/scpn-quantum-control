@@ -136,7 +136,10 @@ def _run_stubbed(
 
 
 class TestPreregisteredInstances:
+    """Exercise construction and serialization of preregistered instances."""
+
     def test_default_set_is_sweep_plus_full_device(self) -> None:
+        """Build ten seed instances followed by one full-device instance."""
         instances = preregistered_instances()
         assert len(instances) == 11
         for seed, instance in enumerate(instances[:10]):
@@ -146,15 +149,18 @@ class TestPreregisteredInstances:
         assert instances[-1] == RelaxationExperimentInstance("full_device_seed0", 0, "full_device")
 
     def test_custom_seeds_and_full_device_seed(self) -> None:
+        """Preserve caller-supplied sweep and full-device seeds."""
         instances = preregistered_instances(seeds=(4, 8), full_device_seed=2)
         assert [instance.seed for instance in instances] == [4, 8, 2]
         assert instances[-1].candidate_region == "full_device"
 
     def test_empty_seeds_rejected(self) -> None:
+        """Reject an empty preregistered sweep."""
         with pytest.raises(ValueError, match="seeds must not be empty"):
             preregistered_instances(seeds=())
 
     def test_instance_to_dict(self) -> None:
+        """Serialize an experiment instance without schema drift."""
         instance = RelaxationExperimentInstance("two_cluster_seed1", 1, "dynq_region")
         assert instance.to_dict() == {
             "label": "two_cluster_seed1",
@@ -164,21 +170,29 @@ class TestPreregisteredInstances:
 
 
 class TestValidation:
+    """Exercise fail-closed experiment configuration."""
+
     def test_pinned_search_config_rejected(self) -> None:
+        """Reject a search config that would bypass per-instance seed binding."""
         with pytest.raises(ValueError, match="must be None"):
             _run_stubbed(base_config=LayoutComparisonConfig(search=LayoutSearchConfig()))
 
     def test_pinned_relaxation_config_rejected(self) -> None:
+        """Reject a relaxation config that would bypass seed binding."""
         with pytest.raises(ValueError, match="must be None"):
             _run_stubbed(base_config=LayoutComparisonConfig(relaxation=SinkhornRelaxationConfig()))
 
     def test_empty_instances_rejected(self) -> None:
+        """Reject an experiment with no comparison instances."""
         with pytest.raises(ValueError, match="instances must not be empty"):
             _run_stubbed(instances=())
 
 
 class TestStubbedRun:
+    """Exercise aggregation with every expensive provider stubbed."""
+
     def test_outcomes_follow_instances(self) -> None:
+        """Preserve labels, candidate regions, and seeds in outcomes."""
         artifact = _run_stubbed()
         assert [outcome.label for outcome in artifact.outcomes] == [
             "two_cluster_seed3",
@@ -191,6 +205,7 @@ class TestStubbedRun:
         assert all(outcome.seed == 3 for outcome in artifact.outcomes)
 
     def test_budget_binding_extracted_per_instance(self) -> None:
+        """Carry each matched true-cost budget into its outcome."""
         artifact = _run_stubbed()
         for outcome in artifact.outcomes:
             assert outcome.budget >= 1
@@ -200,6 +215,7 @@ class TestStubbedRun:
             )
 
     def test_aggregate_matches_outcomes(self) -> None:
+        """Compute aggregate moments and counts from per-instance outcomes."""
         artifact = _run_stubbed()
         baseline = [outcome.baseline_cost for outcome in artifact.outcomes]
         relaxation = [outcome.relaxation_cost for outcome in artifact.outcomes]
@@ -210,6 +226,7 @@ class TestStubbedRun:
         assert artifact.wins + artifact.ties + artifact.losses == len(artifact.outcomes)
 
     def test_research_labelling_and_references(self) -> None:
+        """Retain preregistration and non-hardware research boundaries."""
         artifact = _run_stubbed()
         assert artifact.research_label == RESEARCH_LABEL
         assert artifact.preregistration == PREREGISTRATION_REFERENCE
@@ -226,6 +243,7 @@ class TestStubbedRun:
         assert "KT-" not in public_text
 
     def test_config_records_base_and_instances(self) -> None:
+        """Record the base config, instances, and provenance keys."""
         artifact = _run_stubbed()
         assert artifact.config["base"]["include_relaxation"] is False
         assert [entry["label"] for entry in artifact.config["instances"]] == [
@@ -235,17 +253,20 @@ class TestStubbedRun:
         assert sorted(artifact.provenance) == ["command", "dependencies", "git_commit"]
 
     def test_isolated_host_grades_timings(self) -> None:
+        """Grade timing evidence as measured on a ready isolated host."""
         artifact = _run_stubbed(ready=True)
         assert artifact.timing_grade == "isolated_measured"
         assert not any("advisory" in note for note in artifact.notes)
 
     def test_shared_host_labels_timings_advisory(self) -> None:
+        """Downgrade shared-host timing evidence to advisory."""
         artifact = _run_stubbed(ready=False)
         assert artifact.timing_grade == "advisory_shared_host"
         assert any("advisory" in note for note in artifact.notes)
         assert artifact.host["ready"] is False
 
     def test_to_dict_and_table(self) -> None:
+        """Serialize the artifact and render every outcome in its table."""
         artifact = _run_stubbed()
         payload = artifact.to_dict()
         assert payload["schema_version"] == EXPERIMENT_SCHEMA_VERSION
@@ -258,6 +279,7 @@ class TestStubbedRun:
         assert any(word in table for word in ("win", "tie", "loss"))
 
     def test_live_host_captured_when_not_injected(self) -> None:
+        """Capture host readiness once when no verdict is injected."""
         artifact = run_layout_relaxation_experiment(
             _GATE_ERRORS,
             _K,
@@ -347,18 +369,21 @@ class TestVerdictBranches:
         )
 
     def test_all_ties_keep_null_hypothesis(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Keep the no-gain null hypothesis when every comparison ties."""
         artifact = self._run_with_costs(monkeypatch, [(1.0, 1.0), (2.0, 2.0)])
         assert (artifact.wins, artifact.ties, artifact.losses) == (0, 2, 0)
         assert artifact.null_hypothesis_rejected is False
         assert artifact.verdict.startswith("no_gain")
 
     def test_consistent_wins_reject_null_hypothesis(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Report consistent gain when every relaxation outcome wins."""
         artifact = self._run_with_costs(monkeypatch, [(1.0, 0.9), (2.0, 1.8)])
         assert (artifact.wins, artifact.ties, artifact.losses) == (2, 0, 0)
         assert artifact.null_hypothesis_rejected is True
         assert artifact.verdict.startswith("consistent_gain")
 
     def test_mean_gain_with_a_loss_is_inconsistent(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Report inconsistent gain when the mean wins but one instance loses."""
         artifact = self._run_with_costs(monkeypatch, [(1.0, 0.5), (2.0, 2.1)])
         assert (artifact.wins, artifact.ties, artifact.losses) == (1, 0, 1)
         assert artifact.null_hypothesis_rejected is True
@@ -367,12 +392,14 @@ class TestVerdictBranches:
     def test_balanced_wins_and_losses_keep_null_hypothesis(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Keep the null hypothesis when balanced deltas have no mean gain."""
         artifact = self._run_with_costs(monkeypatch, [(1.0, 0.9), (2.0, 2.1)])
         assert (artifact.wins, artifact.ties, artifact.losses) == (1, 0, 1)
         assert artifact.null_hypothesis_rejected is False
         assert artifact.verdict.startswith("no_gain")
 
     def test_default_instances_used_when_omitted(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Use the complete preregistered instance set by default."""
         captured: list[dict[str, Any]] = []
         results = [(1.0, 1.0)] * 11
 
@@ -391,12 +418,14 @@ class TestVerdictBranches:
         assert all(kwargs["config"].include_relaxation for kwargs in captured)
 
     def test_table_marks_wins_and_losses(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Render both win and loss labels from mixed outcomes."""
         artifact = self._run_with_costs(monkeypatch, [(1.0, 0.5), (2.0, 2.1)])
         table = artifact.render_markdown_table()
         assert "| win |" in table
         assert "| loss |" in table
 
     def test_readiness_shared_across_instances(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Forward one host-readiness record to every comparison."""
         captured: list[dict[str, Any]] = []
         self._run_with_costs(monkeypatch, [(1.0, 1.0), (2.0, 2.0)], captured)
         readiness_objects = {id(kwargs["host_readiness"]) for kwargs in captured}
@@ -404,14 +433,20 @@ class TestVerdictBranches:
 
 
 class TestVerdictFunction:
+    """Exercise the pure aggregate-verdict selector."""
+
     def test_verdict_strings_cover_every_branch(self) -> None:
+        """Return no-gain, consistent-gain, and inconsistent-gain labels."""
         assert _verdict(0, 3, False).startswith("no_gain")
         assert _verdict(3, 3, True).startswith("consistent_gain")
         assert _verdict(2, 3, True).startswith("inconsistent_gain")
 
 
 class TestInstanceOutcomeSerialisation:
+    """Exercise the immutable instance-outcome wire form."""
+
     def test_to_dict_round_trip(self) -> None:
+        """Serialize layouts, cost delta, and budget without loss."""
         outcome = InstanceOutcome(
             label="two_cluster_seed0",
             seed=0,

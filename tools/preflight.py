@@ -171,6 +171,9 @@ if TYPE_CHECKING:
         layout_method_comparison_quality_gates as _layout_method_comparison_quality_gates,
     )
     from tools import (
+        layout_relaxation_experiment_quality_gates as _layout_relaxation_experiment_quality_gates,
+    )
+    from tools import (
         magnetisation_sectors_quality_gates as _magnetisation_sectors_quality_gates,
     )
     from tools import (
@@ -452,6 +455,9 @@ else:
     _kyma_v2_dynamics_quality_gates = import_module("tools.kyma_v2_dynamics_quality_gates")
     _layout_method_comparison_quality_gates = import_module(
         "tools.layout_method_comparison_quality_gates"
+    )
+    _layout_relaxation_experiment_quality_gates = import_module(
+        "tools.layout_relaxation_experiment_quality_gates"
     )
     _kuramoto_layout_cost_quality_gates = import_module("tools.kuramoto_layout_cost_quality_gates")
     _kuramoto_layout_relaxation_quality_gates = import_module(
@@ -895,6 +901,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_nqs_ansatz_quality_gates.build_static_quality_gates(_PY),
     *_sparse_hamiltonian_quality_gates.build_static_quality_gates(_PY),
     *_result_pack_seal_quality_gates.build_static_quality_gates(_PY),
+    *_layout_relaxation_experiment_quality_gates.build_static_quality_gates(_PY),
     *_sync_uncertainty_quality_gates.build_static_quality_gates(_PY),
     *_coupling_invariant_quality_gates.build_static_quality_gates(_PY),
     *_experiment_dynamics_quality_gates.build_static_quality_gates(_PY),
@@ -1423,6 +1430,9 @@ MPS_EVOLUTION_COVERAGE_GATES = _mps_evolution_quality_gates.build_coverage_gates
 NQS_ANSATZ_COVERAGE_GATES = _nqs_ansatz_quality_gates.build_coverage_gates(_PY)
 SPARSE_HAMILTONIAN_COVERAGE_GATES = _sparse_hamiltonian_quality_gates.build_coverage_gates(_PY)
 RESULT_PACK_SEAL_COVERAGE_GATES = _result_pack_seal_quality_gates.build_coverage_gates(_PY)
+LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_GATES = (
+    _layout_relaxation_experiment_quality_gates.build_coverage_gates(_PY)
+)
 SYNC_UNCERTAINTY_COVERAGE_GATES = _sync_uncertainty_quality_gates.build_coverage_gates(_PY)
 COUPLING_INVARIANT_COVERAGE_GATES = _coupling_invariant_quality_gates.build_coverage_gates(_PY)
 EXPERIMENT_DYNAMICS_COVERAGE_GATES = _experiment_dynamics_quality_gates.build_coverage_gates(_PY)
@@ -1875,6 +1885,7 @@ def main() -> int:
             gates.extend(NQS_ANSATZ_COVERAGE_GATES)
             gates.extend(SPARSE_HAMILTONIAN_COVERAGE_GATES)
             gates.extend(RESULT_PACK_SEAL_COVERAGE_GATES)
+            gates.extend(LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_GATES)
             gates.extend(SYNC_UNCERTAINTY_COVERAGE_GATES)
             gates.extend(COUPLING_INVARIANT_COVERAGE_GATES)
             gates.extend(EXPERIMENT_DYNAMICS_COVERAGE_GATES)

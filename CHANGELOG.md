@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Layout-relaxation experiment documentation quality: completed
+  the preview-inclusive NumPy docstring contract across the preregistered
+  experiment, deterministic owner tests, and stubbed CLI tests, and wired
+  permanent strict typing, stubbed experiment execution, complete owner
+  documentation, and exact source coverage into preflight and CI. Instance
+  construction, matched budgets, aggregation, host grading, verdicts, public
+  APIs, and research-only non-promotion claims are unchanged.
+
 - 2026-08-28 — Result-pack seal documentation and exact quality: completed the
   preview-inclusive NumPy docstring and strict typing contracts across the
   attestation-envelope owner and direct test surface, and wired permanent real

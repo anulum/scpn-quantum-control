@@ -1061,6 +1061,8 @@ def test_main_uses_coverage_pytest_by_default(
         "sparse-Hamiltonian exact coverage threshold",
         "result-pack-seal focused coverage",
         "result-pack-seal exact coverage threshold",
+        "layout-relaxation-experiment focused coverage",
+        "layout-relaxation-experiment exact coverage threshold",
         "synchronisation-uncertainty focused coverage",
         "synchronisation-uncertainty exact coverage threshold",
         "coupling-invariant focused coverage",

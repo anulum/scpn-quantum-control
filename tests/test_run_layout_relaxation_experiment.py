@@ -69,6 +69,8 @@ def _canned_artifact() -> RelaxationExperimentArtifact:
 
 
 class TestArgumentParsing:
+    """Exercise repository bootstrap and CLI argument parsing."""
+
     def test_import_bootstraps_repository_root(self) -> None:
         """Insert the repository root when direct-script imports cannot see it."""
         repository_root = str(script.REPO_ROOT)
@@ -81,6 +83,7 @@ class TestArgumentParsing:
             sys.path[:] = original_path
 
     def test_defaults_follow_the_preregistered_protocol(self) -> None:
+        """Expose CLI defaults matching the preregistered protocol."""
         args = script._parse_args([])
         assert args.n == 4
         assert args.seeds == list(range(10))
@@ -89,6 +92,7 @@ class TestArgumentParsing:
         assert Path(args.out_dir) == script.DEFAULT_OUT_DIR
 
     def test_custom_arguments(self) -> None:
+        """Parse explicit dimensions, seeds, and reserved-core choices."""
         args = script._parse_args(
             ["--n", "3", "--seeds", "2", "5", "--full-device-seed", "1", "--reserved-core", "2"]
         )
@@ -98,12 +102,15 @@ class TestArgumentParsing:
 
 
 class TestMain:
+    """Exercise the stubbed CLI artifact-writing workflow."""
+
     def test_writes_artifact_and_prints_verdict(
         self,
         tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Write a canned artifact and print its honest verdict summary."""
         captured: dict[str, Any] = {}
 
         def fake_run(gate_errors: Any, K: Any, omega: Any, **kwargs: Any) -> Any:
@@ -141,6 +148,7 @@ class TestMain:
         tmp_path: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Encode a single seed and caller config in the output path and run."""
         captured: dict[str, Any] = {}
 
         def fake_run(gate_errors: Any, K: Any, omega: Any, **kwargs: Any) -> Any:
