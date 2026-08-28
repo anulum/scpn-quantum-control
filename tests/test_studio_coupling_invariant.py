@@ -11,6 +11,9 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import runpy
+import sys
+import warnings
 
 import pytest
 
@@ -185,6 +188,28 @@ def test_main_emits_admitted_bundle_json(capsys: pytest.CaptureFixture[str]) -> 
     wire = json.loads(captured.out)
     assert wire["schema"] == "studio.coupling-invariant.v1"
     assert len(wire["cases"]) == 4
+    assert captured.err == ""
+
+
+def test_module_guard_emits_admitted_bundle_json(
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Executing the public module traverses the real CLI guard path."""
+    monkeypatch.setattr(sys, "argv", [coupling_invariant.__name__])
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=r".*found in sys\.modules after import of package.*",
+            category=RuntimeWarning,
+        )
+        with pytest.raises(SystemExit) as exc_info:
+            runpy.run_module(coupling_invariant.__name__, run_name="__main__", alter_sys=True)
+
+    captured = capsys.readouterr()
+    assert exc_info.value.code == 0
+    wire = json.loads(captured.out)
+    assert wire["schema"] == "studio.coupling-invariant.v1"
     assert captured.err == ""
 
 

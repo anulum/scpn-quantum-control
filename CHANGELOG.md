@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — Studio coupling-invariant documentation and exact quality:
+  completed the preview-inclusive NumPy docstring contract across the schema-B
+  evidence-bundle owner, added real public module execution, and wired
+  permanent strict typing, complete owner documentation, and exact source
+  coverage into preflight and CI. Source membership, digests, ordering,
+  admission, DLA separation, public APIs, and bounded-model claims are
+  unchanged.
+
 - 2026-08-28 — Topology-kernel classifier documentation and typing quality:
   completed the preview-inclusive NumPy docstring contract across immutable
   model custody, fitting/evaluation, and direct tests; repaired precise test

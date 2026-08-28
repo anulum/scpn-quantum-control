@@ -81,6 +81,7 @@ class CouplingInvariantSource:
         Source role: ``"estimator"`` or ``"uncertainty"``.
     method:
         Human-readable method name that stays stable across refactors.
+
     """
 
     source_id: str
@@ -148,6 +149,7 @@ def build_coupling_invariant_payload() -> CouplingInvariantPayload:
     CouplingInvariantPayload
         The canonical source inventory for
         ``knm.kuramoto.effective-coupling``.
+
     """
     return CouplingInvariantPayload(
         schema=COUPLING_INVARIANT_SCHEMA,
@@ -195,6 +197,7 @@ def validate_coupling_invariant_payload(payload: CouplingInvariantPayload) -> bo
     ------
     ValueError
         If the schema, invariant id, estimator set, or UQ set is malformed.
+
     """
     data = payload.to_dict()
     if payload.schema != COUPLING_INVARIANT_SCHEMA:
@@ -239,6 +242,7 @@ def build_coupling_invariant_bundle(
     -------
     EvidenceBundle
         The admitted bundle candidate for Studio federation.
+
     """
     resolved = payload or build_coupling_invariant_payload()
     validate_coupling_invariant_payload(resolved)

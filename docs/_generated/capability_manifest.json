@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1273
+    "test_files": 1274
   },
   "documentation": {
     "examples": [
@@ -8318,6 +8318,7 @@
       "tests/test_cosimulation.py",
       "tests/test_cosimulation_branches.py",
       "tests/test_count_integrity.py",
+      "tests/test_coupling_invariant_quality_gate.py",
       "tests/test_coupling_recovery_evidence.py",
       "tests/test_coupling_recovery_quality_gate.py",
       "tests/test_coverage_frontier.py",

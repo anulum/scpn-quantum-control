@@ -69,6 +69,7 @@ if TYPE_CHECKING:
     from tools import (
         control_stack_compose_product_quality_gates as _control_stack_compose_quality_gates,
     )
+    from tools import coupling_invariant_quality_gates as _coupling_invariant_quality_gates
     from tools import coupling_recovery_quality_gates as _coupling_recovery_quality_gates
     from tools import coverage_frontier_quality_gates as _coverage_frontier_quality_gates
     from tools import (
@@ -434,6 +435,7 @@ else:
     _kuramoto_variants_quality_gates = import_module("tools.kuramoto_variants_quality_gates")
     _mps_evolution_quality_gates = import_module("tools.mps_evolution_quality_gates")
     _sync_uncertainty_quality_gates = import_module("tools.sync_uncertainty_quality_gates")
+    _coupling_invariant_quality_gates = import_module("tools.coupling_invariant_quality_gates")
     _kyma_dynamics_quality_gates = import_module("tools.kyma_dynamics_quality_gates")
     _kyma_v2_dynamics_quality_gates = import_module("tools.kyma_v2_dynamics_quality_gates")
     _layout_method_comparison_quality_gates = import_module(
@@ -874,6 +876,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_kuramoto_variants_quality_gates.build_static_quality_gates(_PY),
     *_mps_evolution_quality_gates.build_static_quality_gates(_PY),
     *_sync_uncertainty_quality_gates.build_static_quality_gates(_PY),
+    *_coupling_invariant_quality_gates.build_static_quality_gates(_PY),
     *_experiment_dynamics_quality_gates.build_static_quality_gates(_PY),
     *_phase_results_quality_gates.build_static_quality_gates(_PY),
     *_gradient_backend_quality_gates.build_static_quality_gates(_PY),
@@ -1395,6 +1398,7 @@ KOOPMAN_COVERAGE_GATES = _koopman_quality_gates.build_coverage_gates(_PY)
 KURAMOTO_VARIANTS_COVERAGE_GATES = _kuramoto_variants_quality_gates.build_coverage_gates(_PY)
 MPS_EVOLUTION_COVERAGE_GATES = _mps_evolution_quality_gates.build_coverage_gates(_PY)
 SYNC_UNCERTAINTY_COVERAGE_GATES = _sync_uncertainty_quality_gates.build_coverage_gates(_PY)
+COUPLING_INVARIANT_COVERAGE_GATES = _coupling_invariant_quality_gates.build_coverage_gates(_PY)
 EXPERIMENT_DYNAMICS_COVERAGE_GATES = _experiment_dynamics_quality_gates.build_coverage_gates(_PY)
 PHASE_RESULTS_COVERAGE_GATES = _phase_results_quality_gates.build_coverage_gates(_PY)
 GRADIENT_BACKEND_COVERAGE_GATES = _gradient_backend_quality_gates.build_coverage_gates(_PY)
@@ -1838,6 +1842,7 @@ def main() -> int:
             gates.extend(KURAMOTO_VARIANTS_COVERAGE_GATES)
             gates.extend(MPS_EVOLUTION_COVERAGE_GATES)
             gates.extend(SYNC_UNCERTAINTY_COVERAGE_GATES)
+            gates.extend(COUPLING_INVARIANT_COVERAGE_GATES)
             gates.extend(EXPERIMENT_DYNAMICS_COVERAGE_GATES)
             gates.extend(PHASE_RESULTS_COVERAGE_GATES)
             gates.extend(GRADIENT_BACKEND_COVERAGE_GATES)
