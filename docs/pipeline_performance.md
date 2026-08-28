@@ -124,7 +124,7 @@ rho=0.989947 Josephson topology candidate and N=20/30/40 extension targets. It
 is preregistration and claim-boundary evidence only; it does not execute a
 calibrated magnitude comparison or promote a physical K_nm coupling claim.
 
-The QWC-5.3 p_h1 open-claim guard is regenerated with:
+The `p_h1` open-claim guard is regenerated with:
 
 ```bash
 scpn-bench p-h1-open-guard

@@ -1,6 +1,6 @@
 # p_h1 Open-Claim Guard
 
-The QWC-5.3 guard keeps the `p_h1 = 0.72` threshold publicly framed as an open
+The public open-claim guard keeps the `p_h1 = 0.72` threshold framed as an open
 empirical/theoretical parameter.
 
 The guard scans outward-facing Markdown and rejects wording that promotes the

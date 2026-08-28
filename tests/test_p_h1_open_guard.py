@@ -120,6 +120,22 @@ def test_guard_reports_explicit_out_of_repo_paths(tmp_path: Path) -> None:
     assert report.marker_hits == (str(external),)
 
 
+def test_guard_report_records_threshold_without_open_marker(tmp_path: Path) -> None:
+    """Keep a threshold-only public file visible while failing it closed."""
+    external = tmp_path / "unmarked.md"
+    external.write_text(
+        "At this operating point, p_h1 = 0.72 controls the transition.\n",
+        encoding="utf-8",
+    )
+
+    report = run_p_h1_open_guard(REPO_ROOT, paths=(external,))
+
+    assert report.passed is False
+    assert report.checked_paths == (str(external),)
+    assert report.marker_hits == ()
+    assert len(report.violations) == 1
+
+
 def test_export_script_writes_guard_report(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
