@@ -171,7 +171,7 @@ control, or broad quantum-advantage claim is promoted by this release.
 - BL-54 DLA/topology differentiable-control boundaries, topology-aware
   quantum-kernel product, BL-63 domain application honesty kits, BL-98 theory-
   hook promotion registry, BL-84 deep-analysis research-lane registry, and
-  BL-102 preregistered deterministic RL-adjacent research governance.
+  preregistered deterministic RL-adjacent research governance.
 - 2026-07-29 — BL-60 finite synthetic chimera and multiscale control facade,
   exact generator, nested observables, analytic target/proposal surfaces,
   topology-constraint composition, notebook, public guide/API reference, and

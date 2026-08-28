@@ -45,9 +45,10 @@ class RLDiscoveryAgent:
     Parameters
     ----------
     policy
-        Explicit BL-102 research policy. ``None`` keeps execution disabled.
-        The policy must enable the research extra, carry a preregistration ID,
-        fix at least three seeds, and bound search iterations/evaluations.
+        Explicit research-governance policy. ``None`` keeps execution
+        disabled. The policy must enable the research extra, carry a
+        preregistration ID, fix at least three seeds, and bound search
+        iterations/evaluations.
 
     Notes
     -----

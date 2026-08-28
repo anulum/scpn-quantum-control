@@ -1,15 +1,15 @@
 # RL research governance
 
-BL-102 keeps reinforcement-learning-adjacent code in an explicit, reproducible
-research lane. It does not turn witness search or pulse optimisation into a
-production controller.
+The RL research-governance policy keeps reinforcement-learning-adjacent code in
+an explicit, reproducible research lane. It does not turn witness search or
+pulse optimisation into a production controller.
 
 Two existing surfaces are governed:
 
 | Route | Current status | Executable? |
 |---|---|---|
 | `RLDiscoveryAgent` / `discover_kuramoto_witnesses` | Seeded Bandit/Bayesian static candidate search with a dense composite witness score | Local only, after explicit policy and preregistration gates |
-| `RLPulseOptimizer` | Configuration shell for future pulse optimisation | No; implementation and BL-58 pulse boundary remain open |
+| `RLPulseOptimizer` | Configuration shell for future pulse optimisation | No; implementation and the pulse-execution boundary remain open |
 
 ## Disabled by default
 
@@ -99,8 +99,8 @@ environment contract is therefore recorded as
 `not_applicable_static_candidate_search`.
 
 If a future Gym/Gymnasium environment is introduced, its `step` method must
-separately return `(obs, reward, terminated, truncated, info)`. BL-102 does not
-pre-approve such an environment.
+separately return `(obs, reward, terminated, truncated, info)`. The current
+research-governance policy does not pre-approve such an environment.
 
 ## Pulse optimisation remains blocked
 
@@ -110,9 +110,9 @@ extra and missing preregistration. Even with a valid policy it reports both
 `rl_pulse_optimizer_unimplemented` and `pulse_boundary_open`.
 
 The class cannot submit provider work, execute QPU pulses, save invented
-results, or bypass the separately governed [BL-58 pulse boundary](control_stack_compose_product.md#completed-boundaries).
+results, or bypass the separately governed [pulse-execution boundary](control_stack_compose_product.md#completed-boundaries).
 
-## unsuitable-scenario unsuitable scenario
+## Unsuitable scenario
 
 RL work without preregistration is a first-class negative-space entry:
 
@@ -129,9 +129,9 @@ assert decision.refused
 
 ## Deterministic evidence
 
-The committed BL-102 fixture uses three fixed seeds, five candidate evaluations
-per seed, and byte-identical replay. Verify it without credentials or network
-access:
+The committed governed replay fixture uses three fixed seeds, five candidate
+evaluations per seed, and byte-identical replay. Verify it without credentials
+or network access:
 
 ```bash
 python scripts/run_rl_research_governance_evidence.py --check

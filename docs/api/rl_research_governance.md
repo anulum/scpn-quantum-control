@@ -21,7 +21,7 @@ hardware, provider submission, and production control remain refused.
 
 - `WITNESS_DISCOVERY`: the existing seeded Bandit/Bayesian candidate search;
 - `PULSE_OPTIMISATION`: blocked in the current release until implementation and
-  BL-58 are complete.
+  the pulse-execution boundary are complete.
 
 ### `RLResearchGovernanceError`
 
@@ -129,8 +129,8 @@ portability. It does not execute hardware.
 
 ### `build_rl_research_evidence_report()`
 
-Runs the frozen three-seed BL-102 local fixture. Each seed has a five-candidate
-budget. The report is software-replay evidence only.
+Runs the frozen three-seed governed local fixture. Each seed has a
+five-candidate budget. The report is software-replay evidence only.
 
 ### `render_rl_research_evidence_markdown(report=None)`
 
@@ -142,9 +142,9 @@ the frozen fixture; pass a report to avoid repeating execution.
 ### `RLDiscoveryAgent(..., policy=None)`
 
 `run_discovery_loop()` first validates that `K_nm` and `omega` exist, then
-applies BL-102 admission to the actual `WitnessDiscoverySpec`. A configured
-problem without policy raises `RLResearchGovernanceError`. External reward
-mutation remains unsupported.
+applies research-governance admission to the actual `WitnessDiscoverySpec`. A
+configured problem without policy raises `RLResearchGovernanceError`. External
+reward mutation remains unsupported.
 
 ### `RLPulseOptimizer(..., policy=None)`
 

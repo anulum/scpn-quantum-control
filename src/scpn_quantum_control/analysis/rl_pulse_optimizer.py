@@ -24,7 +24,7 @@ class RLPulseOptimizer:
 
     This class is intentionally not implemented. Execution is disabled by
     default and remains refused even with an enabled research policy because
-    BL-58 pulse contracts and the optimiser implementation are incomplete.
+    the pulse-execution contracts and optimiser implementation are incomplete.
     """
 
     def __init__(

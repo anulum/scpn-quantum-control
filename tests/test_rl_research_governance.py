@@ -162,7 +162,7 @@ def test_evaluation_budget_formula_handles_unit_and_larger_batches() -> None:
 
 
 def test_assessment_names_episode_evaluation_and_pulse_blockers() -> None:
-    """Budget overflow and the BL-58 pulse boundary remain explicit."""
+    """Budget overflow and the pulse-execution boundary remain explicit."""
     budget = assess_rl_research(
         _policy(max_episodes=1, max_evaluations_per_seed=4),
         RLResearchLane.WITNESS_DISCOVERY,
@@ -289,7 +289,7 @@ def test_suite_report_rejects_inconsistent_identity_and_digest() -> None:
 
 
 def test_frozen_evidence_and_markdown_are_stable_and_non_promotional() -> None:
-    """The BL-102 fixture is digest-bound and says what it cannot prove."""
+    """The governed fixture is digest-bound and says what it cannot prove."""
     first = build_rl_research_evidence_report()
     second = build_rl_research_evidence_report()
     markdown = render_rl_research_evidence_markdown(first)

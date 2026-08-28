@@ -11,8 +11,8 @@ RL-governance keeps reinforcement-learning-adjacent routes in a research extra. 
 existing witness discovery is a seeded static candidate search, not a Gym
 environment or a trained production policy.  Its dense composite witness score
 is therefore named explicitly and evaluated through deterministic replay over
-multiple seeds.  The pulse optimiser remains unimplemented and blocked behind
-the separately governed pulse-boundary pulse boundary.
+multiple seeds. The pulse optimiser remains unimplemented and blocked behind
+the separately governed pulse-execution boundary.
 
 Nothing in this module enables provider submission, hardware execution,
 production control, policy deployment, or a scientific performance claim.
@@ -468,7 +468,7 @@ def run_governed_witness_seed_suite(
 
 
 def build_rl_research_evidence_report() -> RLSeedSuiteReport:
-    """Run the frozen credential-free BL-102 three-seed fixture."""
+    """Run the frozen credential-free three-seed governance fixture."""
     policy = RLResearchPolicy(
         enabled=True,
         preregistration_id="RL-GOVERNANCE-LOCAL-WITNESS-REPLAY-v1",
@@ -504,10 +504,10 @@ def build_rl_research_evidence_report() -> RLSeedSuiteReport:
 def render_rl_research_evidence_markdown(
     report: RLSeedSuiteReport | None = None,
 ) -> str:
-    """Render deterministic human-readable BL-102 evidence."""
+    """Render deterministic human-readable RL governance evidence."""
     current = report if report is not None else build_rl_research_evidence_report()
     lines = [
-        "# BL-102 RL research-governance evidence",
+        "# RL research-governance evidence",
         "",
         f"- Schema: `{current.schema}`",
         f"- Policy: `{current.policy_id}`",

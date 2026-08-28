@@ -1,4 +1,4 @@
-# BL-102 RL research-governance evidence
+# RL research-governance evidence
 
 - Schema: `scpn.rl-research-governance.v1`
 - Policy: `rl-policy-5308e77754f9f46a`

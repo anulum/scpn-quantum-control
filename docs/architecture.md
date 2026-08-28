@@ -832,7 +832,7 @@ RL-adjacent analysis has an additional one-way governance dependency:
 `rl_research_governance` before execution. The governance leaf reuses the
 existing witness-discovery engine for fixed local seed replays; it does not
 depend on provider, hardware, pulse, or control runtimes. Pulse admission stays
-blocked on both implementation and BL-58.
+blocked on both implementation and the governed pulse-execution boundary.
 
 ## Classical-to-Quantum Mapping
 
