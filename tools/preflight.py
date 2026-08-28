@@ -165,6 +165,7 @@ if TYPE_CHECKING:
     from tools import (
         kyma_mechanism_benchmark_product_quality_gates as _kyma_mechanism_product_quality_gates,
     )
+    from tools import kyma_v2_coupling_quality_gates as _kyma_v2_coupling_quality_gates
     from tools import kyma_v2_dynamics_quality_gates as _kyma_v2_dynamics_quality_gates
     from tools import (
         layout_method_comparison_quality_gates as _layout_method_comparison_quality_gates,
@@ -443,6 +444,7 @@ else:
     _sync_uncertainty_quality_gates = import_module("tools.sync_uncertainty_quality_gates")
     _coupling_invariant_quality_gates = import_module("tools.coupling_invariant_quality_gates")
     _kyma_dynamics_quality_gates = import_module("tools.kyma_dynamics_quality_gates")
+    _kyma_v2_coupling_quality_gates = import_module("tools.kyma_v2_coupling_quality_gates")
     _kyma_v2_dynamics_quality_gates = import_module("tools.kyma_v2_dynamics_quality_gates")
     _layout_method_comparison_quality_gates = import_module(
         "tools.layout_method_comparison_quality_gates"
@@ -846,6 +848,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_kyma_mechanism_product_quality_gates.build_static_quality_gates(_PY),
     *_kyma_dynamics_quality_gates.build_static_quality_gates(_PY),
     *_kyma_v2_dynamics_quality_gates.build_static_quality_gates(_PY),
+    *_kyma_v2_coupling_quality_gates.build_static_quality_gates(_PY),
     *_differentiable_audit_contracts_quality_gates.build_static_quality_gates(_PY),
     *_campaign_harness_product_quality_gates.build_static_quality_gates(_PY),
     *_chimera_control_quality_gates.build_static_quality_gates(_PY),
@@ -1329,6 +1332,7 @@ KYMA_MECHANISM_PRODUCT_COVERAGE_GATES = _kyma_mechanism_product_quality_gates.bu
 )
 KYMA_DYNAMICS_COVERAGE_GATES = _kyma_dynamics_quality_gates.build_coverage_gates(_PY)
 KYMA_V2_DYNAMICS_COVERAGE_GATES = _kyma_v2_dynamics_quality_gates.build_coverage_gates(_PY)
+KYMA_V2_COUPLING_COVERAGE_GATES = _kyma_v2_coupling_quality_gates.build_coverage_gates(_PY)
 DIFFERENTIABLE_AUDIT_CONTRACTS_COVERAGE_GATES = (
     _differentiable_audit_contracts_quality_gates.build_coverage_gates(_PY)
 )
@@ -1816,6 +1820,7 @@ def main() -> int:
             gates.extend(KYMA_MECHANISM_PRODUCT_COVERAGE_GATES)
             gates.extend(KYMA_DYNAMICS_COVERAGE_GATES)
             gates.extend(KYMA_V2_DYNAMICS_COVERAGE_GATES)
+            gates.extend(KYMA_V2_COUPLING_COVERAGE_GATES)
             gates.extend(DIFFERENTIABLE_AUDIT_CONTRACTS_COVERAGE_GATES)
             gates.extend(CAMPAIGN_HARNESS_PRODUCT_COVERAGE_GATES)
             gates.extend(CHIMERA_CONTROL_COVERAGE_GATES)

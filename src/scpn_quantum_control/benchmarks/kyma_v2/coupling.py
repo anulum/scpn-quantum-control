@@ -89,20 +89,27 @@ def readout_bridge_matrix(
 def base_coupling_matrix(
     k_ambient: float, k_bridge: float, partners: tuple[int, ...] | None = None
 ) -> NDArray[np.float64]:
-    """Fixed base coupling = uniform ambient + readout bridge."""
+    """Build fixed base coupling from the uniform ambient and readout bridge."""
     return ambient_matrix(k_ambient) + readout_bridge_matrix(k_bridge, partners)
 
 
 def assemble_coupling(code: jax.Array, gates: jax.Array, base: jax.Array) -> jax.Array:
     """Per-trial ``K_eff = base + Σ code·gates``.
 
-    Args:
-        code: ``(batch, N_RELATIONS, N_PAIRS)`` binary gate activations.
-        gates: ``(N_RELATIONS, N_PAIRS, N_OSC, N_OSC)`` motif perturbations.
-        base: ``(N_OSC, N_OSC)`` fixed base coupling (ambient + bridge).
+    Parameters
+    ----------
+    code:
+        ``(batch, N_RELATIONS, N_PAIRS)`` binary gate activations.
+    gates:
+        ``(N_RELATIONS, N_PAIRS, N_OSC, N_OSC)`` motif perturbations.
+    base:
+        ``(N_OSC, N_OSC)`` fixed base coupling (ambient + bridge).
 
-    Returns:
+    Returns
+    -------
+    jax.Array
         ``(batch, N_OSC, N_OSC)`` symmetric per-trial coupling, zero diagonal.
+
     """
     gated = jnp.einsum("nrp,rpij->nij", code, gates)
     return base[None, :, :] + gated

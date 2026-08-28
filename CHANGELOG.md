@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-28 — KYMA v2 coupling documentation and exact quality: completed the
+  preview-inclusive NumPy docstring contract across base/readout/gated coupling
+  assembly and its direct tests, added explicit-partner public-path coverage,
+  and wired permanent strict typing, real offline execution, complete owner
+  documentation, and exact source coverage into preflight and CI. Coupling
+  arithmetic, masks, shapes, held-out selection, public APIs, and bounded
+  mechanism claims are unchanged.
+
 - 2026-08-28 — Josephson magnitude-study documentation quality: completed the
   preview-inclusive NumPy docstring contract across the fail-closed design
   owner, and wired permanent strict typing, real offline study/export

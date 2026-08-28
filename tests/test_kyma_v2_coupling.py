@@ -20,6 +20,7 @@ from scpn_quantum_control.benchmarks.kyma_v2 import coupling, task  # noqa: E402
 
 
 def test_ambient_matrix_uniform_zero_diagonal() -> None:
+    """Ambient coupling is uniform off diagonal and zero on diagonal."""
     mat = coupling.ambient_matrix(0.3)
     assert mat.shape == (task.N_OSC, task.N_OSC)
     assert not mat.diagonal().any()
@@ -28,6 +29,7 @@ def test_ambient_matrix_uniform_zero_diagonal() -> None:
 
 
 def test_readout_bridge_is_symmetric_and_sparse() -> None:
+    """The default readout bridge is symmetric and contains only partner edges."""
     mat = coupling.readout_bridge_matrix(0.5)
     assert np.array_equal(mat, mat.T)
     partners = coupling.partners_for()
@@ -39,6 +41,7 @@ def test_readout_bridge_is_symmetric_and_sparse() -> None:
 
 
 def test_bridge_partners_span_both_held_out_relations() -> None:
+    """Default and R1-only partner selection preserve the held-out split."""
     partners = coupling.partners_for()
     assert coupling.partners_for(bridge_mode="r1_only") == partners[:1]
     r1_clusters = set(task.PAIRS[task.HELD_OUT_R1_PAIR])
@@ -50,6 +53,7 @@ def test_bridge_partners_span_both_held_out_relations() -> None:
 
 
 def test_bridge_does_not_touch_intra_cluster_edges() -> None:
+    """Readout bridge edges do not perturb any intra-cluster motif."""
     # The bridge must not add coupling inside a cluster (would disturb the motif).
     mat = coupling.readout_bridge_matrix(1.0)
     for cluster in task.CLUSTERS:
@@ -59,12 +63,14 @@ def test_bridge_does_not_touch_intra_cluster_edges() -> None:
 
 
 def test_base_coupling_is_ambient_plus_bridge() -> None:
+    """Base coupling is exactly the ambient matrix plus the readout bridge."""
     base = coupling.base_coupling_matrix(0.1, 0.5)
     expected = coupling.ambient_matrix(0.1) + coupling.readout_bridge_matrix(0.5)
     assert np.allclose(base, expected)
 
 
 def test_assemble_coupling_gates_by_code() -> None:
+    """Binary relation codes select only their associated gate tensor."""
     base = jnp.asarray(coupling.base_coupling_matrix(0.0, 0.0))
     gates = np.zeros((task.N_RELATIONS, task.N_PAIRS, task.N_OSC, task.N_OSC))
     gates[0, 2, 1, 3] = gates[0, 2, 3, 1] = 7.0  # a distinctive motif edge
@@ -79,6 +85,7 @@ def test_assemble_coupling_gates_by_code() -> None:
 
 
 def test_symmetrise_projects_to_symmetric_zero_diagonal() -> None:
+    """Projection symmetrises every gate slice and clears its diagonal."""
     raw = jnp.asarray(
         np.arange(task.N_RELATIONS * task.N_PAIRS * task.N_OSC * task.N_OSC, dtype=float).reshape(
             task.N_RELATIONS, task.N_PAIRS, task.N_OSC, task.N_OSC
@@ -87,3 +94,13 @@ def test_symmetrise_projects_to_symmetric_zero_diagonal() -> None:
     sym = np.asarray(coupling.symmetrise(raw))
     assert np.allclose(sym, np.swapaxes(sym, -1, -2))
     assert np.allclose(np.diagonal(sym, axis1=-2, axis2=-1), 0.0)
+
+
+def test_readout_bridge_honours_explicit_partner_list() -> None:
+    """An explicit partner list bypasses the held-out default selection."""
+    partner = task.CLUSTERS[0][0]
+    mat = coupling.readout_bridge_matrix(0.75, partners=(partner,))
+
+    assert mat[task.READOUT_OSCILLATOR, partner] == pytest.approx(0.75)
+    assert mat[partner, task.READOUT_OSCILLATOR] == pytest.approx(0.75)
+    assert np.count_nonzero(mat) == 2
