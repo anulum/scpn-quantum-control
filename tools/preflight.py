@@ -182,6 +182,9 @@ if TYPE_CHECKING:
         whole_program_ad_product_quality_gates as _whole_program_ad_product_quality_gates,
     )
     from tools import (
+        whole_program_frontend_contracts_quality_gates as _whole_program_frontend_contracts_quality_gates,
+    )
+    from tools import (
         wirtinger_implicit_product_quality_gates as _wirtinger_implicit_product_quality_gates,
     )
 else:
@@ -198,6 +201,9 @@ else:
         "tools.campaign_harness_product_quality_gates"
     )
     _chimera_control_quality_gates = import_module("tools.chimera_control_quality_gates")
+    _whole_program_frontend_contracts_quality_gates = import_module(
+        "tools.whole_program_frontend_contracts_quality_gates"
+    )
     _geometric_control_product_quality_gates = import_module(
         "tools.geometric_control_product_quality_gates"
     )
@@ -652,6 +658,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_kyma_mechanism_product_quality_gates.build_static_quality_gates(_PY),
     *_campaign_harness_product_quality_gates.build_static_quality_gates(_PY),
     *_chimera_control_quality_gates.build_static_quality_gates(_PY),
+    *_whole_program_frontend_contracts_quality_gates.build_static_quality_gates(_PY),
     *_geometric_control_product_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_baseline_design_quality_gates.build_static_quality_gates(_PY),
     *_error_mitigation_product_quality_gates.build_static_quality_gates(_PY),
@@ -1088,6 +1095,9 @@ CAMPAIGN_HARNESS_PRODUCT_COVERAGE_GATES = (
     _campaign_harness_product_quality_gates.build_coverage_gates(_PY)
 )
 CHIMERA_CONTROL_COVERAGE_GATES = _chimera_control_quality_gates.build_coverage_gates(_PY)
+WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_GATES = (
+    _whole_program_frontend_contracts_quality_gates.build_coverage_gates(_PY)
+)
 GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES = (
     _geometric_control_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -1474,6 +1484,7 @@ def main() -> int:
             gates.extend(KYMA_MECHANISM_PRODUCT_COVERAGE_GATES)
             gates.extend(CAMPAIGN_HARNESS_PRODUCT_COVERAGE_GATES)
             gates.extend(CHIMERA_CONTROL_COVERAGE_GATES)
+            gates.extend(WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_GATES)
             gates.extend(GEOMETRIC_CONTROL_PRODUCT_COVERAGE_GATES)
             gates.extend(TN_MPS_BASELINE_DESIGN_COVERAGE_GATES)
             gates.extend(ERROR_MITIGATION_PRODUCT_COVERAGE_GATES)

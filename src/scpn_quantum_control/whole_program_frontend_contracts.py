@@ -24,6 +24,7 @@ class WholeProgramBytecodeInstruction:
     jump_target_offset: int | None = None
 
     def __post_init__(self) -> None:
+        """Validate bytecode offsets, operation name, and source line."""
         if self.offset < 0:
             raise ValueError("bytecode instruction offset must be non-negative")
         if not self.opname:
@@ -45,6 +46,7 @@ class WholeProgramSourceIRFeature:
     line_number: int
 
     def __post_init__(self) -> None:
+        """Validate the source feature description and line number."""
         if not self.kind:
             raise ValueError("source IR feature kind must be non-empty")
         if not self.detail:
@@ -71,6 +73,7 @@ class WholeProgramBytecodeBasicBlock:
     terminating_opname: str
 
     def __post_init__(self) -> None:
+        """Validate block bounds, instructions, successors, and terminator."""
         if not self.label:
             raise ValueError("bytecode basic block label must be non-empty")
         if self.start_offset < 0 or self.end_offset < 0:
@@ -123,6 +126,7 @@ class WholeProgramSourceRegion:
     feature_kinds: tuple[str, ...]
 
     def __post_init__(self) -> None:
+        """Validate region identity, line bounds, parent, and features."""
         if not self.region_id:
             raise ValueError("source region region_id must be non-empty")
         if not self.kind:
@@ -169,6 +173,7 @@ class WholeProgramSourceBytecodeLineMap:
     feature_kinds: tuple[str, ...]
 
     def __post_init__(self) -> None:
+        """Validate source lines and their bytecode and region crosswalk."""
         if self.line_number <= 0:
             raise ValueError("source-bytecode line map line_number must be positive")
         if self.absolute_line_number is not None and self.absolute_line_number <= 0:
@@ -218,6 +223,7 @@ class WholeProgramSymbolScopeEntry:
     region_ids: tuple[str, ...]
 
     def __post_init__(self) -> None:
+        """Validate the symbol identity and canonical scope metadata."""
         if not self.symbol:
             raise ValueError("symbol-scope entry symbol must be non-empty")
         if not self.roles:
@@ -268,6 +274,7 @@ class WholeProgramUnsupportedSemanticDiagnostic:
     bytecode_offsets: tuple[int, ...]
 
     def __post_init__(self) -> None:
+        """Validate the unsupported-semantics diagnostic and locations."""
         if not self.semantic:
             raise ValueError("unsupported semantic diagnostic semantic must be non-empty")
         if not self.detail:
@@ -324,6 +331,7 @@ class WholeProgramSemanticsReport:
     unsupported_python_semantics: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        """Validate semantic flags and accepted or unsupported labels."""
         for name in (
             "bytecode_frontend",
             "source_frontend",
@@ -398,6 +406,7 @@ class WholeProgramCompilerFrontendReport:
     claim_boundary:
         Boundary preventing this static report from becoming an execution or
         performance claim.
+
     """
 
     function_name: str
@@ -420,6 +429,7 @@ class WholeProgramCompilerFrontendReport:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate all static frontend records, digests, and hard gaps."""
         if not isinstance(self.function_name, str) or not self.function_name:
             raise ValueError("compiler frontend function_name must be non-empty")
         if any(

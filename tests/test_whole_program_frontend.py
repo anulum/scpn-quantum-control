@@ -39,7 +39,6 @@ from scpn_quantum_control.whole_program_frontend import (
 
 def test_whole_program_frontend_module_matches_facade_report() -> None:
     """The extracted module and compatibility facade should inspect the same objective."""
-
     calls = {"count": 0}
 
     def objective(values: NDArray[np.float64]) -> object:
@@ -303,13 +302,11 @@ def _line_marker_instruction(starts_line: bool | int, positions: dis.Positions) 
     ``starts_line`` and ``positions``, so a stand-in carrying those two attributes
     exercises the same code on every supported interpreter.
     """
-
     return cast(dis.Instruction, SimpleNamespace(starts_line=starts_line, positions=positions))
 
 
 def test_whole_program_frontend_normalises_python313_boolean_line_markers() -> None:
     """Bytecode line capture should survive CPython 3.13 boolean line markers."""
-
     python313_instruction = _line_marker_instruction(
         starts_line=True,
         positions=dis.Positions(lineno=123, end_lineno=123, col_offset=4, end_col_offset=10),

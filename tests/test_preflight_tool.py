@@ -983,6 +983,8 @@ def test_main_uses_coverage_pytest_by_default(
         "campaign-harness-product exact coverage threshold",
         "chimera-control focused coverage",
         "chimera-control exact coverage threshold",
+        "whole-program-frontend-contracts focused coverage",
+        "whole-program-frontend-contracts exact coverage threshold",
         "geometric-control-product focused coverage",
         "geometric-control-product exact coverage threshold",
         "tn-mps-baseline-design focused coverage",

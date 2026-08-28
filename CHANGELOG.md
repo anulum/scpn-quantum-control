@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — Whole-program frontend contract quality: completed the NumPy
+  docstring contract for all nine immutable bytecode/source frontend records,
+  added exhaustive public invariant tests, and wired permanent strict typing,
+  documentation, and exact source-coverage gates into preflight and CI. Public
+  record identities, serialized fields, validation order, compiler semantics,
+  and claim boundaries are unchanged.
+
 - 2026-08-28 — Chimera-control documentation quality: completed the NumPy
   docstring contract across the finite synthetic Chimera package and all seven
   owning test surfaces, and added permanent strict typing, documentation, and
