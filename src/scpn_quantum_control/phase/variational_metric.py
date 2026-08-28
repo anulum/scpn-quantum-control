@@ -66,9 +66,10 @@ def assert_single_parameter_rotations(ansatz: QuantumCircuit) -> None:
 
     Raises
     ------
-        ValueError: if a parameter drives a non-Pauli-rotation gate, a gate carries
-            more than one free parameter, or a parameter appears in more than one
-            gate.
+    ValueError
+        If a parameter drives a non-Pauli-rotation gate, a gate carries more than
+        one free parameter, or a parameter appears in more than one gate.
+
     """
     if not isinstance(ansatz, QuantumCircuit):
         return
@@ -104,13 +105,18 @@ def assert_single_parameter_rotations(ansatz: QuantumCircuit) -> None:
 def analytic_state_derivatives(state_of: StateEvaluator, params: FloatArray) -> ComplexArray:
     """Exact state derivatives ``∂_k|ψ>`` via the π-shift identity.
 
-    Args:
-        state_of: returns the statevector ``|ψ(p)>`` for parameter vector ``p``.
-        params: current parameter vector θ.
+    Parameters
+    ----------
+    state_of
+        Return the statevector ``|ψ(p)>`` for parameter vector ``p``.
+    params
+        Current parameter vector θ.
 
     Returns
     -------
+    ComplexArray
         Array of shape ``(len(params), dim)`` whose row ``k`` is ``∂_k|ψ(θ)>``.
+
     """
     theta = np.asarray(params, dtype=np.float64)
     reference = np.asarray(state_of(theta), dtype=np.complex128)
@@ -125,13 +131,16 @@ def analytic_state_derivatives(state_of: StateEvaluator, params: FloatArray) -> 
 def mclachlan_metric(state_derivatives: ComplexArray) -> FloatArray:
     """McLachlan metric ``G_ij = Re(<∂_i ψ|∂_j ψ>)`` (the real quantum geometric tensor).
 
-    Args:
-        state_derivatives: rows ``∂_k|ψ>``, as returned by
-            :func:`analytic_state_derivatives`.
+    Parameters
+    ----------
+    state_derivatives
+        Rows ``∂_k|ψ>``, as returned by :func:`analytic_state_derivatives`.
 
     Returns
     -------
+    FloatArray
         Symmetric ``(n_params, n_params)`` real metric.
+
     """
     return np.real(state_derivatives.conj() @ state_derivatives.T).astype(np.float64)
 
@@ -139,13 +148,18 @@ def mclachlan_metric(state_derivatives: ComplexArray) -> FloatArray:
 def real_time_force(state_derivatives: ComplexArray, h_psi: ComplexArray) -> FloatArray:
     """Real-time (McLachlan) force ``V_i = -Im(<∂_i ψ|H|ψ>)``.
 
-    Args:
-        state_derivatives: rows ``∂_k|ψ>``.
-        h_psi: the vector ``H|ψ>``.
+    Parameters
+    ----------
+    state_derivatives
+        Rows ``∂_k|ψ>``.
+    h_psi
+        The vector ``H|ψ>``.
 
     Returns
     -------
+    FloatArray
         Length ``n_params`` force vector.
+
     """
     return (-np.imag(state_derivatives.conj() @ np.asarray(h_psi, dtype=np.complex128))).astype(
         np.float64
@@ -157,13 +171,18 @@ def imaginary_time_force(
 ) -> FloatArray:
     """Imaginary-time force ``C_i = -Re(<∂_i ψ|(H - <H>)|ψ>)``.
 
-    Args:
-        state_derivatives: rows ``∂_k|ψ>``.
-        h_shifted_psi: the vector ``(H - <H>)|ψ>``.
+    Parameters
+    ----------
+    state_derivatives
+        Rows ``∂_k|ψ>``.
+    h_shifted_psi
+        The vector ``(H - <H>)|ψ>``.
 
     Returns
     -------
+    FloatArray
         Length ``n_params`` force vector.
+
     """
     return (
         -np.real(state_derivatives.conj() @ np.asarray(h_shifted_psi, dtype=np.complex128))

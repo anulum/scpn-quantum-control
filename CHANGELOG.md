@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — Variational-metric documentation quality: completed the NumPy
+  docstring contract for the analytic metric/force owner and its real
+  Qiskit-backed tests, and wired permanent strict typing, documentation, and
+  exact source-coverage gates into preflight and CI. The exact π-shift state
+  derivative, McLachlan metric, force numerics, ansatz validation, public
+  symbols, and scientific claim boundaries are unchanged.
+
 - 2026-08-28 — Whole-program frontend contract quality: completed the NumPy
   docstring contract for all nine immutable bytecode/source frontend records,
   added exhaustive public invariant tests, and wired permanent strict typing,

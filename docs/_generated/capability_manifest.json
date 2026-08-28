@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1226
+    "test_files": 1227
   },
   "documentation": {
     "examples": [
@@ -9313,6 +9313,7 @@
       "tests/test_unsuitable_scenario_registry.py",
       "tests/test_unsuitable_scenario_registry_quality_gate.py",
       "tests/test_variational_metric.py",
+      "tests/test_variational_metric_quality_gate.py",
       "tests/test_variational_workflow.py",
       "tests/test_varqite.py",
       "tests/test_visualisation_dashboard_product.py",

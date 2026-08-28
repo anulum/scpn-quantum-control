@@ -48,6 +48,8 @@ def _knm_ansatz_state():
 
 
 class TestPiShiftDerivative:
+    """Verify the exact π-shift state derivative."""
+
     def test_single_qubit_ry_matches_closed_form(self):
         """RY(θ)|0> = [cos(θ/2), sin(θ/2)]; its exact derivative is known."""
         theta_sym = Parameter("t")
@@ -78,6 +80,7 @@ class TestPiShiftDerivative:
             np.testing.assert_allclose(dpsi[k], fd, atol=1e-8)
 
     def test_shape_and_dtype(self):
+        """Preserve the parameter-by-state shape and complex dtype."""
         ansatz, theta, state_of = _knm_ansatz_state()
         dpsi = analytic_state_derivatives(state_of, theta)
         assert dpsi.shape == (theta.size, 2**3)
@@ -85,7 +88,10 @@ class TestPiShiftDerivative:
 
 
 class TestMetricAndForces:
+    """Verify metric and force contractions against their definitions."""
+
     def test_metric_equals_real_gram_matrix(self):
+        """Match the McLachlan metric to an explicit real Gram matrix."""
         ansatz, theta, state_of = _knm_ansatz_state()
         dpsi = analytic_state_derivatives(state_of, theta)
         metric = mclachlan_metric(dpsi)
@@ -99,12 +105,14 @@ class TestMetricAndForces:
         np.testing.assert_allclose(metric, metric.T, atol=1e-12)
 
     def test_metric_is_positive_semidefinite(self):
+        """Require the real derivative Gram matrix to be semidefinite."""
         ansatz, theta, state_of = _knm_ansatz_state()
         dpsi = analytic_state_derivatives(state_of, theta)
         eigenvalues = np.linalg.eigvalsh(mclachlan_metric(dpsi))
         assert eigenvalues.min() > -1e-10
 
     def test_real_time_force_matches_definition(self):
+        """Match the real-time force to explicit inner products."""
         ansatz, theta, state_of = _knm_ansatz_state()
         dpsi = analytic_state_derivatives(state_of, theta)
         dim = dpsi.shape[1]
@@ -116,6 +124,7 @@ class TestMetricAndForces:
         np.testing.assert_allclose(force, direct, atol=1e-12)
 
     def test_imaginary_time_force_matches_definition(self):
+        """Match the imaginary-time force to explicit inner products."""
         ansatz, theta, state_of = _knm_ansatz_state()
         dpsi = analytic_state_derivatives(state_of, theta)
         dim = dpsi.shape[1]
@@ -128,11 +137,15 @@ class TestMetricAndForces:
 
 
 class TestAnsatzValidation:
+    """Exercise every public ansatz-validation outcome."""
+
     def test_accepts_physics_informed_ansatz(self):
+        """Accept the production physics-informed ansatz contract."""
         ansatz = knm_to_ansatz(build_knm_paper27(L=3), reps=2)
         assert_single_parameter_rotations(ansatz)  # must not raise
 
     def test_rejects_non_pauli_rotation(self):
+        """Reject parameters carried by non-Pauli rotations."""
         theta = Parameter("t")
         qc = QuantumCircuit(1)
         qc.p(theta, 0)  # phase gate: generator (I-Z)/2, not a Pauli
@@ -140,6 +153,7 @@ class TestAnsatzValidation:
             assert_single_parameter_rotations(qc)
 
     def test_rejects_multiple_parameters_in_one_gate(self):
+        """Reject one rotation driven by multiple free symbols."""
         a = Parameter("a")
         b = Parameter("b")
         qc = QuantumCircuit(1)
@@ -148,6 +162,7 @@ class TestAnsatzValidation:
             assert_single_parameter_rotations(qc)
 
     def test_rejects_reused_parameter(self):
+        """Reject a parameter reused across separate rotations."""
         a = Parameter("a")
         qc = QuantumCircuit(2)
         qc.ry(a, 0)
@@ -156,12 +171,15 @@ class TestAnsatzValidation:
             assert_single_parameter_rotations(qc)
 
     def test_skips_non_circuit_doubles(self):
+        """Leave non-Qiskit test doubles outside circuit validation."""
+
         class FakeAnsatz:
             num_parameters = 1
 
         assert_single_parameter_rotations(FakeAnsatz())  # must not raise
 
     def test_ignores_unparametrised_gates(self):
+        """Ignore gates that carry no free parameters."""
         theta = Parameter("t")
         qc = QuantumCircuit(2)
         qc.h(0)  # no free parameter
