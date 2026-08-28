@@ -6,7 +6,7 @@
 <!-- Contact: www.anulum.li | protoscience@anulum.li -->
 <!-- SCPN Quantum Control — QBER Re-Run With Basis Metadata Preregistration -->
 
-# QBER Re-Run With Committed Basis Metadata (KIMI-8)
+# QBER Re-Run With Committed Basis Metadata
 
 Date: 2026-07-17
 

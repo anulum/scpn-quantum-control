@@ -36,7 +36,7 @@ Supported after successful execution and analysis:
 Blocked even after a positive result:
 
 - loophole-free or device-independent claims of any kind;
-- QKD viability claims (KIMI-8 tracks the QBER derivation separately);
+- QKD viability claims (the matched-basis QBER campaign is tracked separately);
 - any edit of the published March 2026 record — the original artefact and
   preprint stay as they are; this re-run is a NEW dated record.
 

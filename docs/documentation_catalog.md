@@ -115,7 +115,7 @@ are still built, link-checked, searchable, and public.
 | [Phase 3 Native Decomposition Readiness](campaigns/phase3_native_decomposition_readiness_2026-05-07.md) | catalog | Date: 2026-05-07 |
 | [Phase 3 State/Layout DLA Manifest](campaigns/phase3_state_layout_dla_manifest_2026-05-07.md) | catalog | Date: 2026-05-07 Backend: ibm_marrakesh Jobs: ibm-run-aabcf620230b1438, ibm-run-eea172711aa52b78 Raw-count SHA256: 03068ddaa9794f1ac19614e700887a84dd013cd5af107f49b39c3cff9e5674ac |
 | [Phase 3 VQS Alternative Readiness](campaigns/phase3_vqs_alternative_readiness_2026-05-07.md) | catalog | Date: 2026-05-07 |
-| [QBER Re-Run With Committed Basis Metadata (KIMI-8)](campaigns/qkd_qber_basis_metadata_prereg_2026-07-17.md) | catalog | Date: 2026-07-17 |
+| [QBER Re-Run With Committed Basis Metadata](campaigns/qkd_qber_basis_metadata_prereg_2026-07-17.md) | catalog | Date: 2026-07-17 |
 | [S6 Quantum-Kuramoto API Contract](campaigns/quantum_kuramoto_api_contract_2026-05-07.md) | catalog | This contract validates the proposed quantum_kuramoto export surface before any package skeleton is created. |
 | [S6 Quantum-Kuramoto Boundary Review](campaigns/quantum_kuramoto_boundary_review_2026-05-07.md) | catalog | This review converts the import-graph audit into a conservative package-boundary decision. It does not create a quantum_kuramoto package skeleton. |
 | [Full-Basis Readout Calibration Preregistration](campaigns/readout_full_basis_calibration_prereg_2026-05-06.md) | catalog | Date: 2026-05-06 |

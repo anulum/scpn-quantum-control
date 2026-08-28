@@ -6,7 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — QBER re-run submitter with committed basis metadata
-"""Submit the preregistered matched-basis QBER re-run (KIMI-8).
+"""Submit the preregistered matched-basis QBER re-run behind approval gates.
 
 The published 5.5%/5.8% QKD bit-error rate cannot be re-derived from the
 committed March 2026 artefact because it carries no basis metadata. This
