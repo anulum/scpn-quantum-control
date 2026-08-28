@@ -53,6 +53,7 @@ def qaoa_mpc_4_experiment(runner: HardwareRunner, shots: int = 10000) -> dict[st
             brute_force_actions (list[int]): Optimal binary actions.
             qaoa_p1 (dict): p=1 results (qaoa_cost, qaoa_actions, n_iterations).
             qaoa_p2 (dict): p=2 results (qaoa_cost, qaoa_actions, n_iterations).
+
     """
     B = np.eye(2)
     target = np.array([0.8, 0.6])
@@ -133,6 +134,7 @@ def upde_16_snapshot_experiment(
             hw_exp_x (list[float]): Per-qubit X expectations.
             hw_exp_y (list[float]): Per-qubit Y expectations.
             hw_exp_z (list[float]): Per-qubit Z expectations.
+
     """
     n = 16
     K = build_knm_paper27(L=n)
@@ -191,6 +193,7 @@ def bell_test_4q_experiment(
             violates_classical_sim (bool): S_sim > 2.0.
             correlators_hw (dict): ZZ, ZX, XZ, XX correlators (hardware).
             correlators_sim (dict): Correlators from simulation.
+
     """
     n = 4
     K = build_knm_paper27(L=n)
@@ -261,6 +264,7 @@ def correlator_4q_experiment(
             corr_sim (list[list[float]]): 4x4 connected correlation matrix (sim).
             frobenius_error (float): ||corr_hw - corr_sim||_F.
             max_correlation_hw (float): Max absolute correlation on hardware.
+
     """
     n = 4
     K = build_knm_paper27(L=n)
@@ -331,6 +335,7 @@ def qkd_qber_4q_experiment(
             secure_hw (bool): Both QBERs < 0.11.
             secure_sim (bool): Simulator QBER < 0.11.
             key_rate_hw (float): Devetak-Winter secret key rate.
+
     """
     n = 4
     K = build_knm_paper27(L=n)

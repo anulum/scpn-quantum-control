@@ -1021,6 +1021,8 @@ def test_main_uses_coverage_pytest_by_default(
         "finite-size-scaling exact coverage threshold",
         "studio-executive-differentiate focused coverage",
         "studio-executive-differentiate exact coverage threshold",
+        "hardware-experiment-control focused coverage",
+        "hardware-experiment-control exact coverage threshold",
         "dla-topology-parity focused coverage",
         "dla-topology-parity exact coverage threshold",
         "geometric-control-product focused coverage",

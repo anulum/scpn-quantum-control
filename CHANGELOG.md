@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-28 — Hardware experiment-control documentation quality: completed
+  the NumPy docstring contract across the offline QAOA/UPDE/Bell/correlator/
+  QBER owner and wired permanent strict typing, connected execution,
+  documentation, and exact source coverage into preflight and CI. Experiment
+  arithmetic, runner/simulator injection, serialization, public APIs, and
+  provider/spend boundaries are unchanged.
+
 - 2026-08-28 — Studio executive differentiate documentation quality:
   completed the NumPy docstring contract across the read-only rational-program
   handler and its direct tests, and wired permanent strict typing, connected

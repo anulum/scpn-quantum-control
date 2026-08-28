@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1245
+    "test_files": 1246
   },
   "documentation": {
     "examples": [
@@ -8554,6 +8554,7 @@
       "tests/test_hardware_adapter_contracts.py",
       "tests/test_hardware_backends_branches.py",
       "tests/test_hardware_classical_fuzz.py",
+      "tests/test_hardware_experiment_control_quality_gate.py",
       "tests/test_hardware_experiment_vqe_quality_gate.py",
       "tests/test_hardware_experiments_contracts.py",
       "tests/test_hardware_hal.py",
