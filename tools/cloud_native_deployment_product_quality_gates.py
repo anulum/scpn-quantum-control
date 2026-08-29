@@ -13,16 +13,28 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 
-CLOUD_NATIVE_DEPLOYMENT_QUALITY_RATCHET = [
-    "src/scpn_quantum_control/cloud_native_deployment_product.py",
+CLOUD_NATIVE_DEPLOYMENT_PRODUCT_SOURCE = (
+    "src/scpn_quantum_control/cloud_native_deployment_product.py"
+)
+CLOUD_NATIVE_MANIFEST_SOURCE = "src/scpn_quantum_control/deployment/cloud_native.py"
+CLOUD_NATIVE_DEPLOYMENT_SOURCES = [
+    CLOUD_NATIVE_DEPLOYMENT_PRODUCT_SOURCE,
+    CLOUD_NATIVE_MANIFEST_SOURCE,
+]
+CLOUD_NATIVE_DEPLOYMENT_COVERAGE_COHORT = [
     "tests/test_cloud_native_deployment_product.py",
+    "tests/test_cloud_native.py",
+    "tests/test_cloud_native_branches.py",
+]
+"""Tests that own exact cloud-native deployment coverage."""
+
+CLOUD_NATIVE_DEPLOYMENT_QUALITY_RATCHET = [
+    *CLOUD_NATIVE_DEPLOYMENT_SOURCES,
+    *CLOUD_NATIVE_DEPLOYMENT_COVERAGE_COHORT,
     "tools/cloud_native_deployment_product_quality_gates.py",
     "tests/test_cloud_native_deployment_product_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-
-CLOUD_NATIVE_DEPLOYMENT_COVERAGE_COHORT = ["tests/test_cloud_native_deployment_product.py"]
-"""Tests that own exact cloud-native deployment product coverage."""
 
 CLOUD_NATIVE_DEPLOYMENT_COVERAGE_DATA_FILE = ".coverage.cloud-native-deployment-quality"
 """Isolated coverage database for the cloud-native deployment owner."""
@@ -114,7 +126,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={CLOUD_NATIVE_DEPLOYMENT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/cloud_native_deployment_product.py",
+                "--include=*/cloud_native_deployment_product.py,*/deployment/cloud_native.py",
             ],
         ),
     ]
@@ -123,7 +135,10 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "CLOUD_NATIVE_DEPLOYMENT_COVERAGE_COHORT",
     "CLOUD_NATIVE_DEPLOYMENT_COVERAGE_DATA_FILE",
+    "CLOUD_NATIVE_DEPLOYMENT_PRODUCT_SOURCE",
     "CLOUD_NATIVE_DEPLOYMENT_QUALITY_RATCHET",
+    "CLOUD_NATIVE_DEPLOYMENT_SOURCES",
+    "CLOUD_NATIVE_MANIFEST_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

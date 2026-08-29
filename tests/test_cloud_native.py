@@ -21,7 +21,6 @@ from scpn_quantum_control.deployment.cloud_native import (
 
 def test_cloud_native_manifests_are_deterministic_and_secret_free() -> None:
     """Cloud deployment export should generate usable Kubernetes and Compose specs."""
-
     spec = CloudDeploymentSpec(
         name="scpn-qc",
         image="registry.example/scpn-quantum-control:0.9.7",
@@ -44,7 +43,6 @@ def test_cloud_native_manifests_are_deterministic_and_secret_free() -> None:
 
 def test_cloud_native_manifests_reject_secret_like_env_and_bad_resources() -> None:
     """Deployment specs must not turn credentials into public manifests."""
-
     with pytest.raises(ValueError, match="secret"):
         CloudDeploymentSpec(
             name="bad",
@@ -57,6 +55,5 @@ def test_cloud_native_manifests_reject_secret_like_env_and_bad_resources() -> No
 
 def test_cloud_native_api_exported_from_package_root() -> None:
     """Cloud deployment surfaces should remain stable package-root imports."""
-
     assert scpn.CloudDeploymentSpec is CloudDeploymentSpec
     assert scpn.generate_cloud_manifests is generate_cloud_manifests

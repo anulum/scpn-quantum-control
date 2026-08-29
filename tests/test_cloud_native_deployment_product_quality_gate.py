@@ -35,9 +35,13 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     report = gates["cloud-native-deployment exact coverage threshold"]
     assert f"--data-file={quality_gates.CLOUD_NATIVE_DEPLOYMENT_COVERAGE_DATA_FILE}" in run
     assert "--branch" in run
-    assert run[-1:] == quality_gates.CLOUD_NATIVE_DEPLOYMENT_COVERAGE_COHORT
+    assert run[-len(quality_gates.CLOUD_NATIVE_DEPLOYMENT_COVERAGE_COHORT) :] == (
+        quality_gates.CLOUD_NATIVE_DEPLOYMENT_COVERAGE_COHORT
+    )
     assert "--fail-under=100" in report
-    assert "--include=*/cloud_native_deployment_product.py" in report
+    include = next(argument for argument in report if argument.startswith("--include="))
+    assert "cloud_native_deployment_product.py" in include
+    assert "deployment/cloud_native.py" in include
 
 
 def test_preflight_uses_the_helper_defined_gates() -> None:
@@ -58,5 +62,8 @@ def test_ci_runs_and_aggregates_the_product_gate() -> None:
     for path in quality_gates.CLOUD_NATIVE_DEPLOYMENT_QUALITY_RATCHET:
         assert path in block
     assert "--fail-under=100" in block
-    assert "--include=*/cloud_native_deployment_product.py" in block
+    assert "cloud_native_deployment_product.py" in block
+    assert "deployment/cloud_native.py" in block
+    assert "tests/test_cloud_native.py" in block
+    assert "tests/test_cloud_native_branches.py" in block
     assert "cloud-native-deployment-quality" in workflow[workflow.index("  ci-gate:") :]

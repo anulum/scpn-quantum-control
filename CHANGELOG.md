@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Complete the NumPy documentation contract for cloud-native manifest
+  validation and its direct tests, and extend the existing deployment-product
+  quality owner with real joint execution plus exact line/branch coverage for
+  both the product boundary and ambient manifest generator.
+
 - Complete the preview NumPy docstring contract for the base quantum-reservoir
   feature, matrix, and ridge surfaces and their direct tests, and extend the
   existing QRC-baseline owner with real joint execution plus exact line/branch

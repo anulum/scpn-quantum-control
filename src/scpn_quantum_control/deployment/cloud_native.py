@@ -36,6 +36,7 @@ class ContainerResources:
     memory: str = "512Mi"
 
     def __post_init__(self) -> None:
+        """Validate the Kubernetes resource quantities."""
         if not _CPU_RE.match(self.cpu):
             raise ValueError("cpu must be an integer core count or Kubernetes millicore value")
         if not _MEMORY_RE.match(self.memory):
@@ -57,6 +58,7 @@ class CloudDeploymentSpec:
     namespace: str = "default"
 
     def __post_init__(self) -> None:
+        """Validate and freeze the deployment request."""
         _validate_name(self.name, "name")
         _validate_name(self.service_account, "service_account")
         _validate_name(self.namespace, "namespace")
@@ -89,6 +91,7 @@ class CloudManifestBundle:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate the manifest digest and freeze the files."""
         files = dict(self.files)
         encoded = json.dumps(files, sort_keys=True, separators=(",", ":")).encode("utf-8")
         expected = hashlib.sha256(encoded).hexdigest()

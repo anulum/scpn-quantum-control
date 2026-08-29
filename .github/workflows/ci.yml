@@ -3581,7 +3581,10 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/cloud_native_deployment_product.py
+          src/scpn_quantum_control/deployment/cloud_native.py
           tests/test_cloud_native_deployment_product.py
+          tests/test_cloud_native.py
+          tests/test_cloud_native_branches.py
           tools/cloud_native_deployment_product_quality_gates.py
           tests/test_cloud_native_deployment_product_quality_gate.py
       - name: Ruff NumPy docstrings for cloud-native deployment quality cohort
@@ -3589,7 +3592,10 @@ jobs:
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/cloud_native_deployment_product.py
+          src/scpn_quantum_control/deployment/cloud_native.py
           tests/test_cloud_native_deployment_product.py
+          tests/test_cloud_native.py
+          tests/test_cloud_native_branches.py
           tools/cloud_native_deployment_product_quality_gates.py
           tests/test_cloud_native_deployment_product_quality_gate.py
       - name: Run cloud-native deployment focused coverage
@@ -3600,6 +3606,8 @@ jobs:
           --branch
           -m pytest -q
           tests/test_cloud_native_deployment_product.py
+          tests/test_cloud_native.py
+          tests/test_cloud_native_branches.py
       - name: Enforce cloud-native deployment exact coverage
         run: >-
           python -m coverage report
@@ -3607,7 +3615,7 @@ jobs:
           --data-file=.coverage.cloud-native-deployment-quality
           --precision=2
           --fail-under=100
-          --include=*/cloud_native_deployment_product.py
+          --include=*/cloud_native_deployment_product.py,*/deployment/cloud_native.py
 
   control-stack-compose-quality:
     needs: lint
