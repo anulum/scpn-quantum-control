@@ -1067,6 +1067,8 @@ def test_main_uses_coverage_pytest_by_default(
         "TN/MPS-crossover-admission exact coverage threshold",
         "XY-compile-recompute-artifact focused coverage",
         "XY-compile-recompute-artifact exact coverage threshold",
+        "control-StructuredAnsatz focused coverage",
+        "control-StructuredAnsatz exact coverage threshold",
         "synchronisation-uncertainty focused coverage",
         "synchronisation-uncertainty exact coverage threshold",
         "coupling-invariant focused coverage",

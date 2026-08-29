@@ -69,6 +69,9 @@ if TYPE_CHECKING:
     from tools import (
         control_stack_compose_product_quality_gates as _control_stack_compose_quality_gates,
     )
+    from tools import (
+        control_structured_ansatz_quality_gates as _control_structured_ansatz_quality_gates,
+    )
     from tools import coupling_invariant_quality_gates as _coupling_invariant_quality_gates
     from tools import coupling_recovery_quality_gates as _coupling_recovery_quality_gates
     from tools import coverage_frontier_quality_gates as _coverage_frontier_quality_gates
@@ -353,6 +356,9 @@ else:
     )
     _control_stack_compose_quality_gates = import_module(
         "tools.control_stack_compose_product_quality_gates"
+    )
+    _control_structured_ansatz_quality_gates = import_module(
+        "tools.control_structured_ansatz_quality_gates"
     )
     _public_api_stability_quality_gates = import_module("tools.public_api_stability_quality_gates")
     _qpu_compute_product_quality_gates = import_module("tools.qpu_compute_product_quality_gates")
@@ -916,6 +922,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_layout_relaxation_experiment_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_crossover_admission_quality_gates.build_static_quality_gates(_PY),
     *_xy_compile_recompute_artifact_quality_gates.build_static_quality_gates(_PY),
+    *_control_structured_ansatz_quality_gates.build_static_quality_gates(_PY),
     *_sync_uncertainty_quality_gates.build_static_quality_gates(_PY),
     *_coupling_invariant_quality_gates.build_static_quality_gates(_PY),
     *_experiment_dynamics_quality_gates.build_static_quality_gates(_PY),
@@ -1453,6 +1460,9 @@ TN_MPS_CROSSOVER_ADMISSION_COVERAGE_GATES = (
 XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_GATES = (
     _xy_compile_recompute_artifact_quality_gates.build_coverage_gates(_PY)
 )
+CONTROL_STRUCTURED_ANSATZ_COVERAGE_GATES = (
+    _control_structured_ansatz_quality_gates.build_coverage_gates(_PY)
+)
 SYNC_UNCERTAINTY_COVERAGE_GATES = _sync_uncertainty_quality_gates.build_coverage_gates(_PY)
 COUPLING_INVARIANT_COVERAGE_GATES = _coupling_invariant_quality_gates.build_coverage_gates(_PY)
 EXPERIMENT_DYNAMICS_COVERAGE_GATES = _experiment_dynamics_quality_gates.build_coverage_gates(_PY)
@@ -1908,6 +1918,7 @@ def main() -> int:
             gates.extend(LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_GATES)
             gates.extend(TN_MPS_CROSSOVER_ADMISSION_COVERAGE_GATES)
             gates.extend(XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_GATES)
+            gates.extend(CONTROL_STRUCTURED_ANSATZ_COVERAGE_GATES)
             gates.extend(SYNC_UNCERTAINTY_COVERAGE_GATES)
             gates.extend(COUPLING_INVARIANT_COVERAGE_GATES)
             gates.extend(EXPERIMENT_DYNAMICS_COVERAGE_GATES)

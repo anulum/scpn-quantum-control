@@ -11,11 +11,13 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.control import StructuredAnsatz
 
 
-def _coupling_matrix() -> np.ndarray:
+def _coupling_matrix() -> NDArray[np.float64]:
+    """Return the deterministic three-node coupling fixture."""
     return np.array(
         [
             [0.0, 0.5, 0.0],
@@ -26,7 +28,8 @@ def _coupling_matrix() -> np.ndarray:
     )
 
 
-def test_from_kuramoto_builds_expected_scaled_trotter_circuit():
+def test_from_kuramoto_builds_expected_scaled_trotter_circuit() -> None:
+    """Scaled couplings produce the expected concrete Trotter gates."""
     ansatz = StructuredAnsatz.from_kuramoto(
         _coupling_matrix(),
         omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
@@ -50,7 +53,8 @@ def test_from_kuramoto_builds_expected_scaled_trotter_circuit():
     assert rzz_angles == pytest.approx([0.5, 0.25, 0.5, 0.25])
 
 
-def test_lambda_fim_is_concrete_float_and_repeats_without_parameter_collision():
+def test_lambda_fim_is_concrete_float_and_repeats_without_parameter_collision() -> None:
+    """Concrete FIM feedback repeats without symbolic-parameter collisions."""
     ansatz = StructuredAnsatz.from_kuramoto(
         _coupling_matrix(),
         trotter_depth=3,
@@ -65,7 +69,8 @@ def test_lambda_fim_is_concrete_float_and_repeats_without_parameter_collision():
     assert ansatz.params["lambda_fim"] == 8.0
 
 
-def test_build_circuit_returns_copy():
+def test_build_circuit_returns_copy() -> None:
+    """Each circuit access returns an independently mutable copy."""
     ansatz = StructuredAnsatz.from_kuramoto(_coupling_matrix(), trotter_depth=1)
     first = ansatz.build_circuit()
     second = ansatz.build_circuit()
@@ -75,7 +80,8 @@ def test_build_circuit_returns_copy():
     assert "x" not in second.count_ops()
 
 
-def test_compatibility_kwargs_are_accepted_without_changing_core_circuit():
+def test_compatibility_kwargs_are_accepted_without_changing_core_circuit() -> None:
+    """Reserved compatibility keywords leave the core circuit unchanged."""
     ansatz = StructuredAnsatz.from_kuramoto(
         _coupling_matrix(),
         trotter_depth=1,
@@ -88,7 +94,8 @@ def test_compatibility_kwargs_are_accepted_without_changing_core_circuit():
     assert ops["rzz"] == 2
 
 
-def test_from_kuramoto_rejects_invalid_inputs():
+def test_from_kuramoto_rejects_invalid_inputs() -> None:
+    """Malformed and non-finite coupling inputs fail closed."""
     with pytest.raises(ValueError, match="square"):
         StructuredAnsatz.from_kuramoto(np.ones((2, 3)))
 

@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-30 — Control StructuredAnsatz documentation and exact quality:
+  completed the preview-inclusive NumPy docstring and strict typing contracts
+  across the physical Kuramoto-XY circuit owner and its direct tests, and
+  wired permanent real Qiskit execution plus exact source coverage into
+  preflight and CI. Validation, coupling scaling, Trotter construction,
+  concrete FIM feedback, copy semantics, public APIs, and bounded circuit
+  claims are unchanged.
+
 - 2026-08-30 — XY-compile recompute-artifact documentation and exact quality:
   completed the preview-inclusive NumPy docstring and strict typing contracts,
   added real module-entrypoint execution, and wired permanent committed-unit

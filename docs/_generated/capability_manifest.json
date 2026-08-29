@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1283
+    "test_files": 1284
   },
   "documentation": {
     "examples": [
@@ -8315,6 +8315,7 @@
       "tests/test_control_stack_compose_product_quality_gate.py",
       "tests/test_control_stack_runtime_adapters.py",
       "tests/test_control_structured_ansatz.py",
+      "tests/test_control_structured_ansatz_quality_gate.py",
       "tests/test_cosimulation.py",
       "tests/test_cosimulation_branches.py",
       "tests/test_count_integrity.py",

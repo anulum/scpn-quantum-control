@@ -20,6 +20,7 @@ class StructuredAnsatz:
     """Physically-informed ansatz for heterogeneous Kuramoto-XY model."""
 
     def __init__(self) -> None:
+        """Initialize an empty circuit owner and parameter ledger."""
         self.circuit: QuantumCircuit | None = None
         self.params: dict[str, Any] = {}
 
@@ -62,6 +63,7 @@ class StructuredAnsatz:
         ValueError
             If ``K_nm`` is not square and finite, or ``omega`` has an invalid
             shape or non-finite values.
+
         """
         K_nm = np.asarray(K_nm, dtype=np.float64)
         if K_nm.ndim != 2 or K_nm.shape[0] != K_nm.shape[1]:
@@ -127,12 +129,14 @@ class StructuredAnsatz:
         ------
         ValueError
             If :meth:`from_kuramoto` has not built a circuit yet.
+
         """
         if self.circuit is None:
             raise ValueError("Call from_kuramoto() first.")
         return self.circuit.copy()
 
     def __repr__(self) -> str:
+        """Return a concise summary of the recorded construction parameters."""
         return (
             f"StructuredAnsatz(N={self.params.get('N')}, "
             f"trotter_depth={self.params.get('trotter_depth')}, "
