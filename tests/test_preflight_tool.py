@@ -1043,6 +1043,8 @@ def test_main_uses_coverage_pytest_by_default(
         "DLA topology-objectives exact coverage threshold",
         "DLA-parity-witness focused coverage",
         "DLA-parity-witness exact coverage threshold",
+        "Hamiltonian-learning focused coverage",
+        "Hamiltonian-learning exact coverage threshold",
         "dla-topology-parity focused coverage",
         "dla-topology-parity exact coverage threshold",
         "DLA topology-projection focused coverage",

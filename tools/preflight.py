@@ -136,6 +136,7 @@ if TYPE_CHECKING:
         gradient_plan_explanation_artifact_quality_gates as _gradient_plan_explanation_artifact_quality_gates,
     )
     from tools import gradient_tape_quality_gates as _gradient_tape_quality_gates
+    from tools import hamiltonian_learning_quality_gates as _hamiltonian_learning_quality_gates
     from tools import (
         hardware_experiment_control_quality_gates as _hardware_experiment_control_quality_gates,
     )
@@ -410,6 +411,7 @@ else:
         "tools.hardware_experiment_vqe_quality_gates"
     )
     _gradient_tape_quality_gates = import_module("tools.gradient_tape_quality_gates")
+    _hamiltonian_learning_quality_gates = import_module("tools.hamiltonian_learning_quality_gates")
     _hardware_hal_quality_gates = import_module("tools.hardware_hal_quality_gates")
     _openpulse_control_quality_gates = import_module("tools.openpulse_control_quality_gates")
     _pulse_shaping_quality_gates = import_module("tools.pulse_shaping_quality_gates")
@@ -912,6 +914,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_hls_cosimulation_evidence_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_objectives_quality_gates.build_static_quality_gates(_PY),
     *_dla_parity_witness_quality_gates.build_static_quality_gates(_PY),
+    *_hamiltonian_learning_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_parity_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_projection_quality_gates.build_static_quality_gates(_PY),
     *_magnetisation_sectors_quality_gates.build_static_quality_gates(_PY),
@@ -1439,6 +1442,7 @@ DLA_TOPOLOGY_OBJECTIVES_COVERAGE_GATES = (
     _dla_topology_objectives_quality_gates.build_coverage_gates(_PY)
 )
 DLA_PARITY_WITNESS_COVERAGE_GATES = _dla_parity_witness_quality_gates.build_coverage_gates(_PY)
+HAMILTONIAN_LEARNING_COVERAGE_GATES = _hamiltonian_learning_quality_gates.build_coverage_gates(_PY)
 DLA_TOPOLOGY_PARITY_COVERAGE_GATES = _dla_topology_parity_quality_gates.build_coverage_gates(_PY)
 DLA_TOPOLOGY_PROJECTION_COVERAGE_GATES = (
     _dla_topology_projection_quality_gates.build_coverage_gates(_PY)
@@ -1910,6 +1914,7 @@ def main() -> int:
             gates.extend(HLS_COSIMULATION_EVIDENCE_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_OBJECTIVES_COVERAGE_GATES)
             gates.extend(DLA_PARITY_WITNESS_COVERAGE_GATES)
+            gates.extend(HAMILTONIAN_LEARNING_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_PARITY_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_PROJECTION_COVERAGE_GATES)
             gates.extend(MAGNETISATION_SECTORS_COVERAGE_GATES)

@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-30 — Hamiltonian-learning documentation and exact quality:
+  completed the preview-inclusive NumPy docstring and strict typing contracts
+  across the bounded inverse-fit owner and its direct tests, and wired
+  permanent real exact-simulator/COBYLA execution plus exact source coverage
+  into preflight and CI. Correlator construction, coupling reconstruction,
+  optimization budgets, public APIs, and explicit in-sample/non-hardware
+  claim boundaries are unchanged.
+
 - 2026-08-30 — DLA parity-witness documentation and exact quality: completed
   the preview-inclusive NumPy docstring contract across the parity witness and
   its complete shared observable integration surface, and wired permanent

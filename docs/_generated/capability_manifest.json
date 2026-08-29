@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1285
+    "test_files": 1286
   },
   "documentation": {
     "examples": [
@@ -8561,6 +8561,7 @@
       "tests/test_graph_topology_scan.py",
       "tests/test_h1_persistence.py",
       "tests/test_hamiltonian_learning.py",
+      "tests/test_hamiltonian_learning_quality_gate.py",
       "tests/test_hamiltonian_self_consistency.py",
       "tests/test_hardware_adapter_contracts.py",
       "tests/test_hardware_backends_branches.py",

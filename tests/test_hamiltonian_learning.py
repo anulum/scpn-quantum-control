@@ -20,25 +20,30 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestMeasureCorrelators:
-    def test_shape(self):
+    """Verify the exact correlator-matrix contract."""
+
+    def test_shape(self) -> None:
+        """The correlator matrix matches the oscillator count."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         C = measure_correlators(K, omega)
         assert C.shape == (3, 3)
 
-    def test_symmetric(self):
+    def test_symmetric(self) -> None:
+        """Exact XY correlators form a symmetric matrix."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         C = measure_correlators(K, omega)
         np.testing.assert_allclose(C, C.T, atol=1e-10)
 
-    def test_zero_diagonal(self):
+    def test_zero_diagonal(self) -> None:
+        """The correlator matrix keeps its diagonal at zero."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         C = measure_correlators(K, omega)
         np.testing.assert_allclose(np.diag(C), 0.0, atol=1e-10)
 
-    def test_bounded(self):
+    def test_bounded(self) -> None:
         """XY correlator bounded by [-2, 2]."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -47,28 +52,33 @@ class TestMeasureCorrelators:
 
 
 class TestLearnHamiltonian:
-    def test_returns_result(self):
+    """Verify bounded coupling-fit result invariants."""
+
+    def test_returns_result(self) -> None:
+        """The learner returns its typed result record."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         C = measure_correlators(K, omega)
         result = learn_hamiltonian(C, omega, maxiter=10)
         assert isinstance(result, HamiltonianLearningResult)
 
-    def test_learned_K_symmetric(self):
+    def test_learned_K_symmetric(self) -> None:
+        """The reconstructed coupling matrix remains symmetric."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         C = measure_correlators(K, omega)
         result = learn_hamiltonian(C, omega, maxiter=10)
         np.testing.assert_allclose(result.K_learned, result.K_learned.T, atol=1e-10)
 
-    def test_learned_K_non_negative(self):
+    def test_learned_K_non_negative(self) -> None:
+        """The reconstructed coupling matrix remains non-negative."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         C = measure_correlators(K, omega)
         result = learn_hamiltonian(C, omega, maxiter=10)
         assert np.all(result.K_learned >= -1e-10)
 
-    def test_correlator_error_decreases(self):
+    def test_correlator_error_decreases(self) -> None:
         """Learning should reduce correlator error vs random K."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
@@ -77,7 +87,7 @@ class TestLearnHamiltonian:
         # Error should be finite
         assert result.correlator_error < 10.0
 
-    def test_self_consistent(self):
+    def test_self_consistent(self) -> None:
         """If we give the true K as init, error should be near zero."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
@@ -85,7 +95,8 @@ class TestLearnHamiltonian:
         result = learn_hamiltonian(C, omega, K_init=K, maxiter=5)
         assert result.correlator_error < 0.1
 
-    def test_loss_non_negative(self):
+    def test_loss_non_negative(self) -> None:
+        """The sum-of-squares objective remains non-negative."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         C = measure_correlators(K, omega)
@@ -99,7 +110,9 @@ class TestLearnHamiltonian:
 
 
 class TestLearningPhysics:
-    def test_3qubit_correlators_stronger(self):
+    """Verify finite inverse-problem structure."""
+
+    def test_3qubit_correlators_stronger(self) -> None:
         """Stronger coupling → larger off-diagonal correlators."""
         omega = OMEGA_N_16[:3]
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
@@ -108,7 +121,8 @@ class TestLearningPhysics:
         C_strong = measure_correlators(build_knm_paper27(L=3, K_base=2.0), omega)
         assert np.max(np.abs(C_strong)) > np.max(np.abs(C_weak))
 
-    def test_learned_K_shape(self):
+    def test_learned_K_shape(self) -> None:
+        """A three-oscillator fit returns a three-by-three matrix."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         C = measure_correlators(K, omega)
@@ -122,8 +136,11 @@ class TestLearningPhysics:
 
 
 class TestLearningPipeline:
-    def test_pipeline_knm_to_learned_K(self):
+    """Verify the complete synthetic Hamiltonian-learning pipeline."""
+
+    def test_pipeline_knm_to_learned_K(self) -> None:
         """Full pipeline: build_knm → measure correlators → learn K.
+
         Verifies Hamiltonian learning is wired end-to-end.
         """
         import time

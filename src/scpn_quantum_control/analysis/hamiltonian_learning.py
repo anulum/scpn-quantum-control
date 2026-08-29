@@ -58,6 +58,7 @@ class HamiltonianLearningResult:
         Number of COBYLA objective evaluations reported by SciPy.
     correlator_error
         Mean absolute residual over the full correlator matrix.
+
     """
 
     K_learned: NDArray[np.float64]
@@ -88,6 +89,7 @@ def measure_correlators(
     Notes
     -----
     This is an exact-simulator helper, not a hardware measurement routine.
+
     """
     n = K.shape[0]
     exact = classical_exact_diag(n, K=K, omega=omega)
@@ -180,6 +182,7 @@ def learn_hamiltonian(
     The objective repeatedly performs dense exact diagonalization. A small
     residual is not an identifiability, uncertainty, held-out, or experimental
     validation certificate.
+
     """
     n = len(omega)
 
