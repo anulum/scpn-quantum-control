@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1284
+    "test_files": 1285
   },
   "documentation": {
     "examples": [
@@ -8442,6 +8442,7 @@
       "tests/test_dla_parity_reproduce.py",
       "tests/test_dla_parity_schema.py",
       "tests/test_dla_parity_theorem.py",
+      "tests/test_dla_parity_witness_quality_gate.py",
       "tests/test_dla_protected_scar.py",
       "tests/test_dla_protected_scar_branches.py",
       "tests/test_dla_protected_subspace.py",

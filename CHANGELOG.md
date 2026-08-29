@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-30 — DLA parity-witness documentation and exact quality: completed
+  the preview-inclusive NumPy docstring contract across the parity witness and
+  its complete shared observable integration surface, and wired permanent
+  strict typing, real multi-observable execution, and exact source coverage
+  into preflight and CI. Parity classification, balanced negative controls,
+  physical asymmetry bounds, public APIs, and bounded witness claims are
+  unchanged.
+
 - 2026-08-30 — Control StructuredAnsatz documentation and exact quality:
   completed the preview-inclusive NumPy docstring and strict typing contracts
   across the physical Kuramoto-XY circuit owner and its direct tests, and

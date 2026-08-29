@@ -99,6 +99,7 @@ if TYPE_CHECKING:
     from tools import (
         differentiable_transform_support_matrix_artifact_quality_gates as _transform_support_matrix_artifact_quality_gates,
     )
+    from tools import dla_parity_witness_quality_gates as _dla_parity_witness_quality_gates
     from tools import (
         dla_topology_objectives_quality_gates as _dla_topology_objectives_quality_gates,
     )
@@ -418,6 +419,7 @@ else:
     _dla_topology_objectives_quality_gates = import_module(
         "tools.dla_topology_objectives_quality_gates"
     )
+    _dla_parity_witness_quality_gates = import_module("tools.dla_parity_witness_quality_gates")
     _dla_topology_parity_quality_gates = import_module("tools.dla_topology_parity_quality_gates")
     _dla_topology_projection_quality_gates = import_module(
         "tools.dla_topology_projection_quality_gates"
@@ -909,6 +911,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_qpu_compute_types_quality_gates.build_static_quality_gates(_PY),
     *_hls_cosimulation_evidence_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_objectives_quality_gates.build_static_quality_gates(_PY),
+    *_dla_parity_witness_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_parity_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_projection_quality_gates.build_static_quality_gates(_PY),
     *_magnetisation_sectors_quality_gates.build_static_quality_gates(_PY),
@@ -1435,6 +1438,7 @@ HLS_COSIMULATION_EVIDENCE_COVERAGE_GATES = (
 DLA_TOPOLOGY_OBJECTIVES_COVERAGE_GATES = (
     _dla_topology_objectives_quality_gates.build_coverage_gates(_PY)
 )
+DLA_PARITY_WITNESS_COVERAGE_GATES = _dla_parity_witness_quality_gates.build_coverage_gates(_PY)
 DLA_TOPOLOGY_PARITY_COVERAGE_GATES = _dla_topology_parity_quality_gates.build_coverage_gates(_PY)
 DLA_TOPOLOGY_PROJECTION_COVERAGE_GATES = (
     _dla_topology_projection_quality_gates.build_coverage_gates(_PY)
@@ -1905,6 +1909,7 @@ def main() -> int:
             gates.extend(QPU_COMPUTE_TYPES_COVERAGE_GATES)
             gates.extend(HLS_COSIMULATION_EVIDENCE_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_OBJECTIVES_COVERAGE_GATES)
+            gates.extend(DLA_PARITY_WITNESS_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_PARITY_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_PROJECTION_COVERAGE_GATES)
             gates.extend(MAGNETISATION_SECTORS_COVERAGE_GATES)

@@ -24,9 +24,11 @@ class DLAParityWitness:
     split_odd_even : bool, default=True
         Compatibility flag retained on the witness instance. The current
         observable always reports the odd/even parity split.
+
     """
 
     def __init__(self, split_odd_even: bool = True) -> None:
+        """Initialize the witness with its compatibility-mode flag."""
         self.split_odd_even = split_odd_even
 
     def __call__(self, counts: Mapping[str, int] | None = None, **kwargs: Any) -> dict[str, float]:
@@ -45,6 +47,7 @@ class DLAParityWitness:
         dict[str, float]
             DLA asymmetry percentage, odd/even robustness fractions, and the
             total shot count when at least one shot is present.
+
         """
         if counts is None or len(counts) == 0:
             return {"dla_asymmetry": 0.0, "odd_robustness": 0.5, "even_robustness": 0.5}

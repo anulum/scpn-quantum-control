@@ -30,6 +30,7 @@ from scpn_quantum_control.analysis.thermodynamic_witness import ThermodynamicWit
 
 
 def test_all_observables_with_real_counts() -> None:
+    """All observable facades return claim-bounded real-count outputs."""
     # Realistic 8-qubit measurement counts (example from actual circuit)
     counts = {"00000000": 4523, "11111111": 3187, "01010101": 1740, "10101010": 550}
 
@@ -66,6 +67,7 @@ def test_all_observables_with_real_counts() -> None:
 
 
 def test_thermodynamic_witness_requires_explicit_work_input() -> None:
+    """Thermodynamic estimates reject missing work samples."""
     witness = ThermodynamicWitness()
 
     with pytest.raises(ValueError, match="work_samples_joule"):
@@ -73,6 +75,7 @@ def test_thermodynamic_witness_requires_explicit_work_input() -> None:
 
 
 def test_thermodynamic_witness_reports_sample_statistics_and_jarzynski_residual() -> None:
+    """Thermodynamic outputs expose sample and Jarzynski statistics."""
     witness = ThermodynamicWitness()
 
     result = witness(
@@ -90,6 +93,7 @@ def test_thermodynamic_witness_reports_sample_statistics_and_jarzynski_residual(
 
 
 def test_dla_parity_witness_reports_empty_and_balanced_negative_controls() -> None:
+    """Empty and balanced counts retain the parity negative control."""
     witness = DLAParityWitness()
 
     assert witness({}) == {"dla_asymmetry": 0.0, "odd_robustness": 0.5, "even_robustness": 0.5}
@@ -107,6 +111,7 @@ def test_dla_parity_witness_reports_empty_and_balanced_negative_controls() -> No
 
 
 def test_dla_parity_witness_keeps_physical_asymmetry_bounds() -> None:
+    """Pure parity populations reach only the physical asymmetry bounds."""
     witness = DLAParityWitness()
 
     all_odd = witness({"01": 7})
@@ -117,6 +122,7 @@ def test_dla_parity_witness_keeps_physical_asymmetry_bounds() -> None:
 
 
 def test_integrated_information_does_not_report_entropy_proxy_as_phi() -> None:
+    """Entropy alone is never presented as integrated information."""
     witness = IntegratedInformationPhi()
 
     with pytest.raises(NotImplementedError, match="integrated information"):
@@ -124,6 +130,7 @@ def test_integrated_information_does_not_report_entropy_proxy_as_phi() -> None:
 
 
 def test_integrated_information_entropy_proxy_is_explicitly_labelled() -> None:
+    """The opt-in entropy proxy remains explicitly non-Phi."""
     witness = IntegratedInformationPhi()
 
     result = witness({"00": 5, "11": 5}, allow_entropy_proxy=True)
@@ -135,6 +142,7 @@ def test_integrated_information_entropy_proxy_is_explicitly_labelled() -> None:
 
 
 def test_integrated_information_entropy_proxy_handles_empty_counts_without_phi_claim() -> None:
+    """Empty counts produce a zero proxy without a Phi claim."""
     witness = IntegratedInformationPhi()
 
     result = witness({}, allow_entropy_proxy=True)
@@ -147,6 +155,7 @@ def test_integrated_information_entropy_proxy_handles_empty_counts_without_phi_c
 
 
 def test_integrated_information_entropy_proxy_rejects_invalid_count_totals() -> None:
+    """Entropy-proxy counts require positive nonnegative totals."""
     witness = IntegratedInformationPhi()
 
     with pytest.raises(ValueError, match="positive total"):
@@ -156,6 +165,7 @@ def test_integrated_information_entropy_proxy_rejects_invalid_count_totals() -> 
 
 
 def test_integrated_information_requires_explicit_mutual_information_proxy_opt_in() -> None:
+    """Mutual-information output requires explicit proxy consent."""
     witness = IntegratedInformationPhi()
     coupling_matrix = np.array(
         [
@@ -194,6 +204,7 @@ def test_integrated_information_requires_explicit_mutual_information_proxy_opt_i
 
 
 def test_integrated_information_rejects_partial_or_invalid_hamiltonian_inputs() -> None:
+    """Hamiltonian proxy inputs must be complete, finite, and symmetric."""
     witness = IntegratedInformationPhi()
 
     with pytest.raises(ValueError, match="coupling_matrix and natural_frequencies"):
@@ -225,6 +236,7 @@ def test_integrated_information_rejects_partial_or_invalid_hamiltonian_inputs() 
 
 
 def test_quantum_fisher_information_refuses_proxy_by_default() -> None:
+    """Diagnostic inputs do not silently become quantum Fisher information."""
     qfi = QuantumFisherInformation()
 
     with pytest.raises(NotImplementedError, match="coupling_matrix"):
@@ -232,6 +244,7 @@ def test_quantum_fisher_information_refuses_proxy_by_default() -> None:
 
 
 def test_quantum_fisher_information_requires_complete_production_inputs() -> None:
+    """Real QFI evaluation requires both Hamiltonian input arrays."""
     qfi = QuantumFisherInformation()
 
     with pytest.raises(ValueError, match="both coupling_matrix and natural_frequencies"):
@@ -239,6 +252,7 @@ def test_quantum_fisher_information_requires_complete_production_inputs() -> Non
 
 
 def test_quantum_fisher_information_proxy_is_explicitly_labelled() -> None:
+    """The opt-in QFI proxy remains explicitly non-QFI."""
     qfi = QuantumFisherInformation()
 
     result = qfi({"00": 5, "11": 5}, sync_order=0.95, dla_asymmetry=8.0, allow_proxy_estimate=True)
@@ -250,6 +264,7 @@ def test_quantum_fisher_information_proxy_is_explicitly_labelled() -> None:
 
 
 def test_quantum_fisher_information_proxy_can_derive_inputs_from_counts() -> None:
+    """Count-based proxy mode derives bounded diagnostic inputs."""
     qfi = QuantumFisherInformation()
 
     result = qfi({"00": 6, "11": 4}, allow_proxy_estimate=True)
@@ -262,6 +277,7 @@ def test_quantum_fisher_information_proxy_can_derive_inputs_from_counts() -> Non
 
 
 def test_quantum_fisher_information_proxy_requires_all_diagnostic_inputs() -> None:
+    """Partial explicit diagnostic inputs fail closed."""
     qfi = QuantumFisherInformation()
 
     with pytest.raises(ValueError, match="sync_order and dla_asymmetry"):
@@ -269,6 +285,7 @@ def test_quantum_fisher_information_proxy_requires_all_diagnostic_inputs() -> No
 
 
 def test_quantum_fisher_information_routes_real_hamiltonian_inputs_to_qfi_engine() -> None:
+    """Complete Hamiltonian inputs route to the real QFI engine."""
     import numpy as np
 
     qfi = QuantumFisherInformation()
@@ -313,6 +330,7 @@ def test_quantum_fisher_information_routes_real_hamiltonian_inputs_to_qfi_engine
 def test_quantum_fisher_information_rejects_invalid_production_inputs(
     kwargs: dict[str, Any], match: str
 ) -> None:
+    """Malformed production QFI parameters fail closed."""
     qfi = QuantumFisherInformation()
     base_kwargs: dict[str, Any] = {
         "coupling_matrix": np.array([[0.0, 1.0], [1.0, 0.0]]),
@@ -327,6 +345,7 @@ def test_quantum_fisher_information_rejects_invalid_production_inputs(
 
 
 def test_logical_sync_witness_refuses_fidelity_only_proxy_by_default() -> None:
+    """Fidelity alone is not silently promoted to a logical-sync witness."""
     logical = LogicalSyncWitness()
 
     with pytest.raises(NotImplementedError, match="counts or probabilities"):
@@ -334,6 +353,7 @@ def test_logical_sync_witness_refuses_fidelity_only_proxy_by_default() -> None:
 
 
 def test_logical_sync_witness_fidelity_proxy_is_explicitly_labelled() -> None:
+    """The opt-in fidelity proxy remains explicitly non-witness evidence."""
     logical = LogicalSyncWitness()
 
     result = logical(logical_fidelity=0.92, allow_fidelity_proxy=True)
@@ -346,6 +366,7 @@ def test_logical_sync_witness_fidelity_proxy_is_explicitly_labelled() -> None:
 
 
 def test_logical_sync_witness_infers_spec_from_probability_vector() -> None:
+    """A valid probability vector supplies its logical specification."""
     logical = LogicalSyncWitness()
     probabilities = np.array([1.0, 0.0], dtype=np.float64)
 
@@ -357,6 +378,7 @@ def test_logical_sync_witness_infers_spec_from_probability_vector() -> None:
 
 
 def test_logical_sync_witness_rejects_missing_and_non_power_probability_inputs() -> None:
+    """Logical witness inputs require a power-of-two probability vector."""
     logical = LogicalSyncWitness()
 
     with pytest.raises(ValueError, match="provided"):
@@ -369,6 +391,7 @@ def test_logical_sync_witness_rejects_missing_and_non_power_probability_inputs()
 def test_logical_sync_witness_fidelity_proxy_rejects_invalid_values(
     logical_fidelity: float,
 ) -> None:
+    """Fidelity proxies reject non-finite and out-of-range values."""
     logical = LogicalSyncWitness()
 
     with pytest.raises(ValueError, match="logical_fidelity"):
@@ -376,6 +399,7 @@ def test_logical_sync_witness_fidelity_proxy_rejects_invalid_values(
 
 
 def test_adaptive_fim_feedback_reduces_lambda_for_bad_leakage_and_deadband_holds() -> None:
+    """Leakage feedback reduces lambda while its deadband holds steady."""
     witness = FIMWitness(leakage=0.18, retention=0.93, depth=12, shots=4096)
     config = AdaptiveFIMConfig(lambda_min=0.0, lambda_max=1.0, step_gain=2.0, deadband=0.01)
 
@@ -390,6 +414,7 @@ def test_adaptive_fim_feedback_reduces_lambda_for_bad_leakage_and_deadband_holds
 
 
 def test_adaptive_fim_feedback_retention_mode_clips_and_preserves_provenance() -> None:
+    """Retention recovery clips safely and preserves witness provenance."""
     config = AdaptiveFIMConfig(
         lambda_min=0.2,
         lambda_max=1.0,
@@ -429,11 +454,13 @@ def test_adaptive_fim_feedback_retention_mode_clips_and_preserves_provenance() -
 def test_adaptive_fim_feedback_rejects_invalid_configuration_and_witnesses(
     factory: Callable[[], object], match: str
 ) -> None:
+    """Invalid feedback configuration and witness records fail closed."""
     with pytest.raises(ValueError, match=match):
         factory()
 
 
 def test_adaptive_fim_feedback_rejects_invalid_current_lambda() -> None:
+    """Adaptive feedback rejects invalid current lambda values."""
     with pytest.raises(ValueError, match="current_lambda"):
         propose_next_lambda(-0.1, FIMWitness(leakage=0.0, retention=1.0))
     with pytest.raises(ValueError, match="current_lambda"):
