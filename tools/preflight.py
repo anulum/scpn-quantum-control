@@ -290,6 +290,9 @@ if TYPE_CHECKING:
     from tools import (
         wirtinger_implicit_product_quality_gates as _wirtinger_implicit_product_quality_gates,
     )
+    from tools import (
+        xy_compile_recompute_artifact_quality_gates as _xy_compile_recompute_artifact_quality_gates,
+    )
 else:
     _repo_root = str(Path(__file__).resolve().parents[1])
     if _repo_root not in sys.path:
@@ -553,6 +556,9 @@ else:
     )
     _visualisation_dashboard_product_quality_gates = import_module(
         "tools.visualisation_dashboard_product_quality_gates"
+    )
+    _xy_compile_recompute_artifact_quality_gates = import_module(
+        "tools.xy_compile_recompute_artifact_quality_gates"
     )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -909,6 +915,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_result_pack_seal_quality_gates.build_static_quality_gates(_PY),
     *_layout_relaxation_experiment_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_crossover_admission_quality_gates.build_static_quality_gates(_PY),
+    *_xy_compile_recompute_artifact_quality_gates.build_static_quality_gates(_PY),
     *_sync_uncertainty_quality_gates.build_static_quality_gates(_PY),
     *_coupling_invariant_quality_gates.build_static_quality_gates(_PY),
     *_experiment_dynamics_quality_gates.build_static_quality_gates(_PY),
@@ -1443,6 +1450,9 @@ LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_GATES = (
 TN_MPS_CROSSOVER_ADMISSION_COVERAGE_GATES = (
     _tn_mps_crossover_admission_quality_gates.build_coverage_gates(_PY)
 )
+XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_GATES = (
+    _xy_compile_recompute_artifact_quality_gates.build_coverage_gates(_PY)
+)
 SYNC_UNCERTAINTY_COVERAGE_GATES = _sync_uncertainty_quality_gates.build_coverage_gates(_PY)
 COUPLING_INVARIANT_COVERAGE_GATES = _coupling_invariant_quality_gates.build_coverage_gates(_PY)
 EXPERIMENT_DYNAMICS_COVERAGE_GATES = _experiment_dynamics_quality_gates.build_coverage_gates(_PY)
@@ -1897,6 +1907,7 @@ def main() -> int:
             gates.extend(RESULT_PACK_SEAL_COVERAGE_GATES)
             gates.extend(LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_GATES)
             gates.extend(TN_MPS_CROSSOVER_ADMISSION_COVERAGE_GATES)
+            gates.extend(XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_GATES)
             gates.extend(SYNC_UNCERTAINTY_COVERAGE_GATES)
             gates.extend(COUPLING_INVARIANT_COVERAGE_GATES)
             gates.extend(EXPERIMENT_DYNAMICS_COVERAGE_GATES)

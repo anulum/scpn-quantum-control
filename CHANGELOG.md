@@ -1,5 +1,12 @@
 # Changelog
 
+- 2026-08-30 — XY-compile recompute-artifact documentation and exact quality:
+  completed the preview-inclusive NumPy docstring and strict typing contracts,
+  added real module-entrypoint execution, and wired permanent committed-unit
+  verification plus exact source coverage into preflight and CI. Paper-27
+  inputs, tolerances, packing, digests, artifact bytes, public APIs, browser
+  recompute semantics, and bounded non-physical claims are unchanged.
+
 - 2026-08-29 — TN/MPS crossover-admission documentation quality: completed
   the preview-inclusive NumPy docstring contract across the immutable
   admission-schema owner and wired permanent strict typing, real report/row/

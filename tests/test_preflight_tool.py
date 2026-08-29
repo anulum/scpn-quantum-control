@@ -1065,6 +1065,8 @@ def test_main_uses_coverage_pytest_by_default(
         "layout-relaxation-experiment exact coverage threshold",
         "TN/MPS-crossover-admission focused coverage",
         "TN/MPS-crossover-admission exact coverage threshold",
+        "XY-compile-recompute-artifact focused coverage",
+        "XY-compile-recompute-artifact exact coverage threshold",
         "synchronisation-uncertainty focused coverage",
         "synchronisation-uncertainty exact coverage threshold",
         "coupling-invariant focused coverage",

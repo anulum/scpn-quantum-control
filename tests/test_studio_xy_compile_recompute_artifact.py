@@ -10,11 +10,14 @@
 from __future__ import annotations
 
 import json
+import runpy
+import sys
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
 
@@ -31,8 +34,8 @@ COMMITTED_JSON = REPO_ROOT / artifact.DEFAULT_XY_COMPILE_RECOMPUTE_JSON_PATH
 
 
 def _payload_with_unit(
-    K_nm: np.ndarray,
-    omega: np.ndarray,
+    K_nm: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     time: float = 0.1,
     trotter_steps: int = 1,
@@ -164,21 +167,33 @@ def test_validation_rejects_a_non_dict_unit() -> None:
 def test_validation_rejects_a_structurally_invalid_unit() -> None:
     """A unit the reference verifier raises on fails validation, not crashes."""
     payload = artifact.build_xy_compile_recompute_artifact()
-    del payload["unit"]["schema"]
+    unit = payload["unit"]
+    assert isinstance(unit, dict)
+    del unit["schema"]
     assert not artifact.validate_xy_compile_recompute_artifact(payload)
 
 
 @pytest.mark.parametrize(
-    "override",
+    ("time", "trotter_steps", "trotter_order"),
     [
-        {"time": 0.2},
-        {"trotter_steps": 2},
-        {"trotter_order": 2},
+        (0.2, 1, 1),
+        (0.1, 2, 1),
+        (0.1, 1, 2),
     ],
 )
-def test_validation_rejects_foreign_compile_parameters(override: dict[str, float]) -> None:
+def test_validation_rejects_foreign_compile_parameters(
+    time: float,
+    trotter_steps: int,
+    trotter_order: int,
+) -> None:
     """A self-verifying unit built with non-Paper-27 parameters is rejected."""
-    payload = _payload_with_unit(build_knm_paper27(L=16), OMEGA_N_16, **override)
+    payload = _payload_with_unit(
+        build_knm_paper27(L=16),
+        OMEGA_N_16,
+        time=time,
+        trotter_steps=trotter_steps,
+        trotter_order=trotter_order,
+    )
     # the swapped unit still self-verifies against its own inputs...
     assert verify_xy_compile_recompute_unit(payload["unit"]).value == "match"
     # ...but its parameters no longer bind to the committed Paper-27 constants.
@@ -222,3 +237,19 @@ def test_validation_tolerates_sub_tolerance_platform_drift() -> None:
     payload = _payload_with_unit(K, OMEGA_N_16)
     assert verify_xy_compile_recompute_unit(payload["unit"]).value == "match"
     assert artifact.validate_xy_compile_recompute_artifact(payload)
+
+
+def test_module_entrypoint_prints_a_verified_payload(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """The real module entrypoint exits successfully with a verified payload."""
+    monkeypatch.delitem(sys.modules, artifact.__name__)
+    monkeypatch.setattr(sys, "argv", [str(Path(artifact.__file__).resolve())])
+
+    with pytest.raises(SystemExit) as exc_info:
+        runpy.run_module(artifact.__name__, run_name="__main__", alter_sys=True)
+
+    assert exc_info.value.code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["artifact_id"] == artifact.XY_COMPILE_RECOMPUTE_ARTIFACT_ID

@@ -113,6 +113,7 @@ def build_xy_compile_recompute_artifact() -> dict[str, object]:
     ValueError
         If the freshly built unit fails its own Python round-trip
         verification — an unverifiable unit is never serialised.
+
     """
     unit = build_xy_compile_recompute_unit(
         build_knm_paper27(L=XY_COMPILE_RECOMPUTE_LATTICE),
@@ -192,6 +193,7 @@ def validate_xy_compile_recompute_artifact(payload: dict[str, object]) -> bool:
     -------
     bool
         ``True`` when all three conditions hold.
+
     """
     if any(payload.get(key) != value for key, value in _expected_artifact_metadata().items()):
         return False
@@ -222,6 +224,7 @@ def main(argv: list[str] | None = None) -> int:
     -------
     int
         ``0`` on success; ``1`` when ``--check`` finds committed-artefact drift.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1282
+    "test_files": 1283
   },
   "documentation": {
     "examples": [
@@ -9408,6 +9408,7 @@
       "tests/test_witness_discovery_engine_fallback.py",
       "tests/test_xxz_hamiltonian.py",
       "tests/test_xxz_phase_diagram.py",
+      "tests/test_xy_compile_recompute_artifact_quality_gate.py",
       "tests/test_xy_compiler.py",
       "tests/test_xy_compiler_contracts.py",
       "tests/test_xy_kuramoto.py",
