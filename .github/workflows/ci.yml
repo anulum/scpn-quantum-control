@@ -5267,15 +5267,19 @@ jobs:
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/applications/honesty_kits.py
+          src/scpn_quantum_control/applications/dataset_catalog.py
           tests/test_application_honesty_kits.py
+          tests/test_dataset_catalog.py
           scripts/run_application_honesty_audit.py
           tools/application_honesty_quality_gates.py
           tests/test_application_honesty_quality_gate.py
       - run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D107,D413,D417,D420
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/applications/honesty_kits.py
+          src/scpn_quantum_control/applications/dataset_catalog.py
           tests/test_application_honesty_kits.py
+          tests/test_dataset_catalog.py
           scripts/run_application_honesty_audit.py
           tools/application_honesty_quality_gates.py
           tests/test_application_honesty_quality_gate.py
@@ -5283,11 +5287,14 @@ jobs:
       - run: >-
           python -m coverage run --rcfile=/dev/null
           --data-file=.coverage.application-honesty-quality --branch
-          -m pytest -q tests/test_application_honesty_kits.py
+          -m pytest -q
+          tests/test_application_honesty_kits.py
+          tests/test_dataset_catalog.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.application-honesty-quality
-          --precision=2 --fail-under=100 --include=*/applications/honesty_kits.py
+          --precision=2 --fail-under=100
+          --include=*/applications/honesty_kits.py,*/applications/dataset_catalog.py
 
   layout-method-comparison-quality:
     needs: lint

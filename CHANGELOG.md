@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-30 — Application dataset-catalog documentation and exact quality:
+  completed the preview-inclusive NumPy docstring contract across packaged
+  benchmark privacy custody and extended the existing application-honesty
+  owner with strict typing, real packaged-artifact execution, and exact shared
+  source coverage in preflight and CI. Descriptor identity, provenance and
+  privacy matching, publication-safe refusal, defensive hashes, public APIs,
+  and curated-public claim boundaries are unchanged.
+
 - 2026-08-30 — Hamiltonian-learning documentation and exact quality:
   completed the preview-inclusive NumPy docstring and strict typing contracts
   across the bounded inverse-fit owner and its direct tests, and wired

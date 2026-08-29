@@ -20,17 +20,24 @@ def test_static_gates_cover_typing_docs_and_evidence() -> None:
         gates["mypy-strict-application-honesty-quality"][5:]
         == quality_gates.APPLICATION_HONESTY_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D application-honesty quality ratchet"]
+    docstring = gates["ruff D application-honesty quality ratchet"]
+    assert "--preview" in docstring
+    assert "D,D107,D413,D417,D420" in docstring
     assert gates["application-honesty evidence drift"][-1] == "--check"
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
     """Require branch execution and exact source-only coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["application-honesty focused coverage"]
+    run = gates["application-honesty focused coverage"]
+    assert "--branch" in run
+    assert (
+        run[-len(quality_gates.APPLICATION_HONESTY_COVERAGE_COHORT) :]
+        == quality_gates.APPLICATION_HONESTY_COVERAGE_COHORT
+    )
     threshold = gates["application-honesty exact coverage threshold"]
     assert "--fail-under=100" in threshold
-    assert "--include=*/applications/honesty_kits.py" in threshold
+    assert f"--include={quality_gates.APPLICATION_HONESTY_COVERAGE_INCLUDE}" in threshold
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -49,4 +56,6 @@ def test_ci_runs_and_aggregates_gate() -> None:
     end = workflow.index("\n\n  layout-method-comparison-quality:", start)
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.APPLICATION_HONESTY_QUALITY_RATCHET)
+    assert all(path in block for path in quality_gates.APPLICATION_HONESTY_COVERAGE_COHORT)
+    assert quality_gates.APPLICATION_HONESTY_COVERAGE_INCLUDE in block
     assert "application-honesty-quality" in workflow[workflow.index("  ci-gate:") :]

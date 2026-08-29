@@ -147,6 +147,7 @@ class ApplicationBenchmarkPrivacyAudit:
     passed
         Always ``True`` for returned rows; mismatches raise instead of
         returning an ambiguous partial result.
+
     """
 
     dataset_id: str
@@ -194,6 +195,7 @@ def load_application_benchmark_artifact(dataset_id: str) -> QPUDataArtifact:
     ValueError
         If identity, domain, provenance mode, privacy boundary, or publication
         safety disagrees with the catalogue descriptor.
+
     """
     descriptor = get_application_benchmark_descriptor(dataset_id)
     artifact = read_qpu_data_artifact(descriptor.path)
@@ -235,6 +237,7 @@ def audit_application_benchmark_privacy() -> tuple[ApplicationBenchmarkPrivacyAu
     This audit reads only files beneath ``data/public_application_benchmarks``.
     It never traverses external paths, downloads data, or treats a curated
     matrix as raw domain evidence.  Any mismatch raises immediately.
+
     """
     rows: list[ApplicationBenchmarkPrivacyAudit] = []
     for descriptor in _DESCRIPTORS:

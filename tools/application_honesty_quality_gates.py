@@ -14,7 +14,9 @@ from os import devnull
 Gate = tuple[str, list[str]]
 APPLICATION_HONESTY_QUALITY_RATCHET = [
     "src/scpn_quantum_control/applications/honesty_kits.py",
+    "src/scpn_quantum_control/applications/dataset_catalog.py",
     "tests/test_application_honesty_kits.py",
+    "tests/test_dataset_catalog.py",
     "scripts/run_application_honesty_audit.py",
     "tools/application_honesty_quality_gates.py",
     "tests/test_application_honesty_quality_gate.py",
@@ -22,6 +24,15 @@ APPLICATION_HONESTY_QUALITY_RATCHET = [
 """Ordered strict-typing and NumPy-docstring cohort."""
 APPLICATION_HONESTY_COVERAGE_DATA_FILE = ".coverage.application-honesty-quality"
 """Isolated coverage database for the application honesty module."""
+APPLICATION_HONESTY_COVERAGE_COHORT = [
+    "tests/test_application_honesty_kits.py",
+    "tests/test_dataset_catalog.py",
+]
+"""Real honesty-policy and packaged-catalogue execution cohort."""
+APPLICATION_HONESTY_COVERAGE_INCLUDE = (
+    "*/applications/honesty_kits.py,*/applications/dataset_catalog.py"
+)
+"""Exact source owners enforced by the shared coverage report."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -46,8 +57,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D107,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *APPLICATION_HONESTY_QUALITY_RATCHET,
@@ -77,7 +89,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 "-m",
                 "pytest",
                 "-q",
-                "tests/test_application_honesty_kits.py",
+                *APPLICATION_HONESTY_COVERAGE_COHORT,
             ],
         ),
         (
@@ -91,14 +103,16 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={data}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/applications/honesty_kits.py",
+                f"--include={APPLICATION_HONESTY_COVERAGE_INCLUDE}",
             ],
         ),
     ]
 
 
 __all__ = [
+    "APPLICATION_HONESTY_COVERAGE_COHORT",
     "APPLICATION_HONESTY_COVERAGE_DATA_FILE",
+    "APPLICATION_HONESTY_COVERAGE_INCLUDE",
     "APPLICATION_HONESTY_QUALITY_RATCHET",
     "build_coverage_gates",
     "build_static_quality_gates",
