@@ -169,6 +169,7 @@ def reservoir_features(
     -------
     ReservoirResult
         Pauli expectation features and their labels.
+
     """
     K = _validated_coupling_matrix(K)
     n = K.shape[0]
@@ -246,6 +247,7 @@ def reservoir_feature_matrix(
     -------
     numpy.ndarray
         Feature matrix with shape ``(n_samples, n_reservoir_features)``.
+
     """
     X = _validated_feature_matrix(X)
     K = _validated_coupling_matrix(K)
@@ -300,6 +302,7 @@ def reservoir_ridge_regression(
     -------
     tuple[numpy.ndarray, numpy.ndarray]
         Readout weights and training predictions.
+
     """
     X_train = _validated_feature_matrix(X_train)
     y_array = np.asarray(y_train, dtype=float)

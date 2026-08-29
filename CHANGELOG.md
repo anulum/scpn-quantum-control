@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Complete the preview NumPy docstring contract for the base quantum-reservoir
+  feature, matrix, and ridge surfaces and their direct tests, and extend the
+  existing QRC-baseline owner with real joint execution plus exact line/branch
+  coverage for both connected application modules.
+
 - Fix forward the current CI and Docker failures by refreshing deterministic
   coverage and dependency-environment evidence, registering the notebook
   curriculum hardening owner, and building the locked native quantum engine in

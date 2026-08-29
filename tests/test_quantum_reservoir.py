@@ -24,13 +24,17 @@ from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
 
 class TestReservoirFeatures:
+    """Exercise exact-statevector feature extraction and validation."""
+
     def test_returns_result(self) -> None:
+        """Return the typed reservoir result envelope."""
         K = build_knm_paper27(L=3)
         x = np.array([0.5, 0.3, 0.7])
         result = reservoir_features(x, K)
         assert isinstance(result, ReservoirResult)
 
     def test_feature_count(self) -> None:
+        """Count every requested single-qubit Pauli feature."""
         K = build_knm_paper27(L=3)
         x = np.array([0.5, 0.3, 0.7])
         result = reservoir_features(x, K, max_weight=1)
@@ -38,6 +42,7 @@ class TestReservoirFeatures:
         assert result.n_features == 9
 
     def test_features_bounded(self) -> None:
+        """Keep exact Pauli expectations inside their physical bounds."""
         K = build_knm_paper27(L=3)
         x = np.array([0.5, 0.3, 0.7])
         result = reservoir_features(x, K, max_weight=1)
@@ -45,28 +50,33 @@ class TestReservoirFeatures:
             assert abs(f) <= 1.0 + 1e-6
 
     def test_different_inputs_different_features(self) -> None:
+        """Map separated inputs to observably different feature vectors."""
         K = build_knm_paper27(L=3)
         r1 = reservoir_features(np.array([0.1, 0.1, 0.1]), K, max_weight=1)
         r2 = reservoir_features(np.array([0.9, 0.9, 0.9]), K, max_weight=1)
         assert not np.allclose(r1.features, r2.features)
 
     def test_labels_count_matches(self) -> None:
+        """Pair every generated feature with one Pauli label."""
         K = build_knm_paper27(L=3)
         x = np.array([0.5, 0.3, 0.7])
         result = reservoir_features(x, K, max_weight=2)
         assert len(result.feature_labels) == result.n_features
 
     def test_rejects_empty_feature_vector(self) -> None:
+        """Reject an input vector without encodable features."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="at least one feature"):
             reservoir_features(np.array([]), K)
 
     def test_rejects_non_square_coupling_matrix(self) -> None:
+        """Reject a coupling matrix that does not define a square system."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="K must be a square"):
             reservoir_features(np.array([0.1]), K[:2, :])
 
     def test_rejects_empty_or_nonfinite_coupling_matrix(self) -> None:
+        """Reject empty and non-finite coupling systems."""
         with pytest.raises(ValueError, match="at least one oscillator"):
             reservoir_features(np.array([0.1]), np.empty((0, 0)))
         K = build_knm_paper27(L=3)
@@ -75,6 +85,7 @@ class TestReservoirFeatures:
             reservoir_features(np.array([0.1, 0.2, 0.3]), K)
 
     def test_rejects_non_vector_or_nonfinite_input_features(self) -> None:
+        """Reject malformed or non-finite input feature vectors."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="x must be a 1-D"):
             reservoir_features(np.array([[0.1, 0.2, 0.3]]), K)
@@ -82,21 +93,25 @@ class TestReservoirFeatures:
             reservoir_features(np.array([0.1, np.inf, 0.3]), K)
 
     def test_rejects_omega_shape_mismatch(self) -> None:
+        """Reject a natural-frequency vector with the wrong system width."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="omega must be a vector matching K"):
             reservoir_features(np.array([0.1]), K, omega=np.zeros(2))
 
     def test_rejects_nonfinite_omega(self) -> None:
+        """Reject non-finite natural frequencies."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="omega must contain only finite"):
             reservoir_features(np.array([0.1]), K, omega=np.array([0.0, np.nan, 0.2]))
 
     def test_rejects_invalid_max_weight(self) -> None:
+        """Reject Pauli weights outside the available qubit range."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="max_weight must be between"):
             reservoir_features(np.array([0.1]), K, max_weight=0)
 
     def test_rejects_non_integer_max_weight(self) -> None:
+        """Reject a non-integral Pauli feature weight."""
         K = build_knm_paper27(L=3)
         with pytest.raises(TypeError, match="max_weight"):
             reservoir_features(np.array([0.1]), K, max_weight=cast(int, 1.5))
@@ -117,7 +132,10 @@ class TestReservoirFeatures:
 
 
 class TestReservoirFeatureMatrix:
+    """Exercise batched quantum-reservoir feature extraction."""
+
     def test_shape(self) -> None:
+        """Return one complete feature row per input sample."""
         K = build_knm_paper27(L=3)
         X = np.random.default_rng(42).uniform(size=(5, 3))
         F = reservoir_feature_matrix(X, K, max_weight=1)
@@ -125,21 +143,25 @@ class TestReservoirFeatureMatrix:
         assert F.shape[1] == 9  # 3 × 3 weight-1 Pauli features
 
     def test_rejects_one_dimensional_input(self) -> None:
+        """Reject a batch input without a sample axis."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="X must be a 2-D"):
             reservoir_feature_matrix(np.array([0.1, 0.2, 0.3]), K)
 
     def test_rejects_empty_sample_set(self) -> None:
+        """Reject a feature matrix without samples."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="at least one sample"):
             reservoir_feature_matrix(np.empty((0, 3)), K)
 
     def test_rejects_empty_feature_columns(self) -> None:
+        """Reject samples that contain no input features."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="at least one feature"):
             reservoir_feature_matrix(np.empty((2, 0)), K)
 
     def test_rejects_nonfinite_feature_matrix(self) -> None:
+        """Reject a batch containing a non-finite feature."""
         K = build_knm_paper27(L=3)
         X = np.random.default_rng(42).uniform(size=(3, 3))
         X[1, 2] = np.nan
@@ -154,7 +176,10 @@ class TestReservoirFeatureMatrix:
 
 
 class TestReservoirRidgeRegression:
+    """Exercise the classical ridge readout over real QRC features."""
+
     def test_returns_weights_and_preds(self) -> None:
+        """Return learned weights and one prediction per training row."""
         K = build_knm_paper27(L=3)
         X = np.random.default_rng(42).uniform(size=(8, 3))
         y = np.sin(X[:, 0])
@@ -163,6 +188,7 @@ class TestReservoirRidgeRegression:
         assert preds.shape == y.shape
 
     def test_predictions_finite(self) -> None:
+        """Produce finite ridge predictions for finite training data."""
         K = build_knm_paper27(L=3)
         X = np.random.default_rng(42).uniform(size=(8, 3))
         y = np.sin(X[:, 0])
@@ -170,12 +196,14 @@ class TestReservoirRidgeRegression:
         assert np.all(np.isfinite(preds))
 
     def test_rejects_mismatched_targets(self) -> None:
+        """Reject targets whose length differs from the sample count."""
         K = build_knm_paper27(L=3)
         X = np.random.default_rng(42).uniform(size=(8, 3))
         with pytest.raises(ValueError, match="y_train must be a vector matching"):
             reservoir_ridge_regression(X, np.ones(7), K, max_weight=1)
 
     def test_rejects_non_positive_regularisation(self) -> None:
+        """Reject a ridge penalty that is not finite and positive."""
         K = build_knm_paper27(L=3)
         X = np.random.default_rng(42).uniform(size=(8, 3))
         y = np.sin(X[:, 0])
@@ -183,6 +211,7 @@ class TestReservoirRidgeRegression:
             reservoir_ridge_regression(X, y, K, alpha=0.0, max_weight=1)
 
     def test_rejects_nonfinite_targets(self) -> None:
+        """Reject a training target vector containing infinities."""
         K = build_knm_paper27(L=3)
         X = np.random.default_rng(42).uniform(size=(8, 3))
         y = np.sin(X[:, 0])
@@ -197,6 +226,8 @@ class TestReservoirRidgeRegression:
 
 
 class TestReservoirPhysics:
+    """Check deterministic expressibility properties of the reservoir."""
+
     def test_feature_matrix_rank(self) -> None:
         """Feature matrix should have non-trivial rank (reservoir is expressive)."""
         K = build_knm_paper27(L=3)
@@ -228,8 +259,11 @@ class TestReservoirPhysics:
 
 
 class TestReservoirPipeline:
+    """Exercise the real coupling-to-prediction pipeline end to end."""
+
     def test_pipeline_knm_to_prediction(self) -> None:
-        """Full pipeline: build_knm → reservoir features → ridge → prediction.
+        """Run the full coupling, reservoir, ridge, and prediction pipeline.
+
         Verifies quantum reservoir is not decorative.
         """
         import time

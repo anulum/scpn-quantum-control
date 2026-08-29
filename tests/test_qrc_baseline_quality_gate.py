@@ -33,10 +33,14 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     run = gates["QRC-baseline focused coverage"]
     report = gates["QRC-baseline exact coverage threshold"]
     assert "--branch" in run
-    assert run[-1:] == quality_gates.QRC_BASELINE_COVERAGE_COHORT
+    assert run[-len(quality_gates.QRC_BASELINE_COVERAGE_COHORT) :] == (
+        quality_gates.QRC_BASELINE_COVERAGE_COHORT
+    )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/applications/qrc_baseline.py" in report
+    include = next(argument for argument in report if argument.startswith("--include="))
+    assert "applications/qrc_baseline.py" in include
+    assert "applications/quantum_reservoir.py" in include
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -61,4 +65,6 @@ def test_ci_runs_and_aggregates_qrc_baseline_gate() -> None:
         assert path in block
     assert "--fail-under=100" in block
     assert "applications/qrc_baseline.py" in block
+    assert "applications/quantum_reservoir.py" in block
+    assert "tests/test_quantum_reservoir.py" in block
     assert "qrc-baseline-quality" in workflow[workflow.index("  ci-gate:") :]

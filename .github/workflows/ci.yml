@@ -3376,25 +3376,29 @@ jobs:
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/applications/qrc_baseline.py
+          src/scpn_quantum_control/applications/quantum_reservoir.py
           tests/test_qrc_baseline.py
+          tests/test_quantum_reservoir.py
           tools/qrc_baseline_quality_gates.py
           tests/test_qrc_baseline_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/applications/qrc_baseline.py
+          src/scpn_quantum_control/applications/quantum_reservoir.py
           tests/test_qrc_baseline.py
+          tests/test_quantum_reservoir.py
           tools/qrc_baseline_quality_gates.py
           tests/test_qrc_baseline_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-qrc-baseline-quality.coverage --branch
-          -m pytest -q tests/test_qrc_baseline.py
+          -m pytest -q tests/test_qrc_baseline.py tests/test_quantum_reservoir.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-qrc-baseline-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/applications/qrc_baseline.py
+          --include=*/applications/qrc_baseline.py,*/applications/quantum_reservoir.py
 
   josephson-magnitude-study-quality:
     needs: lint
