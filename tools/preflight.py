@@ -265,6 +265,9 @@ if TYPE_CHECKING:
         tn_mps_baseline_design_quality_gates as _tn_mps_baseline_design_quality_gates,
     )
     from tools import (
+        tn_mps_crossover_admission_quality_gates as _tn_mps_crossover_admission_quality_gates,
+    )
+    from tools import (
         topology_kernel_classifier_quality_gates as _topology_kernel_classifier_quality_gates,
     )
     from tools import (
@@ -328,6 +331,9 @@ else:
     )
     _tn_mps_baseline_design_quality_gates = import_module(
         "tools.tn_mps_baseline_design_quality_gates"
+    )
+    _tn_mps_crossover_admission_quality_gates = import_module(
+        "tools.tn_mps_crossover_admission_quality_gates"
     )
     _cloud_native_deployment_quality_gates = import_module(
         "tools.cloud_native_deployment_product_quality_gates"
@@ -902,6 +908,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_sparse_hamiltonian_quality_gates.build_static_quality_gates(_PY),
     *_result_pack_seal_quality_gates.build_static_quality_gates(_PY),
     *_layout_relaxation_experiment_quality_gates.build_static_quality_gates(_PY),
+    *_tn_mps_crossover_admission_quality_gates.build_static_quality_gates(_PY),
     *_sync_uncertainty_quality_gates.build_static_quality_gates(_PY),
     *_coupling_invariant_quality_gates.build_static_quality_gates(_PY),
     *_experiment_dynamics_quality_gates.build_static_quality_gates(_PY),
@@ -1433,6 +1440,9 @@ RESULT_PACK_SEAL_COVERAGE_GATES = _result_pack_seal_quality_gates.build_coverage
 LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_GATES = (
     _layout_relaxation_experiment_quality_gates.build_coverage_gates(_PY)
 )
+TN_MPS_CROSSOVER_ADMISSION_COVERAGE_GATES = (
+    _tn_mps_crossover_admission_quality_gates.build_coverage_gates(_PY)
+)
 SYNC_UNCERTAINTY_COVERAGE_GATES = _sync_uncertainty_quality_gates.build_coverage_gates(_PY)
 COUPLING_INVARIANT_COVERAGE_GATES = _coupling_invariant_quality_gates.build_coverage_gates(_PY)
 EXPERIMENT_DYNAMICS_COVERAGE_GATES = _experiment_dynamics_quality_gates.build_coverage_gates(_PY)
@@ -1886,6 +1896,7 @@ def main() -> int:
             gates.extend(SPARSE_HAMILTONIAN_COVERAGE_GATES)
             gates.extend(RESULT_PACK_SEAL_COVERAGE_GATES)
             gates.extend(LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_GATES)
+            gates.extend(TN_MPS_CROSSOVER_ADMISSION_COVERAGE_GATES)
             gates.extend(SYNC_UNCERTAINTY_COVERAGE_GATES)
             gates.extend(COUPLING_INVARIANT_COVERAGE_GATES)
             gates.extend(EXPERIMENT_DYNAMICS_COVERAGE_GATES)

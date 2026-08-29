@@ -1,5 +1,13 @@
 # Changelog
 
+- 2026-08-29 — TN/MPS crossover-admission documentation quality: completed
+  the preview-inclusive NumPy docstring contract across the immutable
+  admission-schema owner and wired permanent strict typing, real report/row/
+  export execution, complete owner documentation, and exact source coverage
+  into preflight and CI. Schema validation, target sizes, provenance fields,
+  public APIs, deterministic export, owner-gated compute, and bounded
+  non-advantage claims are unchanged.
+
 - 2026-08-28 — Layout-relaxation experiment documentation quality: completed
   the preview-inclusive NumPy docstring contract across the preregistered
   experiment, deterministic owner tests, and stubbed CLI tests, and wired

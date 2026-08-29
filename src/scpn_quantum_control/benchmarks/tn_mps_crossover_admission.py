@@ -56,6 +56,7 @@ class TNMPSCrossoverRowSchema:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate the immutable crossover row schema."""
         _require_text(self.protocol_id, "protocol_id")
         _require_target_sizes(self.target_sizes)
         _require_nonempty_texts(self.required_fields, "required_fields")
@@ -85,6 +86,7 @@ class TNMPSCrossoverGate:
     blocker: str
 
     def __post_init__(self) -> None:
+        """Validate the gate identity, evidence, and failure blocker."""
         _require_text(self.gate_id, "gate_id")
         _require_text(self.evidence, "evidence")
         if not self.passed:
@@ -116,6 +118,7 @@ class TNMPSCrossoverAdmissionReport:
     advantage_claim_allowed: bool
 
     def __post_init__(self) -> None:
+        """Validate report schema, gates, claims, and follow-up custody."""
         if self.schema != TN_MPS_CROSSOVER_ADMISSION_SCHEMA:
             raise ValueError("TN/MPS crossover admission schema mismatch")
         _require_text(self.design_schema, "design_schema")

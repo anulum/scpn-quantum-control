@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1281
+    "test_files": 1282
   },
   "documentation": {
     "examples": [
@@ -9335,6 +9335,7 @@
       "tests/test_tn_mps_baseline_design.py",
       "tests/test_tn_mps_baseline_design_quality_gate.py",
       "tests/test_tn_mps_crossover_admission.py",
+      "tests/test_tn_mps_crossover_admission_quality_gate.py",
       "tests/test_topological_coupling_guard.py",
       "tests/test_topological_optimizer.py",
       "tests/test_topology_auth_edge.py",
