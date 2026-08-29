@@ -727,10 +727,10 @@ def test_compare_current_debt_rejects_new_paths_and_regression() -> None:
     )
 
 
-def test_main_writes_audits_and_checks_current_artifact(
+def test_main_writes_refreshes_audits_and_checks_current_artifact(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """Exercise the three successful CLI modes."""
+    """Exercise the four successful CLI modes."""
     fixture = _build_repo(tmp_path)
     common = [
         "--project-root",
@@ -742,6 +742,22 @@ def test_main_writes_audits_and_checks_current_artifact(
     assert (
         audit.main([*common, "--coverage-audit", str(fixture.audit_path), "--write-register"]) == 0
     )
+    original = json.loads(fixture.register_path.read_text(encoding="utf-8"))
+    original_budgets = {
+        row["path"]: (row["status"], row["missing_lines"]) for row in original["debt"]
+    }
+    extra_path = fixture.root / "src" / "pkg" / "extra.py"
+    extra_path.write_text("x = 1\n", encoding="utf-8")
+    assert audit.main([*common, "--refresh-metadata"]) == 0
+    refreshed = json.loads(fixture.register_path.read_text(encoding="utf-8"))
+    assert refreshed["source_inventory"]["file_count"] == (
+        original["source_inventory"]["file_count"] + 1
+    )
+    assert {
+        row["path"]: (row["status"], row["missing_lines"]) for row in refreshed["debt"]
+    } == original_budgets
+    extra_path.unlink()
+    assert audit.main([*common, "--refresh-metadata"]) == 0
     assert audit.main(common) == 0
     assert (
         audit.main([*common, "--coverage-audit", str(fixture.audit_path), "--check-current"]) == 0
@@ -781,5 +797,7 @@ def test_main_rejects_conflicting_or_incomplete_modes(tmp_path: Path) -> None:
     ]
     with pytest.raises(SystemExit, match="2"):
         audit.main([*common, "--write-register", "--check-current"])
+    with pytest.raises(SystemExit, match="2"):
+        audit.main([*common, "--write-register", "--refresh-metadata"])
     with pytest.raises(SystemExit, match="2"):
         audit.main([*common, "--check-current"])

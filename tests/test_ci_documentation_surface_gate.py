@@ -349,10 +349,18 @@ def test_docker_reproduction_image_builds_credential_free_git_index() -> None:
 
     assert "RUN git init -q" in dockerfile
     assert "&& git add -A" in dockerfile
-    assert "&& chown sqc:sqc /app /app/.git" in dockerfile
+    assert "&& chown -R sqc:sqc /app" in dockerfile
     assert "COPY .gitignore .gitignore" in dockerfile
     assert "credential-free synthetic Git index" in dockerfile
     assert "COPY scpn_quantum_engine/Cargo.lock scpn_quantum_engine/Cargo.lock" in dockerfile
+    assert "AS native-builder" in dockerfile
+    assert "maturin:v1.10.2@sha256:" in dockerfile
+    assert "maturin build" in dockerfile
+    assert "--locked" in dockerfile
+    assert "--interpreter python3.12" in dockerfile
+    assert "COPY --from=native-builder /wheels/" in dockerfile
+    assert "hasattr(engine, 'MlDsaSigningKey')" in dockerfile
+    assert "compiled scpn_quantum_engine extension is not installed" not in dockerfile
     assert "COPY .github/dependabot.yml .github/dependabot.yml" in dockerfile
     assert dockerignore.splitlines()[0] == ".git"
     assert "!.github/dependabot.yml" in dockerignore.splitlines()

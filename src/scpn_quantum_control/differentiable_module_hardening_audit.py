@@ -453,6 +453,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("module inventory discovery", "module-specific test enforcement"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_notebook_curriculum.py",
+            ("tests/test_differentiable_notebook_curriculum.py",),
+            (
+                "notebook curriculum inventory",
+                "executable notebook and claim-boundary validation",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_transform_algebra.py",
             ("tests/test_differentiable_transform_algebra.py",),
             (

@@ -606,6 +606,14 @@ python tools/audit_coverage_debt.py \
   --write-register
 ```
 
+If that immutable baseline artifact has expired, refresh only the live claim,
+policy, ordering, and source-inventory metadata while retaining every tracked
+numerical debt budget:
+
+```bash
+python tools/audit_coverage_debt.py --refresh-metadata
+```
+
 ### Rust engine format gate
 
 The complete `scpn_quantum_engine` crate is checked with the repository
@@ -776,11 +784,12 @@ The root `Dockerfile` (built and exercised by
 production runtime**. Its default `CMD` is the pytest suite, and the
 workflow builds the image and runs the tests inside it — the image is never
 pushed to a registry. It deliberately ships `tests/`, `docs/`, `paper/`,
-`notebooks/`, `data/`, and CI fixtures, and it does not install the
-compiled `scpn_quantum_engine` extension (stubbed to fail loudly), so the
-Python tier runs on its pure-Python fallbacks with no Rust toolchain in the
-image. It is intentionally not slimmed — slimming would defeat its only
-purpose. For a production deployment, install the published wheel
+`notebooks/`, `data/`, and CI fixtures. A digest-pinned Maturin builder stage
+compiles the locked `scpn_quantum_engine` crate and the final image installs
+that wheel, so native lifecycle, custody, and parity tests exercise the real
+extension. The Rust toolchain remains confined to the builder stage and is not
+present in the final test image. It is intentionally not slimmed — slimming
+would defeat its only purpose. For a production deployment, install the published wheel
 (`pip install scpn-quantum-control`) into your own base image rather than
 reusing this one.
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Fix forward the current CI and Docker failures by refreshing deterministic
+  coverage and dependency-environment evidence, registering the notebook
+  curriculum hardening owner, and building the locked native quantum engine in
+  a digest-pinned Docker builder stage before running extension-dependent tests.
+
 - 2026-08-30 — Application dataset-catalog documentation and exact quality:
   completed the preview-inclusive NumPy docstring contract across packaged
   benchmark privacy custody and extended the existing application-honesty

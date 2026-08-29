@@ -848,6 +848,17 @@
       "covered_lines": null,
       "line_percent": null,
       "missing_lines": null,
+      "path": "src/scpn_quantum_control/differentiable_notebook_curriculum.py",
+      "priority": "P2_unmeasured",
+      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
+      "status": "unmeasured_since_baseline",
+      "valid_lines": null
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": null,
+      "line_percent": null,
+      "missing_lines": null,
       "path": "src/scpn_quantum_control/dla_topology_control/__init__.py",
       "priority": "P2_unmeasured",
       "priority_reason": "No current executable-line baseline; refresh from remote CI.",
@@ -1311,17 +1322,6 @@
       "line_percent": null,
       "missing_lines": null,
       "path": "src/scpn_quantum_control/neural_operator_baseline_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/differentiable_notebook_curriculum.py",
       "priority": "P2_unmeasured",
       "priority_reason": "No current executable-line baseline; refresh from remote CI.",
       "status": "unmeasured_since_baseline",
@@ -3431,7 +3431,7 @@
   ],
   "inputs": {
     "claim_ledger_path": "data/differentiable_phase_qnode/claim_ledger.json",
-    "claim_ledger_sha256": "d6aaed9cff78809c95c6911f07e6252bcadc86cef8085553835d5ea14669f2c4",
+    "claim_ledger_sha256": "0e08524585ae922a2db243a26a810b17ed78a7f7665d9d7e2df8af2123f5ce05",
     "justified_exclusions_path": "docs/release_coverage_exclusions.json",
     "justified_exclusions_sha256": "2798581f29c7896fceaa5c093a26892fb1193335b9e9e547946d0376773acc72"
   },
@@ -3442,7 +3442,7 @@
     "baseline_rows_not_in_live_source": 0,
     "file_count": 739,
     "path": "src/scpn_quantum_control",
-    "sha256": "fa06d822e380db6fb1fafbace1295330b344544c41c8ba484c00523496d91dac"
+    "sha256": "948b2b2088bb16e97a5e1a92375d0307f011fa0ba4fe9afd0089fccee13fcc04"
   },
   "summary": {
     "debt_file_count": 308,

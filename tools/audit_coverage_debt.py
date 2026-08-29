@@ -601,6 +601,87 @@ def render_register(register: GeneratedRegister) -> str:
     return json.dumps(register.payload, indent=2, sort_keys=True) + "\n"
 
 
+def refresh_register_metadata(
+    *, project_root: Path, policy_path: Path, policy: CoverageDebtPolicy, register_path: Path
+) -> GeneratedRegister:
+    """Refresh live governance metadata without changing numerical debt budgets.
+
+    The remote baseline artifact is intentionally immutable and may expire from
+    hosted storage. This operation retains every measured and unmeasured budget
+    from the tracked register while refreshing claim ownership, priority order,
+    input digests, and the live source-path inventory.
+    """
+    original = _mapping(_load_json(register_path), "register")
+    claims = _load_claim_paths(project_root / policy.claim_ledger_path, policy.claim_surface_key)
+    hot_paths = {item.path: item.reason for item in policy.runtime_hot_paths}
+    entries: list[DebtEntry] = []
+    for entry in _parse_register_entries(original):
+        claim_ids = claims.get(entry.path, ())
+        priority, priority_reason = _priority_for(
+            path=entry.path,
+            status=entry.status,
+            missing_lines=entry.missing_lines,
+            claim_ids=claim_ids,
+            runtime_hot_paths=hot_paths,
+            high_line_debt_minimum=policy.high_line_debt_minimum,
+        )
+        entries.append(
+            DebtEntry(
+                path=entry.path,
+                priority=priority,
+                priority_reason=priority_reason,
+                status=entry.status,
+                line_percent=entry.line_percent,
+                covered_lines=entry.covered_lines,
+                valid_lines=entry.valid_lines,
+                missing_lines=entry.missing_lines,
+                claim_ids=claim_ids,
+            )
+        )
+    entries.sort(
+        key=lambda item: (
+            _PRIORITY_ORDER[item.priority],
+            -(item.missing_lines or 0),
+            item.path,
+        )
+    )
+
+    payload = dict(original)
+    payload["policy_sha256"] = _digest_path(policy_path)
+    inputs = dict(_mapping(original.get("inputs"), "register.inputs"))
+    inputs["claim_ledger_sha256"] = _digest_path(project_root / policy.claim_ledger_path)
+    inputs["justified_exclusions_sha256"] = _digest_path(
+        project_root / policy.justified_exclusions_path
+    )
+    payload["inputs"] = inputs
+    inventory = _source_inventory(project_root, policy.source_root)
+    inventory_row = dict(_mapping(original.get("source_inventory"), "register.source_inventory"))
+    inventory_row["file_count"] = len(inventory)
+    inventory_row["sha256"] = _inventory_digest(inventory)
+    payload["source_inventory"] = inventory_row
+
+    summary = dict(_mapping(original.get("summary"), "register.summary"))
+    priority_counts = {key: 0 for key in _PRIORITY_ORDER}
+    status_counts: dict[str, int] = {}
+    for entry in entries:
+        priority_counts[entry.priority] += 1
+        status_counts[entry.status] = status_counts.get(entry.status, 0) + 1
+    summary.update(
+        {
+            "debt_file_count": len(entries),
+            "known_missing_line_count": sum(entry.missing_lines or 0 for entry in entries),
+            "priority_counts": priority_counts,
+            "status_counts": dict(sorted(status_counts.items())),
+            "unmeasured_debt_file_count": sum(
+                entry.status in _UNMEASURED_STATUSES for entry in entries
+            ),
+        }
+    )
+    payload["summary"] = summary
+    payload["debt"] = [_entry_payload(entry) for entry in entries]
+    return GeneratedRegister(payload=payload, entries=tuple(entries))
+
+
 def _parse_register_entries(payload: object) -> tuple[DebtEntry, ...]:
     """Parse the debt rows needed for drift and non-regression auditing."""
     root = _mapping(payload, "register")
@@ -760,6 +841,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help="Compare a fresh coverage audit with the tracked debt budgets.",
     )
+    parser.add_argument(
+        "--refresh-metadata",
+        action="store_true",
+        help="Refresh live register metadata while retaining baseline debt budgets.",
+    )
     args = parser.parse_args(argv)
     project_root = args.project_root.resolve()
     policy_path = args.policy.resolve()
@@ -769,8 +855,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.register is not None
         else project_root / policy.register_path
     )
-    if args.write_register and args.check_current:
-        parser.error("--write-register and --check-current are mutually exclusive")
+    operation_count = sum((args.write_register, args.check_current, args.refresh_metadata))
+    if operation_count > 1:
+        parser.error("operation modes are mutually exclusive")
     if (args.write_register or args.check_current) and args.coverage_audit is None:
         parser.error("--coverage-audit is required for this operation")
     if args.write_register:
@@ -788,6 +875,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not register_path.is_file():
         print(f"coverage-debt register missing: {register_path}")
         return 1
+    if args.refresh_metadata:
+        refreshed = refresh_register_metadata(
+            project_root=project_root,
+            policy_path=policy_path,
+            policy=policy,
+            register_path=register_path,
+        )
+        register_path.write_text(render_register(refreshed), encoding="utf-8")
+        print(_summary(refreshed.entries))
+        return 0
     errors = list(
         audit_tracked_register(
             project_root=project_root,

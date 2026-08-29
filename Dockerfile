@@ -9,13 +9,26 @@
 # (its default CMD is pytest, and .github/workflows/docker.yml builds it
 # and runs the tests inside — it is never pushed to a registry). It
 # therefore deliberately ships tests/, docs/, paper/, notebooks/, data/,
-# and CI fixtures, and it does NOT install the compiled scpn_quantum_engine
-# extension (the module is stubbed to fail loudly): the Python tier runs on
-# its pure-Python fallbacks so the image stays free of a Rust toolchain.
+# and CI fixtures. The final image installs a compiled scpn_quantum_engine
+# wheel produced in a separate, digest-pinned builder stage so native custody
+# and parity tests exercise real extension behaviour without shipping a Rust
+# toolchain in the test image.
 # Do NOT slim this into a runtime image — slimming would defeat its only
 # job (reproducing the full test run). For a production deployment, install
 # the published wheel (`pip install scpn-quantum-control`) into your own
 # base image instead of reusing this one.
+
+FROM ghcr.io/pyo3/maturin:v1.10.2@sha256:4ac83047776d1facc6c7073d9b0dc03e349cac2ff8540499e82be3990ef26258 AS native-builder
+
+WORKDIR /build
+COPY scpn_quantum_engine/ scpn_quantum_engine/
+RUN maturin build \
+    --release \
+    --locked \
+    --manifest-path scpn_quantum_engine/Cargo.toml \
+    --features extension-module \
+    --interpreter python3.12 \
+    --out /wheels
 
 FROM python:3.12-slim@sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4
 
@@ -31,7 +44,6 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
 
-COPY Dockerfile Dockerfile
 COPY .pre-commit-config.yaml pyproject.toml mkdocs.yml requirements.txt requirements-dev.txt README.md LICENSE ROADMAP.md ./
 # The changelog, public-claim, and rendered-docs-header guards read these
 # root documents.
@@ -59,6 +71,11 @@ ENV NUMBA_DISABLE_JIT=1
 RUN pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.txt \
     && pip install --no-cache-dir --no-deps --require-hashes -r requirements-ci-studio-platform.txt
 
+COPY --from=native-builder /wheels/ /tmp/scpn-quantum-engine-wheels/
+RUN pip install --no-cache-dir --no-deps /tmp/scpn-quantum-engine-wheels/*.whl \
+    && python -c "import scpn_quantum_engine as engine; assert hasattr(engine, 'MlDsaSigningKey')" \
+    && rm -rf /tmp/scpn-quantum-engine-wheels
+
 COPY tests/ tests/
 COPY tools/ tools/
 COPY .github/workflows/ .github/workflows/
@@ -71,11 +88,9 @@ COPY scpn_quantum_engine/Cargo.toml scpn_quantum_engine/Cargo.toml
 COPY scpn_quantum_engine/Cargo.lock scpn_quantum_engine/Cargo.lock
 COPY scpn_quantum_engine/src/ scpn_quantum_engine/src/
 COPY scpn_quantum_engine/program_ad_replay/src/ scpn_quantum_engine/program_ad_replay/src/
+COPY scpn_quantum_engine/program_ad_replay/Cargo.toml scpn_quantum_engine/program_ad_replay/Cargo.toml
 COPY scpn_quantum_engine/tests/ scpn_quantum_engine/tests/
 COPY scpn_quantum_engine/fuzz/ scpn_quantum_engine/fuzz/
-RUN printf '%s\n' \
-    'raise ModuleNotFoundError("compiled scpn_quantum_engine extension is not installed in this image", name="scpn_quantum_engine")' \
-    > scpn_quantum_engine/__init__.py
 COPY docs/ docs/
 COPY paper/ paper/
 COPY examples/ examples/
@@ -98,10 +113,11 @@ COPY benchmarks/ benchmarks/
 # build context. Apply the repository ignore contract, then create a
 # credential-free synthetic Git index over the curated tracked files copied
 # above. Ignored fixtures remain readable without becoming policy inputs.
+COPY Dockerfile Dockerfile
 COPY .gitignore .gitignore
 RUN git init -q \
     && git add -A \
-    && chown sqc:sqc /app /app/.git
+    && chown -R sqc:sqc /app
 
 RUN mkdir -p /home/sqc/.cache/pytest /home/sqc/.config/matplotlib \
     && chown -R sqc:sqc /home/sqc/.cache /home/sqc/.config
