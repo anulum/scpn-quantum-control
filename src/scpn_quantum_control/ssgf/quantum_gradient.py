@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Quantum Gradient
-"""SSGF quantum gradient: dC_quantum/dz via parameter-shift rule.
+"""SSGF quantum gradient: dC_quantum/dz via central finite differences.
 
 The SSGF outer cycle optimises a latent vector z that parameterises
 the geometry matrix W(z). The quantum cost function adds a term that
@@ -48,7 +48,20 @@ from ..bridge.ssgf_adapter import (
 
 @dataclass
 class QuantumGradientResult:
-    """Result of quantum gradient computation."""
+    """Result of quantum gradient computation.
+
+    Attributes
+    ----------
+    cost
+        Quantum synchronization cost at the unperturbed latent vector.
+    gradient
+        Central finite-difference gradient with respect to the latent vector.
+    r_global
+        Global Kuramoto order parameter at the unperturbed latent vector.
+    n_evaluations
+        Total number of quantum-cost evaluations.
+
+    """
 
     cost: float  # C_quantum at z
     gradient: NDArray[np.float64]  # dC/dz vector
@@ -62,6 +75,19 @@ def _w_from_z(z: NDArray[np.float64], n_osc: int) -> NDArray[np.float64]:
     Simple parameterisation: z is the upper triangle of W,
     reshaped and symmetrised. W_ij = softplus(z_k) ensures
     non-negative coupling.
+
+    Parameters
+    ----------
+    z
+        Latent upper-triangle parameters.
+    n_osc
+        Number of oscillators represented by the geometry matrix.
+
+    Returns
+    -------
+    NDArray[np.float64]
+        Symmetric non-negative matrix with a zero diagonal.
+
     """
     n_upper = n_osc * (n_osc - 1) // 2
     z_trunc = z[:n_upper]
@@ -89,6 +115,25 @@ def quantum_cost(
     """Quantum cost function: C = 1 - R_global after Trotter evolution.
 
     Low cost = high synchronisation = good geometry.
+
+    Parameters
+    ----------
+    W
+        Symmetric oscillator-coupling matrix.
+    theta_init
+        Initial oscillator phases.
+    omega
+        Natural oscillator frequencies. Uses zeros when omitted.
+    dt
+        Trotter evolution time.
+    trotter_reps
+        Number of Lie-Trotter repetitions.
+
+    Returns
+    -------
+    float
+        One minus the evolved global synchronization order parameter.
+
     """
     from qiskit.circuit.library import PauliEvolutionGate
     from qiskit.synthesis import LieTrotter
@@ -124,14 +169,29 @@ def compute_quantum_gradient(
 ) -> QuantumGradientResult:
     """Compute dC_quantum/dz via central finite differences.
 
-    Args:
-        z: latent vector parameterising W
-        n_osc: number of oscillators
-        theta_init: initial oscillator phases (default: uniform on [0, 2π))
-        omega: natural frequencies (default: zeros)
-        epsilon: finite difference step size
-        dt: Trotter evolution time
-        trotter_reps: Trotter repetitions
+    Parameters
+    ----------
+    z
+        Latent vector parameterizing the upper triangle of ``W``.
+    n_osc
+        Number of oscillators.
+    theta_init
+        Initial oscillator phases. Uses uniform phases on ``[0, 2π)`` when
+        omitted.
+    omega
+        Natural oscillator frequencies. Uses zeros when omitted.
+    epsilon
+        Central finite-difference step size.
+    dt
+        Trotter evolution time.
+    trotter_reps
+        Number of Lie-Trotter repetitions per cost evaluation.
+
+    Returns
+    -------
+    QuantumGradientResult
+        Central cost, gradient, synchronization order, and evaluation count.
+
     """
     if theta_init is None:
         theta_init = np.linspace(0, 2 * np.pi * (1 - 1 / n_osc), n_osc, dtype=np.float64)

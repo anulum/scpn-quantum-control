@@ -20,7 +20,7 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
         gates["mypy-strict-ssgf-geometry-gradient-quality"][5:]
         == quality_gates.SSGF_GEOMETRY_GRADIENT_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D ssgf-geometry-gradient quality ratchet"]
+    assert "D,D413,D417,D420" in gates["ruff D ssgf-geometry-gradient quality ratchet"]
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
@@ -58,4 +58,5 @@ def test_ci_runs_and_aggregates_ssgf_geometry_gradient_gate() -> None:
     for path in quality_gates.SSGF_GEOMETRY_GRADIENT_QUALITY_RATCHET:
         assert path in block
     assert "--fail-under=100" in block
+    assert quality_gates.SSGF_GEOMETRY_GRADIENT_COVERAGE_INCLUDE in block
     assert "ssgf-geometry-gradient-quality" in workflow[workflow.index("  ci-gate:") :]
