@@ -14,22 +14,33 @@ from tools import synchronisation_witness_quality_gates as quality_gates
 
 
 def test_static_gates_cover_typing_and_docs() -> None:
-    """Require strict typing and NumPy docstrings for the owned cohort."""
+    """Require strict typing and complete NumPy docs for the owned cohorts."""
     gates = dict(quality_gates.build_static_quality_gates("/python"))
     assert (
         gates["mypy-strict-synchronisation-witness-quality"][5:]
-        == quality_gates.SYNCHRONISATION_WITNESS_QUALITY_RATCHET
+        == quality_gates.SYNCHRONISATION_WITNESS_TYPING_RATCHET
     )
-    assert "D,D413" in gates["ruff D synchronisation-witness quality ratchet"]
+    ruff = gates["ruff D synchronisation-witness quality ratchet"]
+    assert (
+        ruff[-len(quality_gates.SYNCHRONISATION_WITNESS_DOCSTRING_RATCHET) :]
+        == quality_gates.SYNCHRONISATION_WITNESS_DOCSTRING_RATCHET
+    )
+    assert "--preview" in ruff and "D,D413,D417,D420" in ruff
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
-    """Require branch execution and exact source-only coverage."""
+    """Require connected branch execution and exact source-only coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["synchronisation-witness focused coverage"]
+    run = gates["synchronisation-witness focused coverage"]
+    assert "--branch" in run
+    assert (
+        run[-len(quality_gates.SYNCHRONISATION_WITNESS_COVERAGE_COHORT) :]
+        == quality_gates.SYNCHRONISATION_WITNESS_COVERAGE_COHORT
+    )
+    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     threshold = gates["synchronisation-witness exact coverage threshold"]
     assert "--fail-under=100" in threshold
-    assert any("sync_witness_evidence.py" in argument for argument in threshold)
+    assert any("executive_analyse.py" in argument for argument in threshold)
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -47,5 +58,7 @@ def test_ci_runs_and_aggregates_gate() -> None:
     start = workflow.index("  synchronisation-witness-quality:")
     end = workflow.index("\n\n  experiment-mitigation-quality:", start)
     block = workflow[start:end]
-    assert all(path in block for path in quality_gates.SYNCHRONISATION_WITNESS_QUALITY_RATCHET)
+    assert all(path in block for path in quality_gates.SYNCHRONISATION_WITNESS_TYPING_RATCHET)
+    assert all(path in block for path in quality_gates.SYNCHRONISATION_WITNESS_COVERAGE_COHORT)
+    assert "--fail-under=100" in block
     assert "synchronisation-witness-quality" in workflow[workflow.index("  ci-gate:") :]

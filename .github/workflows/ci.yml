@@ -5138,35 +5138,47 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with: {python-version: "3.12", cache: 'pip'}
       - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: python -m pip install --no-deps -e .
+      - run: >-
+          python -m pip install --no-deps --require-hashes
+          -r requirements-ci-studio-platform.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/phase/synchronisation_witness.py
           src/scpn_quantum_control/benchmarks/sync_witness_evidence.py
           scripts/export_sync_witness_evidence.py
+          src/scpn_quantum_control/studio/executive_analyse.py
+          src/scpn_quantum_control/studio/executive_cli.py
           tests/test_phase_synchronisation_witness.py
           tests/test_sync_witness_evidence.py
+          tests/test_studio_executive_analyse.py
+          tests/test_studio_executive_cli.py
           tools/synchronisation_witness_quality_gates.py
           tests/test_synchronisation_witness_quality_gate.py
       - run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/synchronisation_witness.py
           src/scpn_quantum_control/benchmarks/sync_witness_evidence.py
           scripts/export_sync_witness_evidence.py
+          src/scpn_quantum_control/studio/executive_analyse.py
           tests/test_phase_synchronisation_witness.py
           tests/test_sync_witness_evidence.py
+          tests/test_studio_executive_analyse.py
           tools/synchronisation_witness_quality_gates.py
           tests/test_synchronisation_witness_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
-          --data-file=.coverage.synchronisation-witness-quality --branch
+          --data-file=/tmp/scpn-qc-synchronisation-witness-quality.coverage --branch
           -m pytest -q tests/test_phase_synchronisation_witness.py
           tests/test_sync_witness_evidence.py
+          tests/test_studio_executive_analyse.py
+          tests/test_studio_executive_cli.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
-          --data-file=.coverage.synchronisation-witness-quality
+          --data-file=/tmp/scpn-qc-synchronisation-witness-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/phase/synchronisation_witness.py,*/benchmarks/sync_witness_evidence.py
+          --include=*/phase/synchronisation_witness.py,*/benchmarks/sync_witness_evidence.py,*/studio/executive_analyse.py,*/studio/executive_cli.py
 
   experiment-mitigation-quality:
     needs: lint

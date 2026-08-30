@@ -124,7 +124,7 @@ class AnalyseActionHandler(ActionHandler):
 
     @property
     def verb(self) -> str:
-        """Return ``"analyse"``."""
+        """The Studio verb owned by this handler."""
         return ANALYSE_VERB
 
     def plan(self, request: ExecutiveRequest, contract: VerbContract) -> ExecutionPlan:
@@ -143,6 +143,7 @@ class AnalyseActionHandler(ActionHandler):
         -------
         ExecutionPlan
             The normalised, inspectable plan.
+
         """
         backend = request.backend or _DEFAULT_BACKEND
         if backend not in contract.backends:
@@ -178,6 +179,7 @@ class AnalyseActionHandler(ActionHandler):
         -------
         ExecutionResult
             A succeeded result carrying the witness summary.
+
         """
         analyse_spec: dict[str, Any] = dict(plan.parameters)
         record = _witness(analyse_spec, plan.action_id)
@@ -211,6 +213,7 @@ class AnalyseActionHandler(ActionHandler):
         -------
         GeneratedScript
             The reproduction script, digest attached.
+
         """
         analyse_spec: dict[str, Any] = dict(plan.parameters)
         source = _render_script(

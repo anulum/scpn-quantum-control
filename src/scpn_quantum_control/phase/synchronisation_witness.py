@@ -572,7 +572,7 @@ class SyncWitnessSuiteResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every witness case satisfied its regime bounds."""
+        """Whether every witness case satisfied its regime bounds."""
         return all(record.passed for record in self.records)
 
     def records_for_regime(self, regime: PhaseCloudRegime) -> tuple[SyncWitnessRecord, ...]:
