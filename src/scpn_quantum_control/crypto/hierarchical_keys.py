@@ -38,9 +38,22 @@ def derive_master_key(
     R_global: float,
     nonce: bytes = b"",
 ) -> bytes:
-    """Master key from full coupling matrix + order parameter.
+    """Derive a master key from the coupling matrix and order parameter.
 
-    32-byte SHA-256 digest of K_nm flattened || R_global || nonce.
+    Parameters
+    ----------
+    K
+        Full coupling matrix in canonical row-major representation.
+    R_global
+        Global order parameter bound into the digest.
+    nonce
+        Optional caller-supplied session nonce.
+
+    Returns
+    -------
+    bytes
+        The 32-byte SHA-256 digest of ``K || R_global || nonce``.
+
     """
     h = hashlib.sha256()
     h.update(K.tobytes())
@@ -55,13 +68,24 @@ def derive_layer_key(
     phase_sequence: NDArray[np.float64],
     nonce: bytes = b"",
 ) -> bytes:
-    """Layer-specific subkey from coupling row + phase trajectory.
+    """Derive a layer subkey from one coupling row and phase trajectory.
 
-    Args:
-        K: Full coupling matrix (uses row layer_idx).
-        layer_idx: 0-indexed layer number.
-        phase_sequence: Array of phase values theta_n(t) over time window.
-        nonce: Additional entropy.
+    Parameters
+    ----------
+    K
+        Full coupling matrix; the selected row is bound into the digest.
+    layer_idx
+        Zero-indexed layer number.
+    phase_sequence
+        Phase values for the selected layer over the time window.
+    nonce
+        Optional caller-supplied session nonce.
+
+    Returns
+    -------
+    bytes
+        The 32-byte SHA-256 layer-key digest.
+
     """
     h = hashlib.sha256()
     h.update(K[layer_idx, :].tobytes())
@@ -77,15 +101,25 @@ def key_hierarchy(
     R_global: float,
     nonce: bytes = b"",
 ) -> dict[str, Any]:
-    """Full hierarchy: master key + all layer subkeys.
+    """Derive the master key and every layer subkey.
 
-    Args:
-        K: n×n coupling matrix.
-        phases: n-element array of current phase values.
-        R_global: Global order parameter.
-        nonce: Session nonce.
+    Parameters
+    ----------
+    K
+        Square coupling matrix.
+    phases
+        Current phase value for every layer.
+    R_global
+        Global order parameter bound into the master key.
+    nonce
+        Optional session nonce bound into every key.
 
-    Returns dict with 'master' (bytes) and 'layers' (dict[int, bytes]).
+    Returns
+    -------
+    dict[str, Any]
+        Mapping with the master key under ``master`` and indexed layer keys
+        under ``layers``.
+
     """
     master = derive_master_key(K, R_global, nonce)
     n = K.shape[0]
@@ -103,9 +137,28 @@ def verify_key_chain(
     R_global: float,
     nonce: bytes = b"",
 ) -> bool:
-    """Verify layer keys are consistent with master and K_nm.
+    """Verify the master and layer keys against their derivation inputs.
 
-    Recomputes all keys from K and checks equality.
+    Parameters
+    ----------
+    master
+        Candidate master-key bytes.
+    layer_keys
+        Candidate keys indexed by layer.
+    K
+        Full coupling matrix used for recomputation.
+    phases
+        Current phase value for every layer.
+    R_global
+        Global order parameter used for recomputation.
+    nonce
+        Session nonce used for recomputation.
+
+    Returns
+    -------
+    bool
+        Whether the master and every supplied layer key match recomputation.
+
     """
     expected = key_hierarchy(K, phases, R_global, nonce)
     if master != expected["master"]:
@@ -135,10 +188,31 @@ def evolve_key_phases(
     t_window: float,
     n_samples: int = 32,
 ) -> NDArray[np.float64]:
-    """Evolve Kuramoto dynamics and sample phase trajectory.
+    """Evolve Kuramoto dynamics and sample the phase trajectory.
 
-    Returns (n_layers, n_samples) array of phase values over the time window.
-    Each column is a snapshot at a different time.
+    Parameters
+    ----------
+    K
+        Coupling matrix for the layer oscillators.
+    omega
+        Intrinsic angular frequency of every layer.
+    theta_0
+        Initial phase of every layer.
+    t_window
+        Positive integration-window duration.
+    n_samples
+        Number of evenly spaced trajectory samples.
+
+    Returns
+    -------
+    numpy.ndarray
+        Phase array shaped ``(n_layers, n_samples)``.
+
+    Raises
+    ------
+    RuntimeError
+        If the numerical integrator does not complete successfully.
+
     """
     t_eval = np.linspace(0, t_window, n_samples)
     sol = solve_ivp(
@@ -164,10 +238,25 @@ def rotating_key_schedule(
 ) -> list[dict[str, Any]]:
     """Generate a sequence of key hierarchies from evolving Kuramoto dynamics.
 
-    Each window produces a different key hierarchy because the phase
-    trajectory changes. Natural key rotation without re-keying.
+    Parameters
+    ----------
+    K
+        Coupling matrix for the layer oscillators.
+    omega
+        Intrinsic angular frequency of every layer.
+    theta_0
+        Initial phase of every layer.
+    n_windows
+        Number of consecutive rotation windows.
+    window_duration
+        Integration duration of each window.
 
-    Returns list of dicts, each with 'window', 'master', 'layers', 'R_global'.
+    Returns
+    -------
+    list[dict[str, Any]]
+        One hierarchy per window with its index, keys, order parameter, and
+        final phases. Each window starts from the preceding final phases.
+
     """
     theta = theta_0.copy()
     schedule = []
@@ -204,8 +293,23 @@ def group_key(
 ) -> bytes:
     """Derive a shared key for a subset of SCPN layers.
 
-    Uses the sub-matrix K[members, members] and their phase values.
-    Any subset of layers can form a group with a shared key.
+    Parameters
+    ----------
+    K
+        Full coupling matrix.
+    member_layers
+        Layer indices included in the key group.
+    phases
+        Current phase value for every layer.
+    nonce
+        Optional session nonce.
+
+    Returns
+    -------
+    bytes
+        The 32-byte SHA-256 digest of the selected submatrix, sorted member
+        indices, selected phases, and nonce.
+
     """
     sub_K = K[np.ix_(member_layers, member_layers)]
     sub_phases = phases[member_layers]
@@ -219,14 +323,41 @@ def group_key(
 
 
 def hmac_verify_key(key: bytes, message: bytes, expected_mac: bytes) -> bool:
-    """Verify HMAC-SHA256 tag in constant time.
+    """Verify an HMAC-SHA256 tag with constant-time digest comparison.
 
-    Returns True iff the tag computed from (key, message) matches expected_mac.
+    Parameters
+    ----------
+    key
+        HMAC key bytes.
+    message
+        Authenticated message bytes.
+    expected_mac
+        Candidate HMAC-SHA256 tag.
+
+    Returns
+    -------
+    bool
+        Whether the computed and supplied tags match.
+
     """
     computed = hmac.new(key, message, hashlib.sha256).digest()
     return hmac.compare_digest(computed, expected_mac)
 
 
 def hmac_sign(key: bytes, message: bytes) -> bytes:
-    """Produce HMAC-SHA256 authentication tag for message under key."""
+    """Produce an HMAC-SHA256 authentication tag.
+
+    Parameters
+    ----------
+    key
+        HMAC key bytes.
+    message
+        Message bytes to authenticate.
+
+    Returns
+    -------
+    bytes
+        The 32-byte HMAC-SHA256 tag.
+
+    """
     return hmac.new(key, message, hashlib.sha256).digest()
