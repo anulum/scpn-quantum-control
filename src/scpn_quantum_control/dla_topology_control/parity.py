@@ -116,12 +116,12 @@ class ParitySectorProjector:
 
     @property
     def dimension(self) -> int:
-        """Return the dense Hilbert-space dimension ``2**n_qubits``."""
+        """Dense Hilbert-space dimension ``2**n_qubits``."""
         return 1 << self.n_qubits
 
     @property
     def mask(self) -> BoolArray:
-        """Return a read-only basis mask for the selected parity sector."""
+        """Read-only basis mask for the selected parity sector."""
         return self._mask
 
     def as_state(self, state: NDArray[np.complex128], *, name: str = "state") -> ComplexArray:

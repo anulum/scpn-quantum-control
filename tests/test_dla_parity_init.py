@@ -48,13 +48,17 @@ needs_real_data = pytest.mark.skipif(
 
 
 def test_all_names_in_all_are_importable() -> None:
+    """Expose every symbol declared by the package export contract."""
     for name in dp.__all__:
         assert hasattr(dp, name), f"{name} declared in __all__ but not importable"
 
 
 @needs_real_data
 class TestRunFullHarness:
+    """Exercise the public end-to-end DLA-parity validation harness."""
+
     def test_happy_path(self) -> None:
+        """Return all three validated results for the bundled real dataset."""
         result = run_full_harness()
         assert isinstance(result, FullHarnessResult)
         assert result.dataset.n_circuits_total > 0
@@ -62,10 +66,12 @@ class TestRunFullHarness:
         assert result.classical_reference.is_zero_within_tolerance
 
     def test_accepts_str_data_dir(self) -> None:
+        """Accept a string data-directory override at the public boundary."""
         result = run_full_harness(data_dir=str(DEFAULT_DATA_DIR))
         assert result.dataset.n_circuits_total > 0
 
     def test_tolerance_override_flows_through(self) -> None:
+        """Propagate an explicit reproduction tolerance into the result."""
         tight = ReproductionTolerance(leakage_mean_abs=1e-18)
         # Tightening should still pass because the reproducer is
         # bit-exact on the counts path.
@@ -73,6 +79,7 @@ class TestRunFullHarness:
         assert result.reproduction.tolerance.leakage_mean_abs == 1e-18
 
     def test_classical_reference_violation_raises(self) -> None:
+        """Reject a classical reference that violates parity conservation."""
         # Replace compute_classical_leakage_reference with one that
         # returns a non-zero reference — the harness must raise.
         from scpn_quantum_control.dla_parity import baselines as bl
@@ -104,10 +111,12 @@ class TestRunFullHarness:
             run_full_harness()
 
     def test_baselines_backend_flows_to_classical(self) -> None:
+        """Forward the NumPy backend selection to the classical reference."""
         result = run_full_harness(baselines_backend="numpy")
         assert result.classical_reference.backend == "numpy"
 
     def test_baselines_backend_qutip_if_available(self) -> None:
+        """Forward the optional QuTiP backend when the package is installed."""
         if importlib.util.find_spec("qutip") is None:
             pytest.skip("qutip not installed")
         result = run_full_harness(baselines_backend="qutip")

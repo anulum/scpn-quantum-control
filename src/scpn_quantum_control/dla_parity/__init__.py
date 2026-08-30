@@ -66,7 +66,18 @@ from .schema import (
 
 @dataclass(frozen=True, slots=True)
 class FullHarnessResult:
-    """Outcome of :func:`run_full_harness` — all three pathways bundled."""
+    """Outcome of :func:`run_full_harness` across all three pathways.
+
+    Attributes
+    ----------
+    dataset:
+        Validated DLA-parity dataset loaded from the selected data directory.
+    reproduction:
+        Recomputed statistics and their comparison with published values.
+    classical_reference:
+        Noiseless parity-leakage curve produced by the selected backend.
+
+    """
 
     dataset: DlaParityDataset
     reproduction: ReproductionResult
@@ -115,6 +126,7 @@ def run_full_harness(
         If the dataset directory or any run file is missing.
     DatasetIntegrityError
         If ``verify_integrity`` is True and any digest mismatches.
+
     """
     dataset = load_dla_parity_dataset(
         data_dir=data_dir,
