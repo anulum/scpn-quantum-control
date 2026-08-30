@@ -65,6 +65,7 @@ def check_parameter_shift_consistency(
     GradientCheckResult
         Candidate parameter-shift gradient, finite-difference reference, error
         metrics, tolerance, and pass/fail status.
+
     """
     from . import differentiable as differentiable_facade
 
@@ -132,6 +133,7 @@ def check_custom_derivative_consistency(
     CustomDerivativeCheckResult
         Exact-rule outputs, finite-difference references, error metrics, and
         pass/fail status for the custom derivative rule.
+
     """
     from . import differentiable as differentiable_facade
 

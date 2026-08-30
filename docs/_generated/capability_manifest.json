@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1305
+    "test_files": 1306
   },
   "documentation": {
     "examples": [
@@ -8373,6 +8373,7 @@
       "tests/test_differentiable_claim_rendering.py",
       "tests/test_differentiable_competitive_baselines.py",
       "tests/test_differentiable_consistency.py",
+      "tests/test_differentiable_consistency_quality_gate.py",
       "tests/test_differentiable_custom_derivatives.py",
       "tests/test_differentiable_dashboard.py",
       "tests/test_differentiable_dependency_environment_evidence.py",

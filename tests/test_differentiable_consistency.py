@@ -32,7 +32,6 @@ from scpn_quantum_control.differentiable_consistency import (
 
 def test_facade_and_package_root_reuse_extracted_consistency_diagnostic() -> None:
     """Facade and package-root exports should point at the extracted diagnostic."""
-
     assert differentiable.check_parameter_shift_consistency is check_parameter_shift_consistency
     assert (
         differentiable.check_custom_derivative_consistency is check_custom_derivative_consistency
@@ -43,7 +42,6 @@ def test_facade_and_package_root_reuse_extracted_consistency_diagnostic() -> Non
 
 def test_parameter_shift_consistency_passes_for_shift_compatible_objective() -> None:
     """Gradient checks should pass for a standard sinusoidal generator rule."""
-
     result = check_parameter_shift_consistency(
         lambda values: math.sin(values[0]) + math.cos(values[1]),
         [0.3, -0.2],
@@ -60,7 +58,6 @@ def test_parameter_shift_consistency_passes_for_shift_compatible_objective() -> 
 
 def test_parameter_shift_consistency_detects_wrong_rule_coefficient() -> None:
     """Gradient checks should fail when a rule coefficient is inconsistent."""
-
     result = check_parameter_shift_consistency(
         lambda values: math.sin(values[0]),
         [0.3],
@@ -74,7 +71,6 @@ def test_parameter_shift_consistency_detects_wrong_rule_coefficient() -> None:
 
 def test_parameter_shift_consistency_rejects_invalid_tolerance() -> None:
     """Gradient-check tolerances must be explicit non-negative real scalars."""
-
     with pytest.raises(ValueError, match="gradient check tolerance must be a real numeric scalar"):
         check_parameter_shift_consistency(
             lambda values: math.sin(values[0]), [0.3], tolerance=cast(Any, "1e-5")
@@ -89,7 +85,6 @@ def test_parameter_shift_consistency_rejects_invalid_tolerance() -> None:
 
 def test_check_custom_derivative_consistency_passes_exact_rules() -> None:
     """Custom JVP/VJP rules should satisfy adjoint and finite-difference checks."""
-
     rule = CustomDerivativeRule(
         name="sin_cos_pair",
         value_fn=lambda values: np.array([np.sin(values[0]), values[0] * values[1]]),
@@ -128,7 +123,6 @@ def test_check_custom_derivative_consistency_passes_exact_rules() -> None:
 
 def test_check_custom_derivative_consistency_detects_bad_adjoint_rule() -> None:
     """Incorrect exact rules should fail closed without being silently trusted."""
-
     rule = CustomDerivativeRule(
         name="bad_linear",
         value_fn=lambda values: np.array([2.0 * values[0]]),
@@ -152,7 +146,6 @@ def test_check_custom_derivative_consistency_detects_bad_adjoint_rule() -> None:
 
 def test_check_custom_derivative_consistency_rejects_invalid_controls() -> None:
     """Custom derivative diagnostics should validate tolerance and step controls."""
-
     rule = CustomDerivativeRule(
         name="linear",
         value_fn=lambda values: np.array([values[0]]),
