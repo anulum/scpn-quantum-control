@@ -95,25 +95,32 @@ def _circuit(
 
 
 class TestRecomputeParityLeakage:
+    """Exercise parity leakage derived directly from shot counts."""
+
     def test_all_same_parity_is_zero(self) -> None:
+        """Return zero when every count remains in the initial sector."""
         c = _circuit(initial="0011", counts={"1100": 100, "0011": 50, "1001": 25})
         assert recompute_parity_leakage(c) == 0.0
 
     def test_all_opposite_parity_is_one(self) -> None:
+        """Return one when every count crosses into the opposite sector."""
         c = _circuit(initial="0011", counts={"0001": 100, "1110": 50})
         assert recompute_parity_leakage(c) == 1.0
 
     def test_mixed_counts_exact(self) -> None:
+        """Compute the exact opposite-sector fraction for mixed counts."""
         # initial "0011" → parity 0. "1100" parity 0 (same), "0001" parity 1 (opposite).
         c = _circuit(initial="0011", counts={"1100": 300, "0001": 100})
         assert recompute_parity_leakage(c) == pytest.approx(0.25, rel=1e-12)
 
     def test_empty_counts_is_nan(self) -> None:
+        """Return NaN when a circuit contains no shots."""
         c = _circuit(counts={})
         leak = recompute_parity_leakage(c)
         assert math.isnan(leak)
 
     def test_leakage_invariant_under_count_reordering(self) -> None:
+        """Ignore dictionary insertion order when aggregating leakage."""
         c1 = _circuit(initial="0011", counts={"1100": 300, "0001": 100, "1110": 50})
         c2 = _circuit(initial="0011", counts={"0001": 100, "1110": 50, "1100": 300})
         assert recompute_parity_leakage(c1) == recompute_parity_leakage(c2)
@@ -133,6 +140,7 @@ class TestRecomputeParityLeakage:
     )
     @settings(max_examples=200, deadline=None)
     def test_leakage_bounded_0_1(self, n_qubits: int, shots_per_bitstring: dict[str, int]) -> None:
+        """Keep generated non-empty leakage fractions within probability bounds."""
         clean = {k: v for k, v in shots_per_bitstring.items() if len(k) == n_qubits and v > 0}
         if not clean:
             return
@@ -147,7 +155,10 @@ class TestRecomputeParityLeakage:
 
 
 class TestComputeDepthSummaries:
+    """Exercise filtering and Welch summaries across depths and sectors."""
+
     def test_sector_filter_excludes_baseline(self) -> None:
+        """Exclude baseline circuits from even-versus-odd summaries."""
         circuits = [
             _circuit(counts={"0000": 100}, sector="baseline"),
             _circuit(counts={"1100": 100}, sector="even", depth=2),
@@ -173,6 +184,7 @@ class TestComputeDepthSummaries:
         assert summaries[0].n_reps_odd == 2
 
     def test_experiment_prefix_filter_skips_other_experiments(self) -> None:
+        """Ignore circuits outside the DLA-parity experiment family."""
         circuits = [
             _circuit(counts={"1100": 100}, experiment="B_something_else"),
             _circuit(counts={"1100": 100}, experiment="A_dla_parity_n4"),
@@ -194,6 +206,7 @@ class TestComputeDepthSummaries:
         assert summaries[0].n_reps_odd == 1
 
     def test_nqubits_filter(self) -> None:
+        """Restrict published summaries to four-qubit circuits."""
         circuits = [
             _circuit(counts={"11110000": 100}, n_qubits=8, initial="00110000"),
             _circuit(counts={"1100": 100}, n_qubits=4),
@@ -216,7 +229,10 @@ class TestComputeDepthSummaries:
 
 
 class TestFisherResult:
+    """Exercise the immutable combined-significance result."""
+
     def test_frozen(self) -> None:
+        """Reject mutation of a Fisher result."""
         f = FisherResult(
             chi2=1.0,
             degrees_of_freedom=2,
@@ -229,12 +245,16 @@ class TestFisherResult:
 
 
 class TestReproductionTolerance:
+    """Exercise immutable scalar-comparison tolerances."""
+
     def test_defaults_present(self) -> None:
+        """Provide positive tolerances for every published claim family."""
         t = ReproductionTolerance()
         assert t.leakage_mean_abs > 0
         assert t.fisher_chi2_rel > 0
 
     def test_frozen(self) -> None:
+        """Reject mutation of a reproduction tolerance."""
         t = ReproductionTolerance()
         with pytest.raises(AttributeError):
             t.leakage_mean_abs = 0.0  # type: ignore[misc]
@@ -242,7 +262,10 @@ class TestReproductionTolerance:
 
 @needs_real_data
 class TestReproduceStatisticsRealDataset:
+    """Exercise published-claim reproduction against bundled real data."""
+
     def test_reproduces_published_numbers(self) -> None:
+        """Reproduce every committed scalar within its declared tolerance."""
         ds = load_dla_parity_dataset()
         result = reproduce_statistics(ds)
         assert isinstance(result, ReproductionResult)
@@ -269,6 +292,7 @@ class TestReproduceStatisticsRealDataset:
                 )
 
     def test_tolerance_breach_raises(self, tmp_path: Path) -> None:
+        """Reject a tampered published leakage mean."""
         # Copy the published summary and tamper one leakage mean.
         with Path(DEFAULT_PUBLISHED_SUMMARY).open("r", encoding="utf-8") as fh:
             pub = json.load(fh)
@@ -281,6 +305,7 @@ class TestReproduceStatisticsRealDataset:
             reproduce_statistics(ds, published_summary=tampered)
 
     def test_fisher_chi2_breach_raises(self, tmp_path: Path) -> None:
+        """Reject a tampered published Fisher statistic."""
         with Path(DEFAULT_PUBLISHED_SUMMARY).open("r", encoding="utf-8") as fh:
             pub = json.load(fh)
         pub["fisher_combined"]["chi2"] = 9.99
@@ -292,23 +317,29 @@ class TestReproduceStatisticsRealDataset:
             reproduce_statistics(ds, published_summary=tampered)
 
     def test_default_summary_path_used_when_none(self) -> None:
+        """Use the canonical published summary when no path is supplied."""
         ds = load_dla_parity_dataset()
         result = reproduce_statistics(ds, published_summary=None)
         assert Path(result.published_source) == DEFAULT_PUBLISHED_SUMMARY
 
     def test_accepts_str_path(self) -> None:
+        """Accept a string path for the published summary."""
         ds = load_dla_parity_dataset()
         result = reproduce_statistics(ds, published_summary=str(DEFAULT_PUBLISHED_SUMMARY))
         assert result.fisher.n_depths_tested == 8
 
 
 class TestReproduceStatisticsSynthetic:
+    """Exercise fail-closed reproducer branches with synthetic records."""
+
     def test_empty_dataset_fisher_is_nan(self) -> None:
+        """Produce no depth summaries for an empty dataset."""
         ds = DlaParityDataset(runs=())
         summaries = compute_depth_summaries(ds)
         assert summaries == ()
 
     def test_nan_mismatch_raises(self, tmp_path: Path) -> None:
+        """Reject a NaN published claim when the recomputed value is finite."""
         # Synthesise circuits with variance so Welch yields a finite
         # p-value (and hence a finite chi²); then tamper the published
         # chi² to NaN so the reproducer sees expected=NaN vs actual=finite.
@@ -364,6 +395,7 @@ class TestReproduceStatisticsSynthetic:
             reproduce_statistics(ds, published_summary=path)
 
     def test_published_depth_without_dataset_match_is_skipped(self, tmp_path: Path) -> None:
+        """Skip a published depth absent from the loaded dataset."""
         # Dataset has depth=2 only; published summary has depth=99 too.
         circuits = [
             _circuit(counts={"1100": 100}, sector="even", depth=2),
@@ -424,6 +456,7 @@ class TestReproduceStatisticsSynthetic:
         assert all("depth=99" not in name for name, *_ in result.claims_checked)
 
     def test_optional_mean_and_peak_asymmetry_claims(self, tmp_path: Path) -> None:
+        """Check optional published mean and peak asymmetry scalars."""
         # Build a minimal valid matching-summary then inject the two
         # optional scalars to exercise their check branches.
         circuits = [
@@ -471,6 +504,8 @@ class TestReproduceStatisticsSynthetic:
         assert "peak_asymmetry_relative" in names
 
     def test_dataset_depth_not_in_published_is_skipped(self, tmp_path: Path) -> None:
+        """Skip a dataset depth absent from the published summary."""
+
         # Dataset has depth=2 and depth=4; published only has depth=2.
         def run_at_depth(d: int) -> list[DlaParityCircuit]:
             out: list[DlaParityCircuit] = []
@@ -535,6 +570,7 @@ class TestReproduceStatisticsSynthetic:
         assert all(n.startswith("depth=2.") for n in depth_claim_names)
 
     def test_empty_summaries_give_nan_peak_and_mean(self) -> None:
+        """Return NaN peak and mean values for an empty summary tuple."""
         from scpn_quantum_control.dla_parity.reproduce import _peak_and_mean
 
         val, depth, mean = _peak_and_mean(())
@@ -543,6 +579,7 @@ class TestReproduceStatisticsSynthetic:
         assert math.isnan(mean)
 
     def test_top_level_not_object_raises(self, tmp_path: Path) -> None:
+        """Reject a published summary whose top level is not an object."""
         path = tmp_path / "s.json"
         with path.open("w", encoding="utf-8") as fh:
             json.dump(["not", "an", "object"], fh)
@@ -550,6 +587,7 @@ class TestReproduceStatisticsSynthetic:
             reproduce_statistics(DlaParityDataset(runs=()), published_summary=path)
 
     def test_depth_summaries_not_list_raises(self, tmp_path: Path) -> None:
+        """Reject a non-list published depth-summary collection."""
         path = tmp_path / "s.json"
         with path.open("w", encoding="utf-8") as fh:
             json.dump({"depth_summaries": {"not": "a-list"}, "fisher_combined": {}}, fh)
@@ -557,6 +595,7 @@ class TestReproduceStatisticsSynthetic:
             reproduce_statistics(DlaParityDataset(runs=()), published_summary=path)
 
     def test_depth_row_not_dict_is_skipped(self, tmp_path: Path) -> None:
+        """Ignore malformed non-object depth rows before claim matching."""
         path = tmp_path / "s.json"
         with path.open("w", encoding="utf-8") as fh:
             json.dump(
@@ -575,6 +614,7 @@ class TestReproduceStatisticsSynthetic:
             reproduce_statistics(ds, published_summary=path)
 
     def test_fisher_combined_not_object_raises(self, tmp_path: Path) -> None:
+        """Reject a non-object published Fisher summary."""
         path = tmp_path / "s.json"
         with path.open("w", encoding="utf-8") as fh:
             json.dump({"depth_summaries": [], "fisher_combined": ["not", "an", "object"]}, fh)
@@ -582,6 +622,7 @@ class TestReproduceStatisticsSynthetic:
             reproduce_statistics(DlaParityDataset(runs=()), published_summary=path)
 
     def test_non_numeric_published_field_raises(self, tmp_path: Path) -> None:
+        """Reject a published scalar that cannot be converted to float."""
         path = tmp_path / "s.json"
         with path.open("w", encoding="utf-8") as fh:
             json.dump(
@@ -595,6 +636,7 @@ class TestReproduceStatisticsSynthetic:
             reproduce_statistics(DlaParityDataset(runs=()), published_summary=path)
 
     def test_nan_expected_vs_nan_actual_passes(self, tmp_path: Path) -> None:
+        """Accept matching NaN expected and recomputed scalar values."""
         # Synthesise a one-depth dataset with matching published summary
         # whose leakage means are NaN on both sides.
         circuits_even = [_circuit(counts={"1100": 1000}, sector="even", depth=6) for _ in range(3)]

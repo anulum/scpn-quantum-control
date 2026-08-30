@@ -28,6 +28,10 @@ DLA_PARITY_DATASET_SOURCE = "src/scpn_quantum_control/dla_parity/dataset.py"
 """Published DLA-parity JSON dataset loader."""
 DLA_PARITY_DATASET_TEST = "tests/test_dla_parity_dataset.py"
 """Real-data integrity and synthetic schema-validation tests."""
+DLA_PARITY_REPRODUCER_SOURCE = "src/scpn_quantum_control/dla_parity/reproduce.py"
+"""Published DLA-parity statistical reproducer."""
+DLA_PARITY_REPRODUCER_TEST = "tests/test_dla_parity_reproduce.py"
+"""Real-data and synthetic published-claim reproduction tests."""
 DLA_TOPOLOGY_PARITY_COVERAGE_COHORT = [
     "tests/test_dla_topology_control_parity.py",
     "tests/test_dla_topology_control_objectives.py",
@@ -36,18 +40,21 @@ DLA_TOPOLOGY_PARITY_COVERAGE_COHORT = [
     DLA_PARITY_HARNESS_TEST,
     DLA_PARITY_BASELINES_TEST,
     DLA_PARITY_DATASET_TEST,
+    DLA_PARITY_REPRODUCER_TEST,
 ]
-"""Projector, theorem, consumer, harness, baseline, and dataset tests."""
+"""Projector, theorem, consumer, and DLA-parity package tests."""
 DLA_TOPOLOGY_PARITY_TYPING_RATCHET = [
     DLA_TOPOLOGY_PARITY_SOURCE,
     DLA_PARITY_THEOREM_SOURCE,
     DLA_PARITY_HARNESS_SOURCE,
     DLA_PARITY_BASELINES_SOURCE,
     DLA_PARITY_DATASET_SOURCE,
+    DLA_PARITY_REPRODUCER_SOURCE,
     "tests/test_dla_parity_theorem.py",
     DLA_PARITY_HARNESS_TEST,
     DLA_PARITY_BASELINES_TEST,
     DLA_PARITY_DATASET_TEST,
+    DLA_PARITY_REPRODUCER_TEST,
     "tools/dla_topology_parity_quality_gates.py",
     "tests/test_dla_topology_parity_quality_gate.py",
 ]
@@ -58,11 +65,13 @@ DLA_TOPOLOGY_PARITY_DOCSTRING_RATCHET = [
     DLA_PARITY_HARNESS_SOURCE,
     DLA_PARITY_BASELINES_SOURCE,
     DLA_PARITY_DATASET_SOURCE,
+    DLA_PARITY_REPRODUCER_SOURCE,
     "tests/test_dla_topology_control_parity.py",
     "tests/test_dla_parity_theorem.py",
     DLA_PARITY_HARNESS_TEST,
     DLA_PARITY_BASELINES_TEST,
     DLA_PARITY_DATASET_TEST,
+    DLA_PARITY_REPRODUCER_TEST,
     "tools/dla_topology_parity_quality_gates.py",
     "tests/test_dla_topology_parity_quality_gate.py",
 ]
@@ -71,7 +80,8 @@ DLA_TOPOLOGY_PARITY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-dla-topology-parity-quali
 """Isolated coverage database for the parity projector owner."""
 DLA_TOPOLOGY_PARITY_COVERAGE_INCLUDE = (
     "*/dla_topology_control/parity.py,*/analysis/dla_parity_theorem.py,"
-    "*/dla_parity/__init__.py,*/dla_parity/baselines.py,*/dla_parity/dataset.py"
+    "*/dla_parity/__init__.py,*/dla_parity/baselines.py,*/dla_parity/dataset.py,"
+    "*/dla_parity/reproduce.py"
 )
 """Production surfaces subject to the exact coverage threshold."""
 
@@ -150,6 +160,8 @@ __all__ = [
     "DLA_PARITY_BASELINES_TEST",
     "DLA_PARITY_DATASET_SOURCE",
     "DLA_PARITY_DATASET_TEST",
+    "DLA_PARITY_REPRODUCER_SOURCE",
+    "DLA_PARITY_REPRODUCER_TEST",
     "DLA_PARITY_HARNESS_SOURCE",
     "DLA_PARITY_HARNESS_TEST",
     "DLA_PARITY_THEOREM_SOURCE",

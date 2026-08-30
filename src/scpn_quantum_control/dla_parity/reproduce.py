@@ -283,6 +283,7 @@ def reproduce_statistics(
         and the observed vs permitted difference.
     FileNotFoundError
         If ``published_summary`` is missing.
+
     """
     tol = tolerance if tolerance is not None else ReproductionTolerance()
     summaries = compute_depth_summaries(dataset)
