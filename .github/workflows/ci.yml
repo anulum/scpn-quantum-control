@@ -2113,13 +2113,17 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/program_ad_adjoint.py
+          src/scpn_quantum_control/program_ad_adjoint_generation.py
+          tests/test_program_ad_adjoint_generation.py
+          tests/test_program_ad_adjoint_generation_docstrings.py
           tools/program_ad_adjoint_quality_gates.py
           tests/test_program_ad_adjoint_quality_gate.py
       - name: Ruff NumPy docstrings for Program AD adjoint quality cohort
         run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/program_ad_adjoint.py
+          src/scpn_quantum_control/program_ad_adjoint_generation.py
           tests/test_adjoint_replay_product.py
           tests/test_differentiable_programming_benchmark_program_ir_edges.py
           tests/test_program_ad_adjoint_generation.py
@@ -2139,6 +2143,7 @@ jobs:
           tests/test_program_ad_adjoint_generation.py
           tests/test_program_ad_adjoint_generation_docstrings.py
           tests/test_program_adjoint_replay.py
+          tests/test_program_ad_runtime_registry_dispatch.py
       - name: Enforce Program AD adjoint exact coverage
         run: >-
           python -m coverage report
@@ -2146,7 +2151,7 @@ jobs:
           --data-file=/tmp/scpn-qc-program-ad-adjoint-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/program_ad_adjoint.py
+          --include=*/program_ad_adjoint.py,*/program_ad_adjoint_generation.py
 
   qpu-compute-types-quality:
     needs: lint

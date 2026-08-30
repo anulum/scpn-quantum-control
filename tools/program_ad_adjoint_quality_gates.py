@@ -13,21 +13,31 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 PROGRAM_AD_ADJOINT_SOURCE = "src/scpn_quantum_control/program_ad_adjoint.py"
+PROGRAM_AD_ADJOINT_GENERATION_SOURCE = "src/scpn_quantum_control/program_ad_adjoint_generation.py"
 PROGRAM_AD_ADJOINT_COVERAGE_COHORT = [
     "tests/test_adjoint_replay_product.py",
     "tests/test_differentiable_programming_benchmark_program_ir_edges.py",
     "tests/test_program_ad_adjoint_generation.py",
     "tests/test_program_ad_adjoint_generation_docstrings.py",
     "tests/test_program_adjoint_replay.py",
+    "tests/test_program_ad_runtime_registry_dispatch.py",
 ]
 PROGRAM_AD_ADJOINT_TYPING_RATCHET = [
     PROGRAM_AD_ADJOINT_SOURCE,
+    PROGRAM_AD_ADJOINT_GENERATION_SOURCE,
+    "tests/test_program_ad_adjoint_generation.py",
+    "tests/test_program_ad_adjoint_generation_docstrings.py",
     "tools/program_ad_adjoint_quality_gates.py",
     "tests/test_program_ad_adjoint_quality_gate.py",
 ]
 PROGRAM_AD_ADJOINT_DOCSTRING_RATCHET = [
     PROGRAM_AD_ADJOINT_SOURCE,
-    *PROGRAM_AD_ADJOINT_COVERAGE_COHORT,
+    PROGRAM_AD_ADJOINT_GENERATION_SOURCE,
+    "tests/test_adjoint_replay_product.py",
+    "tests/test_differentiable_programming_benchmark_program_ir_edges.py",
+    "tests/test_program_ad_adjoint_generation.py",
+    "tests/test_program_ad_adjoint_generation_docstrings.py",
+    "tests/test_program_adjoint_replay.py",
     "tools/program_ad_adjoint_quality_gates.py",
     "tests/test_program_ad_adjoint_quality_gate.py",
 ]
@@ -56,8 +66,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *PROGRAM_AD_ADJOINT_DOCSTRING_RATCHET,
@@ -96,7 +107,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={PROGRAM_AD_ADJOINT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/program_ad_adjoint.py",
+                "--include=*/program_ad_adjoint.py,*/program_ad_adjoint_generation.py",
             ],
         ),
     ]
@@ -106,6 +117,7 @@ __all__ = [
     "PROGRAM_AD_ADJOINT_COVERAGE_COHORT",
     "PROGRAM_AD_ADJOINT_COVERAGE_DATA_FILE",
     "PROGRAM_AD_ADJOINT_DOCSTRING_RATCHET",
+    "PROGRAM_AD_ADJOINT_GENERATION_SOURCE",
     "PROGRAM_AD_ADJOINT_SOURCE",
     "PROGRAM_AD_ADJOINT_TYPING_RATCHET",
     "build_coverage_gates",

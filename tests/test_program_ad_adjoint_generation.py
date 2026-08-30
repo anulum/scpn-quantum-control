@@ -1000,6 +1000,213 @@ def test_multi_dot_output_metadata_rejects_degenerate_shape(
         _program_adjoint_multi_dot_output_metadata(["2x3", "0"])
 
 
+# ------------------------------------------ compact primitive metadata guards
+
+
+@pytest.mark.parametrize(
+    ("op", "input_count", "message"),
+    [
+        ("cumsum:bad", 1, "cumulative adjoint metadata is malformed"),
+        ("diff:bad", 1, "cumulative adjoint metadata is malformed"),
+        ("diff:shape:3:n:1:axis:-1:out:0", 3, "metadata is malformed"),
+        ("diff:shape:3:n:1:axis:1:out:0", 3, "metadata is malformed"),
+        ("diff:shape:3:n:-1:axis:0:out:0", 3, "metadata is malformed"),
+        ("diff:shape:3:n:4:axis:0:out:0", 3, "metadata is malformed"),
+        ("cumsum:shape:3:axis:flat:out:0", 2, "inputs must match"),
+        ("cumsum:shape:0:axis:flat:out:0", 0, "metadata is malformed"),
+        ("cumsum:shape:3:axis:flat:out:-1", 3, "outside output shape"),
+        ("cumsum:shape:3:axis:flat:out:3", 3, "outside output shape"),
+        ("diff:shape:3:n:3:axis:0:out:0", 3, "outside output shape"),
+        ("signal:bad", 1, "signal adjoint metadata is malformed"),
+        ("signal:convolve:left:0:right:1:mode:full:out:0", 1, "metadata is malformed"),
+        ("signal:convolve:left:1:right:0:mode:full:out:0", 1, "metadata is malformed"),
+        ("signal:fft:left:1:right:1:mode:full:out:0", 2, "metadata is malformed"),
+        ("signal:convolve:left:1:right:1:mode:bad:out:0", 2, "metadata is malformed"),
+        ("signal:convolve:left:2:right:2:mode:full:out:0", 3, "inputs must match"),
+        ("signal:convolve:left:2:right:2:mode:full:out:-1", 4, "outside output shape"),
+        ("signal:convolve:left:2:right:2:mode:full:out:3", 4, "outside output shape"),
+        ("stencil:gradient:bad", 1, "stencil adjoint metadata is malformed"),
+        (
+            "stencil:gradient:shape:3:axis:0:edge:1:spacing:scalar=0:out:0",
+            3,
+            "metadata is malformed",
+        ),
+        (
+            "stencil:gradient:shape:3:axis:0:edge:1:spacing:scalar=nan:out:0",
+            3,
+            "metadata is malformed",
+        ),
+        (
+            "stencil:gradient:shape:3:axis:0:edge:1:spacing:bad:out:0",
+            3,
+            "metadata is malformed",
+        ),
+        (
+            "stencil:gradient:shape:3:axis:0:edge:1:spacing:coordinates=:out:0",
+            3,
+            "metadata is malformed",
+        ),
+        (
+            "stencil:gradient:shape:3:axis:0:edge:1:spacing:coordinates=1:out:0",
+            3,
+            "metadata is malformed",
+        ),
+        (
+            "stencil:gradient:shape:3:axis:0:edge:1:spacing:coordinates=0,nan,2:out:0",
+            3,
+            "metadata is malformed",
+        ),
+        (
+            "stencil:gradient:shape:3:axis:0:edge:1:spacing:coordinates=0,2,1:out:0",
+            3,
+            "metadata is malformed",
+        ),
+        (
+            "stencil:gradient:shape:3:axis:1:edge:1:spacing:scalar=1:out:0",
+            3,
+            "metadata is malformed",
+        ),
+        (
+            "stencil:gradient:shape:3:axis:0:edge:3:spacing:scalar=1:out:0",
+            3,
+            "metadata is malformed",
+        ),
+        (
+            "stencil:gradient:shape:3:axis:0:edge:1:spacing:scalar=1:out:0",
+            2,
+            "inputs must match",
+        ),
+        (
+            "stencil:gradient:shape:3:axis:0:edge:1:spacing:scalar=1:out:-1",
+            3,
+            "outside source shape",
+        ),
+        (
+            "stencil:gradient:shape:3:axis:0:edge:1:spacing:scalar=1:out:3",
+            3,
+            "outside source shape",
+        ),
+        ("interpolation:interp:bad", 1, "interpolation adjoint metadata is malformed"),
+        (
+            "interpolation:interp:samples:1:grid::left:none:right:none:out:0",
+            1,
+            "metadata is malformed",
+        ),
+        (
+            "interpolation:interp:samples:1:grid:0:left:none:right:none:out:0",
+            2,
+            "metadata is malformed",
+        ),
+        (
+            "interpolation:interp:samples:1:grid:0,nan:left:none:right:none:out:0",
+            3,
+            "metadata is malformed",
+        ),
+        (
+            "interpolation:interp:samples:1:grid:1,0:left:none:right:none:out:0",
+            3,
+            "metadata is malformed",
+        ),
+        (
+            "interpolation:interp:samples:1:grid:0,1:left:nan:right:none:out:0",
+            3,
+            "metadata is malformed",
+        ),
+        (
+            "interpolation:interp:samples:1:grid:0,1:left:none:right:nan:out:0",
+            3,
+            "metadata is malformed",
+        ),
+        (
+            "interpolation:interp:samples:0:grid:0,1:left:none:right:none:out:0",
+            2,
+            "metadata is malformed",
+        ),
+        (
+            "interpolation:interp:samples:1:grid:0,1:left:none:right:none:out:0",
+            2,
+            "inputs must match",
+        ),
+        (
+            "interpolation:interp:samples:1:grid:0,1:left:none:right:none:out:-1",
+            3,
+            "outside output shape",
+        ),
+        (
+            "interpolation:interp:samples:1:grid:0,1:left:none:right:none:out:1",
+            3,
+            "outside output shape",
+        ),
+    ],
+)
+def test_dispatch_rejects_malformed_compact_primitive_metadata(
+    op: str, input_count: int, message: str
+) -> None:
+    """Compact primitive replay must reject corrupt recorded metadata."""
+    names, table = _flat_inputs(np.arange(1, input_count + 1, dtype=np.float64))
+    with pytest.raises(ValueError, match=message):
+        _program_adjoint_node_contributions(_node(op, names), table)
+
+
+def test_cumulative_metadata_parser_rejects_unknown_family() -> None:
+    """The cumulative parser must reject an unrecognised operation family."""
+    with pytest.raises(ValueError, match="cumulative adjoint metadata is malformed"):
+        generation._program_adjoint_cumulative_contributions(_node("unknown", ()), {})
+
+
+def test_stencil_coordinate_spacing_supports_descending_grid() -> None:
+    """Recorded descending coordinates must retain their exact stencil VJP."""
+    names, table = _flat_inputs(np.array([1.0, 2.0, 4.0], dtype=np.float64))
+    contributions = _program_adjoint_node_contributions(
+        _node(
+            "stencil:gradient:shape:3:axis:0:edge:1:spacing:coordinates=3,2,1:out:1",
+            names,
+        ),
+        table,
+    )
+    assert len(contributions) == 3
+    assert all(np.isfinite(scale) for _, scale in contributions)
+
+
+@pytest.mark.parametrize(
+    ("builder", "op", "input_count"),
+    [
+        (
+            "program_ad_cumulative_cumsum_derivative_rule",
+            "cumsum:shape:3:axis:flat:out:0",
+            3,
+        ),
+        (
+            "program_ad_signal_convolve_derivative_rule",
+            "signal:convolve:left:2:right:2:mode:full:out:0",
+            4,
+        ),
+        (
+            "program_ad_stencil_gradient_derivative_rule",
+            "stencil:gradient:shape:3:axis:0:edge:1:spacing:scalar=1:out:0",
+            3,
+        ),
+        (
+            "program_ad_interpolation_interp_derivative_rule",
+            "interpolation:interp:samples:1:grid:0,1:left:0:right:1:out:0",
+            3,
+        ),
+    ],
+)
+def test_compact_primitive_replay_requires_vjp_rule(
+    monkeypatch: pytest.MonkeyPatch, builder: str, op: str, input_count: int
+) -> None:
+    """Replay must fail closed if a registered primitive loses its VJP."""
+    monkeypatch.setattr(
+        generation,
+        builder,
+        lambda *args, **kwargs: SimpleNamespace(vjp_rule=None),
+    )
+    names, table = _flat_inputs(np.arange(1, input_count + 1, dtype=np.float64))
+    with pytest.raises(ValueError, match="requires a VJP rule"):
+        _program_adjoint_node_contributions(_node(op, names), table)
+
+
 # ------------------------------------------------ node-contributions dispatcher
 
 
@@ -1523,6 +1730,30 @@ def test_steps_branch_binds_runtime_region_and_phi() -> None:
     assert steps[0].control_region == 0
     assert steps[0].phi_node == 0
     assert steps[0].phi_selected == "%1"
+
+
+def test_steps_branch_rejects_unselected_runtime_phi() -> None:
+    """Runtime phi metadata without a selected input must fail closed."""
+    node = _branch_node()
+    phi = ProgramADPhiNode(
+        index=0,
+        target="%phi0",
+        incoming=("%1", "%2"),
+        control_region=0,
+        selected=None,
+        source_line=None,
+    )
+    with pytest.raises(ValueError, match="phi_selected must be non-empty"):
+        _program_adjoint_steps_from_ir(
+            nodes=(node,),
+            node_by_name={"%0": node},
+            program_ir=_effect_ir(
+                ssa=(_ssa("%0"),),
+                control_regions=(_runtime_region(0),),
+                phi_nodes=(phi,),
+            ),
+            cotangents={"%0": 0.0},
+        )
 
 
 def test_steps_branch_region_without_phi() -> None:

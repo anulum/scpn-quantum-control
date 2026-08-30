@@ -867,6 +867,7 @@ def _program_adjoint_eig_metadata(
     ValueError
         If the metadata is malformed or any index falls outside the spectrum or
         matrix.
+
     """
     parts = node.op.split(":")
     expected_length = 6 if expect_eigenvector else 5
@@ -988,6 +989,7 @@ def _program_adjoint_eigh_metadata(
     ValueError
         If the metadata is malformed, the matrix is not symmetric, the spectrum
         is degenerate, or any index is out of range.
+
     """
     parts = node.op.split(":")
     expected_length = 7 if expect_eigenvector else 6
