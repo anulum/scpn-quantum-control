@@ -21,21 +21,25 @@ from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
 
 class TestQuantumKernelEntry:
-    def test_self_overlap_one(self):
+    """Exercise the public single-entry fidelity kernel."""
+
+    def test_self_overlap_one(self) -> None:
         """K(x, x) = 1."""
         K = build_knm_paper27(L=3)
         x = np.array([0.5, 0.3, 0.7])
         val = quantum_kernel_entry(x, x, K, 3)
         assert val == pytest.approx(1.0, abs=1e-6)
 
-    def test_bounded(self):
+    def test_bounded(self) -> None:
+        """Keep fidelity values within their numerical probability bounds."""
         K = build_knm_paper27(L=3)
         x1 = np.array([0.1, 0.2, 0.3])
         x2 = np.array([0.9, 0.8, 0.7])
         val = quantum_kernel_entry(x1, x2, K, 3)
         assert 0 <= val <= 1.0 + 1e-6
 
-    def test_symmetric(self):
+    def test_symmetric(self) -> None:
+        """Preserve symmetry when the feature vectors are exchanged."""
         K = build_knm_paper27(L=3)
         x1 = np.array([0.1, 0.5])
         x2 = np.array([0.9, 0.3])
@@ -43,60 +47,72 @@ class TestQuantumKernelEntry:
         k21 = quantum_kernel_entry(x2, x1, K, 3)
         assert k12 == pytest.approx(k21, abs=1e-10)
 
-    def test_rejects_empty_feature_vector(self):
+    def test_rejects_empty_feature_vector(self) -> None:
+        """Reject an empty vector through the public entry surface."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="at least one feature"):
             quantum_kernel_entry(np.array([]), np.array([0.1]), K, 3)
 
-    def test_rejects_mismatched_entry_feature_dimensions(self):
+    def test_rejects_mismatched_entry_feature_dimensions(self) -> None:
+        """Reject entry inputs with different feature dimensions."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="same feature dimension"):
             quantum_kernel_entry(np.array([0.1, 0.2]), np.array([0.1]), K, 3)
 
-    def test_rejects_k_shape_mismatch(self):
+    def test_rejects_k_shape_mismatch(self) -> None:
+        """Reject a nonsquare coupling matrix before circuit construction."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="K must be a square"):
             quantum_kernel_entry(np.array([0.1]), np.array([0.2]), K[:2, :], 3)
 
-    def test_rejects_n_qubits_mismatch(self):
+    def test_rejects_n_qubits_mismatch(self) -> None:
+        """Reject a qubit count that disagrees with the coupling matrix."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="n_qubits must match"):
             quantum_kernel_entry(np.array([0.1]), np.array([0.2]), K, 2)
 
 
 class TestComputeKernelMatrix:
-    def test_returns_result(self):
+    """Exercise the public full Gram-matrix builder and its contracts."""
+
+    def test_returns_result(self) -> None:
+        """Return the result record for a finite sample matrix."""
         K = build_knm_paper27(L=3)
         X = np.random.default_rng(42).uniform(size=(4, 3))
         result = compute_kernel_matrix(X, K, 3)
         assert isinstance(result, QuantumKernelResult)
 
-    def test_shape(self):
+    def test_shape(self) -> None:
+        """Return one square Gram-matrix axis per input sample."""
         K = build_knm_paper27(L=3)
         X = np.random.default_rng(42).uniform(size=(5, 3))
         result = compute_kernel_matrix(X, K, 3)
         assert result.kernel_matrix.shape == (5, 5)
 
-    def test_diagonal_one(self):
+    def test_diagonal_one(self) -> None:
+        """Keep every self-fidelity entry numerically equal to one."""
         K = build_knm_paper27(L=3)
         X = np.random.default_rng(42).uniform(size=(3, 2))
         result = compute_kernel_matrix(X, K, 3)
         np.testing.assert_allclose(np.diag(result.kernel_matrix), 1.0, atol=1e-6)
 
-    def test_symmetric_matrix(self):
+    def test_symmetric_matrix(self) -> None:
+        """Construct a symmetric Gram matrix from pairwise fidelities."""
         K = build_knm_paper27(L=3)
         X = np.random.default_rng(42).uniform(size=(4, 2))
         result = compute_kernel_matrix(X, K, 3)
         np.testing.assert_allclose(result.kernel_matrix, result.kernel_matrix.T, atol=1e-10)
 
-    def test_positive_semidefinite(self):
+    def test_positive_semidefinite(self) -> None:
+        """Preserve positive semidefiniteness within numerical tolerance."""
         K = build_knm_paper27(L=3)
         X = np.random.default_rng(42).uniform(size=(4, 3))
         result = compute_kernel_matrix(X, K, 3)
         eigenvalues = np.linalg.eigvalsh(result.kernel_matrix)
         assert np.all(eigenvalues >= -1e-6)
 
-    def test_n_samples_and_features(self):
+    def test_n_samples_and_features(self) -> None:
+        """Report the admitted sample, feature, and qubit dimensions."""
         K = build_knm_paper27(L=3)
         X = np.random.default_rng(42).uniform(size=(6, 4))
         result = compute_kernel_matrix(X, K, 3)
@@ -104,17 +120,20 @@ class TestComputeKernelMatrix:
         assert result.feature_dim == 4
         assert result.n_qubits == 3
 
-    def test_rejects_one_dimensional_feature_input(self):
+    def test_rejects_one_dimensional_feature_input(self) -> None:
+        """Reject a feature input without a sample axis."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="X must be a 2-D"):
             compute_kernel_matrix(np.array([0.1, 0.2, 0.3]), K, 3)
 
-    def test_rejects_empty_sample_set(self):
+    def test_rejects_empty_sample_set(self) -> None:
+        """Reject a feature matrix with no samples."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="at least one sample"):
             compute_kernel_matrix(np.empty((0, 3)), K, 3)
 
-    def test_rejects_empty_feature_columns(self):
+    def test_rejects_empty_feature_columns(self) -> None:
+        """Reject a sample matrix with no feature columns."""
         K = build_knm_paper27(L=3)
         with pytest.raises(ValueError, match="at least one feature"):
             compute_kernel_matrix(np.empty((2, 0)), K, 3)
@@ -126,7 +145,9 @@ class TestComputeKernelMatrix:
 
 
 class TestKernelPhysics:
-    def test_different_K_different_kernel(self):
+    """Check the finite kernel's coupling sensitivity and continuity."""
+
+    def test_different_K_different_kernel(self) -> None:
         """Different Knm coupling → different kernel values."""
         x1 = np.array([0.5, 0.3])
         x2 = np.array([0.8, 0.1])
@@ -136,7 +157,7 @@ class TestKernelPhysics:
         v2 = quantum_kernel_entry(x1, x2, K_strong, 3)
         assert v1 != v2
 
-    def test_close_inputs_high_overlap(self):
+    def test_close_inputs_high_overlap(self) -> None:
         """Very similar inputs → kernel value near 1."""
         K = build_knm_paper27(L=3)
         x1 = np.array([0.5, 0.5, 0.5])
@@ -151,8 +172,11 @@ class TestKernelPhysics:
 
 
 class TestKernelPipeline:
-    def test_pipeline_knm_to_kernel(self):
+    """Exercise the real coupling-to-Gram-matrix pipeline."""
+
+    def test_pipeline_knm_to_kernel(self) -> None:
         """Full pipeline: build_knm → compute_kernel_matrix → PSD matrix.
+
         Verifies quantum kernel is not decorative — produces valid Gram matrix.
         """
         import time

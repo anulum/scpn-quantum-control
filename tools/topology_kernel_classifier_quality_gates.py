@@ -12,13 +12,20 @@ from __future__ import annotations
 from os import devnull
 
 Gate = tuple[str, list[str]]
+QUANTUM_KERNEL_SOURCE = "src/scpn_quantum_control/applications/quantum_kernel.py"
+TOPOLOGY_KERNEL_SOURCE = "src/scpn_quantum_control/topology_kernel_product/kernels.py"
 TOPOLOGY_KERNEL_CLASSIFIER_SOURCE = (
     "src/scpn_quantum_control/topology_kernel_product/classifier.py"
 )
 TOPOLOGY_KERNEL_CLASSIFIER_COVERAGE_COHORT = [
     "tests/test_topology_kernel_product_classifier.py",
+    "tests/test_topology_kernel_product_kernels.py",
+    "tests/test_quantum_kernel.py",
+    "tests/test_quantum_kernel_branches.py",
 ]
 TOPOLOGY_KERNEL_CLASSIFIER_TYPING_RATCHET = [
+    QUANTUM_KERNEL_SOURCE,
+    TOPOLOGY_KERNEL_SOURCE,
     TOPOLOGY_KERNEL_CLASSIFIER_SOURCE,
     *TOPOLOGY_KERNEL_CLASSIFIER_COVERAGE_COHORT,
     "tools/topology_kernel_classifier_quality_gates.py",
@@ -95,13 +102,15 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={TOPOLOGY_KERNEL_CLASSIFIER_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/topology_kernel_product/classifier.py",
+                "--include=*/applications/quantum_kernel.py,*/topology_kernel_product/kernels.py,*/topology_kernel_product/classifier.py",
             ],
         ),
     ]
 
 
 __all__ = [
+    "QUANTUM_KERNEL_SOURCE",
+    "TOPOLOGY_KERNEL_SOURCE",
     "TOPOLOGY_KERNEL_CLASSIFIER_COVERAGE_COHORT",
     "TOPOLOGY_KERNEL_CLASSIFIER_COVERAGE_DATA_FILE",
     "TOPOLOGY_KERNEL_CLASSIFIER_DOCSTRING_RATCHET",

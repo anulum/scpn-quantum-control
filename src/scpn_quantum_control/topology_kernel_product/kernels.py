@@ -69,6 +69,7 @@ def validate_topology(
     ValueError
         If the matrix violates shape, finiteness, symmetry, or diagonal
         requirements.
+
     """
     if not isinstance(config, TopologyKernelConfig):
         raise ValueError("config must be a TopologyKernelConfig")
@@ -158,6 +159,7 @@ def fidelity_kernel_matrix(
     -----
     This routine performs dense local statevector simulation. It neither
     submits jobs nor infers performance on a quantum processor.
+
     """
     rows = validate_feature_matrix(row_features, config, name="row_features")
     columns = validate_feature_matrix(column_features, config, name="column_features")

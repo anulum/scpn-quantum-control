@@ -34,10 +34,16 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     run = gates["topology-kernel classifier focused coverage"]
     report = gates["topology-kernel classifier exact coverage threshold"]
     assert "--branch" in run
-    assert run[-1:] == quality_gates.TOPOLOGY_KERNEL_CLASSIFIER_COVERAGE_COHORT
+    assert (
+        run[-len(quality_gates.TOPOLOGY_KERNEL_CLASSIFIER_COVERAGE_COHORT) :]
+        == quality_gates.TOPOLOGY_KERNEL_CLASSIFIER_COVERAGE_COHORT
+    )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/topology_kernel_product/classifier.py" in report
+    assert (
+        "--include=*/applications/quantum_kernel.py,*/topology_kernel_product/kernels.py,*/topology_kernel_product/classifier.py"
+        in report
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -61,5 +67,10 @@ def test_ci_runs_and_aggregates_topology_kernel_classifier_gate() -> None:
     for path in quality_gates.TOPOLOGY_KERNEL_CLASSIFIER_DOCSTRING_RATCHET:
         assert path in block
     assert "--fail-under=100" in block
-    assert "topology_kernel_product/classifier.py" in block
+    for source in (
+        quality_gates.QUANTUM_KERNEL_SOURCE,
+        quality_gates.TOPOLOGY_KERNEL_SOURCE,
+        quality_gates.TOPOLOGY_KERNEL_CLASSIFIER_SOURCE,
+    ):
+        assert source in block
     assert "topology-kernel-classifier-quality" in workflow[workflow.index("  ci-gate:") :]

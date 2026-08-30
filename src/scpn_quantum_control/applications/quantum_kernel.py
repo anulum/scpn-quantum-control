@@ -95,6 +95,7 @@ def canonical_edge_pairs(n_qubits: int) -> tuple[Edge, ...]:
     ------
     ValueError
         If ``n_qubits`` is not a positive integer.
+
     """
     if isinstance(n_qubits, bool) or not isinstance(n_qubits, int) or n_qubits < 1:
         raise ValueError("n_qubits must be a positive integer.")
@@ -143,6 +144,7 @@ def encode_topology_edge_features(
     ValueError
         If shapes, symmetry, diagonal, finiteness, evolution settings, or
         resource budgets violate the contract.
+
     """
     if isinstance(max_qubits, bool) or not isinstance(max_qubits, int):
         raise ValueError("max_qubits must be an integer.")
@@ -259,6 +261,7 @@ def compute_kernel_matrix(
         X: (n_samples, n_features) feature matrix
         K: coupling matrix
         n_qubits: number of qubits for encoding
+
     """
     X = np.asarray(X, dtype=float)
     if X.ndim != 2:
