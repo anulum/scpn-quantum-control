@@ -2308,6 +2308,7 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/psi_field/lattice.py
           src/scpn_quantum_control/psi_field/observables.py
+          src/scpn_quantum_control/psi_field/scpn_mapping.py
           tests/test_psi_field.py
           tests/test_lattice_branches.py
           tools/psi_lattice_quality_gates.py
@@ -2318,6 +2319,7 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/psi_field/lattice.py
           src/scpn_quantum_control/psi_field/observables.py
+          src/scpn_quantum_control/psi_field/scpn_mapping.py
           tests/test_psi_field.py
           tests/test_lattice_branches.py
           tools/psi_lattice_quality_gates.py
@@ -2338,7 +2340,7 @@ jobs:
           --data-file=/tmp/scpn-qc-psi-lattice-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/psi_field/lattice.py,*/psi_field/observables.py
+          --include=*/psi_field/lattice.py,*/psi_field/observables.py,*/psi_field/scpn_mapping.py
       - name: Run Rust psi-field lattice parity tests
         run: cargo test --manifest-path scpn_quantum_engine/Cargo.toml --lib gauge_lattice
 

@@ -31,7 +31,22 @@ from .lattice import U1LatticGauge
 
 @dataclass
 class SCPNLattice:
-    """SCPN hierarchy mapped to lattice gauge field + infoton."""
+    """SCPN hierarchy mapped to a gauge field and infoton.
+
+    Attributes
+    ----------
+    gauge
+        U(1) gauge field defined by the SCPN coupling topology.
+    infoton
+        Matter field living on the lattice sites.
+    K
+        Coupling matrix used to construct the topology.
+    omega
+        Natural frequencies associated with the sites.
+    n_layers
+        Number of mapped SCPN layers.
+
+    """
 
     gauge: U1LatticGauge
     infoton: InfitonField
@@ -55,14 +70,29 @@ def scpn_to_lattice(
     proportional to K_nm values, so stronger SCPN coupling produces
     stronger gauge links and more correlated Ψ-field dynamics.
 
-    Args:
-        K: coupling matrix (default: Paper 27 16-layer)
-        omega: natural frequencies (default: OMEGA_N_16)
-        beta: gauge coupling β = 1/g² (higher → more ordered)
-        mass_sq: infoton mass² (positive → symmetric phase)
-        quartic_coupling: infoton λ|φ|⁴ coupling
-        gauge_coupling: gauge-matter coupling g
-        seed: RNG seed
+    Parameters
+    ----------
+    K
+        Coupling matrix. The Paper 27 16-layer matrix is used by default.
+    omega
+        Natural frequencies. The matching prefix of ``OMEGA_N_16`` is used by
+        default.
+    beta
+        Gauge inverse coupling ``1 / g**2``; larger values favour order.
+    mass_sq
+        Infoton mass squared; positive values select the symmetric phase.
+    quartic_coupling
+        Infoton quartic ``lambda * |phi|**4`` coupling.
+    gauge_coupling
+        Gauge-matter coupling.
+    seed
+        Seed shared by gauge-link and infoton initialization.
+
+    Returns
+    -------
+    SCPNLattice
+        Coupled gauge and matter fields with their SCPN inputs.
+
     """
     if K is None:
         K = build_knm_paper27()

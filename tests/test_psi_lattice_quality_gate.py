@@ -38,7 +38,10 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/psi_field/lattice.py,*/psi_field/observables.py" in report
+    assert (
+        "--include=*/psi_field/lattice.py,*/psi_field/observables.py,*/psi_field/scpn_mapping.py"
+        in report
+    )
 
 
 def test_polyglot_gate_targets_rust_lattice_owner() -> None:
