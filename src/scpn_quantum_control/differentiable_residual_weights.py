@@ -39,6 +39,7 @@ def huber_residual_weights(
     -------
     numpy.ndarray
         One-dimensional ``float64`` weight vector aligned with ``residuals``.
+
     """
     residual_arr = _as_vector_output(residuals)
     delta_value = _as_real_scalar("Huber delta", delta)
@@ -80,6 +81,7 @@ def soft_l1_residual_weights(
     -------
     numpy.ndarray
         One-dimensional ``float64`` weight vector aligned with ``residuals``.
+
     """
     residual_arr = _as_vector_output(residuals)
     scale_value = _as_real_scalar("Soft-L1 scale", scale)

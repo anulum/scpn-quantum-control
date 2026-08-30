@@ -102,6 +102,9 @@ if TYPE_CHECKING:
     )
     from tools import differentiable_quality_gates as _differentiable_quality_gates
     from tools import (
+        differentiable_residual_weights_quality_gates as _differentiable_residual_weights_quality_gates,
+    )
+    from tools import (
         differentiable_sparse_derivatives_quality_gates as _differentiable_sparse_derivatives_quality_gates,
     )
     from tools import (
@@ -422,6 +425,9 @@ else:
         "tools.gradient_plan_explanation_artifact_quality_gates"
     )
     _differentiable_quality_gates = import_module("tools.differentiable_quality_gates")
+    _differentiable_residual_weights_quality_gates = import_module(
+        "tools.differentiable_residual_weights_quality_gates"
+    )
     _experiment_mitigation_quality_gates = import_module(
         "tools.experiment_mitigation_quality_gates"
     )
@@ -1039,6 +1045,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_studio_simulation_quality_gates.build_static_quality_gates(_PY),
     *_studio_scorecard_bundle_quality_gates.build_static_quality_gates(_PY),
     *_advanced_witnesses_quality_gates.build_static_quality_gates(_PY),
+    *_differentiable_residual_weights_quality_gates.build_static_quality_gates(_PY),
     *_differentiable_consistency_quality_gates.build_static_quality_gates(_PY),
     *_differentiable_jax_adapter_quality_gates.build_static_quality_gates(_PY),
     *_program_ad_alias_analysis_quality_gates.build_static_quality_gates(_PY),
@@ -1646,6 +1653,9 @@ STUDIO_SCORECARD_BUNDLE_COVERAGE_GATES = (
     _studio_scorecard_bundle_quality_gates.build_coverage_gates(_PY)
 )
 ADVANCED_WITNESSES_COVERAGE_GATES = _advanced_witnesses_quality_gates.build_coverage_gates(_PY)
+DIFFERENTIABLE_RESIDUAL_WEIGHTS_COVERAGE_GATES = (
+    _differentiable_residual_weights_quality_gates.build_coverage_gates(_PY)
+)
 DIFFERENTIABLE_CONSISTENCY_COVERAGE_GATES = (
     _differentiable_consistency_quality_gates.build_coverage_gates(_PY)
 )
@@ -2091,6 +2101,7 @@ def main() -> int:
             gates.extend(STUDIO_SIMULATION_COVERAGE_GATES)
             gates.extend(STUDIO_SCORECARD_BUNDLE_COVERAGE_GATES)
             gates.extend(ADVANCED_WITNESSES_COVERAGE_GATES)
+            gates.extend(DIFFERENTIABLE_RESIDUAL_WEIGHTS_COVERAGE_GATES)
             gates.extend(DIFFERENTIABLE_CONSISTENCY_COVERAGE_GATES)
             gates.extend(DIFFERENTIABLE_JAX_ADAPTER_COVERAGE_GATES)
             gates.extend(PROGRAM_AD_ALIAS_ANALYSIS_COVERAGE_GATES)
