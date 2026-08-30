@@ -59,6 +59,8 @@ def _validate_mcwf_inputs(
     omega_arr = np.asarray(omega, dtype=np.float64)
     if K_arr.ndim != 2 or K_arr.shape[0] != K_arr.shape[1]:
         raise ValueError("K must be a square two-dimensional coupling matrix.")
+    if K_arr.shape[0] == 0:
+        raise ValueError("K must contain at least one oscillator.")
     if omega_arr.ndim != 1 or omega_arr.shape[0] != K_arr.shape[0]:
         raise ValueError("omega must be a one-dimensional vector matching K.")
     if not np.all(np.isfinite(K_arr)) or not np.all(np.isfinite(omega_arr)):
@@ -132,16 +134,33 @@ def mcwf_trajectory(
 
     Parameters
     ----------
-    K, omega : coupling matrix and frequencies
-    gamma_amp : amplitude damping rate per qubit
-    gamma_deph : dephasing rate per qubit
-    t_max : total time
-    dt : timestep
-    seed : RNG seed
+    K
+        Square, non-empty, finite coupling matrix.
+    omega
+        Finite frequency vector with one entry per oscillator.
+    gamma_amp
+        Non-negative amplitude-damping rate per qubit.
+    gamma_deph
+        Non-negative dephasing rate per qubit.
+    t_max
+        Non-negative physical time horizon.
+    dt
+        Positive maximum integration step.
+    seed
+        Optional random-number-generator seed.
+    max_dense_gib
+        Optional dense state-vector workspace limit in GiB.
 
     Returns
     -------
-    dict with keys: times, R, psi_final, n_jumps
+    dict[str, Any]
+        Trajectory times, order history, final state vector, and jump count.
+
+    Raises
+    ------
+    ValueError
+        If a physical input, time setting, or coupling shape is invalid.
+
     """
     K, omega = _validate_mcwf_inputs(K, omega, gamma_amp, gamma_deph, t_max, dt)
     n = K.shape[0]
@@ -233,7 +252,37 @@ def mcwf_ensemble(
 ) -> dict[str, Any]:
     """Run an ensemble of MCWF trajectories and average.
 
-    Returns dict with keys: times, R_mean, R_std, R_trajectories, total_jumps
+    Parameters
+    ----------
+    K
+        Square, non-empty, finite coupling matrix.
+    omega
+        Finite frequency vector with one entry per oscillator.
+    gamma_amp
+        Non-negative amplitude-damping rate per qubit.
+    gamma_deph
+        Non-negative dephasing rate per qubit.
+    t_max
+        Non-negative physical time horizon.
+    dt
+        Positive maximum integration step.
+    n_trajectories
+        Positive number of independently seeded trajectories.
+    seed
+        Optional ensemble random-number-generator seed.
+    max_dense_gib
+        Optional per-trajectory dense state-vector workspace limit in GiB.
+
+    Returns
+    -------
+    dict[str, Any]
+        Time grid, ensemble statistics, trajectory matrix, and jump count.
+
+    Raises
+    ------
+    ValueError
+        If the trajectory count or a delegated trajectory input is invalid.
+
     """
     if isinstance(n_trajectories, bool) or not isinstance(n_trajectories, int):
         raise ValueError("n_trajectories must be a positive integer.")

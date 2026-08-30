@@ -39,9 +39,12 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
 
     assert f"--data-file={quality_gates.OPEN_SYSTEM_COMPLETENESS_COVERAGE_DATA_FILE}" in run
     assert "--branch" in run
-    assert run[-1:] == quality_gates.OPEN_SYSTEM_COMPLETENESS_COVERAGE_COHORT
+    assert (
+        run[-len(quality_gates.OPEN_SYSTEM_COMPLETENESS_COVERAGE_COHORT) :]
+        == quality_gates.OPEN_SYSTEM_COMPLETENESS_COVERAGE_COHORT
+    )
     assert "--fail-under=100" in report
-    assert "--include=*/open_system_mcwf_product.py" in report
+    assert "--include=*/open_system_mcwf_product.py,*/phase/tensor_jump.py" in report
 
 
 def test_preflight_uses_the_helper_defined_gates() -> None:
@@ -63,5 +66,7 @@ def test_ci_runs_and_aggregates_the_open_system_completeness_gate() -> None:
     for path in quality_gates.OPEN_SYSTEM_COMPLETENESS_TYPING_RATCHET:
         assert path in block
     assert "--fail-under=100" in block
-    assert "--include=*/open_system_mcwf_product.py" in block
+    for path in quality_gates.OPEN_SYSTEM_COMPLETENESS_COVERAGE_COHORT:
+        assert path in block
+    assert "--include=*/open_system_mcwf_product.py,*/phase/tensor_jump.py" in block
     assert "open-system-completeness-quality" in workflow[workflow.index("  ci-gate:") :]

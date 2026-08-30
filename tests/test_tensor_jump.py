@@ -259,6 +259,7 @@ class TestMCWFTrajectory:
         ("K", "omega", "kwargs", "match"),
         [
             (np.ones((2, 3)), np.ones(2), {}, "square"),
+            (np.empty((0, 0)), np.empty(0), {}, "at least one oscillator"),
             (np.eye(3), np.ones(2), {}, "omega"),
             (np.eye(2), np.array([1.0, np.nan]), {}, "finite"),
             (np.eye(2), np.ones(2), {"gamma_amp": -0.1}, "gamma_amp"),

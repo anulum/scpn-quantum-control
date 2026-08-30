@@ -571,7 +571,9 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/open_system_mcwf_product.py
+          src/scpn_quantum_control/phase/tensor_jump.py
           tests/test_open_system_mcwf_product.py
+          tests/test_tensor_jump_contracts.py
           tools/open_system_completeness_quality_gates.py
           tests/test_open_system_completeness_quality_gate.py
       - name: Ruff NumPy docstrings for open-system completeness quality cohort
@@ -579,6 +581,8 @@ jobs:
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/open_system_mcwf_product.py
+          src/scpn_quantum_control/phase/tensor_jump.py
+          tests/test_tensor_jump_contracts.py
           tools/open_system_completeness_quality_gates.py
           tests/test_open_system_completeness_quality_gate.py
       - name: Run open-system completeness focused coverage
@@ -589,6 +593,8 @@ jobs:
           --branch
           -m pytest -q
           tests/test_open_system_mcwf_product.py
+          tests/test_tensor_jump.py
+          tests/test_tensor_jump_contracts.py
       - name: Enforce open-system completeness exact coverage
         run: >-
           python -m coverage report
@@ -596,7 +602,7 @@ jobs:
           --data-file=.coverage.open-system-completeness-quality
           --precision=2
           --fail-under=100
-          --include=*/open_system_mcwf_product.py
+          --include=*/open_system_mcwf_product.py,*/phase/tensor_jump.py
 
   thermo-readiness-product-quality:
     needs: lint

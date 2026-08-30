@@ -15,7 +15,9 @@ Gate = tuple[str, list[str]]
 
 OPEN_SYSTEM_COMPLETENESS_TYPING_RATCHET = [
     "src/scpn_quantum_control/open_system_mcwf_product.py",
+    "src/scpn_quantum_control/phase/tensor_jump.py",
     "tests/test_open_system_mcwf_product.py",
+    "tests/test_tensor_jump_contracts.py",
     "tools/open_system_completeness_quality_gates.py",
     "tests/test_open_system_completeness_quality_gate.py",
 ]
@@ -23,12 +25,18 @@ OPEN_SYSTEM_COMPLETENESS_TYPING_RATCHET = [
 
 OPEN_SYSTEM_COMPLETENESS_DOCSTRING_RATCHET = [
     "src/scpn_quantum_control/open_system_mcwf_product.py",
+    "src/scpn_quantum_control/phase/tensor_jump.py",
+    "tests/test_tensor_jump_contracts.py",
     "tools/open_system_completeness_quality_gates.py",
     "tests/test_open_system_completeness_quality_gate.py",
 ]
 """Public source and gate-contract NumPy-docstring cohort."""
 
-OPEN_SYSTEM_COMPLETENESS_COVERAGE_COHORT = ["tests/test_open_system_mcwf_product.py"]
+OPEN_SYSTEM_COMPLETENESS_COVERAGE_COHORT = [
+    "tests/test_open_system_mcwf_product.py",
+    "tests/test_tensor_jump.py",
+    "tests/test_tensor_jump_contracts.py",
+]
 """Tests that own exact open-system completeness statement and branch coverage."""
 
 OPEN_SYSTEM_COMPLETENESS_COVERAGE_DATA_FILE = ".coverage.open-system-completeness-quality"
@@ -121,7 +129,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={OPEN_SYSTEM_COMPLETENESS_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/open_system_mcwf_product.py",
+                "--include=*/open_system_mcwf_product.py,*/phase/tensor_jump.py",
             ],
         ),
     ]
