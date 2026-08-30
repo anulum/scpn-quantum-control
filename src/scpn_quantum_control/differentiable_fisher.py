@@ -51,6 +51,7 @@ def empirical_fisher_vector_product(
     -------
     FisherVectorProductResult
         Matrix-free product result with frozen parameter entries zeroed.
+
     """
     if not isinstance(jacobian, JacobianResult):
         raise ValueError("empirical_fisher_vector_product requires a JacobianResult")
@@ -121,6 +122,7 @@ def empirical_fisher_conjugate_gradient(
     -------
     FisherConjugateGradientResult
         Solution and residual history for the trainable-subspace solve.
+
     """
     if not isinstance(jacobian, JacobianResult):
         raise ValueError("empirical_fisher_conjugate_gradient requires a JacobianResult")
@@ -235,6 +237,7 @@ def least_squares_covariance(
     LeastSquaresCovarianceResult
         Full parameter covariance matrix, standard errors, and conditioning
         metadata with frozen parameter rows and columns zeroed.
+
     """
     if not isinstance(jacobian, JacobianResult):
         raise ValueError("least_squares_covariance requires a JacobianResult")

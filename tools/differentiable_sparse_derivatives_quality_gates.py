@@ -15,16 +15,23 @@ Gate = tuple[str, list[str]]
 DIFFERENTIABLE_SPARSE_DERIVATIVES_SOURCE = (
     "src/scpn_quantum_control/differentiable_sparse_derivatives.py"
 )
+DIFFERENTIABLE_FISHER_SOURCE = "src/scpn_quantum_control/differentiable_fisher.py"
+DIFFERENTIABLE_SPARSE_DERIVATIVES_SOURCES = [
+    DIFFERENTIABLE_SPARSE_DERIVATIVES_SOURCE,
+    DIFFERENTIABLE_FISHER_SOURCE,
+]
 DIFFERENTIABLE_SPARSE_DERIVATIVES_COVERAGE_COHORT = [
-    "tests/test_differentiable_sparse_derivatives.py"
+    "tests/test_differentiable_sparse_derivatives.py",
+    "tests/test_differentiable_fisher.py",
 ]
 DIFFERENTIABLE_SPARSE_DERIVATIVES_TYPING_RATCHET = [
-    DIFFERENTIABLE_SPARSE_DERIVATIVES_SOURCE,
+    *DIFFERENTIABLE_SPARSE_DERIVATIVES_SOURCES,
+    "tests/test_differentiable_fisher.py",
     "tools/differentiable_sparse_derivatives_quality_gates.py",
     "tests/test_differentiable_sparse_derivatives_quality_gate.py",
 ]
 DIFFERENTIABLE_SPARSE_DERIVATIVES_DOCSTRING_RATCHET = [
-    DIFFERENTIABLE_SPARSE_DERIVATIVES_SOURCE,
+    *DIFFERENTIABLE_SPARSE_DERIVATIVES_SOURCES,
     *DIFFERENTIABLE_SPARSE_DERIVATIVES_COVERAGE_COHORT,
     "tools/differentiable_sparse_derivatives_quality_gates.py",
     "tests/test_differentiable_sparse_derivatives_quality_gate.py",
@@ -67,7 +74,7 @@ def build_static_quality_gates(python: str) -> list[Gate]:
 
 
 def build_coverage_gates(python: str) -> list[Gate]:
-    """Build offline sparse-derivative execution and exact coverage gates."""
+    """Build offline sparse-derivative and Fisher exact coverage gates."""
     return [
         (
             "differentiable-sparse-derivatives focused coverage",
@@ -96,17 +103,19 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={DIFFERENTIABLE_SPARSE_DERIVATIVES_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/differentiable_sparse_derivatives.py",
+                "--include=*/differentiable_sparse_derivatives.py,*/differentiable_fisher.py",
             ],
         ),
     ]
 
 
 __all__ = [
+    "DIFFERENTIABLE_FISHER_SOURCE",
     "DIFFERENTIABLE_SPARSE_DERIVATIVES_COVERAGE_COHORT",
     "DIFFERENTIABLE_SPARSE_DERIVATIVES_COVERAGE_DATA_FILE",
     "DIFFERENTIABLE_SPARSE_DERIVATIVES_DOCSTRING_RATCHET",
     "DIFFERENTIABLE_SPARSE_DERIVATIVES_SOURCE",
+    "DIFFERENTIABLE_SPARSE_DERIVATIVES_SOURCES",
     "DIFFERENTIABLE_SPARSE_DERIVATIVES_TYPING_RATCHET",
     "build_coverage_gates",
     "build_static_quality_gates",

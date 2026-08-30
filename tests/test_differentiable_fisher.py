@@ -38,7 +38,6 @@ FloatArray = NDArray[np.float64]
 
 def _assert_allclose(actual: object, expected: object, *, atol: float | None = None) -> None:
     """Assert numerical closeness through NumPy's dynamically typed test helper."""
-
     assert_allclose = cast(Any, np.testing.assert_allclose)
     if atol is None:
         assert_allclose(actual, expected)
@@ -48,7 +47,6 @@ def _assert_allclose(actual: object, expected: object, *, atol: float | None = N
 
 def test_facade_and_package_root_reuse_extracted_fisher_helpers() -> None:
     """Facade and package-root exports should point at the extracted helpers."""
-
     assert (
         differentiable.empirical_fisher_conjugate_gradient is empirical_fisher_conjugate_gradient
     )
@@ -61,7 +59,6 @@ def test_facade_and_package_root_reuse_extracted_fisher_helpers() -> None:
 
 def test_empirical_fisher_vector_product_matches_materialised_metric() -> None:
     """Matrix-free Fisher products should match explicit metric multiplication."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0] + values[1], 2.0 * values[1]]),
         [1.0, -2.0],
@@ -86,7 +83,6 @@ def test_empirical_fisher_vector_product_matches_materialised_metric() -> None:
 
 def test_empirical_fisher_vector_product_respects_frozen_parameters() -> None:
     """Frozen parameters should be removed from Fisher-vector products."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0] + 10.0 * values[1], values[1] ** 2]),
         [1.0, 2.0],
@@ -101,7 +97,6 @@ def test_empirical_fisher_vector_product_respects_frozen_parameters() -> None:
 
 def test_empirical_fisher_vector_product_rejects_invalid_inputs() -> None:
     """Fisher-vector products should fail closed for malformed tangents and weights."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0], values[1]]),
         [1.0, 2.0],
@@ -121,7 +116,6 @@ def test_empirical_fisher_vector_product_rejects_invalid_inputs() -> None:
 
 def test_empirical_fisher_conjugate_gradient_matches_direct_solve() -> None:
     """Matrix-free Fisher CG should solve the same system as a direct metric solve."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0] + values[1], 2.0 * values[1]]),
         [1.0, -2.0],
@@ -148,7 +142,6 @@ def test_empirical_fisher_conjugate_gradient_matches_direct_solve() -> None:
 
 def test_empirical_fisher_conjugate_gradient_respects_frozen_parameters() -> None:
     """Frozen parameters should receive zero matrix-free Fisher-CG solution components."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0] + 10.0 * values[1], values[1] ** 2]),
         [1.0, 2.0],
@@ -166,7 +159,6 @@ def test_empirical_fisher_conjugate_gradient_respects_frozen_parameters() -> Non
 
 def test_empirical_fisher_conjugate_gradient_handles_zero_and_capped_solves() -> None:
     """Zero RHS should converge immediately while a capped solve reports residual debt."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0] + values[1], values[0] - values[1]]),
         [1.0, 2.0],
@@ -195,7 +187,6 @@ def test_empirical_fisher_conjugate_gradient_handles_zero_and_capped_solves() ->
 
 def test_empirical_fisher_conjugate_gradient_rejects_invalid_inputs() -> None:
     """Fisher CG must fail closed on malformed controls and indefinite systems."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0], values[1]]),
         [1.0, 2.0],
@@ -243,7 +234,6 @@ def test_least_squares_covariance_estimates_fisher_uncertainty() -> None:
 
 def test_least_squares_covariance_respects_trainable_mask_and_variance() -> None:
     """Non-trainable parameters should receive zero covariance and standard error."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0], values[1], values[0] + values[1]]),
         [1.0, 2.0],
@@ -263,7 +253,6 @@ def test_least_squares_covariance_respects_trainable_mask_and_variance() -> None
 
 def test_least_squares_covariance_estimates_weighted_residual_variance() -> None:
     """Weighted residual variance should be estimated when no variance is supplied."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0], values[1], values[0] + values[1]]),
         [1.0, 2.0],
@@ -281,7 +270,6 @@ def test_least_squares_covariance_estimates_weighted_residual_variance() -> None
 
 def test_least_squares_covariance_rejects_invalid_inputs() -> None:
     """Covariance estimation should fail closed for singular or malformed solves."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0], 2.0 * values[0]]),
         [1.0],

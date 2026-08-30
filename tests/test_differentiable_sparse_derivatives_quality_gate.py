@@ -29,7 +29,7 @@ def test_static_gate_is_strict_and_completely_documented() -> None:
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
-    """Require offline sparse-derivative execution and exact source coverage."""
+    """Require offline sparse-derivative and Fisher exact source coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
     run = gates["differentiable-sparse-derivatives focused coverage"]
     report = gates["differentiable-sparse-derivatives exact coverage threshold"]
@@ -40,7 +40,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/differentiable_sparse_derivatives.py" in report
+    assert "--include=*/differentiable_sparse_derivatives.py,*/differentiable_fisher.py" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -64,5 +64,6 @@ def test_ci_runs_and_aggregates_sparse_derivatives_gate() -> None:
         assert path in block
     assert "--fail-under=100" in block
     assert "differentiable_sparse_derivatives.py" in block
+    assert "differentiable_fisher.py" in block
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "differentiable-sparse-derivatives-quality" in aggregate

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Complete empirical-Fisher NumPy documentation and extend the existing
+  differentiable sparse-derivatives quality owner with strict typing, real
+  Fisher-vector/CG/covariance execution, and exact joint line/branch coverage
+  for both directly connected derivative modules.
+
 - Complete closed-loop analysis lifecycle and direct-test NumPy documentation,
   close the direct-test strict-typing debt, and extend the existing publication
   quality owner with real response/latency execution plus exact joint
