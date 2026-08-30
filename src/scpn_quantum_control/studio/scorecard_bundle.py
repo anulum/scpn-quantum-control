@@ -87,6 +87,7 @@ def _artifact_edge(artifact_path: Path) -> DerivedEdge:
     ValueError
         If the artefact path does not exist — a requested derivation edge that
         cannot be content-addressed fails closed instead of being dropped.
+
     """
     return _committed_artifact_edge(artifact_path, label="scorecard artefact")
 
@@ -124,6 +125,7 @@ def build_scorecard_bundle(
     ValueError
         If the scorecard fails :func:`validate_differentiable_baseline_scorecard`
         — an invalid scorecard is never federated.
+
     """
     resolved = scorecard if scorecard is not None else run_differentiable_baseline_scorecard()
     validation = validate_differentiable_baseline_scorecard(resolved, repo_root=repo_root)
@@ -183,6 +185,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     int
         ``0`` when the bundle is admitted by the federation gate, ``1``
         otherwise.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

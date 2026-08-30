@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import runpy
+import sys
 from pathlib import Path
 
 import pytest
@@ -141,3 +143,23 @@ def test_main_reports_a_rejected_bundle(
     captured = capsys.readouterr()
     assert exit_code == 1
     assert "forced rejection for the CLI branch" in captured.err
+
+
+def test_module_entrypoint_emits_an_admitted_bundle(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Execute the public module entrypoint and propagate its zero exit code."""
+    module_name = "scpn_quantum_control.studio.scorecard_bundle"
+    imported_module = sys.modules.pop(module_name)
+    artifact = REPO_ROOT / scorecard_bundle.DEFAULT_SCORECARD_ARTIFACT_PATH
+    monkeypatch.setattr(sys, "argv", [module_name, "--artifact-path", str(artifact)])
+    try:
+        with pytest.raises(SystemExit) as raised:
+            runpy.run_module(module_name, run_name="__main__")
+    finally:
+        sys.modules[module_name] = imported_module
+
+    assert raised.value.code == 0
+    wire = json.loads(capsys.readouterr().out)
+    assert wire["schema"] == "studio.differentiation-evidence.v1"

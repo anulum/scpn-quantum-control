@@ -259,6 +259,9 @@ if TYPE_CHECKING:
         studio_executive_differentiate_quality_gates as _studio_executive_differentiate_quality_gates,
     )
     from tools import studio_executive_product_quality_gates as _studio_executive_quality_gates
+    from tools import (
+        studio_scorecard_bundle_quality_gates as _studio_scorecard_bundle_quality_gates,
+    )
     from tools import sync_uncertainty_quality_gates as _sync_uncertainty_quality_gates
     from tools import (
         synchronisation_witness_quality_gates as _synchronisation_witness_quality_gates,
@@ -560,6 +563,9 @@ else:
         "tools.studio_executive_differentiate_quality_gates"
     )
     _studio_executive_quality_gates = import_module("tools.studio_executive_product_quality_gates")
+    _studio_scorecard_bundle_quality_gates = import_module(
+        "tools.studio_scorecard_bundle_quality_gates"
+    )
     _thermo_readiness_product_quality_gates = import_module(
         "tools.thermo_readiness_product_quality_gates"
     )
@@ -965,6 +971,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_stochastic_estimators_product_quality_gates.build_static_quality_gates(_PY),
     *_differentiable_notebook_curriculum_quality_gates.build_static_quality_gates(_PY),
     *_studio_executive_quality_gates.build_static_quality_gates(_PY),
+    *_studio_scorecard_bundle_quality_gates.build_static_quality_gates(_PY),
     *_advanced_witnesses_quality_gates.build_static_quality_gates(_PY),
     *_coverage_frontier_quality_gates.build_static_quality_gates(_PY),
     *_compiler_boundary_product_quality_gates.build_static_quality_gates(_PY),
@@ -1546,6 +1553,9 @@ DIFFERENTIABLE_NOTEBOOK_CURRICULUM_COVERAGE_GATES = (
     _differentiable_notebook_curriculum_quality_gates.build_coverage_gates(_PY)
 )
 STUDIO_EXECUTIVE_PRODUCT_COVERAGE_GATES = _studio_executive_quality_gates.build_coverage_gates(_PY)
+STUDIO_SCORECARD_BUNDLE_COVERAGE_GATES = (
+    _studio_scorecard_bundle_quality_gates.build_coverage_gates(_PY)
+)
 ADVANCED_WITNESSES_COVERAGE_GATES = _advanced_witnesses_quality_gates.build_coverage_gates(_PY)
 COVERAGE_FRONTIER_COVERAGE_GATES = _coverage_frontier_quality_gates.build_coverage_gates(_PY)
 COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES = (
@@ -1967,6 +1977,7 @@ def main() -> int:
             gates.extend(STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_GATES)
             gates.extend(DIFFERENTIABLE_NOTEBOOK_CURRICULUM_COVERAGE_GATES)
             gates.extend(STUDIO_EXECUTIVE_PRODUCT_COVERAGE_GATES)
+            gates.extend(STUDIO_SCORECARD_BUNDLE_COVERAGE_GATES)
             gates.extend(ADVANCED_WITNESSES_COVERAGE_GATES)
             gates.extend(COVERAGE_FRONTIER_COVERAGE_GATES)
             gates.extend(COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES)
