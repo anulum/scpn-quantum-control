@@ -10,12 +10,10 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
-from typing import cast
 from unittest.mock import patch
 
 import numpy as np
 import pytest
-from numpy.typing import NDArray
 
 from scpn_quantum_control.bridge import build_knm_paper27
 from scpn_quantum_control.crypto.hierarchical_keys import (
@@ -131,7 +129,7 @@ def test_evolve_key_phases_ode_failure() -> None:
 def test_all_layer_keys_unique() -> None:
     """All layer keys in a hierarchy must be distinct."""
     K = build_knm_paper27(L=8)
-    phases = cast(NDArray[np.float64], np.linspace(0, 2 * np.pi, 8))
+    phases = np.linspace(0, 2 * np.pi, 8)
     h = key_hierarchy(K, phases, R_global=0.5)
     keys = list(h["layers"].values())
     assert len(set(keys)) == 8  # all unique

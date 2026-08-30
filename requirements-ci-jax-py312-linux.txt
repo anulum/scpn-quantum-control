@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# Hash-locked CPU JAX surface for Python 3.12 quality jobs.
+
+jax==0.10.1 \
+    --hash=sha256:47f3192c76e9e3358de1b106a8af5e943fccb10510903f25d96ea53652729134
+jaxlib==0.10.1 \
+    --hash=sha256:f3cdf5b7f48470ab5455ab79aab746419694ccb6b52651cc2ce5fb27def03588
+ml-dtypes==0.6.0 \
+    --hash=sha256:3b4a480aa8fd54a1805b8ac10f3f91763926a74f73c0c364c10f9231854f4170

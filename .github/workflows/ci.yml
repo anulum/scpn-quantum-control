@@ -361,6 +361,7 @@ jobs:
       - name: Ruff NumPy docstrings for unified differentiable API quality cohort
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/differentiable_api.py
           src/scpn_quantum_control/differentiable_canonical_api.py
@@ -481,6 +482,32 @@ jobs:
           tools/differentiable_reviewer_evidence_catalog.py
           tools/differentiable_reviewer_evidence_page.py
           tests/test_differentiable_reviewer_evidence_page.py
+
+  native-wheels:
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build the current Rust engine wheel
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.51.0
+        with:
+          args: >-
+            --release --features extension-module --out dist
+            -m scpn_quantum_engine/Cargo.toml
+      - name: Upload the ABI-matched Rust engine wheel
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: scpn-quantum-engine-${{ matrix.python-version }}
+          path: dist/scpn_quantum_engine-*.whl
+          if-no-files-found: error
+          retention-days: 1
 
   stable-core-product-quality:
     needs: lint
@@ -1246,6 +1273,7 @@ jobs:
       - name: Ruff NumPy docstrings for DLA topology parity quality cohort
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/dla_topology_control/parity.py
           src/scpn_quantum_control/analysis/dla_parity_theorem.py
@@ -1330,7 +1358,7 @@ jobs:
           --include=*/topology_kernel_product/evidence.py
 
   ml-dsa-seal-quality:
-    needs: lint
+    needs: [lint, native-wheels]
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
@@ -1342,6 +1370,13 @@ jobs:
           cache: 'pip'
       - name: Install dependencies
         run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
       - name: Type-check ML-DSA seal quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -1391,7 +1426,9 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-jax-py312-linux.txt
       - name: Type-check KYMA v2 dynamics quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -1437,7 +1474,9 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-jax-py312-linux.txt
       - name: Type-check legacy KYMA dynamics quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -1482,7 +1521,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-jax-py312-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/benchmarks/kyma_v2/coupling.py
@@ -1491,6 +1532,7 @@ jobs:
           tests/test_kyma_v2_coupling_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/benchmarks/kyma_v2/coupling.py
           tests/test_kyma_v2_coupling.py
@@ -1758,6 +1800,7 @@ jobs:
       - name: Ruff NumPy docstrings for transform support-matrix artefact quality cohort
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/differentiable_transform_support_matrix_artifact.py
           src/scpn_quantum_control/studio/support_matrix_bundle.py
@@ -1863,6 +1906,7 @@ jobs:
       - name: Ruff NumPy docstrings for finite-size scaling quality cohort
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/finite_size_scaling.py
           src/scpn_quantum_control/analysis/phase_diagram.py
@@ -1893,7 +1937,7 @@ jobs:
           --include=*/analysis/finite_size_scaling.py,*/analysis/phase_diagram.py,*/analysis/vortex_binding.py
 
   studio-executive-differentiate-quality:
-    needs: lint
+    needs: [lint, native-wheels]
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
@@ -1905,6 +1949,13 @@ jobs:
           cache: 'pip'
       - name: Install dependencies
         run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
       - name: Type-check Studio executive differentiate quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -1984,7 +2035,7 @@ jobs:
           --include=*/hardware/experiment_control.py
 
   pulse-shaping-quality:
-    needs: lint
+    needs: [lint, native-wheels]
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
@@ -1996,6 +2047,13 @@ jobs:
           cache: 'pip'
       - name: Install dependencies
         run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
       - name: Type-check pulse-shaping quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -2030,7 +2088,7 @@ jobs:
           --include=*/phase/pulse_shaping.py
 
   openpulse-control-quality:
-    needs: lint
+    needs: [lint, native-wheels]
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
@@ -2042,6 +2100,13 @@ jobs:
           cache: 'pip'
       - name: Install dependencies
         run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
       - name: Type-check OpenPulse-control quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -2191,6 +2256,7 @@ jobs:
       - name: Ruff NumPy docstrings for Program AD adjoint quality cohort
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/program_ad_adjoint.py
           src/scpn_quantum_control/program_ad_adjoint_generation.py
@@ -2282,7 +2348,7 @@ jobs:
           --include=*/qpu_compute_types.py,*/bridge/qpu_data_artifact.py
 
   hls-cosimulation-evidence-quality:
-    needs: lint
+    needs: [lint, native-wheels]
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
@@ -2294,6 +2360,13 @@ jobs:
           cache: 'pip'
       - name: Install dependencies
         run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
       - name: Type-check HLS cosimulation-evidence quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -2425,7 +2498,7 @@ jobs:
           --include=*/dla_topology_control/projection.py
 
   magnetisation-sectors-quality:
-    needs: lint
+    needs: [lint, native-wheels]
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
@@ -2437,6 +2510,13 @@ jobs:
           cache: 'pip'
       - name: Install dependencies
         run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
       - name: Type-check magnetisation-sector quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -2455,6 +2535,7 @@ jobs:
       - name: Ruff NumPy docstrings for magnetisation-sector owning cohort
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/magnetisation_sectors.py
           src/scpn_quantum_control/analysis/spectral_form_factor.py
@@ -2525,6 +2606,7 @@ jobs:
       - name: Ruff NumPy docstrings for quantum-neuromorphic bridge cohort
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py
           src/scpn_quantum_control/bridge/snn_backward.py
@@ -2581,6 +2663,7 @@ jobs:
       - name: Ruff NumPy docstrings for Koopman owning cohort
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/koopman.py
           tests/test_koopman.py
@@ -2633,6 +2716,7 @@ jobs:
       - name: Ruff NumPy docstrings for quantum-QMI owning cohort
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/quantum_phi.py
           src/scpn_quantum_control/analysis/integrated_information_phi.py
@@ -2700,6 +2784,7 @@ jobs:
       - name: Ruff NumPy docstrings for QPU result-pack owning cohort
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio/qpu_result_pack.py
           src/scpn_quantum_control/hardware/qpu_result_pack_bridge.py
@@ -2760,6 +2845,7 @@ jobs:
       - name: Ruff NumPy docstrings for Kuramoto-variant direct owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/kuramoto_variants.py
           tests/test_kuramoto_variants.py
@@ -2816,6 +2902,7 @@ jobs:
       - name: Ruff NumPy docstrings for MPS-evolution direct owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/mps_evolution.py
           tests/test_mps_evolution.py
@@ -2870,6 +2957,7 @@ jobs:
       - name: Ruff NumPy docstrings for K_nm key-material owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/crypto/knm_key.py
           src/scpn_quantum_control/crypto/noise_analysis.py
@@ -2915,6 +3003,7 @@ jobs:
       - name: Ruff NumPy docstrings for differentiable implicit-sensitivity owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/differentiable_implicit_sensitivity.py
           tests/test_differentiable_implicit_sensitivity.py
@@ -2954,6 +3043,7 @@ jobs:
       - name: Ruff NumPy docstrings for differentiable residual-weights owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/differentiable_residual_weights.py
           tests/test_differentiable_residual_weights.py
@@ -2993,6 +3083,7 @@ jobs:
       - name: Ruff NumPy docstrings for differentiable-consistency owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/differentiable_consistency.py
           tests/test_differentiable_consistency.py
@@ -3032,6 +3123,7 @@ jobs:
       - name: Ruff NumPy docstrings for differentiable JAX-adapter owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/differentiable_jax_adapter.py
           tests/test_differentiable_jax.py
@@ -3071,6 +3163,7 @@ jobs:
       - name: Ruff NumPy docstrings for Program AD alias-analysis owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/program_ad_alias_analysis.py
           tests/test_program_ad_alias_effects.py tests/test_program_ad_alias_contracts.py
@@ -3109,6 +3202,7 @@ jobs:
       - name: Ruff NumPy docstrings for general-unitary owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/general_unitary.py tests/test_phase_general_unitary_gates.py
           tools/general_unitary_quality_gates.py tests/test_general_unitary_quality_gate.py
@@ -3135,6 +3229,7 @@ jobs:
       - name: Install pinned CI surface and the package
         run: |
           python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-torch-cpu-py312-linux.txt
           python -m pip install --no-deps -e .
       - name: Type-check GPU-batch VQE quality cohort
         run: >-
@@ -3144,6 +3239,7 @@ jobs:
       - name: Ruff NumPy docstrings for GPU-batch VQE owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/gpu_batch_vqe.py tests/test_gpu_batch_vqe.py
           tools/gpu_batch_vqe_quality_gates.py tests/test_gpu_batch_vqe_quality_gate.py
@@ -3181,6 +3277,7 @@ jobs:
       - name: Ruff NumPy docstrings for AVQDS owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/avqds.py
           tests/test_avqds.py
@@ -3223,6 +3320,7 @@ jobs:
       - name: Ruff NumPy docstrings for ansatz-benchmark owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/ansatz_bench.py
           tests/test_ansatz_bench.py
@@ -3265,6 +3363,7 @@ jobs:
       - name: Ruff NumPy docstrings for symmetry-verification owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/mitigation/symmetry_verification.py
           tests/test_symmetry_verification.py
@@ -3307,6 +3406,7 @@ jobs:
       - name: Ruff NumPy docstrings for experiment-helper owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/hardware/_experiment_helpers.py
           tests/test_experiment_helpers_branches.py
@@ -3350,6 +3450,7 @@ jobs:
       - name: Ruff NumPy docstrings for predictive-coding owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/fep/predictive_coding.py
           tests/test_fep.py
@@ -3395,6 +3496,7 @@ jobs:
       - name: Ruff NumPy docstrings for hierarchical-key owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/crypto/hierarchical_keys.py
           src/scpn_quantum_control/crypto/topology_auth.py
@@ -3454,6 +3556,7 @@ jobs:
       - name: Ruff NumPy docstrings for synchronisation-uncertainty owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/sync_uncertainty.py
           src/scpn_quantum_control/mitigation/zne_uncertainty.py
@@ -3496,7 +3599,9 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
       - name: Type-check coupling-invariant quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
@@ -3507,6 +3612,7 @@ jobs:
       - name: Ruff NumPy docstrings for coupling-invariant owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio/coupling_invariant.py
           tests/test_studio_coupling_invariant.py
@@ -3551,6 +3657,7 @@ jobs:
       - name: Ruff NumPy docstrings for experiment-dynamics owners
         run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/hardware/experiment_dynamics.py
           tests/test_experiment_dynamics.py
@@ -3582,7 +3689,8 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/bridge/phase_artifact.py
@@ -3593,6 +3701,7 @@ jobs:
           tests/test_phase_artifact_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/bridge/phase_artifact.py
           tests/test_phase_artifact.py
@@ -3630,6 +3739,7 @@ jobs:
           tests/test_nqs_ansatz_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/nqs_ansatz.py
           tests/test_nqs_ansatz.py
@@ -3646,7 +3756,7 @@ jobs:
           --include=*/phase/nqs_ansatz.py
 
   sparse-hamiltonian-quality:
-    needs: lint
+    needs: [lint, native-wheels]
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
@@ -3655,6 +3765,13 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with: {python-version: "3.12", cache: 'pip'}
       - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/bridge/sparse_hamiltonian.py
@@ -3666,6 +3783,7 @@ jobs:
           tests/test_sparse_hamiltonian_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/bridge/sparse_hamiltonian.py
           tests/test_sparse_hamiltonian.py
@@ -3692,7 +3810,7 @@ jobs:
           --include=*/bridge/sparse_hamiltonian.py,*/bridge/knm_hamiltonian.py
 
   result-pack-seal-quality:
-    needs: lint
+    needs: [lint, native-wheels]
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
@@ -3700,7 +3818,16 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/studio/result_pack_seal.py
@@ -3709,6 +3836,7 @@ jobs:
           tests/test_result_pack_seal_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio/result_pack_seal.py
           tests/test_result_pack_seal.py
@@ -3743,6 +3871,7 @@ jobs:
           tests/test_layout_relaxation_experiment_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/benchmarks/layout_relaxation_experiment.py
           tests/test_layout_relaxation_experiment.py
@@ -3778,6 +3907,7 @@ jobs:
           tests/test_tn_mps_crossover_admission_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/benchmarks/tn_mps_crossover_admission.py
           tests/test_tn_mps_crossover_admission.py
@@ -3820,6 +3950,7 @@ jobs:
           tests/test_xy_compile_recompute_artifact_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio/xy_compile_recompute_artifact.py
           src/scpn_quantum_control/studio/executive_compile.py
@@ -3859,6 +3990,7 @@ jobs:
           tests/test_control_structured_ansatz_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D107,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/control/structured_ansatz.py
           tests/test_control_structured_ansatz.py
@@ -3895,6 +4027,7 @@ jobs:
           tests/test_dla_parity_witness_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D107,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/dla_parity_witness.py
           tests/test_observables.py
@@ -3928,6 +4061,7 @@ jobs:
           tests/test_hamiltonian_learning_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D107,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/hamiltonian_learning.py
           tests/test_hamiltonian_learning.py
@@ -3960,6 +4094,7 @@ jobs:
           tests/test_phase_results_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/results.py
           tests/test_phase_results.py
@@ -3994,6 +4129,7 @@ jobs:
           tests/test_gradient_backend_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/gradient_backend.py
           src/scpn_quantum_control/phase/provider_gradient.py
@@ -4033,6 +4169,7 @@ jobs:
           tests/test_differentiable_exact_modes_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/differentiable_exact_modes.py
           tests/test_differentiable_exact_modes.py
@@ -4068,6 +4205,7 @@ jobs:
           tests/test_mlir_whole_program_native_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/compiler/mlir_whole_program_native.py
           src/scpn_quantum_control/compiler/mlir_native_execution_evidence.py
@@ -4110,6 +4248,7 @@ jobs:
           tests/test_closed_loop_publication_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py
           src/scpn_quantum_control/control/closed_loop_analysis.py
@@ -4150,6 +4289,7 @@ jobs:
           tests/test_kuramoto_layout_optimiser_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/hardware/kuramoto_layout_optimiser.py
           tests/test_kuramoto_layout_optimiser.py
@@ -4189,6 +4329,7 @@ jobs:
           tests/test_qrc_baseline_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/applications/qrc_baseline.py
           src/scpn_quantum_control/applications/quantum_reservoir.py
@@ -4229,6 +4370,7 @@ jobs:
           tests/test_josephson_magnitude_study_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/applications/josephson_magnitude_study.py
           tests/test_josephson_magnitude_study.py
@@ -4264,6 +4406,7 @@ jobs:
           tests/test_dynq_layout_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/hardware/qubit_mapper.py
           src/scpn_quantum_control/hardware/dynq_layout_pass.py
@@ -4304,6 +4447,7 @@ jobs:
           tests/test_topology_kernel_classifier_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/applications/quantum_kernel.py
           src/scpn_quantum_control/topology_kernel_product/kernels.py
@@ -5012,6 +5156,7 @@ jobs:
           tests/test_studio_executive_product_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio_executive_product.py
           src/scpn_quantum_control/studio/manifest.py
@@ -5056,6 +5201,7 @@ jobs:
           tests/test_advanced_witnesses_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/advanced_witnesses_product.py
           src/scpn_quantum_control/analysis/otoc.py
@@ -5164,6 +5310,7 @@ jobs:
           tests/test_resource_budget_gate_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/compile_budget.py
           src/scpn_quantum_control/resource_budget_gate.py
@@ -5274,6 +5421,7 @@ jobs:
           tests/test_competitive_baseline_watch_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/competitive_baseline_watch.py
           src/scpn_quantum_control/benchmarks/reproducible_comparison.py
@@ -5324,6 +5472,7 @@ jobs:
           tests/test_whole_program_ad_product_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/whole_program_ad_product.py
           src/scpn_quantum_control/whole_program_ad_api.py
@@ -5387,7 +5536,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-torch-cpu-py312-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/neural_operator_baseline_product.py
@@ -5442,6 +5593,7 @@ jobs:
           tests/test_entanglement_sync_evidence_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/entanglement_sync_evidence.py
           src/scpn_quantum_control/analysis/entanglement_enhanced_sync.py
@@ -6065,6 +6217,7 @@ jobs:
           tests/test_phase_qnode_product_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase_qnode_product.py
           src/scpn_quantum_control/phase/torch_autograd_function.py
@@ -6092,7 +6245,9 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with: {python-version: "3.12", cache: 'pip'}
-      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/studio/executive_benchmark.py
@@ -6144,6 +6299,7 @@ jobs:
           tests/test_synchronisation_witness_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/synchronisation_witness.py
           src/scpn_quantum_control/benchmarks/sync_witness_evidence.py
@@ -6224,6 +6380,7 @@ jobs:
           tests/test_research_lane_registry_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/research_lane_registry.py
           src/scpn_quantum_control/analysis/rl_discovery_agent.py
@@ -6271,6 +6428,7 @@ jobs:
           tests/test_theory_hook_promotion_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/theory_hook_promotion.py
           src/scpn_quantum_control/analysis/magic_nonstabilizerness.py
@@ -6445,6 +6603,7 @@ jobs:
           tests/test_application_honesty_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D107,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/applications/honesty_kits.py
           src/scpn_quantum_control/applications/dataset_catalog.py
@@ -6968,7 +7127,7 @@ jobs:
           --include=*/program_ad_shape_transforms.py
 
   test:
-    needs: lint
+    needs: [lint, native-wheels]
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
@@ -6994,6 +7153,13 @@ jobs:
         if: matrix.python-version != '3.11'
         run: |
           python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - name: Download the ABI-matched Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-${{ matrix.python-version }}
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
       - name: Run tests
         run: pytest tests/ -v --tb=short -x -m "not slow and not hardware and not internal_corpus and not performance"
       - name: Audit test quality
@@ -7559,6 +7725,7 @@ jobs:
           tests/test_studio_replay_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/hardware_result_packs.py
           src/scpn_quantum_control/studio/executive_replay.py
@@ -7602,6 +7769,7 @@ jobs:
           tests/test_studio_simulation_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio/executive_simulate.py
           tests/test_studio_executive_simulate.py
@@ -7644,6 +7812,7 @@ jobs:
           tests/test_p_h1_open_guard_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/p_h1_open_guard.py
           src/scpn_quantum_control/analysis/persistent_homology.py
@@ -7695,6 +7864,7 @@ jobs:
           tests/test_studio_qec_readiness_bundle_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio/qec_readiness_bundle.py
           tests/test_studio_qec_readiness_bundle.py
@@ -7732,6 +7902,7 @@ jobs:
           tests/test_studio_readout_mitigation_bundle_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio/readout_mitigation_bundle.py
           tests/test_studio_readout_mitigation_bundle.py
@@ -7769,6 +7940,7 @@ jobs:
           tests/test_studio_scorecard_bundle_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio/scorecard_bundle.py
           tests/test_studio_scorecard_bundle.py
@@ -7785,7 +7957,7 @@ jobs:
           --include=*/studio/scorecard_bundle.py
 
   studio-conformance:
-    needs: lint
+    needs: [lint, native-wheels]
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
@@ -7800,6 +7972,13 @@ jobs:
           python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
           python -m pip install --no-deps -e .
           python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
       - name: Gate the studio federation surface against the platform contract
         run: >
           python -m pytest
@@ -7896,13 +8075,14 @@ jobs:
           EOF
 
   ci-gate:
-    needs: [lint, stable-core-product-quality, open-system-completeness-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, custom-derivatives-product-quality, kyma-mechanism-product-quality, kyma-dynamics-quality, kyma-v2-dynamics-quality, kyma-v2-coupling-quality, differentiable-audit-contracts-quality, dla-topology-optimizer-quality, dla-topology-schema-quality, fusion-core-frc-bridge-quality, hardware-experiment-vqe-quality, transform-support-matrix-artifact-quality, gradient-plan-explanation-artifact-quality, finite-size-scaling-quality, studio-executive-differentiate-quality, hardware-experiment-control-quality, pulse-shaping-quality, openpulse-control-quality, differentiable-parameter-shift-quality, differentiable-sparse-derivatives-quality, program-ad-adjoint-quality, qpu-compute-types-quality, hls-cosimulation-evidence-quality, dla-topology-objectives-quality, dla-topology-projection-quality, magnetisation-sectors-quality, quantum-neuromorphic-bridge-quality, koopman-quality, kuramoto-variants-quality, mps-evolution-quality, nqs-ansatz-quality, sparse-hamiltonian-quality, result-pack-seal-quality, layout-relaxation-experiment-quality, tn-mps-crossover-admission-quality, xy-compile-recompute-artifact-quality, control-structured-ansatz-quality, dla-parity-witness-quality, hamiltonian-learning-quality, knm-key-quality, differentiable-implicit-sensitivity-quality, differentiable-residual-weights-quality, differentiable-consistency-quality, differentiable-jax-adapter-quality, program-ad-alias-analysis-quality, general-unitary-quality, gpu-batch-vqe-quality, avqds-quality, ansatz-benchmark-quality, symmetry-verification-quality, experiment-helpers-quality, predictive-coding-quality, hierarchical-keys-quality, sync-uncertainty-quality, coupling-invariant-quality, experiment-dynamics-quality, phase-artifact-quality, phase-results-quality, gradient-backend-quality, differentiable-exact-modes-quality, mlir-whole-program-native-quality, closed-loop-publication-quality, kuramoto-layout-optimiser-quality, qrc-baseline-quality, josephson-magnitude-study-quality, dynq-layout-quality, topology-kernel-classifier-quality, quantum-phi-quality, qpu-result-pack-quality, campaign-harness-product-quality, geometric-control-product-quality, chimera-control-quality, whole-program-frontend-contracts-quality, variational-metric-quality, qnode-circuit-contracts-quality, topology-kernel-schema-quality, feedback-loop-quality, hardware-hal-quality, dla-topology-parity-quality, topology-kernel-evidence-quality, ml-dsa-seal-quality, tn-mps-baseline-design-quality, error-mitigation-product-quality, cloud-native-deployment-quality, control-stack-compose-quality, public-api-stability-quality, polyglot-parity-certificate-quality, program-ad-fuzz-assurance-quality, multi-hal-federation-quality, hermetic-reproduction-kit-quality, hardware-safe-execution-quality, qpu-compute-product-quality, wirtinger-implicit-product-quality, migration-guides-product-quality, visualisation-dashboard-product-quality, stochastic-estimators-product-quality, differentiable-notebook-curriculum-quality, studio-executive-product-quality, advanced-witnesses-quality, coverage-frontier-quality, compiler-boundary-product-quality, resource-budget-gate-quality, advantage-language-protocol-quality, metamorphic-ad-verification-quality, competitive-baseline-watch-quality, whole-program-ad-product-quality, neural-operator-cost-model-quality, neural-operator-baseline-product-quality, entanglement-sync-evidence-quality, bench-cli-quality, identity-binding-spec-quality, identity-coherence-budget-quality, identity-robustness-quality, backend-selector-quality, logging-setup-quality, ssgf-geometry-gradient-quality, codesign-components-quality, enaqt-evidence-quality, diff-contract-audit-quality, coupling-recovery-quality, governed-route-matrix-quality, attested-result-pack-quality, open-system-objective-quality, external-validation-manifest-quality, gradient-tape-quality, fault-tolerant-resource-product-quality, phase-qnode-product-quality, phase-trainability-quality, kuramoto-layout-cost-quality, kuramoto-layout-relaxation-quality, application-honesty-quality, layout-method-comparison-quality, unsuitable-scenario-registry-quality, scorecard-acceptance-engine-quality, studio-executive-benchmark-quality, synchronisation-witness-quality, experiment-mitigation-quality, research-lane-registry-quality, theory-hook-promotion-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-replay-quality, studio-simulation-quality, p-h1-open-guard-quality, studio-qec-readiness-bundle-quality, studio-readout-mitigation-bundle-quality, studio-scorecard-bundle-quality, studio-conformance, studio-web]
+    needs: [lint, native-wheels, stable-core-product-quality, open-system-completeness-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, custom-derivatives-product-quality, kyma-mechanism-product-quality, kyma-dynamics-quality, kyma-v2-dynamics-quality, kyma-v2-coupling-quality, differentiable-audit-contracts-quality, dla-topology-optimizer-quality, dla-topology-schema-quality, fusion-core-frc-bridge-quality, hardware-experiment-vqe-quality, transform-support-matrix-artifact-quality, gradient-plan-explanation-artifact-quality, finite-size-scaling-quality, studio-executive-differentiate-quality, hardware-experiment-control-quality, pulse-shaping-quality, openpulse-control-quality, differentiable-parameter-shift-quality, differentiable-sparse-derivatives-quality, program-ad-adjoint-quality, qpu-compute-types-quality, hls-cosimulation-evidence-quality, dla-topology-objectives-quality, dla-topology-projection-quality, magnetisation-sectors-quality, quantum-neuromorphic-bridge-quality, koopman-quality, kuramoto-variants-quality, mps-evolution-quality, nqs-ansatz-quality, sparse-hamiltonian-quality, result-pack-seal-quality, layout-relaxation-experiment-quality, tn-mps-crossover-admission-quality, xy-compile-recompute-artifact-quality, control-structured-ansatz-quality, dla-parity-witness-quality, hamiltonian-learning-quality, knm-key-quality, differentiable-implicit-sensitivity-quality, differentiable-residual-weights-quality, differentiable-consistency-quality, differentiable-jax-adapter-quality, program-ad-alias-analysis-quality, general-unitary-quality, gpu-batch-vqe-quality, avqds-quality, ansatz-benchmark-quality, symmetry-verification-quality, experiment-helpers-quality, predictive-coding-quality, hierarchical-keys-quality, sync-uncertainty-quality, coupling-invariant-quality, experiment-dynamics-quality, phase-artifact-quality, phase-results-quality, gradient-backend-quality, differentiable-exact-modes-quality, mlir-whole-program-native-quality, closed-loop-publication-quality, kuramoto-layout-optimiser-quality, qrc-baseline-quality, josephson-magnitude-study-quality, dynq-layout-quality, topology-kernel-classifier-quality, quantum-phi-quality, qpu-result-pack-quality, campaign-harness-product-quality, geometric-control-product-quality, chimera-control-quality, whole-program-frontend-contracts-quality, variational-metric-quality, qnode-circuit-contracts-quality, topology-kernel-schema-quality, feedback-loop-quality, hardware-hal-quality, dla-topology-parity-quality, topology-kernel-evidence-quality, ml-dsa-seal-quality, tn-mps-baseline-design-quality, error-mitigation-product-quality, cloud-native-deployment-quality, control-stack-compose-quality, public-api-stability-quality, polyglot-parity-certificate-quality, program-ad-fuzz-assurance-quality, multi-hal-federation-quality, hermetic-reproduction-kit-quality, hardware-safe-execution-quality, qpu-compute-product-quality, wirtinger-implicit-product-quality, migration-guides-product-quality, visualisation-dashboard-product-quality, stochastic-estimators-product-quality, differentiable-notebook-curriculum-quality, studio-executive-product-quality, advanced-witnesses-quality, coverage-frontier-quality, compiler-boundary-product-quality, resource-budget-gate-quality, advantage-language-protocol-quality, metamorphic-ad-verification-quality, competitive-baseline-watch-quality, whole-program-ad-product-quality, neural-operator-cost-model-quality, neural-operator-baseline-product-quality, entanglement-sync-evidence-quality, bench-cli-quality, identity-binding-spec-quality, identity-coherence-budget-quality, identity-robustness-quality, backend-selector-quality, logging-setup-quality, ssgf-geometry-gradient-quality, codesign-components-quality, enaqt-evidence-quality, diff-contract-audit-quality, coupling-recovery-quality, governed-route-matrix-quality, attested-result-pack-quality, open-system-objective-quality, external-validation-manifest-quality, gradient-tape-quality, fault-tolerant-resource-product-quality, phase-qnode-product-quality, phase-trainability-quality, kuramoto-layout-cost-quality, kuramoto-layout-relaxation-quality, application-honesty-quality, layout-method-comparison-quality, unsuitable-scenario-registry-quality, scorecard-acceptance-engine-quality, studio-executive-benchmark-quality, synchronisation-witness-quality, experiment-mitigation-quality, research-lane-registry-quality, theory-hook-promotion-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-replay-quality, studio-simulation-quality, p-h1-open-guard-quality, studio-qec-readiness-bundle-quality, studio-readout-mitigation-bundle-quality, studio-scorecard-bundle-quality, studio-conformance, studio-web]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: Check all jobs passed
         run: |
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
+             [[ "${{ needs['native-wheels'].result }}" != "success" ]] || \
              [[ "${{ needs['stable-core-product-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['open-system-completeness-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['thermo-readiness-product-quality'].result }}" != "success" ]] || \
