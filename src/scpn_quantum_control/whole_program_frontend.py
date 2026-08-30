@@ -736,6 +736,7 @@ def compile_whole_program_frontend(
     ------
     ValueError
         If ``objective`` is not callable.
+
     """
     if not callable(objective):
         raise ValueError("whole-program compiler frontend objective must be callable")

@@ -977,6 +977,7 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/whole_program_frontend_contracts.py
+          src/scpn_quantum_control/whole_program_frontend.py
           tools/whole_program_frontend_contracts_quality_gates.py
           tests/test_whole_program_frontend_contracts_quality_gate.py
       - name: Ruff NumPy docstrings for whole-program frontend-contract quality cohort
@@ -984,6 +985,7 @@ jobs:
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/whole_program_frontend_contracts.py
+          src/scpn_quantum_control/whole_program_frontend.py
           tests/test_whole_program_frontend.py
           tests/test_whole_program_frontend_contracts.py
           tools/whole_program_frontend_contracts_quality_gates.py
@@ -1004,7 +1006,7 @@ jobs:
           --data-file=/tmp/scpn-qc-whole-program-frontend-contracts-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/whole_program_frontend_contracts.py
+          --include=*/whole_program_frontend_contracts.py,*/whole_program_frontend.py
 
   variational-metric-quality:
     needs: lint

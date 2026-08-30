@@ -17,6 +17,8 @@ WHOLE_PROGRAM_FRONTEND_CONTRACTS_SOURCE = (
     "src/scpn_quantum_control/whole_program_frontend_contracts.py"
 )
 """Production source owned by the whole-program frontend contracts."""
+WHOLE_PROGRAM_FRONTEND_SOURCE = "src/scpn_quantum_control/whole_program_frontend.py"
+"""Production runtime owned by the whole-program frontend contracts."""
 
 WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_COHORT = [
     "tests/test_whole_program_frontend.py",
@@ -26,6 +28,7 @@ WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_COHORT = [
 
 WHOLE_PROGRAM_FRONTEND_CONTRACTS_TYPING_RATCHET = [
     WHOLE_PROGRAM_FRONTEND_CONTRACTS_SOURCE,
+    WHOLE_PROGRAM_FRONTEND_SOURCE,
     "tools/whole_program_frontend_contracts_quality_gates.py",
     "tests/test_whole_program_frontend_contracts_quality_gate.py",
 ]
@@ -33,6 +36,7 @@ WHOLE_PROGRAM_FRONTEND_CONTRACTS_TYPING_RATCHET = [
 
 WHOLE_PROGRAM_FRONTEND_CONTRACTS_DOCSTRING_RATCHET = [
     WHOLE_PROGRAM_FRONTEND_CONTRACTS_SOURCE,
+    WHOLE_PROGRAM_FRONTEND_SOURCE,
     *WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_COHORT,
     "tools/whole_program_frontend_contracts_quality_gates.py",
     "tests/test_whole_program_frontend_contracts_quality_gate.py",
@@ -43,6 +47,10 @@ WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_DATA_FILE = (
     "/tmp/scpn-qc-whole-program-frontend-contracts-quality.coverage"  # nosec B108
 )
 """Isolated coverage database for the frontend-contract owner."""
+WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_INCLUDE = (
+    "*/whole_program_frontend_contracts.py,*/whole_program_frontend.py"
+)
+"""Production frontend sources enforced at exact branch coverage."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -107,7 +115,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/whole_program_frontend_contracts.py",
+                f"--include={WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -116,9 +124,11 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_COHORT",
     "WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_DATA_FILE",
+    "WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_INCLUDE",
     "WHOLE_PROGRAM_FRONTEND_CONTRACTS_DOCSTRING_RATCHET",
     "WHOLE_PROGRAM_FRONTEND_CONTRACTS_SOURCE",
     "WHOLE_PROGRAM_FRONTEND_CONTRACTS_TYPING_RATCHET",
+    "WHOLE_PROGRAM_FRONTEND_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]
