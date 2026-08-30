@@ -82,17 +82,18 @@ def configure_logging(
 
     Parameters
     ----------
-    level:
+    level : str or None
         Log level string (DEBUG/INFO/WARNING/ERROR/CRITICAL). Defaults
         to :class:`SCPNConfig`.``log_level``.
-    format:
+    format : str or None
         Rendering style: ``"console"`` for human-readable output or
         ``"json"`` for one JSON object per line. Defaults to
         :class:`SCPNConfig`.``log_format``; automatically downgraded to
         ``"json"`` when stderr is not a TTY.
-    force:
+    force : bool
         When True, reconfigure even if ``configure_logging`` has already
         been called with the same (level, format). Useful in tests.
+
     """
     resolved_level, resolved_format = _resolve(level, format)
 

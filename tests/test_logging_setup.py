@@ -13,6 +13,7 @@ import io
 import json
 import logging
 import sys
+from collections.abc import Generator
 
 import pytest
 import structlog
@@ -21,7 +22,7 @@ from scpn_quantum_control import logging_setup as ls
 
 
 @pytest.fixture(autouse=True)
-def _reset_bootstrap():
+def _reset_bootstrap() -> Generator[None, None, None]:
     """Start each test with a clean structlog + stdlib state."""
     ls.reset_for_testing()
     # Also make sure root logger has no leaked handlers.
@@ -45,7 +46,10 @@ def _capture_stderr(monkeypatch: pytest.MonkeyPatch) -> io.StringIO:
 
 
 class TestConfigureLogging:
+    """Exercise explicit and resolved logging configuration."""
+
     def test_default_level_is_info(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Resolve INFO when neither an argument nor environment override exists."""
         from scpn_quantum_control.config import reload_config
 
         monkeypatch.delenv("SCPN_LOG_LEVEL", raising=False)
@@ -54,6 +58,7 @@ class TestConfigureLogging:
         assert logging.getLogger().level == logging.INFO
 
     def test_level_kwarg_overrides(self) -> None:
+        """Prefer an explicit logging level over configuration defaults."""
         ls.configure_logging(level="DEBUG", force=True)
         assert logging.getLogger().level == logging.DEBUG
 
@@ -61,6 +66,7 @@ class TestConfigureLogging:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Render structured events as JSON when requested."""
         buf = _capture_stderr(monkeypatch)
         ls.configure_logging(level="INFO", format="json", force=True)
         log = ls.get_logger("test")
@@ -76,9 +82,10 @@ class TestConfigureLogging:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        """Even with console requested, a non-TTY stderr triggers JSON
-        downgrade. We assert on the effective renderer by sniffing the
-        output shape."""
+        """Downgrade a console request to JSON for non-TTY stderr.
+
+        The output shape proves which renderer became effective.
+        """
         buf = _capture_stderr(monkeypatch)
         ls.configure_logging(level="INFO", format="console", force=True)
         log = ls.get_logger("test")
@@ -90,6 +97,7 @@ class TestConfigureLogging:
         assert parsed["x"] == 1
 
     def test_idempotent(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Avoid duplicate handlers when the effective configuration repeats."""
         _capture_stderr(monkeypatch)
         ls.configure_logging(level="INFO", format="json", force=True)
         # Same args — must be a no-op (no handler duplication).
@@ -101,6 +109,7 @@ class TestConfigureLogging:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Replace existing handlers when forced configuration changes."""
         _capture_stderr(monkeypatch)
         ls.configure_logging(level="INFO", format="json", force=True)
         ls.configure_logging(level="DEBUG", format="json", force=True)
@@ -115,10 +124,13 @@ class TestConfigureLogging:
 
 
 class TestConfigDefaults:
+    """Exercise environment-backed application defaults."""
+
     def test_respects_scpn_log_level(
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Resolve the root level from SCPN configuration."""
         from scpn_quantum_control.config import reload_config
 
         monkeypatch.setenv("SCPN_LOG_LEVEL", "WARNING")
@@ -130,6 +142,7 @@ class TestConfigDefaults:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Resolve the JSON renderer from SCPN configuration."""
         from scpn_quantum_control.config import reload_config
 
         monkeypatch.setenv("SCPN_LOG_FORMAT", "json")
@@ -148,7 +161,10 @@ class TestConfigDefaults:
 
 
 class TestGetLogger:
+    """Exercise the lazy public logger surface."""
+
     def test_get_logger_before_configure_is_safe(self) -> None:
+        """Return a lazy logger before explicit bootstrap."""
         # structlog auto-installs defaults — this must not raise.
         log = ls.get_logger("before_configure")
         assert log is not None
@@ -157,6 +173,7 @@ class TestGetLogger:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Preserve bound context in the rendered event."""
         buf = _capture_stderr(monkeypatch)
         ls.configure_logging(level="INFO", format="json", force=True)
         log = ls.get_logger("binder").bind(run_id="abc123")
@@ -169,6 +186,7 @@ class TestGetLogger:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Filter events below the configured threshold."""
         buf = _capture_stderr(monkeypatch)
         ls.configure_logging(level="WARNING", format="json", force=True)
         log = ls.get_logger("filter_test")
@@ -185,10 +203,13 @@ class TestGetLogger:
 
 
 class TestPipelineLogging:
+    """Exercise the config-to-rendered-event pipeline."""
+
     def test_pipeline_env_to_json_line(
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Render an environment-configured event with bound campaign context."""
         from scpn_quantum_control.config import reload_config
 
         monkeypatch.setenv("SCPN_LOG_LEVEL", "DEBUG")
@@ -213,6 +234,7 @@ class TestPipelineLogging:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Share one effective threshold across structlog and stdlib logging."""
         _capture_stderr(monkeypatch)
         ls.configure_logging(level="ERROR", format="json", force=True)
         # Structlog's filtering bound logger uses `is_enabled_for`
@@ -223,6 +245,7 @@ class TestPipelineLogging:
         assert log.is_enabled_for(logging.ERROR)
 
     def test_reset_for_testing_clears_everything(self) -> None:
+        """Clear cached bootstrap state and allow a fresh configuration."""
         ls.configure_logging(level="INFO", format="json", force=True)
         ls.reset_for_testing()
         assert ls._STATE.configured is None
@@ -237,14 +260,17 @@ class TestPipelineLogging:
 
 
 class TestCoverageEdgePaths:
-    """Exercise the branches that don't hit under default pytest buffered
-    stderr — the console renderer when stderr is a TTY, and the
-    `_resolve` exception path when SCPNConfig cannot be imported."""
+    """Exercise branches hidden by default buffered stderr.
+
+    These cover the console renderer for a TTY and configuration-import
+    fallback behavior.
+    """
 
     def test_console_renderer_when_stderr_is_tty(
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Select the console renderer when stderr reports a TTY."""
         # Pretend stderr is a TTY so _resolve doesn't downgrade to JSON
         # and the console-branch renderer is selected.
         fake_stderr = type(
@@ -265,6 +291,7 @@ class TestCoverageEdgePaths:
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
+        """Fall back to safe defaults when configuration import fails."""
         import sys as _sys
 
         monkeypatch.setitem(_sys.modules, "scpn_quantum_control.config", None)
@@ -273,15 +300,21 @@ class TestCoverageEdgePaths:
         ls.reset_for_testing()
         ls.configure_logging(force=True)
         # Buffered stderr → console downgrades to json, so (INFO, json).
+        assert ls._STATE.configured is not None
         assert ls._STATE.configured[0] == "INFO"
 
 
 class TestStructlogSurface:
+    """Lock the upstream structlog APIs used by the bootstrap."""
+
     def test_has_filtering_bound_logger(self) -> None:
+        """Require the filtering bound-logger factory."""
         assert hasattr(structlog, "make_filtering_bound_logger")
 
     def test_has_json_renderer(self) -> None:
+        """Require the machine-readable JSON renderer."""
         assert hasattr(structlog.processors, "JSONRenderer")
 
     def test_has_console_renderer(self) -> None:
+        """Require the human-readable console renderer."""
         assert hasattr(structlog.dev, "ConsoleRenderer")
