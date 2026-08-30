@@ -47,6 +47,7 @@ def build_trotter_circuit(
     -------
     QuantumCircuit
         Qiskit circuit ready for export.
+
     """
     n = K.shape[0]
     H = knm_to_hamiltonian(K, omega)
@@ -68,6 +69,23 @@ def to_qasm3(
     Uses qasm2.dumps for Qiskit 2.x compatibility.
     OpenQASM is the standard interchange format accepted by
     IBM, IonQ, Rigetti, Amazon Braket, and most cloud backends.
+
+    Parameters
+    ----------
+    K : ndarray of float
+        Coupling matrix with one row and column per oscillator.
+    omega : ndarray of float
+        Natural frequencies, one per oscillator.
+    t : float
+        Evolution time.
+    reps : int
+        Number of Lie-Trotter repetitions.
+
+    Returns
+    -------
+    str
+        Serialized OpenQASM 2 circuit text.
+
     """
     from qiskit import qasm2
 
@@ -78,9 +96,29 @@ def to_qasm3(
 def to_cirq(
     K: NDArray[np.float64], omega: NDArray[np.float64], t: float = 0.1, reps: int = 5
 ) -> Any:
-    """Export circuit as Cirq Circuit object.
+    """Export the evolution circuit as a Cirq circuit object.
 
-    Requires: pip install cirq-core
+    Parameters
+    ----------
+    K : ndarray of float
+        Coupling matrix with one row and column per oscillator.
+    omega : ndarray of float
+        Natural frequencies, one per oscillator.
+    t : float
+        Evolution time.
+    reps : int
+        Number of Lie-Trotter repetitions.
+
+    Returns
+    -------
+    Any
+        Cirq circuit produced by Mitiq or Cirq's QASM importer.
+
+    Raises
+    ------
+    ImportError
+        If neither the Mitiq converter nor Cirq QASM importer is installed.
+
     """
     try:
         from mitiq.interface.mitiq_qiskit.conversions import from_qiskit
@@ -103,8 +141,24 @@ def to_quil(
 ) -> str:
     """Export circuit as Quil string (Rigetti PyQuil format).
 
-    Requires: pip install pyquil
     Uses QASM→Quil conversion via qiskit transpilation to basis gates.
+
+    Parameters
+    ----------
+    K : ndarray of float
+        Coupling matrix with one row and column per oscillator.
+    omega : ndarray of float
+        Natural frequencies, one per oscillator.
+    t : float
+        Evolution time.
+    reps : int
+        Number of Lie-Trotter repetitions.
+
+    Returns
+    -------
+    str
+        Quil program containing declarations, supported gates, and measurements.
+
     """
     qc = build_trotter_circuit(K, omega, t, reps)
     # Transpile to basis gates that map to Quil
@@ -141,8 +195,22 @@ def export_all(
 ) -> dict[str, Any]:
     """Export circuit in all supported formats.
 
-    Returns dict with keys: qiskit, qasm3, quil.
-    Cirq is omitted by default (requires cirq-core).
+    Parameters
+    ----------
+    K : ndarray of float
+        Coupling matrix with one row and column per oscillator.
+    omega : ndarray of float
+        Natural frequencies, one per oscillator.
+    t : float
+        Evolution time.
+    reps : int
+        Number of Lie-Trotter repetitions.
+
+    Returns
+    -------
+    dict[str, Any]
+        Qiskit, QASM, Quil, circuit-size metadata, and an optional Cirq circuit.
+
     """
     qc = build_trotter_circuit(K, omega, t, reps)
     from qiskit import qasm2
