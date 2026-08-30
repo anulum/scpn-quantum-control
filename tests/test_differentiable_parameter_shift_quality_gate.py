@@ -40,7 +40,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/differentiable_parameter_shift.py" in report
+    assert "--include=*/differentiable_parameter_shift.py,*/phase/param_shift.py" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -62,7 +62,10 @@ def test_ci_runs_and_aggregates_parameter_shift_gate() -> None:
     block = workflow[start:end]
     for path in quality_gates.DIFFERENTIABLE_PARAMETER_SHIFT_DOCSTRING_RATCHET:
         assert path in block
+    for path in quality_gates.DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_COHORT:
+        assert path in block
     assert "--fail-under=100" in block
-    assert "differentiable_parameter_shift.py" in block
+    for path in quality_gates.DIFFERENTIABLE_PARAMETER_SHIFT_SOURCES:
+        assert path in block
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "differentiable-parameter-shift-quality" in aggregate

@@ -311,19 +311,6 @@ def _normalise_iteration_count(
     return int(count)
 
 
-def _shot_vector(shots: int | ArrayLike, width: int) -> FloatArray:
-    if isinstance(shots, bool):
-        raise ValueError("shots must be a positive integer or one-dimensional shot array")
-    if isinstance(shots, int):
-        if shots <= 0:
-            raise ValueError("shots must be positive")
-        return np.full(width, float(shots), dtype=np.float64)
-    values = _as_finite_vector("shots", shots, width=width)
-    if not np.all(values > 0.0) or not np.allclose(values, np.round(values)):
-        raise ValueError("shots must contain positive integers")
-    return values
-
-
 def _finite_shift_sample_matrix(
     name: str,
     values: ArrayLike,
@@ -906,6 +893,7 @@ def parameter_shift_gradient_with_uncertainty(
     StochasticGradientResult
         Provenance-bearing finite-shot gradient, covariance, confidence
         interval, and shifted-sample records.
+
     """
     resolved_rule = rule or ParameterShiftRule()
     term_count = len(resolved_rule.terms)

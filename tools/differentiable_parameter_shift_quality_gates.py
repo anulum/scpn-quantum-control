@@ -15,15 +15,30 @@ Gate = tuple[str, list[str]]
 DIFFERENTIABLE_PARAMETER_SHIFT_SOURCE = (
     "src/scpn_quantum_control/differentiable_parameter_shift.py"
 )
-DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_COHORT = ["tests/test_differentiable_parameter_shift.py"]
-DIFFERENTIABLE_PARAMETER_SHIFT_TYPING_RATCHET = [
+PHASE_PARAMETER_SHIFT_SOURCE = "src/scpn_quantum_control/phase/param_shift.py"
+DIFFERENTIABLE_PARAMETER_SHIFT_SOURCES = [
     DIFFERENTIABLE_PARAMETER_SHIFT_SOURCE,
+    PHASE_PARAMETER_SHIFT_SOURCE,
+]
+DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_COHORT = [
+    "tests/test_differentiable_parameter_shift.py",
+    "tests/test_param_shift.py",
+    "tests/test_param_shift_contracts.py",
+    "tests/test_phase_gradient_backend.py",
+    "tests/test_phase_gradient_training.py",
+    "tests/test_phase_param_shift.py",
+    "tests/test_stochastic_gradient_failure_policy.py",
+]
+DIFFERENTIABLE_PARAMETER_SHIFT_TYPING_RATCHET = [
+    *DIFFERENTIABLE_PARAMETER_SHIFT_SOURCES,
+    "tests/test_phase_param_shift.py",
     "tools/differentiable_parameter_shift_quality_gates.py",
     "tests/test_differentiable_parameter_shift_quality_gate.py",
 ]
 DIFFERENTIABLE_PARAMETER_SHIFT_DOCSTRING_RATCHET = [
-    DIFFERENTIABLE_PARAMETER_SHIFT_SOURCE,
-    *DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_COHORT,
+    *DIFFERENTIABLE_PARAMETER_SHIFT_SOURCES,
+    "tests/test_differentiable_parameter_shift.py",
+    "tests/test_phase_param_shift.py",
     "tools/differentiable_parameter_shift_quality_gates.py",
     "tests/test_differentiable_parameter_shift_quality_gate.py",
 ]
@@ -94,7 +109,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/differentiable_parameter_shift.py",
+                "--include=*/differentiable_parameter_shift.py,*/phase/param_shift.py",
             ],
         ),
     ]
@@ -105,7 +120,9 @@ __all__ = [
     "DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_DATA_FILE",
     "DIFFERENTIABLE_PARAMETER_SHIFT_DOCSTRING_RATCHET",
     "DIFFERENTIABLE_PARAMETER_SHIFT_SOURCE",
+    "DIFFERENTIABLE_PARAMETER_SHIFT_SOURCES",
     "DIFFERENTIABLE_PARAMETER_SHIFT_TYPING_RATCHET",
+    "PHASE_PARAMETER_SHIFT_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]
