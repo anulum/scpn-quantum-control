@@ -12,17 +12,27 @@ from __future__ import annotations
 from os import devnull
 
 Gate = tuple[str, list[str]]
+THEORY_HOOK_PROMOTION_SOURCE = "src/scpn_quantum_control/analysis/theory_hook_promotion.py"
+MAGIC_NONSTABILIZERNESS_SOURCE = "src/scpn_quantum_control/analysis/magic_nonstabilizerness.py"
+THEORY_HOOK_PROMOTION_COVERAGE_INCLUDE = (
+    "*/analysis/theory_hook_promotion.py,*/analysis/magic_nonstabilizerness.py"
+)
 THEORY_HOOK_PROMOTION_QUALITY_RATCHET = [
-    "src/scpn_quantum_control/analysis/theory_hook_promotion.py",
+    THEORY_HOOK_PROMOTION_SOURCE,
+    MAGIC_NONSTABILIZERNESS_SOURCE,
     "tests/test_theory_hook_promotion.py",
+    "tests/test_magic_nonstabilizerness.py",
     "scripts/run_theory_hook_promotion_evidence.py",
     "tools/theory_hook_promotion_quality_gates.py",
     "tests/test_theory_hook_promotion_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-THEORY_HOOK_PROMOTION_COVERAGE_COHORT = ["tests/test_theory_hook_promotion.py"]
+THEORY_HOOK_PROMOTION_COVERAGE_COHORT = [
+    "tests/test_theory_hook_promotion.py",
+    "tests/test_magic_nonstabilizerness.py",
+]
 """Tests that own exact theory-hook-promotion coverage."""
-THEORY_HOOK_PROMOTION_COVERAGE_DATA_FILE = ".coverage.theory-hook-promotion-quality"
+THEORY_HOOK_PROMOTION_COVERAGE_DATA_FILE = "/tmp/scpn-qc-theory-hook-promotion-quality.coverage"  # nosec B108
 """Isolated coverage database for theory-hook-promotion diagnostics."""
 
 
@@ -48,8 +58,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *THEORY_HOOK_PROMOTION_QUALITY_RATCHET,
@@ -93,16 +104,19 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={data}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/analysis/theory_hook_promotion.py",
+                f"--include={THEORY_HOOK_PROMOTION_COVERAGE_INCLUDE}",
             ],
         ),
     ]
 
 
 __all__ = [
+    "MAGIC_NONSTABILIZERNESS_SOURCE",
     "THEORY_HOOK_PROMOTION_COVERAGE_COHORT",
     "THEORY_HOOK_PROMOTION_COVERAGE_DATA_FILE",
+    "THEORY_HOOK_PROMOTION_COVERAGE_INCLUDE",
     "THEORY_HOOK_PROMOTION_QUALITY_RATCHET",
+    "THEORY_HOOK_PROMOTION_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

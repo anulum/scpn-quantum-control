@@ -5939,27 +5939,32 @@ jobs:
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/analysis/theory_hook_promotion.py
+          src/scpn_quantum_control/analysis/magic_nonstabilizerness.py
           tests/test_theory_hook_promotion.py
+          tests/test_magic_nonstabilizerness.py
           scripts/run_theory_hook_promotion_evidence.py
           tools/theory_hook_promotion_quality_gates.py
           tests/test_theory_hook_promotion_quality_gate.py
       - run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/theory_hook_promotion.py
+          src/scpn_quantum_control/analysis/magic_nonstabilizerness.py
           tests/test_theory_hook_promotion.py
+          tests/test_magic_nonstabilizerness.py
           scripts/run_theory_hook_promotion_evidence.py
           tools/theory_hook_promotion_quality_gates.py
           tests/test_theory_hook_promotion_quality_gate.py
       - run: python scripts/run_theory_hook_promotion_evidence.py --check
       - run: >-
           python -m coverage run --rcfile=/dev/null
-          --data-file=.coverage.theory-hook-promotion-quality --branch
-          -m pytest -q tests/test_theory_hook_promotion.py
+          --data-file=/tmp/scpn-qc-theory-hook-promotion-quality.coverage --branch
+          -m pytest -q tests/test_theory_hook_promotion.py tests/test_magic_nonstabilizerness.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
-          --data-file=.coverage.theory-hook-promotion-quality
-          --precision=2 --fail-under=100 --include=*/analysis/theory_hook_promotion.py
+          --data-file=/tmp/scpn-qc-theory-hook-promotion-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/analysis/theory_hook_promotion.py,*/analysis/magic_nonstabilizerness.py
 
   scorecard-acceptance-engine-quality:
     needs: lint

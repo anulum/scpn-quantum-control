@@ -20,15 +20,23 @@ def test_static_gates_cover_typing_docs_and_evidence_drift() -> None:
         gates["mypy-strict-theory-hook-promotion-quality"][5:]
         == quality_gates.THEORY_HOOK_PROMOTION_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D theory-hook-promotion quality ratchet"]
+    ruff = gates["ruff D theory-hook-promotion quality ratchet"]
+    assert "--preview" in ruff and "D,D413,D417" in ruff
     assert gates["theory-hook-promotion evidence drift"][-1] == "--check"
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
     """Require branch execution and exact source-only coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["theory-hook-promotion focused coverage"]
-    assert "--fail-under=100" in gates["theory-hook-promotion exact coverage threshold"]
+    run = gates["theory-hook-promotion focused coverage"]
+    report = gates["theory-hook-promotion exact coverage threshold"]
+    assert "--branch" in run
+    assert run[-len(quality_gates.THEORY_HOOK_PROMOTION_COVERAGE_COHORT) :] == (
+        quality_gates.THEORY_HOOK_PROMOTION_COVERAGE_COHORT
+    )
+    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert "--fail-under=100" in report
+    assert f"--include={quality_gates.THEORY_HOOK_PROMOTION_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -48,4 +56,5 @@ def test_ci_runs_and_aggregates_gate() -> None:
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.THEORY_HOOK_PROMOTION_QUALITY_RATCHET)
     assert "scripts/run_theory_hook_promotion_evidence.py --check" in block
+    assert quality_gates.THEORY_HOOK_PROMOTION_COVERAGE_INCLUDE in block
     assert "theory-hook-promotion-quality" in workflow[workflow.index("  ci-gate:") :]

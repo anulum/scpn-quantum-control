@@ -109,6 +109,7 @@ def magic_at_coupling(
     Runtime grows exponentially through both dense diagonalization and Pauli
     enumeration. The result is a resource diagnostic, not a criticality or
     advantage certificate.
+
     """
     n = len(omega)
     K = K_base * K_topology
