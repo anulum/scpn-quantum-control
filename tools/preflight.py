@@ -131,6 +131,7 @@ if TYPE_CHECKING:
     from tools import feedback_loop_quality_gates as _feedback_loop_quality_gates
     from tools import finite_size_scaling_quality_gates as _finite_size_scaling_quality_gates
     from tools import fusion_core_frc_bridge_quality_gates as _fusion_core_frc_bridge_quality_gates
+    from tools import general_unitary_quality_gates as _general_unitary_quality_gates
     from tools import (
         geometric_control_product_quality_gates as _geometric_control_product_quality_gates,
     )
@@ -328,6 +329,7 @@ else:
     _attested_result_pack_quality_gates = import_module("tools.attested_result_pack_quality_gates")
     _application_honesty_quality_gates = import_module("tools.application_honesty_quality_gates")
     _avqds_quality_gates = import_module("tools.avqds_quality_gates")
+    _general_unitary_quality_gates = import_module("tools.general_unitary_quality_gates")
     _gpu_batch_vqe_quality_gates = import_module("tools.gpu_batch_vqe_quality_gates")
     _advantage_language_protocol_quality_gates = import_module(
         "tools.advantage_language_protocol_quality_gates"
@@ -1019,6 +1021,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_studio_simulation_quality_gates.build_static_quality_gates(_PY),
     *_studio_scorecard_bundle_quality_gates.build_static_quality_gates(_PY),
     *_advanced_witnesses_quality_gates.build_static_quality_gates(_PY),
+    *_general_unitary_quality_gates.build_static_quality_gates(_PY),
     *_gpu_batch_vqe_quality_gates.build_static_quality_gates(_PY),
     *_avqds_quality_gates.build_static_quality_gates(_PY),
     *_ansatz_bench_quality_gates.build_static_quality_gates(_PY),
@@ -1622,6 +1625,7 @@ STUDIO_SCORECARD_BUNDLE_COVERAGE_GATES = (
     _studio_scorecard_bundle_quality_gates.build_coverage_gates(_PY)
 )
 ADVANCED_WITNESSES_COVERAGE_GATES = _advanced_witnesses_quality_gates.build_coverage_gates(_PY)
+GENERAL_UNITARY_COVERAGE_GATES = _general_unitary_quality_gates.build_coverage_gates(_PY)
 GPU_BATCH_VQE_COVERAGE_GATES = _gpu_batch_vqe_quality_gates.build_coverage_gates(_PY)
 AVQDS_COVERAGE_GATES = _avqds_quality_gates.build_coverage_gates(_PY)
 ANSATZ_BENCH_COVERAGE_GATES = _ansatz_bench_quality_gates.build_coverage_gates(_PY)
@@ -2057,6 +2061,7 @@ def main() -> int:
             gates.extend(STUDIO_SIMULATION_COVERAGE_GATES)
             gates.extend(STUDIO_SCORECARD_BUNDLE_COVERAGE_GATES)
             gates.extend(ADVANCED_WITNESSES_COVERAGE_GATES)
+            gates.extend(GENERAL_UNITARY_COVERAGE_GATES)
             gates.extend(GPU_BATCH_VQE_COVERAGE_GATES)
             gates.extend(AVQDS_COVERAGE_GATES)
             gates.extend(ANSATZ_BENCH_COVERAGE_GATES)

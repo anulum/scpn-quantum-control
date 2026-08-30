@@ -13,8 +13,14 @@ is only valid for single-Pauli generators; controlled rotations carry the
 gives U3 and arbitrary single-qubit unitaries exact, differentiable coverage.
 """
 
+from __future__ import annotations
+
+from collections.abc import Sequence
+from typing import cast
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.phase.general_unitary import build_u3_operations, su2_zyz_angles
 from scpn_quantum_control.phase.qnode_circuit import (
@@ -26,12 +32,19 @@ from scpn_quantum_control.phase.qnode_circuit import (
     parameter_shift_phase_qnode_gradient,
 )
 
+FloatArray = NDArray[np.float64]
+ComplexArray = NDArray[np.complex128]
 
-def _value(circuit, params):
+
+def _value(circuit: PhaseQNodeCircuit, params: Sequence[float] | FloatArray) -> float:
+    """Evaluate one real Phase-QNode expectation value."""
     return execute_phase_qnode_circuit(circuit, np.asarray(params, dtype=float)).value
 
 
-def _five_point_gradient(circuit, params):
+def _five_point_gradient(
+    circuit: PhaseQNodeCircuit, params: Sequence[float] | FloatArray
+) -> FloatArray:
+    """Estimate the reference gradient with a five-point stencil."""
     params = np.asarray(params, dtype=float)
     h = 1e-4
     grad = np.zeros_like(params)
@@ -53,23 +66,27 @@ def _five_point_gradient(circuit, params):
 # --------------------------------------------------------------------------- #
 # Generator frequency spectrum
 # --------------------------------------------------------------------------- #
-def test_single_pauli_frequencies():
+def test_single_pauli_frequencies() -> None:
+    """Report the unit generator frequency for one Pauli rotation."""
     op = PhaseQNodeOperation("ry", (0,), parameter_index=0)
     assert _group_generator_frequencies((op,)) == (1.0,)
 
 
 @pytest.mark.parametrize("gate", ["crx", "cry", "crz"])
-def test_controlled_rotation_frequencies(gate):
+def test_controlled_rotation_frequencies(gate: str) -> None:
+    """Report both controlled-rotation generator frequencies."""
     op = PhaseQNodeOperation(gate, (0, 1), parameter_index=0)
     assert _group_generator_frequencies((op,)) == (0.5, 1.0)
 
 
-def test_collapsible_controlled_rotation_frequencies_scale():
+def test_collapsible_controlled_rotation_frequencies_scale() -> None:
+    """Scale frequencies for a repeated controlled rotation."""
     op = PhaseQNodeOperation("cry", (0, 1), parameter_index=0)
     assert _group_generator_frequencies((op, op)) == (1.0, 2.0)
 
 
-def test_collapsible_single_pauli_frequencies_scale():
+def test_collapsible_single_pauli_frequencies_scale() -> None:
+    """Scale the generator frequency for repeated Pauli rotations."""
     op = PhaseQNodeOperation("rx", (0,), parameter_index=0)
     assert _group_generator_frequencies((op, op, op)) == (3.0,)
 
@@ -78,7 +95,8 @@ def test_collapsible_single_pauli_frequencies_scale():
 # Controlled-rotation gradient correctness (the four-term rule)
 # --------------------------------------------------------------------------- #
 @pytest.mark.parametrize("gate", ["crx", "cry", "crz"])
-def test_controlled_rotation_gradient_control_coupling_observable(gate):
+def test_controlled_rotation_gradient_control_coupling_observable(gate: str) -> None:
+    """Match the four-term gradient for a control-coupling observable."""
     # An X on the control qubit couples the control-on/off sectors and excites
     # the 1/2 frequency that the two-term rule mishandles.
     ops = (
@@ -96,7 +114,8 @@ def test_controlled_rotation_gradient_control_coupling_observable(gate):
 
 
 @pytest.mark.parametrize("gate", ["crx", "cry", "crz"])
-def test_controlled_rotation_gradient_target_observable(gate):
+def test_controlled_rotation_gradient_target_observable(gate: str) -> None:
+    """Match the four-term gradient for a target-only observable."""
     ops = (
         PhaseQNodeOperation("h", (0,)),
         PhaseQNodeOperation("h", (1,)),
@@ -109,7 +128,8 @@ def test_controlled_rotation_gradient_target_observable(gate):
         assert np.allclose(analytic, numeric, atol=1e-6)
 
 
-def test_collapsible_controlled_rotation_gradient():
+def test_collapsible_controlled_rotation_gradient() -> None:
+    """Match the gradient for two collapsible controlled rotations."""
     ops = (
         PhaseQNodeOperation("h", (0,)),
         PhaseQNodeOperation("h", (1,)),
@@ -125,7 +145,8 @@ def test_collapsible_controlled_rotation_gradient():
         assert np.allclose(analytic, numeric, atol=1e-6)
 
 
-def test_single_pauli_rotation_gradient_unchanged():
+def test_single_pauli_rotation_gradient_unchanged() -> None:
+    """Preserve the exact single-Pauli parameter-shift gradient."""
     ops = (
         PhaseQNodeOperation("rx", (0,), parameter_index=0),
         PhaseQNodeOperation("ry", (0,), parameter_index=1),
@@ -140,13 +161,15 @@ def test_single_pauli_rotation_gradient_unchanged():
 # --------------------------------------------------------------------------- #
 # U3 / general-unitary ZYZ decomposition
 # --------------------------------------------------------------------------- #
-def _random_unitary(rng: np.random.Generator) -> np.ndarray:
+def _random_unitary(rng: np.random.Generator) -> ComplexArray:
+    """Draw a deterministic Haar-style two-dimensional unitary."""
     z = rng.standard_normal((2, 2)) + 1j * rng.standard_normal((2, 2))
     q, r = np.linalg.qr(z)
-    return q @ np.diag(np.diagonal(r) / np.abs(np.diagonal(r)))
+    return np.asarray(q @ np.diag(np.diagonal(r) / np.abs(np.diagonal(r))), dtype=np.complex128)
 
 
-def test_su2_zyz_roundtrip_statevector():
+def test_su2_zyz_roundtrip_statevector() -> None:
+    """Reconstruct random single-qubit states up to global phase."""
     rng = np.random.default_rng(0)
     ops = build_u3_operations(0, (0, 1, 2))
     circuit = PhaseQNodeCircuit(n_qubits=1, operations=ops, observable=PauliTerm(1.0, ((0, "z"),)))
@@ -168,7 +191,8 @@ def test_su2_zyz_roundtrip_statevector():
         np.array([[1.0, 0.0], [0.0, 1j]], dtype=complex),  # S gate
     ],
 )
-def test_su2_zyz_special_cases(gate_matrix):
+def test_su2_zyz_special_cases(gate_matrix: ComplexArray) -> None:
+    """Reconstruct both gimbal gauges and a generic phase gate."""
     phi, theta, lam = su2_zyz_angles(gate_matrix)
     ops = build_u3_operations(0, (0, 1, 2))
     circuit = PhaseQNodeCircuit(n_qubits=1, operations=ops, observable=PauliTerm(1.0, ((0, "z"),)))
@@ -180,7 +204,8 @@ def test_su2_zyz_special_cases(gate_matrix):
         assert np.allclose(state, target * global_phase, atol=1e-9)
 
 
-def test_u3_decomposition_is_differentiable():
+def test_u3_decomposition_is_differentiable() -> None:
+    """Match analytic and numerical gradients through the U3 decomposition."""
     ops = build_u3_operations(0, (0, 1, 2))
     circuit = PhaseQNodeCircuit(n_qubits=1, operations=ops, observable=PauliTerm(1.0, ((0, "x"),)))
     params = np.array([0.7, 1.3, -0.4])
@@ -189,11 +214,12 @@ def test_u3_decomposition_is_differentiable():
     assert np.allclose(analytic, numeric, atol=1e-6)
 
 
-def test_su2_zyz_rejects_bad_matrix():
+def test_su2_zyz_rejects_bad_matrix() -> None:
+    """Reject wrong-shaped and non-unitary matrices."""
     with pytest.raises(ValueError):
-        su2_zyz_angles(np.zeros((3, 3)))
+        su2_zyz_angles(np.zeros((3, 3), dtype=np.complex128))
     with pytest.raises(ValueError):
-        su2_zyz_angles(np.array([[1.0, 2.0], [3.0, 4.0]]))
+        su2_zyz_angles(np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.complex128))
 
 
 @pytest.mark.parametrize(
@@ -205,6 +231,7 @@ def test_su2_zyz_rejects_bad_matrix():
         (0, (0, -1, 2)),
     ],
 )
-def test_build_u3_operations_rejects_bad_args(args):
+def test_build_u3_operations_rejects_bad_args(args: tuple[int, tuple[int, ...]]) -> None:
+    """Reject invalid qubit and parameter-index contracts."""
     with pytest.raises(ValueError):
-        build_u3_operations(*args)
+        build_u3_operations(args[0], cast(tuple[int, int, int], args[1]))

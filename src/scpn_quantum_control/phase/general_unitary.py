@@ -36,12 +36,16 @@ def su2_zyz_angles(unitary: ComplexArray) -> tuple[float, float, float]:
     framework conventions are ``RZ(a) = diag(e^{-ia/2}, e^{ia/2})`` and
     ``RY(b) = [[cos b/2, -sin b/2], [sin b/2, cos b/2]]``.
 
-    Args:
-        unitary: a ``(2, 2)`` complex unitary matrix.
+    Parameters
+    ----------
+    unitary
+        Complex unitary matrix with shape ``(2, 2)``.
 
     Returns
     -------
-        The ZYZ Euler angles ``(phi, theta, lam)``.
+    tuple[float, float, float]
+        ZYZ Euler angles ``(phi, theta, lam)``.
+
     """
     matrix = np.asarray(unitary, dtype=np.complex128)
     if matrix.shape != (2, 2):
@@ -81,15 +85,19 @@ def build_u3_operations(
     ``U3(theta, phi, lam) ∝ RZ(phi) RY(theta) RZ(lam)`` up to a global phase, and
     each registered rotation differentiates with the exact two-term rule.
 
-    Args:
-        qubit: target qubit index (non-negative).
-        parameter_indices: ``(theta_index, phi_index, lam_index)``, distinct and
-            non-negative.
+    Parameters
+    ----------
+    qubit
+        Non-negative target-qubit index.
+    parameter_indices
+        Distinct non-negative ``(theta_index, phi_index, lam_index)`` values.
 
     Returns
     -------
-        The three registered operations in circuit order ``(RZ(lam), RY(theta),
+    tuple[PhaseQNodeOperation, ...]
+        Three registered operations in circuit order ``(RZ(lam), RY(theta),
         RZ(phi))``.
+
     """
     if not isinstance(qubit, int) or isinstance(qubit, bool) or qubit < 0:
         raise ValueError("qubit must be a non-negative integer")

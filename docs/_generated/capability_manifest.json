@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1302
+    "test_files": 1303
   },
   "documentation": {
     "examples": [
@@ -8548,6 +8548,7 @@
       "tests/test_fusion_core_frc_bridge_quality_gate.py",
       "tests/test_gauge_lattice_crosscheck.py",
       "tests/test_gauge_topology_contracts.py",
+      "tests/test_general_unitary_quality_gate.py",
       "tests/test_geometric_control_product.py",
       "tests/test_geometric_control_product_quality_gate.py",
       "tests/test_github_actions_history_audit.py",
