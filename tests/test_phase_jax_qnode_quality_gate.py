@@ -104,7 +104,8 @@ def test_default_local_gate_has_exact_owner_coverage() -> None:
     assert "--rcfile=/dev/null" in report_cmd
     assert "--precision=2" in report_cmd
     assert "--fail-under=100" in report_cmd
-    assert "--include=*/jax_qnode_transforms.py" in report_cmd
+    assert "--include=*/jax_bridge.py,*/jax_qnode_transforms.py" in report_cmd
+    assert data_file.startswith("/tmp/")
     assert f"--data-file={data_file}" in report_cmd
 
 
@@ -143,7 +144,7 @@ def test_ci_and_local_gates_share_exact_owner_order() -> None:
     )
     assert "Enforce Phase-QNode JAX exact coverage" in workflow
     assert "--source=src/scpn_quantum_control/phase" in workflow
-    assert "--include=*/jax_qnode_transforms.py" in workflow
+    assert "--include=*/jax_bridge.py,*/jax_qnode_transforms.py" in workflow
     overlay_position = workflow.index("Build CPU-only differentiable framework overlay")
     runtime_probe_position = workflow.index("Verify real JAX runtime for Phase-QNode coverage")
     coverage_position = workflow.index("Run Phase-QNode JAX focused coverage")

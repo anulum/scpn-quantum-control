@@ -10,10 +10,12 @@
 from __future__ import annotations
 
 from os import devnull
+from tempfile import gettempdir
 
 Gate = tuple[str, list[str]]
 
 PHASE_JAX_QNODE_QUALITY_RATCHET = [
+    "src/scpn_quantum_control/phase/jax_bridge.py",
     "src/scpn_quantum_control/phase/jax_qnode_transforms.py",
     "src/scpn_quantum_control/phase/jax_compatibility.py",
     "tests/_phase_jax_bridge_test_helpers.py",
@@ -31,6 +33,11 @@ PHASE_JAX_QNODE_QUALITY_RATCHET = [
 """Ordered strict-typing and NumPy-docstring owner cohort."""
 
 PHASE_JAX_QNODE_COVERAGE_COHORT = [
+    "tests/test_phase_jax_bridge.py",
+    "tests/test_phase_jax_compatibility.py",
+    "tests/test_phase_jax_gradients.py",
+    "tests/test_phase_jax_gradients_integration.py",
+    "tests/test_phase_jax_bridge_contracts.py",
     "tests/test_phase_jax_qnode_transforms.py",
     "tests/test_phase_jax_qnode_transforms_integration.py",
     "tests/test_phase_jax_bridge_aot_export.py",
@@ -41,7 +48,7 @@ PHASE_JAX_QNODE_COVERAGE_COHORT = [
 ]
 """Public-path tests that own exact transform-leaf coverage."""
 
-PHASE_JAX_QNODE_COVERAGE_DATA_FILE = ".coverage.phase-jax-qnode"
+PHASE_JAX_QNODE_COVERAGE_DATA_FILE = f"{gettempdir()}/scpn-qc-phase-jax-qnode.coverage"
 """Isolated coverage database for the Phase-QNode JAX owner."""
 
 
@@ -132,7 +139,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={PHASE_JAX_QNODE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/jax_qnode_transforms.py",
+                "--include=*/jax_bridge.py,*/jax_qnode_transforms.py",
             ],
         ),
     ]
