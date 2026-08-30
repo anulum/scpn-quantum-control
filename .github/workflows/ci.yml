@@ -7341,11 +7341,13 @@ jobs:
           src/scpn_quantum_control/analysis/p_h1_open_guard.py
           src/scpn_quantum_control/analysis/persistent_homology.py
           src/scpn_quantum_control/analysis/quantum_persistent_homology.py
+          src/scpn_quantum_control/analysis/tcbo_weighted_complex.py
           scripts/check_p_h1_open_claim_guard.py
           tests/test_p_h1_open_guard.py
           tests/test_bench_cli.py
           tests/test_persistent_homology.py
           tests/test_quantum_persistent_homology.py
+          tests/test_tcbo_weighted_complex.py
           tools/p_h1_open_guard_quality_gates.py
           tests/test_p_h1_open_guard_quality_gate.py
       - run: >-
@@ -7354,10 +7356,12 @@ jobs:
           src/scpn_quantum_control/analysis/p_h1_open_guard.py
           src/scpn_quantum_control/analysis/persistent_homology.py
           src/scpn_quantum_control/analysis/quantum_persistent_homology.py
+          src/scpn_quantum_control/analysis/tcbo_weighted_complex.py
           scripts/check_p_h1_open_claim_guard.py
           tests/test_p_h1_open_guard.py
           tests/test_persistent_homology.py
           tests/test_quantum_persistent_homology.py
+          tests/test_tcbo_weighted_complex.py
           tools/p_h1_open_guard_quality_gates.py
           tests/test_p_h1_open_guard_quality_gate.py
       - run: >-
@@ -7370,11 +7374,12 @@ jobs:
           tests/test_quantum_persistent_homology.py
           tests/test_persistent_homology_branches.py
           tests/test_analysis_topology_contracts.py
+          tests/test_tcbo_weighted_complex.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-p-h1-open-guard-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/analysis/p_h1_open_guard.py,*/scripts/check_p_h1_open_claim_guard.py,*/analysis/persistent_homology.py,*/analysis/quantum_persistent_homology.py
+          --include=*/analysis/p_h1_open_guard.py,*/scripts/check_p_h1_open_claim_guard.py,*/analysis/persistent_homology.py,*/analysis/quantum_persistent_homology.py,*/analysis/tcbo_weighted_complex.py
 
   studio-qec-readiness-bundle-quality:
     needs: lint

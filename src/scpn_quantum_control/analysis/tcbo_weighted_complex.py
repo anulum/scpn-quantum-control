@@ -28,7 +28,30 @@ from numpy.typing import NDArray
 
 @dataclass(frozen=True)
 class TCBOWeightedComplexResult:
-    """Single threshold result for the TCBO coupling-weighted flag complex."""
+    """Single threshold result for the TCBO coupling-weighted flag complex.
+
+    Attributes
+    ----------
+    threshold
+        Normalised edge-weight threshold used to construct the complex.
+    beta_0
+        Number of connected components in the thresholded graph.
+    beta_1
+        First Betti number of the two-dimensional flag complex.
+    p_h1
+        First-homology score normalised by the maximum graph cycle rank.
+    n_nodes
+        Number of oscillator nodes.
+    n_edges
+        Number of active thresholded edges.
+    n_triangles
+        Number of filled two-simplices.
+    max_h1
+        Normalising maximum first-homology rank.
+    edge_weights
+        Symmetric normalised coupling-weight matrix.
+
+    """
 
     threshold: float
     beta_0: int
@@ -43,7 +66,24 @@ class TCBOWeightedComplexResult:
 
 @dataclass(frozen=True)
 class TCBOWeightedThresholdScan:
-    """Threshold scan summary for the TCBO coupling-weighted complex."""
+    """Threshold scan summary for the TCBO coupling-weighted complex.
+
+    Attributes
+    ----------
+    results
+        Per-threshold complex results in input order.
+    target_p_h1
+        Requested first-homology target.
+    best_threshold
+        Threshold producing the smallest absolute target error.
+    best_p_h1
+        First-homology score at ``best_threshold``.
+    best_abs_error
+        Smallest absolute distance from the target.
+    promotes_target
+        Whether an explicit tolerance admits the best result.
+
+    """
 
     results: tuple[TCBOWeightedComplexResult, ...]
     target_p_h1: float
@@ -55,7 +95,44 @@ class TCBOWeightedThresholdScan:
 
 @dataclass(frozen=True)
 class TCBOWeightedReplayUncertainty:
-    """Replay uncertainty summary for a preregistered TCBO reconstruction."""
+    """Replay uncertainty summary for a preregistered TCBO reconstruction.
+
+    Attributes
+    ----------
+    replay_count
+        Number of independent phase-draw replays.
+    seed
+        Random seed used for the replay sequence.
+    target_p_h1
+        Requested first-homology target.
+    confidence_level
+        Central empirical confidence level.
+    p_h1_mean
+        Mean best first-homology score across replays.
+    p_h1_std
+        Sample standard deviation of the best scores.
+    p_h1_ci_low
+        Lower empirical confidence bound.
+    p_h1_ci_high
+        Upper empirical confidence bound.
+    best_abs_error_mean
+        Mean absolute error of replay-optimal scores.
+    best_abs_error_max
+        Maximum absolute error of replay-optimal scores.
+    best_threshold_mean
+        Mean replay-optimal threshold.
+    uncertainty_crosses_target
+        Whether the empirical interval contains the target.
+    preregistered_dataset_id
+        Explicit dataset identifier, or ``None`` for unregistered evidence.
+    promotes_target
+        Whether registration, interval, and tolerance gates all pass.
+    p_h1_samples
+        Replay-optimal first-homology scores.
+    best_threshold_samples
+        Replay-optimal thresholds.
+
+    """
 
     replay_count: int
     seed: int
@@ -126,10 +203,25 @@ def coupling_weighted_edge_matrix(
 ) -> NDArray[np.float64]:
     """Return edge weights ``K_ij * |cos(theta_j - theta_i)|``.
 
-    Args:
-        K: symmetric zero-diagonal coupling matrix.
-        theta: oscillator phase vector matching ``K``.
-        normalise: divide by the maximum positive edge weight when present.
+    Parameters
+    ----------
+    K
+        Symmetric zero-diagonal coupling matrix.
+    theta
+        Oscillator phase vector matching ``K``.
+    normalise
+        Divide by the maximum positive edge weight when present.
+
+    Returns
+    -------
+    numpy.ndarray
+        Symmetric edge-weight matrix with a zero diagonal.
+
+    Raises
+    ------
+    ValueError
+        If the coupling matrix or phase vector violates its contract.
+
     """
     coupling = _validated_coupling_matrix(K)
     phases = _validated_phase_vector(theta, coupling.shape[0])
@@ -231,7 +323,28 @@ def tcbo_weighted_complex(
     *,
     threshold: float = 0.72,
 ) -> TCBOWeightedComplexResult:
-    """Compute beta-1 for the TCBO coupling-weighted flag complex."""
+    """Compute beta-1 for the TCBO coupling-weighted flag complex.
+
+    Parameters
+    ----------
+    K
+        Symmetric zero-diagonal coupling matrix.
+    theta
+        Oscillator phase vector matching ``K``.
+    threshold
+        Inclusive normalised edge-weight threshold in ``[0, 1]``.
+
+    Returns
+    -------
+    TCBOWeightedComplexResult
+        Connectivity, first-homology, and complex-size measurements.
+
+    Raises
+    ------
+    ValueError
+        If the matrix, phase vector, or threshold is invalid.
+
+    """
     threshold = _validated_threshold(threshold)
     weights = coupling_weighted_edge_matrix(K, theta, normalise=True)
     n_nodes = weights.shape[0]
@@ -264,7 +377,32 @@ def tcbo_weighted_threshold_scan(
     target_p_h1: float = 0.72,
     promotion_tolerance: float | None = None,
 ) -> TCBOWeightedThresholdScan:
-    """Scan thresholded coupling-weighted complexes against a target p_h1."""
+    """Scan thresholded coupling-weighted complexes against a target p_h1.
+
+    Parameters
+    ----------
+    K
+        Symmetric zero-diagonal coupling matrix.
+    theta
+        Oscillator phase vector matching ``K``.
+    thresholds
+        Optional non-empty one-dimensional threshold sequence.
+    target_p_h1
+        Requested first-homology target in ``[0, 1]``.
+    promotion_tolerance
+        Optional maximum absolute error required for promotion.
+
+    Returns
+    -------
+    TCBOWeightedThresholdScan
+        All threshold results and the closest target match.
+
+    Raises
+    ------
+    ValueError
+        If any input contract or threshold scan contract is invalid.
+
+    """
     threshold_values = (
         np.asarray(thresholds, dtype=float)
         if thresholds is not None
@@ -315,6 +453,36 @@ def tcbo_weighted_uncertainty_replay(
     threshold scan. Promotion requires an explicit preregistered dataset
     identifier, a confidence interval crossing the target, and a mean absolute
     error no larger than the stated tolerance.
+
+    Parameters
+    ----------
+    K
+        Symmetric zero-diagonal coupling matrix.
+    n_replays
+        Positive number of independent phase draws.
+    seed
+        Integer random seed.
+    thresholds
+        Optional non-empty one-dimensional threshold sequence.
+    target_p_h1
+        Requested first-homology target in ``[0, 1]``.
+    confidence_level
+        Central empirical interval level in ``(0, 1)``.
+    promotion_tolerance
+        Finite non-negative mean absolute-error threshold.
+    preregistered_dataset_id
+        Optional non-empty identifier required for target promotion.
+
+    Returns
+    -------
+    TCBOWeightedReplayUncertainty
+        Replay samples, empirical interval, errors, and promotion decision.
+
+    Raises
+    ------
+    ValueError
+        If the matrix or any replay-control argument is invalid.
+
     """
     coupling = _validated_coupling_matrix(K)
     replay_count = _validated_positive_int(n_replays, name="n_replays")

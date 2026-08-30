@@ -9,8 +9,11 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.analysis.tcbo_weighted_complex import (
     _gf2_rank,
@@ -22,6 +25,7 @@ from scpn_quantum_control.analysis.tcbo_weighted_complex import (
 
 
 def test_edge_weights_follow_kij_abs_cos_phase_difference() -> None:
+    """Build each unnormalised edge from coupling and phase separation."""
     K = np.array(
         [
             [0.0, 2.0, 3.0],
@@ -39,6 +43,7 @@ def test_edge_weights_follow_kij_abs_cos_phase_difference() -> None:
 
 
 def test_edge_weight_normalisation_is_scale_invariant_and_zero_safe() -> None:
+    """Normalise positive weights while retaining the all-zero graph."""
     K = np.array([[0.0, 2.0], [2.0, 0.0]])
     theta = np.zeros(2)
 
@@ -52,6 +57,7 @@ def test_edge_weight_normalisation_is_scale_invariant_and_zero_safe() -> None:
 
 
 def test_square_cycle_has_one_unfilled_h1_cycle() -> None:
+    """Measure one first-homology cycle in an unfilled square."""
     K = np.array(
         [
             [0.0, 1.0, 0.0, 1.0],
@@ -71,6 +77,7 @@ def test_square_cycle_has_one_unfilled_h1_cycle() -> None:
 
 
 def test_filled_triangle_has_no_h1_cycle() -> None:
+    """Remove the graph cycle when its triangle is a filled simplex."""
     K = np.array(
         [
             [0.0, 1.0, 1.0],
@@ -89,6 +96,7 @@ def test_filled_triangle_has_no_h1_cycle() -> None:
 
 
 def test_gf2_rank_handles_empty_swap_and_full_rank_boundary_cases() -> None:
+    """Exercise empty, pivot-swap, and full-rank GF(2) elimination."""
     assert _gf2_rank(np.zeros((0, 0), dtype=np.uint8)) == 0
     assert _gf2_rank(np.array([[0, 1], [0, 0]], dtype=np.uint8)) == 1
     matrix = np.array(
@@ -104,6 +112,7 @@ def test_gf2_rank_handles_empty_swap_and_full_rank_boundary_cases() -> None:
 
 
 def test_threshold_scan_reports_target_distance_without_promotion() -> None:
+    """Report the closest target distance without implicit promotion."""
     K = np.array(
         [
             [0.0, 1.0, 0.0, 1.0],
@@ -123,6 +132,7 @@ def test_threshold_scan_reports_target_distance_without_promotion() -> None:
 
 
 def test_threshold_scan_only_promotes_with_explicit_tolerance() -> None:
+    """Promote a matching scan only when tolerance is explicit."""
     K = np.array(
         [
             [0.0, 1.0, 0.0, 1.0],
@@ -147,6 +157,7 @@ def test_threshold_scan_only_promotes_with_explicit_tolerance() -> None:
 
 
 def test_uncertainty_replay_requires_preregistration_for_promotion() -> None:
+    """Require preregistration in addition to matching replay evidence."""
     K = np.array(
         [
             [0.0, 1.0, 0.0, 1.0],
@@ -183,6 +194,7 @@ def test_uncertainty_replay_requires_preregistration_for_promotion() -> None:
 
 
 def test_rejects_non_symmetric_coupling_matrix() -> None:
+    """Reject a directed matrix from the undirected flag-complex path."""
     K = np.array([[0.0, 1.0], [0.5, 0.0]])
     theta = np.zeros(2)
 
@@ -191,6 +203,7 @@ def test_rejects_non_symmetric_coupling_matrix() -> None:
 
 
 def test_rejects_phase_shape_mismatch() -> None:
+    """Reject phase vectors that do not match the graph order."""
     K = np.array([[0.0, 1.0], [1.0, 0.0]])
 
     with pytest.raises(ValueError, match="theta must match"):
@@ -209,7 +222,13 @@ def test_rejects_phase_shape_mismatch() -> None:
         (np.array([[0.0, 1.0], [1.0, 0.0]]), np.zeros(2), 1.1, "threshold"),
     ],
 )
-def test_rejects_invalid_weighted_complex_inputs(K, theta, threshold, match) -> None:
+def test_rejects_invalid_weighted_complex_inputs(
+    K: NDArray[np.float64],
+    theta: NDArray[np.float64],
+    threshold: float,
+    match: str,
+) -> None:
+    """Reject malformed matrices, phase vectors, and thresholds."""
     with pytest.raises(ValueError, match=match):
         tcbo_weighted_complex(K, theta, threshold=threshold)
 
@@ -223,7 +242,8 @@ def test_rejects_invalid_weighted_complex_inputs(K, theta, threshold, match) -> 
         ({"target_p_h1": np.nan}, "target_p_h1"),
     ],
 )
-def test_threshold_scan_rejects_invalid_scan_contract(kwargs, match) -> None:
+def test_threshold_scan_rejects_invalid_scan_contract(kwargs: dict[str, Any], match: str) -> None:
+    """Reject empty, shaped, non-finite, or out-of-range scan inputs."""
     K = np.array([[0.0, 1.0], [1.0, 0.0]])
     theta = np.zeros(2)
 
@@ -237,13 +257,16 @@ def test_threshold_scan_rejects_invalid_scan_contract(kwargs, match) -> None:
         ({"n_replays": 0}, "n_replays"),
         ({"n_replays": True}, "n_replays"),
         ({"seed": False}, "seed"),
+        ({"target_p_h1": -0.1}, "target_p_h1"),
+        ({"target_p_h1": np.nan}, "target_p_h1"),
         ({"confidence_level": 1.0}, "confidence_level"),
         ({"confidence_level": np.nan}, "confidence_level"),
         ({"promotion_tolerance": -0.01}, "promotion_tolerance"),
         ({"preregistered_dataset_id": "   "}, "preregistered_dataset_id"),
     ],
 )
-def test_uncertainty_replay_rejects_invalid_contract(kwargs, match) -> None:
+def test_uncertainty_replay_rejects_invalid_contract(kwargs: dict[str, Any], match: str) -> None:
+    """Reject invalid replay, target, confidence, tolerance, and ID inputs."""
     K = np.array([[0.0, 1.0], [1.0, 0.0]])
 
     with pytest.raises(ValueError, match=match):
