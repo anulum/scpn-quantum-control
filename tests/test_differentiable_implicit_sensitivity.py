@@ -30,13 +30,11 @@ from scpn_quantum_control.differentiable_implicit_sensitivity import (
 
 def _assert_allclose(actual: object, expected: object) -> None:
     """Assert NumPy-close equality while preserving strict test typing."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected)
 
 
 def test_facade_and_package_root_reuse_extracted_implicit_sensitivity_helpers() -> None:
     """Facade and package-root exports should point at the extracted solvers."""
-
     assert differentiable.implicit_fixed_point_sensitivity is implicit_fixed_point_sensitivity
     assert differentiable.implicit_stationary_sensitivity is implicit_stationary_sensitivity
     assert scpn.implicit_fixed_point_sensitivity is implicit_fixed_point_sensitivity
@@ -45,7 +43,6 @@ def test_facade_and_package_root_reuse_extracted_implicit_sensitivity_helpers() 
 
 def test_implicit_stationary_sensitivity_solves_trainable_system() -> None:
     """Implicit stationary sensitivities should solve -H^{-1}B on trainable parameters."""
-
     result = implicit_stationary_sensitivity(
         hessian=np.diag([2.0, 4.0, 9.0]),
         cross_derivative=np.array([[4.0, -2.0], [8.0, 4.0], [9.0, 9.0]]),
@@ -67,7 +64,6 @@ def test_implicit_stationary_sensitivity_solves_trainable_system() -> None:
 
 def test_implicit_stationary_sensitivity_applies_damping() -> None:
     """Implicit sensitivity should expose damped positive-definite solves."""
-
     result = implicit_stationary_sensitivity(
         hessian=np.diag([1.0, 3.0]),
         cross_derivative=[2.0, 6.0],
@@ -81,7 +77,6 @@ def test_implicit_stationary_sensitivity_applies_damping() -> None:
 
 def test_implicit_stationary_sensitivity_handles_fully_frozen_parameters() -> None:
     """Frozen stationary parameters should be reported with zero sensitivity."""
-
     result = implicit_stationary_sensitivity(
         hessian=np.diag([2.0, 3.0]),
         cross_derivative=np.array([[4.0], [9.0]]),
@@ -95,7 +90,6 @@ def test_implicit_stationary_sensitivity_handles_fully_frozen_parameters() -> No
 
 def test_implicit_stationary_sensitivity_rejects_invalid_contracts() -> None:
     """Implicit solves must fail closed on invalid stationary systems."""
-
     with pytest.raises(ValueError, match="square"):
         implicit_stationary_sensitivity([[1.0, 0.0]], [[1.0]])
     with pytest.raises(ValueError, match="row count"):
@@ -118,7 +112,6 @@ def test_implicit_stationary_sensitivity_rejects_invalid_contracts() -> None:
 
 def test_implicit_fixed_point_sensitivity_solves_trainable_system() -> None:
     """Fixed-point sensitivities should solve (I - dT/dx)^{-1}dT/dalpha."""
-
     result = implicit_fixed_point_sensitivity(
         state_jacobian=np.diag([0.5, 0.2, 0.0]),
         parameter_jacobian=np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]),
@@ -144,7 +137,6 @@ def test_implicit_fixed_point_sensitivity_solves_trainable_system() -> None:
 
 def test_implicit_fixed_point_sensitivity_applies_damping() -> None:
     """Fixed-point sensitivities should expose damped nonsingular solves."""
-
     result = implicit_fixed_point_sensitivity(
         state_jacobian=[[0.5]],
         parameter_jacobian=[2.0],
@@ -159,7 +151,6 @@ def test_implicit_fixed_point_sensitivity_applies_damping() -> None:
 
 def test_implicit_fixed_point_sensitivity_handles_fully_frozen_parameters() -> None:
     """Frozen fixed-point parameters should be reported with zero sensitivity."""
-
     result = implicit_fixed_point_sensitivity(
         state_jacobian=np.diag([0.5, 0.25]),
         parameter_jacobian=np.array([[2.0], [4.0]]),
@@ -173,7 +164,6 @@ def test_implicit_fixed_point_sensitivity_handles_fully_frozen_parameters() -> N
 
 def test_implicit_fixed_point_sensitivity_rejects_invalid_contracts() -> None:
     """Fixed-point implicit differentiation must fail closed on bad systems."""
-
     with pytest.raises(ValueError, match="square"):
         implicit_fixed_point_sensitivity([[0.1, 0.0]], [[1.0]])
     with pytest.raises(ValueError, match="row count"):
