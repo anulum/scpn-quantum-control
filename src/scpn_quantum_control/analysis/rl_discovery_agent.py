@@ -55,6 +55,7 @@ class RLDiscoveryAgent:
     ``reward_function='witness_score'`` is the only wired reward. It is a dense
     composite diagnostic and may not be interpreted as operational utility or
     optimal-policy evidence.
+
     """
 
     def __init__(

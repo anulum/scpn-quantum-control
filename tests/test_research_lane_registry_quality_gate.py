@@ -20,15 +20,24 @@ def test_static_gates_cover_typing_docs_and_evidence_drift() -> None:
         gates["mypy-strict-research-lane-registry-quality"][5:]
         == quality_gates.RESEARCH_LANE_REGISTRY_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D research-lane-registry quality ratchet"]
+    ruff = gates["ruff D research-lane-registry quality ratchet"]
+    assert "--preview" in ruff and "D,D413,D417,D420" in ruff
     assert gates["research-lane-registry evidence drift"][-1] == "--check"
+    assert gates["RL research-governance evidence drift"][-1] == "--check"
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
     """Require branch execution and exact source-only coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["research-lane-registry focused coverage"]
-    assert "--fail-under=100" in gates["research-lane-registry exact coverage threshold"]
+    run = gates["research-lane-registry focused coverage"]
+    report = gates["research-lane-registry exact coverage threshold"]
+    assert "--branch" in run
+    assert run[-len(quality_gates.RESEARCH_LANE_REGISTRY_COVERAGE_COHORT) :] == (
+        quality_gates.RESEARCH_LANE_REGISTRY_COVERAGE_COHORT
+    )
+    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert "--fail-under=100" in report
+    assert f"--include={quality_gates.RESEARCH_LANE_REGISTRY_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -48,4 +57,7 @@ def test_ci_runs_and_aggregates_gate() -> None:
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.RESEARCH_LANE_REGISTRY_QUALITY_RATCHET)
     assert "scripts/run_research_lane_registry.py --check" in block
+    assert "scripts/run_rl_research_governance_evidence.py --check" in block
+    assert quality_gates.RESEARCH_LANE_REGISTRY_COVERAGE_INCLUDE in block
+    assert "tests/test_frontier_interface_guards.py" in block
     assert "research-lane-registry-quality" in workflow[workflow.index("  ci-gate:") :]

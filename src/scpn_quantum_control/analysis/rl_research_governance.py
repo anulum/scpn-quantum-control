@@ -97,6 +97,7 @@ class RLResearchPolicy:
     This policy does not design a Gym environment. Consequently the Gym
     ``step`` tuple is not applicable; a future environment must separately
     implement ``obs, reward, terminated, truncated, info``.
+
     """
 
     enabled: bool = False
@@ -345,6 +346,7 @@ def assess_rl_research(
     spec
         Search specification used for budget checks. It is ignored for the
         pulse route, which is blocked in the current implementation.
+
     """
     if not isinstance(lane, RLResearchLane):
         raise ValueError("lane must be an RLResearchLane")

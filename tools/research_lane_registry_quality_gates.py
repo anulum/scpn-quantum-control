@@ -14,16 +14,33 @@ from os import devnull
 Gate = tuple[str, list[str]]
 RESEARCH_LANE_REGISTRY_QUALITY_RATCHET = [
     "src/scpn_quantum_control/analysis/research_lane_registry.py",
+    "src/scpn_quantum_control/analysis/rl_discovery_agent.py",
+    "src/scpn_quantum_control/analysis/rl_pulse_optimizer.py",
+    "src/scpn_quantum_control/analysis/rl_research_governance.py",
     "tests/test_research_lane_registry.py",
+    "tests/test_rl_research_governance.py",
+    "tests/test_rl_discovery_agent_branches.py",
     "scripts/run_research_lane_registry.py",
+    "scripts/run_rl_research_governance_evidence.py",
     "tools/research_lane_registry_quality_gates.py",
     "tests/test_research_lane_registry_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-RESEARCH_LANE_REGISTRY_COVERAGE_COHORT = ["tests/test_research_lane_registry.py"]
+RESEARCH_LANE_REGISTRY_COVERAGE_COHORT = [
+    "tests/test_research_lane_registry.py",
+    "tests/test_rl_research_governance.py",
+    "tests/test_rl_discovery_agent_branches.py",
+    "tests/test_witness_discovery.py",
+    "tests/test_frontier_interface_guards.py",
+]
 """Tests that own exact research-lane registry coverage."""
-RESEARCH_LANE_REGISTRY_COVERAGE_DATA_FILE = ".coverage.research-lane-registry-quality"
+RESEARCH_LANE_REGISTRY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-research-lane-registry-quality.coverage"  # nosec B108
 """Isolated coverage database for research-lane registry diagnostics."""
+RESEARCH_LANE_REGISTRY_COVERAGE_INCLUDE = (
+    "*/analysis/research_lane_registry.py,*/analysis/rl_discovery_agent.py,"
+    "*/analysis/rl_pulse_optimizer.py,*/analysis/rl_research_governance.py"
+)
+"""Connected registry and governed RL sources owned by exact coverage."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -48,8 +65,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *RESEARCH_LANE_REGISTRY_QUALITY_RATCHET,
@@ -58,6 +76,10 @@ def build_static_quality_gates(python: str) -> list[Gate]:
         (
             "research-lane-registry evidence drift",
             [python, "scripts/run_research_lane_registry.py", "--check"],
+        ),
+        (
+            "RL research-governance evidence drift",
+            [python, "scripts/run_rl_research_governance_evidence.py", "--check"],
         ),
     ]
 
@@ -93,7 +115,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={data}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/analysis/research_lane_registry.py",
+                f"--include={RESEARCH_LANE_REGISTRY_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -102,6 +124,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "RESEARCH_LANE_REGISTRY_COVERAGE_COHORT",
     "RESEARCH_LANE_REGISTRY_COVERAGE_DATA_FILE",
+    "RESEARCH_LANE_REGISTRY_COVERAGE_INCLUDE",
     "RESEARCH_LANE_REGISTRY_QUALITY_RATCHET",
     "build_coverage_gates",
     "build_static_quality_gates",
