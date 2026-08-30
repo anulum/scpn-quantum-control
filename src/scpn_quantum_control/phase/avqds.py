@@ -96,6 +96,7 @@ class AVQDSResult:
         n_params: number of variational parameters of the fixed ansatz.
         final_energy: energy at the final sample time.
         final_fidelity: fidelity against the exact reference at the final time.
+
     """
 
     times: FloatArray
@@ -196,20 +197,30 @@ def avqds_simulate(
     modified, so ``n_params`` is constant across the whole trajectory; this is
     not the adaptive operator-pool growth of full AVQDS.
 
-    Args:
-        K: coupling matrix.
-        omega: natural frequencies.
-        t_total: total simulation time.
-        n_steps: number of variational time steps.
-        ansatz_reps: ansatz circuit repetitions (sets the fixed parameter count).
-        seed: random seed for initial parameters.
-        max_dense_gib: dense exact-simulation budget for Hamiltonian,
-            statevector, and propagator allocations.
+    Parameters
+    ----------
+    K
+        Coupling matrix.
+    omega
+        Natural frequencies.
+    t_total
+        Total simulation time.
+    n_steps
+        Number of variational time steps.
+    ansatz_reps
+        Ansatz circuit repetitions, setting the fixed parameter count.
+    seed
+        Random seed for initial parameters.
+    max_dense_gib
+        Dense exact-simulation budget for Hamiltonian, statevector, and
+        propagator allocations.
 
     Returns
     -------
-        AVQDSResult with the time grid, energies, fidelities against the exact
-        reference, the parameter history, and the final-step summaries.
+    AVQDSResult
+        Time grid, energies, exact-reference fidelities, parameter history,
+        and final-step summaries.
+
     """
     from ..hardware.gpu_accel import expm
 
@@ -243,21 +254,19 @@ def avqds_simulate(
         energies[step] = float(sv.expectation_value(H_op).real)
         fidelities[step] = float(abs(np.dot(psi_exact.conj(), sv.data)) ** 2)
 
-        if step == n_steps:
-            break
+        if step < n_steps:
+            # McLachlan step
+            M, V = _mclachlan_matrices(ansatz, params, H_op, max_dense_gib=max_dense_gib)
 
-        # McLachlan step
-        M, V = _mclachlan_matrices(ansatz, params, H_op, max_dense_gib=max_dense_gib)
+            # Regularised solve: dθ = M^{-1} V × dt
+            reg = 1e-6 * np.eye(n_params)
+            dtheta = np.linalg.solve(M + reg, V) * dt
+            params = params + dtheta
+            param_history.append(params.copy())
 
-        # Regularised solve: dθ = M^{-1} V × dt
-        reg = 1e-6 * np.eye(n_params)
-        dtheta = np.linalg.solve(M + reg, V) * dt
-        params = params + dtheta
-        param_history.append(params.copy())
-
-        # Evolve exact reference
-        U_dt = expm(-1j * H_mat * dt)
-        psi_exact = U_dt @ psi_exact
+            # Evolve exact reference
+            U_dt = expm(-1j * H_mat * dt)
+            psi_exact = U_dt @ psi_exact
 
     return AVQDSResult(
         times=times,
