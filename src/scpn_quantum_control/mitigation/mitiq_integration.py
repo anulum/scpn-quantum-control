@@ -88,6 +88,7 @@ def zne_mitigated_expectation(
     -------
     float
         ZNE-mitigated expectation value.
+
     """
     if not _MITIQ_AVAILABLE:
         raise ImportError("mitiq not installed: pip install mitiq")
