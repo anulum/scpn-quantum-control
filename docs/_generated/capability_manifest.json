@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1287
+    "test_files": 1288
   },
   "documentation": {
     "examples": [
@@ -8467,6 +8467,7 @@
       "tests/test_dynamical_lie_algebra.py",
       "tests/test_dynamical_lie_algebra_contracts.py",
       "tests/test_dynq_layout_pass.py",
+      "tests/test_dynq_layout_quality_gate.py",
       "tests/test_e2e_contract_boundary_audit.py",
       "tests/test_eeg_benchmark.py",
       "tests/test_eeg_benchmark_branches.py",

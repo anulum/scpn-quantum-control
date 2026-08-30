@@ -43,10 +43,12 @@ def calibration_from_target(
     Args:
         target: the device ``Target`` (e.g. ``backend.target``).
 
-    Returns:
+    Returns
+    -------
         ``(gate_errors, readout_errors)`` keyed as
         :func:`.qubit_mapper.dynq_initial_layout` expects — the gate-error keys
         are order-canonicalised ``(min, max)`` qubit pairs.
+
     """
     gate_errors: dict[tuple[int, int], float] = {}
     readout_errors: dict[int, float] = {}
@@ -99,6 +101,7 @@ class DynQLayoutPass(AnalysisPass):  # type: ignore[misc]  # qiskit is ignore_mi
             resolution: Louvain resolution (higher → smaller regions).
             min_qubits: minimum region size (DynQ uses 3).
             seed: Louvain seed for reproducibility.
+
         """
         super().__init__()
         self.target = target
@@ -113,6 +116,7 @@ class DynQLayoutPass(AnalysisPass):  # type: ignore[misc]  # qiskit is ignore_mi
         Args:
             backend: a ``BackendV2`` exposing a ``target`` attribute.
             **kwargs: forwarded to :class:`DynQLayoutPass`.
+
         """
         target = getattr(backend, "target", None)
         if not isinstance(target, Target):

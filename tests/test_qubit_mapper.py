@@ -16,6 +16,9 @@ from __future__ import annotations
 import importlib
 import sys
 import time
+from collections.abc import Sequence
+from importlib.machinery import ModuleSpec
+from types import ModuleType
 
 import numpy as np
 import pytest
@@ -64,18 +67,23 @@ def _cluster_errors() -> dict[tuple[int, int], float]:
 
 
 class TestEmptyNull:
+    """Cover undersized inputs and empty region selections."""
+
     def test_single_edge(self) -> None:
+        """Build one weighted edge from one calibration entry."""
         G = build_calibration_graph({(0, 1): 0.01})
         assert G.number_of_edges() == 1
         assert G[0][1]["weight"] == pytest.approx(1.0 / (0.01 + 1e-6))
 
     def test_no_regions_too_few_qubits(self) -> None:
+        """Discard communities smaller than the requested minimum."""
         errors = {(0, 1): 0.01, (1, 2): 0.01}
         G = build_calibration_graph(errors)
         regions = detect_execution_regions(G, min_qubits=10)
         assert regions == []
 
     def test_select_none_when_too_small(self) -> None:
+        """Return no selection when every region is too small."""
         region = ExecutionRegion(
             qubits=frozenset({0, 1, 2}),
             quality_score=0.9,
@@ -91,12 +99,19 @@ class TestEmptyNull:
 
 
 class TestErrorHandling:
+    """Cover dependency absence and extreme calibration values."""
+
     def test_networkx_absence_reports_mapping_unavailable(self) -> None:
         """Without networkx, mapper APIs raise the documented dependency error."""
         import scpn_quantum_control.hardware.qubit_mapper as mapper_mod
 
         class BlockNetworkXImport:
-            def find_spec(self, fullname, path=None, target=None):
+            def find_spec(
+                self,
+                fullname: str,
+                path: Sequence[str] | None = None,
+                target: ModuleType | None = None,
+            ) -> ModuleSpec | None:
                 if fullname == "networkx" or fullname.startswith("networkx."):
                     raise ImportError("blocked networkx")
                 return None
@@ -127,6 +142,7 @@ class TestErrorHandling:
         assert G[0][1]["weight"] == pytest.approx(1.0 / 1e-6)
 
     def test_high_error_low_weight(self) -> None:
+        """Map a high gate error to a correspondingly low edge weight."""
         G = build_calibration_graph({(0, 1): 0.5})
         assert G[0][1]["weight"] < 3.0  # 1/(0.5+ε) ≈ 2.0
 
@@ -135,6 +151,8 @@ class TestErrorHandling:
 
 
 class TestNegativeCases:
+    """Cover uniform graphs and weak inter-community bridges."""
+
     def test_uniform_errors_single_community(self) -> None:
         """Uniform fidelity → Louvain should produce few large communities."""
         errors = {}
@@ -162,7 +180,10 @@ class TestNegativeCases:
 
 
 class TestPipelineIntegration:
+    """Exercise the complete mapper through its public pipeline."""
+
     def test_full_dynq_pipeline(self) -> None:
+        """Produce a fitting layout and selected execution region."""
         errors = _cluster_errors()
         result = dynq_initial_layout(errors, circuit_width=4, seed=42)
         assert result is not None
@@ -171,6 +192,7 @@ class TestPipelineIntegration:
         assert result.selected_region.quality_score > 0.0
 
     def test_full_dynq_pipeline_returns_none_when_no_region_fits(self) -> None:
+        """Return no mapping when no detected region fits the circuit."""
         errors = {(0, 1): 0.01, (1, 2): 0.01}
         result = dynq_initial_layout(errors, circuit_width=4, min_qubits=2, seed=42)
         assert result is None
@@ -184,6 +206,7 @@ class TestPipelineIntegration:
             assert q in result.selected_region.qubits
 
     def test_readout_errors_affect_layout(self) -> None:
+        """Order selected qubits by their readout calibration."""
         errors = _cluster_errors()
         readout = {i: 0.01 * (9 - i) for i in range(10)}  # qubit 9 has best readout
         result = dynq_initial_layout(errors, circuit_width=3, readout_errors=readout, seed=42)
@@ -193,6 +216,7 @@ class TestPipelineIntegration:
         assert layout_readout == sorted(layout_readout)
 
     def test_region_quality_sorted(self) -> None:
+        """Sort detected regions from highest to lowest quality."""
         errors = _cluster_errors()
         G = build_calibration_graph(errors)
         regions = detect_execution_regions(G, min_qubits=3, seed=42)
@@ -200,6 +224,7 @@ class TestPipelineIntegration:
         assert scores == sorted(scores, reverse=True)
 
     def test_top_level_import(self) -> None:
+        """Expose the public pipeline from its hardware module."""
         from scpn_quantum_control.hardware.qubit_mapper import dynq_initial_layout
 
         assert callable(dynq_initial_layout)
@@ -209,6 +234,8 @@ class TestPipelineIntegration:
 
 
 class TestRoundtrip:
+    """Check bounded scores and stable region-quality relationships."""
+
     def test_best_region_has_lowest_error(self) -> None:
         """Best region should contain qubits with lower mean gate error."""
         errors = _cluster_errors()
@@ -218,6 +245,7 @@ class TestRoundtrip:
             assert regions[0].mean_gate_fidelity >= regions[-1].mean_gate_fidelity
 
     def test_connectivity_bounded(self) -> None:
+        """Keep every computed connectivity score in the unit interval."""
         errors = _heavy_hex_errors(16)
         G = build_calibration_graph(errors)
         regions = detect_execution_regions(G, min_qubits=3, seed=42)
@@ -240,6 +268,8 @@ class TestRoundtrip:
 
 
 class TestPerformance:
+    """Enforce bounded latency for representative mapper workloads."""
+
     def test_community_detection_fast(self) -> None:
         """156-qubit heavy-hex detection must complete in < 50ms."""
         errors = _heavy_hex_errors(156, seed=42)

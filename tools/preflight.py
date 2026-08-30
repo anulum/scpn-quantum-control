@@ -111,6 +111,7 @@ if TYPE_CHECKING:
         dla_topology_projection_quality_gates as _dla_topology_projection_quality_gates,
     )
     from tools import dla_topology_schema_quality_gates as _dla_topology_schema_quality_gates
+    from tools import dynq_layout_quality_gates as _dynq_layout_quality_gates
     from tools import enaqt_evidence_quality_gates as _enaqt_evidence_quality_gates
     from tools import (
         entanglement_sync_evidence_quality_gates as _entanglement_sync_evidence_quality_gates,
@@ -389,6 +390,7 @@ else:
     )
     _external_validation_quality_gates = import_module("tools.external_validation_quality_gates")
     _experiment_dynamics_quality_gates = import_module("tools.experiment_dynamics_quality_gates")
+    _dynq_layout_quality_gates = import_module("tools.dynq_layout_quality_gates")
     _gradient_backend_quality_gates = import_module("tools.gradient_backend_quality_gates")
     _differentiable_exact_modes_quality_gates = import_module(
         "tools.differentiable_exact_modes_quality_gates"
@@ -932,6 +934,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_sync_uncertainty_quality_gates.build_static_quality_gates(_PY),
     *_coupling_invariant_quality_gates.build_static_quality_gates(_PY),
     *_experiment_dynamics_quality_gates.build_static_quality_gates(_PY),
+    *_dynq_layout_quality_gates.build_static_quality_gates(_PY),
     *_phase_artifact_quality_gates.build_static_quality_gates(_PY),
     *_phase_results_quality_gates.build_static_quality_gates(_PY),
     *_gradient_backend_quality_gates.build_static_quality_gates(_PY),
@@ -1493,6 +1496,7 @@ QRC_BASELINE_COVERAGE_GATES = _qrc_baseline_quality_gates.build_coverage_gates(_
 JOSEPHSON_MAGNITUDE_STUDY_COVERAGE_GATES = (
     _josephson_magnitude_study_quality_gates.build_coverage_gates(_PY)
 )
+DYNQ_LAYOUT_COVERAGE_GATES = _dynq_layout_quality_gates.build_coverage_gates(_PY)
 TOPOLOGY_KERNEL_CLASSIFIER_COVERAGE_GATES = (
     _topology_kernel_classifier_quality_gates.build_coverage_gates(_PY)
 )
@@ -1941,6 +1945,7 @@ def main() -> int:
             gates.extend(KURAMOTO_LAYOUT_OPTIMISER_COVERAGE_GATES)
             gates.extend(QRC_BASELINE_COVERAGE_GATES)
             gates.extend(JOSEPHSON_MAGNITUDE_STUDY_COVERAGE_GATES)
+            gates.extend(DYNQ_LAYOUT_COVERAGE_GATES)
             gates.extend(TOPOLOGY_KERNEL_CLASSIFIER_COVERAGE_GATES)
             gates.extend(QUANTUM_PHI_COVERAGE_GATES)
             gates.extend(QPU_RESULT_PACK_COVERAGE_GATES)

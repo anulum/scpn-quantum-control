@@ -65,6 +65,7 @@ def build_calibration_graph(
     Args:
         gate_errors: {(i, j): error_rate} for each two-qubit gate
         readout_errors: {i: error_rate} for each qubit (optional)
+
     """
     if not _HAS_NX:
         raise ImportError("networkx required for qubit mapping")
@@ -98,6 +99,7 @@ def detect_execution_regions(
         min_qubits: minimum region size (DynQ uses 3)
         resolution: Louvain resolution parameter (higher → smaller communities)
         seed: random seed for reproducibility
+
     """
     if not _HAS_NX:
         raise ImportError("networkx required for qubit mapping")
@@ -148,6 +150,7 @@ def select_best_region(
     Args:
         regions: sorted list from detect_execution_regions
         circuit_width: number of qubits the circuit requires
+
     """
     for region in regions:
         if region.n_qubits >= circuit_width:

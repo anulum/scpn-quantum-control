@@ -83,7 +83,7 @@ def layout_physical(pm: PassManager) -> list[int]:
 
 
 def _synthetic_target() -> Target:
-    """A 3-qubit target with duplicate/reversed pairs and a None-error readout."""
+    """Build a target with duplicate pairs and a missing readout error."""
     return _device_target(
         {
             (0, 1): 0.02,
@@ -97,34 +97,42 @@ def _synthetic_target() -> Target:
 
 
 class TestCalibrationExtraction:
+    """Cover canonical calibration extraction from Qiskit targets."""
+
     def test_two_qubit_errors_extracted(self) -> None:
+        """Extract every usable two-qubit gate error."""
         gate_errors, _ = calibration_from_target(_synthetic_target())
         assert set(gate_errors) == {(0, 1), (1, 2)}
 
     def test_pairs_are_order_canonicalised_and_min_wins(self) -> None:
+        """Canonicalise reversed pairs and retain their minimum error."""
         gate_errors, _ = calibration_from_target(_synthetic_target())
         # (0,1) and reversed (1,0) collapse to (0,1) keeping the smaller error.
         assert gate_errors[(0, 1)] == pytest.approx(0.01)
         assert gate_errors[(1, 2)] == pytest.approx(0.03)
 
     def test_readout_errors_extracted_and_none_skipped(self) -> None:
+        """Extract measured readout errors while skipping missing values."""
         _, readout = calibration_from_target(_synthetic_target())
         assert readout == {0: pytest.approx(0.05), 1: pytest.approx(0.04)}
         assert 2 not in readout  # None error skipped
 
     def test_multi_cluster_target_yields_canonical_calibration(self) -> None:
+        """Preserve canonical keys for a multi-cluster target."""
         gate_errors, readout = calibration_from_target(_two_cluster_target())
         assert gate_errors  # cx errors present
         assert readout  # measure errors present
         assert all(k[0] < k[1] for k in gate_errors)  # every pair canonicalised
 
     def test_single_qubit_only_target_has_no_gate_errors(self) -> None:
+        """Report no gate edges for a single-qubit-only target."""
         target = Target(num_qubits=2)
         target.add_instruction(RZGate(0.0), {(0,): InstructionProperties(error=0.0)})
         gate_errors, _ = calibration_from_target(target)
         assert gate_errors == {}
 
     def test_none_props_and_single_qubit_nonmeasure_ignored(self) -> None:
+        """Ignore missing properties and non-measure single-qubit errors."""
         # A None-props entry is skipped; a 1-qubit non-measure gate error is not
         # mistaken for a readout error.
         from qiskit.circuit.library import SXGate
@@ -142,7 +150,10 @@ class TestCalibrationExtraction:
 
 
 class TestLayoutPublication:
+    """Cover physical layout and mapping-result publication."""
+
     def test_layout_published_for_fitting_circuit(self) -> None:
+        """Publish a physical layout when a region fits the circuit."""
         qc = QuantumCircuit(3)
         pm = PassManager([DynQLayoutPass(_two_cluster_target(), seed=42)])
         pm.run(qc)
@@ -153,6 +164,7 @@ class TestLayoutPublication:
         assert all(0 <= p < 7 for p in physical)
 
     def test_layout_selects_best_cluster(self) -> None:
+        """Place a fitting circuit entirely within the best cluster."""
         # width 4 must land entirely inside the low-error size-4 cluster {0,1,2,3}.
         qc = QuantumCircuit(4)
         pm = PassManager([DynQLayoutPass(_two_cluster_target(), seed=1)])
@@ -160,6 +172,7 @@ class TestLayoutPublication:
         assert set(layout_physical(pm)) == {0, 1, 2, 3}
 
     def test_best_readout_qubit_is_placed_first(self) -> None:
+        """Place the best-readout physical qubit first."""
         # readout-sorted placement puts qubit 0 (best readout) at virtual index 0.
         qc = QuantumCircuit(4)
         pm = PassManager([DynQLayoutPass(_two_cluster_target(), seed=1)])
@@ -167,6 +180,7 @@ class TestLayoutPublication:
         assert layout_physical(pm)[0] == 0
 
     def test_mapping_result_attached_order_preserving(self) -> None:
+        """Attach the mapping result in published layout order."""
         qc = QuantumCircuit(3)
         pm = PassManager([DynQLayoutPass(_two_cluster_target(), seed=42)])
         pm.run(qc)
@@ -176,6 +190,7 @@ class TestLayoutPublication:
         assert result.initial_layout == layout_physical(pm)
 
     def test_virtual_qubits_map_one_to_one(self) -> None:
+        """Map every virtual qubit to a distinct physical qubit."""
         qc = QuantumCircuit(4)
         pm = PassManager([DynQLayoutPass(_two_cluster_target(), seed=7)])
         pm.run(qc)
@@ -185,7 +200,11 @@ class TestLayoutPublication:
 
 
 class TestBackendAdapter:
+    """Cover construction from valid and invalid backend adapters."""
+
     def test_from_backend_builds_working_pass(self) -> None:
+        """Build and execute a layout pass from a backend target."""
+
         class _Backend:
             target = _two_cluster_target()
 
@@ -196,6 +215,8 @@ class TestBackendAdapter:
         assert isinstance(pm.property_set["layout"], Layout)
 
     def test_from_backend_without_target_fails_closed(self) -> None:
+        """Reject backend objects without a usable target."""
+
         class _NoTarget:
             pass
 
@@ -204,7 +225,10 @@ class TestBackendAdapter:
 
 
 class TestFailClosed:
+    """Cover unavailable calibration and insufficient-region failures."""
+
     def test_target_without_two_qubit_errors_raises(self) -> None:
+        """Reject targets without two-qubit calibration data."""
         target = Target(num_qubits=3)
         target.add_instruction(
             RZGate(0.0), {(q,): InstructionProperties(error=0.0) for q in range(3)}
@@ -214,6 +238,7 @@ class TestFailClosed:
             pm.run(QuantumCircuit(2))
 
     def test_circuit_too_wide_for_any_region_raises(self) -> None:
+        """Reject circuits wider than every execution region."""
         # width 5 exceeds both clusters (sizes 4 and 3); no region fits.
         pm = PassManager([DynQLayoutPass(_two_cluster_target())])
         with pytest.raises(TranspilerError, match="no execution region"):
@@ -221,7 +246,10 @@ class TestFailClosed:
 
 
 class TestDeterminism:
+    """Cover deterministic placement under a fixed Louvain seed."""
+
     def test_same_seed_same_layout(self) -> None:
+        """Produce the same layout for repeated fixed-seed executions."""
         target = _two_cluster_target()
         qc = QuantumCircuit(4)
         first = PassManager([DynQLayoutPass(target, seed=99)])
