@@ -72,6 +72,7 @@ def value_and_grad(
     ------
     ValueError
         If ``method`` is not one of the supported canonical backends.
+
     """
     if method == "parameter_shift":
         return value_and_parameter_shift_grad(
@@ -151,6 +152,7 @@ def grad(
     -------
     numpy.ndarray
         Gradient vector as ``float64`` values.
+
     """
     result = value_and_grad(
         objective,

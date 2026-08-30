@@ -51,13 +51,11 @@ def _assert_allclose(
     atol: float = 0.0,
 ) -> None:
     """Assert NumPy-close equality while preserving strict test typing."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_canonical_gradient_transform_dispatches_supported_methods() -> None:
     """Canonical grad transforms should provide a stable method-selected API."""
-
     parameter_shift = value_and_grad(
         lambda values: np.sin(values[0]),
         [0.25],
@@ -93,7 +91,6 @@ def test_canonical_gradient_transform_dispatches_supported_methods() -> None:
 
 def test_canonical_jacobian_and_hessian_transforms() -> None:
     """Canonical second-order transform names should dispatch with provenance."""
-
     jacobian_result = value_and_jacobian(
         lambda values: np.array([values[0] ** 2, values[0] + 3.0 * values[1]]),
         [2.0, -1.0],
@@ -170,7 +167,6 @@ def test_forward_mode_dual_gradient_matches_analytic_derivative() -> None:
 
 def test_forward_mode_dual_gradient_respects_frozen_parameters() -> None:
     """Forward-mode gradients should keep frozen tangent lanes zeroed."""
-
     result = value_and_forward_mode_grad(
         lambda values: values[0] ** 2 + values[0] * values[1],
         [3.0, 5.0],
@@ -237,7 +233,6 @@ def test_reverse_mode_tape_gradient_matches_analytic_derivative() -> None:
 
 def test_reverse_mode_tape_gradient_respects_frozen_parameters() -> None:
     """Reverse-mode gradients should backpropagate once and mask frozen outputs."""
-
     result = value_and_reverse_mode_grad(
         lambda values: values[0] ** 2 + values[0] * values[1],
         [3.0, 5.0],

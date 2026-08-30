@@ -50,6 +50,7 @@ from scpn_quantum_control.differentiable_transform_algebra import (
     run_transform_algebra_audit,
 )
 from tools import differentiable_api_quality_gates as api_quality_gates
+from tools import preflight
 
 FloatArray = NDArray[np.float64]
 _API_MODULE = import_module("scpn_quantum_control.differentiable_api")
@@ -61,14 +62,26 @@ def test_api_quality_gate_spec_is_exact_and_focused() -> None:
     cohort = api_quality_gates.DIFFERENTIABLE_API_QUALITY_RATCHET
 
     assert static_gates["mypy-strict-differentiable-api-quality"][-len(cohort) :] == cohort
-    assert static_gates["ruff D differentiable-api quality ratchet"][-len(cohort) :] == cohort
+    ruff = static_gates["ruff D differentiable-api quality ratchet"]
+    assert ruff[-len(cohort) :] == cohort
+    assert "--isolated" in ruff and "--preview" in ruff
+    assert "D,D413,D417,D420" in ruff
 
     coverage_gates = api_quality_gates.build_coverage_gates("python")
     focused_command = coverage_gates[0][1]
+    report_command = coverage_gates[1][1]
     assert "--branch" in focused_command
+    assert any(argument.startswith("--data-file=/tmp/") for argument in focused_command)
+    assert all(
+        path in focused_command for path in api_quality_gates.DIFFERENTIABLE_API_COVERAGE_COHORT
+    )
     assert api_quality_gates.DIFFERENTIABLE_API_COVERAGE_SELECTOR in focused_command
-    assert "--fail-under=100" in coverage_gates[1][1]
-    assert "--include=*/differentiable_api.py" in coverage_gates[1][1]
+    assert "--fail-under=100" in report_command
+    assert "--include=*/differentiable_api.py,*/differentiable_canonical_api.py" in report_command
+    for name, command in api_quality_gates.build_static_quality_gates(preflight._PY):
+        assert dict(preflight.STATIC_GATES)[name] == command
+    for name, command in api_quality_gates.build_coverage_gates(preflight._PY):
+        assert dict(preflight.DIFFERENTIABLE_QUALITY_COVERAGE_GATES)[name] == command
 
 
 @dataclass(frozen=True)

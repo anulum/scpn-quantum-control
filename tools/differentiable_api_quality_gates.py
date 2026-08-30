@@ -15,8 +15,11 @@ Gate = tuple[str, list[str]]
 
 DIFFERENTIABLE_API_QUALITY_RATCHET = [
     "src/scpn_quantum_control/differentiable_api.py",
+    "src/scpn_quantum_control/differentiable_canonical_api.py",
     "tests/test_differentiable_api.py",
     "tests/test_differentiable_api_contracts.py",
+    "tests/test_differentiable_canonical_modes.py",
+    "tests/test_differentiable_package_exports.py",
     "tools/differentiable_api_quality_gates.py",
     "tools/differentiable_quality_gates.py",
 ]
@@ -25,6 +28,9 @@ DIFFERENTIABLE_API_QUALITY_RATCHET = [
 DIFFERENTIABLE_API_COVERAGE_COHORT = [
     "tests/test_differentiable_api.py",
     "tests/test_differentiable_api_contracts.py",
+    "tests/test_differentiable_canonical_modes.py",
+    "tests/test_differentiable_package_exports.py",
+    "tests/test_transform_algebra.py",
 ]
 """Tests that own exact unified-API statement and branch coverage."""
 
@@ -33,7 +39,7 @@ DIFFERENTIABLE_API_COVERAGE_SELECTOR = (
 )
 """Exclude the environment-sensitive benchmark while stubbing its route."""
 
-DIFFERENTIABLE_API_COVERAGE_DATA_FILE = ".coverage.differentiable-api-quality"
+DIFFERENTIABLE_API_COVERAGE_DATA_FILE = "/tmp/scpn-qc-differentiable-api-quality.coverage"  # nosec B108
 """Isolated coverage database for the unified API owner."""
 
 
@@ -71,8 +77,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *DIFFERENTIABLE_API_QUALITY_RATCHET,
@@ -125,7 +132,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={DIFFERENTIABLE_API_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/differentiable_api.py",
+                "--include=*/differentiable_api.py,*/differentiable_canonical_api.py",
             ],
         ),
     ]

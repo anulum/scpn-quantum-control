@@ -127,7 +127,6 @@ from scpn_quantum_control.differentiable import (
 
 def test_differentiable_api_exported_from_package_root() -> None:
     """Stable users should be able to import the native autodiff surface."""
-
     import scpn_quantum_control as scpn
 
     assert scpn.ArmijoLineSearchResult is ArmijoLineSearchResult

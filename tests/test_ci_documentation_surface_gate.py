@@ -131,8 +131,12 @@ def test_ci_gates_program_ad_array_indexing_exact_quality() -> None:
     assert "Ruff NumPy docstrings for unified differentiable API quality cohort" in workflow
     assert "Run unified differentiable API focused coverage" in workflow
     assert "Enforce unified differentiable API exact coverage" in workflow
-    assert "--data-file=.coverage.differentiable-api-quality" in workflow
-    assert "--include=*/differentiable_api.py" in workflow
+    assert "--data-file=/tmp/scpn-qc-differentiable-api-quality.coverage" in workflow
+    assert "src/scpn_quantum_control/differentiable_canonical_api.py" in workflow
+    assert "tests/test_differentiable_canonical_modes.py" in workflow
+    assert "tests/test_differentiable_package_exports.py" in workflow
+    assert "tests/test_transform_algebra.py" in workflow
+    assert "--include=*/differentiable_api.py,*/differentiable_canonical_api.py" in workflow
     assert "Type-check differentiable Levenberg-Marquardt quality cohort" in workflow
     assert (
         "Ruff NumPy docstrings for differentiable Levenberg-Marquardt quality cohort" in workflow
