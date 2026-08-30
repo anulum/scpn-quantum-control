@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1299
+    "test_files": 1300
   },
   "documentation": {
     "examples": [
@@ -8181,6 +8181,7 @@
       "tests/test_ancilla_lindblad.py",
       "tests/test_ancilla_lindblad_contracts.py",
       "tests/test_ansatz_bench.py",
+      "tests/test_ansatz_bench_quality_gate.py",
       "tests/test_ansatz_methodology.py",
       "tests/test_ansatz_scaling_tn_benchmark.py",
       "tests/test_app_plugins_branches.py",

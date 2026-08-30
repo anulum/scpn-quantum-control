@@ -122,6 +122,7 @@ def benchmark_ansatz(
     AnsatzBenchmarkRow
         JSON-ready row with energy, evaluation count, parameter count, and
         optimisation history.
+
     """
     family = _normalise_ansatz_name(ansatz_name)
     n = len(omega)
@@ -160,6 +161,7 @@ def run_ansatz_benchmark(
     -------
     list[AnsatzBenchmarkRow]
         Rows ordered as K_nm-informed, TwoLocal, and EfficientSU2.
+
     """
     K = build_knm_paper27(L=n_qubits)
     omega = OMEGA_N_16[:n_qubits]

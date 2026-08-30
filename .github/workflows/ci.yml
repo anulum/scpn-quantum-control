@@ -2743,6 +2743,46 @@ jobs:
           --precision=2 --fail-under=100
           --include=*/crypto/knm_key.py
 
+  ansatz-benchmark-quality:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check ansatz-benchmark quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/ansatz_bench.py
+          tests/test_ansatz_bench.py
+          tools/ansatz_bench_quality_gates.py
+          tests/test_ansatz_bench_quality_gate.py
+      - name: Ruff NumPy docstrings for ansatz-benchmark owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/ansatz_bench.py
+          tests/test_ansatz_bench.py
+          tools/ansatz_bench_quality_gates.py
+          tests/test_ansatz_bench_quality_gate.py
+      - name: Run bounded local ansatz-benchmark coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-ansatz-benchmark-quality.coverage --branch
+          -m pytest -q tests/test_ansatz_bench.py
+      - name: Enforce ansatz-benchmark exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-ansatz-benchmark-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/phase/ansatz_bench.py
+
   symmetry-verification-quality:
     needs: lint
     runs-on: ubuntu-latest
@@ -7084,7 +7124,7 @@ jobs:
           EOF
 
   ci-gate:
-    needs: [lint, stable-core-product-quality, open-system-completeness-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, custom-derivatives-product-quality, kyma-mechanism-product-quality, kyma-dynamics-quality, kyma-v2-dynamics-quality, kyma-v2-coupling-quality, differentiable-audit-contracts-quality, dla-topology-optimizer-quality, dla-topology-schema-quality, fusion-core-frc-bridge-quality, hardware-experiment-vqe-quality, transform-support-matrix-artifact-quality, gradient-plan-explanation-artifact-quality, finite-size-scaling-quality, studio-executive-differentiate-quality, hardware-experiment-control-quality, pulse-shaping-quality, openpulse-control-quality, differentiable-parameter-shift-quality, differentiable-sparse-derivatives-quality, program-ad-adjoint-quality, qpu-compute-types-quality, hls-cosimulation-evidence-quality, dla-topology-objectives-quality, dla-topology-projection-quality, magnetisation-sectors-quality, quantum-neuromorphic-bridge-quality, koopman-quality, kuramoto-variants-quality, mps-evolution-quality, nqs-ansatz-quality, sparse-hamiltonian-quality, result-pack-seal-quality, layout-relaxation-experiment-quality, tn-mps-crossover-admission-quality, xy-compile-recompute-artifact-quality, control-structured-ansatz-quality, dla-parity-witness-quality, hamiltonian-learning-quality, knm-key-quality, symmetry-verification-quality, experiment-helpers-quality, predictive-coding-quality, hierarchical-keys-quality, sync-uncertainty-quality, coupling-invariant-quality, experiment-dynamics-quality, phase-artifact-quality, phase-results-quality, gradient-backend-quality, differentiable-exact-modes-quality, mlir-whole-program-native-quality, closed-loop-publication-quality, kuramoto-layout-optimiser-quality, qrc-baseline-quality, josephson-magnitude-study-quality, dynq-layout-quality, topology-kernel-classifier-quality, quantum-phi-quality, qpu-result-pack-quality, campaign-harness-product-quality, geometric-control-product-quality, chimera-control-quality, whole-program-frontend-contracts-quality, variational-metric-quality, qnode-circuit-contracts-quality, topology-kernel-schema-quality, feedback-loop-quality, hardware-hal-quality, dla-topology-parity-quality, topology-kernel-evidence-quality, ml-dsa-seal-quality, tn-mps-baseline-design-quality, error-mitigation-product-quality, cloud-native-deployment-quality, control-stack-compose-quality, public-api-stability-quality, polyglot-parity-certificate-quality, program-ad-fuzz-assurance-quality, multi-hal-federation-quality, hermetic-reproduction-kit-quality, hardware-safe-execution-quality, qpu-compute-product-quality, wirtinger-implicit-product-quality, migration-guides-product-quality, visualisation-dashboard-product-quality, stochastic-estimators-product-quality, differentiable-notebook-curriculum-quality, studio-executive-product-quality, advanced-witnesses-quality, coverage-frontier-quality, compiler-boundary-product-quality, resource-budget-gate-quality, advantage-language-protocol-quality, metamorphic-ad-verification-quality, competitive-baseline-watch-quality, whole-program-ad-product-quality, neural-operator-cost-model-quality, neural-operator-baseline-product-quality, entanglement-sync-evidence-quality, bench-cli-quality, identity-binding-spec-quality, ssgf-geometry-gradient-quality, codesign-components-quality, enaqt-evidence-quality, diff-contract-audit-quality, coupling-recovery-quality, governed-route-matrix-quality, attested-result-pack-quality, open-system-objective-quality, external-validation-manifest-quality, gradient-tape-quality, fault-tolerant-resource-product-quality, phase-qnode-product-quality, phase-trainability-quality, kuramoto-layout-cost-quality, kuramoto-layout-relaxation-quality, application-honesty-quality, layout-method-comparison-quality, unsuitable-scenario-registry-quality, scorecard-acceptance-engine-quality, studio-executive-benchmark-quality, synchronisation-witness-quality, experiment-mitigation-quality, research-lane-registry-quality, theory-hook-promotion-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-replay-quality, studio-simulation-quality, p-h1-open-guard-quality, studio-qec-readiness-bundle-quality, studio-readout-mitigation-bundle-quality, studio-scorecard-bundle-quality, studio-conformance, studio-web]
+    needs: [lint, stable-core-product-quality, open-system-completeness-quality, thermo-readiness-product-quality, quantum-sync-oracle-quality, custom-derivatives-product-quality, kyma-mechanism-product-quality, kyma-dynamics-quality, kyma-v2-dynamics-quality, kyma-v2-coupling-quality, differentiable-audit-contracts-quality, dla-topology-optimizer-quality, dla-topology-schema-quality, fusion-core-frc-bridge-quality, hardware-experiment-vqe-quality, transform-support-matrix-artifact-quality, gradient-plan-explanation-artifact-quality, finite-size-scaling-quality, studio-executive-differentiate-quality, hardware-experiment-control-quality, pulse-shaping-quality, openpulse-control-quality, differentiable-parameter-shift-quality, differentiable-sparse-derivatives-quality, program-ad-adjoint-quality, qpu-compute-types-quality, hls-cosimulation-evidence-quality, dla-topology-objectives-quality, dla-topology-projection-quality, magnetisation-sectors-quality, quantum-neuromorphic-bridge-quality, koopman-quality, kuramoto-variants-quality, mps-evolution-quality, nqs-ansatz-quality, sparse-hamiltonian-quality, result-pack-seal-quality, layout-relaxation-experiment-quality, tn-mps-crossover-admission-quality, xy-compile-recompute-artifact-quality, control-structured-ansatz-quality, dla-parity-witness-quality, hamiltonian-learning-quality, knm-key-quality, ansatz-benchmark-quality, symmetry-verification-quality, experiment-helpers-quality, predictive-coding-quality, hierarchical-keys-quality, sync-uncertainty-quality, coupling-invariant-quality, experiment-dynamics-quality, phase-artifact-quality, phase-results-quality, gradient-backend-quality, differentiable-exact-modes-quality, mlir-whole-program-native-quality, closed-loop-publication-quality, kuramoto-layout-optimiser-quality, qrc-baseline-quality, josephson-magnitude-study-quality, dynq-layout-quality, topology-kernel-classifier-quality, quantum-phi-quality, qpu-result-pack-quality, campaign-harness-product-quality, geometric-control-product-quality, chimera-control-quality, whole-program-frontend-contracts-quality, variational-metric-quality, qnode-circuit-contracts-quality, topology-kernel-schema-quality, feedback-loop-quality, hardware-hal-quality, dla-topology-parity-quality, topology-kernel-evidence-quality, ml-dsa-seal-quality, tn-mps-baseline-design-quality, error-mitigation-product-quality, cloud-native-deployment-quality, control-stack-compose-quality, public-api-stability-quality, polyglot-parity-certificate-quality, program-ad-fuzz-assurance-quality, multi-hal-federation-quality, hermetic-reproduction-kit-quality, hardware-safe-execution-quality, qpu-compute-product-quality, wirtinger-implicit-product-quality, migration-guides-product-quality, visualisation-dashboard-product-quality, stochastic-estimators-product-quality, differentiable-notebook-curriculum-quality, studio-executive-product-quality, advanced-witnesses-quality, coverage-frontier-quality, compiler-boundary-product-quality, resource-budget-gate-quality, advantage-language-protocol-quality, metamorphic-ad-verification-quality, competitive-baseline-watch-quality, whole-program-ad-product-quality, neural-operator-cost-model-quality, neural-operator-baseline-product-quality, entanglement-sync-evidence-quality, bench-cli-quality, identity-binding-spec-quality, ssgf-geometry-gradient-quality, codesign-components-quality, enaqt-evidence-quality, diff-contract-audit-quality, coupling-recovery-quality, governed-route-matrix-quality, attested-result-pack-quality, open-system-objective-quality, external-validation-manifest-quality, gradient-tape-quality, fault-tolerant-resource-product-quality, phase-qnode-product-quality, phase-trainability-quality, kuramoto-layout-cost-quality, kuramoto-layout-relaxation-quality, application-honesty-quality, layout-method-comparison-quality, unsuitable-scenario-registry-quality, scorecard-acceptance-engine-quality, studio-executive-benchmark-quality, synchronisation-witness-quality, experiment-mitigation-quality, research-lane-registry-quality, theory-hook-promotion-quality, decisive-advantage-quality, mlir-leaf-quality, phase-qnode-affinity-quality, studio-program-ad-quality, phase-qnode-vector-quality, whole-program-trace-value-quality, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-replay-quality, studio-simulation-quality, p-h1-open-guard-quality, studio-qec-readiness-bundle-quality, studio-readout-mitigation-bundle-quality, studio-scorecard-bundle-quality, studio-conformance, studio-web]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -7213,6 +7253,7 @@ jobs:
              [[ "${{ needs['studio-executive-benchmark-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['synchronisation-witness-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['knm-key-quality'].result }}" != "success" ]] || \
+             [[ "${{ needs['ansatz-benchmark-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['symmetry-verification-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['experiment-helpers-quality'].result }}" != "success" ]] || \
              [[ "${{ needs['predictive-coding-quality'].result }}" != "success" ]] || \

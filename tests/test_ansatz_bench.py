@@ -9,11 +9,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from types import SimpleNamespace
 from typing import Any
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.phase import ansatz_bench as ansatz_bench_module
@@ -22,17 +24,21 @@ from scpn_quantum_control.phase import run_ansatz_benchmark as exported_run_ansa
 from scpn_quantum_control.phase.ansatz_bench import benchmark_ansatz, run_ansatz_benchmark
 
 _REAL_VQE_ENERGY = ansatz_bench_module._vqe_energy
+FloatArray = NDArray[np.float64]
 
 
 @pytest.fixture
-def small_system() -> tuple[np.ndarray, np.ndarray]:
+def small_system() -> tuple[FloatArray, FloatArray]:
+    """Return a four-oscillator coupling and frequency fixture."""
     n = 4
     return build_knm_paper27(L=n), OMEGA_N_16[:n]
 
 
 @pytest.fixture(autouse=True)
 def deterministic_vqe_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
-    def fake_hamiltonian(K: np.ndarray, omega: np.ndarray) -> object:
+    """Replace optimization with deterministic local contract values."""
+
+    def fake_hamiltonian(K: FloatArray, omega: FloatArray) -> object:
         return {"shape": K.shape, "omega": omega.tolist()}
 
     def fake_vqe(ansatz: Any, hamiltonian: object, maxiter: int) -> tuple[float, int, list[float]]:
@@ -44,25 +50,29 @@ def deterministic_vqe_boundary(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(ansatz_bench_module, "_vqe_energy", fake_vqe)
 
 
-def test_knm_informed_produces_finite_energy(small_system: tuple[np.ndarray, np.ndarray]) -> None:
+def test_knm_informed_produces_finite_energy(small_system: tuple[FloatArray, FloatArray]) -> None:
+    """Return a finite negative value for the K_nm-informed family."""
     K, omega = small_system
     result = benchmark_ansatz(K, omega, "knm_informed", maxiter=50)
     assert result["energy"] < 0
 
 
-def test_two_local_produces_finite_energy(small_system: tuple[np.ndarray, np.ndarray]) -> None:
+def test_two_local_produces_finite_energy(small_system: tuple[FloatArray, FloatArray]) -> None:
+    """Return a finite negative value for the TwoLocal family."""
     K, omega = small_system
     result = benchmark_ansatz(K, omega, "two_local", maxiter=50)
     assert result["energy"] < 0
 
 
-def test_efficient_su2_produces_finite_energy(small_system: tuple[np.ndarray, np.ndarray]) -> None:
+def test_efficient_su2_produces_finite_energy(small_system: tuple[FloatArray, FloatArray]) -> None:
+    """Return a finite negative value for the EfficientSU2 family."""
     K, omega = small_system
     result = benchmark_ansatz(K, omega, "efficient_su2", maxiter=50)
     assert result["energy"] < 0
 
 
-def test_knm_fewer_params_than_two_local(small_system: tuple[np.ndarray, np.ndarray]) -> None:
+def test_knm_fewer_params_than_two_local(small_system: tuple[FloatArray, FloatArray]) -> None:
+    """Keep K_nm-informed parameter count no larger than TwoLocal."""
     K, omega = small_system
     knm = benchmark_ansatz(K, omega, "knm_informed", maxiter=10)
     tl = benchmark_ansatz(K, omega, "two_local", maxiter=10)
@@ -70,12 +80,13 @@ def test_knm_fewer_params_than_two_local(small_system: tuple[np.ndarray, np.ndar
 
 
 def test_unknown_ansatz_raises_before_hamiltonian_build(
-    small_system: tuple[np.ndarray, np.ndarray],
+    small_system: tuple[FloatArray, FloatArray],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Reject unknown families before Hamiltonian construction."""
     K, omega = small_system
 
-    def fail_hamiltonian(K: np.ndarray, omega: np.ndarray) -> object:
+    def fail_hamiltonian(K: FloatArray, omega: FloatArray) -> object:
         raise AssertionError("Hamiltonian build should not run for unsupported ansatz names")
 
     monkeypatch.setattr(ansatz_bench_module, "knm_to_hamiltonian", fail_hamiltonian)
@@ -84,13 +95,15 @@ def test_unknown_ansatz_raises_before_hamiltonian_build(
 
 
 def test_run_benchmark_returns_three() -> None:
+    """Return exactly one row for each supported ansatz family."""
     results = run_ansatz_benchmark(n_qubits=3, maxiter=30)
     assert len(results) == 3
     names = {r["ansatz"] for r in results}
     assert names == {"knm_informed", "two_local", "efficient_su2"}
 
 
-def test_benchmark_result_keys(small_system: tuple[np.ndarray, np.ndarray]) -> None:
+def test_benchmark_result_keys(small_system: tuple[FloatArray, FloatArray]) -> None:
+    """Return the complete typed JSON-ready row contract."""
     K, omega = small_system
     result = benchmark_ansatz(K, omega, "knm_informed", maxiter=10)
     assert set(result) == {
@@ -107,7 +120,8 @@ def test_benchmark_result_keys(small_system: tuple[np.ndarray, np.ndarray]) -> N
     assert result["history"][-1] == result["energy"]
 
 
-def test_all_energies_finite(small_system: tuple[np.ndarray, np.ndarray]) -> None:
+def test_all_energies_finite(small_system: tuple[FloatArray, FloatArray]) -> None:
+    """Keep all deterministic family energies finite."""
     K, omega = small_system
     for name in ("knm_informed", "two_local", "efficient_su2"):
         result = benchmark_ansatz(K, omega, name, maxiter=10)
@@ -116,6 +130,7 @@ def test_all_energies_finite(small_system: tuple[np.ndarray, np.ndarray]) -> Non
 
 @pytest.mark.parametrize("n", [2, 3, 4])
 def test_run_benchmark_various_sizes(n: int) -> None:
+    """Run every family for two-, three-, and four-qubit subsets."""
     results = run_ansatz_benchmark(n_qubits=n, maxiter=10)
     assert len(results) == 3
     for r in results:
@@ -123,6 +138,7 @@ def test_run_benchmark_various_sizes(n: int) -> None:
 
 
 def test_knm_informed_negative_energy_2q() -> None:
+    """Return a negative deterministic K_nm-informed two-qubit energy."""
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     result = benchmark_ansatz(K, omega, "knm_informed", maxiter=30)
@@ -135,7 +151,7 @@ def test_knm_informed_negative_energy_2q() -> None:
 
 
 def test_knm_informed_depth_lower_than_two_local(
-    small_system: tuple[np.ndarray, np.ndarray],
+    small_system: tuple[FloatArray, FloatArray],
 ) -> None:
     """Knm-informed ansatz should use fewer or equal parameters than two_local."""
     K, omega = small_system
@@ -144,7 +160,7 @@ def test_knm_informed_depth_lower_than_two_local(
     assert r_knm["n_params"] <= r_tl["n_params"]
 
 
-def test_all_ansatz_names_in_result(small_system: tuple[np.ndarray, np.ndarray]) -> None:
+def test_all_ansatz_names_in_result(small_system: tuple[FloatArray, FloatArray]) -> None:
     """Each result must contain the ansatz name."""
     K, omega = small_system
     for name in ("knm_informed", "two_local", "efficient_su2"):
@@ -158,20 +174,25 @@ def test_all_ansatz_names_in_result(small_system: tuple[np.ndarray, np.ndarray])
 
 
 def test_phase_namespace_exports_ansatz_benchmark_contracts() -> None:
+    """Export both benchmark entry points through the phase namespace."""
     assert exported_benchmark_ansatz is benchmark_ansatz
     assert exported_run_ansatz_benchmark is run_ansatz_benchmark
 
 
 def test_vqe_energy_records_history(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Execute the real VQE helper and retain every evaluated energy."""
+
     class Ansatz:
         num_parameters = 2
 
-        def assign_parameters(self, params: np.ndarray) -> np.ndarray:
+        def assign_parameters(self, params: FloatArray) -> FloatArray:
             return params
 
     class Statevector:
+        bound: FloatArray
+
         @classmethod
-        def from_instruction(cls, bound: np.ndarray) -> Statevector:
+        def from_instruction(cls, bound: FloatArray) -> Statevector:
             instance = cls()
             instance.bound = bound
             return instance
@@ -181,8 +202,8 @@ def test_vqe_energy_records_history(monkeypatch: pytest.MonkeyPatch) -> None:
             return complex(np.sum(self.bound), 0.0)
 
     def fake_minimize(
-        cost: Any,
-        x0: np.ndarray,
+        cost: Callable[[FloatArray], float],
+        x0: FloatArray,
         method: str,
         options: dict[str, int],
     ) -> SimpleNamespace:
@@ -205,7 +226,8 @@ def test_vqe_energy_records_history(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_pipeline_ansatz_comparison() -> None:
-    """Full pipeline: build_knm → benchmark 3 ansätze → compare.
+    """Run the bounded three-family comparison pipeline.
+
     Verifies ansatz benchmark is wired and produces comparative data.
     """
     import time

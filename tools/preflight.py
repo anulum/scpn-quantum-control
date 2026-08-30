@@ -46,6 +46,7 @@ if TYPE_CHECKING:
     from tools import (
         advantage_language_protocol_quality_gates as _advantage_language_protocol_quality_gates,
     )
+    from tools import ansatz_bench_quality_gates as _ansatz_bench_quality_gates
     from tools import application_honesty_quality_gates as _application_honesty_quality_gates
     from tools import attested_result_pack_quality_gates as _attested_result_pack_quality_gates
     from tools import bench_cli_quality_gates as _bench_cli_quality_gates
@@ -321,6 +322,7 @@ else:
     if _repo_root not in sys.path:
         sys.path.insert(0, _repo_root)
     _advanced_witnesses_quality_gates = import_module("tools.advanced_witnesses_quality_gates")
+    _ansatz_bench_quality_gates = import_module("tools.ansatz_bench_quality_gates")
     _attested_result_pack_quality_gates = import_module("tools.attested_result_pack_quality_gates")
     _application_honesty_quality_gates = import_module("tools.application_honesty_quality_gates")
     _advantage_language_protocol_quality_gates = import_module(
@@ -1013,6 +1015,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_studio_simulation_quality_gates.build_static_quality_gates(_PY),
     *_studio_scorecard_bundle_quality_gates.build_static_quality_gates(_PY),
     *_advanced_witnesses_quality_gates.build_static_quality_gates(_PY),
+    *_ansatz_bench_quality_gates.build_static_quality_gates(_PY),
     *_coverage_frontier_quality_gates.build_static_quality_gates(_PY),
     *_compiler_boundary_product_quality_gates.build_static_quality_gates(_PY),
     *_competitive_baseline_watch_quality_gates.build_static_quality_gates(_PY),
@@ -1613,6 +1616,7 @@ STUDIO_SCORECARD_BUNDLE_COVERAGE_GATES = (
     _studio_scorecard_bundle_quality_gates.build_coverage_gates(_PY)
 )
 ADVANCED_WITNESSES_COVERAGE_GATES = _advanced_witnesses_quality_gates.build_coverage_gates(_PY)
+ANSATZ_BENCH_COVERAGE_GATES = _ansatz_bench_quality_gates.build_coverage_gates(_PY)
 COVERAGE_FRONTIER_COVERAGE_GATES = _coverage_frontier_quality_gates.build_coverage_gates(_PY)
 COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES = (
     _compiler_boundary_product_quality_gates.build_coverage_gates(_PY)
@@ -2045,6 +2049,7 @@ def main() -> int:
             gates.extend(STUDIO_SIMULATION_COVERAGE_GATES)
             gates.extend(STUDIO_SCORECARD_BUNDLE_COVERAGE_GATES)
             gates.extend(ADVANCED_WITNESSES_COVERAGE_GATES)
+            gates.extend(ANSATZ_BENCH_COVERAGE_GATES)
             gates.extend(COVERAGE_FRONTIER_COVERAGE_GATES)
             gates.extend(COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES)
             gates.extend(COMPETITIVE_BASELINE_WATCH_COVERAGE_GATES)
