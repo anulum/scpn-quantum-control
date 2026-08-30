@@ -14,12 +14,25 @@ from os import devnull
 Gate = tuple[str, list[str]]
 WIRTINGER_IMPLICIT_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/wirtinger_implicit_product.py",
+    "src/scpn_quantum_control/wirtinger_calculus.py",
     "tests/test_wirtinger_implicit_product.py",
     "tools/wirtinger_implicit_product_quality_gates.py",
     "tests/test_wirtinger_implicit_product_quality_gate.py",
 ]
-"""Ordered strict-typing and NumPy-docstring cohort."""
-WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_COHORT = ["tests/test_wirtinger_implicit_product.py"]
+"""Ordered strict-typing cohort."""
+WIRTINGER_IMPLICIT_PRODUCT_DOCSTRING_RATCHET = [
+    "src/scpn_quantum_control/wirtinger_implicit_product.py",
+    "src/scpn_quantum_control/wirtinger_calculus.py",
+    "tests/test_wirtinger_implicit_product.py",
+    "tests/test_wirtinger_calculus.py",
+    "tools/wirtinger_implicit_product_quality_gates.py",
+    "tests/test_wirtinger_implicit_product_quality_gate.py",
+]
+"""Ordered complete NumPy-docstring cohort."""
+WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_COHORT = [
+    "tests/test_wirtinger_implicit_product.py",
+    "tests/test_wirtinger_calculus.py",
+]
 """Tests that own exact Wirtinger-implicit product coverage."""
 WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_DATA_FILE = ".coverage.wirtinger-implicit-quality"
 """Isolated coverage database for the Wirtinger-implicit product owner."""
@@ -36,7 +49,7 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "mypy",
                 "--strict",
                 "--explicit-package-bases",
-                *WIRTINGER_IMPLICIT_PRODUCT_QUALITY_RATCHET,
+                *WIRTINGER_IMPLICIT_PRODUCT_DOCSTRING_RATCHET,
             ],
         ),
         (
@@ -87,7 +100,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/wirtinger_implicit_product.py",
+                "--include=*/wirtinger_implicit_product.py,*/wirtinger_calculus.py",
             ],
         ),
     ]
@@ -96,6 +109,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_COHORT",
     "WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_DATA_FILE",
+    "WIRTINGER_IMPLICIT_PRODUCT_DOCSTRING_RATCHET",
     "WIRTINGER_IMPLICIT_PRODUCT_QUALITY_RATCHET",
     "build_coverage_gates",
     "build_static_quality_gates",

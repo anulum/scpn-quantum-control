@@ -5214,6 +5214,7 @@ jobs:
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/wirtinger_implicit_product.py
+          src/scpn_quantum_control/wirtinger_calculus.py
           tests/test_wirtinger_implicit_product.py
           tools/wirtinger_implicit_product_quality_gates.py
           tests/test_wirtinger_implicit_product_quality_gate.py
@@ -5221,17 +5222,21 @@ jobs:
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/wirtinger_implicit_product.py
+          src/scpn_quantum_control/wirtinger_calculus.py
           tests/test_wirtinger_implicit_product.py
+          tests/test_wirtinger_calculus.py
           tools/wirtinger_implicit_product_quality_gates.py
           tests/test_wirtinger_implicit_product_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
           --data-file=.coverage.wirtinger-implicit-quality --branch
           -m pytest -q tests/test_wirtinger_implicit_product.py
+          tests/test_wirtinger_calculus.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.wirtinger-implicit-quality
-          --precision=2 --fail-under=100 --include=*/wirtinger_implicit_product.py
+          --precision=2 --fail-under=100
+          --include=*/wirtinger_implicit_product.py,*/wirtinger_calculus.py
 
   migration-guides-product-quality:
     needs: lint

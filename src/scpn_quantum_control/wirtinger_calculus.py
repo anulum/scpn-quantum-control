@@ -94,6 +94,7 @@ def wirtinger_partials(
     -------
         A :class:`WirtingerDerivative` with both partial-derivative vectors and
         the holomorphicity residual ``max|df/dconj_z|``.
+
     """
     point = _as_complex_vector(z)
     h = _validate_step(step)

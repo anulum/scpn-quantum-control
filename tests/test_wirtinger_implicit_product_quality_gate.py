@@ -20,14 +20,26 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
         gates["mypy-strict-wirtinger-implicit-product-quality"][5:]
         == quality_gates.WIRTINGER_IMPLICIT_PRODUCT_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D wirtinger-implicit-product quality ratchet"]
+    ruff = gates["ruff D wirtinger-implicit-product quality ratchet"]
+    assert "D,D413" in ruff
+    assert (
+        ruff[-len(quality_gates.WIRTINGER_IMPLICIT_PRODUCT_DOCSTRING_RATCHET) :]
+        == quality_gates.WIRTINGER_IMPLICIT_PRODUCT_DOCSTRING_RATCHET
+    )
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
     """Require branch execution and exact source-only coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["wirtinger-implicit-product focused coverage"]
-    assert "--fail-under=100" in gates["wirtinger-implicit-product exact coverage threshold"]
+    run = gates["wirtinger-implicit-product focused coverage"]
+    report = gates["wirtinger-implicit-product exact coverage threshold"]
+    assert "--branch" in run
+    assert (
+        run[-len(quality_gates.WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_COHORT) :]
+        == quality_gates.WIRTINGER_IMPLICIT_PRODUCT_COVERAGE_COHORT
+    )
+    assert "--fail-under=100" in report
+    assert "--include=*/wirtinger_implicit_product.py,*/wirtinger_calculus.py" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -45,5 +57,7 @@ def test_ci_runs_and_aggregates_gate() -> None:
     start = workflow.index("  wirtinger-implicit-product-quality:")
     end = workflow.index("\n\n  decisive-advantage-quality:", start)
     block = workflow[start:end]
-    assert all(path in block for path in quality_gates.WIRTINGER_IMPLICIT_PRODUCT_QUALITY_RATCHET)
+    assert all(
+        path in block for path in quality_gates.WIRTINGER_IMPLICIT_PRODUCT_DOCSTRING_RATCHET
+    )
     assert "wirtinger-implicit-product-quality" in workflow[workflow.index("  ci-gate:") :]

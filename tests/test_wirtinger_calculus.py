@@ -23,6 +23,7 @@ from scpn_quantum_control.wirtinger_calculus import (
 # Wirtinger partials against textbook results
 # --------------------------------------------------------------------------- #
 def test_holomorphic_square():
+    """Recover the analytic derivative of a holomorphic square."""
     z = np.array([1.3 - 0.7j])
     derivative = wirtinger_partials(lambda v: v[0] ** 2, z)
     assert np.allclose(derivative.df_dz, 2.0 * z, atol=1e-6)
@@ -31,6 +32,7 @@ def test_holomorphic_square():
 
 
 def test_modulus_squared_is_non_holomorphic():
+    """Recover both nonzero partials of the squared modulus."""
     z = np.array([1.3 - 0.7j])
     derivative = wirtinger_partials(lambda v: np.abs(v[0]) ** 2, z)
     # d/dz |z|^2 = conj(z),  d/dconj_z |z|^2 = z
@@ -39,6 +41,7 @@ def test_modulus_squared_is_non_holomorphic():
 
 
 def test_conjugate_derivative():
+    """Recover the pure conjugate Wirtinger derivative."""
     z = np.array([0.4 + 0.9j])
     derivative = wirtinger_partials(lambda v: np.conj(v[0]), z)
     assert np.allclose(derivative.df_dz, 0.0, atol=1e-6)
@@ -46,6 +49,7 @@ def test_conjugate_derivative():
 
 
 def test_real_part_derivative():
+    """Recover equal Wirtinger partials for the real part."""
     z = np.array([0.5 - 0.2j])
     derivative = wirtinger_partials(lambda v: np.real(v[0]) + 0.0j, z)
     # Re(z) = (z + conj z) / 2 -> both partials are 1/2.
@@ -54,6 +58,7 @@ def test_real_part_derivative():
 
 
 def test_multivariate_partials():
+    """Recover analytic partials for a mixed multivariate objective."""
     z = np.array([0.5 + 0.2j, -0.3 + 0.9j])
     derivative = wirtinger_partials(lambda v: v[0] ** 2 + v[1] * np.conj(v[1]), z)
     assert np.allclose(derivative.df_dz, [2.0 * z[0], np.conj(z[1])], atol=1e-6)
@@ -61,6 +66,7 @@ def test_multivariate_partials():
 
 
 def test_wirtinger_product_rule():
+    """Satisfy the Wirtinger product rule."""
     z = np.array([0.7 + 0.3j])
 
     def f(v):
@@ -81,18 +87,21 @@ def test_wirtinger_product_rule():
 # Holomorphicity test and gradient
 # --------------------------------------------------------------------------- #
 def test_is_holomorphic():
+    """Distinguish holomorphic and non-holomorphic objectives."""
     z = np.array([1.0 + 0.5j, -0.4 + 0.2j])
     assert is_holomorphic(lambda v: np.exp(v[0]) * v[1], z)
     assert not is_holomorphic(lambda v: np.abs(v[0]) ** 2, z)
 
 
 def test_holomorphic_gradient_matches_complex_derivative():
+    """Match the analytic complex derivative for a cubic."""
     z = np.array([1.0 + 1.0j])
     gradient = holomorphic_gradient(lambda v: v[0] ** 3, z)
     assert np.allclose(gradient, 3.0 * z**2, atol=1e-6)
 
 
 def test_holomorphic_gradient_rejects_non_holomorphic():
+    """Refuse an ordinary complex derivative for a non-holomorphic loss."""
     with pytest.raises(ValueError):
         holomorphic_gradient(lambda v: np.abs(v[0]) ** 2, np.array([1.0 + 1.0j]))
 
@@ -101,6 +110,7 @@ def test_holomorphic_gradient_rejects_non_holomorphic():
 # Real-valued objective gradient and descent
 # --------------------------------------------------------------------------- #
 def test_real_objective_gradient_is_conjugate_of_df_dz():
+    """Return the conjugate Wirtinger gradient of a real loss."""
     z = np.array([0.6 - 0.2j, 0.1 + 0.4j])
     target = np.array([0.8 - 0.3j, -0.4 + 0.6j])
 
@@ -113,6 +123,7 @@ def test_real_objective_gradient_is_conjugate_of_df_dz():
 
 
 def test_complex_descent_converges_to_target():
+    """Converge locally to the complex quadratic target."""
     target = np.array([0.8 - 0.3j, -0.4 + 0.6j])
 
     def loss(v):
@@ -126,6 +137,7 @@ def test_complex_descent_converges_to_target():
 
 
 def test_descent_reduces_holomorphic_modulus_objective():
+    """Reduce a squared-modulus objective toward zero."""
     # L(z) = |z|^2 has minimum at 0; CR descent must drive z -> 0.
     result = minimise_real_objective(
         lambda v: float(np.sum(np.abs(v) ** 2)),
@@ -149,23 +161,27 @@ def test_descent_reduces_holomorphic_modulus_objective():
     ],
 )
 def test_wirtinger_rejects_bad_point(z):
+    """Reject empty, malformed, or non-finite evaluation points."""
     with pytest.raises(ValueError):
         wirtinger_partials(lambda v: v[0], z)
 
 
 @pytest.mark.parametrize("step", [0.0, -1e-6, np.inf])
 def test_wirtinger_rejects_bad_step(step):
+    """Reject non-positive and non-finite difference steps."""
     with pytest.raises(ValueError):
         wirtinger_partials(lambda v: v[0], np.array([1.0 + 0j]), step=step)
 
 
 def test_is_holomorphic_rejects_negative_tolerance():
+    """Reject a negative holomorphicity tolerance."""
     with pytest.raises(ValueError):
         is_holomorphic(lambda v: v[0], np.array([1.0 + 0j]), tolerance=-1.0)
 
 
 @pytest.mark.parametrize("kwargs", [{"learning_rate": 0.0}, {"learning_rate": -1.0}, {"steps": 0}])
 def test_minimise_rejects_bad_args(kwargs):
+    """Reject invalid optimizer rates and iteration counts."""
     with pytest.raises(ValueError):
         minimise_real_objective(
             lambda v: float(np.sum(np.abs(v) ** 2)), np.array([1.0 + 0j]), **kwargs
