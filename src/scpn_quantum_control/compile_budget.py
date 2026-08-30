@@ -85,6 +85,7 @@ def pauli_term_upper_bound(n_qubits: int, *, include_zz: bool = False) -> int:
     int
         ``n`` on-site ``Z`` terms plus two (``XX``, ``YY``) or three (adding
         ``ZZ``) terms for each of the ``n*(n-1)/2`` ordered pairs.
+
     """
     if not isinstance(n_qubits, int):
         raise TypeError("n_qubits must be an integer")
@@ -161,6 +162,7 @@ def require_pauli_operator_budget(
         When ``n_qubits`` is below one or ``max_gib`` is non-positive.
     TypeError
         When ``n_qubits`` is not an integer.
+
     """
     estimate = estimate_pauli_operator(
         n_qubits, include_zz=include_zz, max_gib=max_gib, label=label

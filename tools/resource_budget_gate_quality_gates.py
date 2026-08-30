@@ -13,15 +13,20 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 RESOURCE_BUDGET_GATE_QUALITY_RATCHET = [
+    "src/scpn_quantum_control/compile_budget.py",
     "src/scpn_quantum_control/resource_budget_gate.py",
+    "tests/test_compile_budget.py",
     "tests/test_resource_budget_gate.py",
     "tools/resource_budget_gate_quality_gates.py",
     "tests/test_resource_budget_gate_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-RESOURCE_BUDGET_GATE_COVERAGE_COHORT = ["tests/test_resource_budget_gate.py"]
+RESOURCE_BUDGET_GATE_COVERAGE_COHORT = [
+    "tests/test_compile_budget.py",
+    "tests/test_resource_budget_gate.py",
+]
 """Tests that own exact resource-budget gate coverage."""
-RESOURCE_BUDGET_GATE_COVERAGE_DATA_FILE = ".coverage.resource-budget-gate-quality"
+RESOURCE_BUDGET_GATE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-resource-budget-gate-quality.coverage"  # nosec B108
 """Isolated coverage database for the resource-budget gate owner."""
 
 
@@ -47,8 +52,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *RESOURCE_BUDGET_GATE_QUALITY_RATCHET,
@@ -87,7 +93,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={RESOURCE_BUDGET_GATE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/resource_budget_gate.py",
+                "--include=*/compile_budget.py,*/resource_budget_gate.py",
             ],
         ),
     ]

@@ -20,14 +20,23 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
         gates["mypy-strict-resource-budget-gate-quality"][5:]
         == quality_gates.RESOURCE_BUDGET_GATE_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D resource-budget-gate quality ratchet"]
+    ruff = gates["ruff D resource-budget-gate quality ratchet"]
+    assert "--isolated" in ruff and "--preview" in ruff
+    assert "D,D413,D417,D420" in ruff
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
     """Require branch execution and exact source-only coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["resource-budget-gate focused coverage"]
-    assert "--fail-under=100" in gates["resource-budget-gate exact coverage threshold"]
+    run = gates["resource-budget-gate focused coverage"]
+    report = gates["resource-budget-gate exact coverage threshold"]
+    assert "--branch" in run
+    assert run[-len(quality_gates.RESOURCE_BUDGET_GATE_COVERAGE_COHORT) :] == (
+        quality_gates.RESOURCE_BUDGET_GATE_COVERAGE_COHORT
+    )
+    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert "--fail-under=100" in report
+    assert "--include=*/compile_budget.py,*/resource_budget_gate.py" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -46,4 +55,6 @@ def test_ci_runs_and_aggregates_gate() -> None:
     end = workflow.index("\n\n  decisive-advantage-quality:", start)
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.RESOURCE_BUDGET_GATE_QUALITY_RATCHET)
+    assert all(path in block for path in quality_gates.RESOURCE_BUDGET_GATE_COVERAGE_COHORT)
+    assert "--include=*/compile_budget.py,*/resource_budget_gate.py" in block
     assert "resource-budget-gate-quality" in workflow[workflow.index("  ci-gate:") :]

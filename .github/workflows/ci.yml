@@ -4938,25 +4938,32 @@ jobs:
       - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
       - run: >-
           python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/compile_budget.py
           src/scpn_quantum_control/resource_budget_gate.py
+          tests/test_compile_budget.py
           tests/test_resource_budget_gate.py
           tools/resource_budget_gate_quality_gates.py
           tests/test_resource_budget_gate_quality_gate.py
       - run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
           --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/compile_budget.py
           src/scpn_quantum_control/resource_budget_gate.py
+          tests/test_compile_budget.py
           tests/test_resource_budget_gate.py
           tools/resource_budget_gate_quality_gates.py
           tests/test_resource_budget_gate_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
-          --data-file=.coverage.resource-budget-gate-quality --branch
-          -m pytest -q tests/test_resource_budget_gate.py
+          --data-file=/tmp/scpn-qc-resource-budget-gate-quality.coverage --branch
+          -m pytest -q
+          tests/test_compile_budget.py
+          tests/test_resource_budget_gate.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
-          --data-file=.coverage.resource-budget-gate-quality
-          --precision=2 --fail-under=100 --include=*/resource_budget_gate.py
+          --data-file=/tmp/scpn-qc-resource-budget-gate-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/compile_budget.py,*/resource_budget_gate.py
 
   advantage-language-protocol-quality:
     needs: lint
