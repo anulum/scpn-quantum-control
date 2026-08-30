@@ -19,11 +19,15 @@ not build the native engine.
 from __future__ import annotations
 
 import json
+from importlib.metadata import PackageNotFoundError
 
 import numpy as np
 import pytest
 
+from oscillatools.accel import diff_kuramoto_rk4 as rk4
+from oscillatools.accel import dispatcher
 from scpn_quantum_control.benchmarks import kuramoto_competitive_benchmark as m
+from scpn_quantum_control.benchmarks import kuramoto_external_competitors as external
 from scpn_quantum_control.benchmarks.isolated_host_readiness import HostReadiness
 from scpn_quantum_control.benchmarks.kuramoto_competitive_types import (
     CompetitorRow,
@@ -32,7 +36,7 @@ from scpn_quantum_control.benchmarks.kuramoto_competitive_types import (
 
 
 def _small_problem() -> m.KuramotoProblem:
-    """A tiny but non-trivial deterministic problem for fast real runs."""
+    """Build a tiny but non-trivial deterministic problem for fast real runs."""
     return build_default_problem(n_oscillators=6, t_max=0.5, dt=0.1, seed=7)
 
 
@@ -81,6 +85,7 @@ def _manual_comparison(
 
 
 def test_comparison_row_lookup_and_missing() -> None:
+    """Resolve a known row and reject an unknown method."""
     row = _row("ours_rk4_python")
     comp = _manual_comparison((row,))
     assert comp.row("ours_rk4_python") is row
@@ -89,6 +94,7 @@ def test_comparison_row_lookup_and_missing() -> None:
 
 
 def test_fastest_available_picks_min_time_and_handles_empty() -> None:
+    """Select the fastest available row and handle an empty timed set."""
     fast = _row("a", elapsed_ms=1.0)
     slow = _row("c", elapsed_ms=9.0)
     absent = _row("d", available=False, elapsed_ms=None)
@@ -97,6 +103,7 @@ def test_fastest_available_picks_min_time_and_handles_empty() -> None:
 
 
 def test_comparison_to_dict_serialisable_both_load_branches() -> None:
+    """Serialise host readiness with present and absent load averages."""
     with_load = _manual_comparison((_row("ours_rk4_python"),)).to_dict()
     assert with_load["host_readiness"]["load_average"] == [0.1, 0.2, 0.3]
     assert json.dumps(with_load)
@@ -111,28 +118,33 @@ def test_comparison_to_dict_serialisable_both_load_branches() -> None:
 
 
 def test_utc_now_returns_zulu_timestamp() -> None:
+    """Return a UTC timestamp with the canonical Z suffix."""
     stamp = m._utc_now()
     assert stamp.endswith("Z") and "T" in stamp
 
 
 def test_final_r_from_trajectory_synchronised_is_one() -> None:
+    """Compute unit order for a fully synchronised trajectory."""
     trajectory = np.zeros((3, 5), dtype=np.float64)
     assert m._final_r_from_trajectory(trajectory) == pytest.approx(1.0)
 
 
 def test_measure_call_returns_positive_p50() -> None:
+    """Measure the configured repeat count and a non-negative median."""
     stats = m._measure_call(lambda: sum(range(10)))
     assert stats.samples == m._TIMING_REPEATS
     assert stats.p50_us >= 0.0
 
 
 def test_package_version_matches_distribution() -> None:
+    """Expose the package version through the benchmark provenance helper."""
     from scpn_quantum_control import __version__ as expected
 
     assert m._package_version() == str(expected)
 
 
 def test_rust_engine_version_is_a_string() -> None:
+    """Expose a non-empty Rust-engine version label."""
     assert isinstance(m._rust_engine_version(), str)
     assert m._rust_engine_version() != ""
 
@@ -140,20 +152,24 @@ def test_rust_engine_version_is_a_string() -> None:
 def test_rust_engine_version_falls_back_when_metadata_absent(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Fall back to an installed label when distribution metadata is absent."""
+
     def _raise(_name: str) -> str:
-        raise m.PackageNotFoundError(_name)
+        raise PackageNotFoundError(_name)
 
     monkeypatch.setattr(m, "_distribution_version", _raise)
     assert m._rust_engine_version() == "installed"
 
 
 def test_rk4_forced_returns_full_trajectory() -> None:
+    """Run the forced Python tier and retain every trajectory row."""
     problem = _small_problem()
-    trajectory = m._rk4_forced(m._rk4._python_kuramoto_rk4_trajectory, problem)
+    trajectory = m._rk4_forced(rk4._python_kuramoto_rk4_trajectory, problem)
     assert trajectory.shape == (problem.n_steps + 1, problem.n_oscillators)
 
 
 def test_dispatched_rk4_tier_reports_served_tier() -> None:
+    """Report the production facade tier that served the RK4 request."""
     tier = m._dispatched_rk4_tier(_small_problem())
     assert tier in {"rust", "julia", "python"}
 
@@ -173,28 +189,22 @@ class _FakeEngine:
 
 def _install_fake_rust(monkeypatch: pytest.MonkeyPatch) -> None:
     """Make the Rust tier appear built and route its kernel to the Python floor."""
-    monkeypatch.setattr(
-        m._dispatcher, "optional_rust_engine", lambda: _FakeEngine(with_kernel=True)
-    )
-    monkeypatch.setattr(
-        m._rk4, "_rust_kuramoto_rk4_trajectory", m._rk4._python_kuramoto_rk4_trajectory
-    )
+    monkeypatch.setattr(dispatcher, "optional_rust_engine", lambda: _FakeEngine(with_kernel=True))
+    monkeypatch.setattr(rk4, "_rust_kuramoto_rk4_trajectory", rk4._python_kuramoto_rk4_trajectory)
 
 
 def test_rust_rk4_kernel_present_absent_and_stub(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(m._dispatcher, "optional_rust_engine", lambda: None)
+    """Detect absent, incomplete, and callable Rust engine kernels."""
+    monkeypatch.setattr(dispatcher, "optional_rust_engine", lambda: None)
     assert m._rust_rk4_kernel() is None
-    monkeypatch.setattr(
-        m._dispatcher, "optional_rust_engine", lambda: _FakeEngine(with_kernel=False)
-    )
+    monkeypatch.setattr(dispatcher, "optional_rust_engine", lambda: _FakeEngine(with_kernel=False))
     assert m._rust_rk4_kernel() is None
-    monkeypatch.setattr(
-        m._dispatcher, "optional_rust_engine", lambda: _FakeEngine(with_kernel=True)
-    )
+    monkeypatch.setattr(dispatcher, "optional_rust_engine", lambda: _FakeEngine(with_kernel=True))
     assert m._rust_rk4_kernel() is not None
 
 
 def test_ours_python_and_dopri_rows_agree_on_order_parameter() -> None:
+    """Compare real Python RK4 and adaptive DOPRI order parameters."""
     problem = _small_problem()
     python_row = m._ours_rk4_python_row(problem)
     dopri_row = m._ours_dopri_row(problem)
@@ -211,6 +221,7 @@ def test_ours_python_and_dopri_rows_agree_on_order_parameter() -> None:
 
 
 def test_ours_rk4_rust_row_available_records_true_tier(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Record Rust provenance when the native kernel is available."""
     _install_fake_rust(monkeypatch)
     problem = _small_problem()
     row = m._ours_rk4_rust_row(problem)
@@ -225,7 +236,8 @@ def test_ours_rk4_rust_row_available_records_true_tier(monkeypatch: pytest.Monke
 def test_ours_rk4_rust_row_fails_closed_when_engine_absent(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(m._dispatcher, "optional_rust_engine", lambda: None)
+    """Fail closed with a build command when the Rust engine is absent."""
+    monkeypatch.setattr(dispatcher, "optional_rust_engine", lambda: None)
     row = m._ours_rk4_rust_row(_small_problem())
     assert row.available is False
     assert row.language == "rust"
@@ -236,9 +248,8 @@ def test_ours_rk4_rust_row_fails_closed_when_engine_absent(
 def test_ours_rk4_rust_row_fails_closed_when_kernel_missing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(
-        m._dispatcher, "optional_rust_engine", lambda: _FakeEngine(with_kernel=False)
-    )
+    """Fail closed when an installed engine lacks the required kernel."""
+    monkeypatch.setattr(dispatcher, "optional_rust_engine", lambda: _FakeEngine(with_kernel=False))
     row = m._ours_rk4_rust_row(_small_problem())
     assert row.available is False
     assert "lacks the" in (row.unavailable_reason or "")
@@ -246,7 +257,8 @@ def test_ours_rk4_rust_row_fails_closed_when_kernel_missing(
 
 
 def test_rk4_rust_python_parity_present_and_absent(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(m._dispatcher, "optional_rust_engine", lambda: None)
+    """Report no parity without Rust and exact parity for the fake kernel."""
+    monkeypatch.setattr(dispatcher, "optional_rust_engine", lambda: None)
     assert m._rk4_rust_python_parity(_small_problem()) is None
     _install_fake_rust(monkeypatch)
     parity = m._rk4_rust_python_parity(_small_problem())
@@ -254,6 +266,7 @@ def test_rk4_rust_python_parity_present_and_absent(monkeypatch: pytest.MonkeyPat
 
 
 def test_rk4_rust_speedup_ratio_and_none_paths() -> None:
+    """Compute a valid speedup and reject unavailable timing inputs."""
     rust = _row("ours_rk4_rust", elapsed_ms=2.0)
     python = _row("ours_rk4_python", elapsed_ms=18.0)
     assert m._rk4_rust_speedup(rust, python) == pytest.approx(9.0)
@@ -271,11 +284,13 @@ def test_rk4_rust_speedup_ratio_and_none_paths() -> None:
 
 
 def test_with_error_none_reference_is_passthrough() -> None:
+    """Preserve the row when no reference value exists."""
     row = _row("ours_rk4_python")
     assert m._with_error(row, "scipy_solve_ivp", None) is row
 
 
 def test_with_error_fills_absolute_error() -> None:
+    """Fill the absolute error against an available reference."""
     row = _row("ours_rk4_python")  # r_final = 0.5
     scored = m._with_error(row, "scipy_solve_ivp", 0.4)
     assert scored.r_error_vs_reference == pytest.approx(0.1)
@@ -305,11 +320,11 @@ def _stub_external(monkeypatch: pytest.MonkeyPatch, *, scipy_available: bool = T
     r = 0.3775532
     if scipy_available:
         monkeypatch.setattr(
-            m._external, "scipy_row", lambda p: _external_row("scipy_solve_ivp", "python", r)
+            external, "scipy_row", lambda p: _external_row("scipy_solve_ivp", "python", r)
         )
     else:
         monkeypatch.setattr(
-            m._external,
+            external,
             "scipy_row",
             lambda p: CompetitorRow(
                 method="scipy_solve_ivp",
@@ -324,31 +339,32 @@ def _stub_external(monkeypatch: pytest.MonkeyPatch, *, scipy_available: bool = T
             ),
         )
     monkeypatch.setattr(
-        m._external,
+        external,
         "julia_diffeq_row",
         lambda p, *, timeout: _external_row("julia_diffeq", "julia", r),
     )
     monkeypatch.setattr(
-        m._external,
+        external,
         "dynamicalsystems_row",
         lambda p, *, timeout: _external_row("dynamicalsystems_jl", "julia", r),
     )
     monkeypatch.setattr(
-        m._external,
+        external,
         "networkdynamics_row",
         lambda p, *, timeout: _external_row("networkdynamics_jl", "julia", r),
     )
     monkeypatch.setattr(
-        m._external,
+        external,
         "scimlsensitivity_row",
         lambda p, *, timeout: _external_row("scimlsensitivity_jl", "julia", r),
     )
     monkeypatch.setattr(
-        m._external, "jitcdde_row", lambda p, *, timeout: _external_row("jitcdde", "python", r)
+        external, "jitcdde_row", lambda p, *, timeout: _external_row("jitcdde", "python", r)
     )
 
 
 def test_run_comparison_scipy_reference_rows_and_metadata(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Assemble all solver rows with SciPy as the accuracy reference."""
     _stub_external(monkeypatch)
     comp = m.run_kuramoto_competitive_comparison(
         _small_problem(), timeout=5.0, clock=lambda: "2026-07-03T00:00:00Z"
@@ -386,12 +402,14 @@ def test_run_comparison_scipy_reference_rows_and_metadata(monkeypatch: pytest.Mo
 
 
 def test_run_comparison_default_problem_branch(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Build the canonical default problem when none is supplied."""
     _stub_external(monkeypatch)
     comp = m.run_kuramoto_competitive_comparison(timeout=5.0, clock=lambda: "2026-07-03T00:00:00Z")
     assert comp.n_oscillators == build_default_problem().n_oscillators
 
 
 def test_run_comparison_falls_back_to_dopri_reference(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Use DOPRI as the accuracy reference when SciPy is unavailable."""
     _stub_external(monkeypatch, scipy_available=False)
     comp = m.run_kuramoto_competitive_comparison(
         _small_problem(), timeout=5.0, clock=lambda: "2026-07-03T00:00:00Z"

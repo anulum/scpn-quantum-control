@@ -101,6 +101,7 @@ def _fast_comparison(
 
 
 def test_parse_args_defaults_match_committed_problem() -> None:
+    """Keep CLI defaults aligned with the committed benchmark problem."""
     args = runner._parse_args([])
     assert args.n == 12
     assert args.t_max == 6.0
@@ -110,6 +111,7 @@ def test_parse_args_defaults_match_committed_problem() -> None:
 
 
 def test_print_summary_shows_language_and_head_to_head(capsys: pytest.CaptureFixture[str]) -> None:
+    """Surface language and within-toolkit comparisons in the CLI summary."""
     record = {
         "reference_method": "scipy_solve_ivp",
         "n_oscillators": 12,
@@ -146,6 +148,7 @@ def test_print_summary_shows_language_and_head_to_head(capsys: pytest.CaptureFix
 
 
 def test_main_writes_complete_artefact(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Write a complete serialised comparison through the CLI entry point."""
     monkeypatch.setattr(runner, "run_kuramoto_competitive_comparison", _fast_comparison)
     output = tmp_path / "competitive.json"
     code = runner.main(

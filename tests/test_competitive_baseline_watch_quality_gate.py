@@ -29,12 +29,15 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     run = gates["competitive-baseline-watch focused coverage"]
     report = gates["competitive-baseline-watch exact coverage threshold"]
     assert "--branch" in run
+    assert f"--data-file={quality_gates.COMPETITIVE_BASELINE_WATCH_COVERAGE_DATA_FILE}" in run
+    assert quality_gates.COMPETITIVE_BASELINE_WATCH_COVERAGE_DATA_FILE.startswith("/tmp/")
     assert run[-len(quality_gates.COMPETITIVE_BASELINE_WATCH_COVERAGE_COHORT) :] == (
         quality_gates.COMPETITIVE_BASELINE_WATCH_COVERAGE_COHORT
     )
     assert "--fail-under=100" in report
+    assert f"--data-file={quality_gates.COMPETITIVE_BASELINE_WATCH_COVERAGE_DATA_FILE}" in report
     assert (
-        "--include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py,*/benchmarks/kuramoto_competitive_types.py"
+        "--include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py,*/benchmarks/kuramoto_competitive_types.py,*/benchmarks/kuramoto_competitive_benchmark.py"
         in report
     )
 

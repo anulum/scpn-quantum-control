@@ -139,6 +139,7 @@ class KuramotoCompetitiveComparison:
         ------
         KeyError
             If no row carries the requested method identifier.
+
         """
         for candidate in self.rows:
             if candidate.method == method:
@@ -419,6 +420,7 @@ def run_kuramoto_competitive_comparison(
     -------
     KuramotoCompetitiveComparison
         The full, serialisable comparison record.
+
     """
     resolved = problem if problem is not None else build_default_problem()
 
