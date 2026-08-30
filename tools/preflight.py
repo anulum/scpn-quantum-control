@@ -277,6 +277,9 @@ if TYPE_CHECKING:
     from tools import research_lane_registry_quality_gates as _research_lane_registry_quality_gates
     from tools import resource_budget_gate_quality_gates as _resource_budget_gate_quality_gates
     from tools import result_pack_seal_quality_gates as _result_pack_seal_quality_gates
+    from tools import (
+        rust_accel_import_resilience_quality_gates as _rust_accel_import_resilience_quality_gates,
+    )
     from tools import scientific_crosscheck_quality_gates as _scientific_crosscheck_quality_gates
     from tools import (
         scorecard_acceptance_engine_quality_gates as _scorecard_acceptance_engine_quality_gates,
@@ -639,6 +642,9 @@ else:
     )
     _resource_budget_gate_quality_gates = import_module("tools.resource_budget_gate_quality_gates")
     _result_pack_seal_quality_gates = import_module("tools.result_pack_seal_quality_gates")
+    _rust_accel_import_resilience_quality_gates = import_module(
+        "tools.rust_accel_import_resilience_quality_gates"
+    )
     _scorecard_acceptance_engine_quality_gates = import_module(
         "tools.scorecard_acceptance_engine_quality_gates"
     )
@@ -1049,6 +1055,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_nqs_ansatz_quality_gates.build_static_quality_gates(_PY),
     *_sparse_hamiltonian_quality_gates.build_static_quality_gates(_PY),
     *_result_pack_seal_quality_gates.build_static_quality_gates(_PY),
+    *_rust_accel_import_resilience_quality_gates.build_static_quality_gates(_PY),
     *_layout_relaxation_experiment_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_crossover_admission_quality_gates.build_static_quality_gates(_PY),
     *_xy_compile_recompute_artifact_quality_gates.build_static_quality_gates(_PY),
@@ -1616,6 +1623,9 @@ MPS_EVOLUTION_COVERAGE_GATES = _mps_evolution_quality_gates.build_coverage_gates
 NQS_ANSATZ_COVERAGE_GATES = _nqs_ansatz_quality_gates.build_coverage_gates(_PY)
 SPARSE_HAMILTONIAN_COVERAGE_GATES = _sparse_hamiltonian_quality_gates.build_coverage_gates(_PY)
 RESULT_PACK_SEAL_COVERAGE_GATES = _result_pack_seal_quality_gates.build_coverage_gates(_PY)
+RUST_ACCEL_IMPORT_RESILIENCE_COVERAGE_GATES = (
+    _rust_accel_import_resilience_quality_gates.build_coverage_gates(_PY)
+)
 LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_GATES = (
     _layout_relaxation_experiment_quality_gates.build_coverage_gates(_PY)
 )
@@ -2139,6 +2149,7 @@ def main() -> int:
             gates.extend(NQS_ANSATZ_COVERAGE_GATES)
             gates.extend(SPARSE_HAMILTONIAN_COVERAGE_GATES)
             gates.extend(RESULT_PACK_SEAL_COVERAGE_GATES)
+            gates.extend(RUST_ACCEL_IMPORT_RESILIENCE_COVERAGE_GATES)
             gates.extend(LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_GATES)
             gates.extend(TN_MPS_CROSSOVER_ADMISSION_COVERAGE_GATES)
             gates.extend(XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_GATES)

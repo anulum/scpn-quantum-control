@@ -43,6 +43,7 @@ def load_verifier_main() -> Callable[[], int]:
     ModuleNotFoundError
         If the ``scpn_quantum_control`` package or the verifier module file
         cannot be located.
+
     """
     package_spec = importlib.util.find_spec("scpn_quantum_control")
     if package_spec is None or not package_spec.submodule_search_locations:

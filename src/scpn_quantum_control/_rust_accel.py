@@ -50,6 +50,7 @@ def optional_rust_engine() -> ModuleType | None:
         The Rust engine module when both :mod:`oscillatools` and the native
         ``scpn_quantum_engine`` extension are importable; ``None`` when the
         accelerator is unavailable, in which case callers use the Python path.
+
     """
     try:
         from oscillatools.accel.rust_import import (
