@@ -6362,24 +6362,30 @@ jobs:
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/phase/gradient_tape.py
+          src/scpn_quantum_control/phase/qnode_tape.py
           tests/test_phase_gradient_tape.py
+          tests/test_phase_qnode_tape.py
           tools/gradient_tape_quality_gates.py
           tests/test_gradient_tape_quality_gate.py
       - run: >-
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/gradient_tape.py
+          src/scpn_quantum_control/phase/qnode_tape.py
           tests/test_phase_gradient_tape.py
+          tests/test_phase_qnode_tape.py
           tools/gradient_tape_quality_gates.py
           tests/test_gradient_tape_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-gradient-tape.coverage --branch
           -m pytest -q tests/test_phase_gradient_tape.py
+          tests/test_phase_qnode_tape.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-gradient-tape.coverage
-          --precision=2 --fail-under=100 --include=*/phase/gradient_tape.py
+          --precision=2 --fail-under=100
+          --include=*/phase/gradient_tape.py,*/phase/qnode_tape.py
 
   fault-tolerant-resource-product-quality:
     needs: lint

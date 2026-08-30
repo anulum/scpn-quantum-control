@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — phase gradient-tape quality gates
-"""Build strict documentation, typing, and exact coverage gates."""
+# SCPN Quantum Control — phase tape quality gates
+"""Build strict documentation, typing, and exact gradient/QNode tape coverage gates."""
 
 from __future__ import annotations
 
@@ -14,15 +14,20 @@ from os import devnull
 Gate = tuple[str, list[str]]
 GRADIENT_TAPE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/phase/gradient_tape.py",
+    "src/scpn_quantum_control/phase/qnode_tape.py",
     "tests/test_phase_gradient_tape.py",
+    "tests/test_phase_qnode_tape.py",
     "tools/gradient_tape_quality_gates.py",
     "tests/test_gradient_tape_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-GRADIENT_TAPE_COVERAGE_COHORT = ["tests/test_phase_gradient_tape.py"]
-"""Tests that own exact phase gradient-tape coverage."""
+GRADIENT_TAPE_COVERAGE_COHORT = [
+    "tests/test_phase_gradient_tape.py",
+    "tests/test_phase_qnode_tape.py",
+]
+"""Tests that own exact phase gradient and QNode tape coverage."""
 GRADIENT_TAPE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-gradient-tape.coverage"  # nosec B108
-"""Isolated coverage database for the phase gradient tape."""
+"""Isolated coverage database for phase gradient and QNode tapes."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -87,7 +92,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={GRADIENT_TAPE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/phase/gradient_tape.py",
+                "--include=*/phase/gradient_tape.py,*/phase/qnode_tape.py",
             ],
         ),
     ]

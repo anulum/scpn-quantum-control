@@ -69,7 +69,6 @@ def test_phase_qnode_tape_records_deterministic_parameter_shift() -> None:
 
 def test_phase_qnode_tape_records_multi_term_finite_shot_replay() -> None:
     """Finite-shot QNode tape records should expose shifted-sample provenance."""
-
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
     plus_values = np.array([[1.2, -0.3], [0.9, 0.4]], dtype=float)
     minus_values = np.array([[0.8, -0.7], [0.5, -0.2]], dtype=float)
@@ -138,7 +137,6 @@ def test_phase_qnode_tape_records_multi_term_finite_shot_replay() -> None:
 
 def test_phase_qnode_tape_records_fail_closed_provider_boundary() -> None:
     """Provider-boundary QNode tape records should fail closed before submission."""
-
     with phase_qnode_tape(
         qnode_name="hardware_vqe_candidate",
         observable="energy",
@@ -171,7 +169,6 @@ def test_phase_qnode_tape_records_fail_closed_provider_boundary() -> None:
 
 def test_phase_qnode_tape_readiness_suite_reports_supported_and_blocked_routes() -> None:
     """The readiness suite should aggregate supported local and blocked provider routes."""
-
     suite = run_phase_qnode_tape_readiness_suite()
 
     assert suite.passed
@@ -191,7 +188,6 @@ def test_phase_qnode_tape_readiness_suite_reports_supported_and_blocked_routes()
 
 def test_phase_qnode_tape_fails_closed_on_invalid_inputs() -> None:
     """QNode tape construction and finite-shot records should reject invalid inputs."""
-
     with pytest.raises(ValueError, match="qnode_name"):
         PhaseQNodeTape(qnode_name="", observable="energy")
 

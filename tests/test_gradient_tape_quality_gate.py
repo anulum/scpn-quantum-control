@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — phase gradient-tape quality-gate tests
-"""Lock the phase gradient-tape gate into preflight and CI."""
+# SCPN Quantum Control — phase tape quality-gate tests
+"""Lock the phase gradient/QNode tape gate into preflight and CI."""
 
 from pathlib import Path
 
@@ -28,10 +28,10 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     run = gates["gradient-tape focused coverage"]
     report = gates["gradient-tape exact coverage threshold"]
     assert "--branch" in run
-    assert run[-1:] == quality_gates.GRADIENT_TAPE_COVERAGE_COHORT
+    assert run[-2:] == quality_gates.GRADIENT_TAPE_COVERAGE_COHORT
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/phase/gradient_tape.py" in report
+    assert "--include=*/phase/gradient_tape.py,*/phase/qnode_tape.py" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:

@@ -62,6 +62,7 @@ class PhaseQNodeTapeRecord:
     hardware_execution: bool = False
 
     def __post_init__(self) -> None:
+        """Normalize and validate the recorded QNode tape evidence."""
         object.__setattr__(self, "qnode_name", _as_non_empty_string("qnode_name", self.qnode_name))
         object.__setattr__(
             self,
@@ -364,6 +365,7 @@ class PhaseQNodeTape:
         -------
         PhaseQNodeTapeRecord
             QNode tape record containing finite-shot uncertainty evidence.
+
         """
         self._require_active()
         clean_name = _as_non_empty_string("objective_name", objective_name)
