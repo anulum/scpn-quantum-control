@@ -77,6 +77,21 @@ def correlation_matrix_from_counts(
     This equals 2cos(θ_i - θ_j) for states with well-defined phases,
     making it the natural quantum analog of the classical phase
     correlation used in persistent homology.
+
+    Parameters
+    ----------
+    x_counts
+        Measurement counts in the X basis.
+    y_counts
+        Measurement counts in the Y basis.
+    n_qubits
+        Number of measured qubits.
+
+    Returns
+    -------
+    numpy.ndarray
+        Sum of the empirical XX and YY correlation matrices.
+
     """
     xx = _correlator_from_counts(x_counts, n_qubits)
     yy = _correlator_from_counts(y_counts, n_qubits)
@@ -109,6 +124,17 @@ def correlation_to_distance(corr: NDArray[np.float64]) -> NDArray[np.float64]:
 
     Normalized so fully correlated pairs → distance 0,
     uncorrelated pairs → distance 1.
+
+    Parameters
+    ----------
+    corr
+        Qubit correlation matrix.
+
+    Returns
+    -------
+    numpy.ndarray
+        Symmetric normalized distance matrix with a zero diagonal.
+
     """
     abs_corr = np.abs(corr)
     np.fill_diagonal(abs_corr, 0.0)
@@ -130,15 +156,28 @@ def quantum_persistent_homology(
 ) -> QuantumPHResult:
     """Full pipeline: hardware counts → persistent homology.
 
-    Args:
-        x_counts: Measurement counts in X basis.
-        y_counts: Measurement counts in Y basis.
-        n_qubits: Number of qubits.
-        persistence_threshold: Minimum H1 lifetime to count as persistent.
+    Parameters
+    ----------
+    x_counts
+        Measurement counts in the X basis.
+    y_counts
+        Measurement counts in the Y basis.
+    n_qubits
+        Number of measured qubits.
+    persistence_threshold
+        Minimum H1 lifetime counted as persistent.
 
     Returns
     -------
-        QuantumPHResult with p_h1 and full persistence data.
+    QuantumPHResult
+        Normalized H1 indicator, persistence data, and correlation/distance
+        matrices.
+
+    Raises
+    ------
+    ImportError
+        If the optional ``ripser`` dependency is unavailable.
+
     """
     if not _RIPSER_AVAILABLE:
         raise ImportError("ripser not installed: pip install ripser")
@@ -186,7 +225,29 @@ def compare_quantum_classical_ph(
     Runs the quantum PH pipeline on hardware counts and the classical
     PH pipeline on exact Kuramoto evolution at the same K, omega, t.
 
-    Returns dict with both results and the delta.
+    Parameters
+    ----------
+    x_counts
+        Measurement counts in the X basis.
+    y_counts
+        Measurement counts in the Y basis.
+    n_qubits
+        Number of measured qubits.
+    K
+        Classical reference coupling matrix.
+    omega
+        Classical reference natural-frequency vector.
+    t
+        Classical evolution horizon.
+    persistence_threshold
+        Minimum H1 lifetime counted as persistent.
+
+    Returns
+    -------
+    dict[str, Any]
+        Quantum and classical p_h1 summaries, their delta, and both typed
+        result envelopes.
+
     """
     from ..hardware.classical import classical_kuramoto_reference
     from .persistent_homology import compute_persistence
@@ -223,8 +284,24 @@ def ph_sync_scan(
     (from sync_threshold experiment or similar) and computes p_h1
     at each coupling strength.
 
-    Returns dict with K_base values and corresponding p_h1 values,
-    suitable for plotting the topological phase diagram.
+    Parameters
+    ----------
+    x_counts_list
+        X-basis count mappings aligned with the coupling scan.
+    y_counts_list
+        Y-basis count mappings aligned with the coupling scan.
+    n_qubits
+        Number of measured qubits.
+    K_base_values
+        Coupling strengths associated with the count pairs.
+    persistence_threshold
+        Minimum H1 lifetime counted as persistent.
+
+    Returns
+    -------
+    dict[str, Any]
+        Coupling values and aligned p_h1/persistent-H1 series.
+
     """
     p_h1_values = []
     n_h1_values = []

@@ -35,35 +35,45 @@ pytestmark = pytest.mark.skipif(not _RIPSER, reason="ripser not installed")
 
 
 class TestCorrelatorFromCounts:
-    def test_all_zeros(self):
+    """Verify empirical pairwise basis correlators from counts."""
+
+    def test_all_zeros(self) -> None:
+        """Map the all-zero population to unit pair correlations."""
         counts = {"0000": 1000}
         corr = _correlator_from_counts(counts, 4)
         np.testing.assert_array_almost_equal(corr, np.ones((4, 4)))
 
-    def test_mixed(self):
+    def test_mixed(self) -> None:
+        """Preserve positive correlation across aligned outcomes."""
         counts = {"00": 500, "11": 500}
         corr = _correlator_from_counts(counts, 2)
         # Both outcomes give Z_0Z_1 = +1, so ⟨Z_0Z_1⟩ = 1
         assert corr[0, 1] == pytest.approx(1.0)
 
-    def test_anticorrelated(self):
+    def test_anticorrelated(self) -> None:
+        """Preserve negative correlation across opposite outcomes."""
         counts = {"01": 500, "10": 500}
         corr = _correlator_from_counts(counts, 2)
         # Both outcomes give Z_0Z_1 = -1
         assert corr[0, 1] == pytest.approx(-1.0)
 
-    def test_uncorrelated(self):
+    def test_uncorrelated(self) -> None:
+        """Map the balanced population to zero cross-correlation."""
         counts = {"00": 250, "01": 250, "10": 250, "11": 250}
         corr = _correlator_from_counts(counts, 2)
         assert corr[0, 1] == pytest.approx(0.0)
 
-    def test_empty_counts(self):
+    def test_empty_counts(self) -> None:
+        """Return a zero matrix for an empty count mapping."""
         corr = _correlator_from_counts({}, 3)
         np.testing.assert_array_equal(corr, np.zeros((3, 3)))
 
 
 class TestCorrelationMatrix:
-    def test_synchronized_state(self):
+    """Verify combined X/Y correlation matrices."""
+
+    def test_synchronized_state(self) -> None:
+        """Sum aligned X and Y correlations for synchronized counts."""
         x_counts = {"0000": 1000}
         y_counts = {"0000": 1000}
         corr = correlation_matrix_from_counts(x_counts, y_counts, 4)
@@ -71,13 +81,17 @@ class TestCorrelationMatrix:
         assert corr[0, 1] == pytest.approx(2.0)
         assert corr.shape == (4, 4)
 
-    def test_shape(self):
+    def test_shape(self) -> None:
+        """Return the requested qubit-square matrix shape."""
         corr = correlation_matrix_from_counts({"00": 100}, {"00": 100}, 2)
         assert corr.shape == (2, 2)
 
 
 class TestCorrelationToDistance:
-    def test_fully_correlated(self):
+    """Verify normalized correlation-distance construction."""
+
+    def test_fully_correlated(self) -> None:
+        """Map fully correlated off-diagonal pairs to zero distance."""
         corr = np.ones((4, 4)) * 2.0
         np.fill_diagonal(corr, 0.0)
         dist = correlation_to_distance(corr)
@@ -87,7 +101,8 @@ class TestCorrelationToDistance:
                 if i != j:
                     assert dist[i, j] == pytest.approx(0.0)
 
-    def test_uncorrelated(self):
+    def test_uncorrelated(self) -> None:
+        """Map uncorrelated off-diagonal pairs to unit distance."""
         corr = np.zeros((4, 4))
         dist = correlation_to_distance(corr)
         # All off-diagonal should be 1
@@ -96,25 +111,31 @@ class TestCorrelationToDistance:
                 if i != j:
                     assert dist[i, j] == pytest.approx(1.0)
 
-    def test_diagonal_zero(self):
+    def test_diagonal_zero(self) -> None:
+        """Force every self-distance to zero."""
         corr = np.random.default_rng(42).standard_normal((4, 4))
         dist = correlation_to_distance(corr)
         np.testing.assert_array_almost_equal(np.diag(dist), np.zeros(4))
 
-    def test_symmetric(self):
+    def test_symmetric(self) -> None:
+        """Preserve symmetry for a symmetric correlation input."""
         corr = np.array([[1, 0.5], [0.5, 1]])
         dist = correlation_to_distance(corr)
         np.testing.assert_array_almost_equal(dist, dist.T)
 
 
 class TestQuantumPH:
-    def test_missing_ripser_raises_actionable_error(self, monkeypatch):
+    """Verify the public quantum-counts persistent-homology pipeline."""
+
+    def test_missing_ripser_raises_actionable_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Fail closed with installation guidance when ripser is absent."""
         monkeypatch.setattr(qph_mod, "_RIPSER_AVAILABLE", False)
 
         with pytest.raises(ImportError, match="pip install ripser"):
             quantum_persistent_homology({"00": 1}, {"00": 1}, 2)
 
-    def test_synchronized_low_p_h1(self):
+    def test_synchronized_low_p_h1(self) -> None:
+        """Return a low H1 fraction for aligned count populations."""
         # All qubits aligned → low p_h1
         x_counts = {"0000": 1000}
         y_counts = {"0000": 1000}
@@ -123,7 +144,8 @@ class TestQuantumPH:
         assert result.p_h1 < 0.5
         assert result.n_qubits == 4
 
-    def test_incoherent_higher_p_h1(self):
+    def test_incoherent_higher_p_h1(self) -> None:
+        """Process a reproducible incoherent count population."""
         # Random measurements → nontrivial topology
         rng = np.random.default_rng(42)
         x_counts = {
@@ -136,13 +158,15 @@ class TestQuantumPH:
         # Incoherent state has more topological structure
         assert result.n_qubits == 4
 
-    def test_two_qubit(self):
+    def test_two_qubit(self) -> None:
+        """Handle the bounded two-qubit topology case."""
         x_counts = {"00": 500, "11": 500}
         y_counts = {"00": 500, "11": 500}
         result = quantum_persistent_homology(x_counts, y_counts, 2)
         assert result.n_qubits == 2
 
-    def test_result_fields(self):
+    def test_result_fields(self) -> None:
+        """Expose all persistence and geometry result fields."""
         x_counts = {"000": 1000}
         y_counts = {"000": 1000}
         result = quantum_persistent_homology(x_counts, y_counts, 3)
@@ -155,7 +179,10 @@ class TestQuantumPH:
 
 
 class TestCompareQuantumClassical:
-    def test_returns_both(self):
+    """Verify quantum/classical p_h1 comparison output."""
+
+    def test_returns_both(self) -> None:
+        """Return both summaries and their floating-point delta."""
         from scpn_quantum_control.bridge.knm_hamiltonian import (
             OMEGA_N_16,
             build_knm_paper27,
@@ -173,7 +200,10 @@ class TestCompareQuantumClassical:
 
 
 class TestPHSyncScan:
-    def test_returns_matching_lengths(self):
+    """Verify p_h1 scans across measured coupling values."""
+
+    def test_returns_matching_lengths(self) -> None:
+        """Align coupling, p_h1, and persistent-H1 series lengths."""
         K_values = np.array([0.0, 0.5, 1.0])
         x_list = [{"0000": 1000}, {"0000": 700, "0011": 300}, {"0000": 1000}]
         y_list = [{"0000": 1000}, {"0000": 700, "0101": 300}, {"0000": 1000}]
