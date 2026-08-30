@@ -40,7 +40,7 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/control/structured_ansatz.py" in report
+    assert "--include=*/control/structured_ansatz.py,*/phase/structured_ansatz.py" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -65,6 +65,7 @@ def test_ci_runs_and_aggregates_control_structured_ansatz_gate() -> None:
     for path in quality_gates.CONTROL_STRUCTURED_ANSATZ_COVERAGE_COHORT:
         assert path in block
     assert "--fail-under=100" in block
-    assert "control/structured_ansatz.py" in block
+    for path in quality_gates.STRUCTURED_ANSATZ_SOURCES:
+        assert path in block
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "control-structured-ansatz-quality" in aggregate

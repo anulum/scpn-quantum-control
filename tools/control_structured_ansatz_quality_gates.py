@@ -13,12 +13,18 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 CONTROL_STRUCTURED_ANSATZ_SOURCE = "src/scpn_quantum_control/control/structured_ansatz.py"
+PHASE_STRUCTURED_ANSATZ_SOURCE = "src/scpn_quantum_control/phase/structured_ansatz.py"
+STRUCTURED_ANSATZ_SOURCES = [
+    CONTROL_STRUCTURED_ANSATZ_SOURCE,
+    PHASE_STRUCTURED_ANSATZ_SOURCE,
+]
 CONTROL_STRUCTURED_ANSATZ_COVERAGE_COHORT = [
     "tests/test_control_structured_ansatz.py",
     "tests/test_structured_ansatz_branches.py",
+    "tests/test_structured_ansatz.py",
 ]
 CONTROL_STRUCTURED_ANSATZ_TYPING_RATCHET = [
-    CONTROL_STRUCTURED_ANSATZ_SOURCE,
+    *STRUCTURED_ANSATZ_SOURCES,
     *CONTROL_STRUCTURED_ANSATZ_COVERAGE_COHORT,
     "tools/control_structured_ansatz_quality_gates.py",
     "tests/test_control_structured_ansatz_quality_gate.py",
@@ -92,7 +98,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={CONTROL_STRUCTURED_ANSATZ_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/control/structured_ansatz.py",
+                "--include=*/control/structured_ansatz.py,*/phase/structured_ansatz.py",
             ],
         ),
     ]
@@ -104,6 +110,8 @@ __all__ = [
     "CONTROL_STRUCTURED_ANSATZ_DOCSTRING_RATCHET",
     "CONTROL_STRUCTURED_ANSATZ_SOURCE",
     "CONTROL_STRUCTURED_ANSATZ_TYPING_RATCHET",
+    "PHASE_STRUCTURED_ANSATZ_SOURCE",
+    "STRUCTURED_ANSATZ_SOURCES",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]
