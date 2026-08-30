@@ -29,18 +29,27 @@ def spn_to_circuit(
 ) -> QuantumCircuit:
     """Convert SPN weight matrices to a quantum circuit.
 
-    Args:
-        W_in: (n_transitions, n_places) input arc weights. Negative = inhibitor.
-        W_out: (n_places, n_transitions) output arc weights.
-        thresholds: (n_transitions,) firing thresholds.
-
-    Inhibitor arcs (W_in < 0): the place must be empty (|0>) for the
-    transition to fire.  Implemented as anti-controlled rotation on output
-    places: X on inhibitor place, CRy on output, X restore.
+    Parameters
+    ----------
+    W_in
+        Input arc weights shaped ``(n_transitions, n_places)``. Negative
+        entries designate inhibitor arcs.
+    W_out
+        Output arc weights shaped ``(n_places, n_transitions)``.
+    thresholds
+        Firing thresholds shaped ``(n_transitions,)``.
 
     Returns
     -------
-        QuantumCircuit with n_places qubits.
+    qiskit.QuantumCircuit
+        Circuit containing one qubit per place.
+
+    Notes
+    -----
+    An inhibitor arc requires its place to be empty for the transition to
+    fire. The circuit implements this condition by surrounding the controlled
+    output rotation with Pauli-X gates on each inhibitor place.
+
     """
     n_t, n_p = W_in.shape
     qc = QuantumCircuit(n_p)
@@ -76,6 +85,18 @@ def inhibitor_anti_control(
     """Anti-control: output fires only when inhibitor places are empty (|0>).
 
     Pattern per inhibitor qubit: X flips control sense so CRy activates on |0>.
+
+    Parameters
+    ----------
+    circuit
+        Circuit to mutate with the anti-controlled rotation.
+    inhibitor_qubits
+        Qubits whose zero state enables the output rotation.
+    target
+        Output qubit that receives the rotation.
+    theta
+        Rotation angle in radians.
+
     """
     for q in inhibitor_qubits:
         circuit.x(q)

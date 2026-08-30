@@ -19,14 +19,18 @@ from scpn_quantum_control.bridge.spn_to_qcircuit import inhibitor_anti_control, 
 
 
 class TestSPNToCircuit:
-    def test_qubit_count_matches_places(self):
+    """Exercise SPN matrix compilation into quantum circuits."""
+
+    def test_qubit_count_matches_places(self) -> None:
+        """Allocate one circuit qubit for every SPN place."""
         W_in = np.array([[0.5, 0.3], [0.0, 0.7]])
         W_out = np.array([[0.4, 0.0], [0.0, 0.6]])
         thresholds = np.array([0.5, 0.5])
         qc = spn_to_circuit(W_in, W_out, thresholds)
         assert qc.num_qubits == 2
 
-    def test_zero_weights_no_gates(self):
+    def test_zero_weights_no_gates(self) -> None:
+        """Skip all gates when every input and output arc is absent."""
         W_in = np.zeros((1, 2))
         W_out = np.zeros((2, 1))
         thresholds = np.array([0.5])
@@ -34,14 +38,16 @@ class TestSPNToCircuit:
         assert qc.num_qubits == 2
         assert len(qc.data) == 0
 
-    def test_larger_network(self):
+    def test_larger_network(self) -> None:
+        """Compile multiple transitions over a three-place network."""
         W_in = np.array([[0.5, 0.3, 0.0], [0.0, 0.0, 0.8]])
         W_out = np.array([[0.0, 0.4], [0.6, 0.0], [0.0, 0.5]])
         thresholds = np.array([0.5, 0.5])
         qc = spn_to_circuit(W_in, W_out, thresholds)
         assert qc.num_qubits == 3
 
-    def test_single_transition_single_place(self):
+    def test_single_transition_single_place(self) -> None:
+        """Compile the minimal one-place, one-transition network."""
         W_in = np.array([[0.5]])
         W_out = np.array([[0.5]])
         thresholds = np.array([1.0])
@@ -55,14 +61,17 @@ class TestSPNToCircuit:
 
 
 class TestInhibitorAntiControl:
-    def test_produces_x_gates(self):
+    """Exercise direct construction of inhibitor anti-controls."""
+
+    def test_produces_x_gates(self) -> None:
+        """Surround a single controlled rotation with two Pauli-X gates."""
         qc = QuantumCircuit(2)
         inhibitor_anti_control(qc, [0], 1, np.pi / 4)
         ops = [inst.operation.name for inst in qc.data]
         assert ops.count("x") == 2
         assert "cry" in ops
 
-    def test_self_inhibitor_bare_ry(self):
+    def test_self_inhibitor_bare_ry(self) -> None:
         """When inhibitor == target, use bare Ry (no control)."""
         qc = QuantumCircuit(3)
         inhibitor_anti_control(qc, [1], target=1, theta=0.5)
@@ -70,14 +79,15 @@ class TestInhibitorAntiControl:
 
         assert any(isinstance(inst.operation, RYGate) for inst in qc.data)
 
-    def test_all_inhibitors_equal_target(self):
+    def test_all_inhibitors_equal_target(self) -> None:
+        """Use a bare rotation when every inhibitor is also the target."""
         qc = QuantumCircuit(3)
         inhibitor_anti_control(qc, [1, 1], target=1, theta=0.5)
         from qiskit.circuit.library import RYGate
 
         assert any(isinstance(inst.operation, RYGate) for inst in qc.data)
 
-    def test_multiple_inhibitors(self):
+    def test_multiple_inhibitors(self) -> None:
         """Multi-controlled anti-pattern should produce controlled RY."""
         qc = QuantumCircuit(3)
         inhibitor_anti_control(qc, [0, 1], target=2, theta=np.pi / 4)
@@ -91,7 +101,10 @@ class TestInhibitorAntiControl:
 
 
 class TestNegativeWeightInhibitor:
-    def test_negative_input_produces_x_gates(self):
+    """Exercise negative input weights as inhibitor arcs."""
+
+    def test_negative_input_produces_x_gates(self) -> None:
+        """Compile a negative input weight into an anti-control pattern."""
         W_in = np.array([[-0.5, 0.3]])
         W_out = np.array([[0.4], [0.0]])
         thresholds = np.array([0.5])
@@ -99,7 +112,7 @@ class TestNegativeWeightInhibitor:
         ops = [inst.operation.name for inst in qc.data]
         assert "x" in ops
 
-    def test_inhibitor_blocks_when_place_occupied(self):
+    def test_inhibitor_blocks_when_place_occupied(self) -> None:
         """Output fires when inhibitor place is empty, suppressed when occupied."""
         W_in = np.array([[-0.5, 0.0]])
         W_out = np.array([[0.0], [0.9]])
@@ -129,7 +142,9 @@ class TestNegativeWeightInhibitor:
 
 
 class TestCircuitUnitarity:
-    def test_circuit_preserves_norm(self):
+    """Check the compiled circuit's unitary state evolution."""
+
+    def test_circuit_preserves_norm(self) -> None:
         """Any SPN circuit should preserve statevector normalisation."""
         W_in = np.array([[0.5, -0.3], [0.0, 0.7]])
         W_out = np.array([[0.4, 0.0], [0.0, 0.6]])
