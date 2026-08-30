@@ -142,14 +142,20 @@ def project_to_parity_sector(
 ) -> NDArray[np.complex128]:
     """Project a state vector into a specific parity sector.
 
-    Args:
-        state: State vector of length 2^N.
-        parity: 0 (even) or 1 (odd).
-        n_qubits: Number of qubits.
+    Parameters
+    ----------
+    state
+        State vector of length ``2**n_qubits``.
+    parity
+        Target sector: zero for even or one for odd parity.
+    n_qubits
+        Number of qubits represented by the state vector.
 
     Returns
     -------
-        Projected (unnormalized) state vector.
+    numpy.ndarray
+        Projected, unnormalised state vector.
+
     """
     d = 2**n_qubits
     projected = np.zeros(d, dtype=complex)

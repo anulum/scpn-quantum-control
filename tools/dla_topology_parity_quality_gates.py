@@ -14,21 +14,28 @@ from os import devnull
 Gate = tuple[str, list[str]]
 DLA_TOPOLOGY_PARITY_SOURCE = "src/scpn_quantum_control/dla_topology_control/parity.py"
 """Production source owned by the parity projector."""
+DLA_PARITY_THEOREM_SOURCE = "src/scpn_quantum_control/analysis/dla_parity_theorem.py"
+"""Closed-form theorem and legacy sector-projection source."""
 DLA_TOPOLOGY_PARITY_COVERAGE_COHORT = [
     "tests/test_dla_topology_control_parity.py",
     "tests/test_dla_topology_control_objectives.py",
     "tests/test_dla_topology_control_optimizer.py",
+    "tests/test_dla_parity_theorem.py",
 ]
 """Projector tests and its objective and optimiser consumers."""
 DLA_TOPOLOGY_PARITY_TYPING_RATCHET = [
     DLA_TOPOLOGY_PARITY_SOURCE,
+    DLA_PARITY_THEOREM_SOURCE,
+    "tests/test_dla_parity_theorem.py",
     "tools/dla_topology_parity_quality_gates.py",
     "tests/test_dla_topology_parity_quality_gate.py",
 ]
 """Strict-typing cohort for production and gate contracts."""
 DLA_TOPOLOGY_PARITY_DOCSTRING_RATCHET = [
     DLA_TOPOLOGY_PARITY_SOURCE,
+    DLA_PARITY_THEOREM_SOURCE,
     "tests/test_dla_topology_control_parity.py",
+    "tests/test_dla_parity_theorem.py",
     "tools/dla_topology_parity_quality_gates.py",
     "tests/test_dla_topology_parity_quality_gate.py",
 ]
@@ -59,8 +66,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *DLA_TOPOLOGY_PARITY_DOCSTRING_RATCHET,
@@ -99,13 +107,14 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={DLA_TOPOLOGY_PARITY_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/dla_topology_control/parity.py",
+                "--include=*/dla_topology_control/parity.py,*/analysis/dla_parity_theorem.py",
             ],
         ),
     ]
 
 
 __all__ = [
+    "DLA_PARITY_THEOREM_SOURCE",
     "DLA_TOPOLOGY_PARITY_COVERAGE_COHORT",
     "DLA_TOPOLOGY_PARITY_COVERAGE_DATA_FILE",
     "DLA_TOPOLOGY_PARITY_DOCSTRING_RATCHET",

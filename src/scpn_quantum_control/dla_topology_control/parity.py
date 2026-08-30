@@ -206,16 +206,16 @@ class ParitySectorProjector:
             If false, return absolute outside-sector squared norm. If true,
             divide by total squared norm and differentiate that quotient.
 
-        Raises
-        ------
-        ValueError
-            If the state is zero, malformed, or non-finite.
-
         Returns
         -------
         ParityLeakageEvaluation
             Leakage value, exact Euclidean complex gradient, normalisation
             mode, and the positive total norm used by the calculation.
+
+        Raises
+        ------
+        ValueError
+            If the state is zero, malformed, or non-finite.
 
         """
         value = self.as_state(state)
