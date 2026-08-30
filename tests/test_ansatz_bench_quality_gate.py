@@ -40,7 +40,7 @@ def test_coverage_gate_is_isolated_public_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/phase/ansatz_bench.py" in report
+    assert f"--include={quality_gates.ANSATZ_BENCH_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -66,6 +66,6 @@ def test_ci_runs_and_aggregates_ansatz_bench_gate() -> None:
     for path in quality_gates.ANSATZ_BENCH_COVERAGE_COHORT:
         assert path in block
     assert "--fail-under=100" in block
-    assert quality_gates.ANSATZ_BENCH_SOURCE in block
+    assert quality_gates.ANSATZ_BENCH_COVERAGE_INCLUDE in block
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "ansatz-benchmark-quality" in aggregate

@@ -40,7 +40,24 @@ from ..hardware.classical import classical_exact_diag
 
 @dataclass
 class AppQSimMetrics:
-    """Application-oriented benchmarking metrics."""
+    """Application-oriented benchmarking metrics.
+
+    Attributes
+    ----------
+    order_parameter_error
+        Absolute error of the global synchronization order parameter.
+    energy_relative_error_pct
+        Absolute energy error relative to the exact energy, in percent.
+    correlation_fidelity
+        One minus the normalised Frobenius correlator error.
+    n_qubits
+        Number of simulated qubits.
+    n_gates
+        Gate count of the evaluated circuit.
+    circuit_depth
+        Depth of the evaluated circuit.
+
+    """
 
     order_parameter_error: float  # |R_quantum - R_exact|
     energy_relative_error_pct: float  # |E_q - E_ex| / |E_ex| × 100
@@ -76,12 +93,25 @@ def appqsim_benchmark(
 ) -> AppQSimMetrics:
     """Run AppQSim benchmarking protocol.
 
-    Args:
-        K: coupling matrix
-        omega: natural frequencies
-        circuit_sv: statevector from quantum circuit (default: VQE)
-        n_gates: gate count of the circuit
-        circuit_depth: depth of the circuit
+    Parameters
+    ----------
+    K
+        Coupling matrix.
+    omega
+        Natural-frequency vector.
+    circuit_sv
+        Optional evaluated circuit statevector. When omitted, a local VQE
+        supplies the statevector and circuit resources.
+    n_gates
+        Gate count associated with ``circuit_sv``.
+    circuit_depth
+        Circuit depth associated with ``circuit_sv``.
+
+    Returns
+    -------
+    AppQSimMetrics
+        Application error, fidelity, and circuit-resource metrics.
+
     """
     n = K.shape[0]
     exact = classical_exact_diag(n, K=K, omega=omega)

@@ -14,10 +14,18 @@ from os import devnull
 Gate = tuple[str, list[str]]
 ANSATZ_BENCH_SOURCE = "src/scpn_quantum_control/phase/ansatz_bench.py"
 ANSATZ_BENCH_PRIMARY_TEST = "tests/test_ansatz_bench.py"
-ANSATZ_BENCH_COVERAGE_COHORT = [ANSATZ_BENCH_PRIMARY_TEST]
+APPQSIM_PROTOCOL_SOURCE = "src/scpn_quantum_control/benchmarks/appqsim_protocol.py"
+APPQSIM_PROTOCOL_DIRECT_TEST = "tests/test_appqsim_protocol.py"
+ANSATZ_BENCH_COVERAGE_COHORT = [
+    ANSATZ_BENCH_PRIMARY_TEST,
+    APPQSIM_PROTOCOL_DIRECT_TEST,
+]
+ANSATZ_BENCH_COVERAGE_INCLUDE = "*/phase/ansatz_bench.py,*/benchmarks/appqsim_protocol.py"
 ANSATZ_BENCH_TYPING_RATCHET = [
     ANSATZ_BENCH_SOURCE,
     ANSATZ_BENCH_PRIMARY_TEST,
+    APPQSIM_PROTOCOL_SOURCE,
+    APPQSIM_PROTOCOL_DIRECT_TEST,
     "tools/ansatz_bench_quality_gates.py",
     "tests/test_ansatz_bench_quality_gate.py",
 ]
@@ -88,7 +96,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={ANSATZ_BENCH_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/phase/ansatz_bench.py",
+                f"--include={ANSATZ_BENCH_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -97,10 +105,13 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "ANSATZ_BENCH_COVERAGE_COHORT",
     "ANSATZ_BENCH_COVERAGE_DATA_FILE",
+    "ANSATZ_BENCH_COVERAGE_INCLUDE",
     "ANSATZ_BENCH_DOCSTRING_RATCHET",
     "ANSATZ_BENCH_PRIMARY_TEST",
     "ANSATZ_BENCH_SOURCE",
     "ANSATZ_BENCH_TYPING_RATCHET",
+    "APPQSIM_PROTOCOL_DIRECT_TEST",
+    "APPQSIM_PROTOCOL_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]
