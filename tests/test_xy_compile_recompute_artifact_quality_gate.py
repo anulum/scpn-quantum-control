@@ -34,10 +34,16 @@ def test_coverage_gate_is_real_and_exact() -> None:
     run = gates["XY-compile-recompute-artifact focused coverage"]
     report = gates["XY-compile-recompute-artifact exact coverage threshold"]
     assert "--branch" in run
-    assert run[-1:] == quality_gates.XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_COHORT
+    assert (
+        run[-len(quality_gates.XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_COHORT) :]
+        == quality_gates.XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_COHORT
+    )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/studio/xy_compile_recompute_artifact.py" in report
+    assert (
+        "--include=*/studio/xy_compile_recompute_artifact.py,"
+        "*/studio/executive_compile.py,*/studio/executive_cli.py"
+    ) in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:

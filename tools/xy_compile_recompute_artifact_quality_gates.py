@@ -15,16 +15,31 @@ Gate = tuple[str, list[str]]
 XY_COMPILE_RECOMPUTE_ARTIFACT_SOURCE = (
     "src/scpn_quantum_control/studio/xy_compile_recompute_artifact.py"
 )
+COMPILE_SOURCE = "src/scpn_quantum_control/studio/executive_compile.py"
+EXECUTIVE_CLI_SOURCE = "src/scpn_quantum_control/studio/executive_cli.py"
+COMPILE_TEST = "tests/test_studio_executive_compile.py"
+EXECUTIVE_CLI_TEST = "tests/test_studio_executive_cli.py"
 XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_COHORT = [
-    "tests/test_studio_xy_compile_recompute_artifact.py"
+    "tests/test_studio_xy_compile_recompute_artifact.py",
+    COMPILE_TEST,
+    EXECUTIVE_CLI_TEST,
 ]
 XY_COMPILE_RECOMPUTE_ARTIFACT_TYPING_RATCHET = [
     XY_COMPILE_RECOMPUTE_ARTIFACT_SOURCE,
+    COMPILE_SOURCE,
+    EXECUTIVE_CLI_SOURCE,
     *XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_COHORT,
     "tools/xy_compile_recompute_artifact_quality_gates.py",
     "tests/test_xy_compile_recompute_artifact_quality_gate.py",
 ]
-XY_COMPILE_RECOMPUTE_ARTIFACT_DOCSTRING_RATCHET = [*XY_COMPILE_RECOMPUTE_ARTIFACT_TYPING_RATCHET]
+XY_COMPILE_RECOMPUTE_ARTIFACT_DOCSTRING_RATCHET = [
+    XY_COMPILE_RECOMPUTE_ARTIFACT_SOURCE,
+    COMPILE_SOURCE,
+    "tests/test_studio_xy_compile_recompute_artifact.py",
+    COMPILE_TEST,
+    "tools/xy_compile_recompute_artifact_quality_gates.py",
+    "tests/test_xy_compile_recompute_artifact_quality_gate.py",
+]
 XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_DATA_FILE = (  # nosec B108
     "/tmp/scpn-qc-xy-compile-recompute-artifact-quality.coverage"
 )
@@ -93,13 +108,20 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/studio/xy_compile_recompute_artifact.py",
+                (
+                    "--include=*/studio/xy_compile_recompute_artifact.py,"
+                    "*/studio/executive_compile.py,*/studio/executive_cli.py"
+                ),
             ],
         ),
     ]
 
 
 __all__ = [
+    "COMPILE_SOURCE",
+    "COMPILE_TEST",
+    "EXECUTIVE_CLI_SOURCE",
+    "EXECUTIVE_CLI_TEST",
     "XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_COHORT",
     "XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_DATA_FILE",
     "XY_COMPILE_RECOMPUTE_ARTIFACT_DOCSTRING_RATCHET",

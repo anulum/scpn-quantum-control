@@ -133,7 +133,7 @@ class CompileActionHandler(ActionHandler):
 
     @property
     def verb(self) -> str:
-        """Return ``"compile"``."""
+        """The Studio verb owned by this handler."""
         return COMPILE_VERB
 
     def plan(self, request: ExecutiveRequest, contract: VerbContract) -> ExecutionPlan:
@@ -151,6 +151,7 @@ class CompileActionHandler(ActionHandler):
         -------
         ExecutionPlan
             The normalised, inspectable plan.
+
         """
         backend = request.backend or _DEFAULT_BACKEND
         if backend not in contract.backends:
@@ -185,6 +186,7 @@ class CompileActionHandler(ActionHandler):
         ExecutionResult
             A succeeded result carrying the input digest, recompute schema, and
             the self-verification verdict.
+
         """
         compile_spec: dict[str, Any] = dict(plan.parameters)
         k_nm, omega = _arrays(compile_spec)
@@ -225,6 +227,7 @@ class CompileActionHandler(ActionHandler):
         -------
         GeneratedScript
             The reproduction script, digest attached.
+
         """
         compile_spec: dict[str, Any] = dict(plan.parameters)
         source = _render_script(
