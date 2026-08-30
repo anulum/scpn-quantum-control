@@ -87,6 +87,7 @@ def _load_summary(artifact_path: Path) -> dict[str, Any]:
     ValueError
         If the summary is missing its method, its measured pairs, or the
         confusion-matrix honesty caveat.
+
     """
     resolved = artifact_path if artifact_path.is_absolute() else REPO_ROOT / artifact_path
     payload: dict[str, Any] = json.loads(resolved.read_text(encoding="utf-8"))
@@ -127,6 +128,7 @@ def build_readout_mitigation_bundle(
     ------
     ValueError
         If the summary fails its shape check.
+
     """
     payload = _load_summary(artifact_path)
     pairs: list[dict[str, Any]] = payload["pairs"]
@@ -187,6 +189,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     int
         ``0`` when the bundle is admitted by the federation gate, ``1``
         otherwise.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

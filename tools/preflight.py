@@ -263,6 +263,9 @@ if TYPE_CHECKING:
     from tools import (
         studio_qec_readiness_bundle_quality_gates as _studio_qec_readiness_bundle_quality_gates,
     )
+    from tools import (
+        studio_readout_mitigation_bundle_quality_gates as _studio_readout_mitigation_bundle_quality_gates,
+    )
     from tools import studio_replay_quality_gates as _studio_replay_quality_gates
     from tools import (
         studio_scorecard_bundle_quality_gates as _studio_scorecard_bundle_quality_gates,
@@ -572,6 +575,9 @@ else:
     _studio_executive_quality_gates = import_module("tools.studio_executive_product_quality_gates")
     _studio_qec_readiness_bundle_quality_gates = import_module(
         "tools.studio_qec_readiness_bundle_quality_gates"
+    )
+    _studio_readout_mitigation_bundle_quality_gates = import_module(
+        "tools.studio_readout_mitigation_bundle_quality_gates"
     )
     _studio_replay_quality_gates = import_module("tools.studio_replay_quality_gates")
     _studio_simulation_quality_gates = import_module("tools.studio_simulation_quality_gates")
@@ -985,6 +991,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_differentiable_notebook_curriculum_quality_gates.build_static_quality_gates(_PY),
     *_studio_executive_quality_gates.build_static_quality_gates(_PY),
     *_studio_qec_readiness_bundle_quality_gates.build_static_quality_gates(_PY),
+    *_studio_readout_mitigation_bundle_quality_gates.build_static_quality_gates(_PY),
     *_studio_replay_quality_gates.build_static_quality_gates(_PY),
     *_studio_simulation_quality_gates.build_static_quality_gates(_PY),
     *_studio_scorecard_bundle_quality_gates.build_static_quality_gates(_PY),
@@ -1573,6 +1580,9 @@ STUDIO_EXECUTIVE_PRODUCT_COVERAGE_GATES = _studio_executive_quality_gates.build_
 STUDIO_QEC_READINESS_BUNDLE_COVERAGE_GATES = (
     _studio_qec_readiness_bundle_quality_gates.build_coverage_gates(_PY)
 )
+STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_GATES = (
+    _studio_readout_mitigation_bundle_quality_gates.build_coverage_gates(_PY)
+)
 STUDIO_REPLAY_COVERAGE_GATES = _studio_replay_quality_gates.build_coverage_gates(_PY)
 STUDIO_SIMULATION_COVERAGE_GATES = _studio_simulation_quality_gates.build_coverage_gates(_PY)
 STUDIO_SCORECARD_BUNDLE_COVERAGE_GATES = (
@@ -2001,6 +2011,7 @@ def main() -> int:
             gates.extend(DIFFERENTIABLE_NOTEBOOK_CURRICULUM_COVERAGE_GATES)
             gates.extend(STUDIO_EXECUTIVE_PRODUCT_COVERAGE_GATES)
             gates.extend(STUDIO_QEC_READINESS_BUNDLE_COVERAGE_GATES)
+            gates.extend(STUDIO_READOUT_MITIGATION_BUNDLE_COVERAGE_GATES)
             gates.extend(STUDIO_REPLAY_COVERAGE_GATES)
             gates.extend(STUDIO_SIMULATION_COVERAGE_GATES)
             gates.extend(STUDIO_SCORECARD_BUNDLE_COVERAGE_GATES)
