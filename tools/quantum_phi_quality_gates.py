@@ -16,28 +16,44 @@ QUANTUM_PHI_SOURCE = "src/scpn_quantum_control/analysis/quantum_phi.py"
 INTEGRATED_INFORMATION_PHI_SOURCE = (
     "src/scpn_quantum_control/analysis/integrated_information_phi.py"
 )
+SYNC_ORDER_PARAMETER_SOURCE = "src/scpn_quantum_control/analysis/sync_order_parameter.py"
+SYNC_ORDER_PROXY_DIRECT_TEST = "tests/test_sync_order_proxy_contract.py"
+SYNC_ORDER_PARAMETER_BRANCH_TEST = "tests/test_sync_order_parameter_branch.py"
 QUANTUM_PHI_COVERAGE_SOURCES = [
     QUANTUM_PHI_SOURCE,
     INTEGRATED_INFORMATION_PHI_SOURCE,
+    SYNC_ORDER_PARAMETER_SOURCE,
 ]
-QUANTUM_PHI_COVERAGE_INCLUDE = "*/analysis/quantum_phi.py,*/analysis/integrated_information_phi.py"
+QUANTUM_PHI_COVERAGE_INCLUDE = (
+    "*/analysis/quantum_phi.py,*/analysis/integrated_information_phi.py,"
+    "*/analysis/sync_order_parameter.py"
+)
 QUANTUM_PHI_COVERAGE_COHORT = [
     "tests/test_quantum_phi.py",
     "tests/test_analysis_topology_contracts.py",
     "tests/test_observables.py",
+    SYNC_ORDER_PROXY_DIRECT_TEST,
+    SYNC_ORDER_PARAMETER_BRANCH_TEST,
+    "tests/test_sync_uncertainty.py",
 ]
 QUANTUM_PHI_TYPING_RATCHET = [
     QUANTUM_PHI_SOURCE,
     INTEGRATED_INFORMATION_PHI_SOURCE,
+    SYNC_ORDER_PARAMETER_SOURCE,
     "tests/test_observables.py",
+    SYNC_ORDER_PROXY_DIRECT_TEST,
+    SYNC_ORDER_PARAMETER_BRANCH_TEST,
     "tools/quantum_phi_quality_gates.py",
     "tests/test_quantum_phi_quality_gate.py",
 ]
 QUANTUM_PHI_DOCSTRING_RATCHET = [
     QUANTUM_PHI_SOURCE,
     INTEGRATED_INFORMATION_PHI_SOURCE,
+    SYNC_ORDER_PARAMETER_SOURCE,
     "tests/test_quantum_phi.py",
     "tests/test_observables.py",
+    SYNC_ORDER_PROXY_DIRECT_TEST,
+    SYNC_ORDER_PARAMETER_BRANCH_TEST,
     "tools/quantum_phi_quality_gates.py",
     "tests/test_quantum_phi_quality_gate.py",
 ]
@@ -122,6 +138,9 @@ __all__ = [
     "QUANTUM_PHI_DOCSTRING_RATCHET",
     "QUANTUM_PHI_SOURCE",
     "QUANTUM_PHI_TYPING_RATCHET",
+    "SYNC_ORDER_PARAMETER_BRANCH_TEST",
+    "SYNC_ORDER_PARAMETER_SOURCE",
+    "SYNC_ORDER_PROXY_DIRECT_TEST",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

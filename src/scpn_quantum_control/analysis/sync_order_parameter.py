@@ -23,6 +23,14 @@ class SyncOrderParameter:
     ``R = |N**-1 sum_j (<X_j> + i<Y_j>)|``; counts in the computational basis
     only support the absolute mean Z-basis spin proxy emitted as
     ``sync_order_z_magnetisation``.
+
+    Attributes
+    ----------
+    local
+        Reserved compatibility flag for local-observable mode.
+    dtc_mode
+        Reserved compatibility flag for discrete-time-crystal mode.
+
     """
 
     def __init__(self, local: bool = False, dtc_mode: bool = False) -> None:
@@ -46,6 +54,7 @@ class SyncOrderParameter:
             compatibility value. ``is_xy_kuramoto_order_parameter`` is always
             ``0.0`` because this counts-only path does not measure the X/Y
             Kuramoto order parameter.
+
         """
         if counts is None or len(counts) == 0:
             return {

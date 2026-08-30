@@ -2548,7 +2548,10 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/analysis/quantum_phi.py
           src/scpn_quantum_control/analysis/integrated_information_phi.py
+          src/scpn_quantum_control/analysis/sync_order_parameter.py
           tests/test_observables.py
+          tests/test_sync_order_proxy_contract.py
+          tests/test_sync_order_parameter_branch.py
           tools/quantum_phi_quality_gates.py
           tests/test_quantum_phi_quality_gate.py
       - name: Ruff NumPy docstrings for quantum-QMI owning cohort
@@ -2557,8 +2560,11 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/quantum_phi.py
           src/scpn_quantum_control/analysis/integrated_information_phi.py
+          src/scpn_quantum_control/analysis/sync_order_parameter.py
           tests/test_quantum_phi.py
           tests/test_observables.py
+          tests/test_sync_order_proxy_contract.py
+          tests/test_sync_order_parameter_branch.py
           tools/quantum_phi_quality_gates.py
           tests/test_quantum_phi_quality_gate.py
       - name: Run quantum-QMI connected focused coverage
@@ -2571,6 +2577,9 @@ jobs:
           tests/test_quantum_phi.py
           tests/test_analysis_topology_contracts.py
           tests/test_observables.py
+          tests/test_sync_order_proxy_contract.py
+          tests/test_sync_order_parameter_branch.py
+          tests/test_sync_uncertainty.py
       - name: Enforce quantum-QMI exact coverage
         run: >-
           python -m coverage report
@@ -2578,7 +2587,7 @@ jobs:
           --data-file=/tmp/scpn-qc-quantum-phi-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/analysis/quantum_phi.py,*/analysis/integrated_information_phi.py
+          --include=*/analysis/quantum_phi.py,*/analysis/integrated_information_phi.py,*/analysis/sync_order_parameter.py
 
   qpu-result-pack-quality:
     needs: lint
