@@ -106,7 +106,7 @@ class ExecuteActionHandler(ActionHandler):
 
     @property
     def verb(self) -> str:
-        """Return ``"execute"``."""
+        """The Studio verb owned by this handler."""
         return EXECUTE_VERB
 
     def plan(self, request: ExecutiveRequest, contract: VerbContract) -> ExecutionPlan:
@@ -125,6 +125,7 @@ class ExecuteActionHandler(ActionHandler):
         -------
         ExecutionPlan
             The normalised, inspectable, approval-gated plan.
+
         """
         backend = request.backend or _DEFAULT_BACKEND
         if backend not in contract.backends:
@@ -160,6 +161,7 @@ class ExecuteActionHandler(ActionHandler):
             A succeeded result whose outputs are the deployment dossier. The
             dossier declares ``submitted=False`` and ``result_status`` unverifiable:
             no live job ran and no counts were produced.
+
         """
         deployment: dict[str, Any] = dict(plan.parameters)
         script_name = f"deploy_{_safe_slug(plan.action_id)}.py"
@@ -199,6 +201,7 @@ class ExecuteActionHandler(ActionHandler):
         GeneratedScript
             The operator submission scaffold, digest attached. The studio never
             runs this script; the operator does, with their own credentials.
+
         """
         deployment: dict[str, Any] = dict(plan.parameters)
         script_name = f"deploy_{_safe_slug(plan.action_id)}.py"

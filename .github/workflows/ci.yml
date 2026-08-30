@@ -2560,6 +2560,10 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/studio/qpu_result_pack.py
           src/scpn_quantum_control/hardware/qpu_result_pack_bridge.py
+          src/scpn_quantum_control/studio/executive_execute.py
+          src/scpn_quantum_control/studio/executive_cli.py
+          tests/test_studio_executive_execute.py
+          tests/test_studio_executive_cli.py
           tools/qpu_result_pack_quality_gates.py
           tests/test_qpu_result_pack_quality_gate.py
       - name: Ruff NumPy docstrings for QPU result-pack owning cohort
@@ -2568,8 +2572,10 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio/qpu_result_pack.py
           src/scpn_quantum_control/hardware/qpu_result_pack_bridge.py
+          src/scpn_quantum_control/studio/executive_execute.py
           tests/test_studio_qpu_result_pack.py
           tests/test_qpu_result_pack_bridge.py
+          tests/test_studio_executive_execute.py
           tools/qpu_result_pack_quality_gates.py
           tests/test_qpu_result_pack_quality_gate.py
       - name: Run QPU result-pack connected focused coverage
@@ -2582,6 +2588,7 @@ jobs:
           tests/test_studio_qpu_result_pack.py
           tests/test_qpu_result_pack_bridge.py
           tests/test_studio_executive_execute.py
+          tests/test_studio_executive_cli.py
       - name: Enforce QPU result-pack exact coverage
         run: >-
           python -m coverage report
@@ -2589,7 +2596,7 @@ jobs:
           --data-file=/tmp/scpn-qc-qpu-result-pack-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/studio/qpu_result_pack.py
+          --include=*/studio/qpu_result_pack.py,*/studio/executive_execute.py,*/studio/executive_cli.py
 
   kuramoto-variants-quality:
     needs: lint

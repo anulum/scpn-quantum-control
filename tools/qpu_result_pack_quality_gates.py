@@ -14,22 +14,33 @@ from os import devnull
 Gate = tuple[str, list[str]]
 QPU_RESULT_PACK_SOURCE = "src/scpn_quantum_control/studio/qpu_result_pack.py"
 QPU_RESULT_PACK_BRIDGE = "src/scpn_quantum_control/hardware/qpu_result_pack_bridge.py"
+EXECUTE_SOURCE = "src/scpn_quantum_control/studio/executive_execute.py"
+EXECUTIVE_CLI_SOURCE = "src/scpn_quantum_control/studio/executive_cli.py"
+EXECUTE_TEST = "tests/test_studio_executive_execute.py"
+EXECUTIVE_CLI_TEST = "tests/test_studio_executive_cli.py"
 QPU_RESULT_PACK_COVERAGE_COHORT = [
     "tests/test_studio_qpu_result_pack.py",
     "tests/test_qpu_result_pack_bridge.py",
-    "tests/test_studio_executive_execute.py",
+    EXECUTE_TEST,
+    EXECUTIVE_CLI_TEST,
 ]
 QPU_RESULT_PACK_TYPING_RATCHET = [
     QPU_RESULT_PACK_SOURCE,
     QPU_RESULT_PACK_BRIDGE,
+    EXECUTE_SOURCE,
+    EXECUTIVE_CLI_SOURCE,
+    EXECUTE_TEST,
+    EXECUTIVE_CLI_TEST,
     "tools/qpu_result_pack_quality_gates.py",
     "tests/test_qpu_result_pack_quality_gate.py",
 ]
 QPU_RESULT_PACK_DOCSTRING_RATCHET = [
     QPU_RESULT_PACK_SOURCE,
     QPU_RESULT_PACK_BRIDGE,
+    EXECUTE_SOURCE,
     "tests/test_studio_qpu_result_pack.py",
     "tests/test_qpu_result_pack_bridge.py",
+    EXECUTE_TEST,
     "tools/qpu_result_pack_quality_gates.py",
     "tests/test_qpu_result_pack_quality_gate.py",
 ]
@@ -99,13 +110,20 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={QPU_RESULT_PACK_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/studio/qpu_result_pack.py",
+                (
+                    "--include=*/studio/qpu_result_pack.py,"
+                    "*/studio/executive_execute.py,*/studio/executive_cli.py"
+                ),
             ],
         ),
     ]
 
 
 __all__ = [
+    "EXECUTE_SOURCE",
+    "EXECUTE_TEST",
+    "EXECUTIVE_CLI_SOURCE",
+    "EXECUTIVE_CLI_TEST",
     "QPU_RESULT_PACK_BRIDGE",
     "QPU_RESULT_PACK_COVERAGE_COHORT",
     "QPU_RESULT_PACK_COVERAGE_DATA_FILE",

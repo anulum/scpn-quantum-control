@@ -9,25 +9,42 @@
 
 from __future__ import annotations
 
-from typing import Any
+import runpy
+import sys
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
-pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
-
-from scpn_quantum_control.studio.executive import (  # noqa: E402
-    ActionRegistry,
-    ExecutiveRequest,
-    preview_action,
-    resolve_verb_contract,
-    run_action,
-)
-from scpn_quantum_control.studio.executive_execute import (  # noqa: E402
-    EXECUTE_VERB,
-    ExecuteActionHandler,
-    _normalise_deployment,
-    _safe_slug,
-)
+if TYPE_CHECKING:
+    from scpn_quantum_control.studio.executive import (
+        ActionRegistry,
+        ExecutiveRequest,
+        preview_action,
+        resolve_verb_contract,
+        run_action,
+    )
+    from scpn_quantum_control.studio.executive_execute import (
+        EXECUTE_VERB,
+        ExecuteActionHandler,
+        _normalise_deployment,
+        _safe_slug,
+    )
+else:
+    pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
+    from scpn_quantum_control.studio.executive import (
+        ActionRegistry,
+        ExecutiveRequest,
+        preview_action,
+        resolve_verb_contract,
+        run_action,
+    )
+    from scpn_quantum_control.studio.executive_execute import (
+        EXECUTE_VERB,
+        ExecuteActionHandler,
+        _normalise_deployment,
+        _safe_slug,
+    )
 
 _DEPLOYMENT: dict[str, Any] = {
     "provider": "ibm-quantum",
@@ -62,6 +79,7 @@ def _request(
 # approval gate
 # --------------------------------------------------------------------------- #
 def test_execute_gates_closed_without_approval() -> None:
+    """Keep the public action spine closed without operator approval."""
     record = run_action(_request(), registry=_registry())
     assert record.result.status == "gated"
     assert record.script is None
@@ -69,6 +87,7 @@ def test_execute_gates_closed_without_approval() -> None:
 
 
 def test_execute_runs_a_no_submit_deployment_when_approved() -> None:
+    """Build an approved dossier without submitting or inventing counts."""
     record = run_action(_request(approved=True), registry=_registry())
     assert record.result.status == "succeeded"
     outputs = record.result.outputs
@@ -81,6 +100,7 @@ def test_execute_runs_a_no_submit_deployment_when_approved() -> None:
 
 
 def test_execute_plan_defaults_backend_and_is_gated() -> None:
+    """Expose the default backend and live-hardware approval boundary."""
     plan = preview_action(_request(), registry=_registry())
     assert plan.backend == "qiskit-runtime"
     assert plan.requires_approval is True
@@ -88,11 +108,13 @@ def test_execute_plan_defaults_backend_and_is_gated() -> None:
 
 
 def test_execute_accepts_declared_provider_hal_backend() -> None:
+    """Accept the provider-HAL backend declared by the verb contract."""
     plan = preview_action(_request(backend="provider-hal"), registry=_registry())
     assert plan.backend == "provider-hal"
 
 
 def test_execute_rejects_undeclared_backend() -> None:
+    """Reject a backend absent from the public execute contract."""
     handler = ExecuteActionHandler()
     contract = resolve_verb_contract(EXECUTE_VERB)
     with pytest.raises(ValueError, match="is not declared for the execute verb"):
@@ -103,6 +125,7 @@ def test_execute_rejects_undeclared_backend() -> None:
 # generated submission script
 # --------------------------------------------------------------------------- #
 def test_generated_deploy_script_is_guarded_and_compiles() -> None:
+    """Generate a syntactically valid operator script with a confirmation gate."""
     record = run_action(_request(approved=True), registry=_registry())
     assert record.script is not None
     source = record.script.source
@@ -114,7 +137,27 @@ def test_generated_deploy_script_is_guarded_and_compiles() -> None:
     assert record.script.entrypoint.endswith("--confirm")
 
 
+def test_generated_deploy_script_refuses_real_entrypoint_without_confirm(
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Execute the generated script and refuse before any provider boundary."""
+    record = run_action(_request(approved=True), registry=_registry())
+    assert record.script is not None
+    script_path = tmp_path / record.script.filename
+    script_path.write_text(record.script.source, encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", [str(script_path)])
+
+    with pytest.raises(SystemExit) as excinfo:
+        runpy.run_path(str(script_path), run_name="__main__")
+
+    assert excinfo.value.code == 2
+    assert capsys.readouterr().out.strip() == (
+        "refusing to submit a live QPU job without --confirm"
+    )
+
+
 def test_deployment_dossier_carries_optional_calibration_ref() -> None:
+    """Carry an optional calibration reference into the no-submit dossier."""
     record = run_action(
         _request(approved=True, calibration_ref="calibration/brisbane_2026-07-09"),
         registry=_registry(),
@@ -143,6 +186,7 @@ def test_deployment_dossier_carries_optional_calibration_ref() -> None:
     ],
 )
 def test_normalise_deployment_rejects_invalid(overrides: dict[str, Any]) -> None:
+    """Reject malformed or unbounded deployment fields through the handler parser."""
     parameters = dict(_DEPLOYMENT)
     parameters.update(overrides)
     with pytest.raises(ValueError):
@@ -150,6 +194,7 @@ def test_normalise_deployment_rejects_invalid(overrides: dict[str, Any]) -> None
 
 
 def test_normalise_deployment_accepts_bounded_spec() -> None:
+    """Normalise a bounded deployment while leaving absent options absent."""
     deployment = _normalise_deployment(_DEPLOYMENT)
     assert deployment["provider"] == "ibm-quantum"
     assert deployment["shots"] == 4096
@@ -157,5 +202,6 @@ def test_normalise_deployment_accepts_bounded_spec() -> None:
 
 
 def test_safe_slug_normal_and_empty() -> None:
+    """Produce filesystem-safe action slugs and a non-empty fallback."""
     assert _safe_slug("deploy-brisbane.1") == "deploy_brisbane_1"
     assert _safe_slug("///") == "action"
