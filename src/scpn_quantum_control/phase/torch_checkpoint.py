@@ -196,6 +196,7 @@ def run_torch_module_checkpoint_audit(
     -------
     PhaseTorchCheckpointAuditResult
         Checkpoint size/hash metadata plus module and optimiser replay evidence.
+
     """
     torch_module = _load_torch()
     feature_matrix = _as_feature_matrix(features)

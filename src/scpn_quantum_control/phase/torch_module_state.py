@@ -214,6 +214,7 @@ def validate_torch_bounded_qnn_state_dict(
     -------
     PhaseTorchModuleStateValidationResult
         Key, shape, dtype, and claim-boundary metadata for fail-closed callers.
+
     """
     expected_state = _module_state_dict(module)
     observed_keys = tuple(str(key) for key in state_dict)

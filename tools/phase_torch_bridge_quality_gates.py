@@ -17,6 +17,21 @@ Gate = tuple[str, list[str]]
 PHASE_TORCH_BRIDGE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/phase/torch_bridge.py",
     "src/scpn_quantum_control/phase/torch_maturity.py",
+    "src/scpn_quantum_control/phase/torch_module_state.py",
+    "src/scpn_quantum_control/phase/torch_checkpoint.py",
+    "src/scpn_quantum_control/phase/torch_checkpoint_matrix.py",
+    "src/scpn_quantum_control/phase/torch_device_state.py",
+    "src/scpn_quantum_control/phase/torch_export.py",
+    "src/scpn_quantum_control/phase/torch_export_shape_matrix.py",
+    "src/scpn_quantum_control/phase/torch_training_loop_matrix.py",
+    "tests/test_phase_torch_module_state.py",
+    "tests/test_phase_torch_checkpoint.py",
+    "tests/test_phase_torch_checkpoint_matrix.py",
+    "tests/test_phase_torch_device_state.py",
+    "tests/test_phase_torch_export.py",
+    "tests/test_phase_torch_export_shape_matrix.py",
+    "tests/test_phase_torch_training_loop_matrix.py",
+    "tests/test_phase_qnn_framework_bridge_matrix.py",
     "tools/phase_torch_bridge_quality_gates.py",
     "tests/test_phase_torch_bridge_quality_gate.py",
 ]
@@ -35,13 +50,25 @@ PHASE_TORCH_BRIDGE_COVERAGE_COHORT = [
     "tests/test_phase_torch_maturity_integration.py",
     "tests/test_phase_torch_qnode_transforms.py",
     "tests/test_phase_torch_qnode_transforms_integration.py",
+    "tests/test_phase_torch_module_state.py",
+    "tests/test_phase_torch_checkpoint.py",
+    "tests/test_phase_torch_checkpoint_matrix.py",
+    "tests/test_phase_torch_device_state.py",
+    "tests/test_phase_torch_export.py",
+    "tests/test_phase_torch_export_shape_matrix.py",
+    "tests/test_phase_torch_training_loop_matrix.py",
+    "tests/test_phase_qnn_framework_bridge_matrix.py",
 ]
 """Real facade and leaf tests that own exact Torch bridge coverage."""
 
 PHASE_TORCH_BRIDGE_COVERAGE_DATA_FILE = f"{gettempdir()}/scpn-qc-phase-torch-bridge.coverage"
 """Isolated coverage database for the Phase-QNode Torch facade."""
 
-PHASE_TORCH_BRIDGE_COVERAGE_INCLUDE = "*/torch_bridge.py,*/torch_maturity.py"
+PHASE_TORCH_BRIDGE_COVERAGE_INCLUDE = (
+    "*/torch_bridge.py,*/torch_maturity.py,*/torch_module_state.py,"
+    "*/torch_checkpoint.py,*/torch_checkpoint_matrix.py,*/torch_device_state.py,"
+    "*/torch_export.py,*/torch_export_shape_matrix.py,*/torch_training_loop_matrix.py"
+)
 """Production source enforced at exact branch coverage."""
 
 
@@ -79,8 +106,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *PHASE_TORCH_BRIDGE_QUALITY_RATCHET,

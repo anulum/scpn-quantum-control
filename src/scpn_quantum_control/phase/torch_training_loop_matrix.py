@@ -290,6 +290,7 @@ def run_torch_training_loop_matrix(
     PhaseTorchTrainingLoopMatrixResult
         Per-scenario records and fail-closed route classification for local
         bounded training-loop evidence.
+
     """
     tolerance_value = _as_non_negative_tolerance(tolerance)
     selected = tuple(default_torch_training_loop_scenarios() if scenarios is None else scenarios)

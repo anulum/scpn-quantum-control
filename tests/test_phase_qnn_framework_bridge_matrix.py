@@ -21,6 +21,7 @@ from scpn_quantum_control.phase import (
 
 
 def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None:
+    """Record the supported native-autodiff routes and their exact contracts."""
     result = run_bounded_qnn_framework_bridge_matrix()
 
     assert isinstance(result, BoundedQNNFrameworkBridgeMatrixResult)
@@ -93,6 +94,7 @@ def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None
 
 
 def test_bounded_qnn_framework_bridge_matrix_records_fail_closed_gaps() -> None:
+    """Keep generic-simulator and provider-hardware routes fail closed."""
     result = run_bounded_qnn_framework_bridge_matrix(
         frameworks=("generic_simulator_autodiff", "provider_hardware_gradient"),
     )
@@ -110,6 +112,7 @@ def test_bounded_qnn_framework_bridge_matrix_records_fail_closed_gaps() -> None:
 
 
 def test_bounded_qnn_framework_bridge_assertion_fails_closed() -> None:
+    """Reject unsupported and unknown framework selections."""
     capability = assert_bounded_qnn_framework_bridge_supported("jax")
     assert capability.supported
 
@@ -124,6 +127,7 @@ def test_bounded_qnn_framework_bridge_assertion_fails_closed() -> None:
 
 
 def test_bounded_qnn_framework_bridge_matrix_to_dict_is_json_ready() -> None:
+    """Serialize selected framework capabilities into JSON-ready values."""
     result = run_bounded_qnn_framework_bridge_matrix(frameworks=("jax", "tensorflow"))
     payload = result.to_dict()
 

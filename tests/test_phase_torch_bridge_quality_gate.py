@@ -20,7 +20,9 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
         gates["mypy-strict-phase-torch-bridge"][5:]
         == quality_gates.PHASE_TORCH_BRIDGE_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D phase-torch-bridge quality ratchet"]
+    docs = gates["ruff D phase-torch-bridge quality ratchet"]
+    assert "--preview" in docs
+    assert "D,D413,D417,D420" in docs
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:

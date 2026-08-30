@@ -186,6 +186,7 @@ def run_torch_module_device_state_audit(
     PhaseTorchDeviceStateAuditResult
         CPU replay evidence plus CUDA pass/blocked metadata for fail-closed
         callers.
+
     """
     selected_devices = _normalise_target_devices(target_devices)
     torch_module = _load_torch()

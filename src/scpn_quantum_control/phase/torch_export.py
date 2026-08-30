@@ -177,6 +177,7 @@ def run_torch_module_export_audit(
     -------
     PhaseTorchExportAuditResult
         Export file metadata plus graph-signature and local replay evidence.
+
     """
     resolved_path = Path(export_path)
     if not resolved_path.parent.exists():
