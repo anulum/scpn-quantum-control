@@ -238,6 +238,7 @@ if TYPE_CHECKING:
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import phase_qnode_product_quality_gates as _phase_qnode_product_quality_gates
     from tools import phase_results_quality_gates as _phase_results_quality_gates
+    from tools import phase_torch_bridge_quality_gates as _phase_torch_bridge_quality_gates
     from tools import phase_trainability_quality_gates as _phase_trainability_quality_gates
     from tools import (
         polyglot_parity_certificate_quality_gates as _polyglot_parity_certificate_quality_gates,
@@ -606,6 +607,7 @@ else:
     )
     _phase_artifact_quality_gates = import_module("tools.phase_artifact_quality_gates")
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
+    _phase_torch_bridge_quality_gates = import_module("tools.phase_torch_bridge_quality_gates")
     _phase_results_quality_gates = import_module("tools.phase_results_quality_gates")
     _phase_qnode_product_quality_gates = import_module("tools.phase_qnode_product_quality_gates")
     _phase_trainability_quality_gates = import_module("tools.phase_trainability_quality_gates")
@@ -682,6 +684,15 @@ PHASE_JAX_QNODE_QUALITY_RATCHET = _phase_jax_qnode_quality_gates.PHASE_JAX_QNODE
 PHASE_JAX_QNODE_COVERAGE_COHORT = _phase_jax_qnode_quality_gates.PHASE_JAX_QNODE_COVERAGE_COHORT
 PHASE_JAX_QNODE_COVERAGE_DATA_FILE = (
     _phase_jax_qnode_quality_gates.PHASE_JAX_QNODE_COVERAGE_DATA_FILE
+)
+PHASE_TORCH_BRIDGE_QUALITY_RATCHET = (
+    _phase_torch_bridge_quality_gates.PHASE_TORCH_BRIDGE_QUALITY_RATCHET
+)
+PHASE_TORCH_BRIDGE_COVERAGE_COHORT = (
+    _phase_torch_bridge_quality_gates.PHASE_TORCH_BRIDGE_COVERAGE_COHORT
+)
+PHASE_TORCH_BRIDGE_COVERAGE_DATA_FILE = (
+    _phase_torch_bridge_quality_gates.PHASE_TORCH_BRIDGE_COVERAGE_DATA_FILE
 )
 
 DIFFERENTIABLE_DOCSTRING_RATCHET = [
@@ -1226,6 +1237,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     *_phase_jax_qnode_quality_gates.build_static_quality_gates(_PY),
+    *_phase_torch_bridge_quality_gates.build_static_quality_gates(_PY),
     (
         "mypy-strict-whole-program-trace-values",
         [
@@ -1872,6 +1884,7 @@ PHASE_QNODE_VECTOR_COVERAGE_GATES: list[tuple[str, list[str]]] = [
 ]
 
 PHASE_JAX_QNODE_COVERAGE_GATES = _phase_jax_qnode_quality_gates.build_coverage_gates(_PY)
+PHASE_TORCH_BRIDGE_COVERAGE_GATES = _phase_torch_bridge_quality_gates.build_coverage_gates(_PY)
 
 WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES: list[tuple[str, list[str]]] = [
     (
@@ -2204,6 +2217,7 @@ def main() -> int:
             gates.extend(STUDIO_PROGRAM_AD_COVERAGE_GATES)
             gates.extend(PHASE_QNODE_VECTOR_COVERAGE_GATES)
             gates.extend(PHASE_JAX_QNODE_COVERAGE_GATES)
+            gates.extend(PHASE_TORCH_BRIDGE_COVERAGE_GATES)
             gates.extend(WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES)
             gates.append(STUDIO_PROGRAM_AD_BROWSER_COVERAGE_GATE)
             gates.append(("pytest + coverage", _PYTEST_COV))
