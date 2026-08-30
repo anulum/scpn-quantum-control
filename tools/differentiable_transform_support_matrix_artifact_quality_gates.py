@@ -15,17 +15,21 @@ Gate = tuple[str, list[str]]
 TRANSFORM_SUPPORT_MATRIX_ARTIFACT_SOURCE = (
     "src/scpn_quantum_control/differentiable_transform_support_matrix_artifact.py"
 )
+TRANSFORM_SUPPORT_MATRIX_BUNDLE_SOURCE = "src/scpn_quantum_control/studio/support_matrix_bundle.py"
 TRANSFORM_SUPPORT_MATRIX_ARTIFACT_COVERAGE_COHORT = [
     "tests/test_differentiable_transform_support_matrix_artifact.py",
     "tests/test_studio_support_matrix_bundle.py",
 ]
 TRANSFORM_SUPPORT_MATRIX_ARTIFACT_TYPING_RATCHET = [
     TRANSFORM_SUPPORT_MATRIX_ARTIFACT_SOURCE,
+    TRANSFORM_SUPPORT_MATRIX_BUNDLE_SOURCE,
+    "tests/test_studio_support_matrix_bundle.py",
     "tools/differentiable_transform_support_matrix_artifact_quality_gates.py",
     "tests/test_differentiable_transform_support_matrix_artifact_quality_gate.py",
 ]
 TRANSFORM_SUPPORT_MATRIX_ARTIFACT_DOCSTRING_RATCHET = [
     TRANSFORM_SUPPORT_MATRIX_ARTIFACT_SOURCE,
+    TRANSFORM_SUPPORT_MATRIX_BUNDLE_SOURCE,
     *TRANSFORM_SUPPORT_MATRIX_ARTIFACT_COVERAGE_COHORT,
     "tools/differentiable_transform_support_matrix_artifact_quality_gates.py",
     "tests/test_differentiable_transform_support_matrix_artifact_quality_gate.py",
@@ -57,8 +61,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *TRANSFORM_SUPPORT_MATRIX_ARTIFACT_DOCSTRING_RATCHET,
@@ -106,7 +111,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={TRANSFORM_SUPPORT_MATRIX_ARTIFACT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/differentiable_transform_support_matrix_artifact.py",
+                "--include=*/differentiable_transform_support_matrix_artifact.py,*/studio/support_matrix_bundle.py",
             ],
         ),
     ]
@@ -118,6 +123,7 @@ __all__ = [
     "TRANSFORM_SUPPORT_MATRIX_ARTIFACT_DOCSTRING_RATCHET",
     "TRANSFORM_SUPPORT_MATRIX_ARTIFACT_SOURCE",
     "TRANSFORM_SUPPORT_MATRIX_ARTIFACT_TYPING_RATCHET",
+    "TRANSFORM_SUPPORT_MATRIX_BUNDLE_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

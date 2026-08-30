@@ -23,7 +23,8 @@ def test_static_gate_is_strict_documented_and_drift_checked() -> None:
     assert ruff[-len(quality_gates.TRANSFORM_SUPPORT_MATRIX_ARTIFACT_DOCSTRING_RATCHET) :] == (
         quality_gates.TRANSFORM_SUPPORT_MATRIX_ARTIFACT_DOCSTRING_RATCHET
     )
-    assert "--isolated" in ruff and "D,D413" in ruff
+    assert "--isolated" in ruff and "--preview" in ruff
+    assert "D,D413,D417,D420" in ruff
     assert gates["transform-support-matrix committed artefact drift"][-1] == "--check"
 
 
@@ -38,7 +39,10 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/differentiable_transform_support_matrix_artifact.py" in report
+    assert (
+        "--include=*/differentiable_transform_support_matrix_artifact.py,*/studio/support_matrix_bundle.py"
+        in report
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:

@@ -103,6 +103,7 @@ def build_support_matrix_bundle(
     ValueError
         If the audit did not pass — failed cases, missing categories, or
         missing support rows are never federated.
+
     """
     resolved = run_transform_algebra_audit() if audit is None else audit
     payload = build_transform_support_matrix_artifact(resolved)
@@ -164,6 +165,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     int
         ``0`` when the bundle is admitted by the federation gate, ``1``
         otherwise.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

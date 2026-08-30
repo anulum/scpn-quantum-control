@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import runpy
+import sys
 from pathlib import Path
 
 import pytest
@@ -128,6 +130,25 @@ def test_main_emits_admitted_bundle_json(capsys: pytest.CaptureFixture[str]) -> 
         isinstance(error, str) and float(error) >= 0.0 for error in passed_errors
     )
     assert captured.err == ""
+
+
+def test_module_entrypoint_emits_admitted_bundle(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Execute the real module entrypoint and propagate its successful exit."""
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["support_matrix_bundle", "--artifact-path", str(COMMITTED_ARTIFACT)],
+    )
+    with pytest.raises(SystemExit) as exc_info:
+        runpy.run_module(
+            "scpn_quantum_control.studio.support_matrix_bundle",
+            run_name="__main__",
+        )
+    assert exc_info.value.code == 0
+    assert json.loads(capsys.readouterr().out)["schema"] == ("studio.differentiation-evidence.v1")
 
 
 def test_main_fails_closed_on_missing_artifact(tmp_path: Path) -> None:

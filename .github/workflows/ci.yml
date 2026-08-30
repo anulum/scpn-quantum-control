@@ -1701,13 +1701,16 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/differentiable_transform_support_matrix_artifact.py
+          src/scpn_quantum_control/studio/support_matrix_bundle.py
+          tests/test_studio_support_matrix_bundle.py
           tools/differentiable_transform_support_matrix_artifact_quality_gates.py
           tests/test_differentiable_transform_support_matrix_artifact_quality_gate.py
       - name: Ruff NumPy docstrings for transform support-matrix artefact quality cohort
         run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/differentiable_transform_support_matrix_artifact.py
+          src/scpn_quantum_control/studio/support_matrix_bundle.py
           tests/test_differentiable_transform_support_matrix_artifact.py
           tests/test_studio_support_matrix_bundle.py
           tools/differentiable_transform_support_matrix_artifact_quality_gates.py
@@ -1733,7 +1736,7 @@ jobs:
           --data-file=/tmp/scpn-qc-transform-support-matrix-artifact-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/differentiable_transform_support_matrix_artifact.py
+          --include=*/differentiable_transform_support_matrix_artifact.py,*/studio/support_matrix_bundle.py
 
   gradient-plan-explanation-artifact-quality:
     needs: lint
