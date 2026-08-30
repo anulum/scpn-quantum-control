@@ -43,7 +43,28 @@ from .bkt_analysis import bkt_analysis
 
 @dataclass
 class VortexBindingResult:
-    """Vortex binding energy analysis."""
+    """Vortex binding energy analysis.
+
+    Attributes
+    ----------
+    j_eff
+        Effective spin stiffness.
+    e_pair
+        Vortex-pair energy at the effective system scale.
+    t_bkt
+        Estimated BKT transition temperature.
+    binding_ratio
+        Ratio of pair energy to estimated transition temperature.
+    free_energy_at_bkt
+        Pair free energy at the estimated transition temperature.
+    rg_fixed_point_k
+        Universal Kosterlitz fixed point ``2 / pi``.
+    is_bound
+        Whether the requested temperature is below ``t_bkt``.
+    n_oscillators
+        Number of oscillators in the analysed coupling matrix.
+
+    """
 
     j_eff: float  # effective spin stiffness
     e_pair: float  # vortex pair energy at system scale
@@ -59,6 +80,21 @@ def vortex_pair_energy(j_eff: float, system_size: float, cutoff: float = 1.0) ->
     """Logarithmic vortex pair interaction energy.
 
     E = 2*pi*J * ln(L/a) where L = system size, a = lattice cutoff.
+
+    Parameters
+    ----------
+    j_eff
+        Effective spin stiffness.
+    system_size
+        Effective linear system size.
+    cutoff
+        Short-distance lattice cutoff.
+
+    Returns
+    -------
+    float
+        Logarithmic pair energy, or zero at and below the cutoff.
+
     """
     if system_size <= cutoff:
         return 0.0
@@ -69,6 +105,19 @@ def vortex_pair_entropy(system_size: float, cutoff: float = 1.0) -> float:
     """Compute the configurational entropy of a vortex pair.
 
     S = 2 * ln(L/a) (in units where k_B = 1).
+
+    Parameters
+    ----------
+    system_size
+        Effective linear system size.
+    cutoff
+        Short-distance lattice cutoff.
+
+    Returns
+    -------
+    float
+        Configurational entropy, or zero at and below the cutoff.
+
     """
     if system_size <= cutoff:
         return 0.0
@@ -76,7 +125,23 @@ def vortex_pair_entropy(system_size: float, cutoff: float = 1.0) -> float:
 
 
 def vortex_free_energy(j_eff: float, temperature: float, system_size: float) -> float:
-    """Free energy F = E - T*S for a vortex pair."""
+    """Return free energy ``F = E - T*S`` for a vortex pair.
+
+    Parameters
+    ----------
+    j_eff
+        Effective spin stiffness.
+    temperature
+        Effective temperature.
+    system_size
+        Effective linear system size.
+
+    Returns
+    -------
+    float
+        Pair free energy at the requested temperature.
+
+    """
     e = vortex_pair_energy(j_eff, system_size)
     s = vortex_pair_entropy(system_size)
     return e - temperature * s
@@ -91,6 +156,21 @@ def kosterlitz_rg_step(
 
     dK^{-1}/dl = 4*pi^3 * y^2
     dy/dl = (2 - pi/K^{-1}) * y  (note: pi*K = pi/K^{-1})
+
+    Parameters
+    ----------
+    k_inv
+        Inverse dimensionless stiffness.
+    y
+        Vortex fugacity.
+    dl
+        Renormalisation-group scale increment.
+
+    Returns
+    -------
+    tuple[float, float]
+        Updated inverse stiffness and fugacity.
+
     """
     k = 1.0 / max(k_inv, 1e-15)
     dk_inv = 4.0 * np.pi**3 * y**2 * dl
@@ -103,12 +183,22 @@ def compute_vortex_binding(
     omega: NDArray[np.float64],
     temperature: float | None = None,
 ) -> VortexBindingResult:
-    """Full vortex binding analysis.
+    """Run the full vortex-binding analysis.
 
-    Args:
-        K: coupling matrix
-        omega: natural frequencies
-        temperature: effective temperature (default: T_BKT estimate)
+    Parameters
+    ----------
+    K
+        Coupling matrix.
+    omega
+        Natural-frequency vector retained for the public analysis contract.
+    temperature
+        Effective temperature, defaulting to the estimated ``t_bkt``.
+
+    Returns
+    -------
+    VortexBindingResult
+        Stiffness, pair thermodynamics, fixed point, and binding decision.
+
     """
     n = K.shape[0]
     bkt = bkt_analysis(K)

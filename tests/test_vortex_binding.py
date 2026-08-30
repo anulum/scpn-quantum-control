@@ -24,38 +24,50 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestVortexPairEnergy:
-    def test_positive(self):
+    """Exercise logarithmic vortex-pair energy."""
+
+    def test_positive(self) -> None:
+        """Return positive energy above the lattice cutoff."""
         e = vortex_pair_energy(1.0, 4.0)
         assert e > 0
 
-    def test_scales_with_j(self):
+    def test_scales_with_j(self) -> None:
+        """Scale pair energy linearly with effective stiffness."""
         e1 = vortex_pair_energy(0.5, 4.0)
         e2 = vortex_pair_energy(1.0, 4.0)
         assert e2 == pytest.approx(2 * e1)
 
-    def test_logarithmic_in_size(self):
+    def test_logarithmic_in_size(self) -> None:
+        """Scale pair energy logarithmically with system size."""
         e1 = vortex_pair_energy(1.0, 2.0)
         e2 = vortex_pair_energy(1.0, 4.0)
         # E ~ ln(L), so E(4)/E(2) = ln(4)/ln(2) = 2
         assert e2 / e1 == pytest.approx(2.0, rel=0.01)
 
-    def test_zero_at_cutoff(self):
+    def test_zero_at_cutoff(self) -> None:
+        """Return zero energy at the lattice cutoff."""
         e = vortex_pair_energy(1.0, 1.0)
         assert e == 0.0
 
 
 class TestVortexPairEntropy:
-    def test_positive(self):
+    """Exercise vortex-pair configurational entropy."""
+
+    def test_positive(self) -> None:
+        """Return positive entropy above the lattice cutoff."""
         s = vortex_pair_entropy(4.0)
         assert s > 0
 
-    def test_zero_at_cutoff(self):
+    def test_zero_at_cutoff(self) -> None:
+        """Return zero entropy at the lattice cutoff."""
         s = vortex_pair_entropy(1.0)
         assert s == 0.0
 
 
 class TestVortexFreeEnergy:
-    def test_zero_at_bkt(self):
+    """Exercise vortex-pair free energy around the exact transition."""
+
+    def test_zero_at_bkt(self) -> None:
         """At T_BKT = pi*J, F should be approximately zero."""
         j = 1.0
         t_bkt = np.pi * j
@@ -63,7 +75,7 @@ class TestVortexFreeEnergy:
         # F = (2*pi*J - 2*T)*ln(L) = (2*pi*J - 2*pi*J)*ln(L) = 0
         assert f == pytest.approx(0.0, abs=1e-10)
 
-    def test_positive_below_bkt(self):
+    def test_positive_below_bkt(self) -> None:
         """F > 0 below T_BKT (pairs bound)."""
         j = 1.0
         f = vortex_free_energy(j, 0.5, 4.0)
@@ -71,12 +83,15 @@ class TestVortexFreeEnergy:
 
 
 class TestKosterlitzRGStep:
-    def test_returns_two_values(self):
+    """Exercise one-step Kosterlitz renormalisation flow."""
+
+    def test_returns_two_values(self) -> None:
+        """Return updated stiffness and fugacity values."""
         k_new, y_new = kosterlitz_rg_step(1.0, 0.1)
         assert isinstance(k_new, float)
         assert isinstance(y_new, float)
 
-    def test_fugacity_shrinks_below_threshold(self):
+    def test_fugacity_shrinks_below_threshold(self) -> None:
         """Below BKT (K > 2/pi), fugacity decreases."""
         k_inv = 0.5  # K = 2 > 2/pi, below BKT
         y = 0.01
@@ -85,25 +100,30 @@ class TestKosterlitzRGStep:
 
 
 class TestComputeVortexBinding:
-    def test_returns_result(self):
+    """Exercise the public finite-graph vortex-binding analysis."""
+
+    def test_returns_result(self) -> None:
+        """Return the public vortex-binding result record."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_vortex_binding(K, omega)
         assert isinstance(result, VortexBindingResult)
 
-    def test_n_oscillators(self):
+    def test_n_oscillators(self) -> None:
+        """Record the coupling-matrix oscillator count."""
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
         result = compute_vortex_binding(K, omega)
         assert result.n_oscillators == 8
 
-    def test_rg_fixed_point(self):
+    def test_rg_fixed_point(self) -> None:
+        """Expose the universal Kosterlitz fixed point."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_vortex_binding(K, omega)
         assert result.rg_fixed_point_k == pytest.approx(2.0 / np.pi)
 
-    def test_free_energy_positive_at_estimated_bkt(self):
+    def test_free_energy_positive_at_estimated_bkt(self) -> None:
         """F > 0 at our estimated T_BKT (mean-field approximation)."""
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16
@@ -111,7 +131,7 @@ class TestComputeVortexBinding:
         # Our T_BKT = pi/2 * J < pi * J (exact), so F > 0 (still bound)
         assert result.free_energy_at_bkt >= 0
 
-    def test_scpn_binding(self):
+    def test_scpn_binding(self) -> None:
         """Record vortex binding at SCPN defaults."""
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16
@@ -124,3 +144,12 @@ class TestComputeVortexBinding:
         print(f"  F(T_BKT) = {result.free_energy_at_bkt:.2e}")
         print(f"  Bound: {result.is_bound}")
         assert isinstance(result.j_eff, float)
+
+    def test_explicit_temperature_controls_binding_decision(self) -> None:
+        """Use an explicit temperature for the public binding decision."""
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+
+        result = compute_vortex_binding(K, omega, temperature=float("inf"))
+
+        assert result.is_bound is False

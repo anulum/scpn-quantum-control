@@ -14,19 +14,24 @@ from os import devnull
 Gate = tuple[str, list[str]]
 FINITE_SIZE_SCALING_SOURCE = "src/scpn_quantum_control/analysis/finite_size_scaling.py"
 PHASE_DIAGRAM_SOURCE = "src/scpn_quantum_control/analysis/phase_diagram.py"
+VORTEX_BINDING_SOURCE = "src/scpn_quantum_control/analysis/vortex_binding.py"
+VORTEX_BINDING_DIRECT_TEST = "tests/test_vortex_binding.py"
 FINITE_SIZE_SCALING_COVERAGE_INCLUDE = (
-    "*/analysis/finite_size_scaling.py,*/analysis/phase_diagram.py"
+    "*/analysis/finite_size_scaling.py,*/analysis/phase_diagram.py,*/analysis/vortex_binding.py"
 )
 FINITE_SIZE_SCALING_COVERAGE_COHORT = [
     "tests/test_finite_size_scaling.py",
     "tests/test_phase_diagram.py",
     "tests/test_phase_diagram_branches.py",
+    VORTEX_BINDING_DIRECT_TEST,
 ]
 FINITE_SIZE_SCALING_TYPING_RATCHET = [
     FINITE_SIZE_SCALING_SOURCE,
     PHASE_DIAGRAM_SOURCE,
     "tests/test_finite_size_scaling.py",
     "tests/test_phase_diagram.py",
+    VORTEX_BINDING_SOURCE,
+    VORTEX_BINDING_DIRECT_TEST,
     "tools/finite_size_scaling_quality_gates.py",
     "tests/test_finite_size_scaling_quality_gate.py",
 ]
@@ -111,6 +116,8 @@ __all__ = [
     "FINITE_SIZE_SCALING_SOURCE",
     "FINITE_SIZE_SCALING_TYPING_RATCHET",
     "PHASE_DIAGRAM_SOURCE",
+    "VORTEX_BINDING_DIRECT_TEST",
+    "VORTEX_BINDING_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

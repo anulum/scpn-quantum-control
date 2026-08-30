@@ -1809,8 +1809,10 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/analysis/finite_size_scaling.py
           src/scpn_quantum_control/analysis/phase_diagram.py
+          src/scpn_quantum_control/analysis/vortex_binding.py
           tests/test_finite_size_scaling.py
           tests/test_phase_diagram.py
+          tests/test_vortex_binding.py
           tools/finite_size_scaling_quality_gates.py
           tests/test_finite_size_scaling_quality_gate.py
       - name: Ruff NumPy docstrings for finite-size scaling quality cohort
@@ -1819,8 +1821,10 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/finite_size_scaling.py
           src/scpn_quantum_control/analysis/phase_diagram.py
+          src/scpn_quantum_control/analysis/vortex_binding.py
           tests/test_finite_size_scaling.py
           tests/test_phase_diagram.py
+          tests/test_vortex_binding.py
           tools/finite_size_scaling_quality_gates.py
           tests/test_finite_size_scaling_quality_gate.py
       - name: Run finite-size scaling focused coverage
@@ -1833,6 +1837,7 @@ jobs:
           tests/test_finite_size_scaling.py
           tests/test_phase_diagram.py
           tests/test_phase_diagram_branches.py
+          tests/test_vortex_binding.py
       - name: Enforce finite-size scaling exact coverage
         run: >-
           python -m coverage report
@@ -1840,7 +1845,7 @@ jobs:
           --data-file=/tmp/scpn-qc-finite-size-scaling-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/analysis/finite_size_scaling.py,*/analysis/phase_diagram.py
+          --include=*/analysis/finite_size_scaling.py,*/analysis/phase_diagram.py,*/analysis/vortex_binding.py
 
   studio-executive-differentiate-quality:
     needs: lint
