@@ -41,7 +41,22 @@ from ..bridge.ssgf_adapter import (
 
 @dataclass
 class QuantumEVSResult:
-    """Quantum-enhanced EVS feature vector."""
+    """Quantum-enhanced EVS feature vector.
+
+    Attributes
+    ----------
+    classical_features
+        Validated input EVS feature vector.
+    quantum_features
+        Synchronisation, phase, and sampled correlation features.
+    r_global
+        Quantum-state global synchronisation magnitude.
+    p_h1_proxy
+        Fraction of output phases whose magnitude exceeds ``pi / 2``.
+    enhancement_factor
+        Ratio of quantum-feature norm to classical-feature norm.
+
+    """
 
     classical_features: NDArray[np.float64]  # input EVS features
     quantum_features: NDArray[np.float64]  # enhanced features
@@ -103,11 +118,31 @@ def quantum_evs_enhance(
 ) -> QuantumEVSResult:
     """Enhance EVS features through quantum Kuramoto evolution.
 
-    Args:
-        features: classical EVS feature vector (any length)
-        n_osc: number of quantum oscillators
-        dt: evolution time
-        trotter_reps: Trotter repetitions
+    Parameters
+    ----------
+    features
+        Finite non-empty one-dimensional classical EVS feature vector.
+    n_osc
+        Quantum oscillator count in the supported Paper-27 frequency range.
+    dt
+        Positive finite evolution time.
+    trotter_reps
+        Positive integer number of Lie-Trotter repetitions.
+
+    Returns
+    -------
+    QuantumEVSResult
+        Preserved classical features, quantum features, synchronisation,
+        phase-topology proxy, and norm enhancement factor.
+
+    Raises
+    ------
+    TypeError
+        If ``n_osc`` or ``trotter_reps`` is not an integer.
+    ValueError
+        If features, oscillator count, evolution time, or repetitions violate
+        their public contracts.
+
     """
     features = _validated_features(features)
     n_osc = _validated_n_osc(n_osc)

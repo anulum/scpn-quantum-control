@@ -6184,10 +6184,13 @@ jobs:
           src/scpn_quantum_control/applications/honesty_kits.py
           src/scpn_quantum_control/applications/dataset_catalog.py
           src/scpn_quantum_control/applications/eeg_classification.py
+          src/scpn_quantum_control/applications/quantum_evs.py
           tests/test_application_honesty_kits.py
           tests/test_dataset_catalog.py
           tests/test_eeg_classification.py
           tests/test_eeg_classification_validation.py
+          tests/test_quantum_evs.py
+          tests/test_quantum_evs_branches.py
           scripts/run_application_honesty_audit.py
           tools/application_honesty_quality_gates.py
           tests/test_application_honesty_quality_gate.py
@@ -6197,10 +6200,13 @@ jobs:
           src/scpn_quantum_control/applications/honesty_kits.py
           src/scpn_quantum_control/applications/dataset_catalog.py
           src/scpn_quantum_control/applications/eeg_classification.py
+          src/scpn_quantum_control/applications/quantum_evs.py
           tests/test_application_honesty_kits.py
           tests/test_dataset_catalog.py
           tests/test_eeg_classification.py
           tests/test_eeg_classification_validation.py
+          tests/test_quantum_evs.py
+          tests/test_quantum_evs_branches.py
           scripts/run_application_honesty_audit.py
           tools/application_honesty_quality_gates.py
           tests/test_application_honesty_quality_gate.py
@@ -6213,11 +6219,13 @@ jobs:
           tests/test_dataset_catalog.py
           tests/test_eeg_classification.py
           tests/test_eeg_classification_validation.py
+          tests/test_quantum_evs.py
+          tests/test_quantum_evs_branches.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-application-honesty-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/applications/honesty_kits.py,*/applications/dataset_catalog.py,*/applications/eeg_classification.py
+          --include=*/applications/honesty_kits.py,*/applications/dataset_catalog.py,*/applications/eeg_classification.py,*/applications/quantum_evs.py
 
   layout-method-comparison-quality:
     needs: lint

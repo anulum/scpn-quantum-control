@@ -20,6 +20,9 @@ APPLICATION_HONESTY_QUALITY_RATCHET = [
     "src/scpn_quantum_control/applications/eeg_classification.py",
     "tests/test_eeg_classification.py",
     "tests/test_eeg_classification_validation.py",
+    "src/scpn_quantum_control/applications/quantum_evs.py",
+    "tests/test_quantum_evs.py",
+    "tests/test_quantum_evs_branches.py",
     "scripts/run_application_honesty_audit.py",
     "tools/application_honesty_quality_gates.py",
     "tests/test_application_honesty_quality_gate.py",
@@ -32,11 +35,13 @@ APPLICATION_HONESTY_COVERAGE_COHORT = [
     "tests/test_dataset_catalog.py",
     "tests/test_eeg_classification.py",
     "tests/test_eeg_classification_validation.py",
+    "tests/test_quantum_evs.py",
+    "tests/test_quantum_evs_branches.py",
 ]
 """Real honesty-policy and packaged-catalogue execution cohort."""
 APPLICATION_HONESTY_COVERAGE_INCLUDE = (
     "*/applications/honesty_kits.py,*/applications/dataset_catalog.py,"
-    "*/applications/eeg_classification.py"
+    "*/applications/eeg_classification.py,*/applications/quantum_evs.py"
 )
 """Exact source owners enforced by the shared coverage report."""
 
