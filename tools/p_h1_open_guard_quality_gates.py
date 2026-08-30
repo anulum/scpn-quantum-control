@@ -13,24 +13,40 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 P_H1_OPEN_GUARD_SOURCE = "src/scpn_quantum_control/analysis/p_h1_open_guard.py"
+PERSISTENT_HOMOLOGY_SOURCE = "src/scpn_quantum_control/analysis/persistent_homology.py"
 P_H1_OPEN_GUARD_EXPORT = "scripts/check_p_h1_open_claim_guard.py"
 P_H1_OPEN_GUARD_DIRECT_TEST = "tests/test_p_h1_open_guard.py"
 P_H1_OPEN_GUARD_SHARED_CLI_TEST = "tests/test_bench_cli.py"
+PERSISTENT_HOMOLOGY_DIRECT_TEST = "tests/test_persistent_homology.py"
+PERSISTENT_HOMOLOGY_BRANCH_TEST = "tests/test_persistent_homology_branches.py"
+PERSISTENT_HOMOLOGY_CONNECTED_TEST = "tests/test_analysis_topology_contracts.py"
+P_H1_OPEN_GUARD_COVERAGE_INCLUDE = (
+    "*/analysis/p_h1_open_guard.py,*/scripts/check_p_h1_open_claim_guard.py,"
+    "*/analysis/persistent_homology.py"
+)
 P_H1_OPEN_GUARD_COVERAGE_COHORT = [
     P_H1_OPEN_GUARD_DIRECT_TEST,
     P_H1_OPEN_GUARD_SHARED_CLI_TEST,
+    PERSISTENT_HOMOLOGY_DIRECT_TEST,
+    PERSISTENT_HOMOLOGY_BRANCH_TEST,
+    PERSISTENT_HOMOLOGY_CONNECTED_TEST,
 ]
 P_H1_OPEN_GUARD_TYPING_RATCHET = [
     P_H1_OPEN_GUARD_SOURCE,
+    PERSISTENT_HOMOLOGY_SOURCE,
     P_H1_OPEN_GUARD_EXPORT,
-    *P_H1_OPEN_GUARD_COVERAGE_COHORT,
+    P_H1_OPEN_GUARD_DIRECT_TEST,
+    P_H1_OPEN_GUARD_SHARED_CLI_TEST,
+    PERSISTENT_HOMOLOGY_DIRECT_TEST,
     "tools/p_h1_open_guard_quality_gates.py",
     "tests/test_p_h1_open_guard_quality_gate.py",
 ]
 P_H1_OPEN_GUARD_DOCSTRING_RATCHET = [
     P_H1_OPEN_GUARD_SOURCE,
+    PERSISTENT_HOMOLOGY_SOURCE,
     P_H1_OPEN_GUARD_EXPORT,
     P_H1_OPEN_GUARD_DIRECT_TEST,
+    PERSISTENT_HOMOLOGY_DIRECT_TEST,
     "tools/p_h1_open_guard_quality_gates.py",
     "tests/test_p_h1_open_guard_quality_gate.py",
 ]
@@ -100,7 +116,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={P_H1_OPEN_GUARD_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/analysis/p_h1_open_guard.py,*/scripts/check_p_h1_open_claim_guard.py",
+                f"--include={P_H1_OPEN_GUARD_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -109,12 +125,17 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "P_H1_OPEN_GUARD_COVERAGE_COHORT",
     "P_H1_OPEN_GUARD_COVERAGE_DATA_FILE",
+    "P_H1_OPEN_GUARD_COVERAGE_INCLUDE",
     "P_H1_OPEN_GUARD_DIRECT_TEST",
     "P_H1_OPEN_GUARD_DOCSTRING_RATCHET",
     "P_H1_OPEN_GUARD_EXPORT",
     "P_H1_OPEN_GUARD_SHARED_CLI_TEST",
     "P_H1_OPEN_GUARD_SOURCE",
     "P_H1_OPEN_GUARD_TYPING_RATCHET",
+    "PERSISTENT_HOMOLOGY_BRANCH_TEST",
+    "PERSISTENT_HOMOLOGY_CONNECTED_TEST",
+    "PERSISTENT_HOMOLOGY_DIRECT_TEST",
+    "PERSISTENT_HOMOLOGY_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

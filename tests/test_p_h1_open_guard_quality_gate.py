@@ -41,10 +41,7 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert (
-        "--include=*/analysis/p_h1_open_guard.py,*/scripts/check_p_h1_open_claim_guard.py"
-        in report
-    )
+    assert f"--include={quality_gates.P_H1_OPEN_GUARD_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -68,6 +65,9 @@ def test_ci_runs_and_aggregates_p_h1_open_guard_gate() -> None:
     for path in quality_gates.P_H1_OPEN_GUARD_DOCSTRING_RATCHET:
         assert path in block
     assert quality_gates.P_H1_OPEN_GUARD_SHARED_CLI_TEST in block
+    assert quality_gates.PERSISTENT_HOMOLOGY_BRANCH_TEST in block
+    assert quality_gates.PERSISTENT_HOMOLOGY_CONNECTED_TEST in block
     assert "--fail-under=100" in block
+    assert quality_gates.P_H1_OPEN_GUARD_COVERAGE_INCLUDE in block
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "p-h1-open-guard-quality" in aggregate

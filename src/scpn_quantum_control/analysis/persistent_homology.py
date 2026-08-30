@@ -53,7 +53,19 @@ class PersistenceResult:
 
 
 def phase_distance_matrix(theta: NDArray[np.float64]) -> NDArray[np.float64]:
-    """Build phase distance matrix: d_ij = 1 - cos(theta_j - theta_i)."""
+    """Build the pairwise phase-distance matrix.
+
+    Parameters
+    ----------
+    theta
+        One-dimensional oscillator-phase configuration.
+
+    Returns
+    -------
+    numpy.ndarray
+        Symmetric matrix with ``d_ij = 1 - cos(theta_j - theta_i)``.
+
+    """
     n = len(theta)
     D = np.zeros((n, n))
     for i in range(n):
@@ -70,9 +82,23 @@ def compute_persistence(
 ) -> PersistenceResult:
     """Compute persistent homology of a phase configuration.
 
-    Args:
-        theta: oscillator phases (n,)
-        persistence_threshold: minimum lifetime to count as persistent
+    Parameters
+    ----------
+    theta
+        One-dimensional oscillator-phase configuration.
+    persistence_threshold
+        Minimum H1 lifetime counted as persistent.
+
+    Returns
+    -------
+    PersistenceResult
+        H0/H1 counts, normalized H1 fraction, lifetimes, and system size.
+
+    Raises
+    ------
+    ImportError
+        If the optional ``ripser`` dependency is unavailable.
+
     """
     if not _RIPSER_AVAILABLE:
         raise ImportError("ripser not installed: pip install ripser")
@@ -120,6 +146,34 @@ def p_h1_vs_temperature(
     compute persistent homology, average p_h1.
 
     THIS is the correct way to find where p_h1 = 0.72.
+
+    Parameters
+    ----------
+    K
+        Symmetric oscillator coupling matrix.
+    t_range
+        Inclusive lower and upper temperature bounds.
+    n_temps
+        Number of temperature points.
+    n_thermalize
+        Monte Carlo sweeps before sampling at each temperature.
+    n_samples
+        Phase configurations measured at each temperature.
+    persistence_threshold
+        Minimum H1 lifetime counted as persistent.
+    seed
+        Base random seed used to derive each temperature stream.
+
+    Returns
+    -------
+    dict[str, list[float]]
+        Aligned temperature, H1-fraction, and H1-count summary series.
+
+    Raises
+    ------
+    ImportError
+        If the optional ``ripser`` dependency is unavailable.
+
     """
     if not _RIPSER_AVAILABLE:
         raise ImportError("ripser not installed: pip install ripser")
