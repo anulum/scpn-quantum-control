@@ -13,6 +13,8 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 PSI_LATTICE_SOURCE = "src/scpn_quantum_control/psi_field/lattice.py"
+PSI_LATTICE_OBSERVABLES_SOURCE = "src/scpn_quantum_control/psi_field/observables.py"
+PSI_LATTICE_SOURCES = [PSI_LATTICE_SOURCE, PSI_LATTICE_OBSERVABLES_SOURCE]
 PSI_LATTICE_OWNER_TEST = "tests/test_psi_field.py"
 PSI_LATTICE_IMPORT_TEST = "tests/test_lattice_branches.py"
 PSI_LATTICE_RUST_SOURCE = "scpn_quantum_engine/src/gauge_lattice.rs"
@@ -24,7 +26,7 @@ PSI_LATTICE_POLYGLOT_EVIDENCE = [
     PSI_LATTICE_STUB,
 ]
 PSI_LATTICE_TYPING_RATCHET = [
-    PSI_LATTICE_SOURCE,
+    *PSI_LATTICE_SOURCES,
     PSI_LATTICE_OWNER_TEST,
     PSI_LATTICE_IMPORT_TEST,
     "tools/psi_lattice_quality_gates.py",
@@ -98,7 +100,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={PSI_LATTICE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/psi_field/lattice.py",
+                "--include=*/psi_field/lattice.py,*/psi_field/observables.py",
             ],
         ),
     ]
@@ -127,10 +129,12 @@ __all__ = [
     "PSI_LATTICE_DOCSTRING_RATCHET",
     "PSI_LATTICE_IMPORT_TEST",
     "PSI_LATTICE_OWNER_TEST",
+    "PSI_LATTICE_OBSERVABLES_SOURCE",
     "PSI_LATTICE_POLYGLOT_EVIDENCE",
     "PSI_LATTICE_RUST_FFI_TEST",
     "PSI_LATTICE_RUST_SOURCE",
     "PSI_LATTICE_SOURCE",
+    "PSI_LATTICE_SOURCES",
     "PSI_LATTICE_STUB",
     "PSI_LATTICE_TYPING_RATCHET",
     "build_coverage_gates",

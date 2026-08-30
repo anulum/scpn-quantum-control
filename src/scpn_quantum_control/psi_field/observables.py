@@ -40,9 +40,18 @@ def polyakov_loop(gauge: U1LatticGauge, path: list[int]) -> complex:
     For SCPN: a path through layers L1→L2→...→L16 measures the
     total phase accumulated across the hierarchy.
 
-    Args:
-        gauge: U(1) lattice gauge field
-        path: ordered list of site indices forming the path
+    Parameters
+    ----------
+    gauge
+        U(1) lattice gauge field.
+    path
+        Ordered site indices forming the path.
+
+    Returns
+    -------
+    complex
+        Product of link variables along consecutive path edges.
+
     """
     phase = 0.0
     for idx in range(len(path) - 1):
@@ -61,6 +70,17 @@ def topological_charge(gauge: U1LatticGauge) -> float:
     On the SCPN graph, vortices represent topological defects in
     the Ψ-field — points where the phase winds by ±2π.
     Uses Rust when available.
+
+    Parameters
+    ----------
+    gauge
+        U(1) lattice gauge field.
+
+    Returns
+    -------
+    float
+        Wrapped plaquette-angle sum divided by ``2 * pi``.
+
     """
     if _HAS_RUST_GAUGE and len(gauge.plaquettes) > 0:
         return float(
@@ -96,6 +116,20 @@ def string_tension_from_wilson(
 
     Caveat: this is the lowest-order estimate. For precision,
     use Creutz ratios from Wilson loops of different sizes.
+
+    Parameters
+    ----------
+    gauge
+        U(1) lattice gauge field.
+    n_measurements
+        Reserved measurement-count contract retained for API compatibility.
+
+    Returns
+    -------
+    float | None
+        Lowest-order string tension, or ``None`` without a positive plaquette
+        expectation.
+
     """
     result = gauge.measure_plaquettes()
     if result.n_plaquettes == 0 or result.mean_plaquette <= 0:
@@ -108,6 +142,17 @@ def average_link(gauge: U1LatticGauge) -> complex:
 
     Not gauge-invariant, but useful as a diagnostic. In the ordered
     phase (large β), ⟨U⟩ → 1. In the disordered phase, ⟨U⟩ → 0.
+
+    Parameters
+    ----------
+    gauge
+        U(1) lattice gauge field.
+
+    Returns
+    -------
+    complex
+        Mean complex link variable, or zero for an edgeless graph.
+
     """
     if gauge.n_edges == 0:
         return complex(0.0)

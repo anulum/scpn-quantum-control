@@ -38,7 +38,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/psi_field/lattice.py" in report
+    assert "--include=*/psi_field/lattice.py,*/psi_field/observables.py" in report
 
 
 def test_polyglot_gate_targets_rust_lattice_owner() -> None:
@@ -84,6 +84,8 @@ def test_ci_runs_and_aggregates_psi_lattice_gate() -> None:
     for path in quality_gates.PSI_LATTICE_DOCSTRING_RATCHET:
         assert path in block
     for path in quality_gates.PSI_LATTICE_COVERAGE_COHORT:
+        assert path in block
+    for path in quality_gates.PSI_LATTICE_SOURCES:
         assert path in block
     assert "--fail-under=100" in block
     assert "cargo test --manifest-path scpn_quantum_engine/Cargo.toml --lib gauge_lattice" in block
