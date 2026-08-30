@@ -14,12 +14,17 @@ from os import devnull
 Gate = tuple[str, list[str]]
 STUDIO_EXECUTIVE_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/studio_executive_product.py",
+    "src/scpn_quantum_control/studio/manifest.py",
     "tests/test_studio_executive_product.py",
+    "tests/test_studio_manifest.py",
     "tools/studio_executive_product_quality_gates.py",
     "tests/test_studio_executive_product_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT = ["tests/test_studio_executive_product.py"]
+STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT = [
+    "tests/test_studio_executive_product.py",
+    "tests/test_studio_manifest.py",
+]
 """Tests that own exact Studio-executive product coverage."""
 STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE = ".coverage.studio-executive-product-quality"
 """Isolated coverage database for the Studio-executive product owner."""
@@ -87,7 +92,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/studio_executive_product.py",
+                "--include=*/studio_executive_product.py,*/studio/manifest.py",
             ],
         ),
     ]

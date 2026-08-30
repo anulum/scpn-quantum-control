@@ -64,6 +64,7 @@ def _resolve_studio_version() -> str:
         The source-tree ``pyproject.toml`` version when available, then the
         installed distribution version, otherwise ``"0+unknown"`` so the manifest
         never carries a fabricated version.
+
     """
     pyproject = Path(__file__).resolve().parents[3] / "pyproject.toml"
     if pyproject.exists():
@@ -94,6 +95,7 @@ def declared_surface() -> dict[str, bytes]:
     dict[str, bytes]
         Mapping of logical path to canonical-JSON bytes, suitable for
         :func:`scpn_studio_platform.manifest.content_digest`.
+
     """
     surface: dict[str, bytes] = {
         f"verb/{verb.name}": json.dumps(
@@ -124,6 +126,7 @@ def build_manifest(*, studio_version: str = STUDIO_VERSION) -> CapabilityManifes
     -------
     CapabilityManifest
         The schema-A manifest, with a content digest over :func:`declared_surface`.
+
     """
     return CapabilityManifest(
         studio=STUDIO_ID,

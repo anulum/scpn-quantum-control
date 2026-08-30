@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Complete schema-A Studio manifest NumPy documentation and installed-package
+  fallback coverage, and extend the Studio executive owner with real manifest,
+  digest, platform-conformance, strict typing, and exact joint line/branch
+  enforcement.
+
 - Complete reproducible comparison NumPy documentation and extend the
   competitive-baseline owner with a real small-statevector public run,
   deterministic boundary execution, strict typing, and exact joint line/branch

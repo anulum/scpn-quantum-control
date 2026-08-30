@@ -24,10 +24,16 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
-    """Require branch execution and exact source-only coverage."""
+    """Require branch execution and exact joint source coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["studio-executive-product focused coverage"]
-    assert "--fail-under=100" in gates["studio-executive-product exact coverage threshold"]
+    run = gates["studio-executive-product focused coverage"]
+    report = gates["studio-executive-product exact coverage threshold"]
+    assert "--branch" in run
+    assert run[-len(quality_gates.STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT) :] == (
+        quality_gates.STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT
+    )
+    assert "--fail-under=100" in report
+    assert "--include=*/studio_executive_product.py,*/studio/manifest.py" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -46,6 +52,7 @@ def test_ci_runs_and_aggregates_gate() -> None:
     end = workflow.index("\n\n  decisive-advantage-quality:", start)
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.STUDIO_EXECUTIVE_PRODUCT_QUALITY_RATCHET)
+    assert all(path in block for path in quality_gates.STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT)
     assert "requirements-ci-studio-platform.txt" in block
     assert "--no-deps --require-hashes" in block
     assert "studio-executive-product-quality" in workflow[workflow.index("  ci-gate:") :]

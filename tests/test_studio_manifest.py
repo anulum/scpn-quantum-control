@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import sys
+from importlib.metadata import PackageNotFoundError
 from pathlib import Path
 
 import pytest
@@ -26,6 +27,34 @@ def test_manifest_builds_with_studio_identity() -> None:
     assert data["studio"] == "scpn-quantum-control"
     assert len(data["verbs"]) == len(verbs.QUANTUM_VERBS) == 9
     assert data["content_digest"].startswith("sha256:")
+
+
+def test_version_resolution_uses_installed_distribution_outside_source_tree(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Installed-package resolution supplies the version without source metadata."""
+    monkeypatch.setattr(Path, "exists", lambda _path: False)
+    monkeypatch.setattr(
+        "scpn_quantum_control.studio.manifest.version",
+        lambda distribution: f"installed:{distribution}",
+    )
+    assert manifest._resolve_studio_version() == "installed:scpn-quantum-control"
+    monkeypatch.setattr(Path, "exists", lambda _path: True)
+    monkeypatch.setattr(
+        Path,
+        "read_text",
+        lambda _path, *, encoding: '[project]\nversion = ""\n',
+    )
+    assert manifest._resolve_studio_version() == "installed:scpn-quantum-control"
+
+    def missing_distribution(_distribution: str) -> str:
+        raise PackageNotFoundError
+
+    monkeypatch.setattr(
+        "scpn_quantum_control.studio.manifest.version",
+        missing_distribution,
+    )
+    assert manifest._resolve_studio_version() == "0+unknown"
 
 
 def test_content_digest_is_reproducible() -> None:
