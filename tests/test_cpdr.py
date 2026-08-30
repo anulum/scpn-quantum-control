@@ -26,29 +26,40 @@ from scpn_quantum_control.mitigation.cpdr import (
 
 
 class TestNearestCliffordAngle:
-    def test_zero(self):
+    """Verify rotation angles snap to the nearest Clifford grid point."""
+
+    def test_zero(self) -> None:
+        """Keep zero at the zero-angle Clifford point."""
         assert _nearest_clifford_angle(0.0) == pytest.approx(0.0)
 
-    def test_pi_over_2(self):
+    def test_pi_over_2(self) -> None:
+        """Keep pi over two at its exact Clifford point."""
         assert _nearest_clifford_angle(np.pi / 2) == pytest.approx(np.pi / 2)
 
-    def test_pi(self):
+    def test_pi(self) -> None:
+        """Keep pi at its exact Clifford point."""
         assert _nearest_clifford_angle(np.pi) == pytest.approx(np.pi)
 
-    def test_near_pi(self):
+    def test_near_pi(self) -> None:
+        """Snap an angle near pi to pi."""
         assert _nearest_clifford_angle(3.0) == pytest.approx(np.pi)
 
-    def test_small_angle(self):
+    def test_small_angle(self) -> None:
+        """Snap a small positive angle to zero."""
         assert _nearest_clifford_angle(0.1) == pytest.approx(0.0)
 
-    def test_negative_wraps(self):
+    def test_negative_wraps(self) -> None:
+        """Wrap negative angles onto the periodic Clifford grid."""
         # -π/4 mod 2π ≈ 5.50 → nearest is 2π ≈ 6.28 or 3π/2 ≈ 4.71
         result = _nearest_clifford_angle(-np.pi / 4)
         assert result in [pytest.approx(a) for a in [0.0, 3 * np.pi / 2, 2 * np.pi]]
 
 
 class TestGenerateTrainingCircuits:
-    def test_returns_correct_count(self):
+    """Verify construction of reproducible near-Clifford training circuits."""
+
+    def test_returns_correct_count(self) -> None:
+        """Return exactly the requested number of training circuits."""
         qc = QuantumCircuit(2)
         qc.rz(0.5, 0)
         qc.ry(1.2, 1)
@@ -58,7 +69,8 @@ class TestGenerateTrainingCircuits:
         training = generate_training_circuits(qc, n_training=10)
         assert len(training) == 10
 
-    def test_preserves_structure(self):
+    def test_preserves_structure(self) -> None:
+        """Preserve the target circuit's quantum and classical widths."""
         qc = QuantumCircuit(2)
         qc.rz(0.5, 0)
         qc.cx(0, 1)
@@ -69,7 +81,8 @@ class TestGenerateTrainingCircuits:
             assert tc.num_qubits == 2
             assert tc.num_clbits >= 2
 
-    def test_different_from_target(self):
+    def test_different_from_target(self) -> None:
+        """Perturb at least one rotation away from the target parameters."""
         qc = QuantumCircuit(2)
         qc.rz(0.5, 0)
         qc.ry(1.2, 1)
@@ -86,7 +99,8 @@ class TestGenerateTrainingCircuits:
                 break
         assert not all_same
 
-    def test_no_rotation_gates(self):
+    def test_no_rotation_gates(self) -> None:
+        """Copy targets without supported rotation gates safely."""
         qc = QuantumCircuit(2)
         qc.h(0)
         qc.cx(0, 1)
@@ -95,7 +109,8 @@ class TestGenerateTrainingCircuits:
         training = generate_training_circuits(qc, n_training=3)
         assert len(training) == 3
 
-    def test_seed_reproducibility(self):
+    def test_seed_reproducibility(self) -> None:
+        """Reproduce all perturbed parameters for a fixed seed."""
         qc = QuantumCircuit(2)
         qc.rz(0.5, 0)
         qc.measure_all()
@@ -107,7 +122,8 @@ class TestGenerateTrainingCircuits:
             p_b = [float(p) for inst in b.data for p in inst.operation.params]
             assert p_a == p_b
 
-    def test_zero_perturbation_snaps_rotations_to_clifford_grid(self):
+    def test_zero_perturbation_snaps_rotations_to_clifford_grid(self) -> None:
+        """Snap rotations exactly when the perturbation scale is zero."""
         qc = QuantumCircuit(2)
         qc.rz(0.49, 0)
         qc.ry(1.70, 1)
@@ -134,25 +150,31 @@ class TestGenerateTrainingCircuits:
 
 
 class TestComputeIdealValues:
-    def test_identity_circuit(self):
+    """Verify ideal statevector expectation extraction."""
+
+    def test_identity_circuit(self) -> None:
+        """Return positive unit Z expectation for the identity circuit."""
         qc = QuantumCircuit(2)  # |00⟩ → ⟨Z⟩ = +1
         vals = compute_ideal_values([qc])
         assert len(vals) == 1
         assert vals[0] == pytest.approx(1.0)
 
-    def test_x_gate(self):
+    def test_x_gate(self) -> None:
+        """Return negative unit Z expectation after an X gate."""
         qc = QuantumCircuit(1)
         qc.x(0)  # |1⟩ → ⟨Z⟩ = -1
         vals = compute_ideal_values([qc])
         assert vals[0] == pytest.approx(-1.0)
 
-    def test_hadamard(self):
+    def test_hadamard(self) -> None:
+        """Return zero Z expectation for an equal superposition."""
         qc = QuantumCircuit(1)
         qc.h(0)  # |+⟩ → ⟨Z⟩ = 0
         vals = compute_ideal_values([qc])
         assert abs(vals[0]) < 0.01
 
-    def test_observable_qubits(self):
+    def test_observable_qubits(self) -> None:
+        """Restrict the average to the requested observable qubits."""
         qc = QuantumCircuit(2)
         qc.x(0)  # qubit 0 → |1⟩, qubit 1 → |0⟩
         vals = compute_ideal_values([qc], observable_qubits=[0])
@@ -162,26 +184,33 @@ class TestComputeIdealValues:
 
 
 class TestComputeNoisyValues:
-    def test_all_zeros(self):
+    """Verify Z expectations extracted from measurement counts."""
+
+    def test_all_zeros(self) -> None:
+        """Return positive unit expectation for all-zero counts."""
         counts = [{"00": 1000}]
         vals = compute_noisy_values_from_counts(counts, 2)
         assert vals[0] == pytest.approx(1.0)
 
-    def test_all_ones(self):
+    def test_all_ones(self) -> None:
+        """Return negative unit expectation for all-one counts."""
         counts = [{"11": 1000}]
         vals = compute_noisy_values_from_counts(counts, 2)
         assert vals[0] == pytest.approx(-1.0)
 
-    def test_mixed(self):
+    def test_mixed(self) -> None:
+        """Return zero for balanced all-zero and all-one counts."""
         counts = [{"00": 500, "11": 500}]
         vals = compute_noisy_values_from_counts(counts, 2)
         assert vals[0] == pytest.approx(0.0)
 
-    def test_empty_counts(self):
+    def test_empty_counts(self) -> None:
+        """Use the defined zero value for an empty count mapping."""
         vals = compute_noisy_values_from_counts([{}], 2)
         assert vals[0] == 0.0
 
-    def test_multiple_circuits(self):
+    def test_multiple_circuits(self) -> None:
+        """Preserve circuit order while extracting multiple values."""
         counts = [{"00": 1000}, {"11": 1000}, {"00": 500, "11": 500}]
         vals = compute_noisy_values_from_counts(counts, 2)
         assert len(vals) == 3
@@ -189,7 +218,8 @@ class TestComputeNoisyValues:
         assert vals[1] == pytest.approx(-1.0)
         assert vals[2] == pytest.approx(0.0)
 
-    def test_observable_qubits_use_little_endian_measurement_order(self):
+    def test_observable_qubits_use_little_endian_measurement_order(self) -> None:
+        """Interpret observable indices in Qiskit's little-endian order."""
         counts = [{"01": 1000}]
 
         q0_values = compute_noisy_values_from_counts(
@@ -206,9 +236,22 @@ class TestComputeNoisyValues:
         assert q0_values[0] == pytest.approx(-1.0)
         assert q1_values[0] == pytest.approx(1.0)
 
+    def test_out_of_range_observable_qubits_are_ignored(self) -> None:
+        """Ignore observable indices beyond an available count bitstring."""
+        values = compute_noisy_values_from_counts(
+            [{"0": 7, "1": 3}],
+            n_qubits=2,
+            observable_qubits=[0, 1],
+        )
+
+        assert values[0] == pytest.approx(0.2)
+
 
 class TestFitRegression:
-    def test_perfect_linear(self):
+    """Verify CPDR linear-regression fitting and fallbacks."""
+
+    def test_perfect_linear(self) -> None:
+        """Recover an exact affine training relation."""
         ideal = [0.0, 0.5, 1.0]
         noisy = [0.1, 0.35, 0.6]  # noisy = 0.5 * ideal + 0.1
         slope, intercept, r_sq = fit_regression(ideal, noisy)
@@ -216,7 +259,8 @@ class TestFitRegression:
         assert intercept == pytest.approx(0.1)
         assert r_sq == pytest.approx(1.0)
 
-    def test_identity_mapping(self):
+    def test_identity_mapping(self) -> None:
+        """Recover the identity regression relation."""
         ideal = [-1.0, 0.0, 1.0]
         noisy = [-1.0, 0.0, 1.0]
         slope, intercept, r_sq = fit_regression(ideal, noisy)
@@ -224,16 +268,18 @@ class TestFitRegression:
         assert intercept == pytest.approx(0.0)
         assert r_sq == pytest.approx(1.0)
 
-    def test_single_point_fallback(self):
+    def test_single_point_fallback(self) -> None:
+        """Use identity coefficients when fewer than two points exist."""
         slope, intercept, r_sq = fit_regression([1.0], [0.5])
         assert slope == 1.0
         assert intercept == 0.0
 
-    def test_zero_slope_regression_preserves_raw_value(self):
+    def test_zero_slope_regression_preserves_raw_value(self) -> None:
+        """Preserve the raw value when the fitted slope is effectively zero."""
         result = cpdr_mitigate(
             raw_noisy_value=0.42,
-            ideal_training=np.array([0.0, 1.0]),
-            noisy_training=np.array([0.5, 0.5]),
+            ideal_training=[0.0, 1.0],
+            noisy_training=[0.5, 0.5],
         )
 
         assert result.mitigated_value == pytest.approx(0.42)
@@ -242,7 +288,10 @@ class TestFitRegression:
 
 
 class TestCPDRMitigate:
-    def test_corrects_depolarization(self):
+    """Verify correction of raw noisy expectations from fitted data."""
+
+    def test_corrects_depolarization(self) -> None:
+        """Invert a depolarizing compression relation."""
         # Simulated: ideal values in [-1, 1], noisy compressed to [-0.5, 0.5]
         ideal = [-1.0, -0.5, 0.0, 0.5, 1.0]
         noisy = [-0.5, -0.25, 0.0, 0.25, 0.5]  # noisy = 0.5 * ideal
@@ -253,7 +302,8 @@ class TestCPDRMitigate:
         assert result.regression_slope == pytest.approx(0.5)
         assert result.regression_r_squared == pytest.approx(1.0)
 
-    def test_with_offset(self):
+    def test_with_offset(self) -> None:
+        """Invert a fitted affine relation with an intercept."""
         # noisy = 0.8 * ideal + 0.1
         ideal = [-1.0, 0.0, 1.0]
         noisy = [-0.7, 0.1, 0.9]
@@ -262,13 +312,17 @@ class TestCPDRMitigate:
         expected = (0.5 - 0.1) / 0.8  # = 0.5
         assert result.mitigated_value == pytest.approx(expected)
 
-    def test_n_training(self):
+    def test_n_training(self) -> None:
+        """Report the number of ideal training values supplied."""
         result = cpdr_mitigate(0.5, [0.0, 1.0], [0.0, 0.8])
         assert result.n_training_circuits == 2
 
 
 class TestCPDRFullPipeline:
-    def test_end_to_end_simulator(self):
+    """Verify the public end-to-end CPDR composition."""
+
+    def test_end_to_end_simulator(self) -> None:
+        """Keep mitigated and raw values close for a noiseless backend."""
         # Build a simple circuit
         qc = QuantumCircuit(2)
         qc.rz(0.5, 0)
@@ -284,12 +338,14 @@ class TestCPDRFullPipeline:
         target_counts = sv.sample_counts(4000)
 
         # Mock backend: return noiseless counts (ideal = noisy)
-        def noiseless_backend(circuits):
-            results = []
+        def noiseless_backend(
+            circuits: list[QuantumCircuit],
+        ) -> list[dict[str, int]]:
+            results: list[dict[str, int]] = []
             for c in circuits:
                 b = c.remove_final_measurements(inplace=False)
                 s = Statevector.from_instruction(b)
-                results.append(s.sample_counts(4000))
+                results.append(dict(s.sample_counts(4000)))
             return results
 
         result = cpdr_full_pipeline(
@@ -303,14 +359,15 @@ class TestCPDRFullPipeline:
         # With noiseless backend, mitigated ≈ raw
         assert abs(result.mitigated_value - result.raw_value) < 0.15
 
-    def test_full_pipeline_calls_backend_once_with_requested_training_count(self):
+    def test_full_pipeline_calls_backend_once_with_requested_training_count(self) -> None:
+        """Invoke the backend once with the requested training cohort."""
         qc = QuantumCircuit(1)
         qc.rx(0.3, 0)
         qc.measure_all()
         target_counts = {"0": 7, "1": 3}
-        backend_calls = []
+        backend_calls: list[list[QuantumCircuit]] = []
 
-        def mock_backend(circuits):
+        def mock_backend(circuits: list[QuantumCircuit]) -> list[dict[str, int]]:
             backend_calls.append(circuits)
             assert len(circuits) == 4
             assert all(isinstance(circuit, QuantumCircuit) for circuit in circuits)

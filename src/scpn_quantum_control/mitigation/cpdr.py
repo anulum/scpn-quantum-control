@@ -226,15 +226,29 @@ def cpdr_full_pipeline(
 ) -> CPDRResult:
     """End-to-end CPDR: generate training circuits, run, regress, correct.
 
-    Args:
-        target_circuit: The circuit to mitigate.
-        target_counts: Noisy measurement counts from the target circuit.
-        run_on_backend: Callable(list[QuantumCircuit]) -> list[dict[str,int]]
-            that runs circuits on the noisy backend and returns counts.
-        n_training: Number of near-Clifford training circuits.
-        perturbation_scale: σ for Gaussian angle perturbation.
-        observable_qubits: Which qubits to measure ⟨Z⟩ on.
-        seed: RNG seed for reproducibility.
+    Parameters
+    ----------
+    target_circuit : QuantumCircuit
+        Circuit whose noisy expectation value is mitigated.
+    target_counts : dict[str, int]
+        Noisy measurement counts from the target circuit.
+    run_on_backend : Callable[[list[QuantumCircuit]], list[dict[str, int]]]
+        Execute the generated training circuits on the noisy backend and
+        return one count mapping per circuit.
+    n_training : int
+        Number of near-Clifford training circuits.
+    perturbation_scale : float
+        Standard deviation for Gaussian angle perturbations.
+    observable_qubits : list[int] or None
+        Qubits included in the measured Z expectation value.
+    seed : int
+        Random seed for reproducible training-circuit generation.
+
+    Returns
+    -------
+    CPDRResult
+        Raw and mitigated expectations with regression diagnostics.
+
     """
     n_qubits = target_circuit.num_qubits
 

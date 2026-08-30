@@ -34,7 +34,10 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     report = gates["error-mitigation-product exact coverage threshold"]
     assert "--fail-under=100" in report
-    assert "--include=*/error_mitigation_product.py,*/mitigation/compound_mitigation.py" in report
+    assert (
+        "--include=*/error_mitigation_product.py,*/mitigation/compound_mitigation.py,*/mitigation/cpdr.py"
+        in report
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -54,4 +57,5 @@ def test_ci_runs_and_aggregates_gate() -> None:
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.ERROR_MITIGATION_PRODUCT_QUALITY_RATCHET)
     assert "*/mitigation/compound_mitigation.py" in block
+    assert "*/mitigation/cpdr.py" in block
     assert "error-mitigation-product-quality" in workflow[workflow.index("  ci-gate:") :]
