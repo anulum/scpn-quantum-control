@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import runpy
 import sys
 from argparse import Namespace
 from pathlib import Path
@@ -149,3 +150,44 @@ def test_export_script_writes_guard_report(
     assert payload["schema"] == P_H1_OPEN_GUARD_SCHEMA
     assert payload["passed"] is True
     assert payload["violations"] == []
+
+
+def test_export_script_rejects_a_real_closed_claim_repository(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Fail closed when an actual scanned repository closes the p_h1 claim."""
+    (tmp_path / "README.md").write_text(
+        "The derivation closing the p_h1 gap proves p_h1 = 0.72.\n",
+        encoding="utf-8",
+    )
+    output = tmp_path / "data" / "p_h1_open_guard.json"
+    monkeypatch.setattr(export_script, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(export_script, "parse_args", lambda: Namespace(output=output))
+
+    assert export_script.main() == 1
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert payload["passed"] is False
+    assert payload["violations"]
+    assert "closed-claim pattern" in capsys.readouterr().out
+
+
+def test_export_script_module_entrypoint_runs_the_real_guard(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Execute the public export script entrypoint and propagate success."""
+    output = tmp_path / "p_h1_open_guard.json"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [str(EXPORT_SCRIPT_PATH), "--output", str(output)],
+    )
+
+    with pytest.raises(SystemExit) as raised:
+        runpy.run_path(str(EXPORT_SCRIPT_PATH), run_name="__main__")
+
+    assert raised.value.code == 0
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert payload["passed"] is True

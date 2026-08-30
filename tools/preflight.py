@@ -208,6 +208,7 @@ if TYPE_CHECKING:
         open_system_objective_quality_gates as _open_system_objective_quality_gates,
     )
     from tools import openpulse_control_quality_gates as _openpulse_control_quality_gates
+    from tools import p_h1_open_guard_quality_gates as _p_h1_open_guard_quality_gates
     from tools import phase_artifact_quality_gates as _phase_artifact_quality_gates
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import phase_qnode_product_quality_gates as _phase_qnode_product_quality_gates
@@ -419,6 +420,7 @@ else:
     _hamiltonian_learning_quality_gates = import_module("tools.hamiltonian_learning_quality_gates")
     _hardware_hal_quality_gates = import_module("tools.hardware_hal_quality_gates")
     _openpulse_control_quality_gates = import_module("tools.openpulse_control_quality_gates")
+    _p_h1_open_guard_quality_gates = import_module("tools.p_h1_open_guard_quality_gates")
     _pulse_shaping_quality_gates = import_module("tools.pulse_shaping_quality_gates")
     _dla_topology_optimizer_quality_gates = import_module(
         "tools.dla_topology_optimizer_quality_gates"
@@ -915,6 +917,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_hardware_experiment_control_quality_gates.build_static_quality_gates(_PY),
     *_pulse_shaping_quality_gates.build_static_quality_gates(_PY),
     *_openpulse_control_quality_gates.build_static_quality_gates(_PY),
+    *_p_h1_open_guard_quality_gates.build_static_quality_gates(_PY),
     *_differentiable_parameter_shift_quality_gates.build_static_quality_gates(_PY),
     *_differentiable_sparse_derivatives_quality_gates.build_static_quality_gates(_PY),
     *_program_ad_adjoint_quality_gates.build_static_quality_gates(_PY),
@@ -1437,6 +1440,7 @@ HARDWARE_EXPERIMENT_CONTROL_COVERAGE_GATES = (
 )
 PULSE_SHAPING_COVERAGE_GATES = _pulse_shaping_quality_gates.build_coverage_gates(_PY)
 OPENPULSE_CONTROL_COVERAGE_GATES = _openpulse_control_quality_gates.build_coverage_gates(_PY)
+P_H1_OPEN_GUARD_COVERAGE_GATES = _p_h1_open_guard_quality_gates.build_coverage_gates(_PY)
 DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_GATES = (
     _differentiable_parameter_shift_quality_gates.build_coverage_gates(_PY)
 )
@@ -1921,6 +1925,7 @@ def main() -> int:
             gates.extend(HARDWARE_EXPERIMENT_CONTROL_COVERAGE_GATES)
             gates.extend(PULSE_SHAPING_COVERAGE_GATES)
             gates.extend(OPENPULSE_CONTROL_COVERAGE_GATES)
+            gates.extend(P_H1_OPEN_GUARD_COVERAGE_GATES)
             gates.extend(DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_GATES)
             gates.extend(DIFFERENTIABLE_SPARSE_DERIVATIVES_COVERAGE_GATES)
             gates.extend(PROGRAM_AD_ADJOINT_COVERAGE_GATES)

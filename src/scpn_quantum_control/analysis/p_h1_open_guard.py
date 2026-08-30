@@ -115,6 +115,7 @@ def public_markdown_paths(repo_root: Path) -> tuple[Path, ...]:
     tuple[Path, ...]
         Sorted public Markdown paths, excluding ignored internal and rendered
         documentation trees.
+
     """
     root_paths = sorted(repo_root.glob("*.md"))
     docs_root = repo_root / "docs"
@@ -140,6 +141,7 @@ def validate_p_h1_open_claim_text(*, path: str, text: str) -> tuple[P_H1OpenGuar
     -------
     tuple[P_H1OpenGuardViolation, ...]
         Violations found in the supplied content.
+
     """
     stripped = _strip_fenced_code(text)
     violations: list[P_H1OpenGuardViolation] = []
@@ -193,6 +195,7 @@ def run_p_h1_open_guard(
     P_H1OpenGuardReport
         Pass/fail report with checked paths, open-boundary marker hits, and
         wording violations.
+
     """
     active_paths = paths or public_markdown_paths(repo_root)
     violations: list[P_H1OpenGuardViolation] = []
