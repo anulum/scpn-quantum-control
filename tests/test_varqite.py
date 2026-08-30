@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from pytest import MonkeyPatch
 
 import scpn_quantum_control.phase.varqite as varqite_mod
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
@@ -23,13 +24,16 @@ from scpn_quantum_control.phase.varqite import (
 
 
 class TestVarQITE:
-    def test_returns_result(self):
+    """Exercise the public VarQITE result contract."""
+
+    def test_returns_result(self) -> None:
+        """Return the structured VarQITE result type."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = varqite_ground_state(K, omega, tau_total=0.5, n_steps=5, seed=42)
         assert isinstance(result, VarQITEResult)
 
-    def test_energy_decreases(self):
+    def test_energy_decreases(self) -> None:
         """ITE should monotonically decrease energy."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
@@ -37,39 +41,44 @@ class TestVarQITE:
         # Overall trend: final < initial
         assert result.energy_history[-1] <= result.energy_history[0] + 0.1
 
-    def test_energy_finite(self):
+    def test_energy_finite(self) -> None:
+        """Produce a finite final energy."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = varqite_ground_state(K, omega, tau_total=0.5, n_steps=5, seed=42)
         assert np.isfinite(result.energy)
 
-    def test_exact_energy_below(self):
+    def test_exact_energy_below(self) -> None:
         """VarQITE energy should be above or near exact ground state."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = varqite_ground_state(K, omega, tau_total=1.0, n_steps=10, seed=42)
         assert result.energy >= result.exact_energy - 0.1
 
-    def test_relative_error_type(self):
+    def test_relative_error_type(self) -> None:
+        """Report a non-negative floating-point relative error."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = varqite_ground_state(K, omega, tau_total=0.5, n_steps=5, seed=42)
         assert isinstance(result.relative_error_pct, float)
         assert result.relative_error_pct >= 0
 
-    def test_energy_history_length(self):
+    def test_energy_history_length(self) -> None:
+        """Retain the initial and final energies in the trajectory."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = varqite_ground_state(K, omega, tau_total=0.5, n_steps=5, seed=42)
         assert len(result.energy_history) >= 2
 
-    def test_3_oscillators(self):
+    def test_3_oscillators(self) -> None:
+        """Run at least one update for a three-oscillator system."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = varqite_ground_state(K, omega, tau_total=0.3, n_steps=3, seed=42)
         assert result.n_steps >= 1
 
-    def test_convergence_with_loose_threshold(self):
+    def test_convergence_with_loose_threshold(self) -> None:
+        """Mark a trajectory converged under a deliberately loose threshold."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = varqite_ground_state(
@@ -77,20 +86,24 @@ class TestVarQITE:
         )
         assert result.converged
 
-    def test_optimal_params(self):
+    def test_optimal_params(self) -> None:
+        """Return a finite non-empty ansatz parameter vector."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = varqite_ground_state(K, omega, tau_total=0.5, n_steps=3, seed=42)
         assert len(result.optimal_params) > 0
         assert np.all(np.isfinite(result.optimal_params))
 
-    def test_rejects_dense_budget_before_statevector_allocation(self, monkeypatch):
+    def test_rejects_dense_budget_before_statevector_allocation(
+        self, monkeypatch: MonkeyPatch
+    ) -> None:
+        """Reject an over-budget simulation before allocating a statevector."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
 
         class FailIfStatevectorRequested:
             @staticmethod
-            def from_instruction(*args, **kwargs):  # noqa: ARG004
+            def from_instruction(*_args: object, **_kwargs: object) -> None:
                 raise AssertionError("Statevector allocation happened before budget gate")
 
         monkeypatch.setattr(varqite_mod, "Statevector", FailIfStatevectorRequested)
@@ -105,14 +118,16 @@ class TestVarQITE:
 
 
 class TestVarQITEPhysics:
-    def test_variational_bound(self):
+    """Verify the physical invariants exposed by VarQITE."""
+
+    def test_variational_bound(self) -> None:
         """VarQITE energy >= exact ground energy (variational principle)."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = varqite_ground_state(K, omega, tau_total=1.0, n_steps=10, seed=42)
         assert result.energy >= result.exact_energy - 0.5  # generous tolerance
 
-    def test_seed_determinism(self):
+    def test_seed_determinism(self) -> None:
         """Same seed → same result."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
@@ -127,8 +142,11 @@ class TestVarQITEPhysics:
 
 
 class TestVarQITEPipeline:
-    def test_pipeline_knm_to_ground_state(self):
+    """Exercise the coupling-to-ground-state integration path."""
+
+    def test_pipeline_knm_to_ground_state(self) -> None:
         """Full pipeline: build_knm → VarQITE → energy trajectory → ground state.
+
         Verifies ITE module is wired and produces converging energies.
         """
         import time
@@ -148,7 +166,7 @@ class TestVarQITEPipeline:
         print(f"  Exact: {result.exact_energy:.4f}, error: {result.relative_error_pct:.1f}%")
 
 
-def test_rejects_non_power_of_two_statevector_length():
+def test_rejects_non_power_of_two_statevector_length() -> None:
     """Qubit inference rejects a statevector length that is not a power of two."""
     with pytest.raises(ValueError, match="positive power of two"):
         _qubits_from_state_length(3)

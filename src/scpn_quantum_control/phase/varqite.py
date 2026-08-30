@@ -62,7 +62,26 @@ ComplexArray: TypeAlias = NDArray[np.complex128]
 
 @dataclass
 class VarQITEResult:
-    """VarQITE ground state result."""
+    """VarQITE ground-state estimate and convergence evidence.
+
+    Attributes
+    ----------
+    energy
+        Final variational energy.
+    exact_energy
+        Exact ground-state energy from classical diagonalisation.
+    relative_error_pct
+        Absolute energy error relative to ``exact_energy``, in percent.
+    n_steps
+        Number of completed imaginary-time updates.
+    energy_history
+        Energy before each update followed by the final energy.
+    converged
+        Whether consecutive energies met the requested threshold.
+    optimal_params
+        Final ansatz parameter vector.
+
+    """
 
     energy: float
     exact_energy: float
@@ -153,16 +172,32 @@ def varqite_ground_state(
 ) -> VarQITEResult:
     """Find ground state via VarQITE.
 
-    Args:
-        K: coupling matrix
-        omega: natural frequencies
-        tau_total: total imaginary time
-        n_steps: number of ITE steps
-        ansatz_reps: ansatz repetitions
-        convergence_threshold: stop when |ΔE| < threshold
-        seed: random seed
-        max_dense_gib: dense exact-simulation budget for Hamiltonian,
-            statevector, and finite-difference derivative arrays
+    Parameters
+    ----------
+    K
+        Oscillator coupling matrix.
+    omega
+        Natural frequencies, one per oscillator.
+    tau_total
+        Total imaginary evolution time.
+    n_steps
+        Maximum number of imaginary-time updates.
+    ansatz_reps
+        Repetitions in the Kuramoto ansatz.
+    convergence_threshold
+        Stop when the absolute energy change falls below this value.
+    seed
+        Seed for the initial variational parameters.
+    max_dense_gib
+        Dense exact-simulation budget for the Hamiltonian, statevector, and
+        analytic derivative workspace.
+
+    Returns
+    -------
+    VarQITEResult
+        Final energy, exact reference, trajectory, convergence state, and
+        optimized ansatz parameters.
+
     """
     n = K.shape[0]
     require_dense_allocation(
