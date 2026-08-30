@@ -1177,6 +1177,8 @@ def test_main_uses_coverage_pytest_by_default(
         "differentiable JAX-adapter exact coverage threshold",
         "program-ad alias-analysis focused coverage",
         "program-ad alias-analysis exact coverage threshold",
+        "generalised-parameter-shift focused coverage",
+        "generalised-parameter-shift exact coverage threshold",
         "general-unitary focused coverage",
         "general-unitary exact coverage threshold",
         "GPU-batch VQE focused coverage",

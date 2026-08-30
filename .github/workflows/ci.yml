@@ -2199,8 +2199,49 @@ jobs:
           --fail-under=100
           --include=*/hardware/openpulse_control.py
 
-  differentiable-parameter-shift-quality:
+  generalised-parameter-shift-quality:
     needs: lint
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check generalised parameter-shift quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/generalised_parameter_shift.py
+          tests/test_phase_generalised_parameter_shift.py
+          tools/generalised_parameter_shift_quality_gates.py
+          tests/test_generalised_parameter_shift_quality_gate.py
+      - name: Ruff preview NumPy docs for generalised parameter-shift quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/generalised_parameter_shift.py
+          tests/test_phase_generalised_parameter_shift.py
+          tools/generalised_parameter_shift_quality_gates.py
+          tests/test_generalised_parameter_shift_quality_gate.py
+      - name: Run generalised parameter-shift focused coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-generalised-parameter-shift-quality.coverage --branch
+          -m pytest -q tests/test_phase_generalised_parameter_shift.py
+      - name: Enforce generalised parameter-shift exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-generalised-parameter-shift-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/phase/generalised_parameter_shift.py
+
+  differentiable-parameter-shift-quality:
+    needs: [lint, generalised-parameter-shift-quality]
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}

@@ -314,6 +314,7 @@ def plan_generalised_parameter_shift(
     -------
     GeneralisedParameterShiftPlan
         Auditable shifted-evaluation plan.
+
     """
     parameter_values = _as_parameter_array(values)
     parameter_meta = _normalise_parameters(parameter_values, parameters)

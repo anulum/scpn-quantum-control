@@ -84,6 +84,7 @@ def _construct_stochastic_wrapper(
 
 
 def _objective(values: NDArray[np.float64]) -> float:
+    """Return a three-parameter finite-spectrum reference objective."""
     return float(
         math.sin(values[0])
         + 0.2 * math.cos(2.0 * values[0])
@@ -94,6 +95,7 @@ def _objective(values: NDArray[np.float64]) -> float:
 
 
 def test_generalised_plan_records_per_parameter_spectra_and_exports() -> None:
+    """Expose spectra, frozen parameters, and the public phase exports."""
     values = np.array([0.23, -0.4, 0.7], dtype=np.float64)
     parameters = (
         Parameter("theta"),
@@ -126,6 +128,7 @@ def test_generalised_plan_records_per_parameter_spectra_and_exports() -> None:
 
 
 def test_generalised_parameter_shift_matches_exact_reference() -> None:
+    """Match analytic finite-spectrum derivatives and the gradient facade."""
     values = np.array([0.23, -0.4, 0.7], dtype=np.float64)
     parameters = (
         Parameter("theta"),
@@ -166,6 +169,7 @@ def test_generalised_parameter_shift_matches_exact_reference() -> None:
 
 
 def test_generalised_term_shifted_parameters_and_custom_shift() -> None:
+    """Respect custom shifts and reject invalid shift directions."""
     values = np.array([0.3], dtype=np.float64)
     plan = plan_generalised_parameter_shift(
         values,
@@ -192,6 +196,7 @@ def test_generalised_term_shifted_parameters_and_custom_shift() -> None:
 
 
 def test_generalised_stochastic_shift_estimator_builds_shot_noise_envelope() -> None:
+    """Build gradients and an uncertainty envelope from finite-shot summaries."""
     plan = plan_generalised_parameter_shift(
         [0.2, -0.1],
         [[1.0, 2.0], [1.0]],
@@ -247,6 +252,7 @@ def test_generalised_stochastic_shift_estimator_builds_shot_noise_envelope() -> 
 
 
 def test_generalised_stochastic_estimator_reports_failed_uncertainty_policy() -> None:
+    """Report a failed uncertainty policy without upgrading the evidence."""
     plan = plan_generalised_parameter_shift([0.2], [[1.0]])
 
     result = estimate_generalised_parameter_shift_shot_noise(
@@ -270,6 +276,7 @@ def test_generalised_stochastic_estimator_reports_failed_uncertainty_policy() ->
 
 
 def test_generalised_parameter_shift_rejects_invalid_inputs() -> None:
+    """Fail closed for malformed spectra, shifts, statistics, and policies."""
     with pytest.raises(ValueError, match="generator_frequencies length"):
         plan_generalised_parameter_shift([0.1, 0.2], [[1.0]])
     with pytest.raises(ValueError, match="positive"):
@@ -442,6 +449,7 @@ def test_generalised_parameter_shift_rejects_invalid_inputs() -> None:
 
 
 def test_generalised_contract_records_reject_invalid_direct_construction() -> None:
+    """Reject malformed term, plan, result, and stochastic record construction."""
     term = GeneralisedParameterShiftTerm(
         term_index=0,
         parameter_index=0,
