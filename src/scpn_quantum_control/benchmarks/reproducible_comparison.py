@@ -104,6 +104,7 @@ class ComparisonMethodRow:
         Advisory wall-clock time in milliseconds.
     unavailable_reason:
         Populated only when ``available`` is ``False``.
+
     """
 
     method: str
@@ -151,6 +152,7 @@ class ReproducibleKuramotoComparison:
         ------
         KeyError
             If no row carries the requested method identifier.
+
         """
         for candidate in self.rows:
             if candidate.method == method:
@@ -260,6 +262,7 @@ def run_reproducible_kuramoto_comparison(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     if n_oscillators < 2:
         raise ValueError(f"n_oscillators must be >= 2, got {n_oscillators}")

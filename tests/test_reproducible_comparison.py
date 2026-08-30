@@ -135,6 +135,22 @@ def test_default_run_has_three_methods_and_exact_reference() -> None:
     }
 
 
+def test_small_public_comparison_executes_real_backends(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A small public comparison executes the real local solver stack."""
+    monkeypatch.undo()
+    comparison = run_reproducible_kuramoto_comparison(
+        2,
+        t_max=0.1,
+        dt=0.1,
+        trotter_per_step=1,
+    )
+    assert comparison.reference_method == "classical_exact"
+    assert all(row.available for row in comparison.rows)
+    assert comparison.row("quantum_trotter").r_final is not None
+
+
 def test_reference_row_carries_no_self_error() -> None:
     """The exact reference row has no error against itself."""
     comparison = _run(3)

@@ -24,10 +24,19 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
-    """Require branch execution and exact source-only coverage."""
+    """Require branch execution and exact joint source coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["competitive-baseline-watch focused coverage"]
-    assert "--fail-under=100" in gates["competitive-baseline-watch exact coverage threshold"]
+    run = gates["competitive-baseline-watch focused coverage"]
+    report = gates["competitive-baseline-watch exact coverage threshold"]
+    assert "--branch" in run
+    assert run[-len(quality_gates.COMPETITIVE_BASELINE_WATCH_COVERAGE_COHORT) :] == (
+        quality_gates.COMPETITIVE_BASELINE_WATCH_COVERAGE_COHORT
+    )
+    assert "--fail-under=100" in report
+    assert (
+        "--include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py"
+        in report
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -46,4 +55,5 @@ def test_ci_runs_and_aggregates_gate() -> None:
     end = workflow.index("\n\n  decisive-advantage-quality:", start)
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.COMPETITIVE_BASELINE_WATCH_QUALITY_RATCHET)
+    assert all(path in block for path in quality_gates.COMPETITIVE_BASELINE_WATCH_COVERAGE_COHORT)
     assert "competitive-baseline-watch-quality" in workflow[workflow.index("  ci-gate:") :]

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Complete reproducible comparison NumPy documentation and extend the
+  competitive-baseline owner with a real small-statevector public run,
+  deterministic boundary execution, strict typing, and exact joint line/branch
+  coverage while preserving the explicit no-advantage claim.
+
 - Complete native LLVM/JIT execution-evidence lifecycle documentation, add
   fail-closed public validation coverage, and extend the MLIR whole-program
   native owner with real evidence capture plus exact joint line/branch

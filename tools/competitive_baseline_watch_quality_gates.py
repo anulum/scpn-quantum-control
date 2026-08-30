@@ -14,12 +14,17 @@ from os import devnull
 Gate = tuple[str, list[str]]
 COMPETITIVE_BASELINE_WATCH_QUALITY_RATCHET = [
     "src/scpn_quantum_control/competitive_baseline_watch.py",
+    "src/scpn_quantum_control/benchmarks/reproducible_comparison.py",
     "tests/test_competitive_baseline_watch.py",
+    "tests/test_reproducible_comparison.py",
     "tools/competitive_baseline_watch_quality_gates.py",
     "tests/test_competitive_baseline_watch_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-COMPETITIVE_BASELINE_WATCH_COVERAGE_COHORT = ["tests/test_competitive_baseline_watch.py"]
+COMPETITIVE_BASELINE_WATCH_COVERAGE_COHORT = [
+    "tests/test_competitive_baseline_watch.py",
+    "tests/test_reproducible_comparison.py",
+]
 """Tests that own exact competitive-baseline-watch coverage."""
 COMPETITIVE_BASELINE_WATCH_COVERAGE_DATA_FILE = ".coverage.competitive-baseline-watch-quality"
 """Isolated coverage database for the competitive-baseline-watch owner."""
@@ -87,7 +92,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={COMPETITIVE_BASELINE_WATCH_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/competitive_baseline_watch.py",
+                "--include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py",
             ],
         ),
     ]
