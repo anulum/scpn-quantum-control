@@ -40,7 +40,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/hardware/feedback_loop.py" in report
+    assert f"--include={quality_gates.FEEDBACK_LOOP_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -63,5 +63,5 @@ def test_ci_runs_and_aggregates_feedback_loop_gate() -> None:
     for path in quality_gates.FEEDBACK_LOOP_DOCSTRING_RATCHET:
         assert path in block
     assert "--fail-under=100" in block
-    assert "hardware/feedback_loop.py" in block
+    assert quality_gates.FEEDBACK_LOOP_COVERAGE_INCLUDE in block
     assert "feedback-loop-quality" in workflow[workflow.index("  ci-gate:") :]

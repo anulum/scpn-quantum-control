@@ -14,52 +14,62 @@ from scpn_quantum_control.bridge.orchestrator_feedback import (
     OrchestratorFeedback,
     compute_orchestrator_feedback,
 )
+from scpn_quantum_control.l16.quantum_director import L16Result
 
 
 class TestOrchestratorFeedback:
-    def test_returns_feedback(self):
+    """Exercise the real public orchestrator-feedback path."""
+
+    def test_returns_feedback(self) -> None:
+        """Return the public feedback record."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fb = compute_orchestrator_feedback(K, omega)
         assert isinstance(fb, OrchestratorFeedback)
 
-    def test_action_valid(self):
+    def test_action_valid(self) -> None:
+        """Choose one of the three phase actions."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fb = compute_orchestrator_feedback(K, omega)
         assert fb.action in ("advance", "hold", "rollback")
 
-    def test_r_global_bounded(self):
+    def test_r_global_bounded(self) -> None:
+        """Keep the L16 order parameter in the unit interval."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fb = compute_orchestrator_feedback(K, omega)
         assert 0 <= fb.r_global <= 1.0
 
-    def test_confidence_bounded(self):
+    def test_confidence_bounded(self) -> None:
+        """Keep default-threshold confidence in the unit interval."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fb = compute_orchestrator_feedback(K, omega)
         assert 0 <= fb.confidence <= 1.0
 
-    def test_reason_non_empty(self):
+    def test_reason_non_empty(self) -> None:
+        """Record a non-empty threshold decision reason."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fb = compute_orchestrator_feedback(K, omega)
         assert len(fb.reason) > 0
 
-    def test_l16_action_present(self):
+    def test_l16_action_present(self) -> None:
+        """Preserve the underlying L16 action in the result."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fb = compute_orchestrator_feedback(K, omega)
         assert fb.l16_action in ("continue", "adjust", "halt")
 
-    def test_custom_thresholds(self):
+    def test_custom_thresholds(self) -> None:
+        """Accept caller-selected advance and hold thresholds."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fb = compute_orchestrator_feedback(K, omega, r_advance=0.99, r_hold=0.01)
         assert isinstance(fb.action, str)
 
-    def test_scpn_feedback(self):
+    def test_scpn_feedback(self) -> None:
         """Record orchestrator feedback at SCPN defaults."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -78,21 +88,24 @@ class TestOrchestratorFeedback:
 
 
 class TestFeedbackThresholds:
-    def test_threshold_logic_consistent(self):
+    """Exercise feedback decisions around caller-selected thresholds."""
+
+    def test_threshold_logic_consistent(self) -> None:
         """Feedback action must be one of the three valid values."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fb = compute_orchestrator_feedback(K, omega, r_advance=0.5, r_hold=0.3)
         assert fb.action in ("advance", "hold", "rollback")
 
-    def test_very_low_threshold_triggers_advance(self):
+    def test_very_low_threshold_triggers_advance(self) -> None:
         """r_advance=0.0 → always reachable → action should be advance."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         fb = compute_orchestrator_feedback(K, omega, r_advance=0.0, r_hold=0.0)
         assert fb.action == "advance"
 
-    def test_stability_score_finite(self):
+    def test_stability_score_finite(self) -> None:
+        """Return a finite stability score from the real L16 path."""
         import numpy as np
 
         K = build_knm_paper27(L=4)
@@ -110,9 +123,7 @@ class TestFeedbackThresholds:
 class TestFeedbackBranchCoverage:
     """Use mocked L16 to cover all three decision branches."""
 
-    def _mock_l16(self, r: float, stability: float, action: str):
-        from scpn_quantum_control.l16.quantum_director import L16Result
-
+    def _mock_l16(self, r: float, stability: float, action: str) -> L16Result:
         return L16Result(
             loschmidt_echo=0.9,
             energy_variance=0.01,
@@ -122,7 +133,7 @@ class TestFeedbackBranchCoverage:
             action=action,
         )
 
-    def test_hold_branch(self):
+    def test_hold_branch(self) -> None:
         """R in [r_hold, r_advance) → hold."""
         from unittest.mock import patch
 
@@ -137,7 +148,7 @@ class TestFeedbackBranchCoverage:
             assert fb.action == "hold"
             assert "monitoring" in fb.reason
 
-    def test_rollback_branch(self):
+    def test_rollback_branch(self) -> None:
         """R < r_hold → rollback."""
         from unittest.mock import patch
 
@@ -152,7 +163,7 @@ class TestFeedbackBranchCoverage:
             assert fb.action == "rollback"
             assert "desynchronised" in fb.reason
 
-    def test_rollback_confidence_formula(self):
+    def test_rollback_confidence_formula(self) -> None:
         """Rollback confidence = 1 - r/r_hold."""
         from unittest.mock import patch
 
@@ -166,7 +177,7 @@ class TestFeedbackBranchCoverage:
             fb = compute_orchestrator_feedback(build_knm_paper27(L=3), OMEGA_N_16[:3], r_hold=0.5)
             np.testing.assert_allclose(fb.confidence, 1.0 - 0.25 / 0.5)
 
-    def test_hold_confidence_formula(self):
+    def test_hold_confidence_formula(self) -> None:
         """Hold confidence = (r - r_hold) / (r_advance - r_hold)."""
         from unittest.mock import patch
 
@@ -188,7 +199,9 @@ class TestFeedbackBranchCoverage:
 
 
 class TestFeedbackPipeline:
-    def test_full_pipeline_knm_to_feedback(self):
+    """Exercise K_nm construction through the feedback decision."""
+
+    def test_full_pipeline_knm_to_feedback(self) -> None:
         """Pipeline: build_knm → VQE → R → feedback decision."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]

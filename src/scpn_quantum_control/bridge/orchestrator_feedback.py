@@ -36,7 +36,24 @@ from ..l16.quantum_director import compute_l16_lyapunov
 
 @dataclass
 class OrchestratorFeedback:
-    """Feedback from quantum state to orchestrator."""
+    """Feedback from quantum state to orchestrator.
+
+    Attributes
+    ----------
+    action
+        Recommended phase action: ``advance``, ``hold``, or ``rollback``.
+    r_global
+        L16 global synchronisation order parameter.
+    stability_score
+        L16 stability score used by the advance decision.
+    l16_action
+        Underlying L16 director action.
+    confidence
+        Confidence assigned to the phase recommendation.
+    reason
+        Human-readable threshold decision record.
+
+    """
 
     action: str  # "advance", "hold", "rollback"
     r_global: float
@@ -54,11 +71,22 @@ def compute_orchestrator_feedback(
 ) -> OrchestratorFeedback:
     """Compute quantum-informed feedback for the orchestrator.
 
-    Args:
-        K: coupling matrix
-        omega: natural frequencies
-        r_advance: R threshold for phase advancement
-        r_hold: R threshold for hold (below = rollback)
+    Parameters
+    ----------
+    K
+        Oscillator coupling matrix passed to the L16 Lyapunov analysis.
+    omega
+        Natural-frequency vector passed to the L16 Lyapunov analysis.
+    r_advance
+        Global-order threshold for advancing a stable phase.
+    r_hold
+        Global-order threshold below which rollback is recommended.
+
+    Returns
+    -------
+    OrchestratorFeedback
+        Phase action, L16 observables, confidence, and decision reason.
+
     """
     l16 = compute_l16_lyapunov(K, omega)
     r = l16.order_parameter
