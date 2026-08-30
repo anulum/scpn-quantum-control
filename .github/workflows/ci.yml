@@ -6004,9 +6004,12 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/ssgf_geometry_gradient_product.py
           src/scpn_quantum_control/ssgf/quantum_gradient.py
+          src/scpn_quantum_control/ssgf/quantum_outer_cycle.py
           src/scpn_quantum_control/bridge/ssgf_w_adapter.py
           tests/test_ssgf_geometry_gradient_product.py
           tests/test_ssgf_quantum_gradient.py
+          tests/test_quantum_outer_cycle.py
+          tests/test_quantum_outer_cycle_branches.py
           tests/test_ssgf_w_adapter.py
           tools/ssgf_geometry_gradient_quality_gates.py
           tests/test_ssgf_geometry_gradient_quality_gate.py
@@ -6016,9 +6019,12 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/ssgf_geometry_gradient_product.py
           src/scpn_quantum_control/ssgf/quantum_gradient.py
+          src/scpn_quantum_control/ssgf/quantum_outer_cycle.py
           src/scpn_quantum_control/bridge/ssgf_w_adapter.py
           tests/test_ssgf_geometry_gradient_product.py
           tests/test_ssgf_quantum_gradient.py
+          tests/test_quantum_outer_cycle.py
+          tests/test_quantum_outer_cycle_branches.py
           tests/test_ssgf_w_adapter.py
           tools/ssgf_geometry_gradient_quality_gates.py
           tests/test_ssgf_geometry_gradient_quality_gate.py
@@ -6027,12 +6033,14 @@ jobs:
           --data-file=/tmp/scpn-qc-ssgf-geometry-gradient-quality.coverage --branch
           -m pytest -q tests/test_ssgf_geometry_gradient_product.py
           tests/test_ssgf_quantum_gradient.py
+          tests/test_quantum_outer_cycle.py
+          tests/test_quantum_outer_cycle_branches.py
           tests/test_ssgf_w_adapter.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-ssgf-geometry-gradient-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/ssgf_geometry_gradient_product.py,*/ssgf/quantum_gradient.py,*/bridge/ssgf_w_adapter.py
+          --include=*/ssgf_geometry_gradient_product.py,*/ssgf/quantum_gradient.py,*/ssgf/quantum_outer_cycle.py,*/bridge/ssgf_w_adapter.py
 
   codesign-components-quality:
     needs: lint

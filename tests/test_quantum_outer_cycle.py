@@ -20,7 +20,10 @@ from scpn_quantum_control.ssgf.quantum_outer_cycle import (
 
 
 class TestClassicalCost:
-    def test_default_refuses_surrogate_classical_cost(self):
+    """Exercise admission and values of the exploratory classical surrogate."""
+
+    def test_default_refuses_surrogate_classical_cost(self) -> None:
+        """The classical surrogate is disabled by default."""
         W = np.zeros((3, 3))
         try:
             classical_cost(W)
@@ -29,18 +32,21 @@ class TestClassicalCost:
         else:
             raise AssertionError("classical_cost must not return surrogate values by default")
 
-    def test_zero_coupling_high_cost_when_surrogate_explicit(self):
+    def test_zero_coupling_high_cost_when_surrogate_explicit(self) -> None:
+        """Explicit surrogate admission penalizes zero coupling."""
         W = np.zeros((3, 3))
         c = classical_cost(W, allow_surrogate=True)
         assert c >= 0.5
 
-    def test_strong_uniform_coupling_lower_cost_when_surrogate_explicit(self):
+    def test_strong_uniform_coupling_lower_cost_when_surrogate_explicit(self) -> None:
+        """Strong uniform coupling lowers the admitted surrogate cost."""
         W = np.ones((3, 3)) * 2.0
         np.fill_diagonal(W, 0.0)
         c = classical_cost(W, allow_surrogate=True)
         assert c < 1.0
 
-    def test_bounded_when_surrogate_explicit(self):
+    def test_bounded_when_surrogate_explicit(self) -> None:
+        """An admitted random-matrix surrogate returns a finite scalar."""
         W = np.random.default_rng(42).uniform(0, 1, (4, 4))
         W = (W + W.T) / 2
         np.fill_diagonal(W, 0.0)
@@ -49,37 +55,47 @@ class TestClassicalCost:
 
 
 class TestQuantumOuterCycle:
-    def test_returns_result(self):
+    """Exercise quantum, classical, and mixed outer-cycle behavior."""
+
+    def test_returns_result(self) -> None:
+        """The optimizer returns its public result record."""
         result = quantum_outer_cycle(n_osc=2, alpha=1.0, max_iterations=3, seed=42)
         assert isinstance(result, OuterCycleResult)
 
-    def test_z_shape(self):
+    def test_z_shape(self) -> None:
+        """The optimized latent vector represents the upper triangle."""
         result = quantum_outer_cycle(n_osc=3, alpha=1.0, max_iterations=2, seed=42)
         assert result.z_optimised.shape == (3,)  # 3 choose 2 = 3
 
-    def test_w_symmetric(self):
+    def test_w_symmetric(self) -> None:
+        """The optimized coupling matrix is symmetric."""
         result = quantum_outer_cycle(n_osc=3, alpha=1.0, max_iterations=2, seed=42)
         np.testing.assert_allclose(result.W_optimised, result.W_optimised.T, atol=1e-12)
 
-    def test_w_non_negative(self):
+    def test_w_non_negative(self) -> None:
+        """The optimized softplus coupling matrix is non-negative."""
         result = quantum_outer_cycle(n_osc=3, alpha=1.0, max_iterations=2, seed=42)
         assert np.all(result.W_optimised >= -1e-10)
 
-    def test_cost_history_length(self):
+    def test_cost_history_length(self) -> None:
+        """Cost and order histories align within the iteration budget."""
         result = quantum_outer_cycle(n_osc=2, alpha=1.0, max_iterations=5, seed=42)
         assert len(result.cost_history) <= 5
         assert len(result.r_global_history) == len(result.cost_history)
 
-    def test_r_global_bounded(self):
+    def test_r_global_bounded(self) -> None:
+        """Every recorded global-order parameter remains bounded."""
         result = quantum_outer_cycle(n_osc=2, alpha=1.0, max_iterations=3, seed=42)
         for r in result.r_global_history:
             assert 0 <= r <= 1.0
 
-    def test_pure_quantum(self):
+    def test_pure_quantum(self) -> None:
+        """A quantum-only cycle returns a scalar final cost."""
         result = quantum_outer_cycle(n_osc=2, alpha=1.0, max_iterations=3, seed=42)
         assert isinstance(result.final_cost, float)
 
-    def test_pure_classical(self):
+    def test_pure_classical(self) -> None:
+        """A classical-only cycle uses the supplied production cost."""
         result = quantum_outer_cycle(
             n_osc=2,
             alpha=0.0,
@@ -89,18 +105,21 @@ class TestQuantumOuterCycle:
         )
         assert isinstance(result.final_cost, float)
 
-    def test_custom_z_init(self):
+    def test_custom_z_init(self) -> None:
+        """An explicit latent start completes at least one iteration."""
         z0 = np.array([0.5, -0.3, 1.0])
         result = quantum_outer_cycle(n_osc=3, alpha=1.0, z_init=z0, max_iterations=2)
         assert result.n_iterations >= 1
 
-    def test_convergence_flag(self):
+    def test_convergence_flag(self) -> None:
+        """A permissive cost-delta threshold marks convergence."""
         result = quantum_outer_cycle(
             n_osc=2, alpha=1.0, max_iterations=50, convergence_threshold=100.0, seed=42
         )
         assert result.converged
 
-    def test_mixed_cycle_requires_real_classical_cost_function(self):
+    def test_mixed_cycle_requires_real_classical_cost_function(self) -> None:
+        """A mixed production cycle refuses an implicit surrogate."""
         try:
             quantum_outer_cycle(n_osc=2, alpha=0.5, max_iterations=1, seed=42)
         except ValueError as exc:
@@ -112,11 +131,13 @@ class TestQuantumOuterCycle:
 class TestThetaInitThreading:
     """The descent start state is threaded and non-degenerate by default."""
 
-    def test_default_start_has_nonzero_order_parameter(self):
+    def test_default_start_has_nonzero_order_parameter(self) -> None:
+        """The seeded default avoids the degenerate zero-order start."""
         result = quantum_outer_cycle(n_osc=3, alpha=1.0, max_iterations=2, seed=42)
         assert result.r_global_history[0] > 0.0
 
-    def test_explicit_splay_start_documents_the_degenerate_fixed_point(self):
+    def test_explicit_splay_start_documents_the_degenerate_fixed_point(self) -> None:
+        """An intentional splay start retains near-zero global order."""
         splay = np.linspace(0, 2 * np.pi * (1 - 1 / 3), 3)
         result = quantum_outer_cycle(
             n_osc=3, theta_init=splay, alpha=1.0, max_iterations=3, seed=42
@@ -124,16 +145,19 @@ class TestThetaInitThreading:
         for r in result.r_global_history:
             assert r < 1e-3
 
-    def test_theta_init_is_reproducible_with_seed(self):
+    def test_theta_init_is_reproducible_with_seed(self) -> None:
+        """Equal seeds reproduce the global-order history."""
         first = quantum_outer_cycle(n_osc=3, alpha=1.0, max_iterations=2, seed=7)
         second = quantum_outer_cycle(n_osc=3, alpha=1.0, max_iterations=2, seed=7)
         assert first.r_global_history == second.r_global_history
 
-    def test_theta_init_wrong_shape_fails_closed(self):
+    def test_theta_init_wrong_shape_fails_closed(self) -> None:
+        """Initial phases must match the oscillator count."""
         with pytest.raises(ValueError, match="theta_init shape"):
             quantum_outer_cycle(n_osc=3, theta_init=np.zeros(2), alpha=1.0, max_iterations=1)
 
-    def test_theta_init_non_finite_fails_closed(self):
+    def test_theta_init_non_finite_fails_closed(self) -> None:
+        """Initial phases must contain only finite values."""
         theta = np.array([0.0, np.nan, 1.0])
         with pytest.raises(ValueError, match="finite"):
             quantum_outer_cycle(n_osc=3, theta_init=theta, alpha=1.0, max_iterations=1)

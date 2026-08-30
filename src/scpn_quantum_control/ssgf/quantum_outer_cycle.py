@@ -41,7 +41,28 @@ from .quantum_gradient import _w_from_z, compute_quantum_gradient
 
 @dataclass
 class OuterCycleResult:
-    """Result of quantum SSGF outer cycle optimisation."""
+    """Result of quantum SSGF outer-cycle optimization.
+
+    Attributes
+    ----------
+    z_optimised
+        Optimized latent geometry vector.
+    W_optimised
+        Symmetric coupling matrix generated from ``z_optimised``.
+    cost_history
+        Combined cost recorded at each completed iteration.
+    r_global_history
+        Quantum global-order parameter recorded at each iteration.
+    n_iterations
+        Number of completed optimization iterations.
+    final_cost
+        Last combined cost, or one when no iteration completed.
+    final_r_global
+        Last global-order parameter, or zero when no iteration completed.
+    converged
+        Whether the cost-delta convergence threshold was met.
+
+    """
 
     z_optimised: NDArray[np.float64]
     W_optimised: NDArray[np.float64]
@@ -60,6 +81,24 @@ def classical_cost(W: NDArray[np.float64], *, allow_surrogate: bool = False) -> 
     mixed/classical optimisation must pass ``classical_cost_fn`` into
     ``quantum_outer_cycle``. This helper remains available only for explicitly
     labelled exploratory comparisons.
+
+    Parameters
+    ----------
+    W
+        Symmetric oscillator-coupling matrix.
+    allow_surrogate
+        Explicitly admit the exploratory coupling-balance surrogate.
+
+    Returns
+    -------
+    float
+        Exploratory weak-coupling and imbalance cost.
+
+    Raises
+    ------
+    ValueError
+        If the surrogate was not explicitly admitted.
+
     """
     if not allow_surrogate:
         raise ValueError(
@@ -93,22 +132,49 @@ def quantum_outer_cycle(
 ) -> OuterCycleResult:
     """Run the quantum SSGF outer cycle.
 
-    Args:
-        n_osc: number of oscillators
-        z_init: initial latent vector (default: seeded random)
-        theta_init: initial oscillator phases (default: seeded random uniform).
-            The evenly spaced splay state has R_global = 0 identically and a
-            vanishing quantum gradient, so a splay start reports instant
-            convergence with zero descent progress — pass it only on purpose.
-        alpha: quantum cost weight (0 = pure classical, 1 = pure quantum)
-        classical_cost_fn: production classical SSGF cost function for alpha < 1
-        allow_classical_surrogate: opt into the legacy coupling-balance surrogate
-        learning_rate: gradient descent step size
-        max_iterations: maximum optimisation steps
-        convergence_threshold: stop if |ΔC| < threshold
-        dt: Trotter evolution time
-        trotter_reps: Trotter repetitions
-        seed: random seed
+    Parameters
+    ----------
+    n_osc
+        Number of oscillators.
+    z_init
+        Initial latent vector. Uses seeded normal samples when omitted.
+    theta_init
+        Initial oscillator phases. Uses seeded uniform samples when omitted.
+        An evenly spaced splay state has identically zero ``R_global`` and a
+        vanishing quantum gradient, so pass that state only intentionally.
+    alpha
+        Quantum cost weight, from zero for classical-only to one for
+        quantum-only optimization.
+    classical_cost_fn
+        Production classical SSGF cost function required when ``alpha < 1``
+        unless the exploratory surrogate is explicitly admitted.
+    allow_classical_surrogate
+        Admit the legacy coupling-balance surrogate for an exploratory run.
+    learning_rate
+        Gradient-descent step size.
+    max_iterations
+        Maximum number of optimization steps.
+    convergence_threshold
+        Stop when the absolute cost change falls below this threshold.
+    dt
+        Trotter evolution time for each quantum-cost evaluation.
+    trotter_reps
+        Number of Lie-Trotter repetitions.
+    seed
+        Seed for omitted latent vectors and initial phases.
+
+    Returns
+    -------
+    OuterCycleResult
+        Optimized geometry, histories, final metrics, and convergence state.
+
+    Raises
+    ------
+    ValueError
+        If ``alpha`` is outside ``[0, 1]``, a mixed cycle has no admitted
+        classical cost, initial phases are invalid, or a classical cost is
+        non-finite.
+
     """
     if not 0.0 <= alpha <= 1.0:
         raise ValueError(f"alpha must be in [0, 1], got {alpha}")
