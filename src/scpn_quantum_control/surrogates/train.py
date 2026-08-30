@@ -43,6 +43,7 @@ def input_row_digests(inputs: FloatArray) -> tuple[str, ...]:
     -------
     tuple[str, ...]
         Row identities in input order.
+
     """
     values = np.asarray(inputs, dtype=np.float64)
     if values.ndim != 2 or values.shape[0] == 0 or values.shape[1] == 0:
@@ -101,6 +102,7 @@ def fit_gaussian_rbf_surrogate(
     -------
     GaussianRBFSurrogate
         Fitted model carrying training-row and target provenance digests.
+
     """
     x_train = np.asarray(inputs, dtype=np.float64)
     y_train = np.asarray(targets, dtype=np.float64)

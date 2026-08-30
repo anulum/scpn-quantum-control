@@ -4024,8 +4024,12 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/applications/qrc_baseline.py
           src/scpn_quantum_control/applications/quantum_reservoir.py
+          src/scpn_quantum_control/surrogates/models.py
+          src/scpn_quantum_control/surrogates/train.py
           tests/test_qrc_baseline.py
           tests/test_quantum_reservoir.py
+          tests/test_surrogate_models.py
+          tests/test_surrogate_train.py
           tools/qrc_baseline_quality_gates.py
           tests/test_qrc_baseline_quality_gate.py
       - run: >-
@@ -4033,19 +4037,24 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/applications/qrc_baseline.py
           src/scpn_quantum_control/applications/quantum_reservoir.py
+          src/scpn_quantum_control/surrogates/models.py
+          src/scpn_quantum_control/surrogates/train.py
           tests/test_qrc_baseline.py
           tests/test_quantum_reservoir.py
+          tests/test_surrogate_models.py
+          tests/test_surrogate_train.py
           tools/qrc_baseline_quality_gates.py
           tests/test_qrc_baseline_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-qrc-baseline-quality.coverage --branch
           -m pytest -q tests/test_qrc_baseline.py tests/test_quantum_reservoir.py
+          tests/test_surrogate_models.py tests/test_surrogate_train.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-qrc-baseline-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/applications/qrc_baseline.py,*/applications/quantum_reservoir.py
+          --include=*/applications/qrc_baseline.py,*/applications/quantum_reservoir.py,*/surrogates/models.py,*/surrogates/train.py
 
   josephson-magnitude-study-quality:
     needs: lint

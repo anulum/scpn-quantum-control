@@ -14,10 +14,19 @@ from os import devnull
 Gate = tuple[str, list[str]]
 QRC_BASELINE_SOURCE = "src/scpn_quantum_control/applications/qrc_baseline.py"
 QUANTUM_RESERVOIR_SOURCE = "src/scpn_quantum_control/applications/quantum_reservoir.py"
-QRC_BASELINE_SOURCES = [QRC_BASELINE_SOURCE, QUANTUM_RESERVOIR_SOURCE]
+SURROGATE_MODEL_SOURCE = "src/scpn_quantum_control/surrogates/models.py"
+SURROGATE_TRAIN_SOURCE = "src/scpn_quantum_control/surrogates/train.py"
+QRC_BASELINE_SOURCES = [
+    QRC_BASELINE_SOURCE,
+    QUANTUM_RESERVOIR_SOURCE,
+    SURROGATE_MODEL_SOURCE,
+    SURROGATE_TRAIN_SOURCE,
+]
 QRC_BASELINE_COVERAGE_COHORT = [
     "tests/test_qrc_baseline.py",
     "tests/test_quantum_reservoir.py",
+    "tests/test_surrogate_models.py",
+    "tests/test_surrogate_train.py",
 ]
 QRC_BASELINE_TYPING_RATCHET = [
     *QRC_BASELINE_SOURCES,
@@ -63,7 +72,7 @@ def build_static_quality_gates(python: str) -> list[Gate]:
 
 
 def build_coverage_gates(python: str) -> list[Gate]:
-    """Build real offline QRC/ESN execution and exact source-coverage gates."""
+    """Build real offline QRC/surrogate execution and exact coverage gates."""
     return [
         (
             "QRC-baseline focused coverage",
@@ -92,7 +101,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={QRC_BASELINE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/applications/qrc_baseline.py,*/applications/quantum_reservoir.py",
+                "--include=*/applications/qrc_baseline.py,*/applications/quantum_reservoir.py,*/surrogates/models.py,*/surrogates/train.py",
             ],
         ),
     ]
@@ -105,6 +114,8 @@ __all__ = [
     "QRC_BASELINE_SOURCE",
     "QRC_BASELINE_SOURCES",
     "QRC_BASELINE_TYPING_RATCHET",
+    "SURROGATE_MODEL_SOURCE",
+    "SURROGATE_TRAIN_SOURCE",
     "QUANTUM_RESERVOIR_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",

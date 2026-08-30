@@ -68,6 +68,7 @@ class GaussianRBFSurrogate:
         leakage.
     training_target_digest:
         SHA-256 identity of the fitted target vector.
+
     """
 
     centres: FloatArray
@@ -122,6 +123,7 @@ class GaussianRBFSurrogate:
         -------
         numpy.ndarray
             Predicted scalar objective for each sample.
+
         """
         values = _finite_matrix(inputs, name="inputs")
         if values.shape[1] != self.n_parameters:

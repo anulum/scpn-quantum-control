@@ -28,7 +28,7 @@ def test_static_gate_is_strict_and_completely_documented() -> None:
 
 
 def test_coverage_gate_is_isolated_connected_and_exact() -> None:
-    """Require real offline QRC/ESN execution and exact source coverage."""
+    """Require real offline QRC/surrogate execution and exact coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
     run = gates["QRC-baseline focused coverage"]
     report = gates["QRC-baseline exact coverage threshold"]
@@ -41,6 +41,8 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     include = next(argument for argument in report if argument.startswith("--include="))
     assert "applications/qrc_baseline.py" in include
     assert "applications/quantum_reservoir.py" in include
+    assert "surrogates/models.py" in include
+    assert "surrogates/train.py" in include
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -67,4 +69,8 @@ def test_ci_runs_and_aggregates_qrc_baseline_gate() -> None:
     assert "applications/qrc_baseline.py" in block
     assert "applications/quantum_reservoir.py" in block
     assert "tests/test_quantum_reservoir.py" in block
+    assert "surrogates/models.py" in block
+    assert "surrogates/train.py" in block
+    assert "tests/test_surrogate_models.py" in block
+    assert "tests/test_surrogate_train.py" in block
     assert "qrc-baseline-quality" in workflow[workflow.index("  ci-gate:") :]
