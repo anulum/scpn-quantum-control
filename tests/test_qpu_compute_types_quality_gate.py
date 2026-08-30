@@ -40,7 +40,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/qpu_compute_types.py" in report
+    assert f"--include={quality_gates.QPU_COMPUTE_TYPES_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -63,6 +63,6 @@ def test_ci_runs_and_aggregates_qpu_compute_types_gate() -> None:
     for path in quality_gates.QPU_COMPUTE_TYPES_DOCSTRING_RATCHET:
         assert path in block
     assert "--fail-under=100" in block
-    assert "qpu_compute_types.py" in block
+    assert quality_gates.QPU_COMPUTE_TYPES_COVERAGE_INCLUDE in block
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "qpu-compute-types-quality" in aggregate

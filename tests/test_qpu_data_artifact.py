@@ -594,8 +594,9 @@ def test_scpn_datastream_adapter_rejects_publication_safe_source_mode() -> None:
 
 
 def test_scpn_datastream_adapter_rejects_invalid_identity_overrides_before_payload_work() -> None:
-    """Verify that SCPN datastream adapter rejects invalid identity overrides before
-    payload work.
+    """Reject invalid adapter identity overrides before payload work.
+
+    The identity contract is evaluated before the stream payload schema.
     """
     with pytest.raises(ValueError, match="domain must be a string"):
         QPUDataArtifact.from_scpn_datastream_payload(
@@ -614,6 +615,26 @@ def test_loader_rejects_non_mapping_payloads_with_contract_error() -> None:
     """Verify that loader rejects non mapping payloads with contract error."""
     with pytest.raises(ValueError, match="artifact payload must be a mapping"):
         QPUDataArtifact.from_dict(cast(Any, [("schema_version", "wrong")]))
+
+
+def test_loader_accepts_payload_without_optional_artifact_hash() -> None:
+    """Accept a valid versioned payload when its artifact digest is omitted."""
+    artifact = artifact_from_arrays(
+        domain="connectome",
+        source_name="unsealed-input",
+        source_mode="recorded",
+        K_nm=_valid_knm(3),
+        omega=[0.1, 0.2, 0.3],
+        normalization="documented",
+        extraction_method="unit-test",
+        replay_id="source-run-1",
+    )
+    payload = artifact.to_dict()
+    del payload["artifact_sha256"]
+
+    loaded = QPUDataArtifact.from_dict(payload)
+
+    assert loaded.to_dict() == artifact.to_dict()
 
 
 def test_loader_rejects_stale_array_hashes() -> None:

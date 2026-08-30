@@ -13,24 +13,32 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 QPU_COMPUTE_TYPES_SOURCE = "src/scpn_quantum_control/qpu_compute_types.py"
+QPU_DATA_ARTIFACT_SOURCE = "src/scpn_quantum_control/bridge/qpu_data_artifact.py"
 QPU_COMPUTE_TYPES_COVERAGE_COHORT = [
     "tests/test_qpu_compute.py",
     "tests/test_qpu_compute_runtime_branches.py",
     "tests/test_qpu_compute_types_guards.py",
     "tests/test_qpu_compute_product.py",
+    "tests/test_qpu_data_artifact.py",
+    "tests/test_qpu_data_artifact_branches.py",
 ]
 QPU_COMPUTE_TYPES_TYPING_RATCHET = [
     QPU_COMPUTE_TYPES_SOURCE,
+    QPU_DATA_ARTIFACT_SOURCE,
+    "tests/test_qpu_data_artifact.py",
+    "tests/test_qpu_data_artifact_branches.py",
     "tools/qpu_compute_types_quality_gates.py",
     "tests/test_qpu_compute_types_quality_gate.py",
 ]
 QPU_COMPUTE_TYPES_DOCSTRING_RATCHET = [
     QPU_COMPUTE_TYPES_SOURCE,
+    QPU_DATA_ARTIFACT_SOURCE,
     *QPU_COMPUTE_TYPES_COVERAGE_COHORT,
     "tools/qpu_compute_types_quality_gates.py",
     "tests/test_qpu_compute_types_quality_gate.py",
 ]
 QPU_COMPUTE_TYPES_COVERAGE_DATA_FILE = "/tmp/scpn-qc-qpu-compute-types-quality.coverage"  # nosec B108
+QPU_COMPUTE_TYPES_COVERAGE_INCLUDE = "*/qpu_compute_types.py,*/bridge/qpu_data_artifact.py"
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -95,7 +103,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={QPU_COMPUTE_TYPES_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/qpu_compute_types.py",
+                f"--include={QPU_COMPUTE_TYPES_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -104,9 +112,11 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "QPU_COMPUTE_TYPES_COVERAGE_COHORT",
     "QPU_COMPUTE_TYPES_COVERAGE_DATA_FILE",
+    "QPU_COMPUTE_TYPES_COVERAGE_INCLUDE",
     "QPU_COMPUTE_TYPES_DOCSTRING_RATCHET",
     "QPU_COMPUTE_TYPES_SOURCE",
     "QPU_COMPUTE_TYPES_TYPING_RATCHET",
+    "QPU_DATA_ARTIFACT_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]
