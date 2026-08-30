@@ -46,7 +46,36 @@ SURFACE_CODE_PREFACTOR = 0.1  # empirical A in p_L = A × (p/p_th)^((d+1)/2)
 
 @dataclass
 class ErrorBudget:
-    """Error budget for fault-tolerant Kuramoto-XY simulation."""
+    """Error budget for fault-tolerant Kuramoto-XY simulation.
+
+    Attributes
+    ----------
+    n_oscillators
+        Number of simulated oscillators.
+    trotter_error
+        Estimated error from the selected Trotter decomposition.
+    gate_error_per_step
+        Accumulated physical-gate error for one Trotter step.
+    logical_error_rate
+        Surface-code logical error rate per QEC round.
+    total_error
+        Sum of the Trotter, gate, and logical error estimates.
+    code_distance
+        Minimum selected surface-code distance.
+    physical_qubits_per_osc
+        Surface-code physical qubits assigned to each oscillator.
+    total_physical_qubits
+        Total physical-qubit estimate for all oscillators.
+    n_trotter_steps
+        Number of Trotter steps used for the simulation interval.
+    qec_rounds_total
+        Total number of QEC rounds across the Trotter evolution.
+    commutator_bound
+        Commutator-norm bound used for the Trotter estimate.
+    frequency_heterogeneity
+        Relative spread of the oscillator natural frequencies.
+
+    """
 
     n_oscillators: int
     trotter_error: float  # epsilon_T
@@ -71,6 +100,23 @@ def logical_error_rate(
     """Surface code logical error rate at given distance and physical rate.
 
     p_L = A × (p_phys / p_th)^((d+1)/2)
+
+    Parameters
+    ----------
+    code_distance
+        Surface-code distance.
+    p_physical
+        Physical gate error rate.
+    p_threshold
+        Surface-code threshold used by the scaling ansatz.
+    prefactor
+        Empirical prefactor in the logical-error scaling ansatz.
+
+    Returns
+    -------
+    float
+        Estimated logical error rate, saturated at one above threshold.
+
     """
     ratio = p_physical / p_threshold
     if ratio >= 1.0:
@@ -85,7 +131,27 @@ def minimum_code_distance(
     prefactor: float = SURFACE_CODE_PREFACTOR,
     max_distance: int = 51,
 ) -> int:
-    """Find minimum odd d such that p_L(d) <= target."""
+    """Find the minimum odd distance whose logical rate meets the target.
+
+    Parameters
+    ----------
+    target_logical_rate
+        Maximum acceptable logical error rate.
+    p_physical
+        Physical gate error rate.
+    p_threshold
+        Surface-code threshold used by the scaling ansatz.
+    prefactor
+        Empirical prefactor in the logical-error scaling ansatz.
+    max_distance
+        Largest code distance considered.
+
+    Returns
+    -------
+    int
+        First qualifying odd distance, or ``max_distance`` if none qualifies.
+
+    """
     for d in range(3, max_distance + 1, 2):
         if logical_error_rate(d, p_physical, p_threshold, prefactor) <= target_logical_rate:
             return d
@@ -110,14 +176,28 @@ def compute_error_budget(
 
     Then determines the Trotter steps needed and code distance.
 
-    Args:
-        K: coupling matrix (n × n)
-        omega: natural frequencies
-        t_total: total simulation time
-        trotter_order: 1 or 2
-        target_total_error: allowed total error
-        p_physical: physical gate error rate
-        cz_error: CZ gate error rate
+    Parameters
+    ----------
+    K
+        Oscillator coupling matrix.
+    omega
+        Natural angular frequencies.
+    t_total
+        Total simulation time.
+    trotter_order
+        Trotter formula order, either one or two.
+    target_total_error
+        Allowed total simulation error.
+    p_physical
+        Physical single-qubit gate error rate.
+    cz_error
+        Controlled-Z gate error rate.
+
+    Returns
+    -------
+    ErrorBudget
+        Error allocation and surface-code resource estimate.
+
     """
     n = K.shape[0]
 
@@ -183,6 +263,22 @@ def compare_error_budgets(
     """Compare error budgets across hardware generations.
 
     Default: current Heron (0.3%), Willow-like (0.1%), future (0.01%).
+
+    Parameters
+    ----------
+    K
+        Oscillator coupling matrix.
+    omega
+        Natural angular frequencies.
+    p_physical_values
+        Physical error rates to compare. Uses three representative hardware
+        generations when omitted.
+
+    Returns
+    -------
+    list[ErrorBudget]
+        One error budget per physical error rate, in input order.
+
     """
     if p_physical_values is None:
         p_physical_values = np.array([0.003, 0.001, 0.0001])

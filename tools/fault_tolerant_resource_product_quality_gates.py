@@ -14,17 +14,23 @@ from os import devnull
 Gate = tuple[str, list[str]]
 FAULT_TOLERANT_RESOURCE_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/fault_tolerant_resource_product.py",
+    "src/scpn_quantum_control/qec/error_budget.py",
     "tests/test_fault_tolerant_resource_product.py",
+    "tests/test_error_budget.py",
     "tools/fault_tolerant_resource_product_quality_gates.py",
     "tests/test_fault_tolerant_resource_product_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_COHORT = ["tests/test_fault_tolerant_resource_product.py"]
-"""Tests that own exact fault-tolerant resource product coverage."""
+FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_COHORT = [
+    "tests/test_fault_tolerant_resource_product.py",
+    "tests/test_error_budget.py",
+    "tests/test_control_module_contracts.py",
+]
+"""Tests that own exact fault-tolerant resource and error-budget coverage."""
 FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_DATA_FILE = (
     "/tmp/scpn-qc-fault-tolerant-resource-product.coverage"  # nosec B108
 )
-"""Isolated coverage database for the fault-tolerant resource product."""
+"""Isolated coverage database for the fault-tolerant resource and QEC budget sources."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -49,8 +55,11 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *FAULT_TOLERANT_RESOURCE_PRODUCT_QUALITY_RATCHET,
@@ -89,7 +98,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={FAULT_TOLERANT_RESOURCE_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/fault_tolerant_resource_product.py",
+                "--include=*/fault_tolerant_resource_product.py,*/qec/error_budget.py",
             ],
         ),
     ]
