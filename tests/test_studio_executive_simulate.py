@@ -9,29 +9,50 @@
 
 from __future__ import annotations
 
-from typing import Any
+import subprocess
+import sys
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pytest
 
-pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
-pytest.importorskip("qiskit", reason="qiskit not installed")
+if TYPE_CHECKING:
+    from scpn_quantum_control.studio.executive import (
+        ActionRegistry,
+        ExecutiveRequest,
+        preview_action,
+        resolve_verb_contract,
+        run_action,
+    )
+    from scpn_quantum_control.studio.executive_simulate import (
+        SIMULATE_VERB,
+        SimulateActionHandler,
+        _as_float,
+        _as_positive_int,
+        _normalise_simulate,
+        _safe_slug,
+    )
+else:
+    pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
+    pytest.importorskip("qiskit", reason="qiskit not installed")
+    from scpn_quantum_control.studio.executive import (
+        ActionRegistry,
+        ExecutiveRequest,
+        preview_action,
+        resolve_verb_contract,
+        run_action,
+    )
+    from scpn_quantum_control.studio.executive_simulate import (
+        SIMULATE_VERB,
+        SimulateActionHandler,
+        _as_float,
+        _as_positive_int,
+        _normalise_simulate,
+        _safe_slug,
+    )
 
-from scpn_quantum_control.studio.executive import (  # noqa: E402
-    ActionRegistry,
-    ExecutiveRequest,
-    preview_action,
-    resolve_verb_contract,
-    run_action,
-)
-from scpn_quantum_control.studio.executive_simulate import (  # noqa: E402
-    SIMULATE_VERB,
-    SimulateActionHandler,
-    _as_float,
-    _as_positive_int,
-    _normalise_simulate,
-    _safe_slug,
-)
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 _NETWORK: dict[str, Any] = {
     "K_nm": [[0.0, 0.4, 0.1], [0.4, 0.0, 0.3], [0.1, 0.3, 0.0]],
@@ -61,6 +82,7 @@ def _request(*, backend: str | None = None, **overrides: Any) -> ExecutiveReques
 # end-to-end
 # --------------------------------------------------------------------------- #
 def test_simulate_evolves_and_summarises_trajectory() -> None:
+    """Evolve the real public solver and expose a bounded trajectory summary."""
     record = run_action(_request(), registry=_registry())
     assert record.result.status == "succeeded", record.result.error
     outputs = record.result.outputs
@@ -77,6 +99,7 @@ def test_simulate_evolves_and_summarises_trajectory() -> None:
 
 
 def test_simulate_plan_defaults_backend_read_only() -> None:
+    """Expose the read-only plan with its default Python backend."""
     plan = preview_action(_request(), registry=_registry())
     assert plan.backend == "python"
     assert plan.requires_approval is False
@@ -85,11 +108,13 @@ def test_simulate_plan_defaults_backend_read_only() -> None:
 
 @pytest.mark.parametrize("backend", ["rust", "qiskit"])
 def test_simulate_accepts_declared_backends(backend: str) -> None:
+    """Accept every backend declared by the simulate verb contract."""
     plan = preview_action(_request(backend=backend), registry=_registry())
     assert plan.backend == backend
 
 
 def test_simulate_rejects_undeclared_backend() -> None:
+    """Reject a backend absent from the public simulate contract."""
     handler = SimulateActionHandler()
     contract = resolve_verb_contract(SIMULATE_VERB)
     with pytest.raises(ValueError, match="is not declared for the simulate verb"):
@@ -97,6 +122,7 @@ def test_simulate_rejects_undeclared_backend() -> None:
 
 
 def test_generated_simulate_script_embeds_summary_and_compiles() -> None:
+    """Generate a valid script carrying the sealed trajectory summary."""
     record = run_action(_request(), registry=_registry())
     assert record.script is not None
     source = record.script.source
@@ -106,7 +132,32 @@ def test_generated_simulate_script_embeds_summary_and_compiles() -> None:
     assert "solver.run(T_MAX, DT, TROTTER_PER_STEP)" in source
 
 
+def test_generated_simulate_script_executes_real_solver(
+    tmp_path: Path,
+) -> None:
+    """Run the generated script against the real solver outside coverage tracing."""
+    record = run_action(_request(), registry=_registry())
+    assert record.script is not None
+    script_path = tmp_path / record.script.filename
+    script_path.write_text(record.script.source, encoding="utf-8")
+
+    completed = subprocess.run(
+        [sys.executable, str(script_path)],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "order_parameter_final=" in completed.stdout
+    assert "order_parameter_mean=" in completed.stdout
+    assert completed.stdout.rstrip().endswith("verified")
+
+
 def test_simulate_trotter_order_two_is_accepted() -> None:
+    """Evolve the supported second-order Trotter route."""
     record = run_action(_request(trotter_order=2), registry=_registry())
     assert record.result.outputs["trotter_order"] == 2
     assert record.result.status == "succeeded"
@@ -142,6 +193,7 @@ class _StubSolver:
 def test_simulate_execute_and_script_with_stubbed_solver(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Exercise output assembly under coverage despite traced-Qiskit incompatibility."""
     monkeypatch.setattr(
         "scpn_quantum_control.studio.executive_simulate.QuantumKuramotoSolver",
         _StubSolver,
@@ -165,11 +217,13 @@ def test_simulate_execute_and_script_with_stubbed_solver(
 # --------------------------------------------------------------------------- #
 @pytest.mark.parametrize("bad", [True, "1", None, float("inf"), float("nan")])
 def test_as_float_rejects_bad(bad: Any) -> None:
+    """Reject booleans, non-numbers, and non-finite scalar inputs."""
     with pytest.raises(ValueError):
         _as_float("v", bad)
 
 
 def test_as_float_accepts_numbers() -> None:
+    """Normalise integer scalar input to a finite float."""
     assert _as_float("v", 2) == 2.0
 
 
@@ -178,11 +232,13 @@ def test_as_float_accepts_numbers() -> None:
 # --------------------------------------------------------------------------- #
 @pytest.mark.parametrize("bad", [True, "two", 0, 999])
 def test_as_positive_int_rejects_bad(bad: Any) -> None:
+    """Reject non-integer and out-of-range bounded-count inputs."""
     with pytest.raises(ValueError):
         _as_positive_int("v", bad, maximum=64)
 
 
 def test_as_positive_int_accepts_bounded() -> None:
+    """Accept an integer within the declared upper bound."""
     assert _as_positive_int("v", 3, maximum=64) == 3
 
 
@@ -190,6 +246,7 @@ def test_as_positive_int_accepts_bounded() -> None:
 # _safe_slug
 # --------------------------------------------------------------------------- #
 def test_safe_slug_normal_and_empty() -> None:
+    """Produce filesystem-safe action slugs and a non-empty fallback."""
     assert _safe_slug("simulate-3node.1") == "simulate_3node_1"
     assert _safe_slug("!!!") == "action"
 
@@ -224,6 +281,7 @@ def test_safe_slug_normal_and_empty() -> None:
     ],
 )
 def test_normalise_simulate_rejects_invalid(overrides: dict[str, Any]) -> None:
+    """Reject malformed or unbounded simulation requests."""
     parameters = dict(_NETWORK)
     parameters.update(overrides)
     with pytest.raises(ValueError):
@@ -231,6 +289,7 @@ def test_normalise_simulate_rejects_invalid(overrides: dict[str, Any]) -> None:
 
 
 def test_normalise_simulate_accepts_bounded_network() -> None:
+    """Normalise a bounded symmetric network and finite schedule."""
     simulate_spec = _normalise_simulate(_NETWORK)
     assert len(simulate_spec["K_nm"]) == 3
     assert simulate_spec["trotter_order"] == 1

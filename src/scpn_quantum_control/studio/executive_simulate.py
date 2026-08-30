@@ -137,7 +137,7 @@ class SimulateActionHandler(ActionHandler):
 
     @property
     def verb(self) -> str:
-        """Return ``"simulate"``."""
+        """The Studio verb owned by this handler."""
         return SIMULATE_VERB
 
     def plan(self, request: ExecutiveRequest, contract: VerbContract) -> ExecutionPlan:
@@ -156,6 +156,7 @@ class SimulateActionHandler(ActionHandler):
         -------
         ExecutionPlan
             The normalised, inspectable plan.
+
         """
         backend = request.backend or _DEFAULT_BACKEND
         if backend not in contract.backends:
@@ -190,6 +191,7 @@ class SimulateActionHandler(ActionHandler):
         -------
         ExecutionResult
             A succeeded result carrying the order-parameter trajectory summary.
+
         """
         simulate_spec: dict[str, Any] = dict(plan.parameters)
         k_nm = np.asarray(simulate_spec["K_nm"], dtype=np.float64)
@@ -238,6 +240,7 @@ class SimulateActionHandler(ActionHandler):
         -------
         GeneratedScript
             The reproduction script, digest attached.
+
         """
         simulate_spec: dict[str, Any] = dict(plan.parameters)
         source = _render_script(
