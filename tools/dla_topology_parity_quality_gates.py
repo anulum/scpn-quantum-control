@@ -20,20 +20,27 @@ DLA_PARITY_HARNESS_SOURCE = "src/scpn_quantum_control/dla_parity/__init__.py"
 """Public end-to-end DLA-parity validation harness."""
 DLA_PARITY_HARNESS_TEST = "tests/test_dla_parity_init.py"
 """Real-data public-harness test owner."""
+DLA_PARITY_BASELINES_SOURCE = "src/scpn_quantum_control/dla_parity/baselines.py"
+"""Noiseless DLA-parity classical-reference source."""
+DLA_PARITY_BASELINES_TEST = "tests/test_dla_parity_baselines.py"
+"""Dense NumPy and optional QuTiP reference tests."""
 DLA_TOPOLOGY_PARITY_COVERAGE_COHORT = [
     "tests/test_dla_topology_control_parity.py",
     "tests/test_dla_topology_control_objectives.py",
     "tests/test_dla_topology_control_optimizer.py",
     "tests/test_dla_parity_theorem.py",
     DLA_PARITY_HARNESS_TEST,
+    DLA_PARITY_BASELINES_TEST,
 ]
-"""Projector, theorem, consumer, and public-harness tests."""
+"""Projector, theorem, consumer, harness, and baseline tests."""
 DLA_TOPOLOGY_PARITY_TYPING_RATCHET = [
     DLA_TOPOLOGY_PARITY_SOURCE,
     DLA_PARITY_THEOREM_SOURCE,
     DLA_PARITY_HARNESS_SOURCE,
+    DLA_PARITY_BASELINES_SOURCE,
     "tests/test_dla_parity_theorem.py",
     DLA_PARITY_HARNESS_TEST,
+    DLA_PARITY_BASELINES_TEST,
     "tools/dla_topology_parity_quality_gates.py",
     "tests/test_dla_topology_parity_quality_gate.py",
 ]
@@ -42,9 +49,11 @@ DLA_TOPOLOGY_PARITY_DOCSTRING_RATCHET = [
     DLA_TOPOLOGY_PARITY_SOURCE,
     DLA_PARITY_THEOREM_SOURCE,
     DLA_PARITY_HARNESS_SOURCE,
+    DLA_PARITY_BASELINES_SOURCE,
     "tests/test_dla_topology_control_parity.py",
     "tests/test_dla_parity_theorem.py",
     DLA_PARITY_HARNESS_TEST,
+    DLA_PARITY_BASELINES_TEST,
     "tools/dla_topology_parity_quality_gates.py",
     "tests/test_dla_topology_parity_quality_gate.py",
 ]
@@ -52,7 +61,8 @@ DLA_TOPOLOGY_PARITY_DOCSTRING_RATCHET = [
 DLA_TOPOLOGY_PARITY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-dla-topology-parity-quality.coverage"  # nosec B108
 """Isolated coverage database for the parity projector owner."""
 DLA_TOPOLOGY_PARITY_COVERAGE_INCLUDE = (
-    "*/dla_topology_control/parity.py,*/analysis/dla_parity_theorem.py,*/dla_parity/__init__.py"
+    "*/dla_topology_control/parity.py,*/analysis/dla_parity_theorem.py,"
+    "*/dla_parity/__init__.py,*/dla_parity/baselines.py"
 )
 """Production surfaces subject to the exact coverage threshold."""
 
@@ -127,6 +137,8 @@ def build_coverage_gates(python: str) -> list[Gate]:
 
 
 __all__ = [
+    "DLA_PARITY_BASELINES_SOURCE",
+    "DLA_PARITY_BASELINES_TEST",
     "DLA_PARITY_HARNESS_SOURCE",
     "DLA_PARITY_HARNESS_TEST",
     "DLA_PARITY_THEOREM_SOURCE",

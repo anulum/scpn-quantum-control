@@ -66,7 +66,20 @@ CLASSICAL_LEAKAGE_THRESHOLD: float = 1e-10
 
 @dataclass(frozen=True, slots=True)
 class ClassicalLeakagePoint:
-    """Classical leakage for one (depth, sector) point."""
+    """Classical leakage for one depth and parity-sector point.
+
+    Attributes
+    ----------
+    depth:
+        Number of Lie-Trotter evolution steps.
+    sector:
+        Initial-state parity sector.
+    initial:
+        Computational-basis bitstring used as the initial state.
+    leakage:
+        Probability mass measured outside the initial parity sector.
+
+    """
 
     depth: int
     sector: Literal["even", "odd"]
@@ -76,7 +89,22 @@ class ClassicalLeakagePoint:
 
 @dataclass(frozen=True, slots=True)
 class ClassicalLeakageReference:
-    """Full classical reference — the noiseless per-depth leakage."""
+    """Full classical reference for noiseless per-depth leakage.
+
+    Attributes
+    ----------
+    backend:
+        Dense evolution backend used to construct the reference.
+    n_qubits:
+        Number of qubits in the simulated chain.
+    t_step:
+        Duration of each Lie-Trotter step.
+    depths:
+        Evaluated evolution depths in ascending order.
+    points:
+        Leakage result for each depth and initial parity sector.
+
+    """
 
     backend: Literal["numpy", "qutip"]
     n_qubits: int
@@ -86,12 +114,12 @@ class ClassicalLeakageReference:
 
     @property
     def max_abs_leakage(self) -> float:
-        """Return the maximum absolute classical leakage over all points."""
+        """Maximum absolute classical leakage over all points."""
         return max((abs(p.leakage) for p in self.points), default=0.0)
 
     @property
     def is_zero_within_tolerance(self) -> bool:
-        """Return whether the reference leakage is numerically zero."""
+        """Whether the reference leakage is numerically zero."""
         return self.max_abs_leakage < CLASSICAL_LEAKAGE_THRESHOLD
 
 
@@ -104,6 +132,13 @@ def available_baselines() -> dict[str, bool]:
 
     Always reports ``"numpy"`` present — the numpy backend is the
     mandatory floor. The others are opt-in.
+
+    Returns
+    -------
+    dict[str, bool]
+        Availability flags for the mandatory NumPy and optional QuTiP
+        backends.
+
     """
     return {
         "numpy": True,
@@ -343,6 +378,7 @@ def compute_classical_leakage_reference(
     ModuleNotFoundError
         If the caller asked for ``backend="qutip"`` and qutip is
         not installed.
+
     """
     if n_qubits != len(initial_even):
         raise ValueError(

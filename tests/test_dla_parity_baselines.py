@@ -44,25 +44,35 @@ _HAS_QUTIP = importlib.util.find_spec("qutip") is not None
 
 
 class TestAvailableBaselines:
+    """Exercise public backend-availability reporting."""
+
     def test_numpy_always_true(self) -> None:
+        """Report the mandatory NumPy backend as available."""
         a = available_baselines()
         assert a["numpy"] is True
 
     def test_qutip_key_present(self) -> None:
+        """Report a Boolean availability value for optional QuTiP."""
         a = available_baselines()
         assert "qutip" in a
         assert isinstance(a["qutip"], bool)
 
 
 class TestClassicalLeakagePoint:
+    """Exercise the immutable per-depth leakage result."""
+
     def test_frozen(self) -> None:
+        """Reject mutation of a frozen leakage point."""
         p = ClassicalLeakagePoint(depth=2, sector="even", initial="0011", leakage=0.0)
         with pytest.raises(AttributeError):
             p.leakage = 0.1  # type: ignore[misc]
 
 
 class TestClassicalLeakageReference:
+    """Exercise aggregate leakage predicates and extrema."""
+
     def test_max_abs_leakage_empty(self) -> None:
+        """Treat an empty reference as exactly zero leakage."""
         r = ClassicalLeakageReference(
             backend="numpy",
             n_qubits=4,
@@ -74,6 +84,7 @@ class TestClassicalLeakageReference:
         assert r.is_zero_within_tolerance
 
     def test_max_abs_leakage_nonempty(self) -> None:
+        """Select the largest absolute leakage from populated points."""
         pts = (
             ClassicalLeakagePoint(depth=2, sector="even", initial="0011", leakage=0.0),
             ClassicalLeakagePoint(depth=2, sector="odd", initial="0001", leakage=1e-15),
@@ -89,6 +100,7 @@ class TestClassicalLeakageReference:
         assert r.is_zero_within_tolerance
 
     def test_is_zero_within_tolerance_false(self) -> None:
+        """Reject leakage above the classical threshold."""
         pts = (ClassicalLeakagePoint(depth=2, sector="even", initial="0011", leakage=1e-3),)
         r = ClassicalLeakageReference(
             backend="numpy",
@@ -101,7 +113,10 @@ class TestClassicalLeakageReference:
 
 
 class TestComputeClassicalLeakageReferenceNumpy:
+    """Exercise public reference construction with dense NumPy evolution."""
+
     def test_numpy_backend_leakage_is_zero_at_every_depth(self) -> None:
+        """Preserve parity across the complete published depth sweep."""
         ref = compute_classical_leakage_reference(backend="numpy")
         assert ref.backend == "numpy"
         assert ref.n_qubits == 4
@@ -110,6 +125,7 @@ class TestComputeClassicalLeakageReferenceNumpy:
         assert ref.max_abs_leakage < CLASSICAL_LEAKAGE_THRESHOLD
 
     def test_numpy_custom_depths(self) -> None:
+        """Evaluate custom depths including the zero-evolution point."""
         ref = compute_classical_leakage_reference(
             depths=(0, 1, 2),
             backend="numpy",
@@ -121,6 +137,7 @@ class TestComputeClassicalLeakageReferenceNumpy:
         assert all(leak == 0.0 for leak in zero_depth_leaks)
 
     def test_numpy_custom_n_qubits_and_initials(self) -> None:
+        """Construct a parity-preserving reference for a custom chain."""
         ref = compute_classical_leakage_reference(
             n_qubits=3,
             depths=(4,),
@@ -132,6 +149,7 @@ class TestComputeClassicalLeakageReferenceNumpy:
         assert ref.is_zero_within_tolerance
 
     def test_initial_even_length_mismatch_raises(self) -> None:
+        """Reject an even-sector bitstring with the wrong width."""
         with pytest.raises(ValueError, match="initial_even=.*length"):
             compute_classical_leakage_reference(
                 n_qubits=4,
@@ -140,6 +158,7 @@ class TestComputeClassicalLeakageReferenceNumpy:
             )
 
     def test_initial_odd_length_mismatch_raises(self) -> None:
+        """Reject an odd-sector bitstring with the wrong width."""
         with pytest.raises(ValueError, match="initial_odd=.*length"):
             compute_classical_leakage_reference(
                 n_qubits=4,
@@ -148,6 +167,7 @@ class TestComputeClassicalLeakageReferenceNumpy:
             )
 
     def test_negative_depth_raises(self) -> None:
+        """Reject negative Lie-Trotter depths."""
         with pytest.raises(ValueError, match="depths must be non-negative"):
             compute_classical_leakage_reference(
                 depths=(2, -1, 4),
@@ -156,7 +176,10 @@ class TestComputeClassicalLeakageReferenceNumpy:
 
 
 class TestAutoBackendSelection:
+    """Exercise deterministic automatic backend selection."""
+
     def test_auto_prefers_qutip_when_available(self) -> None:
+        """Prefer QuTiP when the optional dependency is installed."""
         if _HAS_QUTIP:
             ref = compute_classical_leakage_reference(
                 depths=(2,),
@@ -171,6 +194,7 @@ class TestAutoBackendSelection:
             assert ref.backend == "numpy"
 
     def test_auto_falls_back_to_numpy_when_qutip_missing(self) -> None:
+        """Fall back to NumPy when QuTiP is unavailable."""
         with mock.patch(
             "scpn_quantum_control.dla_parity.baselines.available_baselines",
             return_value={"numpy": True, "qutip": False},
@@ -183,7 +207,10 @@ class TestAutoBackendSelection:
 
 
 class TestQutipBackendGating:
+    """Exercise fail-closed explicit QuTiP selection."""
+
     def test_explicit_qutip_raises_when_missing(self) -> None:
+        """Reject explicit QuTiP execution without the dependency."""
         with (
             mock.patch(
                 "scpn_quantum_control.dla_parity.baselines.available_baselines",
@@ -199,7 +226,10 @@ class TestQutipBackendGating:
 
 @pytest.mark.skipif(not _HAS_QUTIP, reason="qutip not installed")
 class TestQutipBackend:
+    """Exercise optional QuTiP evolution against the NumPy reference."""
+
     def test_qutip_leakage_is_zero(self) -> None:
+        """Preserve parity under optional QuTiP evolution."""
         ref = compute_classical_leakage_reference(
             depths=(2, 6, 30),
             backend="qutip",
@@ -208,6 +238,7 @@ class TestQutipBackend:
         assert ref.is_zero_within_tolerance
 
     def test_qutip_matches_numpy(self) -> None:
+        """Match NumPy leakage for every tested depth and sector."""
         ref_np = compute_classical_leakage_reference(
             depths=(2, 6, 30),
             backend="numpy",
