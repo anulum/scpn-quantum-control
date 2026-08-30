@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import json
 import shutil
+from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
@@ -54,7 +55,10 @@ needs_real_data = pytest.mark.skipif(
 
 @needs_real_data
 class TestRealDataset:
+    """Exercise loading and validating the bundled published dataset."""
+
     def test_load_full(self) -> None:
+        """Load all four runs and their 342 published circuits."""
         ds = load_dla_parity_dataset()
         assert len(ds.runs) == 4
         assert ds.n_circuits_total == 342
@@ -67,6 +71,7 @@ class TestRealDataset:
         }
 
     def test_load_order_is_publication_order(self) -> None:
+        """Preserve canonical publication order across loaded runs."""
         ds = load_dla_parity_dataset()
         assert tuple(run.experiment for run in ds.runs) == (
             "phase1_dla_parity_mini_bench",
@@ -76,6 +81,7 @@ class TestRealDataset:
         )
 
     def test_meta_fields_populated(self) -> None:
+        """Populate typed circuit metadata from the published records."""
         ds = load_dla_parity_dataset()
         c = ds.circuits[0]
         assert c.meta.n_qubits == 4
@@ -84,17 +90,22 @@ class TestRealDataset:
         assert c.meta.sector in ("even", "odd")
 
     def test_integrity_verifies(self) -> None:
+        """Match every bundled run against its published SHA-256 digest."""
         ds = load_dla_parity_dataset(verify_integrity=True)
         assert ds.n_circuits_total == 342
 
     def test_integrity_digests_are_present(self) -> None:
+        """Provide one complete SHA-256 digest for every canonical run."""
         assert set(PUBLISHED_SHA256.keys()) == set(RUN_FILES)
         assert all(len(v) == 64 for v in PUBLISHED_SHA256.values())
 
 
 @needs_real_data
 class TestIntegrityTamper:
+    """Exercise opt-in integrity enforcement on copied real data."""
+
     def test_tampered_file_raises(self, tmp_path: Path) -> None:
+        """Reject a copied run whose bytes no longer match its digest."""
         for name in RUN_FILES:
             shutil.copy(REAL_DATA_DIR / name, tmp_path / name)
         tampered = tmp_path / RUN_FILES[0]
@@ -107,6 +118,7 @@ class TestIntegrityTamper:
             load_dla_parity_dataset(data_dir=tmp_path, verify_integrity=True)
 
     def test_tampered_file_without_verify_loads(self, tmp_path: Path) -> None:
+        """Permit an altered run when integrity verification is disabled."""
         for name in RUN_FILES:
             shutil.copy(REAL_DATA_DIR / name, tmp_path / name)
         tampered = tmp_path / RUN_FILES[0]
@@ -123,7 +135,7 @@ def _minimal_run(
     *,
     experiment: str = "phase1_dla_parity_mini_bench",
     n_circuits: int = 1,
-    circuits: list | None = None,
+    circuits: Sequence[object] | None = None,
     **overrides: object,
 ) -> dict[str, object]:
     if circuits is None:
@@ -165,12 +177,16 @@ def _write_fake_dataset(root: Path, run_docs: dict[str, dict[str, object]]) -> N
 
 
 class TestFileDiscovery:
+    """Exercise dataset-directory and canonical-file discovery failures."""
+
     def test_missing_dir_raises(self, tmp_path: Path) -> None:
+        """Reject a missing dataset directory before file iteration."""
         missing = tmp_path / "does_not_exist"
         with pytest.raises(FileNotFoundError, match="data directory not found"):
             load_dla_parity_dataset(data_dir=missing)
 
     def test_missing_file_raises(self, tmp_path: Path) -> None:
+        """Reject an incomplete canonical run-file set."""
         docs = {name: _minimal_run() for name in RUN_FILES[:3]}
         _write_fake_dataset(tmp_path, docs)
         with pytest.raises(FileNotFoundError, match="Missing DLA-parity run"):
@@ -178,21 +194,26 @@ class TestFileDiscovery:
 
 
 class TestSchemaValidation:
+    """Exercise fail-closed validation of synthetic JSON structures."""
+
     def _build_all_valid(self, tmp_path: Path) -> None:
         docs = {name: _minimal_run() for name in RUN_FILES}
         _write_fake_dataset(tmp_path, docs)
 
     def test_minimal_valid_dataset_loads(self, tmp_path: Path) -> None:
+        """Load four minimal schema-conforming synthetic runs."""
         self._build_all_valid(tmp_path)
         ds = load_dla_parity_dataset(data_dir=tmp_path)
         assert ds.n_circuits_total == 4
 
     def test_extra_top_level_keys_land_in_extra(self, tmp_path: Path) -> None:
+        """Preserve non-required top-level fields in run metadata."""
         self._build_all_valid(tmp_path)
         ds = load_dla_parity_dataset(data_dir=tmp_path)
         assert all("aggregated" in sp.extra for sp in ds.runs)
 
     def test_top_level_not_object(self, tmp_path: Path) -> None:
+        """Reject a top-level JSON array in place of a run object."""
         tmp_path.mkdir(exist_ok=True)
         path = tmp_path / RUN_FILES[0]
         with path.open("w", encoding="utf-8") as fh:
@@ -204,6 +225,7 @@ class TestSchemaValidation:
             load_dla_parity_dataset(data_dir=tmp_path)
 
     def test_missing_top_level_key(self, tmp_path: Path) -> None:
+        """Report a missing required top-level field by name."""
         docs = {name: _minimal_run() for name in RUN_FILES}
         del docs[RUN_FILES[0]]["backend"]
         _write_fake_dataset(tmp_path, docs)
@@ -211,6 +233,7 @@ class TestSchemaValidation:
             load_dla_parity_dataset(data_dir=tmp_path)
 
     def test_n_circuits_mismatch(self, tmp_path: Path) -> None:
+        """Reject disagreement between declared and parsed circuit counts."""
         docs = {name: _minimal_run() for name in RUN_FILES}
         docs[RUN_FILES[0]]["n_circuits"] = 9
         _write_fake_dataset(tmp_path, docs)
@@ -218,6 +241,7 @@ class TestSchemaValidation:
             load_dla_parity_dataset(data_dir=tmp_path)
 
     def test_circuit_missing_meta(self, tmp_path: Path) -> None:
+        """Reject a circuit record without its required metadata object."""
         bad_circuit = [{"counts": {"0000": 10}}]
         docs = {name: _minimal_run() for name in RUN_FILES}
         docs[RUN_FILES[0]] = _minimal_run(circuits=bad_circuit)
@@ -226,6 +250,7 @@ class TestSchemaValidation:
             load_dla_parity_dataset(data_dir=tmp_path)
 
     def test_circuit_meta_not_object(self, tmp_path: Path) -> None:
+        """Reject circuit metadata encoded as a non-object value."""
         bad_circuit = [{"meta": "not-an-object", "counts": {"0000": 10}}]
         docs = {name: _minimal_run() for name in RUN_FILES}
         docs[RUN_FILES[0]] = _minimal_run(circuits=bad_circuit)
@@ -234,6 +259,7 @@ class TestSchemaValidation:
             load_dla_parity_dataset(data_dir=tmp_path)
 
     def test_invalid_sector(self, tmp_path: Path) -> None:
+        """Reject a circuit outside the controlled parity-sector vocabulary."""
         bad_circuit = [
             {
                 "meta": {
@@ -256,6 +282,7 @@ class TestSchemaValidation:
             load_dla_parity_dataset(data_dir=tmp_path)
 
     def test_counts_not_object(self, tmp_path: Path) -> None:
+        """Reject circuit counts encoded as a non-object collection."""
         bad_circuit = [
             {
                 "meta": {
@@ -278,6 +305,7 @@ class TestSchemaValidation:
             load_dla_parity_dataset(data_dir=tmp_path)
 
     def test_counts_bad_value_type(self, tmp_path: Path) -> None:
+        """Reject non-integer shot counts in a bitstring-count mapping."""
         bad_circuit = [
             {
                 "meta": {
@@ -300,6 +328,7 @@ class TestSchemaValidation:
             load_dla_parity_dataset(data_dir=tmp_path)
 
     def test_circuits_not_list(self, tmp_path: Path) -> None:
+        """Reject a run whose circuit collection is not a list."""
         docs = {name: _minimal_run() for name in RUN_FILES}
         docs[RUN_FILES[0]]["circuits"] = {"not": "a-list"}
         _write_fake_dataset(tmp_path, docs)
@@ -307,6 +336,7 @@ class TestSchemaValidation:
             load_dla_parity_dataset(data_dir=tmp_path)
 
     def test_job_ids_not_list_of_str(self, tmp_path: Path) -> None:
+        """Reject job identifiers outside the required string list."""
         docs = {name: _minimal_run() for name in RUN_FILES}
         docs[RUN_FILES[0]]["job_ids"] = [1, 2, 3]
         _write_fake_dataset(tmp_path, docs)

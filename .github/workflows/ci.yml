@@ -1214,9 +1214,11 @@ jobs:
           src/scpn_quantum_control/analysis/dla_parity_theorem.py
           src/scpn_quantum_control/dla_parity/__init__.py
           src/scpn_quantum_control/dla_parity/baselines.py
+          src/scpn_quantum_control/dla_parity/dataset.py
           tests/test_dla_parity_theorem.py
           tests/test_dla_parity_init.py
           tests/test_dla_parity_baselines.py
+          tests/test_dla_parity_dataset.py
           tools/dla_topology_parity_quality_gates.py
           tests/test_dla_topology_parity_quality_gate.py
       - name: Ruff NumPy docstrings for DLA topology parity quality cohort
@@ -1227,10 +1229,12 @@ jobs:
           src/scpn_quantum_control/analysis/dla_parity_theorem.py
           src/scpn_quantum_control/dla_parity/__init__.py
           src/scpn_quantum_control/dla_parity/baselines.py
+          src/scpn_quantum_control/dla_parity/dataset.py
           tests/test_dla_topology_control_parity.py
           tests/test_dla_parity_theorem.py
           tests/test_dla_parity_init.py
           tests/test_dla_parity_baselines.py
+          tests/test_dla_parity_dataset.py
           tools/dla_topology_parity_quality_gates.py
           tests/test_dla_topology_parity_quality_gate.py
       - name: Run DLA topology parity focused coverage
@@ -1246,6 +1250,7 @@ jobs:
           tests/test_dla_parity_theorem.py
           tests/test_dla_parity_init.py
           tests/test_dla_parity_baselines.py
+          tests/test_dla_parity_dataset.py
       - name: Enforce DLA topology parity exact coverage
         run: >-
           python -m coverage report
@@ -1253,7 +1258,7 @@ jobs:
           --data-file=/tmp/scpn-qc-dla-topology-parity-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/dla_topology_control/parity.py,*/analysis/dla_parity_theorem.py,*/dla_parity/__init__.py,*/dla_parity/baselines.py
+          --include=*/dla_topology_control/parity.py,*/analysis/dla_parity_theorem.py,*/dla_parity/__init__.py,*/dla_parity/baselines.py,*/dla_parity/dataset.py
 
   topology-kernel-evidence-quality:
     needs: lint

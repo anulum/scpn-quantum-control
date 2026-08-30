@@ -211,6 +211,7 @@ def load_dla_parity_dataset(
         If ``verify_integrity`` is True and any digest mismatches.
     ValueError
         If a JSON file is malformed or violates the schema.
+
     """
     root = Path(data_dir) if data_dir is not None else DEFAULT_DATA_DIR
     if not root.is_dir():
