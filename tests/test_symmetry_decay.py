@@ -36,7 +36,10 @@ from scpn_quantum_control.mitigation.symmetry_decay import (
 
 
 class TestEmptyNull:
+    """Exercise minimum cohorts and zero-decay behavior."""
+
     def test_two_scales_minimum(self) -> None:
+        """Fit a model from the minimum two noise scales."""
         model = learn_symmetry_decay(4.0, [3.9, 3.5], [1, 3])
         assert isinstance(model, SymmetryDecayModel)
         assert model.alpha >= 0.0
@@ -64,15 +67,20 @@ class TestEmptyNull:
 
 
 class TestErrorHandling:
+    """Verify invalid observations and optional acceleration boundaries."""
+
     def test_length_mismatch(self) -> None:
+        """Reject mismatched observation and scale lengths."""
         with pytest.raises(ValueError, match="Length mismatch"):
             learn_symmetry_decay(4.0, [3.9, 3.5], [1, 3, 5])
 
     def test_too_few_scales(self) -> None:
+        """Reject a decay fit with fewer than two scales."""
         with pytest.raises(ValueError, match="Need >= 2"):
             learn_symmetry_decay(4.0, [3.9], [1])
 
     def test_zero_ideal_value(self) -> None:
+        """Reject an ideal symmetry value too close to zero."""
         with pytest.raises(ValueError, match="too close to zero"):
             learn_symmetry_decay(0.0, [0.0, 0.0], [1, 3])
 
@@ -88,12 +96,14 @@ class TestErrorHandling:
     def test_nonphysical_symmetry_decay_observations_are_rejected(
         self, noisy_values: list[float]
     ) -> None:
+        """Reject non-finite or sign-inconsistent symmetry observations."""
         with pytest.raises(
             ValueError, match="noisy_symmetry_values must be finite and sign-consistent"
         ):
             learn_symmetry_decay(4.0, noisy_values, [1, 3])
 
     def test_invalid_initial_state(self) -> None:
+        """Reject an unknown XY initial-state label."""
         with pytest.raises(ValueError, match="Unknown initial state"):
             xy_magnetisation_ideal(4, "invalid")
 
@@ -130,6 +140,8 @@ class TestErrorHandling:
 
 
 class TestNegativeCases:
+    """Exercise physically marginal and non-identifiable inputs."""
+
     def test_no_noise_no_correction(self) -> None:
         """If noisy == ideal, correction factor = 1."""
         model = learn_symmetry_decay(4.0, [4.0, 4.0], [1, 3])
@@ -184,6 +196,8 @@ class TestNegativeCases:
 
 
 class TestPipelineIntegration:
+    """Exercise GUESS composition and public package wiring."""
+
     def test_guess_improves_over_raw(self) -> None:
         """Under exponential decay, GUESS should recover closer to ideal."""
         # Simulate: ideal R = 0.8, noisy R = 0.5
@@ -198,14 +212,17 @@ class TestPipelineIntegration:
         assert abs(result.correction_factor - 1.0) < 0.05
 
     def test_xy_magnetisation_ground(self) -> None:
+        """Return total positive magnetisation for ground states."""
         assert xy_magnetisation_ideal(4, "ground") == 4.0
         assert xy_magnetisation_ideal(8, "ground") == 8.0
 
     def test_xy_magnetisation_neel(self) -> None:
+        """Return parity-dependent magnetisation for Neel states."""
         assert xy_magnetisation_ideal(4, "neel") == 0.0  # even
         assert xy_magnetisation_ideal(5, "neel") == 1.0  # odd
 
     def test_top_level_import(self) -> None:
+        """Export the GUESS functions from the mitigation package."""
         from scpn_quantum_control.mitigation import (
             guess_extrapolate,
             learn_symmetry_decay,
@@ -215,6 +232,7 @@ class TestPipelineIntegration:
         assert callable(guess_extrapolate)
 
     def test_decay_model_fields(self) -> None:
+        """Populate every public decay-model field with stable types."""
         model = learn_symmetry_decay(4.0, [3.8, 3.2, 2.5], [1, 3, 5])
         assert model.ideal_symmetry_value == 4.0
         assert len(model.noisy_symmetry_values) == 3
@@ -223,6 +241,7 @@ class TestPipelineIntegration:
         assert isinstance(model.fit_residual, float)
 
     def test_decay_model_copies_input_sequences(self) -> None:
+        """Detach model observations and scales from caller-owned lists."""
         noisy = [3.8, 3.2]
         scales = [1, 3]
 
@@ -238,6 +257,8 @@ class TestPipelineIntegration:
 
 
 class TestRoundtrip:
+    """Verify exponential recovery and correction-factor behavior."""
+
     def test_exact_exponential_recovery(self) -> None:
         """Perfect exponential decay → α should match exactly."""
         alpha_true = 0.15
@@ -278,6 +299,7 @@ class TestRoundtrip:
         assert result.mitigated_value == pytest.approx(0.5 * np.sqrt(2.0))
 
     def test_guess_result_fields(self) -> None:
+        """Populate every public GUESS result field with stable types."""
         model = learn_symmetry_decay(4.0, [3.8, 3.0], [1, 3])
         result = guess_extrapolate(0.6, 3.8, model)
         assert isinstance(result, GUESSResult)
@@ -291,6 +313,8 @@ class TestRoundtrip:
 
 
 class TestPerformance:
+    """Keep the small-array GUESS operations within local budgets."""
+
     def test_learn_fast(self) -> None:
         """Learning from 5 scales must complete in < 1ms."""
         t0 = time.perf_counter()

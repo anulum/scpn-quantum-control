@@ -35,7 +35,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     report = gates["error-mitigation-product exact coverage threshold"]
     assert "--fail-under=100" in report
     assert (
-        "--include=*/error_mitigation_product.py,*/mitigation/compound_mitigation.py,*/mitigation/cpdr.py,*/mitigation/mitiq_integration.py"
+        "--include=*/error_mitigation_product.py,*/mitigation/compound_mitigation.py,*/mitigation/cpdr.py,*/mitigation/mitiq_integration.py,*/mitigation/symmetry_decay.py"
         in report
     )
 
@@ -59,4 +59,5 @@ def test_ci_runs_and_aggregates_gate() -> None:
     assert "*/mitigation/compound_mitigation.py" in block
     assert "*/mitigation/cpdr.py" in block
     assert "*/mitigation/mitiq_integration.py" in block
+    assert "*/mitigation/symmetry_decay.py" in block
     assert "error-mitigation-product-quality" in workflow[workflow.index("  ci-gate:") :]

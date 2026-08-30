@@ -18,10 +18,12 @@ ERROR_MITIGATION_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/mitigation/compound_mitigation.py",
     "src/scpn_quantum_control/mitigation/cpdr.py",
     "src/scpn_quantum_control/mitigation/mitiq_integration.py",
+    "src/scpn_quantum_control/mitigation/symmetry_decay.py",
     "tests/test_error_mitigation_product.py",
     "tests/test_compound_mitigation.py",
     "tests/test_cpdr.py",
     "tests/test_mitiq_integration.py",
+    "tests/test_symmetry_decay.py",
     "tools/error_mitigation_product_quality_gates.py",
     "tests/test_error_mitigation_product_quality_gate.py",
 ]
@@ -32,6 +34,7 @@ ERROR_MITIGATION_PRODUCT_COVERAGE_COHORT = [
     "tests/test_compound_mitigation.py",
     "tests/test_cpdr.py",
     "tests/test_mitiq_integration.py",
+    "tests/test_symmetry_decay.py",
 ]
 """Tests that own exact error-mitigation product coverage."""
 
@@ -101,7 +104,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={ERROR_MITIGATION_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/error_mitigation_product.py,*/mitigation/compound_mitigation.py,*/mitigation/cpdr.py,*/mitigation/mitiq_integration.py",
+                "--include=*/error_mitigation_product.py,*/mitigation/compound_mitigation.py,*/mitigation/cpdr.py,*/mitigation/mitiq_integration.py,*/mitigation/symmetry_decay.py",
             ],
         ),
     ]

@@ -152,9 +152,23 @@ def xy_magnetisation_ideal(n_qubits: int, initial_state: str = "ground") -> floa
 
     For the XY Hamiltonian, Σ Z_i commutes with H, so this is conserved.
 
-    Args:
-        n_qubits: number of qubits
-        initial_state: "ground" (|00...0⟩, ⟨Z⟩=+1 each) or "neel" (|0101...⟩)
+    Parameters
+    ----------
+    n_qubits : int
+        Number of qubits.
+    initial_state : str
+        ``"ground"`` for ``|00...0⟩`` or ``"neel"`` for ``|0101...⟩``.
+
+    Returns
+    -------
+    float
+        Conserved total magnetisation for the requested initial state.
+
+    Raises
+    ------
+    ValueError
+        If ``initial_state`` is not supported.
+
     """
     if initial_state == "ground":
         return float(n_qubits)
