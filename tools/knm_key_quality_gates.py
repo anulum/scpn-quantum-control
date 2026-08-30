@@ -14,18 +14,24 @@ from os import devnull
 Gate = tuple[str, list[str]]
 KNM_KEY_SOURCE = "src/scpn_quantum_control/crypto/knm_key.py"
 KNM_KEY_PRIMARY_TEST = "tests/test_crypto_knm_key.py"
+NOISE_ANALYSIS_SOURCE = "src/scpn_quantum_control/crypto/noise_analysis.py"
+NOISE_ANALYSIS_PRIMARY_TEST = "tests/test_crypto_noise_analysis.py"
 KNM_KEY_COVERAGE_COHORT = [
     KNM_KEY_PRIMARY_TEST,
     "tests/test_crypto_entanglement_qkd.py",
+    NOISE_ANALYSIS_PRIMARY_TEST,
 ]
 KNM_KEY_TYPING_RATCHET = [
     KNM_KEY_SOURCE,
+    NOISE_ANALYSIS_SOURCE,
     KNM_KEY_PRIMARY_TEST,
+    NOISE_ANALYSIS_PRIMARY_TEST,
     "tools/knm_key_quality_gates.py",
     "tests/test_knm_key_quality_gate.py",
 ]
 KNM_KEY_DOCSTRING_RATCHET = [*KNM_KEY_TYPING_RATCHET]
 KNM_KEY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-knm-key-quality.coverage"  # nosec B108
+KNM_KEY_COVERAGE_INCLUDE = "*/crypto/knm_key.py,*/crypto/noise_analysis.py"
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -91,7 +97,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={KNM_KEY_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/crypto/knm_key.py",
+                f"--include={KNM_KEY_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -100,10 +106,13 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "KNM_KEY_COVERAGE_COHORT",
     "KNM_KEY_COVERAGE_DATA_FILE",
+    "KNM_KEY_COVERAGE_INCLUDE",
     "KNM_KEY_DOCSTRING_RATCHET",
     "KNM_KEY_PRIMARY_TEST",
     "KNM_KEY_SOURCE",
     "KNM_KEY_TYPING_RATCHET",
+    "NOISE_ANALYSIS_PRIMARY_TEST",
+    "NOISE_ANALYSIS_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

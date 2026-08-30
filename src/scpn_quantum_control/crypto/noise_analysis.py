@@ -36,9 +36,18 @@ _log = logging.getLogger(__name__)
 def depolarizing_channel(rho: NDArray[np.complex128], p: float) -> NDArray[np.complex128]:
     """Apply depolarizing channel: rho → (1-p)*rho + p*I/d.
 
-    Args:
-        rho: Density matrix (d×d).
-        p: Depolarizing probability in [0, 1].
+    Parameters
+    ----------
+    rho
+        Square density matrix.
+    p
+        Depolarizing probability.
+
+    Returns
+    -------
+    numpy.ndarray
+        Complex density matrix mixed with the maximally mixed state.
+
     """
     d = rho.shape[0]
     result: NDArray[np.complex128] = ((1 - p) * rho + p * np.eye(d) / d).astype(np.complex128)
@@ -51,6 +60,19 @@ def amplitude_damping_single(
     """Single-qubit amplitude damping: |1⟩ → |0⟩ with probability gamma.
 
     Kraus operators: K0 = [[1,0],[0,sqrt(1-gamma)]], K1 = [[0,sqrt(gamma)],[0,0]].
+
+    Parameters
+    ----------
+    rho_2x2
+        Single-qubit density matrix.
+    gamma
+        Excited-state damping probability.
+
+    Returns
+    -------
+    numpy.ndarray
+        Complex density matrix after applying both Kraus operators.
+
     """
     sg = np.sqrt(gamma)
     s1g = np.sqrt(1 - gamma)
@@ -73,6 +95,25 @@ def noisy_concurrence(
 
     Traces out all qubits except (i,j), applies depolarizing channel
     to the 2-qubit reduced state, then computes Wootters concurrence.
+
+    Parameters
+    ----------
+    sv
+        Full-system statevector.
+    qubit_i
+        First retained qubit index.
+    qubit_j
+        Second retained qubit index.
+    n_total
+        Total number of qubits represented by ``sv``.
+    p_depol
+        Depolarizing probability applied to the reduced pair.
+
+    Returns
+    -------
+    float
+        Wootters concurrence of the noisy reduced state.
+
     """
     rho_full = DensityMatrix(sv)
     trace_out = [q for q in range(n_total) if q not in (qubit_i, qubit_j)]
@@ -82,7 +123,19 @@ def noisy_concurrence(
 
 
 def _concurrence_2qubit(rho: NDArray[np.complex128]) -> float:
-    """Wootters concurrence for a 4×4 density matrix."""
+    """Compute Wootters concurrence for a two-qubit density matrix.
+
+    Parameters
+    ----------
+    rho
+        Two-qubit density matrix shaped ``(4, 4)``.
+
+    Returns
+    -------
+    float
+        Non-negative concurrence derived from the spin-flipped spectrum.
+
+    """
     sigma_y = np.array([[0, -1j], [1j, 0]])
     yy = np.kron(sigma_y, sigma_y)
     rho_tilde = yy @ rho.conj() @ yy
@@ -109,6 +162,23 @@ def intercept_resend_qber(
     For entangled states, the disturbance depends on the entanglement structure.
 
     Returns the QBER that Bob would observe on qubit j after Eve's attack.
+
+    Parameters
+    ----------
+    sv
+        Full-system statevector before interception.
+    qubit_i
+        Alice's reference qubit index.
+    qubit_j
+        Bob's intercepted qubit index.
+    n_total
+        Total number of qubits represented by ``sv``.
+
+    Returns
+    -------
+    float
+        Absolute correlation-loss QBER clipped to ``[0, 0.5]``.
+
     """
     from qiskit.quantum_info import SparsePauliOp
 
@@ -149,6 +219,17 @@ def devetak_winter_rate(qber: float) -> float:
     r = max(0, 1 - h(QBER) - h(QBER))
     where h(x) = -x log2(x) - (1-x) log2(1-x) is binary entropy.
     Positive rate requires QBER < 0.11.
+
+    Parameters
+    ----------
+    qber
+        Quantum bit-error rate.
+
+    Returns
+    -------
+    float
+        Secret-key rate clipped to the non-negative interval.
+
     """
     if qber <= 0:
         return 1.0
@@ -164,12 +245,26 @@ def security_analysis(
     bob_qubits: list[int],
     p_depol_range: NDArray[np.float64] | None = None,
 ) -> dict[str, Any]:
-    """Full security analysis: key rates vs noise for each qubit pair.
+    """Compute key-rate curves versus noise for every Alice/Bob qubit pair.
 
-    Returns dict with:
-        pair_rates: dict mapping (i,j) to list of (p_depol, key_rate)
-        critical_noise: dict mapping (i,j) to max tolerable p_depol
-        aggregate_rate: total key rate summed over all pairs at each noise level
+    Parameters
+    ----------
+    sv
+        Full-system statevector used for all reduced-pair calculations.
+    alice_qubits
+        Alice-side qubit indices.
+    bob_qubits
+        Bob-side qubit indices.
+    p_depol_range
+        Depolarizing probabilities to scan. A 16-point ``[0, 0.3]`` grid is
+        used when omitted.
+
+    Returns
+    -------
+    dict
+        Pairwise rate curves, maximum tolerable noise per pair, and aggregate
+        rate versus noise.
+
     """
     n = int(np.log2(len(sv.data)))
     if p_depol_range is None:
