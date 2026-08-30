@@ -70,6 +70,7 @@ def _study(*, measure_wall_clock: bool = False) -> NeuralOperatorAdvantage:
 
 
 def test_surrogate_beats_persistence_on_held_out_initial_conditions() -> None:
+    """Require the trained surrogate to beat persistence on held-out states."""
     study = _study()
     assert isinstance(study.fidelity, HeldOutFidelity)
     assert study.fidelity.beats_persistence
@@ -81,6 +82,7 @@ def test_surrogate_beats_persistence_on_held_out_initial_conditions() -> None:
 
 
 def test_error_grows_more_slowly_than_persistence_over_the_horizon() -> None:
+    """Track the held-out error curve through the complete forecast horizon."""
     study = _study()
     curve = study.fidelity.error_vs_horizon
     assert len(curve) == _STEPS + 1
@@ -95,6 +97,7 @@ def test_error_grows_more_slowly_than_persistence_over_the_horizon() -> None:
 
 
 def test_cost_model_is_wired_through() -> None:
+    """Expose the host-independent direct-versus-surrogate operation model."""
     study = _study()
     assert isinstance(study.cost_model, SurrogateCostModel)
     assert study.cost_model.n_oscillators == _N
@@ -105,6 +108,7 @@ def test_cost_model_is_wired_through() -> None:
 
 
 def test_wall_clock_is_optional_and_excluded_by_default() -> None:
+    """Keep advisory wall-clock samples optional and outside the digest."""
     without = _study(measure_wall_clock=False)
     assert without.wall_clock_ms is None
     with_timing = _study(measure_wall_clock=True)
@@ -119,6 +123,7 @@ def test_wall_clock_is_optional_and_excluded_by_default() -> None:
 
 
 def test_to_dict_is_json_ready_and_complete() -> None:
+    """Serialize the complete study through its public JSON-ready surface."""
     import json
 
     study = _study()
@@ -144,6 +149,7 @@ def test_to_dict_is_json_ready_and_complete() -> None:
 
 
 def test_study_is_deterministic_on_content() -> None:
+    """Reproduce host-independent study content under fixed seeds."""
     first = _study()
     second = _study()
     assert first.payload_sha256 == second.payload_sha256
@@ -159,6 +165,7 @@ def test_study_is_deterministic_on_content() -> None:
 
 
 def test_payload_digest_is_host_independent_of_provenance() -> None:
+    """Keep live host provenance outside the reproducible payload digest."""
     # the digest covers only the bit-exact cost model and configuration, so it is stable regardless of
     # the captured host provenance or timings
     study = _study()
@@ -167,7 +174,33 @@ def test_payload_digest_is_host_independent_of_provenance() -> None:
     assert study.payload_sha256 == _study().payload_sha256
 
 
+def test_default_clock_records_current_utc() -> None:
+    """Record a current UTC timestamp through the unmodified public default clock."""
+    before = datetime.now(timezone.utc)
+    omega, coupling = _network(seed=11)
+    study = evaluate_neural_operator_advantage(
+        omega,
+        coupling,
+        dt=_DT,
+        n_steps=_STEPS,
+        n_trajectories=64,
+        n_eval=10,
+        latent_dim=12,
+        hidden_dim=24,
+        epochs=150,
+        learning_rate=3e-3,
+        dataset_seed=3,
+        train_seed=0,
+        eval_seed=9999,
+        measure_wall_clock=False,
+    )
+    generated = datetime.fromisoformat(study.generated_utc)
+    after = datetime.now(timezone.utc)
+    assert before <= generated <= after
+
+
 def test_non_positive_n_eval_is_rejected() -> None:
+    """Reject an empty held-out evaluation cohort before training."""
     omega, coupling = _network(seed=11)
     with pytest.raises(ValueError, match="n_eval"):
         evaluate_neural_operator_advantage(

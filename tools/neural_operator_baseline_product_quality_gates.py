@@ -15,14 +15,17 @@ Gate = tuple[str, list[str]]
 
 NEURAL_OPERATOR_BASELINE_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/neural_operator_baseline_product.py",
+    "src/scpn_quantum_control/forecasting/neural_operator_advantage.py",
     "tests/test_neural_operator_baseline_product.py",
+    "tests/test_neural_operator_advantage.py",
     "tools/neural_operator_baseline_product_quality_gates.py",
     "tests/test_neural_operator_baseline_product_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
 
 NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_COHORT = [
-    "tests/test_neural_operator_baseline_product.py"
+    "tests/test_neural_operator_baseline_product.py",
+    "tests/test_neural_operator_advantage.py",
 ]
 """Tests that own exact neural-operator baseline product coverage."""
 
@@ -94,7 +97,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/neural_operator_baseline_product.py",
+                "--include=*/neural_operator_baseline_product.py,*/forecasting/neural_operator_advantage.py",
             ],
         ),
     ]

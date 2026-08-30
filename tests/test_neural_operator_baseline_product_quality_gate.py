@@ -29,9 +29,15 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     run = gates["neural-operator-baseline-product focused coverage"]
     report = gates["neural-operator-baseline-product exact coverage threshold"]
     assert "--branch" in run
-    assert run[-1:] == quality_gates.NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_COHORT
+    assert (
+        run[-len(quality_gates.NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_COHORT) :]
+        == quality_gates.NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_COHORT
+    )
     assert "--fail-under=100" in report
-    assert "--include=*/neural_operator_baseline_product.py" in report
+    assert (
+        "--include=*/neural_operator_baseline_product.py,*/forecasting/neural_operator_advantage.py"
+        in report
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:

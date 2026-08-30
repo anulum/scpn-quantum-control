@@ -128,6 +128,7 @@ class HeldOutFidelity:
         Whether the surrogate's mean error is strictly below persistence.
     error_vs_horizon : tuple
         Per-query-time ``(time, surrogate_error, persistence_error)`` triples (radians).
+
     """
 
     n_eval: int
@@ -196,6 +197,7 @@ class NeuralOperatorAdvantage:
         Always ``False``.
     payload_sha256 : str
         A digest of the host-independent cost model and configuration.
+
     """
 
     schema: str
@@ -367,6 +369,7 @@ def evaluate_neural_operator_advantage(
         If ``n_eval`` is not positive (other bounds are enforced by the delegated builders).
     ImportError
         If PyTorch is not installed.
+
     """
     if n_eval < 1:
         raise ValueError(f"n_eval must be positive, got {n_eval}")

@@ -4491,24 +4491,30 @@ jobs:
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/neural_operator_baseline_product.py
+          src/scpn_quantum_control/forecasting/neural_operator_advantage.py
           tests/test_neural_operator_baseline_product.py
+          tests/test_neural_operator_advantage.py
           tools/neural_operator_baseline_product_quality_gates.py
           tests/test_neural_operator_baseline_product_quality_gate.py
       - run: >-
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/neural_operator_baseline_product.py
+          src/scpn_quantum_control/forecasting/neural_operator_advantage.py
           tests/test_neural_operator_baseline_product.py
+          tests/test_neural_operator_advantage.py
           tools/neural_operator_baseline_product_quality_gates.py
           tests/test_neural_operator_baseline_product_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
           --data-file=.coverage.neural-operator-baseline-product-quality --branch
           -m pytest -q tests/test_neural_operator_baseline_product.py
+          tests/test_neural_operator_advantage.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.neural-operator-baseline-product-quality
-          --precision=2 --fail-under=100 --include=*/neural_operator_baseline_product.py
+          --precision=2 --fail-under=100
+          --include=*/neural_operator_baseline_product.py,*/forecasting/neural_operator_advantage.py
 
   entanglement-sync-evidence-quality:
     needs: lint
