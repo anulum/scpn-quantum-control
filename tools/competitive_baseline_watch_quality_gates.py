@@ -17,11 +17,13 @@ COMPETITIVE_BASELINE_WATCH_QUALITY_RATCHET = [
     "src/scpn_quantum_control/benchmarks/reproducible_comparison.py",
     "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py",
     "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py",
+    "src/scpn_quantum_control/benchmarks/kuramoto_external_competitors.py",
     "tests/test_competitive_baseline_watch.py",
     "tests/test_reproducible_comparison.py",
     "tests/test_kuramoto_competitive_types.py",
     "tests/test_kuramoto_competitive_benchmark.py",
     "tests/test_bench_kuramoto_competitive.py",
+    "tests/test_kuramoto_external_competitors.py",
     "tools/competitive_baseline_watch_quality_gates.py",
     "tests/test_competitive_baseline_watch_quality_gate.py",
 ]
@@ -32,6 +34,7 @@ COMPETITIVE_BASELINE_WATCH_COVERAGE_COHORT = [
     "tests/test_kuramoto_competitive_types.py",
     "tests/test_kuramoto_competitive_benchmark.py",
     "tests/test_bench_kuramoto_competitive.py",
+    "tests/test_kuramoto_external_competitors.py",
 ]
 """Tests that own exact competitive-baseline-watch coverage."""
 COMPETITIVE_BASELINE_WATCH_COVERAGE_DATA_FILE = "/tmp/.coverage.competitive-baseline-watch-quality"
@@ -60,8 +63,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *COMPETITIVE_BASELINE_WATCH_QUALITY_RATCHET,
@@ -100,7 +104,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={COMPETITIVE_BASELINE_WATCH_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py,*/benchmarks/kuramoto_competitive_types.py,*/benchmarks/kuramoto_competitive_benchmark.py",
+                "--include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py,*/benchmarks/kuramoto_competitive_types.py,*/benchmarks/kuramoto_competitive_benchmark.py,*/benchmarks/kuramoto_external_competitors.py",
             ],
         ),
     ]

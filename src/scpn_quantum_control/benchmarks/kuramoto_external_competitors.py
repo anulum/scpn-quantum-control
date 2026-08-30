@@ -115,12 +115,7 @@ def _resolve_julia_executable() -> str:
     located = shutil.which("julia")
     if located is None:
         raise FileNotFoundError("julia executable not found on PATH")
-    try:
-        executable_path = Path(located)
-    except (OSError, ValueError) as exc:
-        raise FileNotFoundError(
-            f"julia executable must resolve to an absolute executable path: {located!r}"
-        ) from exc
+    executable_path = Path(located)
     if not executable_path.is_absolute():
         raise FileNotFoundError(
             f"julia executable must resolve to an absolute executable path: {located!r}"
@@ -141,10 +136,7 @@ def _validated_python_interpreter() -> str:
     raw = sys.executable
     if not raw:
         raise RuntimeError("python interpreter path is not configured")
-    try:
-        executable_path = Path(raw)
-    except (OSError, ValueError) as exc:
-        raise RuntimeError(f"python interpreter path is not executable: {raw!r}") from exc
+    executable_path = Path(raw)
     if not executable_path.is_absolute():
         raise RuntimeError(f"python interpreter path must be absolute: {raw!r}")
     try:
@@ -166,6 +158,7 @@ def _run_julia_script(script: str, problem: KuramotoProblem, timeout: float) -> 
     RuntimeError
         If the subprocess fails, times out, or emits unparsable output (for
         example because the competitor package is not installed).
+
     """
     julia = _resolve_julia_executable()
     try:
@@ -203,6 +196,7 @@ def _run_jitcdde(problem: KuramotoProblem, timeout: float) -> dict[str, Any]:
         If ``jitcdde`` is not importable in the current interpreter.
     RuntimeError
         If the subprocess fails, times out, or emits unparsable output.
+
     """
     if not _python_module_present("jitcdde"):
         raise FileNotFoundError("jitcdde is not installed")

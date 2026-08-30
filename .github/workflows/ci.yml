@@ -5053,25 +5053,29 @@ jobs:
           src/scpn_quantum_control/benchmarks/reproducible_comparison.py
           src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py
           src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py
+          src/scpn_quantum_control/benchmarks/kuramoto_external_competitors.py
           tests/test_competitive_baseline_watch.py
           tests/test_reproducible_comparison.py
           tests/test_kuramoto_competitive_types.py
           tests/test_kuramoto_competitive_benchmark.py
           tests/test_bench_kuramoto_competitive.py
+          tests/test_kuramoto_external_competitors.py
           tools/competitive_baseline_watch_quality_gates.py
           tests/test_competitive_baseline_watch_quality_gate.py
       - run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/competitive_baseline_watch.py
           src/scpn_quantum_control/benchmarks/reproducible_comparison.py
           src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py
           src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py
+          src/scpn_quantum_control/benchmarks/kuramoto_external_competitors.py
           tests/test_competitive_baseline_watch.py
           tests/test_reproducible_comparison.py
           tests/test_kuramoto_competitive_types.py
           tests/test_kuramoto_competitive_benchmark.py
           tests/test_bench_kuramoto_competitive.py
+          tests/test_kuramoto_external_competitors.py
           tools/competitive_baseline_watch_quality_gates.py
           tests/test_competitive_baseline_watch_quality_gate.py
       - run: >-
@@ -5082,11 +5086,12 @@ jobs:
           tests/test_kuramoto_competitive_types.py
           tests/test_kuramoto_competitive_benchmark.py
           tests/test_bench_kuramoto_competitive.py
+          tests/test_kuramoto_external_competitors.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/.coverage.competitive-baseline-watch-quality
           --precision=2 --fail-under=100
-          --include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py,*/benchmarks/kuramoto_competitive_types.py,*/benchmarks/kuramoto_competitive_benchmark.py
+          --include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py,*/benchmarks/kuramoto_competitive_types.py,*/benchmarks/kuramoto_competitive_benchmark.py,*/benchmarks/kuramoto_external_competitors.py
 
   whole-program-ad-product-quality:
     needs: lint

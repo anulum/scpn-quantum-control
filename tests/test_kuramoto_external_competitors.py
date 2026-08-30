@@ -33,7 +33,7 @@ from scpn_quantum_control.benchmarks.kuramoto_competitive_types import (
 
 
 def _small_problem() -> KuramotoProblem:
-    """A tiny but non-trivial deterministic problem for fast real runs."""
+    """Build a tiny but non-trivial deterministic problem for fast real runs."""
     return build_default_problem(n_oscillators=6, t_max=0.5, dt=0.1, seed=7)
 
 
@@ -63,11 +63,13 @@ class _Completed:
 
 
 def test_python_module_present_true_and_false() -> None:
+    """Detect installed and deliberately absent Python modules."""
     assert ext._python_module_present("numpy") is True
     assert ext._python_module_present("definitely_not_a_real_module_xyz") is False
 
 
 def test_problem_payload_carries_problem_fields() -> None:
+    """Serialise every shared-problem field consumed by subprocesses."""
     payload = json.loads(ext._problem_payload(_small_problem()))
     assert set(payload) == {"K", "omega", "theta0", "t_max"}
     assert len(payload["omega"]) == 6
@@ -75,6 +77,7 @@ def test_problem_payload_carries_problem_fields() -> None:
 
 
 def test_parse_subprocess_result_happy_and_errors() -> None:
+    """Parse a trailing result row and reject malformed or empty output."""
     parsed = ext._parse_subprocess_result(
         'noise\n{"r_final": 0.4, "elapsed_ms": 1.0, "version": "v"}\n'
     )
@@ -91,6 +94,7 @@ def test_parse_subprocess_result_happy_and_errors() -> None:
 
 
 def test_run_julia_script_missing_executable(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject Julia execution when PATH contains no Julia binary."""
     monkeypatch.setattr(shutil, "which", lambda _name: None)
     with pytest.raises(FileNotFoundError):
         ext._run_julia_script("script", _small_problem(), 5.0)
@@ -115,6 +119,16 @@ def test_run_julia_script_rejects_relative_executable(
     assert called is False
 
 
+def test_julia_runner_rejects_missing_absolute_executable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Reject a missing absolute Julia path through the public runner."""
+    monkeypatch.setattr(shutil, "which", lambda _name: "/definitely/missing/julia")
+
+    with pytest.raises(FileNotFoundError, match="executable file"):
+        ext.default_julia_runner(_small_problem(), 5.0)
+
+
 def test_run_julia_script_rejects_non_executable_path(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -137,6 +151,7 @@ def test_run_julia_script_rejects_non_executable_path(
 
 
 def test_run_julia_script_success(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Run an admitted Julia subprocess and parse its trailing result."""
     payload = json.dumps({"r_final": 0.42, "elapsed_ms": 3.1, "version": "7.17.0"})
     monkeypatch.setattr(shutil, "which", lambda _name: _fake_executable(tmp_path, "julia"))
     monkeypatch.setattr(subprocess, "run", lambda *a, **k: _Completed(0, stdout=f"x\n{payload}\n"))
@@ -145,6 +160,7 @@ def test_run_julia_script_success(monkeypatch: pytest.MonkeyPatch, tmp_path: Pat
 
 
 def test_run_julia_script_nonzero_exit(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Reject a non-zero Julia subprocess result."""
     monkeypatch.setattr(shutil, "which", lambda _name: _fake_executable(tmp_path, "julia"))
     monkeypatch.setattr(
         subprocess, "run", lambda *a, **k: _Completed(1, stderr="Package X not found")
@@ -154,6 +170,8 @@ def test_run_julia_script_nonzero_exit(monkeypatch: pytest.MonkeyPatch, tmp_path
 
 
 def test_run_julia_script_timeout(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Translate a Julia subprocess timeout into the fail-closed error."""
+
     def _raise(*_a: Any, **_k: Any) -> None:
         raise subprocess.TimeoutExpired(cmd="julia", timeout=5.0)
 
@@ -164,6 +182,7 @@ def test_run_julia_script_timeout(monkeypatch: pytest.MonkeyPatch, tmp_path: Pat
 
 
 def test_run_julia_script_unparsable(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Reject unparsable output from a successful Julia subprocess."""
     monkeypatch.setattr(shutil, "which", lambda _name: _fake_executable(tmp_path, "julia"))
     monkeypatch.setattr(subprocess, "run", lambda *a, **k: _Completed(0, stdout="not json"))
     with pytest.raises(RuntimeError, match="could not parse"):
@@ -176,6 +195,7 @@ def test_run_julia_script_unparsable(monkeypatch: pytest.MonkeyPatch, tmp_path: 
 
 
 def test_run_jitcdde_absent(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reject jitcdde execution when its module is unavailable."""
     monkeypatch.setattr(ext, "_python_module_present", lambda _m: False)
     with pytest.raises(FileNotFoundError, match="jitcdde is not installed"):
         ext._run_jitcdde(_small_problem(), 5.0)
@@ -203,7 +223,29 @@ def test_run_jitcdde_rejects_non_executable_interpreter(
     assert called is False
 
 
+@pytest.mark.parametrize(
+    ("interpreter", "message"),
+    [
+        ("", "not configured"),
+        ("python", "must be absolute"),
+        ("/definitely/missing/python", "not executable"),
+    ],
+)
+def test_jitcdde_runner_rejects_invalid_interpreter_paths(
+    monkeypatch: pytest.MonkeyPatch,
+    interpreter: str,
+    message: str,
+) -> None:
+    """Reject invalid interpreter paths through the public jitcdde runner."""
+    monkeypatch.setattr(ext, "_python_module_present", lambda _module: True)
+    monkeypatch.setattr(sys, "executable", interpreter)
+
+    with pytest.raises(RuntimeError, match=message):
+        ext.default_jitcdde_runner(_small_problem(), 5.0)
+
+
 def test_run_jitcdde_success(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Run an admitted jitcdde subprocess and parse its result."""
     payload = json.dumps({"r_final": 0.77, "elapsed_ms": 18.0, "version": "1.8.3"})
     monkeypatch.setattr(ext, "_python_module_present", lambda _m: True)
     monkeypatch.setattr(sys, "executable", _fake_executable(tmp_path, "python"))
@@ -213,6 +255,7 @@ def test_run_jitcdde_success(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) ->
 
 
 def test_run_jitcdde_nonzero(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Reject a non-zero jitcdde subprocess result."""
     monkeypatch.setattr(ext, "_python_module_present", lambda _m: True)
     monkeypatch.setattr(sys, "executable", _fake_executable(tmp_path, "python"))
     monkeypatch.setattr(subprocess, "run", lambda *a, **k: _Completed(1, stderr="compile error"))
@@ -221,6 +264,8 @@ def test_run_jitcdde_nonzero(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) ->
 
 
 def test_run_jitcdde_timeout(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Translate a jitcdde subprocess timeout into the fail-closed error."""
+
     def _raise(*_a: Any, **_k: Any) -> None:
         raise subprocess.TimeoutExpired(cmd="python", timeout=5.0)
 
@@ -237,6 +282,7 @@ def test_run_jitcdde_timeout(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) ->
 
 
 def test_julia_default_runners_route_to_their_scripts(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Route each public Julia adapter to its dedicated embedded program."""
     seen: dict[str, str] = {}
 
     def _capture(script: str, problem: KuramotoProblem, timeout: float) -> dict[str, Any]:
@@ -255,6 +301,7 @@ def test_julia_default_runners_route_to_their_scripts(monkeypatch: pytest.Monkey
 
 
 def test_jitcdde_default_runner_routes_to_run_jitcdde(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Route the public jitcdde adapter to its subprocess implementation."""
     monkeypatch.setattr(
         ext, "_run_jitcdde", lambda p, t: {"r_final": 0.7, "elapsed_ms": 9.0, "version": "1.8.3"}
     )
@@ -267,6 +314,7 @@ def test_jitcdde_default_runner_routes_to_run_jitcdde(monkeypatch: pytest.Monkey
 
 
 def test_scipy_row_available_and_matches_reference() -> None:
+    """Execute the real SciPy adapter and return bounded order evidence."""
     row = ext.scipy_row(_small_problem())
     assert row.available is True
     assert row.family == "external" and row.language == "python"
@@ -275,6 +323,7 @@ def test_scipy_row_available_and_matches_reference() -> None:
 
 
 def test_scipy_row_fails_closed_when_absent(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Return an unavailable SciPy row when the dependency is absent."""
     monkeypatch.setattr(ext, "_python_module_present", lambda _module: False)
     row = ext.scipy_row(_small_problem())
     assert row.available is False
@@ -300,6 +349,7 @@ def test_scipy_row_fails_closed_when_absent(monkeypatch: pytest.MonkeyPatch) -> 
 def test_subprocess_rows_available_with_injected_runner(
     builder: Any, method: str, language: str
 ) -> None:
+    """Build available rows for every injected external solver result."""
     row = builder(_small_problem(), timeout=5.0, runner=_ok_runner)
     assert row.available is True
     assert row.method == method
@@ -318,6 +368,8 @@ def test_subprocess_rows_available_with_injected_runner(
     ],
 )
 def test_subprocess_rows_fail_closed_on_missing_and_error(builder: Any, method: str) -> None:
+    """Build unavailable rows for missing and failed external solvers."""
+
     def _missing(problem: KuramotoProblem, timeout: float) -> dict[str, Any]:
         raise FileNotFoundError("toolchain not found")
 

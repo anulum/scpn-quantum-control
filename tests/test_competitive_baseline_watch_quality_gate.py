@@ -20,7 +20,9 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
         gates["mypy-strict-competitive-baseline-watch-quality"][5:]
         == quality_gates.COMPETITIVE_BASELINE_WATCH_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D competitive-baseline-watch quality ratchet"]
+    docs = gates["ruff D competitive-baseline-watch quality ratchet"]
+    assert "--preview" in docs
+    assert "D,D413,D417,D420" in docs
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
@@ -37,7 +39,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     assert "--fail-under=100" in report
     assert f"--data-file={quality_gates.COMPETITIVE_BASELINE_WATCH_COVERAGE_DATA_FILE}" in report
     assert (
-        "--include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py,*/benchmarks/kuramoto_competitive_types.py,*/benchmarks/kuramoto_competitive_benchmark.py"
+        "--include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py,*/benchmarks/kuramoto_competitive_types.py,*/benchmarks/kuramoto_competitive_benchmark.py,*/benchmarks/kuramoto_external_competitors.py"
         in report
     )
 
