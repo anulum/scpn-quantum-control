@@ -3334,7 +3334,9 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/crypto/hierarchical_keys.py
+          src/scpn_quantum_control/crypto/topology_auth.py
           tests/test_crypto_hierarchical_keys.py
+          tests/test_crypto_topology_auth.py
           tools/hierarchical_keys_quality_gates.py
           tests/test_hierarchical_keys_quality_gate.py
       - name: Ruff NumPy docstrings for hierarchical-key owners
@@ -3342,7 +3344,9 @@ jobs:
           python -m ruff check --isolated --preview --select D,D413,D417,D420
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/crypto/hierarchical_keys.py
+          src/scpn_quantum_control/crypto/topology_auth.py
           tests/test_crypto_hierarchical_keys.py
+          tests/test_crypto_topology_auth.py
           tools/hierarchical_keys_quality_gates.py
           tests/test_hierarchical_keys_quality_gate.py
       - name: Run hierarchical-key connected focused coverage
@@ -3354,12 +3358,14 @@ jobs:
           tests/test_crypto_expanded.py
           tests/test_crypto_properties.py
           tests/test_crypto_exports.py
+          tests/test_crypto_topology_auth.py
+          tests/test_topology_auth_edge.py
       - name: Enforce hierarchical-key exact coverage
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-hierarchical-keys-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/crypto/hierarchical_keys.py
+          --include=*/crypto/hierarchical_keys.py,*/crypto/topology_auth.py
 
   sync-uncertainty-quality:
     needs: lint

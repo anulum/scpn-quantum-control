@@ -14,15 +14,21 @@ from os import devnull
 Gate = tuple[str, list[str]]
 HIERARCHICAL_KEYS_SOURCE = "src/scpn_quantum_control/crypto/hierarchical_keys.py"
 HIERARCHICAL_KEYS_PRIMARY_TEST = "tests/test_crypto_hierarchical_keys.py"
+TOPOLOGY_AUTH_SOURCE = "src/scpn_quantum_control/crypto/topology_auth.py"
+TOPOLOGY_AUTH_PRIMARY_TEST = "tests/test_crypto_topology_auth.py"
 HIERARCHICAL_KEYS_COVERAGE_COHORT = [
     HIERARCHICAL_KEYS_PRIMARY_TEST,
     "tests/test_crypto_expanded.py",
     "tests/test_crypto_properties.py",
     "tests/test_crypto_exports.py",
+    TOPOLOGY_AUTH_PRIMARY_TEST,
+    "tests/test_topology_auth_edge.py",
 ]
 HIERARCHICAL_KEYS_TYPING_RATCHET = [
     HIERARCHICAL_KEYS_SOURCE,
+    TOPOLOGY_AUTH_SOURCE,
     HIERARCHICAL_KEYS_PRIMARY_TEST,
+    TOPOLOGY_AUTH_PRIMARY_TEST,
     "tools/hierarchical_keys_quality_gates.py",
     "tests/test_hierarchical_keys_quality_gate.py",
 ]
@@ -30,6 +36,7 @@ HIERARCHICAL_KEYS_DOCSTRING_RATCHET = [
     *HIERARCHICAL_KEYS_TYPING_RATCHET,
 ]
 HIERARCHICAL_KEYS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-hierarchical-keys-quality.coverage"  # nosec B108
+HIERARCHICAL_KEYS_COVERAGE_INCLUDE = "*/crypto/hierarchical_keys.py,*/crypto/topology_auth.py"
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -95,7 +102,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={HIERARCHICAL_KEYS_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/crypto/hierarchical_keys.py",
+                f"--include={HIERARCHICAL_KEYS_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -104,10 +111,13 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "HIERARCHICAL_KEYS_COVERAGE_COHORT",
     "HIERARCHICAL_KEYS_COVERAGE_DATA_FILE",
+    "HIERARCHICAL_KEYS_COVERAGE_INCLUDE",
     "HIERARCHICAL_KEYS_DOCSTRING_RATCHET",
     "HIERARCHICAL_KEYS_PRIMARY_TEST",
     "HIERARCHICAL_KEYS_SOURCE",
     "HIERARCHICAL_KEYS_TYPING_RATCHET",
+    "TOPOLOGY_AUTH_PRIMARY_TEST",
+    "TOPOLOGY_AUTH_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

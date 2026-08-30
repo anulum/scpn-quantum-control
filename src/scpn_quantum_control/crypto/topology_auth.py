@@ -38,11 +38,17 @@ EIGENVALUE_ZERO_RTOL = 1e-8  # relative tolerance for Laplacian eigenvalue ratio
 def spectral_fingerprint(K: NDArray[np.float64]) -> dict[str, Any]:
     """Compute public spectral fingerprint of coupling matrix.
 
-    Returns dict with:
-        fiedler: Second-smallest eigenvalue of graph Laplacian (algebraic connectivity).
-        gap_ratio: lambda_1 / lambda_2 (spectral gap quality).
-        spectral_entropy: Shannon entropy of normalized eigenvalue distribution.
-        n_components: Number of connected components (eigenvalues ≈ 0).
+    Parameters
+    ----------
+    K
+        Square coupling matrix.
+
+    Returns
+    -------
+    dict
+        Fiedler value, gap ratio, spectral entropy, component count, and sorted
+        combinatorial-Laplacian eigenvalues.
+
     """
     n = K.shape[0]
     D = np.diag(K.sum(axis=1))
@@ -78,6 +84,17 @@ def normalized_laplacian_fingerprint(K: NDArray[np.float64]) -> dict[str, Any]:
 
     More robust to degree heterogeneity than the combinatorial Laplacian.
     Eigenvalues lie in [0, 2] for connected graphs.
+
+    Parameters
+    ----------
+    K
+        Square coupling matrix.
+
+    Returns
+    -------
+    dict
+        Normalized Fiedler value, spectral entropy, eigenvalues, and radius.
+
     """
     n = K.shape[0]
     d = K.sum(axis=1)
@@ -108,7 +125,23 @@ def normalized_laplacian_fingerprint(K: NDArray[np.float64]) -> dict[str, Any]:
 def verify_fingerprint(
     K: NDArray[np.float64], fingerprint: dict[str, Any], tol: float = 1e-6
 ) -> bool:
-    """Check K against a claimed spectral fingerprint."""
+    """Check a coupling matrix against a claimed spectral fingerprint.
+
+    Parameters
+    ----------
+    K
+        Coupling matrix to fingerprint.
+    fingerprint
+        Claimed public fingerprint fields.
+    tol
+        Absolute tolerance for scalar fingerprint fields.
+
+    Returns
+    -------
+    bool
+        Whether scalar fields and the component count match.
+
+    """
     computed = spectral_fingerprint(K)
     return bool(
         abs(computed["fiedler"] - fingerprint["fiedler"]) < tol
@@ -121,6 +154,19 @@ def topology_distance(fp1: dict[str, Any], fp2: dict[str, Any]) -> float:
     """L2 distance between two spectral fingerprints.
 
     Useful for detecting calibration drift or K_nm tampering.
+
+    Parameters
+    ----------
+    fp1
+        First spectral fingerprint.
+    fp2
+        Second spectral fingerprint.
+
+    Returns
+    -------
+    float
+        Euclidean eigenvalue distance, or infinity for unequal dimensions.
+
     """
     e1 = np.array(fp1["eigenvalues"])
     e2 = np.array(fp2["eigenvalues"])
@@ -138,6 +184,19 @@ def topology_commitment(K: NDArray[np.float64], nonce: bytes = b"") -> bytes:
     Returns SHA-256(K_nm_bytes || nonce). The commitment binds the prover
     to a specific K_nm. Later, the prover opens by revealing K_nm + nonce,
     and the verifier recomputes the hash.
+
+    Parameters
+    ----------
+    K
+        Coupling matrix serialized as commitment material.
+    nonce
+        Optional public commitment nonce.
+
+    Returns
+    -------
+    bytes
+        SHA-256 commitment digest.
+
     """
     h = hashlib.sha256()
     h.update(K.tobytes())
@@ -146,7 +205,23 @@ def topology_commitment(K: NDArray[np.float64], nonce: bytes = b"") -> bytes:
 
 
 def verify_commitment(K: NDArray[np.float64], nonce: bytes, commitment: bytes) -> bool:
-    """Verify that K_nm matches a previously issued commitment."""
+    """Verify that a coupling matrix matches a prior commitment.
+
+    Parameters
+    ----------
+    K
+        Candidate coupling matrix.
+    nonce
+        Nonce used to create the commitment.
+    commitment
+        Claimed SHA-256 commitment digest.
+
+    Returns
+    -------
+    bool
+        Whether recomputation matches the supplied digest.
+
+    """
     return topology_commitment(K, nonce) == commitment
 
 
@@ -155,6 +230,19 @@ def challenge_response_prove(K: NDArray[np.float64], challenge: bytes) -> bytes:
 
     The challenge is a random nonce from the verifier. The response
     proves the prover knows K_nm without transmitting it.
+
+    Parameters
+    ----------
+    K
+        Secret coupling matrix used as HMAC key material.
+    challenge
+        Verifier-issued challenge bytes.
+
+    Returns
+    -------
+    bytes
+        SHA-256 HMAC response.
+
     """
     return hmac.new(K.tobytes(), challenge, hashlib.sha256).digest()
 
@@ -179,6 +267,7 @@ def challenge_response_verify(
     -------
     bool
         ``True`` when the response matches the expected HMAC.
+
     """
     expected = hmac.new(K.tobytes(), challenge, hashlib.sha256).digest()
     return hmac.compare_digest(response, expected)
@@ -194,6 +283,22 @@ def fingerprint_noise_tolerance(
 
     Adds Gaussian noise N(0, sigma²) to K, recomputes fingerprint,
     measures drift. Returns mean and max drift across trials.
+
+    Parameters
+    ----------
+    K
+        Reference coupling matrix.
+    n_trials
+        Number of deterministic perturbation trials.
+    sigma
+        Standard deviation of the symmetric Gaussian perturbation.
+
+    Returns
+    -------
+    dict
+        Noise scale and mean, maximum, standard-deviation, and 99th-percentile
+        fingerprint drift statistics.
+
     """
     fp_ref = spectral_fingerprint(K)
     rng = np.random.default_rng(42)
@@ -222,10 +327,37 @@ def row_hash_fingerprint(K: NDArray[np.float64]) -> list[bytes]:
     Enables selective verification: prove knowledge of specific coupling
     rows without revealing the full matrix. Useful for hierarchical
     authentication where different parties control different SCPN layers.
+
+    Parameters
+    ----------
+    K
+        Coupling matrix whose rows are committed independently.
+
+    Returns
+    -------
+    list[bytes]
+        SHA-256 digest for each matrix row in input order.
+
     """
     return [hashlib.sha256(K[i, :].tobytes()).digest() for i in range(K.shape[0])]
 
 
 def verify_row_hash(K: NDArray[np.float64], row_idx: int, expected_hash: bytes) -> bool:
-    """Verify a single row of K_nm against its hash."""
+    """Verify one coupling-matrix row against its hash.
+
+    Parameters
+    ----------
+    K
+        Coupling matrix containing the candidate row.
+    row_idx
+        Row index to hash.
+    expected_hash
+        Claimed SHA-256 row digest.
+
+    Returns
+    -------
+    bool
+        Whether the row digest matches the claim.
+
+    """
     return hashlib.sha256(K[row_idx, :].tobytes()).digest() == expected_hash
