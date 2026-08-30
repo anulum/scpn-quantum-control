@@ -101,7 +101,6 @@ def test_whole_program_ad_captures_bytecode_source_alias_mutation_and_loop_seman
 
 def test_whole_program_ad_reports_accepted_python_calling_semantics() -> None:
     """Whole-program AD should expose accepted closure/default/kwargs semantics."""
-
     scale = 2.5
 
     def objective(

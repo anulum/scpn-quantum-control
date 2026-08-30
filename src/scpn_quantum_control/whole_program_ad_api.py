@@ -72,6 +72,7 @@ def whole_program_value_and_grad(
         If the objective is not callable, fails the source/bytecode frontend
         execution gate, uses unsupported Python semantics, or does not return a
         traceable scalar.
+
     """
     if not callable(objective):
         raise ValueError("whole-program objective must be callable")
@@ -199,6 +200,7 @@ def whole_program_grad(
     -------
     numpy.ndarray
         Exact whole-program AD gradient as ``float64`` values.
+
     """
     return whole_program_value_and_grad(
         objective, values, parameters=parameters, trace=trace

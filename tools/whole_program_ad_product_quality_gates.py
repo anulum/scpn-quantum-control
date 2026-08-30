@@ -14,14 +14,24 @@ from os import devnull
 Gate = tuple[str, list[str]]
 WHOLE_PROGRAM_AD_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/whole_program_ad_product.py",
+    "src/scpn_quantum_control/whole_program_ad_api.py",
     "tests/test_whole_program_ad_product.py",
+    "tests/test_whole_program_ad_contracts.py",
+    "tests/test_whole_program_ad_runtime.py",
     "tools/whole_program_ad_product_quality_gates.py",
     "tests/test_whole_program_ad_product_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_COHORT = ["tests/test_whole_program_ad_product.py"]
+WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_COHORT = [
+    "tests/test_whole_program_ad_product.py",
+    "tests/test_whole_program_ad_contracts.py",
+    "tests/test_whole_program_ad_runtime.py",
+    "tests/test_whole_program_frontend.py",
+]
 """Tests that own exact whole-program AD product coverage."""
-WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_DATA_FILE = ".coverage.whole-program-ad-product-quality"
+WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_DATA_FILE = (
+    "/tmp/scpn-qc-whole-program-ad-product-quality.coverage"  # nosec B108
+)
 """Isolated coverage database for the whole-program AD product owner."""
 
 
@@ -47,8 +57,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *WHOLE_PROGRAM_AD_PRODUCT_QUALITY_RATCHET,
@@ -87,7 +98,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/whole_program_ad_product.py",
+                "--include=*/whole_program_ad_product.py,*/whole_program_ad_api.py",
             ],
         ),
     ]

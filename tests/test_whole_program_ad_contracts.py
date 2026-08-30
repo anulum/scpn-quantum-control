@@ -37,7 +37,6 @@ from scpn_quantum_control.differentiable import (
 
 def _valid_whole_program_payload() -> dict[str, Any]:
     """Build a valid whole-program result payload for mutation checks."""
-
     return {
         "value": 1.0,
         "gradient": np.array([1.0, 0.0], dtype=np.float64),
@@ -96,7 +95,6 @@ def test_whole_program_ad_records_ir_and_executed_branch_semantics() -> None:
 
 def test_whole_program_ad_frontend_gate_rejects_unsupported_semantics_before_execution() -> None:
     """Unsupported semantics should fail before execution with located frontend evidence."""
-
     calls = {"count": 0}
 
     def objective(values: Any) -> object:
@@ -120,7 +118,6 @@ def test_whole_program_ad_frontend_gate_rejects_unsupported_semantics_before_exe
 
 def test_whole_program_ad_frontend_gate_requires_source_coordinates() -> None:
     """Objectives without source coordinates should not execute under whole-program AD."""
-
     namespace: dict[str, Any] = {}
     exec(  # noqa: S102 - deliberate source-unavailable objective for frontend gate coverage.
         "def dynamic_objective(values):\n"
@@ -137,9 +134,35 @@ def test_whole_program_ad_frontend_gate_requires_source_coordinates() -> None:
     assert dynamic_objective.calls == 0
 
 
+def test_whole_program_ad_validates_callable_and_array_scalar_contracts() -> None:
+    """Reject non-callables and non-scalar arrays while accepting scalar arrays."""
+    with pytest.raises(ValueError, match="objective must be callable"):
+        whole_program_value_and_grad(cast(Any, 42), np.array([2.0], dtype=np.float64))
+
+    def scalar_array_objective(values: Any) -> object:
+        return values.reshape(())
+
+    scalar_result = whole_program_value_and_grad(
+        scalar_array_objective,
+        np.array([2.0], dtype=np.float64),
+        trace=False,
+    )
+    assert scalar_result.value == pytest.approx(2.0)
+    np.testing.assert_allclose(scalar_result.gradient, [1.0], atol=1.0e-12)
+
+    def vector_array_objective(values: Any) -> object:
+        return values
+
+    with pytest.raises(ValueError, match="whole-program AD scalar"):
+        whole_program_value_and_grad(
+            vector_array_objective,
+            np.array([2.0], dtype=np.float64),
+            trace=False,
+        )
+
+
 def test_whole_program_grad_respects_trainable_mask_and_rejects_derivative_loss() -> None:
     """Whole-program AD should freeze masked parameters and reject float-cast derivative loss."""
-
     gradient = whole_program_grad(
         lambda values: values[0] ** 2 + values[1] ** 2,
         np.array([2.0, 3.0], dtype=np.float64),
@@ -237,7 +260,6 @@ def test_whole_program_ad_operator_surface_and_fail_closed_paths() -> None:
 
 def test_whole_program_result_validation_fail_closed_paths() -> None:
     """Whole-program AD result contracts should reject malformed metadata."""
-
     assert WholeProgramADResult is result_module.WholeProgramADResult
     assert WholeProgramIRNode is result_module.WholeProgramIRNode
     assert WholeProgramTraceEvent is result_module.WholeProgramTraceEvent
@@ -341,7 +363,6 @@ def test_whole_program_result_validation_fail_closed_paths() -> None:
 
 def test_whole_program_event_and_ir_node_validation_paths() -> None:
     """Trace event and IR node records should reject malformed trace metadata."""
-
     event = WholeProgramTraceEvent("objective.py", "loss", 7, "  return x  ")
     assert event.source == "return x"
 
@@ -378,7 +399,6 @@ def test_whole_program_event_and_ir_node_validation_paths() -> None:
 
 def test_whole_program_ad_rejects_unsupported_power_and_return_contracts() -> None:
     """Whole-program AD should fail closed for unsupported powers and non-scalar returns."""
-
     with pytest.raises(ValueError, match="positive base"):
         whole_program_value_and_grad(lambda values: (-values[0]) ** values[0], [1.0])
     with pytest.raises(ValueError, match="whole-program AD scalar"):
