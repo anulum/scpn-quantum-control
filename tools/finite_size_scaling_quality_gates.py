@@ -13,10 +13,20 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 FINITE_SIZE_SCALING_SOURCE = "src/scpn_quantum_control/analysis/finite_size_scaling.py"
-FINITE_SIZE_SCALING_COVERAGE_COHORT = ["tests/test_finite_size_scaling.py"]
+PHASE_DIAGRAM_SOURCE = "src/scpn_quantum_control/analysis/phase_diagram.py"
+FINITE_SIZE_SCALING_COVERAGE_INCLUDE = (
+    "*/analysis/finite_size_scaling.py,*/analysis/phase_diagram.py"
+)
+FINITE_SIZE_SCALING_COVERAGE_COHORT = [
+    "tests/test_finite_size_scaling.py",
+    "tests/test_phase_diagram.py",
+    "tests/test_phase_diagram_branches.py",
+]
 FINITE_SIZE_SCALING_TYPING_RATCHET = [
     FINITE_SIZE_SCALING_SOURCE,
-    *FINITE_SIZE_SCALING_COVERAGE_COHORT,
+    PHASE_DIAGRAM_SOURCE,
+    "tests/test_finite_size_scaling.py",
+    "tests/test_phase_diagram.py",
     "tools/finite_size_scaling_quality_gates.py",
     "tests/test_finite_size_scaling_quality_gate.py",
 ]
@@ -46,8 +56,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *FINITE_SIZE_SCALING_DOCSTRING_RATCHET,
@@ -86,7 +97,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={FINITE_SIZE_SCALING_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/analysis/finite_size_scaling.py",
+                f"--include={FINITE_SIZE_SCALING_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -95,9 +106,11 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "FINITE_SIZE_SCALING_COVERAGE_COHORT",
     "FINITE_SIZE_SCALING_COVERAGE_DATA_FILE",
+    "FINITE_SIZE_SCALING_COVERAGE_INCLUDE",
     "FINITE_SIZE_SCALING_DOCSTRING_RATCHET",
     "FINITE_SIZE_SCALING_SOURCE",
     "FINITE_SIZE_SCALING_TYPING_RATCHET",
+    "PHASE_DIAGRAM_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

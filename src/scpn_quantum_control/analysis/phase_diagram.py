@@ -67,6 +67,25 @@ def critical_coupling_finite_graph(
     """Critical coupling for synchronization on finite graph.
 
     K_c = Δω / λ_2 where Δω = max(ω) - min(ω) and λ_2 is the Fiedler value.
+
+    Parameters
+    ----------
+    omega
+        Natural-frequency vector.
+    fiedler
+        Non-negative graph-Laplacian Fiedler value.
+
+    Returns
+    -------
+    float
+        Finite-graph critical coupling, zero for identical frequencies, or
+        infinity for a disconnected heterogeneous graph.
+
+    Raises
+    ------
+    ValueError
+        If ``fiedler`` is non-finite or negative.
+
     """
     if not np.isfinite(fiedler):
         raise ValueError("fiedler must be finite")
@@ -85,6 +104,17 @@ def critical_coupling_mean_field(omega: NDArray[np.float64]) -> float:
 
     Approximates g(0) from the empirical frequency distribution using
     kernel density estimation with Scott's bandwidth.
+
+    Parameters
+    ----------
+    omega
+        Natural-frequency samples.
+
+    Returns
+    -------
+    float
+        Empirical mean-field critical coupling, or zero for degenerate input.
+
     """
     n = len(omega)
     if n < 2:
@@ -106,6 +136,24 @@ def decoherence_temperature(t1: float, t2: float) -> float:
 
     Maps T1/T2 decoherence rates to an effective thermal noise scale.
     T_decoherence ~ ħ / (k_B · T2) in natural units → 1/T2.
+
+    Parameters
+    ----------
+    t1
+        Positive longitudinal coherence time or infinity.
+    t2
+        Positive transverse coherence time or infinity.
+
+    Returns
+    -------
+    float
+        Mean of the finite T1 and T2 decay rates.
+
+    Raises
+    ------
+    ValueError
+        If either coherence time is NaN or non-positive.
+
     """
     if np.isnan(t1):
         raise ValueError("t1 must be finite or infinite")
@@ -128,6 +176,26 @@ def effective_temperature(
     """Combine frequency disorder and decoherence into an effective temperature.
 
     T_eff = σ_ω (classical noise) + T_decoherence (quantum noise).
+
+    Parameters
+    ----------
+    omega
+        Natural-frequency vector.
+    t1
+        Positive longitudinal coherence time or infinity.
+    t2
+        Positive transverse coherence time or infinity.
+
+    Returns
+    -------
+    float
+        Sum of empirical frequency spread and decoherence contribution.
+
+    Raises
+    ------
+    ValueError
+        If either coherence time is NaN or non-positive.
+
     """
     t_classical = float(np.std(omega))
     t_quantum = decoherence_temperature(t1, t2)
@@ -142,6 +210,19 @@ def order_parameter_steady_state(
 
     R = sqrt(1 - K_c / K) for K > K_c, else R = 0.
     Mean-field result; Strogatz 2000.
+
+    Parameters
+    ----------
+    K_coupling
+        Evaluated coupling strength.
+    k_critical
+        Critical-coupling threshold.
+
+    Returns
+    -------
+    float
+        Bounded mean-field steady-state order parameter.
+
     """
     if K_coupling <= k_critical or k_critical <= 0:
         return 0.0
@@ -162,14 +243,29 @@ def compute_phase_diagram(
     Scans coupling strength K_base and decoherence time T2 to map
     the synchronization phase boundary.
 
-    Args:
-        K: coupling matrix (used for Fiedler value)
-        omega: natural frequencies
-        k_range: (min, max) coupling strength scan
-        n_k: number of coupling points
-        t2_range: (min, max) T2 decoherence time scan
-        n_t: number of temperature points
-        t1_factor: T1 = t1_factor × T2
+    Parameters
+    ----------
+    K
+        Coupling matrix used for the graph-Laplacian Fiedler value.
+    omega
+        Natural-frequency vector.
+    k_range
+        Lower and upper coupling-strength scan bounds.
+    n_k
+        Number of coupling points.
+    t2_range
+        Lower and upper T2 scan bounds.
+    n_t
+        Number of decoherence-temperature points.
+    t1_factor
+        Multiplier defining ``T1 = t1_factor * T2``.
+
+    Returns
+    -------
+    PhaseDiagramResult
+        Coupling/temperature grids, order map, critical curve, and bounded
+        classical, quantum, and BKT summaries.
+
     """
     fiedler = fiedler_eigenvalue(K)
     k_c_classical = critical_coupling_finite_graph(omega, fiedler)

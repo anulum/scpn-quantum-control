@@ -25,7 +25,10 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestCriticalCoupling:
-    def test_finite_graph_positive(self):
+    """Verify finite-graph and mean-field critical-coupling estimates."""
+
+    def test_finite_graph_positive(self) -> None:
+        """Return a positive threshold for the connected SCPN graph."""
         omega = OMEGA_N_16
         K = build_knm_paper27(L=16)
         from scpn_quantum_control.analysis.bkt_analysis import fiedler_eigenvalue
@@ -34,7 +37,8 @@ class TestCriticalCoupling:
         k_c = critical_coupling_finite_graph(omega, fiedler)
         assert k_c > 0
 
-    def test_finite_graph_scales_with_frequency_spread(self):
+    def test_finite_graph_scales_with_frequency_spread(self) -> None:
+        """Increase the finite-graph threshold with frequency spread."""
         fiedler = 1.0
         omega_narrow = np.array([1.0, 1.01, 1.02])
         omega_wide = np.array([0.5, 1.0, 1.5])
@@ -42,56 +46,70 @@ class TestCriticalCoupling:
         k_c_wide = critical_coupling_finite_graph(omega_wide, fiedler)
         assert k_c_wide > k_c_narrow
 
-    def test_finite_graph_inversely_scales_with_fiedler(self):
+    def test_finite_graph_inversely_scales_with_fiedler(self) -> None:
+        """Decrease the finite-graph threshold with connectivity."""
         omega = np.array([0.5, 1.0, 1.5])
         k_c_low = critical_coupling_finite_graph(omega, fiedler=0.5)
         k_c_high = critical_coupling_finite_graph(omega, fiedler=2.0)
         assert k_c_low > k_c_high
 
-    def test_disconnected_finite_graph_has_no_finite_synchronization_threshold(self):
+    def test_disconnected_finite_graph_has_no_finite_synchronization_threshold(
+        self,
+    ) -> None:
+        """Return an infinite threshold for disconnected heterogeneous input."""
         omega = np.array([0.5, 1.0, 1.5])
 
         k_c = critical_coupling_finite_graph(omega, fiedler=0.0)
 
         assert np.isinf(k_c)
 
-    def test_disconnected_identical_frequency_graph_has_zero_threshold(self):
+    def test_disconnected_identical_frequency_graph_has_zero_threshold(self) -> None:
+        """Return zero for identical frequencies before connectivity refusal."""
         omega = np.ones(4)
 
         k_c = critical_coupling_finite_graph(omega, fiedler=0.0)
 
         assert k_c == 0.0
 
-    def test_negative_fiedler_is_rejected(self):
+    def test_negative_fiedler_is_rejected(self) -> None:
+        """Reject an invalid negative Fiedler value."""
         omega = np.array([0.5, 1.0, 1.5])
 
         with pytest.raises(ValueError, match="fiedler must be non-negative"):
             critical_coupling_finite_graph(omega, fiedler=-1e-6)
 
-    def test_mean_field_positive(self):
+    def test_mean_field_positive(self) -> None:
+        """Return a positive empirical mean-field threshold."""
         k_c = critical_coupling_mean_field(OMEGA_N_16)
         assert k_c > 0
 
-    def test_mean_field_identical_frequencies(self):
+    def test_mean_field_identical_frequencies(self) -> None:
+        """Return zero for a degenerate empirical frequency distribution."""
         omega = np.ones(10)
         k_c = critical_coupling_mean_field(omega)
         assert k_c == 0.0
 
-    def test_mean_field_single_oscillator(self):
+    def test_mean_field_single_oscillator(self) -> None:
+        """Return zero when density estimation has one sample."""
         k_c = critical_coupling_mean_field(np.array([1.0]))
         assert k_c == 0.0
 
 
 class TestDecoherenceTemperature:
-    def test_infinite_t1_t2_zero_temperature(self):
+    """Verify bounded T1/T2-to-effective-temperature mapping."""
+
+    def test_infinite_t1_t2_zero_temperature(self) -> None:
+        """Map infinite coherence times to zero contribution."""
         t_dec = decoherence_temperature(np.inf, np.inf)
         assert t_dec == pytest.approx(0.0, abs=1e-10)
 
-    def test_finite_t2_positive_temperature(self):
+    def test_finite_t2_positive_temperature(self) -> None:
+        """Map finite coherence times to a positive contribution."""
         t_dec = decoherence_temperature(t1=200.0, t2=100.0)
         assert t_dec > 0
 
-    def test_shorter_t2_higher_temperature(self):
+    def test_shorter_t2_higher_temperature(self) -> None:
+        """Increase the contribution when T2 shortens."""
         t_long = decoherence_temperature(t1=200.0, t2=100.0)
         t_short = decoherence_temperature(t1=200.0, t2=10.0)
         assert t_short > t_long
@@ -105,18 +123,25 @@ class TestDecoherenceTemperature:
             (100.0, -1.0, "t2 must be positive"),
         ],
     )
-    def test_non_positive_decoherence_times_are_rejected(self, t1, t2, message):
+    def test_non_positive_decoherence_times_are_rejected(
+        self, t1: float, t2: float, message: str
+    ) -> None:
+        """Reject non-positive T1 and T2 inputs."""
         with pytest.raises(ValueError, match=message):
             decoherence_temperature(t1, t2)
 
 
 class TestEffectiveTemperature:
-    def test_classical_only(self):
+    """Verify classical and decoherence temperature composition."""
+
+    def test_classical_only(self) -> None:
+        """Use frequency spread when coherence times are infinite."""
         omega = np.array([0.5, 1.0, 1.5])
         t_eff = effective_temperature(omega)
         assert t_eff == pytest.approx(np.std(omega), abs=1e-10)
 
-    def test_decoherence_increases_temperature(self):
+    def test_decoherence_increases_temperature(self) -> None:
+        """Increase effective temperature with finite coherence times."""
         omega = OMEGA_N_16
         t_classical = effective_temperature(omega)
         t_quantum = effective_temperature(omega, t1=200.0, t2=100.0)
@@ -124,43 +149,54 @@ class TestEffectiveTemperature:
 
 
 class TestOrderParameter:
-    def test_below_critical_zero(self):
+    """Verify the bounded mean-field steady-state order parameter."""
+
+    def test_below_critical_zero(self) -> None:
+        """Return zero below the critical coupling."""
         R = order_parameter_steady_state(K_coupling=0.5, k_critical=1.0)
         assert R == 0.0
 
-    def test_at_critical_zero(self):
+    def test_at_critical_zero(self) -> None:
+        """Return zero exactly at the critical coupling."""
         R = order_parameter_steady_state(K_coupling=1.0, k_critical=1.0)
         assert R == 0.0
 
-    def test_above_critical_positive(self):
+    def test_above_critical_positive(self) -> None:
+        """Return a positive order parameter above threshold."""
         R = order_parameter_steady_state(K_coupling=2.0, k_critical=1.0)
         assert R > 0
 
-    def test_far_above_critical_near_one(self):
+    def test_far_above_critical_near_one(self) -> None:
+        """Approach unit order far above threshold."""
         R = order_parameter_steady_state(K_coupling=100.0, k_critical=1.0)
         assert R > 0.9
 
-    def test_mean_field_formula(self):
+    def test_mean_field_formula(self) -> None:
         """R = sqrt(1 - K_c/K) for K > K_c."""
         K, K_c = 4.0, 1.0
         R = order_parameter_steady_state(K, K_c)
         expected = np.sqrt(1.0 - K_c / K)
         assert pytest.approx(expected, abs=1e-12) == R
 
-    def test_bounded_zero_one(self):
+    def test_bounded_zero_one(self) -> None:
+        """Keep the scan within the closed unit interval."""
         for k in np.linspace(0.1, 10.0, 20):
             R = order_parameter_steady_state(k, k_critical=1.0)
             assert 0 <= R <= 1.0
 
 
 class TestComputePhaseDiagram:
-    def test_returns_result(self):
+    """Verify the full finite-graph phase-boundary scan."""
+
+    def test_returns_result(self) -> None:
+        """Return the typed phase-diagram result envelope."""
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
         result = compute_phase_diagram(K, omega, n_k=10, n_t=8)
         assert isinstance(result, PhaseDiagramResult)
 
-    def test_shapes(self):
+    def test_shapes(self) -> None:
+        """Align every output with the coupling and temperature grids."""
         n_k, n_t = 15, 12
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
@@ -170,27 +206,29 @@ class TestComputePhaseDiagram:
         assert result.order_parameter.shape == (n_k, n_t)
         assert result.k_critical_curve.shape == (n_t,)
 
-    def test_order_parameter_bounded(self):
+    def test_order_parameter_bounded(self) -> None:
+        """Keep the phase-map order parameter within unit bounds."""
         K = build_knm_paper27(L=8)
         omega = OMEGA_N_16[:8]
         result = compute_phase_diagram(K, omega, n_k=10, n_t=8)
         assert np.all(result.order_parameter >= 0)
         assert np.all(result.order_parameter <= 1)
 
-    def test_bkt_temperature_positive(self):
+    def test_bkt_temperature_positive(self) -> None:
+        """Return a positive connected BKT temperature estimate."""
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16
         result = compute_phase_diagram(K, omega, n_k=10, n_t=8)
         assert result.bkt_temperature > 0
 
-    def test_quantum_kc_exceeds_classical(self):
+    def test_quantum_kc_exceeds_classical(self) -> None:
         """Decoherence increases critical coupling."""
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16
         result = compute_phase_diagram(K, omega, n_k=10, n_t=8)
         assert result.quantum_k_c >= result.classical_k_c
 
-    def test_scpn_default_phase_diagram(self):
+    def test_scpn_default_phase_diagram(self) -> None:
         """Record actual SCPN phase diagram values — this is the finding."""
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16
