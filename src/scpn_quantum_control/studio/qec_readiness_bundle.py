@@ -88,6 +88,7 @@ def _load_readiness(artifact_path: Path) -> dict[str, Any]:
     ValueError
         If the artefact is missing its decoder aggregates, its code distance,
         its readiness decision, or its blocked-claims honesty list.
+
     """
     resolved = artifact_path if artifact_path.is_absolute() else REPO_ROOT / artifact_path
     payload: dict[str, Any] = json.loads(resolved.read_text(encoding="utf-8"))
@@ -138,6 +139,7 @@ def build_qec_readiness_bundle(
     ------
     ValueError
         If the artefact fails its shape check.
+
     """
     payload = _load_readiness(artifact_path)
     aggregates: list[dict[str, Any]] = payload["decoder_aggregates"]
@@ -206,6 +208,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     int
         ``0`` when the bundle is admitted by the federation gate, ``1``
         otherwise.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

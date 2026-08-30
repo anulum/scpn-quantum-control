@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1292
+    "test_files": 1293
   },
   "documentation": {
     "examples": [
@@ -9277,6 +9277,7 @@
       "tests/test_studio_program_ad_quality_gate.py",
       "tests/test_studio_program_ad_replay_artifact.py",
       "tests/test_studio_qec_readiness_bundle.py",
+      "tests/test_studio_qec_readiness_bundle_quality_gate.py",
       "tests/test_studio_qpu_result_pack.py",
       "tests/test_studio_readout_mitigation_bundle.py",
       "tests/test_studio_recompute_kernel.py",
