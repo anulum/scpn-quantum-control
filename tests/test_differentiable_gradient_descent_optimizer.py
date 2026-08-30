@@ -36,13 +36,11 @@ def _assert_allclose(
     atol: float = 0.0,
 ) -> None:
     """Assert NumPy-close equality while preserving strict test typing."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_facade_and_package_root_reuse_extracted_gradient_descent_optimizer() -> None:
     """Facade and package-root exports should reuse the extracted optimizer."""
-
     assert (
         differentiable_module.DifferentiableOptimizer
         is gradient_descent_module.DifferentiableOptimizer
@@ -52,14 +50,12 @@ def test_facade_and_package_root_reuse_extracted_gradient_descent_optimizer() ->
 
 def test_gradient_descent_rejects_negative_learning_rate() -> None:
     """Gradient-descent step sizes must be non-negative real scalars."""
-
     with pytest.raises(ValueError, match="learning_rate"):
         DifferentiableOptimizer(learning_rate=-0.1)
 
 
 def test_gradient_descent_step_respects_trainable_mask() -> None:
     """Native optimizer step should update only trainable parameters."""
-
     result = GradientResult(
         value=1.0,
         gradient=np.array([2.0, 0.0]),
@@ -79,7 +75,6 @@ def test_gradient_descent_step_respects_trainable_mask() -> None:
 
 def test_gradient_descent_step_rejects_inconsistent_metadata() -> None:
     """Optimizer steps must fail closed when gradient metadata is inconsistent."""
-
     result = GradientResult(
         value=1.0,
         gradient=np.array([2.0]),
@@ -102,7 +97,6 @@ def test_gradient_descent_step_rejects_inconsistent_metadata() -> None:
 
 def test_gradient_descent_step_projects_box_bounds() -> None:
     """Optimizer updates should respect explicit parameter box constraints."""
-
     result = GradientResult(
         value=1.0,
         gradient=np.array([10.0, -10.0]),
@@ -126,7 +120,6 @@ def test_gradient_descent_step_projects_box_bounds() -> None:
 
 def test_gradient_descent_step_wraps_periodic_bounds() -> None:
     """Periodic quantum-angle domains should wrap instead of clip."""
-
     result = GradientResult(
         value=1.0,
         gradient=np.array([-4.0 * math.pi]),
@@ -150,7 +143,6 @@ def test_gradient_descent_step_wraps_periodic_bounds() -> None:
 
 def test_gradient_descent_step_clips_trainable_gradient_norm() -> None:
     """Optimizer steps should optionally clip trainable gradient norm."""
-
     result = GradientResult(
         value=1.0,
         gradient=np.array([3.0, 4.0, 0.0]),
@@ -170,7 +162,6 @@ def test_gradient_descent_step_clips_trainable_gradient_norm() -> None:
 
 def test_parameter_bounds_reject_invalid_intervals() -> None:
     """Box constraints must be explicit finite ordered real intervals."""
-
     with pytest.raises(ValueError, match="lower bound must be a real numeric scalar"):
         ParameterBounds(lower=cast(Any, "0.0"))
     with pytest.raises(ValueError, match="less than or equal"):
@@ -185,7 +176,6 @@ def test_parameter_bounds_reject_invalid_intervals() -> None:
 
 def test_optimizer_minimize_converges_for_shift_compatible_quadratic() -> None:
     """Bounded optimizer should return convergence metadata and final values."""
-
     optimizer = DifferentiableOptimizer(learning_rate=0.25)
     result = optimizer.minimize(
         lambda values: 1.0 - math.cos(values[0]),
@@ -206,7 +196,6 @@ def test_optimizer_minimize_converges_for_shift_compatible_quadratic() -> None:
 
 def test_optimizer_minimize_respects_frozen_parameters() -> None:
     """Non-trainable parameters must not move during multi-step optimization."""
-
     optimizer = DifferentiableOptimizer(learning_rate=0.2)
     result = optimizer.minimize(
         lambda values: 1.0 - math.cos(values[0]) + 1.0 - math.cos(values[1]),
@@ -221,7 +210,6 @@ def test_optimizer_minimize_respects_frozen_parameters() -> None:
 
 def test_optimizer_minimize_supports_finite_difference_backend() -> None:
     """Optimizer should support smooth non-parameter-shift objectives explicitly."""
-
     optimizer = DifferentiableOptimizer(learning_rate=0.2)
     result = optimizer.minimize(
         lambda values: values[0] ** 2,
@@ -239,7 +227,6 @@ def test_optimizer_minimize_supports_finite_difference_backend() -> None:
 
 def test_optimizer_minimize_projects_initial_and_updated_bounds() -> None:
     """Bounded minimize should project initial values and subsequent steps."""
-
     optimizer = DifferentiableOptimizer(learning_rate=0.5)
     result = optimizer.minimize(
         lambda values: values[0] ** 2,
@@ -256,7 +243,6 @@ def test_optimizer_minimize_projects_initial_and_updated_bounds() -> None:
 
 def test_optimizer_minimize_wraps_initial_periodic_bounds() -> None:
     """Periodic bounds should canonicalize initial angles before evaluation."""
-
     optimizer = DifferentiableOptimizer(learning_rate=0.1)
     result = optimizer.minimize(
         lambda values: 1.0 - math.cos(values[0]),
@@ -271,7 +257,6 @@ def test_optimizer_minimize_wraps_initial_periodic_bounds() -> None:
 
 def test_optimizer_minimize_accepts_gradient_clipping() -> None:
     """Bounded optimizer should route clipping through multi-step minimization."""
-
     optimizer = DifferentiableOptimizer(learning_rate=1.0)
     result = optimizer.minimize(
         lambda values: values[0] ** 2,
@@ -287,7 +272,6 @@ def test_optimizer_minimize_accepts_gradient_clipping() -> None:
 
 def test_optimizer_minimize_stops_on_value_tolerance() -> None:
     """Value-tolerance convergence should stop after a small objective change."""
-
     optimizer = DifferentiableOptimizer(learning_rate=0.01)
     result = optimizer.minimize(
         lambda values: 1.0 - math.cos(values[0]),
@@ -304,7 +288,6 @@ def test_optimizer_minimize_stops_on_value_tolerance() -> None:
 
 def test_optimizer_result_tracks_best_iterate_when_final_worsens() -> None:
     """OptimizationResult should preserve the best observed iterate."""
-
     gradient = GradientResult(
         value=3.0,
         gradient=np.array([1.0]),
@@ -333,7 +316,6 @@ def test_optimizer_result_tracks_best_iterate_when_final_worsens() -> None:
 
 def test_optimizer_result_rejects_inconsistent_best_value() -> None:
     """Best-iterate provenance must agree with the reported value history."""
-
     gradient = GradientResult(
         value=1.0,
         gradient=np.array([1.0]),
@@ -360,7 +342,6 @@ def test_optimizer_result_rejects_inconsistent_best_value() -> None:
 
 def test_optimizer_minimize_rejects_invalid_loop_controls() -> None:
     """Optimizer loop controls must fail closed before objective evaluation."""
-
     optimizer = DifferentiableOptimizer(learning_rate=0.1)
     with pytest.raises(ValueError, match="gradient_method"):
         optimizer.minimize(lambda values: math.sin(values[0]), [0.1], gradient_method="bogus")
@@ -397,7 +378,6 @@ def test_optimizer_minimize_rejects_invalid_loop_controls() -> None:
 
 def test_gradient_result_rejects_malformed_metadata() -> None:
     """Gradient provenance should not allow silently inconsistent payloads."""
-
     with pytest.raises(ValueError, match="parameter_names"):
         GradientResult(
             value=1.0,

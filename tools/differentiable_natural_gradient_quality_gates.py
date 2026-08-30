@@ -15,8 +15,10 @@ Gate = tuple[str, list[str]]
 
 NATURAL_GRADIENT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/differentiable_natural_gradient.py",
+    "src/scpn_quantum_control/differentiable_gradient_descent.py",
     "tests/test_differentiable_natural_gradient.py",
     "tests/test_differentiable_natural_gradient_line_search.py",
+    "tests/test_differentiable_gradient_descent_optimizer.py",
     "tools/differentiable_natural_gradient_quality_gates.py",
     "tools/differentiable_quality_gates.py",
 ]
@@ -25,6 +27,7 @@ NATURAL_GRADIENT_QUALITY_RATCHET = [
 NATURAL_GRADIENT_COVERAGE_COHORT = [
     "tests/test_differentiable_natural_gradient.py",
     "tests/test_differentiable_natural_gradient_line_search.py",
+    "tests/test_differentiable_gradient_descent_optimizer.py",
 ]
 """Tests that own exact natural-gradient statement and branch coverage."""
 
@@ -118,7 +121,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={NATURAL_GRADIENT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/differentiable_natural_gradient.py",
+                "--include=*/differentiable_natural_gradient.py,*/differentiable_gradient_descent.py",
             ],
         ),
     ]

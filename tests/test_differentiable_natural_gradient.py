@@ -53,7 +53,13 @@ def test_natural_gradient_quality_gate_spec_is_exact_and_focused() -> None:
     coverage_gates = natural_quality_gates.build_coverage_gates("python")
     assert "--branch" in coverage_gates[0][1]
     assert "--fail-under=100" in coverage_gates[1][1]
-    assert "--include=*/differentiable_natural_gradient.py" in coverage_gates[1][1]
+    assert (
+        "--include=*/differentiable_natural_gradient.py,*/differentiable_gradient_descent.py"
+        in coverage_gates[1][1]
+    )
+    assert coverage_gates[0][1][
+        -len(natural_quality_gates.NATURAL_GRADIENT_COVERAGE_COHORT) :
+    ] == (natural_quality_gates.NATURAL_GRADIENT_COVERAGE_COHORT)
 
 
 def _assert_allclose(

@@ -385,8 +385,10 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/differentiable_natural_gradient.py
+          src/scpn_quantum_control/differentiable_gradient_descent.py
           tests/test_differentiable_natural_gradient.py
           tests/test_differentiable_natural_gradient_line_search.py
+          tests/test_differentiable_gradient_descent_optimizer.py
           tools/differentiable_natural_gradient_quality_gates.py
           tools/differentiable_quality_gates.py
       - name: Ruff NumPy docstrings for differentiable natural-gradient quality cohort
@@ -394,8 +396,10 @@ jobs:
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/differentiable_natural_gradient.py
+          src/scpn_quantum_control/differentiable_gradient_descent.py
           tests/test_differentiable_natural_gradient.py
           tests/test_differentiable_natural_gradient_line_search.py
+          tests/test_differentiable_gradient_descent_optimizer.py
           tools/differentiable_natural_gradient_quality_gates.py
           tools/differentiable_quality_gates.py
       - name: Type-check Program-AD array-indexing quality cohort
@@ -5711,6 +5715,7 @@ jobs:
           -m pytest -q
           tests/test_differentiable_natural_gradient.py
           tests/test_differentiable_natural_gradient_line_search.py
+          tests/test_differentiable_gradient_descent_optimizer.py
       - name: Enforce differentiable natural-gradient exact coverage
         run: >-
           python -m coverage report
@@ -5718,7 +5723,7 @@ jobs:
           --data-file=.coverage.natural-gradient-quality
           --precision=2
           --fail-under=100
-          --include=*/differentiable_natural_gradient.py
+          --include=*/differentiable_natural_gradient.py,*/differentiable_gradient_descent.py
       - name: Run Program-AD array-indexing focused coverage
         run: >-
           python -m coverage run

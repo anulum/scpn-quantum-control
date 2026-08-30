@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Complete native gradient-descent optimizer NumPy documentation and extend
+  the natural-gradient quality owner across the differentiable optimizer
+  baseline with strict typing, real bounded/finite-difference/parameter-shift
+  execution, and exact joint line/branch coverage.
+
 - Complete differentiable stochastic-estimator NumPy documentation and extend
   the stochastic-estimators product owner with strict typing, real SPSA,
   score-function, and shot-allocation execution, plus exact joint line/branch
