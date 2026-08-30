@@ -33,8 +33,26 @@ class QAOA_MPC:
         target_state: NDArray[np.float64],
         horizon: int,
         p_layers: int = 2,
-    ):
-        """Set up MPC: B_matrix maps actions to state, horizon = number of binary timesteps."""
+    ) -> None:
+        """Initialize the binary model-predictive controller.
+
+        Parameters
+        ----------
+        B_matrix
+            Linear map from binary actions to the controlled state.
+        target_state
+            State vector used to construct the quadratic tracking cost.
+        horizon
+            Positive number of binary control timesteps and circuit qubits.
+        p_layers
+            Positive number of alternating QAOA cost and mixer layers.
+
+        Raises
+        ------
+        ValueError
+            If ``horizon`` or ``p_layers`` is not positive.
+
+        """
         if horizon <= 0:
             raise ValueError(f"horizon must be positive, got {horizon}")
         if p_layers <= 0:
@@ -53,6 +71,12 @@ class QAOA_MPC:
         Expanding with u_t^2=u_t and u_t=(1-Z_t)/2:
             C = const + h_z * sum_t Z_t
         where h_z = -(a^2 - 2ab)/2.  No ZZ terms (timesteps are independent).
+
+        Returns
+        -------
+        qiskit.quantum_info.SparsePauliOp
+            Diagonal identity-and-Z cost Hamiltonian for the control horizon.
+
         """
         a = float(np.linalg.norm(self.B))
         b = float(np.linalg.norm(self.target)) / self.horizon
@@ -72,7 +96,26 @@ class QAOA_MPC:
     def _build_qaoa_circuit(
         self, gamma: NDArray[np.float64], beta: NDArray[np.float64]
     ) -> QuantumCircuit:
-        """Build p-layer QAOA circuit: initial |+>, alternating cost/mixer."""
+        """Build the layered QAOA circuit for supplied variational angles.
+
+        Parameters
+        ----------
+        gamma
+            Cost-unitary angles, one per QAOA layer.
+        beta
+            Mixer angles, one per QAOA layer.
+
+        Returns
+        -------
+        qiskit.QuantumCircuit
+            Initial plus state followed by alternating cost and mixer gates.
+
+        Raises
+        ------
+        RuntimeError
+            If lazy cost-Hamiltonian construction does not produce an operator.
+
+        """
         if self._cost_ham is None:
             self.build_cost_hamiltonian()
         if self._cost_ham is None:
@@ -91,10 +134,6 @@ class QAOA_MPC:
 
                 if len(z_qubits) == 1:
                     qc.rz(angle, z_qubits[0])
-                elif len(z_qubits) == 2:
-                    qc.cx(z_qubits[0], z_qubits[1])
-                    qc.rz(angle, z_qubits[1])
-                    qc.cx(z_qubits[0], z_qubits[1])
 
             # Mixer unitary: exp(-i*beta*X)
             for q in range(self.n_qubits):
@@ -105,9 +144,16 @@ class QAOA_MPC:
     def optimize(self, seed: int | None = None) -> NDArray[np.int64]:
         """Run QAOA optimization, return binary action sequence.
 
+        Parameters
+        ----------
+        seed
+            Optional seed for the variational parameter initialization.
+
         Returns
         -------
-            shape (horizon,) array of 0/1 actions.
+        numpy.ndarray
+            Integer array of zero/one actions shaped ``(horizon,)``.
+
         """
         if self._cost_ham is None:
             self.build_cost_hamiltonian()

@@ -4432,8 +4432,11 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/control_stack_compose_product.py
           src/scpn_quantum_control/control_stack_runtime_adapters.py
+          src/scpn_quantum_control/control/qaoa_mpc.py
           tests/test_control_stack_compose_product.py
           tests/test_control_stack_runtime_adapters.py
+          tests/test_qaoa_mpc.py
+          tests/test_qaoa_mpc_branches.py
           tools/control_stack_compose_product_quality_gates.py
           tests/test_control_stack_compose_product_quality_gate.py
       - name: Ruff NumPy docstrings for control-stack compose quality cohort
@@ -4442,27 +4445,32 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/control_stack_compose_product.py
           src/scpn_quantum_control/control_stack_runtime_adapters.py
+          src/scpn_quantum_control/control/qaoa_mpc.py
           tests/test_control_stack_compose_product.py
           tests/test_control_stack_runtime_adapters.py
+          tests/test_qaoa_mpc.py
+          tests/test_qaoa_mpc_branches.py
           tools/control_stack_compose_product_quality_gates.py
           tests/test_control_stack_compose_product_quality_gate.py
       - name: Run control-stack compose focused coverage
         run: >-
           python -m coverage run
           --rcfile=/dev/null
-          --data-file=.coverage.control-stack-compose-quality
+          --data-file=/tmp/scpn-qc-control-stack-compose-quality.coverage
           --branch
           -m pytest -q
           tests/test_control_stack_compose_product.py
           tests/test_control_stack_runtime_adapters.py
+          tests/test_qaoa_mpc.py
+          tests/test_qaoa_mpc_branches.py
       - name: Enforce control-stack compose exact coverage
         run: >-
           python -m coverage report
           --rcfile=/dev/null
-          --data-file=.coverage.control-stack-compose-quality
+          --data-file=/tmp/scpn-qc-control-stack-compose-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/control_stack_compose_product.py,*/control_stack_runtime_adapters.py
+          --include=*/control_stack_compose_product.py,*/control_stack_runtime_adapters.py,*/control/qaoa_mpc.py
 
   public-api-stability-quality:
     needs: lint

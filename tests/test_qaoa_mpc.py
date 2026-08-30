@@ -14,7 +14,8 @@ from scpn_quantum_control.control.qaoa_mpc import QAOA_MPC
 from scpn_quantum_control.hardware.classical import classical_brute_mpc
 
 
-def test_build_cost_hamiltonian():
+def test_build_cost_hamiltonian() -> None:
+    """Build one cost-Hamiltonian qubit per control timestep."""
     B = np.array([[1.0, 0.0], [0.0, 1.0]])
     target = np.array([0.5, 0.5])
     mpc = QAOA_MPC(B, target, horizon=3, p_layers=1)
@@ -22,7 +23,8 @@ def test_build_cost_hamiltonian():
     assert H.num_qubits == 3
 
 
-def test_optimize_returns_binary():
+def test_optimize_returns_binary() -> None:
+    """Return a horizon-shaped binary action sequence."""
     B = np.array([[1.0]])
     target = np.array([1.0])
     mpc = QAOA_MPC(B, target, horizon=4, p_layers=1)
@@ -31,7 +33,8 @@ def test_optimize_returns_binary():
     assert set(np.unique(actions)).issubset({0, 1})
 
 
-def test_cost_hamiltonian_hermitian():
+def test_cost_hamiltonian_hermitian() -> None:
+    """Construct a Hermitian diagonal cost Hamiltonian."""
     B = np.eye(2)
     target = np.array([1.0, 0.0])
     mpc = QAOA_MPC(B, target, horizon=3, p_layers=1)
@@ -40,7 +43,7 @@ def test_cost_hamiltonian_hermitian():
     np.testing.assert_allclose(mat, mat.conj().T, atol=1e-12)
 
 
-def test_hamiltonian_matches_classical_cost():
+def test_hamiltonian_matches_classical_cost() -> None:
     """QAOA Hamiltonian diagonal must match classical_brute_mpc cost on each bitstring."""
     B = np.eye(2)
     target = np.array([0.8, 0.6])
@@ -61,7 +64,7 @@ def test_hamiltonian_matches_classical_cost():
         )
 
 
-def test_optimal_bitstring_matches_brute_force():
+def test_optimal_bitstring_matches_brute_force() -> None:
     """QAOA Hamiltonian minimum eigenvalue must correspond to brute-force optimal."""
     B = np.eye(2)
     target = np.array([0.8, 0.6])
@@ -78,17 +81,17 @@ def test_optimal_bitstring_matches_brute_force():
     np.testing.assert_array_equal(qaoa_min_actions, brute["optimal_actions"])
 
 
-def test_optimize_before_build_raises():
+def test_optimize_before_build_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     """RuntimeError fires when auto-build is sabotaged."""
     B = np.array([[1.0]])
     target = np.array([1.0])
     mpc = QAOA_MPC(B, target, horizon=2, p_layers=1)
-    mpc.build_cost_hamiltonian = lambda: None  # break auto-build
+    monkeypatch.setattr(mpc, "build_cost_hamiltonian", lambda: None)
     with pytest.raises(RuntimeError, match="cost Hamiltonian construction failed"):
         mpc.optimize()
 
 
-def test_optimize_seeded_deterministic():
+def test_optimize_seeded_deterministic() -> None:
     """Seeded optimize produces identical action sequences."""
     B = np.array([[1.0]])
     target = np.array([1.0])
@@ -99,7 +102,8 @@ def test_optimize_seeded_deterministic():
     np.testing.assert_array_equal(r1, r2)
 
 
-def test_qaoa_mpc_basic():
+def test_qaoa_mpc_basic() -> None:
+    """Optimize a two-step controller with a deterministic seed."""
     B = np.eye(2, dtype=np.float64)
     target = np.array([1.0, 0.0])
     mpc = QAOA_MPC(B, target, horizon=2, p_layers=1)
@@ -107,7 +111,8 @@ def test_qaoa_mpc_basic():
     assert len(result) == 2
 
 
-def test_qaoa_mpc_3d():
+def test_qaoa_mpc_3d() -> None:
+    """Optimize a three-step controller for a three-dimensional target."""
     B = np.eye(3, dtype=np.float64)
     target = np.ones(3)
     mpc = QAOA_MPC(B, target, horizon=3, p_layers=1)
@@ -115,7 +120,8 @@ def test_qaoa_mpc_3d():
     assert len(result) == 3
 
 
-def test_qaoa_mpc_result_binary():
+def test_qaoa_mpc_result_binary() -> None:
+    """Represent every optimized action as an integer binary value."""
     B = np.eye(2, dtype=np.float64)
     target = np.array([1.0, 0.0])
     mpc = QAOA_MPC(B, target, horizon=4, p_layers=1)
@@ -124,9 +130,32 @@ def test_qaoa_mpc_result_binary():
         assert a in (0, 1) or isinstance(a, (int, np.integer))
 
 
-def test_qaoa_mpc_horizon_1():
+def test_qaoa_mpc_horizon_1() -> None:
+    """Support the minimum positive control horizon."""
     B = np.array([[1.0]])
     target = np.array([1.0])
     mpc = QAOA_MPC(B, target, horizon=1, p_layers=1)
     result = mpc.optimize(seed=42)
     assert len(result) == 1
+
+
+@pytest.mark.parametrize("horizon", [0, -3])
+def test_rejects_non_positive_horizon(horizon: int) -> None:
+    """Reject zero and negative control horizons."""
+    with pytest.raises(ValueError, match="horizon must be positive"):
+        QAOA_MPC(np.eye(2), np.ones(2), horizon=horizon)
+
+
+def test_rejects_non_positive_layer_count() -> None:
+    """Reject a controller without a QAOA layer."""
+    with pytest.raises(ValueError, match="p_layers must be positive"):
+        QAOA_MPC(np.eye(2), np.ones(2), horizon=2, p_layers=0)
+
+
+def test_optimize_reuses_prebuilt_cost_hamiltonian() -> None:
+    """Optimize through the public API with an already built cost operator."""
+    mpc = QAOA_MPC(np.array([[1.0]]), np.array([1.0]), horizon=1, p_layers=1)
+    expected = mpc.build_cost_hamiltonian()
+    result = mpc.optimize(seed=42)
+    assert mpc._cost_ham is expected
+    assert result.shape == (1,)

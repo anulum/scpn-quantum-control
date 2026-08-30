@@ -39,10 +39,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
         quality_gates.CONTROL_STACK_COMPOSE_COVERAGE_COHORT
     )
     assert "--fail-under=100" in report
-    assert (
-        "--include=*/control_stack_compose_product.py,*/control_stack_runtime_adapters.py"
-        in report
-    )
+    assert f"--include={quality_gates.CONTROL_STACK_COMPOSE_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_the_helper_defined_gates() -> None:
@@ -64,7 +61,5 @@ def test_ci_runs_and_aggregates_the_product_gate() -> None:
         assert path in block
     assert "--fail-under=100" in block
     assert "tests/test_control_stack_runtime_adapters.py" in block
-    assert (
-        "--include=*/control_stack_compose_product.py,*/control_stack_runtime_adapters.py" in block
-    )
+    assert quality_gates.CONTROL_STACK_COMPOSE_COVERAGE_INCLUDE in block
     assert "control-stack-compose-quality" in workflow[workflow.index("  ci-gate:") :]

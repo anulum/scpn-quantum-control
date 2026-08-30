@@ -16,8 +16,11 @@ Gate = tuple[str, list[str]]
 CONTROL_STACK_COMPOSE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/control_stack_compose_product.py",
     "src/scpn_quantum_control/control_stack_runtime_adapters.py",
+    "src/scpn_quantum_control/control/qaoa_mpc.py",
     "tests/test_control_stack_compose_product.py",
     "tests/test_control_stack_runtime_adapters.py",
+    "tests/test_qaoa_mpc.py",
+    "tests/test_qaoa_mpc_branches.py",
     "tools/control_stack_compose_product_quality_gates.py",
     "tests/test_control_stack_compose_product_quality_gate.py",
 ]
@@ -26,11 +29,17 @@ CONTROL_STACK_COMPOSE_QUALITY_RATCHET = [
 CONTROL_STACK_COMPOSE_COVERAGE_COHORT = [
     "tests/test_control_stack_compose_product.py",
     "tests/test_control_stack_runtime_adapters.py",
+    "tests/test_qaoa_mpc.py",
+    "tests/test_qaoa_mpc_branches.py",
 ]
 """Tests that own exact control-stack compose product coverage."""
 
-CONTROL_STACK_COMPOSE_COVERAGE_DATA_FILE = ".coverage.control-stack-compose-quality"
+CONTROL_STACK_COMPOSE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-control-stack-compose-quality.coverage"  # nosec B108
 """Isolated coverage database for the control-stack compose owner."""
+CONTROL_STACK_COMPOSE_COVERAGE_INCLUDE = (
+    "*/control_stack_compose_product.py,*/control_stack_runtime_adapters.py,*/control/qaoa_mpc.py"
+)
+"""Production sources enforced at exact branch coverage."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -119,7 +128,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={CONTROL_STACK_COMPOSE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/control_stack_compose_product.py,*/control_stack_runtime_adapters.py",
+                f"--include={CONTROL_STACK_COMPOSE_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -128,6 +137,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "CONTROL_STACK_COMPOSE_COVERAGE_COHORT",
     "CONTROL_STACK_COMPOSE_COVERAGE_DATA_FILE",
+    "CONTROL_STACK_COMPOSE_COVERAGE_INCLUDE",
     "CONTROL_STACK_COMPOSE_QUALITY_RATCHET",
     "build_coverage_gates",
     "build_static_quality_gates",
