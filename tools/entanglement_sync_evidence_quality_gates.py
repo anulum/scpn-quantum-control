@@ -13,11 +13,18 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 
+ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_INCLUDE = (
+    "*/entanglement_sync_evidence.py,*/entanglement_enhanced_sync.py,"
+    "*/sync_entanglement_witness.py"
+)
+
 ENTANGLEMENT_SYNC_EVIDENCE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/analysis/entanglement_sync_evidence.py",
     "src/scpn_quantum_control/analysis/entanglement_enhanced_sync.py",
+    "src/scpn_quantum_control/analysis/sync_entanglement_witness.py",
     "tests/test_entanglement_sync_evidence.py",
     "tests/test_entanglement_enhanced_sync.py",
+    "tests/test_sync_entanglement_witness.py",
     "scripts/run_entanglement_sync_evidence.py",
     "src/scpn_quantum_control/analysis/quantum_speed_limit.py",
     "src/scpn_quantum_control/advantage_language_protocol.py",
@@ -30,6 +37,9 @@ ENTANGLEMENT_SYNC_EVIDENCE_QUALITY_RATCHET = [
 ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_COHORT = [
     "tests/test_entanglement_sync_evidence.py",
     "tests/test_entanglement_enhanced_sync.py",
+    "tests/test_sync_entanglement_witness.py",
+    "tests/test_analysis_entanglement_sync_contracts.py",
+    "tests/test_phase_dynamics_contracts.py",
 ]
 """Tests that own exact entanglement-sync evidence coverage."""
 
@@ -102,7 +112,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/entanglement_sync_evidence.py,*/entanglement_enhanced_sync.py",
+                f"--include={ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -111,6 +121,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_COHORT",
     "ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_DATA_FILE",
+    "ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_INCLUDE",
     "ENTANGLEMENT_SYNC_EVIDENCE_QUALITY_RATCHET",
     "build_coverage_gates",
     "build_static_quality_gates",

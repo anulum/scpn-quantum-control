@@ -35,7 +35,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/entanglement_sync_evidence.py,*/entanglement_enhanced_sync.py" in report
+    assert f"--include={quality_gates.ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -58,6 +58,5 @@ def test_ci_runs_and_aggregates_evidence_gate() -> None:
     for path in quality_gates.ENTANGLEMENT_SYNC_EVIDENCE_QUALITY_RATCHET:
         assert path in block
     assert "--fail-under=100" in block
-    assert "entanglement_enhanced_sync.py" in block
-    assert "tests/test_entanglement_enhanced_sync.py" in block
+    assert quality_gates.ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_INCLUDE in block
     assert "entanglement-sync-evidence-quality" in workflow[workflow.index("  ci-gate:") :]

@@ -47,6 +47,7 @@ References
     Galve et al., Sci. Rep. 3 (2013): synchronization → entanglement.
     Nature Comms 2025 (transmon): synchronised qubits are entangled.
     Gühne & Tóth, Physics Reports 474 (2009): entanglement witnesses.
+
 """
 
 from __future__ import annotations
@@ -65,7 +66,24 @@ from ..hardware.classical import classical_exact_diag
 
 @dataclass
 class EntanglementWitnessResult:
-    """Result of R-based entanglement detection."""
+    """Result of R-based entanglement detection.
+
+    Attributes
+    ----------
+    R_measured
+        Order parameter measured for the evaluated state.
+    R_sep_max
+        Sampled separable-state bound at the same energy.
+    is_entangled
+        Whether the measured value exceeds the separable bound.
+    entanglement_depth
+        Certified depth lower bound: one without certification, two otherwise.
+    n_qubits
+        Number of evaluated qubits.
+    energy
+        Ground-state energy used for the constrained bound.
+
+    """
 
     R_measured: float
     R_sep_max: float
@@ -88,6 +106,17 @@ def R_separable_bound(n_qubits: int) -> float:
     This is achieved by the state ⊗_i |+⟩.
 
     For MIXED separable states, R_sep_max = 1 (convex hull of product states).
+
+    Parameters
+    ----------
+    n_qubits
+        Number of qubits in the separable state.
+
+    Returns
+    -------
+    float
+        Dimension-independent unconstrained separable bound of one.
+
     """
     return 1.0
 
@@ -106,6 +135,27 @@ def R_separable_bound_at_energy(
     This is the energy-constrained separable bound. At a given energy,
     entangled states can achieve higher R than any product state.
     Computed via random sampling of product state parameters.
+
+    Parameters
+    ----------
+    K
+        Coupling matrix.
+    omega
+        Natural-frequency vector.
+    target_energy
+        Maximum admitted product-state energy.
+    n_samples
+        Number of product-state parameter samples.
+    seed
+        Random seed for product-state sampling.
+    max_dense_gib
+        Optional fail-closed dense-allocation budget.
+
+    Returns
+    -------
+    float
+        Largest admitted sampled product-state order parameter.
+
     """
     n = K.shape[0]
     require_dense_allocation(
@@ -161,7 +211,21 @@ def R_separable_bound_at_energy(
 
 
 def R_from_statevector(psi: NDArray[np.complex128], n_qubits: int) -> float:
-    """Compute order parameter R from a quantum state vector."""
+    """Compute the phase order parameter from a statevector.
+
+    Parameters
+    ----------
+    psi
+        Quantum statevector.
+    n_qubits
+        Number of qubits represented by the statevector.
+
+    Returns
+    -------
+    float
+        Magnitude of the mean local Bloch-plane phase.
+
+    """
     sv = Statevector(np.ascontiguousarray(psi))
     phases = np.zeros(n_qubits)
     for k in range(n_qubits):
@@ -185,6 +249,25 @@ def detect_entanglement_from_R(
 
     If R_ground > R_sep_max(E_ground), the ground state is entangled
     and R witnesses this entanglement.
+
+    Parameters
+    ----------
+    K
+        Coupling matrix.
+    omega
+        Natural-frequency vector.
+    n_samples
+        Number of separable product-state samples.
+    seed
+        Random seed for the separable-bound sampler.
+    max_dense_gib
+        Optional fail-closed dense-allocation budget.
+
+    Returns
+    -------
+    EntanglementWitnessResult
+        Ground-state order parameter, separable bound, and bounded verdict.
+
     """
     n = K.shape[0]
     if n < 14:
@@ -248,6 +331,29 @@ def R_entanglement_scan(
 
     At each K_base, compute R_ground and R_sep_max(E_ground).
     The gap R_ground - R_sep_max quantifies entanglement.
+
+    Parameters
+    ----------
+    K
+        Base coupling matrix.
+    omega
+        Natural-frequency vector.
+    K_base_range
+        Optional coupling-scale grid.
+    n_K_values
+        Default grid size when ``K_base_range`` is omitted.
+    n_samples
+        Number of separable product-state samples per coupling.
+    seed
+        Random seed reused for each separable-bound estimate.
+    max_dense_gib
+        Optional fail-closed dense-allocation budget.
+
+    Returns
+    -------
+    dict[str, Any]
+        Couplings, ground-state/bound values, gaps, verdicts, and energies.
+
     """
     n = K.shape[0]
     if n < 14:
