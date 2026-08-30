@@ -9,8 +9,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import cast
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.bridge import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.crypto.knm_key import (
@@ -22,6 +26,7 @@ from scpn_quantum_control.crypto.knm_key import (
 
 
 def test_prepare_key_state_returns_valid() -> None:
+    """Produce a normalized local VQE state and finite ground energy."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
     result = prepare_key_state(K, omega, ansatz_reps=1, maxiter=20)
@@ -32,6 +37,7 @@ def test_prepare_key_state_returns_valid() -> None:
 
 
 def test_extract_raw_key_basic() -> None:
+    """Extract one majority-vote bit for every measured qubit."""
     counts = {"00": 100, "01": 50, "10": 30, "11": 20}
     bits = extract_raw_key(counts, "Z")
     assert len(bits) == 2
@@ -39,24 +45,28 @@ def test_extract_raw_key_basic() -> None:
 
 
 def test_extract_raw_key_subset() -> None:
+    """Restrict raw-key extraction to the requested qubits."""
     counts = {"000": 100, "001": 50, "110": 30}
     bits = extract_raw_key(counts, "Z", keep_qubits=[0, 2])
     assert len(bits) == 2
 
 
 def test_qber_identical_keys() -> None:
+    """Report zero QBER for identical verification bits."""
     a = np.array([0, 1, 0, 1, 1], dtype=np.uint8)
     b = np.array([0, 1, 0, 1, 1], dtype=np.uint8)
     assert estimate_qber(a, b) == 0.0
 
 
 def test_qber_half_errors() -> None:
+    """Report one-half QBER when half the bits disagree."""
     a = np.array([0, 0, 0, 0], dtype=np.uint8)
     b = np.array([0, 0, 1, 1], dtype=np.uint8)
     assert estimate_qber(a, b) == 0.5
 
 
 def test_qber_empty() -> None:
+    """Fail closed at unit QBER for an empty verification subset."""
     assert estimate_qber(np.array([]), np.array([])) == 1.0
 
 
@@ -124,6 +134,7 @@ def test_privacy_amplification_matches_explicit_toeplitz_product() -> None:
 
 
 def test_privacy_amplification_high_qber_yields_empty_key() -> None:
+    """Emit no key at or above the configured QBER threshold."""
     raw = np.array([0, 1, 0, 1], dtype=np.uint8)
     key = privacy_amplification(raw, qber=0.15, seed=3)
     assert key.size == 0  # At/above threshold: no extractable bits
@@ -137,12 +148,18 @@ def test_privacy_amplification_zero_fraction_yields_empty_key() -> None:
 
 
 def test_privacy_amplification_seed_is_required() -> None:
+    """Refuse privacy amplification without an explicit public seed."""
     raw = np.array([0, 1, 0, 1], dtype=np.uint8)
+    call_without_seed = cast(
+        Callable[[NDArray[np.uint8], float], NDArray[np.uint8]],
+        privacy_amplification,
+    )
     with pytest.raises(TypeError):
-        privacy_amplification(raw, 0.02)  # type: ignore[call-arg]
+        call_without_seed(raw, 0.02)
 
 
 def test_prepare_key_state_returns_dict() -> None:
+    """Expose statevector and energy fields in the public result mapping."""
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     state = prepare_key_state(K, omega, ansatz_reps=1, maxiter=10)
@@ -151,6 +168,7 @@ def test_prepare_key_state_returns_dict() -> None:
 
 
 def test_prepare_key_state_energy_finite() -> None:
+    """Return a finite local VQE ground-energy estimate."""
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     state = prepare_key_state(K, omega, ansatz_reps=1, maxiter=10)
@@ -158,6 +176,7 @@ def test_prepare_key_state_energy_finite() -> None:
 
 
 def test_estimate_qber_identical_keys() -> None:
+    """Keep the named Alice/Bob QBER path at zero for equal keys."""
     alice = np.array([0, 1, 0, 1], dtype=np.uint8)
     bob = np.array([0, 1, 0, 1], dtype=np.uint8)
     qber = estimate_qber(alice, bob)

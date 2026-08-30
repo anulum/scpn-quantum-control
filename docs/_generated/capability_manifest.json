@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1295
+    "test_files": 1296
   },
   "documentation": {
     "examples": [
@@ -8648,6 +8648,7 @@
       "tests/test_knm_hamiltonian.py",
       "tests/test_knm_hamiltonian_branches.py",
       "tests/test_knm_hamiltonian_mutation_kills.py",
+      "tests/test_knm_key_quality_gate.py",
       "tests/test_knm_parity.py",
       "tests/test_knm_partition_branches.py",
       "tests/test_knm_physical_validation_audit.py",

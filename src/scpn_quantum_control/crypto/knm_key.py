@@ -35,10 +35,24 @@ def prepare_key_state(
     ansatz_reps: int = 2,
     maxiter: int = 200,
 ) -> dict[str, Any]:
-    """Build VQE-optimized circuit encoding K_nm's ground state.
+    """Build the VQE-optimized circuit encoding the K_nm ground state.
 
-    Returns dict with 'circuit' (bound QuantumCircuit), 'energy' (float),
-    and 'statevector' (Statevector).
+    Parameters
+    ----------
+    K
+        Coupling matrix encoded by the phase Hamiltonian.
+    omega
+        Intrinsic angular frequency of every qubit/layer.
+    ansatz_reps
+        Number of repetitions in the VQE ansatz.
+    maxiter
+        Maximum optimizer iterations.
+
+    Returns
+    -------
+    dict[str, Any]
+        Bound circuit, ground energy, statevector, and qubit count.
+
     """
     vqe = PhaseVQE(K, omega, ansatz_reps=ansatz_reps)
     result = vqe.solve(maxiter=maxiter)
@@ -59,14 +73,21 @@ def extract_raw_key(
 ) -> NDArray[np.uint8]:
     """Sift measurement results into raw key bits.
 
-    Args:
-        counts: Measurement outcome counts from Qiskit.
-        basis: "Z" or "X" — measurement basis used.
-        keep_qubits: Qubit indices to extract (None = all).
+    Parameters
+    ----------
+    counts
+        Measurement outcome counts keyed by Qiskit bitstrings.
+    basis
+        Declared measurement-basis label. The current majority-vote extraction
+        is basis independent and assumes counts are already in that basis.
+    keep_qubits
+        Qubit indices to extract; ``None`` selects every qubit.
 
     Returns
     -------
-        1D array of {0, 1} bits, majority-vote per qubit.
+    numpy.ndarray
+        One-dimensional ``uint8`` array of majority-vote bits.
+
     """
     n_qubits = len(next(iter(counts)))
     if keep_qubits is None:
@@ -82,10 +103,21 @@ def extract_raw_key(
 
 
 def estimate_qber(alice_bits: NDArray[np.uint8], bob_bits: NDArray[np.uint8]) -> float:
-    """Quantum bit error rate from shared verification subset.
+    """Estimate quantum bit error rate from a shared verification subset.
 
-    QBER = (number of disagreements) / (total compared bits).
-    Secure threshold: QBER < 0.11 for BB84-family protocols.
+    Parameters
+    ----------
+    alice_bits
+        Alice's verification bits.
+    bob_bits
+        Bob's verification bits.
+
+    Returns
+    -------
+    float
+        Fraction of disagreements, or ``1.0`` for an empty subset. The
+        BB84-family policy threshold is handled by privacy amplification.
+
     """
     if len(alice_bits) == 0:
         return 1.0
@@ -106,18 +138,23 @@ def privacy_amplification(
     (Shor & Preskill, PRL 85 441); finite-key corrections are out of scope
     for this simulation-only module.
 
-    Args:
-        raw_key: Sifted key bits ({0, 1}, dtype uint8).
-        qber: Estimated quantum bit error rate.
-        seed: PRNG seed selecting the Toeplitz family member. In a real
-            deployment this must be fresh public randomness agreed after
-            the raw key exists; it is a required parameter so no entropy
-            is silently fabricated.
+    Parameters
+    ----------
+    raw_key
+        Sifted ``uint8`` key bits in ``{0, 1}``.
+    qber
+        Estimated quantum bit error rate.
+    seed
+        PRNG seed selecting the Toeplitz family member. A real deployment must
+        use fresh public randomness agreed after the raw key exists; the
+        parameter is required so no entropy is silently fabricated.
 
     Returns
     -------
-        Extracted key bits of length ``n_secure_bits`` — empty above the
+    numpy.ndarray
+        Extracted ``uint8`` bits of length ``n_secure_bits``; empty above the
         QBER security threshold or when the secret fraction rounds to zero.
+
     """
     if qber >= QBER_SECURITY_THRESHOLD:
         return np.zeros(0, dtype=np.uint8)
