@@ -274,6 +274,7 @@ def select_error_aware_chain(
     backtrack_steps:
         Extra depth-first backtracking budget per seed and orientation;
         zero keeps the pure greedy behaviour.
+
     """
     if length < 2:
         raise ValueError("chain length must be at least 2")

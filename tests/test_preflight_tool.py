@@ -1065,6 +1065,8 @@ def test_main_uses_coverage_pytest_by_default(
         "quantum-neuromorphic-bridge exact coverage threshold",
         "Koopman focused coverage",
         "Koopman exact coverage threshold",
+        "error-aware-chain focused coverage",
+        "error-aware-chain exact coverage threshold",
         "Kuramoto-variants focused coverage",
         "Kuramoto-variants exact coverage threshold",
         "MPS-evolution focused coverage",

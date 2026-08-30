@@ -26,13 +26,17 @@ from scpn_quantum_control.hardware.error_aware_chain import (
 def line_graph(
     n: int, gate: float = 0.01, readout: float = 0.02
 ) -> tuple[dict[tuple[int, int], float], dict[int, float]]:
+    """Build a uniformly calibrated line graph."""
     gates = {(i, i + 1): gate for i in range(n - 1)}
     readouts = {i: readout for i in range(n)}
     return gates, readouts
 
 
 class TestChainSelectionDataclass:
+    """Exercise chain invariants and derived error metrics."""
+
     def test_valid_selection_and_derived_properties(self) -> None:
+        """Compute length, total score, and an even-edge median."""
         selection = ChainSelection(
             qubits=(3, 1, 2),
             edge_errors=(0.01, 0.03),
@@ -44,6 +48,7 @@ class TestChainSelectionDataclass:
         assert selection.median_edge_error == pytest.approx(0.02)
 
     def test_median_of_odd_edge_count(self) -> None:
+        """Compute the median for an odd number of edges."""
         selection = ChainSelection(
             qubits=(0, 1, 2, 3),
             edge_errors=(0.05, 0.01, 0.03),
@@ -52,10 +57,12 @@ class TestChainSelectionDataclass:
         assert selection.median_edge_error == pytest.approx(0.03)
 
     def test_too_short_chain_fails_closed(self) -> None:
+        """Reject chains containing fewer than two qubits."""
         with pytest.raises(ValueError, match="at least two qubits"):
             ChainSelection(qubits=(0,), edge_errors=(), readout_errors=(0.1,))
 
     def test_revisited_qubit_fails_closed(self) -> None:
+        """Reject paths that revisit a physical qubit."""
         with pytest.raises(ValueError, match="must not revisit"):
             ChainSelection(
                 qubits=(0, 1, 0),
@@ -64,16 +71,21 @@ class TestChainSelectionDataclass:
             )
 
     def test_wrong_edge_count_fails_closed(self) -> None:
+        """Reject edge-error vectors with the wrong length."""
         with pytest.raises(ValueError, match="one entry per chain edge"):
             ChainSelection(qubits=(0, 1), edge_errors=(0.1, 0.2), readout_errors=(0.1, 0.1))
 
     def test_wrong_readout_count_fails_closed(self) -> None:
+        """Reject readout-error vectors with the wrong length."""
         with pytest.raises(ValueError, match="one entry per chain qubit"):
             ChainSelection(qubits=(0, 1), edge_errors=(0.1,), readout_errors=(0.1,))
 
 
 class TestSelectErrorAwareChain:
+    """Exercise fixed-length error-aware chain selection."""
+
     def test_full_line_is_recovered_in_order(self) -> None:
+        """Recover every qubit in a fully calibrated line."""
         gates, readouts = line_graph(6)
         selection = select_error_aware_chain(gates, readouts, 6)
         assert selection is not None
@@ -81,6 +93,7 @@ class TestSelectErrorAwareChain:
         assert selection.edge_errors == (0.01,) * 5
 
     def test_prefers_the_low_error_branch(self) -> None:
+        """Prefer the reachable branch with the lower aggregate score."""
         # Star at 1: branches 1-0 (cheap) and 1-2-3 (cheap), 1-9 expensive.
         gates = {
             (0, 1): 0.001,
@@ -95,15 +108,18 @@ class TestSelectErrorAwareChain:
         assert 9 not in selection.qubits
 
     def test_unreachable_length_returns_none(self) -> None:
+        """Return no selection when the requested width is unreachable."""
         gates, readouts = line_graph(4)
         assert select_error_aware_chain(gates, readouts, 5) is None
 
     def test_disconnected_components_do_not_bridge(self) -> None:
+        """Keep disconnected calibration components separate."""
         gates = {(0, 1): 0.001, (2, 3): 0.001}
         readouts = {0: 0.01, 1: 0.01, 2: 0.01, 3: 0.01}
         assert select_error_aware_chain(gates, readouts, 3) is None
 
     def test_edges_without_readout_calibration_are_excluded(self) -> None:
+        """Exclude edges whose endpoints lack complete readout calibration."""
         gates = {(0, 1): 0.001, (1, 2): 0.001}
         readouts = {0: 0.01, 1: 0.01}
         assert select_error_aware_chain(gates, readouts, 3) is None
@@ -112,6 +128,7 @@ class TestSelectErrorAwareChain:
         assert set(selection.qubits) == {0, 1}
 
     def test_reversed_duplicate_edges_keep_the_smaller_error(self) -> None:
+        """Canonicalize reversed duplicates to their smaller error."""
         gates = {(0, 1): 0.02, (1, 0): 0.005, (1, 2): 0.01}
         readouts = {0: 0.0, 1: 0.0, 2: 0.0}
         selection = select_error_aware_chain(gates, readouts, 3)
@@ -119,6 +136,7 @@ class TestSelectErrorAwareChain:
         assert selection.edge_errors in ((0.005, 0.01), (0.01, 0.005))
 
     def test_duplicate_edge_with_larger_error_is_ignored(self) -> None:
+        """Ignore a larger duplicate observed after the canonical edge."""
         # Smaller error seen first: the later, larger duplicate must not win.
         gates = {(1, 0): 0.005, (0, 1): 0.02, (1, 2): 0.01}
         readouts = {0: 0.0, 1: 0.0, 2: 0.0}
@@ -127,6 +145,7 @@ class TestSelectErrorAwareChain:
         assert selection.edge_errors in ((0.005, 0.01), (0.01, 0.005))
 
     def test_self_loop_edges_are_ignored(self) -> None:
+        """Ignore calibrated self loops during adjacency construction."""
         gates = {(1, 1): 0.0001, (0, 1): 0.01, (1, 2): 0.01}
         readouts = {0: 0.01, 1: 0.01, 2: 0.01}
         selection = select_error_aware_chain(gates, readouts, 3)
@@ -134,6 +153,7 @@ class TestSelectErrorAwareChain:
         assert set(selection.qubits) == {0, 1, 2}
 
     def test_heavy_hex_fragment_ring_walks_around(self) -> None:
+        """Traverse a heavy-hex-sized ring without revisiting nodes."""
         # A 12-node ring (heavy-hex loops are rings of 12): a chain of 12
         # exists; a chain of 13 does not.
         gates = {(i, (i + 1) % 12): 0.01 for i in range(12)}
@@ -142,6 +162,7 @@ class TestSelectErrorAwareChain:
         assert select_error_aware_chain(gates, readouts, 13) is None
 
     def test_multiple_seeds_find_the_globally_better_chain(self) -> None:
+        """Use restarts to find a reachable chain beyond the cheapest seed."""
         # Cheapest edge (10, 11) is isolated; only the line reaches width 4.
         gates = {(10, 11): 0.0001, (0, 1): 0.01, (1, 2): 0.01, (2, 3): 0.01}
         readouts = {10: 0.0, 11: 0.0, 0: 0.02, 1: 0.02, 2: 0.02, 3: 0.02}
@@ -150,21 +171,24 @@ class TestSelectErrorAwareChain:
         assert set(selection.qubits) == {0, 1, 2, 3}
 
     def test_invalid_length_fails_closed(self) -> None:
+        """Reject fixed chain lengths below two."""
         gates, readouts = line_graph(3)
         with pytest.raises(ValueError, match="at least 2"):
             select_error_aware_chain(gates, readouts, 1)
 
     def test_invalid_seed_count_fails_closed(self) -> None:
+        """Reject a non-positive restart count."""
         gates, readouts = line_graph(3)
         with pytest.raises(ValueError, match="seed_count"):
             select_error_aware_chain(gates, readouts, 2, seed_count=0)
 
     def test_empty_graph_returns_none(self) -> None:
+        """Return no fixed-length chain for an empty graph."""
         assert select_error_aware_chain({}, {}, 2) is None
 
 
 def t_junction_graph() -> tuple[dict[tuple[int, int], float], dict[int, float]]:
-    """A greedy trap: a cheap dead-end branch off a 7-qubit line.
+    """Build a greedy trap with a cheap dead-end off a seven-qubit line.
 
     The cheapest edge (3, 7) seeds the greedy walk into the two-qubit spur
     7-8, wasting qubit 3's line position; the longest simple path is the
@@ -185,7 +209,10 @@ def t_junction_graph() -> tuple[dict[tuple[int, int], float], dict[int, float]]:
 
 
 class TestBacktrackingSearch:
+    """Exercise deterministic bounded DFS recovery from greedy dead ends."""
+
     def test_greedy_alone_dead_ends_in_the_spur(self) -> None:
+        """Show pure greedy selection taking the cheap spur."""
         # Every greedy walk reaching qubit 3 takes the cheap spur and ends
         # trapped at 8, so no seed recovers the full 7-qubit line.
         gates, readouts = t_junction_graph()
@@ -195,6 +222,7 @@ class TestBacktrackingSearch:
         assert 8 in greedy.qubits
 
     def test_backtracking_recovers_the_full_line(self) -> None:
+        """Recover the full line with a sufficient DFS budget."""
         gates, readouts = t_junction_graph()
         selection = longest_error_aware_chain(gates, readouts, seed_count=4, backtrack_steps=1000)
         assert selection is not None
@@ -202,6 +230,7 @@ class TestBacktrackingSearch:
         assert set(selection.qubits) == set(range(7))
 
     def test_select_by_length_uses_the_backtracking_budget(self) -> None:
+        """Apply the DFS budget to fixed-length selection."""
         gates, readouts = t_junction_graph()
         assert select_error_aware_chain(gates, readouts, 7, seed_count=4) is None
         selection = select_error_aware_chain(
@@ -211,12 +240,14 @@ class TestBacktrackingSearch:
         assert selection.length == 7
 
     def test_exhausted_budget_still_returns_the_best_partial(self) -> None:
+        """Return the best partial path after budget exhaustion."""
         gates, readouts = t_junction_graph()
         selection = longest_error_aware_chain(gates, readouts, seed_count=1, backtrack_steps=1)
         assert selection is not None
         assert selection.length >= 2
 
     def test_negative_budget_fails_closed(self) -> None:
+        """Reject negative DFS budgets on both public entry points."""
         gates, readouts = t_junction_graph()
         with pytest.raises(ValueError, match="backtrack_steps"):
             longest_error_aware_chain(gates, readouts, backtrack_steps=-1)
@@ -224,6 +255,7 @@ class TestBacktrackingSearch:
             select_error_aware_chain(gates, readouts, 3, backtrack_steps=-1)
 
     def test_deterministic_across_repeat_calls(self) -> None:
+        """Return the same ordered path across repeated searches."""
         gates, readouts = t_junction_graph()
         first = longest_error_aware_chain(gates, readouts, backtrack_steps=500)
         second = longest_error_aware_chain(gates, readouts, backtrack_steps=500)
@@ -231,6 +263,7 @@ class TestBacktrackingSearch:
         assert first.qubits == second.qubits
 
     def test_heavy_hex_like_ring_with_spurs_reaches_full_coverage(self) -> None:
+        """Reach a near-spanning path on a heavy-hex-like graph."""
         # A 12-ring with a pendant qubit on every even node: the longest
         # simple path is 12 + 2 = 14 (walk the ring, ending on two pendants).
         gates: dict[tuple[int, int], float] = {(i, (i + 1) % 12): 0.01 for i in range(12)}
@@ -245,13 +278,17 @@ class TestBacktrackingSearch:
 
 
 class TestLongestErrorAwareChain:
+    """Exercise unconstrained longest-chain selection."""
+
     def test_line_yields_its_full_length(self) -> None:
+        """Recover the full length of a line graph."""
         gates, readouts = line_graph(7)
         selection = longest_error_aware_chain(gates, readouts)
         assert selection is not None
         assert selection.length == 7
 
     def test_longer_beats_cheaper(self) -> None:
+        """Prefer a longer chain over a cheaper isolated pair."""
         # A cheap isolated pair vs a longer, costlier line: longest wins.
         gates = {(10, 11): 0.0001, (0, 1): 0.05, (1, 2): 0.05}
         readouts = {10: 0.0, 11: 0.0, 0: 0.05, 1: 0.05, 2: 0.05}
@@ -261,6 +298,7 @@ class TestLongestErrorAwareChain:
         assert set(selection.qubits) == {0, 1, 2}
 
     def test_equal_length_ties_resolve_to_cheaper_chain(self) -> None:
+        """Resolve equal-length candidates by aggregate error score."""
         gates = {(0, 1): 0.05, (10, 11): 0.001}
         readouts = {0: 0.05, 1: 0.05, 10: 0.001, 11: 0.001}
         selection = longest_error_aware_chain(gates, readouts, seed_count=4)
@@ -268,8 +306,10 @@ class TestLongestErrorAwareChain:
         assert selection.qubits in ((10, 11), (11, 10))
 
     def test_empty_graph_returns_none(self) -> None:
+        """Return no longest chain for an empty graph."""
         assert longest_error_aware_chain({}, {}) is None
 
     def test_invalid_seed_count_fails_closed(self) -> None:
+        """Reject a non-positive longest-chain restart count."""
         with pytest.raises(ValueError, match="seed_count"):
             longest_error_aware_chain({}, {}, seed_count=0)
