@@ -14,15 +14,24 @@ from os import devnull
 Gate = tuple[str, list[str]]
 COMPILER_BOUNDARY_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/compiler_boundary_product.py",
+    "src/scpn_quantum_control/compiler/mlir_llvm_jit_claim_gate.py",
     "tests/test_compiler_boundary_product.py",
+    "tests/test_llvm_jit_claim_gate.py",
     "tools/compiler_boundary_product_quality_gates.py",
     "tests/test_compiler_boundary_product_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-COMPILER_BOUNDARY_PRODUCT_COVERAGE_COHORT = ["tests/test_compiler_boundary_product.py"]
+COMPILER_BOUNDARY_PRODUCT_COVERAGE_COHORT = [
+    "tests/test_compiler_boundary_product.py",
+    "tests/test_llvm_jit_claim_gate.py",
+]
 """Tests that own exact compiler-boundary product coverage."""
 COMPILER_BOUNDARY_PRODUCT_COVERAGE_DATA_FILE = ".coverage.compiler-boundary-product-quality"
 """Isolated coverage database for the compiler-boundary product owner."""
+COMPILER_BOUNDARY_PRODUCT_COVERAGE_INCLUDE = (
+    "*/compiler_boundary_product.py,*/compiler/mlir_llvm_jit_claim_gate.py"
+)
+"""Production compiler-boundary sources enforced at exact branch coverage."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -47,8 +56,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *COMPILER_BOUNDARY_PRODUCT_QUALITY_RATCHET,
@@ -87,7 +97,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={COMPILER_BOUNDARY_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/compiler_boundary_product.py",
+                f"--include={COMPILER_BOUNDARY_PRODUCT_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -96,6 +106,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "COMPILER_BOUNDARY_PRODUCT_COVERAGE_COHORT",
     "COMPILER_BOUNDARY_PRODUCT_COVERAGE_DATA_FILE",
+    "COMPILER_BOUNDARY_PRODUCT_COVERAGE_INCLUDE",
     "COMPILER_BOUNDARY_PRODUCT_QUALITY_RATCHET",
     "build_coverage_gates",
     "build_static_quality_gates",

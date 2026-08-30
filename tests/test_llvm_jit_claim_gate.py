@@ -34,7 +34,6 @@ def _case(
     operand_dimension: int,
 ) -> NativeWholeProgramADExecutionCase:
     """Build a verified native LLVM/JIT execution row for gate tests."""
-
     return NativeWholeProgramADExecutionCase(
         case_id=case_id,
         operation_family=operation_family,
@@ -51,7 +50,6 @@ def _case(
 
 def _native_evidence(*, beyond_scalar: bool = True) -> NativeWholeProgramADExecutionEvidence:
     """Build minimal validated native execution evidence."""
-
     cases = [_case("scalar_poly_3", "scalar", 3)]
     if beyond_scalar:
         cases.append(_case("determinant_2x2", "determinant", 2))
@@ -66,7 +64,6 @@ def _native_evidence(*, beyond_scalar: bool = True) -> NativeWholeProgramADExecu
 
 def test_native_execution_alone_keeps_jit_promotion_blocked() -> None:
     """Executable lowering plus correctness still blocks without all promotion artefacts."""
-
     gate = build_llvm_jit_claim_gate(
         artifact_id="probe",
         native_execution_evidence=_native_evidence(),
@@ -90,7 +87,6 @@ def test_native_execution_alone_keeps_jit_promotion_blocked() -> None:
 
 def test_gate_promotes_only_when_every_required_evidence_class_is_attached() -> None:
     """The promotion flag is derived from all required evidence classes."""
-
     gate = build_llvm_jit_claim_gate(
         artifact_id="probe",
         native_execution_evidence=_native_evidence(),
@@ -109,7 +105,6 @@ def test_gate_promotes_only_when_every_required_evidence_class_is_attached() -> 
 
 def test_scalar_only_native_evidence_does_not_satisfy_executable_lowering() -> None:
     """Scalar-only evidence cannot unlock a wider LLVM/JIT claim."""
-
     gate = build_llvm_jit_claim_gate(
         artifact_id="probe",
         native_execution_evidence=_native_evidence(beyond_scalar=False),
@@ -127,7 +122,6 @@ def test_scalar_only_native_evidence_does_not_satisfy_executable_lowering() -> N
 
 def test_gate_rejects_blank_ids_and_unbacked_executable_success() -> None:
     """The frozen record fails closed on blank evidence and unsupported success claims."""
-
     with pytest.raises(ValueError, match="executable_lowering_evidence_id"):
         LLVMJITClaimGate(
             artifact_id="probe",
@@ -157,7 +151,6 @@ def test_gate_rejects_blank_ids_and_unbacked_executable_success() -> None:
 
 def test_committed_llvm_jit_claim_gate_artifact_is_blocked_and_consistent() -> None:
     """Committed claim-gate JSON must match the derived blockers."""
-
     path = _EVIDENCE_DIR / "llvm_jit_claim_gate_20260704.json"
     payload = json.loads(path.read_text(encoding="utf-8"))
     gate = llvm_jit_claim_gate_from_dict(payload)

@@ -124,6 +124,7 @@ class LLVMJITClaimGate:
         declared fallback when the native gate is not ready.
     claim_boundary:
         Public-safe boundary text that travels with docs and evidence bundles.
+
     """
 
     artifact_id: str
@@ -137,6 +138,7 @@ class LLVMJITClaimGate:
     claim_boundary: str = LLVM_JIT_CLAIM_GATE_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Normalize evidence identifiers and reject inconsistent claims."""
         artifact_id = self.artifact_id.strip()
         if not artifact_id:
             raise ValueError("artifact_id must be non-empty")
