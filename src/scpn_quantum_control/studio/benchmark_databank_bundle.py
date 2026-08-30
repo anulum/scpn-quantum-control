@@ -130,6 +130,7 @@ def build_benchmark_databank_bundle(
     ------
     ValueError
         If the databank has no rows or is missing its timing caveat.
+
     """
     payload = _load_databank(artifact_path)
     rows: list[dict[str, Any]] = payload["rows"]

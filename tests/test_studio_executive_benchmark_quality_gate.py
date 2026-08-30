@@ -20,7 +20,10 @@ def test_static_gates_cover_typing_and_docs() -> None:
         gates["mypy-strict-studio-executive-benchmark-quality"][5:]
         == quality_gates.STUDIO_EXECUTIVE_BENCHMARK_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D studio-executive-benchmark quality ratchet"]
+    docs = gates["ruff D studio-executive-benchmark quality ratchet"]
+    assert "--preview" in docs
+    assert "D,D413,D417,D420" in docs
+    assert "lint.explicit-preview-rules = true" in docs
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
@@ -29,7 +32,11 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     assert "--branch" in gates["studio-executive-benchmark focused coverage"]
     threshold = gates["studio-executive-benchmark exact coverage threshold"]
     assert "--fail-under=100" in threshold
-    assert "--include=*/studio/executive_benchmark.py" in threshold
+    assert (
+        "--include=*/studio/executive_benchmark.py,*/studio/benchmark_databank_bundle.py"
+        in threshold
+    )
+    assert quality_gates.STUDIO_EXECUTIVE_BENCHMARK_COVERAGE_DATA_FILE.startswith("/tmp/")
 
 
 def test_preflight_uses_helper_defined_gates() -> None:

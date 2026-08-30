@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 import json
+import runpy
+import sys
 from pathlib import Path
 
 import pytest
@@ -106,6 +108,24 @@ def test_main_emits_admitted_bundle_json(capsys: pytest.CaptureFixture[str]) -> 
     printed = json.loads(capsys.readouterr().out)
     assert printed["schema"] == BENCHMARK_DATABANK_SCHEMA
     assert len(printed["cases"]) >= 1
+
+
+def test_module_entrypoint_emits_admitted_bundle(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Execute the real module entrypoint with an explicit committed artefact."""
+    module_name = databank.__name__
+    imported_module = sys.modules.pop(module_name)
+    monkeypatch.setattr(sys, "argv", [module_name, "--artifact-path", str(COMMITTED)])
+    try:
+        with pytest.raises(SystemExit) as raised:
+            runpy.run_module(module_name, run_name="__main__")
+    finally:
+        sys.modules[module_name] = imported_module
+
+    assert raised.value.code == 0
+    assert json.loads(capsys.readouterr().out)["schema"] == BENCHMARK_DATABANK_SCHEMA
 
 
 def test_main_reports_a_rejection(

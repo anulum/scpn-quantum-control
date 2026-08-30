@@ -14,14 +14,21 @@ from os import devnull
 Gate = tuple[str, list[str]]
 STUDIO_EXECUTIVE_BENCHMARK_QUALITY_RATCHET = [
     "src/scpn_quantum_control/studio/executive_benchmark.py",
+    "src/scpn_quantum_control/studio/benchmark_databank_bundle.py",
     "tests/test_studio_executive_benchmark.py",
+    "tests/test_studio_benchmark_databank_bundle.py",
     "tools/studio_executive_benchmark_quality_gates.py",
     "tests/test_studio_executive_benchmark_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-STUDIO_EXECUTIVE_BENCHMARK_COVERAGE_COHORT = ["tests/test_studio_executive_benchmark.py"]
+STUDIO_EXECUTIVE_BENCHMARK_COVERAGE_COHORT = [
+    "tests/test_studio_executive_benchmark.py",
+    "tests/test_studio_benchmark_databank_bundle.py",
+]
 """Tests that own exact Studio benchmark-handler coverage."""
-STUDIO_EXECUTIVE_BENCHMARK_COVERAGE_DATA_FILE = ".coverage.studio-executive-benchmark-quality"
+STUDIO_EXECUTIVE_BENCHMARK_COVERAGE_DATA_FILE = (
+    "/tmp/scpn-qc-studio-executive-benchmark-quality.coverage"
+)
 """Isolated coverage database for Studio benchmark diagnostics."""
 
 
@@ -47,8 +54,11 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *STUDIO_EXECUTIVE_BENCHMARK_QUALITY_RATCHET,
@@ -88,7 +98,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={data}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/studio/executive_benchmark.py",
+                "--include=*/studio/executive_benchmark.py,*/studio/benchmark_databank_bundle.py",
             ],
         ),
     ]
