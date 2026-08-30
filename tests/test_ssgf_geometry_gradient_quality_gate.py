@@ -29,10 +29,13 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     run = gates["ssgf-geometry-gradient focused coverage"]
     report = gates["ssgf-geometry-gradient exact coverage threshold"]
     assert "--branch" in run
-    assert run[-1:] == quality_gates.SSGF_GEOMETRY_GRADIENT_COVERAGE_COHORT
+    assert (
+        run[-len(quality_gates.SSGF_GEOMETRY_GRADIENT_COVERAGE_COHORT) :]
+        == quality_gates.SSGF_GEOMETRY_GRADIENT_COVERAGE_COHORT
+    )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/ssgf_geometry_gradient_product.py" in report
+    assert f"--include={quality_gates.SSGF_GEOMETRY_GRADIENT_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:

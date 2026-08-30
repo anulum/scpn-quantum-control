@@ -37,7 +37,23 @@ from .ssgf_adapter import quantum_to_ssgf_state, ssgf_state_to_quantum, ssgf_w_t
 
 @dataclass
 class WAdaptResult:
-    """Result of W adaptation step."""
+    """Result of one geometry-matrix adaptation step.
+
+    Attributes
+    ----------
+    W_updated
+        Adapted geometry matrix with a zero diagonal and the configured
+        coupling floor.
+    r_global
+        Synchronisation order parameter recovered from the evolved state.
+    delta_r
+        Difference between the recovered and target order parameters.
+    correlators
+        Symmetric pairwise ``<XX + YY>`` correlator matrix.
+    max_update
+        Largest absolute entry in the unconstrained update matrix.
+
+    """
 
     W_updated: NDArray[np.float64]
     r_global: float
@@ -47,7 +63,21 @@ class WAdaptResult:
 
 
 def _measure_correlators(sv: Statevector, n: int) -> NDArray[np.float64]:
-    """Measure <XX + YY> for all pairs from statevector."""
+    """Measure pairwise ``<XX + YY>`` correlators from a statevector.
+
+    Parameters
+    ----------
+    sv
+        Evolved quantum state to measure.
+    n
+        Number of qubits represented by the state.
+
+    Returns
+    -------
+    numpy.ndarray
+        Symmetric ``(n, n)`` correlator matrix with a zero diagonal.
+
+    """
     C = np.zeros((n, n))
     for i in range(n):
         for j in range(i + 1, n):
@@ -79,15 +109,30 @@ def adapt_w_from_quantum(
 ) -> WAdaptResult:
     """One step of W adaptation from quantum feedback.
 
-    Args:
-        W: current geometry matrix
-        theta: current oscillator phases
-        r_target: target synchronisation level
-        learning_rate: update step size
-        omega: natural frequencies (default: zeros)
-        dt: Trotter evolution time
-        trotter_reps: Trotter repetitions
-        min_coupling: minimum coupling value (enforce non-negative)
+    Parameters
+    ----------
+    W
+        Current square geometry matrix.
+    theta
+        Current oscillator phases, one per row of ``W``.
+    r_target
+        Target synchronisation order parameter.
+    learning_rate
+        Multiplicative update step size.
+    omega
+        Natural frequencies. Zeros are used when omitted.
+    dt
+        Trotter evolution time.
+    trotter_reps
+        Number of Lie-Trotter repetitions.
+    min_coupling
+        Elementwise lower bound applied after zeroing the diagonal.
+
+    Returns
+    -------
+    WAdaptResult
+        Adapted matrix and the quantum-feedback diagnostics used to update it.
+
     """
     from qiskit import QuantumCircuit
     from qiskit.circuit.library import PauliEvolutionGate

@@ -15,7 +15,9 @@ Gate = tuple[str, list[str]]
 
 SSGF_GEOMETRY_GRADIENT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/ssgf_geometry_gradient_product.py",
+    "src/scpn_quantum_control/bridge/ssgf_w_adapter.py",
     "tests/test_ssgf_geometry_gradient_product.py",
+    "tests/test_ssgf_w_adapter.py",
     "tools/ssgf_geometry_gradient_quality_gates.py",
     "tests/test_ssgf_geometry_gradient_quality_gate.py",
 ]
@@ -23,11 +25,16 @@ SSGF_GEOMETRY_GRADIENT_QUALITY_RATCHET = [
 
 SSGF_GEOMETRY_GRADIENT_COVERAGE_COHORT = [
     "tests/test_ssgf_geometry_gradient_product.py",
+    "tests/test_ssgf_w_adapter.py",
 ]
 """Tests that own exact SSGF geometry-gradient coverage."""
 
 SSGF_GEOMETRY_GRADIENT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-ssgf-geometry-gradient-quality.coverage"  # nosec B108
 """Isolated coverage database for the SSGF geometry-gradient owner."""
+SSGF_GEOMETRY_GRADIENT_COVERAGE_INCLUDE = (
+    "*/ssgf_geometry_gradient_product.py,*/bridge/ssgf_w_adapter.py"
+)
+"""Production sources enforced at exact branch coverage."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -92,7 +99,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={SSGF_GEOMETRY_GRADIENT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/ssgf_geometry_gradient_product.py",
+                f"--include={SSGF_GEOMETRY_GRADIENT_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -101,6 +108,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "SSGF_GEOMETRY_GRADIENT_COVERAGE_COHORT",
     "SSGF_GEOMETRY_GRADIENT_COVERAGE_DATA_FILE",
+    "SSGF_GEOMETRY_GRADIENT_COVERAGE_INCLUDE",
     "SSGF_GEOMETRY_GRADIENT_QUALITY_RATCHET",
     "build_coverage_gates",
     "build_static_quality_gates",
