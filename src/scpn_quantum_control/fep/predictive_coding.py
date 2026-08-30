@@ -84,6 +84,7 @@ def hierarchical_prediction_error(
     Returns
     -------
         Precision-weighted prediction errors ε_i, shape (n,)
+
     """
     if _HAS_RUST:
         return np.asarray(_pe_rust(observations, beliefs, K), dtype=np.float64)
@@ -129,6 +130,7 @@ def predictive_coding_step(
     Returns
     -------
         PredictiveCodingResult with updated beliefs and errors.
+
     """
     n = len(observations)
     if sigma is None:

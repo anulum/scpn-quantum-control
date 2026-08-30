@@ -18,10 +18,13 @@ import importlib
 import importlib.util
 import sys
 import time
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 from scpn_quantum_control.fep.predictive_coding import (
@@ -39,6 +42,8 @@ from scpn_quantum_control.fep.variational_free_energy import (
 
 
 class TestEmptyNull:
+    """Exercise zero-valued and identity-distribution contracts."""
+
     def test_kl_identical_distributions(self) -> None:
         """KL[q || q] = 0."""
         mu = np.array([1.0, 2.0])
@@ -72,6 +77,8 @@ class TestEmptyNull:
 
 
 class TestErrorHandling:
+    """Exercise numerical and optional-acceleration failure boundaries."""
+
     def test_kl_singular_covariance(self) -> None:
         """Singular covariance should raise or return inf."""
         mu = np.array([0.0])
@@ -91,7 +98,9 @@ class TestErrorHandling:
         result = variational_free_energy(mu, sigma, x, K)
         assert result.free_energy > 0  # accuracy > 0
 
-    def test_variational_free_energy_import_guard_without_rust(self, monkeypatch) -> None:
+    def test_variational_free_energy_import_guard_without_rust(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Import guard marks Rust acceleration unavailable when the engine is absent."""
         source = (
             Path(__file__).parents[1]
@@ -106,9 +115,9 @@ class TestErrorHandling:
         assert spec.loader is not None
         module = importlib.util.module_from_spec(spec)
 
-        original_import = builtins.__import__
+        original_import: Callable[..., Any] = builtins.__import__
 
-        def blocked_import(name, *args, **kwargs):
+        def blocked_import(name: str, *args: object, **kwargs: object) -> Any:
             if name == "scpn_quantum_engine":
                 raise ImportError("blocked in test")
             return original_import(name, *args, **kwargs)
@@ -119,7 +128,9 @@ class TestErrorHandling:
 
         assert module._HAS_RUST is False
 
-    def test_predictive_coding_import_guard_without_rust(self, monkeypatch) -> None:
+    def test_predictive_coding_import_guard_without_rust(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Predictive-coding import guard records absent Rust acceleration."""
         source = (
             Path(__file__).parents[1]
@@ -134,9 +145,9 @@ class TestErrorHandling:
         assert spec.loader is not None
         module = importlib.util.module_from_spec(spec)
 
-        original_import = builtins.__import__
+        original_import: Callable[..., Any] = builtins.__import__
 
-        def blocked_import(name, *args, **kwargs):
+        def blocked_import(name: str, *args: object, **kwargs: object) -> Any:
             if name == "scpn_quantum_engine":
                 raise ImportError("blocked in test")
             return original_import(name, *args, **kwargs)
@@ -152,11 +163,13 @@ class TestErrorHandling:
 
 
 class TestNegativeCases:
+    """Exercise invalid, adversarial, and Python-fallback inputs."""
+
     def test_kl_always_non_negative(self) -> None:
         """KL divergence must be ≥ 0 for any distributions."""
         rng = np.random.default_rng(42)
         for _ in range(10):
-            n = rng.integers(2, 6)
+            n = int(rng.integers(2, 6))
             mu_q = rng.standard_normal(n)
             mu_p = rng.standard_normal(n)
             A = rng.standard_normal((n, n))
@@ -180,7 +193,7 @@ class TestNegativeCases:
         f_new = variational_free_energy(mu_new, sigma, x, K).free_energy
         assert f_new < f_old, "gradient step must reduce F"
 
-    def test_gradient_python_identity_path(self, monkeypatch) -> None:
+    def test_gradient_python_identity_path(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Python identity gradient remains available when Rust is disabled."""
         module = importlib.import_module("scpn_quantum_control.fep.variational_free_energy")
 
@@ -206,7 +219,7 @@ class TestNegativeCases:
         K = np.eye(2)
         sensory = np.diag([2.0, 3.0])
 
-        def generative(values: np.ndarray) -> np.ndarray:
+        def generative(values: NDArray[np.float64]) -> NDArray[np.float64]:
             return values**2
 
         grad = free_energy_gradient(
@@ -229,10 +242,10 @@ class TestNegativeCases:
         K = np.eye(2)
         sensory = np.diag([2.0, 3.0])
 
-        def generative(values: np.ndarray) -> np.ndarray:
+        def generative(values: NDArray[np.float64]) -> NDArray[np.float64]:
             return values**2
 
-        def jacobian(values: np.ndarray) -> np.ndarray:
+        def jacobian(values: NDArray[np.float64]) -> NDArray[np.float64]:
             return np.diag(2.0 * values)
 
         grad = free_energy_gradient(
@@ -249,7 +262,7 @@ class TestNegativeCases:
         expected = (K + 1e-10 * np.eye(2)) @ mu - jacobian(mu).T @ sensory @ error
         assert np.allclose(grad, expected)
 
-    def test_prediction_error_python_fallback_rows(self, monkeypatch) -> None:
+    def test_prediction_error_python_fallback_rows(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Python prediction-error path handles isolated and coupled rows."""
         module = importlib.import_module("scpn_quantum_control.fep.predictive_coding")
         monkeypatch.setattr(module, "_HAS_RUST", False)
@@ -272,6 +285,8 @@ class TestNegativeCases:
 
 
 class TestPipelineIntegration:
+    """Exercise predictive coding through connected public FEP surfaces."""
+
     def test_with_scpn_knm(self) -> None:
         """FEP works with actual SCPN K_nm coupling matrix."""
         K = build_knm_paper27()
@@ -289,7 +304,7 @@ class TestPipelineIntegration:
         n = 4
         rng = np.random.default_rng(42)
         x = rng.standard_normal(n) * 0.5
-        beliefs = np.zeros(n)
+        beliefs: NDArray[np.float64] = np.zeros(n)
 
         errors_over_time = []
         for _ in range(50):
@@ -326,6 +341,8 @@ class TestPipelineIntegration:
 
 
 class TestRoundtrip:
+    """Exercise decompositions, convergence, and explicit covariance input."""
+
     def test_free_energy_decomposition(self) -> None:
         """F = complexity + accuracy."""
         n = 4
@@ -348,12 +365,31 @@ class TestRoundtrip:
         # Ridge regularisation (1e-10) introduces small residual
         assert np.linalg.norm(grad) < 1e-8, f"gradient at MAP: {grad}"
 
+    def test_predictive_coding_preserves_explicit_covariance_contract(self) -> None:
+        """Use a caller-supplied covariance in the public update step."""
+        observations = np.array([0.4, -0.2])
+        beliefs = np.array([0.1, 0.0])
+        coupling = np.array([[1.0, 0.2], [0.2, 1.5]])
+        sigma = np.diag([0.3, 0.7])
+
+        result = predictive_coding_step(
+            observations,
+            beliefs,
+            coupling,
+            learning_rate=0.005,
+            sigma=sigma,
+        )
+
+        assert result.beliefs.shape == observations.shape
+        assert np.isfinite(result.free_energy)
+        assert result.total_error_norm == pytest.approx(np.linalg.norm(result.prediction_errors))
+
     def test_convergence_of_pc_to_equilibrium(self) -> None:
         """Many PC steps should converge to stable beliefs."""
         K = build_knm_paper27(L=4)
         n = 4
         x = np.array([0.5, 0.3, -0.2, 0.1])
-        beliefs = np.zeros(n)
+        beliefs: NDArray[np.float64] = np.zeros(n)
 
         for _ in range(200):
             result = predictive_coding_step(x, beliefs, K, learning_rate=0.001)
@@ -369,6 +405,8 @@ class TestRoundtrip:
 
 
 class TestPerformance:
+    """Protect bounded execution time for the 16-layer public surface."""
+
     def test_free_energy_fast(self) -> None:
         """Free energy computation for n=16 in < 1ms."""
         K = build_knm_paper27()
