@@ -17,11 +17,14 @@ SSGF_GEOMETRY_GRADIENT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/ssgf_geometry_gradient_product.py",
     "src/scpn_quantum_control/ssgf/quantum_gradient.py",
     "src/scpn_quantum_control/ssgf/quantum_outer_cycle.py",
+    "src/scpn_quantum_control/ssgf/quantum_spectral.py",
     "src/scpn_quantum_control/bridge/ssgf_w_adapter.py",
     "tests/test_ssgf_geometry_gradient_product.py",
     "tests/test_ssgf_quantum_gradient.py",
     "tests/test_quantum_outer_cycle.py",
     "tests/test_quantum_outer_cycle_branches.py",
+    "tests/test_ssgf_spectral.py",
+    "tests/test_ssgf_quantum_spectral_branches.py",
     "tests/test_ssgf_w_adapter.py",
     "tools/ssgf_geometry_gradient_quality_gates.py",
     "tests/test_ssgf_geometry_gradient_quality_gate.py",
@@ -33,6 +36,8 @@ SSGF_GEOMETRY_GRADIENT_COVERAGE_COHORT = [
     "tests/test_ssgf_quantum_gradient.py",
     "tests/test_quantum_outer_cycle.py",
     "tests/test_quantum_outer_cycle_branches.py",
+    "tests/test_ssgf_spectral.py",
+    "tests/test_ssgf_quantum_spectral_branches.py",
     "tests/test_ssgf_w_adapter.py",
 ]
 """Tests that own exact SSGF geometry-gradient coverage."""
@@ -41,7 +46,7 @@ SSGF_GEOMETRY_GRADIENT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-ssgf-geometry-gradient
 """Isolated coverage database for the SSGF geometry-gradient owner."""
 SSGF_GEOMETRY_GRADIENT_COVERAGE_INCLUDE = (
     "*/ssgf_geometry_gradient_product.py,*/ssgf/quantum_gradient.py,"
-    "*/ssgf/quantum_outer_cycle.py,*/bridge/ssgf_w_adapter.py"
+    "*/ssgf/quantum_outer_cycle.py,*/ssgf/quantum_spectral.py,*/bridge/ssgf_w_adapter.py"
 )
 """Production sources enforced at exact branch coverage."""
 

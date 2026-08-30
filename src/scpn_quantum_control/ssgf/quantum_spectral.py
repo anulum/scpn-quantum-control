@@ -20,7 +20,7 @@ This module:
     1. Encodes the graph Laplacian as a Hamiltonian
     2. Estimates λ_2 via QPE (simulated classically for now)
     3. Computes the entrainment stability criterion λ_2 vs Δω
-    4. Provides resource estimates for hardware QPE
+    4. Provides coarse asymptotic QPE resource estimates, not hardware evidence
 """
 
 from __future__ import annotations
@@ -35,7 +35,26 @@ from ..analysis.bkt_analysis import coupling_laplacian, fiedler_eigenvalue
 
 @dataclass
 class SpectralBridgeResult:
-    """Spectral bridge analysis result."""
+    """Spectral bridge analysis result.
+
+    Attributes
+    ----------
+    fiedler_value
+        Algebraic-connectivity eigenvalue of the weighted Laplacian.
+    frequency_spread
+        Difference between the largest and smallest natural frequencies.
+    entrainment_stable
+        Whether the Fiedler value exceeds the frequency spread.
+    stability_margin
+        Fiedler value minus the frequency spread.
+    laplacian_spectrum
+        Sorted eigenvalues of the weighted Laplacian.
+    qpe_bits_needed
+        Coarse phase-estimation precision-bit estimate.
+    qpe_circuit_depth
+        Coarse asymptotic circuit-depth estimate, not a compiled-circuit count.
+
+    """
 
     fiedler_value: float  # λ_2
     frequency_spread: float  # max(ω) - min(ω)
@@ -47,7 +66,19 @@ class SpectralBridgeResult:
 
 
 def laplacian_spectrum(K: NDArray[np.float64]) -> NDArray[np.float64]:
-    """Full eigenvalue spectrum of the coupling-weighted Laplacian."""
+    """Return the full spectrum of the coupling-weighted Laplacian.
+
+    Parameters
+    ----------
+    K
+        Oscillator coupling matrix.
+
+    Returns
+    -------
+    NDArray[np.float64]
+        Laplacian eigenvalues in ascending order.
+
+    """
     L = coupling_laplacian(K)
     eigenvalues: NDArray[np.float64] = np.sort(np.linalg.eigvalsh(L)).astype(np.float64)
     return eigenvalues
@@ -59,7 +90,18 @@ def entrainment_criterion(
 ) -> tuple[bool, float]:
     """Check if λ_2 > Δω (synchronisation possible).
 
-    Returns (stable, margin) where margin = λ_2 - Δω.
+    Parameters
+    ----------
+    K
+        Oscillator coupling matrix.
+    omega
+        Natural oscillator frequencies.
+
+    Returns
+    -------
+    tuple[bool, float]
+        Stability decision and margin ``λ_2 - Δω``.
+
     """
     lam2 = fiedler_eigenvalue(K)
     delta_omega = float(np.max(omega) - np.min(omega))
@@ -73,14 +115,22 @@ def qpe_resource_estimate(
 ) -> tuple[int, int]:
     """Estimate QPE resources for Fiedler eigenvalue extraction.
 
-    Args:
-        K: coupling matrix
-        epsilon: target precision for λ_2
+    This asymptotic estimate is not a compiled-circuit, device-readiness, or
+    hardware-performance claim.
+
+    Parameters
+    ----------
+    K
+        Oscillator coupling matrix.
+    epsilon
+        Target Fiedler-value resolution.
 
     Returns
     -------
-        (n_bits, circuit_depth) where n_bits = ceil(log2(1/ε))
-        and depth = O(2^n_bits × n²) for Hamiltonian simulation queries.
+    tuple[int, int]
+        Precision-bit estimate ``ceil(log2(1/epsilon))`` and coarse depth
+        ``2**n_bits * n**2`` for Hamiltonian-simulation queries.
+
     """
     n = K.shape[0]
     n_bits = max(int(np.ceil(np.log2(1.0 / epsilon))), 1)
@@ -94,7 +144,23 @@ def spectral_bridge_analysis(
     omega: NDArray[np.float64],
     epsilon: float = 0.01,
 ) -> SpectralBridgeResult:
-    """Full spectral bridge analysis."""
+    """Run the full spectral bridge analysis.
+
+    Parameters
+    ----------
+    K
+        Oscillator coupling matrix.
+    omega
+        Natural oscillator frequencies.
+    epsilon
+        Target resolution for the coarse QPE resource estimate.
+
+    Returns
+    -------
+    SpectralBridgeResult
+        Connectivity, stability, spectrum, and diagnostic resource estimates.
+
+    """
     lam2 = fiedler_eigenvalue(K)
     spectrum = laplacian_spectrum(K)
     delta_omega = float(np.max(omega) - np.min(omega))
@@ -116,7 +182,22 @@ def spectral_bridge_vs_coupling(
     omega: NDArray[np.float64],
     k_values: NDArray[np.float64] | None = None,
 ) -> dict[str, list[float]]:
-    """Scan Fiedler value and stability margin vs coupling strength."""
+    """Scan Fiedler value and stability margin against coupling strength.
+
+    Parameters
+    ----------
+    omega
+        Natural oscillator frequencies.
+    k_values
+        Base coupling strengths. Uses a fixed 20-point grid when omitted.
+
+    Returns
+    -------
+    dict[str, list[float]]
+        Base couplings, Fiedler values, stability margins, and numeric stable
+        indicators in input order.
+
+    """
     from ..bridge.knm_hamiltonian import build_knm_paper27
 
     if k_values is None:
