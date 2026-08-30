@@ -241,6 +241,7 @@ class FiniteShotSampleProvenance:
         One of ``FINITE_SHOT_SAMPLE_SOURCE_CLASSES``. The value distinguishes
         caller-supplied arrays, local simulator rows, provider replays,
         provider runtimes, and synthetic fixtures.
+
     """
 
     sample_seed: str | int

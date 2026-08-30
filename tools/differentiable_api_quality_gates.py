@@ -16,10 +16,12 @@ Gate = tuple[str, list[str]]
 DIFFERENTIABLE_API_QUALITY_RATCHET = [
     "src/scpn_quantum_control/differentiable_api.py",
     "src/scpn_quantum_control/differentiable_canonical_api.py",
+    "src/scpn_quantum_control/differentiable_result_contracts.py",
     "tests/test_differentiable_api.py",
     "tests/test_differentiable_api_contracts.py",
     "tests/test_differentiable_canonical_modes.py",
     "tests/test_differentiable_package_exports.py",
+    "tests/test_differentiable_result_contracts.py",
     "tools/differentiable_api_quality_gates.py",
     "tools/differentiable_quality_gates.py",
 ]
@@ -30,6 +32,7 @@ DIFFERENTIABLE_API_COVERAGE_COHORT = [
     "tests/test_differentiable_api_contracts.py",
     "tests/test_differentiable_canonical_modes.py",
     "tests/test_differentiable_package_exports.py",
+    "tests/test_differentiable_result_contracts.py",
     "tests/test_transform_algebra.py",
 ]
 """Tests that own exact unified-API statement and branch coverage."""
@@ -132,7 +135,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={DIFFERENTIABLE_API_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/differentiable_api.py,*/differentiable_canonical_api.py",
+                "--include=*/differentiable_api.py,*/differentiable_canonical_api.py,*/differentiable_result_contracts.py",
             ],
         ),
     ]

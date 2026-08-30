@@ -371,10 +371,12 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/differentiable_api.py
           src/scpn_quantum_control/differentiable_canonical_api.py
+          src/scpn_quantum_control/differentiable_result_contracts.py
           tests/test_differentiable_api.py
           tests/test_differentiable_api_contracts.py
           tests/test_differentiable_canonical_modes.py
           tests/test_differentiable_package_exports.py
+          tests/test_differentiable_result_contracts.py
           tools/differentiable_api_quality_gates.py
           tools/differentiable_quality_gates.py
       - name: Ruff NumPy docstrings for unified differentiable API quality cohort
@@ -384,10 +386,12 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/differentiable_api.py
           src/scpn_quantum_control/differentiable_canonical_api.py
+          src/scpn_quantum_control/differentiable_result_contracts.py
           tests/test_differentiable_api.py
           tests/test_differentiable_api_contracts.py
           tests/test_differentiable_canonical_modes.py
           tests/test_differentiable_package_exports.py
+          tests/test_differentiable_result_contracts.py
           tools/differentiable_api_quality_gates.py
           tools/differentiable_quality_gates.py
       - name: Type-check differentiable Levenberg-Marquardt quality cohort
@@ -7257,6 +7261,7 @@ jobs:
           tests/test_differentiable_api_contracts.py
           tests/test_differentiable_canonical_modes.py
           tests/test_differentiable_package_exports.py
+          tests/test_differentiable_result_contracts.py
           tests/test_transform_algebra.py
           -k 'not unified_differentiable_benchmark_report_is_non_performance_evidence'
       - name: Enforce unified differentiable API exact coverage
@@ -7266,7 +7271,7 @@ jobs:
           --data-file=/tmp/scpn-qc-differentiable-api-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/differentiable_api.py,*/differentiable_canonical_api.py
+          --include=*/differentiable_api.py,*/differentiable_canonical_api.py,*/differentiable_result_contracts.py
       - name: Run differentiable Levenberg-Marquardt focused coverage
         run: >-
           python -m coverage run
