@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import importlib
 import sys
+from typing import Any
 from unittest.mock import patch
 
 import numpy as np
@@ -37,21 +38,27 @@ from scpn_quantum_control.phase.contraction_optimiser import (
 
 
 class TestCotengraAvailability:
-    def test_returns_bool(self):
+    """Verify optional cotengra capability detection."""
+
+    def test_returns_bool(self) -> None:
+        """Return a strict boolean availability signal."""
         result = is_cotengra_available()
         assert isinstance(result, bool)
 
-    def test_import_guard_accepts_cotengra_like_module(self, monkeypatch):
+    def test_import_guard_accepts_cotengra_like_module(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Accept a module implementing the required cotengra surface."""
         module_name = "scpn_quantum_control.phase.contraction_optimiser"
         original_module = sys.modules[module_name]
 
         class FakeCotengra:
             @staticmethod
-            def einsum_path(*args, **kwargs):
+            def einsum_path(*args: Any, **kwargs: Any) -> tuple[list[tuple[int, int]], str]:
                 return [(0, 1)], "fake_info"
 
             @staticmethod
-            def einsum(*args, **kwargs):
+            def einsum(*args: Any, **kwargs: Any) -> Any:
                 return np.eye(2)
 
         monkeypatch.setitem(sys.modules, "cotengra", FakeCotengra())
@@ -72,14 +79,17 @@ class TestCotengraAvailability:
             sys.modules[module_name] = original_module
             phase_pkg.contraction_optimiser = original_module
 
-    def test_import_guard_reports_unavailable_when_cotengra_import_fails(self, monkeypatch):
+    def test_import_guard_reports_unavailable_when_cotengra_import_fails(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Report unavailable when importing cotengra fails."""
         import builtins
 
         module_name = "scpn_quantum_control.phase.contraction_optimiser"
         original_module = sys.modules[module_name]
         real_import = builtins.__import__
 
-        def guarded_import(name, *args, **kwargs):
+        def guarded_import(name: str, *args: Any, **kwargs: Any) -> Any:
             if name == "cotengra":
                 raise ImportError("blocked cotengra import")
             return real_import(name, *args, **kwargs)
@@ -101,7 +111,9 @@ class TestCotengraAvailability:
 
 
 class TestOptimalContractionPath:
-    def test_matmul_path(self):
+    """Verify path selection and fallback behavior."""
+
+    def test_matmul_path(self) -> None:
         """Matrix multiply contraction returns valid path."""
         A = np.random.default_rng(42).random((4, 5))
         B = np.random.default_rng(43).random((5, 3))
@@ -109,7 +121,7 @@ class TestOptimalContractionPath:
         assert isinstance(path, list)
         assert isinstance(info, dict)
 
-    def test_numpy_fallback(self):
+    def test_numpy_fallback(self) -> None:
         """With optimiser='greedy', always uses numpy path."""
         A = np.random.default_rng(42).random((3, 4))
         B = np.random.default_rng(43).random((4, 2))
@@ -117,13 +129,13 @@ class TestOptimalContractionPath:
         assert info["method"] == "numpy_optimal"
         assert "info_string" in info
 
-    def test_trace_path(self):
+    def test_trace_path(self) -> None:
         """Trace contraction: ii->."""
         A = np.random.default_rng(42).random((5, 5))
         path, info = optimal_contraction_path("ii->", A)
         assert isinstance(path, list)
 
-    def test_cotengra_exception_falls_through(self):
+    def test_cotengra_exception_falls_through(self) -> None:
         """If cotengra raises, falls back to numpy."""
         import scpn_quantum_control.phase.contraction_optimiser as mod
 
@@ -153,7 +165,9 @@ class TestOptimalContractionPath:
 
 
 class TestContract:
-    def test_matmul_correctness(self):
+    """Verify optimised contractions against NumPy reference operations."""
+
+    def test_matmul_correctness(self) -> None:
         """contract('ij,jk->ik', A, B) == A @ B."""
         rng = np.random.default_rng(42)
         A = rng.random((4, 5))
@@ -162,26 +176,26 @@ class TestContract:
         expected = A @ B
         np.testing.assert_allclose(result, expected, atol=1e-12)
 
-    def test_trace(self):
+    def test_trace(self) -> None:
         """contract('ii->', A) == np.trace(A)."""
         A = np.random.default_rng(42).random((5, 5))
         result = contract("ii->", A)
         np.testing.assert_allclose(result, np.trace(A), atol=1e-12)
 
-    def test_outer_product(self):
+    def test_outer_product(self) -> None:
         """contract('i,j->ij', a, b) == np.outer(a, b)."""
         a = np.array([1.0, 2.0, 3.0])
         b = np.array([4.0, 5.0])
         result = contract("i,j->ij", a, b)
         np.testing.assert_allclose(result, np.outer(a, b))
 
-    def test_returns_ndarray(self):
+    def test_returns_ndarray(self) -> None:
         """Result is always numpy array."""
         A = np.eye(3)
         result = contract("ij->ij", A)
         assert isinstance(result, np.ndarray)
 
-    def test_batch_matmul(self):
+    def test_batch_matmul(self) -> None:
         """Batched contraction: bij,bjk->bik."""
         rng = np.random.default_rng(42)
         A = rng.random((2, 3, 4))
@@ -190,14 +204,14 @@ class TestContract:
         expected = np.einsum("bij,bjk->bik", A, B)
         np.testing.assert_allclose(result, expected, atol=1e-12)
 
-    def test_explicit_numpy_optimiser(self):
+    def test_explicit_numpy_optimiser(self) -> None:
         """optimiser='greedy' forces numpy path."""
         A = np.eye(3)
         B = np.eye(3)
         result = contract("ij,jk->ik", A, B, optimiser="greedy")
         np.testing.assert_allclose(result, np.eye(3))
 
-    def test_cotengra_path_if_available(self):
+    def test_cotengra_path_if_available(self) -> None:
         """If cotengra is available, auto uses it."""
         if not is_cotengra_available():
             pytest.skip("cotengra not installed")
@@ -211,27 +225,33 @@ class TestContract:
 
 
 class TestBenchmarkContraction:
-    def test_output_keys(self):
+    """Verify contraction benchmark result structure and timing arithmetic."""
+
+    def test_output_keys(self) -> None:
+        """Return all public benchmark fields."""
         A = np.random.default_rng(42).random((3, 4))
         B = np.random.default_rng(43).random((4, 2))
         result = benchmark_contraction("ij,jk->ik", A, B, n_repeats=3)
         assert set(result.keys()) == {"naive_ms", "optimised_ms", "speedup"}
 
-    def test_positive_times(self):
+    def test_positive_times(self) -> None:
+        """Report non-negative naive and optimised durations."""
         A = np.random.default_rng(42).random((5, 5))
         B = np.random.default_rng(43).random((5, 5))
         result = benchmark_contraction("ij,jk->ik", A, B, n_repeats=3)
         assert result["naive_ms"] >= 0
         assert result["optimised_ms"] >= 0
 
-    def test_speedup_is_ratio(self):
+    def test_speedup_is_ratio(self) -> None:
+        """Report a non-negative speedup ratio."""
         A = np.eye(4)
         B = np.eye(4)
         result = benchmark_contraction("ij,jk->ik", A, B, n_repeats=5)
         # speedup can be 0.0 for tiny matrices where both paths round to ~0 ms
         assert result["speedup"] >= 0
 
-    def test_single_repeat(self):
+    def test_single_repeat(self) -> None:
+        """Support a single benchmark repetition."""
         A = np.eye(3)
         result = benchmark_contraction("ii->", A, n_repeats=1)
         assert "speedup" in result
@@ -241,7 +261,9 @@ class TestBenchmarkContraction:
 
 
 class TestMockedCotengraPath:
-    def test_cotengra_path_used(self):
+    """Verify the optional cotengra execution surface through test doubles."""
+
+    def test_cotengra_path_used(self) -> None:
         """When cotengra available, optimal_contraction_path uses it."""
         from unittest.mock import MagicMock
 
@@ -264,7 +286,7 @@ class TestMockedCotengraPath:
         finally:
             mod._COTENGRA_AVAILABLE = original
 
-    def test_cotengra_contract_used(self):
+    def test_cotengra_contract_used(self) -> None:
         """When cotengra available, contract uses cotengra.einsum."""
         from unittest.mock import MagicMock
 

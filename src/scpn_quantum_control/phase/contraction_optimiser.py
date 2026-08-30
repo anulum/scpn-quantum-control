@@ -94,8 +94,9 @@ def optimal_contraction_path(
 
     Returns
     -------
-    (path, info) where path is a list of contraction pairs and
-    info contains flops, memory estimates.
+    tuple[list[tuple[int, ...]], ContractionPathInfo]
+        Normalised contraction steps and backend-specific path metadata.
+
     """
     if _COTENGRA_AVAILABLE and optimiser == "auto" and cotengra is not None:
         try:

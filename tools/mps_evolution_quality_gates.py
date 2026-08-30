@@ -17,15 +17,20 @@ MPS_EVOLUTION_COVERAGE_COHORT = [
     "tests/test_mps_evolution.py",
     "tests/test_backend_selector.py",
     "tests/test_classical_baselines.py",
+    "tests/test_contraction_optimiser.py",
 ]
 MPS_EVOLUTION_TYPING_RATCHET = [
     MPS_EVOLUTION_SOURCE,
+    "src/scpn_quantum_control/phase/contraction_optimiser.py",
+    "tests/test_contraction_optimiser.py",
     "tools/mps_evolution_quality_gates.py",
     "tests/test_mps_evolution_quality_gate.py",
 ]
 MPS_EVOLUTION_DOCSTRING_RATCHET = [
     MPS_EVOLUTION_SOURCE,
     "tests/test_mps_evolution.py",
+    "src/scpn_quantum_control/phase/contraction_optimiser.py",
+    "tests/test_contraction_optimiser.py",
     "tools/mps_evolution_quality_gates.py",
     "tests/test_mps_evolution_quality_gate.py",
 ]
@@ -95,7 +100,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={MPS_EVOLUTION_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/phase/mps_evolution.py",
+                "--include=*/phase/mps_evolution.py,*/phase/contraction_optimiser.py",
             ],
         ),
     ]

@@ -40,7 +40,7 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/phase/mps_evolution.py" in report
+    assert "--include=*/phase/mps_evolution.py,*/phase/contraction_optimiser.py" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -68,5 +68,6 @@ def test_ci_runs_real_quimb_and_aggregates_mps_gate() -> None:
     assert "python -c \"import quimb; assert quimb.__version__ == '1.13.0'\"" in block
     assert "--fail-under=100" in block
     assert "phase/mps_evolution.py" in block
+    assert "phase/contraction_optimiser.py" in block
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "mps-evolution-quality" in aggregate
