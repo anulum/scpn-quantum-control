@@ -252,6 +252,7 @@ if TYPE_CHECKING:
         program_ad_fuzz_assurance_quality_gates as _program_ad_fuzz_assurance_quality_gates,
     )
     from tools import program_ad_quality_gates as _program_ad_quality_gates
+    from tools import psi_lattice_quality_gates as _psi_lattice_quality_gates
     from tools import public_api_stability_quality_gates as _public_api_stability_quality_gates
     from tools import pulse_shaping_quality_gates as _pulse_shaping_quality_gates
     from tools import (
@@ -369,6 +370,7 @@ else:
     )
     _variational_metric_quality_gates = import_module("tools.variational_metric_quality_gates")
     _varqite_quality_gates = import_module("tools.varqite_quality_gates")
+    _psi_lattice_quality_gates = import_module("tools.psi_lattice_quality_gates")
     _qnode_circuit_contracts_quality_gates = import_module(
         "tools.qnode_circuit_contracts_quality_gates"
     )
@@ -983,6 +985,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_whole_program_frontend_contracts_quality_gates.build_static_quality_gates(_PY),
     *_variational_metric_quality_gates.build_static_quality_gates(_PY),
     *_varqite_quality_gates.build_static_quality_gates(_PY),
+    *_psi_lattice_quality_gates.build_static_quality_gates(_PY),
     *_qnode_circuit_contracts_quality_gates.build_static_quality_gates(_PY),
     *_topology_kernel_schema_quality_gates.build_static_quality_gates(_PY),
     *_topology_kernel_evidence_quality_gates.build_static_quality_gates(_PY),
@@ -1510,6 +1513,8 @@ WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_GATES = (
 )
 VARIATIONAL_METRIC_COVERAGE_GATES = _variational_metric_quality_gates.build_coverage_gates(_PY)
 VARQITE_COVERAGE_GATES = _varqite_quality_gates.build_coverage_gates(_PY)
+PSI_LATTICE_COVERAGE_GATES = _psi_lattice_quality_gates.build_coverage_gates(_PY)
+PSI_LATTICE_POLYGLOT_GATES = _psi_lattice_quality_gates.build_polyglot_gates(_CARGO)
 QNODE_CIRCUIT_CONTRACTS_COVERAGE_GATES = (
     _qnode_circuit_contracts_quality_gates.build_coverage_gates(_PY)
 )
@@ -2057,6 +2062,8 @@ def main() -> int:
             gates.extend(WHOLE_PROGRAM_FRONTEND_CONTRACTS_COVERAGE_GATES)
             gates.extend(VARIATIONAL_METRIC_COVERAGE_GATES)
             gates.extend(VARQITE_COVERAGE_GATES)
+            gates.extend(PSI_LATTICE_COVERAGE_GATES)
+            gates.extend(PSI_LATTICE_POLYGLOT_GATES)
             gates.extend(QNODE_CIRCUIT_CONTRACTS_COVERAGE_GATES)
             gates.extend(TOPOLOGY_KERNEL_SCHEMA_COVERAGE_GATES)
             gates.extend(TOPOLOGY_KERNEL_EVIDENCE_COVERAGE_GATES)

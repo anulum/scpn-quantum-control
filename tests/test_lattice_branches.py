@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import importlib
 import sys
+from typing import Any, cast
 
 from scpn_quantum_control.psi_field import lattice
 
@@ -22,7 +23,7 @@ def test_lattice_disables_rust_gauge_without_engine() -> None:
     ``scpn_quantum_engine`` is unavailable; the module is restored afterwards.
     """
     original = sys.modules.get("scpn_quantum_engine")
-    sys.modules["scpn_quantum_engine"] = None  # type: ignore[assignment]
+    cast(Any, sys.modules)["scpn_quantum_engine"] = None
     try:
         importlib.reload(lattice)
         assert lattice._HAS_RUST_GAUGE is False

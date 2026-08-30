@@ -45,7 +45,20 @@ except ImportError:
 
 @dataclass
 class PlaquetteResult:
-    """Plaquette action measurement."""
+    """Plaquette action measurement.
+
+    Attributes
+    ----------
+    mean_plaquette
+        Mean real plaquette value.
+    n_plaquettes
+        Number of measured triangular plaquettes.
+    action
+        Wilson action for the measured configuration.
+    beta
+        Inverse coupling used by the action.
+
+    """
 
     mean_plaquette: float  # ⟨Re(U_plaq)⟩ averaged over all plaquettes
     n_plaquettes: int
@@ -71,11 +84,16 @@ class U1LatticGauge:
     ) -> None:
         """Initialise U(1) gauge field.
 
-        Args:
-            adjacency: n×n symmetric adjacency/coupling matrix.
-                       Non-zero entries define edges.
-            beta: inverse coupling constant (β = 1/g²).
-            seed: RNG seed for reproducibility.
+        Parameters
+        ----------
+        adjacency
+            Symmetric adjacency or coupling matrix. Nonzero upper-triangle
+            entries define stored edges.
+        beta
+            Inverse coupling constant, ``1 / g**2``.
+        seed
+            Seed for reproducible link initialization and HMC proposals.
+
         """
         self.n = adjacency.shape[0]
         self.beta = beta
@@ -107,6 +125,17 @@ class U1LatticGauge:
 
         A triangle (i,j,k) contributes plaquette
         U_ij × U_jk × U_ki = exp(i(A_ij + A_jk + A_ki)).
+
+        Parameters
+        ----------
+        adjacency
+            Graph adjacency matrix.
+
+        Returns
+        -------
+        list
+            Triangles represented by their three stored undirected edges.
+
         """
         adj_bool = np.abs(adjacency) > 1e-15
         triangles: list[list[tuple[int, int]]] = []
@@ -121,7 +150,14 @@ class U1LatticGauge:
         return triangles
 
     def _build_flat_triangles(self) -> tuple[NDArray[np.int64], NDArray[np.float64]]:
-        """Build flat arrays of triangle edge indices and signs for Rust."""
+        """Build flat arrays of triangle edge indices and signs for Rust.
+
+        Returns
+        -------
+        tuple
+            Integer edge indices and floating-point orientation signs.
+
+        """
         tri_flat = []
         tri_signs = []
         for plaq in self.plaquettes:
@@ -144,7 +180,21 @@ class U1LatticGauge:
         )
 
     def _edge_link(self, i: int, j: int) -> float:
-        """Get A_ij (signed: A_ji = −A_ij)."""
+        """Get signed link angle ``A_ij`` with ``A_ji = -A_ij``.
+
+        Parameters
+        ----------
+        i
+            Source-site index.
+        j
+            Destination-site index.
+
+        Returns
+        -------
+        float
+            Directed link angle, or zero for a self-link.
+
+        """
         if i < j:
             return float(self.links[self.edge_index[(i, j)]])
         elif j < i:
@@ -152,7 +202,19 @@ class U1LatticGauge:
         return 0.0
 
     def plaquette_phase(self, plaq: list[tuple[int, int]]) -> float:
-        """Compute plaquette phase Σ A_link around a closed path."""
+        """Compute the signed link-angle sum around a closed path.
+
+        Parameters
+        ----------
+        plaq
+            Directed edges forming the path.
+
+        Returns
+        -------
+        float
+            Accumulated plaquette phase.
+
+        """
         phase = 0.0
         for i, j in plaq:
             phase += self._edge_link(i, j)
@@ -162,7 +224,19 @@ class U1LatticGauge:
         return phase
 
     def plaquette_action_value(self, plaq: list[tuple[int, int]]) -> float:
-        """Re(U_plaq) = cos(plaquette_phase)."""
+        """Evaluate the real Wilson plaquette value.
+
+        Parameters
+        ----------
+        plaq
+            Three stored edges of a triangular plaquette.
+
+        Returns
+        -------
+        float
+            ``cos(A_ij + A_jk - A_ik)``.
+
+        """
         # Triangle (i,j), (j,k), (i,k): circulation = A_ij + A_jk − A_ik
         i1, j1 = plaq[0]  # (i, j)
         i2, j2 = plaq[1]  # (j, k)
@@ -180,7 +254,14 @@ class U1LatticGauge:
         return float(np.cos(phase))
 
     def total_action(self) -> float:
-        """S = −β × Σ_plaq Re(U_plaq). Uses Rust when available."""
+        """Compute ``-beta`` times the plaquette sum.
+
+        Returns
+        -------
+        float
+            Total Wilson action, using Rust acceleration when available.
+
+        """
         if _HAS_RUST_GAUGE and len(self.plaquettes) > 0:
             _, action = _plaq_rust(
                 self.links,
@@ -197,7 +278,14 @@ class U1LatticGauge:
         return s
 
     def measure_plaquettes(self) -> PlaquetteResult:
-        """Measure average plaquette value."""
+        """Measure the average plaquette value and action.
+
+        Returns
+        -------
+        PlaquetteResult
+            Plaquette count, mean, action, and inverse coupling.
+
+        """
         if not self.plaquettes:
             return PlaquetteResult(0.0, 0, 0.0, self.beta)
 
@@ -212,7 +300,14 @@ class U1LatticGauge:
         )
 
     def force(self) -> NDArray[np.float64]:
-        """Compute dS/dA for each link. Uses Rust when available."""
+        """Compute the action derivative for each stored link.
+
+        Returns
+        -------
+        numpy.ndarray
+            Force vector in stored-edge order, using Rust when available.
+
+        """
         if _HAS_RUST_GAUGE and len(self.plaquettes) > 0:
             return np.asarray(
                 _force_rust(
@@ -262,7 +357,21 @@ def hmc_update(
     2. Leapfrog integration of (A, π) for n_leapfrog steps
     3. Metropolis accept/reject
 
-    Returns (accepted, delta_H).
+    Parameters
+    ----------
+    gauge
+        Gauge field updated in place when the proposal is accepted.
+    n_leapfrog
+        Number of leapfrog position updates.
+    step_size
+        Leapfrog integration step size.
+
+    Returns
+    -------
+    tuple
+        Acceptance flag and Hamiltonian change. Rejected proposals restore the
+        original link vector.
+
     """
     # Save old state
     old_links = gauge.links.copy()

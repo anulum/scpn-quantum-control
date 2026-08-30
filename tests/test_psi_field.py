@@ -19,9 +19,11 @@ import importlib.util
 import sys
 import time
 from pathlib import Path
+from typing import Any, TypeAlias
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.psi_field.infoton as infoton_module
 import scpn_quantum_control.psi_field.lattice as lattice_module
@@ -45,18 +47,20 @@ from scpn_quantum_control.psi_field.observables import (
 )
 from scpn_quantum_control.psi_field.scpn_mapping import SCPNLattice, scpn_to_lattice
 
+FloatArray: TypeAlias = NDArray[np.float64]
+
 # ===== Fixtures =====
 
 
 @pytest.fixture
-def triangle_adj() -> np.ndarray:
+def triangle_adj() -> FloatArray:
     """Minimal 3-node triangle graph."""
     return np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]], dtype=float)
 
 
 @pytest.fixture
 def scpn_lattice() -> SCPNLattice:
-    """Standard 16-layer SCPN lattice."""
+    """Build the standard 16-layer SCPN lattice."""
     return scpn_to_lattice(beta=2.0, seed=42)
 
 
@@ -64,6 +68,8 @@ def scpn_lattice() -> SCPNLattice:
 
 
 class TestEmptyNull:
+    """Exercise empty and minimal lattice inputs."""
+
     def test_single_edge_no_plaquettes(self) -> None:
         """2-node graph has no triangles → no plaquettes."""
         adj = np.array([[0, 1], [1, 0]], dtype=float)
@@ -103,6 +109,8 @@ class TestEmptyNull:
 
 
 class TestErrorHandling:
+    """Exercise edge cases and optional-native import guards."""
+
     def test_polyakov_single_site(self) -> None:
         """Polyakov loop with single site returns 1."""
         adj = np.array([[0, 1], [1, 0]], dtype=float)
@@ -110,7 +118,7 @@ class TestErrorHandling:
         p = polyakov_loop(g, [0])
         assert abs(p - 1.0) < 1e-12
 
-    def test_hmc_very_large_step(self, triangle_adj: np.ndarray) -> None:
+    def test_hmc_very_large_step(self, triangle_adj: FloatArray) -> None:
         """Very large HMC step should be rejected (huge dH)."""
         g = U1LatticGauge(triangle_adj, beta=1.0, seed=42)
         old_links = g.links.copy()
@@ -119,7 +127,7 @@ class TestErrorHandling:
         if not accepted:
             assert np.allclose(g.links, old_links)
 
-    def test_string_tension_disordered(self, triangle_adj: np.ndarray) -> None:
+    def test_string_tension_disordered(self, triangle_adj: FloatArray) -> None:
         """Random gauge field may have negative mean plaquette → None."""
         g = U1LatticGauge(triangle_adj, beta=0.01, seed=42)
         sigma = string_tension_from_wilson(g)
@@ -143,7 +151,7 @@ class TestErrorHandling:
 
         original_import = builtins.__import__
 
-        def blocked_import(name, *args, **kwargs):
+        def blocked_import(name: str, *args: Any, **kwargs: Any) -> Any:
             if name == "scpn_quantum_engine":
                 raise ImportError("blocked in test")
             return original_import(name, *args, **kwargs)
@@ -167,7 +175,7 @@ class TestErrorHandling:
 
         original_import = builtins.__import__
 
-        def blocked_import(name, *args, **kwargs):
+        def blocked_import(name: str, *args: Any, **kwargs: Any) -> Any:
             if name == "scpn_quantum_engine":
                 raise ImportError("blocked in test")
             return original_import(name, *args, **kwargs)
@@ -183,7 +191,9 @@ class TestErrorHandling:
 
 
 class TestNegativeCases:
-    def test_gauge_invariance_kinetic(self, triangle_adj: np.ndarray) -> None:
+    """Exercise invariants, fallback arithmetic, and branch boundaries."""
+
+    def test_gauge_invariance_kinetic(self, triangle_adj: FloatArray) -> None:
         """Kinetic energy must be gauge-invariant under local U(1).
 
         Transform: φ_i → exp(iα_i) φ_i, A_ij → A_ij + α_i − α_j
@@ -212,7 +222,7 @@ class TestNegativeCases:
         )
 
     def test_gauge_covariant_kinetic_python_fallback(
-        self, triangle_adj: np.ndarray, monkeypatch: pytest.MonkeyPatch
+        self, triangle_adj: FloatArray, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Python kinetic fallback matches the scalar-QED hopping formula."""
         monkeypatch.setattr(infoton_module, "_HAS_RUST_GAUGE", False)
@@ -244,7 +254,7 @@ class TestNegativeCases:
         assert abs(q) < 0.1, f"smooth field should have Q ≈ 0, got {q:.4f}"
 
     def test_topological_charge_python_fallback(
-        self, triangle_adj: np.ndarray, monkeypatch: pytest.MonkeyPatch
+        self, triangle_adj: FloatArray, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Python topological-charge loop wraps plaquette phase."""
         monkeypatch.setattr(observables_module, "_HAS_RUST_GAUGE", False)
@@ -256,7 +266,7 @@ class TestNegativeCases:
 
         assert observables_module.topological_charge(g) == pytest.approx(wrapped / (2 * np.pi))
 
-    def test_plaquette_bounded(self, triangle_adj: np.ndarray) -> None:
+    def test_plaquette_bounded(self, triangle_adj: FloatArray) -> None:
         """Re(U_plaq) must be in [−1, 1]."""
         g = U1LatticGauge(triangle_adj, beta=1.0, seed=42)
         for plaq in g.plaquettes:
@@ -264,7 +274,7 @@ class TestNegativeCases:
             assert -1.0 - 1e-10 <= val <= 1.0 + 1e-10
 
     def test_python_fallback_action_and_force(
-        self, triangle_adj: np.ndarray, monkeypatch: pytest.MonkeyPatch
+        self, triangle_adj: FloatArray, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Python fallback matches the oriented triangle equations."""
         monkeypatch.setattr(lattice_module, "_HAS_RUST_GAUGE", False)
@@ -279,7 +289,7 @@ class TestNegativeCases:
         assert np.allclose(g.force(), expected_force)
 
     def test_reversed_oriented_force_branch(
-        self, triangle_adj: np.ndarray, monkeypatch: pytest.MonkeyPatch
+        self, triangle_adj: FloatArray, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Fallback force honours reversed stored-edge orientation."""
         monkeypatch.setattr(lattice_module, "_HAS_RUST_GAUGE", False)
@@ -294,14 +304,14 @@ class TestNegativeCases:
 
         assert np.allclose(g.force(), expected)
 
-    def test_plaquette_phase_and_self_link(self, triangle_adj: np.ndarray) -> None:
+    def test_plaquette_phase_and_self_link(self, triangle_adj: FloatArray) -> None:
         """Plaquette phase follows signed links and self-links vanish."""
         g = U1LatticGauge(triangle_adj, beta=1.0, seed=42)
         g.links[:] = np.array([0.3, 0.5, -0.2])
         assert g._edge_link(1, 1) == 0.0
         assert g.plaquette_phase([(0, 1), (1, 2), (2, 0)]) == pytest.approx(0.3 - 0.2 - 0.5)
 
-    def test_flat_triangle_builder_skips_missing_edges(self, triangle_adj: np.ndarray) -> None:
+    def test_flat_triangle_builder_skips_missing_edges(self, triangle_adj: FloatArray) -> None:
         """Malformed cached plaquettes are ignored by the Rust flat view."""
         g = U1LatticGauge(triangle_adj, beta=1.0, seed=42)
         g.plaquettes = [[(0, 1), (1, 3), (0, 3)]]
@@ -314,6 +324,8 @@ class TestNegativeCases:
 
 
 class TestPipelineIntegration:
+    """Exercise end-to-end lattice construction and gauge integration."""
+
     def test_scpn_to_lattice_creates_valid(self) -> None:
         """scpn_to_lattice produces a valid SCPNLattice."""
         lattice = scpn_to_lattice(seed=42)
@@ -355,8 +367,11 @@ class TestPipelineIntegration:
         assert hasattr(psi_field, "polyakov_loop")
 
     def test_observables_bridge_to_gauge_package(self) -> None:
-        """Wilson loop from gauge/ and plaquette from psi_field/ measure
-        the same U(1) physics on the SCPN topology."""
+        """Compare gauge and psi-field diagnostics on one topology.
+
+        Wilson loops from ``gauge`` and plaquettes from ``psi_field`` measure
+        the same U(1) physics on the SCPN topology.
+        """
         lattice = scpn_to_lattice(beta=2.0, seed=42)
         # Both packages should agree that ordered phase has high plaquette
         plaq = lattice.gauge.measure_plaquettes()
@@ -365,7 +380,7 @@ class TestPipelineIntegration:
         assert isinstance(plaq.mean_plaquette, float)
         assert isinstance(avg_u, complex)
 
-    def test_string_tension_positive_branch(self, triangle_adj: np.ndarray) -> None:
+    def test_string_tension_positive_branch(self, triangle_adj: FloatArray) -> None:
         """Positive plaquette expectation returns finite string tension."""
         g = U1LatticGauge(triangle_adj, beta=1.0, seed=42)
         g.links[:] = np.array([0.1, 0.2, -0.1])
@@ -387,19 +402,21 @@ class TestPipelineIntegration:
 
 
 class TestRoundtrip:
-    def test_hmc_reversibility(self, triangle_adj: np.ndarray) -> None:
+    """Exercise deterministic and round-trip physical contracts."""
+
+    def test_hmc_reversibility(self, triangle_adj: FloatArray) -> None:
         """HMC with step_size → 0 should have dH → 0."""
         g = U1LatticGauge(triangle_adj, beta=1.0, seed=42)
         _, dH = hmc_update(g, n_leapfrog=20, step_size=0.001)
         assert abs(dH) < 0.1, f"tiny step should give dH ≈ 0, got {dH}"
 
-    def test_polyakov_loop_closed(self, triangle_adj: np.ndarray) -> None:
+    def test_polyakov_loop_closed(self, triangle_adj: FloatArray) -> None:
         """Closed Polyakov loop 0→1→2→0 is gauge-invariant."""
         g = U1LatticGauge(triangle_adj, beta=1.0, seed=42)
         p = polyakov_loop(g, [0, 1, 2, 0])
         assert abs(abs(p) - 1.0) < 1e-10, "closed loop |P| = 1"
 
-    def test_matter_action_equals_kinetic_plus_potential(self, triangle_adj: np.ndarray) -> None:
+    def test_matter_action_equals_kinetic_plus_potential(self, triangle_adj: FloatArray) -> None:
         """S_matter = T + V."""
         g = U1LatticGauge(triangle_adj, beta=1.0, seed=42)
         f = create_infoton(3, gauge_coupling=1.0, seed=42)
@@ -420,6 +437,8 @@ class TestRoundtrip:
 
 
 class TestPerformance:
+    """Exercise bounded runtime on canonical small lattice workloads."""
+
     def test_plaquette_measurement_fast(self) -> None:
         """Plaquette measurement keeps a bounded per-call runtime."""
         lattice = scpn_to_lattice(seed=42)

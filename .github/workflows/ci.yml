@@ -2290,8 +2290,58 @@ jobs:
           --fail-under=100
           --include=*/phase/xy_compiler.py
 
+  psi-lattice-quality:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check psi-field lattice quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/psi_field/lattice.py
+          tests/test_psi_field.py
+          tests/test_lattice_branches.py
+          tools/psi_lattice_quality_gates.py
+          tests/test_psi_lattice_quality_gate.py
+      - name: Ruff NumPy docstrings for psi-field lattice quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/psi_field/lattice.py
+          tests/test_psi_field.py
+          tests/test_lattice_branches.py
+          tools/psi_lattice_quality_gates.py
+          tests/test_psi_lattice_quality_gate.py
+      - name: Run psi-field lattice focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-psi-lattice-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_psi_field.py
+          tests/test_lattice_branches.py
+      - name: Enforce psi-field lattice exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-psi-lattice-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/psi_field/lattice.py
+      - name: Run Rust psi-field lattice parity tests
+        run: cargo test --manifest-path scpn_quantum_engine/Cargo.toml --lib gauge_lattice
+
   differentiable-sparse-derivatives-quality:
-    needs: [lint, varqite-quality, xy-compiler-quality]
+    needs: [lint, varqite-quality, xy-compiler-quality, psi-lattice-quality]
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
