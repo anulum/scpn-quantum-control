@@ -34,10 +34,14 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     run = gates["closed-loop publication focused coverage"]
     report = gates["closed-loop publication exact coverage threshold"]
     assert "--branch" in run
-    assert run[-2:] == quality_gates.CLOSED_LOOP_PUBLICATION_COVERAGE_COHORT
+    assert run[-len(quality_gates.CLOSED_LOOP_PUBLICATION_COVERAGE_COHORT) :] == (
+        quality_gates.CLOSED_LOOP_PUBLICATION_COVERAGE_COHORT
+    )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/benchmarks/closed_loop_publication_run.py" in report
+    include = next(argument for argument in report if argument.startswith("--include="))
+    assert "benchmarks/closed_loop_publication_run.py" in include
+    assert "control/closed_loop_analysis.py" in include
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -62,4 +66,7 @@ def test_ci_runs_and_aggregates_closed_loop_publication_gate() -> None:
         assert path in block
     assert "--fail-under=100" in block
     assert "benchmarks/closed_loop_publication_run.py" in block
+    assert "control/closed_loop_analysis.py" in block
+    assert "tests/test_closed_loop_analysis.py" in block
+    assert "tests/test_closed_loop_analysis_wall_clock.py" in block
     assert "closed-loop-publication-quality" in workflow[workflow.index("  ci-gate:") :]

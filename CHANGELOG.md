@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Complete closed-loop analysis lifecycle and direct-test NumPy documentation,
+  close the direct-test strict-typing debt, and extend the existing publication
+  quality owner with real response/latency execution plus exact joint
+  line/branch coverage for both connected closed-loop modules.
+
 - Complete the UltraScale HLS producer NumPy documentation contract and extend
   the existing host-cosimulation quality owner with the producer source,
   Python-fallback execution, and exact joint line/branch coverage while

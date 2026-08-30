@@ -7,7 +7,10 @@
 # SCPN Quantum Control — Tests for closed-loop control analysis
 """Tests for control/closed_loop_analysis.py: response classification and policy gate."""
 
+from __future__ import annotations
+
 import warnings
+from typing import Any
 
 import numpy as np
 import pytest
@@ -36,41 +39,47 @@ _ROUNDS = 40
 # --------------------------------------------------------------------------- #
 # Response classification
 # --------------------------------------------------------------------------- #
-def test_converged_response():
-    response = _TARGET - 0.5 * np.exp(-0.3 * np.arange(_ROUNDS))
+def test_converged_response() -> None:
+    """Classify a decaying set-point error as converged."""
+    response = np.array(_TARGET - 0.5 * np.exp(-0.3 * np.arange(_ROUNDS)), dtype=np.float64)
     verdict, perf = analyse_closed_loop_response(response, _TARGET, tolerance=0.05)
     assert verdict is ResponseClass.CONVERGED
     assert perf.settling_round is not None
     assert perf.steady_state_error <= 0.05
 
 
-def test_limit_cycle_response():
-    response = _TARGET + 0.15 * np.sin(0.6 * np.arange(_ROUNDS))
+def test_limit_cycle_response() -> None:
+    """Classify sustained oscillation around the target as a limit cycle."""
+    response = np.array(_TARGET + 0.15 * np.sin(0.6 * np.arange(_ROUNDS)), dtype=np.float64)
     verdict, perf = analyse_closed_loop_response(response, _TARGET, tolerance=0.05)
     assert verdict is ResponseClass.LIMIT_CYCLE
     assert perf.oscillation_amplitude > 0.05
     assert perf.error_sign_changes >= 4
 
 
-def test_diverged_response():
-    response = 0.75 - 0.012 * np.arange(_ROUNDS)
+def test_diverged_response() -> None:
+    """Classify a trajectory moving away from the set point as diverged."""
+    response = np.array(0.75 - 0.012 * np.arange(_ROUNDS), dtype=np.float64)
     verdict, _perf = analyse_closed_loop_response(response, _TARGET, tolerance=0.05)
     assert verdict is ResponseClass.DIVERGED
 
 
-def test_unsettled_response():
-    response = _TARGET - 0.5 + 0.008 * np.arange(_ROUNDS)
+def test_unsettled_response() -> None:
+    """Classify an improving but out-of-band trajectory as unsettled."""
+    response = np.array(_TARGET - 0.5 + 0.008 * np.arange(_ROUNDS), dtype=np.float64)
     verdict, _perf = analyse_closed_loop_response(response, _TARGET, tolerance=0.02)
     assert verdict is ResponseClass.UNSETTLED
 
 
-def test_transient_oscillation_then_settle_is_converged():
+def test_transient_oscillation_then_settle_is_converged() -> None:
+    """Accept an early oscillation followed by stable set-point tracking."""
     response = _TARGET + np.concatenate([0.3 * np.sin(np.arange(12)), np.zeros(28)])
     verdict, _perf = analyse_closed_loop_response(response, _TARGET, tolerance=0.03)
     assert verdict is ResponseClass.CONVERGED
 
 
-def test_metrics_on_known_signal():
+def test_metrics_on_known_signal() -> None:
+    """Compute exact control metrics for a constant known offset."""
     # Constant offset of 0.1 below target for 10 rounds.
     response = np.full(10, _TARGET - 0.1)
     _verdict, perf = analyse_closed_loop_response(response, _TARGET, tolerance=0.2)
@@ -89,7 +98,8 @@ def test_metrics_on_known_signal():
         {"response": np.zeros(5), "target": 0.5, "tolerance": 0.1, "settle_window": 0},
     ],
 )
-def test_analyse_rejects_bad_input(kwargs):
+def test_analyse_rejects_bad_input(kwargs: dict[str, Any]) -> None:
+    """Reject malformed response, tolerance, and settling inputs."""
     with pytest.raises(ValueError):
         analyse_closed_loop_response(**kwargs)
 
@@ -97,13 +107,15 @@ def test_analyse_rejects_bad_input(kwargs):
 # --------------------------------------------------------------------------- #
 # Execution policy gate
 # --------------------------------------------------------------------------- #
-def test_policy_defaults_to_simulation():
+def test_policy_defaults_to_simulation() -> None:
+    """Default to an authorised software-in-the-loop execution."""
     decision = evaluate_closed_loop_policy(ClosedLoopExecutionPolicy(), requested_rounds=10)
     assert decision.authorised
     assert decision.mode is ExecutionMode.SIMULATION
 
 
-def test_policy_authorises_hardware_with_ticket_and_backend():
+def test_policy_authorises_hardware_with_ticket_and_backend() -> None:
+    """Authorise hardware only with both a ticket and allow-listed backend."""
     policy = ClosedLoopExecutionPolicy(
         allow_hardware=True, live_ticket="TICKET-1", backend_allowlist=("ibm_heron",)
     )
@@ -112,14 +124,16 @@ def test_policy_authorises_hardware_with_ticket_and_backend():
     assert decision.mode is ExecutionMode.HARDWARE
 
 
-def test_policy_refuses_hardware_without_ticket():
+def test_policy_refuses_hardware_without_ticket() -> None:
+    """Refuse hardware intent when the live ticket is absent."""
     policy = ClosedLoopExecutionPolicy(allow_hardware=True, backend_allowlist=("ibm_heron",))
     decision = evaluate_closed_loop_policy(policy, backend="ibm_heron", requested_rounds=10)
     assert not decision.authorised
     assert decision.mode is ExecutionMode.SIMULATION
 
 
-def test_policy_refuses_unlisted_backend():
+def test_policy_refuses_unlisted_backend() -> None:
+    """Refuse a backend outside the explicit hardware allow-list."""
     policy = ClosedLoopExecutionPolicy(
         allow_hardware=True, live_ticket="TICKET-1", backend_allowlist=("ibm_heron",)
     )
@@ -127,19 +141,22 @@ def test_policy_refuses_unlisted_backend():
     assert not decision.authorised
 
 
-def test_policy_blocks_over_budget():
+def test_policy_blocks_over_budget() -> None:
+    """Block a run that exceeds the configured round budget."""
     policy = ClosedLoopExecutionPolicy(round_budget=5)
     decision = evaluate_closed_loop_policy(policy, requested_rounds=10)
     assert not decision.authorised
     assert "budget" in decision.reason
 
 
-def test_policy_rejects_bad_budget():
+def test_policy_rejects_bad_budget() -> None:
+    """Reject a non-positive policy round budget."""
     with pytest.raises(ValueError):
         ClosedLoopExecutionPolicy(round_budget=0)
 
 
-def test_policy_rejects_bad_round_request():
+def test_policy_rejects_bad_round_request() -> None:
+    """Reject a non-positive requested round count."""
     with pytest.raises(ValueError):
         evaluate_closed_loop_policy(ClosedLoopExecutionPolicy(), requested_rounds=0)
 
@@ -152,7 +169,8 @@ def _controller() -> RealtimeSyncFeedbackController:
     return RealtimeSyncFeedbackController(K, omega, config=RealtimeFeedbackConfig(target_r=0.6))
 
 
-def test_run_closed_loop_control_is_replayable():
+def test_run_closed_loop_control_is_replayable() -> None:
+    """Replay the seeded software loop deterministically."""
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         first = run_closed_loop_control(_controller(), 20, seed=7)
@@ -161,7 +179,8 @@ def test_run_closed_loop_control_is_replayable():
     assert np.array_equal(first.feedback_signal, second.feedback_signal)
 
 
-def test_run_closed_loop_control_evidence_structure():
+def test_run_closed_loop_control_evidence_structure() -> None:
+    """Return complete bounded simulation evidence for every round."""
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         evidence = run_closed_loop_control(_controller(), 20, seed=3)
@@ -173,7 +192,8 @@ def test_run_closed_loop_control_evidence_structure():
     assert evidence.target == pytest.approx(0.6)
 
 
-def test_run_closed_loop_control_rejects_short_horizon():
+def test_run_closed_loop_control_rejects_short_horizon() -> None:
+    """Reject a horizon too short for a control verdict."""
     with pytest.raises(ValueError):
         run_closed_loop_control(_controller(), 1)
 
@@ -181,7 +201,8 @@ def test_run_closed_loop_control_rejects_short_horizon():
 # --------------------------------------------------------------------------- #
 # Latency budget and publication scaffold
 # --------------------------------------------------------------------------- #
-def test_measure_closed_loop_latency_budget_accepts_replay_samples():
+def test_measure_closed_loop_latency_budget_accepts_replay_samples() -> None:
+    """Accept replayed latencies that remain within every budget."""
     budget = ClosedLoopLatencyBudget(
         max_round_latency_s=0.010,
         p95_round_latency_s=0.008,
@@ -207,7 +228,8 @@ def test_measure_closed_loop_latency_budget_accepts_replay_samples():
     assert report.to_dict()["claim_boundary"].startswith("software-in-the-loop")
 
 
-def test_measure_closed_loop_latency_budget_fails_closed_on_budget_breach():
+def test_measure_closed_loop_latency_budget_fails_closed_on_budget_breach() -> None:
+    """Fail closed when a replayed round breaches its ceiling."""
     budget = ClosedLoopLatencyBudget(max_round_latency_s=0.002, max_total_latency_s=0.010)
 
     report = measure_closed_loop_latency_budget(
@@ -221,7 +243,8 @@ def test_measure_closed_loop_latency_budget_fails_closed_on_budget_breach():
     assert any("max round latency" in blocker for blocker in report.blockers)
 
 
-def test_measure_closed_loop_latency_budget_records_policy_block_without_hardware_submit():
+def test_measure_closed_loop_latency_budget_records_policy_block_without_hardware_submit() -> None:
+    """Record a policy blocker without submitting hardware work."""
     policy = ClosedLoopExecutionPolicy(
         allow_hardware=True,
         live_ticket=None,
@@ -241,7 +264,8 @@ def test_measure_closed_loop_latency_budget_records_policy_block_without_hardwar
     assert any("not authorised" in blocker for blocker in report.blockers)
 
 
-def test_measure_closed_loop_latency_budget_rejects_bad_budget_and_samples():
+def test_measure_closed_loop_latency_budget_rejects_bad_budget_and_samples() -> None:
+    """Reject non-positive budgets and incomplete latency replay samples."""
     with pytest.raises(ValueError, match="max_round_latency_s"):
         ClosedLoopLatencyBudget(max_round_latency_s=0.0)
 
@@ -253,7 +277,8 @@ def test_measure_closed_loop_latency_budget_rejects_bad_budget_and_samples():
         )
 
 
-def test_closed_loop_publication_package_separates_evidence_classes():
+def test_closed_loop_publication_package_separates_evidence_classes() -> None:
+    """Keep simulation, prepared, and live-QPU evidence classes distinct."""
     latency_report = measure_closed_loop_latency_budget(
         _controller(),
         4,

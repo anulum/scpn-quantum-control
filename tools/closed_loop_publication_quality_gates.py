@@ -15,12 +15,19 @@ Gate = tuple[str, list[str]]
 CLOSED_LOOP_PUBLICATION_SOURCE = (
     "src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py"
 )
+CLOSED_LOOP_ANALYSIS_SOURCE = "src/scpn_quantum_control/control/closed_loop_analysis.py"
+CLOSED_LOOP_PUBLICATION_SOURCES = [
+    CLOSED_LOOP_PUBLICATION_SOURCE,
+    CLOSED_LOOP_ANALYSIS_SOURCE,
+]
 CLOSED_LOOP_PUBLICATION_COVERAGE_COHORT = [
     "tests/test_closed_loop_publication_run.py",
     "tests/test_run_closed_loop_publication.py",
+    "tests/test_closed_loop_analysis.py",
+    "tests/test_closed_loop_analysis_wall_clock.py",
 ]
 CLOSED_LOOP_PUBLICATION_TYPING_RATCHET = [
-    CLOSED_LOOP_PUBLICATION_SOURCE,
+    *CLOSED_LOOP_PUBLICATION_SOURCES,
     *CLOSED_LOOP_PUBLICATION_COVERAGE_COHORT,
     "tools/closed_loop_publication_quality_gates.py",
     "tests/test_closed_loop_publication_quality_gate.py",
@@ -96,17 +103,19 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={CLOSED_LOOP_PUBLICATION_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/benchmarks/closed_loop_publication_run.py",
+                "--include=*/benchmarks/closed_loop_publication_run.py,*/control/closed_loop_analysis.py",
             ],
         ),
     ]
 
 
 __all__ = [
+    "CLOSED_LOOP_ANALYSIS_SOURCE",
     "CLOSED_LOOP_PUBLICATION_COVERAGE_COHORT",
     "CLOSED_LOOP_PUBLICATION_COVERAGE_DATA_FILE",
     "CLOSED_LOOP_PUBLICATION_DOCSTRING_RATCHET",
     "CLOSED_LOOP_PUBLICATION_SOURCE",
+    "CLOSED_LOOP_PUBLICATION_SOURCES",
     "CLOSED_LOOP_PUBLICATION_TYPING_RATCHET",
     "build_coverage_gates",
     "build_static_quality_gates",

@@ -3322,16 +3322,22 @@ jobs:
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py
+          src/scpn_quantum_control/control/closed_loop_analysis.py
           tests/test_closed_loop_publication_run.py
           tests/test_run_closed_loop_publication.py
+          tests/test_closed_loop_analysis.py
+          tests/test_closed_loop_analysis_wall_clock.py
           tools/closed_loop_publication_quality_gates.py
           tests/test_closed_loop_publication_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py
+          src/scpn_quantum_control/control/closed_loop_analysis.py
           tests/test_closed_loop_publication_run.py
           tests/test_run_closed_loop_publication.py
+          tests/test_closed_loop_analysis.py
+          tests/test_closed_loop_analysis_wall_clock.py
           tools/closed_loop_publication_quality_gates.py
           tests/test_closed_loop_publication_quality_gate.py
       - run: >-
@@ -3339,11 +3345,13 @@ jobs:
           --data-file=/tmp/scpn-qc-closed-loop-publication-quality.coverage --branch
           -m pytest -q tests/test_closed_loop_publication_run.py
           tests/test_run_closed_loop_publication.py
+          tests/test_closed_loop_analysis.py
+          tests/test_closed_loop_analysis_wall_clock.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-closed-loop-publication-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/benchmarks/closed_loop_publication_run.py
+          --include=*/benchmarks/closed_loop_publication_run.py,*/control/closed_loop_analysis.py
 
   kuramoto-layout-optimiser-quality:
     needs: lint

@@ -73,6 +73,7 @@ class ClosedLoopExecutionPolicy:
     round_budget: int = 256
 
     def __post_init__(self) -> None:
+        """Validate the maximum authorised feedback-round count."""
         if self.round_budget < 1:
             raise ValueError("round_budget must be a positive integer")
 
@@ -109,6 +110,7 @@ class ClosedLoopLatencyBudget:
     max_total_latency_s: float | None = None
 
     def __post_init__(self) -> None:
+        """Validate every configured positive latency ceiling."""
         _require_positive(self.max_round_latency_s, "max_round_latency_s")
         if self.p95_round_latency_s is not None:
             _require_positive(self.p95_round_latency_s, "p95_round_latency_s")
@@ -309,6 +311,7 @@ def analyse_closed_loop_response(
     Returns
     -------
         The :class:`ResponseClass` verdict and the :class:`ControlPerformance`.
+
     """
     response = np.asarray(response, dtype=np.float64)
     if response.ndim != 1 or response.size < 2:
