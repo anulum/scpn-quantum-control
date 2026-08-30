@@ -197,6 +197,50 @@ def test_write_federation_document(tmp_path: Path) -> None:
     assert written["schema_a"]["studio"] == "scpn-quantum-control"
 
 
+def test_manifest_drift_reports_missing_and_stale_documents(tmp_path: Path) -> None:
+    """Drift detection distinguishes an absent document from stale content."""
+    expected_path = federation.STUDIO_MANIFEST_PATH.as_posix()
+    assert federation.studio_manifest_drift(tmp_path) == (
+        f"missing generated studio manifest: {expected_path}"
+    )
+
+    out = federation.write_federation_document(tmp_path)
+    out.write_text("{}\n", encoding="utf-8")
+    assert federation.studio_manifest_drift(tmp_path) == (
+        f"stale generated studio manifest: {expected_path}"
+    )
+
+
+def test_manifest_cli_emits_checks_and_rejects_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """The public CLI writes, verifies, and rejects a stale federation file."""
+    monkeypatch.chdir(tmp_path)
+
+    assert federation.main([]) == 0
+    out = tmp_path / federation.STUDIO_MANIFEST_PATH
+    emitted = capsys.readouterr()
+    assert f"Wrote {federation.STUDIO_MANIFEST_PATH}" in emitted.out
+    assert "schema_a content_digest=sha256:" in emitted.out
+
+    assert federation.main(["--check"]) == 0
+    checked = capsys.readouterr()
+    assert checked.out == (
+        f"studio manifest is current ({federation.STUDIO_MANIFEST_PATH.as_posix()})\n"
+    )
+
+    out.write_text("{}\n", encoding="utf-8")
+    assert federation.main(["--check"]) == 1
+    rejected = capsys.readouterr()
+    assert rejected.out == ""
+    assert rejected.err == (
+        "studio manifest drift: stale generated studio manifest: "
+        f"{federation.STUDIO_MANIFEST_PATH.as_posix()}\n"
+    )
+
+
 def test_manifest_passes_studio_conformance_gate() -> None:
     """The CapabilityManifest is admitted by the platform ``validate_studio_manifest`` gate.
 

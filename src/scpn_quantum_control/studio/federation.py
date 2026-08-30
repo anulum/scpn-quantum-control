@@ -359,6 +359,7 @@ def write_federation_document(repo_root: Path | None = None) -> Path:
     -------
     pathlib.Path
         The written file path.
+
     """
     root = repo_root or Path.cwd()
     out = root / STUDIO_MANIFEST_PATH

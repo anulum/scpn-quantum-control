@@ -37,7 +37,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
     assert (
-        "--include=*/studio_executive_product.py,*/studio/manifest.py,*/studio/verbs.py,*/studio/executive_cli.py"
+        "--include=*/studio_executive_product.py,*/studio/manifest.py,*/studio/federation.py,*/studio/verbs.py,*/studio/executive_cli.py"
         in report
     )
 
@@ -62,7 +62,7 @@ def test_ci_runs_and_aggregates_gate() -> None:
     assert "requirements-ci-studio-platform.txt" in block
     assert "--no-deps --require-hashes" in block
     assert (
-        "--include=*/studio_executive_product.py,*/studio/manifest.py,*/studio/verbs.py,*/studio/executive_cli.py"
+        "--include=*/studio_executive_product.py,*/studio/manifest.py,*/studio/federation.py,*/studio/verbs.py,*/studio/executive_cli.py"
         in block
     )
     assert "studio-executive-product-quality" in workflow[workflow.index("  ci-gate:") :]

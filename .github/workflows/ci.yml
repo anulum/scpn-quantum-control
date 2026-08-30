@@ -5402,6 +5402,7 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/studio_executive_product.py
           src/scpn_quantum_control/studio/manifest.py
+          src/scpn_quantum_control/studio/federation.py
           src/scpn_quantum_control/studio/verbs.py
           src/scpn_quantum_control/studio/executive_cli.py
           tests/test_studio_executive_product.py
@@ -5415,6 +5416,7 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio_executive_product.py
           src/scpn_quantum_control/studio/manifest.py
+          src/scpn_quantum_control/studio/federation.py
           src/scpn_quantum_control/studio/verbs.py
           src/scpn_quantum_control/studio/executive_cli.py
           tests/test_studio_executive_product.py
@@ -5432,7 +5434,7 @@ jobs:
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-studio-executive-product-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/studio_executive_product.py,*/studio/manifest.py,*/studio/verbs.py,*/studio/executive_cli.py
+          --include=*/studio_executive_product.py,*/studio/manifest.py,*/studio/federation.py,*/studio/verbs.py,*/studio/executive_cli.py
 
   advanced-witnesses-quality:
     needs: lint
