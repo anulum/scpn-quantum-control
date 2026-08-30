@@ -65,12 +65,12 @@ class DifferentiableCircuitContractCheck:
 
     @property
     def supported(self) -> bool:
-        """Return true when the audited behaviour is supported."""
+        """Whether the audited behaviour is supported."""
         return self.status == "supported"
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when the audited behaviour is intentionally rejected."""
+        """Whether the audited behaviour is intentionally rejected."""
         return self.status == "fail_closed"
 
     def to_dict(self) -> dict[str, object]:
@@ -94,22 +94,22 @@ class DifferentiableCircuitContractAuditResult:
 
     @property
     def passed(self) -> bool:
-        """Return true when all checks carry evidence and expected status."""
+        """Whether all checks carry evidence and expected status."""
         return not self.failing_checks
 
     @property
     def supported_checks(self) -> tuple[DifferentiableCircuitContractCheck, ...]:
-        """Return supported audit checks."""
+        """Supported audit checks."""
         return tuple(check for check in self.checks if check.supported)
 
     @property
     def fail_closed_checks(self) -> tuple[DifferentiableCircuitContractCheck, ...]:
-        """Return fail-closed audit checks."""
+        """Fail-closed audit checks."""
         return tuple(check for check in self.checks if check.fail_closed)
 
     @property
     def failing_checks(self) -> tuple[DifferentiableCircuitContractCheck, ...]:
-        """Return checks that lack the evidence required by the audit."""
+        """Checks that lack the evidence required by the audit."""
         return tuple(
             check
             for check in self.checks

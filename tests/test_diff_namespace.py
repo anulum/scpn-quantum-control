@@ -123,6 +123,31 @@ def test_differentiable_circuit_evaluates_and_serializes_supported_route() -> No
     )
 
 
+def test_explicit_finite_shot_policy_and_provenance_round_trip() -> None:
+    """Explicit public policy and provenance survive facade serialization."""
+    policy = diff.ShotPolicy(shots=128, seed=17, confidence_level=0.9)
+    provenance = diff.EstimatorProvenance(
+        estimator="local_reference",
+        route="native:statevector:grad:finite_difference",
+        package_version="1.1.0",
+        artifact_ids=("artifact-17",),
+    )
+    circuit = diff.differentiable_circuit(
+        _scalar_objective,
+        name="finite_shot_reference",
+        shot_policy=policy,
+        estimator_provenance=provenance,
+        gradient_method="finite_difference",
+    )
+
+    assert circuit.shot_policy.finite_shot is True
+    assert circuit.estimator_provenance is provenance
+    payload = circuit.to_dict()
+    diagnostics = cast(dict[str, Any], payload["diagnostics"])
+    assert diagnostics["shot_policy"] == policy.to_dict()
+    assert diagnostics["estimator_provenance"] == provenance.to_dict()
+
+
 def test_differentiable_circuit_rejects_invalid_gradient_method() -> None:
     """Circuit construction validates the bound canonical gradient method."""
     with pytest.raises(ValueError, match="gradient_method"):
@@ -210,6 +235,17 @@ def test_differentiable_circuit_rejects_invalid_values_and_objectives() -> None:
     with pytest.raises(ValueError, match="non-finite"):
         nonfinite(np.array([0.1], dtype=np.float64))
 
+    with pytest.raises(ValueError, match="numeric array"):
+        unnamed(cast(Any, [object()]))
+
+    vector_result = diff.differentiable_circuit(
+        cast(diff.ScalarObjective, cast(Any, _vector_objective)),
+        name="vector_objective",
+        gradient_method="finite_difference",
+    )
+    with pytest.raises(ValueError, match="return a scalar"):
+        vector_result(np.array([0.1, 0.2], dtype=np.float64))
+
 
 def test_differentiable_circuit_runtime_provenance_guard() -> None:
     """Diagnostics fail closed if provenance is removed after construction."""
@@ -245,6 +281,7 @@ def test_differentiable_circuit_fails_closed_for_unsupported_hardware_route() ->
 
     assert circuit.fail_closed is True
     assert circuit.diagnostics.capability.requires_hardware_policy is True
+    assert circuit.diagnostics.to_dict()["fail_closed"] is True
     with pytest.raises(ValueError, match="unsupported"):
         circuit(np.array([0.1, 0.2], dtype=np.float64))
 
@@ -259,6 +296,32 @@ def test_jit_or_explain_returns_fail_closed_diagnostics() -> None:
     assert explanation.to_dict()["fail_closed"] is True
     with pytest.raises(RuntimeError, match="unsupported"):
         explanation.require_compiled()
+
+
+def test_jit_explanation_accepts_circuit_targets_and_compiled_records() -> None:
+    """Public JIT diagnostics cover circuit labels and successful records."""
+    circuit = diff.differentiable_circuit(_scalar_objective, name="named_circuit")
+    explanation = diff.jit_or_explain(circuit)
+    assert explanation.target == "named_circuit"
+
+    compiled = diff.JITExplanation(
+        target="compiled_reference",
+        compiled=True,
+        blocked_reasons=(),
+        suggested_alternatives=(),
+    )
+    assert compiled.fail_closed is False
+    assert compiled.require_compiled() is None
+
+
+def test_serialization_labels_callable_without_module(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Serialization keeps a stable label when a callable has no module name."""
+    monkeypatch.setattr(_scalar_objective, "__module__", "")
+    circuit = diff.differentiable_circuit(_scalar_objective, name="moduleless_callable")
+
+    assert circuit.to_dict()["objective"] == "_scalar_objective"
 
 
 def test_differentiable_circuit_contract_audit_covers_differentiable_contract_boundaries() -> None:

@@ -20,7 +20,9 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
         gates["mypy-strict-diff-contract-audit-quality"][5:]
         == quality_gates.DIFF_CONTRACT_AUDIT_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D diff-contract-audit quality ratchet"]
+    ruff = gates["ruff D diff-contract-audit quality ratchet"]
+    assert "--preview" in ruff
+    assert "D,D413,D417,D420" in ruff
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
@@ -32,7 +34,10 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     assert run[-1:] == quality_gates.DIFF_CONTRACT_AUDIT_COVERAGE_COHORT
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/diff_contract_audit.py" in report
+    assert (
+        "--include=*/scpn_quantum_control/diff.py,*/scpn_quantum_control/diff_contract_audit.py,*/scpn/diff.py,*/scpn/__init__.py"
+        in report
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -55,4 +60,8 @@ def test_ci_runs_and_aggregates_diff_contract_audit_gate() -> None:
     for path in quality_gates.DIFF_CONTRACT_AUDIT_QUALITY_RATCHET:
         assert path in block
     assert "--fail-under=100" in block
+    assert (
+        "--include=*/scpn_quantum_control/diff.py,*/scpn_quantum_control/diff_contract_audit.py,*/scpn/diff.py,*/scpn/__init__.py"
+        in block
+    )
     assert "diff-contract-audit-quality" in workflow[workflow.index("  ci-gate:") :]

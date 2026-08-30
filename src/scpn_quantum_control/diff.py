@@ -82,7 +82,7 @@ class ShotPolicy:
 
     @property
     def finite_shot(self) -> bool:
-        """Return true when the circuit is configured for finite-shot evidence."""
+        """Whether the circuit is configured for finite-shot evidence."""
         return self.shots is not None
 
     def to_dict(self) -> dict[str, object]:
@@ -171,7 +171,7 @@ class BackendCapabilityMetadata:
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when this route is intentionally unsupported."""
+        """Whether this route is intentionally unsupported."""
         return not self.supported
 
     def to_dict(self) -> dict[str, object]:
@@ -208,7 +208,7 @@ class DifferentiableCircuitDiagnostics:
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when the circuit route is intentionally unsupported."""
+        """Whether the circuit route is intentionally unsupported."""
         return not self.supported
 
     def to_dict(self) -> dict[str, object]:
@@ -236,7 +236,7 @@ class JITExplanation:
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when no compiled callable is exposed."""
+        """Whether no compiled callable is exposed."""
         return not self.compiled
 
     def require_compiled(self) -> None:
@@ -289,6 +289,7 @@ class DifferentiableCircuit:
         Provenance for the estimator route.
     claim_boundary:
         Explicit claim boundary for public diagnostics.
+
     """
 
     name: str
@@ -334,7 +335,7 @@ class DifferentiableCircuit:
 
     @property
     def support_plan(self) -> GradientSupportPlan:
-        """Return the current fail-closed support plan for this circuit."""
+        """Current fail-closed support plan for this circuit."""
         return plan_gradient_support(
             gate=self.gate,
             observable=self.observable,
@@ -348,12 +349,12 @@ class DifferentiableCircuit:
 
     @property
     def capability(self) -> BackendCapabilityMetadata:
-        """Return public capability metadata for the current route."""
+        """Public capability metadata for the current route."""
         return BackendCapabilityMetadata.from_plan(self.support_plan)
 
     @property
     def diagnostics(self) -> DifferentiableCircuitDiagnostics:
-        """Return fail-closed diagnostics for the current route."""
+        """Fail-closed diagnostics for the current route."""
         return DifferentiableCircuitDiagnostics(
             name=self.name,
             supported=self.support_plan.supported,
@@ -365,7 +366,7 @@ class DifferentiableCircuit:
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when the current route is intentionally unsupported."""
+        """Whether the current route is intentionally unsupported."""
         return self.diagnostics.fail_closed
 
     @property

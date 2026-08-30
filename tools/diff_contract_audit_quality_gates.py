@@ -14,7 +14,10 @@ from os import devnull
 Gate = tuple[str, list[str]]
 
 DIFF_CONTRACT_AUDIT_QUALITY_RATCHET = [
+    "src/scpn_quantum_control/diff.py",
     "src/scpn_quantum_control/diff_contract_audit.py",
+    "src/scpn/diff.py",
+    "src/scpn/__init__.py",
     "tests/test_diff_namespace.py",
     "tools/diff_contract_audit_quality_gates.py",
     "tests/test_diff_contract_audit_quality_gate.py",
@@ -52,8 +55,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *DIFF_CONTRACT_AUDIT_QUALITY_RATCHET,
@@ -92,7 +96,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={DIFF_CONTRACT_AUDIT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/diff_contract_audit.py",
+                "--include=*/scpn_quantum_control/diff.py,*/scpn_quantum_control/diff_contract_audit.py,*/scpn/diff.py,*/scpn/__init__.py",
             ],
         ),
     ]
