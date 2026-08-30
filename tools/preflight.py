@@ -89,6 +89,9 @@ if TYPE_CHECKING:
         differentiable_exact_modes_quality_gates as _differentiable_exact_modes_quality_gates,
     )
     from tools import (
+        differentiable_jax_adapter_quality_gates as _differentiable_jax_adapter_quality_gates,
+    )
+    from tools import (
         differentiable_notebook_curriculum_quality_gates as _differentiable_notebook_curriculum_quality_gates,
     )
     from tools import (
@@ -423,6 +426,9 @@ else:
     _gradient_backend_quality_gates = import_module("tools.gradient_backend_quality_gates")
     _differentiable_exact_modes_quality_gates = import_module(
         "tools.differentiable_exact_modes_quality_gates"
+    )
+    _differentiable_jax_adapter_quality_gates = import_module(
+        "tools.differentiable_jax_adapter_quality_gates"
     )
     _mlir_whole_program_native_quality_gates = import_module(
         "tools.mlir_whole_program_native_quality_gates"
@@ -1027,6 +1033,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_studio_simulation_quality_gates.build_static_quality_gates(_PY),
     *_studio_scorecard_bundle_quality_gates.build_static_quality_gates(_PY),
     *_advanced_witnesses_quality_gates.build_static_quality_gates(_PY),
+    *_differentiable_jax_adapter_quality_gates.build_static_quality_gates(_PY),
     *_program_ad_alias_analysis_quality_gates.build_static_quality_gates(_PY),
     *_general_unitary_quality_gates.build_static_quality_gates(_PY),
     *_gpu_batch_vqe_quality_gates.build_static_quality_gates(_PY),
@@ -1632,6 +1639,9 @@ STUDIO_SCORECARD_BUNDLE_COVERAGE_GATES = (
     _studio_scorecard_bundle_quality_gates.build_coverage_gates(_PY)
 )
 ADVANCED_WITNESSES_COVERAGE_GATES = _advanced_witnesses_quality_gates.build_coverage_gates(_PY)
+DIFFERENTIABLE_JAX_ADAPTER_COVERAGE_GATES = (
+    _differentiable_jax_adapter_quality_gates.build_coverage_gates(_PY)
+)
 PROGRAM_AD_ALIAS_ANALYSIS_COVERAGE_GATES = (
     _program_ad_alias_analysis_quality_gates.build_coverage_gates(_PY)
 )
@@ -2071,6 +2081,7 @@ def main() -> int:
             gates.extend(STUDIO_SIMULATION_COVERAGE_GATES)
             gates.extend(STUDIO_SCORECARD_BUNDLE_COVERAGE_GATES)
             gates.extend(ADVANCED_WITNESSES_COVERAGE_GATES)
+            gates.extend(DIFFERENTIABLE_JAX_ADAPTER_COVERAGE_GATES)
             gates.extend(PROGRAM_AD_ALIAS_ANALYSIS_COVERAGE_GATES)
             gates.extend(GENERAL_UNITARY_COVERAGE_GATES)
             gates.extend(GPU_BATCH_VQE_COVERAGE_GATES)

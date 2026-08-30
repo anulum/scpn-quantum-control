@@ -41,6 +41,7 @@ def is_jax_autodiff_available() -> bool:
     bool
         ``True`` when both ``jax`` and ``jax.numpy`` import successfully,
         otherwise ``False``.
+
     """
     try:
         _load_jax_modules()
@@ -75,6 +76,7 @@ def jax_value_and_grad(
     ValueError
         If the input, objective value, or gradient violates the native
         differentiable contract.
+
     """
     parameter_values = _as_parameter_array(values)
 

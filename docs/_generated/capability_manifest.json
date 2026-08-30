@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1304
+    "test_files": 1305
   },
   "documentation": {
     "examples": [
@@ -8397,6 +8397,7 @@
       "tests/test_differentiable_isolated_benchmark_plan.py",
       "tests/test_differentiable_isolated_benchmark_plan_edges.py",
       "tests/test_differentiable_jax.py",
+      "tests/test_differentiable_jax_adapter_quality_gate.py",
       "tests/test_differentiable_levenberg_marquardt.py",
       "tests/test_differentiable_module_hardening_audit.py",
       "tests/test_differentiable_natural_gradient.py",

@@ -37,7 +37,6 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across optional JAX result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
@@ -48,7 +47,6 @@ def _install_fake_jax(
     value: object | None = None,
 ) -> None:
     """Install a minimal JAX module pair for deterministic adapter tests."""
-
     jax_module = types.ModuleType("jax")
     jax_module.__path__ = []
     jax_numpy = types.ModuleType("jax.numpy")
@@ -69,7 +67,6 @@ def _install_fake_jax(
 
 def _block_jax_imports(monkeypatch: pytest.MonkeyPatch) -> None:
     """Patch import resolution so JAX behaves as unavailable."""
-
     real_import = builtins.__import__
 
     def guarded_import(
@@ -88,7 +85,6 @@ def _block_jax_imports(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_jax_adapter_helpers_preserve_facade_identity() -> None:
     """Extracted JAX adapter helpers should keep facade and package-root imports stable."""
-
     import scpn_quantum_control as scpn
     from scpn_quantum_control import differentiable as differentiable_facade
 
@@ -100,7 +96,6 @@ def test_jax_adapter_helpers_preserve_facade_identity() -> None:
 
 def test_jax_adapter_reports_unavailable_dependency(monkeypatch: pytest.MonkeyPatch) -> None:
     """Missing optional JAX imports should remain fail-closed and explicit."""
-
     _block_jax_imports(monkeypatch)
 
     assert not is_jax_autodiff_available()
@@ -110,7 +105,6 @@ def test_jax_adapter_reports_unavailable_dependency(monkeypatch: pytest.MonkeyPa
 
 def test_jax_adapter_validates_fake_jax_payload(monkeypatch: pytest.MonkeyPatch) -> None:
     """JAX adapter should accept finite scalar values and matching gradients."""
-
     _install_fake_jax(monkeypatch, gradient=np.array([4.0], dtype=np.float64))
 
     assert is_jax_autodiff_available()
@@ -124,7 +118,6 @@ def test_jax_adapter_rejects_malformed_fake_jax_payloads(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """JAX adapter should reject malformed value and gradient payloads."""
-
     _install_fake_jax(monkeypatch, gradient=np.array([[1.0]], dtype=np.float64))
     with pytest.raises(ValueError, match="gradient shape"):
         jax_value_and_grad(lambda values: values[0] ** 2, [2.0])
@@ -144,7 +137,6 @@ def test_jax_adapter_rejects_malformed_fake_jax_payloads(
 
 def test_jax_value_and_grad_matches_quadratic_when_available() -> None:
     """Optional JAX bridge should expose real autodiff when JAX is installed."""
-
     if not is_jax_autodiff_available():
         with pytest.raises(ImportError, match="JAX"):
             jax_value_and_grad(lambda values: values[0] ** 2, [2.0])
@@ -157,6 +149,5 @@ def test_jax_value_and_grad_matches_quadratic_when_available() -> None:
 
 def test_jax_value_and_grad_rejects_implicit_parameter_coercion() -> None:
     """JAX bridge input validation should match the native differentiable path."""
-
     with pytest.raises(ValueError, match="parameters must contain real numeric scalars"):
         jax_value_and_grad(lambda values: values[0] ** 2, ["2.0"])
