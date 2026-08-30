@@ -50,6 +50,7 @@ if TYPE_CHECKING:
     from tools import application_honesty_quality_gates as _application_honesty_quality_gates
     from tools import attested_result_pack_quality_gates as _attested_result_pack_quality_gates
     from tools import avqds_quality_gates as _avqds_quality_gates
+    from tools import backend_selector_quality_gates as _backend_selector_quality_gates
     from tools import bench_cli_quality_gates as _bench_cli_quality_gates
     from tools import (
         campaign_harness_product_quality_gates as _campaign_harness_product_quality_gates,
@@ -517,6 +518,7 @@ else:
         "tools.identity_coherence_budget_quality_gates"
     )
     _identity_robustness_quality_gates = import_module("tools.identity_robustness_quality_gates")
+    _backend_selector_quality_gates = import_module("tools.backend_selector_quality_gates")
     _logging_setup_quality_gates = import_module("tools.logging_setup_quality_gates")
     _josephson_magnitude_study_quality_gates = import_module(
         "tools.josephson_magnitude_study_quality_gates"
@@ -1083,6 +1085,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_identity_binding_spec_quality_gates.build_static_quality_gates(_PY),
     *_identity_coherence_budget_quality_gates.build_static_quality_gates(_PY),
     *_identity_robustness_quality_gates.build_static_quality_gates(_PY),
+    *_backend_selector_quality_gates.build_static_quality_gates(_PY),
     *_logging_setup_quality_gates.build_static_quality_gates(_PY),
     *_ssgf_geometry_gradient_quality_gates.build_static_quality_gates(_PY),
     *_codesign_components_quality_gates.build_static_quality_gates(_PY),
@@ -1722,6 +1725,7 @@ IDENTITY_COHERENCE_BUDGET_COVERAGE_GATES = (
     _identity_coherence_budget_quality_gates.build_coverage_gates(_PY)
 )
 IDENTITY_ROBUSTNESS_COVERAGE_GATES = _identity_robustness_quality_gates.build_coverage_gates(_PY)
+BACKEND_SELECTOR_COVERAGE_GATES = _backend_selector_quality_gates.build_coverage_gates(_PY)
 LOGGING_SETUP_COVERAGE_GATES = _logging_setup_quality_gates.build_coverage_gates(_PY)
 SSGF_GEOMETRY_GRADIENT_COVERAGE_GATES = _ssgf_geometry_gradient_quality_gates.build_coverage_gates(
     _PY
@@ -2151,6 +2155,7 @@ def main() -> int:
             gates.extend(IDENTITY_BINDING_SPEC_COVERAGE_GATES)
             gates.extend(IDENTITY_COHERENCE_BUDGET_COVERAGE_GATES)
             gates.extend(IDENTITY_ROBUSTNESS_COVERAGE_GATES)
+            gates.extend(BACKEND_SELECTOR_COVERAGE_GATES)
             gates.extend(LOGGING_SETUP_COVERAGE_GATES)
             gates.extend(SSGF_GEOMETRY_GRADIENT_COVERAGE_GATES)
             gates.extend(CODESIGN_COMPONENTS_COVERAGE_GATES)

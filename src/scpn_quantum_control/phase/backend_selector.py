@@ -77,7 +77,10 @@ def recommend_backend(
 
     Returns
     -------
-    dict with keys: backend, reason, memory_mb, feasible
+    BackendRecommendation
+        Backend name, selection reason, memory estimate, feasibility, and an
+        optional operational note.
+
     """
     if isinstance(n, bool) or not isinstance(n, int) or n < 1:
         raise ValueError("n must be a positive integer qubit count.")

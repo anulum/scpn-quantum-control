@@ -18,113 +18,139 @@ Covers:
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase import backend_selector as backend_selector_module
 from scpn_quantum_control.phase.backend_selector import auto_solve, recommend_backend
 
 
-def _system(n: int = 4):
-    K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
+def _system(n: int = 4) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Build a deterministic heterogeneous Kuramoto-XY system."""
+    K = np.asarray(
+        0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n)))),
+        dtype=np.float64,
+    )
     np.fill_diagonal(K, 0.0)
-    omega = np.linspace(0.8, 1.2, n)
+    omega = np.asarray(np.linspace(0.8, 1.2, n), dtype=np.float64)
     return K, omega
 
 
 class TestRecommendBackend:
-    def test_small_n_exact_diag(self):
+    """Verify recommendation policy across system and resource regimes."""
+
+    def test_small_n_exact_diag(self) -> None:
+        """Select full exact diagonalisation for a small system."""
         rec = recommend_backend(4)
         assert rec["backend"] == "exact_diag"
         assert rec["feasible"] is True
 
-    def test_n14_exact_diag(self):
+    def test_n14_exact_diag(self) -> None:
+        """Keep the documented size-14 exact-diagonalisation boundary."""
         rec = recommend_backend(14)
         assert rec["backend"] == "exact_diag"
 
-    def test_n16_u1_sector(self):
+    def test_n16_u1_sector(self) -> None:
+        """Prefer U(1)-sector diagonalisation at size 16."""
         rec = recommend_backend(16)
         assert rec["backend"] == "u1_sector_ed"
 
-    def test_n15_z2_sector_when_u1_disabled(self):
+    def test_n15_z2_sector_when_u1_disabled(self) -> None:
+        """Use Z2-sector diagonalisation when U(1) reduction is disabled."""
         rec = recommend_backend(15, ram_gb=32, allow_u1_sector=False)
         assert rec["backend"] == "sector_ed"
         assert rec["feasible"] is True
 
-    def test_n18_u1_sector(self):
+    def test_n18_u1_sector(self) -> None:
         """n=18 u1 largest sector C(18,9)=48620 → ~37 GB → fits in 128 GB."""
         rec = recommend_backend(18, ram_gb=128)
         assert rec["backend"] == "u1_sector_ed"
 
-    def test_mps_dmrg(self):
+    def test_mps_dmrg(self) -> None:
+        """Select MPS/DMRG when Quimb is available for a large system."""
         rec = recommend_backend(30, has_quimb=True)
         assert rec["backend"] == "mps_dmrg"
 
-    def test_gpu_statevector(self):
+    def test_gpu_statevector(self) -> None:
+        """Select a GPU statevector under a constrained host-memory budget."""
         rec = recommend_backend(25, has_gpu=True, ram_gb=0.001)
         assert rec["backend"] == "gpu_statevector"
 
-    def test_cpu_statevector(self):
+    def test_cpu_statevector(self) -> None:
         """n=20 u1 sector too large → falls to statevector."""
         rec = recommend_backend(20, ram_gb=128)
         assert rec["backend"] == "statevector"
 
-    def test_hardware_fallback(self):
+    def test_hardware_fallback(self) -> None:
+        """Recommend explicit hardware execution beyond local capacity."""
         rec = recommend_backend(40, ram_gb=0.001)
         assert rec["backend"] == "hardware"
         assert "AsyncHardwareRunner" in rec["note"]
 
-    def test_open_system_lindblad(self):
+    def test_open_system_lindblad(self) -> None:
+        """Select density-matrix evolution for a small open system."""
         rec = recommend_backend(4, want_open_system=True)
         assert rec["backend"] == "lindblad_scipy"
 
-    def test_open_system_tjm(self):
+    def test_open_system_tjm(self) -> None:
+        """Report the non-executable tensor-jump recommendation honestly."""
         rec = recommend_backend(20, want_open_system=True, has_quimb=True)
         assert rec["backend"] == "tjm_mps"
         assert rec["feasible"] is False
         assert "not yet implemented" in rec["note"]
 
-    def test_open_system_fallback(self):
+    def test_open_system_fallback(self) -> None:
+        """Return an explicit slow Lindblad fallback without Quimb."""
         rec = recommend_backend(20, want_open_system=True, has_quimb=False)
         assert rec["backend"] == "lindblad_scipy"
         assert "may be slow" in rec["reason"]
 
-    def test_memory_mb_positive(self):
+    def test_memory_mb_positive(self) -> None:
+        """Report a positive memory estimate for local simulation."""
         rec = recommend_backend(10)
         assert rec["memory_mb"] > 0
 
-    def test_output_keys(self):
+    def test_output_keys(self) -> None:
+        """Populate all required recommendation fields."""
         rec = recommend_backend(4)
         assert "backend" in rec
         assert "reason" in rec
         assert "memory_mb" in rec
         assert "feasible" in rec
 
-    def test_statevector_path(self):
+    def test_statevector_path(self) -> None:
         """n=22 without quimb/gpu but enough RAM → statevector."""
         rec = recommend_backend(22, ram_gb=128, has_quimb=False, has_gpu=False)
         assert rec["backend"] == "statevector"
 
     @pytest.mark.parametrize("n", [0, -1, True])
-    def test_rejects_invalid_qubit_count(self, n):
+    def test_rejects_invalid_qubit_count(self, n: int | bool) -> None:
+        """Reject non-positive and boolean qubit counts."""
         with pytest.raises(ValueError, match="n"):
             recommend_backend(n)
 
     @pytest.mark.parametrize("ram_gb", [0.0, -1.0, np.nan, np.inf])
-    def test_rejects_invalid_ram_budget(self, ram_gb):
+    def test_rejects_invalid_ram_budget(self, ram_gb: float) -> None:
+        """Reject non-positive and non-finite RAM budgets."""
         with pytest.raises(ValueError, match="ram_gb"):
             recommend_backend(4, ram_gb=ram_gb)
 
 
 class TestAutoSolve:
-    def test_exact_diag(self):
+    """Verify automatic dispatch and fail-closed local execution."""
+
+    def test_exact_diag(self) -> None:
+        """Execute the selected exact-diagonalisation path."""
         K, omega = _system(4)
         result = auto_solve(K, omega)
         assert result["backend_used"] == "exact_diag"
         assert "eigvals" in result["result"]
 
-    def test_u1_sector(self):
+    def test_u1_sector(self) -> None:
         """n=16 with RAM forcing u1 path, but use n=8 to avoid OOM."""
         from unittest.mock import patch
 
@@ -142,19 +168,30 @@ class TestAutoSolve:
             assert result["backend_used"] == "u1_sector_ed"
             assert "ground_energy" in result["result"]
 
-    def test_lindblad_open(self):
+    def test_lindblad_open(self) -> None:
+        """Execute the selected Lindblad open-system path."""
         K, omega = _system(4)
         result = auto_solve(K, omega, want_open_system=True, gamma_amp=0.05, t_max=0.3, dt=0.1)
         assert result["backend_used"] == "lindblad_scipy"
         assert "R" in result["result"]
 
-    def test_lindblad_open_receives_dense_budget(self):
+    def test_lindblad_open_receives_dense_budget(self) -> None:
+        """Forward the dense budget through construction and execution."""
         from unittest.mock import patch
 
         K, omega = _system(4)
 
         class FakeLindbladSolver:
-            def __init__(self, n, K_arg, omega_arg, *, gamma_amp, gamma_deph, max_dense_gib):
+            def __init__(
+                self,
+                n: int,
+                K_arg: NDArray[np.float64],
+                omega_arg: NDArray[np.float64],
+                *,
+                gamma_amp: float,
+                gamma_deph: float,
+                max_dense_gib: float | None,
+            ) -> None:
                 assert n == 4
                 assert K_arg is K
                 assert omega_arg is omega
@@ -162,7 +199,9 @@ class TestAutoSolve:
                 assert gamma_deph == 0.0
                 assert max_dense_gib == 0.25
 
-            def run(self, *, t_max, dt, max_dense_gib):
+            def run(
+                self, *, t_max: float, dt: float, max_dense_gib: float | None
+            ) -> dict[str, NDArray[np.float64]]:
                 assert t_max == 0.3
                 assert dt == 0.1
                 assert max_dense_gib == 0.25
@@ -184,7 +223,7 @@ class TestAutoSolve:
 
         assert result["backend_used"] == "lindblad_scipy"
 
-    def test_sector_ed(self):
+    def test_sector_ed(self) -> None:
         """Force sector_ed path via mock."""
         from unittest.mock import patch
 
@@ -201,19 +240,21 @@ class TestAutoSolve:
             result = auto_solve(K, omega)
             assert result["backend_used"] == "sector_ed"
 
-    def test_result_has_recommendation(self):
+    def test_result_has_recommendation(self) -> None:
+        """Include the exact recommendation beside the solver result."""
         K, omega = _system(4)
         result = auto_solve(K, omega)
         assert "recommendation" in result
         assert "backend" in result["recommendation"]
 
-    def test_auto_solve_forwards_u1_policy(self):
+    def test_auto_solve_forwards_u1_policy(self) -> None:
+        """Forward the caller's U(1)-sector policy to recommendation."""
         from unittest.mock import patch
 
         K, omega = _system(4)
-        captured = {}
+        captured: dict[str, Any] = {}
 
-        def fake_recommend(n, **kwargs):
+        def fake_recommend(n: int, **kwargs: Any) -> dict[str, Any]:
             captured.update(kwargs)
             return {
                 "backend": "exact_diag",
@@ -231,7 +272,7 @@ class TestAutoSolve:
         assert result["backend_used"] == "exact_diag"
         assert captured["allow_u1_sector"] is False
 
-    def test_mps_dmrg_path(self):
+    def test_mps_dmrg_path(self) -> None:
         """n=20 with quimb → DMRG path."""
         from unittest.mock import MagicMock, patch
 
@@ -255,19 +296,30 @@ class TestAutoSolve:
             result = auto_solve(K, omega)
             assert result["backend_used"] == "mps_dmrg"
 
-    def test_fallback_statevector(self):
+    def test_fallback_statevector(self) -> None:
         """Force statevector fallback via mock."""
         from unittest.mock import patch
 
         K, omega = _system(4)
 
         class FakeQuantumKuramotoSolver:
-            def __init__(self, n, K_arg, omega_arg):
+            def __init__(
+                self,
+                n: int,
+                K_arg: NDArray[np.float64],
+                omega_arg: NDArray[np.float64],
+            ) -> None:
                 assert n == 4
                 assert K_arg is K
                 assert omega_arg is omega
 
-            def run(self, *, t_max, dt, max_statevector_gib):
+            def run(
+                self,
+                *,
+                t_max: float,
+                dt: float,
+                max_statevector_gib: float | None,
+            ) -> dict[str, NDArray[np.float64]]:
                 assert t_max == 0.1
                 assert dt == 0.1
                 assert max_statevector_gib is None
@@ -292,7 +344,7 @@ class TestAutoSolve:
             assert result["backend_used"] == "statevector"
             assert result["result"]["R"].tolist() == [1.0, 0.9]
 
-    def test_hardware_recommendation_does_not_submit_qpu_job(self):
+    def test_hardware_recommendation_does_not_submit_qpu_job(self) -> None:
         """The selector recommends hardware; auto_solve fails closed locally."""
         from unittest.mock import patch
 
@@ -312,7 +364,7 @@ class TestAutoSolve:
         ):
             auto_solve(K, omega, t_max=0.1, dt=0.1)
 
-    def test_tjm_mps_recommendation_does_not_fall_through_to_statevector(self):
+    def test_tjm_mps_recommendation_does_not_fall_through_to_statevector(self) -> None:
         """Open-system MPS recommendations must fail closed until executable."""
         from unittest.mock import patch
 
@@ -332,12 +384,15 @@ class TestAutoSolve:
         ):
             auto_solve(K, omega, want_open_system=True, t_max=0.1, dt=0.1)
 
-    def test_exact_diag_propagates_dense_budget_before_builder(self, monkeypatch):
+    def test_exact_diag_propagates_dense_budget_before_builder(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Reject an exact-diagonalisation allocation before matrix build."""
         from unittest.mock import patch
 
         K, omega = _system(4)
 
-        def fail_dense(*args, **kwargs):
+        def fail_dense(*args: Any, **kwargs: Any) -> None:
             raise AssertionError("dense builder must not run after budget rejection")
 
         monkeypatch.setattr(backend_selector_module, "knm_to_dense_matrix", fail_dense)
@@ -355,7 +410,7 @@ class TestAutoSolve:
         ):
             auto_solve(K, omega, max_dense_gib=1e-12)
 
-    def test_quimb_import_exception(self):
+    def test_quimb_import_exception(self) -> None:
         """Cover except branch when mps_evolution import fails."""
         from unittest.mock import patch
 

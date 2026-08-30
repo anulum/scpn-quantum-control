@@ -1209,6 +1209,8 @@ def test_main_uses_coverage_pytest_by_default(
         "identity-coherence-budget exact coverage threshold",
         "identity-robustness focused coverage",
         "identity-robustness exact coverage threshold",
+        "backend-selector focused coverage",
+        "backend-selector exact coverage threshold",
         "logging-setup focused coverage",
         "logging-setup exact coverage threshold",
         "ssgf-geometry-gradient focused coverage",
