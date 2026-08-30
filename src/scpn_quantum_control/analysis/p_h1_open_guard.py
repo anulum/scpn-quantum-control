@@ -86,7 +86,7 @@ class P_H1OpenGuardReport:
 
     @property
     def passed(self) -> bool:
-        """Return whether every checked public surface respects the open boundary."""
+        """Whether every checked public surface respects the open boundary."""
         return not self.violations
 
     def to_dict(self) -> dict[str, object]:
