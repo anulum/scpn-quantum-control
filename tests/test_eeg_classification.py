@@ -21,7 +21,9 @@ from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestEEGClassification:
-    def test_eeg_plv_to_vqe_basic(self):
+    """Exercise EEG PLV structured-VQE and quantum-kernel contracts."""
+
+    def test_eeg_plv_to_vqe_basic(self) -> None:
         """Verify structured VQE runs on a synthetic EEG PLV matrix."""
         n = 3
         # Synthetic PLV matrix (strong coupling 0-1, weak 1-2, moderate 0-2)
@@ -38,7 +40,7 @@ class TestEEGClassification:
         # Actually 6 single-qubit ops => 6 parameters per rep. reps=1 => 6 params.
         assert res.n_params == 6
 
-    def test_eeg_quantum_kernel(self):
+    def test_eeg_quantum_kernel(self) -> None:
         """Verify quantum kernel evaluates correctly."""
         state_a = np.array([1.0, 0.0])
         state_b = np.array([1.0, 0.0])
@@ -50,14 +52,14 @@ class TestEEGClassification:
         assert abs(k_ab - 1.0) < 1e-10
         assert abs(k_ac - 0.0) < 1e-10
 
-    def test_statevector_normalised(self):
+    def test_statevector_normalised(self) -> None:
         """VQE output statevector must be unit norm."""
         plv = np.array([[0, 0.5], [0.5, 0]])
         omega = np.array([10.0, 10.0])
         res = eeg_plv_to_vqe(plv, omega, reps=1, threshold=0.1)
         assert abs(np.linalg.norm(res.statevector) - 1.0) < 1e-8
 
-    def test_high_threshold_no_entangling(self):
+    def test_high_threshold_no_entangling(self) -> None:
         """Threshold above all PLV values → ansatz has no entangling gates."""
         plv = np.array([[0, 0.3, 0.1], [0.3, 0, 0.2], [0.1, 0.2, 0]])
         omega = np.ones(3) * 10.0
@@ -65,7 +67,7 @@ class TestEEGClassification:
         assert res.n_channels == 3
         assert res.n_params == 6  # 3*2*1 = 6 (only single-qubit rotations)
 
-    def test_kernel_symmetry(self):
+    def test_kernel_symmetry(self) -> None:
         """Quantum kernel must be symmetric: K(a,b) == K(b,a)."""
         rng = np.random.default_rng(42)
         a = rng.standard_normal(8) + 1j * rng.standard_normal(8)
@@ -74,7 +76,7 @@ class TestEEGClassification:
         b /= np.linalg.norm(b)
         assert abs(eeg_quantum_kernel(a, b) - eeg_quantum_kernel(b, a)) < 1e-12
 
-    def test_kernel_bounded(self):
+    def test_kernel_bounded(self) -> None:
         """Kernel value must be in [0, 1]."""
         rng = np.random.default_rng(42)
         for _ in range(10):
@@ -85,7 +87,7 @@ class TestEEGClassification:
             k = eeg_quantum_kernel(a, b)
             assert 0.0 - 1e-12 <= k <= 1.0 + 1e-12
 
-    def test_larger_plv_matrix(self):
+    def test_larger_plv_matrix(self) -> None:
         """4-channel PLV matrix runs without error."""
         plv = np.array(
             [
@@ -100,57 +102,67 @@ class TestEEGClassification:
         assert res.n_channels == 4
         assert res.statevector.shape == (16,)
 
-    def test_rejects_non_square_plv_matrix(self):
+    def test_rejects_non_square_plv_matrix(self) -> None:
+        """Reject a PLV matrix that is not square."""
         plv = np.ones((2, 3))
         omega = np.ones(2) * 10.0
         with pytest.raises(ValueError, match="plv_matrix must be a square"):
             eeg_plv_to_vqe(plv, omega)
 
-    def test_rejects_non_symmetric_plv_matrix(self):
+    def test_rejects_non_symmetric_plv_matrix(self) -> None:
+        """Reject a directed PLV matrix."""
         plv = np.array([[0.0, 0.8], [0.2, 0.0]])
         omega = np.ones(2) * 10.0
         with pytest.raises(ValueError, match="plv_matrix must be symmetric"):
             eeg_plv_to_vqe(plv, omega)
 
-    def test_rejects_plv_outside_unit_interval(self):
+    def test_rejects_plv_outside_unit_interval(self) -> None:
+        """Reject PLV values outside the unit interval."""
         plv = np.array([[0.0, 1.2], [1.2, 0.0]])
         omega = np.ones(2) * 10.0
         with pytest.raises(ValueError, match="PLV values must be in"):
             eeg_plv_to_vqe(plv, omega)
 
-    def test_rejects_frequency_shape_mismatch(self):
+    def test_rejects_frequency_shape_mismatch(self) -> None:
+        """Reject frequency vectors that do not match the channel count."""
         plv = np.array([[0.0, 0.5], [0.5, 0.0]])
         omega = np.ones(3) * 10.0
         with pytest.raises(ValueError, match="natural_frequencies must match"):
             eeg_plv_to_vqe(plv, omega)
 
-    def test_rejects_invalid_repetitions(self):
+    def test_rejects_invalid_repetitions(self) -> None:
+        """Reject a non-positive structured-ansatz depth."""
         plv = np.array([[0.0, 0.5], [0.5, 0.0]])
         omega = np.ones(2) * 10.0
         with pytest.raises(ValueError, match="reps must be positive"):
             eeg_plv_to_vqe(plv, omega, reps=0)
 
-    def test_rejects_threshold_outside_plv_range(self):
+    def test_rejects_threshold_outside_plv_range(self) -> None:
+        """Reject an entanglement threshold outside the PLV interval."""
         plv = np.array([[0.0, 0.5], [0.5, 0.0]])
         omega = np.ones(2) * 10.0
         with pytest.raises(ValueError, match="threshold must be in"):
             eeg_plv_to_vqe(plv, omega, threshold=-0.1)
 
-    def test_propagates_dense_budget(self):
+    def test_propagates_dense_budget(self) -> None:
+        """Propagate the caller's dense-Hamiltonian allocation budget."""
         plv = np.array([[0, 0.5], [0.5, 0]])
         omega = np.array([10.0, 10.0])
 
         with pytest.raises(DenseAllocationError, match="dense XY Hamiltonian"):
             eeg_plv_to_vqe(plv, omega, max_dense_gib=1e-12)
 
-    def test_kernel_rejects_empty_states(self):
+    def test_kernel_rejects_empty_states(self) -> None:
+        """Reject an empty kernel statevector."""
         with pytest.raises(ValueError, match="state_a must contain at least one amplitude"):
             eeg_quantum_kernel(np.array([]), np.array([1.0]))
 
-    def test_kernel_rejects_mismatched_state_shapes(self):
+    def test_kernel_rejects_mismatched_state_shapes(self) -> None:
+        """Reject statevectors with unequal shapes."""
         with pytest.raises(ValueError, match="same shape"):
             eeg_quantum_kernel(np.array([1.0, 0.0]), np.array([1.0]))
 
-    def test_kernel_rejects_zero_norm_state(self):
+    def test_kernel_rejects_zero_norm_state(self) -> None:
+        """Reject a zero-norm kernel statevector."""
         with pytest.raises(ValueError, match="non-zero norm"):
             eeg_quantum_kernel(np.array([0.0, 0.0]), np.array([1.0, 0.0]))

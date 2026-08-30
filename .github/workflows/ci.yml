@@ -6183,8 +6183,11 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/applications/honesty_kits.py
           src/scpn_quantum_control/applications/dataset_catalog.py
+          src/scpn_quantum_control/applications/eeg_classification.py
           tests/test_application_honesty_kits.py
           tests/test_dataset_catalog.py
+          tests/test_eeg_classification.py
+          tests/test_eeg_classification_validation.py
           scripts/run_application_honesty_audit.py
           tools/application_honesty_quality_gates.py
           tests/test_application_honesty_quality_gate.py
@@ -6193,23 +6196,28 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/applications/honesty_kits.py
           src/scpn_quantum_control/applications/dataset_catalog.py
+          src/scpn_quantum_control/applications/eeg_classification.py
           tests/test_application_honesty_kits.py
           tests/test_dataset_catalog.py
+          tests/test_eeg_classification.py
+          tests/test_eeg_classification_validation.py
           scripts/run_application_honesty_audit.py
           tools/application_honesty_quality_gates.py
           tests/test_application_honesty_quality_gate.py
       - run: python scripts/run_application_honesty_audit.py --check
       - run: >-
           python -m coverage run --rcfile=/dev/null
-          --data-file=.coverage.application-honesty-quality --branch
+          --data-file=/tmp/scpn-qc-application-honesty-quality.coverage --branch
           -m pytest -q
           tests/test_application_honesty_kits.py
           tests/test_dataset_catalog.py
+          tests/test_eeg_classification.py
+          tests/test_eeg_classification_validation.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
-          --data-file=.coverage.application-honesty-quality
+          --data-file=/tmp/scpn-qc-application-honesty-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/applications/honesty_kits.py,*/applications/dataset_catalog.py
+          --include=*/applications/honesty_kits.py,*/applications/dataset_catalog.py,*/applications/eeg_classification.py
 
   layout-method-comparison-quality:
     needs: lint

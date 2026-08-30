@@ -17,20 +17,26 @@ APPLICATION_HONESTY_QUALITY_RATCHET = [
     "src/scpn_quantum_control/applications/dataset_catalog.py",
     "tests/test_application_honesty_kits.py",
     "tests/test_dataset_catalog.py",
+    "src/scpn_quantum_control/applications/eeg_classification.py",
+    "tests/test_eeg_classification.py",
+    "tests/test_eeg_classification_validation.py",
     "scripts/run_application_honesty_audit.py",
     "tools/application_honesty_quality_gates.py",
     "tests/test_application_honesty_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-APPLICATION_HONESTY_COVERAGE_DATA_FILE = ".coverage.application-honesty-quality"
+APPLICATION_HONESTY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-application-honesty-quality.coverage"
 """Isolated coverage database for the application honesty module."""
 APPLICATION_HONESTY_COVERAGE_COHORT = [
     "tests/test_application_honesty_kits.py",
     "tests/test_dataset_catalog.py",
+    "tests/test_eeg_classification.py",
+    "tests/test_eeg_classification_validation.py",
 ]
 """Real honesty-policy and packaged-catalogue execution cohort."""
 APPLICATION_HONESTY_COVERAGE_INCLUDE = (
-    "*/applications/honesty_kits.py,*/applications/dataset_catalog.py"
+    "*/applications/honesty_kits.py,*/applications/dataset_catalog.py,"
+    "*/applications/eeg_classification.py"
 )
 """Exact source owners enforced by the shared coverage report."""
 

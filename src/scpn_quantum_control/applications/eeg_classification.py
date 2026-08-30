@@ -31,7 +31,24 @@ from scpn_quantum_control.phase.structured_ansatz import build_structured_ansatz
 
 @dataclass
 class EEGVQEResult:
-    """Result bundle for EEG PLV VQE classification."""
+    """Result bundle for EEG PLV VQE classification.
+
+    Attributes
+    ----------
+    n_channels
+        Number of EEG channels encoded as qubits.
+    optimal_energy
+        Optimized VQE energy.
+    statevector
+        Statevector of the optimized structured ansatz.
+    ansatz_depth
+        Depth of the bound structured ansatz.
+    n_params
+        Number of variational parameters.
+    success
+        Whether the VQE solver reported convergence.
+
+    """
 
     n_channels: int
     optimal_energy: float
@@ -109,15 +126,31 @@ def eeg_plv_to_vqe(
 ) -> EEGVQEResult:
     """Map an EEG PLV matrix to a VQE ground state using a Structured Ansatz.
 
-    Args:
-        plv_matrix: N x N Phase Locking Value matrix.
-        natural_frequencies: Array of N peak frequencies per channel.
-        reps: Depth of the structured ansatz.
-        threshold: Minimum PLV required to insert an entangling gate.
+    Parameters
+    ----------
+    plv_matrix
+        Square symmetric Phase Locking Value matrix.
+    natural_frequencies
+        Peak-frequency vector with one entry per channel.
+    reps
+        Positive depth of the structured ansatz.
+    threshold
+        Minimum PLV required to insert an entangling gate.
+    max_dense_gib
+        Optional dense-Hamiltonian allocation budget in GiB.
 
     Returns
     -------
-        EEGVQEResult containing the optimized energy and statevector.
+    EEGVQEResult
+        Optimized energy, statevector, resource counts, and convergence flag.
+
+    Raises
+    ------
+    ValueError
+        If any PLV, frequency, repetition, or threshold contract is invalid.
+    TypeError
+        If the VQE solver returns an invalid energy or convergence value.
+
     """
     plv_matrix = _validated_plv_matrix(plv_matrix)
     n = plv_matrix.shape[0]
@@ -160,7 +193,26 @@ def eeg_plv_to_vqe(
 
 
 def eeg_quantum_kernel(state_a: NDArray[np.complex128], state_b: NDArray[np.complex128]) -> float:
-    """Compute the quantum kernel fidelity |<A|B>|^2 between two EEG VQE states."""
+    """Compute quantum-kernel fidelity ``|<A|B>|^2`` between EEG VQE states.
+
+    Parameters
+    ----------
+    state_a
+        First finite non-zero one-dimensional statevector.
+    state_b
+        Second finite non-zero one-dimensional statevector of the same shape.
+
+    Returns
+    -------
+    float
+        Squared normalized state overlap.
+
+    Raises
+    ------
+    ValueError
+        If either statevector is malformed or their shapes differ.
+
+    """
     state_a = _validated_statevector(state_a, "state_a")
     state_b = _validated_statevector(state_b, "state_b")
     if state_a.shape != state_b.shape:
