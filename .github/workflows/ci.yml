@@ -3295,16 +3295,20 @@ jobs:
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/compiler/mlir_whole_program_native.py
+          src/scpn_quantum_control/compiler/mlir_native_execution_evidence.py
           tests/test_mlir_whole_program_native.py
           tests/test_mlir_whole_program_native_quality_edges.py
+          tests/test_native_whole_program_ad_execution_evidence.py
           tools/mlir_whole_program_native_quality_gates.py
           tests/test_mlir_whole_program_native_quality_gate.py
       - run: >-
           python -m ruff check --isolated --preview --select D,D413,D417,D420
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/compiler/mlir_whole_program_native.py
+          src/scpn_quantum_control/compiler/mlir_native_execution_evidence.py
           tests/test_mlir_whole_program_native.py
           tests/test_mlir_whole_program_native_quality_edges.py
+          tests/test_native_whole_program_ad_execution_evidence.py
           tools/mlir_whole_program_native_quality_gates.py
           tests/test_mlir_whole_program_native_quality_gate.py
       - run: >-
@@ -3312,11 +3316,12 @@ jobs:
           --data-file=/tmp/scpn-qc-mlir-whole-program-native-quality.coverage --branch
           -m pytest -q tests/test_mlir_whole_program_native.py
           tests/test_mlir_whole_program_native_quality_edges.py
+          tests/test_native_whole_program_ad_execution_evidence.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-mlir-whole-program-native-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/compiler/mlir_whole_program_native.py
+          --include=*/compiler/mlir_whole_program_native.py,*/compiler/mlir_native_execution_evidence.py
 
   closed-loop-publication-quality:
     needs: lint

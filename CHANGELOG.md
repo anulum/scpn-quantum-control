@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Complete native LLVM/JIT execution-evidence lifecycle documentation, add
+  fail-closed public validation coverage, and extend the MLIR whole-program
+  native owner with real evidence capture plus exact joint line/branch
+  coverage for compilation and evidence custody.
+
 - Complete native gradient-descent optimizer NumPy documentation and extend
   the natural-gradient quality owner across the differentiable optimizer
   baseline with strict typing, real bounded/finite-difference/parameter-shift

@@ -34,10 +34,15 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     run = gates["MLIR whole-program native focused coverage"]
     report = gates["MLIR whole-program native exact coverage threshold"]
     assert "--branch" in run
-    assert run[-2:] == quality_gates.MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_COHORT
+    assert run[-len(quality_gates.MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_COHORT) :] == (
+        quality_gates.MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_COHORT
+    )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/compiler/mlir_whole_program_native.py" in report
+    assert (
+        "--include=*/compiler/mlir_whole_program_native.py,*/compiler/mlir_native_execution_evidence.py"
+        in report
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -62,4 +67,5 @@ def test_ci_runs_and_aggregates_mlir_whole_program_native_gate() -> None:
         assert path in block
     assert "--fail-under=100" in block
     assert "compiler/mlir_whole_program_native.py" in block
+    assert "compiler/mlir_native_execution_evidence.py" in block
     assert "mlir-whole-program-native-quality" in workflow[workflow.index("  ci-gate:") :]

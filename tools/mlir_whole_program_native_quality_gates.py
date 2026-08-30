@@ -13,12 +13,17 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 MLIR_WHOLE_PROGRAM_NATIVE_SOURCE = "src/scpn_quantum_control/compiler/mlir_whole_program_native.py"
+MLIR_NATIVE_EXECUTION_EVIDENCE_SOURCE = (
+    "src/scpn_quantum_control/compiler/mlir_native_execution_evidence.py"
+)
 MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_COHORT = [
     "tests/test_mlir_whole_program_native.py",
     "tests/test_mlir_whole_program_native_quality_edges.py",
+    "tests/test_native_whole_program_ad_execution_evidence.py",
 ]
 MLIR_WHOLE_PROGRAM_NATIVE_TYPING_RATCHET = [
     MLIR_WHOLE_PROGRAM_NATIVE_SOURCE,
+    MLIR_NATIVE_EXECUTION_EVIDENCE_SOURCE,
     *MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_COHORT,
     "tools/mlir_whole_program_native_quality_gates.py",
     "tests/test_mlir_whole_program_native_quality_gate.py",
@@ -94,13 +99,14 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/compiler/mlir_whole_program_native.py",
+                "--include=*/compiler/mlir_whole_program_native.py,*/compiler/mlir_native_execution_evidence.py",
             ],
         ),
     ]
 
 
 __all__ = [
+    "MLIR_NATIVE_EXECUTION_EVIDENCE_SOURCE",
     "MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_COHORT",
     "MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_DATA_FILE",
     "MLIR_WHOLE_PROGRAM_NATIVE_DOCSTRING_RATCHET",

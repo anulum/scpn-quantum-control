@@ -85,6 +85,7 @@ class NativeWholeProgramADExecutionCase:
         The declared fail-closed reason, required for ``fail_closed`` cases.
     claim_boundary:
         The bounded-claim wording attached to the case.
+
     """
 
     case_id: str
@@ -99,6 +100,7 @@ class NativeWholeProgramADExecutionCase:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate the captured execution-case contract."""
         if not self.case_id.strip():
             raise ValueError("case_id must be non-empty")
         if not self.operation_family.strip():
@@ -164,6 +166,7 @@ class NativeWholeProgramADExecutionEvidence:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate aggregate provenance, parity, and boundary contracts."""
         if not self.artifact_id.strip():
             raise ValueError("artifact_id must be non-empty")
         if not self.cases:
