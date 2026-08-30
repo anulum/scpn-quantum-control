@@ -291,6 +291,7 @@ def pulse_to_vivado_hls(
     Returns
     -------
         A frozen :class:`HLSBundle` with the HLS header, testbench, and XDC.
+
     """
     waveform = np.asarray(pulse_waveform, dtype=np.float64)
     if waveform.ndim != 1:
@@ -380,6 +381,7 @@ def emit_versioned_hls_artifact(
     ValueError
         If the waveform, sample rate, target, fixed-point format, or artifact
         identifier is invalid.
+
     """
     _validate_artifact_id(artifact_id)
     waveform = np.asarray(pulse_waveform, dtype=np.float64)
@@ -435,6 +437,7 @@ def verify_hls_artifact_manifest(manifest_path: str | Path) -> HLSArtifactVerifi
     -------
     HLSArtifactVerification
         A structured pass/fail result with all detected errors.
+
     """
     path = Path(manifest_path)
     errors: list[str] = []

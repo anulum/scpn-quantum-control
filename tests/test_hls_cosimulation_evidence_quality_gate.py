@@ -40,7 +40,9 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/hls_cosimulation_evidence.py" in report
+    include = next(argument for argument in report if argument.startswith("--include="))
+    assert "hls_cosimulation_evidence.py" in include
+    assert "codegen/ultrascale_hls.py" in include
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -64,5 +66,7 @@ def test_ci_runs_and_aggregates_hls_cosimulation_evidence_gate() -> None:
         assert path in block
     assert "--fail-under=100" in block
     assert "hls_cosimulation_evidence.py" in block
+    assert "codegen/ultrascale_hls.py" in block
+    assert "tests/test_ultrascale_hls_branch.py" in block
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "hls-cosimulation-evidence-quality" in aggregate

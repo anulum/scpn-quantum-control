@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Complete the UltraScale HLS producer NumPy documentation contract and extend
+  the existing host-cosimulation quality owner with the producer source,
+  Python-fallback execution, and exact joint line/branch coverage while
+  preserving the explicit no-synthesis and no-board boundary.
+
 - Complete provider-gradient lifecycle and direct-test NumPy documentation,
   add fail-closed validation/provenance/planner branch coverage, and extend the
   existing gradient-backend quality owner with real joint execution plus exact

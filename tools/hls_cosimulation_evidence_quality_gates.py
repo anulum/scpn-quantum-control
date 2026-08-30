@@ -15,18 +15,25 @@ Gate = tuple[str, list[str]]
 HLS_COSIMULATION_EVIDENCE_SOURCE = (
     "src/scpn_quantum_control/benchmarks/hls_cosimulation_evidence.py"
 )
+ULTRASCALE_HLS_SOURCE = "src/scpn_quantum_control/codegen/ultrascale_hls.py"
+HLS_COSIMULATION_EVIDENCE_SOURCES = [
+    HLS_COSIMULATION_EVIDENCE_SOURCE,
+    ULTRASCALE_HLS_SOURCE,
+]
 HLS_COSIMULATION_EVIDENCE_COVERAGE_COHORT = [
     "tests/test_hls_cosimulation_evidence.py",
     "tests/test_run_hls_cosimulation_evidence.py",
     "tests/test_ultrascale_hls.py",
+    "tests/test_ultrascale_hls_branch.py",
 ]
 HLS_COSIMULATION_EVIDENCE_TYPING_RATCHET = [
-    HLS_COSIMULATION_EVIDENCE_SOURCE,
+    *HLS_COSIMULATION_EVIDENCE_SOURCES,
+    "tests/test_ultrascale_hls_branch.py",
     "tools/hls_cosimulation_evidence_quality_gates.py",
     "tests/test_hls_cosimulation_evidence_quality_gate.py",
 ]
 HLS_COSIMULATION_EVIDENCE_DOCSTRING_RATCHET = [
-    HLS_COSIMULATION_EVIDENCE_SOURCE,
+    *HLS_COSIMULATION_EVIDENCE_SOURCES,
     *HLS_COSIMULATION_EVIDENCE_COVERAGE_COHORT,
     "tools/hls_cosimulation_evidence_quality_gates.py",
     "tests/test_hls_cosimulation_evidence_quality_gate.py",
@@ -98,7 +105,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={HLS_COSIMULATION_EVIDENCE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/hls_cosimulation_evidence.py",
+                "--include=*/hls_cosimulation_evidence.py,*/codegen/ultrascale_hls.py",
             ],
         ),
     ]
@@ -109,7 +116,9 @@ __all__ = [
     "HLS_COSIMULATION_EVIDENCE_COVERAGE_DATA_FILE",
     "HLS_COSIMULATION_EVIDENCE_DOCSTRING_RATCHET",
     "HLS_COSIMULATION_EVIDENCE_SOURCE",
+    "HLS_COSIMULATION_EVIDENCE_SOURCES",
     "HLS_COSIMULATION_EVIDENCE_TYPING_RATCHET",
+    "ULTRASCALE_HLS_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]
