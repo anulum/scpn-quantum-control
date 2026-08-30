@@ -62,6 +62,7 @@ class ZNEUncertaintyResult:
         ``"ols-delta"``.
     n_points:
         Number of noise-scale data points.
+
     """
 
     zero_noise_estimate: float
@@ -157,6 +158,7 @@ def zne_extrapolate_with_uncertainty(
     ------
     ValueError
         On malformed inputs, too few points, or a singular design matrix.
+
     """
     x, y, errors = _validate_inputs(
         noise_scales, expectation_values, standard_errors, order, coverage

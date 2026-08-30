@@ -9,10 +9,11 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 import numpy as np
 import pytest
 
-from scpn_quantum_control.mitigation import zne_uncertainty as zu_mod
 from scpn_quantum_control.mitigation.zne import zne_extrapolate
 from scpn_quantum_control.mitigation.zne_uncertainty import (
     ZNEUncertaintyResult,
@@ -107,9 +108,13 @@ def test_interval_orders_and_width() -> None:
 
 def test_wider_coverage_widens_interval() -> None:
     """A higher coverage target widens the interval."""
-    common = dict(standard_errors=[0.02, 0.02, 0.02])
-    narrow = zne_extrapolate_with_uncertainty([1, 3, 5], [0.6, 0.5, 0.45], coverage=0.80, **common)
-    wide = zne_extrapolate_with_uncertainty([1, 3, 5], [0.6, 0.5, 0.45], coverage=0.99, **common)
+    errors = [0.02, 0.02, 0.02]
+    narrow = zne_extrapolate_with_uncertainty(
+        [1, 3, 5], [0.6, 0.5, 0.45], standard_errors=errors, coverage=0.80
+    )
+    wide = zne_extrapolate_with_uncertainty(
+        [1, 3, 5], [0.6, 0.5, 0.45], standard_errors=errors, coverage=0.99
+    )
     assert wide.width > narrow.width
 
 
@@ -186,7 +191,7 @@ def test_singular_design_matrix_is_wrapped(monkeypatch: pytest.MonkeyPatch) -> N
     def _raise(_matrix: object) -> object:
         raise np.linalg.LinAlgError("singular")
 
-    monkeypatch.setattr(zu_mod.np.linalg, "inv", _raise)
+    monkeypatch.setattr(np.linalg, "inv", _raise)
     with pytest.raises(ValueError, match="design matrix is singular"):
         zne_extrapolate_with_uncertainty(
             [1, 3, 5], [0.6, 0.5, 0.45], standard_errors=[0.1, 0.1, 0.1]
@@ -196,7 +201,7 @@ def test_singular_design_matrix_is_wrapped(monkeypatch: pytest.MonkeyPatch) -> N
 def test_rejects_two_dimensional_input() -> None:
     """Inputs must be one-dimensional arrays."""
     with pytest.raises(ValueError, match="one-dimensional"):
-        zne_extrapolate_with_uncertainty([[1, 3], [5, 7]], [0.6, 0.5, 0.45])
+        zne_extrapolate_with_uncertainty(cast(Any, [[1, 3], [5, 7]]), [0.6, 0.5, 0.45])
 
 
 def test_result_is_frozen() -> None:

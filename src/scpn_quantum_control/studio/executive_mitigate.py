@@ -119,7 +119,7 @@ class MitigateActionHandler(ActionHandler):
 
     @property
     def verb(self) -> str:
-        """Return ``"mitigate"``."""
+        """The Studio verb owned by this handler."""
         return MITIGATE_VERB
 
     def plan(self, request: ExecutiveRequest, contract: VerbContract) -> ExecutionPlan:
@@ -138,6 +138,7 @@ class MitigateActionHandler(ActionHandler):
         -------
         ExecutionPlan
             The normalised, inspectable plan.
+
         """
         backend = request.backend or _DEFAULT_BACKEND
         if backend not in contract.backends:
@@ -185,6 +186,7 @@ class MitigateActionHandler(ActionHandler):
             When the fit is under-determined (for example an ordinary
             least-squares request with fewer than ``order + 2`` points) — the
             spine seals this as a failed record.
+
         """
         mitigate_spec: dict[str, Any] = dict(plan.parameters)
         result = zne_extrapolate_with_uncertainty(
@@ -224,6 +226,7 @@ class MitigateActionHandler(ActionHandler):
         -------
         GeneratedScript
             The reproduction script, digest attached.
+
         """
         mitigate_spec: dict[str, Any] = dict(plan.parameters)
         source = _render_script(

@@ -40,7 +40,7 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/analysis/sync_uncertainty.py" in report
+    assert any("executive_mitigate.py" in argument for argument in report)
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -65,6 +65,6 @@ def test_ci_runs_and_aggregates_sync_uncertainty_gate() -> None:
     for path in quality_gates.SYNC_UNCERTAINTY_COVERAGE_COHORT:
         assert path in block
     assert "--fail-under=100" in block
-    assert "analysis/sync_uncertainty.py" in block
+    assert "studio/executive_mitigate.py" in block
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "sync-uncertainty-quality" in aggregate

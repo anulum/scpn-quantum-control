@@ -2712,10 +2712,22 @@ jobs:
           cache: 'pip'
       - name: Install dependencies
         run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: python -m pip install --no-deps -e .
+      - run: >-
+          python -m pip install --no-deps --require-hashes
+          -r requirements-ci-studio-platform.txt
       - name: Type-check synchronisation-uncertainty quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/analysis/sync_uncertainty.py
+          src/scpn_quantum_control/mitigation/zne_uncertainty.py
+          src/scpn_quantum_control/studio/executive_mitigate.py
+          src/scpn_quantum_control/studio/executive_cli.py
+          tests/test_sync_uncertainty.py
+          tests/test_studio_coupling_invariant.py
+          tests/test_zne_uncertainty.py
+          tests/test_studio_executive_mitigate.py
+          tests/test_studio_executive_cli.py
           tools/sync_uncertainty_quality_gates.py
           tests/test_sync_uncertainty_quality_gate.py
       - name: Ruff NumPy docstrings for synchronisation-uncertainty owners
@@ -2723,7 +2735,11 @@ jobs:
           python -m ruff check --isolated --preview --select D,D413,D417,D420
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/sync_uncertainty.py
+          src/scpn_quantum_control/mitigation/zne_uncertainty.py
+          src/scpn_quantum_control/studio/executive_mitigate.py
           tests/test_sync_uncertainty.py
+          tests/test_zne_uncertainty.py
+          tests/test_studio_executive_mitigate.py
           tools/sync_uncertainty_quality_gates.py
           tests/test_sync_uncertainty_quality_gate.py
       - name: Run synchronisation-uncertainty connected focused coverage
@@ -2736,6 +2752,8 @@ jobs:
           tests/test_sync_uncertainty.py
           tests/test_studio_coupling_invariant.py
           tests/test_zne_uncertainty.py
+          tests/test_studio_executive_mitigate.py
+          tests/test_studio_executive_cli.py
       - name: Enforce synchronisation-uncertainty exact coverage
         run: >-
           python -m coverage report
@@ -2743,7 +2761,7 @@ jobs:
           --data-file=/tmp/scpn-qc-sync-uncertainty-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/analysis/sync_uncertainty.py
+          --include=*/analysis/sync_uncertainty.py,*/mitigation/zne_uncertainty.py,*/studio/executive_mitigate.py,*/studio/executive_cli.py
 
   coupling-invariant-quality:
     needs: lint
