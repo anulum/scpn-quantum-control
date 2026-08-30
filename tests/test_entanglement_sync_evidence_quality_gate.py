@@ -20,7 +20,8 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
         gates["mypy-strict-entanglement-sync-evidence-quality"][5:]
         == quality_gates.ENTANGLEMENT_SYNC_EVIDENCE_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D entanglement-sync-evidence quality ratchet"]
+    ruff = gates["ruff D entanglement-sync-evidence quality ratchet"]
+    assert "--preview" in ruff and "D,D413,D417,D420" in ruff
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
@@ -29,10 +30,12 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     run = gates["entanglement-sync-evidence focused coverage"]
     report = gates["entanglement-sync-evidence exact coverage threshold"]
     assert "--branch" in run
-    assert run[-1:] == quality_gates.ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_COHORT
+    assert run[-len(quality_gates.ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_COHORT) :] == (
+        quality_gates.ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_COHORT
+    )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/entanglement_sync_evidence.py" in report
+    assert "--include=*/entanglement_sync_evidence.py,*/entanglement_enhanced_sync.py" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -55,4 +58,6 @@ def test_ci_runs_and_aggregates_evidence_gate() -> None:
     for path in quality_gates.ENTANGLEMENT_SYNC_EVIDENCE_QUALITY_RATCHET:
         assert path in block
     assert "--fail-under=100" in block
+    assert "entanglement_enhanced_sync.py" in block
+    assert "tests/test_entanglement_enhanced_sync.py" in block
     assert "entanglement-sync-evidence-quality" in workflow[workflow.index("  ci-gate:") :]

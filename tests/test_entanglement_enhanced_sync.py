@@ -27,6 +27,7 @@ from scpn_quantum_control.analysis.entanglement_enhanced_sync import (
     simulate_sync_trajectory,
     transverse_exchange_coherence,
 )
+from scpn_quantum_control.analysis.quantum_speed_limit import compute_qsl
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.dense_budget import DenseAllocationError
 
@@ -325,3 +326,17 @@ def test_legacy_trajectory_defaults_are_explicitly_non_evidentiary() -> None:
     payload = trajectory.to_dict()
     assert payload["final_local_phase_order"] == 0.5
     assert payload["phase_defined_values"] == []
+
+
+def test_quantum_speed_limit_uses_real_visibility_aware_order_parameter() -> None:
+    """Reach a public QSL threshold through the real local-phase-order consumer."""
+    result = compute_qsl(
+        np.zeros((1, 1), dtype=np.float64),
+        np.array([np.pi / 2.0], dtype=np.float64),
+        t_target=0.1,
+        dt=0.05,
+        R_threshold=0.9,
+    )
+
+    assert result.n_qubits == 1
+    assert result.tau_actual == pytest.approx(0.05)

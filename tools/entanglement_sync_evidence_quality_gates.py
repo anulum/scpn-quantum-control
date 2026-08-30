@@ -15,7 +15,9 @@ Gate = tuple[str, list[str]]
 
 ENTANGLEMENT_SYNC_EVIDENCE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/analysis/entanglement_sync_evidence.py",
+    "src/scpn_quantum_control/analysis/entanglement_enhanced_sync.py",
     "tests/test_entanglement_sync_evidence.py",
+    "tests/test_entanglement_enhanced_sync.py",
     "scripts/run_entanglement_sync_evidence.py",
     "src/scpn_quantum_control/analysis/quantum_speed_limit.py",
     "src/scpn_quantum_control/advantage_language_protocol.py",
@@ -25,11 +27,14 @@ ENTANGLEMENT_SYNC_EVIDENCE_QUALITY_RATCHET = [
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
 
-ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_COHORT = ["tests/test_entanglement_sync_evidence.py"]
+ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_COHORT = [
+    "tests/test_entanglement_sync_evidence.py",
+    "tests/test_entanglement_enhanced_sync.py",
+]
 """Tests that own exact entanglement-sync evidence coverage."""
 
 ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-entanglement-sync-evidence-quality.coverage"
+    "/tmp/scpn-qc-entanglement-sync-evidence-quality.coverage"  # nosec B108
 )
 """Isolated coverage database for the entanglement-sync evidence owner."""
 
@@ -56,8 +61,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *ENTANGLEMENT_SYNC_EVIDENCE_QUALITY_RATCHET,
@@ -96,7 +102,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={ENTANGLEMENT_SYNC_EVIDENCE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/entanglement_sync_evidence.py",
+                "--include=*/entanglement_sync_evidence.py,*/entanglement_enhanced_sync.py",
             ],
         ),
     ]

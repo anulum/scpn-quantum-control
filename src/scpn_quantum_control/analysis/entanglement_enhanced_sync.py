@@ -187,6 +187,7 @@ def prepare_initial_state(
     -------
     QuantumCircuit
         State-preparation circuit.
+
     """
     omega_array = _validate_initial_state_inputs(n_qubits, omega)
     if not isinstance(state_type, InitialState):
