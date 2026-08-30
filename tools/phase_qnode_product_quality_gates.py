@@ -14,12 +14,17 @@ from os import devnull
 Gate = tuple[str, list[str]]
 PHASE_QNODE_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/phase_qnode_product.py",
+    "src/scpn_quantum_control/phase/torch_autograd_function.py",
     "tests/test_phase_qnode_product.py",
+    "tests/test_phase_torch_autograd_function.py",
     "tools/phase_qnode_product_quality_gates.py",
     "tests/test_phase_qnode_product_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-PHASE_QNODE_PRODUCT_COVERAGE_COHORT = ["tests/test_phase_qnode_product.py"]
+PHASE_QNODE_PRODUCT_COVERAGE_COHORT = [
+    "tests/test_phase_qnode_product.py",
+    "tests/test_phase_torch_autograd_function.py",
+]
 """Tests that own exact Phase-QNode product coverage."""
 PHASE_QNODE_PRODUCT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-phase-qnode-product-quality.coverage"  # nosec B108
 """Isolated coverage database for the Phase-QNode product."""
@@ -47,8 +52,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *PHASE_QNODE_PRODUCT_QUALITY_RATCHET,
@@ -88,7 +94,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={data}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/phase_qnode_product.py",
+                "--include=*/phase_qnode_product.py,*/phase/torch_autograd_function.py",
             ],
         ),
     ]

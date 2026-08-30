@@ -180,6 +180,7 @@ def torch_autograd_function_qnn_loss(
         A scalar PyTorch tensor whose custom backward returns the bounded
         phase-QNN parameter-shift gradient for ``params`` and no gradients for
         ``features`` or ``labels``.
+
     """
     torch_module = _load_torch()
     feature_matrix, label_vector, parameter_values = _validate_inputs(features, labels, params)
@@ -221,6 +222,7 @@ def run_torch_autograd_function_audit(
     PhaseTorchAutogradFunctionResult
         JSON-ready evidence for local ``Tensor.backward()`` and optimizer-step
         integration plus explicit blocked route classifications.
+
     """
     torch_module = _load_torch()
     feature_matrix, label_vector, parameter_values = _validate_inputs(

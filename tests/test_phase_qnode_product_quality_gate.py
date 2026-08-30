@@ -20,7 +20,9 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
         gates["mypy-strict-phase-qnode-product-quality"][5:]
         == quality_gates.PHASE_QNODE_PRODUCT_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D phase-qnode-product quality ratchet"]
+    docs = gates["ruff D phase-qnode-product quality ratchet"]
+    assert "--preview" in docs
+    assert "D,D413,D417,D420" in docs
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
@@ -29,10 +31,12 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     run = gates["phase-qnode-product focused coverage"]
     report = gates["phase-qnode-product exact coverage threshold"]
     assert "--branch" in run
-    assert run[-1:] == quality_gates.PHASE_QNODE_PRODUCT_COVERAGE_COHORT
+    assert run[-len(quality_gates.PHASE_QNODE_PRODUCT_COVERAGE_COHORT) :] == (
+        quality_gates.PHASE_QNODE_PRODUCT_COVERAGE_COHORT
+    )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/phase_qnode_product.py" in report
+    assert "--include=*/phase_qnode_product.py,*/phase/torch_autograd_function.py" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
