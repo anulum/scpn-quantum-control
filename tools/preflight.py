@@ -172,6 +172,9 @@ if TYPE_CHECKING:
     )
     from tools import identity_binding_spec_quality_gates as _identity_binding_spec_quality_gates
     from tools import (
+        identity_coherence_budget_quality_gates as _identity_coherence_budget_quality_gates,
+    )
+    from tools import (
         josephson_magnitude_study_quality_gates as _josephson_magnitude_study_quality_gates,
     )
     from tools import knm_key_quality_gates as _knm_key_quality_gates
@@ -507,6 +510,9 @@ else:
     _hardware_safe_quality_gates = import_module("tools.hardware_safe_execution_quality_gates")
     _identity_binding_spec_quality_gates = import_module(
         "tools.identity_binding_spec_quality_gates"
+    )
+    _identity_coherence_budget_quality_gates = import_module(
+        "tools.identity_coherence_budget_quality_gates"
     )
     _josephson_magnitude_study_quality_gates = import_module(
         "tools.josephson_magnitude_study_quality_gates"
@@ -1071,6 +1077,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_coupling_recovery_quality_gates.build_static_quality_gates(_PY),
     *_bench_cli_quality_gates.build_static_quality_gates(_PY),
     *_identity_binding_spec_quality_gates.build_static_quality_gates(_PY),
+    *_identity_coherence_budget_quality_gates.build_static_quality_gates(_PY),
     *_ssgf_geometry_gradient_quality_gates.build_static_quality_gates(_PY),
     *_codesign_components_quality_gates.build_static_quality_gates(_PY),
     *_neural_operator_cost_model_quality_gates.build_static_quality_gates(_PY),
@@ -1705,6 +1712,9 @@ BENCH_CLI_COVERAGE_GATES = _bench_cli_quality_gates.build_coverage_gates(_PY)
 IDENTITY_BINDING_SPEC_COVERAGE_GATES = _identity_binding_spec_quality_gates.build_coverage_gates(
     _PY
 )
+IDENTITY_COHERENCE_BUDGET_COVERAGE_GATES = (
+    _identity_coherence_budget_quality_gates.build_coverage_gates(_PY)
+)
 SSGF_GEOMETRY_GRADIENT_COVERAGE_GATES = _ssgf_geometry_gradient_quality_gates.build_coverage_gates(
     _PY
 )
@@ -2131,6 +2141,7 @@ def main() -> int:
             gates.extend(COUPLING_RECOVERY_COVERAGE_GATES)
             gates.extend(BENCH_CLI_COVERAGE_GATES)
             gates.extend(IDENTITY_BINDING_SPEC_COVERAGE_GATES)
+            gates.extend(IDENTITY_COHERENCE_BUDGET_COVERAGE_GATES)
             gates.extend(SSGF_GEOMETRY_GRADIENT_COVERAGE_GATES)
             gates.extend(CODESIGN_COMPONENTS_COVERAGE_GATES)
             gates.extend(NEURAL_OPERATOR_COST_MODEL_COVERAGE_GATES)

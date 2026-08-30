@@ -44,14 +44,34 @@ def fidelity_at_depth(
     Model: F = F_gate^(n_gates) * F_readout^(n_qubits) * F_decoherence
     where F_decoherence = exp(-t_total / T2) approximately.
 
-    Args:
-        depth: Total gate layers.
-        n_qubits: Number of qubits in the circuit.
-        two_qubit_fraction: Fraction of layers that are two-qubit gates.
+    Parameters
+    ----------
+    depth : int
+        Total number of gate layers.
+    n_qubits : int
+        Number of qubits in the circuit.
+    t1_us : float
+        Qubit relaxation time in microseconds, retained in the public hardware
+        parameter contract.
+    t2_us : float
+        Qubit dephasing time in microseconds.
+    cz_error : float
+        Error probability for each two-qubit gate.
+    readout_error : float
+        Error probability for each measured qubit.
+    two_qubit_fraction : float
+        Fraction of layers containing two-qubit gates.
 
     Returns
     -------
-        Estimated fidelity in [0, 1].
+    float
+        Estimated fidelity in the interval ``[0, 1]``.
+
+    Raises
+    ------
+    ValueError
+        If ``depth`` is negative or ``n_qubits`` is less than one.
+
     """
     if depth < 0:
         raise ValueError(f"depth must be non-negative, got {depth}")
@@ -93,8 +113,37 @@ def coherence_budget(
 ) -> dict[str, Any]:
     """Compute the maximum circuit depth before fidelity drops below threshold.
 
-    Returns dict with max_depth (the budget), fidelity_at_max,
-    fidelity_curve (sampled at key depths), and hardware_params.
+    Parameters
+    ----------
+    n_qubits : int
+        Number of qubits in the circuit.
+    fidelity_threshold : float
+        Minimum acceptable estimated fidelity, strictly between zero and one.
+    max_depth : int
+        Largest depth considered by the binary search and fidelity sampling.
+    t1_us : float
+        Qubit relaxation time in microseconds, reported with the result.
+    t2_us : float
+        Qubit dephasing time in microseconds.
+    cz_error : float
+        Error probability for each two-qubit gate.
+    readout_error : float
+        Error probability for each measured qubit.
+    two_qubit_fraction : float
+        Fraction of layers containing two-qubit gates.
+
+    Returns
+    -------
+    dict[str, Any]
+        Budget depth, fidelity at that depth, sampled fidelity curve, and
+        hardware parameters.
+
+    Raises
+    ------
+    ValueError
+        If ``n_qubits`` is less than one or ``fidelity_threshold`` is outside
+        the open interval ``(0, 1)``.
+
     """
     if n_qubits < 1:
         raise ValueError(f"n_qubits must be >= 1, got {n_qubits}")
