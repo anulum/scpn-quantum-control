@@ -19,7 +19,10 @@ from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
 
 
 class TestParameterShiftGradient:
+    """Exercise the public SNN quantum parameter-shift bridge."""
+
     def test_returns_result(self) -> None:
+        """Return the public backward-result record."""
         layer = QuantumDenseLayer(n_neurons=2, n_inputs=2)
         vals = np.array([0.5, 0.3])
         target = np.array([0.8, 0.2])
@@ -27,6 +30,7 @@ class TestParameterShiftGradient:
         assert isinstance(result, BackwardResult)
 
     def test_grad_shape(self) -> None:
+        """Align angle and spike gradients with the input count."""
         layer = QuantumDenseLayer(n_neurons=3, n_inputs=3)
         vals = np.array([0.5, 0.3, 0.7])
         target = np.array([0.5, 0.5, 0.5])
@@ -35,6 +39,7 @@ class TestParameterShiftGradient:
         assert result.grad_spikes.shape == (3,)
 
     def test_loss_non_negative(self) -> None:
+        """Return a non-negative mean-squared error."""
         layer = QuantumDenseLayer(n_neurons=2, n_inputs=2)
         vals = np.array([0.5, 0.3])
         target = np.array([0.5, 0.5])
@@ -50,6 +55,7 @@ class TestParameterShiftGradient:
         assert result.n_evaluations == 6  # 2 × 3
 
     def test_grad_finite(self) -> None:
+        """Return finite angle and spike-rate gradients."""
         layer = QuantumDenseLayer(n_neurons=2, n_inputs=2)
         vals = np.array([0.5, 0.3])
         target = np.array([0.8, 0.2])
@@ -77,6 +83,7 @@ class TestParameterShiftGradient:
 
 
 def test_gradient_shape_matches_params() -> None:
+    """Match the gradient vector to an asymmetric layer input count."""
     layer = QuantumDenseLayer(n_neurons=2, n_inputs=3)
     vals = np.array([0.5, 0.3, 0.8])
     target = np.array([0.7, 0.2])
@@ -86,6 +93,7 @@ def test_gradient_shape_matches_params() -> None:
 
 
 def test_gradient_finite() -> None:
+    """Return finite gradients for a balanced two-input layer."""
     layer = QuantumDenseLayer(n_neurons=2, n_inputs=2)
     vals = np.array([0.5, 0.5])
     target = np.array([0.8, 0.2])
@@ -94,6 +102,7 @@ def test_gradient_finite() -> None:
 
 
 def test_loss_nonnegative() -> None:
+    """Keep the standalone backward loss non-negative."""
     layer = QuantumDenseLayer(n_neurons=2, n_inputs=2)
     vals = np.array([0.5, 0.5])
     target = np.array([0.5, 0.5])
@@ -102,6 +111,7 @@ def test_loss_nonnegative() -> None:
 
 
 def test_gradient_3x3() -> None:
+    """Evaluate a three-input three-neuron layer."""
     layer = QuantumDenseLayer(n_neurons=3, n_inputs=3)
     vals = np.array([0.1, 0.5, 0.9])
     target = np.array([0.5, 0.5, 0.5])
@@ -110,19 +120,9 @@ def test_gradient_3x3() -> None:
 
 
 def test_boundary_zero_shift() -> None:
-    """When input is at 0.0 with large shift, vals_minus clips to 0.0 and
-    vals_plus goes up, but both should still yield finite gradients.
-    When actual_shift ≈ 0, the gradient falls back to zeros."""
+    """Return zero gradients through the singular zero-shift fallback."""
     layer = QuantumDenseLayer(n_neurons=2, n_inputs=2, seed=42)
-    # Input exactly at 1.0, shift=0.25: vals_plus clips to 1.0, vals_minus=0.75
-    # actual_shift = 1.0 - 0.75 = 0.25 > 1e-10, so normal path.
-    # To trigger zero shift: input at 1.0, shift very small so both clip to 1.0.
-    # Actually: vals_plus = min(1.0 + shift, 1.0) = 1.0, vals_minus = max(1.0 - shift, 0.0) = 1.0 - shift
-    # That still has nonzero shift.
-    # The only way actual_shift = 0 is if both clip to same value.
-    # Input=1.0, shift=0 → both = 1.0 → shift=0.
     result = parameter_shift_gradient(layer, np.array([1.0, 1.0]), np.array([0.5, 0.5]), shift=0.0)
-    # With shift=0, all gradients should be 0
     np.testing.assert_allclose(result.grad_params, 0.0, atol=1e-12)
 
 

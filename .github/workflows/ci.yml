@@ -2476,6 +2476,8 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py
+          src/scpn_quantum_control/bridge/snn_backward.py
+          tests/test_snn_backward.py
           tools/quantum_neuromorphic_bridge_quality_gates.py
           tests/test_quantum_neuromorphic_bridge_quality_gate.py
       - name: Ruff NumPy docstrings for quantum-neuromorphic bridge cohort
@@ -2483,10 +2485,12 @@ jobs:
           python -m ruff check --isolated --preview --select D,D413,D417
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py
+          src/scpn_quantum_control/bridge/snn_backward.py
           tests/test_quantum_neuromorphic_bridge.py
           tests/test_quantum_neuromorphic_bridge_branches.py
           tests/test_qsnn_topology_policy_wiring.py
           tests/test_topology_control_integration.py
+          tests/test_snn_backward.py
           tools/quantum_neuromorphic_bridge_quality_gates.py
           tests/test_quantum_neuromorphic_bridge_quality_gate.py
       - name: Run quantum-neuromorphic bridge focused coverage
@@ -2500,6 +2504,7 @@ jobs:
           tests/test_quantum_neuromorphic_bridge_branches.py
           tests/test_qsnn_topology_policy_wiring.py
           tests/test_topology_control_integration.py
+          tests/test_snn_backward.py
       - name: Enforce quantum-neuromorphic bridge exact coverage
         run: >-
           python -m coverage report
@@ -2507,7 +2512,7 @@ jobs:
           --data-file=/tmp/scpn-qc-quantum-neuromorphic-bridge-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/qsnn/quantum_neuromorphic_bridge.py
+          --include=*/qsnn/quantum_neuromorphic_bridge.py,*/bridge/snn_backward.py
 
   koopman-quality:
     needs: lint

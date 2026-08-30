@@ -39,7 +39,20 @@ from ..qsnn.qlayer import QuantumDenseLayer
 
 @dataclass
 class BackwardResult:
-    """SNN-quantum backward pass result."""
+    """SNN-quantum backward pass result.
+
+    Attributes
+    ----------
+    grad_params
+        Loss gradient with respect to input Ry angles.
+    grad_spikes
+        Loss gradient with respect to SNN spike rates.
+    loss
+        Mean-squared error at the unshifted forward evaluation.
+    n_evaluations
+        Number of shifted quantum evaluations.
+
+    """
 
     grad_params: NDArray[np.float64]  # dL/dtheta for Ry input angles
     grad_spikes: NDArray[np.float64]  # dL/d(spike_rates) for the SNN bridge
@@ -107,11 +120,22 @@ def parameter_shift_gradient(
 ) -> BackwardResult:
     """Compute SNN bridge gradients via the exact Ry parameter-shift rule.
 
-    Args:
-        layer: quantum dense layer
-        input_values: input values in [0, 1] from SNN spike rates
-        target: target output for MSE loss
-        shift: angle-domain shift in radians; ``pi / 2`` is the exact Ry rule
+    Parameters
+    ----------
+    layer
+        Quantum dense layer evaluated by the bridge.
+    input_values
+        SNN spike-rate values mapped to Ry angles after unit-interval clamping.
+    target
+        Target output probabilities for mean-squared error.
+    shift
+        Angle-domain shift in radians; ``pi / 2`` is the exact Ry rule.
+
+    Returns
+    -------
+    BackwardResult
+        Angle gradients, spike-rate gradients, loss, and evaluation count.
+
     """
     y_forward = _quantum_forward(layer, input_values)
     loss = _mse_loss(y_forward, target)
