@@ -57,11 +57,23 @@ def compute_robustness_certificate(
 ) -> RobustnessCertificate:
     """Compute adiabatic robustness certificate from coupling matrix.
 
-    Args:
-        K: coupling matrix
-        omega: natural frequencies
-        noise_strength: ||δH|| of the perturbation
-        sweep_rate: ||dH/ds|| for adiabatic bound
+    Parameters
+    ----------
+    K : NDArray[np.float64]
+        Symmetric oscillator coupling matrix.
+    omega : NDArray[np.float64]
+        Natural oscillator frequencies.
+    noise_strength : float
+        Operator-norm scale ``||δH||`` of the perturbation.
+    sweep_rate : float
+        Hamiltonian path rate ``||dH/ds||`` for the adiabatic bound.
+
+    Returns
+    -------
+    RobustnessCertificate
+        Energy-gap, safe-perturbation, dephasing, transition, and adiabatic
+        bounds together with the leading exact eigenvalues.
+
     """
     n = K.shape[0]
     exact = classical_exact_diag(n, K=K, omega=omega)
@@ -106,6 +118,22 @@ def perturbation_fidelity(
     """Ground state overlap |<ψ_0(K)|ψ_0(K+δK)>|² under coupling perturbation.
 
     Direct numerical check: solve both Hamiltonians and compute overlap.
+
+    Parameters
+    ----------
+    K : NDArray[np.float64]
+        Reference symmetric oscillator coupling matrix.
+    omega : NDArray[np.float64]
+        Natural oscillator frequencies.
+    delta_K : NDArray[np.float64]
+        Coupling perturbation applied to the reference matrix.
+
+    Returns
+    -------
+    float
+        Squared ground-state overlap between the reference and perturbed
+        Hamiltonians.
+
     """
     n = K.shape[0]
     exact_orig = classical_exact_diag(n, K=K, omega=omega)
@@ -127,7 +155,27 @@ def gap_vs_perturbation_scan(
 ) -> dict[str, list[float]]:
     """Scan transition probability vs perturbation strength.
 
-    Returns dict with noise_strength, p_transition, fidelity columns.
+    Parameters
+    ----------
+    K : NDArray[np.float64]
+        Reference symmetric oscillator coupling matrix.
+    omega : NDArray[np.float64]
+        Natural oscillator frequencies.
+    noise_range : NDArray[np.float64] or None
+        Perturbation strengths to evaluate. A deterministic linear grid is
+        generated when omitted.
+    n_samples : int
+        Number of generated perturbation strengths when ``noise_range`` is
+        omitted.
+    seed : int
+        Seed for the symmetric Gaussian coupling perturbations.
+
+    Returns
+    -------
+    dict[str, list[float]]
+        Perturbation strengths, theoretical transition probabilities, and
+        numerical ground-state fidelities.
+
     """
     if noise_range is None:
         noise_range = np.linspace(0.001, 0.5, n_samples, dtype=np.float64)
