@@ -274,6 +274,7 @@ if TYPE_CHECKING:
     from tools import research_lane_registry_quality_gates as _research_lane_registry_quality_gates
     from tools import resource_budget_gate_quality_gates as _resource_budget_gate_quality_gates
     from tools import result_pack_seal_quality_gates as _result_pack_seal_quality_gates
+    from tools import scientific_crosscheck_quality_gates as _scientific_crosscheck_quality_gates
     from tools import (
         scorecard_acceptance_engine_quality_gates as _scorecard_acceptance_engine_quality_gates,
     )
@@ -402,6 +403,9 @@ else:
     )
     _compiler_boundary_product_quality_gates = import_module(
         "tools.compiler_boundary_product_quality_gates"
+    )
+    _scientific_crosscheck_quality_gates = import_module(
+        "tools.scientific_crosscheck_quality_gates"
     )
     _coverage_frontier_quality_gates = import_module("tools.coverage_frontier_quality_gates")
     _competitive_baseline_watch_quality_gates = import_module(
@@ -1097,6 +1101,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_ansatz_bench_quality_gates.build_static_quality_gates(_PY),
     *_coverage_frontier_quality_gates.build_static_quality_gates(_PY),
     *_compiler_boundary_product_quality_gates.build_static_quality_gates(_PY),
+    *_scientific_crosscheck_quality_gates.build_static_quality_gates(_PY),
     *_competitive_baseline_watch_quality_gates.build_static_quality_gates(_PY),
     *_whole_program_ad_product_quality_gates.build_static_quality_gates(_PY),
     *_neural_operator_baseline_product_quality_gates.build_static_quality_gates(_PY),
@@ -1728,6 +1733,9 @@ COVERAGE_FRONTIER_COVERAGE_GATES = _coverage_frontier_quality_gates.build_covera
 COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES = (
     _compiler_boundary_product_quality_gates.build_coverage_gates(_PY)
 )
+SCIENTIFIC_CROSSCHECK_COVERAGE_GATES = _scientific_crosscheck_quality_gates.build_coverage_gates(
+    _PY
+)
 COMPETITIVE_BASELINE_WATCH_COVERAGE_GATES = (
     _competitive_baseline_watch_quality_gates.build_coverage_gates(_PY)
 )
@@ -2179,6 +2187,7 @@ def main() -> int:
             gates.extend(ANSATZ_BENCH_COVERAGE_GATES)
             gates.extend(COVERAGE_FRONTIER_COVERAGE_GATES)
             gates.extend(COMPILER_BOUNDARY_PRODUCT_COVERAGE_GATES)
+            gates.extend(SCIENTIFIC_CROSSCHECK_COVERAGE_GATES)
             gates.extend(COMPETITIVE_BASELINE_WATCH_COVERAGE_GATES)
             gates.extend(WHOLE_PROGRAM_AD_PRODUCT_COVERAGE_GATES)
             gates.extend(NEURAL_OPERATOR_BASELINE_PRODUCT_COVERAGE_GATES)

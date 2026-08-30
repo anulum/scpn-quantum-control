@@ -63,6 +63,7 @@ def test_routes_agree_on_a_four_site_chain_with_six_parameters() -> None:
 
 
 def test_result_is_deterministic() -> None:
+    """Return bitwise-identical QFI crosscheck evidence for fixed inputs."""
     first = crosscheck_qfi_geometric(_ring(3), np.array([0.1, -0.05, 0.02]))
     second = crosscheck_qfi_geometric(_ring(3), np.array([0.1, -0.05, 0.02]))
     np.testing.assert_array_equal(first.qfi_geometric, second.qfi_geometric)
@@ -89,6 +90,7 @@ def test_disagreement_is_reported_not_hidden() -> None:
 def test_malformed_inputs_fail_closed(
     K: NDArray[np.float64], omega: NDArray[np.float64], epsilon: float, match: str
 ) -> None:
+    """Reject malformed topology, frequency, and finite-difference inputs."""
     with pytest.raises(ValueError, match=match):
         crosscheck_qfi_geometric(K, omega, epsilon=epsilon)
 

@@ -32,6 +32,7 @@ _OMEGA4 = np.array([0.15, -0.1, 0.05, -0.02])
 
 
 def test_crosscheck_reports_both_routes_on_a_plaquette_topology() -> None:
+    """Record quantum and lattice observables on a plaquette topology."""
     result = crosscheck_confinement_on_lattice(
         _ring_with_chord(), _OMEGA4, beta=2.0, n_thermalisation=60, seed=7
     )
@@ -49,6 +50,7 @@ def test_crosscheck_reports_both_routes_on_a_plaquette_topology() -> None:
 
 
 def test_crosscheck_is_reproducible_with_a_seed() -> None:
+    """Reproduce seeded lattice sampling evidence exactly."""
     first = crosscheck_confinement_on_lattice(
         _ring_with_chord(), _OMEGA4, n_thermalisation=30, seed=11
     )
@@ -73,6 +75,7 @@ def test_tree_topology_has_no_plaquettes_and_reports_none_tension() -> None:
 
 
 def test_both_tensions_available_requires_both_routes() -> None:
+    """Require both route values before reporting paired tension evidence."""
     result = crosscheck_confinement_on_lattice(
         _ring_with_chord(), _OMEGA4, beta=2.0, n_thermalisation=30, seed=7
     )
@@ -93,6 +96,7 @@ def test_both_tensions_available_requires_both_routes() -> None:
     ],
 )
 def test_sampling_parameters_fail_closed(kwargs: dict[str, float], match: str) -> None:
+    """Reject non-positive lattice sampling controls."""
     with pytest.raises(ValueError, match=match):
         crosscheck_confinement_on_lattice(_ring_with_chord(), _OMEGA4, **kwargs)  # type: ignore[arg-type]
 
@@ -108,11 +112,13 @@ def test_sampling_parameters_fail_closed(kwargs: dict[str, float], match: str) -
 def test_malformed_topology_fails_closed(
     K: NDArray[np.float64], omega: NDArray[np.float64], match: str
 ) -> None:
+    """Reject malformed coupling topologies and frequency vectors."""
     with pytest.raises(ValueError, match=match):
         crosscheck_confinement_on_lattice(K, omega)
 
 
 def test_gauge_subpackage_exports_the_crosscheck() -> None:
+    """Expose the crosscheck only through the governed gauge namespace."""
     from scpn_quantum_control import gauge
 
     assert hasattr(gauge, "crosscheck_confinement_on_lattice")

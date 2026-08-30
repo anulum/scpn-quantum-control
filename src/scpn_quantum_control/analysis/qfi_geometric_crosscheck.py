@@ -85,6 +85,7 @@ def crosscheck_qfi_geometric(
     ValueError
         If ``K`` is not square-symmetric, ``omega`` has the wrong shape, or
         ``epsilon`` is not positive.
+
     """
     K_arr = np.asarray(K, dtype=np.float64)
     omega_arr = np.asarray(omega, dtype=np.float64)

@@ -104,6 +104,7 @@ def crosscheck_confinement_on_lattice(
     ValueError
         If ``K`` is not square-symmetric, ``omega`` has the wrong shape, or
         a sampling parameter is out of range.
+
     """
     K_arr = np.asarray(K, dtype=np.float64)
     omega_arr = np.asarray(omega, dtype=np.float64)
