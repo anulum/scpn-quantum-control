@@ -2385,10 +2385,13 @@ jobs:
           src/scpn_quantum_control/analysis/magnetisation_sectors.py
           src/scpn_quantum_control/analysis/spectral_form_factor.py
           src/scpn_quantum_control/analysis/symmetry_sectors.py
+          src/scpn_quantum_control/analysis/translation_symmetry.py
           tests/test_spectral_form_factor.py
           tests/test_spectral_form_factor_branch.py
           tests/test_symmetry_sectors.py
           tests/test_symmetry_sectors_branch.py
+          tests/test_translation_symmetry.py
+          tests/test_translation_symmetry_contracts.py
           tools/magnetisation_sectors_quality_gates.py
           tests/test_magnetisation_sectors_quality_gate.py
       - name: Ruff NumPy docstrings for magnetisation-sector owning cohort
@@ -2398,12 +2401,15 @@ jobs:
           src/scpn_quantum_control/analysis/magnetisation_sectors.py
           src/scpn_quantum_control/analysis/spectral_form_factor.py
           src/scpn_quantum_control/analysis/symmetry_sectors.py
+          src/scpn_quantum_control/analysis/translation_symmetry.py
           tests/test_magnetisation_sectors.py
           tests/test_magnetisation_sectors_empty_guard.py
           tests/test_spectral_form_factor.py
           tests/test_spectral_form_factor_branch.py
           tests/test_symmetry_sectors.py
           tests/test_symmetry_sectors_branch.py
+          tests/test_translation_symmetry.py
+          tests/test_translation_symmetry_contracts.py
           tools/magnetisation_sectors_quality_gates.py
           tests/test_magnetisation_sectors_quality_gate.py
       - name: Run magnetisation-sector connected focused coverage
@@ -2424,6 +2430,8 @@ jobs:
           tests/test_symmetry_sectors.py
           tests/test_symmetry_sectors_branch.py
           tests/test_symmetry_sparse_workflow.py
+          tests/test_translation_symmetry.py
+          tests/test_translation_symmetry_contracts.py
       - name: Enforce magnetisation-sector exact coverage
         run: >-
           python -m coverage report
@@ -2431,7 +2439,7 @@ jobs:
           --data-file=/tmp/scpn-qc-magnetisation-sectors-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/analysis/magnetisation_sectors.py,*/analysis/spectral_form_factor.py,*/analysis/symmetry_sectors.py
+          --include=*/analysis/magnetisation_sectors.py,*/analysis/spectral_form_factor.py,*/analysis/symmetry_sectors.py,*/analysis/translation_symmetry.py
 
   quantum-neuromorphic-bridge-quality:
     needs: lint

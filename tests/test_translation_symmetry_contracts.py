@@ -11,16 +11,25 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 
-def _system(n: int = 4):
-    K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
+def _system(
+    n: int = 4,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Build a heterogeneous non-translation-invariant system."""
+    K = np.asarray(
+        0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n)))),
+        dtype=np.float64,
+    )
     np.fill_diagonal(K, 0.0)
-    omega = np.linspace(0.8, 1.2, n)
+    omega = np.linspace(0.8, 1.2, n, dtype=np.float64)
     return K, omega
 
 
-def _homogeneous_system(n: int = 4):
+def _homogeneous_system(
+    n: int = 4,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Circulant K + uniform omega for translation symmetry tests."""
     K = np.zeros((n, n))
     for i in range(n):
@@ -35,7 +44,8 @@ class TestTranslationSymmetry:
     """Cyclic translation symmetry tests."""
 
     @pytest.mark.parametrize("n", [4, 6, 8])
-    def test_is_ti_homogeneous(self, n):
+    def test_is_ti_homogeneous(self, n: int) -> None:
+        """Accept homogeneous circulant systems across representative sizes."""
         from scpn_quantum_control.analysis.translation_symmetry import (
             is_translation_invariant,
         )
@@ -44,7 +54,8 @@ class TestTranslationSymmetry:
         assert is_translation_invariant(K, omega)
 
     @pytest.mark.parametrize("n", [4, 6, 8])
-    def test_is_not_ti_heterogeneous(self, n):
+    def test_is_not_ti_heterogeneous(self, n: int) -> None:
+        """Reject heterogeneous systems across representative sizes."""
         from scpn_quantum_control.analysis.translation_symmetry import (
             is_translation_invariant,
         )
@@ -52,7 +63,8 @@ class TestTranslationSymmetry:
         K, omega = _system(n)
         assert not is_translation_invariant(K, omega)
 
-    def test_momentum_sectors_dimensions(self):
+    def test_momentum_sectors_dimensions(self) -> None:
+        """Report positive dimensions whose sum covers Hilbert space."""
         from scpn_quantum_control.analysis.translation_symmetry import (
             momentum_sector_dimensions,
         )
@@ -62,7 +74,8 @@ class TestTranslationSymmetry:
         assert all(d > 0 for d in dims.values())
 
     @pytest.mark.parametrize("momentum", [0, 1, 2, 3])
-    def test_eigh_various_momentum_sectors(self, momentum):
+    def test_eigh_various_momentum_sectors(self, momentum: int) -> None:
+        """Diagonalise every momentum label of the four-site ring."""
         from scpn_quantum_control.analysis.translation_symmetry import (
             eigh_with_translation,
         )
@@ -73,7 +86,8 @@ class TestTranslationSymmetry:
         assert result["momentum"] == momentum
         assert result["is_ti"]
 
-    def test_heterogeneous_raises_valueerror(self):
+    def test_heterogeneous_raises_valueerror(self) -> None:
+        """Refuse a heterogeneous system at the public solver boundary."""
         from scpn_quantum_control.analysis.translation_symmetry import (
             eigh_with_translation,
         )
@@ -83,7 +97,7 @@ class TestTranslationSymmetry:
             eigh_with_translation(K, omega, momentum=0)
 
     @pytest.mark.parametrize("n", [4, 6])
-    def test_k0_ground_within_full_spectrum(self, n):
+    def test_k0_ground_within_full_spectrum(self, n: int) -> None:
         """k=0 sector ground energy ≥ full ground energy."""
         from scpn_quantum_control.analysis.translation_symmetry import (
             eigh_with_translation,
@@ -97,7 +111,8 @@ class TestTranslationSymmetry:
         result = eigh_with_translation(K, omega, momentum=0)
         assert result["eigvals"][0] >= e_full[0] - 1e-8
 
-    def test_eigenvalues_are_real(self):
+    def test_eigenvalues_are_real(self) -> None:
+        """Return real eigenvalues for a real translation-invariant model."""
         from scpn_quantum_control.analysis.translation_symmetry import (
             eigh_with_translation,
         )
@@ -106,7 +121,8 @@ class TestTranslationSymmetry:
         result = eigh_with_translation(K, omega, momentum=0)
         assert all(np.isreal(e) for e in result["eigvals"])
 
-    def test_eigenvalues_sorted(self):
+    def test_eigenvalues_sorted(self) -> None:
+        """Return each projected spectrum in ascending order."""
         from scpn_quantum_control.analysis.translation_symmetry import (
             eigh_with_translation,
         )

@@ -20,9 +20,12 @@ SPECTRAL_FORM_FACTOR_CONNECTED_TEST = "tests/test_analysis_topology_contracts.py
 SYMMETRY_SECTORS_SOURCE = "src/scpn_quantum_control/analysis/symmetry_sectors.py"
 SYMMETRY_SECTORS_DIRECT_TEST = "tests/test_symmetry_sectors.py"
 SYMMETRY_SECTORS_BRANCH_TEST = "tests/test_symmetry_sectors_branch.py"
+TRANSLATION_SYMMETRY_SOURCE = "src/scpn_quantum_control/analysis/translation_symmetry.py"
+TRANSLATION_SYMMETRY_DIRECT_TEST = "tests/test_translation_symmetry.py"
+TRANSLATION_SYMMETRY_CONTRACT_TEST = "tests/test_translation_symmetry_contracts.py"
 MAGNETISATION_SECTORS_COVERAGE_INCLUDE = (
     "*/analysis/magnetisation_sectors.py,*/analysis/spectral_form_factor.py,"
-    "*/analysis/symmetry_sectors.py"
+    "*/analysis/symmetry_sectors.py,*/analysis/translation_symmetry.py"
 )
 MAGNETISATION_SECTORS_COVERAGE_COHORT = [
     "tests/test_magnetisation_sectors.py",
@@ -36,6 +39,8 @@ MAGNETISATION_SECTORS_COVERAGE_COHORT = [
     SYMMETRY_SECTORS_DIRECT_TEST,
     SYMMETRY_SECTORS_BRANCH_TEST,
     "tests/test_symmetry_sparse_workflow.py",
+    TRANSLATION_SYMMETRY_DIRECT_TEST,
+    TRANSLATION_SYMMETRY_CONTRACT_TEST,
 ]
 MAGNETISATION_SECTORS_TYPING_RATCHET = [
     MAGNETISATION_SECTORS_SOURCE,
@@ -45,6 +50,9 @@ MAGNETISATION_SECTORS_TYPING_RATCHET = [
     SYMMETRY_SECTORS_SOURCE,
     SYMMETRY_SECTORS_DIRECT_TEST,
     SYMMETRY_SECTORS_BRANCH_TEST,
+    TRANSLATION_SYMMETRY_SOURCE,
+    TRANSLATION_SYMMETRY_DIRECT_TEST,
+    TRANSLATION_SYMMETRY_CONTRACT_TEST,
     "tools/magnetisation_sectors_quality_gates.py",
     "tests/test_magnetisation_sectors_quality_gate.py",
 ]
@@ -58,6 +66,9 @@ MAGNETISATION_SECTORS_DOCSTRING_RATCHET = [
     SYMMETRY_SECTORS_SOURCE,
     SYMMETRY_SECTORS_DIRECT_TEST,
     SYMMETRY_SECTORS_BRANCH_TEST,
+    TRANSLATION_SYMMETRY_SOURCE,
+    TRANSLATION_SYMMETRY_DIRECT_TEST,
+    TRANSLATION_SYMMETRY_CONTRACT_TEST,
     "tools/magnetisation_sectors_quality_gates.py",
     "tests/test_magnetisation_sectors_quality_gate.py",
 ]
@@ -147,6 +158,9 @@ __all__ = [
     "SYMMETRY_SECTORS_BRANCH_TEST",
     "SYMMETRY_SECTORS_DIRECT_TEST",
     "SYMMETRY_SECTORS_SOURCE",
+    "TRANSLATION_SYMMETRY_CONTRACT_TEST",
+    "TRANSLATION_SYMMETRY_DIRECT_TEST",
+    "TRANSLATION_SYMMETRY_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

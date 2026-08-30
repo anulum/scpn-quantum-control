@@ -48,6 +48,21 @@ def is_translation_invariant(
     """Check whether system has cyclic translation symmetry.
 
     Requires: K_ij = K(|i-j| mod N) and ω_i = ω for all i.
+
+    Parameters
+    ----------
+    K
+        Candidate circulant coupling matrix.
+    omega
+        Oscillator-frequency vector.
+    tol
+        Absolute tolerance for homogeneity and circulant comparisons.
+
+    Returns
+    -------
+    bool
+        Whether the frequencies are homogeneous and ``K`` is circulant.
+
     """
     n = K.shape[0]
 
@@ -67,8 +82,17 @@ def is_translation_invariant(
 def momentum_sectors(n: int) -> dict[int, list[int]]:
     """Find orbits of the cyclic shift operator and assign momentum labels.
 
-    Returns dict mapping momentum index m → list of representative basis states.
-    Each orbit of T has length dividing N.
+    Parameters
+    ----------
+    n
+        Number of sites in the periodic chain.
+
+    Returns
+    -------
+    dict[int, list[int]]
+        Mapping from momentum index to representative computational-basis
+        states. Each cyclic orbit contributes to every compatible momentum.
+
     """
     dim = 2**n
     visited = set()
@@ -79,7 +103,7 @@ def momentum_sectors(n: int) -> dict[int, list[int]]:
             continue
         orbit = []
         state = k
-        for _ in range(n):
+        while True:
             orbit.append(state)
             visited.add(state)
             state = _cyclic_shift(state, n)
@@ -104,7 +128,19 @@ def momentum_sectors(n: int) -> dict[int, list[int]]:
 
 
 def momentum_sector_dimensions(n: int) -> dict[int, int]:
-    """Return dimension of each momentum sector."""
+    """Return the dimension of each momentum sector.
+
+    Parameters
+    ----------
+    n
+        Number of sites in the periodic chain.
+
+    Returns
+    -------
+    dict[int, int]
+        Mapping from momentum index to projected sector dimension.
+
+    """
     sectors = momentum_sectors(n)
     return {m: len(reps) for m, reps in sectors.items()}
 
@@ -116,8 +152,6 @@ def _require_momentum_sector_budget(
     object_count: int = 2,
 ) -> None:
     """Guard dense sector eigensolver workspace for a projected momentum block."""
-    if sector_dim < 1:
-        return
     bytes_required = sector_dim * sector_dim * np.dtype(np.complex128).itemsize * object_count
     budget = dense_budget_bytes(max_dense_gib)
     if bytes_required > budget:
@@ -140,7 +174,7 @@ def _bloch_projector(n: int, reps: list[int], phase: complex) -> sparse.csr_matr
     for row_idx, alpha in enumerate(reps):
         orbit = []
         state = alpha
-        for _ in range(n):
+        while True:
             orbit.append(state)
             state = _cyclic_shift(state, n)
             if state == alpha:
@@ -168,13 +202,28 @@ def eigh_with_translation(
 
     Parameters
     ----------
-    K, omega : coupling and frequencies (must be translation-invariant)
-    momentum : momentum quantum number m ∈ {0, 1, ..., N-1}
-    max_dense_gib : optional GiB budget for the projected dense eigensolver
+    K
+        Circulant coupling matrix.
+    omega
+        Homogeneous oscillator-frequency vector.
+    momentum
+        Momentum quantum number in ``{0, 1, ..., N-1}``.
+    max_dense_gib
+        Optional GiB budget for the projected dense eigensolver.
 
     Returns
     -------
-    dict with: eigvals, dim, momentum, is_ti
+    dict[str, Any]
+        Eigenvalues, sector dimension, momentum label, and symmetry marker.
+
+    Raises
+    ------
+    ValueError
+        If the momentum label is invalid or the system lacks translation
+        symmetry.
+    DenseAllocationError
+        If the projected dense eigensolver exceeds the active memory budget.
+
     """
     n = K.shape[0]
     if isinstance(momentum, bool) or not isinstance(momentum, int):
