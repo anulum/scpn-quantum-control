@@ -293,7 +293,10 @@ class TestPipelineIntegration:
         n = K.shape[0]
         mu = np.zeros(n)
         sigma = 0.1 * np.eye(n)
-        x = np.random.default_rng(42).standard_normal(n) * 0.1
+        x: NDArray[np.float64] = np.asarray(
+            np.random.default_rng(42).standard_normal(n) * 0.1,
+            dtype=np.float64,
+        )
         result = variational_free_energy(mu, sigma, x, K)
         assert isinstance(result.free_energy, float)
         assert result.free_energy > 0

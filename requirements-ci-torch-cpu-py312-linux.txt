@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# Hash-locked CPU PyTorch surface for Python 3.12 quality jobs.
+
+--index-url https://download.pytorch.org/whl/cpu
+
+fsspec==2026.7.0 \
+    --hash=sha256:b57ddbafedfaef7018c1ecab32aa200a9d7ca26b77965f64e48b70061249d279
+torch==2.12.1+cpu \
+    --hash=sha256:ae4bb28409f5370852bd71af221066236c38d647f780d9b0a7240c330a9c12df

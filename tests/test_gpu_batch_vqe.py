@@ -266,6 +266,23 @@ class TestBatchVQEScan:
         with pytest.raises(RuntimeError, match="available CUDA device"):
             batch_vqe_scan(K, omega, n_samples=2, seed=42, use_gpu=True)
 
+    def test_gpu_request_requires_usable_cuda_device(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Reject an admitted CUDA device that fails its allocation probe."""
+        torch = pytest.importorskip("torch")
+        K, omega = _system(2)
+        monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+
+        def _fail_cuda_probe(*args: object, **kwargs: object) -> None:
+            del args, kwargs
+            raise RuntimeError("probe failed")
+
+        monkeypatch.setattr(torch, "zeros", _fail_cuda_probe)
+
+        with pytest.raises(RuntimeError, match="usable CUDA device"):
+            batch_vqe_scan(K, omega, n_samples=2, seed=42, use_gpu=True)
+
     def test_cuda_scan_reports_torch_backend_and_minimum_energy(self) -> None:
         """Report CUDA results when a compatible physical device exists."""
         torch = pytest.importorskip("torch")

@@ -469,3 +469,25 @@ def test_rust_audit_installer_retries_transient_crates_io_transport_errors() -> 
     assert "Check Rust formatting" in workflow
     assert "cargo fmt --all -- --check" in workflow
     assert "cargo audit --deny warnings" in workflow
+
+
+def test_ci_builds_and_reuses_native_wheels_for_supported_python_versions() -> None:
+    """Native-dependent jobs must consume one ABI-matched wheel per Python version."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "  native-wheels:" in workflow
+    assert 'python-version: ["3.11", "3.12", "3.13"]' in workflow
+    assert "name: scpn-quantum-engine-${{ matrix.python-version }}" in workflow
+    assert "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c" in workflow
+    assert "needs['native-wheels'].result" in workflow
+
+
+def test_ci_optional_runtime_locks_and_preview_rules_are_explicit() -> None:
+    """Focused gates must install locked runtimes without enabling new preview rules."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert workflow.count("requirements-ci-jax-py312-linux.txt") == 3
+    assert workflow.count("requirements-ci-torch-cpu-py312-linux.txt") == 2
+    preview_commands = workflow.count("ruff check --isolated --preview --select")
+    explicit_preview_configs = workflow.count("lint.explicit-preview-rules = true")
+    assert preview_commands == explicit_preview_configs
