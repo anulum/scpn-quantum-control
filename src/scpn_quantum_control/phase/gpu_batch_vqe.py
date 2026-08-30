@@ -48,6 +48,7 @@ def batch_energy_numpy(
     Returns
     -------
     energies : array (batch,)
+
     """
     batch = param_sets.shape[0]
     energies = np.zeros(batch)
@@ -80,6 +81,7 @@ def batch_energy_torch(
     Returns
     -------
     energies : array (batch,)
+
     """
     try:
         import torch
@@ -160,21 +162,20 @@ def batch_vqe_scan(
         for layer in range(n_params // n):
             for i in range(n):
                 idx = layer * n + i
-                if idx < len(params):
-                    angle = float(params[idx])
-                    c, s = np.cos(angle / 2), np.sin(angle / 2)
-                    # Apply Ry on qubit i
-                    new_psi = np.zeros_like(psi)
-                    for k in range(dim):
-                        bi = (k >> i) & 1
-                        k_flip = k ^ (1 << i)
-                        if bi == 0:
-                            new_psi[k] += c * psi[k]
-                            new_psi[k_flip] += s * psi[k]
-                        else:
-                            new_psi[k] += c * psi[k]
-                            new_psi[k_flip] -= s * psi[k]
-                    psi[:] = new_psi
+                angle = float(params[idx])
+                c, s = np.cos(angle / 2), np.sin(angle / 2)
+                # Apply Ry on qubit i
+                new_psi = np.zeros_like(psi)
+                for k in range(dim):
+                    bi = (k >> i) & 1
+                    k_flip = k ^ (1 << i)
+                    if bi == 0:
+                        new_psi[k] += c * psi[k]
+                        new_psi[k_flip] += s * psi[k]
+                    else:
+                        new_psi[k] += c * psi[k]
+                        new_psi[k_flip] -= s * psi[k]
+                psi[:] = new_psi
         return psi
 
     backend = "numpy"
@@ -199,21 +200,20 @@ def batch_vqe_scan(
             for layer in range(n_params // n):
                 for i in range(n):
                     idx = layer * n + i
-                    if idx < params.numel():
-                        angle = params[idx]
-                        c = torch.cos(angle / 2).to(torch.complex64)
-                        s = torch.sin(angle / 2).to(torch.complex64)
-                        new_psi = torch.zeros_like(psi)
-                        for k in range(dim):
-                            bi = (k >> i) & 1
-                            k_flip = k ^ (1 << i)
-                            if bi == 0:
-                                new_psi[k] += c * psi[k]
-                                new_psi[k_flip] += s * psi[k]
-                            else:
-                                new_psi[k] += c * psi[k]
-                                new_psi[k_flip] -= s * psi[k]
-                        psi = new_psi
+                    angle = params[idx]
+                    c = torch.cos(angle / 2).to(torch.complex64)
+                    s = torch.sin(angle / 2).to(torch.complex64)
+                    new_psi = torch.zeros_like(psi)
+                    for k in range(dim):
+                        bi = (k >> i) & 1
+                        k_flip = k ^ (1 << i)
+                        if bi == 0:
+                            new_psi[k] += c * psi[k]
+                            new_psi[k_flip] += s * psi[k]
+                        else:
+                            new_psi[k] += c * psi[k]
+                            new_psi[k_flip] -= s * psi[k]
+                    psi = new_psi
             return psi
 
         energies = batch_energy_torch(H, param_sets, torch_ansatz, device="cuda")

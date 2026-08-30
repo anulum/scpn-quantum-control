@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1301
+    "test_files": 1302
   },
   "documentation": {
     "examples": [
@@ -8558,6 +8558,7 @@
       "tests/test_gpu_baseline.py",
       "tests/test_gpu_batch_vqe.py",
       "tests/test_gpu_batch_vqe_contracts.py",
+      "tests/test_gpu_batch_vqe_quality_gate.py",
       "tests/test_gradient_backend_quality_gate.py",
       "tests/test_gradient_plan_explanation_artifact.py",
       "tests/test_gradient_plan_explanation_artifact_quality_gate.py",
