@@ -15,12 +15,20 @@ Gate = tuple[str, list[str]]
 
 COSIMULATION_TYPING_RATCHET = [
     "src/scpn_quantum_control/cosimulation/knm_partition.py",
+    "src/scpn_quantum_control/cosimulation/quantum_classical.py",
     "tests/test_knm_partition_branches.py",
     "tools/cosimulation_quality_gates.py",
     "tests/test_cosimulation_quality_gate.py",
 ]
 """Ordered strict-typing cohort for the admitted partition owner."""
-COSIMULATION_DOCSTRING_RATCHET = [*COSIMULATION_TYPING_RATCHET]
+COSIMULATION_DOCSTRING_RATCHET = [
+    "src/scpn_quantum_control/cosimulation/knm_partition.py",
+    "src/scpn_quantum_control/cosimulation/quantum_classical.py",
+    "tests/test_cosimulation.py",
+    "tests/test_knm_partition_branches.py",
+    "tools/cosimulation_quality_gates.py",
+    "tests/test_cosimulation_quality_gate.py",
+]
 """Ordered complete NumPy-docstring cohort."""
 COSIMULATION_COVERAGE_COHORT = [
     "tests/test_cosimulation.py",
@@ -29,7 +37,9 @@ COSIMULATION_COVERAGE_COHORT = [
 """Real tests that own exact K_nm partition coverage."""
 COSIMULATION_COVERAGE_DATA_FILE = "/tmp/scpn-qc-cosimulation-quality.coverage"  # nosec B108
 """Isolated coverage database for quantum/classical cosimulation."""
-COSIMULATION_COVERAGE_INCLUDE = "*/cosimulation/knm_partition.py"
+COSIMULATION_COVERAGE_INCLUDE = (
+    "*/cosimulation/knm_partition.py,*/cosimulation/quantum_classical.py"
+)
 """Production source enforced at exact branch coverage."""
 
 

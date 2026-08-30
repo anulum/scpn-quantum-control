@@ -275,6 +275,7 @@ def cosimulate(
         A :class:`CoSimulationResult` with the classical-phase and quantum-moment
         trajectories, the quantum/classical/global order parameters, the
         all-classical baseline, and the partition record.
+
     """
     if not np.isfinite(dt) or dt <= 0.0:
         raise ValueError("dt must be a positive finite value")

@@ -30,7 +30,7 @@ except ImportError:  # pragma: no cover - engine optional
 
 
 def _two_scale_network(n_core: int = 6, n_total: int = 60, seed: int = 0):
-    """A strong core embedded in a weakly coupled ring."""
+    """Build a strong core embedded in a weakly coupled ring."""
     rng = np.random.default_rng(seed)
     K = np.zeros((n_total, n_total))
     for i in range(n_core):
@@ -47,6 +47,7 @@ def _two_scale_network(n_core: int = 6, n_total: int = 60, seed: int = 0):
 # Partitioning
 # --------------------------------------------------------------------------- #
 def test_partition_selects_strong_core():
+    """Select the planted strongly coupled core."""
     K, omega = _two_scale_network(n_core=6, n_total=40)
     part = partition_knm(K, omega, max_quantum_nodes=6)
     assert part.quantum_indices == (0, 1, 2, 3, 4, 5)
@@ -56,6 +57,7 @@ def test_partition_selects_strong_core():
 
 
 def test_partition_conservation_is_edge_exact():
+    """Conserve the complete upper-triangular coupling budget."""
     K, omega = _two_scale_network(n_core=5, n_total=30)
     part = partition_knm(K, omega, max_quantum_nodes=5)
     c = part.conservation
@@ -71,6 +73,7 @@ def test_partition_conservation_is_edge_exact():
 
 
 def test_partition_is_deterministic():
+    """Reproduce the same partition and growth order."""
     K, omega = _two_scale_network()
     a = partition_knm(K, omega, max_quantum_nodes=6)
     b = partition_knm(K, omega, max_quantum_nodes=6)
@@ -79,6 +82,7 @@ def test_partition_is_deterministic():
 
 
 def test_partition_records_asymmetry_and_symmetrises():
+    """Record asymmetric input and expose symmetric coupling blocks."""
     K, omega = _two_scale_network(n_core=4, n_total=12)
     K[0, 1] += 0.4  # break symmetry
     part = partition_knm(K, omega, max_quantum_nodes=4)
@@ -88,6 +92,7 @@ def test_partition_records_asymmetry_and_symmetrises():
 
 
 def test_partition_threshold_limits_core_growth():
+    """Stop core growth below the requested coupling threshold."""
     K, omega = _two_scale_network(n_core=6, n_total=30)
     # Threshold above the weak-ring coupling stops growth at the strong core.
     part = partition_knm(K, omega, max_quantum_nodes=10, coupling_threshold=0.5)
@@ -108,6 +113,7 @@ def test_partition_threshold_limits_core_growth():
     ],
 )
 def test_partition_rejects_bad_input(kwargs):
+    """Reject malformed partition matrices and controls."""
     with pytest.raises(ValueError):
         partition_knm(**kwargs)
 
@@ -122,6 +128,7 @@ def test_partition_rejects_bad_input(kwargs):
     seed=st.integers(min_value=0, max_value=10_000),
 )
 def test_classical_substep_rust_parity(n, seed):
+    """Match the optional Rust and Python classical substeps."""
     rng = np.random.default_rng(seed)
     theta = rng.uniform(-np.pi, np.pi, size=n)
     omega = rng.standard_normal(n)
@@ -138,6 +145,7 @@ def test_classical_substep_rust_parity(n, seed):
 
 @pytest.mark.skipif(not _HAS_RUST, reason="cosim kernel not built")
 def test_classical_substep_rejects_bad_args():
+    """Reject malformed arguments at the optional Rust boundary."""
     with pytest.raises(ValueError):
         _engine.cosim_classical_substep(
             np.array([0.0]),
@@ -162,6 +170,7 @@ def test_classical_substep_rejects_bad_args():
 # Co-simulation physics
 # --------------------------------------------------------------------------- #
 def test_internal_propagator_is_unitary():
+    """Construct a unitary internal half-step propagator."""
     K, omega = _two_scale_network(n_core=6, n_total=20)
     part = partition_knm(K, omega, max_quantum_nodes=6)
     half = qc._internal_half_propagator(part.quantum_coupling, part.quantum_omega, 0.05)
@@ -169,6 +178,7 @@ def test_internal_propagator_is_unitary():
 
 
 def test_xy_hamiltonian_python_matches_rust():
+    """Match dense Python and optional Rust XY Hamiltonians."""
     if not (_HAS_RUST and hasattr(_engine, "build_xy_hamiltonian_dense")):
         pytest.skip("XY Hamiltonian kernel not built")
     K, omega = _two_scale_network(n_core=4, n_total=8)
@@ -185,6 +195,7 @@ def test_xy_hamiltonian_python_matches_rust():
 
 
 def test_order_parameters_bounded():
+    """Keep every reported synchronization order parameter bounded."""
     K, omega = _two_scale_network(n_core=6, n_total=50)
     res = cosimulate(K, omega, dt=0.02, n_steps=40, max_quantum_nodes=6, seed=3)
     for arr in (res.quantum_order, res.classical_order, res.global_order):
@@ -196,6 +207,7 @@ def test_order_parameters_bounded():
 
 
 def test_decoupled_core_matches_exact_quantum():
+    """Match isolated quantum evolution when cross coupling vanishes."""
     # Zero cross coupling -> the quantum core must evolve as an isolated system.
     n = 7
     K = np.zeros((n, n))
@@ -228,6 +240,7 @@ def test_decoupled_core_matches_exact_quantum():
 
 
 def test_decoupled_classical_matches_full_kuramoto():
+    """Match the isolated classical baseline when cross coupling vanishes."""
     # Zero cross coupling -> the classical bath order parameter equals its
     # isolated all-classical baseline.
     n = 8
@@ -247,6 +260,7 @@ def test_decoupled_classical_matches_full_kuramoto():
 
 
 def test_reproducible_with_seed():
+    """Reproduce classical and quantum trajectories from a fixed seed."""
     K, omega = _two_scale_network(n_core=5, n_total=24)
     a = cosimulate(K, omega, dt=0.02, n_steps=20, max_quantum_nodes=5, seed=7)
     b = cosimulate(K, omega, dt=0.02, n_steps=20, max_quantum_nodes=5, seed=7)
@@ -255,6 +269,7 @@ def test_reproducible_with_seed():
 
 
 def test_provenance_and_claim_boundary():
+    """Expose integrator provenance and the mean-field claim boundary."""
     K, omega = _two_scale_network(n_core=4, n_total=16)
     res = cosimulate(K, omega, dt=0.02, n_steps=10, max_quantum_nodes=4, seed=1)
     assert res.provenance["quantum_integrator"] == "second_order_trotter_exact_internal"
@@ -272,12 +287,14 @@ def test_provenance_and_claim_boundary():
     ],
 )
 def test_cosimulate_rejects_bad_args(kwargs):
+    """Reject invalid integration steps and durations."""
     K, omega = _two_scale_network(n_core=4, n_total=12)
     with pytest.raises(ValueError):
         cosimulate(K, omega, max_quantum_nodes=4, **kwargs)
 
 
 def test_cosimulate_rejects_bad_initial_state():
+    """Reject malformed or zero-norm initial statevectors."""
     K, omega = _two_scale_network(n_core=4, n_total=12)
     part = partition_knm(K, omega, max_quantum_nodes=4)
     with pytest.raises(ValueError):
@@ -289,6 +306,7 @@ def test_cosimulate_rejects_bad_initial_state():
 @settings(max_examples=10, deadline=None)
 @given(seed=st.integers(min_value=0, max_value=1000))
 def test_global_order_property(seed):
+    """Keep seeded global order finite and bounded."""
     K, omega = _two_scale_network(n_core=4, n_total=20, seed=seed)
     res = cosimulate(K, omega, dt=0.02, n_steps=15, max_quantum_nodes=4, seed=seed)
     assert np.all(np.isfinite(res.global_order))

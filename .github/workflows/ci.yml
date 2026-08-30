@@ -2605,6 +2605,7 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/cosimulation/knm_partition.py
+          src/scpn_quantum_control/cosimulation/quantum_classical.py
           tests/test_knm_partition_branches.py
           tools/cosimulation_quality_gates.py
           tests/test_cosimulation_quality_gate.py
@@ -2613,6 +2614,8 @@ jobs:
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/cosimulation/knm_partition.py
+          src/scpn_quantum_control/cosimulation/quantum_classical.py
+          tests/test_cosimulation.py
           tests/test_knm_partition_branches.py
           tools/cosimulation_quality_gates.py
           tests/test_cosimulation_quality_gate.py
@@ -2627,7 +2630,7 @@ jobs:
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-cosimulation-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/cosimulation/knm_partition.py
+          --include=*/cosimulation/knm_partition.py,*/cosimulation/quantum_classical.py
 
   dla-topology-objectives-quality:
     needs: lint
