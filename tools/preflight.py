@@ -275,6 +275,7 @@ if TYPE_CHECKING:
         studio_scorecard_bundle_quality_gates as _studio_scorecard_bundle_quality_gates,
     )
     from tools import studio_simulation_quality_gates as _studio_simulation_quality_gates
+    from tools import symmetry_verification_quality_gates as _symmetry_verification_quality_gates
     from tools import sync_uncertainty_quality_gates as _sync_uncertainty_quality_gates
     from tools import (
         synchronisation_witness_quality_gates as _synchronisation_witness_quality_gates,
@@ -491,6 +492,9 @@ else:
     _kuramoto_variants_quality_gates = import_module("tools.kuramoto_variants_quality_gates")
     _mps_evolution_quality_gates = import_module("tools.mps_evolution_quality_gates")
     _sync_uncertainty_quality_gates = import_module("tools.sync_uncertainty_quality_gates")
+    _symmetry_verification_quality_gates = import_module(
+        "tools.symmetry_verification_quality_gates"
+    )
     _coupling_invariant_quality_gates = import_module("tools.coupling_invariant_quality_gates")
     _kyma_dynamics_quality_gates = import_module("tools.kyma_dynamics_quality_gates")
     _kyma_v2_coupling_quality_gates = import_module("tools.kyma_v2_coupling_quality_gates")
@@ -968,6 +972,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_xy_compile_recompute_artifact_quality_gates.build_static_quality_gates(_PY),
     *_control_structured_ansatz_quality_gates.build_static_quality_gates(_PY),
     *_sync_uncertainty_quality_gates.build_static_quality_gates(_PY),
+    *_symmetry_verification_quality_gates.build_static_quality_gates(_PY),
     *_coupling_invariant_quality_gates.build_static_quality_gates(_PY),
     *_experiment_dynamics_quality_gates.build_static_quality_gates(_PY),
     *_experiment_helpers_quality_gates.build_static_quality_gates(_PY),
@@ -1521,6 +1526,9 @@ CONTROL_STRUCTURED_ANSATZ_COVERAGE_GATES = (
     _control_structured_ansatz_quality_gates.build_coverage_gates(_PY)
 )
 SYNC_UNCERTAINTY_COVERAGE_GATES = _sync_uncertainty_quality_gates.build_coverage_gates(_PY)
+SYMMETRY_VERIFICATION_COVERAGE_GATES = _symmetry_verification_quality_gates.build_coverage_gates(
+    _PY
+)
 COUPLING_INVARIANT_COVERAGE_GATES = _coupling_invariant_quality_gates.build_coverage_gates(_PY)
 EXPERIMENT_DYNAMICS_COVERAGE_GATES = _experiment_dynamics_quality_gates.build_coverage_gates(_PY)
 EXPERIMENT_HELPERS_COVERAGE_GATES = _experiment_helpers_quality_gates.build_coverage_gates(_PY)
@@ -1996,6 +2004,7 @@ def main() -> int:
             gates.extend(XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_GATES)
             gates.extend(CONTROL_STRUCTURED_ANSATZ_COVERAGE_GATES)
             gates.extend(SYNC_UNCERTAINTY_COVERAGE_GATES)
+            gates.extend(SYMMETRY_VERIFICATION_COVERAGE_GATES)
             gates.extend(COUPLING_INVARIANT_COVERAGE_GATES)
             gates.extend(EXPERIMENT_DYNAMICS_COVERAGE_GATES)
             gates.extend(EXPERIMENT_HELPERS_COVERAGE_GATES)

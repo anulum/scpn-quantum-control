@@ -109,13 +109,17 @@ def parity_postselect(
     The XY Hamiltonian conserves parity: [H_XY, P] = 0 where P = ⊗Z_i.
     Any bitstring with the wrong parity is a hardware error.
 
-    Args:
-        counts: Raw measurement counts {bitstring: count}.
-        expected_parity: 0 (even) or 1 (odd).
+    Parameters
+    ----------
+    counts
+        Raw measurement counts ``{bitstring: count}``.
+    expected_parity
+        Expected sector: zero for even or one for odd parity.
 
     Returns
     -------
         SymmetryVerificationResult with verified and rejected counts.
+
     """
     _validate_expected_parity(expected_parity)
     clean_counts: dict[str, int] = {}
@@ -201,6 +205,7 @@ def parity_verified_expectation(
     Returns
     -------
         (exp_vals, std_vals, rejection_rate)
+
     """
     result = parity_postselect(counts, expected_parity)
 

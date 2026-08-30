@@ -9,8 +9,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.mitigation.symmetry_verification import (
     SymmetryVerificationResult,
@@ -24,73 +28,95 @@ from scpn_quantum_control.mitigation.symmetry_verification import (
 
 
 class TestBitstringParity:
-    def test_all_zeros_is_even(self):
+    """Verify computational-basis parity classification and validation."""
+
+    def test_all_zeros_is_even(self) -> None:
+        """Classify an all-zero string as even parity."""
         assert bitstring_parity("0000") == 0
 
-    def test_single_one_is_odd(self):
+    def test_single_one_is_odd(self) -> None:
+        """Classify either position of a single one as odd parity."""
         assert bitstring_parity("0001") == 1
         assert bitstring_parity("1000") == 1
 
-    def test_two_ones_is_even(self):
+    def test_two_ones_is_even(self) -> None:
+        """Classify representative two-one patterns as even parity."""
         assert bitstring_parity("0011") == 0
         assert bitstring_parity("1010") == 0
         assert bitstring_parity("1001") == 0
 
-    def test_three_ones_is_odd(self):
+    def test_three_ones_is_odd(self) -> None:
+        """Classify representative three-one patterns as odd parity."""
         assert bitstring_parity("0111") == 1
         assert bitstring_parity("1110") == 1
 
-    def test_all_ones_even_n(self):
+    def test_all_ones_even_n(self) -> None:
+        """Classify four occupied qubits as even parity."""
         assert bitstring_parity("1111") == 0
 
-    def test_all_ones_odd_n(self):
+    def test_all_ones_odd_n(self) -> None:
+        """Classify three occupied qubits as odd parity."""
         assert bitstring_parity("111") == 1
 
-    def test_spaces_ignored(self):
+    def test_spaces_ignored(self) -> None:
+        """Ignore classical-register separators in count keys."""
         assert bitstring_parity("00 11") == 0
         assert bitstring_parity("0 0 0 1") == 1
 
-    def test_rejects_non_binary_labels(self):
+    def test_rejects_non_binary_labels(self) -> None:
+        """Reject count keys containing non-binary digits."""
         with pytest.raises(ValueError, match="invalid computational-basis bitstring"):
             bitstring_parity("0102")
 
-    def test_rejects_empty_labels(self):
+    def test_rejects_empty_labels(self) -> None:
+        """Reject empty count keys after separator removal."""
         with pytest.raises(ValueError, match="invalid computational-basis bitstring"):
             bitstring_parity(" ")
 
 
 class TestInitialStateParity:
-    def test_zero_frequencies_even(self):
+    """Verify dominant initial parity from rotation frequencies."""
+
+    def test_zero_frequencies_even(self) -> None:
+        """Map the all-zero rotation vector to the even sector."""
         omega = np.array([0.0, 0.0, 0.0, 0.0])
         assert initial_state_parity(omega) == 0
 
-    def test_small_frequencies_even(self):
+    def test_small_frequencies_even(self) -> None:
+        """Keep small rotations in the dominant even sector."""
         omega = np.array([0.1, 0.2, 0.05, 0.15])
         assert initial_state_parity(omega) == 0
 
-    def test_pi_frequencies(self):
+    def test_pi_frequencies(self) -> None:
+        """Map four pi rotations to four occupied qubits and even parity."""
         # Ry(pi)|0> = |1>, so 4 qubits all at pi -> 4 ones -> even parity
         omega = np.array([np.pi, np.pi, np.pi, np.pi])
         assert initial_state_parity(omega) == 0
 
-    def test_single_pi_frequency(self):
+    def test_single_pi_frequency(self) -> None:
+        """Map one pi rotation to the odd sector."""
         # One qubit flipped -> odd parity
         omega = np.array([np.pi, 0.0, 0.0, 0.0])
         assert initial_state_parity(omega) == 1
 
-    def test_three_pi_frequencies(self):
+    def test_three_pi_frequencies(self) -> None:
+        """Map three pi rotations to the odd sector."""
         # 3 qubits flipped -> odd parity
         omega = np.array([np.pi, np.pi, np.pi, 0.0])
         assert initial_state_parity(omega) == 1
 
     @pytest.mark.parametrize("omega", [np.array([]), np.array([0.0, np.nan])])
-    def test_rejects_invalid_frequency_vectors(self, omega):
+    def test_rejects_invalid_frequency_vectors(self, omega: NDArray[np.float64]) -> None:
+        """Reject empty and non-finite rotation vectors."""
         with pytest.raises(ValueError, match="omega"):
             initial_state_parity(omega)
 
 
 class TestParityPostselect:
-    def test_all_even_parity(self):
+    """Verify parity post-selection counts, rates, and guards."""
+
+    def test_all_even_parity(self) -> None:
+        """Retain every count when all outcomes have even parity."""
         counts = {"0000": 500, "0011": 300, "1100": 200}
         result = parity_postselect(counts, expected_parity=0)
         assert result.verified_counts == counts
@@ -98,7 +124,8 @@ class TestParityPostselect:
         assert result.rejection_rate == 0.0
         assert result.verified_shots == 1000
 
-    def test_mixed_parity(self):
+    def test_mixed_parity(self) -> None:
+        """Partition mixed counts into verified and rejected mappings."""
         counts = {"0000": 400, "0001": 100, "0011": 300, "0111": 200}
         result = parity_postselect(counts, expected_parity=0)
         assert result.verified_counts == {"0000": 400, "0011": 300}
@@ -107,100 +134,122 @@ class TestParityPostselect:
         assert result.rejected_shots == 300
         assert abs(result.rejection_rate - 0.3) < 1e-10
 
-    def test_odd_parity_selection(self):
+    def test_odd_parity_selection(self) -> None:
+        """Select odd outcomes when the expected sector is odd."""
         counts = {"0000": 400, "0001": 600}
         result = parity_postselect(counts, expected_parity=1)
         assert result.verified_counts == {"0001": 600}
         assert result.rejected_counts == {"0000": 400}
         assert result.rejection_rate == 0.4
 
-    def test_empty_counts(self):
+    def test_empty_counts(self) -> None:
+        """Return zero shots and rejection rate for empty counts."""
         result = parity_postselect({}, expected_parity=0)
         assert result.verified_shots == 0
         assert result.rejected_shots == 0
         assert result.rejection_rate == 0.0
 
-    def test_all_rejected(self):
+    def test_all_rejected(self) -> None:
+        """Report unit rejection when every outcome has wrong parity."""
         counts = {"0001": 500, "0111": 500}
         result = parity_postselect(counts, expected_parity=0)
         assert result.verified_shots == 0
         assert result.rejected_shots == 1000
         assert result.rejection_rate == 1.0
 
-    def test_returns_correct_type(self):
+    def test_returns_correct_type(self) -> None:
+        """Return the structured symmetry-verification result type."""
         counts = {"00": 100}
         result = parity_postselect(counts, expected_parity=0)
         assert isinstance(result, SymmetryVerificationResult)
 
-    def test_rejects_invalid_expected_parity(self):
+    def test_rejects_invalid_expected_parity(self) -> None:
+        """Reject sector labels outside zero and one."""
         with pytest.raises(ValueError, match="expected_parity must be 0 or 1"):
             parity_postselect({"00": 100}, expected_parity=2)
 
-    def test_rejects_invalid_count_labels(self):
+    def test_rejects_invalid_count_labels(self) -> None:
+        """Reject non-binary labels before post-selection."""
         with pytest.raises(ValueError, match="invalid computational-basis bitstring"):
             parity_postselect({"0a": 100}, expected_parity=0)
 
-    def test_rejects_negative_counts(self):
+    def test_rejects_negative_counts(self) -> None:
+        """Reject negative shot multiplicities before reduction."""
         with pytest.raises(ValueError, match="counts must be non-negative"):
             parity_postselect({"00": 100, "01": -1}, expected_parity=0)
 
 
 class TestSymmetryExpand:
-    def test_correct_parity_unchanged(self):
+    """Verify parity-sector expansion and shot conservation."""
+
+    def test_correct_parity_unchanged(self) -> None:
+        """Leave counts already in the expected sector unchanged."""
         counts = {"0000": 500, "0011": 300}
         expanded = symmetry_expand(counts, expected_parity=0)
         assert expanded == {"0000": 500, "0011": 300}
 
-    def test_wrong_parity_flipped(self):
+    def test_wrong_parity_flipped(self) -> None:
+        """Flip the least-significant bit of a wrong-sector outcome."""
         counts = {"0001": 100}  # odd parity -> flip LSB -> "0000"
         expanded = symmetry_expand(counts, expected_parity=0)
         assert expanded == {"0000": 100}
 
-    def test_mixed_accumulates(self):
+    def test_mixed_accumulates(self) -> None:
+        """Accumulate a corrected outcome into an existing count key."""
         counts = {"0000": 400, "0001": 100}
         expanded = symmetry_expand(counts, expected_parity=0)
         # "0001" (odd) -> flip LSB -> "0000", added to existing 400
         assert expanded == {"0000": 500}
 
-    def test_preserves_total_shots(self):
+    def test_preserves_total_shots(self) -> None:
+        """Preserve total shot multiplicity across expansion."""
         counts = {"0000": 300, "0001": 200, "0011": 150, "0111": 350}
         expanded = symmetry_expand(counts, expected_parity=0)
         total_in = sum(counts.values())
         total_out = sum(expanded.values())
         assert total_out == total_in
 
-    def test_spaces_stripped(self):
+    def test_spaces_stripped(self) -> None:
+        """Canonicalise separated register labels in expanded output."""
         counts = {"00 00": 100}
         expanded = symmetry_expand(counts, expected_parity=0)
         assert "0000" in expanded
 
-    def test_rejects_invalid_expected_parity(self):
+    def test_rejects_invalid_expected_parity(self) -> None:
+        """Reject invalid target sectors before expansion."""
         with pytest.raises(ValueError, match="expected_parity must be 0 or 1"):
             symmetry_expand({"00": 100}, expected_parity=-1)
 
-    def test_rejects_invalid_count_labels(self):
+    def test_rejects_invalid_count_labels(self) -> None:
+        """Reject non-binary count keys before expansion."""
         with pytest.raises(ValueError, match="invalid computational-basis bitstring"):
             symmetry_expand({"0x": 100}, expected_parity=0)
 
-    def test_rejects_negative_counts(self):
+    def test_rejects_negative_counts(self) -> None:
+        """Reject negative multiplicities before expansion."""
         with pytest.raises(ValueError, match="counts must be non-negative"):
             symmetry_expand({"00": 100, "01": -1}, expected_parity=0)
 
 
 class TestParityVerifiedExpectation:
-    def test_pure_zero_state(self):
+    """Verify parity-filtered per-qubit expectation estimates."""
+
+    def test_pure_zero_state(self) -> None:
+        """Recover positive unit expectations for the zero state."""
         counts = {"0000": 1000}
         exp, std, rej = parity_verified_expectation(counts, 4, expected_parity=0)
         np.testing.assert_array_almost_equal(exp, [1.0, 1.0, 1.0, 1.0])
         assert rej == 0.0
 
-    def test_pure_one_state(self):
+    def test_pure_one_state(self) -> None:
+        """Recover negative unit expectations for the all-one state."""
         counts = {"1111": 1000}
         exp, std, rej = parity_verified_expectation(counts, 4, expected_parity=0)
         np.testing.assert_array_almost_equal(exp, [-1.0, -1.0, -1.0, -1.0])
         assert rej == 0.0
 
-    def test_removes_errors(self):
+    def test_removes_errors(self) -> None:
+        """Remove single-bit parity errors from per-qubit estimates."""
         # Ground truth: all |0000>, but 30% flipped to |0001> by noise
         counts = {"0000": 700, "0001": 300}
         exp_raw = np.zeros(4)
@@ -217,7 +266,8 @@ class TestParityVerifiedExpectation:
         # Raw qubit 0 was degraded by the 300 errors
         assert exp_raw[0] < 1.0
 
-    def test_all_rejected_returns_zeros(self):
+    def test_all_rejected_returns_zeros(self) -> None:
+        """Return zero means and unit deviations when no shots survive."""
         counts = {"0001": 1000}
         exp, std, rej = parity_verified_expectation(counts, 4, expected_parity=0)
         np.testing.assert_array_almost_equal(exp, [0.0, 0.0, 0.0, 0.0])
@@ -225,7 +275,10 @@ class TestParityVerifiedExpectation:
 
 
 class TestParityVerifiedR:
-    def test_perfect_sync_state(self):
+    """Verify raw and parity-corrected order-parameter summaries."""
+
+    def test_perfect_sync_state(self) -> None:
+        """Return every summary field for a perfectly aligned state."""
         # All qubits measure +1 in X and 0 in Y -> R = 1.0
         z_counts = {"0000": 1000}
         x_counts = {"0000": 1000}  # all +X eigenstate
@@ -236,7 +289,8 @@ class TestParityVerifiedR:
         assert "z_rejection_rate" in result
         assert "improvement" in result
 
-    def test_noisy_improves(self):
+    def test_noisy_improves(self) -> None:
+        """Report the known Z-basis rejection rate for injected errors."""
         # Simulate: 80% correct (even parity), 20% single-bit errors (odd parity)
         z_counts = {"0000": 800, "0001": 200}
         x_counts = {"0000": 800, "0001": 200}
@@ -245,7 +299,8 @@ class TestParityVerifiedR:
         # Z rejection should remove the 20% errors
         assert result["z_rejection_rate"] == pytest.approx(0.2)
 
-    def test_two_qubit_system(self):
+    def test_two_qubit_system(self) -> None:
+        """Support a two-qubit even-sector measurement ensemble."""
         z_counts = {"00": 500, "11": 500}
         x_counts = {"00": 500, "11": 500}
         y_counts = {"00": 500, "11": 500}
@@ -256,7 +311,8 @@ class TestParityVerifiedR:
 class TestIntegrationWithExperiments:
     """Verify the module integrates with existing experiment helpers."""
 
-    def test_expectation_matches_format(self):
+    def test_expectation_matches_format(self) -> None:
+        """Match the shared experiment helper when every count is verified."""
         from scpn_quantum_control.hardware.experiments import _expectation_per_qubit
 
         counts = {"0000": 700, "0011": 300}
@@ -267,7 +323,7 @@ class TestIntegrationWithExperiments:
         np.testing.assert_array_almost_equal(exp_raw, exp_ver)
         assert rej == 0.0
 
-    def test_parity_conservation_proof(self):
+    def test_parity_conservation_proof(self) -> None:
         """The XY Hamiltonian conserves parity within each sector.
 
         Start from |00⟩ (definite even parity), evolve under XX+YY,
@@ -298,15 +354,22 @@ class TestIntegrationWithExperiments:
 class TestSymmetryVerificationPythonFallback:
     """Cover lines 110-114: Python parity verification when Rust unavailable."""
 
-    def test_import_guard_uses_python_path(self, monkeypatch):
+    def test_import_guard_uses_python_path(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Reload without the optional engine and execute the Python path."""
         import builtins
         import importlib
 
         import scpn_quantum_control.mitigation.symmetry_verification as sv_mod
 
-        original_import = builtins.__import__
+        original_import: Callable[..., Any] = builtins.__import__
 
-        def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
+        def guarded_import(
+            name: str,
+            globals: dict[str, Any] | None = None,
+            locals: dict[str, Any] | None = None,
+            fromlist: tuple[str, ...] = (),
+            level: int = 0,
+        ) -> Any:
             if name == "scpn_quantum_engine":
                 raise ImportError("optional engine hidden")
             return original_import(name, globals, locals, fromlist, level)
@@ -327,7 +390,7 @@ class TestSymmetryVerificationPythonFallback:
         assert result.rejected_counts == {"01": 3, "10": 1}
         assert result.rejection_rate == pytest.approx(0.25)
 
-    def test_parity_postselect_no_rust(self):
+    def test_parity_postselect_no_rust(self) -> None:
         """Mock _HAS_RUST=False → Python bitstring parity path."""
         import scpn_quantum_control.mitigation.symmetry_verification as sv_mod
 
