@@ -80,7 +80,7 @@ class ReplayActionHandler(ActionHandler):
 
     @property
     def verb(self) -> str:
-        """Return ``"replay"``."""
+        """The Studio verb owned by this handler."""
         return REPLAY_VERB
 
     def plan(self, request: ExecutiveRequest, contract: VerbContract) -> ExecutionPlan:
@@ -99,6 +99,7 @@ class ReplayActionHandler(ActionHandler):
         -------
         ExecutionPlan
             The normalised, inspectable plan.
+
         """
         backend = request.backend or _DEFAULT_BACKEND
         if backend not in contract.backends:
@@ -147,6 +148,7 @@ class ReplayActionHandler(ActionHandler):
             failed record.
         FileNotFoundError
             When a declared artefact is missing on disk.
+
         """
         replay_spec: dict[str, Any] = dict(plan.parameters)
         raw_pack_ids = replay_spec["pack_ids"]
@@ -180,6 +182,7 @@ class ReplayActionHandler(ActionHandler):
         -------
         GeneratedScript
             The reproduction script, digest attached.
+
         """
         replay_spec: dict[str, Any] = dict(plan.parameters)
         source = _render_script(

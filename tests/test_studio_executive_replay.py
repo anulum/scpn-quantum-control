@@ -9,31 +9,54 @@
 
 from __future__ import annotations
 
-from typing import Any
+import subprocess
+import sys
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import pytest
 
-pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
-
-from scpn_quantum_control.differentiable_claim_ledger import REPO_ROOT  # noqa: E402
-from scpn_quantum_control.hardware_result_packs import (  # noqa: E402
-    MANIFEST_RELATIVE_PATH,
-    load_manifest,
-)
-from scpn_quantum_control.studio.executive import (  # noqa: E402
-    ActionRegistry,
-    ExecutiveRequest,
-    preview_action,
-    resolve_verb_contract,
-    run_action,
-)
-from scpn_quantum_control.studio.executive_replay import (  # noqa: E402
-    REPLAY_VERB,
-    ReplayActionHandler,
-    _as_pack_id,
-    _normalise_replay,
-    _safe_slug,
-)
+if TYPE_CHECKING:
+    from scpn_quantum_control.differentiable_claim_ledger import REPO_ROOT
+    from scpn_quantum_control.hardware_result_packs import (
+        MANIFEST_RELATIVE_PATH,
+        load_manifest,
+    )
+    from scpn_quantum_control.studio.executive import (
+        ActionRegistry,
+        ExecutiveRequest,
+        preview_action,
+        resolve_verb_contract,
+        run_action,
+    )
+    from scpn_quantum_control.studio.executive_replay import (
+        REPLAY_VERB,
+        ReplayActionHandler,
+        _as_pack_id,
+        _normalise_replay,
+        _safe_slug,
+    )
+else:
+    pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
+    from scpn_quantum_control.differentiable_claim_ledger import REPO_ROOT
+    from scpn_quantum_control.hardware_result_packs import (
+        MANIFEST_RELATIVE_PATH,
+        load_manifest,
+    )
+    from scpn_quantum_control.studio.executive import (
+        ActionRegistry,
+        ExecutiveRequest,
+        preview_action,
+        resolve_verb_contract,
+        run_action,
+    )
+    from scpn_quantum_control.studio.executive_replay import (
+        REPLAY_VERB,
+        ReplayActionHandler,
+        _as_pack_id,
+        _normalise_replay,
+        _safe_slug,
+    )
 
 _COMMITTED_PACK_IDS = [
     str(pack["id"]) for pack in load_manifest(REPO_ROOT / MANIFEST_RELATIVE_PATH)["packs"]
@@ -56,6 +79,7 @@ def _request(*, backend: str | None = None, **parameters: Any) -> ExecutiveReque
 # end-to-end
 # --------------------------------------------------------------------------- #
 def test_replay_reverifies_every_committed_pack() -> None:
+    """Re-verify every committed pack through the public replay action."""
     record = run_action(_request(), registry=_registry())
     assert record.result.status == "succeeded", record.result.error
     outputs = record.result.outputs
@@ -71,6 +95,7 @@ def test_replay_reverifies_every_committed_pack() -> None:
 
 
 def test_replay_selected_pack_only() -> None:
+    """Restrict replay to one selected committed result pack."""
     record = run_action(_request(pack_ids=[_COMMITTED_PACK_IDS[0]]), registry=_registry())
     assert record.result.status == "succeeded", record.result.error
     outputs = record.result.outputs
@@ -79,6 +104,7 @@ def test_replay_selected_pack_only() -> None:
 
 
 def test_replay_fails_closed_on_unknown_pack_id() -> None:
+    """Seal a failed result when the requested pack does not exist."""
     record = run_action(_request(pack_ids=["nonexistent-pack"]), registry=_registry())
     assert record.result.status == "failed"
     assert record.result.error is not None
@@ -86,7 +112,8 @@ def test_replay_fails_closed_on_unknown_pack_id() -> None:
     assert record.script is None
 
 
-def test_replay_fails_closed_on_artifact_drift(tmp_path: Any) -> None:
+def test_replay_fails_closed_on_artifact_drift(tmp_path: Path) -> None:
+    """Reject a copied result pack after its raw artefact bytes drift."""
     import json
     import shutil
 
@@ -111,6 +138,7 @@ def test_replay_fails_closed_on_artifact_drift(tmp_path: Any) -> None:
 # planning
 # --------------------------------------------------------------------------- #
 def test_replay_plan_defaults_python_backend_all_packs() -> None:
+    """Expose the read-only all-pack plan with its Python backend."""
     plan = preview_action(_request(), registry=_registry())
     assert plan.backend == "python"
     assert plan.requires_approval is False
@@ -120,12 +148,14 @@ def test_replay_plan_defaults_python_backend_all_packs() -> None:
 
 
 def test_replay_plan_names_the_selection() -> None:
+    """Describe a bounded selected-pack plan explicitly."""
     plan = preview_action(_request(pack_ids=list(_COMMITTED_PACK_IDS[:2])), registry=_registry())
     assert "2 selected pack(s)" in plan.steps[1]
     assert plan.parameters["pack_ids"] == sorted(_COMMITTED_PACK_IDS[:2])
 
 
 def test_replay_rejects_undeclared_backend() -> None:
+    """Reject a backend absent from the public replay contract."""
     handler = ReplayActionHandler()
     contract = resolve_verb_contract(REPLAY_VERB)
     with pytest.raises(ValueError, match="is not declared for the replay verb"):
@@ -136,6 +166,7 @@ def test_replay_rejects_undeclared_backend() -> None:
 # generated script
 # --------------------------------------------------------------------------- #
 def test_generated_replay_script_embeds_summary_and_compiles() -> None:
+    """Generate valid source carrying the sealed replay summary."""
     record = run_action(_request(), registry=_registry())
     assert record.script is not None
     source = record.script.source
@@ -149,9 +180,31 @@ def test_generated_replay_script_embeds_summary_and_compiles() -> None:
 
 
 def test_generated_selected_replay_script_embeds_pack_ids() -> None:
+    """Embed the explicit selected-pack set in the reproduction script."""
     record = run_action(_request(pack_ids=[_COMMITTED_PACK_IDS[0]]), registry=_registry())
     assert record.script is not None
     assert f"PACK_IDS = {[_COMMITTED_PACK_IDS[0]]!r}" in record.script.source
+
+
+def test_generated_replay_script_executes_real_verifier(tmp_path: Path) -> None:
+    """Run the generated script against the real committed-pack verifier."""
+    record = run_action(_request(), registry=_registry())
+    assert record.script is not None
+    script_path = tmp_path / record.script.filename
+    script_path.write_text(record.script.source, encoding="utf-8")
+
+    completed = subprocess.run(
+        [sys.executable, str(script_path)],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "replay_verified packs=" in completed.stdout
+    assert "artifacts=" in completed.stdout
 
 
 # --------------------------------------------------------------------------- #
@@ -159,6 +212,7 @@ def test_generated_selected_replay_script_embeds_pack_ids() -> None:
 # --------------------------------------------------------------------------- #
 @pytest.mark.parametrize("bad", [True, 1, "", "   ", None])
 def test_as_pack_id_rejects_bad(bad: Any) -> None:
+    """Reject non-string and empty pack identifiers."""
     with pytest.raises(ValueError):
         _as_pack_id(bad)
 
@@ -175,11 +229,13 @@ def test_as_pack_id_rejects_bad(bad: Any) -> None:
     ],
 )
 def test_normalise_replay_rejects_invalid(parameters: dict[str, Any]) -> None:
+    """Reject unknown, malformed, duplicate, or unbounded pack selections."""
     with pytest.raises(ValueError):
         _normalise_replay(parameters)
 
 
 def test_normalise_replay_defaults_and_sorts() -> None:
+    """Default to all packs and sort an explicit bounded selection."""
     assert _normalise_replay({}) == {"pack_ids": None}
     assert _normalise_replay({"pack_ids": ["b-pack", "a-pack"]}) == {
         "pack_ids": ["a-pack", "b-pack"]
@@ -187,5 +243,6 @@ def test_normalise_replay_defaults_and_sorts() -> None:
 
 
 def test_safe_slug_normal_and_empty() -> None:
+    """Produce filesystem-safe action slugs and a non-empty fallback."""
     assert _safe_slug("replay-packs.v1") == "replay_packs_v1"
     assert _safe_slug("!!!") == "action"
