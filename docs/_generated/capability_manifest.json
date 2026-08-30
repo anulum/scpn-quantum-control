@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1297
+    "test_files": 1298
   },
   "documentation": {
     "examples": [
@@ -8498,6 +8498,7 @@
       "tests/test_experiment_dynamics.py",
       "tests/test_experiment_dynamics_quality_gate.py",
       "tests/test_experiment_helpers_branches.py",
+      "tests/test_experiment_helpers_quality_gate.py",
       "tests/test_experiment_mitigation.py",
       "tests/test_experiment_mitigation_quality_gate.py",
       "tests/test_experiment_registry.py",

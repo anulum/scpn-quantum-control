@@ -102,6 +102,7 @@ def _expectation_per_qubit(
     Returns
     -------
         (exp_vals, std_vals) where std = sqrt((1 - exp^2) / N_shots).
+
     """
     if counts is None:
         raise ValueError("measurement counts are required")
@@ -137,6 +138,7 @@ def _R_from_xyz(
     Returns
     -------
         (R, R_std, exp_x, exp_y, exp_z, std_x, std_y, std_z)
+
     """
     exp_x, std_x = _expectation_per_qubit(x_counts, n_qubits)
     exp_y, std_y = _expectation_per_qubit(y_counts, n_qubits)
