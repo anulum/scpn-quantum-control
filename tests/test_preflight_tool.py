@@ -1041,6 +1041,8 @@ def test_main_uses_coverage_pytest_by_default(
         "QPU compute-types exact coverage threshold",
         "HLS cosimulation-evidence focused coverage",
         "HLS cosimulation-evidence exact coverage threshold",
+        "cosimulation focused coverage",
+        "cosimulation exact coverage threshold",
         "DLA topology-objectives focused coverage",
         "DLA topology-objectives exact coverage threshold",
         "DLA-parity-witness focused coverage",

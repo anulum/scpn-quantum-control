@@ -75,6 +75,7 @@ if TYPE_CHECKING:
     from tools import (
         control_structured_ansatz_quality_gates as _control_structured_ansatz_quality_gates,
     )
+    from tools import cosimulation_quality_gates as _cosimulation_quality_gates
     from tools import coupling_invariant_quality_gates as _coupling_invariant_quality_gates
     from tools import coupling_recovery_quality_gates as _coupling_recovery_quality_gates
     from tools import coverage_frontier_quality_gates as _coverage_frontier_quality_gates
@@ -516,6 +517,7 @@ else:
     _hls_cosimulation_evidence_quality_gates = import_module(
         "tools.hls_cosimulation_evidence_quality_gates"
     )
+    _cosimulation_quality_gates = import_module("tools.cosimulation_quality_gates")
     _hardware_safe_quality_gates = import_module("tools.hardware_safe_execution_quality_gates")
     _identity_binding_spec_quality_gates = import_module(
         "tools.identity_binding_spec_quality_gates"
@@ -1020,6 +1022,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_program_ad_adjoint_quality_gates.build_static_quality_gates(_PY),
     *_qpu_compute_types_quality_gates.build_static_quality_gates(_PY),
     *_hls_cosimulation_evidence_quality_gates.build_static_quality_gates(_PY),
+    *_cosimulation_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_objectives_quality_gates.build_static_quality_gates(_PY),
     *_dla_parity_witness_quality_gates.build_static_quality_gates(_PY),
     *_hamiltonian_learning_quality_gates.build_static_quality_gates(_PY),
@@ -1576,6 +1579,7 @@ QPU_COMPUTE_TYPES_COVERAGE_GATES = _qpu_compute_types_quality_gates.build_covera
 HLS_COSIMULATION_EVIDENCE_COVERAGE_GATES = (
     _hls_cosimulation_evidence_quality_gates.build_coverage_gates(_PY)
 )
+COSIMULATION_COVERAGE_GATES = _cosimulation_quality_gates.build_coverage_gates(_PY)
 DLA_TOPOLOGY_OBJECTIVES_COVERAGE_GATES = (
     _dla_topology_objectives_quality_gates.build_coverage_gates(_PY)
 )
@@ -2100,6 +2104,7 @@ def main() -> int:
             gates.extend(PROGRAM_AD_ADJOINT_COVERAGE_GATES)
             gates.extend(QPU_COMPUTE_TYPES_COVERAGE_GATES)
             gates.extend(HLS_COSIMULATION_EVIDENCE_COVERAGE_GATES)
+            gates.extend(COSIMULATION_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_OBJECTIVES_COVERAGE_GATES)
             gates.extend(DLA_PARITY_WITNESS_COVERAGE_GATES)
             gates.extend(HAMILTONIAN_LEARNING_COVERAGE_GATES)

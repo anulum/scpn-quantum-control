@@ -181,6 +181,7 @@ def partition_knm(
         A :class:`KnmPartition` with the index sets, the three coupling blocks,
         the split frequency vectors, an edge-exact :class:`ConservationReport`,
         and a provenance record.
+
     """
     K_sym, omega, asymmetry = _validate(K, omega)
     n = K_sym.shape[0]
