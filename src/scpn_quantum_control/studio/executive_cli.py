@@ -66,6 +66,7 @@ def build_default_registry() -> ActionRegistry:
         ``differentiate``, ``execute``, ``mitigate``, ``replay``,
         ``simulate``, and ``validate`` handlers — every verb the studio
         advertises on the federation contract.
+
     """
     registry = ActionRegistry()
     registry.register(AnalyseActionHandler())
@@ -156,6 +157,7 @@ def run(argv: Sequence[str] | None = None) -> int:
     int
         ``0`` succeeded (or previewed), ``1`` failed, ``2`` request error,
         ``3`` gated without approval.
+
     """
     ns = _parse_args(sys.argv[1:] if argv is None else argv)
     registry = build_default_registry()

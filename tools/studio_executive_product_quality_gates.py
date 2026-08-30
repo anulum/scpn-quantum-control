@@ -16,8 +16,10 @@ STUDIO_EXECUTIVE_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/studio_executive_product.py",
     "src/scpn_quantum_control/studio/manifest.py",
     "src/scpn_quantum_control/studio/verbs.py",
+    "src/scpn_quantum_control/studio/executive_cli.py",
     "tests/test_studio_executive_product.py",
     "tests/test_studio_manifest.py",
+    "tests/test_studio_executive_cli.py",
     "tools/studio_executive_product_quality_gates.py",
     "tests/test_studio_executive_product_quality_gate.py",
 ]
@@ -25,6 +27,7 @@ STUDIO_EXECUTIVE_PRODUCT_QUALITY_RATCHET = [
 STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT = [
     "tests/test_studio_executive_product.py",
     "tests/test_studio_manifest.py",
+    "tests/test_studio_executive_cli.py",
 ]
 """Tests that own exact Studio-executive product coverage."""
 STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE = (
@@ -96,7 +99,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/studio_executive_product.py,*/studio/manifest.py,*/studio/verbs.py",
+                "--include=*/studio_executive_product.py,*/studio/manifest.py,*/studio/verbs.py,*/studio/executive_cli.py",
             ],
         ),
     ]

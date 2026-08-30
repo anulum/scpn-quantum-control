@@ -74,6 +74,7 @@ def _compile_argv(*extra: str) -> list[str]:
 # registry
 # --------------------------------------------------------------------------- #
 def test_default_registry_registers_all_shipped_verbs() -> None:
+    """Register every verb advertised by the Studio federation contract."""
     registry = build_default_registry()
     assert registry.verbs() == (
         "analyse",
@@ -94,6 +95,7 @@ def test_default_registry_registers_all_shipped_verbs() -> None:
 def test_cli_compile_succeeds_and_prints_sealed_record(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """Compile through the CLI and emit a sealed successful record."""
     assert run(_compile_argv()) == EXIT_SUCCEEDED
     record = json.loads(capsys.readouterr().out)
     assert record["result"]["status"] == "succeeded"
@@ -105,6 +107,7 @@ def test_cli_compile_succeeds_and_prints_sealed_record(
 def test_cli_preview_prints_plan_without_executing(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """Preview a simulation plan without executing the action."""
     argv = [
         "simulate",
         "--action-id",
@@ -123,6 +126,7 @@ def test_cli_preview_prints_plan_without_executing(
 def test_cli_execute_without_approval_is_gated(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """Gate an unapproved live-hardware execution request."""
     argv = [
         "execute",
         "--action-id",
@@ -140,6 +144,7 @@ def test_cli_execute_without_approval_is_gated(
 def test_cli_execute_with_approval_builds_no_submit_dossier(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
+    """Build an approved no-submit execution dossier."""
     argv = [
         "execute",
         "--action-id",
@@ -157,6 +162,7 @@ def test_cli_execute_with_approval_builds_no_submit_dossier(
 def test_cli_writes_script_into_script_dir(
     capsys: pytest.CaptureFixture[str], tmp_path: Path
 ) -> None:
+    """Write a successful reproduction script into the requested directory."""
     script_dir = tmp_path / "scripts"
     assert run(_compile_argv("--script-dir", str(script_dir))) == EXIT_SUCCEEDED
     captured = capsys.readouterr()
@@ -169,6 +175,7 @@ def test_cli_writes_script_into_script_dir(
 def test_cli_without_script_dir_writes_nothing(
     capsys: pytest.CaptureFixture[str], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """Avoid filesystem output when no script directory is requested."""
     monkeypatch.chdir(tmp_path)
     assert run(_compile_argv()) == EXIT_SUCCEEDED
     capsys.readouterr()
@@ -178,6 +185,8 @@ def test_cli_without_script_dir_writes_nothing(
 def test_cli_failed_execution_returns_failure_exit(
     capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """Return the failure exit code for a handler execution fault."""
+
     def _boom(self: CompileActionHandler, plan: ExecutionPlan) -> Any:
         raise RuntimeError("synthetic execution fault")
 
@@ -193,35 +202,41 @@ def test_cli_failed_execution_returns_failure_exit(
 # request errors
 # --------------------------------------------------------------------------- #
 def test_cli_rejects_unknown_verb(capsys: pytest.CaptureFixture[str]) -> None:
+    """Reject a verb absent from the default registry."""
     argv = ["teleport", "--action-id", "x", "--params", "{}"]
     assert run(argv) == EXIT_REQUEST_ERROR
     assert "error" in capsys.readouterr().err
 
 
 def test_cli_rejects_undeclared_backend(capsys: pytest.CaptureFixture[str]) -> None:
+    """Reject a backend not declared by the selected handler."""
     assert run(_compile_argv("--backend", "abacus")) == EXIT_REQUEST_ERROR
     assert "is not declared" in capsys.readouterr().err
 
 
 def test_cli_rejects_invalid_json_params(capsys: pytest.CaptureFixture[str]) -> None:
+    """Reject malformed inline JSON parameters."""
     argv = ["compile", "--action-id", "x", "--params", "{not json"]
     assert run(argv) == EXIT_REQUEST_ERROR
     assert "not valid JSON" in capsys.readouterr().err
 
 
 def test_cli_rejects_non_object_params(capsys: pytest.CaptureFixture[str]) -> None:
+    """Reject JSON parameters that are not an object."""
     argv = ["compile", "--action-id", "x", "--params", "[1, 2]"]
     assert run(argv) == EXIT_REQUEST_ERROR
     assert "JSON object" in capsys.readouterr().err
 
 
 def test_cli_rejects_missing_params_file(capsys: pytest.CaptureFixture[str]) -> None:
+    """Reject an unreadable parameter file."""
     argv = ["compile", "--action-id", "x", "--params-file", "/nonexistent/params.json"]
     assert run(argv) == EXIT_REQUEST_ERROR
     assert "cannot read" in capsys.readouterr().err
 
 
 def test_cli_reads_params_from_file(capsys: pytest.CaptureFixture[str], tmp_path: Path) -> None:
+    """Read parameters from a file and execute the requested action."""
     params_file = tmp_path / "compile.json"
     params_file.write_text(json.dumps(_COMPILE_PARAMS), encoding="utf-8")
     argv = ["compile", "--action-id", "cli-file", "--params-file", str(params_file)]
@@ -238,6 +253,7 @@ def test_cli_reads_params_from_file(capsys: pytest.CaptureFixture[str], tmp_path
     ],
 )
 def test_cli_requires_exactly_one_params_source(argv: list[str]) -> None:
+    """Require exactly one inline or file-backed parameter source."""
     with pytest.raises(SystemExit) as excinfo:
         run(argv)
     assert excinfo.value.code == 2
@@ -247,6 +263,7 @@ def test_cli_requires_exactly_one_params_source(argv: list[str]) -> None:
 # _load_parameters unit branches
 # --------------------------------------------------------------------------- #
 def test_load_parameters_inline_and_file(tmp_path: Path) -> None:
+    """Load equivalent object parameters from inline and file inputs."""
     assert _load_parameters('{"a": 1}', None) == {"a": 1}
     params_file = tmp_path / "p.json"
     params_file.write_text('{"b": 2}', encoding="utf-8")
@@ -259,6 +276,7 @@ def test_load_parameters_inline_and_file(tmp_path: Path) -> None:
 def test_main_exits_with_run_code(
     capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """Propagate the CLI run code through the installed console entry point."""
     monkeypatch.setattr("sys.argv", ["scpn-studio-run", *_compile_argv()])
     with pytest.raises(SystemExit) as excinfo:
         main()
