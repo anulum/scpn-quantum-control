@@ -9,12 +9,16 @@
 
 from __future__ import annotations
 
+from typing import NoReturn, cast
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.analysis.spectral_form_factor as sff_mod
 from scpn_quantum_control.analysis.magnetisation_sectors import level_spacing_by_magnetisation
 from scpn_quantum_control.analysis.spectral_form_factor import (
+    LevelSpacingBasis,
     SFFResult,
     SFFScanResult,
     _level_spacing_ratio,
@@ -22,12 +26,12 @@ from scpn_quantum_control.analysis.spectral_form_factor import (
     sff_vs_coupling,
 )
 from scpn_quantum_control.analysis.symmetry_sectors import level_spacing_by_sector
-from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16
+from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, knm_to_dense_matrix
 from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
-def _ring(n: int) -> np.ndarray:
-    T = np.zeros((n, n))
+def _ring(n: int) -> NDArray[np.float64]:
+    T = np.zeros((n, n), dtype=np.float64)
     for i in range(n):
         j = (i + 1) % n
         T[i, j] = T[j, i] = 1.0
@@ -35,43 +39,52 @@ def _ring(n: int) -> np.ndarray:
 
 
 class TestComputeSFF:
-    def test_returns_result(self):
+    """Verify one-coupling spectral diagnostics."""
+
+    def test_returns_result(self) -> None:
+        """Return a typed result over the requested time grid."""
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
         result = compute_sff(K, omega, t_max=5.0, n_times=50)
         assert isinstance(result, SFFResult)
         assert len(result.sff) == 50
 
-    def test_sff_starts_at_one(self):
+    def test_sff_starts_at_one(self) -> None:
         """K(0) = |Tr(I)|²/d² = d²/d² = 1."""
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
         result = compute_sff(K, omega, t_max=5.0, n_times=50)
         assert abs(result.sff[0] - 1.0) < 1e-10
 
-    def test_sff_bounded(self):
+    def test_sff_bounded(self) -> None:
+        """Keep the normalized finite-spectrum SFF within unit bounds."""
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
         result = compute_sff(K, omega, t_max=10.0, n_times=100)
         assert np.all(result.sff >= 0)
         assert np.all(result.sff <= 1.0 + 1e-10)
 
-    def test_level_spacing_ratio_bounded(self):
+    def test_level_spacing_ratio_bounded(self) -> None:
         """r̄ should be between 0 and 1."""
         K = 2.0 * _ring(4)
         omega = OMEGA_N_16[:4]
         result = compute_sff(K, omega)
         assert 0 <= result.level_spacing_ratio <= 1.0
 
-    def test_4qubit(self):
+    def test_4qubit(self) -> None:
+        """Evaluate a nontrivial four-qubit finite spectrum."""
         K = 1.5 * _ring(4)
         omega = OMEGA_N_16[:4]
         result = compute_sff(K, omega, t_max=5.0, n_times=30)
         assert result.spectral_gap > 0
         assert len(result.times) == 30
 
-    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+    def test_rejects_dense_budget_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Reject an undersized budget before requesting a dense matrix."""
+
+        def fail_if_dense_hamiltonian_is_requested(*_args: object, **_kwargs: object) -> NoReturn:
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(sff_mod, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested)
@@ -81,7 +94,8 @@ class TestComputeSFF:
         with pytest.raises(DenseAllocationError, match="SFF dense eigensolver"):
             compute_sff(K, omega, t_max=1.0, n_times=2, max_dense_gib=1e-5)
 
-    def test_default_level_spacing_uses_magnetisation_sector(self):
+    def test_default_level_spacing_uses_magnetisation_sector(self) -> None:
+        """Resolve adjacent gaps in the default magnetisation sector."""
         K = 2.0 * _ring(4)
         omega = OMEGA_N_16[:4]
 
@@ -93,7 +107,8 @@ class TestComputeSFF:
         assert result.level_spacing_sector_dim > 0
         assert result.level_spacing_ratio == pytest.approx(expected)
 
-    def test_full_level_spacing_mode_preserves_full_spectrum_ratio(self):
+    def test_full_level_spacing_mode_preserves_full_spectrum_ratio(self) -> None:
+        """Expose the full-spectrum ratio when explicitly selected."""
         K = 2.0 * _ring(4)
         omega = OMEGA_N_16[:4]
 
@@ -106,20 +121,24 @@ class TestComputeSFF:
             result.full_spectrum_level_spacing_ratio
         )
 
-    def test_full_and_sector_level_spacing_are_reported_separately(self):
+    def test_full_and_sector_level_spacing_are_reported_separately(self) -> None:
+        """Keep the sector-resolved and full-spectrum ratios distinct."""
         K = 2.0 * _ring(4)
         omega = OMEGA_N_16[:4]
 
         result = compute_sff(K, omega, t_max=1.0, n_times=4)
 
         assert result.full_spectrum_level_spacing_ratio == pytest.approx(
-            _level_spacing_ratio(np.linalg.eigvalsh(sff_mod.knm_to_dense_matrix(K, omega)))
+            _level_spacing_ratio(
+                np.linalg.eigvalsh(knm_to_dense_matrix(K, omega)).astype(np.float64)
+            )
         )
         assert result.level_spacing_ratio == pytest.approx(
             level_spacing_by_magnetisation(K, omega)["r_bar"]
         )
 
-    def test_parity_level_spacing_mode_uses_ground_parity_by_default(self):
+    def test_parity_level_spacing_mode_uses_ground_parity_by_default(self) -> None:
+        """Select the ground-state parity when no parity is requested."""
         K = 2.0 * _ring(6)
         omega = OMEGA_N_16[:6]
         sector_stats = level_spacing_by_sector(K, omega)
@@ -133,7 +152,8 @@ class TestComputeSFF:
         assert result.level_spacing_sector_dim == sector_stats["dim_per_sector"]
         assert result.level_spacing_ratio == pytest.approx(sector_stats[expected_key])
 
-    def test_parity_level_spacing_mode_accepts_explicit_odd_sector(self):
+    def test_parity_level_spacing_mode_accepts_explicit_odd_sector(self) -> None:
+        """Respect an explicitly selected odd parity sector."""
         K = 2.0 * _ring(6)
         omega = OMEGA_N_16[:6]
 
@@ -152,14 +172,17 @@ class TestComputeSFF:
             level_spacing_by_sector(K, omega)["r_bar_odd"]
         )
 
-    def test_parity_mode_preserves_full_spectrum_reference(self):
+    def test_parity_mode_preserves_full_spectrum_reference(self) -> None:
+        """Retain the full-spectrum reference beside a parity ratio."""
         K = 2.0 * _ring(4)
         omega = OMEGA_N_16[:4]
 
         result = compute_sff(K, omega, t_max=1.0, n_times=4, level_spacing_basis="parity")
 
         assert result.full_spectrum_level_spacing_ratio == pytest.approx(
-            _level_spacing_ratio(np.linalg.eigvalsh(sff_mod.knm_to_dense_matrix(K, omega)))
+            _level_spacing_ratio(
+                np.linalg.eigvalsh(knm_to_dense_matrix(K, omega)).astype(np.float64)
+            )
         )
         assert result.level_spacing_ratio == pytest.approx(
             level_spacing_by_sector(K, omega)[
@@ -167,54 +190,67 @@ class TestComputeSFF:
             ]
         )
 
-    def test_invalid_level_spacing_basis_error_lists_available_modes(self):
+    def test_invalid_level_spacing_basis_error_lists_available_modes(self) -> None:
+        """List every supported basis when rejecting an invalid selector."""
         K = 2.0 * _ring(4)
         omega = OMEGA_N_16[:4]
 
         with pytest.raises(ValueError, match="magnetisation.*parity.*full"):
-            compute_sff(K, omega, t_max=1.0, n_times=4, level_spacing_basis="bad")  # type: ignore[arg-type]
+            compute_sff(
+                K,
+                omega,
+                t_max=1.0,
+                n_times=4,
+                level_spacing_basis=cast("LevelSpacingBasis", "bad"),
+            )
 
 
 class TestSFFVsCoupling:
-    def test_returns_result(self):
+    """Verify finite coupling-grid spectral scans."""
+
+    def test_returns_result(self) -> None:
+        """Return an aligned result for every requested coupling."""
         T = _ring(3)
         omega = OMEGA_N_16[:3]
-        result = sff_vs_coupling(omega, T, k_range=np.array([1.0, 2.0, 3.0]))
+        result = sff_vs_coupling(omega, T, k_range=np.array([1.0, 2.0, 3.0], dtype=np.float64))
         assert isinstance(result, SFFScanResult)
         assert len(result.level_spacing_ratios) == 3
 
-    def test_r_bar_varies(self):
+    def test_r_bar_varies(self) -> None:
         """Level spacing ratio should change across the scan."""
         T = _ring(4)
         omega = OMEGA_N_16[:4]
-        result = sff_vs_coupling(omega, T, k_range=np.linspace(0.5, 5.0, 6))
+        result = sff_vs_coupling(omega, T, k_range=np.linspace(0.5, 5.0, 6, dtype=np.float64))
         assert not np.all(result.level_spacing_ratios == result.level_spacing_ratios[0])
 
-    def test_dip_depth_finite(self):
+    def test_dip_depth_finite(self) -> None:
+        """Report finite nonnegative dip depths across the grid."""
         T = _ring(3)
         omega = OMEGA_N_16[:3]
-        result = sff_vs_coupling(omega, T, k_range=np.array([1.0, 3.0]))
+        result = sff_vs_coupling(omega, T, k_range=np.array([1.0, 3.0], dtype=np.float64))
         assert np.all(np.isfinite(result.sff_dip_depth))
         assert np.all(result.sff_dip_depth >= 0)
 
-    def test_nan_sector_ratios_do_not_trigger_chaos_onset(self):
+    def test_nan_sector_ratios_do_not_trigger_chaos_onset(self) -> None:
+        """Keep the heuristic crossing absent for all-NaN ratios."""
         T = _ring(2)
         omega = OMEGA_N_16[:2]
 
         result = sff_vs_coupling(
             omega,
             T,
-            k_range=np.array([1.0, 2.0]),
+            k_range=np.array([1.0, 2.0], dtype=np.float64),
             level_spacing_basis="magnetisation",
         )
 
         assert np.all(np.isnan(result.level_spacing_ratios))
         assert result.chaos_onset_K is None
 
-    def test_forwards_parity_level_spacing_mode_and_sector(self):
+    def test_forwards_parity_level_spacing_mode_and_sector(self) -> None:
+        """Forward the selected parity basis through every scan point."""
         T = _ring(6)
         omega = OMEGA_N_16[:6]
-        k_range = np.array([1.0, 2.0])
+        k_range = np.array([1.0, 2.0], dtype=np.float64)
 
         result = sff_vs_coupling(
             omega,
@@ -246,27 +282,30 @@ class TestSFFVsCoupling:
 
 
 class TestSFFPhysics:
-    def test_sff_at_t_zero_equals_one(self):
+    """Verify finite-spectrum physical invariants."""
+
+    def test_sff_at_t_zero_equals_one(self) -> None:
         """K(t=0) = 1 exactly (trace of identity squared / d²)."""
         K = 1.0 * _ring(2)
         omega = OMEGA_N_16[:2]
         result = compute_sff(K, omega, t_max=1.0, n_times=10)
         np.testing.assert_allclose(result.sff[0], 1.0, atol=1e-10)
 
-    def test_times_monotonic(self):
+    def test_times_monotonic(self) -> None:
+        """Construct a strictly increasing time grid."""
         K = 2.0 * _ring(3)
         omega = OMEGA_N_16[:3]
         result = compute_sff(K, omega, t_max=5.0, n_times=20)
         assert np.all(np.diff(result.times) > 0)
 
-    def test_spectral_gap_positive(self):
+    def test_spectral_gap_positive(self) -> None:
         """Spectral gap (E1-E0) must be positive for non-trivial coupling."""
         K = 3.0 * _ring(3)
         omega = OMEGA_N_16[:3]
         result = compute_sff(K, omega)
         assert result.spectral_gap > 0
 
-    def test_eigenvalues_real(self):
+    def test_eigenvalues_real(self) -> None:
         """Eigenvalues of Hermitian H must be real (verified via SFF computation)."""
         K = 2.0 * _ring(2)
         omega = OMEGA_N_16[:2]
@@ -281,7 +320,9 @@ class TestSFFPhysics:
 
 
 class TestSFFPipeline:
-    def test_knm_to_sff_wired(self):
+    """Verify the public K_nm-to-SFF pipeline."""
+
+    def test_knm_to_sff_wired(self) -> None:
         """Pipeline: build_knm_paper27 → compute_sff → level_spacing_ratio."""
         import time
 
@@ -304,11 +345,17 @@ class TestSFFPipeline:
 class TestSFFSingleTimeDipDepth:
     """Cover line 137: dip_depths = 1.0 when SFF has single element."""
 
-    def test_single_time_point(self):
+    def test_single_time_point(self) -> None:
+        """Use unit dip depth when no nonzero time point exists."""
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
-        scan = sff_vs_coupling(omega, K, k_range=np.array([1.0, 2.0]), n_times=1)
+        scan = sff_vs_coupling(
+            omega,
+            K,
+            k_range=np.array([1.0, 2.0], dtype=np.float64),
+            n_times=1,
+        )
         # With n_times=1, sff has exactly 1 element → dip_depth = 1.0
         assert np.all(scan.sff_dip_depth == 1.0)

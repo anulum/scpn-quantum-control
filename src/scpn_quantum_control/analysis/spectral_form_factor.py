@@ -47,6 +47,28 @@ class SFFResult:
 
     The selected symmetry basis and sector metadata are part of the result so
     callers cannot silently present a mixed-sector ratio as chaos evidence.
+
+    Attributes
+    ----------
+    K_base
+        Maximum absolute coupling in the evaluated matrix.
+    times
+        Inclusive finite-time evaluation grid.
+    sff
+        Normalized spectral form factor at each time.
+    level_spacing_ratio
+        Adjacent-gap ratio in the selected symmetry basis.
+    spectral_gap
+        Full-spectrum gap between the two lowest eigenvalues.
+    level_spacing_basis
+        Symmetry basis used for the reported adjacent-gap ratio.
+    level_spacing_sector
+        Selected magnetisation or parity sector, when applicable.
+    level_spacing_sector_dim
+        Hilbert-space dimension of the selected sector.
+    full_spectrum_level_spacing_ratio
+        Adjacent-gap ratio before symmetry-sector resolution.
+
     """
 
     K_base: float
@@ -66,6 +88,20 @@ class SFFScanResult:
 
     ``chaos_onset_K`` is a heuristic first threshold crossing on the supplied
     grid, not a statistical or thermodynamic-limit certification.
+
+    Attributes
+    ----------
+    k_values
+        Evaluated coupling-scale grid.
+    level_spacing_ratios
+        Selected-sector adjacent-gap ratio at each coupling.
+    spectral_gaps
+        Full-spectrum gap at each coupling.
+    sff_dip_depth
+        Minimum nonzero-time SFF value at each coupling.
+    chaos_onset_K
+        First finite-grid threshold crossing, if one exists.
+
     """
 
     k_values: NDArray[np.float64]
@@ -163,6 +199,7 @@ def compute_sff(
     level-spacing ratio defaults to a U(1) magnetisation sector because
     mixing independent symmetry sectors biases spectral diagnostics. The
     output is not a quantum-chaos certificate.
+
     """
     n = len(omega)
     require_dense_eigensolver_workspace(
@@ -227,6 +264,33 @@ def sff_vs_coupling(
     The compatibility field ``chaos_onset_K`` uses a fixed adjacent-gap-ratio
     threshold. It is a heuristic grid crossing only and does not establish a
     Poisson-to-GOE transition or critical coupling.
+
+    Parameters
+    ----------
+    omega
+        Natural-frequency vector.
+    K_topology
+        Unscaled coupling-topology matrix.
+    k_range
+        Optional coupling-scale grid; defaults to 15 points from 0.5 to 5.0.
+    t_max
+        Inclusive SFF time horizon.
+    n_times
+        Number of SFF time-grid points.
+    level_spacing_basis
+        ``"magnetisation"`` (default), ``"parity"``, or ``"full"``.
+    magnetisation
+        Optional magnetisation-sector selector.
+    parity
+        Optional parity-sector selector.
+    max_dense_gib
+        Optional fail-closed dense eigensolver budget.
+
+    Returns
+    -------
+    SFFScanResult
+        Finite-grid spacing ratios, gaps, dip depths, and heuristic crossing.
+
     """
     if k_range is None:
         k_range = np.linspace(0.5, 5.0, 15, dtype=np.float64)

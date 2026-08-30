@@ -13,24 +13,39 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 MAGNETISATION_SECTORS_SOURCE = "src/scpn_quantum_control/analysis/magnetisation_sectors.py"
+SPECTRAL_FORM_FACTOR_SOURCE = "src/scpn_quantum_control/analysis/spectral_form_factor.py"
+SPECTRAL_FORM_FACTOR_DIRECT_TEST = "tests/test_spectral_form_factor.py"
+SPECTRAL_FORM_FACTOR_BRANCH_TEST = "tests/test_spectral_form_factor_branch.py"
+SPECTRAL_FORM_FACTOR_CONNECTED_TEST = "tests/test_analysis_topology_contracts.py"
+MAGNETISATION_SECTORS_COVERAGE_INCLUDE = (
+    "*/analysis/magnetisation_sectors.py,*/analysis/spectral_form_factor.py"
+)
 MAGNETISATION_SECTORS_COVERAGE_COHORT = [
     "tests/test_magnetisation_sectors.py",
     "tests/test_magnetisation_sectors_empty_guard.py",
     "tests/test_open_system_workflow.py",
     "tests/test_rust_new_functions.py",
     "tests/test_sparse_hamiltonian.py",
-    "tests/test_spectral_form_factor.py",
+    SPECTRAL_FORM_FACTOR_DIRECT_TEST,
+    SPECTRAL_FORM_FACTOR_BRANCH_TEST,
+    SPECTRAL_FORM_FACTOR_CONNECTED_TEST,
     "tests/test_symmetry_sparse_workflow.py",
 ]
 MAGNETISATION_SECTORS_TYPING_RATCHET = [
     MAGNETISATION_SECTORS_SOURCE,
+    SPECTRAL_FORM_FACTOR_SOURCE,
+    SPECTRAL_FORM_FACTOR_DIRECT_TEST,
+    SPECTRAL_FORM_FACTOR_BRANCH_TEST,
     "tools/magnetisation_sectors_quality_gates.py",
     "tests/test_magnetisation_sectors_quality_gate.py",
 ]
 MAGNETISATION_SECTORS_DOCSTRING_RATCHET = [
     MAGNETISATION_SECTORS_SOURCE,
+    SPECTRAL_FORM_FACTOR_SOURCE,
     "tests/test_magnetisation_sectors.py",
     "tests/test_magnetisation_sectors_empty_guard.py",
+    SPECTRAL_FORM_FACTOR_DIRECT_TEST,
+    SPECTRAL_FORM_FACTOR_BRANCH_TEST,
     "tools/magnetisation_sectors_quality_gates.py",
     "tests/test_magnetisation_sectors_quality_gate.py",
 ]
@@ -100,7 +115,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={MAGNETISATION_SECTORS_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/analysis/magnetisation_sectors.py",
+                f"--include={MAGNETISATION_SECTORS_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -109,9 +124,14 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "MAGNETISATION_SECTORS_COVERAGE_COHORT",
     "MAGNETISATION_SECTORS_COVERAGE_DATA_FILE",
+    "MAGNETISATION_SECTORS_COVERAGE_INCLUDE",
     "MAGNETISATION_SECTORS_DOCSTRING_RATCHET",
     "MAGNETISATION_SECTORS_SOURCE",
     "MAGNETISATION_SECTORS_TYPING_RATCHET",
+    "SPECTRAL_FORM_FACTOR_BRANCH_TEST",
+    "SPECTRAL_FORM_FACTOR_CONNECTED_TEST",
+    "SPECTRAL_FORM_FACTOR_DIRECT_TEST",
+    "SPECTRAL_FORM_FACTOR_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]
