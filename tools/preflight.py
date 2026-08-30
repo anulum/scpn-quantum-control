@@ -342,6 +342,7 @@ if TYPE_CHECKING:
     from tools import (
         xy_compile_recompute_artifact_quality_gates as _xy_compile_recompute_artifact_quality_gates,
     )
+    from tools import xy_compiler_quality_gates as _xy_compiler_quality_gates
 else:
     _repo_root = str(Path(__file__).resolve().parents[1])
     if _repo_root not in sys.path:
@@ -660,6 +661,7 @@ else:
     _xy_compile_recompute_artifact_quality_gates = import_module(
         "tools.xy_compile_recompute_artifact_quality_gates"
     )
+    _xy_compiler_quality_gates = import_module("tools.xy_compiler_quality_gates")
 
 ROOT = Path(__file__).resolve().parent.parent
 _PY = sys.executable
@@ -1023,6 +1025,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_layout_relaxation_experiment_quality_gates.build_static_quality_gates(_PY),
     *_tn_mps_crossover_admission_quality_gates.build_static_quality_gates(_PY),
     *_xy_compile_recompute_artifact_quality_gates.build_static_quality_gates(_PY),
+    *_xy_compiler_quality_gates.build_static_quality_gates(_PY),
     *_control_structured_ansatz_quality_gates.build_static_quality_gates(_PY),
     *_sync_uncertainty_quality_gates.build_static_quality_gates(_PY),
     *_symmetry_verification_quality_gates.build_static_quality_gates(_PY),
@@ -1589,6 +1592,7 @@ TN_MPS_CROSSOVER_ADMISSION_COVERAGE_GATES = (
 XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_GATES = (
     _xy_compile_recompute_artifact_quality_gates.build_coverage_gates(_PY)
 )
+XY_COMPILER_COVERAGE_GATES = _xy_compiler_quality_gates.build_coverage_gates(_PY)
 CONTROL_STRUCTURED_ANSATZ_COVERAGE_GATES = (
     _control_structured_ansatz_quality_gates.build_coverage_gates(_PY)
 )
@@ -2095,6 +2099,7 @@ def main() -> int:
             gates.extend(LAYOUT_RELAXATION_EXPERIMENT_COVERAGE_GATES)
             gates.extend(TN_MPS_CROSSOVER_ADMISSION_COVERAGE_GATES)
             gates.extend(XY_COMPILE_RECOMPUTE_ARTIFACT_COVERAGE_GATES)
+            gates.extend(XY_COMPILER_COVERAGE_GATES)
             gates.extend(CONTROL_STRUCTURED_ANSATZ_COVERAGE_GATES)
             gates.extend(SYNC_UNCERTAINTY_COVERAGE_GATES)
             gates.extend(SYMMETRY_VERIFICATION_COVERAGE_GATES)

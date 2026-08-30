@@ -37,6 +37,18 @@ def xy_gate(qc: QuantumCircuit, i: int, j: int, angle: float) -> None:
 
     Decomposition into native gates (2 CNOT + 2 Rz + 2 H):
     This is the iSWAP-family gate, native on many superconducting processors.
+
+    Parameters
+    ----------
+    qc
+        Circuit receiving the interaction sequence.
+    i
+        Control-qubit index.
+    j
+        Target-qubit index.
+    angle
+        Interaction angle in radians.
+
     """
     qc.cx(i, j)
     qc.rx(2 * angle, j)
@@ -69,6 +81,7 @@ def compile_xy_trotter(
     -------
     QuantumCircuit
         Optimised circuit with explicit XY gates.
+
     """
     n = K.shape[0]
     dt = t / reps
@@ -99,7 +112,20 @@ def compile_xy_trotter(
 
 
 def _apply_xy_layer(qc: QuantumCircuit, K: FloatArray, dt: float, n: int) -> None:
-    """Apply all XY coupling terms for one Trotter step."""
+    """Apply all XY coupling terms for one Trotter step.
+
+    Parameters
+    ----------
+    qc
+        Circuit receiving the coupling layer.
+    K
+        Oscillator coupling matrix.
+    dt
+        Duration of the Trotter step.
+    n
+        Number of oscillator qubits.
+
+    """
     for i in range(n):
         for j in range(i + 1, n):
             if abs(K[i, j]) > 1e-15:
@@ -114,7 +140,22 @@ def depth_comparison(
 ) -> DepthComparison:
     """Compare circuit depth: generic Trotter vs XY-optimised.
 
-    Returns dict with keys: generic_depth, optimised_depth, reduction_pct
+    Parameters
+    ----------
+    K
+        Oscillator coupling matrix.
+    omega
+        Natural frequencies, one per oscillator.
+    t
+        Total evolution time.
+    reps
+        Number of Trotter repetitions.
+
+    Returns
+    -------
+    dict
+        Generic and optimized depths, percentage reduction, and CNOT counts.
+
     """
     n = K.shape[0]
 
