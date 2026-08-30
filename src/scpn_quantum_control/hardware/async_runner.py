@@ -118,6 +118,7 @@ class AsyncHardwareRunner:
         submissions. Defaults to ``len(runners)``. Set to a lower number
         to leave headroom for other jobs on the same instance; set
         higher (up to the provider's quota) for Phase 2 fan-outs.
+
     """
 
     def __init__(
@@ -130,6 +131,7 @@ class AsyncHardwareRunner:
         mitigation: str = "GUESS",
         **kwargs: Any,
     ) -> None:
+        """Initialize a runner pool with bounded submission concurrency."""
         self.backend = backend
         self.default_shots = shots
         self.mitigation = mitigation

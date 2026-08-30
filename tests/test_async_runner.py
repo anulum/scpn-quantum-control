@@ -18,7 +18,8 @@ import sys
 import threading
 import time
 import types
-from typing import Any
+from collections.abc import Iterator
+from typing import Any, cast
 from unittest.mock import MagicMock
 
 import pytest
@@ -49,7 +50,7 @@ class _StubSampler:
 
 
 @pytest.fixture(autouse=True)
-def _stub_qiskit_ibm_runtime(monkeypatch: pytest.MonkeyPatch):
+def _stub_qiskit_ibm_runtime(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     """Install a tiny ``qiskit_ibm_runtime`` module with a SamplerV2 stub."""
     mod = types.ModuleType("qiskit_ibm_runtime")
     mod.SamplerV2 = _StubSampler  # type: ignore[attr-defined]
@@ -105,9 +106,12 @@ def _pub_result(counts: dict[str, int]) -> types.SimpleNamespace:
 
 
 class TestConstruction:
+    """Exercise runner-pool construction and round-robin state."""
+
     def test_logger_falls_back_when_structured_logger_unavailable(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Fall back to standard logging when structured logging fails."""
         import builtins
         import logging
 
@@ -126,17 +130,20 @@ class TestConstruction:
         assert logger.name == "fallback_logger"
 
     def test_accepts_single_runner(self) -> None:
+        """Wrap a single connected runner in a one-entry pool."""
         r = _StubRunner()
         a = ar.AsyncHardwareRunner(r)  # type: ignore[arg-type]
         assert a.n_runners == 1
         assert a.max_concurrent == 1
 
     def test_accepts_list_of_runners(self) -> None:
+        """Accept an explicit list of connected runners."""
         a = ar.AsyncHardwareRunner([_StubRunner(), _StubRunner()])  # type: ignore[list-item]
         assert a.n_runners == 2
         assert a.max_concurrent == 2
 
     def test_max_concurrent_override(self) -> None:
+        """Honor an explicit concurrency limit below pool size."""
         a = ar.AsyncHardwareRunner(
             [_StubRunner(), _StubRunner(), _StubRunner()],  # type: ignore[list-item]
             max_concurrent=1,
@@ -144,28 +151,32 @@ class TestConstruction:
         assert a.max_concurrent == 1
 
     def test_rejects_empty(self) -> None:
+        """Reject an explicitly empty runner pool."""
         with pytest.raises(ValueError, match="at least one"):
             ar.AsyncHardwareRunner([])
 
     def test_rejects_zero_concurrent(self) -> None:
+        """Reject a non-positive concurrency limit."""
         with pytest.raises(ValueError, match="max_concurrent"):
             ar.AsyncHardwareRunner(_StubRunner(), max_concurrent=0)  # type: ignore[arg-type]
 
     def test_wraps_non_list_iterable_as_single_runner(self) -> None:
+        """Treat a non-list iterable object as one runner value."""
         runner_set = {_StubRunner("set_runner")}
 
         a = ar.AsyncHardwareRunner(runner_set)  # type: ignore[arg-type]
 
         assert a.n_runners == 1
-        assert a._runners[0] is runner_set
+        assert cast(object, a._runners[0]) is runner_set
 
     def test_next_runner_advances_round_robin_index(self) -> None:
+        """Cycle through runners and advance the internal round-robin index."""
         r1, r2 = _StubRunner("ibm_a"), _StubRunner("ibm_b")
         a = ar.AsyncHardwareRunner([r1, r2])  # type: ignore[list-item]
 
-        assert a._next_runner() is r1
-        assert a._next_runner() is r2
-        assert a._next_runner() is r1
+        assert cast(object, a._next_runner()) is r1
+        assert cast(object, a._next_runner()) is r2
+        assert cast(object, a._next_runner()) is r1
         assert a._rr_index == 3
 
 
@@ -175,7 +186,10 @@ class TestConstruction:
 
 
 class TestSubmitOne:
+    """Exercise one asynchronous hardware submission through fake adapters."""
+
     def test_submit_one_returns_handle(self) -> None:
+        """Return a populated job handle for a successful submission."""
         r = _StubRunner("ibm_test")
         a = ar.AsyncHardwareRunner(r)  # type: ignore[arg-type]
         before = time.time()
@@ -184,12 +198,13 @@ class TestSubmitOne:
         )
         after = time.time()
         assert handle.job_id.startswith("job_")
-        assert handle.runner is r
+        assert cast(object, handle.runner) is r
         assert handle.experiment == "phase1_even"
         assert before <= handle.submitted_at <= after
         assert handle._job is not None
 
     def test_submit_one_transpiles_all_circuits(self) -> None:
+        """Transpile every circuit before sampler submission."""
         r = _StubRunner()
         a = ar.AsyncHardwareRunner(r)  # type: ignore[arg-type]
         circs = _fake_circuits(4)
@@ -197,6 +212,7 @@ class TestSubmitOne:
         assert r.transpiled == circs
 
     def test_submit_one_logs_job(self) -> None:
+        """Record the provider job identifier and experiment name."""
         r = _StubRunner()
         a = ar.AsyncHardwareRunner(r)  # type: ignore[arg-type]
         asyncio.run(a.submit_one_async(_fake_circuits(), name="my_exp"))
@@ -206,12 +222,13 @@ class TestSubmitOne:
         assert job_id.startswith("job_")
 
     def test_submit_one_honours_explicit_runner(self) -> None:
+        """Use an explicitly selected runner instead of round robin."""
         r1, r2 = _StubRunner("ibm_a"), _StubRunner("ibm_b")
         a = ar.AsyncHardwareRunner([r1, r2])  # type: ignore[list-item]
         handle = asyncio.run(
             a.submit_one_async(_fake_circuits(), runner=r2),  # type: ignore[arg-type]
         )
-        assert handle.runner is r2
+        assert cast(object, handle.runner) is r2
 
 
 # ---------------------------------------------------------------------------
@@ -220,7 +237,10 @@ class TestSubmitOne:
 
 
 class TestSubmitBatch:
+    """Exercise bounded asynchronous batch fan-out."""
+
     def test_batch_dispatches_round_robin(self) -> None:
+        """Distribute batch entries across runners in round-robin order."""
         r1, r2 = _StubRunner("ibm_a"), _StubRunner("ibm_b")
         a = ar.AsyncHardwareRunner([r1, r2])  # type: ignore[list-item]
         batches = [_fake_circuits(1) for _ in range(4)]
@@ -233,6 +253,7 @@ class TestSubmitBatch:
         ]
 
     def test_batch_assigns_unique_experiment_names(self) -> None:
+        """Suffix each batch experiment with its stable entry index."""
         r = _StubRunner()
         a = ar.AsyncHardwareRunner(r)  # type: ignore[arg-type]
         batches = [_fake_circuits(1) for _ in range(3)]
@@ -300,7 +321,10 @@ class TestSubmitBatch:
 
 
 class TestWaitForResults:
+    """Exercise asynchronous result collection from job handles."""
+
     def test_wait_returns_job_results(self) -> None:
+        """Return the provider result and forward an explicit timeout."""
         r = _StubRunner()
         a = ar.AsyncHardwareRunner(r)  # type: ignore[arg-type]
         handle = asyncio.run(a.submit_one_async(_fake_circuits(2), name="exp"))
@@ -313,6 +337,7 @@ class TestWaitForResults:
         handle._job.result.assert_called_once_with(timeout=123.0)
 
     def test_wait_raises_without_job(self) -> None:
+        """Reject an orphaned handle without an attached provider job."""
         r = _StubRunner()
         a = ar.AsyncHardwareRunner(r)  # type: ignore[arg-type]
         handle = ar.AsyncJobHandle(job_id="orphan", runner=r, experiment="x")  # type: ignore[arg-type]
@@ -320,6 +345,7 @@ class TestWaitForResults:
             asyncio.run(a.wait_for_job_async(handle))
 
     def test_wait_all_gathers_every_handle(self) -> None:
+        """Gather results for every supplied handle in input order."""
         r = _StubRunner()
         a = ar.AsyncHardwareRunner(r)  # type: ignore[arg-type]
         batches = [_fake_circuits(1) for _ in range(4)]
@@ -335,7 +361,10 @@ class TestWaitForResults:
 
 
 class TestAsyncPipelineSmoke:
+    """Exercise batch submission and result collection end to end."""
+
     def test_pipeline_submit_batch_then_wait_all(self) -> None:
+        """Complete a fake multi-runner submit-and-wait pipeline."""
         r1, r2 = _StubRunner("ibm_a"), _StubRunner("ibm_b")
         a = ar.AsyncHardwareRunner([r1, r2])  # type: ignore[list-item]
         batches = [_fake_circuits(2) for _ in range(4)]
@@ -352,6 +381,8 @@ class TestAsyncPipelineSmoke:
 
 
 class TestSubmitCircuitBatchProvenance:
+    """Exercise provider provenance and labelled fallback boundaries."""
+
     def test_zne_records_all_ibm_job_ids(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """ZNE scale runs and the final counts run must all keep real IBM job ids."""
 
@@ -422,7 +453,7 @@ class TestSubmitCircuitBatchProvenance:
                 self.scale_factors = scale_factors
 
         def _execute_with_zne(circuit: Any, executor: Any, **kwargs: Any) -> float:
-            return sum(executor(circuit) for _ in range(3)) / 3.0
+            return float(sum(executor(circuit) for _ in range(3)) / 3.0)
 
         qiskit_ibm = types.ModuleType("qiskit_ibm_runtime")
         qiskit_ibm.QiskitRuntimeService = _FakeService  # type: ignore[attr-defined]
@@ -802,6 +833,8 @@ class TestSubmitCircuitBatchProvenance:
     def test_submit_circuit_batch_submission_error_without_local_fallback(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Report provider failure without silently running locally."""
+
         class _FakeCircuit:
             num_clbits = 1
 
@@ -837,6 +870,8 @@ class TestSubmitCircuitBatchProvenance:
     def test_submit_circuit_batch_submission_error_can_use_labelled_local_fallback(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
+        """Run an explicit local fallback and ignore non-callable observers."""
+
         class _FakeCircuit:
             num_clbits = 1
 
@@ -874,7 +909,10 @@ class TestSubmitCircuitBatchProvenance:
         runner = ar.AsyncHardwareRunner(backend="ibm_fez", shots=2)
         job = runner.submit_circuit_batch(
             _FakeAnsatz(),
-            lambda **kwargs: {"observable_seen": float(sum(kwargs["counts"].values()))},
+            [
+                lambda **kwargs: {"observable_seen": float(sum(kwargs["counts"].values()))},
+                object(),
+            ],
             allow_local_simulation=True,
         )
 

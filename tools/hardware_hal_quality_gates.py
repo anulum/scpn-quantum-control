@@ -14,29 +14,40 @@ from os import devnull
 Gate = tuple[str, list[str]]
 HARDWARE_HAL_SOURCE = "src/scpn_quantum_control/hardware/hal.py"
 """Production source owned by the provider-neutral HAL."""
+ASYNC_HARDWARE_RUNNER_SOURCE = "src/scpn_quantum_control/hardware/async_runner.py"
+"""Bounded asynchronous orchestration over hardware runners."""
+ASYNC_HARDWARE_RUNNER_TEST = "tests/test_async_runner.py"
+"""Offline fake-adapter orchestration and provenance tests."""
 HARDWARE_HAL_COVERAGE_COHORT = [
     "tests/test_hardware_hal.py",
     "tests/test_hardware_hal_contract_guards.py",
     "tests/test_hardware_hal_count_integrity_contract.py",
     "tests/test_hardware_hal_provider_id_contract.py",
     "tests/test_hardware_hal_status_normalisation_contract.py",
+    ASYNC_HARDWARE_RUNNER_TEST,
 ]
 """Offline and fake-adapter tests that own exact HAL coverage."""
 HARDWARE_HAL_TYPING_RATCHET = [
     HARDWARE_HAL_SOURCE,
+    ASYNC_HARDWARE_RUNNER_SOURCE,
+    ASYNC_HARDWARE_RUNNER_TEST,
     "tools/hardware_hal_quality_gates.py",
     "tests/test_hardware_hal_quality_gate.py",
 ]
 """Strict-typing cohort for production and gate contracts."""
 HARDWARE_HAL_DOCSTRING_RATCHET = [
     HARDWARE_HAL_SOURCE,
+    ASYNC_HARDWARE_RUNNER_SOURCE,
     "tests/test_hardware_hal.py",
+    ASYNC_HARDWARE_RUNNER_TEST,
     "tools/hardware_hal_quality_gates.py",
     "tests/test_hardware_hal_quality_gate.py",
 ]
 """Complete HAL and gate-contract docstring cohort."""
 HARDWARE_HAL_COVERAGE_DATA_FILE = "/tmp/scpn-qc-hardware-hal-quality.coverage"  # nosec B108
 """Isolated coverage database for the hardware HAL owner."""
+HARDWARE_HAL_COVERAGE_INCLUDE = "*/hardware/hal.py,*/hardware/async_runner.py"
+"""Provider-neutral and asynchronous hardware sources under exact coverage."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -101,15 +112,18 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={HARDWARE_HAL_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/hardware/hal.py",
+                f"--include={HARDWARE_HAL_COVERAGE_INCLUDE}",
             ],
         ),
     ]
 
 
 __all__ = [
+    "ASYNC_HARDWARE_RUNNER_SOURCE",
+    "ASYNC_HARDWARE_RUNNER_TEST",
     "HARDWARE_HAL_COVERAGE_COHORT",
     "HARDWARE_HAL_COVERAGE_DATA_FILE",
+    "HARDWARE_HAL_COVERAGE_INCLUDE",
     "HARDWARE_HAL_DOCSTRING_RATCHET",
     "HARDWARE_HAL_SOURCE",
     "HARDWARE_HAL_TYPING_RATCHET",
