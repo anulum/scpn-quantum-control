@@ -26,8 +26,15 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
 def test_coverage_gate_is_isolated_and_exact() -> None:
     """Require branch execution and exact source-only coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["migration-guides-product focused coverage"]
-    assert "--fail-under=100" in gates["migration-guides-product exact coverage threshold"]
+    run = gates["migration-guides-product focused coverage"]
+    report = gates["migration-guides-product exact coverage threshold"]
+    assert "--branch" in run
+    assert (
+        run[-len(quality_gates.MIGRATION_GUIDES_PRODUCT_COVERAGE_COHORT) :]
+        == quality_gates.MIGRATION_GUIDES_PRODUCT_COVERAGE_COHORT
+    )
+    assert "--fail-under=100" in report
+    assert "--include=*/migration_guides_product.py,*/phase/pennylane_import.py" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:

@@ -155,6 +155,7 @@ def import_phase_qnode_from_pennylane(tape: Any) -> PennyLaneImportResult:
     -------
         A :class:`PennyLaneImportResult` with the circuit, the tape-order
         parameter vector, the qubit count, and a provenance record.
+
     """
     qml = _load_pennylane()
     if not hasattr(tape, "operations") or not hasattr(tape, "measurements"):

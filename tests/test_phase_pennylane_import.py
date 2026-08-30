@@ -115,6 +115,7 @@ def _script(ops: Sequence[object], measurements: Sequence[object]) -> object:
 
 
 def test_availability() -> None:
+    """Report the installed optional PennyLane import bridge."""
     assert is_pennylane_import_available() is True
 
 
@@ -135,6 +136,7 @@ def test_availability_reports_missing_optional_dependency(
 # Import structure
 # --------------------------------------------------------------------------- #
 def test_import_structure_and_parameter_order() -> None:
+    """Preserve registered gate structure and tape parameter order."""
     tape = _script(
         [
             qml.Hadamard(0),
@@ -158,6 +160,7 @@ def test_import_structure_and_parameter_order() -> None:
 
 
 def test_import_hamiltonian_observable() -> None:
+    """Import a real-coefficient sparse Pauli Hamiltonian observable."""
     tape = _script(
         [qml.RY(0.4, wires=0), qml.RY(1.1, wires=1)],
         [qml.expval(qml.Hamiltonian([0.5, -0.25], [qml.PauliZ(0), qml.PauliX(1)]))],
@@ -198,6 +201,7 @@ def test_import_hamiltonian_observable() -> None:
     ],
 )
 def test_import_round_trip_value_and_gradient(ops: Sequence[object], obs: object) -> None:
+    """Match PennyLane values and parameter-shift gradients after import."""
     tape = _script(ops, [qml.expval(obs)])
     result = check_pennylane_phase_qnode_import_round_trip(tape)
     assert result.value_match
@@ -207,6 +211,7 @@ def test_import_round_trip_value_and_gradient(ops: Sequence[object], obs: object
 
 
 def test_import_round_trip_parameterless() -> None:
+    """Round-trip a parameterless circuit with an empty gradient."""
     tape = _script([qml.Hadamard(0), qml.CNOT([0, 1])], [qml.expval(qml.PauliZ(1))])
     result = check_pennylane_phase_qnode_import_round_trip(tape)
     assert result.value_match
@@ -216,7 +221,6 @@ def test_import_round_trip_parameterless() -> None:
 
 def test_generated_phase_qnode_export_import_round_trip_preserves_value_and_gradient() -> None:
     """Generated PennyLane QNodes import back into equivalent Phase-QNode circuits."""
-
     circuit = PhaseQNodeCircuit(
         2,
         (("ry", (0,), 0), ("cnot", (0, 1)), ("rzz", (0, 1), 1)),
@@ -250,6 +254,7 @@ def test_generated_phase_qnode_export_import_round_trip_preserves_value_and_grad
 
 
 def test_pennylane_maturity_audit_records_live_import_round_trip() -> None:
+    """Record live import round-trip evidence in the maturity audit."""
     tape = _script(
         [qml.RY(0.4, wires=0), qml.RX(-0.2, wires=0)],
         [qml.expval(qml.PauliZ(0))],
@@ -307,12 +312,14 @@ def test_pennylane_maturity_audit_records_live_import_round_trip() -> None:
     ],
 )
 def test_import_rejects_unsupported(tape_factory: TapeFactory) -> None:
+    """Reject unsupported gates, measurements, and wire layouts."""
     with pytest.raises(ValueError):
         import_phase_qnode_from_pennylane(tape_factory())
 
 
 @pytest.mark.parametrize("parameter", [float("nan"), float("inf"), -float("inf")])
 def test_import_rejects_non_finite_gate_parameters(parameter: float) -> None:
+    """Reject non-finite PennyLane gate parameters."""
     tape = _script(
         [qml.RX(parameter, wires=0)],
         [qml.expval(qml.PauliZ(0))],
@@ -335,6 +342,7 @@ def test_import_round_trip_rejects_invalid_tolerances(
     gradient_tolerance: float,
     match: str,
 ) -> None:
+    """Reject negative and non-finite round-trip tolerances."""
     tape = _script([qml.RY(0.4, wires=0)], [qml.expval(qml.PauliZ(0))])
 
     with pytest.raises(ValueError, match=match):
@@ -346,6 +354,7 @@ def test_import_round_trip_rejects_invalid_tolerances(
 
 
 def test_import_rejects_non_tape() -> None:
+    """Reject objects without the PennyLane tape contract."""
     with pytest.raises(ValueError):
         import_phase_qnode_from_pennylane(object())
 

@@ -14,12 +14,17 @@ from os import devnull
 Gate = tuple[str, list[str]]
 MIGRATION_GUIDES_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/migration_guides_product.py",
+    "src/scpn_quantum_control/phase/pennylane_import.py",
     "tests/test_migration_guides_product.py",
+    "tests/test_phase_pennylane_import.py",
     "tools/migration_guides_product_quality_gates.py",
     "tests/test_migration_guides_product_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-MIGRATION_GUIDES_PRODUCT_COVERAGE_COHORT = ["tests/test_migration_guides_product.py"]
+MIGRATION_GUIDES_PRODUCT_COVERAGE_COHORT = [
+    "tests/test_migration_guides_product.py",
+    "tests/test_phase_pennylane_import.py",
+]
 """Tests that own exact migration-guides product coverage."""
 MIGRATION_GUIDES_PRODUCT_COVERAGE_DATA_FILE = ".coverage.migration-guides-quality"
 """Isolated coverage database for the migration-guides product owner."""
@@ -87,7 +92,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={MIGRATION_GUIDES_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/migration_guides_product.py",
+                "--include=*/migration_guides_product.py,*/phase/pennylane_import.py",
             ],
         ),
     ]
