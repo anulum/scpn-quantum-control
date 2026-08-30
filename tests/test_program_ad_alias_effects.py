@@ -913,6 +913,116 @@ def test_program_ad_static_alias_lattice_reports_malformed_control_path_aliases(
     ]
 
 
+@pytest.mark.parametrize(
+    ("source", "target", "kind", "malformed_field"),
+    (
+        (
+            "control:while:4:body",
+            "control:name:value",
+            "control_path_alias",
+            "malformed_control_path_alias_edges",
+        ),
+        (
+            "control:if:0:body",
+            "control:name:value",
+            "control_path_alias",
+            "malformed_control_path_alias_edges",
+        ),
+        (
+            "control:if:4:invalid",
+            "control:name:value",
+            "control_path_alias",
+            "malformed_control_path_alias_edges",
+        ),
+        (
+            "control:if:4:body",
+            "control:",
+            "control_path_alias",
+            "malformed_control_path_alias_edges",
+        ),
+        ("%0", "name:value", "view_alias", "malformed_view_alias_edges"),
+        ("%0", "view:reshape:1[0", "view_alias", "malformed_view_alias_edges"),
+        ("%0", "view:reshape:x[0]", "view_alias", "malformed_view_alias_edges"),
+        ("list:scratch", "source:other", "list_alias", "malformed_list_alias_edges"),
+        (
+            "carry",
+            "loop:carry:backedge",
+            "loop_carried_state",
+            "malformed_loop_carried_state_edges",
+        ),
+        ("loop:carry:entry", "carry", "loop_carried_state", "malformed_loop_carried_state_edges"),
+        (
+            "loop:left:entry",
+            "loop:right:backedge",
+            "loop_carried_state",
+            "malformed_loop_carried_state_edges",
+        ),
+        ("name:seed", "result", "local_rebinding_alias", "malformed_rebinding_alias_edges"),
+        (
+            "expr:missing",
+            "name:result",
+            "expression_rebinding_alias",
+            "malformed_rebinding_alias_edges",
+        ),
+        (
+            "other:4:value",
+            "name:result",
+            "expression_rebinding_alias",
+            "malformed_rebinding_alias_edges",
+        ),
+        (
+            "expr:0:value",
+            "name:result",
+            "expression_rebinding_alias",
+            "malformed_rebinding_alias_edges",
+        ),
+    ),
+)
+def test_program_ad_static_alias_lattice_fails_closed_for_malformed_markers(
+    source: str,
+    target: str,
+    kind: str,
+    malformed_field: str,
+) -> None:
+    """Exercise every fail-closed marker branch through the public report.
+
+    Parameters
+    ----------
+    source:
+        Malformed alias-edge source marker.
+    target:
+        Malformed alias-edge target marker.
+    kind:
+        Supported alias-edge kind whose marker grammar is violated.
+    malformed_field:
+        Report field that must retain the rejected edge label.
+
+    """
+    edge = ProgramADAliasEdge(source=source, target=target, kind=kind, version=0)
+    ir = ProgramADEffectIR(
+        ssa_values=(
+            ProgramADSSAValue(
+                "%0",
+                producer=0,
+                version=0,
+                shape=(),
+                dtype="float64",
+                effect=0,
+            ),
+        ),
+        effects=(),
+        alias_edges=(edge,),
+        control_regions=(),
+        serialization="program_ad_effect_ir.v1",
+    )
+
+    report = program_ad_static_alias_lattice_report(ir)
+
+    malformed = cast(tuple[str, ...], getattr(report, malformed_field))
+    assert report.complete is False
+    assert f"{source}->{target}:{kind}@0" in malformed
+
+
 def test_program_ad_alias_effect_analysis_tracks_array_view_aliases() -> None:
     """Program AD alias metadata should distinguish view aliases from mutations."""
 

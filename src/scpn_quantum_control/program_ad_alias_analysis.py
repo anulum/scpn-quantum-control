@@ -60,6 +60,7 @@ def analyze_program_ad_alias_effects(
     ValueError
         Raised when ``program_ir`` is not a Program AD effect IR or contains an
         alias-edge kind outside the supported metadata-only vocabulary.
+
     """
     if not isinstance(program_ir, ProgramADEffectIR):
         raise ValueError("program AD alias analysis requires ProgramADEffectIR")
@@ -171,6 +172,7 @@ def program_ad_static_alias_lattice_report(
         Raised when ``program_ir`` is not a Program AD effect IR, diagnostics
         have the wrong type, or emitted alias metadata violates the bounded
         static-lattice contract.
+
     """
     if not isinstance(program_ir, ProgramADEffectIR):
         raise ValueError("program AD static alias lattice requires ProgramADEffectIR")
@@ -641,31 +643,31 @@ def _parse_rebinding_alias_provenance(
             target_name=target_name,
             version=edge.version,
         )
-    if edge.kind == "expression_rebinding_alias":
-        try:
-            prefix, line_raw, expression_label = edge.source.split(":", maxsplit=2)
-        except ValueError as exc:
-            raise ValueError(
-                "program AD expression rebinding alias source must be expr:<line>:<label>"
-            ) from exc
-        if prefix != "expr" or not line_raw.isdecimal() or not expression_label:
-            raise ValueError(
-                "program AD expression rebinding alias source must be expr:<line>:<label>"
-            )
-        expression_line = int(line_raw)
-        if expression_line <= 0:
-            raise ValueError("program AD expression rebinding alias line must be positive")
-        return ProgramADRebindingAliasProvenance(
-            source=edge.source,
-            target=edge.target,
-            binding_kind="expression",
-            source_name=None,
-            expression_line=expression_line,
-            expression_label=expression_label,
-            target_name=target_name,
-            version=edge.version,
+    # The caller admits only the two kinds in
+    # _PROGRAM_AD_REBINDING_ALIAS_EDGE_KINDS, and the local kind returned above.
+    try:
+        prefix, line_raw, expression_label = edge.source.split(":", maxsplit=2)
+    except ValueError as exc:
+        raise ValueError(
+            "program AD expression rebinding alias source must be expr:<line>:<label>"
+        ) from exc
+    if prefix != "expr" or not line_raw.isdecimal() or not expression_label:
+        raise ValueError(
+            "program AD expression rebinding alias source must be expr:<line>:<label>"
         )
-    raise ValueError("program AD rebinding alias kind is unsupported")
+    expression_line = int(line_raw)
+    if expression_line <= 0:
+        raise ValueError("program AD expression rebinding alias line must be positive")
+    return ProgramADRebindingAliasProvenance(
+        source=edge.source,
+        target=edge.target,
+        binding_kind="expression",
+        source_name=None,
+        expression_line=expression_line,
+        expression_label=expression_label,
+        target_name=target_name,
+        version=edge.version,
+    )
 
 
 def _alias_edge_label(edge: ProgramADAliasEdge) -> str:

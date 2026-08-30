@@ -226,6 +226,9 @@ if TYPE_CHECKING:
     )
     from tools import predictive_coding_quality_gates as _predictive_coding_quality_gates
     from tools import program_ad_adjoint_quality_gates as _program_ad_adjoint_quality_gates
+    from tools import (
+        program_ad_alias_analysis_quality_gates as _program_ad_alias_analysis_quality_gates,
+    )
     from tools import program_ad_array_indexing_quality_gates as _array_indexing_quality_gates
     from tools import (
         program_ad_fuzz_assurance_quality_gates as _program_ad_fuzz_assurance_quality_gates,
@@ -545,6 +548,9 @@ else:
         "tools.differentiable_sparse_derivatives_quality_gates"
     )
     _program_ad_adjoint_quality_gates = import_module("tools.program_ad_adjoint_quality_gates")
+    _program_ad_alias_analysis_quality_gates = import_module(
+        "tools.program_ad_alias_analysis_quality_gates"
+    )
     _qpu_compute_types_quality_gates = import_module("tools.qpu_compute_types_quality_gates")
     _quantum_neuromorphic_bridge_quality_gates = import_module(
         "tools.quantum_neuromorphic_bridge_quality_gates"
@@ -1021,6 +1027,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_studio_simulation_quality_gates.build_static_quality_gates(_PY),
     *_studio_scorecard_bundle_quality_gates.build_static_quality_gates(_PY),
     *_advanced_witnesses_quality_gates.build_static_quality_gates(_PY),
+    *_program_ad_alias_analysis_quality_gates.build_static_quality_gates(_PY),
     *_general_unitary_quality_gates.build_static_quality_gates(_PY),
     *_gpu_batch_vqe_quality_gates.build_static_quality_gates(_PY),
     *_avqds_quality_gates.build_static_quality_gates(_PY),
@@ -1625,6 +1632,9 @@ STUDIO_SCORECARD_BUNDLE_COVERAGE_GATES = (
     _studio_scorecard_bundle_quality_gates.build_coverage_gates(_PY)
 )
 ADVANCED_WITNESSES_COVERAGE_GATES = _advanced_witnesses_quality_gates.build_coverage_gates(_PY)
+PROGRAM_AD_ALIAS_ANALYSIS_COVERAGE_GATES = (
+    _program_ad_alias_analysis_quality_gates.build_coverage_gates(_PY)
+)
 GENERAL_UNITARY_COVERAGE_GATES = _general_unitary_quality_gates.build_coverage_gates(_PY)
 GPU_BATCH_VQE_COVERAGE_GATES = _gpu_batch_vqe_quality_gates.build_coverage_gates(_PY)
 AVQDS_COVERAGE_GATES = _avqds_quality_gates.build_coverage_gates(_PY)
@@ -2061,6 +2071,7 @@ def main() -> int:
             gates.extend(STUDIO_SIMULATION_COVERAGE_GATES)
             gates.extend(STUDIO_SCORECARD_BUNDLE_COVERAGE_GATES)
             gates.extend(ADVANCED_WITNESSES_COVERAGE_GATES)
+            gates.extend(PROGRAM_AD_ALIAS_ANALYSIS_COVERAGE_GATES)
             gates.extend(GENERAL_UNITARY_COVERAGE_GATES)
             gates.extend(GPU_BATCH_VQE_COVERAGE_GATES)
             gates.extend(AVQDS_COVERAGE_GATES)
