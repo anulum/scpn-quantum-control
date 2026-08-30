@@ -57,6 +57,7 @@ class IntegratedInformationPhi:
             If a diagnostic is not explicitly opted into.
         ValueError
             If inputs are incomplete, malformed, non-finite, or inconsistent.
+
         """
         coupling_matrix = kwargs.get("coupling_matrix")
         natural_frequencies = kwargs.get("natural_frequencies")
