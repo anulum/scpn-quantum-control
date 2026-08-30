@@ -14,12 +14,17 @@ from os import devnull
 Gate = tuple[str, list[str]]
 STOCHASTIC_ESTIMATORS_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/stochastic_estimators_product.py",
+    "src/scpn_quantum_control/differentiable_stochastic_estimators.py",
     "tests/test_stochastic_estimators_product.py",
+    "tests/test_differentiable_stochastic_estimators.py",
     "tools/stochastic_estimators_product_quality_gates.py",
     "tests/test_stochastic_estimators_product_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_COHORT = ["tests/test_stochastic_estimators_product.py"]
+STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_COHORT = [
+    "tests/test_stochastic_estimators_product.py",
+    "tests/test_differentiable_stochastic_estimators.py",
+]
 """Tests that own exact stochastic-estimators product coverage."""
 STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_DATA_FILE = ".coverage.stochastic-estimators-quality"
 """Isolated coverage database for the stochastic-estimators product owner."""
@@ -87,7 +92,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/stochastic_estimators_product.py",
+                "--include=*/stochastic_estimators_product.py,*/differentiable_stochastic_estimators.py",
             ],
         ),
     ]

@@ -4067,24 +4067,30 @@ jobs:
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/stochastic_estimators_product.py
+          src/scpn_quantum_control/differentiable_stochastic_estimators.py
           tests/test_stochastic_estimators_product.py
+          tests/test_differentiable_stochastic_estimators.py
           tools/stochastic_estimators_product_quality_gates.py
           tests/test_stochastic_estimators_product_quality_gate.py
       - run: >-
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/stochastic_estimators_product.py
+          src/scpn_quantum_control/differentiable_stochastic_estimators.py
           tests/test_stochastic_estimators_product.py
+          tests/test_differentiable_stochastic_estimators.py
           tools/stochastic_estimators_product_quality_gates.py
           tests/test_stochastic_estimators_product_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
           --data-file=.coverage.stochastic-estimators-quality --branch
           -m pytest -q tests/test_stochastic_estimators_product.py
+          tests/test_differentiable_stochastic_estimators.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.stochastic-estimators-quality
-          --precision=2 --fail-under=100 --include=*/stochastic_estimators_product.py
+          --precision=2 --fail-under=100
+          --include=*/stochastic_estimators_product.py,*/differentiable_stochastic_estimators.py
 
   differentiable-notebook-curriculum-quality:
     needs: lint

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Complete differentiable stochastic-estimator NumPy documentation and extend
+  the stochastic-estimators product owner with strict typing, real SPSA,
+  score-function, and shot-allocation execution, plus exact joint line/branch
+  coverage for the product and its explicitly composed ambient estimator.
+
 - Complete empirical-Fisher NumPy documentation and extend the existing
   differentiable sparse-derivatives quality owner with strict typing, real
   Fisher-vector/CG/covariance execution, and exact joint line/branch coverage

@@ -24,10 +24,19 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
-    """Require branch execution and exact source-only coverage."""
+    """Require branch execution and exact joint source coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["stochastic-estimators-product focused coverage"]
-    assert "--fail-under=100" in gates["stochastic-estimators-product exact coverage threshold"]
+    run = gates["stochastic-estimators-product focused coverage"]
+    report = gates["stochastic-estimators-product exact coverage threshold"]
+    assert "--branch" in run
+    assert run[-len(quality_gates.STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_COHORT) :] == (
+        quality_gates.STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_COHORT
+    )
+    assert "--fail-under=100" in report
+    assert (
+        "--include=*/stochastic_estimators_product.py,*/differentiable_stochastic_estimators.py"
+        in report
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -47,5 +56,8 @@ def test_ci_runs_and_aggregates_gate() -> None:
     block = workflow[start:end]
     assert all(
         path in block for path in quality_gates.STOCHASTIC_ESTIMATORS_PRODUCT_QUALITY_RATCHET
+    )
+    assert all(
+        path in block for path in quality_gates.STOCHASTIC_ESTIMATORS_PRODUCT_COVERAGE_COHORT
     )
     assert "stochastic-estimators-product-quality" in workflow[workflow.index("  ci-gate:") :]

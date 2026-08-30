@@ -36,19 +36,16 @@ from scpn_quantum_control.differentiable_stochastic_estimators import (
 
 def _assert_allclose(actual: object, expected: object, *, atol: float = 1.0e-12) -> None:
     """Assert NumPy-close equality while preserving strict test typing."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, atol=atol)
 
 
 def _linear_objective(values: NDArray[np.float64]) -> float:
     """Return a deterministic scalar objective for SPSA tests."""
-
     return float(1.2 * values[0] - 0.4 * values[1])
 
 
 def test_facade_and_package_root_reuse_extracted_stochastic_estimators() -> None:
     """Facade and package-root exports should point at the extracted helpers."""
-
     assert differentiable.spsa_gradient_estimate is spsa_gradient_estimate
     assert differentiable.score_function_gradient_estimate is score_function_gradient_estimate
     assert differentiable.allocate_parameter_shift_shots is allocate_parameter_shift_shots
@@ -59,7 +56,6 @@ def test_facade_and_package_root_reuse_extracted_stochastic_estimators() -> None
 
 def test_spsa_gradient_estimate_records_seeded_probe_pairs() -> None:
     """SPSA should produce deterministic probe records and frozen-parameter zeros."""
-
     first = spsa_gradient_estimate(
         _linear_objective,
         [0.5, -0.25],
@@ -137,7 +133,6 @@ def test_spsa_gradient_estimate_propagates_finite_shot_samples() -> None:
 
 def test_spsa_gradient_estimate_rejects_invalid_contracts() -> None:
     """SPSA should fail closed on invalid controls and objective samples."""
-
     with pytest.raises(ValueError, match="perturbation_radius"):
         spsa_gradient_estimate(_linear_objective, [0.1], perturbation_radius=0.0)
     with pytest.raises(ValueError, match="repetitions"):
@@ -166,7 +161,6 @@ def test_spsa_gradient_estimate_rejects_invalid_contracts() -> None:
 
 def test_score_function_gradient_estimate_uses_materialised_samples() -> None:
     """Score-function gradients should match likelihood-ratio sample moments."""
-
     rewards = np.array([2.0, 0.0, 4.0], dtype=np.float64)
     scores = np.array([[1.0, 2.0], [-1.0, 0.0], [0.0, 1.0]], dtype=np.float64)
     result = score_function_gradient_estimate(
@@ -190,7 +184,6 @@ def test_score_function_gradient_estimate_uses_materialised_samples() -> None:
 
 def test_score_function_gradient_estimate_honours_frozen_parameters() -> None:
     """Frozen score-function columns should report zero gradient and covariance."""
-
     result = score_function_gradient_estimate(
         [2.0, 0.0, 4.0],
         [[1.0, 2.0], [-1.0, 0.0], [0.0, 1.0]],
@@ -206,7 +199,6 @@ def test_score_function_gradient_estimate_honours_frozen_parameters() -> None:
 
 def test_score_function_gradient_estimate_rejects_invalid_contracts() -> None:
     """Score-function estimation should fail closed on malformed samples."""
-
     with pytest.raises(ValueError, match="at least two"):
         score_function_gradient_estimate([1.0], [[0.5]])
     with pytest.raises(ValueError, match="two-dimensional"):
@@ -227,7 +219,6 @@ def test_score_function_gradient_estimate_rejects_invalid_contracts() -> None:
 
 def test_allocate_parameter_shift_shots_meets_single_and_multi_term_targets() -> None:
     """Shot allocation should plan single-term and multi-frequency budgets."""
-
     single = allocate_parameter_shift_shots(
         [0.36, 0.25],
         [0.16, 0.09],
@@ -255,7 +246,6 @@ def test_allocate_parameter_shift_shots_meets_single_and_multi_term_targets() ->
 
 def test_allocate_parameter_shift_shots_respects_caps_and_zero_noise() -> None:
     """Shot allocation should preserve caps and minimum-shot zero-noise plans."""
-
     capped = allocate_parameter_shift_shots(
         [1.0],
         [1.0],
@@ -279,7 +269,6 @@ def test_allocate_parameter_shift_shots_respects_caps_and_zero_noise() -> None:
 
 def test_allocate_parameter_shift_shots_rejects_invalid_inputs() -> None:
     """Shot allocation should reject impossible stochastic planning contracts."""
-
     with pytest.raises(ValueError, match="minus_variances shape"):
         allocate_parameter_shift_shots([0.1], [0.1, 0.2], target_standard_error=0.1)
     with pytest.raises(ValueError, match="shot variances"):
