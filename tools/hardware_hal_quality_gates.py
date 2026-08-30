@@ -26,6 +26,10 @@ HARDWARE_CIRCUIT_EXPORT_SOURCE = "src/scpn_quantum_control/hardware/circuit_expo
 """Multi-platform circuit construction and serialization surface."""
 HARDWARE_CIRCUIT_EXPORT_TEST = "tests/test_circuit_export.py"
 """Real circuit construction plus offline conversion-path tests."""
+HARDWARE_FAST_CLASSICAL_SOURCE = "src/scpn_quantum_control/hardware/fast_classical.py"
+"""Sparse classical statevector evolution with optional Rust acceleration."""
+HARDWARE_FAST_CLASSICAL_TEST = "tests/test_fast_classical.py"
+"""Real sparse-evolution and installed optional-engine parity tests."""
 HARDWARE_HAL_COVERAGE_COHORT = [
     "tests/test_hardware_hal.py",
     "tests/test_hardware_hal_contract_guards.py",
@@ -35,6 +39,7 @@ HARDWARE_HAL_COVERAGE_COHORT = [
     ASYNC_HARDWARE_RUNNER_TEST,
     HARDWARE_CIRCUIT_CUTTING_TEST,
     HARDWARE_CIRCUIT_EXPORT_TEST,
+    HARDWARE_FAST_CLASSICAL_TEST,
 ]
 """Offline and fake-adapter tests that own exact HAL coverage."""
 HARDWARE_HAL_TYPING_RATCHET = [
@@ -45,6 +50,8 @@ HARDWARE_HAL_TYPING_RATCHET = [
     HARDWARE_CIRCUIT_CUTTING_TEST,
     HARDWARE_CIRCUIT_EXPORT_SOURCE,
     HARDWARE_CIRCUIT_EXPORT_TEST,
+    HARDWARE_FAST_CLASSICAL_SOURCE,
+    HARDWARE_FAST_CLASSICAL_TEST,
     "tools/hardware_hal_quality_gates.py",
     "tests/test_hardware_hal_quality_gate.py",
 ]
@@ -54,10 +61,12 @@ HARDWARE_HAL_DOCSTRING_RATCHET = [
     ASYNC_HARDWARE_RUNNER_SOURCE,
     HARDWARE_CIRCUIT_CUTTING_SOURCE,
     HARDWARE_CIRCUIT_EXPORT_SOURCE,
+    HARDWARE_FAST_CLASSICAL_SOURCE,
     "tests/test_hardware_hal.py",
     ASYNC_HARDWARE_RUNNER_TEST,
     HARDWARE_CIRCUIT_CUTTING_TEST,
     HARDWARE_CIRCUIT_EXPORT_TEST,
+    HARDWARE_FAST_CLASSICAL_TEST,
     "tools/hardware_hal_quality_gates.py",
     "tests/test_hardware_hal_quality_gate.py",
 ]
@@ -66,7 +75,7 @@ HARDWARE_HAL_COVERAGE_DATA_FILE = "/tmp/scpn-qc-hardware-hal-quality.coverage"  
 """Isolated coverage database for the hardware HAL owner."""
 HARDWARE_HAL_COVERAGE_INCLUDE = (
     "*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/circuit_cutting.py,"
-    "*/hardware/circuit_export.py"
+    "*/hardware/circuit_export.py,*/hardware/fast_classical.py"
 )
 """Provider-neutral and asynchronous hardware sources under exact coverage."""
 
@@ -150,6 +159,8 @@ __all__ = [
     "HARDWARE_CIRCUIT_CUTTING_TEST",
     "HARDWARE_CIRCUIT_EXPORT_SOURCE",
     "HARDWARE_CIRCUIT_EXPORT_TEST",
+    "HARDWARE_FAST_CLASSICAL_SOURCE",
+    "HARDWARE_FAST_CLASSICAL_TEST",
     "HARDWARE_HAL_SOURCE",
     "HARDWARE_HAL_TYPING_RATCHET",
     "build_coverage_gates",

@@ -42,17 +42,26 @@ def fast_sparse_evolution(
 ) -> dict[str, Any]:
     """Evolve a statevector using fast sparse matrix exponentiation.
 
-    Args:
-        K: Coupling matrix.
-        omega: Natural frequencies.
-        t_total: Total evolution time.
-        n_steps: Number of intermediate time steps to return.
-        initial_state: Initial statevector (default: |0...0>).
-        delta: XXZ anisotropy parameter (default: 0.0 = XY model).
+    Parameters
+    ----------
+    K : ndarray of float
+        Coupling matrix.
+    omega : ndarray of float
+        Natural frequencies.
+    t_total : float
+        Total evolution time.
+    n_steps : int
+        Number of intermediate time steps to return.
+    initial_state : ndarray of complex, optional
+        Initial statevector. Defaults to the all-zero computational basis state.
+    delta : float
+        XXZ anisotropy parameter. Zero selects the XY model.
 
     Returns
     -------
-        dict: Containing 'times' and 'states' (statevector at each step).
+    dict[str, Any]
+        Times, statevectors, qubit count, and final statevector.
+
     """
     n = len(omega)
     dim = 1 << n

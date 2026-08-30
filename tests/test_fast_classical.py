@@ -45,7 +45,10 @@ class _SparseXYHamiltonianEngine(Protocol):
 
 
 class TestFastSparseEvolution:
+    """Exercise sparse evolution through its public runtime surface."""
+
     def test_missing_rust_engine_uses_python_path(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Use the Python Hamiltonian path when the Rust engine is unavailable."""
         real_import = builtins.__import__
 
         def guarded_import(
@@ -112,6 +115,7 @@ class TestFastSparseEvolution:
         assert res["times"][-1] == 1.0
 
     def test_n_qubits(self) -> None:
+        """Report one qubit per supplied natural frequency."""
         n = 2
         K = np.ones((n, n))
         omega = np.ones(n)
@@ -176,7 +180,7 @@ class TestFastSparseEvolution:
         np.testing.assert_allclose(res_default["final_state"], res_d0["final_state"], atol=1e-12)
 
     def test_xxz_nonzero_delta_differs(self) -> None:
-        """delta != 0 adds ZZ coupling, so results diverge from XY."""
+        """Confirm nonzero delta adds ZZ coupling and diverges from XY."""
         n = 2
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -201,6 +205,7 @@ class TestFastClassicalRustParity:
     """Verify Rust-accelerated Hamiltonian matches Qiskit fallback."""
 
     def test_rust_hamiltonian_matches_qiskit(self) -> None:
+        """Match the optional Rust Hamiltonian to the Qiskit fallback."""
         try:
             import scpn_quantum_engine as eng
         except ImportError:
