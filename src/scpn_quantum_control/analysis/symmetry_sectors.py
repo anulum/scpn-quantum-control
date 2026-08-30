@@ -40,8 +40,16 @@ def _parity(k: int, n: int) -> int:
 def basis_indices_by_parity(n: int) -> tuple[NDArray[np.intp], NDArray[np.intp]]:
     """Split computational basis into even and odd parity sectors.
 
-    Returns (even_indices, odd_indices) where each is a sorted array
-    of basis state indices.
+    Parameters
+    ----------
+    n
+        Number of qubits in the computational basis.
+
+    Returns
+    -------
+    tuple[numpy.ndarray, numpy.ndarray]
+        Sorted even- and odd-parity basis-state indices.
+
     """
     dim = 2**n
     even = []
@@ -59,7 +67,18 @@ def project_hamiltonian(
 ) -> NDArray[np.complex128]:
     """Project full Hamiltonian onto a parity sector.
 
-    H_sector[i,j] = H[sector_indices[i], sector_indices[j]]
+    Parameters
+    ----------
+    H
+        Full Hamiltonian matrix.
+    sector_indices
+        Computational-basis indices retained in the sector.
+
+    Returns
+    -------
+    numpy.ndarray
+        Principal submatrix indexed by ``sector_indices``.
+
     """
     return np.asarray(H[np.ix_(sector_indices, sector_indices)])
 
@@ -96,6 +115,8 @@ def build_sector_hamiltonian(
         Natural frequencies.
     parity : int
         0 for even sector, 1 for odd sector.
+    max_dense_gib : float or None
+        Optional fail-closed dense-allocation budget.
 
     Returns
     -------
@@ -103,6 +124,7 @@ def build_sector_hamiltonian(
         Hamiltonian in the parity sector.
     sector_indices : array
         Mapping from sector index to full basis index.
+
     """
     n = K.shape[0]
     _sector_dense_budget(n, object_count=1, max_dense_gib=max_dense_gib)
@@ -122,10 +144,21 @@ def eigh_by_sector(
 ) -> dict[str, Any]:
     """Diagonalise both parity sectors separately.
 
-    Returns dict with keys:
-        eigvals_even, eigvecs_even, indices_even,
-        eigvals_odd, eigvecs_odd, indices_odd,
-        eigvals_all (sorted), ground_energy, ground_parity
+    Parameters
+    ----------
+    K
+        Coupling matrix.
+    omega
+        Natural-frequency vector.
+    max_dense_gib
+        Optional fail-closed dense-allocation budget.
+
+    Returns
+    -------
+    dict[str, Any]
+        Sector eigenpairs and indices, sorted combined eigenvalues, and the
+        ground-state energy/parity.
+
     """
     n = K.shape[0]
     _sector_dense_budget(n, object_count=4, max_dense_gib=max_dense_gib)
@@ -167,6 +200,22 @@ def level_spacing_by_sector(
     This avoids mixing even/odd spectra which would artificially
     give Poisson statistics (two independent spectra overlaid always
     look integrable).
+
+    Parameters
+    ----------
+    K
+        Coupling matrix.
+    omega
+        Natural-frequency vector.
+    max_dense_gib
+        Optional fail-closed dense-allocation budget.
+
+    Returns
+    -------
+    dict[str, Any]
+        Even, odd, and combined adjacent-gap ratios plus ground-state and
+        sector-dimension metadata.
+
     """
     result = eigh_by_sector(K, omega, max_dense_gib=max_dense_gib)
 
@@ -194,7 +243,21 @@ def level_spacing_by_sector(
 
 
 def memory_estimate_mb(n: int, use_sectors: bool = True) -> float:
-    """Estimate memory for ED in MB (float64 complex)."""
+    """Estimate complex128 exact-diagonalisation matrix memory.
+
+    Parameters
+    ----------
+    n
+        Number of qubits.
+    use_sectors
+        Whether to estimate one parity-sector matrix instead of the full one.
+
+    Returns
+    -------
+    float
+        Dense matrix storage estimate in decimal megabytes.
+
+    """
     if use_sectors:
         dim = 2 ** (n - 1)
     else:

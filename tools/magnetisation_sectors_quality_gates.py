@@ -17,8 +17,12 @@ SPECTRAL_FORM_FACTOR_SOURCE = "src/scpn_quantum_control/analysis/spectral_form_f
 SPECTRAL_FORM_FACTOR_DIRECT_TEST = "tests/test_spectral_form_factor.py"
 SPECTRAL_FORM_FACTOR_BRANCH_TEST = "tests/test_spectral_form_factor_branch.py"
 SPECTRAL_FORM_FACTOR_CONNECTED_TEST = "tests/test_analysis_topology_contracts.py"
+SYMMETRY_SECTORS_SOURCE = "src/scpn_quantum_control/analysis/symmetry_sectors.py"
+SYMMETRY_SECTORS_DIRECT_TEST = "tests/test_symmetry_sectors.py"
+SYMMETRY_SECTORS_BRANCH_TEST = "tests/test_symmetry_sectors_branch.py"
 MAGNETISATION_SECTORS_COVERAGE_INCLUDE = (
-    "*/analysis/magnetisation_sectors.py,*/analysis/spectral_form_factor.py"
+    "*/analysis/magnetisation_sectors.py,*/analysis/spectral_form_factor.py,"
+    "*/analysis/symmetry_sectors.py"
 )
 MAGNETISATION_SECTORS_COVERAGE_COHORT = [
     "tests/test_magnetisation_sectors.py",
@@ -29,6 +33,8 @@ MAGNETISATION_SECTORS_COVERAGE_COHORT = [
     SPECTRAL_FORM_FACTOR_DIRECT_TEST,
     SPECTRAL_FORM_FACTOR_BRANCH_TEST,
     SPECTRAL_FORM_FACTOR_CONNECTED_TEST,
+    SYMMETRY_SECTORS_DIRECT_TEST,
+    SYMMETRY_SECTORS_BRANCH_TEST,
     "tests/test_symmetry_sparse_workflow.py",
 ]
 MAGNETISATION_SECTORS_TYPING_RATCHET = [
@@ -36,6 +42,9 @@ MAGNETISATION_SECTORS_TYPING_RATCHET = [
     SPECTRAL_FORM_FACTOR_SOURCE,
     SPECTRAL_FORM_FACTOR_DIRECT_TEST,
     SPECTRAL_FORM_FACTOR_BRANCH_TEST,
+    SYMMETRY_SECTORS_SOURCE,
+    SYMMETRY_SECTORS_DIRECT_TEST,
+    SYMMETRY_SECTORS_BRANCH_TEST,
     "tools/magnetisation_sectors_quality_gates.py",
     "tests/test_magnetisation_sectors_quality_gate.py",
 ]
@@ -46,6 +55,9 @@ MAGNETISATION_SECTORS_DOCSTRING_RATCHET = [
     "tests/test_magnetisation_sectors_empty_guard.py",
     SPECTRAL_FORM_FACTOR_DIRECT_TEST,
     SPECTRAL_FORM_FACTOR_BRANCH_TEST,
+    SYMMETRY_SECTORS_SOURCE,
+    SYMMETRY_SECTORS_DIRECT_TEST,
+    SYMMETRY_SECTORS_BRANCH_TEST,
     "tools/magnetisation_sectors_quality_gates.py",
     "tests/test_magnetisation_sectors_quality_gate.py",
 ]
@@ -132,6 +144,9 @@ __all__ = [
     "SPECTRAL_FORM_FACTOR_CONNECTED_TEST",
     "SPECTRAL_FORM_FACTOR_DIRECT_TEST",
     "SPECTRAL_FORM_FACTOR_SOURCE",
+    "SYMMETRY_SECTORS_BRANCH_TEST",
+    "SYMMETRY_SECTORS_DIRECT_TEST",
+    "SYMMETRY_SECTORS_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]
