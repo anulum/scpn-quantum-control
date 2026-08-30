@@ -16,6 +16,7 @@ Gate = tuple[str, list[str]]
 
 PHASE_TORCH_BRIDGE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/phase/torch_bridge.py",
+    "src/scpn_quantum_control/phase/torch_maturity.py",
     "tools/phase_torch_bridge_quality_gates.py",
     "tests/test_phase_torch_bridge_quality_gate.py",
 ]
@@ -30,6 +31,8 @@ PHASE_TORCH_BRIDGE_COVERAGE_COHORT = [
     "tests/test_phase_torch_compatibility_integration.py",
     "tests/test_phase_torch_gradients.py",
     "tests/test_phase_torch_gradients_integration.py",
+    "tests/test_phase_torch_maturity.py",
+    "tests/test_phase_torch_maturity_integration.py",
     "tests/test_phase_torch_qnode_transforms.py",
     "tests/test_phase_torch_qnode_transforms_integration.py",
 ]
@@ -38,7 +41,7 @@ PHASE_TORCH_BRIDGE_COVERAGE_COHORT = [
 PHASE_TORCH_BRIDGE_COVERAGE_DATA_FILE = f"{gettempdir()}/scpn-qc-phase-torch-bridge.coverage"
 """Isolated coverage database for the Phase-QNode Torch facade."""
 
-PHASE_TORCH_BRIDGE_COVERAGE_INCLUDE = "*/torch_bridge.py"
+PHASE_TORCH_BRIDGE_COVERAGE_INCLUDE = "*/torch_bridge.py,*/torch_maturity.py"
 """Production source enforced at exact branch coverage."""
 
 
