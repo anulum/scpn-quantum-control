@@ -4802,29 +4802,31 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/studio_executive_product.py
           src/scpn_quantum_control/studio/manifest.py
+          src/scpn_quantum_control/studio/verbs.py
           tests/test_studio_executive_product.py
           tests/test_studio_manifest.py
           tools/studio_executive_product_quality_gates.py
           tests/test_studio_executive_product_quality_gate.py
       - run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/studio_executive_product.py
           src/scpn_quantum_control/studio/manifest.py
+          src/scpn_quantum_control/studio/verbs.py
           tests/test_studio_executive_product.py
           tests/test_studio_manifest.py
           tools/studio_executive_product_quality_gates.py
           tests/test_studio_executive_product_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
-          --data-file=.coverage.studio-executive-product-quality --branch
+          --data-file=/tmp/scpn-qc-studio-executive-product-quality.coverage --branch
           -m pytest -q tests/test_studio_executive_product.py
           tests/test_studio_manifest.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
-          --data-file=.coverage.studio-executive-product-quality
+          --data-file=/tmp/scpn-qc-studio-executive-product-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/studio_executive_product.py,*/studio/manifest.py
+          --include=*/studio_executive_product.py,*/studio/manifest.py,*/studio/verbs.py
 
   advanced-witnesses-quality:
     needs: lint

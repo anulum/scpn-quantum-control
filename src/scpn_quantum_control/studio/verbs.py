@@ -211,6 +211,7 @@ def evidence_schemas() -> tuple[str, ...]:
     -------
     tuple[str, ...]
         The evidence-schema identifiers produced by :data:`QUANTUM_VERBS`.
+
     """
     return (
         KURAMOTO_COMPILATION_SCHEMA,
@@ -239,5 +240,6 @@ def verb_substrates() -> dict[str, tuple[str, ...]]:
     dict[str, tuple[str, ...]]
         Mapping of verb name to the schema-B substrate values that emitted
         bundles may carry for that verb.
+
     """
     return {verb: tuple(substrates) for verb, substrates in VERB_SUBSTRATES.items()}

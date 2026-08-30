@@ -15,6 +15,7 @@ Gate = tuple[str, list[str]]
 STUDIO_EXECUTIVE_PRODUCT_QUALITY_RATCHET = [
     "src/scpn_quantum_control/studio_executive_product.py",
     "src/scpn_quantum_control/studio/manifest.py",
+    "src/scpn_quantum_control/studio/verbs.py",
     "tests/test_studio_executive_product.py",
     "tests/test_studio_manifest.py",
     "tools/studio_executive_product_quality_gates.py",
@@ -26,7 +27,9 @@ STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT = [
     "tests/test_studio_manifest.py",
 ]
 """Tests that own exact Studio-executive product coverage."""
-STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE = ".coverage.studio-executive-product-quality"
+STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE = (
+    "/tmp/scpn-qc-studio-executive-product-quality.coverage"  # nosec B108
+)
 """Isolated coverage database for the Studio-executive product owner."""
 
 
@@ -52,8 +55,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *STUDIO_EXECUTIVE_PRODUCT_QUALITY_RATCHET,
@@ -92,7 +96,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={STUDIO_EXECUTIVE_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/studio_executive_product.py,*/studio/manifest.py",
+                "--include=*/studio_executive_product.py,*/studio/manifest.py,*/studio/verbs.py",
             ],
         ),
     ]

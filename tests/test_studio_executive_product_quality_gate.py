@@ -20,7 +20,9 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
         gates["mypy-strict-studio-executive-product-quality"][5:]
         == quality_gates.STUDIO_EXECUTIVE_PRODUCT_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D studio-executive-product quality ratchet"]
+    ruff = gates["ruff D studio-executive-product quality ratchet"]
+    assert "--isolated" in ruff and "--preview" in ruff
+    assert "D,D413,D417,D420" in ruff
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
@@ -32,8 +34,11 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     assert run[-len(quality_gates.STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT) :] == (
         quality_gates.STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT
     )
+    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/studio_executive_product.py,*/studio/manifest.py" in report
+    assert (
+        "--include=*/studio_executive_product.py,*/studio/manifest.py,*/studio/verbs.py" in report
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -55,4 +60,7 @@ def test_ci_runs_and_aggregates_gate() -> None:
     assert all(path in block for path in quality_gates.STUDIO_EXECUTIVE_PRODUCT_COVERAGE_COHORT)
     assert "requirements-ci-studio-platform.txt" in block
     assert "--no-deps --require-hashes" in block
+    assert (
+        "--include=*/studio_executive_product.py,*/studio/manifest.py,*/studio/verbs.py" in block
+    )
     assert "studio-executive-product-quality" in workflow[workflow.index("  ci-gate:") :]
