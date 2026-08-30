@@ -45,6 +45,7 @@ class KuramotoProblem:
         grid; positive and not exceeding ``t_max``.
     seed:
         Seed the problem was generated from, recorded for provenance.
+
     """
 
     coupling: NDArray[np.float64]
@@ -100,6 +101,7 @@ def build_default_problem(
     ------
     ValueError
         If any argument falls outside its documented bound.
+
     """
     if n_oscillators < 2:
         raise ValueError(f"n_oscillators must be >= 2, got {n_oscillators}")
@@ -158,6 +160,7 @@ class CompetitorRow:
         tier), or ``None`` when the row is available.
     unavailable_reason:
         Populated only when ``available`` is ``False``.
+
     """
 
     method: str

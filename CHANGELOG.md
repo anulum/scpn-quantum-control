@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Complete shared Kuramoto competitive-type NumPy documentation and direct-test
+  documentation, and extend the competitive-baseline owner with deterministic
+  problem/row execution, strict typing, and exact joint line/branch coverage.
+
 - Complete schema-A Studio manifest NumPy documentation and installed-package
   fallback coverage, and extend the Studio executive owner with real manifest,
   digest, platform-conformance, strict typing, and exact joint line/branch

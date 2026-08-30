@@ -24,6 +24,7 @@ from scpn_quantum_control.benchmarks import kuramoto_competitive_types as t
 
 
 def test_build_default_problem_shapes_and_properties() -> None:
+    """The default problem exposes consistent deterministic dimensions."""
     problem = t.build_default_problem(n_oscillators=8, t_max=1.0, dt=0.05, seed=3)
     assert problem.coupling.shape == (8, 8)
     assert problem.omega.shape == (8,)
@@ -37,6 +38,7 @@ def test_build_default_problem_shapes_and_properties() -> None:
 
 
 def test_build_default_problem_is_deterministic() -> None:
+    """Equal seeds reproduce the complete benchmark problem."""
     a = t.build_default_problem(seed=11)
     b = t.build_default_problem(seed=11)
     assert np.array_equal(a.coupling, b.coupling)
@@ -54,11 +56,13 @@ def test_build_default_problem_is_deterministic() -> None:
     ],
 )
 def test_build_default_problem_rejects_bad_bounds(kwargs: dict[str, Any], message: str) -> None:
+    """Invalid oscillator and integration bounds fail closed."""
     with pytest.raises(ValueError, match=message):
         t.build_default_problem(**kwargs)
 
 
 def test_competitor_row_to_dict_round_trips_fields() -> None:
+    """Competitor rows serialize all provenance and result fields."""
     row = t.CompetitorRow(
         method="x",
         backend="b",

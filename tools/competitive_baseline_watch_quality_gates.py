@@ -15,8 +15,10 @@ Gate = tuple[str, list[str]]
 COMPETITIVE_BASELINE_WATCH_QUALITY_RATCHET = [
     "src/scpn_quantum_control/competitive_baseline_watch.py",
     "src/scpn_quantum_control/benchmarks/reproducible_comparison.py",
+    "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py",
     "tests/test_competitive_baseline_watch.py",
     "tests/test_reproducible_comparison.py",
+    "tests/test_kuramoto_competitive_types.py",
     "tools/competitive_baseline_watch_quality_gates.py",
     "tests/test_competitive_baseline_watch_quality_gate.py",
 ]
@@ -24,6 +26,7 @@ COMPETITIVE_BASELINE_WATCH_QUALITY_RATCHET = [
 COMPETITIVE_BASELINE_WATCH_COVERAGE_COHORT = [
     "tests/test_competitive_baseline_watch.py",
     "tests/test_reproducible_comparison.py",
+    "tests/test_kuramoto_competitive_types.py",
 ]
 """Tests that own exact competitive-baseline-watch coverage."""
 COMPETITIVE_BASELINE_WATCH_COVERAGE_DATA_FILE = ".coverage.competitive-baseline-watch-quality"
@@ -92,7 +95,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={COMPETITIVE_BASELINE_WATCH_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py",
+                "--include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py,*/benchmarks/kuramoto_competitive_types.py",
             ],
         ),
     ]

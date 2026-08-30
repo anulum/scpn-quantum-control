@@ -4385,8 +4385,10 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/competitive_baseline_watch.py
           src/scpn_quantum_control/benchmarks/reproducible_comparison.py
+          src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py
           tests/test_competitive_baseline_watch.py
           tests/test_reproducible_comparison.py
+          tests/test_kuramoto_competitive_types.py
           tools/competitive_baseline_watch_quality_gates.py
           tests/test_competitive_baseline_watch_quality_gate.py
       - run: >-
@@ -4394,8 +4396,10 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/competitive_baseline_watch.py
           src/scpn_quantum_control/benchmarks/reproducible_comparison.py
+          src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py
           tests/test_competitive_baseline_watch.py
           tests/test_reproducible_comparison.py
+          tests/test_kuramoto_competitive_types.py
           tools/competitive_baseline_watch_quality_gates.py
           tests/test_competitive_baseline_watch_quality_gate.py
       - run: >-
@@ -4403,11 +4407,12 @@ jobs:
           --data-file=.coverage.competitive-baseline-watch-quality --branch
           -m pytest -q tests/test_competitive_baseline_watch.py
           tests/test_reproducible_comparison.py
+          tests/test_kuramoto_competitive_types.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.competitive-baseline-watch-quality
           --precision=2 --fail-under=100
-          --include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py
+          --include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py,*/benchmarks/kuramoto_competitive_types.py
 
   whole-program-ad-product-quality:
     needs: lint

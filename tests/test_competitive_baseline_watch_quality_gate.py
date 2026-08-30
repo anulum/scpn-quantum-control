@@ -34,7 +34,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert "--fail-under=100" in report
     assert (
-        "--include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py"
+        "--include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py,*/benchmarks/kuramoto_competitive_types.py"
         in report
     )
 
