@@ -78,6 +78,7 @@ def omega_for_oscillators(n_oscillators: int) -> NDArray[np.float64]:
         If ``n_oscillators`` is not an integer.
     ValueError
         If ``n_oscillators`` is below one.
+
     """
     if not isinstance(n_oscillators, int):
         raise TypeError("n_oscillators must be an integer")

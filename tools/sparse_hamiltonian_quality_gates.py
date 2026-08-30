@@ -13,13 +13,30 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 SPARSE_HAMILTONIAN_SOURCE = "src/scpn_quantum_control/bridge/sparse_hamiltonian.py"
+KNM_HAMILTONIAN_SOURCE = "src/scpn_quantum_control/bridge/knm_hamiltonian.py"
+KNM_HAMILTONIAN_DIRECT_TEST = "tests/test_knm_hamiltonian.py"
+KNM_HAMILTONIAN_BRANCH_TEST = "tests/test_knm_hamiltonian_branches.py"
+KNM_HAMILTONIAN_MUTATION_TEST = "tests/test_knm_hamiltonian_mutation_kills.py"
+KNM_HAMILTONIAN_PHYSICAL_TEST = "tests/test_knm_physical_validation_audit.py"
+KNM_HAMILTONIAN_PROPERTY_TEST = "tests/test_knm_properties.py"
+KNM_HAMILTONIAN_XXZ_TEST = "tests/test_xxz_hamiltonian.py"
 SPARSE_HAMILTONIAN_COVERAGE_COHORT = [
     "tests/test_sparse_hamiltonian.py",
     "tests/test_sparse_hamiltonian_branches.py",
+    KNM_HAMILTONIAN_DIRECT_TEST,
+    KNM_HAMILTONIAN_BRANCH_TEST,
+    KNM_HAMILTONIAN_MUTATION_TEST,
+    KNM_HAMILTONIAN_PHYSICAL_TEST,
+    KNM_HAMILTONIAN_PROPERTY_TEST,
+    KNM_HAMILTONIAN_XXZ_TEST,
 ]
+SPARSE_HAMILTONIAN_COVERAGE_INCLUDE = "*/bridge/sparse_hamiltonian.py,*/bridge/knm_hamiltonian.py"
 SPARSE_HAMILTONIAN_TYPING_RATCHET = [
     SPARSE_HAMILTONIAN_SOURCE,
-    *SPARSE_HAMILTONIAN_COVERAGE_COHORT,
+    "tests/test_sparse_hamiltonian.py",
+    "tests/test_sparse_hamiltonian_branches.py",
+    KNM_HAMILTONIAN_SOURCE,
+    KNM_HAMILTONIAN_DIRECT_TEST,
     "tools/sparse_hamiltonian_quality_gates.py",
     "tests/test_sparse_hamiltonian_quality_gate.py",
 ]
@@ -92,15 +109,23 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={SPARSE_HAMILTONIAN_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/bridge/sparse_hamiltonian.py",
+                f"--include={SPARSE_HAMILTONIAN_COVERAGE_INCLUDE}",
             ],
         ),
     ]
 
 
 __all__ = [
+    "KNM_HAMILTONIAN_BRANCH_TEST",
+    "KNM_HAMILTONIAN_DIRECT_TEST",
+    "KNM_HAMILTONIAN_MUTATION_TEST",
+    "KNM_HAMILTONIAN_PHYSICAL_TEST",
+    "KNM_HAMILTONIAN_PROPERTY_TEST",
+    "KNM_HAMILTONIAN_SOURCE",
+    "KNM_HAMILTONIAN_XXZ_TEST",
     "SPARSE_HAMILTONIAN_COVERAGE_COHORT",
     "SPARSE_HAMILTONIAN_COVERAGE_DATA_FILE",
+    "SPARSE_HAMILTONIAN_COVERAGE_INCLUDE",
     "SPARSE_HAMILTONIAN_DOCSTRING_RATCHET",
     "SPARSE_HAMILTONIAN_SOURCE",
     "SPARSE_HAMILTONIAN_TYPING_RATCHET",
