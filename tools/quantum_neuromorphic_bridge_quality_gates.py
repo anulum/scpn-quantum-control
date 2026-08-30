@@ -13,6 +13,7 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 QUANTUM_NEUROMORPHIC_BRIDGE_SOURCE = "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py"
+QUANTUM_DENSE_LAYER_SOURCE = "src/scpn_quantum_control/qsnn/qlayer.py"
 SNN_BACKWARD_SOURCE = "src/scpn_quantum_control/bridge/snn_backward.py"
 SPN_TO_QCIRCUIT_SOURCE = "src/scpn_quantum_control/bridge/spn_to_qcircuit.py"
 QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_COHORT = [
@@ -22,18 +23,22 @@ QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_COHORT = [
     "tests/test_topology_control_integration.py",
     "tests/test_snn_backward.py",
     "tests/test_spn_to_qcircuit.py",
+    "tests/test_qlayer.py",
 ]
 QUANTUM_NEUROMORPHIC_BRIDGE_TYPING_RATCHET = [
     QUANTUM_NEUROMORPHIC_BRIDGE_SOURCE,
+    QUANTUM_DENSE_LAYER_SOURCE,
     SNN_BACKWARD_SOURCE,
     SPN_TO_QCIRCUIT_SOURCE,
     "tests/test_snn_backward.py",
     "tests/test_spn_to_qcircuit.py",
+    "tests/test_qlayer.py",
     "tools/quantum_neuromorphic_bridge_quality_gates.py",
     "tests/test_quantum_neuromorphic_bridge_quality_gate.py",
 ]
 QUANTUM_NEUROMORPHIC_BRIDGE_DOCSTRING_RATCHET = [
     QUANTUM_NEUROMORPHIC_BRIDGE_SOURCE,
+    QUANTUM_DENSE_LAYER_SOURCE,
     SNN_BACKWARD_SOURCE,
     *QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_COHORT,
     "tools/quantum_neuromorphic_bridge_quality_gates.py",
@@ -43,7 +48,8 @@ QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_DATA_FILE = (
     "/tmp/scpn-qc-quantum-neuromorphic-bridge-quality.coverage"  # nosec B108
 )
 QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_INCLUDE = (
-    "*/qsnn/quantum_neuromorphic_bridge.py,*/bridge/snn_backward.py,*/bridge/spn_to_qcircuit.py"
+    "*/qsnn/quantum_neuromorphic_bridge.py,*/qsnn/qlayer.py,"
+    "*/bridge/snn_backward.py,*/bridge/spn_to_qcircuit.py"
 )
 
 
@@ -123,6 +129,7 @@ __all__ = [
     "QUANTUM_NEUROMORPHIC_BRIDGE_DOCSTRING_RATCHET",
     "QUANTUM_NEUROMORPHIC_BRIDGE_SOURCE",
     "QUANTUM_NEUROMORPHIC_BRIDGE_TYPING_RATCHET",
+    "QUANTUM_DENSE_LAYER_SOURCE",
     "SNN_BACKWARD_SOURCE",
     "SPN_TO_QCIRCUIT_SOURCE",
     "build_coverage_gates",

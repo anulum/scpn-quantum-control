@@ -12,63 +12,72 @@ import numpy as np
 from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
 
 
-def test_output_shape():
+def test_output_shape() -> None:
+    """Forward returns one binary value per neuron."""
     layer = QuantumDenseLayer(n_neurons=3, n_inputs=2)
     out = layer.forward(np.array([0.5, 0.5]))
     assert out.shape == (3,)
     assert set(np.unique(out)).issubset({0, 1})
 
 
-def test_zero_input_no_spikes():
+def test_zero_input_no_spikes() -> None:
+    """A zero input does not excite any neuron."""
     layer = QuantumDenseLayer(n_neurons=2, n_inputs=2, spike_threshold=0.5)
     out = layer.forward(np.array([0.0, 0.0]))
     assert np.all(out == 0)
 
 
-def test_qubit_count():
+def test_qubit_count() -> None:
+    """The layer records the combined input and neuron qubit count."""
     layer = QuantumDenseLayer(n_neurons=3, n_inputs=2)
     assert layer.n_qubits == 5
 
 
-def test_get_weights_shape():
+def test_get_weights_shape() -> None:
+    """The public weight matrix uses neuron-by-input ordering."""
     layer = QuantumDenseLayer(n_neurons=3, n_inputs=4)
     W = layer.get_weights()
     assert W.shape == (3, 4)
 
 
-def test_custom_weights():
+def test_custom_weights() -> None:
+    """Explicit weights are preserved by the synapse representation."""
     W = np.array([[0.9, 0.9], [0.1, 0.1]])
     layer = QuantumDenseLayer(n_neurons=2, n_inputs=2, weights=W)
     np.testing.assert_allclose(layer.get_weights(), W, atol=1e-10)
 
 
-def test_low_threshold_fires():
+def test_low_threshold_fires() -> None:
+    """Strong input and weights cross a low spike threshold."""
     W = np.array([[0.9, 0.9]])
     layer = QuantumDenseLayer(n_neurons=1, n_inputs=2, weights=W, spike_threshold=0.01)
     out = layer.forward(np.array([1.0, 1.0]))
     assert out[0] == 1
 
 
-def test_random_weight_bounds():
+def test_random_weight_bounds() -> None:
+    """Default random weights remain within the documented interval."""
     layer = QuantumDenseLayer(n_neurons=4, n_inputs=3)
     W = layer.get_weights()
     assert W.shape == (4, 3)
     assert np.all((W >= 0.0) & (W <= 1.0))
 
 
-def test_default_weights_seeded_deterministic():
+def test_default_weights_seeded_deterministic() -> None:
+    """Equal seeds reproduce default weight initialization."""
     layer1 = QuantumDenseLayer(n_neurons=2, n_inputs=2, seed=42)
     layer2 = QuantumDenseLayer(n_neurons=2, n_inputs=2, seed=42)
     np.testing.assert_array_equal(layer1.get_weights(), layer2.get_weights())
 
 
-def test_different_seeds_different_weights():
+def test_different_seeds_different_weights() -> None:
+    """Distinct seeds produce distinct default weight matrices."""
     layer1 = QuantumDenseLayer(n_neurons=2, n_inputs=2, seed=1)
     layer2 = QuantumDenseLayer(n_neurons=2, n_inputs=2, seed=999)
     assert not np.array_equal(layer1.get_weights(), layer2.get_weights())
 
 
-def test_forward_binary_output():
+def test_forward_binary_output() -> None:
     """Forward output must be strictly 0 or 1."""
     layer = QuantumDenseLayer(n_neurons=3, n_inputs=2, seed=42)
     for _ in range(5):
@@ -76,14 +85,14 @@ def test_forward_binary_output():
         assert set(np.unique(out)).issubset({0, 1})
 
 
-def test_n_qubits_formula():
+def test_n_qubits_formula() -> None:
     """n_qubits = n_neurons + n_inputs."""
     for n, m in [(2, 3), (4, 2), (1, 5)]:
         layer = QuantumDenseLayer(n_neurons=n, n_inputs=m)
         assert layer.n_qubits == n + m
 
 
-def test_high_weight_high_fire_rate():
+def test_high_weight_high_fire_rate() -> None:
     """Neurons with weight=1 and input=1 should fire more than weight=0."""
     layer_high = QuantumDenseLayer(
         n_neurons=1, n_inputs=1, weights=np.array([[1.0]]), spike_threshold=0.3

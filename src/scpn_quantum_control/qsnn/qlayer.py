@@ -80,6 +80,10 @@ class QuantumDenseLayer:
     n_qubits = n_inputs + n_neurons.
     Input qubits: [0, n_inputs)
     Neuron qubits: [n_inputs, n_inputs + n_neurons)
+
+    The layer encodes clipped inputs with ``Ry`` rotations, applies learned
+    controlled rotations, entangles adjacent neuron qubits, and thresholds
+    exact marginal probabilities into binary spikes.
     """
 
     def __init__(
@@ -89,8 +93,24 @@ class QuantumDenseLayer:
         weights: NDArray[np.float64] | None = None,
         spike_threshold: float = 0.5,
         seed: int | None = None,
-    ):
-        """weights: (n_neurons, n_inputs) or None for random init in [0, 1]."""
+    ) -> None:
+        """Initialize a quantum dense layer.
+
+        Parameters
+        ----------
+        n_neurons
+            Number of output neuron qubits.
+        n_inputs
+            Number of input qubits.
+        weights
+            Synaptic weight matrix with shape ``(n_neurons, n_inputs)``. When
+            omitted, weights are sampled uniformly from ``[0, 1]``.
+        spike_threshold
+            Strict marginal-probability threshold used to emit a spike.
+        seed
+            Seed for random weight initialization when ``weights`` is omitted.
+
+        """
         self.n_neurons = n_neurons
         self.n_inputs = n_inputs
         self.spike_threshold = spike_threshold
@@ -106,12 +126,17 @@ class QuantumDenseLayer:
     def forward(self, input_values: NDArray[np.float64]) -> NDArray[np.int64]:
         """Build circuit, measure neuron register, return spike array.
 
-        Args:
-            input_values: shape (n_inputs,) with values in [0, 1]
+        Parameters
+        ----------
+        input_values
+            Input vector with shape ``(n_inputs,)``. Values are clipped to
+            ``[0, 1]`` before angle encoding.
 
         Returns
         -------
-            shape (n_neurons,) int array of 0/1 spikes
+        NDArray[np.int64]
+            Binary spike vector with shape ``(n_neurons,)``.
+
         """
         state = np.zeros(1 << self.n_qubits, dtype=np.complex128)
         state[0] = 1.0
@@ -136,7 +161,14 @@ class QuantumDenseLayer:
         return result
 
     def get_weights(self) -> NDArray[np.float64]:
-        """Return (n_neurons, n_inputs) weight matrix."""
+        """Return the synaptic weight matrix.
+
+        Returns
+        -------
+        NDArray[np.float64]
+            Weight matrix with shape ``(n_neurons, n_inputs)``.
+
+        """
         result: NDArray[np.float64] = np.array(
             [
                 [self.synapses[n][i].weight for i in range(self.n_inputs)]
