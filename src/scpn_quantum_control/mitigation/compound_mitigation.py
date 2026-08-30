@@ -57,16 +57,32 @@ def compound_mitigate_pipeline(
 ) -> CompoundMitigationResult:
     """End-to-end CPDR with Z2 symmetry verification.
 
-    Args:
-        target_circuit: The circuit to mitigate.
-        target_counts: Noisy measurement counts from the target circuit.
-        run_on_backend: Callable(list[QuantumCircuit]) -> list[dict[str,int]]
-            that runs circuits on the noisy backend and returns counts.
-        expected_parity: 0 for even, 1 for odd.
-        n_training: Number of near-Clifford training circuits.
-        perturbation_scale: σ for Gaussian angle perturbation.
-        observable_qubits: Which qubits to measure ⟨Z⟩ on.
-        seed: RNG seed for reproducibility.
+    Parameters
+    ----------
+    target_circuit : QuantumCircuit
+        Circuit whose noisy expectation value is mitigated.
+    target_counts : dict[str, int]
+        Noisy measurement counts from the target circuit.
+    run_on_backend : Callable[[list[QuantumCircuit]], list[dict[str, int]]]
+        Execute the generated training circuits on the noisy backend and
+        return one count mapping per circuit.
+    expected_parity : int
+        Expected Z2 sector: zero for even parity or one for odd parity.
+    n_training : int
+        Number of near-Clifford training circuits.
+    perturbation_scale : float
+        Standard deviation for Gaussian angle perturbations.
+    observable_qubits : list[int] or None
+        Qubits included in the measured Z expectation value.
+    seed : int
+        Random seed for reproducible training-circuit generation.
+
+    Returns
+    -------
+    CompoundMitigationResult
+        Verified raw expectation, CPDR-mitigated estimate, regression
+        diagnostics, training count, and mean symmetry rejection rate.
+
     """
     n_qubits = target_circuit.num_qubits
 

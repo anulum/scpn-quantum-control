@@ -19,7 +19,9 @@ from scpn_quantum_control.mitigation.compound_mitigation import (
 
 
 class TestCompoundMitigation:
-    def test_compound_mitigate_pipeline(self):
+    """Exercise CPDR composed with Z2 symmetry verification."""
+
+    def test_compound_mitigate_pipeline(self) -> None:
         """Verify compound mitigation combines CPDR and Z2 symmetry."""
         qc = QuantumCircuit(2)
         qc.rx(np.pi / 2, 0)
@@ -27,9 +29,9 @@ class TestCompoundMitigation:
 
         # Mock counts: 80% perfect even parity, 20% odd parity noise
         target_counts = {"00": 800, "01": 200}
-        backend_calls = []
+        backend_calls: list[list[QuantumCircuit]] = []
 
-        def mock_backend(circuits):
+        def mock_backend(circuits: list[QuantumCircuit]) -> list[dict[str, int]]:
             backend_calls.append(circuits)
             assert len(circuits) == 5
             assert all(isinstance(circuit, QuantumCircuit) for circuit in circuits)
@@ -53,7 +55,7 @@ class TestCompoundMitigation:
         assert abs(res.mean_rejection_rate - 0.2) < 1e-6
         assert np.isfinite(res.mitigated_value)
 
-    def test_odd_parity_expectation(self):
+    def test_odd_parity_expectation(self) -> None:
         """Parity postselect correctly filters with expected_parity=1."""
         from scpn_quantum_control.mitigation.symmetry_verification import parity_postselect
 
@@ -64,13 +66,13 @@ class TestCompoundMitigation:
         assert res.rejected_shots == 100
         assert abs(res.rejection_rate - 0.1) < 1e-6
 
-    def test_zero_rejection_rate(self):
+    def test_zero_rejection_rate(self) -> None:
         """All-correct parity yields zero rejection."""
         qc = QuantumCircuit(2)
         target_counts = {"00": 500, "11": 500}
-        backend_call_sizes = []
+        backend_call_sizes: list[int] = []
 
-        def mock_backend(circuits):
+        def mock_backend(circuits: list[QuantumCircuit]) -> list[dict[str, int]]:
             backend_call_sizes.append(len(circuits))
             return [{"00": 500, "11": 500} for _ in circuits]
 
@@ -85,12 +87,12 @@ class TestCompoundMitigation:
         assert res.mean_rejection_rate == 0.0
         assert backend_call_sizes == [5]
 
-    def test_full_rejection_rate(self):
+    def test_full_rejection_rate(self) -> None:
         """All-wrong parity yields 100% rejection."""
         qc = QuantumCircuit(2)
         target_counts = {"01": 500, "10": 500}
 
-        def mock_backend(circuits):
+        def mock_backend(circuits: list[QuantumCircuit]) -> list[dict[str, int]]:
             return [{"01": 500, "10": 500} for _ in circuits]
 
         res = compound_mitigate_pipeline(
@@ -103,13 +105,13 @@ class TestCompoundMitigation:
         )
         assert res.mean_rejection_rate == 1.0
 
-    def test_result_fields_finite(self):
+    def test_result_fields_finite(self) -> None:
         """All numeric result fields must be finite."""
         qc = QuantumCircuit(2)
         qc.h(0)
         target_counts = {"00": 400, "01": 100, "10": 100, "11": 400}
 
-        def mock_backend(circuits):
+        def mock_backend(circuits: list[QuantumCircuit]) -> list[dict[str, int]]:
             return [{"00": 400, "01": 100, "10": 100, "11": 400} for _ in circuits]
 
         res = compound_mitigate_pipeline(

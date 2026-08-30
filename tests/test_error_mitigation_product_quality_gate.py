@@ -26,10 +26,15 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
 def test_coverage_gate_is_isolated_and_exact() -> None:
     """Require branch execution and exact source-only coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["error-mitigation-product focused coverage"]
+    run = gates["error-mitigation-product focused coverage"]
+    assert "--branch" in run
+    assert (
+        run[-len(quality_gates.ERROR_MITIGATION_PRODUCT_COVERAGE_COHORT) :]
+        == quality_gates.ERROR_MITIGATION_PRODUCT_COVERAGE_COHORT
+    )
     report = gates["error-mitigation-product exact coverage threshold"]
     assert "--fail-under=100" in report
-    assert "--include=*/error_mitigation_product.py" in report
+    assert "--include=*/error_mitigation_product.py,*/mitigation/compound_mitigation.py" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -48,5 +53,5 @@ def test_ci_runs_and_aggregates_gate() -> None:
     end = workflow.index("\n\n  cloud-native-deployment-quality:", start)
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.ERROR_MITIGATION_PRODUCT_QUALITY_RATCHET)
-    assert "--include=*/error_mitigation_product.py" in block
+    assert "*/mitigation/compound_mitigation.py" in block
     assert "error-mitigation-product-quality" in workflow[workflow.index("  ci-gate:") :]
