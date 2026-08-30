@@ -14,12 +14,17 @@ from os import devnull
 Gate = tuple[str, list[str]]
 ADVANCED_WITNESSES_SOURCE = "src/scpn_quantum_control/advanced_witnesses_product.py"
 OTOC_SOURCE = "src/scpn_quantum_control/analysis/otoc.py"
-ADVANCED_WITNESSES_COVERAGE_INCLUDE = "*/advanced_witnesses_product.py,*/analysis/otoc.py"
+SHADOW_TOMOGRAPHY_SOURCE = "src/scpn_quantum_control/analysis/shadow_tomography.py"
+ADVANCED_WITNESSES_COVERAGE_INCLUDE = (
+    "*/advanced_witnesses_product.py,*/analysis/otoc.py,*/analysis/shadow_tomography.py"
+)
 ADVANCED_WITNESSES_QUALITY_RATCHET = [
     ADVANCED_WITNESSES_SOURCE,
     OTOC_SOURCE,
+    SHADOW_TOMOGRAPHY_SOURCE,
     "tests/test_advanced_witnesses_product.py",
     "tests/test_otoc.py",
+    "tests/test_shadow_tomography.py",
     "tools/advanced_witnesses_quality_gates.py",
     "tests/test_advanced_witnesses_quality_gate.py",
 ]
@@ -27,6 +32,7 @@ ADVANCED_WITNESSES_QUALITY_RATCHET = [
 ADVANCED_WITNESSES_TEST_COHORT = [
     "tests/test_advanced_witnesses_product.py",
     "tests/test_otoc.py",
+    "tests/test_shadow_tomography.py",
 ]
 """Tests that own exact advanced-witnesses source coverage."""
 ADVANCED_WITNESSES_COVERAGE_DATA_FILE = "/tmp/scpn-qc-advanced-witnesses-quality.coverage"  # nosec B108
@@ -109,6 +115,7 @@ __all__ = [
     "ADVANCED_WITNESSES_SOURCE",
     "ADVANCED_WITNESSES_TEST_COHORT",
     "OTOC_SOURCE",
+    "SHADOW_TOMOGRAPHY_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

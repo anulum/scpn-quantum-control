@@ -75,7 +75,20 @@ _CLIFFORD_GATES: list[NDArray[np.complex128]] = _build_clifford_group()
 
 @dataclass
 class ShadowResult:
-    """Classical shadow estimation result."""
+    """Classical shadow estimation result.
+
+    Attributes
+    ----------
+    n_qubits
+        Number of qubits in the estimated state.
+    n_shots
+        Number of sampled Clifford-measurement snapshots.
+    estimated_observables
+        Observable names mapped to their shadow estimates.
+    shadow_norm_bound
+        Statistical error bound induced by the largest Pauli weight.
+
+    """
 
     n_qubits: int
     n_shots: int
@@ -141,7 +154,24 @@ def estimate_pauli_expectation(
 ) -> float:
     """Estimate <pauli_label> from classical shadows.
 
-    pauli_label: string like "XXIY" (n characters, I/X/Y/Z).
+    Parameters
+    ----------
+    psi
+        Input statevector.
+    n
+        Number of qubits in the statevector.
+    pauli_label
+        Pauli word with one ``I``, ``X``, ``Y``, or ``Z`` character per qubit.
+    n_shots
+        Number of Clifford-measurement snapshots to sample.
+    seed
+        Random seed used for Clifford and measurement sampling.
+
+    Returns
+    -------
+    float
+        Median single-shot estimator for the requested Pauli observable.
+
     """
     rng = np.random.default_rng(seed)
     estimates: list[float] = []
@@ -183,12 +213,24 @@ def classical_shadow_estimation(
 ) -> ShadowResult:
     """Estimate multiple Pauli observables from classical shadows.
 
-    Args:
-        psi: statevector
-        n: number of qubits
-        observables: dict of {name: pauli_label}
-        n_shots: number of shadow shots
-        seed: random seed
+    Parameters
+    ----------
+    psi
+        Input statevector.
+    n
+        Number of qubits in the statevector.
+    observables
+        Observable names mapped to Pauli words.
+    n_shots
+        Number of Clifford-measurement snapshots per observable.
+    seed
+        Random seed reused for each observable estimate.
+
+    Returns
+    -------
+    ShadowResult
+        Observable estimates and their bounded shadow-norm summary.
+
     """
     estimated: dict[str, float] = {}
     for name, label in observables.items():
