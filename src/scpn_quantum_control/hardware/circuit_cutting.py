@@ -41,7 +41,26 @@ DEFAULT_SCALING_N_VALUES: Final[tuple[int, ...]] = (16, 24, 32, 48, 64, 96, 128)
 
 @dataclass
 class CircuitCuttingPlan:
-    """Circuit cutting resource plan."""
+    """Circuit-cutting resource plan.
+
+    Attributes
+    ----------
+    n_oscillators:
+        Number of oscillators represented by the coupling matrix.
+    n_partitions:
+        Number of contiguous circuit partitions.
+    partition_sizes:
+        Oscillator count assigned to each partition.
+    n_cuts:
+        Non-zero coupling terms crossing partition boundaries.
+    classical_overhead:
+        Reconstruction factor ``4**n_cuts``, or infinity above the safe bound.
+    max_partition_qubits:
+        Qubits required by the largest partition.
+    fits_on_heron:
+        Whether the largest partition fits the supplied Heron capacity.
+
+    """
 
     n_oscillators: int
     n_partitions: int
@@ -56,7 +75,21 @@ def count_inter_partition_couplings(
     K: NDArray[np.float64],
     partition: list[list[int]],
 ) -> int:
-    """Count non-zero coupling terms between partitions."""
+    """Count non-zero coupling terms between partitions.
+
+    Parameters
+    ----------
+    K:
+        Square oscillator coupling matrix.
+    partition:
+        Disjoint oscillator-index groups.
+
+    Returns
+    -------
+    int
+        Number of coupling entries crossing distinct groups.
+
+    """
     cuts = 0
     for pi in range(len(partition)):
         for pj in range(pi + 1, len(partition)):
@@ -76,6 +109,26 @@ def optimal_partition(
     Simple greedy: contiguous blocks of max_partition_size.
     For all-to-all K_nm, any partition has the same cut count,
     so contiguous is as good as any.
+
+    Parameters
+    ----------
+    K:
+        Square oscillator coupling matrix.
+    max_partition_size:
+        Maximum oscillator count per contiguous partition.
+
+    Returns
+    -------
+    list[list[int]]
+        Contiguous oscillator-index partitions covering the full matrix.
+
+    Raises
+    ------
+    TypeError
+        If ``max_partition_size`` is not an integer.
+    ValueError
+        If the partition size or coupling matrix is invalid.
+
     """
     n = _validate_partition_inputs(K, max_partition_size)
     partitions: list[list[int]] = []
@@ -92,10 +145,27 @@ def circuit_cutting_plan(
 ) -> CircuitCuttingPlan:
     """Compute circuit cutting resource plan.
 
-    Args:
-        K: coupling matrix (n × n)
-        max_partition_size: maximum oscillators per partition
-        heron_qubits: available qubits per QPU
+    Parameters
+    ----------
+    K:
+        Square oscillator coupling matrix.
+    max_partition_size:
+        Maximum oscillator count per circuit partition.
+    heron_qubits:
+        Available qubits per target QPU.
+
+    Returns
+    -------
+    CircuitCuttingPlan
+        Partition sizes, cut count, reconstruction overhead, and fit decision.
+
+    Raises
+    ------
+    TypeError
+        If an integer capacity argument has the wrong type.
+    ValueError
+        If a capacity or the coupling matrix is invalid.
+
     """
     n = _validate_partition_inputs(K, max_partition_size)
     if not isinstance(heron_qubits, int):
@@ -123,7 +193,30 @@ def scaling_analysis(
     n_values: list[int] | None = None,
     max_partition_size: int = DEFAULT_MAX_PARTITION_SIZE,
 ) -> dict[str, list[float]]:
-    """Analyse circuit cutting overhead across system sizes."""
+    """Analyse circuit-cutting overhead across system sizes.
+
+    Parameters
+    ----------
+    n_values:
+        Oscillator counts to evaluate. Defaults to the published scaling grid.
+    max_partition_size:
+        Maximum oscillator count per partition.
+
+    Returns
+    -------
+    dict[str, list[float]]
+        System sizes, partition counts, cut counts, logarithmic overheads, and
+        Heron-fit indicators in aligned lists.
+
+    Raises
+    ------
+    TypeError
+        If a system size or the partition size has the wrong type.
+    ValueError
+        If a system size, partition size, or generated coupling matrix is
+        invalid.
+
+    """
     from ..bridge.knm_hamiltonian import build_knm_paper27
 
     if n_values is None:

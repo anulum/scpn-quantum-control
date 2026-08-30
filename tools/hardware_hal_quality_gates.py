@@ -18,6 +18,10 @@ ASYNC_HARDWARE_RUNNER_SOURCE = "src/scpn_quantum_control/hardware/async_runner.p
 """Bounded asynchronous orchestration over hardware runners."""
 ASYNC_HARDWARE_RUNNER_TEST = "tests/test_async_runner.py"
 """Offline fake-adapter orchestration and provenance tests."""
+HARDWARE_CIRCUIT_CUTTING_SOURCE = "src/scpn_quantum_control/hardware/circuit_cutting.py"
+"""Bounded circuit-partition and reconstruction-overhead planner."""
+HARDWARE_CIRCUIT_CUTTING_TEST = "tests/test_circuit_cutting.py"
+"""Real coupling-matrix partition and scaling tests."""
 HARDWARE_HAL_COVERAGE_COHORT = [
     "tests/test_hardware_hal.py",
     "tests/test_hardware_hal_contract_guards.py",
@@ -25,12 +29,15 @@ HARDWARE_HAL_COVERAGE_COHORT = [
     "tests/test_hardware_hal_provider_id_contract.py",
     "tests/test_hardware_hal_status_normalisation_contract.py",
     ASYNC_HARDWARE_RUNNER_TEST,
+    HARDWARE_CIRCUIT_CUTTING_TEST,
 ]
 """Offline and fake-adapter tests that own exact HAL coverage."""
 HARDWARE_HAL_TYPING_RATCHET = [
     HARDWARE_HAL_SOURCE,
     ASYNC_HARDWARE_RUNNER_SOURCE,
     ASYNC_HARDWARE_RUNNER_TEST,
+    HARDWARE_CIRCUIT_CUTTING_SOURCE,
+    HARDWARE_CIRCUIT_CUTTING_TEST,
     "tools/hardware_hal_quality_gates.py",
     "tests/test_hardware_hal_quality_gate.py",
 ]
@@ -38,15 +45,19 @@ HARDWARE_HAL_TYPING_RATCHET = [
 HARDWARE_HAL_DOCSTRING_RATCHET = [
     HARDWARE_HAL_SOURCE,
     ASYNC_HARDWARE_RUNNER_SOURCE,
+    HARDWARE_CIRCUIT_CUTTING_SOURCE,
     "tests/test_hardware_hal.py",
     ASYNC_HARDWARE_RUNNER_TEST,
+    HARDWARE_CIRCUIT_CUTTING_TEST,
     "tools/hardware_hal_quality_gates.py",
     "tests/test_hardware_hal_quality_gate.py",
 ]
 """Complete HAL and gate-contract docstring cohort."""
 HARDWARE_HAL_COVERAGE_DATA_FILE = "/tmp/scpn-qc-hardware-hal-quality.coverage"  # nosec B108
 """Isolated coverage database for the hardware HAL owner."""
-HARDWARE_HAL_COVERAGE_INCLUDE = "*/hardware/hal.py,*/hardware/async_runner.py"
+HARDWARE_HAL_COVERAGE_INCLUDE = (
+    "*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/circuit_cutting.py"
+)
 """Provider-neutral and asynchronous hardware sources under exact coverage."""
 
 
@@ -125,6 +136,8 @@ __all__ = [
     "HARDWARE_HAL_COVERAGE_DATA_FILE",
     "HARDWARE_HAL_COVERAGE_INCLUDE",
     "HARDWARE_HAL_DOCSTRING_RATCHET",
+    "HARDWARE_CIRCUIT_CUTTING_SOURCE",
+    "HARDWARE_CIRCUIT_CUTTING_TEST",
     "HARDWARE_HAL_SOURCE",
     "HARDWARE_HAL_TYPING_RATCHET",
     "build_coverage_gates",

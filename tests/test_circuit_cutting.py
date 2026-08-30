@@ -25,30 +25,37 @@ from scpn_quantum_control.hardware.circuit_cutting import (
 
 
 class TestOptimalPartition:
+    """Exercise contiguous bounded partition construction."""
+
     def test_16_into_16(self) -> None:
+        """Keep a 16-oscillator system in one 16-site partition."""
         K = build_knm_paper27(L=16)
         parts = optimal_partition(K, max_partition_size=16)
         assert len(parts) == 1
         assert len(parts[0]) == 16
 
     def test_32_into_2x16(self) -> None:
+        """Split 32 oscillators into two 16-site partitions."""
         K = build_knm_paper27(L=32)
         parts = optimal_partition(K, max_partition_size=16)
         assert len(parts) == 2
 
     def test_128_into_8x16(self) -> None:
+        """Split 128 oscillators into eight uniform partitions."""
         K = build_knm_paper27(L=128)
         parts = optimal_partition(K, max_partition_size=16)
         assert len(parts) == 8
         assert all(len(part) == 16 for part in parts)
 
     def test_covers_all(self) -> None:
+        """Cover every oscillator index exactly once."""
         K = build_knm_paper27(L=20)
         parts = optimal_partition(K, max_partition_size=8)
         all_osc = sorted(i for p in parts for i in p)
         assert all_osc == list(range(20))
 
     def test_rejects_bad_partition_size(self) -> None:
+        """Reject non-positive and non-integer partition capacities."""
         K = build_knm_paper27(L=4)
         with pytest.raises(ValueError, match="max_partition_size"):
             optimal_partition(K, max_partition_size=0)
@@ -56,6 +63,7 @@ class TestOptimalPartition:
             optimal_partition(K, max_partition_size=cast(int, "bad"))
 
     def test_rejects_bad_coupling_matrix(self) -> None:
+        """Reject non-square, undersized, and non-finite coupling matrices."""
         with pytest.raises(ValueError, match="square"):
             optimal_partition(np.zeros((2, 3), dtype=np.float64), max_partition_size=2)
         with pytest.raises(ValueError, match="at least two"):
@@ -65,12 +73,16 @@ class TestOptimalPartition:
 
 
 class TestCountCuts:
+    """Exercise inter-partition coupling counting."""
+
     def test_single_partition_zero_cuts(self) -> None:
+        """Count no cuts when all oscillators share one partition."""
         K = build_knm_paper27(L=4)
         parts = [[0, 1, 2, 3]]
         assert count_inter_partition_couplings(K, parts) == 0
 
     def test_two_partitions_nonzero(self) -> None:
+        """Count crossing terms between two coupled partitions."""
         K = build_knm_paper27(L=4)
         parts = [[0, 1], [2, 3]]
         cuts = count_inter_partition_couplings(K, parts)
@@ -78,24 +90,30 @@ class TestCountCuts:
 
 
 class TestCircuitCuttingPlan:
+    """Exercise public circuit-cutting resource plans."""
+
     def test_returns_plan(self) -> None:
+        """Return the typed planning record for a valid coupling matrix."""
         K = build_knm_paper27(L=32)
         plan = circuit_cutting_plan(K)
         assert isinstance(plan, CircuitCuttingPlan)
 
     def test_16_no_cuts(self) -> None:
+        """Require no reconstruction cuts for one fitting partition."""
         K = build_knm_paper27(L=16)
         plan = circuit_cutting_plan(K, max_partition_size=16)
         assert plan.n_cuts == 0
         assert plan.n_partitions == 1
 
     def test_32_needs_cuts(self) -> None:
+        """Report crossing cuts for a two-partition plan."""
         K = build_knm_paper27(L=32)
         plan = circuit_cutting_plan(K, max_partition_size=16)
         assert plan.n_cuts > 0
         assert plan.n_partitions == 2
 
     def test_128_plan_is_partitioned_not_single_dense_run(self) -> None:
+        """Represent a 128-site system as eight bounded partitions."""
         K = build_knm_paper27(L=128)
         plan = circuit_cutting_plan(K, max_partition_size=16)
         assert plan.n_oscillators == 128
@@ -104,11 +122,13 @@ class TestCircuitCuttingPlan:
         assert plan.classical_overhead == float("inf")
 
     def test_fits_heron(self) -> None:
+        """Mark a 16-qubit maximum partition as fitting Heron."""
         K = build_knm_paper27(L=32)
         plan = circuit_cutting_plan(K, max_partition_size=16)
         assert plan.fits_on_heron
 
     def test_rejects_bad_heron_qubits(self) -> None:
+        """Reject non-positive and non-integer QPU capacities."""
         K = build_knm_paper27(L=4)
         with pytest.raises(ValueError, match="heron_qubits"):
             circuit_cutting_plan(K, heron_qubits=0)
@@ -117,13 +137,17 @@ class TestCircuitCuttingPlan:
 
 
 class TestScalingAnalysis:
+    """Exercise system-size scaling summaries and validation."""
+
     def test_returns_keys(self) -> None:
+        """Return aligned planning metric collections."""
         results = scaling_analysis(n_values=[16, 32])
         assert "n_oscillators" in results
         assert "n_cuts" in results
         assert len(results["n_oscillators"]) == 2
 
     def test_cuts_increase_with_n(self) -> None:
+        """Increase or preserve cut counts as system size grows."""
         results = scaling_analysis(n_values=[16, 32, 64])
         assert results["n_cuts"][0] <= results["n_cuts"][1] <= results["n_cuts"][2]
 
@@ -134,6 +158,7 @@ class TestScalingAnalysis:
         assert results["n_oscillators"] == [16, 24, 32, 48, 64, 96, 128]
 
     def test_rejects_bad_n_values(self) -> None:
+        """Reject undersized and non-integer system-size entries."""
         with pytest.raises(ValueError, match="n_values"):
             scaling_analysis(n_values=[1])
         with pytest.raises(TypeError, match="n_values"):
