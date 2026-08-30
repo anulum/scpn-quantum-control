@@ -12,16 +12,24 @@ from __future__ import annotations
 from os import devnull
 
 Gate = tuple[str, list[str]]
+ADVANCED_WITNESSES_SOURCE = "src/scpn_quantum_control/advanced_witnesses_product.py"
+OTOC_SOURCE = "src/scpn_quantum_control/analysis/otoc.py"
+ADVANCED_WITNESSES_COVERAGE_INCLUDE = "*/advanced_witnesses_product.py,*/analysis/otoc.py"
 ADVANCED_WITNESSES_QUALITY_RATCHET = [
-    "src/scpn_quantum_control/advanced_witnesses_product.py",
+    ADVANCED_WITNESSES_SOURCE,
+    OTOC_SOURCE,
     "tests/test_advanced_witnesses_product.py",
+    "tests/test_otoc.py",
     "tools/advanced_witnesses_quality_gates.py",
     "tests/test_advanced_witnesses_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-ADVANCED_WITNESSES_TEST_COHORT = ["tests/test_advanced_witnesses_product.py"]
+ADVANCED_WITNESSES_TEST_COHORT = [
+    "tests/test_advanced_witnesses_product.py",
+    "tests/test_otoc.py",
+]
 """Tests that own exact advanced-witnesses source coverage."""
-ADVANCED_WITNESSES_COVERAGE_DATA_FILE = ".coverage.advanced-witnesses-quality"
+ADVANCED_WITNESSES_COVERAGE_DATA_FILE = "/tmp/scpn-qc-advanced-witnesses-quality.coverage"  # nosec B108
 """Isolated coverage database for the advanced-witnesses owner."""
 
 
@@ -47,8 +55,9 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *ADVANCED_WITNESSES_QUALITY_RATCHET,
@@ -87,7 +96,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={ADVANCED_WITNESSES_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/advanced_witnesses_product.py",
+                f"--include={ADVANCED_WITNESSES_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -95,8 +104,11 @@ def build_coverage_gates(python: str) -> list[Gate]:
 
 __all__ = [
     "ADVANCED_WITNESSES_COVERAGE_DATA_FILE",
+    "ADVANCED_WITNESSES_COVERAGE_INCLUDE",
     "ADVANCED_WITNESSES_QUALITY_RATCHET",
+    "ADVANCED_WITNESSES_SOURCE",
     "ADVANCED_WITNESSES_TEST_COHORT",
+    "OTOC_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

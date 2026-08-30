@@ -86,7 +86,28 @@ class OTOC:
         *,
         max_dense_gib: float | None = None,
     ) -> OTOCResult:
-        """Run OTOC computation and return an :class:`OTOCResult`."""
+        """Run OTOC computation with the configured operators.
+
+        Parameters
+        ----------
+        times
+            Optional evaluation times. The runtime uses its bounded default
+            grid when omitted.
+        max_dense_gib
+            Optional per-call dense-allocation budget overriding the
+            construction-time budget.
+
+        Returns
+        -------
+        OTOCResult
+            Exact statevector OTOC values and derived diagnostics.
+
+        Raises
+        ------
+        ValueError
+            If the coupling matrix or frequency vector was not configured.
+
+        """
         if self._K is None or self._omega is None:
             raise ValueError("OTOC requires K and omega to be set at construction time.")
         budget_gib = self._max_dense_gib if max_dense_gib is None else max_dense_gib
@@ -145,14 +166,30 @@ def compute_otoc(
 
     F(t) = Re(<ψ|W†(t) V† W(t) V|ψ>) where |ψ> = |0...0>.
 
-    Args:
-        K: coupling matrix
-        omega: natural frequencies
-        times: time points for OTOC evaluation
-        w_qubit: qubit index for W operator
-        v_qubit: qubit index for V operator (default: w_qubit + 1)
-        w_pauli: Pauli label for W ("X", "Y", or "Z")
-        v_pauli: Pauli label for V
+    Parameters
+    ----------
+    K
+        Coupling matrix for the Kuramoto-XY Hamiltonian.
+    omega
+        Natural-frequency vector aligned with ``K``.
+    times
+        Optional time points for OTOC evaluation.
+    w_qubit
+        Qubit index for the evolved ``W`` operator.
+    v_qubit
+        Qubit index for ``V``; defaults to the next bounded qubit.
+    w_pauli
+        Pauli label for ``W``: ``X``, ``Y``, or ``Z``.
+    v_pauli
+        Pauli label for ``V``: ``X``, ``Y``, or ``Z``.
+    max_dense_gib
+        Optional fail-closed budget for dense runtime allocations.
+
+    Returns
+    -------
+    OTOCResult
+        Exact OTOC series, derived estimates, and operator provenance.
+
     """
     n = K.shape[0]
     if times is None:

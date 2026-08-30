@@ -20,14 +20,22 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
         gates["mypy-strict-advanced-witnesses-quality"][5:]
         == quality_gates.ADVANCED_WITNESSES_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D advanced-witnesses quality ratchet"]
+    ruff = gates["ruff D advanced-witnesses quality ratchet"]
+    assert "--preview" in ruff and "D,D413,D417" in ruff
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
     """Require branch execution and exact source-only coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
-    assert "--branch" in gates["advanced-witnesses focused coverage"]
-    assert "--fail-under=100" in gates["advanced-witnesses exact coverage threshold"]
+    run = gates["advanced-witnesses focused coverage"]
+    report = gates["advanced-witnesses exact coverage threshold"]
+    assert "--branch" in run
+    assert run[-len(quality_gates.ADVANCED_WITNESSES_TEST_COHORT) :] == (
+        quality_gates.ADVANCED_WITNESSES_TEST_COHORT
+    )
+    assert any(argument.startswith("--data-file=/tmp/") for argument in run)
+    assert "--fail-under=100" in report
+    assert f"--include={quality_gates.ADVANCED_WITNESSES_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -46,4 +54,5 @@ def test_ci_runs_and_aggregates_gate() -> None:
     end = workflow.index("\n\n  coverage-frontier-quality:", start)
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.ADVANCED_WITNESSES_QUALITY_RATCHET)
+    assert quality_gates.ADVANCED_WITNESSES_COVERAGE_INCLUDE in block
     assert "advanced-witnesses-quality" in workflow[workflow.index("  ci-gate:") :]
