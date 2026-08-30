@@ -42,6 +42,7 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     include = next(argument for argument in report if argument.startswith("--include="))
     assert "phase/gradient_backend.py" in include
     assert "phase/provider_gradient.py" in include
+    assert "phase/qiskit_runtime.py" in include
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -67,6 +68,8 @@ def test_ci_runs_and_aggregates_gradient_backend_gate() -> None:
     assert "--fail-under=100" in block
     assert "phase/gradient_backend.py" in block
     assert "phase/provider_gradient.py" in block
+    assert "phase/qiskit_runtime.py" in block
     assert "tests/test_phase_provider_gradient.py" in block
     assert "tests/test_phase_provider_gradient_branches.py" in block
+    assert "tests/test_phase_qiskit_runtime.py" in block
     assert "gradient-backend-quality" in workflow[workflow.index("  ci-gate:") :]

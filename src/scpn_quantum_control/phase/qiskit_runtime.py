@@ -170,6 +170,7 @@ def build_qiskit_provider_gradient_workflow_artifact(
     ValueError
         If primitive, method, digest, shot, dimension, observable, live-ticket,
         or hardware-execution evidence is malformed.
+
     """
     return QiskitProviderGradientWorkflowArtifact(
         artifact_id=artifact_id,

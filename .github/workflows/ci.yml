@@ -4314,6 +4314,7 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/phase/gradient_backend.py
           src/scpn_quantum_control/phase/provider_gradient.py
+          src/scpn_quantum_control/phase/qiskit_runtime.py
           tests/test_phase_provider_gradient.py
           tests/test_phase_provider_gradient_branches.py
           tools/gradient_backend_quality_gates.py
@@ -4324,6 +4325,7 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/gradient_backend.py
           src/scpn_quantum_control/phase/provider_gradient.py
+          src/scpn_quantum_control/phase/qiskit_runtime.py
           tests/test_phase_gradient_backend.py
           tests/test_phase_provider_gradient.py
           tests/test_phase_provider_gradient_branches.py
@@ -4336,11 +4338,12 @@ jobs:
           tests/test_phase_gradient_backend.py
           tests/test_phase_provider_gradient.py
           tests/test_phase_provider_gradient_branches.py
+          tests/test_phase_qiskit_runtime.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-gradient-backend-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/phase/gradient_backend.py,*/phase/provider_gradient.py
+          --include=*/phase/gradient_backend.py,*/phase/provider_gradient.py,*/phase/qiskit_runtime.py
 
   differentiable-exact-modes-quality:
     needs: lint
