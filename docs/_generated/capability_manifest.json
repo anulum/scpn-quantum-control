@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1286
+    "test_files": 1287
   },
   "documentation": {
     "examples": [
@@ -8888,6 +8888,7 @@
       "tests/test_phase_pennylane_provider_plugin_integration.py",
       "tests/test_phase_provider_gradient.py",
       "tests/test_phase_provider_gradient_audit.py",
+      "tests/test_phase_provider_gradient_branches.py",
       "tests/test_phase_provider_hardware_gradient_audit.py",
       "tests/test_phase_provider_hardware_safety_audit.py",
       "tests/test_phase_qgnn.py",

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Complete provider-gradient lifecycle and direct-test NumPy documentation,
+  add fail-closed validation/provenance/planner branch coverage, and extend the
+  existing gradient-backend quality owner with real joint execution plus exact
+  line/branch coverage for both connected phase modules.
+
 - Complete the NumPy documentation contract for cloud-native manifest
   validation and its direct tests, and extend the existing deployment-product
   quality owner with real joint execution plus exact line/branch coverage for

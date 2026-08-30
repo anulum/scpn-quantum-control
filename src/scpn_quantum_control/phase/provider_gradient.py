@@ -49,6 +49,7 @@ class ProviderExpectationSample:
     metadata: Mapping[str, object] | None = None
 
     def __post_init__(self) -> None:
+        """Validate and normalize one provider expectation sample."""
         value = _as_finite_scalar("sample value", self.value)
         variance = (
             None if self.variance is None else _as_non_negative_scalar("variance", self.variance)
@@ -109,6 +110,7 @@ class ProviderParameterShiftRecord:
     confidence_radius: float
 
     def __post_init__(self) -> None:
+        """Validate and normalize one parameter-shift record."""
         if isinstance(self.parameter_index, bool) or self.parameter_index < 0:
             raise ValueError("parameter_index must be a non-negative integer")
         if isinstance(self.shift_index, bool) or self.shift_index < 0:
@@ -164,6 +166,7 @@ class ProviderGradientExecutionResult:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate and normalize the provider-gradient result."""
         values = _as_finite_vector("values", self.values)
         gradient = _as_finite_vector("gradient", self.gradient)
         standard_error = _as_finite_vector("standard_error", self.standard_error)

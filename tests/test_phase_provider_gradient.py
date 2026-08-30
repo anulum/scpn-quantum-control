@@ -50,6 +50,7 @@ def _finite_shot_sample_metadata(label: str) -> dict[str, object]:
 
 
 def test_provider_gradient_executes_statevector_parameter_shift() -> None:
+    """Match analytic gradients through the statevector callback route."""
     values = np.array([0.2, -0.4], dtype=float)
 
     def sampler(params: FloatArray, shots: int | None) -> ProviderExpectationSample:
@@ -75,6 +76,7 @@ def test_provider_gradient_executes_statevector_parameter_shift() -> None:
 
 
 def test_provider_gradient_executes_finite_shot_parameter_shift_with_uncertainty() -> None:
+    """Propagate finite-shot variance and attach shift provenance."""
     values = np.array([0.2, -0.4], dtype=float)
     observed_shots: list[int | None] = []
 
@@ -135,6 +137,7 @@ def test_provider_gradient_rejects_finite_shot_without_sample_provenance() -> No
 
 
 def test_provider_gradient_executes_multi_frequency_finite_shot_records() -> None:
+    """Accumulate every term in a multi-frequency finite-shot rule."""
     values = np.array([0.4], dtype=float)
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
     observed_shots: list[int | None] = []
@@ -183,6 +186,8 @@ def test_provider_gradient_executes_multi_frequency_finite_shot_records() -> Non
 
 
 def test_provider_gradient_fails_closed_for_hardware_without_policy() -> None:
+    """Refuse a hardware route without explicit policy approval."""
+
     def sampler(params: FloatArray, shots: int | None) -> ProviderExpectationSample:
         return ProviderExpectationSample(value=_objective(params), variance=0.04, shots=shots)
 
@@ -196,6 +201,7 @@ def test_provider_gradient_fails_closed_for_hardware_without_policy() -> None:
 
 
 def test_provider_hardware_preparation_approves_dry_run_without_sampling() -> None:
+    """Approve an evidence-complete dry run without sampling hardware."""
     values = np.array([0.2, -0.4], dtype=float)
 
     result = prepare_provider_hardware_parameter_shift_gradient(
@@ -220,6 +226,7 @@ def test_provider_hardware_preparation_approves_dry_run_without_sampling() -> No
 
 
 def test_provider_hardware_preparation_blocks_missing_evidence() -> None:
+    """Block preparation when required evidence identifiers are absent."""
     result = prepare_provider_hardware_parameter_shift_gradient(
         np.array([0.2, -0.4], dtype=float),
         provider="ibm_quantum",
@@ -241,6 +248,7 @@ def test_provider_hardware_preparation_blocks_missing_evidence() -> None:
 
 
 def test_provider_hardware_preparation_live_mode_requires_ticket() -> None:
+    """Require a live ticket while preserving the no-execution result."""
     blocked = prepare_provider_hardware_parameter_shift_gradient(
         np.array([0.2], dtype=float),
         provider="ibm_quantum",
@@ -274,6 +282,8 @@ def test_provider_hardware_preparation_live_mode_requires_ticket() -> None:
 
 
 def test_provider_gradient_rejects_invalid_samples() -> None:
+    """Reject non-finite samples and missing finite-shot variance."""
+
     def non_finite_sampler(params: FloatArray, shots: int | None) -> ProviderExpectationSample:
         return ProviderExpectationSample(value=float("nan"))
 
