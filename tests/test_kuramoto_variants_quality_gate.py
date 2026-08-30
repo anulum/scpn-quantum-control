@@ -55,7 +55,7 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/phase/kuramoto_variants.py" in report
+    assert "--include=*/phase/kuramoto_variants.py,*/phase/floquet_kuramoto.py" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -82,5 +82,6 @@ def test_ci_runs_and_aggregates_kuramoto_variants_gate() -> None:
     assert "PyO3/maturin-action@" in block
     assert "--fail-under=100" in block
     assert "phase/kuramoto_variants.py" in block
+    assert "phase/floquet_kuramoto.py" in block
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "kuramoto-variants-quality" in aggregate

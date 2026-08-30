@@ -17,7 +17,7 @@ from scpn_quantum_control.phase import floquet_kuramoto as module
 
 def test_build_h_matrix_normalizes_dense_complex_dtype(monkeypatch: pytest.MonkeyPatch) -> None:
     """The dense Hamiltonian wrapper preserves budget forwarding and complex dtype."""
-    calls: list[tuple[tuple[int, int], tuple[int], float | None]] = []
+    calls: list[tuple[tuple[int, ...], tuple[int, ...], float | None]] = []
 
     def fake_dense_matrix(
         K: module.FloatArray,

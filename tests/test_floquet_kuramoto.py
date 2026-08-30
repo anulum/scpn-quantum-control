@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
 
@@ -22,8 +24,9 @@ from scpn_quantum_control.phase.floquet_kuramoto import (
 )
 
 
-def _ring_topology(n: int) -> np.ndarray:
-    T = np.zeros((n, n))
+def _ring_topology(n: int) -> floquet_module.FloatArray:
+    """Build a nearest-neighbour ring coupling matrix."""
+    T = np.zeros((n, n), dtype=np.float64)
     for i in range(n):
         j = (i + 1) % n
         T[i, j] = T[j, i] = 1.0
@@ -31,12 +34,17 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestFloquetEvolve:
-    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+    """Verify dense driven evolution and allocation boundaries."""
+
+    def test_rejects_dense_budget_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Reject an oversized dense workspace before Hamiltonian allocation."""
         n = 10
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
 
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*args: Any, **kwargs: Any) -> None:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(
@@ -55,12 +63,17 @@ class TestFloquetEvolve:
                 max_dense_gib=1e-12,
             )
 
-    def test_passes_dense_budget_to_bridge(self, monkeypatch):
+    def test_passes_dense_budget_to_bridge(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Forward the dense budget to every Hamiltonian construction."""
         T = _ring_topology(2)
         omega = OMEGA_N_16[:2]
         seen_budgets: list[float | None] = []
 
-        def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
+        def fake_dense_matrix(
+            K_arg: floquet_module.FloatArray,
+            omega_arg: floquet_module.FloatArray,
+            **kwargs: Any,
+        ) -> floquet_module.ComplexArray:  # noqa: ARG001
             seen_budgets.append(kwargs.get("max_dense_gib"))
             return np.zeros((4, 4), dtype=complex)
 
@@ -79,7 +92,8 @@ class TestFloquetEvolve:
 
         assert seen_budgets == [0.25, 0.25, 0.25]
 
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
+        """Return a typed result with the requested number of time steps."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -96,7 +110,8 @@ class TestFloquetEvolve:
         assert len(result.times) == 3 * 8 + 1
         assert len(result.R_values) == len(result.times)
 
-    def test_R_bounded(self):
+    def test_R_bounded(self) -> None:
+        """Keep the synchronization order parameter physically bounded."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -112,7 +127,8 @@ class TestFloquetEvolve:
         assert np.all(result.R_values >= 0)
         assert np.all(result.R_values <= 1.0 + 1e-10)
 
-    def test_drive_signal_oscillates(self):
+    def test_drive_signal_oscillates(self) -> None:
+        """Produce a non-constant signal for a nonzero drive amplitude."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -129,7 +145,7 @@ class TestFloquetEvolve:
         assert np.min(result.drive_signal) < 1.0
         assert np.max(result.drive_signal) > 1.0
 
-    def test_zero_amplitude_no_oscillation(self):
+    def test_zero_amplitude_no_oscillation(self) -> None:
         """No drive → R should still evolve (unitary dynamics) but no drive signal variation."""
         n = 2
         T = _ring_topology(n)
@@ -146,7 +162,8 @@ class TestFloquetEvolve:
         # Drive signal should be constant
         assert np.std(result.drive_signal) < 1e-10
 
-    def test_subharmonic_ratio_finite(self):
+    def test_subharmonic_ratio_finite(self) -> None:
+        """Return a finite subharmonic spectral ratio."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -161,7 +178,8 @@ class TestFloquetEvolve:
         )
         assert np.isfinite(result.subharmonic_ratio)
 
-    def test_3qubit_evolves(self):
+    def test_3qubit_evolves(self) -> None:
+        """Evolve a three-qubit ring with finite order parameters."""
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -179,7 +197,10 @@ class TestFloquetEvolve:
 
 
 class TestScanDriveAmplitude:
-    def test_returns_dict(self):
+    """Verify drive-amplitude scan summaries."""
+
+    def test_returns_dict(self) -> None:
+        """Return all scan series at the requested amplitude count."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -196,7 +217,8 @@ class TestScanDriveAmplitude:
         assert "subharmonic_ratio" in result
         assert len(result["amplitude"]) == 2
 
-    def test_all_values_finite(self):
+    def test_all_values_finite(self) -> None:
+        """Keep every scan summary finite."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -219,7 +241,10 @@ class TestScanDriveAmplitude:
 
 
 class TestFloquetResultStructure:
-    def test_result_has_all_fields(self):
+    """Verify the public Floquet result envelope."""
+
+    def test_result_has_all_fields(self) -> None:
+        """Populate every declared result field."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -238,7 +263,8 @@ class TestFloquetResultStructure:
         assert hasattr(result, "subharmonic_ratio")
         assert hasattr(result, "is_dtc_candidate")
 
-    def test_is_dtc_candidate_is_bool(self):
+    def test_is_dtc_candidate_is_bool(self) -> None:
+        """Expose the DTC-candidate decision as a strict boolean."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -260,7 +286,10 @@ class TestFloquetResultStructure:
 
 
 class TestTimeArray:
-    def test_times_monotonically_increasing(self):
+    """Verify time and drive-series alignment."""
+
+    def test_times_monotonically_increasing(self) -> None:
+        """Return strictly increasing time samples."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -275,7 +304,8 @@ class TestTimeArray:
         )
         assert np.all(np.diff(result.times) > 0)
 
-    def test_drive_signal_length_matches_times(self):
+    def test_drive_signal_length_matches_times(self) -> None:
+        """Align the drive signal with every time sample."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -297,7 +327,9 @@ class TestTimeArray:
 
 
 class TestFloquetPipeline:
-    def test_knm_topology_to_floquet(self):
+    """Verify topology-to-dynamics and scan compositions."""
+
+    def test_knm_topology_to_floquet(self) -> None:
         """Full pipeline: build_knm_paper27 topology → Floquet evolution → R."""
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
@@ -315,7 +347,8 @@ class TestFloquetPipeline:
         assert len(result.R_values) == 3 * 6 + 1
         assert np.isfinite(result.subharmonic_ratio)
 
-    def test_scan_amplitude_count(self):
+    def test_scan_amplitude_count(self) -> None:
+        """Preserve the caller's amplitude count in scan outputs."""
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -336,7 +369,7 @@ class TestFloquetPipeline:
 class TestFloquetCoverage:
     """Cover Python fallback and edge cases."""
 
-    def test_order_param_qiskit_fallback(self):
+    def test_order_param_qiskit_fallback(self) -> None:
         """Cover lines 63-78: Qiskit SparsePauliOp path when Rust unavailable."""
         from unittest.mock import patch
 
@@ -350,7 +383,7 @@ class TestFloquetCoverage:
 
         assert 0 <= R <= 1.0
 
-    def test_subharmonic_ratio_short_signal(self):
+    def test_subharmonic_ratio_short_signal(self) -> None:
         """Short signals return zero before FFT bin selection."""
         from scpn_quantum_control.phase.floquet_kuramoto import _subharmonic_ratio
 

@@ -17,15 +17,23 @@ KURAMOTO_VARIANTS_MIXED_CONSUMER = "tests/test_commutator_bounds.py"
 KURAMOTO_VARIANTS_COVERAGE_COHORT = [
     "tests/test_kuramoto_variants.py",
     KURAMOTO_VARIANTS_MIXED_CONSUMER,
+    "tests/test_floquet_kuramoto.py",
+    "tests/test_floquet_kuramoto_strict_surface.py",
 ]
 KURAMOTO_VARIANTS_TYPING_RATCHET = [
     KURAMOTO_VARIANTS_SOURCE,
+    "src/scpn_quantum_control/phase/floquet_kuramoto.py",
+    "tests/test_floquet_kuramoto.py",
+    "tests/test_floquet_kuramoto_strict_surface.py",
     "tools/kuramoto_variants_quality_gates.py",
     "tests/test_kuramoto_variants_quality_gate.py",
 ]
 KURAMOTO_VARIANTS_DOCSTRING_RATCHET = [
     KURAMOTO_VARIANTS_SOURCE,
     "tests/test_kuramoto_variants.py",
+    "src/scpn_quantum_control/phase/floquet_kuramoto.py",
+    "tests/test_floquet_kuramoto.py",
+    "tests/test_floquet_kuramoto_strict_surface.py",
     "tools/kuramoto_variants_quality_gates.py",
     "tests/test_kuramoto_variants_quality_gate.py",
 ]
@@ -95,7 +103,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={KURAMOTO_VARIANTS_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/phase/kuramoto_variants.py",
+                "--include=*/phase/kuramoto_variants.py,*/phase/floquet_kuramoto.py",
             ],
         ),
     ]

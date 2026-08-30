@@ -2752,6 +2752,9 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/phase/kuramoto_variants.py
+          src/scpn_quantum_control/phase/floquet_kuramoto.py
+          tests/test_floquet_kuramoto.py
+          tests/test_floquet_kuramoto_strict_surface.py
           tools/kuramoto_variants_quality_gates.py
           tests/test_kuramoto_variants_quality_gate.py
       - name: Ruff NumPy docstrings for Kuramoto-variant direct owners
@@ -2760,6 +2763,9 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/kuramoto_variants.py
           tests/test_kuramoto_variants.py
+          src/scpn_quantum_control/phase/floquet_kuramoto.py
+          tests/test_floquet_kuramoto.py
+          tests/test_floquet_kuramoto_strict_surface.py
           tools/kuramoto_variants_quality_gates.py
           tests/test_kuramoto_variants_quality_gate.py
       - name: Run Kuramoto-variant connected focused coverage
@@ -2771,6 +2777,8 @@ jobs:
           -m pytest -q
           tests/test_kuramoto_variants.py
           tests/test_commutator_bounds.py
+          tests/test_floquet_kuramoto.py
+          tests/test_floquet_kuramoto_strict_surface.py
       - name: Enforce Kuramoto-variant exact coverage
         run: >-
           python -m coverage report
@@ -2778,7 +2786,7 @@ jobs:
           --data-file=/tmp/scpn-qc-kuramoto-variants-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/phase/kuramoto_variants.py
+          --include=*/phase/kuramoto_variants.py,*/phase/floquet_kuramoto.py
 
   mps-evolution-quality:
     needs: lint

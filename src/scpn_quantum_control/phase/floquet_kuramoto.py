@@ -106,15 +106,30 @@ def floquet_evolve(
 
     K(t) = K_base * (1 + drive_amplitude * cos(drive_frequency * t)) * K_topology
 
-    Args:
-        K_topology: normalized coupling matrix (max=1)
-        omega: natural frequencies
-        K_base: base coupling strength
-        drive_amplitude: delta in K(t) = K_base*(1 + delta*cos(Omega*t))
-        drive_frequency: Omega (angular frequency of periodic drive)
-        n_periods: number of drive periods to simulate
-        steps_per_period: time steps per period
-        max_dense_gib: optional dense allocation budget in GiB
+    Parameters
+    ----------
+    K_topology : FloatArray
+        Normalised coupling matrix with maximum magnitude one.
+    omega : FloatArray
+        Natural oscillator frequencies.
+    K_base : float
+        Base coupling strength.
+    drive_amplitude : float
+        Modulation amplitude in the driven coupling.
+    drive_frequency : float
+        Angular frequency of the periodic drive.
+    n_periods : int
+        Number of drive periods to simulate.
+    steps_per_period : int
+        Time steps per drive period.
+    max_dense_gib : float or None
+        Optional dense-allocation budget in GiB.
+
+    Returns
+    -------
+    FloquetResult
+        Time series, drive signal, subharmonic ratio, and DTC-candidate flag.
+
     """
     n = len(omega)
     require_dense_allocation(
