@@ -981,6 +981,8 @@ def test_main_uses_coverage_pytest_by_default(
         "phase-coupling-learning exact coverage threshold",
         "phase-objectives focused coverage",
         "phase-objectives exact coverage threshold",
+        "provider-gradient-audit focused coverage",
+        "provider-gradient-audit exact coverage threshold",
         "quantum-sync-oracle focused coverage",
         "quantum-sync-oracle exact coverage threshold",
         "custom-derivatives-product focused coverage",

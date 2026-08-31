@@ -9,8 +9,12 @@
 
 from __future__ import annotations
 
+import math
+from collections.abc import Callable
+from dataclasses import replace
 from typing import cast
 
+import numpy as np
 import pytest
 
 from scpn_quantum_control.phase import (
@@ -22,6 +26,7 @@ from scpn_quantum_control.phase import (
 
 
 def test_provider_gradient_readiness_audit_covers_supported_and_blocked_routes() -> None:
+    """Execute every built-in supported and fail-closed route."""
     audit = run_provider_gradient_readiness_audit()
     names = {record.scenario.name for record in audit.records}
 
@@ -42,6 +47,7 @@ def test_provider_gradient_readiness_audit_covers_supported_and_blocked_routes()
 
 
 def test_provider_gradient_readiness_audit_verifies_gradient_references() -> None:
+    """Match analytic references and retain finite-shot provenance."""
     audit = run_provider_gradient_readiness_audit()
 
     for record in audit.supported_records:
@@ -79,6 +85,7 @@ def test_provider_gradient_readiness_audit_verifies_gradient_references() -> Non
 
 
 def test_provider_gradient_readiness_audit_records_fail_closed_reasons() -> None:
+    """Distinguish planning refusals from malformed execution samples."""
     audit = run_provider_gradient_readiness_audit()
     blocked = {record.scenario.name: record for record in audit.blocked_records}
 
@@ -101,6 +108,7 @@ def test_provider_gradient_readiness_audit_records_fail_closed_reasons() -> None
 
 
 def test_provider_gradient_readiness_audit_payload_is_json_ready() -> None:
+    """Serialize nested scenarios, plans, and execution records."""
     audit = run_provider_gradient_readiness_audit()
     payload = audit.to_dict()
     claim_boundary = cast(str, payload["claim_boundary"])
@@ -116,28 +124,117 @@ def test_provider_gradient_readiness_audit_payload_is_json_ready() -> None:
     assert records[3]["result"] is None
 
 
-def test_provider_gradient_readiness_scenario_validation_is_strict() -> None:
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        (lambda base: replace(base, name=" "), "scenario name"),
+        (lambda base: replace(base, backend=" "), "scenario backend"),
+        (
+            lambda base: replace(base, values=np.array([], dtype=np.float64)),
+            "scenario values",
+        ),
+        (
+            lambda base: replace(base, values=np.array([[0.2]], dtype=np.float64)),
+            "scenario values",
+        ),
+        (
+            lambda base: replace(base, values=np.array([math.nan], dtype=np.float64)),
+            "scenario values",
+        ),
+        (lambda base: replace(base, shots=cast(int, True)), "scenario shots"),
+        (lambda base: replace(base, shots=cast(int, "400")), "scenario shots"),
+        (lambda base: replace(base, shots=0), "scenario shots"),
+        (
+            lambda base: replace(base, expected_gradient=np.array([0.1])),
+            "expected_gradient",
+        ),
+        (
+            lambda base: replace(base, expected_gradient=np.array([math.nan, 0.1])),
+            "expected_gradient",
+        ),
+    ],
+)
+def test_provider_gradient_readiness_scenario_validation_is_strict(
+    mutate: Callable[[ProviderGradientReadinessScenario], ProviderGradientReadinessScenario],
+    message: str,
+) -> None:
+    """Reject malformed identity, vector, shot, and reference inputs."""
     base = default_provider_gradient_readiness_scenarios()[0]
 
-    with pytest.raises(ValueError, match="scenario name"):
-        ProviderGradientReadinessScenario(
-            name=" ",
-            backend=base.backend,
-            values=base.values,
-            shots=base.shots,
-            rule=base.rule,
-            expected_gradient=base.expected_gradient,
-            expected_outcome=base.expected_outcome,
-            description=base.description,
-        )
-    with pytest.raises(ValueError, match="shots"):
-        ProviderGradientReadinessScenario(
-            name=base.name,
-            backend=base.backend,
-            values=base.values,
-            shots=0,
-            rule=base.rule,
-            expected_gradient=base.expected_gradient,
-            expected_outcome=base.expected_outcome,
-            description=base.description,
-        )
+    with pytest.raises(ValueError, match=message):
+        mutate(base)
+
+
+def test_provider_gradient_readiness_scenario_normalises_public_metadata() -> None:
+    """Trim scenario labels and serialize absent optional references."""
+    base = default_provider_gradient_readiness_scenarios()[3]
+
+    scenario = replace(base, name="  governed  ", backend=" statevector ", description="  note  ")
+
+    assert scenario.name == "governed"
+    assert scenario.backend == "statevector"
+    assert scenario.description == "note"
+    assert scenario.to_dict() == {
+        "name": "governed",
+        "backend": "statevector",
+        "values": [0.2, -0.4],
+        "shots": 1024,
+        "rule_terms": 1,
+        "expected_gradient": None,
+        "expected_outcome": "plan_blocked",
+        "description": "note",
+    }
+
+
+@pytest.mark.parametrize("tolerance", [0.0, -1.0, math.inf, math.nan])
+def test_provider_gradient_readiness_audit_rejects_invalid_tolerance(tolerance: float) -> None:
+    """Require a positive finite gradient comparison tolerance."""
+    with pytest.raises(ValueError, match="tolerance must be positive and finite"):
+        run_provider_gradient_readiness_audit(tolerance=tolerance)
+
+
+def test_provider_gradient_readiness_audit_rejects_empty_selection() -> None:
+    """Require at least one explicit readiness scenario."""
+    with pytest.raises(ValueError, match="at least one provider-gradient"):
+        run_provider_gradient_readiness_audit(())
+
+
+def test_provider_gradient_readiness_audit_reports_reference_mismatch() -> None:
+    """Expose an executed route whose analytic reference is wrong."""
+    base = default_provider_gradient_readiness_scenarios()[0]
+    scenario = replace(base, name="reference_mismatch", expected_gradient=np.zeros(2))
+
+    audit = run_provider_gradient_readiness_audit((scenario,))
+    record = audit.records[0]
+
+    assert not audit.passed
+    assert audit.supported_records == ()
+    assert audit.blocked_records == (record,)
+    assert audit.failing_records == (record,)
+    assert record.result is not None
+    assert record.max_abs_error is not None and record.max_abs_error > 0.0
+    assert record.failure_reason == "gradient route executed but did not match expectation"
+
+
+def test_provider_gradient_readiness_audit_requires_reference_for_supported_route() -> None:
+    """Fail an executed supported route when no gradient reference exists."""
+    base = default_provider_gradient_readiness_scenarios()[0]
+    scenario = replace(base, name="missing_reference", expected_gradient=None)
+
+    record = run_provider_gradient_readiness_audit((scenario,)).records[0]
+
+    assert record.result is not None
+    assert record.max_abs_error == math.inf
+    assert not record.passed
+
+
+def test_provider_gradient_readiness_audit_detects_outcome_mismatch() -> None:
+    """Fail when a scenario expected to block executes successfully."""
+    base = default_provider_gradient_readiness_scenarios()[0]
+    scenario = replace(base, name="unexpected_execution", expected_outcome="plan_blocked")
+
+    record = run_provider_gradient_readiness_audit((scenario,)).records[0]
+
+    assert record.result is not None
+    assert not record.supported
+    assert not record.passed

@@ -45,6 +45,7 @@ class ProviderGradientReadinessScenario:
     description: str
 
     def __post_init__(self) -> None:
+        """Validate and normalise immutable scenario inputs."""
         if not self.name.strip():
             raise ValueError("scenario name must be non-empty")
         if not self.backend.strip():

@@ -271,6 +271,9 @@ if TYPE_CHECKING:
         program_ad_fuzz_assurance_quality_gates as _program_ad_fuzz_assurance_quality_gates,
     )
     from tools import program_ad_quality_gates as _program_ad_quality_gates
+    from tools import (
+        provider_gradient_audit_quality_gates as _provider_gradient_audit_quality_gates,
+    )
     from tools import psi_lattice_quality_gates as _psi_lattice_quality_gates
     from tools import public_api_stability_quality_gates as _public_api_stability_quality_gates
     from tools import pulse_shaping_quality_gates as _pulse_shaping_quality_gates
@@ -379,6 +382,9 @@ else:
         "tools.phase_coupling_learning_quality_gates"
     )
     _phase_objectives_quality_gates = import_module("tools.phase_objectives_quality_gates")
+    _provider_gradient_audit_quality_gates = import_module(
+        "tools.provider_gradient_audit_quality_gates"
+    )
     _analog_platform_catalogue_quality_gates = import_module(
         "tools.analog_platform_catalogue_quality_gates"
     )
@@ -1034,6 +1040,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_quantum_sensing_quality_gates.build_static_quality_gates(_PY),
     *_phase_coupling_learning_quality_gates.build_static_quality_gates(_PY),
     *_phase_objectives_quality_gates.build_static_quality_gates(_PY),
+    *_provider_gradient_audit_quality_gates.build_static_quality_gates(_PY),
     *_quantum_sync_oracle_product_quality_gates.build_static_quality_gates(_PY),
     *_custom_derivatives_product_quality_gates.build_static_quality_gates(_PY),
     *_kyma_mechanism_product_quality_gates.build_static_quality_gates(_PY),
@@ -1566,6 +1573,9 @@ PHASE_COUPLING_LEARNING_COVERAGE_GATES = (
     _phase_coupling_learning_quality_gates.build_coverage_gates(_PY)
 )
 PHASE_OBJECTIVES_COVERAGE_GATES = _phase_objectives_quality_gates.build_coverage_gates(_PY)
+PROVIDER_GRADIENT_AUDIT_COVERAGE_GATES = (
+    _provider_gradient_audit_quality_gates.build_coverage_gates(_PY)
+)
 QUANTUM_SYNC_ORACLE_COVERAGE_GATES = (
     _quantum_sync_oracle_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -2152,6 +2162,7 @@ def main() -> int:
             gates.extend(QUANTUM_SENSING_COVERAGE_GATES)
             gates.extend(PHASE_COUPLING_LEARNING_COVERAGE_GATES)
             gates.extend(PHASE_OBJECTIVES_COVERAGE_GATES)
+            gates.extend(PROVIDER_GRADIENT_AUDIT_COVERAGE_GATES)
             gates.extend(QUANTUM_SYNC_ORACLE_COVERAGE_GATES)
             gates.extend(CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_GATES)
             gates.extend(KYMA_MECHANISM_PRODUCT_COVERAGE_GATES)
