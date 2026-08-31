@@ -189,6 +189,7 @@ if TYPE_CHECKING:
     )
     from tools import knm_key_quality_gates as _knm_key_quality_gates
     from tools import koopman_quality_gates as _koopman_quality_gates
+    from tools import kuramoto_core_quality_gates as _kuramoto_core_quality_gates
     from tools import (
         kuramoto_layout_cost_quality_gates as _kuramoto_layout_cost_quality_gates,
     )
@@ -563,6 +564,7 @@ else:
         "tools.kyma_mechanism_benchmark_product_quality_gates"
     )
     _koopman_quality_gates = import_module("tools.koopman_quality_gates")
+    _kuramoto_core_quality_gates = import_module("tools.kuramoto_core_quality_gates")
     _kuramoto_layout_optimiser_quality_gates = import_module(
         "tools.kuramoto_layout_optimiser_quality_gates"
     )
@@ -1061,6 +1063,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_magnetisation_sectors_quality_gates.build_static_quality_gates(_PY),
     *_quantum_neuromorphic_bridge_quality_gates.build_static_quality_gates(_PY),
     *_koopman_quality_gates.build_static_quality_gates(_PY),
+    *_kuramoto_core_quality_gates.build_static_quality_gates(_PY),
     *_error_aware_chain_quality_gates.build_static_quality_gates(_PY),
     *_kuramoto_variants_quality_gates.build_static_quality_gates(_PY),
     *_mps_evolution_quality_gates.build_static_quality_gates(_PY),
@@ -1634,6 +1637,7 @@ QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_GATES = (
     _quantum_neuromorphic_bridge_quality_gates.build_coverage_gates(_PY)
 )
 KOOPMAN_COVERAGE_GATES = _koopman_quality_gates.build_coverage_gates(_PY)
+KURAMOTO_CORE_COVERAGE_GATES = _kuramoto_core_quality_gates.build_coverage_gates(_PY)
 ERROR_AWARE_CHAIN_COVERAGE_GATES = _error_aware_chain_quality_gates.build_coverage_gates(_PY)
 KURAMOTO_VARIANTS_COVERAGE_GATES = _kuramoto_variants_quality_gates.build_coverage_gates(_PY)
 MPS_EVOLUTION_COVERAGE_GATES = _mps_evolution_quality_gates.build_coverage_gates(_PY)
@@ -2163,6 +2167,7 @@ def main() -> int:
             gates.extend(MAGNETISATION_SECTORS_COVERAGE_GATES)
             gates.extend(QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_GATES)
             gates.extend(KOOPMAN_COVERAGE_GATES)
+            gates.extend(KURAMOTO_CORE_COVERAGE_GATES)
             gates.extend(ERROR_AWARE_CHAIN_COVERAGE_GATES)
             gates.extend(KURAMOTO_VARIANTS_COVERAGE_GATES)
             gates.extend(MPS_EVOLUTION_COVERAGE_GATES)

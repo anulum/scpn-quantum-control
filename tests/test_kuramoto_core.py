@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 import numpy as np
 import pytest
 from qiskit import QuantumCircuit
@@ -38,6 +40,7 @@ def _problem() -> KuramotoProblem:
 
 
 def test_problem_copies_inputs_and_exports_serialisable_metadata() -> None:
+    """Problems own immutable copies and export stable metadata."""
     K_nm = np.array([[7.0, 0.25], [0.25, 9.0]], dtype=np.float64)
     omega = np.array([0.1, -0.2], dtype=np.float64)
 
@@ -59,11 +62,12 @@ def test_problem_copies_inputs_and_exports_serialisable_metadata() -> None:
     with pytest.raises(ValueError):
         problem.K_nm[0, 1] = 0.5
     with pytest.raises(TypeError):
-        problem.metadata["new"] = "blocked"
-    assert problem.validate() is None
+        cast(dict[str, Any], problem.metadata)["new"] = "blocked"
+    problem.validate()
 
 
 def test_problem_rejects_invalid_inputs_and_metadata() -> None:
+    """Problem construction rejects malformed arrays and metadata."""
     with pytest.raises(ValueError, match="K_nm must be a square matrix"):
         build_kuramoto_problem(np.zeros((2, 3)), np.zeros(2))
     with pytest.raises(ValueError, match="K_nm must contain at least one oscillator"):
@@ -75,20 +79,27 @@ def test_problem_rejects_invalid_inputs_and_metadata() -> None:
     with pytest.raises(ValueError, match="omega must contain only finite values"):
         build_kuramoto_problem(np.zeros((2, 2)), np.array([0.0, np.nan]))
     with pytest.raises(TypeError, match="metadata must be JSON-serialisable"):
-        build_kuramoto_problem(np.zeros((2, 2)), np.zeros(2), metadata={"bad": object()})
+        build_kuramoto_problem(
+            np.zeros((2, 2)), np.zeros(2), metadata=cast(Any, {"bad": object()})
+        )
 
 
 def test_problem_rejects_implicit_numeric_string_coercion() -> None:
+    """String scalars cannot enter the real-valued problem contract."""
     with pytest.raises(ValueError, match="K_nm must contain real numeric scalars"):
-        build_kuramoto_problem([["0.0", "0.25"], ["0.25", "0.0"]], [0.1, -0.2])
+        build_kuramoto_problem(
+            cast(Any, [["0.0", "0.25"], ["0.25", "0.0"]]), cast(Any, [0.1, -0.2])
+        )
 
 
 def test_problem_rejects_boolean_frequency_coercion() -> None:
+    """Boolean frequencies cannot masquerade as real-valued inputs."""
     with pytest.raises(ValueError, match="omega must contain real numeric scalars"):
-        build_kuramoto_problem([[0.0, 0.25], [0.25, 0.0]], [True, False])
+        build_kuramoto_problem(cast(Any, [[0.0, 0.25], [0.25, 0.0]]), cast(Any, [True, False]))
 
 
 def test_facade_compiles_hamiltonians_and_circuit_for_arbitrary_problem() -> None:
+    """The public facade compiles sparse, dense, and circuit forms."""
     problem = _problem()
 
     sparse = compile_hamiltonian(problem)
@@ -103,6 +114,7 @@ def test_facade_compiles_hamiltonians_and_circuit_for_arbitrary_problem() -> Non
 
 
 def test_facade_measures_order_parameter_from_statevector() -> None:
+    """The public facade measures an in-phase state's order parameter."""
     problem = _problem()
     qc = QuantumCircuit(problem.n_oscillators)
     qc.h(range(problem.n_oscillators))

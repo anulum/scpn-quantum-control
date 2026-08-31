@@ -57,6 +57,7 @@ class KuramotoProblem:
     metadata: Mapping[str, JsonScalar] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate inputs and freeze defensive copies after construction."""
         K_nm, omega = validate_kuramoto_inputs(self.K_nm, self.omega)
         metadata = dict(self.metadata)
         try:
