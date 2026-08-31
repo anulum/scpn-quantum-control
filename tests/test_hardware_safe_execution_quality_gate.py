@@ -15,10 +15,22 @@ from tools import preflight
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
     """Require strict typing and isolated NumPy docstrings."""
+    capability_source = "src/scpn_quantum_control/hardware/feedback_capability_probe.py"
+    capability_tests = {
+        "tests/test_feedback_capability_probe.py",
+        "tests/test_feedback_capability_probe_branch.py",
+    }
+    assert capability_source in quality_gates.HARDWARE_SAFE_EXECUTION_TYPING_RATCHET
+    assert capability_source in quality_gates.HARDWARE_SAFE_EXECUTION_QUALITY_RATCHET
+    assert capability_tests.issubset(quality_gates.HARDWARE_SAFE_EXECUTION_QUALITY_RATCHET)
+    assert capability_tests.issubset(quality_gates.HARDWARE_SAFE_EXECUTION_COVERAGE_COHORT)
+    assert "*/hardware/feedback_capability_probe.py" in (
+        quality_gates.HARDWARE_SAFE_EXECUTION_COVERAGE_INCLUDE
+    )
     gates = dict(quality_gates.build_static_quality_gates("/python"))
     assert (
         gates["mypy-strict-hardware-safe-execution-quality"][5:]
-        == quality_gates.HARDWARE_SAFE_EXECUTION_QUALITY_RATCHET
+        == quality_gates.HARDWARE_SAFE_EXECUTION_TYPING_RATCHET
     )
     docs = gates["ruff D hardware-safe-execution quality ratchet"]
     assert "D,D413,D417,D420" in docs

@@ -33,6 +33,7 @@ def _package():
 
 
 def test_required_s1_dynamic_features_follow_package_circuit() -> None:
+    """Derive required dynamic features from the packaged circuit contract."""
     features = required_s1_dynamic_features(_package())
 
     assert features == (
@@ -43,6 +44,7 @@ def test_required_s1_dynamic_features_follow_package_circuit() -> None:
 
 
 def test_feedback_backend_capability_ready_when_metadata_satisfies_package() -> None:
+    """Mark a backend ready when declared features and limits satisfy the package."""
     package = _package()
     snapshot = BackendCapabilitySnapshot(
         provider="ibm",
@@ -61,6 +63,7 @@ def test_feedback_backend_capability_ready_when_metadata_satisfies_package() -> 
 
 
 def test_feedback_backend_capability_blocks_missing_features_and_budget_limits() -> None:
+    """Block a backend with missing dynamic features and insufficient limits."""
     package = _package()
     snapshot = BackendCapabilitySnapshot(
         provider="gate",
@@ -80,6 +83,7 @@ def test_feedback_backend_capability_blocks_missing_features_and_budget_limits()
 
 
 def test_feedback_backend_capability_unknown_without_declared_features() -> None:
+    """Keep capability unknown when a backend declares no supported features."""
     decision = assess_feedback_backend_capability(
         BackendCapabilitySnapshot(provider="unknown", backend_name="metadata-light", n_qubits=8),
         _package(),
@@ -90,6 +94,7 @@ def test_feedback_backend_capability_unknown_without_declared_features() -> None
 
 
 def test_feedback_backend_fleet_assesses_all_snapshots() -> None:
+    """Assess each backend snapshot in a no-submit fleet probe."""
     package = _package()
     decisions = assess_feedback_backend_fleet(
         (
@@ -108,6 +113,7 @@ def test_feedback_backend_fleet_assesses_all_snapshots() -> None:
 
 
 def test_feedback_backend_capability_blocks_budget_even_when_features_match() -> None:
+    """Block insufficient shot capacity even when dynamic features match."""
     package = _package()
     snapshot = BackendCapabilitySnapshot(
         provider="ibm",
@@ -141,6 +147,7 @@ def test_backend_capability_snapshot_rejects_invalid_metadata_boundaries(
     kwargs: dict[str, object],
     message: str,
 ) -> None:
+    """Reject empty identity, invalid qubit counts, and non-positive limits."""
     params = {"provider": "ibm", "backend_name": "target", "n_qubits": 4} | kwargs
 
     with pytest.raises(ValueError, match=message):

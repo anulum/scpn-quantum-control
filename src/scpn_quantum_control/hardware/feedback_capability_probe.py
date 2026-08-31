@@ -33,6 +33,7 @@ class BackendCapabilitySnapshot:
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate provider identity, qubit capacity, and optional limits."""
         if not self.provider:
             raise ValueError("provider must be non-empty")
         if not self.backend_name:
