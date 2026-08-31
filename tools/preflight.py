@@ -249,6 +249,9 @@ if TYPE_CHECKING:
     from tools import openpulse_control_quality_gates as _openpulse_control_quality_gates
     from tools import p_h1_open_guard_quality_gates as _p_h1_open_guard_quality_gates
     from tools import phase_artifact_quality_gates as _phase_artifact_quality_gates
+    from tools import (
+        phase_coupling_learning_quality_gates as _phase_coupling_learning_quality_gates,
+    )
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import phase_qnode_product_quality_gates as _phase_qnode_product_quality_gates
     from tools import phase_results_quality_gates as _phase_results_quality_gates
@@ -371,6 +374,9 @@ else:
     _adaptive_branching_quality_gates = import_module("tools.adaptive_branching_quality_gates")
     _advanced_witnesses_quality_gates = import_module("tools.advanced_witnesses_quality_gates")
     _quantum_sensing_quality_gates = import_module("tools.quantum_sensing_quality_gates")
+    _phase_coupling_learning_quality_gates = import_module(
+        "tools.phase_coupling_learning_quality_gates"
+    )
     _analog_platform_catalogue_quality_gates = import_module(
         "tools.analog_platform_catalogue_quality_gates"
     )
@@ -1024,6 +1030,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_thermo_readiness_product_quality_gates.build_static_quality_gates(_PY),
     *_adaptive_branching_quality_gates.build_static_quality_gates(_PY),
     *_quantum_sensing_quality_gates.build_static_quality_gates(_PY),
+    *_phase_coupling_learning_quality_gates.build_static_quality_gates(_PY),
     *_quantum_sync_oracle_product_quality_gates.build_static_quality_gates(_PY),
     *_custom_derivatives_product_quality_gates.build_static_quality_gates(_PY),
     *_kyma_mechanism_product_quality_gates.build_static_quality_gates(_PY),
@@ -1552,6 +1559,9 @@ THERMO_READINESS_PRODUCT_COVERAGE_GATES = (
 )
 ADAPTIVE_BRANCHING_COVERAGE_GATES = _adaptive_branching_quality_gates.build_coverage_gates(_PY)
 QUANTUM_SENSING_COVERAGE_GATES = _quantum_sensing_quality_gates.build_coverage_gates(_PY)
+PHASE_COUPLING_LEARNING_COVERAGE_GATES = (
+    _phase_coupling_learning_quality_gates.build_coverage_gates(_PY)
+)
 QUANTUM_SYNC_ORACLE_COVERAGE_GATES = (
     _quantum_sync_oracle_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -2136,6 +2146,7 @@ def main() -> int:
             gates.extend(THERMO_READINESS_PRODUCT_COVERAGE_GATES)
             gates.extend(ADAPTIVE_BRANCHING_COVERAGE_GATES)
             gates.extend(QUANTUM_SENSING_COVERAGE_GATES)
+            gates.extend(PHASE_COUPLING_LEARNING_COVERAGE_GATES)
             gates.extend(QUANTUM_SYNC_ORACLE_COVERAGE_GATES)
             gates.extend(CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_GATES)
             gates.extend(KYMA_MECHANISM_PRODUCT_COVERAGE_GATES)

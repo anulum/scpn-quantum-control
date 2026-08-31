@@ -10,7 +10,8 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TypeAlias
+from dataclasses import replace
+from typing import Any, TypeAlias
 
 import numpy as np
 import pytest
@@ -34,7 +35,30 @@ def _sin_observation(couplings: FloatArray) -> FloatArray:
     return np.array([np.sin(couplings[0, 1])], dtype=np.float64)
 
 
+def _verification_result(**changes: Any) -> CouplingGradientVerificationResult:
+    """Build typed verification evidence with selected invalid fields."""
+    base = CouplingGradientVerificationResult(
+        parameters=np.array([0.1], dtype=np.float64),
+        parameter_shift_gradient=np.array([0.1], dtype=np.float64),
+        finite_difference_gradient=np.array([0.1], dtype=np.float64),
+        abs_error=np.array([0.0], dtype=np.float64),
+        max_abs_error=0.0,
+        objective_value=0.1,
+        value_delta=0.0,
+        passed=True,
+        method="check",
+        finite_difference_step=1e-6,
+        tolerance=1e-5,
+        parameter_shift_evaluations=1,
+        finite_difference_evaluations=1,
+        edges=((0, 1),),
+        claim_boundary="small smooth diagnostic",
+    )
+    return replace(base, **changes)
+
+
 def test_learn_couplings_from_observations_converges_on_sinusoidal_edge() -> None:
+    """Parameter-shift training converges on a sinusoidal edge target."""
     initial = np.array([[0.0, 0.8], [0.8, 0.0]], dtype=np.float64)
     rule = multi_frequency_parameter_shift_rule([2.0])
 
@@ -69,6 +93,7 @@ def test_learn_couplings_from_observations_converges_on_sinusoidal_edge() -> Non
 
 
 def test_coupling_matrix_from_edge_vector_preserves_static_edges() -> None:
+    """Static edge order produces the expected symmetric matrix."""
     matrix = coupling_matrix_from_edge_vector(
         np.array([0.2, -0.4], dtype=np.float64),
         n_nodes=3,
@@ -87,6 +112,7 @@ def test_coupling_matrix_from_edge_vector_preserves_static_edges() -> None:
 
 
 def test_verify_coupling_parameter_shift_gradient_matches_finite_difference() -> None:
+    """Parameter-shift gradients agree with the finite-difference reference."""
     initial = np.array([[0.0, 0.8], [0.8, 0.0]], dtype=np.float64)
     rule = multi_frequency_parameter_shift_rule([2.0])
 
@@ -117,6 +143,7 @@ def test_verify_coupling_parameter_shift_gradient_matches_finite_difference() ->
 
 
 def test_verify_coupling_parameter_shift_gradient_rejects_bad_step() -> None:
+    """A non-positive finite-difference step fails closed."""
     with pytest.raises(ValueError, match="finite_difference_step"):
         verify_coupling_parameter_shift_gradient(
             _sin_observation,
@@ -127,6 +154,7 @@ def test_verify_coupling_parameter_shift_gradient_rejects_bad_step() -> None:
 
 
 def test_learn_couplings_from_observations_fails_closed_for_hardware() -> None:
+    """Hardware gradient execution remains explicitly approval-gated."""
     with pytest.raises(ValueError, match="hardware gradient execution requires"):
         learn_couplings_from_observations(
             _sin_observation,
@@ -138,6 +166,7 @@ def test_learn_couplings_from_observations_fails_closed_for_hardware() -> None:
 
 
 def test_learn_couplings_from_observations_rejects_invalid_matrices() -> None:
+    """Asymmetric and nonzero-diagonal coupling matrices are rejected."""
     with pytest.raises(ValueError, match="symmetric"):
         learn_couplings_from_observations(
             _sin_observation,
@@ -154,6 +183,8 @@ def test_learn_couplings_from_observations_rejects_invalid_matrices() -> None:
 
 
 def test_learn_couplings_from_observations_rejects_shape_drift() -> None:
+    """Observation-model output shape cannot drift from the target."""
+
     def bad_observation_model(couplings: FloatArray) -> FloatArray:
         return np.array([couplings[0, 1], couplings[0, 1]], dtype=np.float64)
 
@@ -167,6 +198,7 @@ def test_learn_couplings_from_observations_rejects_shape_drift() -> None:
 
 
 def test_default_rule_learning_and_verification_cover_json_contracts() -> None:
+    """Default-rule training and verification expose JSON-ready evidence."""
     initial = np.array([[0.0, 0.6], [0.6, 0.0]], dtype=np.float64)
     rule = ParameterShiftRule()
 
@@ -196,6 +228,7 @@ def test_default_rule_learning_and_verification_cover_json_contracts() -> None:
 
 
 def test_vector_initialisation_and_complete_graph_edges() -> None:
+    """Vector initialisation expands over deterministic complete-graph edges."""
     matrix = coupling_matrix_from_edge_vector(
         np.array([0.1, 0.2, 0.3], dtype=np.float64),
         n_nodes=3,
@@ -228,11 +261,13 @@ def test_coupling_matrix_from_edge_vector_rejects_invalid_values(
     values: FloatArray,
     message: str,
 ) -> None:
+    """Malformed edge vectors fail at the public matrix boundary."""
     with pytest.raises(ValueError, match=message):
         coupling_matrix_from_edge_vector(values, n_nodes=2)
 
 
 def test_coupling_matrix_from_edge_vector_rejects_bad_node_count_and_length() -> None:
+    """Node count and vector length must agree with the edge catalogue."""
     with pytest.raises(ValueError, match="at least two"):
         coupling_matrix_from_edge_vector(np.array([0.1], dtype=np.float64), n_nodes=1)
     with pytest.raises(ValueError, match="values length"):
@@ -253,6 +288,7 @@ def test_coupling_matrix_from_edge_vector_rejects_invalid_edges(
     edges: tuple[tuple[int, ...], ...],
     message: str,
 ) -> None:
+    """Malformed, duplicate, and empty edge selections fail closed."""
     with pytest.raises(ValueError, match=message):
         coupling_matrix_from_edge_vector(
             np.array([0.1], dtype=np.float64),
@@ -262,6 +298,7 @@ def test_coupling_matrix_from_edge_vector_rejects_invalid_edges(
 
 
 def test_initial_couplings_reject_invalid_shapes_and_sizes() -> None:
+    """Initial coupling representations must be finite and dimensionally valid."""
     with pytest.raises(ValueError, match="vector or square matrix"):
         learn_couplings_from_observations(
             _sin_observation,
@@ -302,6 +339,7 @@ def test_initial_couplings_reject_invalid_shapes_and_sizes() -> None:
 
 
 def test_target_and_observation_values_must_be_finite() -> None:
+    """Targets and observation-model outputs must remain finite."""
     with pytest.raises(ValueError, match="target_observations"):
         learn_couplings_from_observations(
             _sin_observation,
@@ -343,27 +381,9 @@ def test_gradient_verification_result_rejects_invalid_scalar_metadata(
     kwargs: dict[str, object],
     message: str,
 ) -> None:
-    payload: dict[str, object] = {
-        "parameters": np.array([0.1], dtype=np.float64),
-        "parameter_shift_gradient": np.array([0.1], dtype=np.float64),
-        "finite_difference_gradient": np.array([0.1], dtype=np.float64),
-        "abs_error": np.array([0.0], dtype=np.float64),
-        "max_abs_error": 0.0,
-        "objective_value": 0.1,
-        "value_delta": 0.0,
-        "passed": True,
-        "method": "check",
-        "finite_difference_step": 1e-6,
-        "tolerance": 1e-5,
-        "parameter_shift_evaluations": 1,
-        "finite_difference_evaluations": 1,
-        "edges": ((0, 1),),
-        "claim_boundary": "small smooth diagnostic",
-    }
-    payload.update(kwargs)
-
+    """Invalid scalar certificate metadata is rejected during construction."""
     with pytest.raises(ValueError, match=message):
-        CouplingGradientVerificationResult(**payload)
+        _verification_result(**kwargs)
 
 
 @pytest.mark.parametrize(
@@ -382,30 +402,13 @@ def test_gradient_verification_result_rejects_invalid_arrays(
     kwargs: dict[str, object],
     message: str,
 ) -> None:
-    payload: dict[str, object] = {
-        "parameters": np.array([0.1], dtype=np.float64),
-        "parameter_shift_gradient": np.array([0.1], dtype=np.float64),
-        "finite_difference_gradient": np.array([0.1], dtype=np.float64),
-        "abs_error": np.array([0.0], dtype=np.float64),
-        "max_abs_error": 0.0,
-        "objective_value": 0.1,
-        "value_delta": 0.0,
-        "passed": True,
-        "method": "check",
-        "finite_difference_step": 1e-6,
-        "tolerance": 1e-5,
-        "parameter_shift_evaluations": 1,
-        "finite_difference_evaluations": 1,
-        "edges": ((0, 1),),
-        "claim_boundary": "small smooth diagnostic",
-    }
-    payload.update(kwargs)
-
+    """Invalid array certificate fields are rejected during construction."""
     with pytest.raises(ValueError, match=message):
-        CouplingGradientVerificationResult(**payload)
+        _verification_result(**kwargs)
 
 
 def test_verify_coupling_parameter_shift_gradient_rejects_bad_tolerance() -> None:
+    """Negative or non-finite verification controls fail closed."""
     with pytest.raises(ValueError, match="tolerance"):
         verify_coupling_parameter_shift_gradient(
             _sin_observation,

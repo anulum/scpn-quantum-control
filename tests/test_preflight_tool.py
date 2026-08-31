@@ -977,6 +977,8 @@ def test_main_uses_coverage_pytest_by_default(
         "adaptive-branching exact coverage threshold",
         "quantum-sensing focused coverage",
         "quantum-sensing exact coverage threshold",
+        "phase-coupling-learning focused coverage",
+        "phase-coupling-learning exact coverage threshold",
         "quantum-sync-oracle focused coverage",
         "quantum-sync-oracle exact coverage threshold",
         "custom-derivatives-product focused coverage",

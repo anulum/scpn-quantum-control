@@ -117,6 +117,7 @@ class CouplingGradientVerificationResult:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate and defensively copy gradient-verification evidence."""
         parameters = _as_finite_vector("verification parameters", self.parameters)
         parameter_shift_gradient = _as_finite_vector(
             "parameter_shift_gradient",
