@@ -196,6 +196,13 @@ HISTORICAL_EXEMPT_SHAS: frozenset[str] = frozenset(
         # without the required authorship line. The later empty attestation
         # records provenance but cannot satisfy this per-commit audit.
         "2ff0114",  # "fix(ci): reconcile link and dependency drift (#183)"
+        # 2026-08-31: three direct protected-main CI coverage fix-forwards were
+        # committed with shell-escaped body text, omitting the authorship line.
+        # Force-push is disabled; the exact immutable-debt waiver is recorded
+        # in docs/internal/AUDIT_INDEX.md.
+        "af96351",  # "test(ci): close modularity audit branch coverage"
+        "ea9adea",  # "test(ci): exercise remaining modularity branches"
+        "43f0c93",  # "test(ci): cover modularity CLI entrypoint"
     }
 )
 

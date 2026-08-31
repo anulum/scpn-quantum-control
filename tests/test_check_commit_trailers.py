@@ -389,6 +389,13 @@ def test_pr_183_immutable_merge_is_explicitly_exempt() -> None:
     assert "2ff0114" in _check_commit_trailers.HISTORICAL_EXEMPT_SHAS
 
 
+def test_modularity_fix_forward_authorship_debt_is_exactly_exempt() -> None:
+    """Keep the protected-main waiver bounded to the three published commits."""
+    assert {"af96351", "ea9adea", "43f0c93"}.issubset(
+        _check_commit_trailers.HISTORICAL_EXEMPT_SHAS
+    )
+
+
 def test_main_dispatches_audit_ranges(monkeypatch: pytest.MonkeyPatch) -> None:
     """The CLI dispatcher passes the requested audit range through."""
     seen: list[str] = []
