@@ -284,3 +284,149 @@ def test_modularity_audit_fails_loudly_on_non_mapping_workflows(
 
     with pytest.raises(ValueError, match="workflow must be a mapping"):
         modularity.audit_ci_workflow_modularity(policy)
+
+
+def test_modularity_helpers_reject_malformed_needs_actions_and_jobs(tmp_path: Path) -> None:
+    """Cover fail-closed helper behavior for malformed workflow fragments."""
+    workflow = tmp_path / "workflow.yml"
+    workflow.write_text("jobs: []\n", encoding="utf-8")
+    assert modularity._load_workflow(workflow) == {"jobs": []}
+    assert modularity._needs({"needs": "lint"}) == ["lint"]
+    assert modularity._needs({"needs": ["lint", "test"]}) == ["lint", "test"]
+    with pytest.raises(ValueError, match="job needs"):
+        modularity._needs({"needs": ["lint", 1]})
+
+    errors: list[str] = []
+    modularity._check_action_pins({"jobs": []}, workflow, errors)
+    modularity._check_action_pins(
+        {
+            "jobs": {
+                "scalar": "invalid",
+                "local": {"uses": "./.github/workflows/local.yml"},
+                "mutable": {"uses": "owner/action@main"},
+                "nonlist": {"steps": "invalid"},
+                "steps": {
+                    "steps": [
+                        "invalid",
+                        {"run": "true"},
+                        {"uses": f"owner/action@{_ACTION_SHA} # pinned"},
+                        {"uses": "owner/action@v1"},
+                    ]
+                },
+            }
+        },
+        workflow,
+        errors,
+    )
+    assert any("jobs must be a mapping" in error for error in errors)
+    assert sum("unpinned action" in error for error in errors) == 2
+
+    with pytest.raises(ValueError, match="workflow job not found"):
+        modularity._job_text(workflow, "missing")
+
+
+def test_inventory_rejects_jobs_shared_between_reusable_workflows(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Reject duplicate ownership even when each workflow is valid alone."""
+    policy = _policy()
+    duplicate: WorkflowCategory = {
+        "id": "duplicate-quality",
+        "workflow": ".github/workflows/ci-duplicate-quality.yml",
+        "caller_needs": [],
+        "jobs": ["unit"],
+    }
+    policy["categories"].append(duplicate)
+    _write_fixture(tmp_path, policy)
+    source = tmp_path / ".github/workflows/ci-unit-quality.yml"
+    (tmp_path / duplicate["workflow"]).write_text(source.read_text(encoding="utf-8"))
+    monkeypatch.setattr(inventory, "REPOSITORY_ROOT", tmp_path)
+    monkeypatch.setattr(
+        inventory, "CI_WORKFLOW_POLICY", tmp_path / "tools" / "ci_workflow_policy.json"
+    )
+
+    with pytest.raises(ValueError, match="multiple reusable workflows"):
+        inventory.read_ci_workflow_source()
+
+
+def test_modularity_audit_rejects_non_mapping_job_collections(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Reject coordinators and categories whose jobs are not mappings."""
+    policy = _policy()
+    _write_fixture(tmp_path, policy)
+    monkeypatch.setattr(modularity, "REPOSITORY_ROOT", tmp_path)
+    coordinator = tmp_path / ".github/workflows/ci.yml"
+    coordinator.write_text("name: CI\njobs: []\n", encoding="utf-8")
+    errors = modularity.audit_ci_workflow_modularity(policy)
+    assert any("jobs must be a mapping" in error for error in errors)
+
+    _write_fixture(tmp_path, policy)
+    category = tmp_path / ".github/workflows/ci-unit-quality.yml"
+    category.write_text(
+        "name: CI / Unit Quality\non:\n  workflow_call:\njobs: []\n", encoding="utf-8"
+    )
+    errors = modularity.audit_ci_workflow_modularity(policy)
+    assert any(f"{category}: jobs must be a mapping" == error for error in errors)
+
+
+def test_modularity_audit_rejects_missing_calls_gates_and_non_mapping_jobs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Exercise missing coordinator ownership and malformed category jobs."""
+    policy = _policy()
+    _write_fixture(tmp_path, policy)
+    monkeypatch.setattr(modularity, "REPOSITORY_ROOT", tmp_path)
+    coordinator = tmp_path / ".github/workflows/ci.yml"
+    coordinator.write_text(
+        "name: CI\npermissions:\n  contents: write\njobs:\n  unrelated: invalid\n",
+        encoding="utf-8",
+    )
+    category = tmp_path / ".github/workflows/ci-unit-quality.yml"
+    category.write_text(
+        "name: CI / Unit Quality\non:\n  workflow_call:\npermissions:\n  contents: read\n"
+        "jobs:\n  unit: invalid\n",
+        encoding="utf-8",
+    )
+
+    errors = modularity.audit_ci_workflow_modularity(policy)
+
+    assert any("coordinator must retain read-only" in error for error in errors)
+    assert any("coordinator jobs do not match" in error for error in errors)
+    assert any("job unit must be a mapping" in error for error in errors)
+    assert any("missing reusable call unit-quality" in error for error in errors)
+    assert any("missing required gate ci-gate" in error for error in errors)
+
+
+def test_modularity_audit_accepts_explicit_optional_waivers(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Accept either supported explicit semantic for optional category jobs."""
+    for waiver in ("    if: success()\n", "    continue-on-error: true\n"):
+        policy = _policy()
+        policy["optional_jobs"] = ["unit"]
+        _write_fixture(tmp_path, policy)
+        monkeypatch.setattr(modularity, "REPOSITORY_ROOT", tmp_path)
+        category = tmp_path / ".github/workflows/ci-unit-quality.yml"
+        category.write_text(
+            category.read_text(encoding="utf-8").replace(
+                "    runs-on: ubuntu-latest\n", waiver + "    runs-on: ubuntu-latest\n"
+            ),
+            encoding="utf-8",
+        )
+
+        errors = modularity.audit_ci_workflow_modularity(policy)
+
+        assert not any("optional job unit lacks" in error for error in errors)
+
+
+def test_modularity_main_prints_failures(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Return a failing shell status and print every audit violation."""
+    monkeypatch.setattr(
+        modularity, "audit_ci_workflow_modularity", lambda: ["first failure", "second failure"]
+    )
+
+    assert modularity.main() == 1
+    assert capsys.readouterr().out.splitlines() == ["first failure", "second failure"]
