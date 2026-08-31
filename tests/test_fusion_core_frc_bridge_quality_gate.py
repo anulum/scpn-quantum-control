@@ -27,7 +27,7 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
-    """Require offline bridge execution and exact source coverage."""
+    """Require offline FRC execution and exact bridge/cost source coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
     run = gates["fusion-core-frc-bridge focused coverage"]
     report = gates["fusion-core-frc-bridge exact coverage threshold"]
@@ -37,7 +37,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/bridge/fusion_core_frc.py" in report
+    assert f"--include={quality_gates.FUSION_CORE_FRC_BRIDGE_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -62,6 +62,11 @@ def test_ci_runs_and_aggregates_fusion_core_frc_bridge_gate() -> None:
     for path in quality_gates.FUSION_CORE_FRC_BRIDGE_COVERAGE_COHORT:
         assert path in block
     assert "--fail-under=100" in block
-    assert "bridge/fusion_core_frc.py" in block
+    for source in (
+        quality_gates.FUSION_CORE_FRC_BRIDGE_SOURCE,
+        quality_gates.FRC_PULSED_COST_SOURCE,
+    ):
+        assert source in block
+    assert quality_gates.FUSION_CORE_FRC_BRIDGE_COVERAGE_INCLUDE in block
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "fusion-core-frc-bridge-quality" in aggregate

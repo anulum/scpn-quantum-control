@@ -66,7 +66,7 @@ def test_mrti_growth_falls_back_on_engine_error(monkeypatch: pytest.MonkeyPatch)
         raise ValueError("engine refused the MRTI growth")
 
     stub = types.ModuleType("scpn_quantum_engine")
-    stub.frc_mrti_growth = _boom  # type: ignore[attr-defined]
+    stub.frc_mrti_growth = _boom  # type: ignore[attr-defined]  # synthetic extension module
     monkeypatch.setitem(sys.modules, "scpn_quantum_engine", stub)
 
     field = np.array([0.5, 1.0, 1.5, 2.0], dtype=np.float64)

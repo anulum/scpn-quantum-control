@@ -59,6 +59,7 @@ class FRCQAOAObjective:
     weight_tilt: float = 1.5
 
     def __post_init__(self) -> None:
+        """Validate objective targets, limits, budgets, and weights."""
         for name in ("target_s_parameter", "bank_energy_budget_J", "mrti_amplitude_max_m"):
             value = getattr(self, name)
             if not np.isfinite(value) or value <= 0.0:
@@ -96,6 +97,7 @@ class FRCPlasmaSurrogate:
     tilt_kinetic_threshold: float = 3.5  # critical S*/E for kinetic tilt stabilisation
 
     def __post_init__(self) -> None:
+        """Validate the control-surrogate parameter domain."""
         positives = (
             "reference_field_T",
             "reference_s_parameter",

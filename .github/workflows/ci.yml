@@ -2260,6 +2260,9 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/bridge/fusion_core_frc.py
+          src/scpn_quantum_control/control/qaoa_pulsed_cost.py
+          tests/test_qaoa_pulsed_cost.py
+          tests/test_qaoa_pulsed_cost_branches.py
           tools/fusion_core_frc_bridge_quality_gates.py
           tests/test_fusion_core_frc_bridge_quality_gate.py
       - name: Ruff NumPy docstrings for fusion-core FRC bridge quality cohort
@@ -2267,8 +2270,11 @@ jobs:
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/bridge/fusion_core_frc.py
+          src/scpn_quantum_control/control/qaoa_pulsed_cost.py
           tests/test_fusion_core_frc.py
           tests/test_frc_pulsed_qaoa_branches.py
+          tests/test_qaoa_pulsed_cost.py
+          tests/test_qaoa_pulsed_cost_branches.py
           tools/fusion_core_frc_bridge_quality_gates.py
           tests/test_fusion_core_frc_bridge_quality_gate.py
       - name: Run fusion-core FRC bridge focused coverage
@@ -2280,6 +2286,8 @@ jobs:
           -m pytest -q
           tests/test_fusion_core_frc.py
           tests/test_frc_pulsed_qaoa_branches.py
+          tests/test_qaoa_pulsed_cost.py
+          tests/test_qaoa_pulsed_cost_branches.py
       - name: Enforce fusion-core FRC bridge exact coverage
         run: >-
           python -m coverage report
@@ -2287,7 +2295,7 @@ jobs:
           --data-file=/tmp/scpn-qc-fusion-core-frc-bridge-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/bridge/fusion_core_frc.py
+          --include=*/bridge/fusion_core_frc.py,*/control/qaoa_pulsed_cost.py
 
   hardware-experiment-vqe-quality:
     needs: lint

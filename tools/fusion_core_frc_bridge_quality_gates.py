@@ -13,22 +13,32 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 FUSION_CORE_FRC_BRIDGE_SOURCE = "src/scpn_quantum_control/bridge/fusion_core_frc.py"
+FRC_PULSED_COST_SOURCE = "src/scpn_quantum_control/control/qaoa_pulsed_cost.py"
 FUSION_CORE_FRC_BRIDGE_COVERAGE_COHORT = [
     "tests/test_fusion_core_frc.py",
     "tests/test_frc_pulsed_qaoa_branches.py",
+    "tests/test_qaoa_pulsed_cost.py",
+    "tests/test_qaoa_pulsed_cost_branches.py",
 ]
 FUSION_CORE_FRC_BRIDGE_TYPING_RATCHET = [
     FUSION_CORE_FRC_BRIDGE_SOURCE,
+    FRC_PULSED_COST_SOURCE,
+    "tests/test_qaoa_pulsed_cost.py",
+    "tests/test_qaoa_pulsed_cost_branches.py",
     "tools/fusion_core_frc_bridge_quality_gates.py",
     "tests/test_fusion_core_frc_bridge_quality_gate.py",
 ]
 FUSION_CORE_FRC_BRIDGE_DOCSTRING_RATCHET = [
     FUSION_CORE_FRC_BRIDGE_SOURCE,
+    FRC_PULSED_COST_SOURCE,
     *FUSION_CORE_FRC_BRIDGE_COVERAGE_COHORT,
     "tools/fusion_core_frc_bridge_quality_gates.py",
     "tests/test_fusion_core_frc_bridge_quality_gate.py",
 ]
 FUSION_CORE_FRC_BRIDGE_COVERAGE_DATA_FILE = "/tmp/scpn-qc-fusion-core-frc-bridge-quality.coverage"  # nosec B108
+FUSION_CORE_FRC_BRIDGE_COVERAGE_INCLUDE = (
+    "*/bridge/fusion_core_frc.py,*/control/qaoa_pulsed_cost.py"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -93,7 +103,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={FUSION_CORE_FRC_BRIDGE_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/bridge/fusion_core_frc.py",
+                f"--include={FUSION_CORE_FRC_BRIDGE_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -102,9 +112,11 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "FUSION_CORE_FRC_BRIDGE_COVERAGE_COHORT",
     "FUSION_CORE_FRC_BRIDGE_COVERAGE_DATA_FILE",
+    "FUSION_CORE_FRC_BRIDGE_COVERAGE_INCLUDE",
     "FUSION_CORE_FRC_BRIDGE_DOCSTRING_RATCHET",
     "FUSION_CORE_FRC_BRIDGE_SOURCE",
     "FUSION_CORE_FRC_BRIDGE_TYPING_RATCHET",
+    "FRC_PULSED_COST_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]
