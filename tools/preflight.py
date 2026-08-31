@@ -916,10 +916,23 @@ _PYTEST_COV = _PYTEST_BASE + [
 ]
 
 STATIC_GATES: list[tuple[str, list[str]]] = [
-    ("ruff check", [_PY, "-m", "ruff", "check", "src/", "tests/", "examples/"]),
+    (
+        "ruff check",
+        [_PY, "-m", "ruff", "check", "src/", "tests/", "examples/", "figures/"],
+    ),
     (
         "ruff format",
-        [_PY, "-m", "ruff", "format", "--check", "src/", "tests/", "examples/"],
+        [
+            _PY,
+            "-m",
+            "ruff",
+            "format",
+            "--check",
+            "src/",
+            "tests/",
+            "examples/",
+            "figures/",
+        ],
     ),
     (
         "ci-workflow-modularity",

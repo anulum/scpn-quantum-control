@@ -81,8 +81,8 @@ jobs:
             --fail-under=100 \
             --include='*/ci_workflow_inventory.py,*/audit_ci_workflow_modularity.py'
           python tools/audit_ci_workflow_modularity.py
-      - run: ruff check src/ tests/ examples/
-      - run: ruff format --check src/ tests/ examples/
+      - run: ruff check src/ tests/ examples/ figures/
+      - run: ruff format --check src/ tests/ examples/ figures/
       - name: Audit documentation surface
         run: >
           python tools/audit_documentation_surface.py

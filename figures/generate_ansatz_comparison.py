@@ -31,6 +31,7 @@ COLORS = {
 
 
 def main() -> None:
+    """Generate and save the VQE ansatz error and parameter comparison."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
     exact = classical_exact_diag(4, K=K, omega=omega)

@@ -19,6 +19,7 @@ DPI = 100
 
 
 def generate_quantum_control_header():
+    """Render and save the deterministic repository header image."""
     fig = plt.figure(figsize=(WIDTH, HEIGHT), dpi=DPI, facecolor="#050510")
     ax = fig.add_axes([0, 0, 1, 1], frameon=False)
     ax.set_xlim(0, WIDTH)
@@ -113,7 +114,7 @@ def generate_quantum_control_header():
     ax.text(
         1.0,
         4.5,
-        "v0.8.0 | 483 TESTS | VQE 0.05% ERROR | 16-LAYER UPDE",
+        "SIMULATOR-FIRST | FAIL-CLOSED EVIDENCE | 16-LAYER UPDE",
         color="#00d4ff",
         fontsize=10,
         fontname="monospace",

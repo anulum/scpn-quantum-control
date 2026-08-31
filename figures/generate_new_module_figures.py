@@ -146,6 +146,7 @@ def surface_code_budget_figure() -> None:
 
 
 def main() -> None:
+    """Generate the PEC, scaling, identity, and surface-code figures."""
     print("Generating v1.0 figures...")
     pec_overhead_figure()
     quantum_advantage_figure()
