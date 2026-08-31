@@ -962,7 +962,9 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/phase/provider_gradient_audit.py
+          src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py
           tests/test_phase_provider_gradient_audit.py
+          tests/test_phase_provider_hardware_gradient_audit.py
           tools/provider_gradient_audit_quality_gates.py
           tests/test_provider_gradient_audit_quality_gate.py
           tools/preflight.py
@@ -974,7 +976,9 @@ jobs:
           --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/provider_gradient_audit.py
+          src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py
           tests/test_phase_provider_gradient_audit.py
+          tests/test_phase_provider_hardware_gradient_audit.py
           tools/provider_gradient_audit_quality_gates.py
           tests/test_provider_gradient_audit_quality_gate.py
           tests/test_preflight_tool.py
@@ -986,6 +990,7 @@ jobs:
           --branch
           -m pytest -q
           tests/test_phase_provider_gradient_audit.py
+          tests/test_phase_provider_hardware_gradient_audit.py
       - name: Enforce provider-gradient audit exact coverage
         run: >-
           python -m coverage report
@@ -993,7 +998,7 @@ jobs:
           --data-file=/tmp/scpn-qc-provider-gradient-audit-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/phase/provider_gradient_audit.py
+          --include=*/phase/provider_gradient_audit.py,*/phase/provider_hardware_gradient_audit.py
 
   quantum-sync-oracle-quality:
     needs: lint

@@ -35,7 +35,9 @@ def test_coverage_gate_runs_real_audit_suite_and_is_exact() -> None:
     run = gates["provider-gradient-audit focused coverage"]
     report = gates["provider-gradient-audit exact coverage threshold"]
     assert "--branch" in run
-    assert run[-1:] == quality_gates.PROVIDER_GRADIENT_AUDIT_COVERAGE_COHORT
+    assert run[-len(quality_gates.PROVIDER_GRADIENT_AUDIT_COVERAGE_COHORT) :] == (
+        quality_gates.PROVIDER_GRADIENT_AUDIT_COVERAGE_COHORT
+    )
     assert quality_gates.PROVIDER_GRADIENT_AUDIT_COVERAGE_DATA_FILE.startswith("/tmp/")
     assert "--fail-under=100" in report
     assert f"--include={quality_gates.PROVIDER_GRADIENT_AUDIT_COVERAGE_INCLUDE}" in report
@@ -60,6 +62,6 @@ def test_ci_runs_and_aggregates_provider_gradient_audit_gate() -> None:
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.PROVIDER_GRADIENT_AUDIT_TYPING_RATCHET)
     assert all(path in block for path in quality_gates.PROVIDER_GRADIENT_AUDIT_DOCSTRING_RATCHET)
-    assert quality_gates.PROVIDER_GRADIENT_AUDIT_TEST in block
+    assert all(path in block for path in quality_gates.PROVIDER_GRADIENT_AUDIT_TESTS)
     assert quality_gates.PROVIDER_GRADIENT_AUDIT_COVERAGE_INCLUDE in block
     assert "provider-gradient-audit-quality" in workflow[workflow.index("  ci-gate:") :]

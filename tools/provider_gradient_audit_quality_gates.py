@@ -14,9 +14,23 @@ from os import devnull
 Gate = tuple[str, list[str]]
 PROVIDER_GRADIENT_AUDIT_SOURCE = "src/scpn_quantum_control/phase/provider_gradient_audit.py"
 PROVIDER_GRADIENT_AUDIT_TEST = "tests/test_phase_provider_gradient_audit.py"
-PROVIDER_GRADIENT_AUDIT_TYPING_RATCHET = [
+PROVIDER_HARDWARE_GRADIENT_AUDIT_SOURCE = (
+    "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py"
+)
+PROVIDER_HARDWARE_GRADIENT_AUDIT_TEST = "tests/test_phase_provider_hardware_gradient_audit.py"
+PROVIDER_GRADIENT_AUDIT_SOURCES = [
     PROVIDER_GRADIENT_AUDIT_SOURCE,
+    PROVIDER_HARDWARE_GRADIENT_AUDIT_SOURCE,
+]
+"""Provider-gradient readiness sources owned as one audit family."""
+PROVIDER_GRADIENT_AUDIT_TESTS = [
     PROVIDER_GRADIENT_AUDIT_TEST,
+    PROVIDER_HARDWARE_GRADIENT_AUDIT_TEST,
+]
+"""Public offline suites for the provider-gradient audit family."""
+PROVIDER_GRADIENT_AUDIT_TYPING_RATCHET = [
+    *PROVIDER_GRADIENT_AUDIT_SOURCES,
+    *PROVIDER_GRADIENT_AUDIT_TESTS,
     "tools/provider_gradient_audit_quality_gates.py",
     "tests/test_provider_gradient_audit_quality_gate.py",
     "tools/preflight.py",
@@ -24,19 +38,21 @@ PROVIDER_GRADIENT_AUDIT_TYPING_RATCHET = [
 ]
 """Production, tests, and gate surfaces held to strict MyPy."""
 PROVIDER_GRADIENT_AUDIT_DOCSTRING_RATCHET = [
-    PROVIDER_GRADIENT_AUDIT_SOURCE,
-    PROVIDER_GRADIENT_AUDIT_TEST,
+    *PROVIDER_GRADIENT_AUDIT_SOURCES,
+    *PROVIDER_GRADIENT_AUDIT_TESTS,
     "tools/provider_gradient_audit_quality_gates.py",
     "tests/test_provider_gradient_audit_quality_gate.py",
     "tests/test_preflight_tool.py",
 ]
 """Whole owner cohort held to complete NumPy docstrings."""
-PROVIDER_GRADIENT_AUDIT_COVERAGE_COHORT = [PROVIDER_GRADIENT_AUDIT_TEST]
+PROVIDER_GRADIENT_AUDIT_COVERAGE_COHORT = PROVIDER_GRADIENT_AUDIT_TESTS
 """Public readiness-audit suite that owns source branch coverage."""
 PROVIDER_GRADIENT_AUDIT_COVERAGE_DATA_FILE = (
     "/tmp/scpn-qc-provider-gradient-audit-quality.coverage"  # nosec B108
 )
-PROVIDER_GRADIENT_AUDIT_COVERAGE_INCLUDE = "*/phase/provider_gradient_audit.py"
+PROVIDER_GRADIENT_AUDIT_COVERAGE_INCLUDE = (
+    "*/phase/provider_gradient_audit.py,*/phase/provider_hardware_gradient_audit.py"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -116,8 +132,12 @@ __all__ = [
     "PROVIDER_GRADIENT_AUDIT_COVERAGE_INCLUDE",
     "PROVIDER_GRADIENT_AUDIT_DOCSTRING_RATCHET",
     "PROVIDER_GRADIENT_AUDIT_SOURCE",
+    "PROVIDER_GRADIENT_AUDIT_SOURCES",
     "PROVIDER_GRADIENT_AUDIT_TEST",
+    "PROVIDER_GRADIENT_AUDIT_TESTS",
     "PROVIDER_GRADIENT_AUDIT_TYPING_RATCHET",
+    "PROVIDER_HARDWARE_GRADIENT_AUDIT_SOURCE",
+    "PROVIDER_HARDWARE_GRADIENT_AUDIT_TEST",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]
