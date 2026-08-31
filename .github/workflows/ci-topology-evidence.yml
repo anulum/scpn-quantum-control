@@ -165,7 +165,9 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/benchmarks/kyma_v2/dynamics.py
           src/scpn_quantum_control/benchmarks/kyma_v2/task.py
+          src/scpn_quantum_control/benchmarks/kyma_v2/probe.py
           tests/test_kyma_v2_task.py
+          tests/test_kyma_v2_probe.py
           tools/kyma_v2_dynamics_quality_gates.py
           tests/test_kyma_v2_dynamics_quality_gate.py
       - name: Ruff NumPy docstrings for KYMA v2 dynamics quality cohort
@@ -175,9 +177,11 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/benchmarks/kyma_v2/dynamics.py
           src/scpn_quantum_control/benchmarks/kyma_v2/task.py
+          src/scpn_quantum_control/benchmarks/kyma_v2/probe.py
           tests/test_kyma_v2_dynamics.py
           tests/test_kyma_v2_teacher.py
           tests/test_kyma_v2_task.py
+          tests/test_kyma_v2_probe.py
           tools/kyma_v2_dynamics_quality_gates.py
           tests/test_kyma_v2_dynamics_quality_gate.py
       - name: Run KYMA v2 dynamics focused coverage
@@ -197,7 +201,7 @@ jobs:
           --data-file=/tmp/scpn-qc-kyma-v2-dynamics-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/benchmarks/kyma_v2/dynamics.py,*/benchmarks/kyma_v2/task.py
+          --include=*/benchmarks/kyma_v2/dynamics.py,*/benchmarks/kyma_v2/task.py,*/benchmarks/kyma_v2/probe.py
   kyma-dynamics-quality:
     runs-on: ubuntu-latest
     env:

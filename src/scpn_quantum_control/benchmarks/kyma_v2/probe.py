@@ -66,7 +66,7 @@ def _test_slice(batch: TrialBatchV2) -> TrialBatchV2:
 def _measure_j_per_task_student(
     params: dict[str, jax.Array], batch: TrialBatchV2, config: ProbeConfigV2
 ) -> float:
-    """steps × measured per-task inference wall-cost × nominal power (one trial)."""
+    """Estimate one student task from steps and measured inference cost."""
     test = _test_slice(batch)
     one = TrialBatchV2(
         test.theta0[:1], test.code[:1], test.r1_pair[:1], test.r2_pair[:1], test.is_test[:1]

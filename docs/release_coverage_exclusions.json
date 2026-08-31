@@ -94,8 +94,8 @@
     },
     {
       "path_glob": "src/scpn_quantum_control/benchmarks/kyma_v2/*.py",
-      "reason": "The KYMA v2/v2.1 corrected-design compositional-generalisation probe is a differentiable-Kuramoto experiment that needs the optional [jax] extra, absent from the pinned CPU-only CI lane. Its importorskip(jax)-guarded tests run locally; the pytest --cov tracer also crashes on jax modules, so it is omitted from the CI coverage gate.",
-      "exercised_by": "local [jax] extra; tests/test_kyma_v2_*.py (66 tests) run without --cov (the coverage tracer errors on jax). Tracked gap: not CI-covered, validated locally before land."
+      "reason": "The broad CPU-only release coverage lane omits the KYMA v2 package because it requires the optional JAX stack. A separate hash-pinned JAX owner now reports dynamics.py, task.py, and probe.py at exact branch coverage; the package-wide omit remains for the JAX model, teacher, coupling, design, and rigor surfaces outside that exact report.",
+      "exercised_by": "ci-topology-evidence.yml kyma-v2-dynamics-quality installs the pinned JAX requirements, executes its direct v2 cohort, and enforces exact branch coverage for dynamics.py, task.py, and probe.py."
     }
   ]
 }

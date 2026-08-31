@@ -64,6 +64,8 @@ def test_ci_runs_and_aggregates_kyma_v2_dynamics_gate() -> None:
     start = workflow.index("  kyma-v2-dynamics-quality:")
     end = workflow.index("\n\n  tn-mps-baseline-design-quality:", start)
     block = workflow[start:end]
+    for path in quality_gates.KYMA_V2_DYNAMICS_TYPING_RATCHET:
+        assert path in block
     for path in quality_gates.KYMA_V2_DYNAMICS_DOCSTRING_RATCHET:
         assert path in block
     for path in quality_gates.KYMA_V2_DYNAMICS_COVERAGE_COHORT:

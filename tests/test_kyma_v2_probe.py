@@ -34,11 +34,34 @@ def _tiny_cfg() -> task.ProbeConfigV2:
 
 @pytest.fixture(autouse=True)
 def _fast_epochs(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reduce both training budgets for every direct orchestration test."""
     monkeypatch.setattr(probe, "STUDENT_EPOCHS", 40)
     monkeypatch.setattr(probe, "MLP_EPOCHS", 40)
 
 
+def _seed_result(
+    seed: int,
+    student_accuracy: float,
+    mlp_accuracy: float,
+    chance_accuracy: float,
+) -> probe.SeedResultV2:
+    """Build a deterministic v2 result for aggregate-contract tests."""
+    return probe.SeedResultV2(
+        seed=seed,
+        student_accuracy=student_accuracy,
+        mlp_accuracy=mlp_accuracy,
+        chance_accuracy=chance_accuracy,
+        student_params=400,
+        mlp_params=396,
+        mlp_hidden=12,
+        student_j_per_task=0.2,
+        mlp_j_per_task=0.1,
+        steps=_tiny_cfg().steps,
+    )
+
+
 def test_run_seed_returns_populated_result() -> None:
+    """Return all registered metrics for one deterministic seed."""
     r = probe.run_seed(0, _tiny_cfg())
     assert r.seed == 0
     for acc in (r.student_accuracy, r.mlp_accuracy, r.chance_accuracy):
@@ -48,6 +71,7 @@ def test_run_seed_returns_populated_result() -> None:
 
 
 def test_run_probe_aggregates_and_scores_contract() -> None:
+    """Aggregate seed metrics under the frozen v2 contract."""
     result = probe.run_probe((0, 1), _tiny_cfg())
     assert result["verdict"] in {"PASS", "NEGATIVE"}
     assert set(result["student_accuracy"]) == {"mean", "sd"}
@@ -59,6 +83,7 @@ def test_run_probe_aggregates_and_scores_contract() -> None:
 
 
 def test_pass_requires_all_conditions(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Require every preregistered condition for a passing verdict."""
     # A verdict of PASS must satisfy accuracy, margin, and chance simultaneously.
     result = probe.run_probe((0,), _tiny_cfg())
     s = result["student_accuracy"]["mean"]
@@ -66,3 +91,28 @@ def test_pass_requires_all_conditions(monkeypatch: pytest.MonkeyPatch) -> None:
     c = result["chance_accuracy"]["mean"]
     expected = s >= probe.PASS_ACCURACY and m >= probe.PASS_MARGIN_PP and s > c
     assert (result["verdict"] == "PASS") == expected
+
+
+@pytest.mark.parametrize(
+    ("student_accuracy", "mlp_accuracy", "chance_accuracy", "verdict"),
+    [
+        (0.70, 0.40, 0.20, "PASS"),
+        (0.59, 0.30, 0.20, "NEGATIVE"),
+        (0.70, 0.55, 0.20, "NEGATIVE"),
+        (0.70, 0.40, 0.70, "NEGATIVE"),
+    ],
+)
+def test_run_probe_guards_every_frozen_verdict_branch(
+    student_accuracy: float,
+    mlp_accuracy: float,
+    chance_accuracy: float,
+    verdict: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Guard accuracy, MLP margin, and chance separation independently."""
+
+    def deterministic_seed(seed: int, _config: task.ProbeConfigV2) -> probe.SeedResultV2:
+        return _seed_result(seed, student_accuracy, mlp_accuracy, chance_accuracy)
+
+    monkeypatch.setattr(probe, "run_seed", deterministic_seed)
+    assert probe.run_probe((0,), _tiny_cfg())["verdict"] == verdict
