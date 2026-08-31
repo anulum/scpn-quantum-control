@@ -52,4 +52,7 @@ def test_ci_runs_and_aggregates_gate() -> None:
     end = workflow.index("\n\n  decisive-advantage-quality:", start)
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.MIGRATION_GUIDES_PRODUCT_QUALITY_RATCHET)
+    assert "Build CPU-only PennyLane runtime overlay" in block
+    assert "install-differentiable-framework-overlay" in block
+    assert 'echo "PYTHONPATH=$SCPN_FRAMEWORK_OVERLAY:$PYTHONPATH"' in block
     assert "migration-guides-product-quality" in workflow[workflow.index("  ci-gate:") :]

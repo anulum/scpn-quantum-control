@@ -352,6 +352,24 @@ def test_order_parameter_falls_back_when_rust_engine_is_absent(
     assert psi == pytest.approx(0.0)
 
 
+def test_order_parameter_uses_native_expectations(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Compute the order parameter from the optional native expectation batch."""
+
+    class NativeEngine:
+        @staticmethod
+        def all_xy_expectations(*_args: object) -> tuple[list[float], list[float]]:
+            return [1.0, 0.0], [0.0, 1.0]
+
+    monkeypatch.setattr(xy_mod, "optional_rust_engine", lambda: NativeEngine())
+    solver = QuantumKuramotoSolver(2, np.zeros((2, 2)), np.zeros(2))
+    state = xy_mod.Statevector.from_label("00")
+
+    order, phase = solver.measure_order_parameter(state)
+
+    assert order == pytest.approx(np.sqrt(0.5))
+    assert phase == pytest.approx(np.pi / 4.0)
+
+
 def test_trotter_product_expands_with_reps() -> None:
     """Increasing Trotter reps should expand the decomposed product formula."""
     K = np.array([[0, 0.8], [0.8, 0]])

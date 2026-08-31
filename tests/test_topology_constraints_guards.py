@@ -98,6 +98,16 @@ def test_fixed_sign_policy_imposes_reference_signs() -> None:
     assert projected[1, 0] < 0.0
 
 
+def test_signed_policy_preserves_negative_couplings() -> None:
+    """The signed policy skips both non-negative and fixed-sign projections."""
+    ledger = TopologyConstraintLedger(
+        sign_policy="signed",
+        bounds=CouplingGraphBounds(lower=-1.0, upper=1.0),
+    )
+    projected = ledger.project(np.array([[0.0, -0.4], [-0.4, 0.0]], dtype=np.float64))
+    assert projected[0, 1] == pytest.approx(-0.4)
+
+
 def test_project_total_weight_returns_matrix_when_unbounded() -> None:
     """The total-weight projection is a no-op when no budget is configured."""
     ledger = TopologyConstraintLedger()

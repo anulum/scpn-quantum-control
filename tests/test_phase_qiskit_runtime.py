@@ -607,6 +607,7 @@ def _qiskit_provider_gradient_workflow_artifact(
     parameter_digest: str = "sha256:" + "8" * 64,
     live_ticket_id: str = "live-ticket-20260619",
     method_metadata: dict[str, object] | None = None,
+    shots: int = 4096,
 ) -> QiskitProviderGradientWorkflowArtifact:
     metadata_payload = method_metadata
     if metadata_payload is None and gradient_method in (
@@ -630,7 +631,7 @@ def _qiskit_provider_gradient_workflow_artifact(
         parameter_digest=parameter_digest,
         gradient_digest="sha256:" + "b" * 64,
         metadata_digest="sha256:" + "c" * 64,
-        shots=4096,
+        shots=shots,
         parameter_count=1,
         gradient_dimension=1,
         hardware_execution=True,
@@ -895,6 +896,49 @@ def test_qiskit_gradient_workflow_suite_rejects_duplicate_artifact_ids() -> None
             shots=400,
             qpu_provider_evidence_bundle=bundle,
             provider_gradient_workflow_artifacts=gradient_artifacts,
+        )
+
+
+def test_qiskit_gradient_workflow_normalisation_boundaries() -> None:
+    """Normalise empty evidence and retain a complete unpaired workflow suite."""
+    assert (
+        qiskit_runtime._normalise_provider_gradient_workflow_artifacts(
+            (), runtime_qpu_execution_artifact=None
+        )
+        == ()
+    )
+    suite = _qiskit_provider_gradient_workflow_suite()
+    assert (
+        qiskit_runtime._normalise_provider_gradient_workflow_artifacts(
+            suite, runtime_qpu_execution_artifact=None
+        )
+        == suite
+    )
+
+
+def test_qiskit_gradient_workflow_suite_rejects_duplicate_method() -> None:
+    """Reject a complete method set when one workflow method is duplicated."""
+    suite = _qiskit_provider_gradient_workflow_suite()
+    duplicated = (*suite, _qiskit_provider_gradient_workflow_artifact("parameter_shift"))
+    with pytest.raises(ValueError, match="must not contain duplicates"):
+        qiskit_runtime._normalise_provider_gradient_workflow_artifacts(
+            duplicated, runtime_qpu_execution_artifact=None
+        )
+
+
+def test_qiskit_gradient_workflow_artifact_rejects_shot_drift() -> None:
+    """Provider-gradient workflows must cite the Runtime QPU shot count."""
+    suite = (
+        _qiskit_provider_gradient_workflow_artifact("parameter_shift", shots=2048),
+        *tuple(
+            _qiskit_provider_gradient_workflow_artifact(method)
+            for method in ("finite_difference", "lcu", "spsa", "qgt", "qfi")
+        ),
+    )
+    with pytest.raises(ValueError, match="shots must match Runtime QPU shots"):
+        qiskit_runtime._normalise_provider_gradient_workflow_artifacts(
+            suite,
+            runtime_qpu_execution_artifact=_qiskit_runtime_qpu_execution_artifact(),
         )
 
 

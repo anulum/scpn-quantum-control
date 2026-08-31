@@ -18,6 +18,7 @@ import importlib
 import importlib.util
 import sys
 import time
+import types
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -157,6 +158,43 @@ class TestErrorHandling:
         spec.loader.exec_module(module)
 
         assert module._HAS_RUST is False
+
+    def test_predictive_coding_dispatches_to_rust_when_available(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Import and exercise the optional native prediction-error dispatch."""
+        source = (
+            Path(__file__).parents[1]
+            / "src"
+            / "scpn_quantum_control"
+            / "fep"
+            / "predictive_coding.py"
+        )
+        module_name = "scpn_quantum_control.fep._test_predictive_coding_with_rust"
+        spec = importlib.util.spec_from_file_location(module_name, source)
+        assert spec is not None
+        assert spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+
+        def native_prediction_error(
+            observations: NDArray[np.float64],
+            beliefs: NDArray[np.float64],
+            coupling: NDArray[np.float64],
+        ) -> NDArray[np.float64]:
+            del coupling
+            return observations - beliefs
+
+        engine = types.ModuleType("scpn_quantum_engine")
+        engine.hierarchical_prediction_error_rust = native_prediction_error  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "scpn_quantum_engine", engine)
+        monkeypatch.setitem(sys.modules, module_name, module)
+        spec.loader.exec_module(module)
+
+        observations = np.array([0.5, 0.25], dtype=np.float64)
+        beliefs = np.array([0.1, -0.25], dtype=np.float64)
+        errors = module.hierarchical_prediction_error(observations, beliefs, np.eye(2))
+        assert module._HAS_RUST is True
+        np.testing.assert_array_equal(errors, observations - beliefs)
 
 
 # ===== 3. Negative Cases =====

@@ -390,6 +390,13 @@ def test_ci_workflow_audit_rejects_broader_or_unchecked_exceptions() -> None:
     )
     assert waiver.audit_ci_workflow(block_scalar) == ()
 
+    block_with_blank_line = block_scalar.replace(
+        "          python tools/audit_dependency_security_waiver.py\n",
+        "          python tools/audit_dependency_security_waiver.py\n\n",
+    )
+    runs = waiver._workflow_runs(block_with_blank_line)
+    assert runs[0].command == "python tools/audit_dependency_security_waiver.py\n"
+
     hidden_second_exception = (
         _workflow()
         + "      - run: |\n"

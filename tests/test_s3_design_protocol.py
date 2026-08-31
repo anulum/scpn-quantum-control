@@ -14,6 +14,8 @@ import pytest
 
 from scpn_quantum_control.benchmarks.s3_design_protocol import (
     default_s3_design_protocol,
+    generate_s3_candidate_grid,
+    grid_s3_design_protocol,
     score_s3_candidates,
     validate_s3_design_rows,
 )
@@ -54,3 +56,14 @@ def test_score_s3_candidates_rejects_invalid_problem_shape() -> None:
     """Reject a non-square coupling problem before candidate scoring."""
     with pytest.raises(ValueError, match="square"):
         score_s3_candidates(default_s3_design_protocol(), np.ones((2, 3)), np.ones(2))
+
+
+def test_grid_protocol_exposes_deterministic_ansatz_and_pulse_candidates() -> None:
+    """Expand the public design grid and install it into the derived protocol."""
+    candidates = generate_s3_candidate_grid()
+    protocol = grid_s3_design_protocol()
+
+    assert len(candidates) == 28
+    assert {candidate.family for candidate in candidates} == {"ansatz", "pulse"}
+    assert protocol.candidates == candidates
+    assert protocol.protocol_id == default_s3_design_protocol().protocol_id

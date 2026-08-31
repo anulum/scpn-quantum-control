@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import json
+import runpy
 import sys
 from importlib.metadata import PackageNotFoundError
 from pathlib import Path
@@ -239,6 +240,21 @@ def test_manifest_cli_emits_checks_and_rejects_drift(
         "studio manifest drift: stale generated studio manifest: "
         f"{federation.STUDIO_MANIFEST_PATH.as_posix()}\n"
     )
+
+
+def test_manifest_module_entrypoint_runs_public_check(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Execute the installed ``python -m`` entrypoint against a current manifest."""
+    monkeypatch.chdir(tmp_path)
+    federation.write_federation_document()
+    monkeypatch.setattr(sys, "argv", ["scpn_quantum_control.studio.federation", "--check"])
+
+    with pytest.raises(SystemExit) as exit_info:
+        runpy.run_module("scpn_quantum_control.studio.federation", run_name="__main__")
+
+    assert exit_info.value.code == 0
 
 
 def test_manifest_passes_studio_conformance_gate() -> None:

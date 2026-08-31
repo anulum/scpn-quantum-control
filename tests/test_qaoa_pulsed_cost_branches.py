@@ -73,3 +73,17 @@ def test_mrti_growth_falls_back_on_engine_error(monkeypatch: pytest.MonkeyPatch)
     growth = _mrti_growth(field, 1.0e-6, 0.5, 0.3, 1.0e-3, 1.0e-7)
     assert np.isfinite(growth)
     assert growth >= 0.0
+
+
+def test_mrti_growth_falls_back_when_engine_lacks_kernel(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Use the NumPy integrator when the optional engine lacks the MRTI kernel."""
+    monkeypatch.setitem(
+        sys.modules, "scpn_quantum_engine", types.ModuleType("scpn_quantum_engine")
+    )
+
+    field = np.array([0.5, 1.0, 1.5, 2.0], dtype=np.float64)
+    growth = _mrti_growth(field, 1.0e-6, 0.5, 0.3, 1.0e-3, 1.0e-7)
+    assert np.isfinite(growth)
+    assert growth >= 0.0

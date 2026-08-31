@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+from dataclasses import replace
 
 import numpy as np
 import pytest
@@ -53,6 +54,12 @@ def test_differentiable_programming_benchmark_result_validation_paths() -> None:
         blocked_reasons=("optional native backend unavailable",),
     )
     assert blocked_row.passed is False
+    assert replace(row, max_abs_gradient_error=1.0).passed is False
+    assert replace(row, max_abs_adjoint_error=1.0).passed is False
+    with pytest.raises(ValueError, match="blocked_reasons"):
+        replace(row, blocked_reasons=("",))
+    with pytest.raises(ValueError, match="blocked_reasons"):
+        replace(row, blocked_reasons=(1,))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="case_id"):
         DifferentiableProgrammingBenchmarkResult(
             case_id="",
@@ -181,6 +188,17 @@ def test_quantum_gradient_benchmark_result_validation_paths() -> None:
     )
 
     assert row.passed is True
+    assert replace(row, verification_passed=False).passed is False
+    assert replace(row, max_abs_reference_error=1.0).passed is False
+    assert replace(row, max_abs_finite_difference_error=1.0).passed is False
+    with pytest.raises(ValueError, match="category"):
+        replace(row, category="")
+    with pytest.raises(ValueError, match="value"):
+        replace(row, value=np.inf)
+    with pytest.raises(ValueError, match="finite-difference error"):
+        replace(row, max_abs_finite_difference_error=np.nan)
+    with pytest.raises(ValueError, match="claim_boundary"):
+        replace(row, claim_boundary="")
     with pytest.raises(ValueError, match="case_id"):
         QuantumGradientBenchmarkResult(
             case_id="",
@@ -269,6 +287,8 @@ def test_differentiable_programming_external_reference_result_validation_paths()
     )
 
     assert row.passed is True
+    assert replace(row, max_abs_value_error=1.0).passed is False
+    assert replace(row, max_abs_gradient_error=1.0).passed is False
     with pytest.raises(ValueError, match="backend"):
         DifferentiableProgrammingExternalReferenceResult(
             case_id="case",
@@ -317,6 +337,8 @@ def test_differentiable_programming_external_reference_result_validation_paths()
             max_abs_gradient_error=0.0,
             claim_boundary="diagnostic",
         )
+    with pytest.raises(ValueError, match="values"):
+        replace(row, reference_value=np.inf)
     with pytest.raises(ValueError, match="program_gradient"):
         DifferentiableProgrammingExternalReferenceResult(
             case_id="case",
@@ -381,6 +403,13 @@ def test_benchmark_contract_leaf_has_no_suite_backedge() -> None:
         for module in imported_modules
         for token in ("differentiable_programming", "differentiable", "phase", "compiler")
     )
+
+
+def test_benchmark_contract_max_abs_error_helper() -> None:
+    """Measure the largest elementwise difference used by benchmark reports."""
+    left = np.array([1.0, -2.0], dtype=np.float64)
+    right = np.array([0.25, -1.5], dtype=np.float64)
+    assert contracts._max_abs_error(left, right) == pytest.approx(0.75)
 
 
 def test_benchmark_contract_objects_are_exact_facade_aliases() -> None:

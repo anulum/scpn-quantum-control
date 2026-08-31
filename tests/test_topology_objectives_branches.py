@@ -92,3 +92,13 @@ def test_digest_payload_includes_source_shape() -> None:
     """The digest payload records the source-matrix shape when present."""
     payload = objective_sha256_payload(_objective())
     assert payload["source_shape"] == (2, 2)
+
+
+def test_digest_payload_omits_source_shape_without_reference() -> None:
+    """Keep the source-shape field null when no comparison matrix is configured."""
+    objective = CouplingTopologyObjective(
+        ph_backend=NetworkCycleBackend(threshold=0.2),
+        ledger=TopologyConstraintLedger(),
+        allow_approximate_ph_backend=True,
+    )
+    assert objective_sha256_payload(objective)["source_shape"] is None

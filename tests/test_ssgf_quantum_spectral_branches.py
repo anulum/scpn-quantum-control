@@ -30,3 +30,10 @@ def test_spectral_bridge_vs_coupling_default_grid() -> None:
     """The coupling scan uses the default grid when none is supplied."""
     scan = spectral_bridge_vs_coupling(_OMEGA)
     assert len(scan["fiedler"]) == 20
+
+
+def test_spectral_bridge_vs_coupling_preserves_explicit_grid() -> None:
+    """Scan exactly the caller-provided coupling strengths in input order."""
+    grid = np.array([0.1, 0.3, 0.9], dtype=np.float64)
+    scan = spectral_bridge_vs_coupling(_OMEGA, grid)
+    np.testing.assert_allclose(scan["k_base"], grid)

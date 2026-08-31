@@ -19,6 +19,7 @@ import importlib.util
 import sys
 import time
 from pathlib import Path
+from types import ModuleType
 from typing import Any, TypeAlias
 
 import numpy as np
@@ -186,6 +187,55 @@ class TestErrorHandling:
 
         assert module._HAS_RUST_GAUGE is False
 
+    def test_lattice_and_observables_dispatch_to_native_gauge_kernels(
+        self,
+        triangle_adj: FloatArray,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Import and exercise the optional native lattice and topology dispatches."""
+
+        def plaquette_action_batch(*_args: Any) -> tuple[float, float]:
+            return 0.5, -1.5
+
+        def gauge_force_batch(*args: Any) -> NDArray[np.float64]:
+            return np.zeros(int(args[4]), dtype=np.float64)
+
+        def topological_charge_rust(*_args: Any) -> float:
+            return 0.25
+
+        engine = ModuleType("scpn_quantum_engine")
+        engine.plaquette_action_batch = plaquette_action_batch  # type: ignore[attr-defined]
+        engine.gauge_force_batch = gauge_force_batch  # type: ignore[attr-defined]
+        engine.topological_charge_rust = topological_charge_rust  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "scpn_quantum_engine", engine)
+
+        source_root = Path(__file__).parents[1] / "src" / "scpn_quantum_control" / "psi_field"
+        lattice_name = "scpn_quantum_control.psi_field._test_lattice_with_rust"
+        lattice_spec = importlib.util.spec_from_file_location(
+            lattice_name, source_root / "lattice.py"
+        )
+        assert lattice_spec is not None and lattice_spec.loader is not None
+        native_lattice = importlib.util.module_from_spec(lattice_spec)
+        monkeypatch.setitem(sys.modules, lattice_name, native_lattice)
+        lattice_spec.loader.exec_module(native_lattice)
+
+        gauge = native_lattice.U1LatticGauge(triangle_adj, beta=1.5, seed=7)
+        assert native_lattice._HAS_RUST_GAUGE is True
+        assert gauge.total_action() == pytest.approx(-1.5)
+        np.testing.assert_array_equal(gauge.force(), np.zeros(gauge.n_edges))
+
+        observables_name = "scpn_quantum_control.psi_field._test_observables_with_rust"
+        observables_spec = importlib.util.spec_from_file_location(
+            observables_name, source_root / "observables.py"
+        )
+        assert observables_spec is not None and observables_spec.loader is not None
+        native_observables = importlib.util.module_from_spec(observables_spec)
+        monkeypatch.setitem(sys.modules, observables_name, native_observables)
+        observables_spec.loader.exec_module(native_observables)
+
+        assert native_observables._HAS_RUST_GAUGE is True
+        assert native_observables.topological_charge(gauge) == pytest.approx(0.25)
+
 
 # ===== 3. Negative Cases =====
 
@@ -319,6 +369,28 @@ class TestNegativeCases:
         assert tri_flat.size == 0
         assert tri_signs.size == 0
 
+    def test_triangle_search_and_force_skip_absent_oriented_edges(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Skip open wedges and absent orientation entries in the Python force loop."""
+        path = np.array(
+            [[0.0, 1.0, 0.0], [1.0, 0.0, 1.0], [0.0, 1.0, 0.0]],
+            dtype=np.float64,
+        )
+        assert U1LatticGauge(path, seed=1).plaquettes == []
+
+        triangle = np.ones((3, 3), dtype=np.float64) - np.eye(3)
+        gauge = U1LatticGauge(triangle, beta=1.0, seed=2)
+        monkeypatch.setattr(lattice_module, "_HAS_RUST_GAUGE", False)
+
+        class SelectiveMembership(dict[tuple[int, int], int]):
+            def __contains__(self, key: object) -> bool:
+                return key == (0, 1) and super().__contains__(key)
+
+        gauge.edge_index = SelectiveMembership(gauge.edge_index)
+        force = gauge.force()
+        assert np.count_nonzero(force) <= 1
+
 
 # ===== 4. Pipeline Integration =====
 
@@ -339,6 +411,13 @@ class TestPipelineIntegration:
         lattice = scpn_to_lattice(K=K, seed=42)
         for i, j in lattice.gauge.edges:
             assert abs(K[i, j]) > 1e-15, f"edge ({i},{j}) not in K_nm"
+
+    def test_scpn_mapping_preserves_explicit_frequency_vector(self) -> None:
+        """Use a caller-provided frequency vector without replacing it by defaults."""
+        K = build_knm_paper27(L=4)
+        omega = np.array([0.1, 0.2, 0.3, 0.4], dtype=np.float64)
+        lattice = scpn_to_lattice(K=K, omega=omega, seed=4)
+        np.testing.assert_array_equal(lattice.omega, omega)
 
     def test_hmc_thermalisation_increases_plaquette(self) -> None:
         """HMC at large β should increase mean plaquette (ordering)."""

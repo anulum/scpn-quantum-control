@@ -12,12 +12,14 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
+from dataclasses import replace
 from typing import Any
 
 import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+import scpn_quantum_control.analysis.witness_discovery as witness_discovery
 from scpn_quantum_control.analysis import (
     RLDiscoveryAgent,
     RLResearchPolicy,
@@ -140,6 +142,30 @@ def test_discovery_loop_is_deterministic_and_uses_bayesian_and_rl_sources() -> N
     assert WitnessSearchMode.RL_BANDIT in sources
     assert result_1.best in result_1.ranked(limit=1)
     assert result_1.ranked()[0].score >= result_1.ranked()[-1].score
+
+
+def test_discovery_continues_when_bayesian_pool_is_exhausted(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Keep the RL proposal lane active when no unseen Bayesian candidate remains."""
+    K_nm, omega, theta0 = _problem()
+
+    def _empty_selection(
+        pool: NDArray[np.float64],
+        acquisition: NDArray[np.float64],
+        evaluated: object,
+        limit: int,
+    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+        del acquisition, evaluated, limit
+        return np.empty((0, pool.shape[1]), dtype=np.float64), np.empty(0, dtype=np.float64)
+
+    monkeypatch.setattr(witness_discovery, "_select_unique_candidates", _empty_selection)
+    spec = replace(_small_spec(seed=91), n_iterations=1)
+    result = discover_kuramoto_witnesses(K_nm, omega, theta0=theta0, spec=spec, prefer_rust=False)
+
+    sources = {item.source for item in result.evaluations}
+    assert WitnessSearchMode.BAYESIAN_UCB not in sources
+    assert WitnessSearchMode.RL_BANDIT in sources
 
 
 def test_discovery_metadata_is_json_safe_and_immutable() -> None:

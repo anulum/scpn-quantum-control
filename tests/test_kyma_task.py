@@ -111,3 +111,9 @@ def test_determinism_same_seed_same_trials() -> None:
     b = build_trials(cfg, seed=7)
     assert np.array_equal(a.theta0, b.theta0)
     assert np.array_equal(a.code, b.code)
+
+
+def test_probe_config_reports_integrated_horizon() -> None:
+    """Expose the preregistered integration horizon through the public config."""
+    config = ProbeConfig(dt=0.2, steps=15)
+    assert config.horizon == pytest.approx(3.0)

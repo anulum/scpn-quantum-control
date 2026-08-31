@@ -61,6 +61,26 @@ def test_feedback_policy_falls_back_on_engine_error(monkeypatch: pytest.MonkeyPa
     np.testing.assert_allclose(errors, expected[2])
 
 
+def test_feedback_policy_falls_back_when_engine_lacks_kernel(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Use the NumPy policy when the optional engine lacks the batch export."""
+    monkeypatch.setitem(
+        sys.modules, "scpn_quantum_engine", types.ModuleType("scpn_quantum_engine")
+    )
+    r_values = np.array([0.2, 0.75, 0.95], dtype=np.float64)
+
+    actual = rf._feedback_policy(
+        r_values, target_r=0.75, deadband=0.03, base_gain=0.8, max_gain=1.5
+    )
+    expected = rf.feedback_policy_numpy(
+        r_values, target_r=0.75, deadband=0.03, base_gain=0.8, max_gain=1.5
+    )
+
+    for observed, reference in zip(actual, expected, strict=True):
+        np.testing.assert_allclose(observed, reference)
+
+
 def test_feedback_policy_uses_native_batch_result(monkeypatch: pytest.MonkeyPatch) -> None:
     """A successful native batch policy is adopted verbatim."""
 
@@ -106,3 +126,20 @@ def test_xy_expectations_falls_back_to_qiskit(monkeypatch: pytest.MonkeyPatch) -
     # |01> is a computational-basis state, so all transverse expectations vanish.
     np.testing.assert_allclose(exp_x, np.zeros(2), atol=1e-12)
     np.testing.assert_allclose(exp_y, np.zeros(2), atol=1e-12)
+
+
+def test_xy_expectations_uses_native_result(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Adopt transverse expectations returned by the optional native kernel."""
+
+    def _native(*_args: Any) -> tuple[list[float], list[float]]:
+        return [0.25, -0.5], [0.75, 0.0]
+
+    stub = types.ModuleType("scpn_quantum_engine")
+    stub.all_xy_expectations = _native  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "scpn_quantum_engine", stub)
+
+    solver = QuantumKuramotoSolver(2, _K, _OMEGA)
+    exp_x, exp_y = rf._xy_expectations(Statevector.from_label("01"), 2, solver)
+
+    np.testing.assert_array_equal(exp_x, np.array([0.25, -0.5]))
+    np.testing.assert_array_equal(exp_y, np.array([0.75, 0.0]))

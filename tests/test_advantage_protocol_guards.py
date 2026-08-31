@@ -116,3 +116,14 @@ def test_validate_rows_flags_unknown_baseline() -> None:
     """A row naming an unknown baseline is flagged invalid."""
     validation = validate_scaling_rows(_PROTOCOL, [_row(baseline="not-a-baseline")])
     assert any("unknown baseline" in item for item in validation.invalid_rows)
+
+
+def test_scaling_validation_serialises_and_rejects_non_text_baseline() -> None:
+    """Serialise validation diagnostics while rejecting a non-text baseline key."""
+    validation = validate_scaling_rows(_PROTOCOL, [_row(baseline=None)])
+    payload = validation.to_dict()
+
+    assert payload["valid"] is False
+    assert isinstance(payload["missing_required"], list)
+    assert isinstance(payload["invalid_rows"], list)
+    assert any("unknown baseline" in item for item in validation.invalid_rows)

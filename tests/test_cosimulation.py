@@ -7,6 +7,8 @@
 # SCPN Quantum Control — Tests for the quantum/classical co-simulation package
 """Tests for cosimulation/knm_partition.py and cosimulation/quantum_classical.py."""
 
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
 import scipy.linalg as sla
@@ -194,6 +196,37 @@ def test_xy_hamiltonian_python_matches_rust():
     assert np.allclose(py, flat, atol=1e-12)
 
 
+def test_optional_native_cosimulation_dispatches(monkeypatch):
+    """Dispatch Hamiltonian construction and classical stepping to native kernels."""
+    K = np.array([[0.0, 0.4], [0.4, 0.0]])
+    omega = np.array([0.2, -0.1])
+    expected_hamiltonian = qc._xy_hamiltonian_dense_python(K, omega)
+    expected_step = np.array([0.3, -0.2])
+    engine = SimpleNamespace(
+        build_xy_hamiltonian_dense=lambda *_args: expected_hamiltonian.ravel(),
+        cosim_classical_substep=lambda *_args: expected_step,
+    )
+    monkeypatch.setattr(qc, "optional_rust_engine", lambda: engine)
+
+    propagator = qc._internal_half_propagator(K, omega, 0.01)
+    stepped = qc._classical_substep(np.zeros(2), omega, K, np.zeros(2), np.zeros(2), 0.01)
+
+    assert np.allclose(propagator @ propagator.conj().T, np.eye(4), atol=1e-12)
+    assert np.array_equal(stepped, expected_step)
+
+
+def test_cosimulation_python_helpers_cover_sparse_and_empty_boundaries():
+    """Exercise zero couplings, empty order parameters, and state normalization."""
+    K = np.zeros((2, 2))
+    omega = np.array([0.2, -0.1])
+    hamiltonian = qc._xy_hamiltonian_dense_python(K, omega)
+    state = qc._initial_quantum_state(1, np.array([3.0 + 0.0j, 4.0 + 0.0j]))
+
+    assert np.count_nonzero(hamiltonian - np.diag(np.diag(hamiltonian))) == 0
+    assert qc._order_parameter(np.array([], dtype=np.float64)) == 0.0
+    assert np.linalg.norm(state) == pytest.approx(1.0)
+
+
 def test_order_parameters_bounded():
     """Keep every reported synchronization order parameter bounded."""
     K, omega = _two_scale_network(n_core=6, n_total=50)
@@ -301,6 +334,32 @@ def test_cosimulate_rejects_bad_initial_state():
         cosimulate(K, omega, dt=0.01, n_steps=5, partition=part, quantum_state0=np.zeros(8))
     with pytest.raises(ValueError):
         cosimulate(K, omega, dt=0.01, n_steps=5, partition=part, quantum_state0=np.zeros(16))
+
+
+def test_cosimulate_rejects_bad_classical_phase_shape():
+    """Reject an initial classical phase vector with the wrong bath size."""
+    K, omega = _two_scale_network(n_core=3, n_total=8)
+    part = partition_knm(K, omega, max_quantum_nodes=3)
+    with pytest.raises(ValueError, match="theta0_classical"):
+        cosimulate(
+            K,
+            omega,
+            dt=0.01,
+            n_steps=1,
+            partition=part,
+            theta0_classical=np.zeros(part.n_classical + 1),
+        )
+
+
+def test_cosimulate_all_quantum_partition_has_empty_classical_trajectory():
+    """Run the public simulator when every oscillator belongs to the quantum core."""
+    K = np.array([[0.0, 0.4], [0.4, 0.0]])
+    omega = np.array([0.2, -0.1])
+    result = cosimulate(K, omega, dt=0.01, n_steps=2, max_quantum_nodes=2, seed=7)
+
+    assert result.partition.n_classical == 0
+    assert result.classical_phases.shape == (3, 0)
+    assert np.array_equal(result.baseline_classical_order, np.zeros(3))
 
 
 @settings(max_examples=10, deadline=None)

@@ -106,6 +106,15 @@ class TestCompileXYTrotter:
         # No Rz from omega, but CX from coupling
         assert "cx" in ops
 
+    def test_zero_omega_order2(self) -> None:
+        """Omit both half-step frequency rotations in second-order compilation."""
+        K, _ = _system(3)
+        omega = np.zeros(3)
+        qc = compile_xy_trotter(K, omega, reps=2, order=2)
+        ops = [inst.operation.name for inst in qc.data]
+        assert "rz" not in ops
+        assert "cx" in ops
+
     def test_single_rep(self) -> None:
         """Compile the minimum positive repetition count."""
         K, omega = _system(3)
