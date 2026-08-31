@@ -11,9 +11,8 @@ from __future__ import annotations
 
 import re
 import sys
-from collections.abc import Callable
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 import yaml
 
@@ -37,7 +36,7 @@ def _load_workflow(path: Path) -> dict[str, Any]:
     try:
         payload = loader.get_single_data()
     finally:
-        cast(Callable[[], None], loader.dispose)()
+        loader.dispose()
     if not isinstance(payload, dict):
         raise ValueError(f"workflow must be a mapping: {path}")
     return payload
