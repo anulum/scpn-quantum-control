@@ -79,10 +79,12 @@ def _bell_circuit() -> QuantumCircuit:
 
 
 def test_is_iqm_available_returns_bool() -> None:
+    """The package-level dependency probe always returns a Boolean."""
     assert isinstance(is_iqm_available(), bool)
 
 
 def test_iqm_config_rejects_unsafe_values() -> None:
+    """Execution configuration rejects unsafe budgets and implicit remotes."""
     with pytest.raises(ValueError, match="shots must be positive"):
         IQMBackendConfig(shots=0)
     with pytest.raises(ValueError, match="timeout_s must be positive"):
@@ -92,6 +94,7 @@ def test_iqm_config_rejects_unsafe_values() -> None:
 
 
 def test_iqm_descriptor_is_registered_and_approval_gated() -> None:
+    """The registry exposes IQM submission only behind explicit approval."""
     descriptor = be.describe_backend("iqm")
     assert descriptor.name == "iqm"
     assert descriptor.provider == "iqm"
@@ -105,6 +108,8 @@ def test_iqm_descriptor_is_registered_and_approval_gated() -> None:
 def test_iqm_backend_requires_dependency_for_backend_resolution(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Backend resolution fails clearly without the optional IQM client."""
+
     def missing_module(name: str) -> Any:
         raise ModuleNotFoundError(name)
 
@@ -115,6 +120,7 @@ def test_iqm_backend_requires_dependency_for_backend_resolution(
 
 
 def test_iqm_fake_backend_resolution_and_count_run(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A local fake backend resolves and returns bounded circuit counts."""
     fake_module = types.SimpleNamespace(IQMFakeGarnet=_FakeIQMBackend)
 
     def import_module(name: str) -> Any:
@@ -139,6 +145,7 @@ def test_iqm_fake_backend_resolution_and_count_run(monkeypatch: pytest.MonkeyPat
 
 
 def test_iqm_remote_backend_uses_provider_url_and_quantum_computer() -> None:
+    """Remote resolution forwards only the explicit URL and computer name."""
     captured: dict[str, str | None] = {}
 
     class Provider(_FakeIQMProvider):

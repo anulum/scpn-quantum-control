@@ -56,6 +56,7 @@ class IQMBackendConfig:
     optimisation_level: int = 1
 
     def __post_init__(self) -> None:
+        """Validate execution mode, budgets, and explicit remote routing."""
         if self.mode not in {"fake", "remote"}:
             raise ValueError("mode must be 'fake' or 'remote'")
         if self.shots <= 0:
