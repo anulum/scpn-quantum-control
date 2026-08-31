@@ -1,0 +1,671 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — CI Native Integration
+name: CI / Native Integration
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  ml-dsa-seal-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Type-check ML-DSA seal quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/crypto/ml_dsa_seal.py
+          tools/ml_dsa_seal_quality_gates.py
+          tests/test_ml_dsa_seal_quality_gate.py
+      - name: Ruff NumPy docstrings for ML-DSA seal quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/crypto/ml_dsa_seal.py
+          tests/test_ml_dsa_seal.py
+          tests/test_result_pack_seal.py
+          tests/test_qpu_result_pack_bridge.py
+          tests/test_studio_qpu_result_pack.py
+          tools/ml_dsa_seal_quality_gates.py
+          tests/test_ml_dsa_seal_quality_gate.py
+      - name: Run ML-DSA seal focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-ml-dsa-seal-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_ml_dsa_seal.py
+          tests/test_result_pack_seal.py
+          tests/test_qpu_result_pack_bridge.py
+          tests/test_studio_qpu_result_pack.py
+      - name: Enforce ML-DSA seal exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-ml-dsa-seal-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/crypto/ml_dsa_seal.py
+  studio-executive-differentiate-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Type-check Studio executive differentiate quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/studio/executive_differentiate.py
+          tests/test_studio_executive_differentiate.py
+          tools/studio_executive_differentiate_quality_gates.py
+          tests/test_studio_executive_differentiate_quality_gate.py
+      - name: Ruff NumPy docstrings for Studio executive differentiate quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/studio/executive_differentiate.py
+          tests/test_studio_executive_differentiate.py
+          tools/studio_executive_differentiate_quality_gates.py
+          tests/test_studio_executive_differentiate_quality_gate.py
+      - name: Run Studio executive differentiate focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-studio-executive-differentiate-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_studio_executive_differentiate.py
+      - name: Enforce Studio executive differentiate exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-studio-executive-differentiate-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/studio/executive_differentiate.py
+  pulse-shaping-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Type-check pulse-shaping quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/pulse_shaping.py
+          tools/pulse_shaping_quality_gates.py
+          tests/test_pulse_shaping_quality_gate.py
+      - name: Ruff NumPy docstrings for pulse-shaping quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/pulse_shaping.py
+          tests/test_pulse_shaping.py
+          tests/test_pulse_shaping_python_fallback.py
+          tools/pulse_shaping_quality_gates.py
+          tests/test_pulse_shaping_quality_gate.py
+      - name: Run pulse-shaping focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-pulse-shaping-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_pulse_shaping.py
+          tests/test_pulse_shaping_python_fallback.py
+      - name: Enforce pulse-shaping exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-pulse-shaping-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/phase/pulse_shaping.py
+  openpulse-control-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Type-check OpenPulse-control quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/hardware/openpulse_control.py
+          tools/openpulse_control_quality_gates.py
+          tests/test_openpulse_control_quality_gate.py
+      - name: Ruff NumPy docstrings for OpenPulse-control quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/hardware/openpulse_control.py
+          tests/test_openpulse_control.py
+          tools/openpulse_control_quality_gates.py
+          tests/test_openpulse_control_quality_gate.py
+      - name: Run OpenPulse-control focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-openpulse-control-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_openpulse_control.py
+      - name: Enforce OpenPulse-control exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-openpulse-control-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/hardware/openpulse_control.py
+  dla-protected-memory-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the current Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Type-check DLA protected-memory quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/qec/dla_protected_scar.py
+          src/scpn_quantum_control/qec/dla_protected_subspace.py
+          tests/test_dla_protected_scar.py
+          tests/test_dla_protected_scar_branches.py
+          tests/test_dla_protected_subspace.py
+          tests/test_dla_protected_subspace_branches.py
+          tools/dla_protected_memory_quality_gates.py
+          tests/test_dla_protected_memory_quality_gate.py
+          tools/preflight.py
+          tests/test_preflight_tool.py
+      - name: Ruff NumPy docstrings for DLA protected-memory owner
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/qec/dla_protected_scar.py
+          src/scpn_quantum_control/qec/dla_protected_subspace.py
+          tests/test_dla_protected_scar.py
+          tests/test_dla_protected_scar_branches.py
+          tests/test_dla_protected_subspace.py
+          tests/test_dla_protected_subspace_branches.py
+          tools/dla_protected_memory_quality_gates.py
+          tests/test_dla_protected_memory_quality_gate.py
+      - name: Run DLA protected-memory focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-dla-protected-memory-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_dla_protected_scar.py
+          tests/test_dla_protected_scar_branches.py
+          tests/test_dla_protected_subspace.py
+          tests/test_dla_protected_subspace_branches.py
+      - name: Enforce DLA protected-memory exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-dla-protected-memory-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/qec/dla_protected_scar.py,*/qec/dla_protected_subspace.py
+      - name: Run Rust DLA protected-memory parity tests
+        run: cargo test --manifest-path scpn_quantum_engine/Cargo.toml --lib test_memory_
+      - name: Validate installed DLA protected-memory Rust FFI
+        run: >-
+          python -m pytest -q tests/test_rust_ffi_validation.py
+          -k dla_protected_memory_metrics
+  hls-cosimulation-evidence-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Type-check HLS cosimulation-evidence quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/benchmarks/hls_cosimulation_evidence.py
+          src/scpn_quantum_control/codegen/ultrascale_hls.py
+          tests/test_ultrascale_hls_branch.py
+          tools/hls_cosimulation_evidence_quality_gates.py
+          tests/test_hls_cosimulation_evidence_quality_gate.py
+      - name: Ruff NumPy docstrings for HLS cosimulation-evidence quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/benchmarks/hls_cosimulation_evidence.py
+          src/scpn_quantum_control/codegen/ultrascale_hls.py
+          tests/test_hls_cosimulation_evidence.py
+          tests/test_run_hls_cosimulation_evidence.py
+          tests/test_ultrascale_hls.py
+          tests/test_ultrascale_hls_branch.py
+          tools/hls_cosimulation_evidence_quality_gates.py
+          tests/test_hls_cosimulation_evidence_quality_gate.py
+      - name: Run HLS cosimulation-evidence focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-hls-cosimulation-evidence-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_hls_cosimulation_evidence.py
+          tests/test_run_hls_cosimulation_evidence.py
+          tests/test_ultrascale_hls.py
+          tests/test_ultrascale_hls_branch.py
+      - name: Enforce HLS cosimulation-evidence exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-hls-cosimulation-evidence-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/hls_cosimulation_evidence.py,*/codegen/ultrascale_hls.py
+  magnetisation-sectors-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Type-check magnetisation-sector quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/analysis/magnetisation_sectors.py
+          src/scpn_quantum_control/analysis/spectral_form_factor.py
+          src/scpn_quantum_control/analysis/symmetry_sectors.py
+          src/scpn_quantum_control/analysis/translation_symmetry.py
+          tests/test_spectral_form_factor.py
+          tests/test_spectral_form_factor_branch.py
+          tests/test_symmetry_sectors.py
+          tests/test_symmetry_sectors_branch.py
+          tests/test_translation_symmetry.py
+          tests/test_translation_symmetry_contracts.py
+          tools/magnetisation_sectors_quality_gates.py
+          tests/test_magnetisation_sectors_quality_gate.py
+      - name: Ruff NumPy docstrings for magnetisation-sector owning cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/analysis/magnetisation_sectors.py
+          src/scpn_quantum_control/analysis/spectral_form_factor.py
+          src/scpn_quantum_control/analysis/symmetry_sectors.py
+          src/scpn_quantum_control/analysis/translation_symmetry.py
+          tests/test_magnetisation_sectors.py
+          tests/test_magnetisation_sectors_empty_guard.py
+          tests/test_spectral_form_factor.py
+          tests/test_spectral_form_factor_branch.py
+          tests/test_symmetry_sectors.py
+          tests/test_symmetry_sectors_branch.py
+          tests/test_translation_symmetry.py
+          tests/test_translation_symmetry_contracts.py
+          tools/magnetisation_sectors_quality_gates.py
+          tests/test_magnetisation_sectors_quality_gate.py
+      - name: Run magnetisation-sector connected focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-magnetisation-sectors-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_magnetisation_sectors.py
+          tests/test_magnetisation_sectors_empty_guard.py
+          tests/test_open_system_workflow.py
+          tests/test_rust_new_functions.py
+          tests/test_sparse_hamiltonian.py
+          tests/test_spectral_form_factor.py
+          tests/test_spectral_form_factor_branch.py
+          tests/test_analysis_topology_contracts.py
+          tests/test_symmetry_sectors.py
+          tests/test_symmetry_sectors_branch.py
+          tests/test_symmetry_sparse_workflow.py
+          tests/test_translation_symmetry.py
+          tests/test_translation_symmetry_contracts.py
+      - name: Enforce magnetisation-sector exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-magnetisation-sectors-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/analysis/magnetisation_sectors.py,*/analysis/spectral_form_factor.py,*/analysis/symmetry_sectors.py,*/analysis/translation_symmetry.py
+  sparse-hamiltonian-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/bridge/sparse_hamiltonian.py
+          tests/test_sparse_hamiltonian.py
+          tests/test_sparse_hamiltonian_branches.py
+          src/scpn_quantum_control/bridge/knm_hamiltonian.py
+          tests/test_knm_hamiltonian.py
+          tools/sparse_hamiltonian_quality_gates.py
+          tests/test_sparse_hamiltonian_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/bridge/sparse_hamiltonian.py
+          tests/test_sparse_hamiltonian.py
+          tests/test_sparse_hamiltonian_branches.py
+          src/scpn_quantum_control/bridge/knm_hamiltonian.py
+          tests/test_knm_hamiltonian.py
+          tools/sparse_hamiltonian_quality_gates.py
+          tests/test_sparse_hamiltonian_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-sparse-hamiltonian-quality.coverage --branch
+          -m pytest -q tests/test_sparse_hamiltonian.py
+          tests/test_sparse_hamiltonian_branches.py
+          tests/test_knm_hamiltonian.py
+          tests/test_knm_hamiltonian_branches.py
+          tests/test_knm_hamiltonian_mutation_kills.py
+          tests/test_knm_physical_validation_audit.py
+          tests/test_knm_properties.py
+          tests/test_xxz_hamiltonian.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-sparse-hamiltonian-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/bridge/sparse_hamiltonian.py,*/bridge/knm_hamiltonian.py
+  result-pack-seal-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/studio/result_pack_seal.py
+          tests/test_result_pack_seal.py
+          tools/result_pack_seal_quality_gates.py
+          tests/test_result_pack_seal_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/studio/result_pack_seal.py
+          tests/test_result_pack_seal.py
+          tools/result_pack_seal_quality_gates.py
+          tests/test_result_pack_seal_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-result-pack-seal-quality.coverage --branch
+          -m pytest -q tests/test_result_pack_seal.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-result-pack-seal-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/studio/result_pack_seal.py
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: "3.11"
+            requirements-file: requirements-ci-py311-linux.txt
+          - python-version: "3.12"
+            requirements-file: requirements-ci-py312-linux.txt
+          - python-version: "3.13"
+            requirements-file: requirements-ci-py313-linux.txt
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r ${{ matrix.requirements-file }}
+      - name: Install Studio recompute dependency
+        if: matrix.python-version != '3.11'
+        run: |
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - name: Download the ABI-matched Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-${{ matrix.python-version }}
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Run tests
+        run: pytest tests/ -v --tb=short -x -m "not slow and not hardware and not internal_corpus and not performance"
+      - name: Audit test quality
+        run: python tools/audit_test_quality.py
+      - name: Run tests with coverage (3.12 only)
+        if: matrix.python-version == '3.12'
+        run: |
+          pytest tests/ --cov=src/scpn_quantum_control --cov-branch --cov-report=xml --cov-fail-under=0 -m "not slow and not hardware and not internal_corpus and not performance"
+          python tools/audit_coverage_policy.py --coverage-xml coverage.xml
+      - name: Audit coverage gaps (3.12 only)
+        if: matrix.python-version == '3.12'
+        run: |
+          python tools/audit_coverage_gaps.py --json > coverage-gap-audit.json
+          python tools/audit_coverage_debt.py \
+            --coverage-audit coverage-gap-audit.json \
+            --check-current
+      - name: Upload coverage policy evidence (3.12 only)
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: coverage-gap-audit-${{ matrix.python-version }}
+          path: |
+            coverage.xml
+            coverage-gap-audit.json
+          retention-days: 30
+      - name: Smoke-test DLA-parity validation CLI (3.12 only)
+        if: matrix.python-version == '3.12'
+        run: python scripts/run_dla_parity_suite.py --json > /tmp/dla_parity_result.json
+      - name: Upload coverage
+        if: matrix.python-version == '3.12'
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f  # v5
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+
+  # Cross-platform package smoke. The full scientific artefact and
+  # documentation corpus is validated on Linux with the pinned Linux
+  # lock above; this job verifies that the install/import/core-QEC
+  # surface also works on macOS and Windows without pretending a
+  # Linux wheel-hash lock is portable across operating systems.
+  hardware-smoke:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Hardware tests (simulator only)
+        run: pytest tests/test_hardware_runner.py -v --tb=short -k "simulator"
+  integration-optional:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    continue-on-error: true
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Install sc-neurocore
+        run: python -m pip install --no-deps --require-hashes -r requirements-integration-sc-neurocore.txt
+      - name: Run cross-repo integration tests
+        run: pytest tests/test_snn_neurocore_e2e.py tests/test_cross_repo_wiring.py -v --tb=short
+  studio-conformance:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install pinned CI surface, the package, and the studio federation extra
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - name: Download the Python 3.12 Rust engine wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          name: scpn-quantum-engine-3.12
+          path: dist
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Gate the studio federation surface against the platform contract
+        run: >
+          python -m pytest
+          tests/test_studio_manifest.py
+          tests/test_studio_evidence_bundle.py
+          tests/test_studio_scorecard_bundle.py
+          tests/test_studio_support_matrix_bundle.py
+          tests/test_studio_recompute_kernel.py
+          tests/test_studio_reference_validation.py
+          tests/test_coverage_frontier.py
+          tests/test_result_pack_seal.py
+          tests/test_ml_dsa_seal.py
+          tests/test_differentiable_transform_support_matrix_artifact.py
+          tests/test_studio_xy_compile_recompute_artifact.py
+          tests/test_studio_qpu_result_pack.py
+          tests/test_studio_kuramoto_reference.py
+          tests/test_studio_kuramoto_scenario_artifact.py
+          tests/test_studio_program_ad_replay_artifact.py
+          tests/test_studio_benchmark_databank_bundle.py
+          -q

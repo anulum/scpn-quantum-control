@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -17,11 +18,12 @@ import tomllib
 
 from scpn_quantum_control import TraceADArray, TraceADScalar
 from scpn_quantum_control.control import realtime_runtime
+from tools.ci_workflow_inventory import read_ci_workflow_source, workflow_path_for_job
 
 
 def test_ci_lint_job_gates_documentation_surface() -> None:
     """CI must fail if repository documentation-surface findings reappear."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "Audit documentation surface" in workflow
     assert "python tools/audit_documentation_surface.py" in workflow
@@ -33,7 +35,7 @@ def test_ci_lint_job_gates_documentation_surface() -> None:
 
 def test_ci_lint_job_gates_generated_differentiable_support_matrix() -> None:
     """CI must reject generated-page, manifest, typing, or docstring drift."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "Audit generated differentiable support-matrix page" in workflow
     assert "python tools/differentiable_support_matrix_page.py --check" in workflow
@@ -45,7 +47,7 @@ def test_ci_lint_job_gates_generated_differentiable_support_matrix() -> None:
 
 def test_ci_lint_job_gates_generated_differentiable_reviewer_evidence() -> None:
     """CI must reject reviewer-page, catalogue, manifest, and typing drift."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "Audit generated differentiable reviewer-evidence page" in workflow
     assert "python tools/differentiable_reviewer_evidence_page.py --check" in workflow
@@ -57,7 +59,7 @@ def test_ci_lint_job_gates_generated_differentiable_reviewer_evidence() -> None:
 
 def test_ci_lint_job_gates_realtime_runtime_quality_cohort() -> None:
     """CI must retain strict typing and NumPy docstrings for realtime runtime."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "Type-check realtime runtime quality cohort" in workflow
     assert "python -m mypy --strict --explicit-package-bases" in workflow
@@ -88,7 +90,7 @@ def test_realtime_runtime_autodoc_matches_public_exports() -> None:
 
 def test_ci_gates_whole_program_trace_value_quality_and_exact_coverage() -> None:
     """CI must retain trace-value typing, docs, and focused 100% coverage."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "Type-check whole-program trace-value quality cohort" in workflow
     assert "Ruff NumPy docstrings for whole-program trace-value quality cohort" in workflow
@@ -100,12 +102,14 @@ def test_ci_gates_whole_program_trace_value_quality_and_exact_coverage() -> None
         "--include=*/whole_program_trace_values.py,*/whole_program_trace_predicates.py" in workflow
     )
     assert "--fail-under=100" in workflow
-    assert "needs['whole-program-trace-value-quality'].result" in workflow
+    assert workflow_path_for_job("whole-program-trace-value-quality").name == (
+        "ci-whole-program-trace.yml"
+    )
 
 
 def test_ci_gates_program_ad_array_indexing_exact_quality() -> None:
     """CI must retain array-indexing typing, docs, and exact branch coverage."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "Type-check Program-AD array-indexing quality cohort" in workflow
     assert "Ruff NumPy docstrings for Program-AD array-indexing quality cohort" in workflow
@@ -181,7 +185,7 @@ def test_trace_value_autodoc_exposes_both_public_value_types() -> None:
 
 def test_ci_lint_job_gates_additive_test_typing_policy() -> None:
     """CI must execute the registered strict-test cohort and type its audit."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "Audit additive strict test-typing cohort" in workflow
     assert "python tools/audit_test_typing_policy.py" in workflow
@@ -191,7 +195,7 @@ def test_ci_lint_job_gates_additive_test_typing_policy() -> None:
 
 def test_ci_coverage_job_collects_branches_and_preserves_the_line_gate() -> None:
     """CI must measure branches while enforcing lines through the policy audit."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "--cov-branch" in workflow
     assert "--cov-fail-under=0" in workflow
@@ -210,7 +214,7 @@ def test_ci_coverage_job_collects_branches_and_preserves_the_line_gate() -> None
 
 def test_ci_mlir_leaf_job_enforces_exact_branch_coverage() -> None:
     """CI must gate the complete post-baseline MLIR leaf owner at 100%."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "mlir-leaf-quality:" in workflow
     assert "Run MLIR leaf focused coverage" in workflow
@@ -224,12 +228,12 @@ def test_ci_mlir_leaf_job_enforces_exact_branch_coverage() -> None:
     assert "*/mlir_transform_plan_assembly.py" in workflow
     assert "*/mlir_workload_compilation.py" in workflow
     assert "--fail-under=100" in workflow
-    assert "needs['mlir-leaf-quality'].result" in workflow
+    assert workflow_path_for_job("mlir-leaf-quality").name == "ci-application-domain.yml"
 
 
 def test_ci_phase_qnode_affinity_job_enforces_exact_quality_and_coverage() -> None:
     """CI must keep affinity evidence typed, documented, and exactly covered."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "Type-check Phase-QNode affinity quality cohort" in workflow
     assert "Ruff NumPy docstrings for Phase-QNode affinity quality cohort" in workflow
@@ -241,12 +245,14 @@ def test_ci_phase_qnode_affinity_job_enforces_exact_quality_and_coverage() -> No
     assert "Enforce Phase-QNode affinity exact coverage" in workflow
     assert "--include=*/qnode_affinity_benchmark.py" in workflow
     assert "--fail-under=100" in workflow
-    assert "needs['phase-qnode-affinity-quality'].result" in workflow
+    assert workflow_path_for_job("phase-qnode-affinity-quality").name == (
+        "ci-application-domain.yml"
+    )
 
 
 def test_ci_studio_program_ad_job_enforces_exact_polyglot_quality() -> None:
     """CI must bind the Studio replay across Python, Rust, WASM, and TypeScript."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "Type-check Studio Program-AD replay quality cohort" in workflow
     assert "Ruff NumPy docstrings for Studio Program-AD replay quality cohort" in workflow
@@ -260,12 +266,12 @@ def test_ci_studio_program_ad_job_enforces_exact_polyglot_quality() -> None:
     assert "--coverage.include=src/panel/programAd.ts" in workflow
     assert "--coverage.include=src/panel/ProgramADReplayCard.tsx" in workflow
     assert workflow.count("--coverage.thresholds.branches=100") >= 1
-    assert "needs['studio-program-ad-quality'].result" in workflow
+    assert workflow_path_for_job("studio-program-ad-quality").name == ("ci-application-domain.yml")
 
 
 def test_ci_phase_qnode_vector_job_enforces_exact_branch_coverage() -> None:
     """CI must give the vector-transform owner an exact focused branch gate."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "phase-qnode-vector-quality:" in workflow
     assert "Run Phase-QNode vector focused coverage" in workflow
@@ -274,19 +280,21 @@ def test_ci_phase_qnode_vector_job_enforces_exact_branch_coverage() -> None:
     assert "Enforce Phase-QNode vector exact coverage" in workflow
     assert "--include=*/qnode_vector_transforms.py" in workflow
     assert "--fail-under=100" in workflow
-    assert "needs['phase-qnode-vector-quality'].result" in workflow
+    assert workflow_path_for_job("phase-qnode-vector-quality").name == (
+        "ci-application-domain.yml"
+    )
 
 
 def test_ci_phase_jax_qnode_gate_runs_after_the_real_cpu_overlay() -> None:
     """CI must execute exact JAX QNode coverage with the verified CPU overlay."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "Type-check Phase-QNode JAX quality cohort" in workflow
     assert "Ruff NumPy docstrings for Phase-QNode JAX quality cohort" in workflow
     assert "Run Phase-QNode JAX focused coverage" in workflow
     assert "tests/test_phase_jax_qnode_transforms.py" in workflow
     assert "tests/test_phase_jax_qnode_statevector_edges.py" in workflow
-    assert "--data-file=.coverage.phase-jax-qnode" in workflow
+    assert "--data-file=/tmp/scpn-qc-phase-jax-qnode.coverage" in workflow
     assert "--source=src/scpn_quantum_control/phase" in workflow
     assert "Enforce Phase-QNode JAX exact coverage" in workflow
     assert "--include=*/jax_qnode_transforms.py" in workflow
@@ -313,7 +321,7 @@ def test_coverage_sources_are_filesystem_paths_not_importable_packages() -> None
     """Coverage discovery must not import and then unload NumPy/Qiskit state."""
     filesystem_target = "--cov=src/scpn_quantum_control"
     importable_target = "--cov=scpn_quantum_control"
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     test_docs = Path("docs/test_infrastructure.md").read_text(encoding="utf-8")
     pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
 
@@ -332,7 +340,7 @@ def test_coverage_sources_are_filesystem_paths_not_importable_packages() -> None
 
 def test_ci_lint_gates_differentiable_external_validation_manifests() -> None:
     """CI lint must reject pinned-input drift before expensive test matrices."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "Audit differentiable external-validation manifests" in workflow
     assert "python tools/check_differentiable_external_validation.py" in workflow
@@ -378,7 +386,7 @@ def test_docker_reproduction_image_builds_credential_free_git_index() -> None:
 
 def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
     """CI must enforce strict mypy on promoted differentiable modules."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "mypy --strict" in workflow
     assert "src/scpn_quantum_control/differentiable.py" in workflow
@@ -430,7 +438,7 @@ def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
 
 def test_ci_gates_differentiable_docstring_ratchet() -> None:
     """CI must enforce Ruff D on docstring-clean differentiable modules."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "Ruff docstring ratchet for differentiable module hardening" in workflow
     assert "ruff check --isolated --select D,D413" in workflow
@@ -462,7 +470,7 @@ def test_ci_gates_differentiable_docstring_ratchet() -> None:
 
 def test_rust_audit_installer_retries_transient_crates_io_transport_errors() -> None:
     """The Rust advisory gate must tolerate transient crates.io transport errors."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "Install cargo-audit" in workflow
     assert 'CARGO_HTTP_MULTIPLEXING: "false"' in workflow
@@ -475,21 +483,21 @@ def test_rust_audit_installer_retries_transient_crates_io_transport_errors() -> 
 
 def test_ci_builds_and_reuses_native_wheels_for_supported_python_versions() -> None:
     """Native-dependent jobs must consume one ABI-matched wheel per Python version."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert "  native-wheels:" in workflow
     assert 'python-version: ["3.11", "3.12", "3.13"]' in workflow
     assert "name: scpn-quantum-engine-${{ matrix.python-version }}" in workflow
     assert "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c" in workflow
-    assert "needs['native-wheels'].result" in workflow
+    assert workflow_path_for_job("native-wheels").name == "ci-native-build.yml"
 
 
 def test_ci_optional_runtime_locks_and_preview_rules_are_explicit() -> None:
     """Focused gates must install locked runtimes without enabling new preview rules."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert workflow.count("requirements-ci-jax-py312-linux.txt") == 3
     assert workflow.count("requirements-ci-torch-cpu-py312-linux.txt") == 2
-    preview_commands = workflow.count("ruff check --isolated --preview --select")
+    preview_commands = len(re.findall(r"ruff check --isolated\s+--preview\s+--select", workflow))
     explicit_preview_configs = workflow.count("lint.explicit-preview-rules = true")
     assert preview_commands == explicit_preview_configs

@@ -7,10 +7,9 @@
 # SCPN Quantum Control — generalised parameter-shift quality-gate tests
 """Lock finite-spectrum parameter-shift quality commands into preflight and CI."""
 
-from pathlib import Path
-
 from tools import generalised_parameter_shift_quality_gates as quality_gates
 from tools import preflight
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def test_helper_builds_strict_preview_and_exact_gates() -> None:
@@ -40,7 +39,7 @@ def test_preflight_uses_helper_commands_verbatim() -> None:
 
 def test_ci_runs_and_aggregates_generalised_parameter_shift() -> None:
     """Keep the dedicated job and transitive aggregate dependency required."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     start = workflow.index("  generalised-parameter-shift-quality:")
     end = workflow.index("\n\n  differentiable-parameter-shift-quality:", start)
     block = workflow[start:end]

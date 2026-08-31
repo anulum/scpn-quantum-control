@@ -1,0 +1,578 @@
+{
+  "schema_version": 1,
+  "coordinator": ".github/workflows/ci.yml",
+  "required_gate": "ci-gate",
+  "limits": {
+    "coordinator_max_lines": 250,
+    "coordinator_max_bytes": 32768,
+    "reusable_max_lines": 1000,
+    "reusable_max_bytes": 102400,
+    "max_reusable_workflows": 32
+  },
+  "categories": [
+    {
+      "id": "static-analysis",
+      "workflow": ".github/workflows/ci-static-analysis.yml",
+      "caller_needs": [],
+      "jobs": [
+        "lint"
+      ]
+    },
+    {
+      "id": "native-build",
+      "workflow": ".github/workflows/ci-native-build.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "native-wheels"
+      ]
+    },
+    {
+      "id": "core-science",
+      "workflow": ".github/workflows/ci-core-science.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "stable-core-product-quality",
+        "open-system-completeness-quality",
+        "thermo-readiness-product-quality",
+        "adaptive-branching-quality",
+        "quantum-sensing-quality",
+        "phase-coupling-learning-quality",
+        "phase-objectives-quality",
+        "provider-gradient-audit-quality",
+        "entropy-randomness-quality",
+        "topology-control-quality",
+        "quantum-sync-oracle-quality",
+        "custom-derivatives-product-quality"
+      ]
+    },
+    {
+      "id": "control-provider",
+      "workflow": ".github/workflows/ci-control-provider.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "kyma-mechanism-product-quality",
+        "campaign-harness-product-quality",
+        "geometric-control-product-quality",
+        "chimera-control-quality",
+        "whole-program-frontend-contracts-quality",
+        "variational-metric-quality",
+        "qnode-circuit-contracts-quality",
+        "topology-kernel-schema-quality",
+        "feedback-loop-quality",
+        "analog-platform-catalogue-quality",
+        "hardware-hal-quality"
+      ]
+    },
+    {
+      "id": "topology-evidence",
+      "workflow": ".github/workflows/ci-topology-evidence.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "dla-topology-parity-quality",
+        "topology-kernel-evidence-quality",
+        "kyma-v2-dynamics-quality",
+        "kyma-dynamics-quality",
+        "kyma-v2-coupling-quality",
+        "differentiable-audit-contracts-quality",
+        "dla-topology-optimizer-quality",
+        "dla-topology-schema-quality",
+        "fusion-core-frc-bridge-quality",
+        "hardware-experiment-vqe-quality",
+        "transform-support-matrix-artifact-quality",
+        "gradient-plan-explanation-artifact-quality"
+      ]
+    },
+    {
+      "id": "differentiable-control",
+      "workflow": ".github/workflows/ci-differentiable-control.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "finite-size-scaling-quality",
+        "hardware-experiment-control-quality",
+        "generalised-parameter-shift-quality",
+        "differentiable-parameter-shift-quality",
+        "varqite-quality",
+        "xy-compiler-quality",
+        "psi-lattice-quality",
+        "differentiable-sparse-derivatives-quality",
+        "program-ad-adjoint-quality"
+      ]
+    },
+    {
+      "id": "compiler-cosimulation",
+      "workflow": ".github/workflows/ci-compiler-cosimulation.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "qpu-compute-types-quality",
+        "cosimulation-quality",
+        "dla-topology-objectives-quality",
+        "dla-topology-projection-quality",
+        "quantum-neuromorphic-bridge-quality"
+      ]
+    },
+    {
+      "id": "analysis-model",
+      "workflow": ".github/workflows/ci-analysis-model.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "koopman-quality",
+        "quantum-phi-quality",
+        "qpu-result-pack-quality",
+        "error-aware-chain-quality",
+        "kuramoto-variants-quality",
+        "kuramoto-core-quality",
+        "mps-evolution-quality",
+        "knm-key-quality",
+        "differentiable-implicit-sensitivity-quality",
+        "differentiable-residual-weights-quality",
+        "differentiable-consistency-quality",
+        "differentiable-jax-adapter-quality"
+      ]
+    },
+    {
+      "id": "algorithm-experiment",
+      "workflow": ".github/workflows/ci-algorithm-experiment.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "program-ad-alias-analysis-quality",
+        "general-unitary-quality",
+        "gpu-batch-vqe-quality",
+        "avqds-quality",
+        "ansatz-benchmark-quality",
+        "symmetry-verification-quality",
+        "experiment-helpers-quality",
+        "predictive-coding-quality",
+        "hierarchical-keys-quality",
+        "sync-uncertainty-quality",
+        "coupling-invariant-quality",
+        "experiment-dynamics-quality",
+        "phase-artifact-quality"
+      ]
+    },
+    {
+      "id": "simulation-artifact",
+      "workflow": ".github/workflows/ci-simulation-artifact.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "nqs-ansatz-quality",
+        "layout-relaxation-experiment-quality",
+        "tn-mps-crossover-admission-quality",
+        "xy-compile-recompute-artifact-quality",
+        "control-structured-ansatz-quality",
+        "dla-parity-witness-quality",
+        "hamiltonian-learning-quality",
+        "phase-results-quality",
+        "gradient-backend-quality",
+        "differentiable-exact-modes-quality",
+        "mlir-whole-program-native-quality",
+        "closed-loop-publication-quality",
+        "kuramoto-layout-optimiser-quality",
+        "multimodal-schema-quality",
+        "qrc-baseline-quality",
+        "josephson-magnitude-study-quality",
+        "dynq-layout-quality",
+        "topology-kernel-classifier-quality",
+        "tn-mps-baseline-design-quality"
+      ]
+    },
+    {
+      "id": "product-deployment",
+      "workflow": ".github/workflows/ci-product-deployment.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "error-mitigation-product-quality",
+        "cloud-native-deployment-quality",
+        "control-stack-compose-quality",
+        "public-api-stability-quality",
+        "polyglot-parity-certificate-quality",
+        "program-ad-fuzz-assurance-quality",
+        "multi-hal-federation-quality",
+        "hermetic-reproduction-kit-quality",
+        "hardware-safe-execution-quality",
+        "qpu-compute-product-quality",
+        "wirtinger-implicit-product-quality",
+        "migration-guides-product-quality",
+        "visualisation-dashboard-product-quality",
+        "stochastic-estimators-product-quality",
+        "differentiable-notebook-curriculum-quality",
+        "studio-executive-product-quality"
+      ]
+    },
+    {
+      "id": "assurance-policy",
+      "workflow": ".github/workflows/ci-assurance-policy.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "advanced-witnesses-quality",
+        "coverage-frontier-quality",
+        "compiler-boundary-product-quality",
+        "scientific-crosscheck-quality",
+        "resource-budget-gate-quality",
+        "advantage-language-protocol-quality",
+        "metamorphic-ad-verification-quality",
+        "competitive-baseline-watch-quality"
+      ]
+    },
+    {
+      "id": "benchmark-evidence",
+      "workflow": ".github/workflows/ci-benchmark-evidence.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "whole-program-ad-product-quality",
+        "neural-operator-cost-model-quality",
+        "neural-operator-baseline-product-quality",
+        "entanglement-sync-evidence-quality",
+        "bench-cli-quality",
+        "identity-binding-spec-quality",
+        "identity-coherence-budget-quality",
+        "identity-robustness-quality",
+        "backend-selector-quality",
+        "logging-setup-quality",
+        "ssgf-geometry-gradient-quality",
+        "codesign-components-quality",
+        "enaqt-evidence-quality",
+        "diff-contract-audit-quality",
+        "coupling-recovery-quality",
+        "governed-route-matrix-quality",
+        "attested-result-pack-quality",
+        "open-system-objective-quality",
+        "external-validation-manifest-quality",
+        "gradient-tape-quality",
+        "fault-tolerant-resource-product-quality"
+      ]
+    },
+    {
+      "id": "application-domain",
+      "workflow": ".github/workflows/ci-application-domain.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "phase-qnode-product-quality",
+        "rust-accel-import-resilience-quality",
+        "studio-executive-benchmark-quality",
+        "synchronisation-witness-quality",
+        "experiment-mitigation-quality",
+        "research-lane-registry-quality",
+        "theory-hook-promotion-quality",
+        "scorecard-acceptance-engine-quality",
+        "unsuitable-scenario-registry-quality",
+        "kuramoto-layout-cost-quality",
+        "kuramoto-layout-relaxation-quality",
+        "application-honesty-quality",
+        "layout-method-comparison-quality",
+        "phase-trainability-quality",
+        "decisive-advantage-quality",
+        "mlir-leaf-quality",
+        "phase-qnode-affinity-quality",
+        "phase-qnode-vector-quality",
+        "studio-program-ad-quality"
+      ]
+    },
+    {
+      "id": "whole-program-trace",
+      "workflow": ".github/workflows/ci-whole-program-trace.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "whole-program-trace-value-quality"
+      ]
+    },
+    {
+      "id": "runtime-package",
+      "workflow": ".github/workflows/ci-runtime-package.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "test-extra-platforms",
+        "type-check",
+        "wheel-check",
+        "install-smoke",
+        "minimal-install"
+      ]
+    },
+    {
+      "id": "framework-parity",
+      "workflow": ".github/workflows/ci-framework-parity.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "differentiable-parity",
+        "differentiable-isolated-benchmark"
+      ]
+    },
+    {
+      "id": "security",
+      "workflow": ".github/workflows/ci-security.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "security",
+        "rust-audit"
+      ]
+    },
+    {
+      "id": "studio",
+      "workflow": ".github/workflows/ci-studio.yml",
+      "caller_needs": [
+        "static-analysis"
+      ],
+      "jobs": [
+        "studio-replay-quality",
+        "studio-simulation-quality",
+        "p-h1-open-guard-quality",
+        "studio-qec-readiness-bundle-quality",
+        "studio-readout-mitigation-bundle-quality",
+        "studio-scorecard-bundle-quality",
+        "studio-web"
+      ]
+    },
+    {
+      "id": "native-integration",
+      "workflow": ".github/workflows/ci-native-integration.yml",
+      "caller_needs": [
+        "static-analysis",
+        "native-build"
+      ],
+      "jobs": [
+        "ml-dsa-seal-quality",
+        "studio-executive-differentiate-quality",
+        "pulse-shaping-quality",
+        "openpulse-control-quality",
+        "dla-protected-memory-quality",
+        "hls-cosimulation-evidence-quality",
+        "magnetisation-sectors-quality",
+        "sparse-hamiltonian-quality",
+        "result-pack-seal-quality",
+        "test",
+        "hardware-smoke",
+        "integration-optional",
+        "studio-conformance"
+      ]
+    }
+  ],
+  "job_order": [
+    "lint",
+    "native-wheels",
+    "stable-core-product-quality",
+    "open-system-completeness-quality",
+    "thermo-readiness-product-quality",
+    "adaptive-branching-quality",
+    "quantum-sensing-quality",
+    "phase-coupling-learning-quality",
+    "phase-objectives-quality",
+    "provider-gradient-audit-quality",
+    "entropy-randomness-quality",
+    "topology-control-quality",
+    "quantum-sync-oracle-quality",
+    "custom-derivatives-product-quality",
+    "kyma-mechanism-product-quality",
+    "campaign-harness-product-quality",
+    "geometric-control-product-quality",
+    "chimera-control-quality",
+    "whole-program-frontend-contracts-quality",
+    "variational-metric-quality",
+    "qnode-circuit-contracts-quality",
+    "topology-kernel-schema-quality",
+    "feedback-loop-quality",
+    "analog-platform-catalogue-quality",
+    "hardware-hal-quality",
+    "dla-topology-parity-quality",
+    "topology-kernel-evidence-quality",
+    "ml-dsa-seal-quality",
+    "kyma-v2-dynamics-quality",
+    "kyma-dynamics-quality",
+    "kyma-v2-coupling-quality",
+    "differentiable-audit-contracts-quality",
+    "dla-topology-optimizer-quality",
+    "dla-topology-schema-quality",
+    "fusion-core-frc-bridge-quality",
+    "hardware-experiment-vqe-quality",
+    "transform-support-matrix-artifact-quality",
+    "gradient-plan-explanation-artifact-quality",
+    "finite-size-scaling-quality",
+    "studio-executive-differentiate-quality",
+    "hardware-experiment-control-quality",
+    "pulse-shaping-quality",
+    "openpulse-control-quality",
+    "generalised-parameter-shift-quality",
+    "differentiable-parameter-shift-quality",
+    "varqite-quality",
+    "xy-compiler-quality",
+    "psi-lattice-quality",
+    "dla-protected-memory-quality",
+    "differentiable-sparse-derivatives-quality",
+    "program-ad-adjoint-quality",
+    "qpu-compute-types-quality",
+    "hls-cosimulation-evidence-quality",
+    "cosimulation-quality",
+    "dla-topology-objectives-quality",
+    "dla-topology-projection-quality",
+    "magnetisation-sectors-quality",
+    "quantum-neuromorphic-bridge-quality",
+    "koopman-quality",
+    "quantum-phi-quality",
+    "qpu-result-pack-quality",
+    "error-aware-chain-quality",
+    "kuramoto-variants-quality",
+    "kuramoto-core-quality",
+    "mps-evolution-quality",
+    "knm-key-quality",
+    "differentiable-implicit-sensitivity-quality",
+    "differentiable-residual-weights-quality",
+    "differentiable-consistency-quality",
+    "differentiable-jax-adapter-quality",
+    "program-ad-alias-analysis-quality",
+    "general-unitary-quality",
+    "gpu-batch-vqe-quality",
+    "avqds-quality",
+    "ansatz-benchmark-quality",
+    "symmetry-verification-quality",
+    "experiment-helpers-quality",
+    "predictive-coding-quality",
+    "hierarchical-keys-quality",
+    "sync-uncertainty-quality",
+    "coupling-invariant-quality",
+    "experiment-dynamics-quality",
+    "phase-artifact-quality",
+    "nqs-ansatz-quality",
+    "sparse-hamiltonian-quality",
+    "result-pack-seal-quality",
+    "layout-relaxation-experiment-quality",
+    "tn-mps-crossover-admission-quality",
+    "xy-compile-recompute-artifact-quality",
+    "control-structured-ansatz-quality",
+    "dla-parity-witness-quality",
+    "hamiltonian-learning-quality",
+    "phase-results-quality",
+    "gradient-backend-quality",
+    "differentiable-exact-modes-quality",
+    "mlir-whole-program-native-quality",
+    "closed-loop-publication-quality",
+    "kuramoto-layout-optimiser-quality",
+    "multimodal-schema-quality",
+    "qrc-baseline-quality",
+    "josephson-magnitude-study-quality",
+    "dynq-layout-quality",
+    "topology-kernel-classifier-quality",
+    "tn-mps-baseline-design-quality",
+    "error-mitigation-product-quality",
+    "cloud-native-deployment-quality",
+    "control-stack-compose-quality",
+    "public-api-stability-quality",
+    "polyglot-parity-certificate-quality",
+    "program-ad-fuzz-assurance-quality",
+    "multi-hal-federation-quality",
+    "hermetic-reproduction-kit-quality",
+    "hardware-safe-execution-quality",
+    "qpu-compute-product-quality",
+    "wirtinger-implicit-product-quality",
+    "migration-guides-product-quality",
+    "visualisation-dashboard-product-quality",
+    "stochastic-estimators-product-quality",
+    "differentiable-notebook-curriculum-quality",
+    "studio-executive-product-quality",
+    "advanced-witnesses-quality",
+    "coverage-frontier-quality",
+    "compiler-boundary-product-quality",
+    "scientific-crosscheck-quality",
+    "resource-budget-gate-quality",
+    "advantage-language-protocol-quality",
+    "metamorphic-ad-verification-quality",
+    "competitive-baseline-watch-quality",
+    "whole-program-ad-product-quality",
+    "neural-operator-cost-model-quality",
+    "neural-operator-baseline-product-quality",
+    "entanglement-sync-evidence-quality",
+    "bench-cli-quality",
+    "identity-binding-spec-quality",
+    "identity-coherence-budget-quality",
+    "identity-robustness-quality",
+    "backend-selector-quality",
+    "logging-setup-quality",
+    "ssgf-geometry-gradient-quality",
+    "codesign-components-quality",
+    "enaqt-evidence-quality",
+    "diff-contract-audit-quality",
+    "coupling-recovery-quality",
+    "governed-route-matrix-quality",
+    "attested-result-pack-quality",
+    "open-system-objective-quality",
+    "external-validation-manifest-quality",
+    "gradient-tape-quality",
+    "fault-tolerant-resource-product-quality",
+    "phase-qnode-product-quality",
+    "rust-accel-import-resilience-quality",
+    "studio-executive-benchmark-quality",
+    "synchronisation-witness-quality",
+    "experiment-mitigation-quality",
+    "research-lane-registry-quality",
+    "theory-hook-promotion-quality",
+    "scorecard-acceptance-engine-quality",
+    "unsuitable-scenario-registry-quality",
+    "kuramoto-layout-cost-quality",
+    "kuramoto-layout-relaxation-quality",
+    "application-honesty-quality",
+    "layout-method-comparison-quality",
+    "phase-trainability-quality",
+    "decisive-advantage-quality",
+    "mlir-leaf-quality",
+    "phase-qnode-affinity-quality",
+    "phase-qnode-vector-quality",
+    "studio-program-ad-quality",
+    "whole-program-trace-value-quality",
+    "test",
+    "test-extra-platforms",
+    "type-check",
+    "wheel-check",
+    "install-smoke",
+    "minimal-install",
+    "differentiable-parity",
+    "differentiable-isolated-benchmark",
+    "security",
+    "rust-audit",
+    "hardware-smoke",
+    "integration-optional",
+    "studio-replay-quality",
+    "studio-simulation-quality",
+    "p-h1-open-guard-quality",
+    "studio-qec-readiness-bundle-quality",
+    "studio-readout-mitigation-bundle-quality",
+    "studio-scorecard-bundle-quality",
+    "studio-conformance",
+    "studio-web"
+  ],
+  "optional_jobs": [
+    "differentiable-isolated-benchmark",
+    "hardware-smoke",
+    "integration-optional"
+  ]
+}

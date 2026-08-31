@@ -11,6 +11,7 @@ from pathlib import Path
 
 from tools import differentiable_jax_adapter_quality_gates as quality_gates
 from tools import preflight
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
@@ -57,7 +58,7 @@ def test_preflight_uses_helper_defined_gates() -> None:
 
 def test_ci_runs_and_aggregates_differentiable_jax_adapter_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     start = workflow.index("  differentiable-jax-adapter-quality:")
     end = workflow.index("\n\n  program-ad-alias-analysis-quality:", start)
     block = workflow[start:end]

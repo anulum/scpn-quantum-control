@@ -7,10 +7,9 @@
 # SCPN Quantum Control — open-system-objective quality-gate tests
 """Lock open-system-objective quality gates into preflight and CI."""
 
-from pathlib import Path
-
 from tools import open_system_objective_quality_gates as quality_gates
 from tools import preflight
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
@@ -45,7 +44,7 @@ def test_preflight_uses_helper_defined_gates() -> None:
 
 def test_ci_runs_and_aggregates_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
-    workflow = Path(".github/workflows/ci.yml").read_text()
+    workflow = read_ci_workflow_source()
     start = workflow.index("  open-system-objective-quality:")
     end = workflow.index("\n\n  external-validation-manifest-quality:", start)
     block = workflow[start:end]

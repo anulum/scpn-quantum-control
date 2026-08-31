@@ -1,0 +1,453 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — CI Differentiable Control
+name: CI / Differentiable Control
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  finite-size-scaling-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check finite-size scaling quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/analysis/finite_size_scaling.py
+          src/scpn_quantum_control/analysis/phase_diagram.py
+          src/scpn_quantum_control/analysis/vortex_binding.py
+          tests/test_finite_size_scaling.py
+          tests/test_phase_diagram.py
+          tests/test_vortex_binding.py
+          tools/finite_size_scaling_quality_gates.py
+          tests/test_finite_size_scaling_quality_gate.py
+      - name: Ruff NumPy docstrings for finite-size scaling quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/analysis/finite_size_scaling.py
+          src/scpn_quantum_control/analysis/phase_diagram.py
+          src/scpn_quantum_control/analysis/vortex_binding.py
+          tests/test_finite_size_scaling.py
+          tests/test_phase_diagram.py
+          tests/test_vortex_binding.py
+          tools/finite_size_scaling_quality_gates.py
+          tests/test_finite_size_scaling_quality_gate.py
+      - name: Run finite-size scaling focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-finite-size-scaling-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_finite_size_scaling.py
+          tests/test_phase_diagram.py
+          tests/test_phase_diagram_branches.py
+          tests/test_vortex_binding.py
+      - name: Enforce finite-size scaling exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-finite-size-scaling-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/analysis/finite_size_scaling.py,*/analysis/phase_diagram.py,*/analysis/vortex_binding.py
+  hardware-experiment-control-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check hardware experiment-control quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/hardware/experiment_control.py
+          tools/hardware_experiment_control_quality_gates.py
+          tests/test_hardware_experiment_control_quality_gate.py
+      - name: Ruff NumPy docstrings for hardware experiment-control quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/hardware/experiment_control.py
+          tests/test_hardware_runner.py
+          tests/test_hardware_experiments_contracts.py
+          tools/hardware_experiment_control_quality_gates.py
+          tests/test_hardware_experiment_control_quality_gate.py
+      - name: Run hardware experiment-control focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-hardware-experiment-control-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_hardware_runner.py
+          tests/test_hardware_experiments_contracts.py
+      - name: Enforce hardware experiment-control exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-hardware-experiment-control-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/hardware/experiment_control.py
+  generalised-parameter-shift-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check generalised parameter-shift quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/generalised_parameter_shift.py
+          tests/test_phase_generalised_parameter_shift.py
+          tools/generalised_parameter_shift_quality_gates.py
+          tests/test_generalised_parameter_shift_quality_gate.py
+      - name: Ruff preview NumPy docs for generalised parameter-shift quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/generalised_parameter_shift.py
+          tests/test_phase_generalised_parameter_shift.py
+          tools/generalised_parameter_shift_quality_gates.py
+          tests/test_generalised_parameter_shift_quality_gate.py
+      - name: Run generalised parameter-shift focused coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-generalised-parameter-shift-quality.coverage --branch
+          -m pytest -q tests/test_phase_generalised_parameter_shift.py
+      - name: Enforce generalised parameter-shift exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-generalised-parameter-shift-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/phase/generalised_parameter_shift.py
+  differentiable-parameter-shift-quality:
+    needs: generalised-parameter-shift-quality
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check differentiable parameter-shift quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_parameter_shift.py
+          src/scpn_quantum_control/phase/param_shift.py
+          tests/test_phase_param_shift.py
+          tools/differentiable_parameter_shift_quality_gates.py
+          tests/test_differentiable_parameter_shift_quality_gate.py
+      - name: Ruff NumPy docstrings for differentiable parameter-shift quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_parameter_shift.py
+          src/scpn_quantum_control/phase/param_shift.py
+          tests/test_differentiable_parameter_shift.py
+          tests/test_phase_param_shift.py
+          tools/differentiable_parameter_shift_quality_gates.py
+          tests/test_differentiable_parameter_shift_quality_gate.py
+      - name: Run differentiable parameter-shift focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-differentiable-parameter-shift-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_differentiable_parameter_shift.py
+          tests/test_param_shift.py
+          tests/test_param_shift_contracts.py
+          tests/test_phase_gradient_backend.py
+          tests/test_phase_gradient_training.py
+          tests/test_phase_param_shift.py
+          tests/test_stochastic_gradient_failure_policy.py
+      - name: Enforce differentiable parameter-shift exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-differentiable-parameter-shift-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/differentiable_parameter_shift.py,*/phase/param_shift.py
+  varqite-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check VarQITE quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/varqite.py
+          tests/test_varqite.py
+          tools/varqite_quality_gates.py
+          tests/test_varqite_quality_gate.py
+      - name: Ruff NumPy docstrings for VarQITE quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413,D417,D420
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/varqite.py
+          tests/test_varqite.py
+          tools/varqite_quality_gates.py
+          tests/test_varqite_quality_gate.py
+      - name: Run VarQITE focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-varqite-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_varqite.py
+          tests/test_phase_dynamics_contracts.py
+      - name: Enforce VarQITE exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-varqite-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/phase/varqite.py
+  xy-compiler-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check XY compiler quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/xy_compiler.py
+          tests/test_xy_compiler.py
+          tools/xy_compiler_quality_gates.py
+          tests/test_xy_compiler_quality_gate.py
+      - name: Ruff NumPy docstrings for XY compiler quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/xy_compiler.py
+          tests/test_xy_compiler.py
+          tools/xy_compiler_quality_gates.py
+          tests/test_xy_compiler_quality_gate.py
+      - name: Run XY compiler focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-xy-compiler-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_xy_compiler.py
+          tests/test_xy_compiler_contracts.py
+      - name: Enforce XY compiler exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-xy-compiler-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/phase/xy_compiler.py
+  psi-lattice-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check psi-field lattice quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/psi_field/lattice.py
+          src/scpn_quantum_control/psi_field/observables.py
+          src/scpn_quantum_control/psi_field/scpn_mapping.py
+          tests/test_psi_field.py
+          tests/test_lattice_branches.py
+          tools/psi_lattice_quality_gates.py
+          tests/test_psi_lattice_quality_gate.py
+      - name: Ruff NumPy docstrings for psi-field lattice quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/psi_field/lattice.py
+          src/scpn_quantum_control/psi_field/observables.py
+          src/scpn_quantum_control/psi_field/scpn_mapping.py
+          tests/test_psi_field.py
+          tests/test_lattice_branches.py
+          tools/psi_lattice_quality_gates.py
+          tests/test_psi_lattice_quality_gate.py
+      - name: Run psi-field lattice focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-psi-lattice-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_psi_field.py
+          tests/test_lattice_branches.py
+      - name: Enforce psi-field lattice exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-psi-lattice-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/psi_field/lattice.py,*/psi_field/observables.py,*/psi_field/scpn_mapping.py
+      - name: Run Rust psi-field lattice parity tests
+        run: cargo test --manifest-path scpn_quantum_engine/Cargo.toml --lib gauge_lattice
+  differentiable-sparse-derivatives-quality:
+    needs: [varqite-quality, xy-compiler-quality, psi-lattice-quality]
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check differentiable sparse-derivative quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_sparse_derivatives.py
+          src/scpn_quantum_control/differentiable_fisher.py
+          tests/test_differentiable_fisher.py
+          tools/differentiable_sparse_derivatives_quality_gates.py
+          tests/test_differentiable_sparse_derivatives_quality_gate.py
+      - name: Ruff NumPy docstrings for differentiable sparse-derivative quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_sparse_derivatives.py
+          src/scpn_quantum_control/differentiable_fisher.py
+          tests/test_differentiable_sparse_derivatives.py
+          tests/test_differentiable_fisher.py
+          tools/differentiable_sparse_derivatives_quality_gates.py
+          tests/test_differentiable_sparse_derivatives_quality_gate.py
+      - name: Run differentiable sparse-derivative focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-differentiable-sparse-derivatives-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_differentiable_sparse_derivatives.py
+          tests/test_differentiable_fisher.py
+      - name: Enforce differentiable sparse-derivative exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-differentiable-sparse-derivatives-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/differentiable_sparse_derivatives.py,*/differentiable_fisher.py
+  program-ad-adjoint-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check Program AD adjoint quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/program_ad_adjoint.py
+          src/scpn_quantum_control/program_ad_adjoint_generation.py
+          tests/test_program_ad_adjoint_generation.py
+          tests/test_program_ad_adjoint_generation_docstrings.py
+          tools/program_ad_adjoint_quality_gates.py
+          tests/test_program_ad_adjoint_quality_gate.py
+      - name: Ruff NumPy docstrings for Program AD adjoint quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/program_ad_adjoint.py
+          src/scpn_quantum_control/program_ad_adjoint_generation.py
+          tests/test_adjoint_replay_product.py
+          tests/test_differentiable_programming_benchmark_program_ir_edges.py
+          tests/test_program_ad_adjoint_generation.py
+          tests/test_program_ad_adjoint_generation_docstrings.py
+          tests/test_program_adjoint_replay.py
+          tools/program_ad_adjoint_quality_gates.py
+          tests/test_program_ad_adjoint_quality_gate.py
+      - name: Run Program AD adjoint focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-program-ad-adjoint-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_adjoint_replay_product.py
+          tests/test_differentiable_programming_benchmark_program_ir_edges.py
+          tests/test_program_ad_adjoint_generation.py
+          tests/test_program_ad_adjoint_generation_docstrings.py
+          tests/test_program_adjoint_replay.py
+          tests/test_program_ad_runtime_registry_dispatch.py
+      - name: Enforce Program AD adjoint exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-program-ad-adjoint-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/program_ad_adjoint.py,*/program_ad_adjoint_generation.py

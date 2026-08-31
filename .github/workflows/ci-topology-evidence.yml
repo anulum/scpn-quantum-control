@@ -1,0 +1,581 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — CI Topology Evidence
+name: CI / Topology Evidence
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  dla-topology-parity-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check DLA topology parity quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/dla_topology_control/parity.py
+          src/scpn_quantum_control/analysis/dla_parity_theorem.py
+          src/scpn_quantum_control/dla_parity/__init__.py
+          src/scpn_quantum_control/dla_parity/baselines.py
+          src/scpn_quantum_control/dla_parity/dataset.py
+          src/scpn_quantum_control/dla_parity/reproduce.py
+          tests/test_dla_parity_theorem.py
+          tests/test_dla_parity_init.py
+          tests/test_dla_parity_baselines.py
+          tests/test_dla_parity_dataset.py
+          tests/test_dla_parity_reproduce.py
+          tools/dla_topology_parity_quality_gates.py
+          tests/test_dla_topology_parity_quality_gate.py
+      - name: Ruff NumPy docstrings for DLA topology parity quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/dla_topology_control/parity.py
+          src/scpn_quantum_control/analysis/dla_parity_theorem.py
+          src/scpn_quantum_control/dla_parity/__init__.py
+          src/scpn_quantum_control/dla_parity/baselines.py
+          src/scpn_quantum_control/dla_parity/dataset.py
+          src/scpn_quantum_control/dla_parity/reproduce.py
+          tests/test_dla_topology_control_parity.py
+          tests/test_dla_parity_theorem.py
+          tests/test_dla_parity_init.py
+          tests/test_dla_parity_baselines.py
+          tests/test_dla_parity_dataset.py
+          tests/test_dla_parity_reproduce.py
+          tools/dla_topology_parity_quality_gates.py
+          tests/test_dla_topology_parity_quality_gate.py
+      - name: Run DLA topology parity focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-dla-topology-parity-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_dla_topology_control_parity.py
+          tests/test_dla_topology_control_objectives.py
+          tests/test_dla_topology_control_optimizer.py
+          tests/test_dla_parity_theorem.py
+          tests/test_dla_parity_init.py
+          tests/test_dla_parity_baselines.py
+          tests/test_dla_parity_dataset.py
+          tests/test_dla_parity_reproduce.py
+      - name: Enforce DLA topology parity exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-dla-topology-parity-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/dla_topology_control/parity.py,*/analysis/dla_parity_theorem.py,*/dla_parity/__init__.py,*/dla_parity/baselines.py,*/dla_parity/dataset.py,*/dla_parity/reproduce.py
+  topology-kernel-evidence-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check topology-kernel evidence quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/topology_kernel_product/evidence.py
+          tools/topology_kernel_evidence_quality_gates.py
+          tests/test_topology_kernel_evidence_quality_gate.py
+      - name: Ruff NumPy docstrings for topology-kernel evidence quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/topology_kernel_product/evidence.py
+          tests/test_topology_kernel_product_evidence.py
+          tools/topology_kernel_evidence_quality_gates.py
+          tests/test_topology_kernel_evidence_quality_gate.py
+      - name: Run topology-kernel evidence focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-topology-kernel-evidence-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_topology_kernel_product_evidence.py
+      - name: Enforce topology-kernel evidence exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-topology-kernel-evidence-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/topology_kernel_product/evidence.py
+  kyma-v2-dynamics-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-jax-py312-linux.txt
+      - name: Type-check KYMA v2 dynamics quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/benchmarks/kyma_v2/dynamics.py
+          tools/kyma_v2_dynamics_quality_gates.py
+          tests/test_kyma_v2_dynamics_quality_gate.py
+      - name: Ruff NumPy docstrings for KYMA v2 dynamics quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/benchmarks/kyma_v2/dynamics.py
+          tests/test_kyma_v2_dynamics.py
+          tests/test_kyma_v2_teacher.py
+          tools/kyma_v2_dynamics_quality_gates.py
+          tests/test_kyma_v2_dynamics_quality_gate.py
+      - name: Run KYMA v2 dynamics focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-kyma-v2-dynamics-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_kyma_v2_dynamics.py
+          tests/test_kyma_v2_teacher.py
+      - name: Enforce KYMA v2 dynamics exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-kyma-v2-dynamics-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/benchmarks/kyma_v2/dynamics.py
+  kyma-dynamics-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-jax-py312-linux.txt
+      - name: Type-check legacy KYMA dynamics quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/benchmarks/kyma/dynamics.py
+          tools/kyma_dynamics_quality_gates.py
+          tests/test_kyma_dynamics_quality_gate.py
+      - name: Ruff NumPy docstrings for legacy KYMA dynamics quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/benchmarks/kyma/dynamics.py
+          tests/test_kyma_dynamics.py
+          tests/test_kyma_models.py
+          tests/test_kyma_probe.py
+          tools/kyma_dynamics_quality_gates.py
+          tests/test_kyma_dynamics_quality_gate.py
+      - name: Run legacy KYMA dynamics focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-kyma-dynamics-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_kyma_dynamics.py
+          tests/test_kyma_models.py
+          tests/test_kyma_probe.py
+      - name: Enforce legacy KYMA dynamics exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-kyma-dynamics-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/benchmarks/kyma/dynamics.py
+  kyma-v2-coupling-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-jax-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/benchmarks/kyma_v2/coupling.py
+          tests/test_kyma_v2_coupling.py
+          tools/kyma_v2_coupling_quality_gates.py
+          tests/test_kyma_v2_coupling_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/benchmarks/kyma_v2/coupling.py
+          tests/test_kyma_v2_coupling.py
+          tools/kyma_v2_coupling_quality_gates.py
+          tests/test_kyma_v2_coupling_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-kyma-v2-coupling-quality.coverage --branch
+          -m pytest -q tests/test_kyma_v2_coupling.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-kyma-v2-coupling-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/benchmarks/kyma_v2/coupling.py
+  differentiable-audit-contracts-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check differentiable audit-contract quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/differentiable_audit_contracts.py
+          tools/differentiable_audit_contracts_quality_gates.py
+          tests/test_differentiable_audit_contracts_quality_gate.py
+      - name: Ruff NumPy docstrings for differentiable audit-contract quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/differentiable_audit_contracts.py
+          tests/test_phase_differentiable_audit.py
+          tests/test_phase_differentiable_audit_contracts.py
+          tools/differentiable_audit_contracts_quality_gates.py
+          tests/test_differentiable_audit_contracts_quality_gate.py
+      - name: Run differentiable audit-contract focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-differentiable-audit-contracts-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_phase_differentiable_audit.py
+          tests/test_phase_differentiable_audit_contracts.py
+      - name: Enforce differentiable audit-contract exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-differentiable-audit-contracts-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/phase/differentiable_audit_contracts.py
+  dla-topology-optimizer-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check DLA topology optimiser quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/dla_topology_control/optimizer.py
+          tools/dla_topology_optimizer_quality_gates.py
+          tests/test_dla_topology_optimizer_quality_gate.py
+      - name: Ruff NumPy docstrings for DLA topology optimiser quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/dla_topology_control/optimizer.py
+          tests/test_dla_topology_control_optimizer.py
+          tools/dla_topology_optimizer_quality_gates.py
+          tests/test_dla_topology_optimizer_quality_gate.py
+      - name: Run DLA topology optimiser focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-dla-topology-optimizer-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_dla_topology_control_optimizer.py
+      - name: Enforce DLA topology optimiser exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-dla-topology-optimizer-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/dla_topology_control/optimizer.py
+  dla-topology-schema-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check DLA topology schema quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/dla_topology_control/schema.py
+          tools/dla_topology_schema_quality_gates.py
+          tests/test_dla_topology_schema_quality_gate.py
+      - name: Ruff NumPy docstrings for DLA topology schema quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/dla_topology_control/schema.py
+          tests/test_dla_topology_control_schema.py
+          tools/dla_topology_schema_quality_gates.py
+          tests/test_dla_topology_schema_quality_gate.py
+      - name: Run DLA topology schema focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-dla-topology-schema-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_dla_topology_control_schema.py
+      - name: Enforce DLA topology schema exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-dla-topology-schema-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/dla_topology_control/schema.py
+  fusion-core-frc-bridge-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check fusion-core FRC bridge quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/bridge/fusion_core_frc.py
+          src/scpn_quantum_control/control/qaoa_pulsed_cost.py
+          tests/test_qaoa_pulsed_cost.py
+          tests/test_qaoa_pulsed_cost_branches.py
+          tools/fusion_core_frc_bridge_quality_gates.py
+          tests/test_fusion_core_frc_bridge_quality_gate.py
+      - name: Ruff NumPy docstrings for fusion-core FRC bridge quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/bridge/fusion_core_frc.py
+          src/scpn_quantum_control/control/qaoa_pulsed_cost.py
+          tests/test_fusion_core_frc.py
+          tests/test_frc_pulsed_qaoa_branches.py
+          tests/test_qaoa_pulsed_cost.py
+          tests/test_qaoa_pulsed_cost_branches.py
+          tools/fusion_core_frc_bridge_quality_gates.py
+          tests/test_fusion_core_frc_bridge_quality_gate.py
+      - name: Run fusion-core FRC bridge focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-fusion-core-frc-bridge-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_fusion_core_frc.py
+          tests/test_frc_pulsed_qaoa_branches.py
+          tests/test_qaoa_pulsed_cost.py
+          tests/test_qaoa_pulsed_cost_branches.py
+      - name: Enforce fusion-core FRC bridge exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-fusion-core-frc-bridge-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/bridge/fusion_core_frc.py,*/control/qaoa_pulsed_cost.py
+  hardware-experiment-vqe-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check hardware experiment VQE quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/hardware/experiment_vqe.py
+          tools/hardware_experiment_vqe_quality_gates.py
+          tests/test_hardware_experiment_vqe_quality_gate.py
+      - name: Ruff NumPy docstrings for hardware experiment VQE quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/hardware/experiment_vqe.py
+          tests/test_hardware_runner.py
+          tests/test_hardware_experiments_contracts.py
+          tests/test_experiments_edge_cases.py
+          tools/hardware_experiment_vqe_quality_gates.py
+          tests/test_hardware_experiment_vqe_quality_gate.py
+      - name: Run hardware experiment VQE focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-hardware-experiment-vqe-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_hardware_runner.py
+          tests/test_hardware_experiments_contracts.py
+          tests/test_experiments_edge_cases.py
+      - name: Enforce hardware experiment VQE exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-hardware-experiment-vqe-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/hardware/experiment_vqe.py
+  transform-support-matrix-artifact-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check transform support-matrix artefact quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_transform_support_matrix_artifact.py
+          src/scpn_quantum_control/studio/support_matrix_bundle.py
+          tests/test_studio_support_matrix_bundle.py
+          tools/differentiable_transform_support_matrix_artifact_quality_gates.py
+          tests/test_differentiable_transform_support_matrix_artifact_quality_gate.py
+      - name: Ruff NumPy docstrings for transform support-matrix artefact quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_transform_support_matrix_artifact.py
+          src/scpn_quantum_control/studio/support_matrix_bundle.py
+          tests/test_differentiable_transform_support_matrix_artifact.py
+          tests/test_studio_support_matrix_bundle.py
+          tools/differentiable_transform_support_matrix_artifact_quality_gates.py
+          tests/test_differentiable_transform_support_matrix_artifact_quality_gate.py
+      - name: Check committed transform support-matrix artefact
+        run: >-
+          python -m
+          scpn_quantum_control.differentiable_transform_support_matrix_artifact
+          --check
+      - name: Run transform support-matrix artefact focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-transform-support-matrix-artifact-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_differentiable_transform_support_matrix_artifact.py
+          tests/test_studio_support_matrix_bundle.py
+      - name: Enforce transform support-matrix artefact exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-transform-support-matrix-artifact-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/differentiable_transform_support_matrix_artifact.py,*/studio/support_matrix_bundle.py
+  gradient-plan-explanation-artifact-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check gradient-plan explanation artefact quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/gradient_plan_explanation_artifact.py
+          tools/gradient_plan_explanation_artifact_quality_gates.py
+          tests/test_gradient_plan_explanation_artifact_quality_gate.py
+      - name: Ruff NumPy docstrings for gradient-plan explanation artefact quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/gradient_plan_explanation_artifact.py
+          tests/test_gradient_plan_explanation_artifact.py
+          tools/gradient_plan_explanation_artifact_quality_gates.py
+          tests/test_gradient_plan_explanation_artifact_quality_gate.py
+      - name: Check committed gradient-plan explanation artefact
+        run: >-
+          python -m scpn_quantum_control.gradient_plan_explanation_artifact
+          --check
+      - name: Run gradient-plan explanation artefact focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-gradient-plan-explanation-artifact-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_gradient_plan_explanation_artifact.py
+      - name: Enforce gradient-plan explanation artefact exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-gradient-plan-explanation-artifact-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/gradient_plan_explanation_artifact.py

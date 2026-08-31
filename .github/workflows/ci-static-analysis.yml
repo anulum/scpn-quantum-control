@@ -1,0 +1,572 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — CI Static Analysis
+name: CI / Static Analysis
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      # The differentiable promotion-language audit imports scpn_quantum_control, which
+      # now imports the standalone oscillatools distribution; expose its source tree.
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Verify the lock-faithful CI build environment
+        run: |
+          python -m mypy --strict --explicit-package-bases \
+            tools/audit_ci_build_environment.py \
+            tests/test_audit_ci_build_environment.py
+          python -m ruff check \
+            tools/audit_ci_build_environment.py \
+            tests/test_audit_ci_build_environment.py
+          python -m ruff format --check \
+            tools/audit_ci_build_environment.py \
+            tests/test_audit_ci_build_environment.py
+          python -m ruff check --isolated --select D,D413 \
+            --config 'lint.pydocstyle.convention = "numpy"' \
+            tools/audit_ci_build_environment.py \
+            tests/test_audit_ci_build_environment.py
+          python -m bandit -q tools/audit_ci_build_environment.py
+          python -m coverage run --rcfile=/dev/null \
+            --data-file=.coverage.ci-build-environment --branch \
+            -m pytest -q tests/test_audit_ci_build_environment.py
+          python -m coverage report --rcfile=/dev/null \
+            --data-file=.coverage.ci-build-environment --precision=2 \
+            --fail-under=100 \
+            --include='*/audit_ci_build_environment.py'
+          python tools/audit_ci_build_environment.py
+      - name: Guard distributed CI workflow modularity
+        run: |
+          python -m mypy --strict --explicit-package-bases \
+            tools/ci_workflow_inventory.py \
+            tools/audit_ci_workflow_modularity.py \
+            tests/test_ci_workflow_modularity.py
+          python -m ruff check \
+            tools/ci_workflow_inventory.py \
+            tools/audit_ci_workflow_modularity.py \
+            tests/test_ci_workflow_modularity.py
+          python -m ruff format --check \
+            tools/ci_workflow_inventory.py \
+            tools/audit_ci_workflow_modularity.py \
+            tests/test_ci_workflow_modularity.py
+          python -m ruff check --isolated --select D,D413 \
+            --config 'lint.pydocstyle.convention = "numpy"' \
+            tools/ci_workflow_inventory.py \
+            tools/audit_ci_workflow_modularity.py \
+            tests/test_ci_workflow_modularity.py
+          python -m bandit -q \
+            tools/ci_workflow_inventory.py \
+            tools/audit_ci_workflow_modularity.py
+          python -m coverage run --rcfile=/dev/null \
+            --data-file=.coverage.ci-workflow-modularity --branch \
+            -m pytest -q tests/test_ci_workflow_modularity.py
+          python -m coverage report --rcfile=/dev/null \
+            --data-file=.coverage.ci-workflow-modularity --precision=2 \
+            --fail-under=100 \
+            --include='*/ci_workflow_inventory.py,*/audit_ci_workflow_modularity.py'
+          python tools/audit_ci_workflow_modularity.py
+      - run: ruff check src/ tests/
+      - run: ruff format --check src/ tests/
+      - name: Audit documentation surface
+        run: >
+          python tools/audit_documentation_surface.py
+          --allowlist tools/documentation_surface_allowlist.json
+          --fail-on-findings
+      - name: Enforce the published-record freeze (read-only preprints)
+        run: |
+          python -m mypy --strict --explicit-package-bases \
+            tools/check_published_record_freeze.py \
+            tests/test_check_published_record_freeze.py
+          python -m pytest -q -p no:cacheprovider \
+            tests/test_check_published_record_freeze.py
+          python tools/check_published_record_freeze.py
+      - name: Enforce retired public claims (no silent revivals)
+        run: |
+          python -m mypy --strict --explicit-package-bases \
+            tools/check_retired_claims.py \
+            tests/test_check_retired_claims.py
+          python -m pytest -q -p no:cacheprovider \
+            tests/test_check_retired_claims.py
+          python tools/check_retired_claims.py
+      - name: Audit tracked module responsibilities
+        run: python tools/audit_module_size_policy.py
+      - name: Type-check module-responsibility audit
+        run: mypy --strict tools/audit_module_size_policy.py
+      - name: Enforce descriptive production naming
+        run: |
+          python -m mypy --strict --explicit-package-bases \
+            tools/audit_descriptive_production_naming.py \
+            tests/test_audit_descriptive_production_naming.py
+          python -m ruff check \
+            tools/audit_descriptive_production_naming.py \
+            tests/test_audit_descriptive_production_naming.py
+          python -m ruff format --check \
+            tools/audit_descriptive_production_naming.py \
+            tests/test_audit_descriptive_production_naming.py
+          python -m pytest -q -p no:cacheprovider \
+            tests/test_audit_descriptive_production_naming.py
+          python tools/audit_descriptive_production_naming.py
+      - name: Audit licence readiness and canonical source headers
+        run: python tools/audit_license_readiness.py
+      - name: Type-check licence readiness audit
+        run: mypy --strict tools/audit_license_readiness.py
+      - name: Audit additive strict test-typing cohort
+        run: python tools/audit_test_typing_policy.py
+      - name: Type-check test-typing policy audit
+        run: mypy --strict tools/audit_test_typing_policy.py
+      - name: Type-check wheel-content release gate
+        run: >-
+          mypy --strict --explicit-package-bases
+          tools/check_wheel_contents.py
+          tests/test_wheel_contents.py
+      - name: Lint and format-check wheel-content release gate
+        run: |
+          ruff check tools/check_wheel_contents.py tests/test_wheel_contents.py
+          ruff format --check tools/check_wheel_contents.py tests/test_wheel_contents.py
+      - name: Ruff NumPy docstrings for wheel-content release gate
+        run: >-
+          ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          tools/check_wheel_contents.py
+          tests/test_wheel_contents.py
+      - name: Validate line and branch coverage policy
+        run: python tools/audit_coverage_policy.py --validate-policy
+      - name: Type-check coverage policy audit
+        run: mypy --strict tools/audit_coverage_policy.py
+      - name: Audit coverage-debt register
+        run: python tools/audit_coverage_debt.py
+      - name: Type-check coverage-debt audit
+        run: mypy --strict tools/audit_coverage_debt.py
+      - name: Audit differentiable external-validation manifests
+        run: python tools/check_differentiable_external_validation.py
+      - name: Type-check differentiable external-validation manifest audit
+        run: mypy --strict tools/check_differentiable_external_validation.py
+      - name: Audit differentiable promotion language
+        run: python tools/check_differentiable_promotion_language.py
+      - name: Audit generated differentiable support-matrix page
+        run: python tools/differentiable_support_matrix_page.py --check
+      - name: Type-check differentiable support-matrix page gate
+        run: >-
+          mypy --strict --explicit-package-bases
+          tools/differentiable_support_matrix_page.py
+          tests/test_differentiable_support_matrix_page.py
+      - name: Audit generated differentiable reviewer-evidence page
+        run: python tools/differentiable_reviewer_evidence_page.py --check
+      - name: Type-check differentiable reviewer-evidence page gate
+        run: >-
+          mypy --strict --explicit-package-bases
+          tools/differentiable_reviewer_evidence_catalog.py
+          tools/differentiable_reviewer_evidence_page.py
+          tests/test_differentiable_reviewer_evidence_page.py
+      - name: Type-check realtime runtime quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/control/realtime_runtime.py
+          tests/test_realtime_runtime.py
+          tests/test_realtime_runtime_branches.py
+      - name: Ruff NumPy docstrings for realtime runtime quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/control/realtime_runtime.py
+          tests/test_realtime_runtime.py
+          tests/test_realtime_runtime_branches.py
+      - name: Type-check Phase-QNode affinity quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/qnode_affinity_benchmark.py
+          tools/lean_phase_import.py
+          tools/run_phase_qnode_affinity_benchmark.py
+          tests/test_phase_qnode_affinity_benchmark.py
+          tests/test_lean_phase_import.py
+      - name: Ruff NumPy docstrings for Phase-QNode affinity quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/qnode_affinity_benchmark.py
+          tools/lean_phase_import.py
+          tools/run_phase_qnode_affinity_benchmark.py
+          tests/test_phase_qnode_affinity_benchmark.py
+          tests/test_lean_phase_import.py
+      - name: Type-check Studio Program-AD replay quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/studio/program_ad_replay_artifact.py
+          tests/test_studio_program_ad_replay_artifact.py
+          src/scpn_quantum_control/studio/executive.py
+          tests/test_studio_executive.py
+          tools/program_ad_quality_gates.py
+          tests/test_studio_program_ad_quality_gate.py
+      - name: Ruff NumPy docstrings for Studio Program-AD replay quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/studio/program_ad_replay_artifact.py
+          tests/test_studio_program_ad_replay_artifact.py
+          src/scpn_quantum_control/studio/executive.py
+          tests/test_studio_executive.py
+          tools/program_ad_quality_gates.py
+          tests/test_studio_program_ad_quality_gate.py
+      - name: Type-check MLIR leaf quality cohort
+        run: >-
+          python -m mypy --strict
+          src/scpn_quantum_control/compiler/mlir_enzyme_audit.py
+          src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py
+          src/scpn_quantum_control/compiler/mlir_executable_kernel.py
+          src/scpn_quantum_control/compiler/mlir_phase_qnode_runtime.py
+          src/scpn_quantum_control/compiler/mlir_transform_plan_assembly.py
+          src/scpn_quantum_control/compiler/mlir_workload_compilation.py
+          tests/_mlir_native_compilation_test_helpers.py
+          tests/test_mlir_enzyme_audit.py
+          tests/test_mlir_enzyme_evidence_docstrings.py
+          tests/test_mlir_enzyme_evidence_contracts.py
+          tests/test_mlir_executable_kernel.py
+          tests/test_mlir_toolchain_probe_hardening.py
+          tests/test_mlir_phase_qnode_runtime.py
+          tests/test_phase_qnode_compiler_lowering.py
+          tests/test_mlir_transform_plan.py
+          tests/test_mlir_transform_plan_assembly.py
+          tests/test_mlir_workload_compilation.py
+          tests/test_mlir_executable_batching_integration.py
+          tests/test_mlir_native_compilation_integration.py
+          tests/test_mlir_scalar_native_compilation_integration.py
+          tests/test_mlir_vector_native_compilation_integration.py
+          tests/test_mlir_matrix_native_compilation_integration.py
+          tests/test_mlir_matrix_2x2_native_compilation_integration.py
+          tests/test_mlir_symmetric_native_compilation_integration.py
+      - name: Ruff NumPy docstrings for MLIR leaf quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/compiler/mlir_enzyme_audit.py
+          src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py
+          src/scpn_quantum_control/compiler/mlir_executable_kernel.py
+          src/scpn_quantum_control/compiler/mlir_phase_qnode_runtime.py
+          src/scpn_quantum_control/compiler/mlir_transform_plan_assembly.py
+          src/scpn_quantum_control/compiler/mlir_workload_compilation.py
+          tests/_mlir_native_compilation_test_helpers.py
+          tests/test_mlir_enzyme_audit.py
+          tests/test_mlir_enzyme_evidence_docstrings.py
+          tests/test_mlir_enzyme_evidence_contracts.py
+          tests/test_mlir_executable_kernel.py
+          tests/test_mlir_toolchain_probe_hardening.py
+          tests/test_mlir_phase_qnode_runtime.py
+          tests/test_phase_qnode_compiler_lowering.py
+          tests/test_mlir_transform_plan.py
+          tests/test_mlir_transform_plan_assembly.py
+          tests/test_mlir_workload_compilation.py
+          tests/test_mlir_executable_batching_integration.py
+          tests/test_mlir_native_compilation_integration.py
+          tests/test_mlir_scalar_native_compilation_integration.py
+          tests/test_mlir_vector_native_compilation_integration.py
+          tests/test_mlir_matrix_native_compilation_integration.py
+          tests/test_mlir_matrix_2x2_native_compilation_integration.py
+          tests/test_mlir_symmetric_native_compilation_integration.py
+      - name: Type-check Phase-QNode vector quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/qnode_vector_transforms.py
+          tests/test_phase_qnode_vector_transforms.py
+          tests/test_phase_qnode_rust_parity.py
+      - name: Ruff NumPy docstrings for Phase-QNode vector quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/qnode_vector_transforms.py
+          tests/test_phase_qnode_vector_transforms.py
+          tests/test_phase_qnode_rust_parity.py
+      - name: Type-check Phase-QNode JAX quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/jax_bridge.py
+          src/scpn_quantum_control/phase/jax_maturity.py
+          src/scpn_quantum_control/phase/jax_qnode_transforms.py
+          src/scpn_quantum_control/phase/jax_compatibility.py
+          tests/_phase_jax_bridge_test_helpers.py
+          tests/_phase_jax_qnode_test_helpers.py
+          tests/test_phase_jax_bridge_aot_export.py
+          tests/test_phase_jax_qnode_transforms.py
+          tests/test_phase_jax_qnode_transforms_integration.py
+          tests/test_phase_jax_qnode_input_validation.py
+          tests/test_phase_jax_qnode_pytree_validation.py
+          tests/test_phase_jax_qnode_aot_validation.py
+          tests/test_phase_jax_qnode_statevector_edges.py
+          tools/phase_jax_qnode_quality_gates.py
+          tests/test_phase_jax_qnode_quality_gate.py
+      - name: Ruff NumPy docstrings for Phase-QNode JAX quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/jax_bridge.py
+          src/scpn_quantum_control/phase/jax_maturity.py
+          src/scpn_quantum_control/phase/jax_qnode_transforms.py
+          src/scpn_quantum_control/phase/jax_compatibility.py
+          tests/_phase_jax_bridge_test_helpers.py
+          tests/_phase_jax_qnode_test_helpers.py
+          tests/test_phase_jax_bridge_aot_export.py
+          tests/test_phase_jax_qnode_transforms.py
+          tests/test_phase_jax_qnode_transforms_integration.py
+          tests/test_phase_jax_qnode_input_validation.py
+          tests/test_phase_jax_qnode_pytree_validation.py
+          tests/test_phase_jax_qnode_aot_validation.py
+          tests/test_phase_jax_qnode_statevector_edges.py
+          tools/phase_jax_qnode_quality_gates.py
+          tests/test_phase_jax_qnode_quality_gate.py
+      - name: Type-check Phase-QNode Torch bridge quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/torch_bridge.py
+          src/scpn_quantum_control/phase/torch_maturity.py
+          src/scpn_quantum_control/phase/torch_module_state.py
+          src/scpn_quantum_control/phase/torch_checkpoint.py
+          src/scpn_quantum_control/phase/torch_checkpoint_matrix.py
+          src/scpn_quantum_control/phase/torch_device_state.py
+          src/scpn_quantum_control/phase/torch_export.py
+          src/scpn_quantum_control/phase/torch_export_shape_matrix.py
+          src/scpn_quantum_control/phase/torch_training_loop_matrix.py
+          src/scpn_quantum_control/phase/torch_aot_autograd_export.py
+          src/scpn_quantum_control/phase/torch_dynamic_shape_export.py
+          tests/test_phase_torch_module_state.py
+          tests/test_phase_torch_checkpoint.py
+          tests/test_phase_torch_checkpoint_matrix.py
+          tests/test_phase_torch_device_state.py
+          tests/test_phase_torch_export.py
+          tests/test_phase_torch_export_shape_matrix.py
+          tests/test_phase_torch_training_loop_matrix.py
+          tests/test_phase_qnn_framework_bridge_matrix.py
+          tests/test_phase_torch_aot_autograd_export.py
+          tests/test_phase_torch_dynamic_shape_export.py
+          tests/test_optional_torch_export_contracts.py
+          tools/phase_torch_bridge_quality_gates.py
+          tests/test_phase_torch_bridge_quality_gate.py
+      - name: Ruff NumPy docstrings for Phase-QNode Torch bridge quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/torch_bridge.py
+          src/scpn_quantum_control/phase/torch_maturity.py
+          src/scpn_quantum_control/phase/torch_module_state.py
+          src/scpn_quantum_control/phase/torch_checkpoint.py
+          src/scpn_quantum_control/phase/torch_checkpoint_matrix.py
+          src/scpn_quantum_control/phase/torch_device_state.py
+          src/scpn_quantum_control/phase/torch_export.py
+          src/scpn_quantum_control/phase/torch_export_shape_matrix.py
+          src/scpn_quantum_control/phase/torch_training_loop_matrix.py
+          src/scpn_quantum_control/phase/torch_aot_autograd_export.py
+          src/scpn_quantum_control/phase/torch_dynamic_shape_export.py
+          tests/test_phase_torch_module_state.py
+          tests/test_phase_torch_checkpoint.py
+          tests/test_phase_torch_checkpoint_matrix.py
+          tests/test_phase_torch_device_state.py
+          tests/test_phase_torch_export.py
+          tests/test_phase_torch_export_shape_matrix.py
+          tests/test_phase_torch_training_loop_matrix.py
+          tests/test_phase_qnn_framework_bridge_matrix.py
+          tests/test_phase_torch_aot_autograd_export.py
+          tests/test_phase_torch_dynamic_shape_export.py
+          tests/test_optional_torch_export_contracts.py
+          tools/phase_torch_bridge_quality_gates.py
+          tests/test_phase_torch_bridge_quality_gate.py
+      - name: Type-check adjoint replay product quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/adjoint_replay_product.py
+          tests/test_adjoint_replay_product.py
+          tools/adjoint_replay_product_quality_gates.py
+          tools/differentiable_quality_gates.py
+      - name: Ruff NumPy docstrings for adjoint replay product quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/adjoint_replay_product.py
+          tests/test_adjoint_replay_product.py
+          tools/adjoint_replay_product_quality_gates.py
+          tools/differentiable_quality_gates.py
+      - name: Type-check differentiable scalar-kernel quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_scalar_kernels.py
+          tests/test_differentiable_scalar_kernels.py
+          tests/test_differentiable_transform_helpers.py
+          tools/differentiable_scalar_kernels_quality_gates.py
+      - name: Ruff NumPy docstrings for differentiable scalar-kernel quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_scalar_kernels.py
+          tests/test_differentiable_scalar_kernels.py
+          tests/test_differentiable_transform_helpers.py
+          tools/differentiable_scalar_kernels_quality_gates.py
+      - name: Type-check differentiable Rust/Python inventory quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_rust_python_inventory.py
+          tests/test_differentiable_rust_python_inventory.py
+          tools/differentiable_rust_python_inventory_quality_gates.py
+      - name: Ruff NumPy docstrings for differentiable Rust/Python inventory quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_rust_python_inventory.py
+          tests/test_differentiable_rust_python_inventory.py
+          tools/differentiable_rust_python_inventory_quality_gates.py
+      - name: Type-check unified differentiable API quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_api.py
+          src/scpn_quantum_control/differentiable_canonical_api.py
+          src/scpn_quantum_control/differentiable_result_contracts.py
+          tests/test_differentiable_api.py
+          tests/test_differentiable_api_contracts.py
+          tests/test_differentiable_canonical_modes.py
+          tests/test_differentiable_package_exports.py
+          tests/test_differentiable_result_contracts.py
+          tools/differentiable_api_quality_gates.py
+          tools/differentiable_quality_gates.py
+      - name: Ruff NumPy docstrings for unified differentiable API quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_api.py
+          src/scpn_quantum_control/differentiable_canonical_api.py
+          src/scpn_quantum_control/differentiable_result_contracts.py
+          tests/test_differentiable_api.py
+          tests/test_differentiable_api_contracts.py
+          tests/test_differentiable_canonical_modes.py
+          tests/test_differentiable_package_exports.py
+          tests/test_differentiable_result_contracts.py
+          tools/differentiable_api_quality_gates.py
+          tools/differentiable_quality_gates.py
+      - name: Type-check differentiable Levenberg-Marquardt quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_levenberg_marquardt.py
+          tests/test_differentiable_levenberg_marquardt.py
+          tests/test_differentiable_custom_derivatives.py
+          tools/differentiable_levenberg_marquardt_quality_gates.py
+          tools/differentiable_quality_gates.py
+      - name: Ruff NumPy docstrings for differentiable Levenberg-Marquardt quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_levenberg_marquardt.py
+          tests/test_differentiable_levenberg_marquardt.py
+          tests/test_differentiable_custom_derivatives.py
+          tools/differentiable_levenberg_marquardt_quality_gates.py
+          tools/differentiable_quality_gates.py
+      - name: Type-check differentiable natural-gradient quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_natural_gradient.py
+          src/scpn_quantum_control/differentiable_gradient_descent.py
+          tests/test_differentiable_natural_gradient.py
+          tests/test_differentiable_natural_gradient_line_search.py
+          tests/test_differentiable_gradient_descent_optimizer.py
+          tools/differentiable_natural_gradient_quality_gates.py
+          tools/differentiable_quality_gates.py
+      - name: Ruff NumPy docstrings for differentiable natural-gradient quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_natural_gradient.py
+          src/scpn_quantum_control/differentiable_gradient_descent.py
+          tests/test_differentiable_natural_gradient.py
+          tests/test_differentiable_natural_gradient_line_search.py
+          tests/test_differentiable_gradient_descent_optimizer.py
+          tools/differentiable_natural_gradient_quality_gates.py
+          tools/differentiable_quality_gates.py
+      - name: Type-check Program-AD array-indexing quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/program_ad_array_indexing.py
+          tests/test_program_ad_array_indexing_quality.py
+          tools/program_ad_array_indexing_quality_gates.py
+      - name: Ruff NumPy docstrings for Program-AD array-indexing quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/program_ad_array_indexing.py
+          tests/test_program_ad_array_indexing_quality.py
+          tools/program_ad_array_indexing_quality_gates.py
+      - name: Type-check whole-program trace-value quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/whole_program_trace_values.py
+          src/scpn_quantum_control/whole_program_trace_predicates.py
+          tests/test_whole_program_trace_predicates.py
+          tests/test_whole_program_trace_values.py
+          tests/test_whole_program_trace_value_operators.py
+          tests/test_whole_program_trace_value_selection.py
+          tests/test_whole_program_trace_value_signal.py
+          tests/test_whole_program_trace_value_linalg.py
+          tests/test_whole_program_trace_value_shapes.py
+      - name: Ruff NumPy docstrings for whole-program trace-value quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/whole_program_trace_values.py
+          src/scpn_quantum_control/whole_program_trace_predicates.py
+          tests/test_whole_program_trace_predicates.py
+          tests/test_whole_program_trace_values.py
+          tests/test_whole_program_trace_value_operators.py
+          tests/test_whole_program_trace_value_selection.py
+          tests/test_whole_program_trace_value_signal.py
+          tests/test_whole_program_trace_value_linalg.py
+          tests/test_whole_program_trace_value_shapes.py
+      - name: Ruff docstring ratchet for differentiable module hardening
+        run: >-
+          ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_architecture_map.py
+          src/scpn_quantum_control/differentiable_claim_ledger.py
+          src/scpn_quantum_control/differentiable_claim_rendering.py
+          src/scpn_quantum_control/differentiable_competitive_baselines.py
+          src/scpn_quantum_control/differentiable_dependency_environment_evidence.py
+          src/scpn_quantum_control/differentiable_dependency_environment_map.py
+          src/scpn_quantum_control/differentiable_baseline_scorecard.py
+          src/scpn_quantum_control/differentiable_external_validation.py
+          src/scpn_quantum_control/differentiable_finite_difference.py
+          src/scpn_quantum_control/differentiable_module_hardening_audit.py
+          src/scpn_quantum_control/differentiable_transform_algebra.py
+          src/scpn_quantum_control/program_ad_alias_contracts.py
+          src/scpn_quantum_control/program_ad_registry.py
+          src/scpn_quantum_control/program_ad_shape_transforms.py
+          src/scpn_quantum_control/studio/evidence_bundle.py
+          src/scpn_quantum_control/phase/tensorflow_maintenance.py
+          src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py
+          src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py
+          src/scpn_quantum_control/stable_core_product.py
+          tests/test_differentiable_external_validation.py
+          tests/test_differentiable_finite_difference.py
+          tests/test_differentiable_competitive_baselines.py
+          tests/test_differentiable_module_hardening_audit.py
+          tests/test_differentiable_transform_algebra.py
+          tests/test_program_ad_alias_contracts.py
+          tests/test_program_ad_registry.py
+          tests/test_program_ad_shape_transforms.py
+          tests/test_phase_tensorflow_maintenance.py
+          tests/test_differentiable_hardening_gate.py
+          tests/test_stable_core_product.py
+          tools/differentiable_support_matrix_page.py
+          tests/test_differentiable_support_matrix_page.py
+          tools/differentiable_reviewer_evidence_catalog.py
+          tools/differentiable_reviewer_evidence_page.py
+          tests/test_differentiable_reviewer_evidence_page.py

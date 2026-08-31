@@ -1,0 +1,738 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — CI Application Domain
+name: CI / Application Domain
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  phase-qnode-product-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase_qnode_product.py
+          src/scpn_quantum_control/phase/torch_autograd_function.py
+          tests/test_phase_qnode_product.py
+          tests/test_phase_torch_autograd_function.py
+          tools/phase_qnode_product_quality_gates.py
+          tests/test_phase_qnode_product_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase_qnode_product.py
+          src/scpn_quantum_control/phase/torch_autograd_function.py
+          tests/test_phase_qnode_product.py
+          tests/test_phase_torch_autograd_function.py
+          tools/phase_qnode_product_quality_gates.py
+          tests/test_phase_qnode_product_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-phase-qnode-product-quality.coverage --branch
+          -m pytest -q tests/test_phase_qnode_product.py
+          tests/test_phase_torch_autograd_function.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-phase-qnode-product-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/phase_qnode_product.py,*/phase/torch_autograd_function.py
+  rust-accel-import-resilience-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check Rust accelerator import-resilience cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/_rust_accel.py
+          scripts/verify_hardware_result_packs.py
+          tests/test_rust_accel_import_resilience.py
+          tools/rust_accel_import_resilience_quality_gates.py
+          tests/test_rust_accel_import_resilience_quality_gate.py
+      - name: Ruff preview NumPy docs for Rust accelerator import resilience
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/_rust_accel.py
+          scripts/verify_hardware_result_packs.py
+          tests/test_rust_accel_import_resilience.py
+          tools/rust_accel_import_resilience_quality_gates.py
+          tests/test_rust_accel_import_resilience_quality_gate.py
+      - name: Run Rust accelerator import-resilience focused coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-rust-accel-import-resilience-quality.coverage --branch
+          -m pytest -q tests/test_rust_accel_import_resilience.py
+      - name: Enforce Rust accelerator import-resilience exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-rust-accel-import-resilience-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/scpn_quantum_control/_rust_accel.py
+  studio-executive-benchmark-quality:
+    needs: rust-accel-import-resilience-quality
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/studio/executive_benchmark.py
+          src/scpn_quantum_control/studio/benchmark_databank_bundle.py
+          tests/test_studio_executive_benchmark.py
+          tests/test_studio_benchmark_databank_bundle.py
+          tools/studio_executive_benchmark_quality_gates.py
+          tests/test_studio_executive_benchmark_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/studio/executive_benchmark.py
+          src/scpn_quantum_control/studio/benchmark_databank_bundle.py
+          tests/test_studio_executive_benchmark.py
+          tests/test_studio_benchmark_databank_bundle.py
+          tools/studio_executive_benchmark_quality_gates.py
+          tests/test_studio_executive_benchmark_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-studio-executive-benchmark-quality.coverage --branch
+          -m pytest -q tests/test_studio_executive_benchmark.py
+          tests/test_studio_benchmark_databank_bundle.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-studio-executive-benchmark-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/studio/executive_benchmark.py,*/studio/benchmark_databank_bundle.py
+  synchronisation-witness-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: python -m pip install --no-deps -e .
+      - run: >-
+          python -m pip install --no-deps --require-hashes
+          -r requirements-ci-studio-platform.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/synchronisation_witness.py
+          src/scpn_quantum_control/benchmarks/sync_witness_evidence.py
+          scripts/export_sync_witness_evidence.py
+          src/scpn_quantum_control/studio/executive_analyse.py
+          src/scpn_quantum_control/studio/executive_cli.py
+          tests/test_phase_synchronisation_witness.py
+          tests/test_sync_witness_evidence.py
+          tests/test_studio_executive_analyse.py
+          tests/test_studio_executive_cli.py
+          tools/synchronisation_witness_quality_gates.py
+          tests/test_synchronisation_witness_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/synchronisation_witness.py
+          src/scpn_quantum_control/benchmarks/sync_witness_evidence.py
+          scripts/export_sync_witness_evidence.py
+          src/scpn_quantum_control/studio/executive_analyse.py
+          tests/test_phase_synchronisation_witness.py
+          tests/test_sync_witness_evidence.py
+          tests/test_studio_executive_analyse.py
+          tools/synchronisation_witness_quality_gates.py
+          tests/test_synchronisation_witness_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-synchronisation-witness-quality.coverage --branch
+          -m pytest -q tests/test_phase_synchronisation_witness.py
+          tests/test_sync_witness_evidence.py
+          tests/test_studio_executive_analyse.py
+          tests/test_studio_executive_cli.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-synchronisation-witness-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/phase/synchronisation_witness.py,*/benchmarks/sync_witness_evidence.py,*/studio/executive_analyse.py,*/studio/executive_cli.py
+  experiment-mitigation-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/hardware/experiment_mitigation.py
+          tests/test_experiment_mitigation.py
+          tools/experiment_mitigation_quality_gates.py
+          tests/test_experiment_mitigation_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/hardware/experiment_mitigation.py
+          tests/test_experiment_mitigation.py
+          tools/experiment_mitigation_quality_gates.py
+          tests/test_experiment_mitigation_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=.coverage.experiment-mitigation-quality --branch
+          -m pytest -q tests/test_experiment_mitigation.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=.coverage.experiment-mitigation-quality
+          --precision=2 --fail-under=100 --include=*/hardware/experiment_mitigation.py
+  research-lane-registry-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/analysis/research_lane_registry.py
+          src/scpn_quantum_control/analysis/rl_discovery_agent.py
+          src/scpn_quantum_control/analysis/rl_pulse_optimizer.py
+          src/scpn_quantum_control/analysis/rl_research_governance.py
+          src/scpn_quantum_control/analysis/witness_discovery.py
+          tests/test_research_lane_registry.py
+          tests/test_rl_research_governance.py
+          tests/test_rl_discovery_agent_branches.py
+          tests/test_witness_discovery.py
+          tests/test_witness_discovery_engine_fallback.py
+          scripts/run_research_lane_registry.py
+          scripts/run_rl_research_governance_evidence.py
+          tools/research_lane_registry_quality_gates.py
+          tests/test_research_lane_registry_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/analysis/research_lane_registry.py
+          src/scpn_quantum_control/analysis/rl_discovery_agent.py
+          src/scpn_quantum_control/analysis/rl_pulse_optimizer.py
+          src/scpn_quantum_control/analysis/rl_research_governance.py
+          src/scpn_quantum_control/analysis/witness_discovery.py
+          tests/test_research_lane_registry.py
+          tests/test_rl_research_governance.py
+          tests/test_rl_discovery_agent_branches.py
+          tests/test_witness_discovery.py
+          tests/test_witness_discovery_engine_fallback.py
+          scripts/run_research_lane_registry.py
+          scripts/run_rl_research_governance_evidence.py
+          tools/research_lane_registry_quality_gates.py
+          tests/test_research_lane_registry_quality_gate.py
+      - run: python scripts/run_research_lane_registry.py --check
+      - run: python scripts/run_rl_research_governance_evidence.py --check
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-research-lane-registry-quality.coverage --branch
+          -m pytest -q tests/test_research_lane_registry.py
+          tests/test_rl_research_governance.py tests/test_rl_discovery_agent_branches.py
+          tests/test_witness_discovery.py tests/test_witness_discovery_engine_fallback.py
+          tests/test_frontier_interface_guards.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-research-lane-registry-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/analysis/research_lane_registry.py,*/analysis/rl_discovery_agent.py,*/analysis/rl_pulse_optimizer.py,*/analysis/rl_research_governance.py,*/analysis/witness_discovery.py
+  theory-hook-promotion-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/analysis/theory_hook_promotion.py
+          src/scpn_quantum_control/analysis/magic_nonstabilizerness.py
+          tests/test_theory_hook_promotion.py
+          tests/test_magic_nonstabilizerness.py
+          scripts/run_theory_hook_promotion_evidence.py
+          tools/theory_hook_promotion_quality_gates.py
+          tests/test_theory_hook_promotion_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/analysis/theory_hook_promotion.py
+          src/scpn_quantum_control/analysis/magic_nonstabilizerness.py
+          tests/test_theory_hook_promotion.py
+          tests/test_magic_nonstabilizerness.py
+          scripts/run_theory_hook_promotion_evidence.py
+          tools/theory_hook_promotion_quality_gates.py
+          tests/test_theory_hook_promotion_quality_gate.py
+      - run: python scripts/run_theory_hook_promotion_evidence.py --check
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-theory-hook-promotion-quality.coverage --branch
+          -m pytest -q tests/test_theory_hook_promotion.py tests/test_magic_nonstabilizerness.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-theory-hook-promotion-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/analysis/theory_hook_promotion.py,*/analysis/magic_nonstabilizerness.py
+  scorecard-acceptance-engine-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/scorecard_acceptance_engine.py
+          tests/test_scorecard_acceptance_engine.py
+          tools/scorecard_acceptance_engine_quality_gates.py
+          tests/test_scorecard_acceptance_engine_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/scorecard_acceptance_engine.py
+          tests/test_scorecard_acceptance_engine.py
+          tools/scorecard_acceptance_engine_quality_gates.py
+          tests/test_scorecard_acceptance_engine_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-scorecard-acceptance-engine.coverage --branch
+          -m pytest -q tests/test_scorecard_acceptance_engine.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-scorecard-acceptance-engine.coverage
+          --precision=2 --fail-under=100 --include=*/scorecard_acceptance_engine.py
+  unsuitable-scenario-registry-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/unsuitable_scenario_registry.py
+          tests/test_unsuitable_scenario_registry.py
+          tools/unsuitable_scenario_registry_quality_gates.py
+          tests/test_unsuitable_scenario_registry_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/unsuitable_scenario_registry.py
+          tests/test_unsuitable_scenario_registry.py
+          tools/unsuitable_scenario_registry_quality_gates.py
+          tests/test_unsuitable_scenario_registry_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=.coverage.unsuitable-scenario-registry-quality --branch
+          -m pytest -q tests/test_unsuitable_scenario_registry.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=.coverage.unsuitable-scenario-registry-quality
+          --precision=2 --fail-under=100 --include=*/unsuitable_scenario_registry.py
+  kuramoto-layout-cost-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/hardware/kuramoto_layout_cost.py
+          tests/test_kuramoto_layout_cost.py
+          tools/kuramoto_layout_cost_quality_gates.py
+          tests/test_kuramoto_layout_cost_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/hardware/kuramoto_layout_cost.py
+          tests/test_kuramoto_layout_cost.py
+          tools/kuramoto_layout_cost_quality_gates.py
+          tests/test_kuramoto_layout_cost_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=.coverage.kuramoto-layout-cost-quality --branch
+          -m pytest -q tests/test_kuramoto_layout_cost.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=.coverage.kuramoto-layout-cost-quality
+          --precision=2 --fail-under=100 --include=*/hardware/kuramoto_layout_cost.py
+  kuramoto-layout-relaxation-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/hardware/kuramoto_layout_relaxation.py
+          tests/test_kuramoto_layout_relaxation.py
+          tools/kuramoto_layout_relaxation_quality_gates.py
+          tests/test_kuramoto_layout_relaxation_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/hardware/kuramoto_layout_relaxation.py
+          tests/test_kuramoto_layout_relaxation.py
+          tools/kuramoto_layout_relaxation_quality_gates.py
+          tests/test_kuramoto_layout_relaxation_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=.coverage.kuramoto-layout-relaxation-quality --branch
+          -m pytest -q tests/test_kuramoto_layout_relaxation.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=.coverage.kuramoto-layout-relaxation-quality
+          --precision=2 --fail-under=100 --include=*/hardware/kuramoto_layout_relaxation.py
+  application-honesty-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/applications/honesty_kits.py
+          src/scpn_quantum_control/applications/dataset_catalog.py
+          src/scpn_quantum_control/applications/eeg_classification.py
+          src/scpn_quantum_control/applications/quantum_evs.py
+          tests/test_application_honesty_kits.py
+          tests/test_dataset_catalog.py
+          tests/test_eeg_classification.py
+          tests/test_eeg_classification_validation.py
+          tests/test_quantum_evs.py
+          tests/test_quantum_evs_branches.py
+          scripts/run_application_honesty_audit.py
+          tools/application_honesty_quality_gates.py
+          tests/test_application_honesty_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D107,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/applications/honesty_kits.py
+          src/scpn_quantum_control/applications/dataset_catalog.py
+          src/scpn_quantum_control/applications/eeg_classification.py
+          src/scpn_quantum_control/applications/quantum_evs.py
+          tests/test_application_honesty_kits.py
+          tests/test_dataset_catalog.py
+          tests/test_eeg_classification.py
+          tests/test_eeg_classification_validation.py
+          tests/test_quantum_evs.py
+          tests/test_quantum_evs_branches.py
+          scripts/run_application_honesty_audit.py
+          tools/application_honesty_quality_gates.py
+          tests/test_application_honesty_quality_gate.py
+      - run: python scripts/run_application_honesty_audit.py --check
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-application-honesty-quality.coverage --branch
+          -m pytest -q
+          tests/test_application_honesty_kits.py
+          tests/test_dataset_catalog.py
+          tests/test_eeg_classification.py
+          tests/test_eeg_classification_validation.py
+          tests/test_quantum_evs.py
+          tests/test_quantum_evs_branches.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-application-honesty-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/applications/honesty_kits.py,*/applications/dataset_catalog.py,*/applications/eeg_classification.py,*/applications/quantum_evs.py
+  layout-method-comparison-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/benchmarks/layout_method_comparison.py
+          tests/test_layout_method_comparison.py
+          scripts/run_layout_method_comparison.py
+          tests/test_run_layout_method_comparison.py
+          tools/layout_method_comparison_quality_gates.py
+          tests/test_layout_method_comparison_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/benchmarks/layout_method_comparison.py
+          tests/test_layout_method_comparison.py
+          scripts/run_layout_method_comparison.py
+          tests/test_run_layout_method_comparison.py
+          tools/layout_method_comparison_quality_gates.py
+          tests/test_layout_method_comparison_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-layout-method-comparison-quality.coverage --branch
+          -m pytest -q tests/test_layout_method_comparison.py
+          tests/test_run_layout_method_comparison.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-layout-method-comparison-quality.coverage
+          --precision=2 --fail-under=100 --include=*/benchmarks/layout_method_comparison.py
+  phase-trainability-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/trainability.py
+          tests/test_phase_trainability.py
+          tools/phase_trainability_quality_gates.py
+          tests/test_phase_trainability_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/trainability.py
+          tests/test_phase_trainability.py
+          tools/phase_trainability_quality_gates.py
+          tests/test_phase_trainability_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=.coverage.phase-trainability-quality --branch
+          -m pytest -q tests/test_phase_trainability.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=.coverage.phase-trainability-quality
+          --precision=2 --fail-under=100 --include=*/phase/trainability.py
+  decisive-advantage-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check decisive-advantage quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py
+          src/scpn_quantum_control/benchmarks/decisive_run_harness.py
+          tests/test_decisive_advantage_protocol.py
+          tests/test_decisive_run_harness.py
+          tools/decisive_advantage_quality_gates.py
+      - name: Ruff NumPy docstrings for decisive-advantage quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py
+          src/scpn_quantum_control/benchmarks/decisive_run_harness.py
+          tests/test_decisive_advantage_protocol.py
+          tests/test_decisive_run_harness.py
+          tools/decisive_advantage_quality_gates.py
+      - name: Run decisive-advantage focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.decisive-advantage-quality
+          --branch
+          -m pytest -q
+          tests/test_decisive_advantage_protocol.py
+          tests/test_decisive_run_harness.py
+      - name: Enforce decisive-advantage exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.decisive-advantage-quality
+          --precision=2
+          --fail-under=100
+          --include=*/decisive_advantage_protocol.py,*/decisive_run_harness.py
+  mlir-leaf-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Run MLIR leaf focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.mlir-leaf-quality
+          --branch
+          --source=src/scpn_quantum_control/compiler
+          -m pytest -q
+          tests/test_mlir_enzyme_audit.py
+          tests/test_mlir_enzyme_evidence_contracts.py
+          tests/test_mlir_executable_kernel.py
+          tests/test_mlir_toolchain_probe_hardening.py
+          tests/test_mlir_phase_qnode_runtime.py
+          tests/test_phase_qnode_compiler_lowering.py
+          tests/test_mlir_transform_plan.py
+          tests/test_mlir_transform_plan_assembly.py
+          tests/test_mlir_workload_compilation.py
+          tests/test_mlir_executable_batching_integration.py
+          tests/test_mlir_native_compilation_integration.py
+          tests/test_mlir_scalar_native_compilation_integration.py
+          tests/test_mlir_vector_native_compilation_integration.py
+          tests/test_mlir_matrix_native_compilation_integration.py
+          tests/test_mlir_matrix_2x2_native_compilation_integration.py
+          tests/test_mlir_symmetric_native_compilation_integration.py
+      - name: Enforce MLIR leaf exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.mlir-leaf-quality
+          --precision=2
+          --fail-under=100
+          --include=*/mlir_enzyme_audit.py,*/mlir_enzyme_evidence.py,*/mlir_executable_kernel.py,*/mlir_phase_qnode_runtime.py,*/mlir_transform_plan_assembly.py,*/mlir_workload_compilation.py
+  phase-qnode-affinity-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Run Phase-QNode affinity focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.phase-qnode-affinity
+          --branch
+          -m pytest -q
+          tests/test_phase_qnode_affinity_benchmark.py
+          tests/test_lean_phase_import.py
+      - name: Enforce Phase-QNode affinity exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.phase-qnode-affinity
+          --precision=2
+          --fail-under=100
+          --include=*/qnode_affinity_benchmark.py
+  phase-qnode-vector-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Run Phase-QNode vector focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.phase-qnode-vector
+          --branch
+          -m pytest -q
+          tests/test_phase_qnode_vector_transforms.py
+      - name: Enforce Phase-QNode vector exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.phase-qnode-vector
+          --precision=2
+          --fail-under=100
+          --include=*/qnode_vector_transforms.py
+  studio-program-ad-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+      SCPN_PROGRAM_AD_REQUIRE_NATIVE: "1"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install pinned Python and Studio dependencies
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - name: Build the current Rust engine wheel for artifact regeneration
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.51.0
+        with:
+          args: --release --features extension-module --out dist -m scpn_quantum_engine/Cargo.toml
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Run Studio Program-AD focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.studio-program-ad
+          --branch
+          -m pytest -q
+          tests/test_studio_program_ad_replay_artifact.py
+          tests/test_studio_executive.py
+      - name: Enforce Studio Program-AD exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.studio-program-ad
+          --precision=2
+          --fail-under=100
+          --include=*/program_ad_replay_artifact.py,*/executive.py

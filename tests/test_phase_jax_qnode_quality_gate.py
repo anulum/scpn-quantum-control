@@ -15,6 +15,7 @@ from pathlib import Path
 from types import ModuleType
 
 from tools import phase_jax_qnode_quality_gates as _quality_gates
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def _load_preflight_module() -> ModuleType:
@@ -124,7 +125,7 @@ def test_preflight_reexports_the_policy_contract() -> None:
 
 def test_ci_and_local_gates_share_exact_owner_order() -> None:
     """CI and local gates should preserve identical owner-file ordering."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     quality_steps = (
         "Type-check Phase-QNode JAX quality cohort",
         "Ruff NumPy docstrings for Phase-QNode JAX quality cohort",

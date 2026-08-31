@@ -9,10 +9,9 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from tools import preflight
 from tools import thermo_readiness_product_quality_gates as quality_gates
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def test_static_gate_owns_product_and_ambient_readiness_surfaces() -> None:
@@ -61,7 +60,7 @@ def test_preflight_uses_the_helper_defined_gates() -> None:
 
 def test_ci_runs_and_aggregates_the_thermo_readiness_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     start = workflow.index("  thermo-readiness-product-quality:")
     end = workflow.index("\n\n  adaptive-branching-quality:", start)
     block = workflow[start:end]

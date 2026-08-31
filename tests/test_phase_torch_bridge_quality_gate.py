@@ -7,10 +7,9 @@
 # SCPN Quantum Control — Phase-QNode Torch quality-gate tests
 """Lock the Phase-QNode Torch facade gate into preflight and CI."""
 
-from pathlib import Path
-
 from tools import phase_torch_bridge_quality_gates as quality_gates
 from tools import preflight
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
@@ -49,7 +48,7 @@ def test_preflight_uses_helper_defined_gates() -> None:
 
 def test_ci_runs_torch_gate_inside_differentiable_parity() -> None:
     """Keep the overlay-backed CI steps and aggregate owner required."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     for path in quality_gates.PHASE_TORCH_BRIDGE_QUALITY_RATCHET:
         assert path in workflow
     for path in quality_gates.PHASE_TORCH_BRIDGE_COVERAGE_COHORT:

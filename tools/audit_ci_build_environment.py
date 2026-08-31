@@ -20,6 +20,7 @@ import argparse
 import importlib
 import importlib.metadata
 import re
+import sys
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -30,6 +31,15 @@ import tomllib
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.utils import canonicalize_name
 
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from tools.ci_workflow_inventory import (
+    REPOSITORY_ROOT,
+    load_ci_workflow_policy,
+    read_ci_workflow_source,
+)
+
 BUILD_BACKEND = "hatchling.build"
 DEVELOPMENT_INPUT = "requirements-dev.txt"
 PROJECT_PATHS = ("pyproject.toml", "oscillatools/pyproject.toml")
@@ -38,7 +48,7 @@ LOCKS_BY_PYTHON = (
     ("3.12", "requirements-ci-py312-linux.txt"),
     ("3.13", "requirements-ci-py313-linux.txt"),
 )
-CI_WORKFLOW_PATH = ".github/workflows/ci.yml"
+CI_WORKFLOW_PATH = load_ci_workflow_policy()["coordinator"]
 DOCKERFILE_PATH = "Dockerfile"
 WHEEL_TEST_PATH = "tests/test_wheel_contents.py"
 AUDIT_COMMAND = "python tools/audit_ci_build_environment.py"
@@ -458,7 +468,11 @@ def audit_repository(root: Path) -> BuildEnvironmentAuditResult:
             lock_texts[path] = text
     errors.extend(audit_lockfiles(lock_texts))
 
-    ci_text = _read_required(root, CI_WORKFLOW_PATH, errors)
+    ci_text = (
+        read_ci_workflow_source()
+        if root.resolve() == REPOSITORY_ROOT
+        else _read_required(root, CI_WORKFLOW_PATH, errors)
+    )
     dockerfile_text = _read_required(root, DOCKERFILE_PATH, errors)
     wheel_test_text = _read_required(root, WHEEL_TEST_PATH, errors)
     if ci_text is not None and dockerfile_text is not None and wheel_test_text is not None:

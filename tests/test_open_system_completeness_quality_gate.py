@@ -9,10 +9,9 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from tools import open_system_completeness_quality_gates as quality_gates
 from tools import preflight
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def test_static_gate_separates_public_docs_from_owner_test_typing() -> None:
@@ -58,7 +57,7 @@ def test_preflight_uses_the_helper_defined_gates() -> None:
 
 def test_ci_runs_and_aggregates_the_open_system_completeness_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     start = workflow.index("  open-system-completeness-quality:")
     end = workflow.index("\n\n  thermo-readiness-product-quality:", start)
     block = workflow[start:end]

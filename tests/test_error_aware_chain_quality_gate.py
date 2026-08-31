@@ -7,10 +7,9 @@
 # SCPN Quantum Control — error-aware chain quality-gate tests
 """Lock error-aware chain quality gates into preflight and CI."""
 
-from pathlib import Path
-
 from tools import error_aware_chain_quality_gates as quality_gates
 from tools import preflight
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def test_helper_builds_strict_preview_and_exact_gates() -> None:
@@ -40,7 +39,7 @@ def test_preflight_uses_helper_commands_verbatim() -> None:
 
 def test_ci_runs_and_aggregates_error_aware_chain_quality() -> None:
     """Keep the dedicated job and transitive aggregate dependency required."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     start = workflow.index("  error-aware-chain-quality:")
     end = workflow.index("\n\n  kuramoto-variants-quality:", start)
     block = workflow[start:end]

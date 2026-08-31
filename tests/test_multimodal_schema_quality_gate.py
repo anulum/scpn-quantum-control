@@ -7,10 +7,9 @@
 # SCPN Quantum Control — multimodal schema quality-gate tests
 """Lock multimodal schema quality gates into preflight and CI."""
 
-from pathlib import Path
-
 from tools import multimodal_schema_quality_gates as quality_gates
 from tools import preflight
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def test_helper_builds_strict_preview_and_exact_gates() -> None:
@@ -50,7 +49,7 @@ def test_preflight_uses_helper_commands_verbatim() -> None:
 
 def test_ci_runs_and_aggregates_multimodal_schema() -> None:
     """Keep the dedicated job and transitive aggregate dependency required."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     start = workflow.index("  multimodal-schema-quality:")
     end = workflow.index("\n\n  qrc-baseline-quality:", start)
     block = workflow[start:end]

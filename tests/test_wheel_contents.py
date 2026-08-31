@@ -34,6 +34,7 @@ from tools.check_wheel_contents import (
     load_expectation,
     main,
 )
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _MAIN_PROJECT = _REPO_ROOT / "pyproject.toml"
@@ -974,7 +975,7 @@ def test_all_publish_workflows_block_on_the_wheel_audit() -> None:
 
 def test_ci_and_strict_typing_policy_own_the_wheel_gate() -> None:
     """CI permanently enforces strict typing, NumPy docstrings, and test typing."""
-    ci = (_REPO_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+    ci = read_ci_workflow_source()
     policy = json.loads((_REPO_ROOT / "tools/test_typing_policy.json").read_text(encoding="utf-8"))
     repository_policy = next(
         cohort for cohort in policy["cohorts"] if cohort["id"] == "repository_policy"

@@ -1,0 +1,591 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — CI Control Provider
+name: CI / Control Provider
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  kyma-mechanism-product-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check KYMA mechanism product quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/kyma_mechanism_benchmark_product.py
+          tests/test_kyma_mechanism_benchmark_product.py
+          tools/kyma_mechanism_benchmark_product_quality_gates.py
+          tests/test_kyma_mechanism_benchmark_product_quality_gate.py
+      - name: Ruff NumPy docstrings for KYMA mechanism product quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/kyma_mechanism_benchmark_product.py
+          tests/test_kyma_mechanism_benchmark_product.py
+          tools/kyma_mechanism_benchmark_product_quality_gates.py
+          tests/test_kyma_mechanism_benchmark_product_quality_gate.py
+      - name: Run KYMA mechanism product focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.kyma-mechanism-product-quality
+          --branch
+          -m pytest -q
+          tests/test_kyma_mechanism_benchmark_product.py
+      - name: Enforce KYMA mechanism product exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.kyma-mechanism-product-quality
+          --precision=2
+          --fail-under=100
+          --include=*/kyma_mechanism_benchmark_product.py
+  campaign-harness-product-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check campaign-harness product quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/campaign_harness_product.py
+          tests/test_campaign_harness_product.py
+          tools/campaign_harness_product_quality_gates.py
+          tests/test_campaign_harness_product_quality_gate.py
+      - name: Ruff NumPy docstrings for campaign-harness product quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/campaign_harness_product.py
+          tests/test_campaign_harness_product.py
+          tools/campaign_harness_product_quality_gates.py
+          tests/test_campaign_harness_product_quality_gate.py
+      - name: Run campaign-harness product focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.campaign-harness-product-quality
+          --branch
+          -m pytest -q
+          tests/test_campaign_harness_product.py
+      - name: Enforce campaign-harness product exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.campaign-harness-product-quality
+          --precision=2
+          --fail-under=100
+          --include=*/campaign_harness_product.py
+  geometric-control-product-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check geometric-control product quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/geometric_control_product.py
+          tests/test_geometric_control_product.py
+          tools/geometric_control_product_quality_gates.py
+          tests/test_geometric_control_product_quality_gate.py
+      - name: Ruff NumPy docstrings for geometric-control product quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/geometric_control_product.py
+          tests/test_geometric_control_product.py
+          tools/geometric_control_product_quality_gates.py
+          tests/test_geometric_control_product_quality_gate.py
+      - name: Run geometric-control product focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=.coverage.geometric-control-product-quality
+          --branch
+          -m pytest -q
+          tests/test_geometric_control_product.py
+      - name: Enforce geometric-control product exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=.coverage.geometric-control-product-quality
+          --precision=2
+          --fail-under=100
+          --include=*/geometric_control_product.py
+  chimera-control-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check Chimera-control quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/chimera_control/__init__.py
+          src/scpn_quantum_control/chimera_control/evidence.py
+          src/scpn_quantum_control/chimera_control/objectives.py
+          src/scpn_quantum_control/chimera_control/observables.py
+          src/scpn_quantum_control/chimera_control/schema.py
+          src/scpn_quantum_control/chimera_control/synthetic.py
+          src/scpn_quantum_control/chimera_control/topology.py
+          tools/chimera_control_quality_gates.py
+          tests/test_chimera_control_quality_gate.py
+      - name: Ruff NumPy docstrings for Chimera-control quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/chimera_control/__init__.py
+          src/scpn_quantum_control/chimera_control/evidence.py
+          src/scpn_quantum_control/chimera_control/objectives.py
+          src/scpn_quantum_control/chimera_control/observables.py
+          src/scpn_quantum_control/chimera_control/schema.py
+          src/scpn_quantum_control/chimera_control/synthetic.py
+          src/scpn_quantum_control/chimera_control/topology.py
+          tests/test_chimera_control_e2e.py
+          tests/test_chimera_control_evidence.py
+          tests/test_chimera_control_objectives.py
+          tests/test_chimera_control_observables.py
+          tests/test_chimera_control_schema.py
+          tests/test_chimera_control_synthetic.py
+          tests/test_chimera_control_topology.py
+          tools/chimera_control_quality_gates.py
+          tests/test_chimera_control_quality_gate.py
+      - name: Run Chimera-control focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-chimera-control-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_chimera_control_e2e.py
+          tests/test_chimera_control_evidence.py
+          tests/test_chimera_control_objectives.py
+          tests/test_chimera_control_observables.py
+          tests/test_chimera_control_schema.py
+          tests/test_chimera_control_synthetic.py
+          tests/test_chimera_control_topology.py
+      - name: Enforce Chimera-control exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-chimera-control-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include='*/chimera_control/*.py'
+  whole-program-frontend-contracts-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check whole-program frontend-contract quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/whole_program_frontend_contracts.py
+          src/scpn_quantum_control/whole_program_frontend.py
+          tools/whole_program_frontend_contracts_quality_gates.py
+          tests/test_whole_program_frontend_contracts_quality_gate.py
+      - name: Ruff NumPy docstrings for whole-program frontend-contract quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/whole_program_frontend_contracts.py
+          src/scpn_quantum_control/whole_program_frontend.py
+          tests/test_whole_program_frontend.py
+          tests/test_whole_program_frontend_contracts.py
+          tools/whole_program_frontend_contracts_quality_gates.py
+          tests/test_whole_program_frontend_contracts_quality_gate.py
+      - name: Run whole-program frontend-contract focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-whole-program-frontend-contracts-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_whole_program_frontend.py
+          tests/test_whole_program_frontend_contracts.py
+      - name: Enforce whole-program frontend-contract exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-whole-program-frontend-contracts-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/whole_program_frontend_contracts.py,*/whole_program_frontend.py
+  variational-metric-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check variational-metric quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/variational_metric.py
+          tools/variational_metric_quality_gates.py
+          tests/test_variational_metric_quality_gate.py
+      - name: Ruff NumPy docstrings for variational-metric quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/variational_metric.py
+          tests/test_variational_metric.py
+          tools/variational_metric_quality_gates.py
+          tests/test_variational_metric_quality_gate.py
+      - name: Run variational-metric focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-variational-metric-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_variational_metric.py
+      - name: Enforce variational-metric exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-variational-metric-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/phase/variational_metric.py
+  qnode-circuit-contracts-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check QNode circuit-contract quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/qnode_circuit_contracts.py
+          tools/qnode_circuit_contracts_quality_gates.py
+          tests/test_qnode_circuit_contracts_quality_gate.py
+      - name: Ruff NumPy docstrings for QNode circuit-contract quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/qnode_circuit_contracts.py
+          tests/test_phase_qnode_circuit_contracts.py
+          tools/qnode_circuit_contracts_quality_gates.py
+          tests/test_qnode_circuit_contracts_quality_gate.py
+      - name: Run QNode circuit-contract focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-qnode-circuit-contracts-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_phase_qnode_circuit.py
+          tests/test_phase_qnode_circuit_builders.py
+          tests/test_phase_qnode_circuit_builders_integration.py
+          tests/test_phase_qnode_circuit_contracts.py
+          tests/test_phase_qnode_circuit_differentiation.py
+          tests/test_phase_qnode_circuit_differentiation_integration.py
+          tests/test_phase_qnode_circuit_execution.py
+          tests/test_phase_qnode_circuit_execution_integration.py
+          tests/test_phase_qnode_circuit_support.py
+          tests/test_phase_qnode_circuit_support_integration.py
+      - name: Enforce QNode circuit-contract exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-qnode-circuit-contracts-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/phase/qnode_circuit_contracts.py
+  topology-kernel-schema-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check topology-kernel schema quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/topology_kernel_product/schema.py
+          src/scpn_quantum_control/topology_kernel_product/synthetic.py
+          tools/topology_kernel_schema_quality_gates.py
+          tests/test_topology_kernel_schema_quality_gate.py
+      - name: Ruff NumPy docstrings for topology-kernel schema quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/topology_kernel_product/schema.py
+          src/scpn_quantum_control/topology_kernel_product/synthetic.py
+          tests/test_topology_kernel_product_schema.py
+          tests/test_topology_kernel_product_synthetic.py
+          tools/topology_kernel_schema_quality_gates.py
+          tests/test_topology_kernel_schema_quality_gate.py
+      - name: Run topology-kernel schema focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-topology-kernel-schema-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_topology_kernel_product_schema.py
+          tests/test_topology_kernel_product_synthetic.py
+      - name: Enforce topology-kernel schema exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-topology-kernel-schema-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/topology_kernel_product/schema.py,*/topology_kernel_product/synthetic.py
+  feedback-loop-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check feedback-loop quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/hardware/feedback_loop.py
+          src/scpn_quantum_control/bridge/orchestrator_feedback.py
+          src/scpn_quantum_control/control/realtime_feedback.py
+          tests/test_orchestrator_feedback.py
+          tools/feedback_loop_quality_gates.py
+          tests/test_feedback_loop_quality_gate.py
+      - name: Ruff NumPy docstrings for feedback-loop quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/hardware/feedback_loop.py
+          src/scpn_quantum_control/bridge/orchestrator_feedback.py
+          src/scpn_quantum_control/control/realtime_feedback.py
+          tests/test_feedback_loop.py
+          tests/test_feedback_loop_branches.py
+          tests/test_orchestrator_feedback.py
+          tests/test_realtime_feedback.py
+          tests/test_realtime_feedback_fallback_branches.py
+          tools/feedback_loop_quality_gates.py
+          tests/test_feedback_loop_quality_gate.py
+      - name: Run feedback-loop focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-feedback-loop-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_feedback_loop.py
+          tests/test_feedback_loop_branches.py
+          tests/test_orchestrator_feedback.py
+          tests/test_realtime_feedback.py
+          tests/test_realtime_feedback_fallback_branches.py
+      - name: Enforce feedback-loop exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-feedback-loop-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/hardware/feedback_loop.py,*/bridge/orchestrator_feedback.py,*/control/realtime_feedback.py
+  analog-platform-catalogue-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check analog platform catalogue cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/analog_mapping/platforms.py
+          tests/test_analog_mapping_feasibility.py
+          src/scpn_quantum_control/hardware/analog_native_readiness.py
+          tests/test_analog_native_readiness.py
+          tests/test_analog_native_readiness_branches.py
+          scripts/export_s10_analog_native_readiness.py
+          tests/test_export_s10_analog_native_readiness.py
+          tools/analog_platform_catalogue_quality_gates.py
+          tests/test_analog_platform_catalogue_quality_gate.py
+      - name: Ruff preview NumPy docs for analog platform catalogue
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/analog_mapping/platforms.py
+          tests/test_analog_mapping_feasibility.py
+          src/scpn_quantum_control/hardware/analog_native_readiness.py
+          tests/test_analog_native_readiness.py
+          tests/test_analog_native_readiness_branches.py
+          scripts/export_s10_analog_native_readiness.py
+          tests/test_export_s10_analog_native_readiness.py
+          tools/analog_platform_catalogue_quality_gates.py
+          tests/test_analog_platform_catalogue_quality_gate.py
+      - name: Run analog platform catalogue focused coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-analog-platform-catalogue-quality.coverage --branch
+          -m pytest -q
+          tests/test_analog_mapping_feasibility.py
+          tests/test_analog_native_readiness.py
+          tests/test_analog_native_readiness_branches.py
+          tests/test_export_s10_analog_native_readiness.py
+      - name: Enforce analog platform catalogue exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-analog-platform-catalogue-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/analog_mapping/platforms.py,*/hardware/analog_native_readiness.py
+  hardware-hal-quality:
+    needs: analog-platform-catalogue-quality
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check hardware HAL quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/hardware/hal.py
+          src/scpn_quantum_control/hardware/async_runner.py
+          src/scpn_quantum_control/hardware/circuit_cutting.py
+          src/scpn_quantum_control/hardware/circuit_export.py
+          src/scpn_quantum_control/hardware/fast_classical.py
+          src/scpn_quantum_control/hardware/iqm_backend.py
+          src/scpn_quantum_control/hardware/aggregators.py
+          src/scpn_quantum_control/hardware/provider_capability_core.py
+          tests/test_async_runner.py
+          tests/test_circuit_cutting.py
+          tests/test_circuit_export.py
+          tests/test_fast_classical.py
+          tests/test_iqm_backend.py
+          tests/test_aggregators_branches.py
+          tests/test_hardware_hal_provider_conformance.py
+          tests/test_provider_capability_core.py
+          tools/hardware_hal_quality_gates.py
+          tests/test_hardware_hal_quality_gate.py
+      - name: Ruff NumPy docstrings for hardware HAL quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/hardware/hal.py
+          src/scpn_quantum_control/hardware/async_runner.py
+          src/scpn_quantum_control/hardware/circuit_cutting.py
+          src/scpn_quantum_control/hardware/circuit_export.py
+          src/scpn_quantum_control/hardware/fast_classical.py
+          src/scpn_quantum_control/hardware/iqm_backend.py
+          src/scpn_quantum_control/hardware/aggregators.py
+          src/scpn_quantum_control/hardware/provider_capability_core.py
+          tests/test_hardware_hal.py
+          tests/test_async_runner.py
+          tests/test_circuit_cutting.py
+          tests/test_circuit_export.py
+          tests/test_fast_classical.py
+          tests/test_iqm_backend.py
+          tests/test_aggregators_branches.py
+          tests/test_hardware_hal_provider_conformance.py
+          tests/test_provider_capability_core.py
+          tools/hardware_hal_quality_gates.py
+          tests/test_hardware_hal_quality_gate.py
+      - name: Run hardware HAL focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-hardware-hal-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_hardware_hal.py
+          tests/test_hardware_hal_contract_guards.py
+          tests/test_hardware_hal_count_integrity_contract.py
+          tests/test_hardware_hal_provider_id_contract.py
+          tests/test_hardware_hal_status_normalisation_contract.py
+          tests/test_async_runner.py
+          tests/test_circuit_cutting.py
+          tests/test_circuit_export.py
+          tests/test_fast_classical.py
+          tests/test_iqm_backend.py
+          tests/test_aggregators_branches.py
+          tests/test_hardware_hal_provider_conformance.py
+          tests/test_provider_capability_core.py
+      - name: Enforce hardware HAL exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-hardware-hal-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/circuit_cutting.py,*/hardware/circuit_export.py,*/hardware/fast_classical.py,*/hardware/iqm_backend.py,*/hardware/aggregators.py,*/hardware/provider_capability_core.py

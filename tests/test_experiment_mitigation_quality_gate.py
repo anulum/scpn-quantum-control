@@ -7,10 +7,9 @@
 # SCPN Quantum Control — experiment mitigation quality-gate tests
 """Lock the experiment-mitigation gate into preflight and CI."""
 
-from pathlib import Path
-
 from tools import experiment_mitigation_quality_gates as quality_gates
 from tools import preflight
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def test_static_gates_cover_typing_and_docs() -> None:
@@ -41,7 +40,7 @@ def test_preflight_uses_helper_defined_gates() -> None:
 
 def test_ci_runs_and_aggregates_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
-    workflow = Path(".github/workflows/ci.yml").read_text()
+    workflow = read_ci_workflow_source()
     start = workflow.index("  experiment-mitigation-quality:")
     end = workflow.index("\n\n  research-lane-registry-quality:", start)
     block = workflow[start:end]

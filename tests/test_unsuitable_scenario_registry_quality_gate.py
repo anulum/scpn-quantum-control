@@ -7,10 +7,9 @@
 # SCPN Quantum Control — unsuitable scenario registry quality-gate tests
 """Lock the unsuitable-scenario-registry gate into preflight and CI."""
 
-from pathlib import Path
-
 from tools import preflight
 from tools import unsuitable_scenario_registry_quality_gates as quality_gates
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
@@ -41,7 +40,7 @@ def test_preflight_uses_helper_defined_gates() -> None:
 
 def test_ci_runs_and_aggregates_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
-    workflow = Path(".github/workflows/ci.yml").read_text()
+    workflow = read_ci_workflow_source()
     start = workflow.index("  unsuitable-scenario-registry-quality:")
     end = workflow.index("\n\n  layout-method-comparison-quality:", start)
     block = workflow[start:end]

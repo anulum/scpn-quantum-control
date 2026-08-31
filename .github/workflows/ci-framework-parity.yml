@@ -1,0 +1,205 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — CI Framework Parity
+name: CI / Framework Parity
+
+on:
+  workflow_call:
+    inputs:
+      run_isolated_benchmark:
+        description: Run the self-hosted isolated benchmark job on main only.
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  differentiable-parity:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+      RUNNER_ENVIRONMENT: github-hosted
+      RUNNER_LABELS: ubuntu-latest,linux
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install pinned CI dependency surface
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Build CPU-only differentiable framework overlay
+        run: |
+          # CPU wheels: jax[cpu], tensorflow-cpu, pennylane, torch.
+          export SCPN_FRAMEWORK_OVERLAY="$RUNNER_TEMP/scpn-qc-framework-site-py312"
+          install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY" --install
+          echo "PYTHONPATH=$SCPN_FRAMEWORK_OVERLAY:$PYTHONPATH" >> "$GITHUB_ENV"
+          install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY" --verify
+      - name: Verify real JAX runtime for Phase-QNode coverage
+        run: >-
+          python -c
+          "import jax; devices=jax.devices();
+          print(f'JAX {jax.__version__}; devices={devices}; primary={devices[0]}')"
+      - name: Run Phase-QNode JAX focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-phase-jax-qnode.coverage
+          --branch
+          --source=src/scpn_quantum_control/phase
+          -m pytest -q
+          tests/test_phase_jax_bridge.py
+          tests/test_phase_jax_compatibility.py
+          tests/test_phase_jax_gradients.py
+          tests/test_phase_jax_gradients_integration.py
+          tests/test_phase_jax_bridge_contracts.py
+          tests/test_phase_jax_maturity.py
+          tests/test_phase_jax_maturity_integration.py
+          tests/test_phase_jax_qnode_transforms.py
+          tests/test_phase_jax_qnode_transforms_integration.py
+          tests/test_phase_jax_bridge_aot_export.py
+          tests/test_phase_jax_qnode_input_validation.py
+          tests/test_phase_jax_qnode_pytree_validation.py
+          tests/test_phase_jax_qnode_aot_validation.py
+          tests/test_phase_jax_qnode_statevector_edges.py
+      - name: Enforce Phase-QNode JAX exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-phase-jax-qnode.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/jax_bridge.py,*/jax_maturity.py,*/jax_qnode_transforms.py
+      - name: Run Phase-QNode Torch bridge focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-phase-torch-bridge.coverage
+          --branch
+          -m pytest -q
+          tests/test_phase_torch_bridge.py
+          tests/test_phase_torch_bridge_contracts.py
+          tests/test_phase_torch_bridge_runtime_boundaries.py
+          tests/test_phase_torch_bridge_validation_edges.py
+          tests/test_phase_torch_compatibility.py
+          tests/test_phase_torch_compatibility_integration.py
+          tests/test_phase_torch_gradients.py
+          tests/test_phase_torch_gradients_integration.py
+          tests/test_phase_torch_maturity.py
+          tests/test_phase_torch_maturity_integration.py
+          tests/test_phase_torch_qnode_transforms.py
+          tests/test_phase_torch_qnode_transforms_integration.py
+          tests/test_phase_torch_module_state.py
+          tests/test_phase_torch_checkpoint.py
+          tests/test_phase_torch_checkpoint_matrix.py
+          tests/test_phase_torch_device_state.py
+          tests/test_phase_torch_export.py
+          tests/test_phase_torch_export_shape_matrix.py
+          tests/test_phase_torch_training_loop_matrix.py
+          tests/test_phase_qnn_framework_bridge_matrix.py
+          tests/test_phase_torch_aot_autograd_export.py
+          tests/test_phase_torch_dynamic_shape_export.py
+          tests/test_optional_torch_export_contracts.py
+      - name: Enforce Phase-QNode Torch bridge exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-phase-torch-bridge.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/torch_bridge.py,*/torch_maturity.py,*/torch_module_state.py,*/torch_checkpoint.py,*/torch_checkpoint_matrix.py,*/torch_device_state.py,*/torch_export.py,*/torch_export_shape_matrix.py,*/torch_training_loop_matrix.py,*/torch_aot_autograd_export.py,*/torch_dynamic_shape_export.py
+      - name: Run differentiable parity tests
+        run: >
+          pytest
+          tests/test_differentiable_framework_overlay.py
+          tests/test_differentiable_external_comparisons.py
+          tests/test_phase_qnode_framework_parity.py
+          -q
+      - name: Generate functional_non_isolated differentiable evidence
+        run: |
+          echo "GITHUB_RUN_ID=$GITHUB_RUN_ID"
+          echo "GITHUB_SHA=$GITHUB_SHA"
+          mkdir -p differentiable-benchmark-evidence
+          python scripts/run_differentiable_benchmark_evidence.py \
+            --output-dir differentiable-benchmark-evidence
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(
+              Path("differentiable-benchmark-evidence/diff-qnode-ci-evidence-schema-v1.json").read_text()
+          )
+          external_payload = json.loads(
+              Path("differentiable-benchmark-evidence/diff-qnode-external-comparison.json").read_text()
+          )
+          if payload["metadata"]["classification"] != "functional_non_isolated":
+              raise SystemExit("GitHub-hosted benchmark evidence must remain functional_non_isolated")
+          if external_payload["classification"] != "functional_non_isolated":
+              raise SystemExit("External comparison evidence must remain functional_non_isolated")
+          if external_payload["artifact_id"] not in payload["evidence_artifact_ids"]:
+              raise SystemExit("Benchmark evidence must reference the external comparison artefact ID")
+          PY
+      - name: Assert non-provider benchmark boundary
+        run: grep -R "No provider or QPU execution" differentiable-benchmark-evidence
+      - name: Upload functional_non_isolated differentiable evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: differentiable-functional-non-isolated-evidence
+          path: differentiable-benchmark-evidence/
+          retention-days: 30
+
+  # Self-hosted execution is reserved for explicit maintainer dispatch on main.
+  differentiable-isolated-benchmark:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.run_isolated_benchmark == true &&
+      github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, linux, isolated-benchmark]
+    permissions:
+      contents: read
+    timeout-minutes: 45
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+      RUNNER_ENVIRONMENT: self-hosted
+      RUNNER_LABELS: self-hosted,linux,isolated-benchmark
+      SCPN_BENCH_CPU_AFFINITY: "0"
+      SCPN_BENCH_ISOLATION_METHOD: taskset+chrt
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          ref: refs/heads/main
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install pinned CI dependency surface
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Run isolated differentiable benchmark evidence
+        run: |
+          mkdir -p differentiable-isolated-benchmark-evidence
+          taskset -c "$SCPN_BENCH_CPU_AFFINITY" chrt -f 1 \
+            python scripts/run_differentiable_benchmark_evidence.py \
+              --output-dir differentiable-isolated-benchmark-evidence \
+              --cpu-affinity "$SCPN_BENCH_CPU_AFFINITY" \
+              --isolation-method "$SCPN_BENCH_ISOLATION_METHOD"
+          grep '"classification": "isolated_affinity"' \
+            differentiable-isolated-benchmark-evidence/diff-qnode-ci-evidence-schema-v1.json
+          grep '"classification": "functional_non_isolated"' \
+            differentiable-isolated-benchmark-evidence/diff-qnode-external-comparison.json
+      - name: Upload isolated differentiable benchmark evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: differentiable-isolated-benchmark-evidence
+          path: differentiable-isolated-benchmark-evidence/
+          retention-days: 30

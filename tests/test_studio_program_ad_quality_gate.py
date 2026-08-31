@@ -15,6 +15,7 @@ from pathlib import Path
 from types import ModuleType
 
 from tools import program_ad_quality_gates
+from tools.ci_workflow_inventory import read_ci_workflow_source, workflow_path_for_job
 
 
 def _load_preflight_module() -> ModuleType:
@@ -118,7 +119,7 @@ def test_default_preflight_has_exact_studio_program_ad_coverage() -> None:
 
 def test_ci_and_preflight_share_studio_program_ad_cohorts() -> None:
     """CI and local gates must preserve the exact replay-owner contracts."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     quality_steps = (
         "Type-check Studio Program-AD replay quality cohort",
         "Ruff NumPy docstrings for Studio Program-AD replay quality cohort",
@@ -136,7 +137,7 @@ def test_ci_and_preflight_share_studio_program_ad_cohorts() -> None:
     assert ci_coverage_paths == _preflight.STUDIO_PROGRAM_AD_COVERAGE_COHORT
     assert "Enforce Studio Program-AD exact coverage" in workflow
     assert "--include=*/program_ad_replay_artifact.py,*/executive.py" in workflow
-    assert "needs['studio-program-ad-quality'].result" in workflow
+    assert workflow_path_for_job("studio-program-ad-quality").name == ("ci-application-domain.yml")
     coverage_job = workflow[
         workflow.index("  studio-program-ad-quality:") : workflow.index(
             "\n  whole-program-trace-value-quality:"
@@ -162,7 +163,7 @@ def test_local_studio_program_ad_runtime_gates_match_ci() -> None:
     typecheck = runtime["studio Program-AD browser strict typecheck"]
     browser_test = _preflight.STUDIO_PROGRAM_AD_BROWSER_TEST_GATE[1]
     browser_coverage = _preflight.STUDIO_PROGRAM_AD_BROWSER_COVERAGE_GATE[1]
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
 
     assert rust_test[0] == _preflight._CARGO
     assert rust_test[1:3] == ["test", "--locked"]

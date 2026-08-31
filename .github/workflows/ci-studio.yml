@@ -1,0 +1,333 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — CI Studio
+name: CI / Studio
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  studio-replay-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: python -m pip install --no-deps -e .
+      - run: >-
+          python -m pip install --no-deps --require-hashes
+          -r requirements-ci-studio-platform.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/hardware_result_packs.py
+          src/scpn_quantum_control/studio/executive_replay.py
+          src/scpn_quantum_control/studio/executive_cli.py
+          tests/test_hardware_result_packs.py
+          tests/test_studio_executive_replay.py
+          tests/test_studio_executive_cli.py
+          tools/studio_replay_quality_gates.py
+          tests/test_studio_replay_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/hardware_result_packs.py
+          src/scpn_quantum_control/studio/executive_replay.py
+          tests/test_hardware_result_packs.py
+          tests/test_studio_executive_replay.py
+          tools/studio_replay_quality_gates.py
+          tests/test_studio_replay_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-studio-replay-quality.coverage --branch
+          -m pytest -q tests/test_hardware_result_packs.py
+          tests/test_studio_executive_replay.py
+          tests/test_studio_executive_cli.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-studio-replay-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/hardware_result_packs.py,*/studio/executive_replay.py,*/studio/executive_cli.py
+  studio-simulation-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: python -m pip install --no-deps -e .
+      - run: >-
+          python -m pip install --no-deps --require-hashes
+          -r requirements-ci-studio-platform.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/studio/executive_simulate.py
+          src/scpn_quantum_control/studio/executive_cli.py
+          tests/test_studio_executive_simulate.py
+          tests/test_studio_executive_cli.py
+          tools/studio_simulation_quality_gates.py
+          tests/test_studio_simulation_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/studio/executive_simulate.py
+          tests/test_studio_executive_simulate.py
+          tools/studio_simulation_quality_gates.py
+          tests/test_studio_simulation_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-studio-simulation-quality.coverage --branch
+          -m pytest -q tests/test_studio_executive_simulate.py
+          tests/test_studio_executive_cli.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-studio-simulation-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/studio/executive_simulate.py,*/studio/executive_cli.py
+  p-h1-open-guard-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/analysis/p_h1_open_guard.py
+          src/scpn_quantum_control/analysis/persistent_homology.py
+          src/scpn_quantum_control/analysis/quantum_persistent_homology.py
+          src/scpn_quantum_control/analysis/tcbo_weighted_complex.py
+          scripts/check_p_h1_open_claim_guard.py
+          tests/test_p_h1_open_guard.py
+          tests/test_bench_cli.py
+          tests/test_persistent_homology.py
+          tests/test_quantum_persistent_homology.py
+          tests/test_tcbo_weighted_complex.py
+          tools/p_h1_open_guard_quality_gates.py
+          tests/test_p_h1_open_guard_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/analysis/p_h1_open_guard.py
+          src/scpn_quantum_control/analysis/persistent_homology.py
+          src/scpn_quantum_control/analysis/quantum_persistent_homology.py
+          src/scpn_quantum_control/analysis/tcbo_weighted_complex.py
+          scripts/check_p_h1_open_claim_guard.py
+          tests/test_p_h1_open_guard.py
+          tests/test_persistent_homology.py
+          tests/test_quantum_persistent_homology.py
+          tests/test_tcbo_weighted_complex.py
+          tools/p_h1_open_guard_quality_gates.py
+          tests/test_p_h1_open_guard_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-p-h1-open-guard-quality.coverage --branch
+          -m pytest -q
+          tests/test_p_h1_open_guard.py
+          tests/test_bench_cli.py
+          tests/test_persistent_homology.py
+          tests/test_quantum_persistent_homology.py
+          tests/test_persistent_homology_branches.py
+          tests/test_analysis_topology_contracts.py
+          tests/test_tcbo_weighted_complex.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-p-h1-open-guard-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/analysis/p_h1_open_guard.py,*/scripts/check_p_h1_open_claim_guard.py,*/analysis/persistent_homology.py,*/analysis/quantum_persistent_homology.py,*/analysis/tcbo_weighted_complex.py
+  studio-qec-readiness-bundle-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - name: Install pinned CI surface, the package, and the studio federation extra
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/studio/qec_readiness_bundle.py
+          tests/test_studio_qec_readiness_bundle.py
+          tools/studio_qec_readiness_bundle_quality_gates.py
+          tests/test_studio_qec_readiness_bundle_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/studio/qec_readiness_bundle.py
+          tests/test_studio_qec_readiness_bundle.py
+          tools/studio_qec_readiness_bundle_quality_gates.py
+          tests/test_studio_qec_readiness_bundle_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-studio-qec-readiness-bundle-quality.coverage --branch
+          -m pytest -q tests/test_studio_qec_readiness_bundle.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-studio-qec-readiness-bundle-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/studio/qec_readiness_bundle.py
+  studio-readout-mitigation-bundle-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - name: Install pinned CI surface, the package, and the studio federation extra
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/studio/readout_mitigation_bundle.py
+          tests/test_studio_readout_mitigation_bundle.py
+          tools/studio_readout_mitigation_bundle_quality_gates.py
+          tests/test_studio_readout_mitigation_bundle_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/studio/readout_mitigation_bundle.py
+          tests/test_studio_readout_mitigation_bundle.py
+          tools/studio_readout_mitigation_bundle_quality_gates.py
+          tests/test_studio_readout_mitigation_bundle_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-studio-readout-mitigation-bundle-quality.coverage --branch
+          -m pytest -q tests/test_studio_readout_mitigation_bundle.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-studio-readout-mitigation-bundle-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/studio/readout_mitigation_bundle.py
+  studio-scorecard-bundle-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - name: Install pinned CI surface, the package, and the studio federation extra
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/studio/scorecard_bundle.py
+          tests/test_studio_scorecard_bundle.py
+          tools/studio_scorecard_bundle_quality_gates.py
+          tests/test_studio_scorecard_bundle_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/studio/scorecard_bundle.py
+          tests/test_studio_scorecard_bundle.py
+          tools/studio_scorecard_bundle_quality_gates.py
+          tests/test_studio_scorecard_bundle_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-studio-scorecard-bundle-quality.coverage --branch
+          -m pytest -q tests/test_studio_scorecard_bundle.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-studio-scorecard-bundle-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/studio/scorecard_bundle.py
+  studio-web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: studio-web
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        with:
+          node-version: "22"
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271  # v6.0.9
+        with:
+          version: 11.9.0
+          run_install: false
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck (TS strict)
+        run: pnpm typecheck
+      - name: Add the WASM build target
+        run: rustup target add wasm32-unknown-unknown
+      - name: Build the WASM kernel (browser recompute path needs it at test time)
+        working-directory: scpn_quantum_engine/studio_wasm_kernel
+        run: cargo build --release --locked --target wasm32-unknown-unknown
+      - name: Assert the program-AD replay crate stays WASM-portable
+        working-directory: scpn_quantum_engine/program_ad_replay
+        run: cargo build --release --locked --target wasm32-unknown-unknown
+      - name: Build the program-AD WASM kernel
+        working-directory: scpn_quantum_engine/studio_program_ad_wasm
+        run: cargo build --release --locked --target wasm32-unknown-unknown
+      - name: Test the program-AD WASM kernel
+        working-directory: scpn_quantum_engine/studio_program_ad_wasm
+        run: cargo test --locked
+      - name: Test with enforced coverage thresholds
+        run: pnpm test:coverage
+      - name: Enforce Program-AD browser owner exact coverage
+        run: >-
+          pnpm exec vitest run
+          src/panel/programAd.test.ts
+          src/panel/ProgramADReplayCard.test.tsx
+          --coverage
+          --coverage.reporter=text
+          --coverage.include=src/panel/programAd.ts
+          --coverage.include=src/panel/ProgramADReplayCard.tsx
+          --coverage.thresholds.statements=100
+          --coverage.thresholds.branches=100
+          --coverage.thresholds.functions=100
+          --coverage.thresholds.lines=100
+      - name: Build the portal and the federation remote
+        run: pnpm build
+      - name: Assert the ESM remote entry carries the locked federation name
+        run: |
+          test -f dist/remoteEntry.js
+          grep -q "scpn_quantum_control" dist/remoteEntry.js
+      - name: Ship the WASM kernel into the bundle + write the deploy manifest
+        working-directory: .
+        run: python3 tools/build_studio_wasm_bundle.py
+      - name: Assert the deploy manifest content-addresses the shipped bundle
+        working-directory: .
+        run: |
+          test -f studio-web/dist/deploy-manifest.json
+          test -f studio-web/dist/wasm/scpn_quantum_studio_wasm_kernel.wasm
+          test -f studio-web/dist/wasm/scpn_quantum_studio_program_ad_wasm.wasm
+          python3 - <<'EOF'
+          import hashlib, json
+          from pathlib import Path
+          manifest = json.loads(Path("studio-web/dist/deploy-manifest.json").read_text())
+          for row in manifest["artifacts"]:
+              path = Path("studio-web/dist") / row["path"]
+              digest = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+              assert digest == row["sha256"], f"digest drift: {row['path']}"
+          print(f"deploy manifest verified: {len(manifest['artifacts'])} artefacts")
+          EOF

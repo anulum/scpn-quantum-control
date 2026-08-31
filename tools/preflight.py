@@ -978,6 +978,40 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     ("ruff check", [_PY, "-m", "ruff", "check", "src/", "tests/"]),
     ("ruff format", [_PY, "-m", "ruff", "format", "--check", "src/", "tests/"]),
     (
+        "ci-workflow-modularity",
+        [_PY, "tools/audit_ci_workflow_modularity.py"],
+    ),
+    (
+        "mypy-strict-ci-workflow-modularity",
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "--explicit-package-bases",
+            "tools/ci_workflow_inventory.py",
+            "tools/audit_ci_workflow_modularity.py",
+            "tests/test_ci_workflow_modularity.py",
+        ],
+    ),
+    (
+        "ruff D ci-workflow-modularity",
+        [
+            _PY,
+            "-m",
+            "ruff",
+            "check",
+            "--isolated",
+            "--select",
+            "D,D413",
+            "--config",
+            'lint.pydocstyle.convention = "numpy"',
+            "tools/ci_workflow_inventory.py",
+            "tools/audit_ci_workflow_modularity.py",
+            "tests/test_ci_workflow_modularity.py",
+        ],
+    ),
+    (
         "documentation-surface",
         [
             _PY,

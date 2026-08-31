@@ -67,7 +67,7 @@ def test_paths_json_workflows_and_other_languages_fail(tmp_path: Path) -> None:
     """Task codes must not name artefacts, payload fields, CI, or polyglot symbols."""
     coded_path = "data/results/bl19_evidence.json"
     _write(tmp_path / coded_path, '{"bl19_key": "safe"}')
-    workflow = ".github/workflows/ci.yml"
+    workflow = ".github/workflows/checks.yml"
     _write(tmp_path / workflow, "jobs:\n  lint:\n    name: Product checks (ST-12)\n")
     rust = "scpn_quantum_engine/src/lib.rs"
     _write(tmp_path / rust, "fn bl19_runner() {}\n")

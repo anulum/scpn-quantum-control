@@ -1,0 +1,254 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — CI Runtime Package
+name: CI / Runtime Package
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test-extra-platforms:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          sparse-checkout: |
+            .github
+            src
+            oscillatools
+            tests
+            scripts
+            tools
+            pyproject.toml
+            README.md
+            LICENSE
+            requirements-ci-cross-platform-smoke.txt
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Configure Python import path
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            echo "PYTHONPATH=$GITHUB_WORKSPACE/src;$GITHUB_WORKSPACE/oscillatools/src;$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          else
+            echo "PYTHONPATH=$GITHUB_WORKSPACE/src:$GITHUB_WORKSPACE/oscillatools/src:$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+          fi
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-cross-platform-smoke.txt
+      - name: Run cross-platform smoke tests
+        run: >
+          pytest
+          tests/test_biological_surface_code.py
+          tests/test_biological_pipeline.py
+          tests/test_biological_cli.py
+          tests/test_qec_properties.py
+          -v --tb=short
+  type-check:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: python tools/check_rust_pyi_exports.py
+      - run: >-
+          mypy --strict
+          src/scpn_quantum_control/differentiable.py
+          src/scpn_quantum_control/differentiable_claim_ledger.py
+          src/scpn_quantum_control/differentiable_architecture_map.py
+          src/scpn_quantum_control/differentiable_dependency_environment_evidence.py
+          src/scpn_quantum_control/differentiable_dependency_environment_map.py
+          src/scpn_quantum_control/differentiable_baseline_scorecard.py
+          src/scpn_quantum_control/differentiable_api.py
+          src/scpn_quantum_control/benchmarks/differentiable_programming.py
+          src/scpn_quantum_control/differentiable_external_validation.py
+          src/scpn_quantum_control/differentiable_framework_overlay.py
+          src/scpn_quantum_control/differentiable_module_hardening_audit.py
+          src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py
+          src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py
+          src/scpn_quantum_control/benchmarks/differentiable_evidence.py
+          src/scpn_quantum_control/phase/differentiable_readiness.py
+          src/scpn_quantum_control/phase/differentiable_audit.py
+          src/scpn_quantum_control/phase/gradient_support_matrix.py
+          src/scpn_quantum_control/phase/provider_gradient.py
+          src/scpn_quantum_control/phase/hardware_gradient_policy.py
+          src/scpn_quantum_control/phase/provider_gradient_audit.py
+          src/scpn_quantum_control/phase/hardware_gradient_publication.py
+          src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py
+          src/scpn_quantum_control/phase/hardware_gradient_campaign.py
+          src/scpn_quantum_control/phase/gradient_backend.py
+          src/scpn_quantum_control/phase/gradient_tape.py
+          src/scpn_quantum_control/phase/natural_gradient.py
+          src/scpn_quantum_control/phase/gradient_descent.py
+          src/scpn_quantum_control/phase/qnode_affinity_benchmark.py
+          src/scpn_quantum_control/phase/qnode_tape.py
+          src/scpn_quantum_control/phase/qnode_provider_transforms.py
+          src/scpn_quantum_control/phase/qnode_transforms.py
+          src/scpn_quantum_control/phase/qnode_vector_transforms.py
+          src/scpn_quantum_control/phase/qnode_framework_parity.py
+          src/scpn_quantum_control/phase/qnode_circuit_builders.py
+          src/scpn_quantum_control/phase/qnode_circuit.py
+          src/scpn_quantum_control/phase/qnode_circuit_contracts.py
+          src/scpn_quantum_control/phase/qnode_circuit_differentiation.py
+          src/scpn_quantum_control/phase/qnode_circuit_execution.py
+          src/scpn_quantum_control/phase/qnode_circuit_support.py
+          src/scpn_quantum_control/phase/pennylane_bridge.py
+          src/scpn_quantum_control/phase/pennylane_provider_plugin.py
+          src/scpn_quantum_control/phase/jax_bridge.py
+          src/scpn_quantum_control/phase/jax_bridge_contracts.py
+          src/scpn_quantum_control/phase/jax_compatibility.py
+          src/scpn_quantum_control/phase/jax_gradients.py
+          src/scpn_quantum_control/phase/jax_maturity.py
+          src/scpn_quantum_control/phase/jax_qnode_transforms.py
+          src/scpn_quantum_control/phase/torch_bridge.py
+          src/scpn_quantum_control/phase/torch_bridge_contracts.py
+          src/scpn_quantum_control/phase/torch_compatibility.py
+          src/scpn_quantum_control/phase/torch_gradients.py
+          src/scpn_quantum_control/phase/torch_maturity.py
+          src/scpn_quantum_control/phase/torch_qnode_transforms.py
+          src/scpn_quantum_control/phase/tensorflow_bridge.py
+          src/scpn_quantum_control/phase/tensorflow_bridge_contracts.py
+          src/scpn_quantum_control/phase/tensorflow_compatibility.py
+          src/scpn_quantum_control/phase/tensorflow_gradients.py
+          src/scpn_quantum_control/phase/tensorflow_maintenance.py
+          src/scpn_quantum_control/phase/qiskit_bridge.py
+          src/scpn_quantum_control/phase/qiskit_bridge_contracts.py
+          src/scpn_quantum_control/phase/qiskit_gradients.py
+          src/scpn_quantum_control/phase/qiskit_runtime.py
+          src/scpn_quantum_control/phase/qnn_framework_bridge_matrix.py
+          src/scpn_quantum_control/phase/transform_nesting.py
+          src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py
+          src/scpn_quantum_control/phase/xy_compiler.py
+          src/scpn_quantum_control/phase/pennylane_import.py
+          src/scpn_quantum_control/phase/qnn_optimizer_benchmark.py
+          src/scpn_quantum_control/phase/qnn_training.py
+          src/scpn_quantum_control/phase/qnn_conformance.py
+          src/scpn_quantum_control/phase/qnn_finite_shot.py
+          src/scpn_quantum_control/phase/qnn_convergence.py
+          src/scpn_quantum_control/phase/qnn_loss_landscape.py
+          src/scpn_quantum_control/phase/qgnn.py
+          src/scpn_quantum_control/phase/qnn_framework_agreement.py
+          src/scpn_quantum_control/phase/model_training_evidence.py
+          src/scpn_quantum_control/phase/domain_benchmark_datasets.py
+          src/scpn_quantum_control/phase/objectives.py
+          src/scpn_quantum_control/phase/objective_planner.py
+          src/scpn_quantum_control/phase/objective_audit.py
+          src/scpn_quantum_control/phase/optimizer_audit.py
+          src/scpn_quantum_control/phase/param_shift.py
+          src/scpn_quantum_control/phase/general_unitary.py
+          src/scpn_quantum_control/phase/phase_vqe.py
+          src/scpn_quantum_control/phase/structured_ansatz.py
+          src/scpn_quantum_control/phase/xy_kuramoto.py
+          src/scpn_quantum_control/phase/kuramoto_variants.py
+          src/scpn_quantum_control/phase/adapt_vqe.py
+          src/scpn_quantum_control/phase/trotter_error.py
+          src/scpn_quantum_control/phase/ansatz_methodology.py
+          src/scpn_quantum_control/phase/results.py
+          src/scpn_quantum_control/phase/provider_hardware_safety_audit.py
+          src/scpn_quantum_control/phase/backend_selector.py
+          src/scpn_quantum_control/phase/ansatz_bench.py
+          src/scpn_quantum_control/phase/trotter_upde.py
+          src/scpn_quantum_control/phase/adiabatic_preparation.py
+          src/scpn_quantum_control/phase/ancilla_lindblad.py
+          src/scpn_quantum_control/phase/avqds.py
+          src/scpn_quantum_control/phase/coupling_learning.py
+          src/scpn_quantum_control/phase/contraction_optimiser.py
+          src/scpn_quantum_control/phase/cross_domain_transfer.py
+          src/scpn_quantum_control/phase/floquet_kuramoto.py
+      # Repo-wide strict gate: every src/ module must pass mypy --strict (the
+      # explicit list above is a subset kept for targeted failure attribution).
+      - run: mypy --strict src/scpn_quantum_control/
+      - run: mypy
+  wheel-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: python -m build
+      - name: Install from wheel
+        # oscillatools is an unpublished local sibling dependency, so resolve the
+        # built scpn wheel without reaching PyPI for it; the smoke step below
+        # supplies oscillatools from source on the import path.
+        run: pip install --no-deps dist/*.whl
+      - name: Smoke test
+        env:
+          PYTHONPATH: ${{ github.workspace }}/oscillatools/src
+        run: |
+          python -c "import scpn_quantum_control; print(scpn_quantum_control.__version__)"
+          python -c "from scpn_quantum_control.crypto import spectral_fingerprint; print('OK')"
+          python -c "from scpn_quantum_control import knm_to_ansatz; print('OK')"
+  install-smoke:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install pinned CI dependency surface
+        run: pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Import installed package and optional bridges
+        run: |
+          python -c "import scpn_quantum_control; print(scpn_quantum_control.__version__)"
+          python -c "from scpn_quantum_control.hardware.backends import discover_backends; print(discover_backends())"
+          python -c "from scpn_quantum_control.analysis import DLAParityWitness; print(DLAParityWitness.__name__)"
+  minimal-install:
+    # A default `pip install scpn-quantum-control` ships no optional extras —
+    # in particular no structlog. This leg reproduces that install and drives
+    # the structured-logging fallback end to end, so structlog-style call
+    # sites can never again crash a minimal install (2026-07-16 external
+    # review: TypeError on the runner's first logged event).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install the package with no extras
+        # oscillatools is a core dependency vendored in-repo and not yet on
+        # public PyPI — install the local tree first, exactly what a minimal
+        # source install requires today.
+        run: |
+          pip install ./oscillatools
+          pip install .
+          pip install pytest hypothesis
+      - name: Assert structlog is absent and the kwarg fallback is selected
+        run: |
+          if python -c "import structlog" 2>/dev/null; then
+            echo "structlog unexpectedly present — this leg must run without it"
+            exit 1
+          fi
+          python - <<'PY'
+          from scpn_quantum_control.hardware import runner
+          from scpn_quantum_control.structured_log_fallback import (
+              KwargTolerantLoggerAdapter,
+          )
+          assert isinstance(runner._slog, KwargTolerantLoggerAdapter), type(runner._slog)
+          runner._slog.info("backend_connected", backend="smoke", mode="simulator")
+          PY
+      - name: Run the fallback test surface on the minimal install
+        run: pytest -q tests/test_structured_log_fallback.py tests/test_hardware_runner_branches.py

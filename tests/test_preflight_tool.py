@@ -19,6 +19,8 @@ from types import ModuleType
 
 import pytest
 
+from tools.ci_workflow_inventory import read_ci_workflow_source, workflow_path_for_job
+
 
 def _load_tool_module(module_name: str, filename: str) -> ModuleType:
     module_path = Path(__file__).resolve().parents[1] / "tools" / filename
@@ -40,6 +42,19 @@ def _load_tool_module(module_name: str, filename: str) -> ModuleType:
 
 
 _preflight = _load_tool_module("preflight_for_tests", "preflight.py")
+
+
+def test_static_gates_guard_ci_workflow_modularity() -> None:
+    """Preflight must keep CI categories bounded, unique, and fully aggregated."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+
+    assert gate_map["ci-workflow-modularity"][-1] == ("tools/audit_ci_workflow_modularity.py")
+    strict_cmd = gate_map["mypy-strict-ci-workflow-modularity"]
+    assert "--strict" in strict_cmd
+    assert "tools/ci_workflow_inventory.py" in strict_cmd
+    assert "tests/test_ci_workflow_modularity.py" in strict_cmd
+    doc_cmd = gate_map["ruff D ci-workflow-modularity"]
+    assert "D,D413" in doc_cmd
 
 
 def test_static_gates_include_documentation_surface_gate() -> None:
@@ -230,7 +245,7 @@ def test_static_gates_include_decisive_advantage_quality_ratchets() -> None:
     assert "D,D413" in docstring_cmd
     assert 'lint.pydocstyle.convention = "numpy"' in docstring_cmd
     assert docstring_cmd[-len(cohort) :] == cohort
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     for step_name in (
         "Type-check decisive-advantage quality cohort",
         "Ruff NumPy docstrings for decisive-advantage quality cohort",
@@ -243,7 +258,9 @@ def test_static_gates_include_decisive_advantage_quality_ratchets() -> None:
             if line.strip().startswith(("src/", "tests/", "tools/"))
         ]
         assert ci_paths == cohort
-    assert "needs['decisive-advantage-quality'].result" in workflow
+    assert workflow_path_for_job("decisive-advantage-quality").name == (
+        "ci-application-domain.yml"
+    )
 
 
 def test_decisive_advantage_coverage_gate_is_exact_and_focused() -> None:
@@ -284,7 +301,7 @@ def test_static_gates_include_realtime_runtime_quality_ratchets() -> None:
 
 def test_ci_and_preflight_share_realtime_runtime_quality_cohort() -> None:
     """CI and local static gates must enforce the same realtime file order."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     step_names = (
         "Type-check realtime runtime quality cohort",
         "Ruff NumPy docstrings for realtime runtime quality cohort",
@@ -389,7 +406,7 @@ def test_default_preflight_has_exact_mlir_leaf_coverage() -> None:
 
 def test_ci_and_preflight_share_mlir_leaf_cohorts() -> None:
     """CI and local MLIR gates must preserve identical quality and coverage order."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     quality_steps = (
         "Type-check MLIR leaf quality cohort",
         "Ruff NumPy docstrings for MLIR leaf quality cohort",
@@ -416,7 +433,7 @@ def test_ci_and_preflight_share_mlir_leaf_cohorts() -> None:
     assert "Enforce MLIR leaf exact coverage" in workflow
     assert f"--source={_preflight.MLIR_LEAF_COVERAGE_SOURCE}" in workflow
     assert f"--include={_preflight.MLIR_LEAF_COVERAGE_INCLUDE}" in workflow
-    assert "needs['mlir-leaf-quality'].result" in workflow
+    assert workflow_path_for_job("mlir-leaf-quality").name == "ci-application-domain.yml"
 
 
 def test_default_preflight_has_exact_phase_qnode_affinity_coverage() -> None:
@@ -440,7 +457,7 @@ def test_default_preflight_has_exact_phase_qnode_affinity_coverage() -> None:
 
 def test_ci_and_preflight_share_phase_qnode_affinity_cohorts() -> None:
     """CI and local gates must preserve identical affinity-owner file order."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     quality_steps = (
         "Type-check Phase-QNode affinity quality cohort",
         "Ruff NumPy docstrings for Phase-QNode affinity quality cohort",
@@ -466,7 +483,9 @@ def test_ci_and_preflight_share_phase_qnode_affinity_cohorts() -> None:
     assert ci_coverage_paths == _preflight.PHASE_QNODE_AFFINITY_COVERAGE_COHORT
     assert "Enforce Phase-QNode affinity exact coverage" in workflow
     assert "--include=*/qnode_affinity_benchmark.py" in workflow
-    assert "needs['phase-qnode-affinity-quality'].result" in workflow
+    assert workflow_path_for_job("phase-qnode-affinity-quality").name == (
+        "ci-application-domain.yml"
+    )
 
 
 def test_default_preflight_has_exact_phase_qnode_vector_coverage() -> None:
@@ -490,7 +509,7 @@ def test_default_preflight_has_exact_phase_qnode_vector_coverage() -> None:
 
 def test_ci_and_preflight_share_phase_qnode_vector_cohorts() -> None:
     """CI and local gates must preserve identical vector-owner file order."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     quality_steps = (
         "Type-check Phase-QNode vector quality cohort",
         "Ruff NumPy docstrings for Phase-QNode vector quality cohort",
@@ -516,7 +535,9 @@ def test_ci_and_preflight_share_phase_qnode_vector_cohorts() -> None:
     assert ci_coverage_paths == _preflight.PHASE_QNODE_VECTOR_COVERAGE_COHORT
     assert "Enforce Phase-QNode vector exact coverage" in workflow
     assert "--include=*/qnode_vector_transforms.py" in workflow
-    assert "needs['phase-qnode-vector-quality'].result" in workflow
+    assert workflow_path_for_job("phase-qnode-vector-quality").name == (
+        "ci-application-domain.yml"
+    )
 
 
 def test_default_preflight_has_exact_whole_program_trace_value_coverage() -> None:
@@ -552,7 +573,7 @@ def test_default_preflight_has_exact_whole_program_trace_value_coverage() -> Non
 
 def test_ci_and_preflight_share_whole_program_trace_value_cohorts() -> None:
     """CI and local gates must preserve identical quality and coverage file order."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     quality_steps = (
         "Type-check whole-program trace-value quality cohort",
         "Ruff NumPy docstrings for whole-program trace-value quality cohort",
@@ -583,12 +604,14 @@ def test_ci_and_preflight_share_whole_program_trace_value_cohorts() -> None:
     assert "Enforce Program-AD shape-transform exact coverage" in workflow
     assert "--include=*/program_ad_shape_transforms.py" in workflow
     assert "--fail-under=100" in workflow
-    assert "needs['whole-program-trace-value-quality'].result" in workflow
+    assert workflow_path_for_job("whole-program-trace-value-quality").name == (
+        "ci-whole-program-trace.yml"
+    )
 
 
 def test_ci_and_preflight_share_the_docstring_ratchet_cohort() -> None:
     """CI and the local static gate must enforce the same ordered file cohort."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     block_start = workflow.index("      - name: Ruff docstring ratchet")
     block_end = workflow.index("\n\n  stable-core-product-quality:", block_start)
     ci_paths = [

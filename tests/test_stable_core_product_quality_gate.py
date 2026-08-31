@@ -9,10 +9,9 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from tools import preflight
 from tools import stable_core_product_quality_gates as quality_gates
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def test_static_gate_contract_is_strict_and_numpy_documented() -> None:
@@ -67,7 +66,7 @@ def test_preflight_uses_the_same_quality_gate_contract() -> None:
 
 def test_ci_runs_and_aggregates_the_stable_core_product_gate() -> None:
     """Keep CI's focused job and aggregate check wired to the exact cohort."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     start = workflow.index("  stable-core-product-quality:")
     end = workflow.index("\n\n  thermo-readiness-product-quality:", start)
     block = workflow[start:end]

@@ -7,10 +7,9 @@
 # SCPN Quantum Control — tensor-network MPS baseline quality-gate tests
 """Lock the tensor-network MPS baseline gate into preflight and CI."""
 
-from pathlib import Path
-
 from tools import preflight
 from tools import tn_mps_baseline_design_quality_gates as quality_gates
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
@@ -43,7 +42,7 @@ def test_preflight_uses_helper_defined_gates() -> None:
 
 def test_ci_runs_and_aggregates_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
-    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
     start = workflow.index("  tn-mps-baseline-design-quality:")
     end = workflow.index("\n\n  cloud-native-deployment-quality:", start)
     block = workflow[start:end]

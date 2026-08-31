@@ -1,0 +1,87 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — CI Security
+name: CI / Security
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: python tools/audit_serialization_surface.py
+      - run: bandit -r src/ scripts/ -ll -q
+      - name: Verify the constrained dependency advisory waiver
+        run: |
+          python -m mypy --strict --explicit-package-bases \
+            tools/audit_dependency_security_waiver.py \
+            tools/yaml_mapping_key_audit.py \
+            tests/test_audit_dependency_security_waiver.py
+          python -m ruff check --isolated --select D,D413 \
+            --config 'lint.pydocstyle.convention = "numpy"' \
+            tools/audit_dependency_security_waiver.py \
+            tools/yaml_mapping_key_audit.py \
+            tests/test_audit_dependency_security_waiver.py
+          python -m coverage run --rcfile=/dev/null \
+            --data-file=.coverage.dependency-security-waiver --branch \
+            -m pytest -q tests/test_audit_dependency_security_waiver.py
+          python -m coverage report --rcfile=/dev/null \
+            --data-file=.coverage.dependency-security-waiver --precision=2 \
+            --fail-under=100 \
+            --include='*/audit_dependency_security_waiver.py,*/yaml_mapping_key_audit.py'
+      - run: python tools/audit_dependency_security_waiver.py
+      # Audit the full hash-pinned CI lock — every transitive pin the CI jobs
+      # actually install — rather than the top-level dev inputs. `--no-deps`
+      # because the lock is already a complete closure. The former
+      # CVE-2026-4539 (pygments ≤2.19.2) exception is obsolete: the lock pins
+      # pygments 2.20.0. The only active exception is fail-closed by the waiver
+      # audit above and documented in docs/test_infrastructure.md.
+      - run: pip-audit -r requirements-ci-py312-linux.txt --no-deps --desc on --ignore-vuln PYSEC-2026-3447
+  rust-audit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scpn_quantum_engine
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - name: Check Rust formatting
+        run: cargo fmt --all -- --check
+      - name: Cache cargo registry + advisory database
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/advisory-db
+          key: ${{ runner.os }}-cargo-audit-${{ hashFiles('scpn_quantum_engine/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-audit-
+      - name: Install cargo-audit
+        env:
+          CARGO_HTTP_MULTIPLEXING: "false"
+        run: |
+          for attempt in 1 2 3; do
+            cargo install cargo-audit --locked --version 0.22.1 && exit 0
+            sleep $((attempt * 10))
+          done
+          cargo install cargo-audit --locked --version 0.22.1
+      - name: Audit Rust dependency advisories
+        run: cargo audit --deny warnings
+      - name: Run Rust engine tests
+        run: cargo test --locked

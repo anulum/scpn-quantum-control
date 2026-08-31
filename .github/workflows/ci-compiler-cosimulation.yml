@@ -1,0 +1,265 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — CI Compiler Cosimulation
+name: CI / Compiler Cosimulation
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  qpu-compute-types-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check QPU compute-type quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/qpu_compute_types.py
+          src/scpn_quantum_control/bridge/qpu_data_artifact.py
+          tests/test_qpu_data_artifact.py
+          tests/test_qpu_data_artifact_branches.py
+          tools/qpu_compute_types_quality_gates.py
+          tests/test_qpu_compute_types_quality_gate.py
+      - name: Ruff NumPy docstrings for QPU compute-type quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/qpu_compute_types.py
+          src/scpn_quantum_control/bridge/qpu_data_artifact.py
+          tests/test_qpu_compute.py
+          tests/test_qpu_compute_runtime_branches.py
+          tests/test_qpu_compute_types_guards.py
+          tests/test_qpu_compute_product.py
+          tests/test_qpu_data_artifact.py
+          tests/test_qpu_data_artifact_branches.py
+          tools/qpu_compute_types_quality_gates.py
+          tests/test_qpu_compute_types_quality_gate.py
+      - name: Run QPU compute-type focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-qpu-compute-types-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_qpu_compute.py
+          tests/test_qpu_compute_runtime_branches.py
+          tests/test_qpu_compute_types_guards.py
+          tests/test_qpu_compute_product.py
+          tests/test_qpu_data_artifact.py
+          tests/test_qpu_data_artifact_branches.py
+      - name: Enforce QPU compute-type exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-qpu-compute-types-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/qpu_compute_types.py,*/bridge/qpu_data_artifact.py
+  cosimulation-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check quantum/classical cosimulation quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/cosimulation/knm_partition.py
+          src/scpn_quantum_control/cosimulation/quantum_classical.py
+          tests/test_knm_partition_branches.py
+          tools/cosimulation_quality_gates.py
+          tests/test_cosimulation_quality_gate.py
+      - name: Ruff NumPy docstrings for quantum/classical cosimulation quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/cosimulation/knm_partition.py
+          src/scpn_quantum_control/cosimulation/quantum_classical.py
+          tests/test_cosimulation.py
+          tests/test_knm_partition_branches.py
+          tools/cosimulation_quality_gates.py
+          tests/test_cosimulation_quality_gate.py
+      - name: Run quantum/classical cosimulation focused coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-cosimulation-quality.coverage --branch
+          -m pytest -q tests/test_cosimulation.py
+          tests/test_knm_partition_branches.py
+      - name: Enforce quantum/classical cosimulation exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-cosimulation-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/cosimulation/knm_partition.py,*/cosimulation/quantum_classical.py
+  dla-topology-objectives-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check DLA topology-objective quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/dla_topology_control/objectives.py
+          tools/dla_topology_objectives_quality_gates.py
+          tests/test_dla_topology_objectives_quality_gate.py
+      - name: Ruff NumPy docstrings for DLA topology-objective quality cohort
+        run: >-
+          python -m ruff check --isolated --select D,D413
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/dla_topology_control/objectives.py
+          tests/test_dla_topology_control_objectives.py
+          tests/test_dla_topology_control_optimizer.py
+          tools/dla_topology_objectives_quality_gates.py
+          tests/test_dla_topology_objectives_quality_gate.py
+      - name: Run DLA topology-objective focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-dla-topology-objectives-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_dla_topology_control_objectives.py
+          tests/test_dla_topology_control_optimizer.py
+      - name: Enforce DLA topology-objective exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-dla-topology-objectives-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/dla_topology_control/objectives.py
+  dla-topology-projection-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check DLA topology-projection quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/dla_topology_control/projection.py
+          tools/dla_topology_projection_quality_gates.py
+          tests/test_dla_topology_projection_quality_gate.py
+      - name: Ruff NumPy docstrings for DLA topology-projection quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/dla_topology_control/projection.py
+          tests/test_dla_topology_control_projection.py
+          tools/dla_topology_projection_quality_gates.py
+          tests/test_dla_topology_projection_quality_gate.py
+      - name: Run DLA topology-projection focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-dla-topology-projection-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_dla_topology_control_projection.py
+      - name: Enforce DLA topology-projection exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-dla-topology-projection-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/dla_topology_control/projection.py
+  quantum-neuromorphic-bridge-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check quantum-neuromorphic bridge quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py
+          src/scpn_quantum_control/qsnn/qlayer.py
+          src/scpn_quantum_control/bridge/snn_backward.py
+          src/scpn_quantum_control/bridge/spn_to_qcircuit.py
+          tests/test_snn_backward.py
+          tests/test_spn_to_qcircuit.py
+          tests/test_qlayer.py
+          tools/quantum_neuromorphic_bridge_quality_gates.py
+          tests/test_quantum_neuromorphic_bridge_quality_gate.py
+      - name: Ruff NumPy docstrings for quantum-neuromorphic bridge cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py
+          src/scpn_quantum_control/qsnn/qlayer.py
+          src/scpn_quantum_control/bridge/snn_backward.py
+          src/scpn_quantum_control/bridge/spn_to_qcircuit.py
+          tests/test_quantum_neuromorphic_bridge.py
+          tests/test_quantum_neuromorphic_bridge_branches.py
+          tests/test_qsnn_topology_policy_wiring.py
+          tests/test_topology_control_integration.py
+          tests/test_snn_backward.py
+          tests/test_spn_to_qcircuit.py
+          tests/test_qlayer.py
+          tools/quantum_neuromorphic_bridge_quality_gates.py
+          tests/test_quantum_neuromorphic_bridge_quality_gate.py
+      - name: Run quantum-neuromorphic bridge focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-quantum-neuromorphic-bridge-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_quantum_neuromorphic_bridge.py
+          tests/test_quantum_neuromorphic_bridge_branches.py
+          tests/test_qsnn_topology_policy_wiring.py
+          tests/test_topology_control_integration.py
+          tests/test_snn_backward.py
+          tests/test_spn_to_qcircuit.py
+          tests/test_qlayer.py
+      - name: Enforce quantum-neuromorphic bridge exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-quantum-neuromorphic-bridge-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/qsnn/quantum_neuromorphic_bridge.py,*/qsnn/qlayer.py,*/bridge/snn_backward.py,*/bridge/spn_to_qcircuit.py

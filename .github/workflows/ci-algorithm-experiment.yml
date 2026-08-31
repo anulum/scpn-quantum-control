@@ -1,0 +1,576 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — CI Algorithm Experiment
+name: CI / Algorithm Experiment
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  program-ad-alias-analysis-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check Program AD alias-analysis quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/program_ad_alias_analysis.py
+          tests/test_program_ad_alias_effects.py tests/test_program_ad_alias_contracts.py
+          tools/program_ad_alias_analysis_quality_gates.py
+          tests/test_program_ad_alias_analysis_quality_gate.py
+      - name: Ruff NumPy docstrings for Program AD alias-analysis owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/program_ad_alias_analysis.py
+          tests/test_program_ad_alias_effects.py tests/test_program_ad_alias_contracts.py
+          tools/program_ad_alias_analysis_quality_gates.py
+          tests/test_program_ad_alias_analysis_quality_gate.py
+      - name: Run public Program AD alias-analysis coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-program-ad-alias-analysis-quality.coverage --branch
+          -m pytest -q tests/test_program_ad_alias_effects.py
+          tests/test_program_ad_alias_contracts.py
+      - name: Enforce Program AD alias-analysis exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-program-ad-alias-analysis-quality.coverage
+          --precision=2 --fail-under=100 --include=*/program_ad_alias_analysis.py
+  general-unitary-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check general-unitary quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/general_unitary.py tests/test_phase_general_unitary_gates.py
+          tools/general_unitary_quality_gates.py tests/test_general_unitary_quality_gate.py
+      - name: Ruff NumPy docstrings for general-unitary owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/general_unitary.py tests/test_phase_general_unitary_gates.py
+          tools/general_unitary_quality_gates.py tests/test_general_unitary_quality_gate.py
+      - name: Run bounded local general-unitary coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-general-unitary-quality.coverage --branch
+          -m pytest -q tests/test_phase_general_unitary_gates.py
+      - name: Enforce general-unitary exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-general-unitary-quality.coverage
+          --precision=2 --fail-under=100 --include=*/phase/general_unitary.py
+  gpu-batch-vqe-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --require-hashes -r requirements-ci-torch-cpu-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check GPU-batch VQE quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/gpu_batch_vqe.py tests/test_gpu_batch_vqe.py
+          tools/gpu_batch_vqe_quality_gates.py tests/test_gpu_batch_vqe_quality_gate.py
+      - name: Ruff NumPy docstrings for GPU-batch VQE owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/gpu_batch_vqe.py tests/test_gpu_batch_vqe.py
+          tools/gpu_batch_vqe_quality_gates.py tests/test_gpu_batch_vqe_quality_gate.py
+      - name: Run bounded local GPU-batch VQE coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-gpu-batch-vqe-quality.coverage --branch
+          -m pytest -q tests/test_gpu_batch_vqe.py
+      - name: Enforce GPU-batch VQE exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-gpu-batch-vqe-quality.coverage
+          --precision=2 --fail-under=100 --include=*/phase/gpu_batch_vqe.py
+  avqds-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check AVQDS quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/avqds.py
+          tests/test_avqds.py
+          tools/avqds_quality_gates.py
+          tests/test_avqds_quality_gate.py
+      - name: Ruff NumPy docstrings for AVQDS owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/avqds.py
+          tests/test_avqds.py
+          tools/avqds_quality_gates.py
+          tests/test_avqds_quality_gate.py
+      - name: Run bounded local AVQDS coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-avqds-quality.coverage --branch
+          -m pytest -q tests/test_avqds.py
+      - name: Enforce AVQDS exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-avqds-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/phase/avqds.py
+  ansatz-benchmark-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check ansatz-benchmark quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/ansatz_bench.py
+          tests/test_ansatz_bench.py
+          src/scpn_quantum_control/benchmarks/appqsim_protocol.py
+          tests/test_appqsim_protocol.py
+          tools/ansatz_bench_quality_gates.py
+          tests/test_ansatz_bench_quality_gate.py
+      - name: Ruff NumPy docstrings for ansatz-benchmark owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/ansatz_bench.py
+          tests/test_ansatz_bench.py
+          src/scpn_quantum_control/benchmarks/appqsim_protocol.py
+          tests/test_appqsim_protocol.py
+          tools/ansatz_bench_quality_gates.py
+          tests/test_ansatz_bench_quality_gate.py
+      - name: Run bounded local ansatz-benchmark coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-ansatz-benchmark-quality.coverage --branch
+          -m pytest -q tests/test_ansatz_bench.py tests/test_appqsim_protocol.py
+      - name: Enforce ansatz-benchmark exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-ansatz-benchmark-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/phase/ansatz_bench.py,*/benchmarks/appqsim_protocol.py
+  symmetry-verification-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check symmetry-verification quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/mitigation/symmetry_verification.py
+          tests/test_symmetry_verification.py
+          tools/symmetry_verification_quality_gates.py
+          tests/test_symmetry_verification_quality_gate.py
+      - name: Ruff NumPy docstrings for symmetry-verification owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/mitigation/symmetry_verification.py
+          tests/test_symmetry_verification.py
+          tools/symmetry_verification_quality_gates.py
+          tests/test_symmetry_verification_quality_gate.py
+      - name: Run symmetry-verification focused coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-symmetry-verification-quality.coverage --branch
+          -m pytest -q tests/test_symmetry_verification.py
+      - name: Enforce symmetry-verification exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-symmetry-verification-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/mitigation/symmetry_verification.py
+  experiment-helpers-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check experiment-helper quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/hardware/_experiment_helpers.py
+          tests/test_experiment_helpers_branches.py
+          tools/experiment_helpers_quality_gates.py
+          tests/test_experiment_helpers_quality_gate.py
+      - name: Ruff NumPy docstrings for experiment-helper owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/hardware/_experiment_helpers.py
+          tests/test_experiment_helpers_branches.py
+          tools/experiment_helpers_quality_gates.py
+          tests/test_experiment_helpers_quality_gate.py
+      - name: Run experiment-helper offline focused coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-experiment-helpers-quality.coverage --branch
+          -m pytest -q
+          tests/test_experiment_helpers_branches.py
+      - name: Enforce experiment-helper exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-experiment-helpers-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/hardware/_experiment_helpers.py
+  predictive-coding-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check predictive-coding quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/fep/predictive_coding.py
+          tests/test_fep.py
+          tools/predictive_coding_quality_gates.py
+          tests/test_predictive_coding_quality_gate.py
+      - name: Ruff NumPy docstrings for predictive-coding owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/fep/predictive_coding.py
+          tests/test_fep.py
+          tools/predictive_coding_quality_gates.py
+          tests/test_predictive_coding_quality_gate.py
+      - name: Run predictive-coding connected focused coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-predictive-coding-quality.coverage --branch
+          -m pytest -q
+          tests/test_fep.py
+      - name: Enforce predictive-coding exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-predictive-coding-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/fep/predictive_coding.py
+  hierarchical-keys-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check hierarchical-key quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/crypto/hierarchical_keys.py
+          src/scpn_quantum_control/crypto/topology_auth.py
+          tests/test_crypto_hierarchical_keys.py
+          tests/test_crypto_topology_auth.py
+          tools/hierarchical_keys_quality_gates.py
+          tests/test_hierarchical_keys_quality_gate.py
+      - name: Ruff NumPy docstrings for hierarchical-key owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/crypto/hierarchical_keys.py
+          src/scpn_quantum_control/crypto/topology_auth.py
+          tests/test_crypto_hierarchical_keys.py
+          tests/test_crypto_topology_auth.py
+          tools/hierarchical_keys_quality_gates.py
+          tests/test_hierarchical_keys_quality_gate.py
+      - name: Run hierarchical-key connected focused coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-hierarchical-keys-quality.coverage --branch
+          -m pytest -q
+          tests/test_crypto_hierarchical_keys.py
+          tests/test_crypto_expanded.py
+          tests/test_crypto_properties.py
+          tests/test_crypto_exports.py
+          tests/test_crypto_topology_auth.py
+          tests/test_topology_auth_edge.py
+      - name: Enforce hierarchical-key exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-hierarchical-keys-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/crypto/hierarchical_keys.py,*/crypto/topology_auth.py
+  sync-uncertainty-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: python -m pip install --no-deps -e .
+      - run: >-
+          python -m pip install --no-deps --require-hashes
+          -r requirements-ci-studio-platform.txt
+      - name: Type-check synchronisation-uncertainty quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/analysis/sync_uncertainty.py
+          src/scpn_quantum_control/mitigation/zne_uncertainty.py
+          src/scpn_quantum_control/studio/executive_mitigate.py
+          src/scpn_quantum_control/studio/executive_cli.py
+          tests/test_sync_uncertainty.py
+          tests/test_studio_coupling_invariant.py
+          tests/test_zne_uncertainty.py
+          tests/test_studio_executive_mitigate.py
+          tests/test_studio_executive_cli.py
+          tools/sync_uncertainty_quality_gates.py
+          tests/test_sync_uncertainty_quality_gate.py
+      - name: Ruff NumPy docstrings for synchronisation-uncertainty owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/analysis/sync_uncertainty.py
+          src/scpn_quantum_control/mitigation/zne_uncertainty.py
+          src/scpn_quantum_control/studio/executive_mitigate.py
+          tests/test_sync_uncertainty.py
+          tests/test_zne_uncertainty.py
+          tests/test_studio_executive_mitigate.py
+          tools/sync_uncertainty_quality_gates.py
+          tests/test_sync_uncertainty_quality_gate.py
+      - name: Run synchronisation-uncertainty connected focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-sync-uncertainty-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_sync_uncertainty.py
+          tests/test_studio_coupling_invariant.py
+          tests/test_zne_uncertainty.py
+          tests/test_studio_executive_mitigate.py
+          tests/test_studio_executive_cli.py
+      - name: Enforce synchronisation-uncertainty exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-sync-uncertainty-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/analysis/sync_uncertainty.py,*/mitigation/zne_uncertainty.py,*/studio/executive_mitigate.py,*/studio/executive_cli.py
+  coupling-invariant-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - name: Type-check coupling-invariant quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/studio/coupling_invariant.py
+          tests/test_studio_coupling_invariant.py
+          tools/coupling_invariant_quality_gates.py
+          tests/test_coupling_invariant_quality_gate.py
+      - name: Ruff NumPy docstrings for coupling-invariant owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/studio/coupling_invariant.py
+          tests/test_studio_coupling_invariant.py
+          tools/coupling_invariant_quality_gates.py
+          tests/test_coupling_invariant_quality_gate.py
+      - name: Run coupling-invariant focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-coupling-invariant-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_studio_coupling_invariant.py
+      - name: Enforce coupling-invariant exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-coupling-invariant-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/studio/coupling_invariant.py
+  experiment-dynamics-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check experiment-dynamics quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/hardware/experiment_dynamics.py
+          tools/experiment_dynamics_quality_gates.py
+          tests/test_experiment_dynamics_quality_gate.py
+      - name: Ruff NumPy docstrings for experiment-dynamics owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/hardware/experiment_dynamics.py
+          tests/test_experiment_dynamics.py
+          tools/experiment_dynamics_quality_gates.py
+          tests/test_experiment_dynamics_quality_gate.py
+      - name: Run bounded experiment-dynamics focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-experiment-dynamics-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_experiment_dynamics.py
+      - name: Enforce experiment-dynamics exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-experiment-dynamics-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/hardware/experiment_dynamics.py
+  phase-artifact-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/bridge/phase_artifact.py
+          src/scpn_quantum_control/bridge/scpn_upde_edge.py
+          tests/test_phase_artifact.py
+          tests/test_phase_artifact_errors.py
+          tests/test_phase_artifact_fuzz.py
+          tests/test_scpn_upde_edge.py
+          tools/phase_artifact_quality_gates.py
+          tests/test_phase_artifact_quality_gate.py
+      - run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/bridge/phase_artifact.py
+          src/scpn_quantum_control/bridge/scpn_upde_edge.py
+          tests/test_phase_artifact.py
+          tests/test_phase_artifact_errors.py
+          tests/test_phase_artifact_fuzz.py
+          tests/test_scpn_upde_edge.py
+          tools/phase_artifact_quality_gates.py
+          tests/test_phase_artifact_quality_gate.py
+      - run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-phase-artifact-quality.coverage --branch
+          -m pytest -q tests/test_phase_artifact.py
+          tests/test_phase_artifact_errors.py
+          tests/test_phase_artifact_fuzz.py
+          tests/test_scpn_upde_edge.py
+      - run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-phase-artifact-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/bridge/phase_artifact.py,*/bridge/scpn_upde_edge.py

@@ -7,10 +7,9 @@
 # SCPN Quantum Control — synchronisation witness quality-gate tests
 """Lock synchronisation-witness quality gates into preflight and CI."""
 
-from pathlib import Path
-
 from tools import preflight
 from tools import synchronisation_witness_quality_gates as quality_gates
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def test_static_gates_cover_typing_and_docs() -> None:
@@ -54,7 +53,7 @@ def test_preflight_uses_helper_defined_gates() -> None:
 
 def test_ci_runs_and_aggregates_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
-    workflow = Path(".github/workflows/ci.yml").read_text()
+    workflow = read_ci_workflow_source()
     start = workflow.index("  synchronisation-witness-quality:")
     end = workflow.index("\n\n  experiment-mitigation-quality:", start)
     block = workflow[start:end]

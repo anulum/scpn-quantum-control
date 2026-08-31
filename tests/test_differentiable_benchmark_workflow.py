@@ -9,9 +9,8 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
-WORKFLOW = Path(".github/workflows/ci.yml")
 RISKY_SELF_HOSTED_TRIGGERS = (
     "pull_request_target:",
     "issue_comment:",
@@ -22,7 +21,7 @@ RISKY_SELF_HOSTED_TRIGGERS = (
 
 def test_ci_workflow_declares_parity_and_isolated_benchmark_jobs() -> None:
     """Assert that CI still declares both differentiable benchmark lanes."""
-    text = WORKFLOW.read_text(encoding="utf-8")
+    text = read_ci_workflow_source()
 
     assert "differentiable-parity:" in text
     assert "differentiable-isolated-benchmark:" in text
@@ -36,7 +35,7 @@ def test_ci_workflow_declares_parity_and_isolated_benchmark_jobs() -> None:
 
 def test_ci_workflow_uses_cpu_framework_wheels_without_cuda_extra() -> None:
     """Assert that the GitHub-hosted parity lane stays on CPU wheels."""
-    text = WORKFLOW.read_text(encoding="utf-8")
+    text = read_ci_workflow_source()
     parity_block = text.split("differentiable-parity:", maxsplit=1)[1].split(
         "differentiable-isolated-benchmark:",
         maxsplit=1,
@@ -52,7 +51,7 @@ def test_ci_workflow_uses_cpu_framework_wheels_without_cuda_extra() -> None:
 
 def test_ci_workflow_uploads_non_isolated_artifacts_without_production_promotion() -> None:
     """Assert that non-isolated CI evidence is not promoted as isolated output."""
-    text = WORKFLOW.read_text(encoding="utf-8")
+    text = read_ci_workflow_source()
 
     assert "functional_non_isolated" in text
     assert "RUNNER_ENVIRONMENT" in text
@@ -65,7 +64,7 @@ def test_ci_workflow_uploads_non_isolated_artifacts_without_production_promotion
 
 def test_isolated_benchmark_runner_requires_manual_main_opt_in() -> None:
     """Assert that self-hosted benchmark execution is manual and main-bound."""
-    text = WORKFLOW.read_text(encoding="utf-8")
+    text = read_ci_workflow_source()
     isolated_block = text.split("differentiable-isolated-benchmark:", maxsplit=1)[1].split(
         "  security:",
         maxsplit=1,

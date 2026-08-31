@@ -1,0 +1,590 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — CI Analysis Model
+name: CI / Analysis Model
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  koopman-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check Koopman quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/analysis/koopman.py
+          tools/koopman_quality_gates.py
+          tests/test_koopman_quality_gate.py
+      - name: Ruff NumPy docstrings for Koopman owning cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/analysis/koopman.py
+          tests/test_koopman.py
+          tests/test_koopman_rust_generator_branches.py
+          tools/koopman_quality_gates.py
+          tests/test_koopman_quality_gate.py
+      - name: Run Koopman connected focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-koopman-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_koopman.py
+          tests/test_koopman_rust_generator_branches.py
+          tests/test_rust_path_benchmarks.py
+      - name: Enforce Koopman exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-koopman-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/analysis/koopman.py
+  quantum-phi-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check quantum-QMI compatibility quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/analysis/quantum_phi.py
+          src/scpn_quantum_control/analysis/integrated_information_phi.py
+          src/scpn_quantum_control/analysis/sync_order_parameter.py
+          tests/test_observables.py
+          tests/test_sync_order_proxy_contract.py
+          tests/test_sync_order_parameter_branch.py
+          tools/quantum_phi_quality_gates.py
+          tests/test_quantum_phi_quality_gate.py
+      - name: Ruff NumPy docstrings for quantum-QMI owning cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/analysis/quantum_phi.py
+          src/scpn_quantum_control/analysis/integrated_information_phi.py
+          src/scpn_quantum_control/analysis/sync_order_parameter.py
+          tests/test_quantum_phi.py
+          tests/test_observables.py
+          tests/test_sync_order_proxy_contract.py
+          tests/test_sync_order_parameter_branch.py
+          tools/quantum_phi_quality_gates.py
+          tests/test_quantum_phi_quality_gate.py
+      - name: Run quantum-QMI connected focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-quantum-phi-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_quantum_phi.py
+          tests/test_analysis_topology_contracts.py
+          tests/test_observables.py
+          tests/test_sync_order_proxy_contract.py
+          tests/test_sync_order_parameter_branch.py
+          tests/test_sync_uncertainty.py
+      - name: Enforce quantum-QMI exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-quantum-phi-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/analysis/quantum_phi.py,*/analysis/integrated_information_phi.py,*/analysis/sync_order_parameter.py
+  qpu-result-pack-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install pinned Python and Studio dependencies
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
+      - name: Build the current zeroizing Rust signer wheel
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.51.0
+        with:
+          args: --release --features extension-module --out dist -m scpn_quantum_engine/Cargo.toml
+      - name: Install the current Rust signer wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Type-check QPU result-pack quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/studio/qpu_result_pack.py
+          src/scpn_quantum_control/hardware/qpu_result_pack_bridge.py
+          src/scpn_quantum_control/studio/executive_execute.py
+          src/scpn_quantum_control/studio/executive_cli.py
+          tests/test_studio_executive_execute.py
+          tests/test_studio_executive_cli.py
+          tools/qpu_result_pack_quality_gates.py
+          tests/test_qpu_result_pack_quality_gate.py
+      - name: Ruff NumPy docstrings for QPU result-pack owning cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/studio/qpu_result_pack.py
+          src/scpn_quantum_control/hardware/qpu_result_pack_bridge.py
+          src/scpn_quantum_control/studio/executive_execute.py
+          tests/test_studio_qpu_result_pack.py
+          tests/test_qpu_result_pack_bridge.py
+          tests/test_studio_executive_execute.py
+          tools/qpu_result_pack_quality_gates.py
+          tests/test_qpu_result_pack_quality_gate.py
+      - name: Run QPU result-pack connected focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-qpu-result-pack-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_studio_qpu_result_pack.py
+          tests/test_qpu_result_pack_bridge.py
+          tests/test_studio_executive_execute.py
+          tests/test_studio_executive_cli.py
+      - name: Enforce QPU result-pack exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-qpu-result-pack-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/studio/qpu_result_pack.py,*/studio/executive_execute.py,*/studio/executive_cli.py
+  error-aware-chain-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check error-aware chain cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/hardware/error_aware_chain.py
+          tests/test_error_aware_chain.py
+          tools/error_aware_chain_quality_gates.py
+          tests/test_error_aware_chain_quality_gate.py
+      - name: Ruff preview NumPy docs for error-aware chain owner
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/hardware/error_aware_chain.py
+          tests/test_error_aware_chain.py
+          tools/error_aware_chain_quality_gates.py
+          tests/test_error_aware_chain_quality_gate.py
+      - name: Run error-aware chain focused coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-error-aware-chain-quality.coverage --branch
+          -m pytest -q tests/test_error_aware_chain.py
+      - name: Enforce error-aware chain exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-error-aware-chain-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/hardware/error_aware_chain.py
+  kuramoto-variants-quality:
+    needs: error-aware-chain-quality
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Build the current Kuramoto Rust kernels
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.51.0
+        with:
+          args: --release --features extension-module --out dist -m scpn_quantum_engine/Cargo.toml
+      - name: Install the current Rust engine wheel
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+      - name: Type-check Kuramoto-variant quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/kuramoto_variants.py
+          src/scpn_quantum_control/phase/floquet_kuramoto.py
+          tests/test_floquet_kuramoto.py
+          tests/test_floquet_kuramoto_strict_surface.py
+          tools/kuramoto_variants_quality_gates.py
+          tests/test_kuramoto_variants_quality_gate.py
+      - name: Ruff NumPy docstrings for Kuramoto-variant direct owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/kuramoto_variants.py
+          tests/test_kuramoto_variants.py
+          src/scpn_quantum_control/phase/floquet_kuramoto.py
+          tests/test_floquet_kuramoto.py
+          tests/test_floquet_kuramoto_strict_surface.py
+          tools/kuramoto_variants_quality_gates.py
+          tests/test_kuramoto_variants_quality_gate.py
+      - name: Run Kuramoto-variant connected focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-kuramoto-variants-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_kuramoto_variants.py
+          tests/test_commutator_bounds.py
+          tests/test_floquet_kuramoto.py
+          tests/test_floquet_kuramoto_strict_surface.py
+      - name: Enforce Kuramoto-variant exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-kuramoto-variants-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/phase/kuramoto_variants.py,*/phase/floquet_kuramoto.py
+  kuramoto-core-quality:
+    needs: kuramoto-variants-quality
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Type-check Kuramoto-core quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/kuramoto_core.py
+          tests/test_kuramoto_core.py
+          tests/test_kuramoto_core_branches.py
+          tools/kuramoto_core_quality_gates.py
+          tests/test_kuramoto_core_quality_gate.py
+          tools/preflight.py
+          tests/test_preflight_tool.py
+      - name: Ruff NumPy docstrings for Kuramoto-core direct owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/kuramoto_core.py
+          tests/test_kuramoto_core.py
+          tests/test_kuramoto_core_branches.py
+          tools/kuramoto_core_quality_gates.py
+          tests/test_kuramoto_core_quality_gate.py
+          tests/test_preflight_tool.py
+      - name: Run Kuramoto-core connected focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-kuramoto-core-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_kuramoto_core.py
+          tests/test_kuramoto_core_branches.py
+          tests/test_kuramoto_input_hardening.py
+          tests/test_kuramoto_variants.py
+          tests/test_analog_kuramoto.py
+          tests/test_hybrid_digital_analog.py
+      - name: Enforce Kuramoto-core exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-kuramoto-core-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/kuramoto_core.py
+  mps-evolution-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install locked base dependencies
+        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - name: Install the pinned optional tensor-network runtime
+        run: python -m pip install "quimb==1.13.0"
+      - name: Verify the real tensor-network runtime
+        run: python -c "import quimb; assert quimb.__version__ == '1.13.0'"
+      - name: Type-check MPS-evolution quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/mps_evolution.py
+          src/scpn_quantum_control/phase/contraction_optimiser.py
+          tests/test_contraction_optimiser.py
+          tools/mps_evolution_quality_gates.py
+          tests/test_mps_evolution_quality_gate.py
+      - name: Ruff NumPy docstrings for MPS-evolution direct owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/mps_evolution.py
+          tests/test_mps_evolution.py
+          src/scpn_quantum_control/phase/contraction_optimiser.py
+          tests/test_contraction_optimiser.py
+          tools/mps_evolution_quality_gates.py
+          tests/test_mps_evolution_quality_gate.py
+      - name: Run real-quimb connected focused coverage
+        run: >-
+          python -m coverage run
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-mps-evolution-quality.coverage
+          --branch
+          -m pytest -q
+          tests/test_mps_evolution.py
+          tests/test_backend_selector.py
+          tests/test_classical_baselines.py
+          tests/test_contraction_optimiser.py
+      - name: Enforce MPS-evolution exact coverage
+        run: >-
+          python -m coverage report
+          --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-mps-evolution-quality.coverage
+          --precision=2
+          --fail-under=100
+          --include=*/phase/mps_evolution.py,*/phase/contraction_optimiser.py
+  knm-key-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check K_nm key-material quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/crypto/knm_key.py
+          src/scpn_quantum_control/crypto/noise_analysis.py
+          tests/test_crypto_knm_key.py
+          tests/test_crypto_noise_analysis.py
+          tools/knm_key_quality_gates.py
+          tests/test_knm_key_quality_gate.py
+      - name: Ruff NumPy docstrings for K_nm key-material owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/crypto/knm_key.py
+          src/scpn_quantum_control/crypto/noise_analysis.py
+          tests/test_crypto_knm_key.py
+          tests/test_crypto_noise_analysis.py
+          tools/knm_key_quality_gates.py
+          tests/test_knm_key_quality_gate.py
+      - name: Run K_nm key-material connected focused coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-knm-key-quality.coverage --branch
+          -m pytest -q
+          tests/test_crypto_knm_key.py
+          tests/test_crypto_entanglement_qkd.py
+          tests/test_crypto_noise_analysis.py
+      - name: Enforce K_nm key-material exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-knm-key-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/crypto/knm_key.py,*/crypto/noise_analysis.py
+  differentiable-implicit-sensitivity-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check differentiable implicit-sensitivity quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_implicit_sensitivity.py
+          tests/test_differentiable_implicit_sensitivity.py
+          tools/differentiable_implicit_sensitivity_quality_gates.py
+          tests/test_differentiable_implicit_sensitivity_quality_gate.py
+      - name: Ruff NumPy docstrings for differentiable implicit-sensitivity owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_implicit_sensitivity.py
+          tests/test_differentiable_implicit_sensitivity.py
+          tools/differentiable_implicit_sensitivity_quality_gates.py
+          tests/test_differentiable_implicit_sensitivity_quality_gate.py
+      - name: Run local differentiable implicit-sensitivity coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-differentiable-implicit-sensitivity-quality.coverage --branch
+          -m pytest -q tests/test_differentiable_implicit_sensitivity.py
+      - name: Enforce differentiable implicit-sensitivity exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-differentiable-implicit-sensitivity-quality.coverage
+          --precision=2 --fail-under=100 --include=*/differentiable_implicit_sensitivity.py
+  differentiable-residual-weights-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check differentiable residual-weights quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_residual_weights.py
+          tests/test_differentiable_residual_weights.py
+          tools/differentiable_residual_weights_quality_gates.py
+          tests/test_differentiable_residual_weights_quality_gate.py
+      - name: Ruff NumPy docstrings for differentiable residual-weights owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_residual_weights.py
+          tests/test_differentiable_residual_weights.py
+          tools/differentiable_residual_weights_quality_gates.py
+          tests/test_differentiable_residual_weights_quality_gate.py
+      - name: Run local differentiable residual-weights coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-differentiable-residual-weights-quality.coverage --branch
+          -m pytest -q tests/test_differentiable_residual_weights.py
+      - name: Enforce differentiable residual-weights exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-differentiable-residual-weights-quality.coverage
+          --precision=2 --fail-under=100 --include=*/differentiable_residual_weights.py
+  differentiable-consistency-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check differentiable-consistency quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_consistency.py
+          tests/test_differentiable_consistency.py
+          tools/differentiable_consistency_quality_gates.py
+          tests/test_differentiable_consistency_quality_gate.py
+      - name: Ruff NumPy docstrings for differentiable-consistency owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_consistency.py
+          tests/test_differentiable_consistency.py
+          tools/differentiable_consistency_quality_gates.py
+          tests/test_differentiable_consistency_quality_gate.py
+      - name: Run local differentiable-consistency coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-differentiable-consistency-quality.coverage --branch
+          -m pytest -q tests/test_differentiable_consistency.py
+      - name: Enforce differentiable-consistency exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-differentiable-consistency-quality.coverage
+          --precision=2 --fail-under=100 --include=*/differentiable_consistency.py
+  differentiable-jax-adapter-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src:${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with: {python-version: "3.12", cache: 'pip'}
+      - name: Install pinned CI surface and the package
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e .
+      - name: Type-check differentiable JAX-adapter quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/differentiable_jax_adapter.py
+          tests/test_differentiable_jax.py
+          tools/differentiable_jax_adapter_quality_gates.py
+          tests/test_differentiable_jax_adapter_quality_gate.py
+      - name: Ruff NumPy docstrings for differentiable JAX-adapter owners
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/differentiable_jax_adapter.py
+          tests/test_differentiable_jax.py
+          tools/differentiable_jax_adapter_quality_gates.py
+          tests/test_differentiable_jax_adapter_quality_gate.py
+      - name: Run local differentiable JAX-adapter coverage
+        run: >-
+          python -m coverage run --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-differentiable-jax-adapter-quality.coverage --branch
+          -m pytest -q tests/test_differentiable_jax.py
+      - name: Enforce differentiable JAX-adapter exact coverage
+        run: >-
+          python -m coverage report --rcfile=/dev/null
+          --data-file=/tmp/scpn-qc-differentiable-jax-adapter-quality.coverage
+          --precision=2 --fail-under=100 --include=*/differentiable_jax_adapter.py

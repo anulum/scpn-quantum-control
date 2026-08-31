@@ -11,6 +11,7 @@ from pathlib import Path
 
 from tools import dla_protected_memory_quality_gates as quality_gates
 from tools import preflight
+from tools.ci_workflow_inventory import read_ci_workflow_source
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
@@ -69,7 +70,7 @@ def test_preflight_uses_helper_defined_gates() -> None:
 
 def test_ci_runs_and_aggregates_protected_memory_gate() -> None:
     """Keep the Rust-building CI job and aggregate dependency required."""
-    workflow = Path(".github/workflows/ci.yml").read_text()
+    workflow = read_ci_workflow_source()
     start = workflow.index("  dla-protected-memory-quality:")
     end = workflow.index("\n\n  differentiable-sparse-derivatives-quality:", start)
     block = workflow[start:end]
