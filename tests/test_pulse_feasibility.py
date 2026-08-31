@@ -26,6 +26,7 @@ def _schedule():
 
 
 def test_pulse_provider_ready_when_metadata_satisfies_schedule() -> None:
+    """Mark a provider ready when declared limits satisfy the schedule."""
     decision = assess_pulse_provider_feasibility(
         PulseProviderSnapshot(
             provider="pulse",
@@ -47,6 +48,7 @@ def test_pulse_provider_ready_when_metadata_satisfies_schedule() -> None:
 
 
 def test_pulse_provider_blocks_missing_execution_support() -> None:
+    """Block providers without pulse-control or native-XY support."""
     decision = assess_pulse_provider_feasibility(
         PulseProviderSnapshot(
             provider="gate_only",
@@ -64,6 +66,7 @@ def test_pulse_provider_blocks_missing_execution_support() -> None:
 
 
 def test_pulse_snapshot_from_metadata_parses_provider_neutral_record() -> None:
+    """Parse a provider-neutral metadata record into a snapshot."""
     snapshot = pulse_snapshot_from_metadata(
         {
             "provider": "analog",
@@ -80,6 +83,7 @@ def test_pulse_snapshot_from_metadata_parses_provider_neutral_record() -> None:
 
 
 def test_pulse_snapshot_from_metadata_rejects_non_text_feature_entries() -> None:
+    """Reject supported-feature sequences containing non-text entries."""
     with pytest.raises(ValueError, match="string sequences"):
         pulse_snapshot_from_metadata(
             {
@@ -94,6 +98,7 @@ def test_pulse_snapshot_from_metadata_rejects_non_text_feature_entries() -> None
 
 
 def test_pulse_provider_fleet_keeps_native_xy_limits_for_manual_review() -> None:
+    """Keep constrained native-XY targets behind manual review."""
     decisions = assess_pulse_provider_fleet(
         (
             PulseProviderSnapshot(
@@ -123,6 +128,7 @@ def test_pulse_provider_fleet_keeps_native_xy_limits_for_manual_review() -> None
 
 
 def test_pulse_provider_blocks_declared_pulse_backend_over_schedule_limits() -> None:
+    """Block pulse backends whose declared limits miss the schedule."""
     decision = assess_pulse_provider_feasibility(
         PulseProviderSnapshot(
             provider="pulse",
@@ -146,6 +152,7 @@ def test_pulse_provider_blocks_declared_pulse_backend_over_schedule_limits() -> 
 
 
 def test_pulse_provider_blocks_insufficient_qubits_with_declared_execution_support() -> None:
+    """Block execution-capable providers with insufficient qubits."""
     decision = assess_pulse_provider_feasibility(
         PulseProviderSnapshot(
             provider="pulse",
@@ -234,6 +241,7 @@ def test_pulse_snapshot_from_metadata_rejects_invalid_boundary_fields(
     metadata: dict[str, object],
     message: str,
 ) -> None:
+    """Reject invalid required and optional provider metadata fields."""
     with pytest.raises(ValueError, match=message):
         pulse_snapshot_from_metadata(metadata)
 
@@ -253,6 +261,7 @@ def test_pulse_provider_snapshot_rejects_invalid_boundaries(
     kwargs: dict[str, object],
     message: str,
 ) -> None:
+    """Reject snapshots with invalid identity, capacity, or limit values."""
     params = {
         "provider": "pulse",
         "backend_name": "target",
@@ -268,6 +277,7 @@ def test_pulse_provider_snapshot_rejects_invalid_boundaries(
 def test_pulse_snapshot_from_metadata_accepts_single_feature_text_and_ignores_private_blob() -> (
     None
 ):
+    """Accept one feature string and discard a non-mapping private blob."""
     snapshot = pulse_snapshot_from_metadata(
         {
             "provider": "pulse",
@@ -288,6 +298,7 @@ def test_pulse_snapshot_from_metadata_accepts_single_feature_text_and_ignores_pr
 def test_pulse_snapshot_from_metadata_rejects_malformed_feature_sequences(
     supported_features: object,
 ) -> None:
+    """Reject unsupported or empty feature-sequence representations."""
     with pytest.raises(ValueError):
         pulse_snapshot_from_metadata(
             {
