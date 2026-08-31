@@ -17,6 +17,7 @@ HARDWARE_SAFE_EXECUTION_TYPING_RATCHET = [
     "src/scpn_quantum_control/active_sensing_product.py",
     "src/scpn_quantum_control/hardware/feedback_capability_probe.py",
     "src/scpn_quantum_control/hardware/feedback_dryrun.py",
+    "src/scpn_quantum_control/hardware/feedback_hardware_scheduler.py",
     "tests/test_hardware_safe_execution.py",
     "tests/test_active_sensing_product.py",
     "tools/hardware_safe_execution_quality_gates.py",
@@ -28,12 +29,14 @@ HARDWARE_SAFE_EXECUTION_QUALITY_RATCHET = [
     "src/scpn_quantum_control/active_sensing_product.py",
     "src/scpn_quantum_control/hardware/feedback_capability_probe.py",
     "src/scpn_quantum_control/hardware/feedback_dryrun.py",
+    "src/scpn_quantum_control/hardware/feedback_hardware_scheduler.py",
     "tests/test_hardware_safe_execution.py",
     "tests/test_active_sensing_product.py",
     "tests/test_feedback_capability_probe.py",
     "tests/test_feedback_capability_probe_branch.py",
     "tests/test_feedback_dryrun.py",
     "tests/test_feedback_dryrun_branch.py",
+    "tests/test_feedback_hardware_scheduler.py",
     "tools/hardware_safe_execution_quality_gates.py",
     "tests/test_hardware_safe_execution_quality_gate.py",
 ]
@@ -45,6 +48,7 @@ HARDWARE_SAFE_EXECUTION_COVERAGE_COHORT = [
     "tests/test_feedback_capability_probe_branch.py",
     "tests/test_feedback_dryrun.py",
     "tests/test_feedback_dryrun_branch.py",
+    "tests/test_feedback_hardware_scheduler.py",
 ]
 """Tests that own hardware-safe, active-sensing, and capability coverage."""
 HARDWARE_SAFE_EXECUTION_COVERAGE_DATA_FILE = (
@@ -53,7 +57,8 @@ HARDWARE_SAFE_EXECUTION_COVERAGE_DATA_FILE = (
 """Isolated coverage database for the hardware-safe execution owner."""
 HARDWARE_SAFE_EXECUTION_COVERAGE_INCLUDE = (
     "*/hardware_safe_execution.py,*/active_sensing_product.py,"
-    "*/hardware/feedback_capability_probe.py,*/hardware/feedback_dryrun.py"
+    "*/hardware/feedback_capability_probe.py,*/hardware/feedback_dryrun.py,"
+    "*/hardware/feedback_hardware_scheduler.py"
 )
 """Production policy, active-sensing, and capability sources at exact coverage."""
 

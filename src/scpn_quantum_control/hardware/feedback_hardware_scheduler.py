@@ -40,6 +40,7 @@ class HardwareApprovalRecord:
     notes: str = ""
 
     def __post_init__(self) -> None:
+        """Reject approval records that cannot identify or bound a submission."""
         if not self.approval_id:
             raise ValueError("approval_id must be non-empty")
         if not self.approver:

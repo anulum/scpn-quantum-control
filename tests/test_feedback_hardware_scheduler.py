@@ -40,6 +40,7 @@ def _approval(manifest: dict[str, object], *, approved: bool = True) -> Hardware
 
 
 def test_approval_gated_scheduler_fails_closed_without_approval() -> None:
+    """Reject a submission unless the approval explicitly permits it."""
     manifest = _manifest()
     scheduler = ApprovalGatedFeedbackHardwareScheduler(
         provider="ibm_runtime",
@@ -53,6 +54,7 @@ def test_approval_gated_scheduler_fails_closed_without_approval() -> None:
 
 
 def test_approval_gated_scheduler_records_approved_submission() -> None:
+    """Record provider identity and package evidence for approved work."""
     manifest = _manifest()
 
     def submitter(command: FeedbackCommand, package: dict[str, object]) -> FeedbackResult:
@@ -79,6 +81,7 @@ def test_approval_gated_scheduler_records_approved_submission() -> None:
 
 
 def test_approval_gated_scheduler_rejects_provider_and_hash_mismatch() -> None:
+    """Reject provider and package evidence that diverges from approval."""
     manifest = _manifest()
     approval = _approval(manifest)
     provider_calls: list[FeedbackCommand] = []
@@ -119,6 +122,7 @@ def test_approval_gated_scheduler_rejects_provider_and_hash_mismatch() -> None:
 
 
 def test_approval_gated_scheduler_rejects_non_submit_descriptor() -> None:
+    """Reject descriptors that expose simulation without live submission."""
     manifest = _manifest()
     approval = HardwareApprovalRecord(
         approval_id="local-sim",
@@ -140,6 +144,7 @@ def test_approval_gated_scheduler_rejects_non_submit_descriptor() -> None:
 
 
 def test_approval_gated_scheduler_accepts_descriptor_name_or_provider() -> None:
+    """Accept either registered descriptor name or provider identity."""
     manifest = _manifest()
     descriptor_name_approval = HardwareApprovalRecord(
         approval_id="approved-by-descriptor",
@@ -170,6 +175,7 @@ def test_approval_gated_scheduler_accepts_descriptor_name_or_provider() -> None:
 
 
 def test_approval_gated_scheduler_enforces_estimated_and_reported_qpu_budget() -> None:
+    """Enforce the approved QPU budget before and after provider execution."""
     manifest = _manifest()
     provider_calls = 0
 
@@ -208,6 +214,7 @@ def test_hardware_approval_record_rejects_invalid_boundaries(
     kwargs: dict[str, object],
     message: str,
 ) -> None:
+    """Reject empty identifiers and negative approval budgets."""
     params = {
         "approval_id": "approval",
         "approver": "Miroslav Sotek",
@@ -221,6 +228,7 @@ def test_hardware_approval_record_rejects_invalid_boundaries(
 
 
 def test_approval_gated_scheduler_rejects_empty_provider_and_manifest() -> None:
+    """Reject schedulers without a provider or preregistered manifest."""
     manifest = _manifest()
 
     with pytest.raises(ValueError, match="provider"):

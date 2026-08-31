@@ -36,6 +36,15 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
     assert "*/hardware/feedback_dryrun.py" in (
         quality_gates.HARDWARE_SAFE_EXECUTION_COVERAGE_INCLUDE
     )
+    scheduler_source = "src/scpn_quantum_control/hardware/feedback_hardware_scheduler.py"
+    scheduler_test = "tests/test_feedback_hardware_scheduler.py"
+    assert scheduler_source in quality_gates.HARDWARE_SAFE_EXECUTION_TYPING_RATCHET
+    assert scheduler_source in quality_gates.HARDWARE_SAFE_EXECUTION_QUALITY_RATCHET
+    assert scheduler_test in quality_gates.HARDWARE_SAFE_EXECUTION_QUALITY_RATCHET
+    assert scheduler_test in quality_gates.HARDWARE_SAFE_EXECUTION_COVERAGE_COHORT
+    assert "*/hardware/feedback_hardware_scheduler.py" in (
+        quality_gates.HARDWARE_SAFE_EXECUTION_COVERAGE_INCLUDE
+    )
     gates = dict(quality_gates.build_static_quality_gates("/python"))
     assert (
         gates["mypy-strict-hardware-safe-execution-quality"][5:]
