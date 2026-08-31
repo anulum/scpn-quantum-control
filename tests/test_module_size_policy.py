@@ -17,6 +17,8 @@ from types import ModuleType
 
 import pytest
 
+from tools.ci_workflow_inventory import workflow_path_for_job
+
 
 def _load_tool() -> ModuleType:
     path = Path(__file__).resolve().parents[1] / "tools" / "audit_module_size_policy.py"
@@ -198,7 +200,7 @@ def test_architecture_quotes_the_reviewed_inventory_and_open_count() -> None:
 
 def test_ci_and_preflight_run_the_inventory_gate() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    workflow = (repo_root / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    workflow = workflow_path_for_job("lint").read_text(encoding="utf-8")
     preflight = (repo_root / "tools" / "preflight.py").read_text(encoding="utf-8")
 
     assert "python tools/audit_module_size_policy.py" in workflow

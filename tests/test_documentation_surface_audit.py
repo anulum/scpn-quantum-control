@@ -67,6 +67,27 @@ def test_python_audit_allows_private_missing_docstrings() -> None:
     assert findings == ()
 
 
+def test_python_audit_allows_undocumented_typing_overloads() -> None:
+    findings = audit_python_text(
+        Path("src/example.py"),
+        '''"""Module docs."""
+from typing import overload
+
+@overload
+def convert(value: int) -> int: ...
+
+@typing.overload
+def convert(value: str) -> str: ...
+
+def convert(value: int | str) -> int | str:
+    """Return the value unchanged."""
+    return value
+''',
+    )
+
+    assert findings == ()
+
+
 def test_markdown_audit_flags_missing_title_and_stale_status() -> None:
     findings = audit_markdown_text(
         Path("docs/page.md"),

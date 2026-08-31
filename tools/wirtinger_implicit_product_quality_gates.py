@@ -49,7 +49,7 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "mypy",
                 "--strict",
                 "--explicit-package-bases",
-                *WIRTINGER_IMPLICIT_PRODUCT_DOCSTRING_RATCHET,
+                *WIRTINGER_IMPLICIT_PRODUCT_QUALITY_RATCHET,
             ],
         ),
         (
@@ -64,7 +64,7 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "D,D413",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
-                *WIRTINGER_IMPLICIT_PRODUCT_QUALITY_RATCHET,
+                *WIRTINGER_IMPLICIT_PRODUCT_DOCSTRING_RATCHET,
             ],
         ),
     ]

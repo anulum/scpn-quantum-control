@@ -109,6 +109,8 @@ def test_inventory_reconstructs_real_jobs_and_resolves_owners() -> None:
     assert source.count("  lint:\n") == 1
     assert source.count("  ci-gate:\n") == 1
     assert source.index("  lint:\n") < source.index("  native-wheels:\n")
+    compatibility_gate = source[source.index("  ci-gate:\n") :]
+    assert all(job_id in compatibility_gate for job_id in policy["job_order"])
     assert inventory.workflow_path_for_job("lint").name == "ci-static-analysis.yml"
     assert inventory.workflow_path_for_job("ci-gate").name == "ci.yml"
     assert inventory.ci_workflow_paths(policy)[0].name == "ci.yml"

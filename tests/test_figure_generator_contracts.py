@@ -12,6 +12,8 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
+from tools import preflight
+
 ROOT = Path(__file__).resolve().parents[1]
 FIGURES = ROOT / "figures"
 PYPROJECT = ROOT / "pyproject.toml"
@@ -69,11 +71,12 @@ def test_tracked_figure_generators_have_documented_public_surfaces() -> None:
 def test_figure_generators_remain_in_static_quality_ownership() -> None:
     """Pin figure generators into configured Ruff, preflight, and hosted CI."""
     pyproject = PYPROJECT.read_text(encoding="utf-8")
-    preflight = PREFLIGHT.read_text(encoding="utf-8")
     workflow = STATIC_WORKFLOW.read_text(encoding="utf-8")
+    gates = dict(preflight.STATIC_GATES)
 
     assert '"figures/**" = ["D"]' not in pyproject
-    assert '"src/", "tests/", "examples/", "figures/"' in preflight
+    assert "figures/" in gates["ruff check"]
+    assert "figures/" in gates["ruff format"]
     assert "ruff check src/ tests/ examples/ figures/" in workflow
     assert "ruff format --check src/ tests/ examples/ figures/" in workflow
 

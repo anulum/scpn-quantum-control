@@ -35,7 +35,7 @@
       "evidence_paths": [
         "requirements-dev.txt"
       ],
-      "pinned_package_count": 28,
+      "pinned_package_count": 29,
       "checksum_count": 1,
       "evidence_status": "locked",
       "blockers": [],
@@ -58,7 +58,7 @@
         "requirements-ci-py312-linux.txt",
         "requirements-ci-py313-linux.txt"
       ],
-      "pinned_package_count": 488,
+      "pinned_package_count": 491,
       "checksum_count": 4,
       "evidence_status": "locked",
       "blockers": [],
@@ -122,11 +122,11 @@
         "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json"
       ],
       "evidence_sha256": [
-        "35660e01a5aa20c65e54a1d892675f78aaf37fd2204232587aadee07a43dd986",
-        "e4184396cf87e2c22905bccd199ac12d078930ff783ff1b8eec740c9408f4cd8",
-        "d7c95a30ff728d3fcea5f7739d48c5b10446503c153b7773038a992f73bc9756",
-        "3d912d4ef65e5f20965e05abc3861c8222e220a43fde3690279237734e22c81b",
-        "5c0dc2fedde6ddd4609941fbd6c9aec716c57dbcede6505f3b7cea205f15c642"
+        "c4c16a3bb255843a94ec6e90b919857b206842c461a8aa344809062fe97f2261",
+        "d78257a8c5d5d1e9d9da695ce878f43bd2f6f7c35027a12bdbd2ae274cf4f390",
+        "537ae37c2a31e2abdb3cab4f0728bb88c5f22643626f3c722d7e5f721978438b",
+        "a5c6d5ca3d64d56934b8507edb675127883b163b866bf89c607966f025d4292c",
+        "8ef2f01c490a52b5833c224ab857ffd9da71c1bd0488862e6d6296caf84c0721"
       ],
       "evidence_status": "locked",
       "blockers": [],
@@ -160,7 +160,7 @@
         "scpn_quantum_engine/Cargo.lock"
       ],
       "evidence_sha256": [
-        "3c303fdf73558abc0d292245db8ce8df755b9619cb287a598d20a1ff3034c3ec"
+        "41bb719fe998a9ebcab639da765a5ed51cc979891a66f2e1b0e45cbd8ca28edb"
       ],
       "evidence_status": "locked",
       "blockers": [],
@@ -262,7 +262,7 @@
       ],
       "evidence_sha256": [
         "67d30486ee7b3d478dcdab2c44ed932dada3a2fcda326b2cda425a057bc62618",
-        "88ed9a13e3ddf447a8db27cbea2f5345b13d294fce24e028718da4a0149b2fb4"
+        "c95c5dceba3f04f1c4b1153174ab9315f42f09918d432bc21e0ce7132b5f8e87"
       ],
       "evidence_status": "locked",
       "blockers": [],
@@ -329,9 +329,9 @@
         "src/scpn_quantum_control/phase/torch_maturity.py"
       ],
       "evidence_sha256": [
-        "35660e01a5aa20c65e54a1d892675f78aaf37fd2204232587aadee07a43dd986",
-        "8c32c988ed2a1acdf5b7ad9d37dcd258167abc130bca6f3fb2cdc4e898cb97b5",
-        "f335a8ccd0bce75945caf8e243846f796cc26d68bbb8c01d296722db3da62e21"
+        "c4c16a3bb255843a94ec6e90b919857b206842c461a8aa344809062fe97f2261",
+        "bbc9d36825b9965fabaac9fe152c67549fc305507037d05fb0094dc767a55b2e",
+        "b103d89b86a5a8bd9ebe2946622be84165d40b2cc6603a4d5241bb7eb1845136"
       ],
       "evidence_status": "hard_gap",
       "blockers": [
@@ -369,8 +369,8 @@
         "docs/quantum_gradients.md"
       ],
       "evidence_sha256": [
-        "8c32c988ed2a1acdf5b7ad9d37dcd258167abc130bca6f3fb2cdc4e898cb97b5",
-        "f335a8ccd0bce75945caf8e243846f796cc26d68bbb8c01d296722db3da62e21",
+        "bbc9d36825b9965fabaac9fe152c67549fc305507037d05fb0094dc767a55b2e",
+        "b103d89b86a5a8bd9ebe2946622be84165d40b2cc6603a4d5241bb7eb1845136",
         "7855071c605d698944fe2f3b586d6f0774180c6b08db245761040ba49e85cd1f"
       ],
       "evidence_status": "hard_gap",
@@ -391,7 +391,7 @@
         "docs/differentiable_api.md"
       ],
       "evidence_sha256": [
-        "877f6203165da422a4995d1877d72bd58178271b39389ead8598b5aa5dd76b06",
+        "143adfb150d6dc203fabcd2e6202d4fdd2dc8170e3200ce880399bc4114b6024",
         "8f3fa430faffb887f69bd38799c4e539e86b8904beb0fa1928ab125f14d174a8"
       ],
       "evidence_status": "hard_gap",
@@ -412,7 +412,7 @@
         "docs/differentiable_api.md"
       ],
       "evidence_sha256": [
-        "877f6203165da422a4995d1877d72bd58178271b39389ead8598b5aa5dd76b06",
+        "143adfb150d6dc203fabcd2e6202d4fdd2dc8170e3200ce880399bc4114b6024",
         "8f3fa430faffb887f69bd38799c4e539e86b8904beb0fa1928ab125f14d174a8"
       ],
       "evidence_status": "hard_gap",
@@ -433,7 +433,7 @@
         "docs/differentiable_api.md"
       ],
       "evidence_sha256": [
-        "8c32c988ed2a1acdf5b7ad9d37dcd258167abc130bca6f3fb2cdc4e898cb97b5",
+        "bbc9d36825b9965fabaac9fe152c67549fc305507037d05fb0094dc767a55b2e",
         "8f3fa430faffb887f69bd38799c4e539e86b8904beb0fa1928ab125f14d174a8"
       ],
       "evidence_status": "hard_gap",

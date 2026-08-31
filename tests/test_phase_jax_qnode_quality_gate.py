@@ -15,7 +15,7 @@ from pathlib import Path
 from types import ModuleType
 
 from tools import phase_jax_qnode_quality_gates as _quality_gates
-from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.ci_workflow_inventory import workflow_path_for_job
 
 
 def _load_preflight_module() -> ModuleType:
@@ -125,7 +125,7 @@ def test_preflight_reexports_the_policy_contract() -> None:
 
 def test_ci_and_local_gates_share_exact_owner_order() -> None:
     """CI and local gates should preserve identical owner-file ordering."""
-    workflow = read_ci_workflow_source()
+    workflow = workflow_path_for_job("differentiable-parity").read_text(encoding="utf-8")
     quality_steps = (
         "Type-check Phase-QNode JAX quality cohort",
         "Ruff NumPy docstrings for Phase-QNode JAX quality cohort",
@@ -150,7 +150,9 @@ def test_ci_and_local_gates_share_exact_owner_order() -> None:
     runtime_probe_position = workflow.index("Verify real JAX runtime for Phase-QNode coverage")
     coverage_position = workflow.index("Run Phase-QNode JAX focused coverage")
     parity_job_position = workflow.index("  differentiable-parity:")
-    next_job_position = workflow.index("\n  security:", parity_job_position)
+    next_job_position = workflow.index(
+        "\n  differentiable-isolated-benchmark:", parity_job_position
+    )
     assert (
         parity_job_position
         < overlay_position
@@ -161,4 +163,3 @@ def test_ci_and_local_gates_share_exact_owner_order() -> None:
     assert "import jax; devices=jax.devices()" in workflow
     assert "primary={devices[0]}" in workflow
     assert "SCPN_FRAMEWORK_OVERLAY:$PYTHONPATH" in workflow
-    assert "differentiable-parity" in workflow[workflow.index("  ci-gate:") :]

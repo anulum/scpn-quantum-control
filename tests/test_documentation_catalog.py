@@ -51,8 +51,13 @@ def _fixture_repo(repo: Path) -> None:
         "\n".join(
             (
                 '"""Control surface | with a table separator."""',
+                "from typing import overload",
+                "",
                 "class Controller:",
                 '    """Documented controller."""',
+                "",
+                "@overload",
+                "def optimise(value: int) -> int: ...",
                 "",
                 "def optimise():",
                 '    """Return a documented result."""',

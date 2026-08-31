@@ -21,6 +21,8 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
+from tools import preflight
+
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "examples"
 README = EXAMPLES / "README.md"
@@ -82,11 +84,11 @@ def test_all_example_scripts_are_documented_and_import_safe() -> None:
 def test_examples_remain_in_static_documentation_ownership() -> None:
     """Pin examples into configured Ruff, preflight, and hosted-CI ownership."""
     pyproject = PYPROJECT.read_text(encoding="utf-8")
-    preflight = PREFLIGHT.read_text(encoding="utf-8")
     workflow = STATIC_WORKFLOW.read_text(encoding="utf-8")
+    gates = dict(preflight.STATIC_GATES)
 
     assert '"examples/**" = ["D"]' not in pyproject
-    assert '"ruff", "check", "src/", "tests/", "examples/"' in preflight
-    assert '"format", "--check", "src/", "tests/", "examples/"' in preflight
+    assert "examples/" in gates["ruff check"]
+    assert "examples/" in gates["ruff format"]
     assert "ruff check src/ tests/ examples/" in workflow
     assert "ruff format --check src/ tests/ examples/" in workflow

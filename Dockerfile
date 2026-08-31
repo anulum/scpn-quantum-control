@@ -50,6 +50,9 @@ COPY .pre-commit-config.yaml pyproject.toml mkdocs.yml requirements.txt requirem
 COPY CHANGELOG.md VALIDATION.md RESULTS_SUMMARY.md CAPABILITIES_AND_USECASES.md REUSE.toml ./
 COPY ARCHITECTURE.md DEPRECATIONS.md CONTRIBUTORS.md GOVERNANCE.md NOTICE.md SUPPORT.md ./
 COPY requirements-ci-cross-platform-smoke.txt requirements-ci-py311-linux.txt requirements-ci-py312-linux.txt requirements-ci-py313-linux.txt requirements-ci-studio-platform.txt ./
+# Supply-chain contract tests validate the human-reviewed inputs that generate
+# the minimal-install and Quimb hash closures.
+COPY requirements-ci-minimal-install-py312-linux.in requirements-ci-quimb-py312-linux.in ./
 COPY src/ src/
 COPY oscillatools/src/ oscillatools/src/
 # The standalone-package decision and real wheel tests require the complete

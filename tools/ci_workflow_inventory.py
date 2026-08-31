@@ -112,8 +112,27 @@ def read_ci_workflow_source() -> str:
     missing = set(policy["job_order"]) - blocks.keys()
     if missing:
         raise ValueError(f"CI workflow inventory is missing jobs: {sorted(missing)}")
-    ordered = [blocks[job_id] for job_id in policy["job_order"]]
-    ordered.append(coordinator_blocks[gate_id])
+    ordered: list[str] = []
+    for job_id in policy["job_order"]:
+        block = blocks[job_id]
+        if job_id != "lint":
+            needs = re.search(r"(?m)^    needs: (?P<value>.+)$", block)
+            if needs is None:
+                block = block.replace(f"  {job_id}:\n", f"  {job_id}:\n    needs: lint\n", 1)
+            else:
+                value = needs.group("value")
+                dependencies = value[1:-1] if value.startswith("[") else value
+                block = block[: needs.start()] + (
+                    f"    needs: [lint, {dependencies}]" + block[needs.end() :]
+                )
+        ordered.append(block)
+    compatibility_gate = re.sub(
+        r"(?m)^    needs:.*$",
+        "    needs: [" + ", ".join(policy["job_order"]) + "]",
+        coordinator_blocks[gate_id],
+        count=1,
+    )
+    ordered.append(compatibility_gate)
     return prefix + "jobs:\n" + "\n\n".join(ordered) + "\n"
 
 

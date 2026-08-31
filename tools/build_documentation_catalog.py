@@ -108,6 +108,15 @@ def _table_cell(value: str) -> str:
     return " ".join(value.split()).replace("|", r"\|")
 
 
+def _is_overload(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    """Return whether a function is a typing overload declaration."""
+    return any(
+        (isinstance(decorator, ast.Name) and decorator.id == "overload")
+        or (isinstance(decorator, ast.Attribute) and decorator.attr == "overload")
+        for decorator in node.decorator_list
+    )
+
+
 def collect_modules(repo: Path) -> tuple[ModuleRecord, ...]:
     """Collect every ordinary Python module and its documented public symbols."""
     package_root = repo / "src/scpn_quantum_control"
@@ -124,6 +133,9 @@ def collect_modules(repo: Path) -> tuple[ModuleRecord, ...]:
             for node in tree.body
             if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef))
             and not node.name.startswith("_")
+            and not (
+                isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and _is_overload(node)
+            )
         )
         classes = tuple(node.name for node in public_nodes if isinstance(node, ast.ClassDef))
         functions = tuple(

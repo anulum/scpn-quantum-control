@@ -347,7 +347,7 @@ def test_ci_phase_qnode_vector_job_enforces_exact_branch_coverage() -> None:
 
 def test_ci_phase_jax_qnode_gate_runs_after_the_real_cpu_overlay() -> None:
     """CI must execute exact JAX QNode coverage with the verified CPU overlay."""
-    workflow = read_ci_workflow_source()
+    workflow = workflow_path_for_job("differentiable-parity").read_text(encoding="utf-8")
 
     assert "Type-check Phase-QNode JAX quality cohort" in workflow
     assert "Ruff NumPy docstrings for Phase-QNode JAX quality cohort" in workflow
@@ -363,7 +363,9 @@ def test_ci_phase_jax_qnode_gate_runs_after_the_real_cpu_overlay() -> None:
     runtime_probe_position = workflow.index("Verify real JAX runtime for Phase-QNode coverage")
     coverage_position = workflow.index("Run Phase-QNode JAX focused coverage")
     parity_job_position = workflow.index("  differentiable-parity:")
-    next_job_position = workflow.index("\n  security:", parity_job_position)
+    next_job_position = workflow.index(
+        "\n  differentiable-isolated-benchmark:", parity_job_position
+    )
     assert (
         parity_job_position
         < overlay_position

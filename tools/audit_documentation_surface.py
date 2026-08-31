@@ -122,6 +122,15 @@ def _is_public_callable_scope(stack: Sequence[tuple[str, str]]) -> bool:
     return stack[-1][0] == "class" and all(kind == "class" for kind, _ in stack)
 
 
+def _is_overload(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    """Return whether a function is a typing overload declaration."""
+    return any(
+        (isinstance(decorator, ast.Name) and decorator.id == "overload")
+        or (isinstance(decorator, ast.Attribute) and decorator.attr == "overload")
+        for decorator in node.decorator_list
+    )
+
+
 class _DocstringVisitor(ast.NodeVisitor):
     def __init__(self, path: Path) -> None:
         self.path = path
@@ -170,6 +179,7 @@ class _DocstringVisitor(ast.NodeVisitor):
         if (
             _is_public_name(node.name)
             and _is_public_callable_scope(self.stack)
+            and not _is_overload(node)
             and ast.get_docstring(node) is None
         ):
             self.findings.append(

@@ -1263,7 +1263,7 @@ Assemble the per-trial gated coupling ``K_eff(code)``.
 
 ### `scpn_quantum_control.benchmarks.kyma_v2.design`
 
-Fix the v2 design constants from **teacher dynamics only** — never a model's held-out accuracy (pre-registration §5).
+Fix the v2 design constants from teacher dynamics only.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/kyma_v2/design.py) · Public symbols: **4**
 
@@ -1279,7 +1279,7 @@ Differentiable Kuramoto RK4 integrator with a **per-trial** coupling matrix.
 
 ### `scpn_quantum_control.benchmarks.kyma_v2.models`
 
-The trainable gated **student** substrate, a parameter-matched MLP baseline, and the chance floor.
+Provide the gated student, matched MLP, and chance floor.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/kyma_v2/models.py) · Public symbols: **12**
 
@@ -1297,7 +1297,7 @@ Train, evaluate, and aggregate the KYMA v2 composition probe over seeds.
 
 ### `scpn_quantum_control.benchmarks.kyma_v2.rigor`
 
-Orchestrate the four v2.1 supplementary analyses (ablations, stronger baselines, MLP convergence, leave-one-out) against the frozen v2 task.
+Orchestrate the four v2.1 supplementary analyses.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/benchmarks/kyma_v2/rigor.py) · Public symbols: **4**
 
@@ -4753,7 +4753,7 @@ Quantum cost terms for SSGF integration.
 
 ### `scpn_quantum_control.ssgf.quantum_gradient`
 
-SSGF quantum gradient: dC_quantum/dz via parameter-shift rule.
+SSGF quantum gradient: dC_quantum/dz via central finite differences.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/ssgf/quantum_gradient.py) · Public symbols: **3**
 
