@@ -43,6 +43,7 @@ class AdaptiveBranchingConfig:
     max_correction_angle: float = 0.20
 
     def __post_init__(self) -> None:
+        """Reject invalid branch-planning dimensions and thresholds."""
         if not isinstance(self.n_oscillators, int) or self.n_oscillators < 2:
             raise ValueError("n_oscillators must be an integer >= 2")
         if not isinstance(self.n_rounds, int) or self.n_rounds < 1:

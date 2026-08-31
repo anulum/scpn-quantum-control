@@ -42,6 +42,7 @@ from shutil import which
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from tools import adaptive_branching_quality_gates as _adaptive_branching_quality_gates
     from tools import advanced_witnesses_quality_gates as _advanced_witnesses_quality_gates
     from tools import (
         advantage_language_protocol_quality_gates as _advantage_language_protocol_quality_gates,
@@ -366,6 +367,7 @@ else:
     _repo_root = str(Path(__file__).resolve().parents[1])
     if _repo_root not in sys.path:
         sys.path.insert(0, _repo_root)
+    _adaptive_branching_quality_gates = import_module("tools.adaptive_branching_quality_gates")
     _advanced_witnesses_quality_gates = import_module("tools.advanced_witnesses_quality_gates")
     _analog_platform_catalogue_quality_gates = import_module(
         "tools.analog_platform_catalogue_quality_gates"
@@ -1018,6 +1020,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_stable_core_product_quality_gates.build_static_quality_gates(_PY),
     *_open_system_completeness_quality_gates.build_static_quality_gates(_PY),
     *_thermo_readiness_product_quality_gates.build_static_quality_gates(_PY),
+    *_adaptive_branching_quality_gates.build_static_quality_gates(_PY),
     *_quantum_sync_oracle_product_quality_gates.build_static_quality_gates(_PY),
     *_custom_derivatives_product_quality_gates.build_static_quality_gates(_PY),
     *_kyma_mechanism_product_quality_gates.build_static_quality_gates(_PY),
@@ -1544,6 +1547,7 @@ OPEN_SYSTEM_COMPLETENESS_COVERAGE_GATES = (
 THERMO_READINESS_PRODUCT_COVERAGE_GATES = (
     _thermo_readiness_product_quality_gates.build_coverage_gates(_PY)
 )
+ADAPTIVE_BRANCHING_COVERAGE_GATES = _adaptive_branching_quality_gates.build_coverage_gates(_PY)
 QUANTUM_SYNC_ORACLE_COVERAGE_GATES = (
     _quantum_sync_oracle_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -2126,6 +2130,7 @@ def main() -> int:
             gates.extend(STABLE_CORE_PRODUCT_COVERAGE_GATES)
             gates.extend(OPEN_SYSTEM_COMPLETENESS_COVERAGE_GATES)
             gates.extend(THERMO_READINESS_PRODUCT_COVERAGE_GATES)
+            gates.extend(ADAPTIVE_BRANCHING_COVERAGE_GATES)
             gates.extend(QUANTUM_SYNC_ORACLE_COVERAGE_GATES)
             gates.extend(CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_GATES)
             gates.extend(KYMA_MECHANISM_PRODUCT_COVERAGE_GATES)

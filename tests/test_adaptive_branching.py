@@ -24,6 +24,7 @@ from scpn_quantum_control.control.adaptive_branching import (
 
 
 def test_threshold_branch_triggers_only_below_target_deadband() -> None:
+    """Low local order triggers correction only beyond the deadband."""
     config = AdaptiveBranchingConfig(target_r=0.75, deadband=0.05)
 
     low = classify_branch_state(
@@ -42,6 +43,7 @@ def test_threshold_branch_triggers_only_below_target_deadband() -> None:
 
 
 def test_parity_leakage_has_priority_over_local_order() -> None:
+    """Parity leakage takes priority over the local-order policy."""
     config = AdaptiveBranchingConfig(target_r=0.75, max_parity_leakage=0.08)
 
     decision = classify_branch_state(
@@ -57,6 +59,7 @@ def test_parity_leakage_has_priority_over_local_order() -> None:
 
 
 def test_chimera_branch_detects_clustered_desynchronisation() -> None:
+    """Cluster imbalance and low local order select the chimera policy."""
     config = AdaptiveBranchingConfig(target_r=0.8, chimera_imbalance_threshold=0.25)
 
     decision = classify_branch_state(
@@ -72,6 +75,7 @@ def test_chimera_branch_detects_clustered_desynchronisation() -> None:
 
 
 def test_branch_table_is_deterministic_and_non_submitting() -> None:
+    """Branch-table construction is deterministic and cannot submit work."""
     table = build_adaptive_branch_table(
         AdaptiveBranchingConfig(target_r=0.75),
         local_r_grid=(0.5, 0.75),
@@ -85,6 +89,7 @@ def test_branch_table_is_deterministic_and_non_submitting() -> None:
 
 
 def test_readiness_blocks_without_backend_dynamic_circuit_support() -> None:
+    """Missing dynamic-circuit features keep readiness closed."""
     readiness = estimate_branching_readiness(
         AdaptiveBranchingConfig(n_oscillators=4, n_rounds=3),
         backend_features=("cross_shot_batches",),
@@ -97,6 +102,7 @@ def test_readiness_blocks_without_backend_dynamic_circuit_support() -> None:
 
 
 def test_payload_keeps_s8_as_no_submit_readiness_artifact() -> None:
+    """The public S8 payload remains a no-submit readiness artefact."""
     payload = s8_adaptive_branching_payload()
 
     assert payload["schema"] == ADAPTIVE_BRANCHING_SCHEMA
@@ -112,6 +118,7 @@ def test_payload_keeps_s8_as_no_submit_readiness_artifact() -> None:
 
 
 def test_markdown_records_gate_and_falsifier() -> None:
+    """Rendered readiness notes expose both the gate and falsifier."""
     markdown = s8_adaptive_branching_markdown(s8_adaptive_branching_payload())
 
     assert "scpn-bench s8-adaptive-branching-readiness" in markdown
@@ -120,5 +127,6 @@ def test_markdown_records_gate_and_falsifier() -> None:
 
 
 def test_invalid_config_fails_closed() -> None:
+    """Out-of-range configuration values fail closed."""
     with pytest.raises(ValueError, match="target_r"):
         AdaptiveBranchingConfig(target_r=1.5)

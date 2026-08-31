@@ -973,6 +973,8 @@ def test_main_uses_coverage_pytest_by_default(
         "open-system-completeness exact coverage threshold",
         "thermo-readiness-product focused coverage",
         "thermo-readiness-product exact coverage threshold",
+        "adaptive-branching focused coverage",
+        "adaptive-branching exact coverage threshold",
         "quantum-sync-oracle focused coverage",
         "quantum-sync-oracle exact coverage threshold",
         "custom-derivatives-product focused coverage",
