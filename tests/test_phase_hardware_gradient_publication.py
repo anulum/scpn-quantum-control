@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
+from typing import cast
 
 import pytest
 
@@ -37,7 +39,7 @@ def test_hardware_gradient_publication_package_is_json_ready_and_no_submit() -> 
     assert payload["gradient_available_count"] == 0
     assert payload["claim_status"] == "pre_registered_no_submit_scaffold"
     assert payload["submission_ready"] is False
-    assert "no-submit" in payload["claim_boundary"]
+    assert "no-submit" in cast(str, payload["claim_boundary"])
     assert json.loads(json.dumps(payload))["schema_version"].endswith(".v1")
 
 
@@ -64,9 +66,10 @@ def test_hardware_gradient_publication_artifact_map_requires_raw_replay_fields()
         assert payload["raw_counts_status"] == "required_not_captured"
         assert payload["statevector_reference_status"] == "required_not_captured"
         assert payload["backend_calibration_status"] == "required_not_captured"
-        assert "evaluation_records" in payload["required_replay_fields"]
-        assert "statevector_reference" in payload["required_replay_fields"]
-        assert "hardware_execution" in payload["required_replay_fields"]
+        required_replay_fields = cast(list[str], payload["required_replay_fields"])
+        assert "evaluation_records" in required_replay_fields
+        assert "statevector_reference" in required_replay_fields
+        assert "hardware_execution" in required_replay_fields
 
 
 def test_hardware_gradient_publication_claim_rows_are_not_promoted() -> None:
@@ -130,3 +133,91 @@ def test_hardware_gradient_publication_exports_from_phase_namespace() -> None:
         is build_hardware_gradient_publication_package
     )
     assert phase.HardwareGradientPublicationPackage is HardwareGradientPublicationPackage
+
+
+def test_hardware_gradient_publication_rejects_empty_campaign_collection() -> None:
+    """Reject a publication package with no campaign plans."""
+    with pytest.raises(ValueError, match="at least one hardware-gradient campaign"):
+        build_hardware_gradient_publication_package(plans=())
+
+
+def test_hardware_gradient_publication_validates_preregistration_contract() -> None:
+    """Reject blank and structurally empty preregistration fields."""
+    preregistration = build_hardware_gradient_publication_package().preregistration
+
+    with pytest.raises(ValueError, match="title must be non-empty"):
+        replace(preregistration, title=" ")
+    with pytest.raises(ValueError, match="secondary_endpoints"):
+        replace(preregistration, secondary_endpoints=())
+    with pytest.raises(ValueError, match="exclusion_rules"):
+        replace(preregistration, exclusion_rules=())
+
+
+def test_hardware_gradient_publication_renders_reviewer_markdown() -> None:
+    """Render methods, artefacts, benchmarks, and the claim boundary."""
+    markdown = build_hardware_gradient_publication_package().to_markdown()
+
+    assert "# Hardware-Validated Quantum Gradients" in markdown
+    assert "## Methods" in markdown
+    assert "## Artefact Map" in markdown
+    assert "## Benchmark Placeholders" in markdown
+    assert "xy_parameter_shift_vqe_heron_r2_dry_run" in markdown
+    assert "scpn_statevector_reference" in markdown
+    assert "Claim boundary: no-submit publication scaffold" in markdown
+
+
+def test_hardware_gradient_publication_requires_every_promotion_evidence_layer() -> None:
+    """Require hardware output, promoted rows, and every artifact identifier."""
+    package = build_hardware_gradient_publication_package()
+    promoted_rows = tuple(
+        replace(row, promoted=True, artifact_id="artifact", benchmark_id="benchmark")
+        for row in package.claim_ledger_rows
+    )
+    mapped_artifacts = tuple(
+        replace(entry, artifact_id="artifact") for entry in package.artifact_map
+    )
+    mapped_benchmarks = tuple(
+        replace(entry, artifact_id="benchmark") for entry in package.benchmark_placeholders
+    )
+
+    assert replace(package, hardware_execution_count=1).submission_ready is False
+    assert (
+        replace(package, hardware_execution_count=1, gradient_available_count=1).submission_ready
+        is False
+    )
+    assert (
+        replace(
+            package,
+            hardware_execution_count=1,
+            gradient_available_count=1,
+            claim_ledger_rows=promoted_rows,
+        ).submission_ready
+        is False
+    )
+    assert (
+        replace(
+            package,
+            hardware_execution_count=1,
+            gradient_available_count=1,
+            claim_ledger_rows=promoted_rows,
+            artifact_map=mapped_artifacts,
+        ).submission_ready
+        is False
+    )
+    assert replace(
+        package,
+        hardware_execution_count=1,
+        gradient_available_count=1,
+        claim_ledger_rows=promoted_rows,
+        artifact_map=mapped_artifacts,
+        benchmark_placeholders=mapped_benchmarks,
+    ).submission_ready
+
+
+def test_hardware_gradient_publication_rejects_gradient_without_execution() -> None:
+    """Reject injected gradient availability even without execution metadata."""
+    plan = plan_hardware_gradient_campaign(default_hardware_gradient_campaign_specs()[0])
+    invalid_plan = replace(plan, gradient_available=True)
+
+    with pytest.raises(ValueError, match="publication scaffold cannot contain"):
+        build_hardware_gradient_publication_package(plans=(invalid_plan,))

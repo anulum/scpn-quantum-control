@@ -145,6 +145,7 @@ class DifferentiableProviderHardwareSafetySurface:
     payload: Mapping[str, object]
 
     def __post_init__(self) -> None:
+        """Validate counts and normalize the surface identity."""
         if not self.name.strip():
             raise ValueError("surface name must be non-empty")
         if self.record_count < 0:
@@ -190,6 +191,7 @@ class DifferentiableProviderHardwareSafetyAuditResult:
     claim_boundary: str = "differentiable_provider_hardware_safety_audit"
 
     def __post_init__(self) -> None:
+        """Validate the aggregate surfaces and promotion evidence."""
         if not self.surfaces:
             raise ValueError("at least one safety surface is required")
         if any(
@@ -211,7 +213,7 @@ class DifferentiableProviderHardwareSafetyAuditResult:
                 self.evidence_chain,
                 as_of_utc=self.evidence_review_as_of_utc,
             )
-            _mirror_evidence_chain_fields(self)
+            _mirror_evidence_chain_fields(self, self.evidence_chain)
         for field_name in (
             "live_execution_ticket",
             "raw_count_replay_artifact_id",
@@ -367,10 +369,8 @@ def run_differentiable_provider_hardware_safety_audit(
 
 def _mirror_evidence_chain_fields(
     audit: DifferentiableProviderHardwareSafetyAuditResult,
+    evidence_chain: DifferentiableProviderHardwareEvidenceChain,
 ) -> None:
-    evidence_chain = audit.evidence_chain
-    if evidence_chain is None:
-        return
     field_map = {
         "live_execution_ticket": evidence_chain.live_execution_ticket,
         "raw_count_replay_artifact_id": evidence_chain.raw_count_replay_artifact_id,
