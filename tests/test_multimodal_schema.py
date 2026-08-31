@@ -67,6 +67,7 @@ def test_public_forecasting_facade_exports_product_entry_points() -> None:
 
 
 def test_batch_normalises_missing_values_and_freezes_custody() -> None:
+    """Masked values become immutable NaNs with intact shape metadata."""
     baseline = _batch()
     series = baseline.series.copy()
     mask = baseline.series_mask.copy()
@@ -102,6 +103,7 @@ def test_batch_normalises_missing_values_and_freezes_custody() -> None:
 
 
 def test_digest_and_summary_bind_masks_ids_tags_and_split() -> None:
+    """Custody digests and summaries bind identifiers, tags, masks, and splits."""
     first = _batch()
     same = _batch()
     changed_id = _batch(sample_id="train-1")
@@ -121,6 +123,7 @@ def test_digest_and_summary_bind_masks_ids_tags_and_split() -> None:
 
 
 def test_disjoint_batch_gate_rejects_cross_split_leakage() -> None:
+    """Cross-split sample identifiers must remain disjoint."""
     train = _batch(sample_id="row-0", split="train")
     test = _batch(sample_id="row-1", split="test")
     assert_disjoint_batches(train, test)
@@ -129,6 +132,7 @@ def test_disjoint_batch_gate_rejects_cross_split_leakage() -> None:
 
 
 def test_schema_rejects_invalid_shapes_and_metadata() -> None:
+    """Invalid tensor shapes and custody metadata fail closed."""
     baseline = _batch()
     with pytest.raises(ValueError, match="rank-three"):
         replace(
@@ -155,6 +159,7 @@ def test_schema_rejects_invalid_shapes_and_metadata() -> None:
 
 
 def test_schema_rejects_mask_shape_nonfinite_and_unobserved_channels() -> None:
+    """Masks, observed values, and channel visibility remain validated."""
     baseline = _batch()
     with pytest.raises(ValueError, match="identical shapes"):
         MultimodalObservationBatch(

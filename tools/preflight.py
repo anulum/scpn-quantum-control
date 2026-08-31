@@ -227,6 +227,7 @@ if TYPE_CHECKING:
     )
     from tools import mps_evolution_quality_gates as _mps_evolution_quality_gates
     from tools import multi_hal_federation_product_quality_gates as _multi_hal_quality_gates
+    from tools import multimodal_schema_quality_gates as _multimodal_schema_quality_gates
     from tools import (
         neural_operator_baseline_product_quality_gates as _neural_operator_baseline_product_quality_gates,
     )
@@ -596,6 +597,7 @@ else:
     )
     _ml_dsa_seal_quality_gates = import_module("tools.ml_dsa_seal_quality_gates")
     _multi_hal_quality_gates = import_module("tools.multi_hal_federation_product_quality_gates")
+    _multimodal_schema_quality_gates = import_module("tools.multimodal_schema_quality_gates")
     _neural_operator_cost_model_quality_gates = import_module(
         "tools.neural_operator_cost_model_quality_gates"
     )
@@ -1084,6 +1086,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_mlir_whole_program_native_quality_gates.build_static_quality_gates(_PY),
     *_closed_loop_publication_quality_gates.build_static_quality_gates(_PY),
     *_kuramoto_layout_optimiser_quality_gates.build_static_quality_gates(_PY),
+    *_multimodal_schema_quality_gates.build_static_quality_gates(_PY),
     *_qrc_baseline_quality_gates.build_static_quality_gates(_PY),
     *_josephson_magnitude_study_quality_gates.build_static_quality_gates(_PY),
     *_topology_kernel_classifier_quality_gates.build_static_quality_gates(_PY),
@@ -1675,6 +1678,7 @@ CLOSED_LOOP_PUBLICATION_COVERAGE_GATES = (
 KURAMOTO_LAYOUT_OPTIMISER_COVERAGE_GATES = (
     _kuramoto_layout_optimiser_quality_gates.build_coverage_gates(_PY)
 )
+MULTIMODAL_SCHEMA_COVERAGE_GATES = _multimodal_schema_quality_gates.build_coverage_gates(_PY)
 QRC_BASELINE_COVERAGE_GATES = _qrc_baseline_quality_gates.build_coverage_gates(_PY)
 JOSEPHSON_MAGNITUDE_STUDY_COVERAGE_GATES = (
     _josephson_magnitude_study_quality_gates.build_coverage_gates(_PY)
@@ -2183,6 +2187,7 @@ def main() -> int:
             gates.extend(MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_GATES)
             gates.extend(CLOSED_LOOP_PUBLICATION_COVERAGE_GATES)
             gates.extend(KURAMOTO_LAYOUT_OPTIMISER_COVERAGE_GATES)
+            gates.extend(MULTIMODAL_SCHEMA_COVERAGE_GATES)
             gates.extend(QRC_BASELINE_COVERAGE_GATES)
             gates.extend(JOSEPHSON_MAGNITUDE_STUDY_COVERAGE_GATES)
             gates.extend(DYNQ_LAYOUT_COVERAGE_GATES)

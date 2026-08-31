@@ -1113,6 +1113,8 @@ def test_main_uses_coverage_pytest_by_default(
         "closed-loop publication exact coverage threshold",
         "Kuramoto layout-optimiser focused coverage",
         "Kuramoto layout-optimiser exact coverage threshold",
+        "multimodal-schema focused coverage",
+        "multimodal-schema exact coverage threshold",
         "QRC-baseline focused coverage",
         "QRC-baseline exact coverage threshold",
         "Josephson magnitude-study focused coverage",

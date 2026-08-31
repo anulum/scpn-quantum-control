@@ -95,6 +95,7 @@ class MultimodalObservationBatch:
         Integration time step.
     source
         Non-empty provenance label for the synthetic generator.
+
     """
 
     series: FloatArray
