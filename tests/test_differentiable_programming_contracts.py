@@ -26,7 +26,6 @@ from scpn_quantum_control.benchmarks.differentiable_programming import (
 
 def test_differentiable_programming_benchmark_result_validation_paths() -> None:
     """Benchmark result metadata should reject malformed diagnostic rows."""
-
     valid_gradient = np.array([1.0, 2.0], dtype=np.float64)
     row = DifferentiableProgrammingBenchmarkResult(
         case_id="case",
@@ -166,7 +165,6 @@ def test_differentiable_programming_benchmark_result_validation_paths() -> None:
 
 def test_quantum_gradient_benchmark_result_validation_paths() -> None:
     """Quantum-gradient benchmark metadata should reject malformed rows."""
-
     gradient = np.array([1.0, 2.0], dtype=np.float64)
     row = QuantumGradientBenchmarkResult(
         case_id="case",
@@ -257,7 +255,6 @@ def test_quantum_gradient_benchmark_result_validation_paths() -> None:
 
 def test_differentiable_programming_external_reference_result_validation_paths() -> None:
     """External-reference benchmark metadata should reject malformed rows."""
-
     gradient = np.array([1.0, 2.0], dtype=np.float64)
     row = DifferentiableProgrammingExternalReferenceResult(
         case_id="case",

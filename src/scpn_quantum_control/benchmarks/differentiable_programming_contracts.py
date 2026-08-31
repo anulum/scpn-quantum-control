@@ -32,6 +32,7 @@ class DifferentiableProgrammingBenchmarkResult:
     blocked_reasons: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        """Validate and normalize one differentiable benchmark result."""
         if not self.case_id:
             raise ValueError("benchmark case_id must be non-empty")
         if not self.category:
@@ -82,6 +83,7 @@ class DifferentiableProgrammingExternalReferenceResult:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate and normalize one external-reference result."""
         if not self.case_id:
             raise ValueError("external reference case_id must be non-empty")
         if not self.backend:
@@ -124,6 +126,7 @@ class QuantumGradientBenchmarkResult:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate and normalize one quantum-gradient result."""
         if not self.case_id:
             raise ValueError("quantum gradient case_id must be non-empty")
         if not self.category:

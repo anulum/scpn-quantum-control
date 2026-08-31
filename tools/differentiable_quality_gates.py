@@ -13,6 +13,9 @@ from tools import adjoint_replay_product_quality_gates as _adjoint_replay_gates
 from tools import differentiable_api_quality_gates as _api_gates
 from tools import differentiable_levenberg_marquardt_quality_gates as _lm_gates
 from tools import differentiable_natural_gradient_quality_gates as _natural_gradient_gates
+from tools import (
+    differentiable_programming_contracts_quality_gates as _programming_contracts_gates,
+)
 from tools import differentiable_rust_python_inventory_quality_gates as _inventory_gates
 from tools import differentiable_scalar_kernels_quality_gates as _scalar_gates
 
@@ -30,13 +33,14 @@ def build_static_quality_gates(python: str) -> list[Gate]:
     Returns
     -------
     list[Gate]
-        Scalar-kernel, Rust/Python inventory, unified-API, and LM static gates.
+        Focused differentiable static gates in canonical ownership order.
 
     """
     return [
         *_adjoint_replay_gates.build_static_quality_gates(python),
         *_scalar_gates.build_static_quality_gates(python),
         *_inventory_gates.build_static_quality_gates(python),
+        *_programming_contracts_gates.build_static_quality_gates(python),
         *_api_gates.build_static_quality_gates(python),
         *_lm_gates.build_static_quality_gates(python),
         *_natural_gradient_gates.build_static_quality_gates(python),
@@ -54,13 +58,14 @@ def build_coverage_gates(python: str) -> list[Gate]:
     Returns
     -------
     list[Gate]
-        Scalar-kernel, Rust/Python inventory, unified-API, and LM coverage gates.
+        Focused differentiable coverage gates in canonical ownership order.
 
     """
     return [
         *_adjoint_replay_gates.build_coverage_gates(python),
         *_scalar_gates.build_coverage_gates(python),
         *_inventory_gates.build_coverage_gates(python),
+        *_programming_contracts_gates.build_coverage_gates(python),
         *_api_gates.build_coverage_gates(python),
         *_lm_gates.build_coverage_gates(python),
         *_natural_gradient_gates.build_coverage_gates(python),
