@@ -24,7 +24,9 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
     assert ruff[-len(quality_gates.TOPOLOGY_KERNEL_SCHEMA_DOCSTRING_RATCHET) :] == (
         quality_gates.TOPOLOGY_KERNEL_SCHEMA_DOCSTRING_RATCHET
     )
-    assert "--isolated" in ruff and "D,D413" in ruff
+    assert "--isolated" in ruff and "D,D413,D417,D420" in ruff
+    assert "--preview" in ruff
+    assert "lint.explicit-preview-rules = true" in ruff
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
@@ -38,7 +40,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/topology_kernel_product/schema.py" in report
+    assert f"--include={quality_gates.TOPOLOGY_KERNEL_SCHEMA_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -62,4 +64,6 @@ def test_ci_runs_and_aggregates_topology_kernel_schema_gate() -> None:
         assert path in block
     assert "--fail-under=100" in block
     assert "topology_kernel_product/schema.py" in block
+    assert "topology_kernel_product/synthetic.py" in block
+    assert "tests/test_topology_kernel_product_synthetic.py" in block
     assert "topology-kernel-schema-quality" in workflow[workflow.index("  ci-gate:") :]

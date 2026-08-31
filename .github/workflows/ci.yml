@@ -1166,14 +1166,18 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/topology_kernel_product/schema.py
+          src/scpn_quantum_control/topology_kernel_product/synthetic.py
           tools/topology_kernel_schema_quality_gates.py
           tests/test_topology_kernel_schema_quality_gate.py
       - name: Ruff NumPy docstrings for topology-kernel schema quality cohort
         run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/topology_kernel_product/schema.py
+          src/scpn_quantum_control/topology_kernel_product/synthetic.py
           tests/test_topology_kernel_product_schema.py
+          tests/test_topology_kernel_product_synthetic.py
           tools/topology_kernel_schema_quality_gates.py
           tests/test_topology_kernel_schema_quality_gate.py
       - name: Run topology-kernel schema focused coverage
@@ -1184,6 +1188,7 @@ jobs:
           --branch
           -m pytest -q
           tests/test_topology_kernel_product_schema.py
+          tests/test_topology_kernel_product_synthetic.py
       - name: Enforce topology-kernel schema exact coverage
         run: >-
           python -m coverage report
@@ -1191,7 +1196,7 @@ jobs:
           --data-file=/tmp/scpn-qc-topology-kernel-schema-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/topology_kernel_product/schema.py
+          --include=*/topology_kernel_product/schema.py,*/topology_kernel_product/synthetic.py
 
   feedback-loop-quality:
     needs: lint

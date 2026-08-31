@@ -104,6 +104,7 @@ def build_teacher_aligned_dataset(
     Because labels and evaluation share the ring-kernel family, good accuracy
     is circular representability evidence rather than independent predictive
     validation.
+
     """
     if not isinstance(config, TopologyKernelConfig):
         raise ValueError("config must be a TopologyKernelConfig")
