@@ -38,6 +38,7 @@ class ScalingBaseline:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate the baseline label, bounds, metrics, and claim boundary."""
         if not self.label:
             raise ValueError("label must be non-empty")
         if self.max_qubits is not None and self.max_qubits < 1:
@@ -72,6 +73,7 @@ class ScalingProtocol:
     output_schema: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate the ordered scaling protocol and its falsification contract."""
         if not self.protocol_id:
             raise ValueError("protocol_id must be non-empty")
         if not self.sizes or any(size < 1 for size in self.sizes):

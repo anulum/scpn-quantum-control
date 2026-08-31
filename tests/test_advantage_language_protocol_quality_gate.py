@@ -15,19 +15,35 @@ from tools import preflight
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
     """Require strict typing and isolated NumPy docstrings."""
+    scaling_source = "src/scpn_quantum_control/benchmarks/advantage_protocol.py"
+    scaling_tests = {
+        "tests/test_advantage_protocol.py",
+        "tests/test_advantage_protocol_guards.py",
+    }
+    assert scaling_source in quality_gates.ADVANTAGE_LANGUAGE_PROTOCOL_QUALITY_RATCHET
+    assert scaling_tests.issubset(quality_gates.ADVANTAGE_LANGUAGE_PROTOCOL_QUALITY_RATCHET)
+    assert scaling_tests.issubset(quality_gates.ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_COHORT)
+    assert "*/benchmarks/advantage_protocol.py" in (
+        quality_gates.ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_INCLUDE
+    )
     gates = dict(quality_gates.build_static_quality_gates("/python"))
     assert (
         gates["mypy-strict-advantage-language-protocol-quality"][5:]
         == quality_gates.ADVANTAGE_LANGUAGE_PROTOCOL_QUALITY_RATCHET
     )
-    assert "D,D413" in gates["ruff D advantage-language-protocol quality ratchet"]
+    ruff = gates["ruff D advantage-language-protocol quality ratchet"]
+    assert "--preview" in ruff and "D,D413,D417,D420" in ruff
+    assert "lint.explicit-preview-rules = true" in ruff
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
     """Require branch execution and exact source-only coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
     assert "--branch" in gates["advantage-language-protocol focused coverage"]
-    assert "--fail-under=100" in gates["advantage-language-protocol exact coverage threshold"]
+    report = gates["advantage-language-protocol exact coverage threshold"]
+    assert "--fail-under=100" in report
+    assert f"--include={quality_gates.ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_INCLUDE}" in report
+    assert quality_gates.ADVANTAGE_LANGUAGE_PROTOCOL_COVERAGE_DATA_FILE.startswith("/tmp/")
 
 
 def test_preflight_uses_helper_defined_gates() -> None:

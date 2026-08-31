@@ -5869,24 +5869,33 @@ jobs:
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/advantage_language_protocol.py
+          src/scpn_quantum_control/benchmarks/advantage_protocol.py
           tests/test_advantage_language_protocol.py
+          tests/test_advantage_protocol.py
+          tests/test_advantage_protocol_guards.py
           tools/advantage_language_protocol_quality_gates.py
           tests/test_advantage_language_protocol_quality_gate.py
       - run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/advantage_language_protocol.py
+          src/scpn_quantum_control/benchmarks/advantage_protocol.py
           tests/test_advantage_language_protocol.py
+          tests/test_advantage_protocol.py
+          tests/test_advantage_protocol_guards.py
           tools/advantage_language_protocol_quality_gates.py
           tests/test_advantage_language_protocol_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
-          --data-file=.coverage.advantage-language-protocol-quality --branch
+          --data-file=/tmp/scpn-qc-advantage-language-protocol-quality.coverage --branch
           -m pytest -q tests/test_advantage_language_protocol.py
+          tests/test_advantage_protocol.py tests/test_advantage_protocol_guards.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
-          --data-file=.coverage.advantage-language-protocol-quality
-          --precision=2 --fail-under=100 --include=*/advantage_language_protocol.py
+          --data-file=/tmp/scpn-qc-advantage-language-protocol-quality.coverage
+          --precision=2 --fail-under=100
+          --include=*/advantage_language_protocol.py,*/benchmarks/advantage_protocol.py
 
   metamorphic-ad-verification-quality:
     needs: lint

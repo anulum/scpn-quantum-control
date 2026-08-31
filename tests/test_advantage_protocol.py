@@ -19,6 +19,7 @@ from scpn_quantum_control.benchmarks.advantage_protocol import (
 
 
 def test_default_s2_scaling_protocol_contains_required_baselines_and_boundaries() -> None:
+    """Keep required S2 baselines and no-advantage boundaries explicit."""
     protocol = default_s2_scaling_protocol()
     data = protocol.to_dict()
 
@@ -32,6 +33,7 @@ def test_default_s2_scaling_protocol_contains_required_baselines_and_boundaries(
 
 
 def test_scaling_baseline_rejects_empty_metrics() -> None:
+    """Reject a scaling baseline without declared metrics."""
     with pytest.raises(ValueError, match="metrics"):
         ScalingBaseline(
             kind="classical_ode",
@@ -44,6 +46,7 @@ def test_scaling_baseline_rejects_empty_metrics() -> None:
 
 
 def test_validate_scaling_rows_accepts_required_ok_or_skipped_rows() -> None:
+    """Accept complete required rows with measured or explained-skip status."""
     protocol = default_s2_scaling_protocol()
     rows = [
         {key: None for key in protocol.output_schema["row_keys"]}
@@ -68,6 +71,7 @@ def test_validate_scaling_rows_accepts_required_ok_or_skipped_rows() -> None:
 
 
 def test_validate_scaling_rows_rejects_missing_baseline_and_unknown_status() -> None:
+    """Reject missing required baselines and unrecognised row statuses."""
     protocol = default_s2_scaling_protocol()
 
     validation = validate_scaling_rows(
@@ -105,6 +109,7 @@ def _complete_row(protocol_id: str, n_qubits: int, baseline: str) -> dict:
 
 
 def test_validate_scaling_rows_requires_each_required_baseline_per_size() -> None:
+    """Require every mandatory baseline at each preregistered problem size."""
     protocol = default_s2_scaling_protocol()
     rows = [
         _complete_row(protocol.protocol_id, 4, baseline)
@@ -125,6 +130,7 @@ def test_validate_scaling_rows_requires_each_required_baseline_per_size() -> Non
 
 
 def test_validate_scaling_rows_rejects_unbounded_ok_and_unexplained_skip() -> None:
+    """Reject measurements beyond baseline bounds and unexplained skips."""
     protocol = default_s2_scaling_protocol()
     rows = [
         _complete_row(protocol.protocol_id, 4, baseline)
@@ -148,6 +154,7 @@ def test_validate_scaling_rows_rejects_unbounded_ok_and_unexplained_skip() -> No
 
 
 def test_validate_scaling_rows_rejects_duplicate_rows_for_same_size_baseline() -> None:
+    """Reject duplicate baseline rows at one problem size."""
     protocol = default_s2_scaling_protocol()
     rows = [
         _complete_row(protocol.protocol_id, 4, baseline)
@@ -165,6 +172,7 @@ def test_validate_scaling_rows_rejects_duplicate_rows_for_same_size_baseline() -
 
 
 def test_validate_scaling_rows_rejects_malformed_provenance_payloads() -> None:
+    """Reject rows with malformed command, machine, dependency, or note custody."""
     protocol = default_s2_scaling_protocol()
     rows = [
         _complete_row(protocol.protocol_id, 4, baseline)
