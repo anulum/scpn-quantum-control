@@ -162,6 +162,7 @@ def certify_surrogate_fidelity(
     -------
     SurrogateFidelityCertificate
         Digest-bound held-out metrics and pass/fail decision.
+
     """
     x_validation, y_exact = _validated_validation_data(model, validation_inputs, exact_targets)
     predictions = model.predict(x_validation)

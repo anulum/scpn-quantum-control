@@ -25,6 +25,7 @@ def test_static_gate_is_strict_and_completely_documented() -> None:
         == quality_gates.QRC_BASELINE_DOCSTRING_RATCHET
     )
     assert "--preview" in ruff and "D,D413,D417,D420" in ruff
+    assert "lint.explicit-preview-rules = true" in ruff
 
 
 def test_coverage_gate_is_isolated_connected_and_exact() -> None:
@@ -43,6 +44,7 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     assert "applications/quantum_reservoir.py" in include
     assert "surrogates/models.py" in include
     assert "surrogates/train.py" in include
+    assert "surrogates/fidelity.py" in include
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -73,4 +75,6 @@ def test_ci_runs_and_aggregates_qrc_baseline_gate() -> None:
     assert "surrogates/train.py" in block
     assert "tests/test_surrogate_models.py" in block
     assert "tests/test_surrogate_train.py" in block
+    assert "src/scpn_quantum_control/surrogates/fidelity.py" in block
+    assert "tests/test_surrogate_fidelity.py" in block
     assert "qrc-baseline-quality" in workflow[workflow.index("  ci-gate:") :]
