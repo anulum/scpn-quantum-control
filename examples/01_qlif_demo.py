@@ -11,6 +11,7 @@ from scpn_quantum_control.qsnn import QuantumLIFNeuron
 
 
 def main():
+    """Compare quantum LIF firing rates across a fixed current sweep."""
     neuron = QuantumLIFNeuron(v_rest=0.0, v_threshold=1.0, tau_mem=10.0, dt=1.0, n_shots=100)
 
     currents = [0.05, 0.1, 0.15, 0.2, 0.3]

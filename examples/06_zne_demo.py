@@ -24,6 +24,7 @@ from scpn_quantum_control.mitigation.zne import gate_fold_circuit, zne_extrapola
 
 
 def main():
+    """Estimate a zero-noise order parameter from folded noisy circuits."""
     n = 4
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]

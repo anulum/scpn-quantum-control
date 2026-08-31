@@ -13,6 +13,7 @@ from scpn_quantum_control.control import QAOA_MPC
 
 
 def main():
+    """Optimise a four-step binary coil-control schedule with QAOA-MPC."""
     B = np.eye(2)
     target = np.array([0.8, 0.6])
     horizon = 4

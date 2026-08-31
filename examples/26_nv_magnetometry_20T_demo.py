@@ -26,6 +26,7 @@ from scpn_quantum_control.sensing.nv_magnetometry_20T import (
 
 
 def main() -> None:
+    """Recover a high magnetic field from a simulated noisy ODMR spectrum."""
     nv = NVCenter()
     print(f"DC sensitivity = {cw_odmr_dc_sensitivity_t_per_sqrt_hz(nv) * 1e12:.1f} pT/sqrt(Hz)")
 

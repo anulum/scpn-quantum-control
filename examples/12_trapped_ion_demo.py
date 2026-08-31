@@ -19,6 +19,7 @@ from scpn_quantum_control.hardware.trapped_ion import (
 
 
 def main() -> None:
+    """Exercise trapped-ion noise and all-to-all transpilation on a simulator."""
     K = build_knm_paper27(L=4)
     solver = QuantumKuramotoSolver(4, K, OMEGA_N_16[:4])
     qc = solver.evolve(time=0.3, trotter_steps=2)

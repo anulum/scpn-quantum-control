@@ -15,6 +15,7 @@ from scpn_quantum_control.benchmarks.quantum_advantage import run_scaling_benchm
 
 
 def main() -> None:
+    """Report classical and projected quantum scaling across system sizes."""
     print("Quantum Advantage Scaling Demo")
     print("=" * 50)
 

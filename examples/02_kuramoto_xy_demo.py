@@ -12,6 +12,7 @@ from scpn_quantum_control.phase import QuantumKuramotoSolver
 
 
 def main():
+    """Simulate four coupled oscillators through the XY Hamiltonian mapping."""
     n = 4
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]

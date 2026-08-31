@@ -22,6 +22,7 @@ from scpn_quantum_control.analysis import crosscheck_qfi_geometric
 
 
 def main() -> None:
+    """Cross-check spectral QFI against the quantum geometric tensor route."""
     print("QGT/QFI cross-check demo")
     print("=" * 50)
 

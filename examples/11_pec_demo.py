@@ -16,6 +16,7 @@ from scpn_quantum_control.mitigation.pec import pec_sample
 
 
 def main() -> None:
+    """Mitigate a noisy Bell-state observable with PEC sampling."""
     K = build_knm_paper27(L=2)
     solver = QuantumKuramotoSolver(2, K, OMEGA_N_16[:2])
     qc = solver.evolve(time=0.3, trotter_steps=2)

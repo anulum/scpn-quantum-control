@@ -24,6 +24,7 @@ from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
 
 
 def main() -> None:
+    """Reproduce and classify the local differentiable benchmark evidence."""
     timing_rows = tuple(row.to_dict() for row in run_differentiable_external_comparison_suite())
     failure_classes = sorted(
         {

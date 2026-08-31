@@ -17,6 +17,7 @@ from scpn_quantum_control.control.q_disruption_iter import (
 
 
 def main() -> None:
+    """Train and evaluate the synthetic ITER disruption classifier."""
     spec = ITERFeatureSpec()
     print("ITER Disruption Classifier Demo")
     print("=" * 50)

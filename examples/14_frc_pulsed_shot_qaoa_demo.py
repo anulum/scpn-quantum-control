@@ -28,6 +28,7 @@ from scpn_quantum_control.control.qaoa_pulsed_cost import (
 
 
 def main() -> None:
+    """Compare QAOA and classical FRC capacitor-bank firing schedules."""
     target_b_profile = np.linspace(0.5, 4.0, 8)  # desired external field ramp [T]
     available_energy = 1.0e6  # J
     objective = FRCQAOAObjective(

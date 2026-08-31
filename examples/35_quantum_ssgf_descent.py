@@ -18,6 +18,7 @@ from scpn_quantum_control.ssgf.quantum_outer_cycle import quantum_outer_cycle
 
 
 def main() -> None:
+    """Optimise the synchronisation cost with variational geometry descent."""
     print("Quantum SSGF descent demo")
     print("=" * 50)
 

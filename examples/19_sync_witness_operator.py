@@ -22,6 +22,7 @@ from scpn_quantum_control.hardware.fast_classical import fast_sparse_evolution
 
 
 def main():
+    """Measure the synchronization witness across a coupling sweep."""
     n = 4
     K_topo = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]

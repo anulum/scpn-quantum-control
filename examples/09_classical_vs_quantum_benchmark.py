@@ -110,6 +110,7 @@ def _write_artifact(path: Path) -> None:
 
 
 def main() -> None:
+    """Run classical and statevector Kuramoto comparisons and report timings."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--artifact",

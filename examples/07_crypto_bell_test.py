@@ -25,6 +25,7 @@ from scpn_quantum_control.phase.phase_vqe import PhaseVQE
 
 
 def main():
+    """Evaluate a Bell inequality on the coupling-Hamiltonian ground state."""
     n = 4
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]

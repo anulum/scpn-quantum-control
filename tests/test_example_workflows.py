@@ -8,10 +8,12 @@
 """Static contracts for example workflow scripts.
 
 Examples are intentionally not executed here because several are
-demonstrations with optimisation loops or optional dependencies.  This
-test constrains the workflow boundary that matters for import safety and
-documentation freshness: scripts must parse, expose ``main()``, protect
-execution behind a main guard, and be listed in the examples README.
+demonstrations with optimisation loops or optional dependencies. This test
+constrains the workflow boundary that matters for import safety and
+documentation freshness: scripts must parse, document their public functions,
+expose ``main()``, protect execution behind a main guard, and be listed in the
+examples README. The gate also prevents CI, preflight, or Ruff configuration
+from silently dropping the examples owner.
 """
 
 from __future__ import annotations
@@ -22,6 +24,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "examples"
 README = EXAMPLES / "README.md"
+PYPROJECT = ROOT / "pyproject.toml"
+PREFLIGHT = ROOT / "tools" / "preflight.py"
+STATIC_WORKFLOW = ROOT / ".github" / "workflows" / "ci-static-analysis.yml"
 EXPECTED_EXAMPLE_SCRIPT_COUNT = 36
 
 
@@ -51,13 +56,37 @@ def _has_main_guard(tree: ast.Module) -> bool:
 
 
 def test_all_example_scripts_are_documented_and_import_safe() -> None:
+    """Require every numbered example to expose a documented guarded entry point."""
     scripts = _example_scripts()
     readme = README.read_text(encoding="utf-8")
 
     assert len(scripts) == EXPECTED_EXAMPLE_SCRIPT_COUNT
     for script in scripts:
         tree = ast.parse(script.read_text(encoding="utf-8"), filename=str(script))
-        public_functions = {node.name for node in tree.body if isinstance(node, ast.FunctionDef)}
+        public_nodes = {
+            node.name: node
+            for node in tree.body
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and not node.name.startswith("_")
+        }
+        public_functions = set(public_nodes)
         assert "main" in public_functions, f"{script.name} must expose main()"
+        for function_name, function in public_nodes.items():
+            assert ast.get_docstring(function), (
+                f"{script.name}:{function_name} must have a native docstring"
+            )
         assert _has_main_guard(tree), f"{script.name} must guard example execution"
         assert script.name in readme, f"{script.name} must be listed in examples/README.md"
+
+
+def test_examples_remain_in_static_documentation_ownership() -> None:
+    """Pin examples into configured Ruff, preflight, and hosted-CI ownership."""
+    pyproject = PYPROJECT.read_text(encoding="utf-8")
+    preflight = PREFLIGHT.read_text(encoding="utf-8")
+    workflow = STATIC_WORKFLOW.read_text(encoding="utf-8")
+
+    assert '"examples/**" = ["D"]' not in pyproject
+    assert '"ruff", "check", "src/", "tests/", "examples/"' in preflight
+    assert '"format", "--check", "src/", "tests/", "examples/"' in preflight
+    assert "ruff check src/ tests/ examples/" in workflow
+    assert "ruff format --check src/ tests/ examples/" in workflow

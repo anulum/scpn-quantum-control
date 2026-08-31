@@ -16,6 +16,7 @@ from scpn_quantum_control.qsnn.training import QSNNTrainer
 
 
 def main() -> None:
+    """Train a quantum dense layer with parameter-shift gradients."""
     print("QSNN Training Demo")
     print("=" * 50)
 

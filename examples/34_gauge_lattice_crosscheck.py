@@ -21,6 +21,7 @@ from scpn_quantum_control.gauge import crosscheck_confinement_on_lattice
 
 
 def main() -> None:
+    """Compare quantum Wilson loops with classical U(1) lattice estimates."""
     print("Gauge/lattice confinement cross-check demo")
     print("=" * 50)
 

@@ -23,6 +23,7 @@ from scpn_quantum_control.phase import (
 
 
 def main() -> None:
+    """Differentiate a phase-control objective through the public API."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("ry", (0,), 0),),

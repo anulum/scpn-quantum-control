@@ -56,7 +56,6 @@ class WorkflowSummary:
 
     def to_json_dict(self) -> dict[str, object]:
         """Return a JSON-stable representation of the workflow summary."""
-
         return asdict(self)
 
 
@@ -67,7 +66,6 @@ def build_problem() -> tuple[FloatArray, FloatArray, FloatArray]:
     Frequencies are centred near zero so a short local run can show both
     phase-coherence diagnostics and the effect of the coupling-design pass.
     """
-
     theta0 = np.array([0.0, 0.28, 0.62, 1.05, 1.52, 2.05], dtype=np.float64)
     omega = np.array([-0.24, -0.10, -0.03, 0.05, 0.14, 0.22], dtype=np.float64)
     coupling = np.array(
@@ -86,7 +84,6 @@ def build_problem() -> tuple[FloatArray, FloatArray, FloatArray]:
 
 def _mean_pairwise_coupling(coupling: FloatArray) -> float:
     """Return the mean off-diagonal coupling strength."""
-
     count = coupling.shape[0]
     off_diagonal = coupling[~np.eye(count, dtype=np.bool_)]
     return float(np.mean(off_diagonal))
@@ -94,13 +91,11 @@ def _mean_pairwise_coupling(coupling: FloatArray) -> float:
 
 def _rounded(values: NDArray[np.float64]) -> tuple[float, ...]:
     """Return rounded floats for stable JSON output."""
-
     return tuple(float(np.round(value, 12)) for value in values)
 
 
 def run_workflow() -> WorkflowSummary:
     """Run the handbook workflow and return deterministic diagnostics."""
-
     theta0, omega, coupling = build_problem()
     trajectory = kuramoto.kuramoto_rk4_trajectory(theta0, omega, coupling, DT, TRAJECTORY_STEPS)
     final_theta = trajectory[-1]
@@ -152,7 +147,6 @@ def run_workflow() -> WorkflowSummary:
 
 def main() -> None:
     """Print the worked workflow summary as stable JSON."""
-
     print(json.dumps(run_workflow().to_json_dict(), indent=2, sort_keys=True))
 
 

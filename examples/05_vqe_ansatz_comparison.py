@@ -16,6 +16,7 @@ from scpn_quantum_control.phase.ansatz_bench import run_ansatz_benchmark
 
 
 def main():
+    """Compare three VQE ansatz families on a Kuramoto Hamiltonian."""
     n = 4
     exact = classical_exact_diag(n)
 

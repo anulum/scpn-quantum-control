@@ -35,6 +35,7 @@ def _h1_cycles(backend: NetworkCycleBackend, weights: NDArray[np.float64]) -> in
 
 
 def main() -> None:
+    """Compare free and topology-controlled recurrent QSNN coupling."""
     print("Topology-controlled QSNN demo")
     print("=" * 50)
 

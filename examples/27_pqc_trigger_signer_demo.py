@@ -20,6 +20,7 @@ from scpn_quantum_control.crypto.pqc_trigger import PqcTriggerSigner, _canonical
 
 
 def main() -> None:
+    """Sign and verify a capacitor-bank trigger with ML-DSA-65."""
     signer = PqcTriggerSigner()
     pk, sk = signer.keygen()
     print(f"public key  : {len(pk.key_bytes)} bytes ({pk.algorithm})")

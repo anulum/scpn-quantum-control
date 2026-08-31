@@ -20,6 +20,7 @@ from scpn_quantum_control.qsnn import (
 
 
 def main() -> None:
+    """Drive the neuromorphic bridge with a deterministic spike stream."""
     bridge = QuantumNeuromorphicBridge(
         n_inputs=2,
         n_neurons=3,

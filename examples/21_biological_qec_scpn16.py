@@ -26,6 +26,7 @@ from scpn_quantum_control.qec.biological_surface_code import (
 
 
 def main():
+    """Demonstrate topological error correction on the SCPN layer graph."""
     print("=== SCPN 16-Layer Biological Surface Code ===\n")
 
     # 1. Build the physical SCPN coupling graph (N=16)

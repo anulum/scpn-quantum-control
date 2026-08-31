@@ -45,6 +45,7 @@ def _simulate_measurement_counts(psi: np.ndarray, n: int, shots: int = 1000) -> 
 
 
 def main():
+    """Track persistent H1 signatures across a Kuramoto coupling sweep."""
     if not _RIPSER_AVAILABLE:
         print("Ripser not available. Please run: pip install ripser")
         return

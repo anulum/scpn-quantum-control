@@ -13,6 +13,7 @@ from scpn_quantum_control.control import QuantumPetriNet
 
 
 def main():
+    """Evolve tokens through the three-place quantum Petri-net example."""
     W_in = np.array(
         [
             [0.8, 0.0, 0.0],

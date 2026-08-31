@@ -19,6 +19,7 @@ from scpn_quantum_control.entropy.nist_sp800_22 import frequency_test, runs_test
 
 
 def main() -> None:
+    """Generate a QRNG stream and report its health-test results."""
     # Bell-pair entropy source with Von Neumann debiasing.
     qrng = QRNGStream("bell_pair", register_qubits=64, debias=True, seed=2026)
 

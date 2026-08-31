@@ -85,6 +85,7 @@ SMALL_SPEC = {
 
 
 def main():
+    """Report attractor, coherence, entanglement, and identity diagnostics."""
     print("=" * 60)
     print("IDENTITY CONTINUITY ANALYSIS")
     print("=" * 60)

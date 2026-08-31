@@ -24,6 +24,7 @@ from scpn_quantum_control.hardware.runner import HardwareRunner
 
 
 def main():
+    """Compare noisy Kuramoto evolution with and without decoupling pulses."""
     n = 4
     dt = 0.1
     K = build_knm_paper27(L=n)

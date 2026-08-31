@@ -24,6 +24,7 @@ from scpn_quantum_control.phase.pulse_shaping import build_hypergeometric_pulse
 
 
 def main() -> None:
+    """Generate an HLS pulse-player bundle from a control envelope."""
     pulse = build_hypergeometric_pulse(t_total=1.0, omega_0=1.0, alpha=1.0, beta=1.0, n_points=256)
 
     bundle = pulse_to_vivado_hls(

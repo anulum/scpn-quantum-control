@@ -24,6 +24,7 @@ from scpn_quantum_control.identity.binding_spec import (
 
 
 def snn_demo() -> None:
+    """Map a deterministic spike train through the SNN quantum bridge."""
     print("SNN Adapter Demo (pure numpy, no sc-neurocore)")
     print("-" * 50)
     rng = np.random.default_rng(42)
@@ -38,6 +39,7 @@ def snn_demo() -> None:
 
 
 def ssgf_demo() -> None:
+    """Round-trip an SSGF phase state through its quantum representation."""
     print("\nSSGF Adapter Demo (standalone functions)")
     print("-" * 50)
     W = np.array([[0, 0.3, 0.1], [0.3, 0, 0.2], [0.1, 0.2, 0]])
@@ -58,6 +60,7 @@ def ssgf_demo() -> None:
 
 
 def orchestrator_demo() -> None:
+    """Round-trip oscillator phases through the orchestrator mapping."""
     print("\nOrchestrator Phase Mapping Demo")
     print("-" * 50)
     theta_18 = np.linspace(0, 2 * np.pi, 18, endpoint=False)
@@ -70,6 +73,7 @@ def orchestrator_demo() -> None:
 
 
 def main() -> None:
+    """Run the SNN, SSGF, and orchestrator bridge demonstrations."""
     print("Cross-Repo Bridge Demos")
     print("=" * 50)
     snn_demo()

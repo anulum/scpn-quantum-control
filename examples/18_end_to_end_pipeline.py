@@ -31,6 +31,7 @@ from scpn_quantum_control.phase.phase_vqe import PhaseVQE
 
 
 def main() -> None:
+    """Run the Kuramoto simulation and mitigation comparison pipeline."""
     n = 4
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]

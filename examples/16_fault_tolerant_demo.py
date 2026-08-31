@@ -13,6 +13,7 @@ from scpn_quantum_control.qec.fault_tolerant import FaultTolerantUPDE
 
 
 def main() -> None:
+    """Demonstrate repetition-code syndrome extraction for UPDE evolution."""
     print("Fault-Tolerant UPDE Demo")
     print("=" * 50)
 
