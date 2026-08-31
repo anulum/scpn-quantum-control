@@ -17,9 +17,12 @@ RESEARCH_LANE_REGISTRY_QUALITY_RATCHET = [
     "src/scpn_quantum_control/analysis/rl_discovery_agent.py",
     "src/scpn_quantum_control/analysis/rl_pulse_optimizer.py",
     "src/scpn_quantum_control/analysis/rl_research_governance.py",
+    "src/scpn_quantum_control/analysis/witness_discovery.py",
     "tests/test_research_lane_registry.py",
     "tests/test_rl_research_governance.py",
     "tests/test_rl_discovery_agent_branches.py",
+    "tests/test_witness_discovery.py",
+    "tests/test_witness_discovery_engine_fallback.py",
     "scripts/run_research_lane_registry.py",
     "scripts/run_rl_research_governance_evidence.py",
     "tools/research_lane_registry_quality_gates.py",
@@ -31,6 +34,7 @@ RESEARCH_LANE_REGISTRY_COVERAGE_COHORT = [
     "tests/test_rl_research_governance.py",
     "tests/test_rl_discovery_agent_branches.py",
     "tests/test_witness_discovery.py",
+    "tests/test_witness_discovery_engine_fallback.py",
     "tests/test_frontier_interface_guards.py",
 ]
 """Tests that own exact research-lane registry coverage."""
@@ -38,7 +42,8 @@ RESEARCH_LANE_REGISTRY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-research-lane-registry
 """Isolated coverage database for research-lane registry diagnostics."""
 RESEARCH_LANE_REGISTRY_COVERAGE_INCLUDE = (
     "*/analysis/research_lane_registry.py,*/analysis/rl_discovery_agent.py,"
-    "*/analysis/rl_pulse_optimizer.py,*/analysis/rl_research_governance.py"
+    "*/analysis/rl_pulse_optimizer.py,*/analysis/rl_research_governance.py,"
+    "*/analysis/witness_discovery.py"
 )
 """Connected registry and governed RL sources owned by exact coverage."""
 

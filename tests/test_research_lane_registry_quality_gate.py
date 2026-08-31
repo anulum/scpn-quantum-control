@@ -15,6 +15,17 @@ from tools import research_lane_registry_quality_gates as quality_gates
 
 def test_static_gates_cover_typing_docs_and_evidence_drift() -> None:
     """Require strict typing, NumPy docstrings, and committed evidence parity."""
+    witness_source = "src/scpn_quantum_control/analysis/witness_discovery.py"
+    witness_test = "tests/test_witness_discovery.py"
+    witness_fallback_test = "tests/test_witness_discovery_engine_fallback.py"
+    assert witness_source in quality_gates.RESEARCH_LANE_REGISTRY_QUALITY_RATCHET
+    assert witness_test in quality_gates.RESEARCH_LANE_REGISTRY_QUALITY_RATCHET
+    assert witness_fallback_test in quality_gates.RESEARCH_LANE_REGISTRY_QUALITY_RATCHET
+    assert witness_test in quality_gates.RESEARCH_LANE_REGISTRY_COVERAGE_COHORT
+    assert witness_fallback_test in quality_gates.RESEARCH_LANE_REGISTRY_COVERAGE_COHORT
+    assert "*/analysis/witness_discovery.py" in (
+        quality_gates.RESEARCH_LANE_REGISTRY_COVERAGE_INCLUDE
+    )
     gates = dict(quality_gates.build_static_quality_gates("/python"))
     assert (
         gates["mypy-strict-research-lane-registry-quality"][5:]

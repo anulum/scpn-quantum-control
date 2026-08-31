@@ -69,6 +69,7 @@ def _small_spec(seed: int = 123) -> WitnessDiscoverySpec:
 
 
 def test_fixed_candidate_scoring_uses_witness_results_and_metadata() -> None:
+    """Score fixed candidates with both witnesses and serialisable metadata."""
     K_nm, omega, theta0 = _problem()
     candidates = [
         WitnessCandidate(0.1, 1.0, 0.0),
@@ -93,6 +94,7 @@ def test_fixed_candidate_scoring_uses_witness_results_and_metadata() -> None:
 
 
 def test_candidate_scoring_rejects_empty_candidate_batches() -> None:
+    """Reject candidate scoring when no candidate is supplied."""
     K_nm, omega, theta0 = _problem()
 
     with pytest.raises(ValueError, match="at least one candidate"):
@@ -100,6 +102,7 @@ def test_candidate_scoring_rejects_empty_candidate_batches() -> None:
 
 
 def test_single_oscillator_candidate_features_use_trivial_correlation() -> None:
+    """Use unit correlation for the single-oscillator feature boundary."""
     final_r, mean_corr, final_theta = _candidate_features_numpy(
         np.array([0.1], dtype=np.float64),
         np.array([0.2], dtype=np.float64),
@@ -115,6 +118,7 @@ def test_single_oscillator_candidate_features_use_trivial_correlation() -> None:
 
 
 def test_discovery_loop_is_deterministic_and_uses_bayesian_and_rl_sources() -> None:
+    """Replay seeded discovery across initial, Bayesian, and bandit proposals."""
     K_nm, omega, theta0 = _problem()
     spec = _small_spec(seed=77)
 
@@ -137,6 +141,7 @@ def test_discovery_loop_is_deterministic_and_uses_bayesian_and_rl_sources() -> N
 
 
 def test_discovery_metadata_is_json_safe_and_immutable() -> None:
+    """Freeze JSON-safe discovery metadata and reject invalid entries."""
     spec = WitnessDiscoverySpec(metadata={"dataset": "synthetic", "seed": 12})
 
     assert spec.metadata["dataset"] == "synthetic"
@@ -149,6 +154,7 @@ def test_discovery_metadata_is_json_safe_and_immutable() -> None:
 
 
 def test_preferred_rust_feature_path_matches_numpy_when_available() -> None:
+    """Match the optional native candidate features against the NumPy path."""
     K_nm, omega, theta0 = _problem()
     spec = _small_spec()
     candidates = np.array(
@@ -191,6 +197,7 @@ def test_preferred_rust_feature_path_matches_numpy_when_available() -> None:
 
 
 def test_preferred_rust_feature_path_records_backend_provenance(monkeypatch) -> None:
+    """Record native-backend provenance when the feature export is available."""
     K_nm, omega, theta0 = _problem()
     spec = _small_spec()
 
@@ -221,6 +228,7 @@ def test_preferred_rust_feature_path_records_backend_provenance(monkeypatch) -> 
 
 
 def test_bayesian_surrogate_prefers_near_high_scoring_region() -> None:
+    """Prefer a candidate near the highest-scoring surrogate observation."""
     X_train = np.array(
         [
             [0.0, 1.0, 0.0],
@@ -245,6 +253,7 @@ def test_bayesian_surrogate_prefers_near_high_scoring_region() -> None:
 
 
 def test_bayesian_surrogate_and_novelty_have_prior_for_single_training_point() -> None:
+    """Apply the single-observation surrogate prior and novelty distance."""
     X_train = np.array([[1.0, 1.0, 0.0]], dtype=np.float64)
     y_train = np.array([0.7], dtype=np.float64)
     X_pool = np.array([[1.0, 1.0, 0.0], [2.0, 1.0, 0.0]], dtype=np.float64)
@@ -261,6 +270,7 @@ def test_bayesian_surrogate_and_novelty_have_prior_for_single_training_point() -
 def test_bayesian_surrogate_falls_back_to_pseudoinverse_for_singular_solver(
     monkeypatch,
 ) -> None:
+    """Fall back to a pseudoinverse when the surrogate solve is singular."""
     X_train = np.array(
         [
             [0.0, 1.0, 0.0],
@@ -283,6 +293,7 @@ def test_bayesian_surrogate_falls_back_to_pseudoinverse_for_singular_solver(
 
 
 def test_rl_bandit_zero_count_and_duplicate_filtering_are_stable() -> None:
+    """Keep empty bandit requests and duplicate filtering deterministic."""
     spec = _small_spec(seed=17)
     best = WitnessCandidate(1.0, 1.0, 0.0)
     empty = _rl_bandit_candidates(spec, best, 0, np.random.default_rng(17))
@@ -315,6 +326,7 @@ def test_rl_bandit_zero_count_and_duplicate_filtering_are_stable() -> None:
 
 
 def test_nearest_distance_empty_training_set_returns_unit_novelty() -> None:
+    """Return unit novelty when no training candidates exist."""
     novelty = _nearest_distance(
         np.zeros((0, 3), dtype=np.float64),
         np.array([[0.1, 1.0, 0.0], [0.2, 1.1, 0.1]], dtype=np.float64),
@@ -324,6 +336,7 @@ def test_nearest_distance_empty_training_set_returns_unit_novelty() -> None:
 
 
 def test_correlation_witness_encodes_threshold_crossing_direction() -> None:
+    """Encode correlation-threshold crossings with the expected sign."""
     unsynchronised = _correlation_witness_from_mean(0.2, n_qubits=4, threshold=0.5)
     synchronised = _correlation_witness_from_mean(0.8, n_qubits=4, threshold=0.5)
 
@@ -334,6 +347,7 @@ def test_correlation_witness_encodes_threshold_crossing_direction() -> None:
 
 
 def test_discovery_result_serialises_to_json() -> None:
+    """Serialise a complete discovery result to JSON-safe values."""
     K_nm, omega, theta0 = _problem()
     result = discover_kuramoto_witnesses(
         K_nm,
@@ -351,6 +365,7 @@ def test_discovery_result_serialises_to_json() -> None:
 
 
 def test_rl_discovery_agent_requires_real_problem_and_runs_when_configured() -> None:
+    """Require a real problem before the governed discovery agent can run."""
     agent = RLDiscoveryAgent(n_episodes=1)
     with pytest.raises(NotImplementedError, match="requires K_nm and omega"):
         asyncio.run(agent.run_discovery_loop())
@@ -389,11 +404,13 @@ def test_rl_discovery_agent_requires_real_problem_and_runs_when_configured() -> 
     ],
 )
 def test_rl_discovery_agent_rejects_unwired_compatibility_parameters(kwargs, match) -> None:
+    """Reject compatibility parameters without executable wiring."""
     with pytest.raises(ValueError, match=match):
         RLDiscoveryAgent(**kwargs)
 
 
 def test_invalid_inputs_rejected_before_search() -> None:
+    """Reject invalid candidate and search inputs before proposal generation."""
     K_nm, omega, theta0 = _problem()
 
     result = discover_kuramoto_witnesses(K_nm, omega, spec=_small_spec(), prefer_rust=False)
@@ -422,6 +439,7 @@ def test_invalid_inputs_rejected_before_search() -> None:
     ],
 )
 def test_problem_validation_rejects_non_physical_inputs(kwargs, match) -> None:
+    """Reject non-square, non-finite, or shape-inconsistent problems."""
     theta0 = kwargs.pop("theta0", None)
 
     with pytest.raises(ValueError, match=match):
@@ -441,5 +459,6 @@ def test_problem_validation_rejects_non_physical_inputs(kwargs, match) -> None:
     ],
 )
 def test_discovery_spec_rejects_invalid_search_contract(kwargs, match) -> None:
+    """Reject invalid search horizons, bounds, weights, and probabilities."""
     with pytest.raises(ValueError, match=match):
         WitnessDiscoverySpec(**kwargs)

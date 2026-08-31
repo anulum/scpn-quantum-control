@@ -42,6 +42,7 @@ class WitnessCandidate:
     phase_bias: float
 
     def __post_init__(self) -> None:
+        """Validate non-negative scales and a finite phase bias."""
         _require_non_negative(self.coupling_scale, "coupling_scale")
         _require_non_negative(self.omega_scale, "omega_scale")
         _require_finite(self.phase_bias, "phase_bias")
@@ -88,6 +89,7 @@ class WitnessDiscoverySpec:
     metadata: Mapping[str, JsonScalar] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate the bounded search configuration and freeze its metadata."""
         _require_positive(self.dt, "dt")
         _require_positive_int(self.n_steps, "n_steps")
         _require_positive_int(self.n_initial, "n_initial")
