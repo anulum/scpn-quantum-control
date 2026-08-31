@@ -72,6 +72,7 @@ class ExecutableCompilerADKernel:
     )
 
     def __post_init__(self) -> None:
+        """Validate executable kernels and their verified provenance."""
         if not self.rule_name:
             raise ValueError("rule_name must be non-empty")
         if self.backend not in {"mlir_runtime", "native_llvm_jit"}:

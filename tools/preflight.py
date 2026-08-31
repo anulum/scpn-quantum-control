@@ -821,6 +821,7 @@ PHASE_QNODE_VECTOR_QUALITY_RATCHET = [
 MLIR_LEAF_QUALITY_RATCHET = [
     "src/scpn_quantum_control/compiler/mlir_enzyme_audit.py",
     "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
+    "src/scpn_quantum_control/compiler/mlir_executable_kernel.py",
     "src/scpn_quantum_control/compiler/mlir_phase_qnode_runtime.py",
     "src/scpn_quantum_control/compiler/mlir_transform_plan_assembly.py",
     "src/scpn_quantum_control/compiler/mlir_workload_compilation.py",
@@ -828,6 +829,7 @@ MLIR_LEAF_QUALITY_RATCHET = [
     "tests/test_mlir_enzyme_audit.py",
     "tests/test_mlir_enzyme_evidence_docstrings.py",
     "tests/test_mlir_enzyme_evidence_contracts.py",
+    "tests/test_mlir_executable_kernel.py",
     "tests/test_mlir_toolchain_probe_hardening.py",
     "tests/test_mlir_phase_qnode_runtime.py",
     "tests/test_phase_qnode_compiler_lowering.py",
@@ -846,6 +848,7 @@ MLIR_LEAF_QUALITY_RATCHET = [
 MLIR_LEAF_COVERAGE_COHORT = [
     "tests/test_mlir_enzyme_audit.py",
     "tests/test_mlir_enzyme_evidence_contracts.py",
+    "tests/test_mlir_executable_kernel.py",
     "tests/test_mlir_toolchain_probe_hardening.py",
     "tests/test_mlir_phase_qnode_runtime.py",
     "tests/test_phase_qnode_compiler_lowering.py",
@@ -942,8 +945,9 @@ WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT = [
 MLIR_LEAF_COVERAGE_DATA_FILE = ".coverage.mlir-leaf-quality"
 MLIR_LEAF_COVERAGE_SOURCE = "src/scpn_quantum_control/compiler"
 MLIR_LEAF_COVERAGE_INCLUDE = (
-    "*/mlir_enzyme_audit.py,*/mlir_enzyme_evidence.py,*/mlir_phase_qnode_runtime.py,"
-    "*/mlir_transform_plan_assembly.py,*/mlir_workload_compilation.py"
+    "*/mlir_enzyme_audit.py,*/mlir_enzyme_evidence.py,*/mlir_executable_kernel.py,"
+    "*/mlir_phase_qnode_runtime.py,*/mlir_transform_plan_assembly.py,"
+    "*/mlir_workload_compilation.py"
 )
 PHASE_QNODE_AFFINITY_COVERAGE_DATA_FILE = ".coverage.phase-qnode-affinity"
 PHASE_QNODE_VECTOR_COVERAGE_DATA_FILE = ".coverage.phase-qnode-vector"
