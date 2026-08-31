@@ -34,6 +34,7 @@ class GradientFailurePolicy:
     require_trainable: bool = True
 
     def __post_init__(self) -> None:
+        """Validate and normalize stochastic-gradient failure thresholds."""
         max_standard_error = (
             None
             if self.max_standard_error is None
@@ -78,6 +79,7 @@ class StochasticGradientConfidenceInterval:
     failure_reasons: tuple[str, ...]
 
     def __post_init__(self) -> None:
+        """Validate and normalize confidence-interval metadata."""
         lower = _as_parameter_array(self.lower)
         upper = _as_parameter_array(self.upper)
         z_value = _as_real_scalar("confidence interval confidence_z", self.confidence_z)

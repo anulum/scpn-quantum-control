@@ -16,9 +16,13 @@ DIFFERENTIABLE_PARAMETER_SHIFT_SOURCE = (
     "src/scpn_quantum_control/differentiable_parameter_shift.py"
 )
 PHASE_PARAMETER_SHIFT_SOURCE = "src/scpn_quantum_control/phase/param_shift.py"
+DIFFERENTIABLE_STOCHASTIC_POLICY_SOURCE = (
+    "src/scpn_quantum_control/differentiable_stochastic_policy.py"
+)
 DIFFERENTIABLE_PARAMETER_SHIFT_SOURCES = [
     DIFFERENTIABLE_PARAMETER_SHIFT_SOURCE,
     PHASE_PARAMETER_SHIFT_SOURCE,
+    DIFFERENTIABLE_STOCHASTIC_POLICY_SOURCE,
 ]
 DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_COHORT = [
     "tests/test_differentiable_parameter_shift.py",
@@ -32,6 +36,7 @@ DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_COHORT = [
 DIFFERENTIABLE_PARAMETER_SHIFT_TYPING_RATCHET = [
     *DIFFERENTIABLE_PARAMETER_SHIFT_SOURCES,
     "tests/test_phase_param_shift.py",
+    "tests/test_stochastic_gradient_failure_policy.py",
     "tools/differentiable_parameter_shift_quality_gates.py",
     "tests/test_differentiable_parameter_shift_quality_gate.py",
 ]
@@ -39,11 +44,16 @@ DIFFERENTIABLE_PARAMETER_SHIFT_DOCSTRING_RATCHET = [
     *DIFFERENTIABLE_PARAMETER_SHIFT_SOURCES,
     "tests/test_differentiable_parameter_shift.py",
     "tests/test_phase_param_shift.py",
+    "tests/test_stochastic_gradient_failure_policy.py",
     "tools/differentiable_parameter_shift_quality_gates.py",
     "tests/test_differentiable_parameter_shift_quality_gate.py",
 ]
 DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_DATA_FILE = (
     "/tmp/scpn-qc-differentiable-parameter-shift-quality.coverage"  # nosec B108
+)
+DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_INCLUDE = (
+    "--include=*/differentiable_parameter_shift.py,*/phase/param_shift.py,"
+    "*/differentiable_stochastic_policy.py"
 )
 
 
@@ -69,8 +79,11 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *DIFFERENTIABLE_PARAMETER_SHIFT_DOCSTRING_RATCHET,
@@ -109,7 +122,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/differentiable_parameter_shift.py,*/phase/param_shift.py",
+                DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_INCLUDE,
             ],
         ),
     ]
@@ -118,10 +131,12 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_COHORT",
     "DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_DATA_FILE",
+    "DIFFERENTIABLE_PARAMETER_SHIFT_COVERAGE_INCLUDE",
     "DIFFERENTIABLE_PARAMETER_SHIFT_DOCSTRING_RATCHET",
     "DIFFERENTIABLE_PARAMETER_SHIFT_SOURCE",
     "DIFFERENTIABLE_PARAMETER_SHIFT_SOURCES",
     "DIFFERENTIABLE_PARAMETER_SHIFT_TYPING_RATCHET",
+    "DIFFERENTIABLE_STOCHASTIC_POLICY_SOURCE",
     "PHASE_PARAMETER_SHIFT_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",

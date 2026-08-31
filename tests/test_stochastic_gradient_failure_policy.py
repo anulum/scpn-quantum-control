@@ -47,7 +47,6 @@ SAMPLE_PROVENANCE = {
 
 def test_stochastic_policy_direct_facade_and_root_exports_match() -> None:
     """The extracted policy module should preserve public import identities."""
-
     assert GradientFailurePolicy is DirectGradientFailurePolicy
     assert StochasticGradientConfidenceInterval is DirectStochasticGradientConfidenceInterval
     assert gradient_confidence_interval is direct_gradient_confidence_interval
@@ -65,6 +64,7 @@ def test_stochastic_policy_direct_facade_and_root_exports_match() -> None:
 
 
 def test_parameter_shift_uncertainty_reports_interval_and_passed_policy() -> None:
+    """Report a passing policy with parameter-shift uncertainty bounds."""
     result = parameter_shift_gradient_with_uncertainty(
         plus_values=[0.8, 0.1],
         minus_values=[0.2, -0.3],
@@ -91,6 +91,7 @@ def test_parameter_shift_uncertainty_reports_interval_and_passed_policy() -> Non
 
 
 def test_score_function_policy_fails_closed_on_uncertainty_threshold() -> None:
+    """Fail closed when score-function uncertainty exceeds policy."""
     result = score_function_gradient_estimate(
         [2.0, 0.0, 4.0],
         [[1.0, 2.0], [-1.0, 0.0], [0.0, 1.0]],
@@ -106,6 +107,7 @@ def test_score_function_policy_fails_closed_on_uncertainty_threshold() -> None:
 
 
 def test_gradient_confidence_interval_rejects_invalid_policy_contracts() -> None:
+    """Reject malformed confidence and failure-policy contracts."""
     with pytest.raises(ValueError, match="confidence_z"):
         gradient_confidence_interval([1.0], [0.1], confidence_z=0.0)
     with pytest.raises(ValueError, match="standard_error shape"):
@@ -128,7 +130,6 @@ def test_gradient_confidence_interval_rejects_invalid_policy_contracts() -> None
 
 def test_stochastic_confidence_interval_rejects_invalid_interval_metadata() -> None:
     """Interval records should fail closed on inconsistent policy metadata."""
-
     policy = GradientFailurePolicy(require_trainable=False)
     interval = StochasticGradientConfidenceInterval(
         lower=np.array([0.8]),
@@ -222,7 +223,6 @@ def test_stochastic_confidence_interval_rejects_invalid_interval_metadata() -> N
 
 def test_gradient_confidence_interval_reports_threshold_failures() -> None:
     """Both policy thresholds should produce auditable failure reasons."""
-
     default_interval = gradient_confidence_interval([1.0], [0.1])
     assert default_interval.status == "passed"
 
@@ -245,6 +245,7 @@ def test_gradient_confidence_interval_reports_threshold_failures() -> None:
 
 
 def test_failure_policy_exports_from_package_root() -> None:
+    """Expose the failure-policy contracts from the package root."""
     assert scpn.GradientFailurePolicy is GradientFailurePolicy
     assert scpn.StochasticGradientConfidenceInterval is StochasticGradientConfidenceInterval
     assert scpn.gradient_confidence_interval is gradient_confidence_interval

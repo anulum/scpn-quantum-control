@@ -170,17 +170,22 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/differentiable_parameter_shift.py
           src/scpn_quantum_control/phase/param_shift.py
+          src/scpn_quantum_control/differentiable_stochastic_policy.py
           tests/test_phase_param_shift.py
+          tests/test_stochastic_gradient_failure_policy.py
           tools/differentiable_parameter_shift_quality_gates.py
           tests/test_differentiable_parameter_shift_quality_gate.py
       - name: Ruff NumPy docstrings for differentiable parameter-shift quality cohort
         run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/differentiable_parameter_shift.py
           src/scpn_quantum_control/phase/param_shift.py
+          src/scpn_quantum_control/differentiable_stochastic_policy.py
           tests/test_differentiable_parameter_shift.py
           tests/test_phase_param_shift.py
+          tests/test_stochastic_gradient_failure_policy.py
           tools/differentiable_parameter_shift_quality_gates.py
           tests/test_differentiable_parameter_shift_quality_gate.py
       - name: Run differentiable parameter-shift focused coverage
@@ -204,7 +209,7 @@ jobs:
           --data-file=/tmp/scpn-qc-differentiable-parameter-shift-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/differentiable_parameter_shift.py,*/phase/param_shift.py
+          --include=*/differentiable_parameter_shift.py,*/phase/param_shift.py,*/differentiable_stochastic_policy.py
   varqite-quality:
     runs-on: ubuntu-latest
     env:
