@@ -7,6 +7,10 @@
 # SCPN Quantum Control — Tests for DLA-Protected Logical Subspaces
 """Tests for DLA-protected logical synchronisation memory."""
 
+from __future__ import annotations
+
+from typing import Any, cast
+
 import numpy as np
 import pytest
 
@@ -26,7 +30,8 @@ from scpn_quantum_control.qec.dla_protected_subspace import (
 )
 
 
-def test_certificate_matches_dla_parity_sector_dimensions():
+def test_certificate_matches_dla_parity_sector_dimensions() -> None:
+    """The certificate matches the analytic DLA parity-sector dimensions."""
     spec = DLAProtectedSubspaceSpec(n_logical=3, code_distance=3, target_parity=1)
     certificate = certify_dla_protected_subspace(spec)
 
@@ -39,7 +44,8 @@ def test_certificate_matches_dla_parity_sector_dimensions():
     assert set(certificate.sync_basis_indices).issubset(certificate.protected_basis_indices)
 
 
-def test_protected_memory_mask_selects_fixed_parity_repetition_words():
+def test_protected_memory_mask_selects_fixed_parity_repetition_words() -> None:
+    """The memory mask selects only fixed-parity repetition words."""
     spec = DLAProtectedSubspaceSpec(n_logical=2, code_distance=3, target_parity=0)
     mask = protected_memory_mask(spec)
     fallback = _protected_memory_mask_numpy(spec)
@@ -52,7 +58,8 @@ def test_protected_memory_mask_selects_fixed_parity_repetition_words():
     assert not mask[0b010_111]
 
 
-def test_sync_mask_can_be_stricter_than_protected_sector():
+def test_sync_mask_can_be_stricter_than_protected_sector() -> None:
+    """The synchronised mask may be stricter than the protected sector."""
     spec = DLAProtectedSubspaceSpec(n_logical=4, code_distance=1, target_parity=0)
     protected = protected_memory_mask(spec)
     sync = sync_memory_mask(spec)
@@ -64,7 +71,8 @@ def test_sync_mask_can_be_stricter_than_protected_sector():
     assert not sync[0b0011]
 
 
-def test_memory_prototype_prepares_only_valid_target_parity_words():
+def test_memory_prototype_prepares_only_valid_target_parity_words() -> None:
+    """The prototype prepares only target-parity logical words."""
     spec = DLAProtectedSubspaceSpec(n_logical=2, code_distance=3, target_parity=0)
     prototype = build_dla_protected_memory_prototype(spec, logical_word=(1, 1))
 
@@ -75,7 +83,8 @@ def test_memory_prototype_prepares_only_valid_target_parity_words():
         build_dla_protected_memory_prototype(spec, logical_word=(1, 0))
 
 
-def test_witness_passes_for_synchronised_protected_memory_state():
+def test_witness_passes_for_synchronised_protected_memory_state() -> None:
+    """A synchronised protected memory state passes every witness gate."""
     spec = DLAProtectedSubspaceSpec(n_logical=2, code_distance=3, target_parity=0)
     probabilities = np.zeros(spec.hilbert_dim, dtype=np.float64)
     probabilities[0b111_111] = 1.0
@@ -90,7 +99,8 @@ def test_witness_passes_for_synchronised_protected_memory_state():
     assert result.code_leakage == pytest.approx(0.0)
 
 
-def test_witness_reports_code_and_parity_failure_modes():
+def test_witness_reports_code_and_parity_failure_modes() -> None:
+    """The witness reports distinct code and parity leakage failures."""
     spec = DLAProtectedSubspaceSpec(n_logical=2, code_distance=3, target_parity=0)
     probabilities = np.zeros(spec.hilbert_dim, dtype=np.float64)
     probabilities[0b000_000] = 0.82
@@ -107,7 +117,8 @@ def test_witness_reports_code_and_parity_failure_modes():
     assert "parity_leakage_above_threshold" in result.failure_reasons
 
 
-def test_counts_witness_uses_reversed_qiskit_bit_order_for_block_layout():
+def test_counts_witness_uses_reversed_qiskit_bit_order_for_block_layout() -> None:
+    """Count evaluation respects Qiskit's reversed bit order."""
     spec = DLAProtectedSubspaceSpec(n_logical=2, code_distance=3, target_parity=0)
     result = DLAProtectedLogicalSyncWitness(spec)(
         counts={
@@ -129,14 +140,18 @@ def test_counts_witness_uses_reversed_qiskit_bit_order_for_block_layout():
         {"000000": -1, "111111": 2},
     ],
 )
-def test_counts_witness_rejects_non_integral_or_negative_shots(counts):
+def test_counts_witness_rejects_non_integral_or_negative_shots(
+    counts: dict[str, int | float | bool],
+) -> None:
+    """Non-integral, Boolean, and negative shot counts are rejected."""
     spec = DLAProtectedSubspaceSpec(n_logical=2, code_distance=3, target_parity=0)
 
     with pytest.raises(ValueError, match="counts"):
-        evaluate_dla_protected_memory(counts=counts, spec=spec)
+        evaluate_dla_protected_memory(counts=cast(Any, counts), spec=spec)
 
 
-def test_legacy_logical_sync_witness_returns_concrete_metrics():
+def test_legacy_logical_sync_witness_returns_concrete_metrics() -> None:
+    """The legacy witness adapter returns concrete protected metrics."""
     spec = DLAProtectedSubspaceSpec(n_logical=2, code_distance=3, target_parity=0)
     report = LogicalSyncWitness(spec)(
         counts={
@@ -150,7 +165,8 @@ def test_legacy_logical_sync_witness_returns_concrete_metrics():
     assert report["passes"] is False
 
 
-def test_numpy_metrics_match_expected_weights():
+def test_numpy_metrics_match_expected_weights() -> None:
+    """The NumPy reference returns the expected sector weights."""
     spec = DLAProtectedSubspaceSpec(n_logical=2, code_distance=3, target_parity=0)
     probabilities = np.zeros(spec.hilbert_dim, dtype=np.float64)
     probabilities[0b000_000] = 0.5
@@ -167,7 +183,8 @@ def test_numpy_metrics_match_expected_weights():
     assert total == pytest.approx(1.0)
 
 
-def test_spec_validation_rejects_invalid_dense_and_threshold_inputs():
+def test_spec_validation_rejects_invalid_dense_and_threshold_inputs() -> None:
+    """Specifications reject invalid geometry, thresholds, and dense size."""
     with pytest.raises(ValueError, match="odd"):
         DLAProtectedSubspaceSpec(n_logical=2, code_distance=2)
     with pytest.raises(ValueError, match="target_parity"):

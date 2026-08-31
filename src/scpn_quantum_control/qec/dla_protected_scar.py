@@ -47,6 +47,7 @@ class DLAProtectedScarSpec:
     max_parity_leakage: float = 1e-12
 
     def __post_init__(self) -> None:
+        """Validate the revival grid and all acceptance thresholds."""
         if self.revival_period <= 0.0 or not np.isfinite(self.revival_period):
             raise ValueError("revival_period must be finite and positive")
         if int(self.n_time_steps) != self.n_time_steps or self.n_time_steps < 2:

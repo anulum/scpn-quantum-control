@@ -105,6 +105,24 @@ def test_trajectory_metrics_falls_back_to_python(monkeypatch: pytest.MonkeyPatch
     assert result.backend == "python:evaluate_dla_protected_memory"
 
 
+def test_trajectory_metrics_falls_back_when_native_symbol_is_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An importable extension without the trajectory symbol uses Python metrics."""
+    monkeypatch.setitem(
+        sys.modules, "scpn_quantum_engine", types.ModuleType("scpn_quantum_engine")
+    )
+    spec = DLAProtectedScarSpec(
+        memory_spec=DLAProtectedSubspaceSpec(n_logical=2, code_distance=3, target_parity=0),
+        revival_period=1.0,
+        n_time_steps=4,
+    )
+
+    result = simulate_dla_protected_scar_memory(spec=spec)
+
+    assert result.backend == "python:evaluate_dla_protected_memory"
+
+
 def test_scar_failure_reasons_collects_all_threshold_breaches() -> None:
     """Every breached criterion is reported as a distinct failure reason."""
     prototype = types.SimpleNamespace(

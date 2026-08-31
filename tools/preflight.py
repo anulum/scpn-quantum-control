@@ -120,6 +120,9 @@ if TYPE_CHECKING:
     )
     from tools import dla_parity_witness_quality_gates as _dla_parity_witness_quality_gates
     from tools import (
+        dla_protected_memory_quality_gates as _dla_protected_memory_quality_gates,
+    )
+    from tools import (
         dla_topology_objectives_quality_gates as _dla_topology_objectives_quality_gates,
     )
     from tools import (
@@ -522,6 +525,7 @@ else:
         "tools.dla_topology_projection_quality_gates"
     )
     _dla_topology_schema_quality_gates = import_module("tools.dla_topology_schema_quality_gates")
+    _dla_protected_memory_quality_gates = import_module("tools.dla_protected_memory_quality_gates")
     _entanglement_sync_evidence_quality_gates = import_module(
         "tools.entanglement_sync_evidence_quality_gates"
     )
@@ -1060,6 +1064,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_predictive_coding_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_parity_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_projection_quality_gates.build_static_quality_gates(_PY),
+    *_dla_protected_memory_quality_gates.build_static_quality_gates(_PY),
     *_magnetisation_sectors_quality_gates.build_static_quality_gates(_PY),
     *_quantum_neuromorphic_bridge_quality_gates.build_static_quality_gates(_PY),
     *_koopman_quality_gates.build_static_quality_gates(_PY),
@@ -1630,6 +1635,10 @@ DLA_TOPOLOGY_PARITY_COVERAGE_GATES = _dla_topology_parity_quality_gates.build_co
 DLA_TOPOLOGY_PROJECTION_COVERAGE_GATES = (
     _dla_topology_projection_quality_gates.build_coverage_gates(_PY)
 )
+DLA_PROTECTED_MEMORY_COVERAGE_GATES = _dla_protected_memory_quality_gates.build_coverage_gates(_PY)
+DLA_PROTECTED_MEMORY_POLYGLOT_GATES = _dla_protected_memory_quality_gates.build_polyglot_gates(
+    _CARGO, _PY
+)
 MAGNETISATION_SECTORS_COVERAGE_GATES = _magnetisation_sectors_quality_gates.build_coverage_gates(
     _PY
 )
@@ -2164,6 +2173,8 @@ def main() -> int:
             gates.extend(PREDICTIVE_CODING_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_PARITY_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_PROJECTION_COVERAGE_GATES)
+            gates.extend(DLA_PROTECTED_MEMORY_COVERAGE_GATES)
+            gates.extend(DLA_PROTECTED_MEMORY_POLYGLOT_GATES)
             gates.extend(MAGNETISATION_SECTORS_COVERAGE_GATES)
             gates.extend(QUANTUM_NEUROMORPHIC_BRIDGE_COVERAGE_GATES)
             gates.extend(KOOPMAN_COVERAGE_GATES)

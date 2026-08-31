@@ -35,7 +35,8 @@ def _small_spec() -> DLAProtectedScarSpec:
     )
 
 
-def test_prototype_builds_protected_logical_cat_memory():
+def test_prototype_builds_protected_logical_cat_memory() -> None:
+    """The default scar prototype is a protected logical cat memory."""
     prototype = build_dla_protected_scar_prototype(_small_spec())
 
     assert isinstance(prototype, DLAProtectedScarPrototype)
@@ -47,7 +48,8 @@ def test_prototype_builds_protected_logical_cat_memory():
     np.testing.assert_allclose(np.linalg.norm(prototype.initial_state), 1.0)
 
 
-def test_scar_revival_has_unit_final_survival_and_low_midcycle_survival():
+def test_scar_revival_has_unit_final_survival_and_low_midcycle_survival() -> None:
+    """The protected scar revives fully after dispersing at midcycle."""
     result = simulate_dla_protected_scar_memory(spec=_small_spec())
 
     assert isinstance(result, DLAProtectedScarSimulationResult)
@@ -62,7 +64,8 @@ def test_scar_revival_has_unit_final_survival_and_low_midcycle_survival():
     assert result.max_parity_leakage == pytest.approx(0.0, abs=1e-12)
 
 
-def test_survival_matches_cosine_revival_law_for_two_level_scar():
+def test_survival_matches_cosine_revival_law_for_two_level_scar() -> None:
+    """Two-level scar survival follows the exact cosine revival law."""
     spec = _small_spec()
     result = simulate_dla_protected_scar_memory(spec=spec)
     expected = np.cos(np.pi * result.times / spec.revival_period) ** 2
@@ -70,7 +73,8 @@ def test_survival_matches_cosine_revival_law_for_two_level_scar():
     np.testing.assert_allclose(result.survival_probability, expected, atol=1e-12)
 
 
-def test_scar_support_stays_inside_selected_protected_basis_states():
+def test_scar_support_stays_inside_selected_protected_basis_states() -> None:
+    """The simulated packet remains inside its selected protected basis."""
     result = simulate_dla_protected_scar_memory(spec=_small_spec())
 
     np.testing.assert_allclose(result.scar_support, 1.0, atol=1e-12)
@@ -79,7 +83,8 @@ def test_scar_support_stays_inside_selected_protected_basis_states():
     np.testing.assert_allclose(result.total_weight, 1.0, atol=1e-12)
 
 
-def test_counts_path_detects_protected_scar_support():
+def test_counts_path_detects_protected_scar_support() -> None:
+    """Protected count snapshots satisfy every scar-memory criterion."""
     prototype = build_dla_protected_scar_prototype(_small_spec())
     counts = [
         {"000000": 512, "111111": 512},
@@ -95,7 +100,8 @@ def test_counts_path_detects_protected_scar_support():
     np.testing.assert_allclose(result.scar_support, 1.0, atol=1e-12)
 
 
-def test_counts_path_fails_on_code_leakage_outside_scar_support():
+def test_counts_path_fails_on_code_leakage_outside_scar_support() -> None:
+    """Counts outside the scar code report support and parity failures."""
     prototype = build_dla_protected_scar_prototype(_small_spec())
     counts = [
         {"000000": 512, "111111": 512},
@@ -110,7 +116,8 @@ def test_counts_path_fails_on_code_leakage_outside_scar_support():
     assert "parity_leakage_above_threshold" in result.failure_reasons
 
 
-def test_custom_scar_words_must_live_in_protected_sector():
+def test_custom_scar_words_must_live_in_protected_sector() -> None:
+    """Custom scar words outside the protected sector are rejected."""
     spec = _small_spec()
 
     with pytest.raises(ValueError, match="protected DLA sector"):
@@ -120,7 +127,8 @@ def test_custom_scar_words_must_live_in_protected_sector():
         )
 
 
-def test_scar_spec_validates_thresholds_and_time_grid():
+def test_scar_spec_validates_thresholds_and_time_grid() -> None:
+    """Scar specifications reject invalid periods, grids, and thresholds."""
     with pytest.raises(ValueError, match="revival_period"):
         DLAProtectedScarSpec(revival_period=0.0)
     with pytest.raises(ValueError, match="n_time_steps"):
@@ -129,7 +137,8 @@ def test_scar_spec_validates_thresholds_and_time_grid():
         DLAProtectedScarSpec(min_revival_fidelity=1.5)
 
 
-def test_result_serialisation_contains_certificate_and_metrics():
+def test_result_serialisation_contains_certificate_and_metrics() -> None:
+    """Result serialisation retains its certificate and revival metrics."""
     result = simulate_dla_protected_scar_memory(spec=_small_spec())
     payload = result.to_dict()
 
@@ -139,7 +148,8 @@ def test_result_serialisation_contains_certificate_and_metrics():
     assert payload["final_revival_fidelity"] == pytest.approx(1.0, abs=1e-12)
 
 
-def test_default_four_logical_spec_runs_without_dense_overflow():
+def test_default_four_logical_spec_runs_without_dense_overflow() -> None:
+    """The default four-logical prototype fits its bounded dense model."""
     result = simulate_dla_protected_scar_memory()
 
     assert result.prototype.spec.memory_spec.n_physical == 12

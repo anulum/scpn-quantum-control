@@ -38,6 +38,7 @@ class DLAProtectedSubspaceSpec:
     sync_agreement_threshold: float = 1.0
 
     def __post_init__(self) -> None:
+        """Validate repetition-code geometry and witness thresholds."""
         _require_positive_int(self.n_logical, "n_logical")
         _require_positive_int(self.code_distance, "code_distance")
         if self.code_distance % 2 == 0:
