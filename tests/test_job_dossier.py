@@ -36,6 +36,7 @@ def _dossier() -> HardwareJobDossier:
 
 
 def test_hardware_job_dossier_serialises_to_dict_and_markdown() -> None:
+    """Serialise a complete dossier into machine and reviewer formats."""
     dossier = _dossier()
 
     data = dossier.to_dict()
@@ -48,6 +49,7 @@ def test_hardware_job_dossier_serialises_to_dict_and_markdown() -> None:
 
 
 def test_hardware_job_dossier_rejects_missing_required_sections() -> None:
+    """Reject dossiers that omit a required scientific review section."""
     with pytest.raises(ValueError, match="expected_observables"):
         HardwareJobDossier(
             job_id="job",

@@ -44,6 +44,7 @@ class HardwareJobDossier:
     prerequisites: tuple[str, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
+        """Reject dossiers missing any required review or custody section."""
         _require_text(self.job_id, "job_id")
         _require_text(self.title, "title")
         _require_text(self.purpose, "purpose")
