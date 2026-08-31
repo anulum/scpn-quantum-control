@@ -36,6 +36,7 @@ class AggregatorProviderRoute:
     notes: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        """Validate route identifiers and freeze normalized note metadata."""
         for field_name in ("route_id", "aggregator", "provider", "backend_id"):
             _validate_token(str(getattr(self, field_name)), field_name)
         _validate_token(self.sdk_package, "sdk_package")

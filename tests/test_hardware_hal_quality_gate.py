@@ -40,6 +40,11 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
     assert f"--include={quality_gates.HARDWARE_HAL_COVERAGE_INCLUDE}" in report
+    assert quality_gates.HARDWARE_AGGREGATOR_SOURCE in quality_gates.HARDWARE_HAL_TYPING_RATCHET
+    assert all(
+        path in quality_gates.HARDWARE_HAL_COVERAGE_COHORT
+        for path in quality_gates.HARDWARE_AGGREGATOR_TESTS
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:

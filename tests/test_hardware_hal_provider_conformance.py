@@ -40,6 +40,7 @@ from scpn_quantum_control.hardware.provider_smoke import (
 
 
 def test_every_builtin_hal_route_has_importable_adapter_module() -> None:
+    """Import every adapter declared by the built-in HAL descriptors."""
     descriptors = list_hal_backend_descriptors()
 
     assert descriptors
@@ -50,7 +51,6 @@ def test_every_builtin_hal_route_has_importable_adapter_module() -> None:
 
 def test_aggregator_provider_routes_resolve_to_first_class_hal_profiles() -> None:
     """Every declared aggregator-provider combination must hit a real HAL route."""
-
     descriptors = {descriptor.name: descriptor for descriptor in list_hal_backend_descriptors()}
     profiles = {profile.backend_id: profile for profile in built_in_backend_profiles()}
     routes = built_in_aggregator_provider_routes()
@@ -71,7 +71,6 @@ def test_aggregator_provider_routes_resolve_to_first_class_hal_profiles() -> Non
 
 def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> None:
     """The matrix should expose concrete current aggregator/provider combinations."""
-
     route_ids = {route.route_id for route in built_in_aggregator_provider_routes()}
 
     expected = {
@@ -174,7 +173,6 @@ def test_aggregator_provider_matrix_covers_source_grounded_current_brokers() -> 
 
 def test_aggregator_provider_selector_resolves_profile_and_ir() -> None:
     """Routing code should resolve matrix rows to executable HAL profiles."""
-
     resolved = resolve_aggregator_provider_route(
         aggregator="qbraid",
         provider="aws_braket",
@@ -296,6 +294,7 @@ def test_aggregator_provider_selector_resolves_profile_and_ir() -> None:
 
 
 def test_cloud_routes_are_approval_gated_and_local_routes_are_not() -> None:
+    """Match descriptor capabilities to cloud approval and local simulation policy."""
     profile_by_id = {profile.backend_id: profile for profile in built_in_backend_profiles()}
 
     for descriptor in list_hal_backend_descriptors():
@@ -307,6 +306,7 @@ def test_cloud_routes_are_approval_gated_and_local_routes_are_not() -> None:
 
 
 def test_direct_and_local_provider_routes_do_not_fall_back_to_generic_hal_module() -> None:
+    """Require dedicated adapters for every non-local backend descriptor."""
     allowed_generic = {"local_statevector"}
 
     for descriptor in list_hal_backend_descriptors():
@@ -316,6 +316,7 @@ def test_direct_and_local_provider_routes_do_not_fall_back_to_generic_hal_module
 
 
 def test_every_dedicated_hal_adapter_has_focused_adapter_tests() -> None:
+    """Keep focused adapter suites for every dedicated HAL integration family."""
     tests_dir = Path(__file__).resolve().parent
     available = {path.name for path in tests_dir.glob("test_hardware_hal*_adapters.py")}
 
@@ -342,6 +343,7 @@ def test_every_dedicated_hal_adapter_has_focused_adapter_tests() -> None:
 
 
 def test_optional_dependency_matrix_covers_all_non_builtin_provider_modules() -> None:
+    """Describe dependency availability for every non-local provider adapter."""
     matrix = provider_optional_dependency_matrix()
     by_backend = {row.backend_id: row for row in matrix}
 
@@ -357,7 +359,6 @@ def test_optional_dependency_matrix_covers_all_non_builtin_provider_modules() ->
 
 def test_aggregator_provider_dependency_matrix_covers_every_route() -> None:
     """Aggregator routes should carry executable dependency evidence."""
-
     rows = aggregator_provider_optional_dependency_matrix()
     by_route = {row.route_id: row for row in rows}
     routes = built_in_aggregator_provider_routes()
@@ -461,7 +462,6 @@ def test_aggregator_provider_dependency_matrix_covers_every_route() -> None:
 
 def test_aggregator_provider_dependency_matrix_filters_by_route_request() -> None:
     """Operators need deterministic scoped preflight rows before live work."""
-
     rows = aggregator_provider_optional_dependency_matrix(
         aggregator="qbraid",
         provider="rigetti",
@@ -479,6 +479,7 @@ def test_aggregator_provider_dependency_matrix_filters_by_route_request() -> Non
 
 
 def test_hal_sdk_packages_are_exposed_as_install_extras() -> None:
+    """Expose every provider SDK through compatible aggregate or isolated extras."""
     pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
     data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
     extras = data["project"]["optional-dependencies"]
@@ -532,7 +533,10 @@ def _normalise_requirement(requirement: str) -> str:
     return re.split(r"\s*(?:[<>=!~;\[])", requirement, maxsplit=1)[0].strip().lower()
 
 
-def test_provider_smoke_cli_emits_offline_json_matrix(capsys) -> None:  # type: ignore[no-untyped-def]
+def test_provider_smoke_cli_emits_offline_json_matrix(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Render the complete offline provider dependency matrix as JSON."""
     exit_code = provider_smoke_main(["--format", "json"])
 
     captured = capsys.readouterr()
@@ -552,7 +556,10 @@ def test_provider_smoke_cli_emits_offline_json_matrix(capsys) -> None:  # type: 
     } <= set(row)
 
 
-def test_provider_smoke_cli_filters_to_one_backend(capsys) -> None:  # type: ignore[no-untyped-def]
+def test_provider_smoke_cli_filters_to_one_backend(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Filter the provider smoke matrix to one requested backend."""
     exit_code = provider_smoke_main(["--format", "json", "--backend", "dwave_leap"])
 
     captured = capsys.readouterr()
@@ -562,7 +569,10 @@ def test_provider_smoke_cli_filters_to_one_backend(capsys) -> None:  # type: ign
     assert payload[0]["sdk_package"] == "dwave-cloud-client"
 
 
-def test_provider_smoke_cli_emits_aggregator_route_dependency_matrix(capsys) -> None:  # type: ignore[no-untyped-def]
+def test_provider_smoke_cli_emits_aggregator_route_dependency_matrix(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Render one aggregator route with its dependency and target metadata."""
     exit_code = provider_smoke_main(
         [
             "--format",
@@ -585,7 +595,10 @@ def test_provider_smoke_cli_emits_aggregator_route_dependency_matrix(capsys) -> 
     assert payload[0]["dynamic_catalog_target"] is True
 
 
-def test_provider_smoke_cli_rejects_empty_filter(capsys) -> None:  # type: ignore[no-untyped-def]
+def test_provider_smoke_cli_rejects_empty_filter(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Return a diagnostic failure when a backend filter matches no row."""
     exit_code = provider_smoke_main(["--format", "json", "--backend", "not_a_route"])
 
     captured = capsys.readouterr()
@@ -594,7 +607,10 @@ def test_provider_smoke_cli_rejects_empty_filter(capsys) -> None:  # type: ignor
     assert "no provider smoke rows matched" in captured.err
 
 
-def test_provider_smoke_cli_requires_only_selected_sdk(capsys) -> None:  # type: ignore[no-untyped-def]
+def test_provider_smoke_cli_requires_only_selected_sdk(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Apply dependency enforcement only to the selected SDK package."""
     exit_code = provider_smoke_main(
         ["--format", "json", "--sdk-package", "requests", "--require-all"]
     )
@@ -607,6 +623,7 @@ def test_provider_smoke_cli_requires_only_selected_sdk(capsys) -> None:  # type:
 
 
 def test_isolated_provider_smoke_lanes_cover_conflict_prone_extras() -> None:
+    """Keep conflict-prone SDK families in reproducible isolated environments."""
     lanes = isolated_provider_smoke_lanes()
     by_extra = {lane.extra: lane for lane in lanes}
 
@@ -629,7 +646,10 @@ def test_isolated_provider_smoke_lanes_cover_conflict_prone_extras() -> None:
             assert backend_id in lane.smoke_command
 
 
-def test_provider_smoke_cli_emits_isolated_plan(capsys) -> None:  # type: ignore[no-untyped-def]
+def test_provider_smoke_cli_emits_isolated_plan(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Render every isolated provider lane as an offline execution plan."""
     exit_code = provider_smoke_main(["--format", "json", "--plan-isolated"])
 
     captured = capsys.readouterr()

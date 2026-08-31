@@ -1680,11 +1680,14 @@ jobs:
           src/scpn_quantum_control/hardware/circuit_export.py
           src/scpn_quantum_control/hardware/fast_classical.py
           src/scpn_quantum_control/hardware/iqm_backend.py
+          src/scpn_quantum_control/hardware/aggregators.py
           tests/test_async_runner.py
           tests/test_circuit_cutting.py
           tests/test_circuit_export.py
           tests/test_fast_classical.py
           tests/test_iqm_backend.py
+          tests/test_aggregators_branches.py
+          tests/test_hardware_hal_provider_conformance.py
           tools/hardware_hal_quality_gates.py
           tests/test_hardware_hal_quality_gate.py
       - name: Ruff NumPy docstrings for hardware HAL quality cohort
@@ -1697,12 +1700,15 @@ jobs:
           src/scpn_quantum_control/hardware/circuit_export.py
           src/scpn_quantum_control/hardware/fast_classical.py
           src/scpn_quantum_control/hardware/iqm_backend.py
+          src/scpn_quantum_control/hardware/aggregators.py
           tests/test_hardware_hal.py
           tests/test_async_runner.py
           tests/test_circuit_cutting.py
           tests/test_circuit_export.py
           tests/test_fast_classical.py
           tests/test_iqm_backend.py
+          tests/test_aggregators_branches.py
+          tests/test_hardware_hal_provider_conformance.py
           tools/hardware_hal_quality_gates.py
           tests/test_hardware_hal_quality_gate.py
       - name: Run hardware HAL focused coverage
@@ -1722,6 +1728,8 @@ jobs:
           tests/test_circuit_export.py
           tests/test_fast_classical.py
           tests/test_iqm_backend.py
+          tests/test_aggregators_branches.py
+          tests/test_hardware_hal_provider_conformance.py
       - name: Enforce hardware HAL exact coverage
         run: >-
           python -m coverage report
@@ -1729,7 +1737,7 @@ jobs:
           --data-file=/tmp/scpn-qc-hardware-hal-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/circuit_cutting.py,*/hardware/circuit_export.py,*/hardware/fast_classical.py,*/hardware/iqm_backend.py
+          --include=*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/circuit_cutting.py,*/hardware/circuit_export.py,*/hardware/fast_classical.py,*/hardware/iqm_backend.py,*/hardware/aggregators.py
 
   dla-topology-parity-quality:
     needs: lint
