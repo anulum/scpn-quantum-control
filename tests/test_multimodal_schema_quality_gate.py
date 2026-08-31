@@ -23,7 +23,9 @@ def test_helper_builds_strict_preview_and_exact_gates() -> None:
     assert "--preview" in docs
     assert "D,D413,D417,D420" in docs
     assert "lint.explicit-preview-rules = true" in docs
-    assert run[-1:] == quality_gates.MULTIMODAL_SCHEMA_COVERAGE_COHORT
+    assert run[-len(quality_gates.MULTIMODAL_SCHEMA_COVERAGE_COHORT) :] == (
+        quality_gates.MULTIMODAL_SCHEMA_COVERAGE_COHORT
+    )
     assert "--fail-under=100" in report
     assert f"--include={quality_gates.MULTIMODAL_SCHEMA_COVERAGE_INCLUDE}" in report
     assert quality_gates.MULTIMODAL_SCHEMA_COVERAGE_DATA_FILE.startswith("/tmp/")

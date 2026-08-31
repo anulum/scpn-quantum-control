@@ -34,6 +34,7 @@ class PartialObservationWeights:
         Non-negative weight for the exact Kuramoto derivative residual.
     observation_noise_std
         Positive scale used to normalise the observed-phase error.
+
     """
 
     observation: float = 1.0

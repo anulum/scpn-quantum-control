@@ -45,6 +45,7 @@ def _dataset() -> SyntheticMultimodalDataset:
 
 
 def test_exact_synthetic_target_has_zero_observation_error_and_small_residual() -> None:
+    """Exact synthetic targets retain zero error and a small physics residual."""
     dataset = _dataset()
     batch = dataset.test
     truth = batch.targets[0]
@@ -66,6 +67,7 @@ def test_exact_synthetic_target_has_zero_observation_error_and_small_residual() 
 
 
 def test_batch_certificate_uses_explicit_partial_mask_and_complete_couplings() -> None:
+    """Batch evidence binds the explicit mask and complete simulator graph."""
     dataset = _dataset()
     model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
     forecast = model.predict(dataset.test)
@@ -91,6 +93,7 @@ def test_batch_certificate_uses_explicit_partial_mask_and_complete_couplings() -
     ],
 )
 def test_single_term_objectives_remain_supported(weights: PartialObservationWeights) -> None:
+    """Either observation or physics scoring may operate independently."""
     predicted = np.array([[0.0, 0.2], [0.1, 0.25]])
     observed = predicted + 0.01
     score = evaluate_partial_observation_objective(
@@ -120,11 +123,13 @@ def test_single_term_objectives_remain_supported(weights: PartialObservationWeig
 def test_weights_reject_invalid_values(
     builder: Callable[[], PartialObservationWeights], message: str
 ) -> None:
+    """Invalid objective weights and noise scales fail closed."""
     with pytest.raises(ValueError, match=message):
         builder()
 
 
 def test_objective_rejects_shape_nonfinite_empty_mask_and_time_errors() -> None:
+    """Malformed, non-finite, unobserved, and invalid-time inputs are rejected."""
     predicted = np.array([[0.0, 0.2], [0.1, 0.25]])
     observed = predicted.copy()
     mask = np.ones_like(predicted, dtype=np.bool_)
@@ -188,6 +193,7 @@ def test_objective_rejects_shape_nonfinite_empty_mask_and_time_errors() -> None:
 
 
 def test_batch_certificate_rejects_custody_shape_and_incomplete_graph() -> None:
+    """Batch certification rejects custody drift and incomplete couplings."""
     dataset = _dataset()
     model = fit_multimodal_ridge_forecaster(dataset.train, ridge=10.0)
     forecast = model.predict(dataset.test)
