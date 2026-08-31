@@ -4731,8 +4731,10 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/forecasting/multimodal_schema.py
           src/scpn_quantum_control/forecasting/partial_observation.py
+          src/scpn_quantum_control/forecasting/synthetic_multimodal.py
           tests/test_multimodal_schema.py
           tests/test_partial_observation_forecast.py
+          tests/test_synthetic_multimodal.py
           tools/multimodal_schema_quality_gates.py
           tests/test_multimodal_schema_quality_gate.py
       - run: >-
@@ -4741,19 +4743,22 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/forecasting/multimodal_schema.py
           src/scpn_quantum_control/forecasting/partial_observation.py
+          src/scpn_quantum_control/forecasting/synthetic_multimodal.py
           tests/test_multimodal_schema.py
           tests/test_partial_observation_forecast.py
+          tests/test_synthetic_multimodal.py
           tools/multimodal_schema_quality_gates.py
           tests/test_multimodal_schema_quality_gate.py
       - run: >-
           python -m coverage run --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-multimodal-schema-quality.coverage --branch
           -m pytest -q tests/test_multimodal_schema.py tests/test_partial_observation_forecast.py
+          tests/test_synthetic_multimodal.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-multimodal-schema-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/forecasting/multimodal_schema.py,*/forecasting/partial_observation.py
+          --include=*/forecasting/multimodal_schema.py,*/forecasting/partial_observation.py,*/forecasting/synthetic_multimodal.py
 
   qrc-baseline-quality:
     needs: [lint, multimodal-schema-quality]

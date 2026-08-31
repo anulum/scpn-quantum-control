@@ -16,8 +16,10 @@ Gate = tuple[str, list[str]]
 MULTIMODAL_SCHEMA_QUALITY_RATCHET = [
     "src/scpn_quantum_control/forecasting/multimodal_schema.py",
     "src/scpn_quantum_control/forecasting/partial_observation.py",
+    "src/scpn_quantum_control/forecasting/synthetic_multimodal.py",
     "tests/test_multimodal_schema.py",
     "tests/test_partial_observation_forecast.py",
+    "tests/test_synthetic_multimodal.py",
     "tools/multimodal_schema_quality_gates.py",
     "tests/test_multimodal_schema_quality_gate.py",
 ]
@@ -26,6 +28,7 @@ MULTIMODAL_SCHEMA_QUALITY_RATCHET = [
 MULTIMODAL_SCHEMA_COVERAGE_COHORT = [
     "tests/test_multimodal_schema.py",
     "tests/test_partial_observation_forecast.py",
+    "tests/test_synthetic_multimodal.py",
 ]
 """Real immutable custody and partial-observation objective suites."""
 
@@ -33,7 +36,8 @@ MULTIMODAL_SCHEMA_COVERAGE_DATA_FILE = "/tmp/scpn-qc-multimodal-schema-quality.c
 """Isolated coverage database for the multimodal schema."""
 
 MULTIMODAL_SCHEMA_COVERAGE_INCLUDE = (
-    "*/forecasting/multimodal_schema.py,*/forecasting/partial_observation.py"
+    "*/forecasting/multimodal_schema.py,*/forecasting/partial_observation.py,"
+    "*/forecasting/synthetic_multimodal.py"
 )
 """Production custody and objective sources enforced at exact branch coverage."""
 

@@ -15,6 +15,14 @@ from tools import preflight
 
 def test_helper_builds_strict_preview_and_exact_gates() -> None:
     """Require strict preview docs, the real suite, and exact source coverage."""
+    synthetic_source = "src/scpn_quantum_control/forecasting/synthetic_multimodal.py"
+    synthetic_test = "tests/test_synthetic_multimodal.py"
+    assert synthetic_source in quality_gates.MULTIMODAL_SCHEMA_QUALITY_RATCHET
+    assert synthetic_test in quality_gates.MULTIMODAL_SCHEMA_QUALITY_RATCHET
+    assert synthetic_test in quality_gates.MULTIMODAL_SCHEMA_COVERAGE_COHORT
+    assert "*/forecasting/synthetic_multimodal.py" in (
+        quality_gates.MULTIMODAL_SCHEMA_COVERAGE_INCLUDE
+    )
     static = dict(quality_gates.build_static_quality_gates("/python"))
     docs = static["ruff D multimodal-schema quality ratchet"]
     coverage = dict(quality_gates.build_coverage_gates("/python"))

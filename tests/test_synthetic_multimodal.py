@@ -53,6 +53,7 @@ def _config(
 
 
 def test_generator_is_deterministic_disjoint_and_domain_balanced() -> None:
+    """Keep seeded split custody deterministic, disjoint, and domain-complete."""
     first = generate_synthetic_multimodal_dataset(_config())
     second = generate_synthetic_multimodal_dataset(_config())
     changed = generate_synthetic_multimodal_dataset(_config(seed=38))
@@ -73,6 +74,7 @@ def test_generator_is_deterministic_disjoint_and_domain_balanced() -> None:
 
 
 def test_zero_missing_dataset_replays_exact_kuramoto_trajectory() -> None:
+    """Replay every unmasked phase target from the exact Kuramoto trajectory."""
     config = _config(missing_fraction=0.0)
     dataset = generate_synthetic_multimodal_dataset(config)
     batch = dataset.test
@@ -92,6 +94,7 @@ def test_zero_missing_dataset_replays_exact_kuramoto_trajectory() -> None:
 
 
 def test_domain_tags_change_only_simulation_templates() -> None:
+    """Separate synthetic domain tags through their declared graph templates."""
     dataset = generate_synthetic_multimodal_dataset(_config(missing_fraction=0.0))
     batch = dataset.train
     by_tag = {tag: index for index, tag in enumerate(batch.domain_tags[:4])}
@@ -121,11 +124,13 @@ def test_domain_tags_change_only_simulation_templates() -> None:
 def test_config_rejects_unbounded_or_invalid_inputs(
     builder: Callable[[], SyntheticMultimodalConfig], message: str
 ) -> None:
+    """Reject invalid bounded-domain sample, shape, time, and seed controls."""
     with pytest.raises(ValueError, match=message):
         builder()
 
 
 def test_dataset_rejects_wrong_split_order_and_leakage() -> None:
+    """Reject reordered custody splits and repeated trajectory identifiers."""
     dataset = generate_synthetic_multimodal_dataset(_config())
     with pytest.raises(ValueError, match="train, calibration, and test"):
         SyntheticMultimodalDataset(

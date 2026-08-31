@@ -53,6 +53,7 @@ class SyntheticMultimodalConfig:
         Requested random missing fraction for phase/event input entries.
     seed
         Root deterministic seed; split seeds are derived without reuse.
+
     """
 
     train_samples: int = 48
