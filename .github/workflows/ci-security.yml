@@ -42,7 +42,7 @@ jobs:
             --data-file=.coverage.dependency-security-waiver --branch \
             -m pytest -q tests/test_audit_dependency_security_waiver.py
           python -m coverage report --rcfile=/dev/null \
-            --data-file=.coverage.dependency-security-waiver --precision=2 \
+            --data-file=.coverage.dependency-security-waiver --precision=2 --show-missing \
             --fail-under=100 \
             --include='*/audit_dependency_security_waiver.py,*/yaml_mapping_key_audit.py'
       - run: python tools/audit_dependency_security_waiver.py

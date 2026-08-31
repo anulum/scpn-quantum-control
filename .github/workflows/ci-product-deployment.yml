@@ -74,7 +74,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.error-mitigation-product-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/error_mitigation_product.py,*/mitigation/compound_mitigation.py,*/mitigation/cpdr.py,*/mitigation/mitiq_integration.py,*/mitigation/symmetry_decay.py
   cloud-native-deployment-quality:
@@ -125,7 +125,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.cloud-native-deployment-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/cloud_native_deployment_product.py,*/deployment/cloud_native.py
   control-stack-compose-quality:
@@ -181,7 +181,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-control-stack-compose-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/control_stack_compose_product.py,*/control_stack_runtime_adapters.py,*/control/qaoa_mpc.py
   public-api-stability-quality:
@@ -224,7 +224,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-public-api-stability.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/public_api_stability.py
   polyglot-parity-certificate-quality:
@@ -267,7 +267,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.polyglot-parity-certificate-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/polyglot_parity_certificate.py
   program-ad-fuzz-assurance-quality:
@@ -310,7 +310,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.program-ad-fuzz-assurance-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/program_ad_fuzz_assurance.py
   multi-hal-federation-quality:
@@ -342,7 +342,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.multi-hal-federation-quality
-          --precision=2 --fail-under=100 --include=*/multi_hal_federation_product.py
+          --precision=2 --show-missing --fail-under=100 --include=*/multi_hal_federation_product.py
   hermetic-reproduction-kit-quality:
     runs-on: ubuntu-latest
     env:
@@ -372,7 +372,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.hermetic-reproduction-kit-quality
-          --precision=2 --fail-under=100 --include=*/hermetic_reproduction_kit.py
+          --precision=2 --show-missing --fail-under=100 --include=*/hermetic_reproduction_kit.py
   hardware-safe-execution-quality:
     runs-on: ubuntu-latest
     env:
@@ -443,7 +443,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-hardware-safe-execution-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/hardware_safe_execution.py,*/active_sensing_product.py,*/hardware/feedback_capability_probe.py,*/hardware/feedback_dryrun.py,*/hardware/feedback_hardware_scheduler.py,*/hardware/feedback_submission.py,*/hardware/job_dossier.py,*/hardware/pulse_feasibility.py,*/hardware/s1_feedback_ibm.py
   qpu-compute-product-quality:
     runs-on: ubuntu-latest
@@ -474,7 +474,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-qpu-compute-product-quality.coverage
-          --precision=2 --fail-under=100 --include=*/qpu_compute_product.py
+          --precision=2 --show-missing --fail-under=100 --include=*/qpu_compute_product.py
   wirtinger-implicit-product-quality:
     runs-on: ubuntu-latest
     env:
@@ -508,7 +508,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.wirtinger-implicit-quality
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/wirtinger_implicit_product.py,*/wirtinger_calculus.py
   migration-guides-product-quality:
     runs-on: ubuntu-latest
@@ -544,7 +544,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.migration-guides-quality
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/migration_guides_product.py,*/phase/pennylane_import.py
   visualisation-dashboard-product-quality:
     runs-on: ubuntu-latest
@@ -575,7 +575,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.visualisation-dashboard-quality
-          --precision=2 --fail-under=100 --include=*/visualisation_dashboard_product.py
+          --precision=2 --show-missing --fail-under=100 --include=*/visualisation_dashboard_product.py
   stochastic-estimators-product-quality:
     runs-on: ubuntu-latest
     env:
@@ -610,7 +610,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.stochastic-estimators-quality
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/stochastic_estimators_product.py,*/differentiable_stochastic_estimators.py
   differentiable-notebook-curriculum-quality:
     runs-on: ubuntu-latest
@@ -641,7 +641,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.differentiable-notebook-curriculum
-          --precision=2 --fail-under=100 --include=*/differentiable_notebook_curriculum.py
+          --precision=2 --show-missing --fail-under=100 --include=*/differentiable_notebook_curriculum.py
   studio-executive-product-quality:
     runs-on: ubuntu-latest
     env:
@@ -690,5 +690,5 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-studio-executive-product-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/studio_executive_product.py,*/studio/manifest.py,*/studio/federation.py,*/studio/verbs.py,*/studio/executive_cli.py

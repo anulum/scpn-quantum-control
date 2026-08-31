@@ -25,7 +25,9 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
       - name: Download the Python 3.12 Rust engine wheel
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
         with:
@@ -66,7 +68,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-ml-dsa-seal-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/crypto/ml_dsa_seal.py
   studio-executive-differentiate-quality:
@@ -80,7 +82,9 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
       - name: Download the Python 3.12 Rust engine wheel
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
         with:
@@ -116,7 +120,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-studio-executive-differentiate-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/studio/executive_differentiate.py
   pulse-shaping-quality:
@@ -167,7 +171,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-pulse-shaping-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/phase/pulse_shaping.py
   openpulse-control-quality:
@@ -216,7 +220,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-openpulse-control-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/hardware/openpulse_control.py
   dla-protected-memory-quality:
@@ -280,7 +284,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-dla-protected-memory-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/qec/dla_protected_scar.py,*/qec/dla_protected_subspace.py
       - name: Run Rust DLA protected-memory parity tests
@@ -344,7 +348,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-hls-cosimulation-evidence-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/hls_cosimulation_evidence.py,*/codegen/ultrascale_hls.py
   magnetisation-sectors-quality:
@@ -425,7 +429,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-magnetisation-sectors-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/analysis/magnetisation_sectors.py,*/analysis/spectral_form_factor.py,*/analysis/symmetry_sectors.py,*/analysis/translation_symmetry.py
   sparse-hamiltonian-quality:
@@ -478,7 +482,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-sparse-hamiltonian-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/bridge/sparse_hamiltonian.py,*/bridge/knm_hamiltonian.py
   result-pack-seal-quality:
     runs-on: ubuntu-latest
@@ -519,7 +523,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-result-pack-seal-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/studio/result_pack_seal.py
   test:
     runs-on: ubuntu-latest

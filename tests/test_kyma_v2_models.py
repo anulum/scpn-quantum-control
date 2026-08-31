@@ -20,7 +20,7 @@ pytest.importorskip("jax")
 
 import jax.numpy as jnp  # noqa: E402
 
-from scpn_quantum_control.benchmarks.kyma_v2 import models, task, teacher  # noqa: E402
+from scpn_quantum_control.benchmarks.kyma_v2 import coupling, models, task, teacher  # noqa: E402
 
 
 def _tiny_cfg() -> task.ProbeConfigV2:
@@ -96,7 +96,7 @@ def test_student_loss_decreases() -> None:
     finals = jnp.asarray(np.asarray(teacher.teacher_final_phases(batch.theta0, batch.code, cfg)))
     tr = ~batch.is_test
     theta0, code = jnp.asarray(batch.theta0[tr]), jnp.asarray(batch.code[tr])
-    base = jnp.asarray(models.base_coupling_matrix(cfg.k_ambient, cfg.k_bridge))
+    base = jnp.asarray(coupling.base_coupling_matrix(cfg.k_ambient, cfg.k_bridge))
     target = finals[tr]
 
     def loss(p: models._Params) -> float:

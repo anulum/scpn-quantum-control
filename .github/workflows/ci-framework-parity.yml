@@ -75,7 +75,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-phase-jax-qnode.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/jax_bridge.py,*/jax_maturity.py,*/jax_qnode_transforms.py
       - name: Run Phase-QNode Torch bridge focused coverage
@@ -113,7 +113,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-phase-torch-bridge.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/torch_bridge.py,*/torch_maturity.py,*/torch_module_state.py,*/torch_checkpoint.py,*/torch_checkpoint_matrix.py,*/torch_device_state.py,*/torch_export.py,*/torch_export_shape_matrix.py,*/torch_training_loop_matrix.py,*/torch_aot_autograd_export.py,*/torch_dynamic_shape_export.py
       - name: Run differentiable parity tests

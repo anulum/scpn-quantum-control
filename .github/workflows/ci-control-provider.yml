@@ -54,7 +54,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.kyma-mechanism-product-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/kyma_mechanism_benchmark_product.py
   campaign-harness-product-quality:
@@ -97,7 +97,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.campaign-harness-product-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/campaign_harness_product.py
   geometric-control-product-quality:
@@ -140,7 +140,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.geometric-control-product-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/geometric_control_product.py
   chimera-control-quality:
@@ -206,7 +206,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-chimera-control-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include='*/chimera_control/*.py'
   whole-program-frontend-contracts-quality:
@@ -252,7 +252,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-whole-program-frontend-contracts-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/whole_program_frontend_contracts.py,*/whole_program_frontend.py
   variational-metric-quality:
@@ -294,7 +294,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-variational-metric-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/phase/variational_metric.py
   qnode-circuit-contracts-quality:
@@ -345,7 +345,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-qnode-circuit-contracts-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/phase/qnode_circuit_contracts.py
   topology-kernel-schema-quality:
@@ -392,7 +392,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-topology-kernel-schema-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/topology_kernel_product/schema.py,*/topology_kernel_product/synthetic.py
   feedback-loop-quality:
@@ -448,7 +448,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-feedback-loop-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/hardware/feedback_loop.py,*/bridge/orchestrator_feedback.py,*/control/realtime_feedback.py
   analog-platform-catalogue-quality:
@@ -502,7 +502,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-analog-platform-catalogue-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/analog_mapping/platforms.py,*/hardware/analog_native_readiness.py
   hardware-hal-quality:
     needs: analog-platform-catalogue-quality
@@ -586,6 +586,6 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-hardware-hal-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/circuit_cutting.py,*/hardware/circuit_export.py,*/hardware/fast_classical.py,*/hardware/iqm_backend.py,*/hardware/aggregators.py,*/hardware/provider_capability_core.py

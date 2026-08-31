@@ -44,7 +44,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-nqs-ansatz-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/phase/nqs_ansatz.py
   layout-relaxation-experiment-quality:
     runs-on: ubuntu-latest
@@ -78,7 +78,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-layout-relaxation-experiment-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/benchmarks/layout_relaxation_experiment.py
   tn-mps-crossover-admission-quality:
     runs-on: ubuntu-latest
@@ -112,7 +112,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-tn-mps-crossover-admission-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/benchmarks/tn_mps_crossover_admission.py
   xy-compile-recompute-artifact-quality:
     runs-on: ubuntu-latest
@@ -157,7 +157,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-xy-compile-recompute-artifact-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/studio/xy_compile_recompute_artifact.py,*/studio/executive_compile.py,*/studio/executive_cli.py
   control-structured-ansatz-quality:
     runs-on: ubuntu-latest
@@ -198,7 +198,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-control-structured-ansatz-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/control/structured_ansatz.py,*/phase/structured_ansatz.py
   dla-parity-witness-quality:
     runs-on: ubuntu-latest
@@ -230,7 +230,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-dla-parity-witness-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/analysis/dla_parity_witness.py
   hamiltonian-learning-quality:
     runs-on: ubuntu-latest
@@ -262,7 +262,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-hamiltonian-learning-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/analysis/hamiltonian_learning.py
   phase-results-quality:
     runs-on: ubuntu-latest
@@ -297,7 +297,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-phase-results-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/phase/results.py,*/phase/xy_kuramoto.py
   gradient-backend-quality:
     runs-on: ubuntu-latest
@@ -340,7 +340,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-gradient-backend-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/phase/gradient_backend.py,*/phase/provider_gradient.py,*/phase/qiskit_runtime.py
   differentiable-exact-modes-quality:
     runs-on: ubuntu-latest
@@ -372,7 +372,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-differentiable-exact-modes-quality.coverage
-          --precision=2 --fail-under=100 --include=*/differentiable_exact_modes.py
+          --precision=2 --show-missing --fail-under=100 --include=*/differentiable_exact_modes.py
   mlir-whole-program-native-quality:
     runs-on: ubuntu-latest
     env:
@@ -416,7 +416,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-mlir-whole-program-native-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/compiler/mlir_whole_program_native.py,*/compiler/mlir_native_execution_evidence.py
   closed-loop-publication-quality:
     runs-on: ubuntu-latest
@@ -459,7 +459,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-closed-loop-publication-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/benchmarks/closed_loop_publication_run.py,*/control/closed_loop_analysis.py
   kuramoto-layout-optimiser-quality:
     runs-on: ubuntu-latest
@@ -491,7 +491,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-kuramoto-layout-optimiser-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/hardware/kuramoto_layout_optimiser.py
   multimodal-schema-quality:
     runs-on: ubuntu-latest
@@ -532,7 +532,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-multimodal-schema-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/forecasting/multimodal_schema.py,*/forecasting/partial_observation.py,*/forecasting/synthetic_multimodal.py
   qrc-baseline-quality:
     needs: multimodal-schema-quality
@@ -583,7 +583,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-qrc-baseline-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/applications/qrc_baseline.py,*/applications/quantum_reservoir.py,*/surrogates/models.py,*/surrogates/train.py,*/surrogates/fidelity.py
   josephson-magnitude-study-quality:
     runs-on: ubuntu-latest
@@ -615,7 +615,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-josephson-magnitude-study-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/applications/josephson_magnitude_study.py
   dynq-layout-quality:
     runs-on: ubuntu-latest
@@ -651,7 +651,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-dynq-layout-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/hardware/qubit_mapper.py,*/hardware/dynq_layout_pass.py
   topology-kernel-classifier-quality:
     runs-on: ubuntu-latest
@@ -696,7 +696,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-topology-kernel-classifier-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/applications/quantum_kernel.py,*/topology_kernel_product/kernels.py,*/topology_kernel_product/classifier.py
   tn-mps-baseline-design-quality:
     runs-on: ubuntu-latest
@@ -746,6 +746,6 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.tn-mps-baseline-design-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/tn_mps_baseline_design.py

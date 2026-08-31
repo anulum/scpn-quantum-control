@@ -115,7 +115,11 @@ def _write_replay_repository(root: Path) -> None:
     )
     for path, text in _lock_mapping().items():
         (root / path).write_text(text, encoding="utf-8")
-    (root / ".github" / "workflows" / "ci.yml").write_text(_workflow(), encoding="utf-8")
+    (root / ".github" / "workflows" / "ci.yml").write_text(
+        "jobs:\n  security:\n    uses: ./.github/workflows/ci-security.yml\n",
+        encoding="utf-8",
+    )
+    (root / waiver.SECURITY_WORKFLOW_PATH).write_text(_workflow(), encoding="utf-8")
     (root / ".github" / "dependabot.yml").write_text(_dependabot_config(), encoding="utf-8")
     (root / "docs" / "test_infrastructure.md").write_text(_documentation(), encoding="utf-8")
     (root / "src" / "runtime.py").write_text("import pathlib\n", encoding="utf-8")
@@ -466,7 +470,7 @@ def test_ci_workflow_audit_rejects_escaped_double_quoted_mapping_keys() -> None:
     """YAML escapes must not hide security controls from the raw audit."""
     pip_audit_command = _shlex_join(waiver.EXPECTED_PIP_AUDIT_COMMAND)
     expected = ("CI must not encode mapping keys with YAML escapes",)
-    live_workflow = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    live_workflow = (REPO_ROOT / waiver.SECURITY_WORKFLOW_PATH).read_text(encoding="utf-8")
     pip_audit_step = f"      - run: {pip_audit_command}\n"
     assert live_workflow.count(pip_audit_step) == 1
 
@@ -527,7 +531,7 @@ def test_ci_workflow_audit_rejects_escaped_double_quoted_mapping_keys() -> None:
 
 def test_ci_workflow_audit_rejects_explicit_protected_mapping_keys() -> None:
     """Explicit semantic controls must not bypass raw workflow ownership."""
-    live_workflow = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    live_workflow = (REPO_ROOT / waiver.SECURITY_WORKFLOW_PATH).read_text(encoding="utf-8")
     pip_audit_command = _shlex_join(waiver.EXPECTED_PIP_AUDIT_COMMAND)
     pip_audit_step = f"      - run: {pip_audit_command}\n"
     assert live_workflow.count(pip_audit_step) == 1

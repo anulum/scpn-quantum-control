@@ -56,7 +56,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-studio-replay-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/hardware_result_packs.py,*/studio/executive_replay.py,*/studio/executive_cli.py
   studio-simulation-quality:
     runs-on: ubuntu-latest
@@ -95,7 +95,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-studio-simulation-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/studio/executive_simulate.py,*/studio/executive_cli.py
   p-h1-open-guard-quality:
     runs-on: ubuntu-latest
@@ -149,7 +149,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-p-h1-open-guard-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/analysis/p_h1_open_guard.py,*/scripts/check_p_h1_open_claim_guard.py,*/analysis/persistent_homology.py,*/analysis/quantum_persistent_homology.py,*/analysis/tcbo_weighted_complex.py
   studio-qec-readiness-bundle-quality:
     runs-on: ubuntu-latest
@@ -185,7 +185,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-studio-qec-readiness-bundle-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/studio/qec_readiness_bundle.py
   studio-readout-mitigation-bundle-quality:
     runs-on: ubuntu-latest
@@ -221,7 +221,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-studio-readout-mitigation-bundle-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/studio/readout_mitigation_bundle.py
   studio-scorecard-bundle-quality:
     runs-on: ubuntu-latest
@@ -257,7 +257,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-studio-scorecard-bundle-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/studio/scorecard_bundle.py
   studio-web:
     runs-on: ubuntu-latest

@@ -101,7 +101,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-dla-topology-parity-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/dla_topology_control/parity.py,*/dla_topology_control/evidence.py,*/analysis/dla_parity_exact_baseline.py,*/analysis/dla_parity_theorem.py,*/analysis/two_colour_schedule.py,*/dla_parity/__init__.py,*/dla_parity/baselines.py,*/dla_parity/dataset.py,*/dla_parity/reproduce.py,*/scripts/run_dla_parity_exact_baseline.py
   topology-kernel-evidence-quality:
@@ -143,7 +143,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-topology-kernel-evidence-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/topology_kernel_product/evidence.py
   kyma-v2-dynamics-quality:
@@ -215,7 +215,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-kyma-v2-dynamics-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/benchmarks/kyma_v2/dynamics.py,*/benchmarks/kyma_v2/task.py,*/benchmarks/kyma_v2/probe.py
   kyma-dynamics-quality:
@@ -272,7 +272,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-kyma-dynamics-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/benchmarks/kyma/dynamics.py,*/benchmarks/kyma/task.py,*/benchmarks/kyma/probe.py
   kyma-v2-coupling-quality:
@@ -307,7 +307,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-kyma-v2-coupling-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/benchmarks/kyma_v2/coupling.py
   differentiable-audit-contracts-quality:
     runs-on: ubuntu-latest
@@ -350,7 +350,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-differentiable-audit-contracts-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/phase/differentiable_audit_contracts.py
   dla-topology-optimizer-quality:
@@ -392,7 +392,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-dla-topology-optimizer-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/dla_topology_control/optimizer.py
   dla-topology-schema-quality:
@@ -434,7 +434,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-dla-topology-schema-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/dla_topology_control/schema.py
   fusion-core-frc-bridge-quality:
@@ -486,7 +486,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-fusion-core-frc-bridge-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/bridge/fusion_core_frc.py,*/control/qaoa_pulsed_cost.py
   hardware-experiment-vqe-quality:
@@ -532,7 +532,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-hardware-experiment-vqe-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/hardware/experiment_vqe.py
   transform-support-matrix-artifact-quality:
@@ -585,7 +585,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-transform-support-matrix-artifact-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/differentiable_transform_support_matrix_artifact.py,*/studio/support_matrix_bundle.py
   gradient-plan-explanation-artifact-quality:
@@ -631,6 +631,6 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-gradient-plan-explanation-artifact-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/gradient_plan_explanation_artifact.py

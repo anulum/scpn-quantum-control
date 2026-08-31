@@ -7,3 +7,6 @@
 # SCPN Quantum Control — Python 3.12 Quimb CI dependency input
 
 quimb==1.13.0
+# NumPy 2.5 uses Python 3.12-only typing syntax in its public stubs. Keep the
+# quimb runtime on the repository's Python 3.11-compatible strict-type baseline.
+numpy==2.4.6

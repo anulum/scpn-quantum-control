@@ -39,7 +39,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.adjoint-replay-product-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/adjoint_replay_product.py
       - name: Run differentiable scalar-kernel focused coverage
@@ -56,7 +56,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.scalar-kernels-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/differentiable_scalar_kernels.py
       - name: Run differentiable Rust/Python inventory focused coverage
@@ -72,7 +72,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.rust-python-inventory-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/differentiable_rust_python_inventory.py
       - name: Run unified differentiable API focused coverage
@@ -94,7 +94,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-differentiable-api-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/differentiable_api.py,*/differentiable_canonical_api.py,*/differentiable_result_contracts.py
       - name: Run differentiable Levenberg-Marquardt focused coverage
@@ -111,7 +111,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.levenberg-marquardt-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/differentiable_levenberg_marquardt.py
       - name: Run differentiable natural-gradient focused coverage
@@ -129,7 +129,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.natural-gradient-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/differentiable_natural_gradient.py,*/differentiable_gradient_descent.py
       - name: Run Program-AD array-indexing focused coverage
@@ -148,7 +148,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.program-ad-array-indexing
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/program_ad_array_indexing.py
       - name: Run whole-program trace-value focused coverage
@@ -222,7 +222,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.whole-program-trace-values
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/whole_program_trace_values.py,*/whole_program_trace_predicates.py,*/program_ad_linalg_primitives.py
       - name: Enforce Program-AD alias-contract exact coverage
@@ -230,7 +230,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.whole-program-trace-values
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/program_ad_alias_contracts.py
       - name: Enforce Program-AD shape-transform exact coverage
@@ -238,6 +238,6 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.whole-program-trace-values
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/program_ad_shape_transforms.py

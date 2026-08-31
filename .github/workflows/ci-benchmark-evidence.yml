@@ -54,7 +54,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-whole-program-ad-product-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/whole_program_ad_product.py,*/whole_program_ad_api.py
       - name: mypy-strict-differentiable-programming-contracts-quality
         run: >-
@@ -81,7 +81,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-differentiable-programming-contracts-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/benchmarks/differentiable_programming_contracts.py
   neural-operator-cost-model-quality:
     runs-on: ubuntu-latest
@@ -112,7 +112,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.neural-operator-cost-model-quality
-          --precision=2 --fail-under=100 --include=*/neural_operator_cost_model.py
+          --precision=2 --show-missing --fail-under=100 --include=*/neural_operator_cost_model.py
   neural-operator-baseline-product-quality:
     runs-on: ubuntu-latest
     env:
@@ -149,7 +149,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.neural-operator-baseline-product-quality
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/neural_operator_baseline_product.py,*/forecasting/neural_operator_advantage.py
   entanglement-sync-evidence-quality:
     runs-on: ubuntu-latest
@@ -201,7 +201,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-entanglement-sync-evidence-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/entanglement_sync_evidence.py,*/entanglement_enhanced_sync.py,*/sync_entanglement_witness.py
   bench-cli-quality:
     runs-on: ubuntu-latest
@@ -243,7 +243,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-bench-cli-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/bench_cli.py,*/benchmarks/s3_design_protocol.py
   identity-binding-spec-quality:
     runs-on: ubuntu-latest
@@ -276,7 +276,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-identity-binding-spec-quality.coverage
-          --precision=2 --fail-under=100 --include=*/identity/binding_spec.py
+          --precision=2 --show-missing --fail-under=100 --include=*/identity/binding_spec.py
   identity-coherence-budget-quality:
     runs-on: ubuntu-latest
     env:
@@ -306,7 +306,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-identity-coherence-budget-quality.coverage
-          --precision=2 --fail-under=100 --include=*/identity/coherence_budget.py
+          --precision=2 --show-missing --fail-under=100 --include=*/identity/coherence_budget.py
   identity-robustness-quality:
     runs-on: ubuntu-latest
     env:
@@ -336,7 +336,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-identity-robustness-quality.coverage
-          --precision=2 --fail-under=100 --include=*/identity/robustness.py
+          --precision=2 --show-missing --fail-under=100 --include=*/identity/robustness.py
   backend-selector-quality:
     runs-on: ubuntu-latest
     env:
@@ -366,7 +366,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-backend-selector-quality.coverage
-          --precision=2 --fail-under=100 --include=*/phase/backend_selector.py
+          --precision=2 --show-missing --fail-under=100 --include=*/phase/backend_selector.py
   logging-setup-quality:
     runs-on: ubuntu-latest
     env:
@@ -396,7 +396,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-logging-setup-quality.coverage
-          --precision=2 --fail-under=100 --include=*/logging_setup.py
+          --precision=2 --show-missing --fail-under=100 --include=*/logging_setup.py
   ssgf-geometry-gradient-quality:
     runs-on: ubuntu-latest
     env:
@@ -453,7 +453,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-ssgf-geometry-gradient-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/ssgf_geometry_gradient_product.py,*/ssgf/quantum_gradient.py,*/ssgf/quantum_outer_cycle.py,*/ssgf/quantum_spectral.py,*/bridge/ssgf_w_adapter.py
   codesign-components-quality:
     runs-on: ubuntu-latest
@@ -484,7 +484,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-codesign-components-quality.coverage
-          --precision=2 --fail-under=100 --include=*/codesign/components.py
+          --precision=2 --show-missing --fail-under=100 --include=*/codesign/components.py
   enaqt-evidence-quality:
     runs-on: ubuntu-latest
     env:
@@ -516,7 +516,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-enaqt-evidence-quality.coverage
-          --precision=2 --fail-under=100 --include=*/analysis/enaqt_evidence.py
+          --precision=2 --show-missing --fail-under=100 --include=*/analysis/enaqt_evidence.py
   diff-contract-audit-quality:
     runs-on: ubuntu-latest
     env:
@@ -553,7 +553,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-diff-contract-audit-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/scpn_quantum_control/diff.py,*/scpn_quantum_control/diff_contract_audit.py,*/scpn/diff.py,*/scpn/__init__.py
   coupling-recovery-quality:
     runs-on: ubuntu-latest
@@ -591,7 +591,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-coupling-recovery-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/phase/coupling_time_series_recovery.py,*/benchmarks/coupling_recovery_evidence.py
   governed-route-matrix-quality:
     runs-on: ubuntu-latest
@@ -622,7 +622,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.governed-route-matrix-quality
-          --precision=2 --fail-under=100 --include=*/governed_route_matrix.py
+          --precision=2 --show-missing --fail-under=100 --include=*/governed_route_matrix.py
   attested-result-pack-quality:
     runs-on: ubuntu-latest
     env:
@@ -652,7 +652,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.attested-result-pack-quality
-          --precision=2 --fail-under=100 --include=*/attested_result_pack.py
+          --precision=2 --show-missing --fail-under=100 --include=*/attested_result_pack.py
   open-system-objective-quality:
     runs-on: ubuntu-latest
     env:
@@ -689,7 +689,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-open-system-objective.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/benchmarks/open_system_objective_evidence.py,*/phase/open_system_objectives.py
   external-validation-manifest-quality:
     runs-on: ubuntu-latest
@@ -722,7 +722,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-external-validation.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/differentiable_external_validation.py
   gradient-tape-quality:
     runs-on: ubuntu-latest
@@ -758,7 +758,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-gradient-tape.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/phase/gradient_tape.py,*/phase/qnode_tape.py
   fault-tolerant-resource-product-quality:
     runs-on: ubuntu-latest
@@ -795,5 +795,5 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-fault-tolerant-resource-product.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/fault_tolerant_resource_product.py,*/qec/error_budget.py

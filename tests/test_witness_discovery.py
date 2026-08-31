@@ -12,9 +12,11 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
+from typing import Any
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.analysis import (
     RLDiscoveryAgent,
@@ -146,11 +148,11 @@ def test_discovery_metadata_is_json_safe_and_immutable() -> None:
 
     assert spec.metadata["dataset"] == "synthetic"
     with pytest.raises(TypeError):
-        spec.metadata["dataset"] = "mutated"
+        spec.metadata["dataset"] = "mutated"  # type: ignore[index]
     with pytest.raises(TypeError, match="JSON"):
-        WitnessDiscoverySpec(metadata={"bad": object()})
+        WitnessDiscoverySpec(metadata={"bad": object()})  # type: ignore[dict-item]
     with pytest.raises(TypeError, match="keys"):
-        WitnessDiscoverySpec(metadata={1: "not-a-string"})
+        WitnessDiscoverySpec(metadata={1: "not-a-string"})  # type: ignore[dict-item]
 
 
 def test_preferred_rust_feature_path_matches_numpy_when_available() -> None:
@@ -196,14 +198,23 @@ def test_preferred_rust_feature_path_matches_numpy_when_available() -> None:
     np.testing.assert_allclose(rust_theta, numpy_theta, atol=1e-12)
 
 
-def test_preferred_rust_feature_path_records_backend_provenance(monkeypatch) -> None:
+def test_preferred_rust_feature_path_records_backend_provenance(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Record native-backend provenance when the feature export is available."""
     K_nm, omega, theta0 = _problem()
     spec = _small_spec()
 
     class FakeEngine:
         @staticmethod
-        def kuramoto_witness_candidate_features(theta0, omega, K_nm, candidates, dt, n_steps):
+        def kuramoto_witness_candidate_features(
+            theta0: NDArray[np.float64],
+            omega: NDArray[np.float64],
+            K_nm: NDArray[np.float64],
+            candidates: NDArray[np.float64],
+            dt: float,
+            n_steps: int,
+        ) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
             n_candidates = candidates.shape[0]
             return (
                 np.full(n_candidates, 0.5, dtype=np.float64),
@@ -268,7 +279,7 @@ def test_bayesian_surrogate_and_novelty_have_prior_for_single_training_point() -
 
 
 def test_bayesian_surrogate_falls_back_to_pseudoinverse_for_singular_solver(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Fall back to a pseudoinverse when the surrogate solve is singular."""
     X_train = np.array(
@@ -281,7 +292,7 @@ def test_bayesian_surrogate_falls_back_to_pseudoinverse_for_singular_solver(
     y_train = np.array([0.2, 0.8], dtype=np.float64)
     X_pool = np.array([[0.5, 1.0, 0.0]], dtype=np.float64)
 
-    def raise_singular(*args, **kwargs):
+    def raise_singular(*args: object, **kwargs: object) -> None:
         raise np.linalg.LinAlgError("forced singular solve")
 
     monkeypatch.setattr(np.linalg, "solve", raise_singular)
@@ -403,7 +414,9 @@ def test_rl_discovery_agent_requires_real_problem_and_runs_when_configured() -> 
         ({"n_episodes": 0}, "n_episodes"),
     ],
 )
-def test_rl_discovery_agent_rejects_unwired_compatibility_parameters(kwargs, match) -> None:
+def test_rl_discovery_agent_rejects_unwired_compatibility_parameters(
+    kwargs: dict[str, Any], match: str
+) -> None:
     """Reject compatibility parameters without executable wiring."""
     with pytest.raises(ValueError, match=match):
         RLDiscoveryAgent(**kwargs)
@@ -438,7 +451,9 @@ def test_invalid_inputs_rejected_before_search() -> None:
         ({"K_nm": np.eye(2), "omega": np.ones(2), "theta0": np.array([0.0, np.nan])}, "theta0"),
     ],
 )
-def test_problem_validation_rejects_non_physical_inputs(kwargs, match) -> None:
+def test_problem_validation_rejects_non_physical_inputs(
+    kwargs: dict[str, Any], match: str
+) -> None:
     """Reject non-square, non-finite, or shape-inconsistent problems."""
     theta0 = kwargs.pop("theta0", None)
 
@@ -458,7 +473,9 @@ def test_problem_validation_rejects_non_physical_inputs(kwargs, match) -> None:
         ({"rl_epsilon": 1.1}, "rl_epsilon"),
     ],
 )
-def test_discovery_spec_rejects_invalid_search_contract(kwargs, match) -> None:
+def test_discovery_spec_rejects_invalid_search_contract(
+    kwargs: dict[str, Any], match: str
+) -> None:
     """Reject invalid search horizons, bounds, weights, and probabilities."""
     with pytest.raises(ValueError, match=match):
         WitnessDiscoverySpec(**kwargs)

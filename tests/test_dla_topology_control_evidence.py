@@ -9,7 +9,9 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -75,7 +77,8 @@ def test_evidence_serialisation_and_markdown_expose_nonclaims(
     markdown = render_dla_topology_control_markdown(frozen_evidence)
     assert payload["content_digest"] == frozen_evidence.content_digest
     assert "content_digest" not in without_digest
-    assert payload["support"][5]["status"] == "descoped"
+    support = cast(list[dict[str, object]], payload["support"])
+    assert support[5]["status"] == "descoped"
     assert frozen_evidence.content_digest in markdown
     assert "not a full-DLA" in markdown
     assert "differentiable-PH" in markdown
@@ -123,49 +126,27 @@ def test_writer_round_trips_and_fails_closed_on_drift(
 
 
 @pytest.mark.parametrize(
-    ("kwargs", "message"),
+    ("n_qubits", "seed", "message"),
     [
-        ({"n_qubits": 1}, "n_qubits"),
-        ({"n_qubits": 9}, "n_qubits"),
-        ({"n_qubits": True}, "n_qubits"),
-        ({"seed": True}, "seed"),
-        ({"seed": 1.5}, "seed"),
+        (1, 23, "n_qubits"),
+        (9, 23, "n_qubits"),
+        (True, 23, "n_qubits"),
+        (4, True, "seed"),
+        (4, 1.5, "seed"),
     ],
 )
 def test_evidence_builder_rejects_unbounded_or_invalid_configuration(
-    kwargs: dict[str, object], message: str
+    n_qubits: int, seed: int, message: str
 ) -> None:
     """Bound dense evidence size and require an exact integer seed."""
     with pytest.raises(ValueError, match=message):
-        build_dla_topology_control_evidence(**kwargs)
+        build_dla_topology_control_evidence(n_qubits=n_qubits, seed=seed)
 
 
 def test_evidence_contract_rejects_invalid_schema_metrics_and_custody(
     frozen_evidence: DlaTopologyControlEvidence,
 ) -> None:
     """Reject malformed top-level evidence fields and contradictory metrics."""
-    values = {
-        "schema_version": frozen_evidence.schema_version,
-        "generated_on": frozen_evidence.generated_on,
-        "n_qubits": frozen_evidence.n_qubits,
-        "sector": frozen_evidence.sector,
-        "initial_objective": frozen_evidence.initial_objective,
-        "final_objective": frozen_evidence.final_objective,
-        "initial_leakage_mass": frozen_evidence.initial_leakage_mass,
-        "final_leakage_mass": frozen_evidence.final_leakage_mass,
-        "accepted_steps": frozen_evidence.accepted_steps,
-        "parity_gradient_max_abs_error": frozen_evidence.parity_gradient_max_abs_error,
-        "parity_jvp_max_abs_error": frozen_evidence.parity_jvp_max_abs_error,
-        "topology_jvp_max_abs_error": frozen_evidence.topology_jvp_max_abs_error,
-        "topology_adjoint_error": frozen_evidence.topology_adjoint_error,
-        "existing_optimizer_final_violation": frozen_evidence.existing_optimizer_final_violation,
-        "topology_differential_digest": frozen_evidence.topology_differential_digest,
-        "trace_digest": frozen_evidence.trace_digest,
-        "unsupported_blockers": frozen_evidence.unsupported_blockers,
-        "support": frozen_evidence.support,
-        "claim_boundary": frozen_evidence.claim_boundary,
-        "content_digest": frozen_evidence.content_digest,
-    }
     cases = (
         ({"schema_version": "bad"}, "schema_version"),
         ({"generated_on": " "}, "generated_on"),
@@ -185,4 +166,4 @@ def test_evidence_contract_rejects_invalid_schema_metrics_and_custody(
     )
     for replacement, message in cases:
         with pytest.raises(ValueError, match=message):
-            DlaTopologyControlEvidence(**(values | replacement))
+            replace(frozen_evidence, **replacement)

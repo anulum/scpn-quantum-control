@@ -53,7 +53,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-advanced-witnesses-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/advanced_witnesses_product.py,*/analysis/otoc.py,*/analysis/shadow_tomography.py
   coverage-frontier-quality:
     runs-on: ubuntu-latest
@@ -88,7 +88,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.coverage-frontier-quality
-          --precision=2 --fail-under=100 --include=*/studio/coverage_frontier.py
+          --precision=2 --show-missing --fail-under=100 --include=*/studio/coverage_frontier.py
   compiler-boundary-product-quality:
     runs-on: ubuntu-latest
     env:
@@ -125,7 +125,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.compiler-boundary-product-quality
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/compiler_boundary_product.py,*/compiler/mlir_llvm_jit_claim_gate.py
   scientific-crosscheck-quality:
     runs-on: ubuntu-latest
@@ -163,7 +163,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.scientific-crosscheck-quality
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/analysis/qfi_geometric_crosscheck.py,*/gauge/lattice_crosscheck.py
   resource-budget-gate-quality:
     needs: scientific-crosscheck-quality
@@ -202,7 +202,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-resource-budget-gate-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/compile_budget.py,*/resource_budget_gate.py
   advantage-language-protocol-quality:
     runs-on: ubuntu-latest
@@ -241,7 +241,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-advantage-language-protocol-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/advantage_language_protocol.py,*/benchmarks/advantage_protocol.py
   metamorphic-ad-verification-quality:
     runs-on: ubuntu-latest
@@ -272,7 +272,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.metamorphic-ad-verification-quality
-          --precision=2 --fail-under=100 --include=*/metamorphic_ad_verification.py
+          --precision=2 --show-missing --fail-under=100 --include=*/metamorphic_ad_verification.py
   competitive-baseline-watch-quality:
     runs-on: ubuntu-latest
     env:
@@ -326,5 +326,5 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/.coverage.competitive-baseline-watch-quality
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/competitive_baseline_watch.py,*/benchmarks/reproducible_comparison.py,*/benchmarks/kuramoto_competitive_types.py,*/benchmarks/kuramoto_competitive_benchmark.py,*/benchmarks/kuramoto_external_competitors.py

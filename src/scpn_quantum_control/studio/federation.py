@@ -400,9 +400,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 1
         print(f"studio manifest is current ({STUDIO_MANIFEST_PATH.as_posix()})")
         return 0
-    path = write_federation_document()
+    write_federation_document()
     digest = build_manifest().to_dict()["content_digest"]
-    print(f"Wrote {path} (schema_a content_digest={digest})")
+    print(f"Wrote {STUDIO_MANIFEST_PATH.as_posix()} (schema_a content_digest={digest})")
     return 0
 
 

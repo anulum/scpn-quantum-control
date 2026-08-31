@@ -49,7 +49,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-phase-qnode-product-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/phase_qnode_product.py,*/phase/torch_autograd_function.py
   rust-accel-import-resilience-quality:
     runs-on: ubuntu-latest
@@ -90,7 +90,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-rust-accel-import-resilience-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/scpn_quantum_control/_rust_accel.py
   studio-executive-benchmark-quality:
     needs: rust-accel-import-resilience-quality
@@ -130,7 +130,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-studio-executive-benchmark-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/studio/executive_benchmark.py,*/studio/benchmark_databank_bundle.py
   synchronisation-witness-quality:
     runs-on: ubuntu-latest
@@ -181,7 +181,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-synchronisation-witness-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/phase/synchronisation_witness.py,*/benchmarks/sync_witness_evidence.py,*/studio/executive_analyse.py,*/studio/executive_cli.py
   experiment-mitigation-quality:
     runs-on: ubuntu-latest
@@ -212,7 +212,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.experiment-mitigation-quality
-          --precision=2 --fail-under=100 --include=*/hardware/experiment_mitigation.py
+          --precision=2 --show-missing --fail-under=100 --include=*/hardware/experiment_mitigation.py
   research-lane-registry-quality:
     runs-on: ubuntu-latest
     env:
@@ -268,7 +268,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-research-lane-registry-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/analysis/research_lane_registry.py,*/analysis/rl_discovery_agent.py,*/analysis/rl_pulse_optimizer.py,*/analysis/rl_research_governance.py,*/analysis/witness_discovery.py
   theory-hook-promotion-quality:
     runs-on: ubuntu-latest
@@ -307,7 +307,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-theory-hook-promotion-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/analysis/theory_hook_promotion.py,*/analysis/magic_nonstabilizerness.py
   scorecard-acceptance-engine-quality:
     runs-on: ubuntu-latest
@@ -338,7 +338,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-scorecard-acceptance-engine.coverage
-          --precision=2 --fail-under=100 --include=*/scorecard_acceptance_engine.py
+          --precision=2 --show-missing --fail-under=100 --include=*/scorecard_acceptance_engine.py
   unsuitable-scenario-registry-quality:
     runs-on: ubuntu-latest
     env:
@@ -368,7 +368,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.unsuitable-scenario-registry-quality
-          --precision=2 --fail-under=100 --include=*/unsuitable_scenario_registry.py
+          --precision=2 --show-missing --fail-under=100 --include=*/unsuitable_scenario_registry.py
   kuramoto-layout-cost-quality:
     runs-on: ubuntu-latest
     env:
@@ -398,7 +398,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.kuramoto-layout-cost-quality
-          --precision=2 --fail-under=100 --include=*/hardware/kuramoto_layout_cost.py
+          --precision=2 --show-missing --fail-under=100 --include=*/hardware/kuramoto_layout_cost.py
   kuramoto-layout-relaxation-quality:
     runs-on: ubuntu-latest
     env:
@@ -428,7 +428,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.kuramoto-layout-relaxation-quality
-          --precision=2 --fail-under=100 --include=*/hardware/kuramoto_layout_relaxation.py
+          --precision=2 --show-missing --fail-under=100 --include=*/hardware/kuramoto_layout_relaxation.py
   application-honesty-quality:
     runs-on: ubuntu-latest
     env:
@@ -484,7 +484,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-application-honesty-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/applications/honesty_kits.py,*/applications/dataset_catalog.py,*/applications/eeg_classification.py,*/applications/quantum_evs.py
   layout-method-comparison-quality:
     runs-on: ubuntu-latest
@@ -520,7 +520,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-layout-method-comparison-quality.coverage
-          --precision=2 --fail-under=100 --include=*/benchmarks/layout_method_comparison.py
+          --precision=2 --show-missing --fail-under=100 --include=*/benchmarks/layout_method_comparison.py
   phase-trainability-quality:
     runs-on: ubuntu-latest
     env:
@@ -550,7 +550,7 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=.coverage.phase-trainability-quality
-          --precision=2 --fail-under=100 --include=*/phase/trainability.py
+          --precision=2 --show-missing --fail-under=100 --include=*/phase/trainability.py
   decisive-advantage-quality:
     runs-on: ubuntu-latest
     env:
@@ -594,7 +594,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.decisive-advantage-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/decisive_advantage_protocol.py,*/decisive_run_harness.py
   mlir-leaf-quality:
@@ -638,7 +638,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.mlir-leaf-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/mlir_enzyme_audit.py,*/mlir_enzyme_evidence.py,*/mlir_executable_kernel.py,*/mlir_phase_qnode_runtime.py,*/mlir_transform_plan_assembly.py,*/mlir_workload_compilation.py
   phase-qnode-affinity-quality:
@@ -667,7 +667,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.phase-qnode-affinity
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/qnode_affinity_benchmark.py
   phase-qnode-vector-quality:
@@ -695,7 +695,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.phase-qnode-vector
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/qnode_vector_transforms.py
   studio-program-ad-quality:
@@ -733,6 +733,6 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.studio-program-ad
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/program_ad_replay_artifact.py,*/executive.py

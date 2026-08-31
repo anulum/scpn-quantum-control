@@ -35,9 +35,11 @@ from scpn_quantum_control.sensing.nv_magnetometry_20T import (
     simulate_odmr_measurement,
 )
 
+_engine: ModuleType | None
 try:
-    import scpn_quantum_engine as _engine
+    import scpn_quantum_engine as _loaded_engine
 
+    _engine = _loaded_engine
     _HAS_RUST = hasattr(_engine, "nv_odmr_spectrum")
 except ImportError:  # pragma: no cover - engine optional
     _engine = None

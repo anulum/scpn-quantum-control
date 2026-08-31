@@ -52,7 +52,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-program-ad-alias-analysis-quality.coverage
-          --precision=2 --fail-under=100 --include=*/program_ad_alias_analysis.py
+          --precision=2 --show-missing --fail-under=100 --include=*/program_ad_alias_analysis.py
   general-unitary-quality:
     runs-on: ubuntu-latest
     env:
@@ -86,7 +86,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-general-unitary-quality.coverage
-          --precision=2 --fail-under=100 --include=*/phase/general_unitary.py
+          --precision=2 --show-missing --fail-under=100 --include=*/phase/general_unitary.py
   gpu-batch-vqe-quality:
     runs-on: ubuntu-latest
     env:
@@ -121,7 +121,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-gpu-batch-vqe-quality.coverage
-          --precision=2 --fail-under=100 --include=*/phase/gpu_batch_vqe.py
+          --precision=2 --show-missing --fail-under=100 --include=*/phase/gpu_batch_vqe.py
   avqds-quality:
     runs-on: ubuntu-latest
     env:
@@ -159,7 +159,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-avqds-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/phase/avqds.py
   ansatz-benchmark-quality:
     runs-on: ubuntu-latest
@@ -202,7 +202,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-ansatz-benchmark-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/phase/ansatz_bench.py,*/benchmarks/appqsim_protocol.py
   symmetry-verification-quality:
     runs-on: ubuntu-latest
@@ -241,7 +241,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-symmetry-verification-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/mitigation/symmetry_verification.py
   experiment-helpers-quality:
     runs-on: ubuntu-latest
@@ -283,7 +283,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-experiment-helpers-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/hardware/_experiment_helpers.py
   predictive-coding-quality:
     runs-on: ubuntu-latest
@@ -325,7 +325,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-predictive-coding-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/fep/predictive_coding.py
   hierarchical-keys-quality:
     runs-on: ubuntu-latest
@@ -376,7 +376,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-hierarchical-keys-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/crypto/hierarchical_keys.py,*/crypto/topology_auth.py
   sync-uncertainty-quality:
     runs-on: ubuntu-latest
@@ -438,7 +438,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-sync-uncertainty-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/analysis/sync_uncertainty.py,*/mitigation/zne_uncertainty.py,*/studio/executive_mitigate.py,*/studio/executive_cli.py
   coupling-invariant-quality:
@@ -484,7 +484,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-coupling-invariant-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/studio/coupling_invariant.py
   experiment-dynamics-quality:
@@ -527,7 +527,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-experiment-dynamics-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/hardware/experiment_dynamics.py
   phase-artifact-quality:
@@ -572,5 +572,5 @@ jobs:
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-phase-artifact-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/bridge/phase_artifact.py,*/bridge/scpn_upde_edge.py

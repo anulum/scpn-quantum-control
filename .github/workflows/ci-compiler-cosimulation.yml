@@ -67,7 +67,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-qpu-compute-types-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/qpu_compute_types.py,*/bridge/qpu_data_artifact.py
   cosimulation-quality:
@@ -110,7 +110,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-cosimulation-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/cosimulation/knm_partition.py,*/cosimulation/quantum_classical.py
   dla-topology-objectives-quality:
     runs-on: ubuntu-latest
@@ -153,7 +153,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-dla-topology-objectives-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/dla_topology_control/objectives.py
   dla-topology-projection-quality:
@@ -196,7 +196,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-dla-topology-projection-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/dla_topology_control/projection.py
   quantum-neuromorphic-bridge-quality:
@@ -260,6 +260,6 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-quantum-neuromorphic-bridge-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/qsnn/quantum_neuromorphic_bridge.py,*/qsnn/qlayer.py,*/bridge/snn_backward.py,*/bridge/spn_to_qcircuit.py

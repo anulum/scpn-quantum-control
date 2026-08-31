@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from scpn_quantum_control.benchmarks.advantage_protocol import (
@@ -48,7 +50,7 @@ def test_scaling_baseline_rejects_empty_metrics() -> None:
 def test_validate_scaling_rows_accepts_required_ok_or_skipped_rows() -> None:
     """Accept complete required rows with measured or explained-skip status."""
     protocol = default_s2_scaling_protocol()
-    rows = [
+    rows: list[dict[str, Any]] = [
         {key: None for key in protocol.output_schema["row_keys"]}
         for _ in protocol.required_baselines
     ]
@@ -91,7 +93,7 @@ def test_validate_scaling_rows_rejects_missing_baseline_and_unknown_status() -> 
     assert any("invalid status" in item for item in validation.invalid_rows)
 
 
-def _complete_row(protocol_id: str, n_qubits: int, baseline: str) -> dict:
+def _complete_row(protocol_id: str, n_qubits: int, baseline: str) -> dict[str, Any]:
     return {
         "protocol_id": protocol_id,
         "n_qubits": n_qubits,

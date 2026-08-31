@@ -54,7 +54,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.stable-core-product-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/stable_core_product.py
   open-system-completeness-quality:
@@ -102,7 +102,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.open-system-completeness-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/open_system_mcwf_product.py,*/phase/tensor_jump.py
   thermo-readiness-product-quality:
@@ -159,7 +159,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-thermo-readiness-product-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/thermo_readiness_product.py,*/thermodynamics/readiness.py
   adaptive-branching-quality:
@@ -215,7 +215,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-adaptive-branching-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/control/adaptive_branching.py
   quantum-sensing-quality:
@@ -282,7 +282,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-quantum-sensing-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/analysis/sensing.py,*/sensing/nv_magnetometry_20T.py
   phase-coupling-learning-quality:
@@ -330,7 +330,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-phase-coupling-learning-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/phase/coupling_learning.py
   phase-objectives-quality:
@@ -378,7 +378,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-phase-objectives-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/phase/objectives.py
   provider-gradient-audit-quality:
@@ -446,7 +446,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-provider-gradient-audit-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/phase/provider_gradient_audit.py,*/phase/provider_hardware_gradient_audit.py,*/phase/provider_hardware_safety_audit.py,*/phase/hardware_gradient_campaign.py,*/phase/hardware_gradient_publication.py
   entropy-randomness-quality:
@@ -502,7 +502,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-entropy-randomness-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/entropy/nist_sp800_22.py,*/entropy/qrng_stream.py
   topology-control-quality:
@@ -558,7 +558,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-topology-control-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/topology_control/constraints.py,*/topology_control/objectives.py
   quantum-sync-oracle-quality:
@@ -601,7 +601,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.quantum-sync-oracle-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/quantum_sync_challenge_oracle_product.py
   custom-derivatives-product-quality:
@@ -644,6 +644,6 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=.coverage.custom-derivatives-product-quality
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/custom_derivatives_product.py

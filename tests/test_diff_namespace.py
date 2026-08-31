@@ -311,7 +311,7 @@ def test_jit_explanation_accepts_circuit_targets_and_compiled_records() -> None:
         suggested_alternatives=(),
     )
     assert compiled.fail_closed is False
-    assert compiled.require_compiled() is None
+    compiled.require_compiled()
 
 
 def test_serialization_labels_callable_without_module(

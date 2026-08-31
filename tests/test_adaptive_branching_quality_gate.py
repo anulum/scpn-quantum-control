@@ -11,7 +11,7 @@ from pathlib import Path
 
 from tools import adaptive_branching_quality_gates as quality_gates
 from tools import preflight
-from tools.ci_workflow_inventory import read_ci_workflow_source
+from tools.ci_workflow_inventory import read_ci_workflow_source, workflow_path_for_job
 
 
 def test_static_gate_is_strict_and_completely_documented() -> None:
@@ -66,4 +66,5 @@ def test_ci_runs_and_aggregates_adaptive_branching_gate() -> None:
     assert all(path in block for path in quality_gates.ADAPTIVE_BRANCHING_DOCSTRING_RATCHET)
     assert all(path in block for path in quality_gates.ADAPTIVE_BRANCHING_COVERAGE_COHORT)
     assert quality_gates.ADAPTIVE_BRANCHING_COVERAGE_INCLUDE in block
-    assert "adaptive-branching-quality" in workflow[workflow.index("  ci-gate:") :]
+    owner = workflow_path_for_job("adaptive-branching-quality").read_text(encoding="utf-8")
+    assert block in owner

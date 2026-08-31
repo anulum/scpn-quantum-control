@@ -91,7 +91,9 @@ def test_constraint_projection_preserves_frozen_edges_and_budget() -> None:
     np.testing.assert_allclose(np.diag(projected), 0.0)
     assert projected[0, 1] == pytest.approx(0.4)
     assert projected[0, 2] == pytest.approx(0.0)
-    assert ledger.total_weight[0] <= float(np.sum(projected)) <= ledger.total_weight[1]
+    total_weight = ledger.total_weight
+    assert total_weight is not None
+    assert total_weight[0] <= float(np.sum(projected)) <= total_weight[1]
 
 
 def test_objective_penalises_degenerate_zero_graph() -> None:

@@ -57,7 +57,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-koopman-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/analysis/koopman.py
   quantum-phi-quality:
@@ -115,7 +115,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-quantum-phi-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/analysis/quantum_phi.py,*/analysis/integrated_information_phi.py,*/analysis/sync_order_parameter.py
   qpu-result-pack-quality:
@@ -178,7 +178,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-qpu-result-pack-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/studio/qpu_result_pack.py,*/studio/executive_execute.py,*/studio/executive_cli.py
   error-aware-chain-quality:
@@ -218,7 +218,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-error-aware-chain-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/hardware/error_aware_chain.py
   kuramoto-variants-quality:
     needs: error-aware-chain-quality
@@ -276,7 +276,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-kuramoto-variants-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/phase/kuramoto_variants.py,*/phase/floquet_kuramoto.py
   kuramoto-core-quality:
@@ -331,7 +331,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-kuramoto-core-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/kuramoto_core.py
   mps-evolution-quality:
@@ -387,7 +387,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-mps-evolution-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/phase/mps_evolution.py,*/phase/contraction_optimiser.py
   knm-key-quality:
@@ -436,7 +436,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-knm-key-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/crypto/knm_key.py,*/crypto/noise_analysis.py
   differentiable-implicit-sensitivity-quality:
     runs-on: ubuntu-latest
@@ -475,7 +475,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-differentiable-implicit-sensitivity-quality.coverage
-          --precision=2 --fail-under=100 --include=*/differentiable_implicit_sensitivity.py
+          --precision=2 --show-missing --fail-under=100 --include=*/differentiable_implicit_sensitivity.py
   differentiable-residual-weights-quality:
     runs-on: ubuntu-latest
     env:
@@ -513,7 +513,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-differentiable-residual-weights-quality.coverage
-          --precision=2 --fail-under=100 --include=*/differentiable_residual_weights.py
+          --precision=2 --show-missing --fail-under=100 --include=*/differentiable_residual_weights.py
   differentiable-consistency-quality:
     runs-on: ubuntu-latest
     env:
@@ -551,7 +551,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-differentiable-consistency-quality.coverage
-          --precision=2 --fail-under=100 --include=*/differentiable_consistency.py
+          --precision=2 --show-missing --fail-under=100 --include=*/differentiable_consistency.py
   differentiable-jax-adapter-quality:
     runs-on: ubuntu-latest
     env:
@@ -589,4 +589,4 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-differentiable-jax-adapter-quality.coverage
-          --precision=2 --fail-under=100 --include=*/differentiable_jax_adapter.py
+          --precision=2 --show-missing --fail-under=100 --include=*/differentiable_jax_adapter.py

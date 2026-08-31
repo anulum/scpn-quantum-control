@@ -37,6 +37,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import Literal, overload
 
 import numpy as np
 from numpy.typing import NDArray
@@ -164,6 +165,36 @@ def decode_schedule_to_field(
     if delta_field_T <= 0.0:
         raise ValueError("delta_field_T must be positive")
     return base_field_T + delta_field_T * np.cumsum(u)
+
+
+@overload
+def frc_pulsed_shot_cost(
+    schedule: NDArray[np.integer] | NDArray[np.floating],
+    target_b_profile: NDArray[np.floating],
+    available_capacitor_energy_J: float,
+    objective: FRCQAOAObjective,
+    *,
+    surrogate: FRCPlasmaSurrogate | None = None,
+    delta_field_T: float = 0.5,
+    energy_per_bank_J: float = 1.0e5,
+    dt_s: float = 1.0e-6,
+    return_components: Literal[False] = False,
+) -> float: ...
+
+
+@overload
+def frc_pulsed_shot_cost(
+    schedule: NDArray[np.integer] | NDArray[np.floating],
+    target_b_profile: NDArray[np.floating],
+    available_capacitor_energy_J: float,
+    objective: FRCQAOAObjective,
+    *,
+    surrogate: FRCPlasmaSurrogate | None = None,
+    delta_field_T: float = 0.5,
+    energy_per_bank_J: float = 1.0e5,
+    dt_s: float = 1.0e-6,
+    return_components: Literal[True],
+) -> tuple[float, Mapping[str, float]]: ...
 
 
 def frc_pulsed_shot_cost(

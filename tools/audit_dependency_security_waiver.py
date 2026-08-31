@@ -65,6 +65,8 @@ EXPECTED_PIP_AUDIT_COMMAND = (
 WAIVER_GATE_COMMAND = "python tools/audit_dependency_security_waiver.py"
 WAIVER_DOC_HEADING = "### Braket-constrained setuptools advisory waiver"
 DEPENDABOT_CONFIG_PATH = ".github/dependabot.yml"
+SECURITY_WORKFLOW_PATH = ".github/workflows/ci-security.yml"
+"""Reusable workflow that exclusively owns dependency-security execution."""
 DEPENDABOT_WAIVER_DEPENDENCY = "setuptools"
 DEPENDABOT_SECURITY_UPDATES_MARKER = "Dependabot security updates are disabled"
 _RUN_KEY_RE = re.compile(
@@ -850,9 +852,7 @@ def audit_repository(
     errors.extend(audit_lockfiles(lock_texts))
 
     try:
-        workflow_text = (repo_root / ".github" / "workflows" / "ci.yml").read_text(
-            encoding="utf-8"
-        )
+        workflow_text = (repo_root / SECURITY_WORKFLOW_PATH).read_text(encoding="utf-8")
         errors.extend(audit_ci_workflow(workflow_text))
     except OSError as exc:
         errors.append(f"cannot read CI workflow: {exc}")

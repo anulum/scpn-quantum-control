@@ -66,7 +66,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-finite-size-scaling-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/analysis/finite_size_scaling.py,*/analysis/phase_diagram.py,*/analysis/vortex_binding.py
   hardware-experiment-control-quality:
@@ -110,7 +110,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-hardware-experiment-control-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/hardware/experiment_control.py
   generalised-parameter-shift-quality:
@@ -150,7 +150,7 @@ jobs:
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-generalised-parameter-shift-quality.coverage
-          --precision=2 --fail-under=100
+          --precision=2 --show-missing --fail-under=100
           --include=*/phase/generalised_parameter_shift.py
   differentiable-parameter-shift-quality:
     needs: generalised-parameter-shift-quality
@@ -207,7 +207,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-differentiable-parameter-shift-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/differentiable_parameter_shift.py,*/phase/param_shift.py,*/differentiable_stochastic_policy.py
   varqite-quality:
@@ -251,7 +251,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-varqite-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/phase/varqite.py
   xy-compiler-quality:
@@ -296,7 +296,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-xy-compiler-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/phase/xy_compiler.py
   psi-lattice-quality:
@@ -347,7 +347,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-psi-lattice-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/psi_field/lattice.py,*/psi_field/observables.py,*/psi_field/scpn_mapping.py
       - name: Run Rust psi-field lattice parity tests
@@ -397,7 +397,7 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-differentiable-sparse-derivatives-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/differentiable_sparse_derivatives.py,*/differentiable_fisher.py
   program-ad-adjoint-quality:
@@ -453,6 +453,6 @@ jobs:
           python -m coverage report
           --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-program-ad-adjoint-quality.coverage
-          --precision=2
+          --precision=2 --show-missing
           --fail-under=100
           --include=*/program_ad_adjoint.py,*/program_ad_adjoint_generation.py
