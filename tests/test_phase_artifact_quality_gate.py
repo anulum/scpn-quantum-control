@@ -34,10 +34,13 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     run = gates["phase-artifact focused coverage"]
     report = gates["phase-artifact exact coverage threshold"]
     assert "--branch" in run
-    assert run[-3:] == quality_gates.PHASE_ARTIFACT_COVERAGE_COHORT
+    assert (
+        run[-len(quality_gates.PHASE_ARTIFACT_COVERAGE_COHORT) :]
+        == quality_gates.PHASE_ARTIFACT_COVERAGE_COHORT
+    )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/bridge/phase_artifact.py" in report
+    assert f"--include={quality_gates.PHASE_ARTIFACT_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -61,5 +64,5 @@ def test_ci_runs_and_aggregates_phase_artifact_gate() -> None:
     for path in quality_gates.PHASE_ARTIFACT_DOCSTRING_RATCHET:
         assert path in block
     assert "--fail-under=100" in block
-    assert "bridge/phase_artifact.py" in block
+    assert quality_gates.PHASE_ARTIFACT_COVERAGE_INCLUDE in block
     assert "phase-artifact-quality" in workflow[workflow.index("  ci-gate:") :]

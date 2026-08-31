@@ -4683,9 +4683,11 @@ jobs:
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/bridge/phase_artifact.py
+          src/scpn_quantum_control/bridge/scpn_upde_edge.py
           tests/test_phase_artifact.py
           tests/test_phase_artifact_errors.py
           tests/test_phase_artifact_fuzz.py
+          tests/test_scpn_upde_edge.py
           tools/phase_artifact_quality_gates.py
           tests/test_phase_artifact_quality_gate.py
       - run: >-
@@ -4693,9 +4695,11 @@ jobs:
           --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/bridge/phase_artifact.py
+          src/scpn_quantum_control/bridge/scpn_upde_edge.py
           tests/test_phase_artifact.py
           tests/test_phase_artifact_errors.py
           tests/test_phase_artifact_fuzz.py
+          tests/test_scpn_upde_edge.py
           tools/phase_artifact_quality_gates.py
           tests/test_phase_artifact_quality_gate.py
       - run: >-
@@ -4704,11 +4708,12 @@ jobs:
           -m pytest -q tests/test_phase_artifact.py
           tests/test_phase_artifact_errors.py
           tests/test_phase_artifact_fuzz.py
+          tests/test_scpn_upde_edge.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-phase-artifact-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/bridge/phase_artifact.py
+          --include=*/bridge/phase_artifact.py,*/bridge/scpn_upde_edge.py
 
   nqs-ansatz-quality:
     needs: lint

@@ -106,6 +106,7 @@ class SCPNUPDEEdge:
     claim_boundary: str = PAPER27_PROVISIONAL_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate and normalise the bounded federation payload fields."""
         K_nm = _finite_array(self.K_nm, name="K_nm")
         omega = _finite_array(self.omega, name="omega")
         if K_nm.ndim != 2 or K_nm.shape[0] != K_nm.shape[1]:
@@ -140,12 +141,12 @@ class SCPNUPDEEdge:
 
     @property
     def n_oscillators(self) -> int:
-        """Return the oscillator/qubit count carried by the edge."""
+        """Oscillator/qubit count carried by the edge."""
         return int(self.omega.shape[0])
 
     @property
     def dt(self) -> float:
-        """Return the implied per-step Trotter interval."""
+        """Implied per-step Trotter interval."""
         return float(self.time / self.trotter_steps)
 
     def to_payload(self) -> JsonObject:

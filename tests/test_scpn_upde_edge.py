@@ -27,7 +27,6 @@ from scpn_quantum_control.bridge import (
 
 def test_paper27_edge_emits_16_oscillator_computational_agreement_payload() -> None:
     """Paper-27 edge payloads should remain bounded computational-agreement artefacts."""
-
     edge = build_paper27_scpn_upde_edge(time=0.1, trotter_steps=1, trotter_order=1)
     payload = edge.to_payload()
 
@@ -53,7 +52,6 @@ def test_paper27_edge_emits_16_oscillator_computational_agreement_payload() -> N
 
 def test_edge_payload_digest_changes_when_knm_changes() -> None:
     """Payload validation should reject stale matrix digests after K_nm mutation."""
-
     edge = build_paper27_scpn_upde_edge()
     payload = edge.to_payload()
     tampered = copy.deepcopy(payload)
@@ -65,7 +63,6 @@ def test_edge_payload_digest_changes_when_knm_changes() -> None:
 
 def test_edge_payload_rejects_broader_scope_or_permissions() -> None:
     """Payload validation should reject broader scope and execution permissions."""
-
     payload = build_paper27_scpn_upde_edge().to_payload()
     broader = copy.deepcopy(payload)
     broader["scope_envelope"] = "physical-validation"
@@ -82,7 +79,6 @@ def test_edge_payload_rejects_broader_scope_or_permissions() -> None:
 
 def test_custom_edge_validates_shapes_before_compile_surface() -> None:
     """Custom K_nm and omega inputs should round-trip through the compile-backed edge."""
-
     K_nm = np.array([[0.0, 0.25], [0.25, 0.0]], dtype=np.float64)
     omega = np.array([1.0, -0.5], dtype=np.float64)
 
@@ -101,7 +97,6 @@ def test_custom_edge_validates_shapes_before_compile_surface() -> None:
 
 def test_edge_rejects_asymmetric_knm() -> None:
     """The public builder should reject asymmetric coupling matrices."""
-
     with pytest.raises(ValueError, match="symmetric"):
         build_scpn_upde_edge(
             np.array([[0.0, 0.25], [0.1, 0.0]], dtype=np.float64),
@@ -111,7 +106,6 @@ def test_edge_rejects_asymmetric_knm() -> None:
 
 def _minimal_edge() -> SCPNUPDEEdge:
     """Return a small public edge object for validator boundary tests."""
-
     return SCPNUPDEEdge(
         K_nm=np.array([[0.0, 0.25], [0.25, 0.0]], dtype=np.float64),
         omega=np.array([1.0, -0.5], dtype=np.float64),
@@ -146,7 +140,6 @@ def test_edge_constructor_rejects_malformed_public_inputs(
     match: str,
 ) -> None:
     """The public edge dataclass should fail closed on malformed inputs."""
-
     params: dict[str, object] = {
         "K_nm": np.array([[0.0, 0.25], [0.25, 0.0]], dtype=np.float64),
         "omega": np.array([1.0, -0.5], dtype=np.float64),
@@ -181,7 +174,6 @@ def test_payload_validator_rejects_malformed_top_level_fields(
     match: str,
 ) -> None:
     """Payload validation should reject malformed top-level wire fields."""
-
     payload = _minimal_edge().to_payload()
     payload[field] = value
 
@@ -191,7 +183,6 @@ def test_payload_validator_rejects_malformed_top_level_fields(
 
 def test_payload_validator_rejects_actuation_and_stale_omega_digest() -> None:
     """Payload validation should reject actuation and stale omega digests."""
-
     payload = _minimal_edge().to_payload()
     actuation = copy.deepcopy(payload)
     actuation["permissions"]["actuation_permitted"] = True
@@ -208,7 +199,6 @@ def test_payload_validator_rejects_actuation_and_stale_omega_digest() -> None:
 
 def test_payload_validator_rejects_stale_edge_digest_only() -> None:
     """Payload validation should reject stale edge digests after metadata mutation."""
-
     payload = _minimal_edge().to_payload()
     stale_edge = copy.deepcopy(payload)
     stale_edge["claim_boundary"] = "changed computational-agreement boundary"

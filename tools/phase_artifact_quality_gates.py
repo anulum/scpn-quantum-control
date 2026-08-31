@@ -13,13 +13,16 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 PHASE_ARTIFACT_SOURCE = "src/scpn_quantum_control/bridge/phase_artifact.py"
+SCPN_UPDE_EDGE_SOURCE = "src/scpn_quantum_control/bridge/scpn_upde_edge.py"
 PHASE_ARTIFACT_COVERAGE_COHORT = [
     "tests/test_phase_artifact.py",
     "tests/test_phase_artifact_errors.py",
     "tests/test_phase_artifact_fuzz.py",
+    "tests/test_scpn_upde_edge.py",
 ]
 PHASE_ARTIFACT_TYPING_RATCHET = [
     PHASE_ARTIFACT_SOURCE,
+    SCPN_UPDE_EDGE_SOURCE,
     *PHASE_ARTIFACT_COVERAGE_COHORT,
     "tools/phase_artifact_quality_gates.py",
     "tests/test_phase_artifact_quality_gate.py",
@@ -28,6 +31,7 @@ PHASE_ARTIFACT_DOCSTRING_RATCHET = [
     *PHASE_ARTIFACT_TYPING_RATCHET,
 ]
 PHASE_ARTIFACT_COVERAGE_DATA_FILE = "/tmp/scpn-qc-phase-artifact-quality.coverage"  # nosec B108
+PHASE_ARTIFACT_COVERAGE_INCLUDE = "*/bridge/phase_artifact.py,*/bridge/scpn_upde_edge.py"
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -93,7 +97,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={PHASE_ARTIFACT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/bridge/phase_artifact.py",
+                f"--include={PHASE_ARTIFACT_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -102,9 +106,11 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "PHASE_ARTIFACT_COVERAGE_COHORT",
     "PHASE_ARTIFACT_COVERAGE_DATA_FILE",
+    "PHASE_ARTIFACT_COVERAGE_INCLUDE",
     "PHASE_ARTIFACT_DOCSTRING_RATCHET",
     "PHASE_ARTIFACT_SOURCE",
     "PHASE_ARTIFACT_TYPING_RATCHET",
+    "SCPN_UPDE_EDGE_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]
