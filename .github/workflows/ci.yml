@@ -6169,16 +6169,23 @@ jobs:
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/bench_cli.py
+          src/scpn_quantum_control/benchmarks/s3_design_protocol.py
           tests/test_bench_cli.py
           tests/test_bench_cli_branches.py
           tests/test_execution_surface_policy.py
+          tests/test_s3_design_protocol.py
+          tests/test_s3_design_protocol_guards.py
           tools/bench_cli_quality_gates.py
           tests/test_bench_cli_quality_gate.py
       - run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/bench_cli.py
+          src/scpn_quantum_control/benchmarks/s3_design_protocol.py
           tests/test_bench_cli_branches.py
+          tests/test_s3_design_protocol.py
+          tests/test_s3_design_protocol_guards.py
           tools/bench_cli_quality_gates.py
           tests/test_bench_cli_quality_gate.py
       - run: >-
@@ -6186,10 +6193,12 @@ jobs:
           --data-file=/tmp/scpn-qc-bench-cli-quality.coverage --branch
           -m pytest -q tests/test_bench_cli.py tests/test_bench_cli_branches.py
           tests/test_execution_surface_policy.py
+          tests/test_s3_design_protocol.py tests/test_s3_design_protocol_guards.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-bench-cli-quality.coverage
-          --precision=2 --fail-under=100 --include=*/bench_cli.py
+          --precision=2 --fail-under=100
+          --include=*/bench_cli.py,*/benchmarks/s3_design_protocol.py
 
   identity-binding-spec-quality:
     needs: lint

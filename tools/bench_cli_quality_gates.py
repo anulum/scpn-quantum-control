@@ -15,9 +15,12 @@ Gate = tuple[str, list[str]]
 
 BENCH_CLI_QUALITY_RATCHET = [
     "src/scpn_quantum_control/bench_cli.py",
+    "src/scpn_quantum_control/benchmarks/s3_design_protocol.py",
     "tests/test_bench_cli.py",
     "tests/test_bench_cli_branches.py",
     "tests/test_execution_surface_policy.py",
+    "tests/test_s3_design_protocol.py",
+    "tests/test_s3_design_protocol_guards.py",
     "tools/bench_cli_quality_gates.py",
     "tests/test_bench_cli_quality_gate.py",
 ]
@@ -25,7 +28,10 @@ BENCH_CLI_QUALITY_RATCHET = [
 
 BENCH_CLI_DOCSTRING_RATCHET = [
     "src/scpn_quantum_control/bench_cli.py",
+    "src/scpn_quantum_control/benchmarks/s3_design_protocol.py",
     "tests/test_bench_cli_branches.py",
+    "tests/test_s3_design_protocol.py",
+    "tests/test_s3_design_protocol_guards.py",
     "tools/bench_cli_quality_gates.py",
     "tests/test_bench_cli_quality_gate.py",
 ]
@@ -35,11 +41,16 @@ BENCH_CLI_COVERAGE_COHORT = [
     "tests/test_bench_cli.py",
     "tests/test_bench_cli_branches.py",
     "tests/test_execution_surface_policy.py",
+    "tests/test_s3_design_protocol.py",
+    "tests/test_s3_design_protocol_guards.py",
 ]
 """Tests that own exact benchmark CLI coverage."""
 
 BENCH_CLI_COVERAGE_DATA_FILE = "/tmp/scpn-qc-bench-cli-quality.coverage"  # nosec B108
 """Isolated coverage database for the benchmark CLI owner."""
+
+BENCH_CLI_COVERAGE_INCLUDE = "*/bench_cli.py,*/benchmarks/s3_design_protocol.py"
+"""Benchmark CLI and routed S3 protocol sources enforced at exact coverage."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -64,8 +75,11 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *BENCH_CLI_DOCSTRING_RATCHET,
@@ -104,7 +118,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={BENCH_CLI_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/bench_cli.py",
+                f"--include={BENCH_CLI_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -113,6 +127,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "BENCH_CLI_COVERAGE_COHORT",
     "BENCH_CLI_COVERAGE_DATA_FILE",
+    "BENCH_CLI_COVERAGE_INCLUDE",
     "BENCH_CLI_DOCSTRING_RATCHET",
     "BENCH_CLI_QUALITY_RATCHET",
     "build_coverage_gates",

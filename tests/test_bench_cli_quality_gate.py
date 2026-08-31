@@ -15,11 +15,25 @@ from tools import preflight
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
     """Require strict typing and isolated NumPy docstrings."""
+    s3_source = "src/scpn_quantum_control/benchmarks/s3_design_protocol.py"
+    s3_tests = {
+        "tests/test_s3_design_protocol.py",
+        "tests/test_s3_design_protocol_guards.py",
+    }
+    assert s3_source in quality_gates.BENCH_CLI_QUALITY_RATCHET
+    assert s3_source in quality_gates.BENCH_CLI_DOCSTRING_RATCHET
+    assert s3_tests.issubset(quality_gates.BENCH_CLI_QUALITY_RATCHET)
+    assert s3_tests.issubset(quality_gates.BENCH_CLI_DOCSTRING_RATCHET)
+    assert s3_tests.issubset(quality_gates.BENCH_CLI_COVERAGE_COHORT)
+    assert "*/benchmarks/s3_design_protocol.py" in (quality_gates.BENCH_CLI_COVERAGE_INCLUDE)
     gates = dict(quality_gates.build_static_quality_gates("/python"))
     assert gates["mypy-strict-bench-cli-quality"][5:] == quality_gates.BENCH_CLI_QUALITY_RATCHET
     docstring_gate = gates["ruff D bench-cli quality ratchet"]
-    assert "D,D413" in docstring_gate
-    assert docstring_gate[-4:] == quality_gates.BENCH_CLI_DOCSTRING_RATCHET
+    assert "--preview" in docstring_gate and "D,D413,D417,D420" in docstring_gate
+    assert "lint.explicit-preview-rules = true" in docstring_gate
+    assert docstring_gate[-len(quality_gates.BENCH_CLI_DOCSTRING_RATCHET) :] == (
+        quality_gates.BENCH_CLI_DOCSTRING_RATCHET
+    )
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
@@ -28,10 +42,12 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     run = gates["bench-cli focused coverage"]
     report = gates["bench-cli exact coverage threshold"]
     assert "--branch" in run
-    assert run[-3:] == quality_gates.BENCH_CLI_COVERAGE_COHORT
+    assert run[-len(quality_gates.BENCH_CLI_COVERAGE_COHORT) :] == (
+        quality_gates.BENCH_CLI_COVERAGE_COHORT
+    )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/bench_cli.py" in report
+    assert f"--include={quality_gates.BENCH_CLI_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:

@@ -32,6 +32,7 @@ class S3DesignCandidate:
     parameters: Mapping[str, float | int | str]
 
     def __post_init__(self) -> None:
+        """Validate a labelled design candidate with non-empty parameters."""
         if not self.label:
             raise ValueError("label must be non-empty")
         if not self.parameters:

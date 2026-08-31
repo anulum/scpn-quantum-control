@@ -21,6 +21,7 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 def test_score_s3_candidates_emits_ansatz_and_pulse_rows() -> None:
+    """Emit finite bounded rows for both ansatz and pulse candidates."""
     protocol = default_s3_design_protocol()
     rows = score_s3_candidates(
         protocol,
@@ -35,6 +36,7 @@ def test_score_s3_candidates_emits_ansatz_and_pulse_rows() -> None:
 
 
 def test_validate_s3_design_rows_rejects_missing_hardware_boundary() -> None:
+    """Reject a scored row without the explicit no-hardware claim boundary."""
     protocol = default_s3_design_protocol()
     rows = score_s3_candidates(
         protocol,
@@ -49,5 +51,6 @@ def test_validate_s3_design_rows_rejects_missing_hardware_boundary() -> None:
 
 
 def test_score_s3_candidates_rejects_invalid_problem_shape() -> None:
+    """Reject a non-square coupling problem before candidate scoring."""
     with pytest.raises(ValueError, match="square"):
         score_s3_candidates(default_s3_design_protocol(), np.ones((2, 3)), np.ones(2))
