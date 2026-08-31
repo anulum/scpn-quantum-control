@@ -76,6 +76,19 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
     assert (
         "*/hardware/pulse_feasibility.py" in quality_gates.HARDWARE_SAFE_EXECUTION_COVERAGE_INCLUDE
     )
+    s1_source = "src/scpn_quantum_control/hardware/s1_feedback_ibm.py"
+    s1_tests = {
+        "tests/test_s1_feedback_ibm.py",
+        "tests/test_s1_feedback_ibm_branches.py",
+    }
+    assert s1_source in quality_gates.HARDWARE_SAFE_EXECUTION_TYPING_RATCHET
+    assert s1_source in quality_gates.HARDWARE_SAFE_EXECUTION_QUALITY_RATCHET
+    assert s1_tests.issubset(quality_gates.HARDWARE_SAFE_EXECUTION_TYPING_RATCHET)
+    assert s1_tests.issubset(quality_gates.HARDWARE_SAFE_EXECUTION_QUALITY_RATCHET)
+    assert s1_tests.issubset(quality_gates.HARDWARE_SAFE_EXECUTION_COVERAGE_COHORT)
+    assert "*/hardware/s1_feedback_ibm.py" in (
+        quality_gates.HARDWARE_SAFE_EXECUTION_COVERAGE_INCLUDE
+    )
     gates = dict(quality_gates.build_static_quality_gates("/python"))
     assert (
         gates["mypy-strict-hardware-safe-execution-quality"][5:]

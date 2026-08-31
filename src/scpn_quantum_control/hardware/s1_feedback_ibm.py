@@ -40,6 +40,7 @@ class S1FeedbackArmCircuit:
     observable: str = "binary_phase_synchrony"
 
     def __post_init__(self) -> None:
+        """Reject invalid arm metadata before provider-facing packaging."""
         if self.label not in {S1_FEEDBACK_ARM, S1_CONTROL_ARM}:
             raise ValueError("unsupported S1 arm label")
         if self.shots < 1:

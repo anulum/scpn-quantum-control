@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 import numpy as np
 import pytest
 
@@ -38,6 +40,7 @@ def _controller() -> RealtimeSyncFeedbackController:
 
 
 def test_build_s1_feedback_arm_circuits_returns_preregistered_pair() -> None:
+    """The public builder returns the preregistered feedback/control pair."""
     arms = build_s1_feedback_arm_circuits(_controller(), n_rounds=3, shots=1024, repetitions=12)
 
     assert [arm.label for arm in arms] == [S1_FEEDBACK_ARM, S1_CONTROL_ARM]
@@ -49,6 +52,7 @@ def test_build_s1_feedback_arm_circuits_returns_preregistered_pair() -> None:
 
 
 def test_corrected_feedback_summary_does_not_require_conditional_reset() -> None:
+    """Corrected feedback requires conditional control but not reset."""
     arm = build_s1_feedback_arm_circuits(_controller(), n_rounds=3, shots=1024, repetitions=12)[0]
 
     summary = summarise_feedback_circuit(arm.circuit, n_rounds=3)
@@ -58,6 +62,7 @@ def test_corrected_feedback_summary_does_not_require_conditional_reset() -> None
 
 
 def test_binary_phase_synchrony_from_counts_uses_raw_bitstrings() -> None:
+    """Raw computational-basis counts produce shot-weighted synchrony."""
     assert binary_phase_synchrony_from_counts({"000": 10}, n_qubits=3) == pytest.approx(1.0)
     assert binary_phase_synchrony_from_counts({"001": 10}, n_qubits=3) == pytest.approx(1.0 / 3.0)
     assert binary_phase_synchrony_from_counts({"000": 5, "001": 5}, n_qubits=3) == pytest.approx(
@@ -66,6 +71,7 @@ def test_binary_phase_synchrony_from_counts_uses_raw_bitstrings() -> None:
 
 
 def test_raw_count_package_from_feedback_results_preserves_jobs_and_records() -> None:
+    """The feedback package preserves job IDs and per-repetition records."""
     feedback = FeedbackResult(
         job_id="job-feedback",
         qpu_seconds=4.0,
@@ -99,6 +105,7 @@ def test_raw_count_package_from_feedback_results_preserves_jobs_and_records() ->
 
 
 def test_raw_count_package_rejects_missing_job_or_records() -> None:
+    """Missing provider custody fails closed before package creation."""
     feedback = FeedbackResult(job_id=None, metadata={"arm": S1_FEEDBACK_ARM, "records": []})
     control = FeedbackResult(job_id="job-control", metadata={"arm": S1_CONTROL_ARM, "records": []})
 
@@ -113,6 +120,7 @@ def test_raw_count_package_rejects_missing_job_or_records() -> None:
 
 
 def test_run_ibm_sampler_arm_preserves_per_repetition_counts() -> None:
+    """A fake sampler preserves every repetition without provider contact."""
     arm = build_s1_feedback_arm_circuits(_controller(), n_rounds=1, shots=128, repetitions=2)[0]
 
     class _Register:
@@ -130,16 +138,16 @@ def test_run_ibm_sampler_arm_preserves_per_repetition_counts() -> None:
         def job_id(self) -> str:
             return "job-feedback"
 
-        def result(self, timeout: float):
+        def result(self, timeout: float) -> list[_PubResult]:
             assert timeout == 30.0
             return [_PubResult({"000": 128}), _PubResult({"001": 128})]
 
     class _Sampler:
-        def __init__(self, mode) -> None:
+        def __init__(self, mode: object) -> None:
             self.mode = mode
             self.options = type("Options", (), {})()
 
-        def run(self, circuits):
+        def run(self, circuits: Sequence[object]) -> _Job:
             assert len(circuits) == 2
             assert self.options.default_shots == 128
             return _Job()
@@ -163,6 +171,8 @@ def test_run_ibm_sampler_arm_preserves_per_repetition_counts() -> None:
 
 
 def test_extract_counts_prefers_final_readout_over_monitor_register() -> None:
+    """Final system readout wins over the intermediate monitor register."""
+
     class _Register:
         def __init__(self, counts: dict[str, int]) -> None:
             self._counts = counts
@@ -189,6 +199,7 @@ def test_extract_counts_prefers_final_readout_over_monitor_register() -> None:
 
 
 def test_build_s1_arm_command_carries_approval_budget_payload() -> None:
+    """Scheduler commands retain the approved arm and budget envelope."""
     arm = build_s1_feedback_arm_circuits(_controller(), n_rounds=1, shots=128, repetitions=2)[1]
 
     command = build_s1_arm_command(arm, isa_circuits=[arm.circuit, arm.circuit], timeout_s=45.0)
@@ -200,6 +211,7 @@ def test_build_s1_arm_command_carries_approval_budget_payload() -> None:
 
 
 def test_build_s1_xy_observable_arm_circuits_preserves_dynamic_body() -> None:
+    """XY variants retain dynamic feedback while rotating final readout."""
     arms = build_s1_xy_observable_arm_circuits(
         _controller(),
         observables=("XXI", "YYI", "IXX", "IYY"),
@@ -232,6 +244,7 @@ def test_build_s1_xy_observable_arm_circuits_preserves_dynamic_body() -> None:
 
 
 def test_pauli_expectation_from_counts_reduces_selected_non_identity_bits() -> None:
+    """Selected non-identity bits determine the Pauli expectation."""
     assert pauli_expectation_from_counts(
         {"000": 10}, observable="XXI", n_qubits=3
     ) == pytest.approx(1.0)
@@ -244,6 +257,7 @@ def test_pauli_expectation_from_counts_reduces_selected_non_identity_bits() -> N
 
 
 def test_pauli_expectation_from_counts_left_pads_provider_trimmed_bitstrings() -> None:
+    """Provider-trimmed bitstrings are left-padded to the system width."""
     assert pauli_expectation_from_counts({"0": 10}, observable="IXX", n_qubits=3) == pytest.approx(
         1.0
     )
@@ -253,6 +267,7 @@ def test_pauli_expectation_from_counts_left_pads_provider_trimmed_bitstrings() -
 
 
 def test_raw_count_package_from_xy_observable_results_groups_by_observable() -> None:
+    """Direct-Pauli records are grouped into matched observable arms."""
     feedback_xx = FeedbackResult(
         job_id="job-feedback-xx",
         metadata={

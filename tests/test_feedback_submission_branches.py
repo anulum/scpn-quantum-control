@@ -31,6 +31,7 @@ from scpn_quantum_control.hardware.feedback_submission import (
     assess_platform_readiness,
     build_s1_feedback_submission_package,
     default_s1_platforms,
+    summarise_feedback_circuit,
 )
 
 
@@ -117,6 +118,21 @@ def test_circuit_has_operation_inside_control_flow_block() -> None:
 def test_circuit_has_conditional_operation_in_control_flow_block() -> None:
     """A control-flow block carrying the target operation is detected."""
     assert _circuit_has_conditional_operation(_conditional_circuit(), "x") is True
+
+
+def test_summary_searches_both_conditional_branches_for_reset() -> None:
+    """Public summary traverses nested blocks before finding a reset."""
+    circuit = QuantumCircuit(1, 1)
+    circuit.measure(0, 0)
+    with circuit.if_test((circuit.clbits[0], 1)):
+        with circuit.if_test((circuit.clbits[0], 1)) as nested_else:
+            circuit.h(0)
+        with nested_else:
+            circuit.reset(0)
+
+    summary = summarise_feedback_circuit(circuit, n_rounds=1)
+
+    assert summary.has_conditional_reset is True
 
 
 def test_circuit_has_conditional_operation_legacy_condition() -> None:

@@ -29,6 +29,26 @@ def test_summarise_rejects_non_positive_qubits() -> None:
         summarise_pulse_schedule(schedule)
 
 
+def test_summarise_scans_multiple_sampled_pulses() -> None:
+    """Public summary consumes spacing samples from consecutive pulses."""
+    schedule = cast(
+        PulseSchedule,
+        SimpleNamespace(
+            n_qubits=1,
+            pulses=(
+                SimpleNamespace(times=(0.0,)),
+                SimpleNamespace(times=(0.0, 0.25, 1.0)),
+            ),
+            total_time=1.0,
+            infidelity_bound=0.01,
+        ),
+    )
+
+    summary = summarise_pulse_schedule(schedule)
+
+    assert summary.min_sample_spacing == pytest.approx(0.25)
+
+
 def test_optional_float_coerces_positive_value() -> None:
     """A positive optional float is coerced to float."""
     assert _optional_float(2.0, "min_time_step") == 2.0
