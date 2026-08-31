@@ -61,7 +61,7 @@ def _bind_cost(
     dt_s: float,
 ) -> CostFunction:
     def cost(schedule: NDArray[np.float64]) -> float:
-        value = frc_pulsed_shot_cost(
+        return frc_pulsed_shot_cost(
             schedule,
             target_b_profile,
             available_capacitor_energy_J,
@@ -71,7 +71,6 @@ def _bind_cost(
             energy_per_bank_J=energy_per_bank_J,
             dt_s=dt_s,
         )
-        return value[0] if isinstance(value, tuple) else float(value)
 
     return cost
 
