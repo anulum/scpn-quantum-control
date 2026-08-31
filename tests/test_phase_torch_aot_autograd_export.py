@@ -357,7 +357,7 @@ def test_torch_load_graph_verifies_the_digest_gate(tmp_path: Path) -> None:
     path = tmp_path / "artifact.pt"
     digest = aot_export._torch_save(torch, torch.tensor([3.0]), path)
     loaded = aot_export._torch_load_graph(torch, path, expected_sha256=digest)
-    assert float(loaded[0]) == 3.0
+    assert float(cast(Any, loaded)[0]) == 3.0
 
 
 def test_torch_load_graph_fails_closed_on_tampered_artifact(tmp_path: Path) -> None:
