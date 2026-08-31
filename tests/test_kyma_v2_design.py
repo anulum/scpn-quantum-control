@@ -21,6 +21,7 @@ def _cfg() -> task.ProbeConfigV2:
 
 
 def test_single_relation_realisability_high_at_frozen_config() -> None:
+    """Realise both single-relation motifs at the frozen configuration."""
     cfg = _cfg()
     batch = task.build_trials(cfg, seed=0)
     r1_frac, r2_frac = design.single_relation_realisability(cfg, batch)
@@ -29,6 +30,7 @@ def test_single_relation_realisability_high_at_frozen_config() -> None:
 
 
 def test_bridge_off_still_realises() -> None:
+    """Realise both motifs before enabling the readout bridge."""
     cfg = task.ProbeConfigV2(g_sync=0.5, steps=40, dt=0.1, k_bridge=0.0)
     batch = task.build_trials(cfg, seed=0)
     r1_frac, r2_frac = design.single_relation_realisability(cfg, batch)
@@ -36,6 +38,7 @@ def test_bridge_off_still_realises() -> None:
 
 
 def test_non_separability_both_relations_matter() -> None:
+    """Require both active relations to influence the held-out label."""
     cfg = _cfg()
     batch = task.build_trials(cfg, seed=0)
     drop_r1 = design._label_flip_when_dropping(cfg, batch, 0)
@@ -46,6 +49,7 @@ def test_non_separability_both_relations_matter() -> None:
 
 
 def test_no_bridge_is_separable() -> None:
+    """Recover a separable readout when the bridge is disabled."""
     # With no bridge the readout node is uncoupled → dropping a relation cannot flip it.
     cfg = task.ProbeConfigV2(g_sync=0.5, steps=40, dt=0.1, k_bridge=0.0)
     batch = task.build_trials(cfg, seed=0)
@@ -53,6 +57,7 @@ def test_no_bridge_is_separable() -> None:
 
 
 def test_select_config_meets_all_gates() -> None:
+    """Select the smallest frozen configuration meeting every design gate."""
     sel = design.select_config(seed=0)
     assert sel["realisability_r1"] >= design.REALISE_FRACTION
     assert sel["realisability_r2"] >= design.REALISE_FRACTION

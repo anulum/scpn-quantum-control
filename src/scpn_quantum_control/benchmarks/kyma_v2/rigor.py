@@ -5,8 +5,10 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — KYMA v2.1 supplementary-rigor orchestration
-"""Orchestrate the four v2.1 supplementary analyses (ablations, stronger
-baselines, MLP convergence, leave-one-out) against the frozen v2 task.
+"""Orchestrate the four v2.1 supplementary analyses.
+
+Evaluate ablations, stronger baselines, MLP convergence, and leave-one-out
+against the frozen v2 task.
 
 Every prediction is fixed in
 ``KYMA_V2_1_SUPPLEMENTARY_RIGOR_PREREGISTRATION_7f6b_2026-07-21.md``; this module

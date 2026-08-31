@@ -39,6 +39,7 @@ def _fast(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_run_ablations_structure() -> None:
+    """Report both preregistered ablations and their verdicts."""
     out = rigor.run_ablations(_tiny_cfg(), seeds=(0,))
     for key in ("A1_no_gating", "A2_separable_readout"):
         assert key in out
@@ -49,6 +50,7 @@ def test_run_ablations_structure() -> None:
 
 
 def test_run_stronger_baselines_structure() -> None:
+    """Report every stronger baseline with its comparison metadata."""
     out = rigor.run_stronger_baselines(_tiny_cfg(), seeds=(0,), gnn_hidden=8)
     for key in ("substrate", "over_param_mlp", "deep_mlp", "gnn"):
         assert key in out
@@ -58,6 +60,7 @@ def test_run_stronger_baselines_structure() -> None:
 
 
 def test_mlp_convergence_reports_trajectory_and_train_accuracy() -> None:
+    """Report convergence checkpoints, loss, accuracy, and plateau status."""
     out = rigor.mlp_convergence(_tiny_cfg(), seed=0, probes=3)
     assert len(out["loss_trajectory"]) == len(out["checkpoint_epochs"]) == 3
     assert 0.0 <= out["train_accuracy"] <= 1.0
@@ -65,6 +68,7 @@ def test_mlp_convergence_reports_trajectory_and_train_accuracy() -> None:
 
 
 def test_leave_one_out_covers_all_six_splits() -> None:
+    """Evaluate every disjoint held-out pair split exactly once."""
     out = rigor.run_leave_one_out(base_config=_tiny_cfg(), seeds=(0,))
     assert len(out["per_split"]) == 6
     for split in out["per_split"]:

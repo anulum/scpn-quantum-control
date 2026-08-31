@@ -36,6 +36,7 @@ def _tiny_cfg() -> task.ProbeConfigV2:
 
 
 def test_substrate_param_count() -> None:
+    """Count every free motif edge in the student substrate."""
     assert (
         models.substrate_param_count() == task.N_RELATIONS * task.N_PAIRS * models.EDGES_PER_PAIR
     )
@@ -43,6 +44,7 @@ def test_substrate_param_count() -> None:
 
 
 def test_mlp_param_match_within_ten_percent() -> None:
+    """Match the MLP parameter budget within ten percent."""
     target = models.substrate_param_count()
     h = models.mlp_hidden_for_match(target, n_bins=4)
     count = models.mlp_param_count(h, n_bins=4)
@@ -50,6 +52,7 @@ def test_mlp_param_match_within_ten_percent() -> None:
 
 
 def test_student_gates_symmetric_zero_diagonal() -> None:
+    """Expand student gates into symmetric zero-diagonal matrices."""
     params = models.student_init(0)
     assert params["gates_free"].shape == (task.N_RELATIONS, task.N_PAIRS, models.EDGES_PER_PAIR)
     gates = np.asarray(models._student_gates(params["gates_free"]))
@@ -58,6 +61,7 @@ def test_student_gates_symmetric_zero_diagonal() -> None:
 
 
 def test_student_gates_are_masked_to_pair_edges() -> None:
+    """Restrict each learned motif to its oscillator-pair edges."""
     # A student gate for (relation, pair p) must be zero outside pair p's edges.
     free = np.zeros((task.N_RELATIONS, task.N_PAIRS, models.EDGES_PER_PAIR))
     free[0, 0, :] = 1.0  # activate all edges of pair 0's motif
@@ -68,6 +72,7 @@ def test_student_gates_are_masked_to_pair_edges() -> None:
 
 
 def test_student_trains_and_predicts_in_range() -> None:
+    """Train the student and emit valid held-out class labels."""
     cfg = _tiny_cfg()
     batch = task.build_trials(cfg, seed=0)
     finals = np.asarray(teacher.teacher_final_phases(batch.theta0, batch.code, cfg))
@@ -85,6 +90,7 @@ def test_student_trains_and_predicts_in_range() -> None:
 
 
 def test_student_loss_decreases() -> None:
+    """Reduce circular teacher-imitation loss during student training."""
     cfg = _tiny_cfg()
     batch = task.build_trials(cfg, seed=0)
     finals = jnp.asarray(np.asarray(teacher.teacher_final_phases(batch.theta0, batch.code, cfg)))
@@ -93,7 +99,7 @@ def test_student_loss_decreases() -> None:
     base = jnp.asarray(models.base_coupling_matrix(cfg.k_ambient, cfg.k_bridge))
     target = finals[tr]
 
-    def loss(p: dict) -> float:
+    def loss(p: models._Params) -> float:
         pred = models.student_final_phases(p, theta0, code, base, cfg)
         return float(models._circular_loss(pred, target))
 
@@ -103,6 +109,7 @@ def test_student_loss_decreases() -> None:
 
 
 def test_mlp_trains_and_predicts_in_range() -> None:
+    """Train the matched MLP and emit valid held-out class labels."""
     cfg = _tiny_cfg()
     batch = task.build_trials(cfg, seed=0)
     labels = teacher.label_batch(batch, cfg)
@@ -121,6 +128,7 @@ def test_mlp_trains_and_predicts_in_range() -> None:
 
 
 def test_chance_floor_is_majority_class_accuracy() -> None:
+    """Score the training-majority class on held-out labels."""
     labels = np.array([0, 0, 0, 1, 2, 2, 3])  # train majority = 0 among train slots
     is_test = np.array([False, False, True, False, True, True, True])
     # train labels = [0,0,1] → majority 0; test labels = [0,2,2,3] → acc(pred 0) = 1/4

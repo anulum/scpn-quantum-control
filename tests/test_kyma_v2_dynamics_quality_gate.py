@@ -64,12 +64,18 @@ def test_ci_runs_and_aggregates_kyma_v2_dynamics_gate() -> None:
     start = workflow.index("  kyma-v2-dynamics-quality:")
     end = workflow.index("\n\n  tn-mps-baseline-design-quality:", start)
     block = workflow[start:end]
+    typing_end = block.index("      - name: Ruff NumPy docstrings")
+    docs_end = block.index("      - name: Run KYMA v2 dynamics focused coverage")
+    coverage_end = block.index("      - name: Enforce KYMA v2 dynamics exact coverage")
+    typing_block = block[:typing_end]
+    docs_block = block[typing_end:docs_end]
+    coverage_block = block[docs_end:coverage_end]
     for path in quality_gates.KYMA_V2_DYNAMICS_TYPING_RATCHET:
-        assert path in block
+        assert path in typing_block
     for path in quality_gates.KYMA_V2_DYNAMICS_DOCSTRING_RATCHET:
-        assert path in block
+        assert path in docs_block
     for path in quality_gates.KYMA_V2_DYNAMICS_COVERAGE_COHORT:
-        assert path in block
+        assert path in coverage_block
     assert "--fail-under=100" in block
     assert quality_gates.KYMA_V2_DYNAMICS_COVERAGE_INCLUDE.removeprefix("--include=") in block
     assert "kyma-v2-dynamics-quality" in workflow[workflow.index("  ci-gate:") :]

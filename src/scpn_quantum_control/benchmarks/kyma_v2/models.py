@@ -5,8 +5,9 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — KYMA v2 models: gated student, MLP baseline, chance floor
-"""The trainable gated **student** substrate, a parameter-matched MLP baseline,
-and the chance floor.
+"""Provide the gated student, matched MLP, and chance floor.
+
+The trainable components are:
 
 * **Student** — a gated Kuramoto substrate (same architecture as the teacher)
   whose per-``(relation, pair)`` motif gates are *learned*. It is trained to

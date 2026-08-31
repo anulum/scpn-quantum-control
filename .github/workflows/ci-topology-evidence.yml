@@ -166,8 +166,14 @@ jobs:
           src/scpn_quantum_control/benchmarks/kyma_v2/dynamics.py
           src/scpn_quantum_control/benchmarks/kyma_v2/task.py
           src/scpn_quantum_control/benchmarks/kyma_v2/probe.py
+          src/scpn_quantum_control/benchmarks/kyma_v2/design.py
+          src/scpn_quantum_control/benchmarks/kyma_v2/models.py
+          src/scpn_quantum_control/benchmarks/kyma_v2/rigor.py
           tests/test_kyma_v2_task.py
           tests/test_kyma_v2_probe.py
+          tests/test_kyma_v2_design.py
+          tests/test_kyma_v2_models.py
+          tests/test_kyma_v2_rigor.py
           tools/kyma_v2_dynamics_quality_gates.py
           tests/test_kyma_v2_dynamics_quality_gate.py
       - name: Ruff NumPy docstrings for KYMA v2 dynamics quality cohort
@@ -178,10 +184,16 @@ jobs:
           src/scpn_quantum_control/benchmarks/kyma_v2/dynamics.py
           src/scpn_quantum_control/benchmarks/kyma_v2/task.py
           src/scpn_quantum_control/benchmarks/kyma_v2/probe.py
+          src/scpn_quantum_control/benchmarks/kyma_v2/design.py
+          src/scpn_quantum_control/benchmarks/kyma_v2/models.py
+          src/scpn_quantum_control/benchmarks/kyma_v2/rigor.py
           tests/test_kyma_v2_dynamics.py
           tests/test_kyma_v2_teacher.py
           tests/test_kyma_v2_task.py
           tests/test_kyma_v2_probe.py
+          tests/test_kyma_v2_design.py
+          tests/test_kyma_v2_models.py
+          tests/test_kyma_v2_rigor.py
           tools/kyma_v2_dynamics_quality_gates.py
           tests/test_kyma_v2_dynamics_quality_gate.py
       - name: Run KYMA v2 dynamics focused coverage
@@ -194,6 +206,10 @@ jobs:
           tests/test_kyma_v2_dynamics.py
           tests/test_kyma_v2_teacher.py
           tests/test_kyma_v2_task.py
+          tests/test_kyma_v2_probe.py
+          tests/test_kyma_v2_design.py
+          tests/test_kyma_v2_models.py
+          tests/test_kyma_v2_rigor.py
       - name: Enforce KYMA v2 dynamics exact coverage
         run: >-
           python -m coverage report

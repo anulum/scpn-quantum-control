@@ -20,11 +20,24 @@ KYMA_V2_PROBE_SOURCE = "src/scpn_quantum_control/benchmarks/kyma_v2/probe.py"
 """Frozen v2 seed orchestration and verdict aggregation."""
 KYMA_V2_PROBE_TEST = "tests/test_kyma_v2_probe.py"
 """Direct JAX orchestration and frozen-verdict tests."""
+KYMA_V2_SUPPLEMENTARY_SOURCES = [
+    "src/scpn_quantum_control/benchmarks/kyma_v2/design.py",
+    "src/scpn_quantum_control/benchmarks/kyma_v2/models.py",
+    "src/scpn_quantum_control/benchmarks/kyma_v2/rigor.py",
+]
+"""Teacher-only design, trainable models, and supplementary rigor sources."""
+KYMA_V2_SUPPLEMENTARY_TESTS = [
+    "tests/test_kyma_v2_design.py",
+    "tests/test_kyma_v2_models.py",
+    "tests/test_kyma_v2_rigor.py",
+]
+"""Direct supplementary package execution suites."""
 KYMA_V2_DYNAMICS_COVERAGE_COHORT = [
     "tests/test_kyma_v2_dynamics.py",
     "tests/test_kyma_v2_teacher.py",
     "tests/test_kyma_v2_task.py",
     KYMA_V2_PROBE_TEST,
+    *KYMA_V2_SUPPLEMENTARY_TESTS,
 ]
 """Direct dynamics and teacher-consumer tests."""
 KYMA_V2_DYNAMICS_TYPING_RATCHET = [
@@ -32,6 +45,8 @@ KYMA_V2_DYNAMICS_TYPING_RATCHET = [
     KYMA_V2_TASK_SOURCE,
     KYMA_V2_PROBE_SOURCE,
     KYMA_V2_PROBE_TEST,
+    *KYMA_V2_SUPPLEMENTARY_SOURCES,
+    *KYMA_V2_SUPPLEMENTARY_TESTS,
     "tests/test_kyma_v2_task.py",
     "tools/kyma_v2_dynamics_quality_gates.py",
     "tests/test_kyma_v2_dynamics_quality_gate.py",
@@ -41,6 +56,7 @@ KYMA_V2_DYNAMICS_DOCSTRING_RATCHET = [
     KYMA_V2_DYNAMICS_SOURCE,
     KYMA_V2_TASK_SOURCE,
     KYMA_V2_PROBE_SOURCE,
+    *KYMA_V2_SUPPLEMENTARY_SOURCES,
     *KYMA_V2_DYNAMICS_COVERAGE_COHORT,
     "tools/kyma_v2_dynamics_quality_gates.py",
     "tests/test_kyma_v2_dynamics_quality_gate.py",
@@ -135,6 +151,8 @@ __all__ = [
     "KYMA_V2_DYNAMICS_TYPING_RATCHET",
     "KYMA_V2_PROBE_SOURCE",
     "KYMA_V2_PROBE_TEST",
+    "KYMA_V2_SUPPLEMENTARY_SOURCES",
+    "KYMA_V2_SUPPLEMENTARY_TESTS",
     "KYMA_V2_TASK_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",

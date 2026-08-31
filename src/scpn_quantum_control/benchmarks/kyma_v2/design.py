@@ -5,8 +5,9 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — KYMA v2 mechanism-only design sanity check (§5)
-"""Fix the v2 design constants from **teacher dynamics only** — never a model's
-held-out accuracy (pre-registration §5).
+"""Fix the v2 design constants from teacher dynamics only.
+
+Never use a model's held-out accuracy (pre-registration §5).
 
 Three constants are chosen here, before any student or MLP is trained:
 
