@@ -41,6 +41,10 @@ HARDWARE_AGGREGATOR_TESTS = [
     "tests/test_hardware_hal_provider_conformance.py",
 ]
 """Route validation, selection, dependency, and offline-smoke conformance tests."""
+PROVIDER_CAPABILITY_CORE_SOURCE = "src/scpn_quantum_control/hardware/provider_capability_core.py"
+"""Provider-neutral no-submit capability metadata and readiness decisions."""
+PROVIDER_CAPABILITY_CORE_TEST = "tests/test_provider_capability_core.py"
+"""Public capability validation, route, assessment, and OpenPulse tests."""
 HARDWARE_HAL_COVERAGE_COHORT = [
     "tests/test_hardware_hal.py",
     "tests/test_hardware_hal_contract_guards.py",
@@ -53,6 +57,7 @@ HARDWARE_HAL_COVERAGE_COHORT = [
     HARDWARE_FAST_CLASSICAL_TEST,
     IQM_BACKEND_TEST,
     *HARDWARE_AGGREGATOR_TESTS,
+    PROVIDER_CAPABILITY_CORE_TEST,
 ]
 """Offline and fake-adapter tests that own exact HAL coverage."""
 HARDWARE_HAL_TYPING_RATCHET = [
@@ -69,6 +74,8 @@ HARDWARE_HAL_TYPING_RATCHET = [
     IQM_BACKEND_TEST,
     HARDWARE_AGGREGATOR_SOURCE,
     *HARDWARE_AGGREGATOR_TESTS,
+    PROVIDER_CAPABILITY_CORE_SOURCE,
+    PROVIDER_CAPABILITY_CORE_TEST,
     "tools/hardware_hal_quality_gates.py",
     "tests/test_hardware_hal_quality_gate.py",
 ]
@@ -81,6 +88,7 @@ HARDWARE_HAL_DOCSTRING_RATCHET = [
     HARDWARE_FAST_CLASSICAL_SOURCE,
     IQM_BACKEND_SOURCE,
     HARDWARE_AGGREGATOR_SOURCE,
+    PROVIDER_CAPABILITY_CORE_SOURCE,
     "tests/test_hardware_hal.py",
     ASYNC_HARDWARE_RUNNER_TEST,
     HARDWARE_CIRCUIT_CUTTING_TEST,
@@ -88,6 +96,7 @@ HARDWARE_HAL_DOCSTRING_RATCHET = [
     HARDWARE_FAST_CLASSICAL_TEST,
     IQM_BACKEND_TEST,
     *HARDWARE_AGGREGATOR_TESTS,
+    PROVIDER_CAPABILITY_CORE_TEST,
     "tools/hardware_hal_quality_gates.py",
     "tests/test_hardware_hal_quality_gate.py",
 ]
@@ -97,7 +106,8 @@ HARDWARE_HAL_COVERAGE_DATA_FILE = "/tmp/scpn-qc-hardware-hal-quality.coverage"  
 HARDWARE_HAL_COVERAGE_INCLUDE = (
     "*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/circuit_cutting.py,"
     "*/hardware/circuit_export.py,*/hardware/fast_classical.py,"
-    "*/hardware/iqm_backend.py,*/hardware/aggregators.py"
+    "*/hardware/iqm_backend.py,*/hardware/aggregators.py,"
+    "*/hardware/provider_capability_core.py"
 )
 """Provider-neutral, route-matrix, and asynchronous sources under exact coverage."""
 
@@ -189,6 +199,8 @@ __all__ = [
     "HARDWARE_HAL_TYPING_RATCHET",
     "IQM_BACKEND_SOURCE",
     "IQM_BACKEND_TEST",
+    "PROVIDER_CAPABILITY_CORE_SOURCE",
+    "PROVIDER_CAPABILITY_CORE_TEST",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

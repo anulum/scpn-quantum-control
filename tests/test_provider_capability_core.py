@@ -11,6 +11,9 @@ from __future__ import annotations
 
 import ast
 import inspect
+from collections.abc import Callable, Mapping
+from dataclasses import replace
+from typing import Any, cast
 
 import pytest
 
@@ -27,7 +30,6 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
 
 def test_no_submit_probe_resolves_route_and_accepts_matching_capability_snapshot() -> None:
     """Route-level capability probes must stay read-only and route-bound."""
-
     seen_route_ids: list[str] = []
 
     def read_only_probe(resolved: ResolvedAggregatorProviderRoute) -> ProviderCapabilitySnapshot:
@@ -69,7 +71,6 @@ def test_no_submit_probe_resolves_route_and_accepts_matching_capability_snapshot
 
 def test_capability_assessment_blocks_offline_insufficient_and_wrong_ir_targets() -> None:
     """Capability decisions should fail closed before any provider submission."""
-
     snapshot = ProviderCapabilitySnapshot(
         route_id="aws_braket/ionq",
         aggregator="aws_braket",
@@ -99,7 +100,6 @@ def test_capability_assessment_blocks_offline_insufficient_and_wrong_ir_targets(
 
 def test_capability_snapshot_rejects_submission_side_effects() -> None:
     """Live-capability metadata objects must not represent submitted jobs."""
-
     with pytest.raises(ValueError, match="no-submit"):
         ProviderCapabilitySnapshot(
             route_id="qbraid/rigetti",
@@ -140,6 +140,7 @@ def test_probe_rejects_snapshot_that_does_not_match_resolved_route() -> None:
 
 
 def test_openpulse_readiness_builds_calibration_workflow_for_pulse_ready_snapshot() -> None:
+    """Build a no-submit calibration workflow for a pulse-ready target."""
     snapshot = ProviderCapabilitySnapshot(
         route_id="direct/ibm",
         aggregator="direct",
@@ -171,6 +172,7 @@ def test_openpulse_readiness_builds_calibration_workflow_for_pulse_ready_snapsho
 
 
 def test_openpulse_readiness_blocks_missing_ir_and_native_features() -> None:
+    """Block offline targets without compatible IR and native features."""
     snapshot = ProviderCapabilitySnapshot(
         route_id="direct/ibm",
         aggregator="direct",
@@ -274,3 +276,112 @@ def test_provider_capability_core_excludes_provider_snapshot_adapters() -> None:
     function_names = {node.name for node in tree.body if isinstance(node, ast.FunctionDef)}
 
     assert not any(name.startswith("snapshot_from_") for name in function_names)
+
+
+def _ready_snapshot() -> ProviderCapabilitySnapshot:
+    return ProviderCapabilitySnapshot(
+        route_id="direct/ibm",
+        aggregator="direct",
+        provider="ibm",
+        backend_id="ibm_quantum",
+        target_name="ibm_fez",
+        n_qubits=156,
+        supported_ir_formats=("qiskit_qpy", "qiskit"),
+        basis_gates=("rx", "rz", "cz"),
+        native_features=("pulse_control", "drive_channel_access", "dynamic_circuits"),
+        online=True,
+        max_shots=10_000,
+        max_circuits=100,
+        queue_depth=0,
+        calibration_timestamp="2026-08-31T00:00:00Z",
+        metadata={"source": "offline_catalogue"},
+    )
+
+
+@pytest.mark.parametrize(
+    ("factory", "match"),
+    [
+        (lambda: replace(_ready_snapshot(), route_id=""), "route_id"),
+        (lambda: replace(_ready_snapshot(), route_id=cast(str, 7)), "route_id"),
+        (lambda: replace(_ready_snapshot(), n_qubits=0), "n_qubits"),
+        (
+            lambda: replace(_ready_snapshot(), supported_ir_formats=()),
+            "supported_ir_formats",
+        ),
+        (
+            lambda: replace(
+                _ready_snapshot(),
+                supported_ir_formats=cast(tuple[str, ...], ["qiskit"]),
+            ),
+            "supported_ir_formats",
+        ),
+        (lambda: replace(_ready_snapshot(), basis_gates=("",)), "basis_gates"),
+        (
+            lambda: replace(
+                _ready_snapshot(),
+                native_features=(cast(str, 7),),
+            ),
+            "native_features",
+        ),
+        (lambda: replace(_ready_snapshot(), max_shots=0), "max_shots"),
+        (lambda: replace(_ready_snapshot(), max_circuits=0), "max_circuits"),
+        (lambda: replace(_ready_snapshot(), queue_depth=-1), "queue_depth"),
+        (
+            lambda: replace(_ready_snapshot(), calibration_timestamp=""),
+            "calibration_timestamp",
+        ),
+        (
+            lambda: replace(
+                _ready_snapshot(),
+                metadata=cast(Mapping[str, Any], []),
+            ),
+            "metadata",
+        ),
+    ],
+)
+def test_capability_snapshot_rejects_invalid_metadata_contracts(
+    factory: Callable[[], object],
+    match: str,
+) -> None:
+    """Reject malformed identity, capacity, tuple, and metadata fields."""
+    with pytest.raises(ValueError, match=match):
+        factory()
+
+
+def test_openpulse_readiness_reports_unknown_status_and_qubit_bounds() -> None:
+    """Warn on unknown availability and block an unavailable qubit index."""
+    snapshot = replace(
+        _ready_snapshot(),
+        n_qubits=1,
+        online=None,
+        native_features=("pulse_control", "drive_channel_access"),
+    )
+
+    readiness = build_openpulse_control_readiness(snapshot, qubit=1, dt=2.22e-10)
+
+    assert readiness.ready is False
+    assert "target online status is unknown" in readiness.warnings
+    assert "target does not advertise dynamic_circuits" in readiness.warnings
+    assert any("requested qubit index 1" in blocker for blocker in readiness.blockers)
+
+
+def test_capability_assessment_distinguishes_unknown_and_identity_mismatch() -> None:
+    """Return unknown for absent availability and block aggregator drift."""
+    snapshot = replace(_ready_snapshot(), online=None)
+    unknown = assess_provider_capability_snapshot(
+        snapshot,
+        aggregator="direct",
+        provider="ibm",
+        backend_id="ibm_quantum",
+    )
+    mismatched = assess_provider_capability_snapshot(
+        snapshot,
+        aggregator="broker",
+        provider="ibm",
+        backend_id="ibm_quantum",
+    )
+
+    assert unknown.status == "unknown"
+    assert unknown.warnings == ("provider target online status was not reported",)
+    assert mismatched.status == "blocked"
+    assert "aggregator mismatch: expected broker, got direct" in mismatched.blockers

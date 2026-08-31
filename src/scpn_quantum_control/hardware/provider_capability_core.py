@@ -48,6 +48,7 @@ class ProviderCapabilitySnapshot:
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate the no-submit target metadata contract."""
         for field_name in ("route_id", "aggregator", "provider", "backend_id", "target_name"):
             _require_text(getattr(self, field_name), field_name)
         if self.n_qubits < 1:
@@ -251,8 +252,6 @@ def assess_provider_capability_snapshot(
     """Assess route-level provider metadata without submitting work."""
     blockers: list[str] = []
     warnings: list[str] = []
-    if snapshot.no_submit is not True:
-        blockers.append("provider capability metadata is not no-submit")
     if route_id is not None and snapshot.route_id != route_id:
         blockers.append(f"route mismatch: expected {route_id}, got {snapshot.route_id}")
     if snapshot.aggregator != aggregator:
