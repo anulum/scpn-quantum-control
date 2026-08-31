@@ -25,12 +25,34 @@ from scpn_quantum_control.benchmarks.kyma.task import ProbeConfig
 _TINY = ProbeConfig(steps=5, trials_per_single=2, trials_per_conjunction=2, test_trials=8)
 
 
-def _fast(monkeypatch) -> None:  # noqa: ANN001
+def _fast(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reduce both training budgets for the direct orchestration tests."""
     monkeypatch.setattr(probe, "SUBSTRATE_EPOCHS", 5)
     monkeypatch.setattr(probe, "MLP_EPOCHS", 5)
 
 
-def test_run_seed_reports_all_fields(monkeypatch) -> None:  # noqa: ANN001
+def _seed_result(
+    seed: int,
+    substrate_accuracy: float,
+    mlp_accuracy: float,
+    chance_accuracy: float,
+) -> probe.SeedResult:
+    """Build a deterministic result for aggregate-contract tests."""
+    return probe.SeedResult(
+        seed=seed,
+        substrate_accuracy=substrate_accuracy,
+        mlp_accuracy=mlp_accuracy,
+        chance_accuracy=chance_accuracy,
+        substrate_params=312,
+        mlp_params=310,
+        mlp_hidden=10,
+        substrate_j_per_task=0.2,
+        mlp_j_per_task=0.1,
+        substrate_steps=_TINY.steps,
+    )
+
+
+def test_run_seed_reports_all_fields(monkeypatch: pytest.MonkeyPatch) -> None:
     """Report every registered field for one deterministic seed."""
     _fast(monkeypatch)
     result = probe.run_seed(0, _TINY)
@@ -45,7 +67,7 @@ def test_run_seed_reports_all_fields(monkeypatch) -> None:  # noqa: ANN001
     assert result.substrate_steps == _TINY.steps
 
 
-def test_run_probe_evaluates_frozen_contract(monkeypatch) -> None:  # noqa: ANN001
+def test_run_probe_evaluates_frozen_contract(monkeypatch: pytest.MonkeyPatch) -> None:
     """Evaluate the complete frozen probe contract."""
     _fast(monkeypatch)
     out = probe.run_probe((0, 1), _TINY)
@@ -60,7 +82,7 @@ def test_run_probe_evaluates_frozen_contract(monkeypatch) -> None:  # noqa: ANN0
     assert out["param_counts"]["substrate"] == 312
 
 
-def test_verdict_pass_requires_all_conditions(monkeypatch) -> None:  # noqa: ANN001
+def test_verdict_pass_requires_all_conditions(monkeypatch: pytest.MonkeyPatch) -> None:
     """Require every preregistered condition for a passing verdict."""
     # A hand-built result where the substrate beats the bar → PASS wiring.
     _fast(monkeypatch)
@@ -73,3 +95,50 @@ def test_verdict_pass_requires_all_conditions(monkeypatch) -> None:  # noqa: ANN
         and sub > out["chance_accuracy"]["mean"]
     )
     assert (out["verdict"] == "PASS") == expected
+
+
+def test_run_seed_uses_the_default_probe_config(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Construct the default probe configuration when none is supplied."""
+    _fast(monkeypatch)
+    monkeypatch.setattr(probe, "ProbeConfig", lambda: _TINY)
+    assert probe.run_seed(0).substrate_steps == _TINY.steps
+
+
+@pytest.mark.parametrize(
+    ("substrate_accuracy", "mlp_accuracy", "chance_accuracy", "verdict"),
+    [
+        (0.80, 0.40, 0.20, "PASS"),
+        (0.69, 0.40, 0.20, "NEGATIVE"),
+        (0.80, 0.60, 0.20, "NEGATIVE"),
+        (0.80, 0.40, 0.80, "NEGATIVE"),
+    ],
+)
+def test_run_probe_guards_every_frozen_verdict_branch(
+    substrate_accuracy: float,
+    mlp_accuracy: float,
+    chance_accuracy: float,
+    verdict: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Require accuracy, MLP margin, and chance separation together."""
+
+    def deterministic_seed(seed: int, _config: ProbeConfig | None = None) -> probe.SeedResult:
+        return _seed_result(seed, substrate_accuracy, mlp_accuracy, chance_accuracy)
+
+    monkeypatch.setattr(probe, "run_seed", deterministic_seed)
+    assert probe.run_probe((0,), _TINY)["verdict"] == verdict
+
+
+def test_run_probe_uses_default_config_and_seed_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Run every frozen seed with a constructed default configuration."""
+    observed: list[int] = []
+
+    def deterministic_seed(seed: int, config: ProbeConfig | None = None) -> probe.SeedResult:
+        assert config is _TINY
+        observed.append(seed)
+        return _seed_result(seed, 0.80, 0.40, 0.20)
+
+    monkeypatch.setattr(probe, "ProbeConfig", lambda: _TINY)
+    monkeypatch.setattr(probe, "run_seed", deterministic_seed)
+    assert probe.run_probe()["verdict"] == "PASS"
+    assert observed == list(probe.DEFAULT_SEEDS)

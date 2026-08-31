@@ -14,6 +14,8 @@ from os import devnull
 Gate = tuple[str, list[str]]
 KYMA_DYNAMICS_SOURCE = "src/scpn_quantum_control/benchmarks/kyma/dynamics.py"
 KYMA_TASK_SOURCE = "src/scpn_quantum_control/benchmarks/kyma/task.py"
+KYMA_PROBE_SOURCE = "src/scpn_quantum_control/benchmarks/kyma/probe.py"
+KYMA_PROBE_TEST = "tests/test_kyma_probe.py"
 KYMA_DYNAMICS_COVERAGE_COHORT = [
     "tests/test_kyma_dynamics.py",
     "tests/test_kyma_models.py",
@@ -23,6 +25,8 @@ KYMA_DYNAMICS_COVERAGE_COHORT = [
 KYMA_DYNAMICS_TYPING_RATCHET = [
     KYMA_DYNAMICS_SOURCE,
     KYMA_TASK_SOURCE,
+    KYMA_PROBE_SOURCE,
+    KYMA_PROBE_TEST,
     "tests/test_kyma_task.py",
     "tools/kyma_dynamics_quality_gates.py",
     "tests/test_kyma_dynamics_quality_gate.py",
@@ -30,13 +34,14 @@ KYMA_DYNAMICS_TYPING_RATCHET = [
 KYMA_DYNAMICS_DOCSTRING_RATCHET = [
     KYMA_DYNAMICS_SOURCE,
     KYMA_TASK_SOURCE,
+    KYMA_PROBE_SOURCE,
     *KYMA_DYNAMICS_COVERAGE_COHORT,
     "tools/kyma_dynamics_quality_gates.py",
     "tests/test_kyma_dynamics_quality_gate.py",
 ]
 KYMA_DYNAMICS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-kyma-dynamics-quality.coverage"  # nosec B108
 KYMA_DYNAMICS_COVERAGE_INCLUDE = (
-    "--include=*/benchmarks/kyma/dynamics.py,*/benchmarks/kyma/task.py"
+    "--include=*/benchmarks/kyma/dynamics.py,*/benchmarks/kyma/task.py,*/benchmarks/kyma/probe.py"
 )
 
 
@@ -118,6 +123,8 @@ __all__ = [
     "KYMA_DYNAMICS_DOCSTRING_RATCHET",
     "KYMA_DYNAMICS_SOURCE",
     "KYMA_DYNAMICS_TYPING_RATCHET",
+    "KYMA_PROBE_SOURCE",
+    "KYMA_PROBE_TEST",
     "KYMA_TASK_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",

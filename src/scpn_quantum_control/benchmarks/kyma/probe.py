@@ -85,7 +85,7 @@ def _mlp_test_accuracy(
 def _measure_j_per_task_substrate(
     params: dict[str, jax.Array], batch: TrialBatch, config: ProbeConfig
 ) -> float:
-    """steps × measured per-step wall-cost + energy proxy for one substrate task."""
+    """Estimate one substrate task from steps and measured wall cost."""
     test = _test_slice(batch)
     one = TrialBatch(
         test.theta0[:1], test.code[:1], test.r1_pair[:1], test.r2_pair[:1], test.is_test[:1]

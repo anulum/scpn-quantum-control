@@ -217,7 +217,9 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/benchmarks/kyma/dynamics.py
           src/scpn_quantum_control/benchmarks/kyma/task.py
+          src/scpn_quantum_control/benchmarks/kyma/probe.py
           tests/test_kyma_task.py
+          tests/test_kyma_probe.py
           tools/kyma_dynamics_quality_gates.py
           tests/test_kyma_dynamics_quality_gate.py
       - name: Ruff NumPy docstrings for legacy KYMA dynamics quality cohort
@@ -227,6 +229,7 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/benchmarks/kyma/dynamics.py
           src/scpn_quantum_control/benchmarks/kyma/task.py
+          src/scpn_quantum_control/benchmarks/kyma/probe.py
           tests/test_kyma_dynamics.py
           tests/test_kyma_models.py
           tests/test_kyma_probe.py
@@ -251,7 +254,7 @@ jobs:
           --data-file=/tmp/scpn-qc-kyma-dynamics-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/benchmarks/kyma/dynamics.py,*/benchmarks/kyma/task.py
+          --include=*/benchmarks/kyma/dynamics.py,*/benchmarks/kyma/task.py,*/benchmarks/kyma/probe.py
   kyma-v2-coupling-quality:
     runs-on: ubuntu-latest
     env:
