@@ -35,6 +35,7 @@ def _inputs() -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.floa
 
 
 def test_metrological_gain_scan_uses_qfi_and_classical_proxy_without_promotion() -> None:
+    """The gain scan remains a readiness estimate with both claims blocked."""
     omega, topology, k_grid = _inputs()
     result = metrological_gain_vs_k(
         omega,
@@ -53,6 +54,7 @@ def test_metrological_gain_scan_uses_qfi_and_classical_proxy_without_promotion()
 
 
 def test_optimal_sensing_k_selects_grid_row_with_largest_gain() -> None:
+    """The public selector returns the largest estimated-gain row."""
     omega, topology, k_grid = _inputs()
     result = optimal_sensing_k(
         omega,
@@ -110,6 +112,7 @@ def test_qfi_criticality_sensing_tail_can_skip_the_geometric_crosscheck() -> Non
 
 
 def test_quantum_sensing_payload_keeps_hardware_and_advantage_claims_blocked() -> None:
+    """The serialised readiness payload preserves both no-promotion gates."""
     payload = quantum_sensing_payload()
 
     assert payload["schema"] == QUANTUM_SENSING_SCHEMA
@@ -123,6 +126,7 @@ def test_quantum_sensing_payload_keeps_hardware_and_advantage_claims_blocked() -
 
 
 def test_quantum_sensing_markdown_records_gate_and_falsifier() -> None:
+    """The rendered note exposes its regeneration gate and falsifier."""
     markdown = quantum_sensing_markdown(quantum_sensing_payload())
 
     assert "scpn-bench s11-quantum-sensing-readiness" in markdown
@@ -133,6 +137,7 @@ def test_quantum_sensing_markdown_records_gate_and_falsifier() -> None:
 
 
 def test_quantum_sensing_inputs_fail_closed() -> None:
+    """Malformed gain-scan inputs fail before readiness computation."""
     omega, topology, k_grid = _inputs()
     with pytest.raises(ValueError, match="k_grid"):
         metrological_gain_vs_k(omega, topology, np.array([0.8]))

@@ -55,6 +55,7 @@ class QuantumSensingReadinessConfig:
     max_dense_gib: float = 0.01
 
     def __post_init__(self) -> None:
+        """Reject non-positive numerical controls before any scan begins."""
         _require_positive(self.readout_variance_floor, "readout_variance_floor")
         _require_positive(self.finite_difference_delta, "finite_difference_delta")
         _require_positive(self.max_dense_gib, "max_dense_gib")
