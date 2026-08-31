@@ -867,6 +867,8 @@ PHASE_QNODE_VECTOR_COVERAGE_COHORT = [
 
 WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/whole_program_trace_values.py",
+    "src/scpn_quantum_control/whole_program_trace_predicates.py",
+    "tests/test_whole_program_trace_predicates.py",
     "tests/test_whole_program_trace_values.py",
     "tests/test_whole_program_trace_value_operators.py",
     "tests/test_whole_program_trace_value_selection.py",
@@ -946,6 +948,9 @@ MLIR_LEAF_COVERAGE_INCLUDE = (
 PHASE_QNODE_AFFINITY_COVERAGE_DATA_FILE = ".coverage.phase-qnode-affinity"
 PHASE_QNODE_VECTOR_COVERAGE_DATA_FILE = ".coverage.phase-qnode-vector"
 WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE = ".coverage.whole-program-trace-values"
+WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_INCLUDE = (
+    "*/whole_program_trace_values.py,*/whole_program_trace_predicates.py"
+)
 
 _PYTEST_BASE = [
     _PY,
@@ -2023,7 +2028,7 @@ WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES: list[tuple[str, list[str]]] = [
             f"--data-file={WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE}",
             "--precision=2",
             "--fail-under=100",
-            "--include=*/whole_program_trace_values.py",
+            f"--include={WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_INCLUDE}",
         ],
     ),
     (

@@ -60,6 +60,7 @@ class TraceADPredicateArray:
         self.context = context
 
     def __bool__(self) -> bool:
+        """Collapse a singleton predicate array to its recorded truth value."""
         if self.shape != () or len(self.predicates) != 1:
             raise ValueError("whole-program AD vector predicates cannot be used as scalar bools")
         return bool(self.predicates[0])

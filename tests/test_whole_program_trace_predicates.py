@@ -27,7 +27,6 @@ from scpn_quantum_control.whole_program_trace_runtime import _WholeProgramTraceC
 
 def _context() -> _WholeProgramTraceContext:
     """Build a two-parameter trace context with the scalar factory bound."""
-
     return _WholeProgramTraceContext(2, scalar_factory=TraceADScalar)
 
 

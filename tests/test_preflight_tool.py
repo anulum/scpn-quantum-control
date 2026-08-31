@@ -534,7 +534,7 @@ def test_default_preflight_has_exact_whole_program_trace_value_coverage() -> Non
     assert report_cmd[:4] == [_preflight._PY, "-m", "coverage", "report"]
     assert "--precision=2" in report_cmd
     assert "--fail-under=100" in report_cmd
-    assert "--include=*/whole_program_trace_values.py" in report_cmd
+    assert f"--include={_preflight.WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_INCLUDE}" in report_cmd
     assert f"--data-file={data_file}" in report_cmd
     alias_report_cmd = gate_map["program AD alias-contract exact coverage threshold"]
     assert alias_report_cmd[:4] == [_preflight._PY, "-m", "coverage", "report"]
@@ -577,7 +577,7 @@ def test_ci_and_preflight_share_whole_program_trace_value_cohorts() -> None:
     ]
     assert ci_coverage_paths == _preflight.WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT
     assert "Enforce whole-program trace-value exact coverage" in workflow
-    assert "--include=*/whole_program_trace_values.py" in workflow
+    assert _preflight.WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_INCLUDE in workflow
     assert "Enforce Program-AD alias-contract exact coverage" in workflow
     assert "--include=*/program_ad_alias_contracts.py" in workflow
     assert "Enforce Program-AD shape-transform exact coverage" in workflow

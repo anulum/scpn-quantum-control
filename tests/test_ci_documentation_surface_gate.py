@@ -96,7 +96,9 @@ def test_ci_gates_whole_program_trace_value_quality_and_exact_coverage() -> None
     assert "Run whole-program trace-value focused coverage" in workflow
     assert "Enforce whole-program trace-value exact coverage" in workflow
     assert "--data-file=.coverage.whole-program-trace-values" in workflow
-    assert "--include=*/whole_program_trace_values.py" in workflow
+    assert (
+        "--include=*/whole_program_trace_values.py,*/whole_program_trace_predicates.py" in workflow
+    )
     assert "--fail-under=100" in workflow
     assert "needs['whole-program-trace-value-quality'].result" in workflow
 
