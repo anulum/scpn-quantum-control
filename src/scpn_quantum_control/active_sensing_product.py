@@ -65,6 +65,7 @@ class InformationGainCandidate:
         Per-shot observation-noise variance.
     channel
         Co-design observer-channel label.
+
     """
 
     observable_id: str

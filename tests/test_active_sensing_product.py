@@ -36,6 +36,7 @@ def _problem() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
 
 
 def test_inventory_preserves_ownership_and_hardware_boundary() -> None:
+    """The inventory preserves surface ownership and no-hardware posture."""
     rows = sensing_surface_inventory()
 
     assert {row.surface_id for row in rows} == {
@@ -50,6 +51,7 @@ def test_inventory_preserves_ownership_and_hardware_boundary() -> None:
 
 
 def test_information_gain_uses_gaussian_posterior_update() -> None:
+    """Information gain follows the scalar conjugate Gaussian update."""
     candidate = InformationGainCandidate("phase", 2.0, 0.5, 0.25)
     score = score_expected_information_gain(candidate, shots=4)
 
@@ -66,6 +68,7 @@ def test_information_gain_uses_gaussian_posterior_update() -> None:
     ],
 )
 def test_information_gain_rejects_nonpositive_shots(candidate: InformationGainCandidate) -> None:
+    """Information-gain scoring requires a positive shot count."""
     with pytest.raises(ValueError, match="shots must be positive"):
         score_expected_information_gain(candidate, shots=0)
 
@@ -122,11 +125,13 @@ def test_information_gain_rejects_nonpositive_shots(candidate: InformationGainCa
     ],
 )
 def test_candidate_validation(kwargs: dict[str, Any], message: str) -> None:
+    """Malformed observation candidates fail closed."""
     with pytest.raises(ValueError, match=message):
         InformationGainCandidate(**kwargs)
 
 
 def test_plan_runs_real_budget_and_analytic_design_surfaces() -> None:
+    """Allowed plans execute budget, ranking, design, and observer surfaces."""
     k_matrix, omega = _problem()
     plan = plan_active_sensing(
         demo_information_gain_candidates(),
@@ -164,6 +169,7 @@ def test_plan_runs_real_budget_and_analytic_design_surfaces() -> None:
 
 
 def test_budget_refusal_prevents_information_and_analytic_design_evaluation() -> None:
+    """Budget refusal precedes information and analytic-design evaluation."""
     k_matrix, omega = _problem()
     plan = plan_active_sensing(
         demo_information_gain_candidates(),
@@ -184,6 +190,7 @@ def test_budget_refusal_prevents_information_and_analytic_design_evaluation() ->
 
 
 def test_hardware_adaptive_path_is_fail_closed() -> None:
+    """Adaptive hardware requests remain explicitly fail closed."""
     k_matrix, omega = _problem()
     plan = plan_active_sensing(
         demo_information_gain_candidates(),
@@ -200,6 +207,7 @@ def test_hardware_adaptive_path_is_fail_closed() -> None:
 
 
 def test_plan_rejects_empty_or_duplicate_candidates() -> None:
+    """Plans require a non-empty set of uniquely identified candidates."""
     k_matrix, omega = _problem()
     with pytest.raises(ValueError, match="candidates must be non-empty"):
         plan_active_sensing(
@@ -221,6 +229,7 @@ def test_plan_rejects_empty_or_duplicate_candidates() -> None:
 
 
 def test_allowed_plan_propagates_analytic_design_input_validation() -> None:
+    """Allowed planning propagates analytic-design input validation."""
     _, omega = _problem()
     with pytest.raises(ValueError, match="square"):
         plan_active_sensing(

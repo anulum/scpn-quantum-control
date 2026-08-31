@@ -14,15 +14,26 @@ from os import devnull
 Gate = tuple[str, list[str]]
 HARDWARE_SAFE_EXECUTION_QUALITY_RATCHET = [
     "src/scpn_quantum_control/hardware_safe_execution.py",
+    "src/scpn_quantum_control/active_sensing_product.py",
     "tests/test_hardware_safe_execution.py",
+    "tests/test_active_sensing_product.py",
     "tools/hardware_safe_execution_quality_gates.py",
     "tests/test_hardware_safe_execution_quality_gate.py",
 ]
 """Ordered strict-typing and NumPy-docstring cohort."""
-HARDWARE_SAFE_EXECUTION_COVERAGE_COHORT = ["tests/test_hardware_safe_execution.py"]
-"""Tests that own exact hardware-safe execution coverage."""
-HARDWARE_SAFE_EXECUTION_COVERAGE_DATA_FILE = ".coverage.hardware-safe-execution-quality"
+HARDWARE_SAFE_EXECUTION_COVERAGE_COHORT = [
+    "tests/test_hardware_safe_execution.py",
+    "tests/test_active_sensing_product.py",
+]
+"""Tests that own hardware-safe and active-sensing product coverage."""
+HARDWARE_SAFE_EXECUTION_COVERAGE_DATA_FILE = (
+    "/tmp/scpn-qc-hardware-safe-execution-quality.coverage"
+)
 """Isolated coverage database for the hardware-safe execution owner."""
+HARDWARE_SAFE_EXECUTION_COVERAGE_INCLUDE = (
+    "*/hardware_safe_execution.py,*/active_sensing_product.py"
+)
+"""Production policy and active-sensing sources enforced at exact coverage."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -47,8 +58,11 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *HARDWARE_SAFE_EXECUTION_QUALITY_RATCHET,
@@ -87,7 +101,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={HARDWARE_SAFE_EXECUTION_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/hardware_safe_execution.py",
+                f"--include={HARDWARE_SAFE_EXECUTION_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -96,6 +110,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "HARDWARE_SAFE_EXECUTION_COVERAGE_COHORT",
     "HARDWARE_SAFE_EXECUTION_COVERAGE_DATA_FILE",
+    "HARDWARE_SAFE_EXECUTION_COVERAGE_INCLUDE",
     "HARDWARE_SAFE_EXECUTION_QUALITY_RATCHET",
     "build_coverage_gates",
     "build_static_quality_gates",
