@@ -16,7 +16,7 @@ import pytest
 
 from tools import audit_ci_workflow_modularity as modularity
 from tools import ci_workflow_inventory as inventory
-from tools.ci_workflow_inventory import WorkflowPolicy
+from tools.ci_workflow_inventory import WorkflowCategory, WorkflowPolicy
 
 _ACTION_SHA = "0123456789abcdef0123456789abcdef01234567"
 
@@ -221,7 +221,7 @@ def test_modularity_audit_rejects_duplicate_jobs_and_direct_coordinator_readers(
 ) -> None:
     """Reject shared job ownership and renewed test coupling to the coordinator."""
     policy = _policy()
-    duplicate = {
+    duplicate: WorkflowCategory = {
         "id": "duplicate-quality",
         "workflow": ".github/workflows/ci-duplicate-quality.yml",
         "caller_needs": [],

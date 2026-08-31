@@ -233,9 +233,28 @@ jobs:
         # public PyPI — install the local tree first, exactly what a minimal
         # source install requires today.
         run: |
-          pip install ./oscillatools
-          pip install .
-          pip install pytest hypothesis
+          python -m pip install --require-hashes \
+            -r requirements-ci-minimal-install-py312-linux.txt
+          python -m build --wheel --no-isolation --outdir dist/minimal oscillatools
+          python -m build --wheel --no-isolation --outdir dist/minimal .
+          python - <<'PY'
+          from hashlib import sha256
+          from pathlib import Path
+
+          wheels = sorted(Path("dist/minimal").glob("*.whl"))
+          if len(wheels) != 2:
+              raise SystemExit(f"expected two local wheels, found {len(wheels)}")
+          lines = [
+              f"{wheel.resolve().as_uri()} --hash=sha256:{sha256(wheel.read_bytes()).hexdigest()}"
+              for wheel in wheels
+          ]
+          Path("/tmp/scpn-qc-minimal-local-wheels.txt").write_text(
+              "\n".join(lines) + "\n",
+              encoding="utf-8",
+          )
+          PY
+          python -m pip install --no-deps --require-hashes \
+            -r /tmp/scpn-qc-minimal-local-wheels.txt
       - name: Assert structlog is absent and the kwarg fallback is selected
         run: |
           if python -c "import structlog" 2>/dev/null; then

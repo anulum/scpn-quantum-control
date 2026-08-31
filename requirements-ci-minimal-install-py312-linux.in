@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — Python 3.12 minimal-install CI dependency input
+
+build==1.5.0
+hatchling==1.31.0
+hypothesis==6.165.10
+jinja2==3.1.6
+networkx==3.6.1
+numpy==2.4.6
+pytest==9.1.1
+qiskit==2.5.1
+qiskit-aer==0.17.2
+qiskit-qasm3-import==0.6.0
+requests==2.34.2
+scipy==1.17.1
+symengine==0.14.1
+urllib3==2.7.0

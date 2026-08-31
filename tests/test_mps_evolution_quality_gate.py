@@ -65,7 +65,9 @@ def test_ci_runs_real_quimb_and_aggregates_mps_gate() -> None:
         assert path in block
     for path in quality_gates.MPS_EVOLUTION_COVERAGE_COHORT:
         assert path in block
-    assert 'python -m pip install "quimb==1.13.0"' in block
+    assert "python -m pip install --require-hashes" in block
+    assert "requirements-ci-quimb-py312-linux.txt" in block
+    assert 'python -m pip install "quimb==1.13.0"' not in block
     assert "python -c \"import quimb; assert quimb.__version__ == '1.13.0'\"" in block
     assert "--fail-under=100" in block
     assert "phase/mps_evolution.py" in block
