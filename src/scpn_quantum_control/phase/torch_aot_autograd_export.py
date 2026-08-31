@@ -231,6 +231,7 @@ def run_torch_aot_autograd_export_audit(
     PhaseTorchAOTAutogradExportResult
         Persistent local FX graph metadata plus compiled and loaded gradient
         replay evidence.
+
     """
     resolved_dir = Path(artifact_dir)
     if not resolved_dir.parent.exists():

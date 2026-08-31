@@ -320,6 +320,8 @@ jobs:
           src/scpn_quantum_control/phase/torch_export.py
           src/scpn_quantum_control/phase/torch_export_shape_matrix.py
           src/scpn_quantum_control/phase/torch_training_loop_matrix.py
+          src/scpn_quantum_control/phase/torch_aot_autograd_export.py
+          src/scpn_quantum_control/phase/torch_dynamic_shape_export.py
           tests/test_phase_torch_module_state.py
           tests/test_phase_torch_checkpoint.py
           tests/test_phase_torch_checkpoint_matrix.py
@@ -328,6 +330,9 @@ jobs:
           tests/test_phase_torch_export_shape_matrix.py
           tests/test_phase_torch_training_loop_matrix.py
           tests/test_phase_qnn_framework_bridge_matrix.py
+          tests/test_phase_torch_aot_autograd_export.py
+          tests/test_phase_torch_dynamic_shape_export.py
+          tests/test_optional_torch_export_contracts.py
           tools/phase_torch_bridge_quality_gates.py
           tests/test_phase_torch_bridge_quality_gate.py
       - name: Ruff NumPy docstrings for Phase-QNode Torch bridge quality cohort
@@ -343,6 +348,8 @@ jobs:
           src/scpn_quantum_control/phase/torch_export.py
           src/scpn_quantum_control/phase/torch_export_shape_matrix.py
           src/scpn_quantum_control/phase/torch_training_loop_matrix.py
+          src/scpn_quantum_control/phase/torch_aot_autograd_export.py
+          src/scpn_quantum_control/phase/torch_dynamic_shape_export.py
           tests/test_phase_torch_module_state.py
           tests/test_phase_torch_checkpoint.py
           tests/test_phase_torch_checkpoint_matrix.py
@@ -351,6 +358,9 @@ jobs:
           tests/test_phase_torch_export_shape_matrix.py
           tests/test_phase_torch_training_loop_matrix.py
           tests/test_phase_qnn_framework_bridge_matrix.py
+          tests/test_phase_torch_aot_autograd_export.py
+          tests/test_phase_torch_dynamic_shape_export.py
+          tests/test_optional_torch_export_contracts.py
           tools/phase_torch_bridge_quality_gates.py
           tests/test_phase_torch_bridge_quality_gate.py
       - name: Type-check adjoint replay product quality cohort
@@ -8043,6 +8053,9 @@ jobs:
           tests/test_phase_torch_export_shape_matrix.py
           tests/test_phase_torch_training_loop_matrix.py
           tests/test_phase_qnn_framework_bridge_matrix.py
+          tests/test_phase_torch_aot_autograd_export.py
+          tests/test_phase_torch_dynamic_shape_export.py
+          tests/test_optional_torch_export_contracts.py
       - name: Enforce Phase-QNode Torch bridge exact coverage
         run: >-
           python -m coverage report
@@ -8050,7 +8063,7 @@ jobs:
           --data-file=/tmp/scpn-qc-phase-torch-bridge.coverage
           --precision=2
           --fail-under=100
-          --include=*/torch_bridge.py,*/torch_maturity.py,*/torch_module_state.py,*/torch_checkpoint.py,*/torch_checkpoint_matrix.py,*/torch_device_state.py,*/torch_export.py,*/torch_export_shape_matrix.py,*/torch_training_loop_matrix.py
+          --include=*/torch_bridge.py,*/torch_maturity.py,*/torch_module_state.py,*/torch_checkpoint.py,*/torch_checkpoint_matrix.py,*/torch_device_state.py,*/torch_export.py,*/torch_export_shape_matrix.py,*/torch_training_loop_matrix.py,*/torch_aot_autograd_export.py,*/torch_dynamic_shape_export.py
       - name: Run differentiable parity tests
         run: >
           pytest
