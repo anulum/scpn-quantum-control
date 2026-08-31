@@ -108,6 +108,7 @@ class DlaTopologyControlEvidence:
     content_digest: str
 
     def __post_init__(self) -> None:
+        """Validate and normalize the frozen topology-evidence record."""
         if self.schema_version != TOPOLOGY_CONTROL_EVIDENCE_SCHEMA:
             raise ValueError("schema_version is unsupported")
         if not isinstance(self.generated_on, str) or not self.generated_on.strip():
