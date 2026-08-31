@@ -67,3 +67,15 @@ def test_ci_runs_and_aggregates_quantum_sensing_gate() -> None:
     assert all(path in block for path in quality_gates.QUANTUM_SENSING_COVERAGE_COHORT)
     assert quality_gates.QUANTUM_SENSING_COVERAGE_INCLUDE in block
     assert "quantum-sensing-quality" in workflow[workflow.index("  ci-gate:") :]
+
+
+def test_native_spectrum_keeps_rustdoc_parity_and_global_rust_ci() -> None:
+    """Keep the native kernel documented, parity-tested, and Rust-owned."""
+    rust = Path(quality_gates.NV_MAGNETOMETRY_RUSTDOC_SOURCE).read_text(encoding="utf-8")
+    parity = Path(quality_gates.NV_MAGNETOMETRY_TEST).read_text(encoding="utf-8")
+    workflow = read_ci_workflow_source()
+    assert "//! Lorentzian CW-ODMR photoluminescence spectrum." in rust
+    assert "/// Normalised ODMR spectrum" in rust
+    assert "test_odmr_spectrum_rust_parity" in parity
+    assert "Run Rust engine tests" in workflow
+    assert "cargo test --locked" in workflow

@@ -234,6 +234,9 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/analysis/sensing.py
+          src/scpn_quantum_control/sensing/nv_magnetometry_20T.py
+          tests/test_nv_magnetometry.py
+          tests/test_nv_magnetometry_high_field.py
           tests/test_quantum_sensing_readiness.py
           tests/test_sensing_branches.py
           tests/test_sensing_readiness_contracts.py
@@ -250,6 +253,9 @@ jobs:
           --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analysis/sensing.py
+          src/scpn_quantum_control/sensing/nv_magnetometry_20T.py
+          tests/test_nv_magnetometry.py
+          tests/test_nv_magnetometry_high_field.py
           tests/test_quantum_sensing_readiness.py
           tests/test_sensing_branches.py
           tests/test_sensing_readiness_contracts.py
@@ -265,6 +271,8 @@ jobs:
           --data-file=/tmp/scpn-qc-quantum-sensing-quality.coverage
           --branch
           -m pytest -q
+          tests/test_nv_magnetometry.py
+          tests/test_nv_magnetometry_high_field.py
           tests/test_quantum_sensing_readiness.py
           tests/test_sensing_branches.py
           tests/test_sensing_readiness_contracts.py
@@ -276,7 +284,7 @@ jobs:
           --data-file=/tmp/scpn-qc-quantum-sensing-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/analysis/sensing.py
+          --include=*/analysis/sensing.py,*/sensing/nv_magnetometry_20T.py
   phase-coupling-learning-quality:
     runs-on: ubuntu-latest
     env:

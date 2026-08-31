@@ -7,12 +7,16 @@
 # SCPN Quantum Control — Tests for NV-centre 20 T magnetometry (QUA-C.5)
 """Tests for sensing/nv_magnetometry_20T.py (simulation-only + hardware-gated)."""
 
+from __future__ import annotations
+
 import os
+from types import ModuleType
 
 import numpy as np
 import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
+from numpy.typing import NDArray
 
 from scpn_quantum_control.sensing.nv_magnetometry_20T import (
     ELECTRON_GYROMAGNETIC_HZ_PER_T as GAMMA,
@@ -54,17 +58,20 @@ except ImportError:  # pragma: no cover - engine optional
         {"photon_rate_per_s": 0.0},
     ],
 )
-def test_nv_center_rejects_bad_params(kw):
+def test_nv_center_rejects_bad_params(kw: dict[str, float]) -> None:
+    """Reject invalid NV-centre simulation parameters."""
     with pytest.raises(ValueError):
         NVCenter(**kw)
 
 
-def test_hamiltonian_hermitian():
+def test_hamiltonian_hermitian() -> None:
+    """Produce a Hermitian ground-state Hamiltonian."""
     h = nv_ground_state_hamiltonian(NVCenter(), 5.0, theta_rad=0.7, phi_rad=0.3)
     assert np.allclose(h, h.conj().T)
 
 
-def test_negative_field_rejected():
+def test_negative_field_rejected() -> None:
+    """Reject a negative magnetic-field magnitude."""
     with pytest.raises(ValueError):
         nv_ground_state_hamiltonian(NVCenter(), -1.0)
 
@@ -72,33 +79,38 @@ def test_negative_field_rejected():
 # --------------------------------------------------------------------------- #
 # Spin-Hamiltonian physics
 # --------------------------------------------------------------------------- #
-def test_zero_field_resonances_equal_d():
+def test_zero_field_resonances_equal_d() -> None:
+    """Recover the zero-field splitting at zero field."""
     lo, hi = odmr_resonances_hz(NVCenter(), 0.0)
     assert lo == pytest.approx(D, rel=1e-9)
     assert hi == pytest.approx(D, rel=1e-9)
 
 
 @pytest.mark.parametrize("b", [0.01, 0.05, 0.08])
-def test_axial_resonances_linear_below_gslac(b):
+def test_axial_resonances_linear_below_gslac(b: float) -> None:
+    """Follow the analytic axial branches below the GSLAC."""
     lo, hi = odmr_resonances_hz(NVCenter(), b, theta_rad=0.0)
     assert lo == pytest.approx(D - GAMMA * b, rel=1e-9)
     assert hi == pytest.approx(D + GAMMA * b, rel=1e-9)
 
 
-def test_gslac_lower_resonance_vanishes():
+def test_gslac_lower_resonance_vanishes() -> None:
+    """Resolve the lower resonance to zero at the GSLAC."""
     b_gslac = D / GAMMA
     lo, _ = odmr_resonances_hz(NVCenter(), b_gslac, theta_rad=0.0)
     assert lo == pytest.approx(0.0, abs=1.0)  # within 1 Hz of the crossing
 
 
 @pytest.mark.parametrize("b", [1.0, 5.0, 20.0])
-def test_high_field_regime(b):
+def test_high_field_regime(b: float) -> None:
+    """Follow both analytic resonance branches through 20 tesla."""
     lo, hi = odmr_resonances_hz(NVCenter(), b, theta_rad=0.0)
     assert lo == pytest.approx(GAMMA * b - D, rel=1e-9)  # |D - gamma B| past GSLAC
     assert hi == pytest.approx(D + GAMMA * b, rel=1e-9)
 
 
-def test_upper_resonance_monotonic_in_field():
+def test_upper_resonance_monotonic_in_field() -> None:
+    """Keep the upper resonance monotonic across the field range."""
     nv = NVCenter()
     uppers = [odmr_resonances_hz(nv, b)[1] for b in np.linspace(0.0, 20.0, 50)]
     assert np.all(np.diff(uppers) > 0)
@@ -107,7 +119,8 @@ def test_upper_resonance_monotonic_in_field():
 # --------------------------------------------------------------------------- #
 # Sensitivity
 # --------------------------------------------------------------------------- #
-def test_sensitivity_positive_and_scales():
+def test_sensitivity_positive_and_scales() -> None:
+    """Improve positive sensitivity with linewidth, contrast, and photons."""
     base = cw_odmr_dc_sensitivity_t_per_sqrt_hz(NVCenter())
     assert base > 0.0
     # Narrower line, higher contrast, more photons all improve (lower) sensitivity.
@@ -120,7 +133,8 @@ def test_sensitivity_positive_and_scales():
 # --------------------------------------------------------------------------- #
 # ODMR spectrum
 # --------------------------------------------------------------------------- #
-def test_spectrum_dips_at_resonances():
+def test_spectrum_dips_at_resonances() -> None:
+    """Place the two Lorentzian dips at the ODMR resonances."""
     nv = NVCenter()
     lo, hi = odmr_resonances_hz(nv, 0.05)
     freqs = np.linspace(lo - 5e6, hi + 5e6, 4000)
@@ -130,7 +144,8 @@ def test_spectrum_dips_at_resonances():
     assert spectrum.min() == pytest.approx(1.0 - nv.contrast, abs=1e-3)
 
 
-def test_spectrum_rejects_empty_grid():
+def test_spectrum_rejects_empty_grid() -> None:
+    """Reject an empty ODMR frequency grid."""
     with pytest.raises(ValueError):
         odmr_spectrum(np.array([]), NVCenter(), 1.0)
 
@@ -138,14 +153,20 @@ def test_spectrum_rejects_empty_grid():
 # --------------------------------------------------------------------------- #
 # Field calibration (simulation only)
 # --------------------------------------------------------------------------- #
-def _resolved_window(nv: NVCenter, b_true: float, half_width_hz: float = 5.0e7, n: int = 4000):
-    """A fine ODMR scan window around the upper resonance (resolves the linewidth)."""
+def _resolved_window(
+    nv: NVCenter,
+    b_true: float,
+    half_width_hz: float = 5.0e7,
+    n: int = 4000,
+) -> NDArray[np.float64]:
+    """Build a fine ODMR scan window around the upper resonance."""
     f_upper = odmr_resonances_hz(nv, b_true)[1]
     return np.linspace(f_upper - half_width_hz, f_upper + half_width_hz, n)
 
 
 @pytest.mark.parametrize("b_true", [0.0734, 0.12, 0.5, 1.5, 5.0, 20.0])
-def test_calibration_recovers_field_to_microtesla(b_true):
+def test_calibration_recovers_field_to_microtesla(b_true: float) -> None:
+    """Recover simulated fields through 20 tesla within 50 microtesla."""
     nv = NVCenter()
     freqs = _resolved_window(nv, b_true)
     measured = simulate_odmr_measurement(
@@ -155,7 +176,8 @@ def test_calibration_recovers_field_to_microtesla(b_true):
     assert cal.abs_error_tesla < 5.0e-5  # < 50 microtesla across 0.07-20 T
 
 
-def test_calibration_shape_mismatch_raises():
+def test_calibration_shape_mismatch_raises() -> None:
+    """Reject mismatched calibration-grid and spectrum shapes."""
     nv = NVCenter()
     with pytest.raises(ValueError):
         calibrate_field_from_odmr(np.linspace(0, 1, 10), np.ones(9), nv)
@@ -163,7 +185,8 @@ def test_calibration_shape_mismatch_raises():
 
 @settings(max_examples=20, deadline=None)
 @given(b_true=st.floats(min_value=0.2, max_value=20.0))
-def test_calibration_property(b_true):
+def test_calibration_property(b_true: float) -> None:
+    """Recover random high fields within the calibrated tolerance."""
     nv = NVCenter()
     freqs = _resolved_window(nv, b_true)
     measured = simulate_odmr_measurement(
@@ -183,7 +206,13 @@ def test_calibration_property(b_true):
     fwhm_mhz=st.floats(min_value=0.1, max_value=10.0),
     contrast=st.floats(min_value=0.001, max_value=0.3),
 )
-def test_odmr_spectrum_rust_parity(n_freqs, fwhm_mhz, contrast):
+def test_odmr_spectrum_rust_parity(
+    n_freqs: int,
+    fwhm_mhz: float,
+    contrast: float,
+) -> None:
+    """Match the native Rust spectrum to the NumPy reference bit for bit."""
+    assert isinstance(_engine, ModuleType)
     freqs = np.linspace(2.0e9, 4.0e9, n_freqs)
     centers = np.array([2.5e9, 3.3e9], dtype=np.float64)
     rust = np.asarray(
@@ -202,6 +231,7 @@ def test_odmr_spectrum_rust_parity(n_freqs, fwhm_mhz, contrast):
     os.environ.get("MIF_NV_HARDWARE_CI") != "1",
     reason="hardware NV magnetometry gated by MIF_NV_HARDWARE_CI=1",
 )
-def test_hardware_nv_calibration():  # pragma: no cover - hardware only
+def test_hardware_nv_calibration() -> None:  # pragma: no cover - hardware only
+    """Keep real magnet calibration behind the explicit hardware gate."""
     assert os.environ.get("MIF_NV_HARDWARE_CI") == "1"
     raise AssertionError("NV hardware calibration requires a magnet and is not run in CI")

@@ -65,6 +65,7 @@ class NVCenter:
     photon_rate_per_s: float = 1.0e12  # detected photons / s
 
     def __post_init__(self) -> None:
+        """Validate the NV-centre simulation parameters."""
         if not np.isfinite(self.zero_field_splitting_hz) or self.zero_field_splitting_hz <= 0.0:
             raise ValueError("zero_field_splitting_hz must be finite and positive")
         if not np.isfinite(self.gyromagnetic_hz_per_t) or self.gyromagnetic_hz_per_t <= 0.0:

@@ -14,10 +14,21 @@ from os import devnull
 Gate = tuple[str, list[str]]
 QUANTUM_SENSING_SOURCE = "src/scpn_quantum_control/analysis/sensing.py"
 """No-submit S11 quantum-sensing readiness surface."""
+NV_MAGNETOMETRY_SOURCE = "src/scpn_quantum_control/sensing/nv_magnetometry_20T.py"
+"""Simulation-only NV-centre magnetometry model through 20 tesla."""
+NV_MAGNETOMETRY_TEST = "tests/test_nv_magnetometry.py"
+"""Primary public, calibration, and native-parity NV suite."""
+NV_MAGNETOMETRY_BRANCH_TEST = "tests/test_nv_magnetometry_high_field.py"
+"""Focused validation and Python-fallback branch suite."""
+NV_MAGNETOMETRY_RUSTDOC_SOURCE = "scpn_quantum_engine/src/sensing.rs"
+"""Documented native Lorentzian kernel owned by global Rust CI."""
 QUANTUM_SENSING_EXPORTER = "scripts/export_s11_quantum_sensing_readiness.py"
 """Executable JSON and Markdown readiness exporter."""
 QUANTUM_SENSING_TYPING_RATCHET = [
     QUANTUM_SENSING_SOURCE,
+    NV_MAGNETOMETRY_SOURCE,
+    NV_MAGNETOMETRY_TEST,
+    NV_MAGNETOMETRY_BRANCH_TEST,
     "tests/test_quantum_sensing_readiness.py",
     "tests/test_sensing_branches.py",
     "tests/test_sensing_readiness_contracts.py",
@@ -31,6 +42,9 @@ QUANTUM_SENSING_TYPING_RATCHET = [
 """Production, export, tests, and gate surfaces held to strict MyPy."""
 QUANTUM_SENSING_DOCSTRING_RATCHET = [
     QUANTUM_SENSING_SOURCE,
+    NV_MAGNETOMETRY_SOURCE,
+    NV_MAGNETOMETRY_TEST,
+    NV_MAGNETOMETRY_BRANCH_TEST,
     "tests/test_quantum_sensing_readiness.py",
     "tests/test_sensing_branches.py",
     "tests/test_sensing_readiness_contracts.py",
@@ -42,6 +56,8 @@ QUANTUM_SENSING_DOCSTRING_RATCHET = [
 ]
 """Whole owner cohort held to complete NumPy docstrings."""
 QUANTUM_SENSING_COVERAGE_COHORT = [
+    NV_MAGNETOMETRY_TEST,
+    NV_MAGNETOMETRY_BRANCH_TEST,
     "tests/test_quantum_sensing_readiness.py",
     "tests/test_sensing_branches.py",
     "tests/test_sensing_readiness_contracts.py",
@@ -50,7 +66,7 @@ QUANTUM_SENSING_COVERAGE_COHORT = [
 """Public, contract, and executable-export tests that own source coverage."""
 QUANTUM_SENSING_COVERAGE_DATA_FILE = "/tmp/scpn-qc-quantum-sensing-quality.coverage"  # nosec B108
 """Isolated coverage database for the quantum-sensing owner."""
-QUANTUM_SENSING_COVERAGE_INCLUDE = "*/analysis/sensing.py"
+QUANTUM_SENSING_COVERAGE_INCLUDE = "*/analysis/sensing.py,*/sensing/nv_magnetometry_20T.py"
 """Exact production source include for the coverage report."""
 
 
@@ -126,6 +142,10 @@ def build_coverage_gates(python: str) -> list[Gate]:
 
 
 __all__ = [
+    "NV_MAGNETOMETRY_BRANCH_TEST",
+    "NV_MAGNETOMETRY_RUSTDOC_SOURCE",
+    "NV_MAGNETOMETRY_SOURCE",
+    "NV_MAGNETOMETRY_TEST",
     "QUANTUM_SENSING_COVERAGE_COHORT",
     "QUANTUM_SENSING_COVERAGE_DATA_FILE",
     "QUANTUM_SENSING_COVERAGE_INCLUDE",
