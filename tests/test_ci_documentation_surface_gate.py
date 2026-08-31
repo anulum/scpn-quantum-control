@@ -347,10 +347,11 @@ def test_ci_phase_qnode_vector_job_enforces_exact_branch_coverage() -> None:
 
 def test_ci_phase_jax_qnode_gate_runs_after_the_real_cpu_overlay() -> None:
     """CI must execute exact JAX QNode coverage with the verified CPU overlay."""
+    static_workflow = workflow_path_for_job("lint").read_text(encoding="utf-8")
     workflow = workflow_path_for_job("differentiable-parity").read_text(encoding="utf-8")
 
-    assert "Type-check Phase-QNode JAX quality cohort" in workflow
-    assert "Ruff NumPy docstrings for Phase-QNode JAX quality cohort" in workflow
+    assert "Type-check Phase-QNode JAX quality cohort" in static_workflow
+    assert "Ruff NumPy docstrings for Phase-QNode JAX quality cohort" in static_workflow
     assert "Run Phase-QNode JAX focused coverage" in workflow
     assert "tests/test_phase_jax_qnode_transforms.py" in workflow
     assert "tests/test_phase_jax_qnode_statevector_edges.py" in workflow
@@ -376,7 +377,11 @@ def test_ci_phase_jax_qnode_gate_runs_after_the_real_cpu_overlay() -> None:
     assert "import jax; devices=jax.devices()" in workflow
     assert "primary={devices[0]}" in workflow
     assert "SCPN_FRAMEWORK_OVERLAY:$PYTHONPATH" in workflow
-    assert "differentiable-parity" in workflow[workflow.index("  ci-gate:") :]
+    compatibility_workflow = read_ci_workflow_source()
+    assert (
+        "differentiable-parity"
+        in compatibility_workflow[compatibility_workflow.index("  ci-gate:") :]
+    )
 
 
 def test_coverage_sources_are_filesystem_paths_not_importable_packages() -> None:

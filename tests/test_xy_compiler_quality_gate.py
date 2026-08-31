@@ -67,6 +67,9 @@ def test_ci_runs_and_aggregates_xy_compiler_gate() -> None:
     downstream_start = workflow.index("  differentiable-sparse-derivatives-quality:")
     downstream_end = workflow.index("\n\n  tn-mps-baseline-design-quality:", downstream_start)
     downstream = workflow[downstream_start:downstream_end]
-    assert "needs: [lint, varqite-quality, xy-compiler-quality]" in downstream
+    needs = next(line for line in downstream.splitlines() if line.strip().startswith("needs:"))
+    assert "lint" in needs
+    assert "varqite-quality" in needs
+    assert "xy-compiler-quality" in needs
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "differentiable-sparse-derivatives-quality" in aggregate

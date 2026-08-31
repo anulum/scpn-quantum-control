@@ -58,13 +58,14 @@ def test_preflight_uses_helper_defined_gates() -> None:
 
 def test_ci_runs_and_aggregates_adaptive_branching_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
-    workflow = read_ci_workflow_source()
-    start = workflow.index("  adaptive-branching-quality:")
-    end = workflow.index("\n\n  quantum-sync-oracle-quality:", start)
-    block = workflow[start:end]
+    owner = workflow_path_for_job("adaptive-branching-quality").read_text(encoding="utf-8")
+    start = owner.index("  adaptive-branching-quality:")
+    end = owner.index("\n  quantum-sensing-quality:", start)
+    block = owner[start:end]
     assert all(path in block for path in quality_gates.ADAPTIVE_BRANCHING_TYPING_RATCHET)
     assert all(path in block for path in quality_gates.ADAPTIVE_BRANCHING_DOCSTRING_RATCHET)
     assert all(path in block for path in quality_gates.ADAPTIVE_BRANCHING_COVERAGE_COHORT)
     assert quality_gates.ADAPTIVE_BRANCHING_COVERAGE_INCLUDE in block
-    owner = workflow_path_for_job("adaptive-branching-quality").read_text(encoding="utf-8")
-    assert block in owner
+    workflow = read_ci_workflow_source()
+    aggregate = workflow[workflow.index("  ci-gate:") :]
+    assert "adaptive-branching-quality" in aggregate

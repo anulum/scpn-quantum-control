@@ -66,6 +66,8 @@ def test_ci_runs_and_aggregates_varqite_gate() -> None:
     downstream_start = workflow.index("  differentiable-sparse-derivatives-quality:")
     downstream_end = workflow.index("\n\n  tn-mps-baseline-design-quality:", downstream_start)
     downstream = workflow[downstream_start:downstream_end]
-    assert "needs: [lint, varqite-quality]" in downstream
+    needs = next(line for line in downstream.splitlines() if line.strip().startswith("needs:"))
+    assert "lint" in needs
+    assert "varqite-quality" in needs
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "differentiable-sparse-derivatives-quality" in aggregate

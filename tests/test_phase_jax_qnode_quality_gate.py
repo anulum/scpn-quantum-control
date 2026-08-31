@@ -125,6 +125,7 @@ def test_preflight_reexports_the_policy_contract() -> None:
 
 def test_ci_and_local_gates_share_exact_owner_order() -> None:
     """CI and local gates should preserve identical owner-file ordering."""
+    static_workflow = workflow_path_for_job("lint").read_text(encoding="utf-8")
     workflow = workflow_path_for_job("differentiable-parity").read_text(encoding="utf-8")
     quality_steps = (
         "Type-check Phase-QNode JAX quality cohort",
@@ -132,7 +133,7 @@ def test_ci_and_local_gates_share_exact_owner_order() -> None:
     )
 
     for step_name in quality_steps:
-        assert _workflow_step_paths(workflow, step_name) == (
+        assert _workflow_step_paths(static_workflow, step_name) == (
             _quality_gates.PHASE_JAX_QNODE_QUALITY_RATCHET
         )
 

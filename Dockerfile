@@ -53,6 +53,7 @@ COPY requirements-ci-cross-platform-smoke.txt requirements-ci-py311-linux.txt re
 # Supply-chain contract tests validate the human-reviewed inputs that generate
 # the minimal-install and Quimb hash closures.
 COPY requirements-ci-minimal-install-py312-linux.in requirements-ci-quimb-py312-linux.in ./
+COPY requirements-ci-minimal-install-py312-linux.txt requirements-ci-quimb-py312-linux.txt ./
 COPY src/ src/
 COPY oscillatools/src/ oscillatools/src/
 # The standalone-package decision and real wheel tests require the complete
