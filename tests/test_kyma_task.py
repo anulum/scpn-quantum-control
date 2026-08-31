@@ -30,12 +30,14 @@ from scpn_quantum_control.benchmarks.kyma.task import (
 
 
 def test_cluster_partition_covers_all_oscillators_disjointly() -> None:
+    """Keep the cluster partition complete and pairwise disjoint."""
     flat = [q for cluster in CLUSTERS for q in cluster]
     assert sorted(flat) == list(range(N_OSC))
     assert len(set(flat)) == N_OSC
 
 
 def test_six_pairs_and_six_disjoint_conjunctions() -> None:
+    """Enumerate all cluster pairs and their disjoint conjunctions."""
     assert len(PAIRS) == 6
     conj = disjoint_conjunctions()
     assert len(conj) == 6
@@ -45,12 +47,14 @@ def test_six_pairs_and_six_disjoint_conjunctions() -> None:
 
 
 def test_pair_members_are_eight_distinct_oscillators() -> None:
+    """Resolve one cluster pair to eight distinct oscillators."""
     members = pair_members(0)
     assert members.shape == (8,)
     assert len(set(members.tolist())) == 8
 
 
 def test_encode_marks_active_relation_slots() -> None:
+    """Encode active single and conjunction relation slots."""
     code = encode(0, 5)
     assert code[0, 0] == 1.0 and code[1, 5] == 1.0
     assert code.sum() == 2.0
@@ -59,6 +63,7 @@ def test_encode_marks_active_relation_slots() -> None:
 
 
 def test_held_out_conjunction_is_test_only_and_absent_from_training() -> None:
+    """Reserve the held-out conjunction exclusively for test trials."""
     cfg = ProbeConfig()
     batch = build_trials(cfg, seed=0)
     train = ~batch.is_test
@@ -76,6 +81,7 @@ def test_held_out_conjunction_is_test_only_and_absent_from_training() -> None:
 
 
 def test_constituent_single_relations_are_in_training() -> None:
+    """Expose both held-out constituents as single training relations."""
     cfg = ProbeConfig()
     batch = build_trials(cfg, seed=3)
     train = ~batch.is_test
@@ -90,6 +96,7 @@ def test_constituent_single_relations_are_in_training() -> None:
 
 
 def test_success_mask_frozen_criterion() -> None:
+    """Apply the frozen joint success criterion to every trial."""
     r1 = np.array([1.0, 0.9, 0.8, 1.0])
     r2 = np.array([0.0, 0.1, 0.05, 0.2])
     mask = success_mask(r1, r2, epsilon=0.15)
@@ -98,6 +105,7 @@ def test_success_mask_frozen_criterion() -> None:
 
 
 def test_determinism_same_seed_same_trials() -> None:
+    """Build identical trial arrays from an identical seed."""
     cfg = ProbeConfig()
     a = build_trials(cfg, seed=7)
     b = build_trials(cfg, seed=7)

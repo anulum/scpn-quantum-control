@@ -190,16 +190,21 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/benchmarks/kyma/dynamics.py
+          src/scpn_quantum_control/benchmarks/kyma/task.py
+          tests/test_kyma_task.py
           tools/kyma_dynamics_quality_gates.py
           tests/test_kyma_dynamics_quality_gate.py
       - name: Ruff NumPy docstrings for legacy KYMA dynamics quality cohort
         run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/benchmarks/kyma/dynamics.py
+          src/scpn_quantum_control/benchmarks/kyma/task.py
           tests/test_kyma_dynamics.py
           tests/test_kyma_models.py
           tests/test_kyma_probe.py
+          tests/test_kyma_task.py
           tools/kyma_dynamics_quality_gates.py
           tests/test_kyma_dynamics_quality_gate.py
       - name: Run legacy KYMA dynamics focused coverage
@@ -212,6 +217,7 @@ jobs:
           tests/test_kyma_dynamics.py
           tests/test_kyma_models.py
           tests/test_kyma_probe.py
+          tests/test_kyma_task.py
       - name: Enforce legacy KYMA dynamics exact coverage
         run: >-
           python -m coverage report
@@ -219,7 +225,7 @@ jobs:
           --data-file=/tmp/scpn-qc-kyma-dynamics-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/benchmarks/kyma/dynamics.py
+          --include=*/benchmarks/kyma/dynamics.py,*/benchmarks/kyma/task.py
   kyma-v2-coupling-quality:
     runs-on: ubuntu-latest
     env:

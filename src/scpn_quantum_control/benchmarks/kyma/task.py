@@ -97,6 +97,7 @@ class TrialBatch:
     meta: dict[str, Any] = field(default_factory=dict)
 
     def __len__(self) -> int:
+        """Return the number of trials in the batch."""
         return int(self.theta0.shape[0])
 
 

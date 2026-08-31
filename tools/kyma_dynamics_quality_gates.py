@@ -13,23 +13,31 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 KYMA_DYNAMICS_SOURCE = "src/scpn_quantum_control/benchmarks/kyma/dynamics.py"
+KYMA_TASK_SOURCE = "src/scpn_quantum_control/benchmarks/kyma/task.py"
 KYMA_DYNAMICS_COVERAGE_COHORT = [
     "tests/test_kyma_dynamics.py",
     "tests/test_kyma_models.py",
     "tests/test_kyma_probe.py",
+    "tests/test_kyma_task.py",
 ]
 KYMA_DYNAMICS_TYPING_RATCHET = [
     KYMA_DYNAMICS_SOURCE,
+    KYMA_TASK_SOURCE,
+    "tests/test_kyma_task.py",
     "tools/kyma_dynamics_quality_gates.py",
     "tests/test_kyma_dynamics_quality_gate.py",
 ]
 KYMA_DYNAMICS_DOCSTRING_RATCHET = [
     KYMA_DYNAMICS_SOURCE,
+    KYMA_TASK_SOURCE,
     *KYMA_DYNAMICS_COVERAGE_COHORT,
     "tools/kyma_dynamics_quality_gates.py",
     "tests/test_kyma_dynamics_quality_gate.py",
 ]
 KYMA_DYNAMICS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-kyma-dynamics-quality.coverage"  # nosec B108
+KYMA_DYNAMICS_COVERAGE_INCLUDE = (
+    "--include=*/benchmarks/kyma/dynamics.py,*/benchmarks/kyma/task.py"
+)
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -54,8 +62,11 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *KYMA_DYNAMICS_DOCSTRING_RATCHET,
@@ -94,7 +105,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={KYMA_DYNAMICS_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/benchmarks/kyma/dynamics.py",
+                KYMA_DYNAMICS_COVERAGE_INCLUDE,
             ],
         ),
     ]
@@ -103,9 +114,11 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "KYMA_DYNAMICS_COVERAGE_COHORT",
     "KYMA_DYNAMICS_COVERAGE_DATA_FILE",
+    "KYMA_DYNAMICS_COVERAGE_INCLUDE",
     "KYMA_DYNAMICS_DOCSTRING_RATCHET",
     "KYMA_DYNAMICS_SOURCE",
     "KYMA_DYNAMICS_TYPING_RATCHET",
+    "KYMA_TASK_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]
