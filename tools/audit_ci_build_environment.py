@@ -38,6 +38,7 @@ from tools.ci_workflow_inventory import (
     REPOSITORY_ROOT,
     load_ci_workflow_policy,
     read_ci_workflow_source,
+    workflow_path_for_job,
 )
 
 BUILD_BACKEND = "hatchling.build"
@@ -414,10 +415,17 @@ def audit_installed_backend(
     return tuple(errors)
 
 
-def audit_consumers(ci_text: str, dockerfile_text: str, wheel_test_text: str) -> tuple[str, ...]:
+def audit_consumers(
+    ci_text: str,
+    dockerfile_text: str,
+    wheel_test_text: str,
+    *,
+    security_ci_text: str | None = None,
+) -> tuple[str, ...]:
     """Validate CI, Docker, and wheel-test wiring to the locked environment."""
     errors: list[str] = []
     docker_lines = tuple(line.strip() for line in dockerfile_text.splitlines())
+    security_source = ci_text if security_ci_text is None else security_ci_text
     for python_version, path in LOCKS_BY_PYTHON:
         mapping = f'python-version: "{python_version}"\n            requirements-file: {path}'
         if ci_text.count(mapping) != 1:
@@ -426,7 +434,7 @@ def audit_consumers(ci_text: str, dockerfile_text: str, wheel_test_text: str) ->
         errors.append("CI test matrix must install its selected lock with --require-hashes")
     if ci_text.count(AUDIT_COMMAND) != 1:
         errors.append("CI lint job must execute the build-environment audit exactly once")
-    if ci_text.count(SECURITY_JOB_ENVIRONMENT) != 1:
+    if security_source.count(SECURITY_JOB_ENVIRONMENT) != 1:
         errors.append("CI security job must expose both source trees through PYTHONPATH")
     if DOCKER_INSTALL_COMMAND not in dockerfile_text:
         errors.append("Docker must install the Python 3.12 CI lock with --require-hashes")
@@ -467,15 +475,27 @@ def audit_repository(root: Path) -> BuildEnvironmentAuditResult:
             lock_texts[path] = text
     errors.extend(audit_lockfiles(lock_texts))
 
+    live_repository = root.resolve() == REPOSITORY_ROOT
     ci_text = (
         read_ci_workflow_source()
-        if root.resolve() == REPOSITORY_ROOT
+        if live_repository
         else _read_required(root, CI_WORKFLOW_PATH, errors)
     )
+    security_ci_text = None
+    if live_repository:
+        security_path = workflow_path_for_job("security").relative_to(REPOSITORY_ROOT).as_posix()
+        security_ci_text = _read_required(root, security_path, errors)
     dockerfile_text = _read_required(root, DOCKERFILE_PATH, errors)
     wheel_test_text = _read_required(root, WHEEL_TEST_PATH, errors)
     if ci_text is not None and dockerfile_text is not None and wheel_test_text is not None:
-        errors.extend(audit_consumers(ci_text, dockerfile_text, wheel_test_text))
+        errors.extend(
+            audit_consumers(
+                ci_text,
+                dockerfile_text,
+                wheel_test_text,
+                security_ci_text=security_ci_text,
+            )
+        )
     errors.extend(audit_installed_backend())
     return BuildEnvironmentAuditResult(errors=tuple(errors))
 

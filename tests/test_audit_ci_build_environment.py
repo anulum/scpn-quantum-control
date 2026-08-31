@@ -280,6 +280,16 @@ def test_consumer_audit_rejects_matrix_install_gate_docker_and_fixture_drift() -
     )
     valid_wheel_test = 'args = ["--no-isolation"]\n'
     assert build_audit.audit_consumers(_ci(), valid_docker, valid_wheel_test) == ()
+    coordinator_only = _ci().replace(build_audit.SECURITY_JOB_ENVIRONMENT, "  security:\n")
+    assert (
+        build_audit.audit_consumers(
+            coordinator_only,
+            valid_docker,
+            valid_wheel_test,
+            security_ci_text=_ci(),
+        )
+        == ()
+    )
 
     missing_context = f"RUN {build_audit.DOCKER_INSTALL_COMMAND}\n"
     assert build_audit.audit_consumers(_ci(), missing_context, valid_wheel_test) == (
