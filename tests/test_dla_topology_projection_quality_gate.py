@@ -25,7 +25,9 @@ def test_static_gate_is_strict_and_completely_documented() -> None:
         ruff[-len(quality_gates.DLA_TOPOLOGY_PROJECTION_DOCSTRING_RATCHET) :]
         == quality_gates.DLA_TOPOLOGY_PROJECTION_DOCSTRING_RATCHET
     )
-    assert "--isolated" in ruff and "D,D413" in ruff
+    assert "--isolated" in ruff and "--preview" in ruff
+    assert "D,D413,D417,D420" in ruff
+    assert "lint.explicit-preview-rules = true" in ruff
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:

@@ -362,18 +362,18 @@ def topology_projection_jvp(
 ) -> TopologyProjectionDifferential:
     """Return the production-ledger projection and exact local JVP.
 
+    Returns
+    -------
+    TopologyProjectionDifferential
+        Production forward projection, exact supported local JVP, immutable
+        input custody, support report, and content digest.
+
     Raises
     ------
     UnsupportedDifferentiableConstraintError
         If any exact active branch lacks a supported derivative rule.
     ValueError
         If matrices or ``margin`` violate their contracts.
-
-    Returns
-    -------
-    TopologyProjectionDifferential
-        Production forward projection, exact supported local JVP, immutable
-        input custody, support report, and content digest.
 
     """
     primal = _square_finite(matrix, "matrix")

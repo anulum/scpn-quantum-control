@@ -2832,7 +2832,8 @@ jobs:
           tests/test_dla_topology_projection_quality_gate.py
       - name: Ruff NumPy docstrings for DLA topology-projection quality cohort
         run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/dla_topology_control/projection.py
           tests/test_dla_topology_control_projection.py
