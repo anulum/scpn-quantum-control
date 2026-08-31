@@ -5382,6 +5382,7 @@ jobs:
           src/scpn_quantum_control/hardware_safe_execution.py
           src/scpn_quantum_control/active_sensing_product.py
           src/scpn_quantum_control/hardware/feedback_capability_probe.py
+          src/scpn_quantum_control/hardware/feedback_dryrun.py
           tests/test_hardware_safe_execution.py
           tests/test_active_sensing_product.py
           tools/hardware_safe_execution_quality_gates.py
@@ -5393,10 +5394,13 @@ jobs:
           src/scpn_quantum_control/hardware_safe_execution.py
           src/scpn_quantum_control/active_sensing_product.py
           src/scpn_quantum_control/hardware/feedback_capability_probe.py
+          src/scpn_quantum_control/hardware/feedback_dryrun.py
           tests/test_hardware_safe_execution.py
           tests/test_active_sensing_product.py
           tests/test_feedback_capability_probe.py
           tests/test_feedback_capability_probe_branch.py
+          tests/test_feedback_dryrun.py
+          tests/test_feedback_dryrun_branch.py
           tools/hardware_safe_execution_quality_gates.py
           tests/test_hardware_safe_execution_quality_gate.py
       - run: >-
@@ -5404,11 +5408,12 @@ jobs:
           --data-file=/tmp/scpn-qc-hardware-safe-execution-quality.coverage --branch
           -m pytest -q tests/test_hardware_safe_execution.py tests/test_active_sensing_product.py
           tests/test_feedback_capability_probe.py tests/test_feedback_capability_probe_branch.py
+          tests/test_feedback_dryrun.py tests/test_feedback_dryrun_branch.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-hardware-safe-execution-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/hardware_safe_execution.py,*/active_sensing_product.py,*/hardware/feedback_capability_probe.py
+          --include=*/hardware_safe_execution.py,*/active_sensing_product.py,*/hardware/feedback_capability_probe.py,*/hardware/feedback_dryrun.py
 
   qpu-compute-product-quality:
     needs: lint

@@ -27,6 +27,7 @@ class FeedbackDryRunPayload:
     warnings: tuple[str, ...]
 
     def __post_init__(self) -> None:
+        """Reject any dry-run payload that enables provider submission."""
         if self.submission_enabled:
             raise ValueError("dry-run payloads must not enable submission")
 

@@ -31,6 +31,7 @@ def _package():
 
 
 def test_s1_feedback_dry_run_bundle_contains_no_submit_provider_payloads() -> None:
+    """Build all provider payloads with submission disabled and warnings intact."""
     bundle = build_s1_feedback_dry_run_bundle(_package())
 
     providers = [payload.provider for payload in bundle]
@@ -48,6 +49,7 @@ def test_s1_feedback_dry_run_bundle_contains_no_submit_provider_payloads() -> No
 
 
 def test_feedback_dry_run_payload_rejects_submission_enabled() -> None:
+    """Reject a purported dry-run payload that enables submission."""
     with pytest.raises(ValueError, match="must not enable submission"):
         FeedbackDryRunPayload(
             provider="ibm_runtime",

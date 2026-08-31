@@ -27,6 +27,15 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
     assert "*/hardware/feedback_capability_probe.py" in (
         quality_gates.HARDWARE_SAFE_EXECUTION_COVERAGE_INCLUDE
     )
+    dryrun_source = "src/scpn_quantum_control/hardware/feedback_dryrun.py"
+    dryrun_tests = {"tests/test_feedback_dryrun.py", "tests/test_feedback_dryrun_branch.py"}
+    assert dryrun_source in quality_gates.HARDWARE_SAFE_EXECUTION_TYPING_RATCHET
+    assert dryrun_source in quality_gates.HARDWARE_SAFE_EXECUTION_QUALITY_RATCHET
+    assert dryrun_tests.issubset(quality_gates.HARDWARE_SAFE_EXECUTION_QUALITY_RATCHET)
+    assert dryrun_tests.issubset(quality_gates.HARDWARE_SAFE_EXECUTION_COVERAGE_COHORT)
+    assert "*/hardware/feedback_dryrun.py" in (
+        quality_gates.HARDWARE_SAFE_EXECUTION_COVERAGE_INCLUDE
+    )
     gates = dict(quality_gates.build_static_quality_gates("/python"))
     assert (
         gates["mypy-strict-hardware-safe-execution-quality"][5:]
