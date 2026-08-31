@@ -27,6 +27,7 @@ from scpn_quantum_control.phase.hardware_gradient_publication import (
 
 
 def test_hardware_gradient_publication_package_is_json_ready_and_no_submit() -> None:
+    """Keep the default package serialisable and explicitly no-submit."""
     package = build_hardware_gradient_publication_package()
     payload = package.to_dict()
 
@@ -41,6 +42,7 @@ def test_hardware_gradient_publication_package_is_json_ready_and_no_submit() -> 
 
 
 def test_hardware_gradient_publication_package_covers_campaign_methods() -> None:
+    """Cover every registered campaign method in all publication sections."""
     package = build_hardware_gradient_publication_package()
 
     methods = {section.method for section in package.method_sections}
@@ -54,6 +56,7 @@ def test_hardware_gradient_publication_package_covers_campaign_methods() -> None
 
 
 def test_hardware_gradient_publication_artifact_map_requires_raw_replay_fields() -> None:
+    """Require raw replay and calibration fields before evidence promotion."""
     package = build_hardware_gradient_publication_package()
 
     for entry in package.artifact_map:
@@ -67,6 +70,7 @@ def test_hardware_gradient_publication_artifact_map_requires_raw_replay_fields()
 
 
 def test_hardware_gradient_publication_claim_rows_are_not_promoted() -> None:
+    """Keep claim-ledger rows unpromoted until every evidence item exists."""
     package = build_hardware_gradient_publication_package()
 
     for row in package.claim_ledger_rows:
@@ -85,6 +89,7 @@ def test_hardware_gradient_publication_claim_rows_are_not_promoted() -> None:
 
 
 def test_hardware_gradient_publication_benchmark_placeholders_are_explicit() -> None:
+    """Keep same-circuit benchmark placeholders explicit and unexecuted."""
     package = build_hardware_gradient_publication_package()
 
     routes = {placeholder.route for placeholder in package.benchmark_placeholders}
@@ -104,6 +109,7 @@ def test_hardware_gradient_publication_benchmark_placeholders_are_explicit() -> 
 
 
 def test_hardware_gradient_publication_package_rejects_live_result_claims() -> None:
+    """Reject injected live-result claims from the no-submit scaffold."""
     plan = plan_hardware_gradient_campaign(default_hardware_gradient_campaign_specs()[0])
     invalid_plan = HardwareGradientCampaignPlan(
         spec=plan.spec,
@@ -118,6 +124,7 @@ def test_hardware_gradient_publication_package_rejects_live_result_claims() -> N
 
 
 def test_hardware_gradient_publication_exports_from_phase_namespace() -> None:
+    """Export the publication builder and package through the phase namespace."""
     assert (
         phase.build_hardware_gradient_publication_package
         is build_hardware_gradient_publication_package

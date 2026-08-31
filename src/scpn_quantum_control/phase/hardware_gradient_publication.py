@@ -49,6 +49,7 @@ class HardwareGradientPreregistration:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate the required preregistration fields and collections."""
         _require_non_empty("title", self.title)
         _require_non_empty("research_question", self.research_question)
         _require_non_empty("primary_endpoint", self.primary_endpoint)
@@ -211,7 +212,7 @@ class HardwareGradientPublicationPackage:
 
     @property
     def submission_ready(self) -> bool:
-        """Return whether the package contains enough evidence for submission."""
+        """Whether the package contains enough evidence for submission."""
         return (
             self.hardware_execution_count > 0
             and self.gradient_available_count > 0

@@ -20,16 +20,22 @@ PROVIDER_HARDWARE_GRADIENT_AUDIT_SOURCE = (
 PROVIDER_HARDWARE_GRADIENT_AUDIT_TEST = "tests/test_phase_provider_hardware_gradient_audit.py"
 HARDWARE_GRADIENT_CAMPAIGN_SOURCE = "src/scpn_quantum_control/phase/hardware_gradient_campaign.py"
 HARDWARE_GRADIENT_CAMPAIGN_TEST = "tests/test_phase_hardware_gradient_campaign.py"
+HARDWARE_GRADIENT_PUBLICATION_SOURCE = (
+    "src/scpn_quantum_control/phase/hardware_gradient_publication.py"
+)
+HARDWARE_GRADIENT_PUBLICATION_TEST = "tests/test_phase_hardware_gradient_publication.py"
 PROVIDER_GRADIENT_AUDIT_SOURCES = [
     PROVIDER_GRADIENT_AUDIT_SOURCE,
     PROVIDER_HARDWARE_GRADIENT_AUDIT_SOURCE,
     HARDWARE_GRADIENT_CAMPAIGN_SOURCE,
+    HARDWARE_GRADIENT_PUBLICATION_SOURCE,
 ]
 """Provider-gradient readiness sources owned as one audit family."""
 PROVIDER_GRADIENT_AUDIT_TESTS = [
     PROVIDER_GRADIENT_AUDIT_TEST,
     PROVIDER_HARDWARE_GRADIENT_AUDIT_TEST,
     HARDWARE_GRADIENT_CAMPAIGN_TEST,
+    HARDWARE_GRADIENT_PUBLICATION_TEST,
 ]
 """Public offline suites for the provider-gradient audit family."""
 PROVIDER_GRADIENT_AUDIT_TYPING_RATCHET = [
@@ -56,7 +62,7 @@ PROVIDER_GRADIENT_AUDIT_COVERAGE_DATA_FILE = (
 )
 PROVIDER_GRADIENT_AUDIT_COVERAGE_INCLUDE = (
     "*/phase/provider_gradient_audit.py,*/phase/provider_hardware_gradient_audit.py,"
-    "*/phase/hardware_gradient_campaign.py"
+    "*/phase/hardware_gradient_campaign.py,*/phase/hardware_gradient_publication.py"
 )
 
 
@@ -134,6 +140,8 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "HARDWARE_GRADIENT_CAMPAIGN_SOURCE",
     "HARDWARE_GRADIENT_CAMPAIGN_TEST",
+    "HARDWARE_GRADIENT_PUBLICATION_SOURCE",
+    "HARDWARE_GRADIENT_PUBLICATION_TEST",
     "PROVIDER_GRADIENT_AUDIT_COVERAGE_COHORT",
     "PROVIDER_GRADIENT_AUDIT_COVERAGE_DATA_FILE",
     "PROVIDER_GRADIENT_AUDIT_COVERAGE_INCLUDE",
