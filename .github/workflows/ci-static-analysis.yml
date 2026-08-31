@@ -78,6 +78,7 @@ jobs:
             -m pytest -q tests/test_ci_workflow_modularity.py
           python -m coverage report --rcfile=/dev/null \
             --data-file=.coverage.ci-workflow-modularity --precision=2 \
+            --show-missing \
             --fail-under=100 \
             --include='*/ci_workflow_inventory.py,*/audit_ci_workflow_modularity.py'
           python tools/audit_ci_workflow_modularity.py

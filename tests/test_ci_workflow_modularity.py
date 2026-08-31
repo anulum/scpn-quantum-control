@@ -398,6 +398,62 @@ def test_modularity_audit_rejects_missing_calls_gates_and_non_mapping_jobs(
     assert any("missing required gate ci-gate" in error for error in errors)
 
 
+def test_modularity_audit_rejects_scalar_triggers_calls_and_gates(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Reject scalar YAML where reusable triggers and coordinator jobs are required."""
+    policy = _policy()
+    _write_fixture(tmp_path, policy)
+    monkeypatch.setattr(modularity, "REPOSITORY_ROOT", tmp_path)
+    coordinator = tmp_path / ".github/workflows/ci.yml"
+    coordinator.write_text(
+        "name: CI\npermissions:\n  contents: read\njobs:\n"
+        "  unit-quality: invalid\n  ci-gate: invalid\n",
+        encoding="utf-8",
+    )
+    category = tmp_path / ".github/workflows/ci-unit-quality.yml"
+    category.write_text(
+        f"""name: CI / Unit Quality
+on: invalid
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@{_ACTION_SHA}
+""",
+        encoding="utf-8",
+    )
+
+    errors = modularity.audit_ci_workflow_modularity(policy)
+
+    assert any("reusable category must expose" in error for error in errors)
+    assert any("missing reusable call unit-quality" in error for error in errors)
+    assert any("missing required gate ci-gate" in error for error in errors)
+
+
+def test_modularity_audit_rejects_reusable_call_dependency_drift(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Require coordinator call dependencies to match the category policy exactly."""
+    policy = _policy()
+    _write_fixture(tmp_path, policy)
+    monkeypatch.setattr(modularity, "REPOSITORY_ROOT", tmp_path)
+    coordinator = tmp_path / ".github/workflows/ci.yml"
+    coordinator.write_text(
+        coordinator.read_text(encoding="utf-8").replace(
+            "    uses: ./.github/workflows/ci-unit-quality.yml\n",
+            "    needs: unexpected\n    uses: ./.github/workflows/ci-unit-quality.yml\n",
+        ),
+        encoding="utf-8",
+    )
+
+    errors = modularity.audit_ci_workflow_modularity(policy)
+
+    assert any("call unit-quality has incorrect dependencies" in error for error in errors)
+
+
 def test_modularity_audit_accepts_explicit_optional_waivers(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
