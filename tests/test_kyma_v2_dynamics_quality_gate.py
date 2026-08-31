@@ -26,7 +26,9 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
         ruff[-len(quality_gates.KYMA_V2_DYNAMICS_DOCSTRING_RATCHET) :]
         == quality_gates.KYMA_V2_DYNAMICS_DOCSTRING_RATCHET
     )
-    assert "--isolated" in ruff and "D,D413" in ruff
+    assert "--isolated" in ruff and "--preview" in ruff
+    assert "D,D413,D417,D420" in ruff
+    assert "lint.explicit-preview-rules = true" in ruff
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
@@ -41,7 +43,7 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/benchmarks/kyma_v2/dynamics.py" in report
+    assert quality_gates.KYMA_V2_DYNAMICS_COVERAGE_INCLUDE in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -67,5 +69,5 @@ def test_ci_runs_and_aggregates_kyma_v2_dynamics_gate() -> None:
     for path in quality_gates.KYMA_V2_DYNAMICS_COVERAGE_COHORT:
         assert path in block
     assert "--fail-under=100" in block
-    assert "benchmarks/kyma_v2/dynamics.py" in block
+    assert quality_gates.KYMA_V2_DYNAMICS_COVERAGE_INCLUDE.removeprefix("--include=") in block
     assert "kyma-v2-dynamics-quality" in workflow[workflow.index("  ci-gate:") :]

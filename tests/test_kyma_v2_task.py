@@ -15,6 +15,7 @@ from scpn_quantum_control.benchmarks.kyma_v2 import task
 
 
 def test_readout_node_is_outside_every_cluster() -> None:
+    """Keep the passive readout oscillator outside every cluster."""
     all_cluster_osc = {o for c in task.CLUSTERS for o in c}
     assert task.READOUT_OSCILLATOR not in all_cluster_osc
     assert task.N_OSC == task.N_CLUSTER_OSC + 1
@@ -22,17 +23,20 @@ def test_readout_node_is_outside_every_cluster() -> None:
 
 
 def test_pairs_are_the_six_disjoint_free_cluster_pairs() -> None:
+    """Enumerate six pairs and preserve the held-out complements."""
     assert task.N_PAIRS == 6
     assert task.PAIRS[task.HELD_OUT_R1_PAIR] == (0, 1)
     assert task.PAIRS[task.HELD_OUT_R2_PAIR] == (2, 3)
 
 
 def test_pair_members_are_the_two_clusters() -> None:
+    """Resolve a pair to the members of its two clusters."""
     members = task.pair_members(0)  # clusters A + B
     assert set(members.tolist()) == {0, 1, 2, 3, 4, 5, 6, 7}
 
 
 def test_in_phase_mask_is_symmetric_zero_diagonal_over_members() -> None:
+    """Restrict the symmetric in-phase mask to off-diagonal pair edges."""
     mask = task.in_phase_mask(0)
     assert mask.shape == (task.N_OSC, task.N_OSC)
     assert np.array_equal(mask, mask.T)
@@ -48,6 +52,7 @@ def test_in_phase_mask_is_symmetric_zero_diagonal_over_members() -> None:
 
 
 def test_anti_phase_masks_partition_the_pair_edges() -> None:
+    """Partition pair edges into within- and between-cluster masks."""
     within, between = task.anti_phase_masks(0)  # clusters A, B
     both = task.in_phase_mask(0)
     # within ∪ between == all pair edges, and they are disjoint
@@ -59,6 +64,7 @@ def test_anti_phase_masks_partition_the_pair_edges() -> None:
 
 
 def test_disjoint_conjunctions_are_all_complementary_pairs() -> None:
+    """Enumerate every complementary relation-pair conjunction."""
     conj = task.disjoint_conjunctions()
     for r1, r2 in conj:
         assert not (set(task.PAIRS[r1]) & set(task.PAIRS[r2]))
@@ -66,6 +72,7 @@ def test_disjoint_conjunctions_are_all_complementary_pairs() -> None:
 
 
 def test_encode_sets_one_hot_rows() -> None:
+    """Encode active relations as one-hot pair rows."""
     code = task.encode(2, 5)
     assert code.shape == (task.N_RELATIONS, task.N_PAIRS)
     assert code[0, 2] == 1.0 and code[1, 5] == 1.0
@@ -75,6 +82,7 @@ def test_encode_sets_one_hot_rows() -> None:
 
 
 def test_build_trials_holds_out_only_the_target_conjunction() -> None:
+    """Reserve only the target conjunction for held-out trials."""
     cfg = task.ProbeConfigV2()
     batch = task.build_trials(cfg, seed=0)
     # test trials are exactly the held-out conjunction
@@ -90,6 +98,7 @@ def test_build_trials_holds_out_only_the_target_conjunction() -> None:
 
 
 def test_build_trials_contains_both_single_relations_of_the_held_out() -> None:
+    """Expose both held-out constituents as single training relations."""
     cfg = task.ProbeConfigV2()
     batch = task.build_trials(cfg, seed=0)
     train = ~batch.is_test
@@ -99,6 +108,7 @@ def test_build_trials_contains_both_single_relations_of_the_held_out() -> None:
 
 
 def test_build_trials_shapes_and_determinism() -> None:
+    """Build deterministic trial arrays with the configured dimensions."""
     cfg = task.ProbeConfigV2()
     a = task.build_trials(cfg, seed=3)
     b = task.build_trials(cfg, seed=3)
