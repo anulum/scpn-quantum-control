@@ -1216,18 +1216,23 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/hardware/feedback_loop.py
           src/scpn_quantum_control/bridge/orchestrator_feedback.py
+          src/scpn_quantum_control/control/realtime_feedback.py
           tests/test_orchestrator_feedback.py
           tools/feedback_loop_quality_gates.py
           tests/test_feedback_loop_quality_gate.py
       - name: Ruff NumPy docstrings for feedback-loop quality cohort
         run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/hardware/feedback_loop.py
           src/scpn_quantum_control/bridge/orchestrator_feedback.py
+          src/scpn_quantum_control/control/realtime_feedback.py
           tests/test_feedback_loop.py
           tests/test_feedback_loop_branches.py
           tests/test_orchestrator_feedback.py
+          tests/test_realtime_feedback.py
+          tests/test_realtime_feedback_fallback_branches.py
           tools/feedback_loop_quality_gates.py
           tests/test_feedback_loop_quality_gate.py
       - name: Run feedback-loop focused coverage
@@ -1240,6 +1245,8 @@ jobs:
           tests/test_feedback_loop.py
           tests/test_feedback_loop_branches.py
           tests/test_orchestrator_feedback.py
+          tests/test_realtime_feedback.py
+          tests/test_realtime_feedback_fallback_branches.py
       - name: Enforce feedback-loop exact coverage
         run: >-
           python -m coverage report
@@ -1247,7 +1254,7 @@ jobs:
           --data-file=/tmp/scpn-qc-feedback-loop-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/hardware/feedback_loop.py,*/bridge/orchestrator_feedback.py
+          --include=*/hardware/feedback_loop.py,*/bridge/orchestrator_feedback.py,*/control/realtime_feedback.py
 
   analog-platform-catalogue-quality:
     needs: lint

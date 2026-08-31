@@ -48,6 +48,7 @@ class RealtimeFeedbackConfig:
     feedback_correction_sign: float = -1.0
 
     def __post_init__(self) -> None:
+        """Validate feedback targets, gains, measurement, and correction controls."""
         _require_range(self.target_r, 0.0, 1.0, "target_r")
         _require_range(self.deadband, 0.0, 1.0, "deadband")
         _require_positive(self.base_dt, "base_dt")

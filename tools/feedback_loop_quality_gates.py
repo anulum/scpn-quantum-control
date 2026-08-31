@@ -17,17 +17,22 @@ FEEDBACK_LOOP_SOURCE = "src/scpn_quantum_control/hardware/feedback_loop.py"
 """Production source owned by the cross-shot feedback loop."""
 ORCHESTRATOR_FEEDBACK_SOURCE = "src/scpn_quantum_control/bridge/orchestrator_feedback.py"
 """Production source owned by the phase-orchestrator feedback path."""
+REALTIME_FEEDBACK_SOURCE = "src/scpn_quantum_control/control/realtime_feedback.py"
+"""Production source owned by the live-shot controller path."""
 
 FEEDBACK_LOOP_COVERAGE_COHORT = [
     "tests/test_feedback_loop.py",
     "tests/test_feedback_loop_branches.py",
     "tests/test_orchestrator_feedback.py",
+    "tests/test_realtime_feedback.py",
+    "tests/test_realtime_feedback_fallback_branches.py",
 ]
 """Offline tests that own exact feedback-loop coverage."""
 
 FEEDBACK_LOOP_TYPING_RATCHET = [
     FEEDBACK_LOOP_SOURCE,
     ORCHESTRATOR_FEEDBACK_SOURCE,
+    REALTIME_FEEDBACK_SOURCE,
     "tests/test_orchestrator_feedback.py",
     "tools/feedback_loop_quality_gates.py",
     "tests/test_feedback_loop_quality_gate.py",
@@ -37,6 +42,7 @@ FEEDBACK_LOOP_TYPING_RATCHET = [
 FEEDBACK_LOOP_DOCSTRING_RATCHET = [
     FEEDBACK_LOOP_SOURCE,
     ORCHESTRATOR_FEEDBACK_SOURCE,
+    REALTIME_FEEDBACK_SOURCE,
     *FEEDBACK_LOOP_COVERAGE_COHORT,
     "tools/feedback_loop_quality_gates.py",
     "tests/test_feedback_loop_quality_gate.py",
@@ -45,7 +51,9 @@ FEEDBACK_LOOP_DOCSTRING_RATCHET = [
 
 FEEDBACK_LOOP_COVERAGE_DATA_FILE = "/tmp/scpn-qc-feedback-loop-quality.coverage"  # nosec B108
 """Isolated coverage database for the feedback-loop owner."""
-FEEDBACK_LOOP_COVERAGE_INCLUDE = "*/hardware/feedback_loop.py,*/bridge/orchestrator_feedback.py"
+FEEDBACK_LOOP_COVERAGE_INCLUDE = (
+    "*/hardware/feedback_loop.py,*/bridge/orchestrator_feedback.py,*/control/realtime_feedback.py"
+)
 """Exact production sources enforced by the shared coverage report."""
 
 
@@ -71,8 +79,11 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *FEEDBACK_LOOP_DOCSTRING_RATCHET,
@@ -125,6 +136,7 @@ __all__ = [
     "FEEDBACK_LOOP_SOURCE",
     "FEEDBACK_LOOP_TYPING_RATCHET",
     "ORCHESTRATOR_FEEDBACK_SOURCE",
+    "REALTIME_FEEDBACK_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

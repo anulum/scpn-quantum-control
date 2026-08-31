@@ -33,11 +33,13 @@ def _inputs():
 
 
 def test_config_validation_rejects_invalid_shots():
+    """Reject a realtime-feedback configuration without positive shots."""
     with pytest.raises(ValueError, match="measurement_shots"):
         RealtimeFeedbackConfig(measurement_shots=0)
 
 
 def test_config_validation_rejects_invalid_control_parameters():
+    """Reject invalid Trotter-depth and gain controls."""
     with pytest.raises(ValueError, match="trotter_steps"):
         RealtimeFeedbackConfig(trotter_steps=0)
     with pytest.raises(ValueError, match="max_gain"):
@@ -45,6 +47,7 @@ def test_config_validation_rejects_invalid_control_parameters():
 
 
 def test_feedback_policy_numpy_actions_and_bounds():
+    """Map live order values to bounded synchronise, hold, and release actions."""
     actions, gains, errors = feedback_policy_numpy(
         np.array([0.2, 0.75, 0.95], dtype=np.float64),
         target_r=0.75,
@@ -61,6 +64,7 @@ def test_feedback_policy_numpy_actions_and_bounds():
 
 
 def test_feedback_policy_rejects_nonfinite_live_order_parameter():
+    """Reject non-finite live order-parameter observations."""
     with pytest.raises(ValueError, match="r_values"):
         feedback_policy_numpy(
             np.array([0.5, np.nan], dtype=np.float64),
@@ -72,6 +76,7 @@ def test_feedback_policy_rejects_nonfinite_live_order_parameter():
 
 
 def test_feedback_policy_rejects_invalid_gain_and_target_contracts():
+    """Reject invalid target, base-gain, and maximum-gain contracts."""
     with pytest.raises(ValueError, match="target_r"):
         feedback_policy_numpy(
             np.array([0.5]), target_r=1.5, deadband=0.03, base_gain=0.8, max_gain=1.5
@@ -87,6 +92,7 @@ def test_feedback_policy_rejects_invalid_gain_and_target_contracts():
 
 
 def test_monitored_circuit_contains_conditional_reset_and_correction():
+    """Build monitored rounds with conditional corrections and resets."""
     K, omega = _inputs()
     circuit = build_monitored_feedback_circuit(K, omega, n_rounds=2)
     operations = circuit.count_ops()
@@ -107,6 +113,7 @@ def test_monitored_circuit_contains_conditional_reset_and_correction():
 
 
 def test_open_loop_control_circuit_matches_monitor_skeleton_without_conditionals():
+    """Preserve the monitor skeleton while removing closed-loop conditionals."""
     K, omega = _inputs()
     monitored = build_monitored_feedback_circuit(K, omega, n_rounds=2)
     control = build_open_loop_feedback_control_circuit(K, omega, n_rounds=2)
@@ -119,6 +126,7 @@ def test_open_loop_control_circuit_matches_monitor_skeleton_without_conditionals
 
 
 def test_monitored_circuit_rejects_zero_rounds():
+    """Reject monitored and open-loop circuits without positive rounds."""
     K, omega = _inputs()
     with pytest.raises(ValueError, match="n_rounds"):
         build_monitored_feedback_circuit(K, omega, n_rounds=0)
@@ -127,6 +135,7 @@ def test_monitored_circuit_rejects_zero_rounds():
 
 
 def test_controller_run_is_seeded_and_live_shot_driven():
+    """Replay live-shot controller histories from deterministic child seeds."""
     K, omega = _inputs()
     cfg = RealtimeFeedbackConfig(measurement_shots=64, target_r=0.7)
     left = RealtimeSyncFeedbackController(K, omega, config=cfg)
@@ -147,6 +156,7 @@ def test_controller_run_is_seeded_and_live_shot_driven():
 
 
 def test_controller_low_target_can_release_coupling():
+    """Allow a low target to release coupling within policy bounds."""
     K, omega = _inputs()
     cfg = RealtimeFeedbackConfig(measurement_shots=128, target_r=0.05, deadband=0.01)
     controller = RealtimeSyncFeedbackController(K, omega, config=cfg)
@@ -156,6 +166,7 @@ def test_controller_low_target_can_release_coupling():
 
 
 def test_controller_rejects_out_of_policy_coupling_scale():
+    """Reject a manually selected coupling scale beyond the configured bound."""
     K, omega = _inputs()
     cfg = RealtimeFeedbackConfig(max_gain=1.25)
     controller = RealtimeSyncFeedbackController(K, omega, config=cfg)
@@ -165,6 +176,7 @@ def test_controller_rejects_out_of_policy_coupling_scale():
 
 
 def test_controller_hold_action_applies_no_correction():
+    """Apply no phase correction for a hold action."""
     K, omega = _inputs()
     controller = RealtimeSyncFeedbackController(K, omega)
 
@@ -172,6 +184,7 @@ def test_controller_hold_action_applies_no_correction():
 
 
 def test_controller_reset_restores_state_and_clears_history():
+    """Restore prepared state, unit coupling, and empty history on reset."""
     K, omega = _inputs()
     controller = RealtimeSyncFeedbackController(K, omega)
     controller.step(seed=12)
@@ -188,6 +201,7 @@ def test_controller_reset_restores_state_and_clears_history():
 
 
 def test_controller_run_rejects_zero_steps():
+    """Reject a controller run without positive feedback steps."""
     K, omega = _inputs()
     controller = RealtimeSyncFeedbackController(K, omega)
 
@@ -196,6 +210,7 @@ def test_controller_run_rejects_zero_steps():
 
 
 def test_controller_builds_instance_monitored_circuit():
+    """Build the monitored dynamic circuit from controller state."""
     K, omega = _inputs()
     controller = RealtimeSyncFeedbackController(K, omega)
     circuit = controller.build_monitored_circuit(n_rounds=1)

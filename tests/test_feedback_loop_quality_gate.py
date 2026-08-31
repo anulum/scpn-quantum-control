@@ -15,6 +15,15 @@ from tools import preflight
 
 def test_static_gate_is_strict_and_numpy_documented() -> None:
     """Require strict typing and complete owner NumPy docstrings."""
+    realtime_tests = {
+        "tests/test_realtime_feedback.py",
+        "tests/test_realtime_feedback_fallback_branches.py",
+    }
+    assert quality_gates.REALTIME_FEEDBACK_SOURCE in quality_gates.FEEDBACK_LOOP_TYPING_RATCHET
+    assert quality_gates.REALTIME_FEEDBACK_SOURCE in quality_gates.FEEDBACK_LOOP_DOCSTRING_RATCHET
+    assert realtime_tests.issubset(quality_gates.FEEDBACK_LOOP_DOCSTRING_RATCHET)
+    assert realtime_tests.issubset(quality_gates.FEEDBACK_LOOP_COVERAGE_COHORT)
+    assert "*/control/realtime_feedback.py" in quality_gates.FEEDBACK_LOOP_COVERAGE_INCLUDE
     gates = dict(quality_gates.build_static_quality_gates("/python"))
     assert (
         gates["mypy-strict-feedback-loop-quality"][5:]
@@ -25,7 +34,9 @@ def test_static_gate_is_strict_and_numpy_documented() -> None:
         ruff[-len(quality_gates.FEEDBACK_LOOP_DOCSTRING_RATCHET) :]
         == quality_gates.FEEDBACK_LOOP_DOCSTRING_RATCHET
     )
-    assert "--isolated" in ruff and "D,D413" in ruff
+    assert "--isolated" in ruff and "--preview" in ruff
+    assert "D,D413,D417,D420" in ruff
+    assert "lint.explicit-preview-rules = true" in ruff
 
 
 def test_coverage_gate_is_isolated_and_exact() -> None:
