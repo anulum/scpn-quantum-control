@@ -48,6 +48,7 @@ class NistTestResult:
     details: Mapping[str, float] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Freeze detail metadata and normalize family P-values."""
         object.__setattr__(self, "details", MappingProxyType(dict(self.details)))
         object.__setattr__(self, "p_values", tuple(float(p) for p in self.p_values))
 

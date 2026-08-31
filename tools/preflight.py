@@ -139,6 +139,7 @@ if TYPE_CHECKING:
     from tools import (
         entanglement_sync_evidence_quality_gates as _entanglement_sync_evidence_quality_gates,
     )
+    from tools import entropy_randomness_quality_gates as _entropy_randomness_quality_gates
     from tools import error_aware_chain_quality_gates as _error_aware_chain_quality_gates
     from tools import (
         error_mitigation_product_quality_gates as _error_mitigation_product_quality_gates,
@@ -385,6 +386,7 @@ else:
     _provider_gradient_audit_quality_gates = import_module(
         "tools.provider_gradient_audit_quality_gates"
     )
+    _entropy_randomness_quality_gates = import_module("tools.entropy_randomness_quality_gates")
     _analog_platform_catalogue_quality_gates = import_module(
         "tools.analog_platform_catalogue_quality_gates"
     )
@@ -1041,6 +1043,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_phase_coupling_learning_quality_gates.build_static_quality_gates(_PY),
     *_phase_objectives_quality_gates.build_static_quality_gates(_PY),
     *_provider_gradient_audit_quality_gates.build_static_quality_gates(_PY),
+    *_entropy_randomness_quality_gates.build_static_quality_gates(_PY),
     *_quantum_sync_oracle_product_quality_gates.build_static_quality_gates(_PY),
     *_custom_derivatives_product_quality_gates.build_static_quality_gates(_PY),
     *_kyma_mechanism_product_quality_gates.build_static_quality_gates(_PY),
@@ -1576,6 +1579,7 @@ PHASE_OBJECTIVES_COVERAGE_GATES = _phase_objectives_quality_gates.build_coverage
 PROVIDER_GRADIENT_AUDIT_COVERAGE_GATES = (
     _provider_gradient_audit_quality_gates.build_coverage_gates(_PY)
 )
+ENTROPY_RANDOMNESS_COVERAGE_GATES = _entropy_randomness_quality_gates.build_coverage_gates(_PY)
 QUANTUM_SYNC_ORACLE_COVERAGE_GATES = (
     _quantum_sync_oracle_product_quality_gates.build_coverage_gates(_PY)
 )
@@ -2163,6 +2167,7 @@ def main() -> int:
             gates.extend(PHASE_COUPLING_LEARNING_COVERAGE_GATES)
             gates.extend(PHASE_OBJECTIVES_COVERAGE_GATES)
             gates.extend(PROVIDER_GRADIENT_AUDIT_COVERAGE_GATES)
+            gates.extend(ENTROPY_RANDOMNESS_COVERAGE_GATES)
             gates.extend(QUANTUM_SYNC_ORACLE_COVERAGE_GATES)
             gates.extend(CUSTOM_DERIVATIVES_PRODUCT_COVERAGE_GATES)
             gates.extend(KYMA_MECHANISM_PRODUCT_COVERAGE_GATES)

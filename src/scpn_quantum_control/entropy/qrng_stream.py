@@ -52,6 +52,7 @@ class EntropyHealthReport:
     timestamp_ns: int
 
     def __post_init__(self) -> None:
+        """Freeze the NIST P-value mapping for immutable report custody."""
         object.__setattr__(self, "nist_p_values", MappingProxyType(dict(self.nist_p_values)))
 
     @property

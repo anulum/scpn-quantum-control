@@ -1,0 +1,67 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — entropy and randomness quality-gate tests
+"""Lock the entropy/randomness owner into preflight and required CI."""
+
+from pathlib import Path
+
+from tools import entropy_randomness_quality_gates as quality_gates
+from tools import preflight
+
+
+def test_static_gate_is_strict_and_completely_documented() -> None:
+    """Require strict typing and isolated complete NumPy docstrings."""
+    gates = dict(quality_gates.build_static_quality_gates("/python"))
+    assert (
+        gates["mypy-strict-entropy-randomness-quality"][5:]
+        == quality_gates.ENTROPY_RANDOMNESS_TYPING_RATCHET
+    )
+    docs = gates["ruff D entropy-randomness quality ratchet"]
+    assert "D,D413,D417,D420" in docs
+    assert "--preview" in docs
+    assert "lint.explicit-preview-rules = true" in docs
+    assert docs[-len(quality_gates.ENTROPY_RANDOMNESS_DOCSTRING_RATCHET) :] == (
+        quality_gates.ENTROPY_RANDOMNESS_DOCSTRING_RATCHET
+    )
+
+
+def test_coverage_gate_runs_real_entropy_suite_and_is_exact() -> None:
+    """Require real entropy execution and exact source branch coverage."""
+    gates = dict(quality_gates.build_coverage_gates("/python"))
+    run = gates["entropy-randomness focused coverage"]
+    report = gates["entropy-randomness exact coverage threshold"]
+    assert "--branch" in run
+    assert run[-len(quality_gates.ENTROPY_RANDOMNESS_TESTS) :] == (
+        quality_gates.ENTROPY_RANDOMNESS_TESTS
+    )
+    assert quality_gates.ENTROPY_RANDOMNESS_COVERAGE_DATA_FILE.startswith("/tmp/")
+    assert "--fail-under=100" in report
+    assert f"--include={quality_gates.ENTROPY_RANDOMNESS_COVERAGE_INCLUDE}" in report
+
+
+def test_preflight_uses_helper_defined_gates() -> None:
+    """Keep helper-defined static and coverage commands verbatim in preflight."""
+    assert dict(preflight.ENTROPY_RANDOMNESS_COVERAGE_GATES) == dict(
+        quality_gates.build_coverage_gates(preflight._PY)
+    )
+    for name, command in quality_gates.build_static_quality_gates(preflight._PY):
+        assert dict(preflight.STATIC_GATES)[name] == command
+    source = Path("tools/preflight.py").read_text(encoding="utf-8")
+    assert "gates.extend(ENTROPY_RANDOMNESS_COVERAGE_GATES)" in source
+
+
+def test_ci_runs_and_aggregates_entropy_randomness_gate() -> None:
+    """Keep the focused CI job and aggregate dependency required."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    start = workflow.index("  entropy-randomness-quality:")
+    end = workflow.index("\n\n  quantum-sync-oracle-quality:", start)
+    block = workflow[start:end]
+    assert all(path in block for path in quality_gates.ENTROPY_RANDOMNESS_TYPING_RATCHET)
+    assert all(path in block for path in quality_gates.ENTROPY_RANDOMNESS_DOCSTRING_RATCHET)
+    assert all(path in block for path in quality_gates.ENTROPY_RANDOMNESS_TESTS)
+    assert quality_gates.ENTROPY_RANDOMNESS_COVERAGE_INCLUDE in block
+    assert "entropy-randomness-quality" in workflow[workflow.index("  ci-gate:") :]
