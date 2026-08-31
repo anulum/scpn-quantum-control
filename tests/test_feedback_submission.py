@@ -33,6 +33,7 @@ def _controller() -> RealtimeSyncFeedbackController:
 
 
 def test_s1_feedback_submission_package_marks_dynamic_backends_ready() -> None:
+    """Mark capable dynamic backends ready without submitting work."""
     package = build_s1_feedback_submission_package(
         _controller(),
         n_rounds=2,
@@ -61,6 +62,7 @@ def test_s1_feedback_submission_package_marks_dynamic_backends_ready() -> None:
 
 
 def test_default_s1_platforms_carry_backend_descriptor_policy() -> None:
+    """Carry registered backend policy into default platform decisions."""
     package = build_s1_feedback_submission_package(_controller(), n_rounds=1)
     decisions = {decision.platform.name: decision for decision in package.platform_readiness}
 
@@ -82,6 +84,7 @@ def test_default_s1_platforms_carry_backend_descriptor_policy() -> None:
 
 
 def test_s1_feedback_submission_package_separates_analog_targets_for_review() -> None:
+    """Route incompatible analogue targets to manual review."""
     package = build_s1_feedback_submission_package(_controller(), n_rounds=1)
     decisions = {decision.platform.name: decision for decision in package.platform_readiness}
 
@@ -93,6 +96,7 @@ def test_s1_feedback_submission_package_separates_analog_targets_for_review() ->
 
 
 def test_platform_readiness_blocks_insufficient_gate_backend() -> None:
+    """Block gate backends missing qubits or dynamic-circuit features."""
     package = build_s1_feedback_submission_package(_controller(), n_rounds=1)
     tiny_backend = FeedbackPlatformCapability(
         name="tiny gate target",
@@ -112,6 +116,7 @@ def test_platform_readiness_blocks_insufficient_gate_backend() -> None:
 
 
 def test_feedback_budget_total_includes_queue_and_calibration_seconds() -> None:
+    """Include execution, queue, and calibration time in reservations."""
     budget = FeedbackBudgetEstimate(
         circuits=2,
         shots_per_circuit=128,
@@ -125,6 +130,7 @@ def test_feedback_budget_total_includes_queue_and_calibration_seconds() -> None:
 
 
 def test_platform_readiness_blocks_zero_reserved_budget_without_submitting() -> None:
+    """Block zero-time reservations without invoking a provider."""
     package = build_s1_feedback_submission_package(_controller(), n_rounds=1)
     ready_platform = next(
         decision.platform
@@ -158,11 +164,13 @@ def test_s1_feedback_submission_package_rejects_invalid_budget_boundaries(
     kwargs: dict[str, object],
     message: str,
 ) -> None:
+    """Reject invalid workload boundaries while building packages."""
     with pytest.raises(ValueError, match=message):
         build_s1_feedback_submission_package(_controller(), **kwargs)
 
 
 def test_feedback_platform_capability_rejects_invalid_target_metadata() -> None:
+    """Reject targets without a name or positive qubit capacity."""
     with pytest.raises(ValueError, match="platform name"):
         FeedbackPlatformCapability(
             name="",
@@ -199,6 +207,7 @@ def test_feedback_budget_estimate_rejects_invalid_boundaries(
     kwargs: dict[str, object],
     message: str,
 ) -> None:
+    """Reject invalid workload counts and negative timing components."""
     params = {
         "circuits": 1,
         "shots_per_circuit": 32,

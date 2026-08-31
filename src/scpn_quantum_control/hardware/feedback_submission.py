@@ -55,6 +55,7 @@ class FeedbackPlatformCapability:
     notes: str = ""
 
     def __post_init__(self) -> None:
+        """Reject capabilities without a usable platform identity or size."""
         if not self.name:
             raise ValueError("platform name must be non-empty")
         if self.max_qubits < 1:
@@ -73,6 +74,7 @@ class FeedbackBudgetEstimate:
     calibration_seconds: float = 0.0
 
     def __post_init__(self) -> None:
+        """Reject non-positive workloads and negative reservation times."""
         if self.circuits < 1:
             raise ValueError("circuits must be positive")
         if self.shots_per_circuit < 1:
