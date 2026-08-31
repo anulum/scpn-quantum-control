@@ -49,6 +49,11 @@ def test_entropy_per_bit_empty_is_zero() -> None:
     assert _entropy_per_bit(np.empty(0, dtype=np.int8)) == (0.0, 0.0)
 
 
+def test_entropy_per_bit_constant_population_is_zero() -> None:
+    """A deterministic population skips the zero-probability logarithm."""
+    assert _entropy_per_bit(np.zeros(8, dtype=np.int8)) == (0.0, 0.0)
+
+
 def test_accepts_injected_backend_without_debias() -> None:
     """A custom entropy backend is used directly; raw bits stream through."""
     stream = QRNGStream(source=_ConstantBackend(), debias=False)

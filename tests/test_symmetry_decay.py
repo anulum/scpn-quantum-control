@@ -24,6 +24,7 @@ from typing import Any
 import numpy as np
 import pytest
 
+import scpn_quantum_control.mitigation.symmetry_decay as symmetry_decay_module
 from scpn_quantum_control.mitigation.symmetry_decay import (
     GUESSResult,
     SymmetryDecayModel,
@@ -269,6 +270,15 @@ class TestRoundtrip:
         model = learn_symmetry_decay(s_ideal, s_noisy, scales)
         assert abs(model.alpha - alpha_true) < 1e-10
         assert model.fit_residual < 1e-10
+
+    def test_native_fit_dispatch(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Use the native decay fitter when its optional kernel is available."""
+        monkeypatch.setattr(symmetry_decay_module, "_fit_rust", lambda *_args: (0.25, 0.01))
+
+        model = learn_symmetry_decay(4.0, [3.8, 3.0], [1, 3])
+
+        assert model.alpha == pytest.approx(0.25)
+        assert model.fit_residual == pytest.approx(0.01)
 
     def test_correction_increases_with_noise(self) -> None:
         """More noise → larger correction factor."""

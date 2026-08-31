@@ -522,12 +522,6 @@ jobs:
         run: |
           python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
           python -m pip install --no-deps -e .
-      - name: Build CPU-only PennyLane runtime overlay
-        run: |
-          export SCPN_FRAMEWORK_OVERLAY="$RUNNER_TEMP/scpn-qc-framework-site-py312"
-          install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY" --install
-          echo "PYTHONPATH=$SCPN_FRAMEWORK_OVERLAY:$PYTHONPATH" >> "$GITHUB_ENV"
-          install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY" --verify
       - run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/migration_guides_product.py
@@ -545,6 +539,12 @@ jobs:
           tests/test_phase_pennylane_import.py
           tools/migration_guides_product_quality_gates.py
           tests/test_migration_guides_product_quality_gate.py
+      - name: Build CPU-only PennyLane runtime overlay
+        run: |
+          export SCPN_FRAMEWORK_OVERLAY="$RUNNER_TEMP/scpn-qc-framework-site-py312"
+          install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY" --install
+          echo "PYTHONPATH=$SCPN_FRAMEWORK_OVERLAY:$PYTHONPATH" >> "$GITHUB_ENV"
+          install-differentiable-framework-overlay --overlay-path "$SCPN_FRAMEWORK_OVERLAY" --verify
       - run: >-
           python -m coverage run --rcfile=/dev/null
           --data-file=.coverage.migration-guides-quality --branch

@@ -13,14 +13,6 @@ import numpy as np
 import pytest
 
 import scpn_quantum_control.analysis.quantum_persistent_homology as qph_mod
-
-try:
-    from ripser import ripser  # noqa: F401
-
-    _RIPSER = True
-except ImportError:
-    _RIPSER = False
-
 from scpn_quantum_control.analysis.quantum_persistent_homology import (
     QuantumPHResult,
     _correlator_from_counts,
@@ -31,7 +23,25 @@ from scpn_quantum_control.analysis.quantum_persistent_homology import (
     quantum_persistent_homology,
 )
 
-pytestmark = pytest.mark.skipif(not _RIPSER, reason="ripser not installed")
+
+@pytest.fixture(autouse=True)
+def _deterministic_ripser(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Exercise the public pipeline without requiring the optional wheel."""
+
+    def fake_ripser(
+        distance: np.ndarray,
+        *,
+        maxdim: int,
+        distance_matrix: bool,
+    ) -> dict[str, list[np.ndarray]]:
+        assert maxdim == 1
+        assert distance_matrix is True
+        h0 = np.column_stack((np.zeros(distance.shape[0]), np.full(distance.shape[0], np.inf)))
+        h1 = np.array([[0.1, 0.25], [0.2, np.inf]]) if distance.shape[0] >= 4 else np.empty((0, 2))
+        return {"dgms": [h0, h1]}
+
+    monkeypatch.setattr(qph_mod, "_RIPSER_AVAILABLE", True)
+    monkeypatch.setattr(qph_mod, "ripser", fake_ripser, raising=False)
 
 
 class TestCorrelatorFromCounts:

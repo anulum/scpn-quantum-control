@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 import builtins
+import sys
+from types import ModuleType
 from typing import Any
 
 import numpy as np
@@ -224,6 +226,21 @@ class TestOTOCCoverage:
 
         assert len(result.otoc_values) == 5
         assert np.isfinite(result.otoc_values).all()
+
+    def test_native_eigendecomposition_dispatch(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Pass the dense eigendecomposition to the optional native OTOC kernel."""
+        engine = ModuleType("scpn_quantum_engine")
+        expected = np.array([1.0, 0.8], dtype=np.float64)
+        engine.otoc_from_eigendecomp = lambda *_args: expected  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "scpn_quantum_engine", engine)
+
+        result = compute_otoc(
+            build_knm_paper27(L=2),
+            OMEGA_N_16[:2],
+            times=np.array([0.0, 0.1], dtype=np.float64),
+        )
+
+        np.testing.assert_array_equal(result.otoc_values, expected)
 
     def test_lyapunov_none_zero_f0(self) -> None:
         """Cover line 167: F(0) ≈ 0 → Lyapunov returns None."""

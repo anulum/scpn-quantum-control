@@ -127,6 +127,23 @@ def test_berlekamp_massey_falls_back_on_engine_error(monkeypatch: pytest.MonkeyP
     assert nist.berlekamp_massey(bits) == nist._berlekamp_massey_python(bits)
 
 
+def test_berlekamp_massey_falls_back_when_native_symbol_is_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A loaded engine without the optional kernel uses the Python algorithm."""
+    monkeypatch.setitem(
+        sys.modules, "scpn_quantum_engine", types.ModuleType("scpn_quantum_engine")
+    )
+    bits = np.array([0, 1, 1, 0], dtype=np.int8)
+    assert nist.berlekamp_massey(bits) == nist._berlekamp_massey_python(bits)
+
+
+def test_berlekamp_massey_handles_final_full_length_shift() -> None:
+    """A discrepancy only at the final bit skips the empty coefficient update."""
+    bits = np.array([0, 0, 0, 1], dtype=np.int8)
+    assert nist._berlekamp_massey_python(bits) == 4
+
+
 def _short_bits_factory(size: int) -> Any:
     """Return an ``as_bits`` replacement that ignores the minimum-length floor."""
 

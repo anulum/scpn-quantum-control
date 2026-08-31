@@ -93,6 +93,18 @@ def test_odmr_dispatch_falls_back_when_native_symbol_is_absent(
     np.testing.assert_array_equal(result, _lorentzian_dip(freqs, centers, 1.0e6, 0.03))
 
 
+def test_odmr_dispatch_uses_native_kernel(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A loaded native kernel supplies the accelerated spectrum."""
+    engine = ModuleType("scpn_quantum_engine")
+    expected = np.array([0.8, 0.9], dtype=np.float64)
+    engine.nv_odmr_spectrum = lambda *_args: expected  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "scpn_quantum_engine", engine)
+
+    result = _odmr_spectrum_dispatch(np.array([1.0, 2.0]), np.array([1.5, 2.5]), 0.1, 0.2)
+
+    np.testing.assert_array_equal(result, expected)
+
+
 def test_rejects_negative_noise_std() -> None:
     """A negative readout-noise standard deviation is rejected."""
     freqs = np.linspace(2.80e9, 2.94e9, 16, dtype=np.float64)

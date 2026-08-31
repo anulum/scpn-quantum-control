@@ -12,6 +12,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+import scpn_quantum_control.qec.error_budget as error_budget_module
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.qec.error_budget import (
     ErrorBudget,
@@ -90,6 +91,24 @@ class TestMinimumCodeDistance:
 
 class TestComputeErrorBudget:
     """Exercise complete Kuramoto-XY error-budget construction."""
+
+    def test_trotter_search_uses_declared_iteration_ceiling(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A permanently excessive bound exits at the fail-closed step ceiling."""
+        monkeypatch.setattr(
+            error_budget_module, "trotter_error_bound", lambda *_args, **_kwargs: 1.0
+        )
+        coupling = build_knm_paper27(L=4)
+
+        budget = compute_error_budget(
+            coupling,
+            OMEGA_N_16[:4],
+            target_total_error=0.01,
+        )
+
+        assert budget.n_trotter_steps == 131072
+        assert budget.trotter_error == 1.0
 
     def test_returns_error_budget(self) -> None:
         """The estimator returns its public result record."""

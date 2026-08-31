@@ -170,3 +170,67 @@ def test_committed_llvm_jit_claim_gate_artifact_is_blocked_and_consistent() -> N
     assert gate.fallback_policy is not None
     assert payload["missing_requirements"] == list(gate.missing_requirements)
     assert payload["promotion_ready"] is gate.promotion_ready
+
+
+def test_gate_validation_edges_fail_closed() -> None:
+    """Reject malformed payload fields, inconsistent derivations, and wrong types."""
+    with pytest.raises(ValueError, match="artifact_id"):
+        build_llvm_jit_claim_gate(artifact_id=" ", native_execution_evidence=None)
+    with pytest.raises(ValueError, match="claim_boundary"):
+        build_llvm_jit_claim_gate(
+            artifact_id="probe", native_execution_evidence=None, claim_boundary=" "
+        )
+    with pytest.raises(ValueError, match="native_execution_evidence"):
+        build_llvm_jit_claim_gate(
+            artifact_id="probe",
+            native_execution_evidence=object(),  # type: ignore[arg-type]
+        )
+    with pytest.raises(ValueError, match="gate must be"):
+        render_llvm_jit_claim_gate_markdown(object())  # type: ignore[arg-type]
+
+    payload = build_llvm_jit_claim_gate(
+        artifact_id="probe",
+        native_execution_evidence=None,
+    ).to_dict()
+    malformed = (
+        ("artifact_id", None, "non-empty string"),
+        ("executable_lowering_evidence_id", 1, "string when provided"),
+        ("executable_lowering_verified", 1, "bool"),
+        ("correctness_test_ids", "bad", "list of strings"),
+        ("crash_safety_test_ids", [1], "list of strings"),
+    )
+    for field, value, message in malformed:
+        candidate = dict(payload)
+        candidate[field] = value
+        with pytest.raises(ValueError, match=message):
+            llvm_jit_claim_gate_from_dict(candidate)
+
+    candidate = dict(payload)
+    candidate["missing_requirements"] = []
+    with pytest.raises(ValueError, match="missing_requirements"):
+        llvm_jit_claim_gate_from_dict(candidate)
+    candidate = dict(payload)
+    candidate["promotion_ready"] = True
+    with pytest.raises(ValueError, match="promotion_ready"):
+        llvm_jit_claim_gate_from_dict(candidate)
+
+
+def test_gate_normalizes_optional_payload_and_tracks_empty_correctness() -> None:
+    """Normalize serialized optional text while deriving every empty blocker."""
+    gate = llvm_jit_claim_gate_from_dict(
+        {
+            "artifact_id": " probe ",
+            "executable_lowering_evidence_id": None,
+            "executable_lowering_verified": False,
+            "correctness_test_ids": [],
+            "crash_safety_test_ids": [],
+            "benchmark_artifact_ids": [],
+            "rollback_policy": None,
+            "fallback_policy": None,
+            "claim_boundary": " bounded ",
+        }
+    )
+
+    assert gate.artifact_id == "probe"
+    assert gate.claim_boundary == "bounded"
+    assert "correctness_tests" in gate.missing_requirements

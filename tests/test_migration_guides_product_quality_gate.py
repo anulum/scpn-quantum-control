@@ -55,4 +55,9 @@ def test_ci_runs_and_aggregates_gate() -> None:
     assert "Build CPU-only PennyLane runtime overlay" in block
     assert "install-differentiable-framework-overlay" in block
     assert 'echo "PYTHONPATH=$SCPN_FRAMEWORK_OVERLAY:$PYTHONPATH"' in block
+    assert block.index("python -m mypy") < block.index("Build CPU-only PennyLane runtime overlay")
+    assert block.index("python -m ruff") < block.index("Build CPU-only PennyLane runtime overlay")
+    assert block.index("Build CPU-only PennyLane runtime overlay") < block.index(
+        "python -m coverage run"
+    )
     assert "migration-guides-product-quality" in workflow[workflow.index("  ci-gate:") :]
