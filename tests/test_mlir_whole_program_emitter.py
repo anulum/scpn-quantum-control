@@ -29,7 +29,6 @@ def _node(
     value: float = 1.0,
 ) -> WholeProgramIRNode:
     """Return a minimal IR node for emitter tests."""
-
     return WholeProgramIRNode(
         index=index,
         op=op,
@@ -45,7 +44,6 @@ def _result(
     trainable: tuple[bool, ...] = (True, True),
 ) -> WholeProgramADResult:
     """Return a minimal validated whole-program AD result."""
-
     gradient = np.array(
         [float(index + 1) if flag else 0.0 for index, flag in enumerate(trainable)],
         dtype=np.float64,
@@ -73,7 +71,6 @@ def _operation_lines(
     node: WholeProgramIRNode,
 ) -> list[str]:
     """Emit one operation through the production emitter dispatcher."""
-
     lines: list[str] = []
     emitter._emit_whole_program_native_operation(
         lines,
@@ -86,13 +83,11 @@ def _operation_lines(
 
 def _tokens(count: int) -> tuple[str, ...]:
     """Return deterministic scalar-token inputs for emitter contracts."""
-
     return tuple(str(1.0 + float(index) / 10.0) for index in range(count))
 
 
 def test_native_computation_emits_parameters_constants_branches_and_unary_variants() -> None:
     """Whole-kernel computation emission should handle scalar leaf IR records."""
-
     nodes = (
         _node(0, "parameter", ("x0",), value=0.25),
         _node(1, "parameter", ("x1",), value=1.25),
@@ -128,7 +123,6 @@ def test_native_computation_rejects_malformed_leaf_ir(
     message: str,
 ) -> None:
     """Computation emission should fail closed on malformed structural nodes."""
-
     with pytest.raises(ValueError, match=message):
         emitter._emit_whole_program_native_computation(
             _result(nodes),
@@ -175,7 +169,6 @@ def test_operation_dispatcher_rejects_invalid_contracts(
     message: str,
 ) -> None:
     """The operation dispatcher should reject malformed op-specific contracts."""
-
     with pytest.raises(ValueError, match=message):
         _operation_lines(_result((_node(0, "parameter", ("x0",)),)), _node(4, op, inputs))
 
@@ -203,7 +196,6 @@ def test_linalg_dispatcher_rejects_unknown_output_slots(
     message: str,
 ) -> None:
     """Compact linalg op families should reject unknown output coordinates."""
-
     with pytest.raises(ValueError, match=message):
         _operation_lines(_result((_node(0, "parameter", ("x0",)),)), _node(8, op, inputs))
 
@@ -212,7 +204,6 @@ def test_dispatcher_exercises_faddeev_leverrier_wide_det_route(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """The wide-det dispatcher should call the non-helper Faddeev-LeVerrier route when selected."""
-
     calls: list[tuple[int, str]] = []
 
     def fake_faddeev(
@@ -249,7 +240,6 @@ def test_linalg_helper_emitters_cover_cached_inverse_and_solve_paths(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Shared helper emitters should generate reusable determinant, inverse, and solve code."""
-
     monkeypatch.setattr(emitter, "_WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES", frozenset())
     matrix_tokens = ("%0", "%1", *_tokens(23))
     rhs_tokens = ("%0", "%1", *_tokens(3))
@@ -311,7 +301,6 @@ def test_linalg_helper_emitters_cover_cached_inverse_and_solve_paths(
 
 def test_factorisation_helper_paths_and_guardrails() -> None:
     """Factorisation-backed helpers should reject invalid shapes and emit pivoting IR."""
-
     result = _result((_node(0, "parameter", ("x0",)),), trainable=(True,))
     state = emitter._WholeProgramNativeEmissionState()
     matrix_tokens = ("%0", *_tokens(24))
@@ -434,7 +423,6 @@ def test_factorisation_helper_paths_and_guardrails() -> None:
 
 def test_determinant_derivative_helpers_and_faddeev_paths() -> None:
     """Determinant emitters should cover recursive, helper-backed, and FL derivative code."""
-
     lines: list[str] = []
     matrix3 = (
         ("%0", "1.0", "2.0"),
@@ -547,7 +535,6 @@ def test_determinant_derivative_helpers_and_faddeev_paths() -> None:
 
 def test_spec_parsers_predicates_operands_and_formatters_fail_closed() -> None:
     """Spec parsers and token helpers should accept only supported native contracts."""
-
     assert emitter._whole_program_native_where_branch_op("%0:gt:%1") is None
     assert emitter._whole_program_native_where_branch_op("left:truth:2") is None
     assert emitter._whole_program_native_where_branch_op("left:truth:1") == "branch:left:True"
@@ -652,7 +639,6 @@ def test_spec_parsers_predicates_operands_and_formatters_fail_closed() -> None:
 
 def test_structural_derivative_operand_folds_parameter_seeds() -> None:
     """Structural derivatives should fold direct parameter seeds when possible."""
-
     parameter = _node(0, "parameter", ("x0",))
     frozen = _node(1, "parameter", ("x1",))
     out_of_order = _node(5, "parameter", ("x0",))
@@ -682,7 +668,6 @@ def test_structural_derivative_operand_folds_parameter_seeds() -> None:
 
 def test_sum_and_batch_emitters_cover_identity_and_accumulation_paths() -> None:
     """Batch and sum helpers should emit deterministic LLVM loops and sum identities."""
-
     result = _result((_node(0, "parameter", ("x0",)), _node(1, "parameter", ("x1",))))
     jvp = emitter._emit_whole_program_native_batch_jvp(
         result,

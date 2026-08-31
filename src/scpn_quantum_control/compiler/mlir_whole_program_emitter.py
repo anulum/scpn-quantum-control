@@ -1306,7 +1306,6 @@ def _emit_whole_program_native_inverse_helper(
     emission_state: _WholeProgramNativeEmissionState,
 ) -> _WholeProgramNativeInverseHelper:
     """Emit or reuse one shared inverse helper for a static matrix."""
-
     if size in _WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES:
         return _emit_whole_program_native_inverse_factorisation_helper(
             lines,
@@ -1405,7 +1404,6 @@ def _emit_whole_program_native_inverse_factorisation_helper(
     emission_state: _WholeProgramNativeEmissionState,
 ) -> _WholeProgramNativeInverseHelper:
     """Emit or reuse one shared partial-pivot factorisation inverse helper."""
-
     if size not in _WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES:
         raise ValueError("native factorisation helper requested for unsupported size")
     if len(matrix_tokens) != size * size:
@@ -2783,7 +2781,6 @@ def _whole_program_native_structural_derivative_operand(
     derivative_index: int,
 ) -> str:
     """Return a derivative operand with direct-parameter zero seeds folded."""
-
     if not _whole_program_native_is_ir_value(token):
         return _whole_program_native_derivative_operand(token, derivative_index)
     node_index = int(token[1:])

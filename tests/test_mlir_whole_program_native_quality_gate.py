@@ -64,8 +64,19 @@ def test_ci_runs_and_aggregates_mlir_whole_program_native_gate() -> None:
     start = workflow.index("  mlir-whole-program-native-quality:")
     end = workflow.index("\n\n  tn-mps-baseline-design-quality:", start)
     block = workflow[start:end]
+    typing_start = block.index("          python -m mypy")
+    docs_start = block.index("          python -m ruff")
+    coverage_start = block.index("          python -m coverage run")
+    report_start = block.index("          python -m coverage report")
+    typing_block = block[typing_start:docs_start]
+    docs_block = block[docs_start:coverage_start]
+    coverage_block = block[coverage_start:report_start]
+    for path in quality_gates.MLIR_WHOLE_PROGRAM_NATIVE_TYPING_RATCHET:
+        assert path in typing_block
     for path in quality_gates.MLIR_WHOLE_PROGRAM_NATIVE_DOCSTRING_RATCHET:
-        assert path in block
+        assert path in docs_block
+    for path in quality_gates.MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_COHORT:
+        assert path in coverage_block
     assert "--fail-under=100" in block
     assert "compiler/mlir_whole_program_native.py" in block
     assert "compiler/mlir_native_execution_evidence.py" in block

@@ -16,14 +16,22 @@ MLIR_WHOLE_PROGRAM_NATIVE_SOURCE = "src/scpn_quantum_control/compiler/mlir_whole
 MLIR_NATIVE_EXECUTION_EVIDENCE_SOURCE = (
     "src/scpn_quantum_control/compiler/mlir_native_execution_evidence.py"
 )
+MLIR_WHOLE_PROGRAM_EMITTER_SOURCE = (
+    "src/scpn_quantum_control/compiler/mlir_whole_program_emitter.py"
+)
+"""Cohesive LLVM text emitter for recorded whole-program operations."""
+MLIR_WHOLE_PROGRAM_EMITTER_TEST = "tests/test_mlir_whole_program_emitter.py"
+"""Direct emitter syntax, derivative, matrix, cache, and failure tests."""
 MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_COHORT = [
     "tests/test_mlir_whole_program_native.py",
     "tests/test_mlir_whole_program_native_quality_edges.py",
     "tests/test_native_whole_program_ad_execution_evidence.py",
+    MLIR_WHOLE_PROGRAM_EMITTER_TEST,
 ]
 MLIR_WHOLE_PROGRAM_NATIVE_TYPING_RATCHET = [
     MLIR_WHOLE_PROGRAM_NATIVE_SOURCE,
     MLIR_NATIVE_EXECUTION_EVIDENCE_SOURCE,
+    MLIR_WHOLE_PROGRAM_EMITTER_SOURCE,
     *MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_COHORT,
     "tools/mlir_whole_program_native_quality_gates.py",
     "tests/test_mlir_whole_program_native_quality_gate.py",
@@ -107,6 +115,8 @@ def build_coverage_gates(python: str) -> list[Gate]:
 
 __all__ = [
     "MLIR_NATIVE_EXECUTION_EVIDENCE_SOURCE",
+    "MLIR_WHOLE_PROGRAM_EMITTER_SOURCE",
+    "MLIR_WHOLE_PROGRAM_EMITTER_TEST",
     "MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_COHORT",
     "MLIR_WHOLE_PROGRAM_NATIVE_COVERAGE_DATA_FILE",
     "MLIR_WHOLE_PROGRAM_NATIVE_DOCSTRING_RATCHET",
