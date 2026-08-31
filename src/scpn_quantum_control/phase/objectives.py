@@ -81,6 +81,7 @@ class ObjectiveTerm:
     description: str
 
     def __post_init__(self) -> None:
+        """Validate the term identity, weight, and declared gradient contract."""
         if not self.name:
             raise ValueError("term name must be non-empty")
         if not self.kind:
@@ -138,6 +139,7 @@ class ComposedPhaseObjective:
     )
 
     def __post_init__(self) -> None:
+        """Validate the objective identity and uniqueness of its term names."""
         if not self.name:
             raise ValueError("objective name must be non-empty")
         if not self.terms:
@@ -692,9 +694,8 @@ def train_composed_phase_objective(
         current = objective.evaluate(params)
         current_value = current.value
         current_gradient = current.gradient.copy()
-        if current_value < best_value:
-            best_value = current_value
-            best_params = params.copy()
+        best_value = current_value
+        best_params = params.copy()
         records.append(
             ComposedObjectiveTrainingStep(
                 index=index,
