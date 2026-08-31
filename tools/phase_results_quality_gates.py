@@ -13,22 +13,28 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 PHASE_RESULTS_SOURCE = "src/scpn_quantum_control/phase/results.py"
+XY_KURAMOTO_SOURCE = "src/scpn_quantum_control/phase/xy_kuramoto.py"
 PHASE_RESULTS_COVERAGE_COHORT = [
     "tests/test_phase_results.py",
     "tests/test_xy_kuramoto.py",
 ]
 PHASE_RESULTS_TYPING_RATCHET = [
     PHASE_RESULTS_SOURCE,
+    XY_KURAMOTO_SOURCE,
+    "tests/test_xy_kuramoto.py",
     "tools/phase_results_quality_gates.py",
     "tests/test_phase_results_quality_gate.py",
 ]
 PHASE_RESULTS_DOCSTRING_RATCHET = [
     PHASE_RESULTS_SOURCE,
+    XY_KURAMOTO_SOURCE,
     "tests/test_phase_results.py",
+    "tests/test_xy_kuramoto.py",
     "tools/phase_results_quality_gates.py",
     "tests/test_phase_results_quality_gate.py",
 ]
 PHASE_RESULTS_COVERAGE_DATA_FILE = "/tmp/scpn-qc-phase-results-quality.coverage"  # nosec B108
+PHASE_RESULTS_COVERAGE_INCLUDE = "*/phase/results.py,*/phase/xy_kuramoto.py"
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -94,7 +100,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={PHASE_RESULTS_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/phase/results.py",
+                f"--include={PHASE_RESULTS_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -103,9 +109,11 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "PHASE_RESULTS_COVERAGE_COHORT",
     "PHASE_RESULTS_COVERAGE_DATA_FILE",
+    "PHASE_RESULTS_COVERAGE_INCLUDE",
     "PHASE_RESULTS_DOCSTRING_RATCHET",
     "PHASE_RESULTS_SOURCE",
     "PHASE_RESULTS_TYPING_RATCHET",
+    "XY_KURAMOTO_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

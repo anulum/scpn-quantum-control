@@ -66,6 +66,7 @@ class TrotterEvolutionConfig:
     run_steps_per_step: int = 5
 
     def __post_init__(self) -> None:
+        """Validate all discrete Trotter evolution settings."""
         if self.order not in (1, 2):
             raise ValueError(f"order must be 1 or 2, got {self.order}")
         if not isinstance(self.evolve_steps, int) or self.evolve_steps < 1:

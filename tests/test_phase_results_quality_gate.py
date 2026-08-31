@@ -40,7 +40,7 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/phase/results.py" in report
+    assert f"--include={quality_gates.PHASE_RESULTS_COVERAGE_INCLUDE}" in report
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -66,5 +66,5 @@ def test_ci_runs_and_aggregates_phase_results_gate() -> None:
     ):
         assert path in block
     assert "--fail-under=100" in block
-    assert "phase/results.py" in block
+    assert quality_gates.PHASE_RESULTS_COVERAGE_INCLUDE in block
     assert "phase-results-quality" in workflow[workflow.index("  ci-gate:") :]

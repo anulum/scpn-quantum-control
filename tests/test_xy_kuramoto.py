@@ -7,7 +7,10 @@
 # SCPN Quantum Control — Tests for Xy Kuramoto
 """Tests for phase/xy_kuramoto.py."""
 
+from __future__ import annotations
+
 import sys
+from typing import Any, cast
 
 import numpy as np
 import pytest
@@ -22,33 +25,38 @@ SIZES = [2, 3, 4]
 
 
 @pytest.fixture(params=SIZES)
-def solver(request):
-    n = request.param
+def solver(request: pytest.FixtureRequest) -> QuantumKuramotoSolver:
+    """Build a representative solver for each small problem size."""
+    n = cast(int, request.param)
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
     return QuantumKuramotoSolver(n, K, omega)
 
 
-def test_build_hamiltonian(solver):
+def test_build_hamiltonian(solver: QuantumKuramotoSolver) -> None:
+    """The solver compiles an operator with one qubit per oscillator."""
     H = solver.build_hamiltonian()
     assert H.num_qubits == solver.n
 
 
-def test_rejects_invalid_coupling_shape():
+def test_rejects_invalid_coupling_shape() -> None:
+    """A coupling matrix with the wrong shape is rejected."""
     K = np.zeros((2, 3))
     omega = np.zeros(2)
     with pytest.raises(ValueError, match=r"K_coupling shape must be \(2, 2\)"):
         QuantumKuramotoSolver(2, K, omega)
 
 
-def test_rejects_invalid_omega_shape():
+def test_rejects_invalid_omega_shape() -> None:
+    """A natural-frequency vector with the wrong shape is rejected."""
     K = np.zeros((3, 3))
     omega = np.zeros(2)
     with pytest.raises(ValueError, match=r"omega_natural shape must be \(3,\)"):
         QuantumKuramotoSolver(3, K, omega)
 
 
-def test_rejects_non_finite_inputs():
+def test_rejects_non_finite_inputs() -> None:
+    """Non-finite couplings and frequencies are rejected."""
     K = np.array([[0.0, np.inf], [np.inf, 0.0]])
     omega = np.zeros(2)
     with pytest.raises(ValueError, match="K_coupling must contain only finite values"):
@@ -58,28 +66,51 @@ def test_rejects_non_finite_inputs():
         QuantumKuramotoSolver(2, np.zeros((2, 2)), np.array([0.0, np.nan]))
 
 
-def test_rejects_string_coupling_coercion():
-    K = [["0.0", "1.0"], ["1.0", "0.0"]]
+def test_rejects_string_coupling_coercion() -> None:
+    """String couplings cannot enter the real-valued solver contract."""
+    K = cast(Any, [["0.0", "1.0"], ["1.0", "0.0"]])
     omega = np.zeros(2)
     with pytest.raises(ValueError, match="K_coupling must contain real numeric scalars"):
         QuantumKuramotoSolver(2, K, omega)
 
 
-def test_rejects_boolean_frequency_coercion():
+def test_rejects_boolean_frequency_coercion() -> None:
+    """Boolean frequencies cannot masquerade as real values."""
     K = np.zeros((2, 2))
-    omega = [True, False]
+    omega = cast(Any, [True, False])
     with pytest.raises(ValueError, match="omega_natural must contain real numeric scalars"):
         QuantumKuramotoSolver(2, K, omega)
 
 
-def test_rejects_asymmetric_coupling_matrix():
+def test_rejects_ragged_complex_and_structured_couplings() -> None:
+    """Malformed and non-real coupling arrays fail through the public constructor."""
+    omega = np.zeros(2)
+    with pytest.raises(ValueError, match="K_coupling must be a rectangular numeric array"):
+        QuantumKuramotoSolver(2, cast(Any, [[0.0, 1.0], [1.0]]), omega)
+    with pytest.raises(ValueError, match="K_coupling must contain real numeric scalars"):
+        QuantumKuramotoSolver(2, cast(Any, np.zeros((2, 2), dtype=np.complex128)), omega)
+    structured = np.zeros((2, 2), dtype=[("real", "f8"), ("aux", "f8")])
+    with pytest.raises(ValueError, match="K_coupling must contain real numeric scalars"):
+        QuantumKuramotoSolver(2, cast(Any, structured), omega)
+
+
+@pytest.mark.parametrize("n_oscillators", [0, 1.5])
+def test_rejects_invalid_oscillator_count(n_oscillators: object) -> None:
+    """Non-positive and non-integral oscillator counts are rejected."""
+    with pytest.raises(ValueError, match="n_oscillators must be a positive integer"):
+        QuantumKuramotoSolver(cast(Any, n_oscillators), np.zeros((1, 1)), np.zeros(1))
+
+
+def test_rejects_asymmetric_coupling_matrix() -> None:
+    """An asymmetric coupling matrix is rejected."""
     K = np.array([[0.0, 1.0], [0.5, 0.0]])
     omega = np.zeros(2)
     with pytest.raises(ValueError, match="K_coupling must be symmetric"):
         QuantumKuramotoSolver(2, K, omega)
 
 
-def test_canonicalises_nonzero_coupling_diagonal_without_mutating_input():
+def test_canonicalises_nonzero_coupling_diagonal_without_mutating_input() -> None:
+    """Solver-owned couplings clear self-links without mutating inputs."""
     K = np.array([[0.1, 1.0], [1.0, 0.0]])
     omega = np.zeros(2)
     solver = QuantumKuramotoSolver(2, K, omega)
@@ -88,7 +119,8 @@ def test_canonicalises_nonzero_coupling_diagonal_without_mutating_input():
     np.testing.assert_allclose(np.diag(K), [0.1, 0.0])
 
 
-def test_rejects_invalid_trotter_settings():
+def test_rejects_invalid_trotter_settings() -> None:
+    """Invalid Trotter orders and step counts fail closed."""
     K = np.zeros((2, 2))
     omega = np.zeros(2)
     with pytest.raises(ValueError, match="trotter_order must be 1 or 2"):
@@ -107,7 +139,8 @@ def test_rejects_invalid_trotter_settings():
         solver.evolve(-1.0)
 
 
-def test_trotter_config_sets_default_public_surface():
+def test_trotter_config_sets_default_public_surface() -> None:
+    """Typed evolution settings drive default public solver behavior."""
     K = np.array([[0.0, 1.0], [1.0, 0.0]])
     omega = np.zeros(2)
     config = TrotterEvolutionConfig(order=2, evolve_steps=3, run_steps_per_step=2)
@@ -124,7 +157,8 @@ def test_trotter_config_sets_default_public_surface():
     assert result["R"] is result.R
 
 
-def test_legacy_trotter_order_overrides_config_order_only():
+def test_legacy_trotter_order_overrides_config_order_only() -> None:
+    """The compatibility order overrides only the configured order."""
     K = np.array([[0.0, 1.0], [1.0, 0.0]])
     omega = np.zeros(2)
     config = TrotterEvolutionConfig(order=2, evolve_steps=4, run_steps_per_step=3)
@@ -135,7 +169,8 @@ def test_legacy_trotter_order_overrides_config_order_only():
     assert solver.evolution_config.run_steps_per_step == 3
 
 
-def test_rejects_invalid_run_grid():
+def test_rejects_invalid_run_grid() -> None:
+    """Invalid trajectory horizons and step counts are rejected."""
     solver = QuantumKuramotoSolver(2, np.zeros((2, 2)), np.zeros(2))
     with pytest.raises(ValueError, match="t_max must be finite and non-negative"):
         solver.run(t_max=-0.1, dt=0.1)
@@ -145,13 +180,15 @@ def test_rejects_invalid_run_grid():
         solver.run(t_max=0.1, dt=0.1, trotter_per_step=0)
 
 
-def test_evolve_circuit(solver):
+def test_evolve_circuit(solver: QuantumKuramotoSolver) -> None:
+    """Evolution produces a circuit over every oscillator qubit."""
     solver.build_hamiltonian()
     qc = solver.evolve(1.0, trotter_steps=5)
     assert qc.num_qubits == solver.n
 
 
-def test_order_parameter_range(solver):
+def test_order_parameter_range(solver: QuantumKuramotoSolver) -> None:
+    """Measured order-parameter magnitude remains physical."""
     solver.build_hamiltonian()
     from qiskit import QuantumCircuit
     from qiskit.quantum_info import Statevector
@@ -162,14 +199,18 @@ def test_order_parameter_range(solver):
     assert 0.0 <= R <= 1.0
 
 
-def test_run_returns_trajectory(solver):
+def test_run_returns_trajectory(solver: QuantumKuramotoSolver) -> None:
+    """A solver run returns aligned order-parameter and time arrays."""
     result = solver.run(t_max=0.5, dt=0.1)
     assert "R" in result
     assert "times" in result
     assert len(result["R"]) == len(result["times"])
 
 
-def test_run_rejects_statevector_before_qiskit_allocation(monkeypatch):
+def test_run_rejects_statevector_before_qiskit_allocation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The dense budget fails before Qiskit allocates a statevector."""
     n = 4
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
@@ -177,7 +218,7 @@ def test_run_rejects_statevector_before_qiskit_allocation(monkeypatch):
 
     class FailIfStatevectorRequested:
         @staticmethod
-        def from_instruction(*args, **kwargs):  # noqa: ARG004
+        def from_instruction(*args: object, **kwargs: object) -> None:  # noqa: ARG004
             raise AssertionError("Statevector allocation happened before budget gate")
 
     monkeypatch.setattr(xy_mod, "Statevector", FailIfStatevectorRequested)
@@ -186,7 +227,7 @@ def test_run_rejects_statevector_before_qiskit_allocation(monkeypatch):
         solver.run(t_max=0.2, dt=0.1, max_statevector_gib=1e-9)
 
 
-def test_strong_coupling_increases_R():
+def test_strong_coupling_increases_R() -> None:
     """Strong coupling (K >> delta_omega) should maintain or increase R."""
     K = np.array([[0, 5.0], [5.0, 0]])
     omega = np.array([1.0, 1.0])
@@ -196,7 +237,7 @@ def test_strong_coupling_increases_R():
     assert result["R"][-1] > 0.1
 
 
-def test_single_oscillator():
+def test_single_oscillator() -> None:
     """n=1: no coupling, R determined by single qubit state."""
     K = np.array([[0.0]])
     omega = np.array([1.0])
@@ -210,7 +251,7 @@ def test_single_oscillator():
         assert 0.0 <= r <= 1.0 + 1e-10
 
 
-def test_second_order_trotter():
+def test_second_order_trotter() -> None:
     """SuzukiTrotter(order=2) should build a valid evolution circuit."""
     from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 
@@ -233,7 +274,7 @@ def test_second_order_trotter():
     assert qc2.size() > qc1.size()
 
 
-def test_energy_expectation():
+def test_energy_expectation() -> None:
     """energy_expectation should return <H> consistent with direct computation."""
     from qiskit import QuantumCircuit
     from qiskit.quantum_info import Statevector
@@ -249,13 +290,14 @@ def test_energy_expectation():
     E = solver.energy_expectation(sv)
     assert isinstance(E, float)
     # Energy from direct matrix multiplication
+    assert solver._hamiltonian is not None
     H_mat = np.array(solver._hamiltonian.to_matrix())
     psi = np.array(sv)
     E_direct = float(np.real(psi.conj() @ H_mat @ psi))
     np.testing.assert_allclose(E, E_direct, atol=1e-12)
 
 
-def test_energy_expectation_builds_hamiltonian_lazily():
+def test_energy_expectation_builds_hamiltonian_lazily() -> None:
     """energy_expectation builds H if called before build_hamiltonian."""
     from qiskit import QuantumCircuit
     from qiskit.quantum_info import Statevector
@@ -271,7 +313,7 @@ def test_energy_expectation_builds_hamiltonian_lazily():
     assert solver._hamiltonian is not None
 
 
-def test_order_parameter_qiskit_fallback(monkeypatch: pytest.MonkeyPatch):
+def test_order_parameter_qiskit_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
     """Order parameter falls back to Qiskit expectations if Rust lacks the helper."""
     from qiskit.quantum_info import Statevector
 
@@ -291,9 +333,27 @@ def test_order_parameter_qiskit_fallback(monkeypatch: pytest.MonkeyPatch):
     assert psi == pytest.approx(0.0)
 
 
-def test_trotter_product_expands_with_reps():
-    """Increasing Trotter reps should expand the decomposed product formula."""
+def test_order_parameter_falls_back_when_rust_engine_is_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An explicitly absent optional engine uses Qiskit's public expectation path."""
+    from qiskit.quantum_info import Statevector
 
+    def no_engine() -> None:
+        return None
+
+    monkeypatch.setattr(xy_mod, "optional_rust_engine", no_engine)
+    solver = QuantumKuramotoSolver(1, np.zeros((1, 1)), np.zeros(1))
+    state = Statevector([1 / np.sqrt(2), 1 / np.sqrt(2)])
+
+    R, psi = solver.measure_order_parameter(state)
+
+    assert pytest.approx(1.0) == R
+    assert psi == pytest.approx(0.0)
+
+
+def test_trotter_product_expands_with_reps() -> None:
+    """Increasing Trotter reps should expand the decomposed product formula."""
     K = np.array([[0, 0.8], [0.8, 0]])
     omega = np.array([1.0, 2.0])
     t = 0.5
@@ -315,7 +375,7 @@ def test_trotter_product_expands_with_reps():
 # ---------------------------------------------------------------------------
 
 
-def test_hamiltonian_hermitian():
+def test_hamiltonian_hermitian() -> None:
     """H must be Hermitian (eigenvalues real, spectrum bounded)."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
@@ -327,7 +387,7 @@ def test_hamiltonian_hermitian():
     np.testing.assert_allclose(mat, mat.conj().T, atol=1e-12)
 
 
-def test_hamiltonian_traceless():
+def test_hamiltonian_traceless() -> None:
     """XY Hamiltonian (Pauli terms) is traceless."""
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
@@ -339,7 +399,7 @@ def test_hamiltonian_traceless():
     assert abs(np.trace(mat)) < 1e-8
 
 
-def test_evolution_unitarity():
+def test_evolution_unitarity() -> None:
     """Trotter evolution circuit must preserve statevector norm."""
     from qiskit.quantum_info import Statevector
 
@@ -351,7 +411,7 @@ def test_evolution_unitarity():
     np.testing.assert_allclose(float(np.sum(np.abs(sv) ** 2)), 1.0, atol=1e-12)
 
 
-def test_zero_time_evolution_is_identity():
+def test_zero_time_evolution_is_identity() -> None:
     """Mutation guard: zero-time evolution must leave arbitrary states unchanged."""
     from qiskit import QuantumCircuit
     from qiskit.quantum_info import Statevector
@@ -370,7 +430,7 @@ def test_zero_time_evolution_is_identity():
     np.testing.assert_allclose(after.data, before.data, atol=1e-12)
 
 
-def test_pauli_operator_targets_requested_qubit():
+def test_pauli_operator_targets_requested_qubit() -> None:
     """Mutation guard: internal Pauli labels must respect Qiskit qubit ordering."""
     solver = QuantumKuramotoSolver(3, np.zeros((3, 3)), np.zeros(3))
 
@@ -379,7 +439,7 @@ def test_pauli_operator_targets_requested_qubit():
     assert str(solver._pauli_op("Z", 2).paulis[0]) == "ZII"
 
 
-def test_run_time_grid_preserves_requested_endpoints():
+def test_run_time_grid_preserves_requested_endpoints() -> None:
     """Mutation guard: trajectory grid must include the requested start and stop times."""
     solver = QuantumKuramotoSolver(2, np.zeros((2, 2)), np.array([0.2, 0.4]))
 
@@ -390,12 +450,22 @@ def test_run_time_grid_preserves_requested_endpoints():
     assert len(result["times"]) == len(result["R"])
 
 
-def test_run_evolves_final_partial_interval_without_time_label_drift():
+def test_zero_horizon_returns_one_exact_initial_sample() -> None:
+    """A zero horizon returns exactly the initial state at time zero."""
+    solver = QuantumKuramotoSolver(1, np.zeros((1, 1)), np.zeros(1))
+
+    result = solver.run(t_max=0.0, dt=0.1, trotter_per_step=1)
+
+    np.testing.assert_array_equal(result.times, [0.0])
+    assert result.R.shape == (1,)
+
+
+def test_run_evolves_final_partial_interval_without_time_label_drift() -> None:
     """Non-divisible horizons must evolve exactly to the labelled final time."""
     from qiskit import QuantumCircuit
 
     class RecordingSolver(QuantumKuramotoSolver):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__(2, np.zeros((2, 2)), np.array([0.2, 0.4]))
             self.evolution_times: list[float] = []
 
@@ -416,7 +486,7 @@ def test_run_evolves_final_partial_interval_without_time_label_drift():
 # ---------------------------------------------------------------------------
 
 
-def test_rust_kuramoto_euler_matches_direction():
+def test_rust_kuramoto_euler_matches_direction() -> None:
     """Rust kuramoto_euler and quantum solver should evolve phases in the same direction.
 
     Not exact parity (Trotter vs Euler), but both should show synchronisation
@@ -451,8 +521,9 @@ def test_rust_kuramoto_euler_matches_direction():
 # ---------------------------------------------------------------------------
 
 
-def test_pipeline_full_kuramoto_evolution():
+def test_pipeline_full_kuramoto_evolution() -> None:
     """Full pipeline: build_knm → QuantumKuramotoSolver → run → R trajectory.
+
     Verifies the core solver is wired and produces physical output.
     """
     import time
