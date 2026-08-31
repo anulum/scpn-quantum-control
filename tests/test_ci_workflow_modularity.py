@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import json
+import runpy
 from pathlib import Path
 
 import pytest
@@ -486,3 +487,11 @@ def test_modularity_main_prints_failures(
 
     assert modularity.main() == 1
     assert capsys.readouterr().out.splitlines() == ["first failure", "second failure"]
+
+
+def test_modularity_script_entrypoint_exits_successfully() -> None:
+    """Exercise the repository-root bootstrap and shell entrypoint together."""
+    with pytest.raises(SystemExit) as exit_info:
+        runpy.run_path(str(Path(modularity.__file__)), run_name="__main__")
+
+    assert exit_info.value.code == 0
