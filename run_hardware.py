@@ -44,6 +44,7 @@ import numpy as np
 
 
 def main():
+    """Run selected quantum-control experiments through the requested backend."""
     parser = argparse.ArgumentParser(
         description="Run scpn-quantum-control experiments on IBM Quantum hardware"
     )

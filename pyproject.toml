@@ -214,7 +214,6 @@ ignore = [
 "scripts/**" = ["D"]
 "notebooks/**" = ["D"]
 "data/**" = ["D"]
-"*.py" = ["D"]
 [tool.ruff.lint.isort]
 known-first-party = ["oscillatools", "scpn_quantum_control"]
 

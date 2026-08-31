@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import ast
 import re
 from pathlib import Path
 
@@ -19,6 +20,52 @@ import tomllib
 from scpn_quantum_control import TraceADArray, TraceADScalar
 from scpn_quantum_control.control import realtime_runtime
 from tools.ci_workflow_inventory import read_ci_workflow_source, workflow_path_for_job
+
+
+def test_configured_python_documentation_scope_is_fail_closed() -> None:
+    """Allow D exemptions only for named debt trees and gate maintained surfaces."""
+    pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+    per_file_ignores = pyproject["tool"]["ruff"]["lint"]["per-file-ignores"]
+    documentation_exemptions = {
+        pattern for pattern, rules in per_file_ignores.items() if "D" in rules
+    }
+    assert documentation_exemptions == {
+        "tests/**",
+        "scripts/**",
+        "notebooks/**",
+        "data/**",
+    }
+
+    preflight_source = Path("tools/preflight.py").read_text(encoding="utf-8")
+    preflight_tree = ast.parse(preflight_source)
+    static_gates = next(
+        node
+        for node in preflight_tree.body
+        if isinstance(node, ast.AnnAssign)
+        and isinstance(node.target, ast.Name)
+        and node.target.id == "STATIC_GATES"
+    )
+    assert isinstance(static_gates.value, ast.List)
+    commands = {
+        gate.elts[0].value: [
+            item.value
+            for item in gate.elts[1].elts
+            if isinstance(item, ast.Constant) and isinstance(item.value, str)
+        ]
+        for gate in static_gates.value.elts
+        if isinstance(gate, ast.Tuple)
+        and len(gate.elts) == 2
+        and isinstance(gate.elts[0], ast.Constant)
+        and isinstance(gate.elts[0].value, str)
+        and isinstance(gate.elts[1], ast.List)
+    }
+    owned_paths = ["src/", "tests/", "examples/", "figures/", "tools/", "run_hardware.py"]
+    assert commands["ruff check"][-len(owned_paths) :] == owned_paths
+    assert commands["ruff format"][-len(owned_paths) :] == owned_paths
+
+    workflow = Path(".github/workflows/ci-static-analysis.yml").read_text(encoding="utf-8")
+    assert "ruff check src/ tests/ examples/ figures/ tools/ run_hardware.py" in workflow
+    assert "ruff format --check src/ tests/ examples/ figures/ tools/ run_hardware.py" in workflow
 
 
 def test_ci_lint_job_gates_documentation_surface() -> None:

@@ -78,6 +78,7 @@ def sha256_bytes(payload: bytes) -> str:
     -------
     str
         The prefixed SHA-256 hex digest.
+
     """
     return "sha256:" + hashlib.sha256(payload).hexdigest()
 
@@ -99,6 +100,7 @@ def studio_version(pyproject_path: Path = REPO_ROOT / "pyproject.toml") -> str:
     ------
     ValueError
         If the project metadata carries no version.
+
     """
     metadata = tomllib.loads(pyproject_path.read_text(encoding="utf-8"))
     version = metadata.get("project", {}).get("version")
@@ -126,6 +128,7 @@ def load_deploy_manifest(dist_dir: Path) -> dict[str, Any]:
         If the bundle or its manifest is missing, or if any manifest row's
         digest no longer matches the bytes on disk — a stale or tampered
         bundle is never packaged.
+
     """
     manifest_path = dist_dir / DEPLOY_MANIFEST_NAME
     if not manifest_path.is_file():
@@ -166,6 +169,7 @@ def bundle_file_table(dist_dir: Path) -> list[dict[str, object]]:
     ------
     ValueError
         If the bundle tree contains no deployable files.
+
     """
     rows: list[dict[str, object]] = []
     for path in sorted(dist_dir.rglob("*")):
@@ -223,6 +227,7 @@ def stage_capability_manifest(
     ------
     ValueError
         If the committed manifest is missing or does not name this studio.
+
     """
     if not source.is_file():
         raise ValueError(f"capability manifest missing: {source.as_posix()}")
@@ -266,6 +271,7 @@ def pack_release_tarball(dist_dir: Path, files: list[dict[str, object]], out_dir
     -------
     Path
         The written tarball.
+
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     tarball_path = out_dir / RELEASE_TARBALL_NAME
@@ -314,6 +320,7 @@ def build_release_manifest(
     -------
     dict[str, object]
         JSON-ready release manifest. Deterministic — no timestamps.
+
     """
     return {
         "schema": RELEASE_MANIFEST_SCHEMA,
@@ -357,6 +364,7 @@ def build_deploy_descriptor(
     -------
     dict[str, object]
         JSON-ready deploy descriptor.
+
     """
     return {
         "schema": DEPLOY_BUNDLE_SCHEMA,
@@ -383,6 +391,7 @@ def write_deploy_descriptor(descriptor: dict[str, object], out_dir: Path) -> Pat
     -------
     Path
         The written ``studio-deploy.json`` path.
+
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / DEPLOY_DESCRIPTOR_NAME
@@ -404,6 +413,7 @@ def write_release_manifest(manifest: dict[str, object], out_dir: Path) -> Path:
     -------
     Path
         The written manifest path.
+
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / DEPLOY_MANIFEST_NAME
@@ -429,6 +439,7 @@ def main(argv: list[str] | None = None) -> int:
     ValueError
         If the bundle is missing or stale, or if the capability manifest
         does not name this studio.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

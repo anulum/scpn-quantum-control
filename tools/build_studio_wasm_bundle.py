@@ -61,6 +61,7 @@ def sha256_file(path: Path) -> str:
     -------
     str
         The prefixed SHA-256 hex digest.
+
     """
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -82,6 +83,7 @@ def kernel_crate_version(crate_dir: Path = KERNEL_CRATE_DIR) -> str:
     ------
     ValueError
         If the crate manifest carries no version.
+
     """
     manifest = tomllib.loads((crate_dir / "Cargo.toml").read_text(encoding="utf-8"))
     version = manifest.get("package", {}).get("version")
@@ -111,6 +113,7 @@ def build_wasm_kernel(
     ------
     ValueError
         If the build succeeds but the expected artefact is absent.
+
     """
     subprocess.run(
         ["cargo", "build", "--release", "--locked", "--target", WASM_TARGET],
@@ -154,6 +157,7 @@ def ship_wasm_into_bundle(artefact: Path, dist_dir: Path) -> Path:
     ValueError
         If the portal bundle does not exist — the WASM tier ships inside the
         portal bundle, never on its own.
+
     """
     if not dist_dir.is_dir():
         raise ValueError(f"portal bundle does not exist: {dist_dir.as_posix()} (run vite build)")
@@ -191,6 +195,7 @@ def build_deploy_manifest(
     ValueError
         If a tracked bundle artefact is missing — a partial bundle is never
         manifest-signed.
+
     """
     artefacts: list[dict[str, object]] = []
     tracked = [
@@ -239,6 +244,7 @@ def main(argv: list[str] | None = None) -> int:
     -------
     int
         ``0`` on success.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

@@ -918,7 +918,18 @@ _PYTEST_COV = _PYTEST_BASE + [
 STATIC_GATES: list[tuple[str, list[str]]] = [
     (
         "ruff check",
-        [_PY, "-m", "ruff", "check", "src/", "tests/", "examples/", "figures/"],
+        [
+            _PY,
+            "-m",
+            "ruff",
+            "check",
+            "src/",
+            "tests/",
+            "examples/",
+            "figures/",
+            "tools/",
+            "run_hardware.py",
+        ],
     ),
     (
         "ruff format",
@@ -932,6 +943,8 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "tests/",
             "examples/",
             "figures/",
+            "tools/",
+            "run_hardware.py",
         ],
     ),
     (
