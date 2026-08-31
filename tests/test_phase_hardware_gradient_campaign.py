@@ -27,6 +27,7 @@ from scpn_quantum_control.phase.hardware_gradient_campaign import (
 
 
 def test_default_hardware_gradient_campaign_specs_are_no_submit_and_json_ready() -> None:
+    """Expose two deterministic JSON-ready dry-run campaign specifications."""
     specs = default_hardware_gradient_campaign_specs()
 
     assert len(specs) == 2
@@ -41,6 +42,7 @@ def test_default_hardware_gradient_campaign_specs_are_no_submit_and_json_ready()
 
 
 def test_parameter_shift_vqe_campaign_policy_counts_shifted_evaluations() -> None:
+    """Account for every parameter-shift evaluation and bounded shot."""
     spec = default_hardware_gradient_campaign_specs()[0]
 
     plan = plan_hardware_gradient_campaign(spec)
@@ -58,6 +60,7 @@ def test_parameter_shift_vqe_campaign_policy_counts_shifted_evaluations() -> Non
 
 
 def test_spsa_campaign_policy_counts_seeded_repetitions() -> None:
+    """Account for seeded SPSA perturbations without executing hardware."""
     spec = default_hardware_gradient_campaign_specs()[1]
 
     plan = plan_hardware_gradient_campaign(spec)
@@ -76,6 +79,7 @@ def test_spsa_campaign_policy_counts_seeded_repetitions() -> None:
 
 
 def test_hardware_gradient_campaign_suite_preserves_no_submit_boundary() -> None:
+    """Preserve the no-submit boundary across the default campaign suite."""
     suite = run_hardware_gradient_campaign_readiness_suite()
 
     assert isinstance(suite, HardwareGradientCampaignSuite)
@@ -89,6 +93,7 @@ def test_hardware_gradient_campaign_suite_preserves_no_submit_boundary() -> None
 
 
 def test_hardware_gradient_campaign_rejects_missing_evidence_and_bad_allowlist() -> None:
+    """Reject missing governance evidence and non-allowlisted backends."""
     evidence = dict(DEFAULT_CAMPAIGN_EVIDENCE_IDS)
     evidence.pop("cost_budget_id")
 
@@ -126,6 +131,7 @@ def test_hardware_gradient_campaign_rejects_missing_evidence_and_bad_allowlist()
 
 
 def test_hardware_gradient_campaign_policy_blocks_budget_overrun() -> None:
+    """Fail closed when the proposed campaign exceeds its shot budget."""
     spec = HardwareGradientCampaignSpec(
         name="budget_overrun",
         method="parameter_shift_vqe",
@@ -150,6 +156,7 @@ def test_hardware_gradient_campaign_policy_blocks_budget_overrun() -> None:
 
 
 def test_hardware_gradient_campaign_exports_from_phase_namespace() -> None:
+    """Expose campaign types and builders through the public phase namespace."""
     assert phase.HardwareGradientCampaignSpec is HardwareGradientCampaignSpec
     assert phase.HardwareGradientCampaignPlan is HardwareGradientCampaignPlan
     assert (

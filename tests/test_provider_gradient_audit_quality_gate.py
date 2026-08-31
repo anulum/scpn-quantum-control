@@ -58,7 +58,7 @@ def test_ci_runs_and_aggregates_provider_gradient_audit_gate() -> None:
     """Keep the focused CI job and aggregate dependency required."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
     start = workflow.index("  provider-gradient-audit-quality:")
-    end = workflow.index("\n\n  quantum-sync-oracle-quality:", start)
+    end = workflow.index("\n\n  entropy-randomness-quality:", start)
     block = workflow[start:end]
     assert all(path in block for path in quality_gates.PROVIDER_GRADIENT_AUDIT_TYPING_RATCHET)
     assert all(path in block for path in quality_gates.PROVIDER_GRADIENT_AUDIT_DOCSTRING_RATCHET)

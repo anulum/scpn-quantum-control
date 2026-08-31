@@ -77,6 +77,7 @@ class HardwareGradientCampaignSpec:
     publication_claim: str = "no_hardware_execution"
 
     def __post_init__(self) -> None:
+        """Validate and normalize the bounded no-submit campaign specification."""
         name = self.name.strip()
         if not name:
             raise ValueError("campaign name must be non-empty")
