@@ -62,6 +62,7 @@ def _ring_request(*, tolerance: float = 1e-4) -> MappingRequest:
 
 
 def test_static_catalogue_is_source_dated_and_non_promotional() -> None:
+    """Keep all packaged profiles unique, sourced, and non-promotional."""
     profiles = load_platform_profiles()
     assert len(profiles) == 5
     assert len({profile.profile_id for profile in profiles}) == 5
@@ -72,11 +73,13 @@ def test_static_catalogue_is_source_dated_and_non_promotional() -> None:
 
 
 def test_unknown_profile_fails_with_catalogue_context() -> None:
+    """Report known catalogue identifiers for an unknown profile."""
     with pytest.raises(KeyError, match="known: scpn_circuit_qed_design_v1"):
         platform_profile("missing")
 
 
 def test_mapping_request_is_immutable_and_digest_is_deterministic() -> None:
+    """Detach request arrays and keep their digest deterministic."""
     source = np.array([[0.0, 0.5], [0.5, 0.0]], dtype=np.float64)
     request = MappingRequest.from_arrays(
         source,
@@ -109,6 +112,7 @@ def test_mapping_request_rejects_invalid_arrays(
     detunings: np.ndarray[Any, Any],
     match: str,
 ) -> None:
+    """Reject malformed, asymmetric, or non-finite request arrays."""
     with pytest.raises(ValueError, match=match):
         MappingRequest.from_arrays(
             couplings,
@@ -120,12 +124,14 @@ def test_mapping_request_rejects_invalid_arrays(
 
 @pytest.mark.parametrize("field", ["duration", "coupling_scale", "comparison_tolerance"])
 def test_mapping_request_rejects_non_positive_scales(field: str) -> None:
+    """Reject non-positive duration, scale, and tolerance values."""
     request = _ring_request()
     with pytest.raises(ValueError, match=field):
         replace(request, **{field: 0.0})
 
 
 def test_topology_classifier_covers_ring_complete_and_sparse() -> None:
+    """Classify ring, complete, sparse, and two-node graphs."""
     ring = _ring_request().coupling_matrix
     complete = np.ones((4, 4), dtype=np.float64) - np.eye(4)
     sparse = np.zeros((4, 4), dtype=np.float64)
@@ -141,11 +147,13 @@ def test_topology_classifier_covers_ring_complete_and_sparse() -> None:
     [np.zeros((1, 1)), np.zeros((2, 3)), np.array([[0.0, 1.0], [0.0, 0.0]])],
 )
 def test_topology_classifier_rejects_invalid_matrices(matrix: np.ndarray[Any, Any]) -> None:
+    """Reject invalid matrices before topology classification."""
     with pytest.raises(ValueError, match="topology classification"):
         classify_topology(matrix)
 
 
 def test_internal_compiler_profile_admits_parameter_mapping_only() -> None:
+    """Admit bounded internal compilation without hardware claims."""
     report = assess_mapping_feasibility(_ring_request(), "scpn_circuit_qed_design_v1")
     assert report.schema == ANALOG_MAPPING_SCHEMA
     assert report.supported is True
@@ -161,6 +169,7 @@ def test_internal_compiler_profile_admits_parameter_mapping_only() -> None:
 
 
 def test_declared_topology_mismatch_fails_closed() -> None:
+    """Block a request whose declared topology disagrees with its matrix."""
     request = replace(_ring_request(), topology="sparse")
     report = assess_mapping_feasibility(request, "scpn_circuit_qed_design_v1")
     assert report.supported is False
@@ -169,6 +178,7 @@ def test_declared_topology_mismatch_fails_closed() -> None:
 
 
 def test_provider_sketch_fails_closed_on_control_measurement_and_posture() -> None:
+    """Block a provider sketch across all unsupported request dimensions."""
     report = assess_mapping_feasibility(_ring_request(), "pulser_analogdevice_sketch_2026_07")
     codes = {item.code for item in report.diagnostics}
     assert report.supported is False
@@ -182,6 +192,7 @@ def test_provider_sketch_fails_closed_on_control_measurement_and_posture() -> No
 
 
 def test_custom_profile_range_capacity_and_ledger_diagnostics() -> None:
+    """Report capacity, range, and ledger mismatches together."""
     base = platform_profile("scpn_circuit_qed_design_v1")
     constrained = replace(
         base,
@@ -201,11 +212,13 @@ def test_custom_profile_range_capacity_and_ledger_diagnostics() -> None:
 
 
 def test_unsupported_vendor_topology_is_diagnostic() -> None:
+    """Expose an unsupported vendor topology as a diagnostic."""
     report = assess_mapping_feasibility(_ring_request(), "ionq_native_gate_sketch_2026_07")
     assert "unsupported_topology" in {item.code for item in report.diagnostics}
 
 
 def test_reconstruct_compiled_couplings_recovers_sign_phase() -> None:
+    """Recover signed symmetric couplings from compiler phases."""
     payload: dict[str, object] = {
         "coupling_terms": [
             {"source": 0, "target": 1, "strength": 0.5, "phase": 0.0},
@@ -234,6 +247,7 @@ def test_reconstruct_compiled_couplings_recovers_sign_phase() -> None:
 def test_reconstruct_compiled_couplings_rejects_malformed_payloads(
     payload: dict[str, object], n_nodes: int, match: str
 ) -> None:
+    """Reject malformed compiled coupling payloads and invalid sizes."""
     with pytest.raises(ValueError, match=match):
         reconstruct_compiled_couplings(payload, n_nodes)
     with pytest.raises(ValueError, match="at least two"):
@@ -241,6 +255,7 @@ def test_reconstruct_compiled_couplings_rejects_malformed_payloads(
 
 
 def test_bounded_model_comparison_reports_math_not_hardware() -> None:
+    """Report bounded model numerics without hardware-equivalence claims."""
     comparison = compare_analog_model_to_trotter(_ring_request(tolerance=5e-3), trotter_steps=32)
     assert comparison.n_nodes == 4
     assert comparison.parameter_rmse < 1e-12
@@ -253,6 +268,7 @@ def test_bounded_model_comparison_reports_math_not_hardware() -> None:
 
 
 def test_bounded_model_comparison_rejects_size_and_steps() -> None:
+    """Reject oversized bounded comparisons and invalid Trotter steps."""
     request = MappingRequest.from_arrays(
         np.zeros((7, 7)),
         np.zeros(7),
@@ -266,6 +282,7 @@ def test_bounded_model_comparison_rejects_size_and_steps() -> None:
 
 
 def test_calibration_objective_gradient_matches_central_difference() -> None:
+    """Match the analytic calibration gradient to central differences."""
     native = _ring_request().coupling_matrix
     target = 1.4 * native
     evaluation = coupling_scale_objective(native, target, scale=1.2)
@@ -278,6 +295,7 @@ def test_calibration_objective_gradient_matches_central_difference() -> None:
 
 
 def test_calibration_sensitivity_has_zero_nominal_and_symmetric_drift() -> None:
+    """Keep nominal calibration exact and symmetric under scale drift."""
     native = _ring_request().coupling_matrix
     sensitivity = calibration_sensitivity(
         native,
@@ -307,6 +325,7 @@ def test_calibration_objective_rejects_invalid_inputs(
     scale: float,
     match: str,
 ) -> None:
+    """Reject invalid calibration arrays, scales, and drift bounds."""
     with pytest.raises(ValueError, match=match):
         coupling_scale_objective(native, target, scale=scale)
     with pytest.raises(ValueError, match="relative_drift"):
@@ -319,6 +338,7 @@ def test_calibration_objective_rejects_invalid_inputs(
 
 
 def test_evidence_bundle_is_deterministic_writable_and_renderable(tmp_path: Any) -> None:
+    """Write and render deterministic supported-profile evidence."""
     bundle = build_analog_mapping_evidence(
         _ring_request(tolerance=5e-3),
         "scpn_circuit_qed_design_v1",
@@ -345,6 +365,7 @@ def test_evidence_bundle_is_deterministic_writable_and_renderable(tmp_path: Any)
 
 
 def test_blocked_profile_evidence_omits_comparison_and_calibration() -> None:
+    """Omit numerical evidence when the selected profile is blocked."""
     bundle = build_analog_mapping_evidence(
         _ring_request(),
         "pulser_analogdevice_sketch_2026_07",
@@ -356,6 +377,7 @@ def test_blocked_profile_evidence_omits_comparison_and_calibration() -> None:
 
 
 def test_report_and_bundle_invariants_refuse_promotion() -> None:
+    """Reject report or bundle states that imply unsupported promotion."""
     diagnostic = FeasibilityDiagnostic("blocked", "blocker", "blocked")
     with pytest.raises(ValueError, match="supported"):
         FeasibilityReport(

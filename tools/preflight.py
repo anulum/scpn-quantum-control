@@ -46,6 +46,9 @@ if TYPE_CHECKING:
     from tools import (
         advantage_language_protocol_quality_gates as _advantage_language_protocol_quality_gates,
     )
+    from tools import (
+        analog_platform_catalogue_quality_gates as _analog_platform_catalogue_quality_gates,
+    )
     from tools import ansatz_bench_quality_gates as _ansatz_bench_quality_gates
     from tools import application_honesty_quality_gates as _application_honesty_quality_gates
     from tools import attested_result_pack_quality_gates as _attested_result_pack_quality_gates
@@ -359,6 +362,9 @@ else:
     if _repo_root not in sys.path:
         sys.path.insert(0, _repo_root)
     _advanced_witnesses_quality_gates = import_module("tools.advanced_witnesses_quality_gates")
+    _analog_platform_catalogue_quality_gates = import_module(
+        "tools.analog_platform_catalogue_quality_gates"
+    )
     _ansatz_bench_quality_gates = import_module("tools.ansatz_bench_quality_gates")
     _attested_result_pack_quality_gates = import_module("tools.attested_result_pack_quality_gates")
     _application_honesty_quality_gates = import_module("tools.application_honesty_quality_gates")
@@ -1022,6 +1028,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     *_topology_kernel_evidence_quality_gates.build_static_quality_gates(_PY),
     *_ml_dsa_seal_quality_gates.build_static_quality_gates(_PY),
     *_feedback_loop_quality_gates.build_static_quality_gates(_PY),
+    *_analog_platform_catalogue_quality_gates.build_static_quality_gates(_PY),
     *_hardware_hal_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_optimizer_quality_gates.build_static_quality_gates(_PY),
     *_dla_topology_schema_quality_gates.build_static_quality_gates(_PY),
@@ -1563,6 +1570,9 @@ TOPOLOGY_KERNEL_EVIDENCE_COVERAGE_GATES = (
 )
 ML_DSA_SEAL_COVERAGE_GATES = _ml_dsa_seal_quality_gates.build_coverage_gates(_PY)
 FEEDBACK_LOOP_COVERAGE_GATES = _feedback_loop_quality_gates.build_coverage_gates(_PY)
+ANALOG_PLATFORM_CATALOGUE_COVERAGE_GATES = (
+    _analog_platform_catalogue_quality_gates.build_coverage_gates(_PY)
+)
 HARDWARE_HAL_COVERAGE_GATES = _hardware_hal_quality_gates.build_coverage_gates(_PY)
 DLA_TOPOLOGY_OPTIMIZER_COVERAGE_GATES = _dla_topology_optimizer_quality_gates.build_coverage_gates(
     _PY
@@ -2118,6 +2128,7 @@ def main() -> int:
             gates.extend(TOPOLOGY_KERNEL_EVIDENCE_COVERAGE_GATES)
             gates.extend(ML_DSA_SEAL_COVERAGE_GATES)
             gates.extend(FEEDBACK_LOOP_COVERAGE_GATES)
+            gates.extend(ANALOG_PLATFORM_CATALOGUE_COVERAGE_GATES)
             gates.extend(HARDWARE_HAL_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_OPTIMIZER_COVERAGE_GATES)
             gates.extend(DLA_TOPOLOGY_SCHEMA_COVERAGE_GATES)

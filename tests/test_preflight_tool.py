@@ -1005,6 +1005,8 @@ def test_main_uses_coverage_pytest_by_default(
         "ml-dsa-seal exact coverage threshold",
         "feedback-loop focused coverage",
         "feedback-loop exact coverage threshold",
+        "analog-platform-catalogue focused coverage",
+        "analog-platform-catalogue exact coverage threshold",
         "hardware-hal focused coverage",
         "hardware-hal exact coverage threshold",
         "dla-topology-optimizer focused coverage",

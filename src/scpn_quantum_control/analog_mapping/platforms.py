@@ -43,6 +43,7 @@ def platform_profile(profile_id: str) -> AnalogPlatformProfile:
     ------
     KeyError
         If no packaged profile has the requested id.
+
     """
     for profile in load_platform_profiles():
         if profile.profile_id == profile_id:
