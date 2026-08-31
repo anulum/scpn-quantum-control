@@ -13,8 +13,6 @@ degeneracy classifications and the digest payload with a source matrix.
 
 from __future__ import annotations
 
-from typing import Any
-
 import numpy as np
 import pytest
 
@@ -30,29 +28,44 @@ from scpn_quantum_control.topology_control.objectives import (
 )
 
 
-def _objective(**overrides: Any) -> CouplingTopologyObjective:
-    kwargs: dict[str, Any] = {
-        "ph_backend": NetworkCycleBackend(threshold=0.2),
-        "ledger": TopologyConstraintLedger(),
-        "source_matrix": np.array([[0.0, 0.3], [0.3, 0.0]], dtype=np.float64),
-        "allow_approximate_ph_backend": True,
-    }
-    kwargs.update(overrides)
-    return CouplingTopologyObjective(**kwargs)
+def _objective() -> CouplingTopologyObjective:
+    """Build a valid admitted approximate-backend objective."""
+    return CouplingTopologyObjective(
+        ph_backend=NetworkCycleBackend(threshold=0.2),
+        ledger=TopologyConstraintLedger(),
+        source_matrix=np.array([[0.0, 0.3], [0.3, 0.0]], dtype=np.float64),
+        allow_approximate_ph_backend=True,
+    )
 
 
-@pytest.mark.parametrize(
-    ("field", "match"),
-    [
-        ("h1_weight", "h1_weight must be non-negative"),
-        ("source_distance_weight", "source_distance_weight must be non-negative"),
-        ("h1_target", "h1_target must be non-negative"),
-    ],
-)
-def test_objective_rejects_negative_weights(field: str, match: str) -> None:
-    """Each objective weight must be non-negative."""
-    with pytest.raises(ValueError, match=match):
-        _objective(**{field: -1.0})
+def test_objective_rejects_negative_h1_weight() -> None:
+    """Reject a negative persistent-H1 mismatch weight."""
+    with pytest.raises(ValueError, match="h1_weight must be non-negative"):
+        CouplingTopologyObjective(
+            ph_backend=NetworkCycleBackend(threshold=0.2),
+            ledger=TopologyConstraintLedger(),
+            h1_weight=-1.0,
+        )
+
+
+def test_objective_rejects_negative_source_distance_weight() -> None:
+    """Reject a negative source-distance preservation weight."""
+    with pytest.raises(ValueError, match="source_distance_weight must be non-negative"):
+        CouplingTopologyObjective(
+            ph_backend=NetworkCycleBackend(threshold=0.2),
+            ledger=TopologyConstraintLedger(),
+            source_distance_weight=-1.0,
+        )
+
+
+def test_objective_rejects_negative_h1_target() -> None:
+    """Reject a negative persistent-H1 target."""
+    with pytest.raises(ValueError, match="h1_target must be non-negative"):
+        CouplingTopologyObjective(
+            ph_backend=NetworkCycleBackend(threshold=0.2),
+            ledger=TopologyConstraintLedger(),
+            h1_target=-1.0,
+        )
 
 
 def test_classify_degeneracy_complete_uniform() -> None:

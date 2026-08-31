@@ -37,6 +37,7 @@ class CouplingGraphBounds:
     upper: float = 1.0
 
     def __post_init__(self) -> None:
+        """Require a strictly ordered coupling interval."""
         if self.upper <= self.lower:
             raise ValueError("upper bound must exceed lower bound")
 
@@ -100,6 +101,7 @@ class TopologyConstraintLedger:
     fixed_sign_reference: NDArray[np.float64] | None = None
 
     def __post_init__(self) -> None:
+        """Validate sign, weight-budget, and connectivity policies."""
         if self.sign_policy not in {"nonnegative", "signed", "fixed_sign"}:
             raise ValueError("invalid sign_policy")
         if self.total_weight is not None:

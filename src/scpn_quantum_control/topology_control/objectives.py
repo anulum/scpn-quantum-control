@@ -62,6 +62,7 @@ class CouplingTopologyObjective:
     metadata: dict[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Require non-negative persistent-H1 objective weights and target."""
         if self.h1_weight < 0.0:
             raise ValueError("h1_weight must be non-negative")
         if self.source_distance_weight < 0.0:

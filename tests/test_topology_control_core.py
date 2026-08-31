@@ -9,8 +9,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.topology_control import (
     CouplingGraphBounds,
@@ -25,6 +28,7 @@ from scpn_quantum_control.topology_control import (
 
 
 def test_coupling_distance_matrix_is_symmetric_and_zero_diagonal() -> None:
+    """Convert couplings to a symmetric distance matrix with zero diagonal."""
     K = np.array(
         [
             [0.0, 0.2, 0.9],
@@ -41,6 +45,7 @@ def test_coupling_distance_matrix_is_symmetric_and_zero_diagonal() -> None:
 
 
 def test_network_cycle_backend_detects_one_square_hole() -> None:
+    """Detect one persistent cycle in a four-node square graph."""
     distance = np.array(
         [
             [0.0, 0.1, 1.0, 0.1],
@@ -58,6 +63,7 @@ def test_network_cycle_backend_detects_one_square_hole() -> None:
 
 
 def test_constraint_projection_preserves_frozen_edges_and_budget() -> None:
+    """Preserve frozen edges and total-weight bounds during projection."""
     K0 = np.array(
         [
             [0.0, 0.4, 0.2],
@@ -89,6 +95,7 @@ def test_constraint_projection_preserves_frozen_edges_and_budget() -> None:
 
 
 def test_objective_penalises_degenerate_zero_graph() -> None:
+    """Penalize a collapsed zero graph relative to the connected source."""
     K0 = np.array(
         [
             [0.0, 0.3, 0.0, 0.3],
@@ -117,6 +124,7 @@ def test_objective_penalises_degenerate_zero_graph() -> None:
 
 
 def test_projected_spsa_is_deterministic_and_respects_constraints() -> None:
+    """Reproduce seeded SPSA traces while retaining projected constraints."""
     K0 = np.array(
         [
             [0.0, 0.3, 0.0, 0.3],
@@ -151,6 +159,7 @@ def test_projected_spsa_is_deterministic_and_respects_constraints() -> None:
 
 
 def test_objective_rejects_approximate_backend_without_explicit_opt_in() -> None:
+    """Reject approximate persistent homology without explicit admission."""
     K0 = np.array(
         [
             [0.0, 0.3, 0.0, 0.3],
@@ -171,6 +180,7 @@ def test_objective_rejects_approximate_backend_without_explicit_opt_in() -> None
 def test_projected_scipy_optimizer_records_callback_trace(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Record every SciPy callback iterate in the optimisation trace."""
     K0 = np.array(
         [
             [0.0, 0.3, 0.0, 0.3],
@@ -187,10 +197,16 @@ def test_projected_scipy_optimizer_records_callback_trace(
     )
 
     class _FakeResult:
-        def __init__(self, x: np.ndarray) -> None:
+        def __init__(self, x: NDArray[np.float64]) -> None:
             self.x = x
 
-    def _fake_minimize(fun, x0, method, callback, options):  # type: ignore[no-untyped-def]
+    def _fake_minimize(
+        fun: Callable[[NDArray[np.float64]], float],
+        x0: NDArray[np.float64],
+        method: str,
+        callback: Callable[[NDArray[np.float64]], None],
+        options: dict[str, int],
+    ) -> _FakeResult:
         assert method == "COBYLA"
         assert options == {"maxiter": 5}
         x1 = np.asarray(x0, dtype=np.float64) * 0.95

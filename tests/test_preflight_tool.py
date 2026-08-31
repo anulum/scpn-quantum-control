@@ -985,6 +985,8 @@ def test_main_uses_coverage_pytest_by_default(
         "provider-gradient-audit exact coverage threshold",
         "entropy-randomness focused coverage",
         "entropy-randomness exact coverage threshold",
+        "topology-control focused coverage",
+        "topology-control exact coverage threshold",
         "quantum-sync-oracle focused coverage",
         "quantum-sync-oracle exact coverage threshold",
         "custom-derivatives-product focused coverage",
