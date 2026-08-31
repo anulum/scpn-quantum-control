@@ -67,7 +67,7 @@ def initial_parity(bitstring: str) -> int:
 def build_statevector_circuit(
     n: int, initial_bitstring: str, depth: int, t_step: float = T_STEP
 ) -> QuantumCircuit:
-    """The DLA-parity XY-Trotter circuit without measurement (for statevector).
+    """Build the DLA-parity XY-Trotter circuit without measurement.
 
     Identical gate sequence to the campaign builder: prepare the basis state
     (little-endian: ``bitstring[q]`` sets qubit ``q``), then ``depth`` Trotter

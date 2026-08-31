@@ -25,7 +25,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import Any
+from typing import TypedDict, cast
 
 _REPO = Path(__file__).resolve().parents[1]
 if str(_REPO / "src") not in sys.path:
@@ -45,10 +45,46 @@ _ODD_INIT = "0001"
 _LEAKAGE_TOL = 1e-9
 
 
-def build_comparison() -> dict[str, Any]:
-    """Per-depth exact-vs-hardware leakage comparison from the promoted summary."""
-    summary = json.loads(_SUMMARY.read_text(encoding="utf-8"))
-    rows = []
+class _DepthSummary(TypedDict):
+    depth: int
+    leakage_even: float
+    leakage_odd: float
+    asymmetry_relative: float
+
+
+class _HardwareSummary(TypedDict):
+    depth_summaries: list[_DepthSummary]
+
+
+class _ComparisonRow(TypedDict):
+    depth: int
+    exact_leakage_even: float
+    exact_leakage_odd: float
+    hardware_leakage_even: float
+    hardware_leakage_odd: float
+    hardware_asymmetry_relative: float
+
+
+class Comparison(TypedDict):
+    """Typed exact-versus-hardware artifact payload."""
+
+    source_summary: str
+    n_qubits: int
+    even_init: str
+    odd_init: str
+    t_step: float
+    leakage_tolerance: float
+    exact_leakage_all_zero: bool
+    hardware_leakage_max: float
+    per_depth: list[_ComparisonRow]
+    conclusion: str
+    ablation_note: str
+
+
+def build_comparison() -> Comparison:
+    """Build a per-depth comparison from the promoted hardware summary."""
+    summary = cast(_HardwareSummary, json.loads(_SUMMARY.read_text(encoding="utf-8")))
+    rows: list[_ComparisonRow] = []
     max_hw = 0.0
     for entry in summary["depth_summaries"]:
         depth = int(entry["depth"])
@@ -112,5 +148,5 @@ def main() -> int:
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover - main() owns the tested CLI contract.
     raise SystemExit(main())

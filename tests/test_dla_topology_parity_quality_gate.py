@@ -64,6 +64,8 @@ def test_ci_runs_and_aggregates_dla_topology_parity_gate() -> None:
     start = workflow.index("  dla-topology-parity-quality:")
     end = workflow.index("\n\n  tn-mps-baseline-design-quality:", start)
     block = workflow[start:end]
+    for path in quality_gates.DLA_TOPOLOGY_PARITY_TYPING_RATCHET:
+        assert path in block
     for path in quality_gates.DLA_TOPOLOGY_PARITY_DOCSTRING_RATCHET:
         assert path in block
     for path in quality_gates.DLA_TOPOLOGY_PARITY_COVERAGE_COHORT:

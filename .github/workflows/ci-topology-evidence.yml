@@ -31,6 +31,8 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/dla_topology_control/parity.py
           src/scpn_quantum_control/dla_topology_control/evidence.py
+          src/scpn_quantum_control/analysis/dla_parity_exact_baseline.py
+          scripts/run_dla_parity_exact_baseline.py
           src/scpn_quantum_control/analysis/dla_parity_theorem.py
           src/scpn_quantum_control/dla_parity/__init__.py
           src/scpn_quantum_control/dla_parity/baselines.py
@@ -38,6 +40,8 @@ jobs:
           src/scpn_quantum_control/dla_parity/reproduce.py
           tests/test_dla_parity_theorem.py
           tests/test_dla_topology_control_evidence.py
+          tests/test_dla_parity_exact_baseline.py
+          tests/test_run_dla_parity_exact_baseline.py
           tests/test_dla_parity_init.py
           tests/test_dla_parity_baselines.py
           tests/test_dla_parity_dataset.py
@@ -51,6 +55,8 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/dla_topology_control/parity.py
           src/scpn_quantum_control/dla_topology_control/evidence.py
+          src/scpn_quantum_control/analysis/dla_parity_exact_baseline.py
+          scripts/run_dla_parity_exact_baseline.py
           src/scpn_quantum_control/analysis/dla_parity_theorem.py
           src/scpn_quantum_control/dla_parity/__init__.py
           src/scpn_quantum_control/dla_parity/baselines.py
@@ -58,6 +64,8 @@ jobs:
           src/scpn_quantum_control/dla_parity/reproduce.py
           tests/test_dla_topology_control_parity.py
           tests/test_dla_topology_control_evidence.py
+          tests/test_dla_parity_exact_baseline.py
+          tests/test_run_dla_parity_exact_baseline.py
           tests/test_dla_parity_theorem.py
           tests/test_dla_parity_init.py
           tests/test_dla_parity_baselines.py
@@ -74,6 +82,8 @@ jobs:
           -m pytest -q
           tests/test_dla_topology_control_parity.py
           tests/test_dla_topology_control_evidence.py
+          tests/test_dla_parity_exact_baseline.py
+          tests/test_run_dla_parity_exact_baseline.py
           tests/test_dla_topology_control_objectives.py
           tests/test_dla_topology_control_optimizer.py
           tests/test_dla_parity_theorem.py
@@ -88,7 +98,7 @@ jobs:
           --data-file=/tmp/scpn-qc-dla-topology-parity-quality.coverage
           --precision=2
           --fail-under=100
-          --include=*/dla_topology_control/parity.py,*/dla_topology_control/evidence.py,*/analysis/dla_parity_theorem.py,*/dla_parity/__init__.py,*/dla_parity/baselines.py,*/dla_parity/dataset.py,*/dla_parity/reproduce.py
+          --include=*/dla_topology_control/parity.py,*/dla_topology_control/evidence.py,*/analysis/dla_parity_exact_baseline.py,*/analysis/dla_parity_theorem.py,*/dla_parity/__init__.py,*/dla_parity/baselines.py,*/dla_parity/dataset.py,*/dla_parity/reproduce.py,*/scripts/run_dla_parity_exact_baseline.py
   topology-kernel-evidence-quality:
     runs-on: ubuntu-latest
     env:

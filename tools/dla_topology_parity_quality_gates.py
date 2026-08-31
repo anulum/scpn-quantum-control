@@ -18,6 +18,14 @@ DLA_TOPOLOGY_EVIDENCE_SOURCE = "src/scpn_quantum_control/dla_topology_control/ev
 """Deterministic topology-control evidence and custody source."""
 DLA_TOPOLOGY_EVIDENCE_TEST = "tests/test_dla_topology_control_evidence.py"
 """Real evidence construction, validation, rendering, and custody tests."""
+DLA_PARITY_EXACT_SOURCE = "src/scpn_quantum_control/analysis/dla_parity_exact_baseline.py"
+"""Exact statevector reference for the promoted DLA-parity campaign."""
+DLA_PARITY_EXACT_TEST = "tests/test_dla_parity_exact_baseline.py"
+"""Direct conservation and campaign-equivalence tests."""
+DLA_PARITY_EXACT_RUNNER = "scripts/run_dla_parity_exact_baseline.py"
+"""Public exact-versus-hardware artifact runner."""
+DLA_PARITY_EXACT_RUNNER_TEST = "tests/test_run_dla_parity_exact_baseline.py"
+"""Direct artifact-construction and CLI entry-point tests."""
 DLA_PARITY_THEOREM_SOURCE = "src/scpn_quantum_control/analysis/dla_parity_theorem.py"
 """Closed-form theorem and legacy sector-projection source."""
 DLA_PARITY_HARNESS_SOURCE = "src/scpn_quantum_control/dla_parity/__init__.py"
@@ -39,6 +47,8 @@ DLA_PARITY_REPRODUCER_TEST = "tests/test_dla_parity_reproduce.py"
 DLA_TOPOLOGY_PARITY_COVERAGE_COHORT = [
     "tests/test_dla_topology_control_parity.py",
     DLA_TOPOLOGY_EVIDENCE_TEST,
+    DLA_PARITY_EXACT_TEST,
+    DLA_PARITY_EXACT_RUNNER_TEST,
     "tests/test_dla_topology_control_objectives.py",
     "tests/test_dla_topology_control_optimizer.py",
     "tests/test_dla_parity_theorem.py",
@@ -51,6 +61,8 @@ DLA_TOPOLOGY_PARITY_COVERAGE_COHORT = [
 DLA_TOPOLOGY_PARITY_TYPING_RATCHET = [
     DLA_TOPOLOGY_PARITY_SOURCE,
     DLA_TOPOLOGY_EVIDENCE_SOURCE,
+    DLA_PARITY_EXACT_SOURCE,
+    DLA_PARITY_EXACT_RUNNER,
     DLA_PARITY_THEOREM_SOURCE,
     DLA_PARITY_HARNESS_SOURCE,
     DLA_PARITY_BASELINES_SOURCE,
@@ -58,6 +70,8 @@ DLA_TOPOLOGY_PARITY_TYPING_RATCHET = [
     DLA_PARITY_REPRODUCER_SOURCE,
     "tests/test_dla_parity_theorem.py",
     DLA_TOPOLOGY_EVIDENCE_TEST,
+    DLA_PARITY_EXACT_TEST,
+    DLA_PARITY_EXACT_RUNNER_TEST,
     DLA_PARITY_HARNESS_TEST,
     DLA_PARITY_BASELINES_TEST,
     DLA_PARITY_DATASET_TEST,
@@ -69,6 +83,8 @@ DLA_TOPOLOGY_PARITY_TYPING_RATCHET = [
 DLA_TOPOLOGY_PARITY_DOCSTRING_RATCHET = [
     DLA_TOPOLOGY_PARITY_SOURCE,
     DLA_TOPOLOGY_EVIDENCE_SOURCE,
+    DLA_PARITY_EXACT_SOURCE,
+    DLA_PARITY_EXACT_RUNNER,
     DLA_PARITY_THEOREM_SOURCE,
     DLA_PARITY_HARNESS_SOURCE,
     DLA_PARITY_BASELINES_SOURCE,
@@ -76,6 +92,8 @@ DLA_TOPOLOGY_PARITY_DOCSTRING_RATCHET = [
     DLA_PARITY_REPRODUCER_SOURCE,
     "tests/test_dla_topology_control_parity.py",
     DLA_TOPOLOGY_EVIDENCE_TEST,
+    DLA_PARITY_EXACT_TEST,
+    DLA_PARITY_EXACT_RUNNER_TEST,
     "tests/test_dla_parity_theorem.py",
     DLA_PARITY_HARNESS_TEST,
     DLA_PARITY_BASELINES_TEST,
@@ -89,9 +107,9 @@ DLA_TOPOLOGY_PARITY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-dla-topology-parity-quali
 """Isolated coverage database for the parity projector owner."""
 DLA_TOPOLOGY_PARITY_COVERAGE_INCLUDE = (
     "*/dla_topology_control/parity.py,*/dla_topology_control/evidence.py,"
-    "*/analysis/dla_parity_theorem.py,"
+    "*/analysis/dla_parity_exact_baseline.py,*/analysis/dla_parity_theorem.py,"
     "*/dla_parity/__init__.py,*/dla_parity/baselines.py,*/dla_parity/dataset.py,"
-    "*/dla_parity/reproduce.py"
+    "*/dla_parity/reproduce.py,*/scripts/run_dla_parity_exact_baseline.py"
 )
 """Production surfaces subject to the exact coverage threshold."""
 
@@ -168,6 +186,10 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "DLA_TOPOLOGY_EVIDENCE_SOURCE",
     "DLA_TOPOLOGY_EVIDENCE_TEST",
+    "DLA_PARITY_EXACT_RUNNER",
+    "DLA_PARITY_EXACT_RUNNER_TEST",
+    "DLA_PARITY_EXACT_SOURCE",
+    "DLA_PARITY_EXACT_TEST",
     "DLA_PARITY_BASELINES_SOURCE",
     "DLA_PARITY_BASELINES_TEST",
     "DLA_PARITY_DATASET_SOURCE",
