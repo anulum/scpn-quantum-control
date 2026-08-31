@@ -26,6 +26,10 @@ DLA_PARITY_EXACT_RUNNER = "scripts/run_dla_parity_exact_baseline.py"
 """Public exact-versus-hardware artifact runner."""
 DLA_PARITY_EXACT_RUNNER_TEST = "tests/test_run_dla_parity_exact_baseline.py"
 """Direct artifact-construction and CLI entry-point tests."""
+DLA_TWO_COLOUR_SOURCE = "src/scpn_quantum_control/analysis/two_colour_schedule.py"
+"""Public width-2 XY-Trotter scheduler and depth evidence."""
+DLA_TWO_COLOUR_TEST = "tests/test_two_colour_schedule.py"
+"""Direct colouring, parity, and scheduling-depth tests."""
 DLA_PARITY_THEOREM_SOURCE = "src/scpn_quantum_control/analysis/dla_parity_theorem.py"
 """Closed-form theorem and legacy sector-projection source."""
 DLA_PARITY_HARNESS_SOURCE = "src/scpn_quantum_control/dla_parity/__init__.py"
@@ -49,6 +53,7 @@ DLA_TOPOLOGY_PARITY_COVERAGE_COHORT = [
     DLA_TOPOLOGY_EVIDENCE_TEST,
     DLA_PARITY_EXACT_TEST,
     DLA_PARITY_EXACT_RUNNER_TEST,
+    DLA_TWO_COLOUR_TEST,
     "tests/test_dla_topology_control_objectives.py",
     "tests/test_dla_topology_control_optimizer.py",
     "tests/test_dla_parity_theorem.py",
@@ -63,6 +68,7 @@ DLA_TOPOLOGY_PARITY_TYPING_RATCHET = [
     DLA_TOPOLOGY_EVIDENCE_SOURCE,
     DLA_PARITY_EXACT_SOURCE,
     DLA_PARITY_EXACT_RUNNER,
+    DLA_TWO_COLOUR_SOURCE,
     DLA_PARITY_THEOREM_SOURCE,
     DLA_PARITY_HARNESS_SOURCE,
     DLA_PARITY_BASELINES_SOURCE,
@@ -72,6 +78,7 @@ DLA_TOPOLOGY_PARITY_TYPING_RATCHET = [
     DLA_TOPOLOGY_EVIDENCE_TEST,
     DLA_PARITY_EXACT_TEST,
     DLA_PARITY_EXACT_RUNNER_TEST,
+    DLA_TWO_COLOUR_TEST,
     DLA_PARITY_HARNESS_TEST,
     DLA_PARITY_BASELINES_TEST,
     DLA_PARITY_DATASET_TEST,
@@ -85,6 +92,7 @@ DLA_TOPOLOGY_PARITY_DOCSTRING_RATCHET = [
     DLA_TOPOLOGY_EVIDENCE_SOURCE,
     DLA_PARITY_EXACT_SOURCE,
     DLA_PARITY_EXACT_RUNNER,
+    DLA_TWO_COLOUR_SOURCE,
     DLA_PARITY_THEOREM_SOURCE,
     DLA_PARITY_HARNESS_SOURCE,
     DLA_PARITY_BASELINES_SOURCE,
@@ -94,6 +102,7 @@ DLA_TOPOLOGY_PARITY_DOCSTRING_RATCHET = [
     DLA_TOPOLOGY_EVIDENCE_TEST,
     DLA_PARITY_EXACT_TEST,
     DLA_PARITY_EXACT_RUNNER_TEST,
+    DLA_TWO_COLOUR_TEST,
     "tests/test_dla_parity_theorem.py",
     DLA_PARITY_HARNESS_TEST,
     DLA_PARITY_BASELINES_TEST,
@@ -108,6 +117,7 @@ DLA_TOPOLOGY_PARITY_COVERAGE_DATA_FILE = "/tmp/scpn-qc-dla-topology-parity-quali
 DLA_TOPOLOGY_PARITY_COVERAGE_INCLUDE = (
     "*/dla_topology_control/parity.py,*/dla_topology_control/evidence.py,"
     "*/analysis/dla_parity_exact_baseline.py,*/analysis/dla_parity_theorem.py,"
+    "*/analysis/two_colour_schedule.py,"
     "*/dla_parity/__init__.py,*/dla_parity/baselines.py,*/dla_parity/dataset.py,"
     "*/dla_parity/reproduce.py,*/scripts/run_dla_parity_exact_baseline.py"
 )
@@ -190,6 +200,8 @@ __all__ = [
     "DLA_PARITY_EXACT_RUNNER_TEST",
     "DLA_PARITY_EXACT_SOURCE",
     "DLA_PARITY_EXACT_TEST",
+    "DLA_TWO_COLOUR_SOURCE",
+    "DLA_TWO_COLOUR_TEST",
     "DLA_PARITY_BASELINES_SOURCE",
     "DLA_PARITY_BASELINES_TEST",
     "DLA_PARITY_DATASET_SOURCE",

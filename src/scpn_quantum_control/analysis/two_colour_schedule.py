@@ -77,7 +77,7 @@ def build_two_colour_circuit(
 def build_sequential_circuit(
     n: int, initial_bitstring: str, depth: int, t_step: float = T_STEP
 ) -> QuantumCircuit:
-    """The same Trotter terms emitted edge-by-edge (the serial baseline)."""
+    """Emit the same Trotter terms edge by edge as the serial baseline."""
     k = coupling_matrix(n)
     omega = np.linspace(0.8, 1.2, n)
     qc = QuantumCircuit(n)
