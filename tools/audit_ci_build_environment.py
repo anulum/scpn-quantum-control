@@ -63,7 +63,6 @@ DOCKER_CONTEXT_COPIES = (
 """Build metadata that must survive into the reproduction image."""
 SECURITY_JOB_ENVIRONMENT = (
     "  security:\n"
-    "    needs: lint\n"
     "    runs-on: ubuntu-latest\n"
     "    env:\n"
     "      PYTHONPATH: ${{ github.workspace }}/src:"
