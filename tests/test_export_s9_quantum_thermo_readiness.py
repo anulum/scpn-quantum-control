@@ -15,6 +15,8 @@ import json
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 
 def _load_export_module() -> ModuleType:
     script_path = (
@@ -33,7 +35,10 @@ def _load_export_module() -> ModuleType:
 export_module = _load_export_module()
 
 
-def test_s9_export_writes_json_and_markdown(tmp_path: Path, monkeypatch) -> None:
+def test_s9_export_writes_json_and_markdown(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The real exporter writes bounded JSON and Markdown artefacts."""
     out_dir = tmp_path / "data"
     doc_path = tmp_path / "quantum_thermo.md"
 

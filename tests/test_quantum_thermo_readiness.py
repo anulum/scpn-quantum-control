@@ -26,6 +26,7 @@ from scpn_quantum_control.thermodynamics import (
 
 
 def test_entropy_production_rate_combines_heat_and_information_channels() -> None:
+    """Entropy production combines calibrated heat and information rates."""
     rate = entropy_production_rate(
         heat_current_joule_per_s=2.0,
         bath_beta_per_joule=0.5,
@@ -39,6 +40,7 @@ def test_entropy_production_rate_combines_heat_and_information_channels() -> Non
 
 
 def test_entropy_production_rejects_negative_total_budget() -> None:
+    """A negative total entropy-production budget fails closed."""
     with pytest.raises(ValueError, match="negative entropy-production"):
         entropy_production_rate(
             heat_current_joule_per_s=-5.0,
@@ -49,6 +51,7 @@ def test_entropy_production_rejects_negative_total_budget() -> None:
 
 
 def test_irreversibility_residual_uses_calibrated_work_identity() -> None:
+    """Irreversibility diagnostics derive from calibrated work identity."""
     identity = calibrated_work_identity(
         work_samples_joule=(0.90, 1.00, 1.10),
         beta_per_joule=1.0,
@@ -63,6 +66,7 @@ def test_irreversibility_residual_uses_calibrated_work_identity() -> None:
 
 
 def test_heat_dissipation_requires_finite_jump_statistics() -> None:
+    """Heat dissipation uses finite jumps and a positive duration."""
     rate = heat_dissipation_rate(
         jump_counts=(2, 3, 4),
         jump_energy_joule=0.25,
@@ -76,6 +80,7 @@ def test_heat_dissipation_requires_finite_jump_statistics() -> None:
 
 
 def test_k_sweep_protocol_marks_peak_without_hardware_promotion() -> None:
+    """The deterministic sweep locates a peak without hardware promotion."""
     config = ThermodynamicSweepConfig(k_values=(0.4, 0.8, 1.2), transition_k=0.8)
     result = run_k_sweep_protocol(config)
 
@@ -87,6 +92,7 @@ def test_k_sweep_protocol_marks_peak_without_hardware_promotion() -> None:
 
 
 def test_quantum_thermo_payload_keeps_claims_blocked() -> None:
+    """The public readiness payload keeps hardware and peak claims blocked."""
     payload = quantum_thermo_payload()
 
     assert payload["schema"] == QUANTUM_THERMO_SCHEMA
@@ -98,6 +104,7 @@ def test_quantum_thermo_payload_keeps_claims_blocked() -> None:
 
 
 def test_quantum_thermo_markdown_records_gate_and_falsifier() -> None:
+    """Rendered readiness notes expose the gate and falsifier."""
     markdown = quantum_thermo_markdown(quantum_thermo_payload())
 
     assert "scpn-bench s9-quantum-thermo-readiness" in markdown
@@ -106,5 +113,6 @@ def test_quantum_thermo_markdown_records_gate_and_falsifier() -> None:
 
 
 def test_sweep_config_fails_closed_on_unsorted_grid() -> None:
+    """An unsorted sweep grid fails closed."""
     with pytest.raises(ValueError, match="strictly increasing"):
         ThermodynamicSweepConfig(k_values=(0.8, 0.4, 1.2))

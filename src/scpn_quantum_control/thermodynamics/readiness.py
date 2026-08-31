@@ -99,6 +99,7 @@ class ThermodynamicSweepConfig:
     duration_s: float = 1.0
 
     def __post_init__(self) -> None:
+        """Reject invalid sweep grids and non-physical protocol values."""
         if len(self.k_values) < 3:
             raise ValueError("k_values must contain at least three values")
         if any(not np.isfinite(k) for k in self.k_values):

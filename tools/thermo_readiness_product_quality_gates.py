@@ -13,26 +13,59 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 
+THERMO_READINESS_PRODUCT_SOURCE = "src/scpn_quantum_control/thermo_readiness_product.py"
+"""Public fail-closed product surface."""
+QUANTUM_THERMO_READINESS_SOURCE = "src/scpn_quantum_control/thermodynamics/readiness.py"
+"""Ambient S9 no-submit thermodynamics protocol model."""
+QUANTUM_THERMO_READINESS_TEST = "tests/test_quantum_thermo_readiness.py"
+"""Public S9 protocol and payload tests."""
+QUANTUM_THERMO_READINESS_BRANCH_TEST = "tests/test_quantum_thermo_readiness_branches.py"
+"""Validation and serialisation branch tests."""
+QUANTUM_THERMO_READINESS_EXPORTER = "scripts/export_s9_quantum_thermo_readiness.py"
+"""Executable S9 JSON and Markdown readiness exporter."""
+QUANTUM_THERMO_READINESS_EXPORT_TEST = "tests/test_export_s9_quantum_thermo_readiness.py"
+"""Real filesystem exporter test."""
 THERMO_READINESS_PRODUCT_TYPING_RATCHET = [
-    "src/scpn_quantum_control/thermo_readiness_product.py",
+    THERMO_READINESS_PRODUCT_SOURCE,
     "tests/test_thermo_readiness_product.py",
+    QUANTUM_THERMO_READINESS_SOURCE,
+    QUANTUM_THERMO_READINESS_TEST,
+    QUANTUM_THERMO_READINESS_BRANCH_TEST,
+    QUANTUM_THERMO_READINESS_EXPORTER,
+    QUANTUM_THERMO_READINESS_EXPORT_TEST,
     "tools/thermo_readiness_product_quality_gates.py",
     "tests/test_thermo_readiness_product_quality_gate.py",
 ]
 """Ordered strict-typing cohort."""
 
 THERMO_READINESS_PRODUCT_DOCSTRING_RATCHET = [
-    "src/scpn_quantum_control/thermo_readiness_product.py",
+    THERMO_READINESS_PRODUCT_SOURCE,
+    QUANTUM_THERMO_READINESS_SOURCE,
+    QUANTUM_THERMO_READINESS_TEST,
+    QUANTUM_THERMO_READINESS_BRANCH_TEST,
+    QUANTUM_THERMO_READINESS_EXPORTER,
+    QUANTUM_THERMO_READINESS_EXPORT_TEST,
     "tools/thermo_readiness_product_quality_gates.py",
     "tests/test_thermo_readiness_product_quality_gate.py",
 ]
-"""Public source and gate-contract NumPy-docstring cohort."""
+"""Public product, ambient readiness, exporter, and gate docstring cohort."""
 
-THERMO_READINESS_PRODUCT_COVERAGE_COHORT = ["tests/test_thermo_readiness_product.py"]
-"""Tests that own exact thermo-readiness statement and branch coverage."""
+THERMO_READINESS_PRODUCT_COVERAGE_COHORT = [
+    "tests/test_thermo_readiness_product.py",
+    QUANTUM_THERMO_READINESS_TEST,
+    QUANTUM_THERMO_READINESS_BRANCH_TEST,
+    QUANTUM_THERMO_READINESS_EXPORT_TEST,
+]
+"""Tests that own exact product and ambient-readiness branch coverage."""
 
-THERMO_READINESS_PRODUCT_COVERAGE_DATA_FILE = ".coverage.thermo-readiness-product-quality"
+THERMO_READINESS_PRODUCT_COVERAGE_DATA_FILE = (
+    "/tmp/scpn-qc-thermo-readiness-product-quality.coverage"  # nosec B108
+)
 """Isolated coverage database for the thermo-readiness source owner."""
+THERMO_READINESS_PRODUCT_COVERAGE_INCLUDE = (
+    "*/thermo_readiness_product.py,*/thermodynamics/readiness.py"
+)
+"""Exact public product and ambient-readiness source include."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -69,8 +102,11 @@ def build_static_quality_gates(python: str) -> list[Gate]:
                 "ruff",
                 "check",
                 "--isolated",
+                "--preview",
                 "--select",
-                "D,D413",
+                "D,D413,D417,D420",
+                "--config",
+                "lint.explicit-preview-rules = true",
                 "--config",
                 'lint.pydocstyle.convention = "numpy"',
                 *THERMO_READINESS_PRODUCT_DOCSTRING_RATCHET,
@@ -121,7 +157,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={THERMO_READINESS_PRODUCT_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/thermo_readiness_product.py",
+                f"--include={THERMO_READINESS_PRODUCT_COVERAGE_INCLUDE}",
             ],
         ),
     ]
@@ -130,8 +166,15 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "THERMO_READINESS_PRODUCT_COVERAGE_COHORT",
     "THERMO_READINESS_PRODUCT_COVERAGE_DATA_FILE",
+    "THERMO_READINESS_PRODUCT_COVERAGE_INCLUDE",
     "THERMO_READINESS_PRODUCT_DOCSTRING_RATCHET",
+    "THERMO_READINESS_PRODUCT_SOURCE",
     "THERMO_READINESS_PRODUCT_TYPING_RATCHET",
+    "QUANTUM_THERMO_READINESS_BRANCH_TEST",
+    "QUANTUM_THERMO_READINESS_EXPORTER",
+    "QUANTUM_THERMO_READINESS_EXPORT_TEST",
+    "QUANTUM_THERMO_READINESS_SOURCE",
+    "QUANTUM_THERMO_READINESS_TEST",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]
