@@ -99,13 +99,11 @@ ArgsBuilder = Callable[[int, np.random.Generator], tuple[Any, ...]]
 
 def _phases(n: int, rng: np.random.Generator) -> NDArray[np.float64]:
     """Return ``n`` phases drawn uniformly from ``(-π, π]``."""
-
     return rng.uniform(-np.pi, np.pi, size=n)
 
 
 def _symmetric_coupling(n: int, rng: np.random.Generator) -> NDArray[np.float64]:
     """Return a symmetric, zero-diagonal ``n × n`` coupling matrix."""
-
     base = rng.uniform(-1.0, 1.0, size=(n, n))
     coupling = (base + base.T) / 2.0
     np.fill_diagonal(coupling, 0.0)
@@ -114,7 +112,6 @@ def _symmetric_coupling(n: int, rng: np.random.Generator) -> NDArray[np.float64]
 
 def _adjacency(n: int, rng: np.random.Generator) -> NDArray[np.float64]:
     """Return a symmetric, zero-diagonal ``0/1`` adjacency matrix (~40 % dense)."""
-
     upper = (rng.uniform(0.0, 1.0, size=(n, n)) < 0.4).astype(np.float64)
     adjacency = np.triu(upper, k=1)
     adjacency = adjacency + adjacency.T
@@ -165,7 +162,6 @@ def _build_trajectory_args(n: int, rng: np.random.Generator) -> tuple[Any, ...]:
 
 def _forward_trajectory(operation: str, n: int, rng: np.random.Generator) -> NDArray[np.float64]:
     """Integrate a forward trajectory with the Python floor for a VJP input."""
-
     theta0 = _phases(n, rng)
     omega = rng.uniform(-0.5, 0.5, size=n)
     coupling = _symmetric_coupling(n, rng)
@@ -321,7 +317,6 @@ _SPECS: tuple[PrimitiveSpec, ...] = (
 
 def _flatten_numeric(value: Any) -> list[NDArray[np.float64]]:
     """Flatten a tier return (array, tuple of arrays, or scalar) to arrays."""
-
     if isinstance(value, (tuple, list)):
         flattened: list[NDArray[np.float64]] = []
         for item in value:
@@ -336,7 +331,6 @@ def _max_abs_diff(reference: Any, candidate: Any) -> float | None:
     Returns ``None`` when the two cannot be aligned (mismatched structure or a
     non-numeric return) rather than fabricating a parity number.
     """
-
     ref_parts = _flatten_numeric(reference)
     cand_parts = _flatten_numeric(candidate)
     if len(ref_parts) != len(cand_parts):
@@ -358,7 +352,6 @@ def _selected_tiers(
     chain: Sequence[tuple[str, Callable[..., Any]]], wanted: set[str]
 ) -> list[str]:
     """Return chain tier names, preserving chain order, filtered to ``wanted``."""
-
     return [name for name, _ in chain if name in wanted]
 
 
@@ -379,7 +372,6 @@ def benchmark_primitive(
     recorded as an unavailable row with the exception text — never silently
     dropped.
     """
-
     chain = _dispatcher.registered_dispatchers()[spec.operation].chain
     rng = np.random.default_rng(seed)
     args = spec.build(size, rng)
@@ -420,7 +412,6 @@ def benchmark_primitive(
 
 def _tier_availability(tiers: set[str]) -> dict[str, str]:
     """Summarise which requested tiers are usable in this process."""
-
     summary: dict[str, str] = {}
     available = set(_dispatcher.available_tiers())
     for tier in sorted(tiers):
@@ -440,7 +431,6 @@ def run_suite(
     repeats: int,
 ) -> list[PrimitiveResult]:
     """Measure every spec primitive across every requested size."""
-
     registered = set(_dispatcher.registered_dispatchers())
     spec_names = {spec.operation for spec in _SPECS}
     missing = registered - spec_names
@@ -477,7 +467,6 @@ def _write_artefacts(
     generated_utc: str,
 ) -> tuple[Path, Path]:
     """Write the per-environment artefact and the manifest; return their paths."""
-
     output_dir.mkdir(parents=True, exist_ok=True)
     artifact = build_primitive_artifact(
         environment=environment,
@@ -523,7 +512,6 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the consolidated tier benchmark and write the artefact + manifest."""
-
     args = _parse_args(list(sys.argv[1:] if argv is None else argv))
     tiers = {tier.strip() for tier in args.tiers.split(",") if tier.strip()}
     sizes = [int(size) for size in args.sizes.split(",") if size.strip()]

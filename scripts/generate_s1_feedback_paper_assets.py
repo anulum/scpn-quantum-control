@@ -109,7 +109,6 @@ def build_matrix(
     data_dir: Path, backend_run: Mapping[str, str]
 ) -> tuple[list[str], list[str], np.ndarray]:
     """Build feedback-minus-control observable matrix for S1b--S1f."""
-
     labels: list[str] = []
     matrix: list[list[float]] = []
     cache: dict[str, dict[str, Any]] = {}
@@ -131,7 +130,6 @@ def write_single_backend_heatmap(
     output_dir: Path,
 ) -> list[Path]:
     """Write PNG and PDF heatmaps for the S1 direct-observable extensions."""
-
     output_dir.mkdir(parents=True, exist_ok=True)
     cmap = plt.get_cmap("coolwarm").copy()
     cmap.set_bad("#eeeeee")
@@ -183,7 +181,6 @@ def write_multibackend_heatmap(
     output_dir: Path,
 ) -> list[Path]:
     """Write a three-backend heatmap panel for the S1 extension stack."""
-
     output_dir.mkdir(parents=True, exist_ok=True)
     max_abs = max(float(np.nanmax(np.abs(values))) for _, values in backend_values)
     cmap = plt.get_cmap("coolwarm").copy()

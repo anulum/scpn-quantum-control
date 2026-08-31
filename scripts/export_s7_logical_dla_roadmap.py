@@ -41,7 +41,6 @@ def _write_text(path: Path, text: str) -> str:
 
 def _display_path(path: Path) -> str:
     """Return a concise path for repo-local output and a full path otherwise."""
-
     try:
         return str(path.relative_to(REPO_ROOT))
     except ValueError:
@@ -50,7 +49,6 @@ def _display_path(path: Path) -> str:
 
 def parse_args() -> argparse.Namespace:
     """Parse S7 roadmap export options."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
     parser.add_argument("--doc-path", type=Path, default=DOC_PATH)
@@ -59,7 +57,6 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     """Write the S7 logical-DLA roadmap JSON and Markdown artefacts."""
-
     args = parse_args()
     payload = logical_dla_parity_payload()
     json_path = args.out_dir / f"logical_dla_parity_roadmap_{DATE}.json"

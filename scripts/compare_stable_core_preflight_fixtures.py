@@ -40,7 +40,6 @@ _PRE_FLIGHT_FALLBACK_MODULE = "_stable_core_preflight_fixtures_optional"
 
 def stable_core_preflight_fixtures_payload() -> dict[str, Any]:
     """Return stable-core preflight fixture payload."""
-
     module = _load_stable_core_preflight_module()
     if module is not None:
         candidate = _resolve_callable(
@@ -61,7 +60,6 @@ def stable_core_preflight_fixtures_payload() -> dict[str, Any]:
 
 def stable_core_preflight_fixtures_json(payload: dict[str, Any]) -> str:
     """Return deterministic JSON text for stable-core preflight fixtures."""
-
     module = _load_stable_core_preflight_module()
     if module is not None:
         candidate = _resolve_callable(
@@ -80,7 +78,6 @@ def stable_core_preflight_fixtures_json(payload: dict[str, Any]) -> str:
 
 def stable_core_preflight_fixtures_markdown(payload: dict[str, Any]) -> str:
     """Return a deterministic markdown summary for stable-core preflight fixtures."""
-
     module = _load_stable_core_preflight_module()
     if module is not None:
         candidate = _resolve_callable(
@@ -155,7 +152,6 @@ def write_stable_core_preflight_fixtures(
     markdown_path: Path,
 ) -> dict[str, str]:
     """Write deterministic stable-core preflight fixture artifacts."""
-
     payload = stable_core_preflight_fixtures_payload()
     json_text = stable_core_preflight_fixtures_json(payload)
     markdown_text = stable_core_preflight_fixtures_markdown(payload)
@@ -179,7 +175,6 @@ def compare_stable_core_preflight_fixtures(
     actual_markdown_path: Path | None = None,
 ) -> dict[str, Any]:
     """Compare committed stable-core preflight artifacts with generated ones."""
-
     blockers: list[str] = []
 
     if (actual_json_path is None) != (actual_markdown_path is None):
@@ -261,7 +256,6 @@ def _comparison_result(
     blockers: list[str],
 ) -> bool:
     """Populate blockers and return whether the artefacts match exactly."""
-
     valid = True
     expected_json = _load_json(expected_json_path, blockers)
     actual_json = _load_json(actual_json_path, blockers)
@@ -304,25 +298,21 @@ def _comparison_result(
 
 def _normalised_json(payload: dict[str, Any]) -> str:
     """Canonical JSON text for deterministic drift checks."""
-
     return json.dumps(payload, sort_keys=True, indent=2) + "\n"
 
 
 def _normalised_json_payload(payload: dict[str, Any]) -> dict[str, Any]:
     """Return canonical payload shape for stable comparisons."""
-
     return json.loads(json.dumps(payload, sort_keys=True))
 
 
 def _normalise_markdown(text: str) -> str:
     """Normalise markdown line endings for deterministic comparisons."""
-
     return text.replace("\r\n", "\n")
 
 
 def _load_text(path: Path, blockers: list[str]) -> str:
     """Load text with deterministic blocker recording."""
-
     try:
         return path.read_text(encoding="utf-8")
     except OSError as exc:
@@ -332,7 +322,6 @@ def _load_text(path: Path, blockers: list[str]) -> str:
 
 def _load_json(path: Path, blockers: list[str]) -> dict[str, Any] | None:
     """Load JSON with deterministic blocker recording."""
-
     try:
         return json.loads(_load_text(path, blockers))
     except json.JSONDecodeError as exc:
@@ -342,13 +331,11 @@ def _load_json(path: Path, blockers: list[str]) -> dict[str, Any] | None:
 
 def _sha256(payload: str) -> str:
     """Return sha256 digest for stable text."""
-
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def _sha256_path(path: Path) -> str:
     """Return sha256 digest for existing path text."""
-
     try:
         return _sha256(path.read_text(encoding="utf-8"))
     except OSError:
@@ -357,7 +344,6 @@ def _sha256_path(path: Path) -> str:
 
 def _load_stable_core_preflight_module() -> ModuleType | None:
     """Import optional stable_core_preflight module without hard dependency."""
-
     try:
         return importlib.import_module(_PRE_FLIGHT_MODULE)
     except ImportError:
@@ -386,7 +372,6 @@ def _load_stable_core_preflight_module() -> ModuleType | None:
 
 def _resolve_callable(module: ModuleType, candidates: tuple[str, ...]) -> Any:
     """Return first callable from candidate attributes on module."""
-
     for candidate in candidates:
         value = getattr(module, candidate, None)
         if callable(value):
@@ -396,7 +381,6 @@ def _resolve_callable(module: ModuleType, candidates: tuple[str, ...]) -> Any:
 
 def _fallback_stable_core_preflight_fixtures_payload() -> dict[str, Any]:
     """Fallback fixture payload before shared preflight module is added."""
-
     return {
         "schema": SCHEMA_VERSION,
         "hardware_submission": False,
@@ -485,7 +469,6 @@ def _fallback_stable_core_preflight_fixtures_payload() -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point for stable-core preflight fixture comparison."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expected-json", type=Path, default=DEFAULT_EXPECTED_JSON)
     parser.add_argument("--expected-markdown", type=Path, default=DEFAULT_EXPECTED_MARKDOWN)

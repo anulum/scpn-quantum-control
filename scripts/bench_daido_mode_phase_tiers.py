@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multi-tier benchmark for daido_mode_phase and its gradient
-"""Wall-time micro-benchmark for the ``daido_mode_phase`` dispatch chains (m = 2).
+r"""Wall-time micro-benchmark for the ``daido_mode_phase`` dispatch chains (m = 2).
 
 Measures every installed tier (Rust, Julia, Python floor) of the m-th Fourier-mode
 phase :math:`\\psi_m = \\operatorname{atan2}(\\langle\\sin m\\theta\\rangle, \\langle\\cos m\\theta\\rangle)` and its gradient at the

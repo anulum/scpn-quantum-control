@@ -6,9 +6,9 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — fetch completed from IBM script
-"""
-fetch_completed_from_ibm.py — Retrieve the two most-recently completed IBM
-Quantum jobs from the configured account (no embedded job IDs required).
+"""Retrieve recently completed IBM Quantum jobs from the configured account.
+
+No embedded job identifiers are required.
 
 Steps:
   1. Connect to IBM Quantum via environment variables.

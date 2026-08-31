@@ -163,7 +163,6 @@ def generate(
     n_values: list[int], lambdas: list[float], seeds: list[int], reps: int, maxiter: int
 ) -> dict[str, object]:
     """Generate FIM-regularised VQE benchmark rows and aggregate summaries."""
-
     rows: list[dict[str, object]] = []
     for n_qubits in n_values:
         for lambda_fim in lambdas:
@@ -192,7 +191,6 @@ def generate(
 
 def main() -> int:
     """Run the FIM VQE ground-state benchmark CLI."""
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--n-values", default="4")
     parser.add_argument("--lambdas", default="0,1,4")

@@ -37,7 +37,6 @@ _MARKDOWN_SPDX_HEADER = (
 
 def write_json(path: Path, payload: dict[str, Any]) -> str:
     """Write deterministic JSON and return its SHA-256 digest."""
-
     path.parent.mkdir(parents=True, exist_ok=True)
     encoded = json.dumps(payload, indent=2, sort_keys=True) + "\n"
     path.write_text(encoded, encoding="utf-8")
@@ -46,7 +45,6 @@ def write_json(path: Path, payload: dict[str, Any]) -> str:
 
 def markdown(payload: dict[str, Any]) -> str:
     """Render a compact public registry document."""
-
     lines = [
         *_MARKDOWN_SPDX_HEADER,
         "",
@@ -107,7 +105,6 @@ def markdown(payload: dict[str, Any]) -> str:
 
 def write_text(path: Path, text: str) -> str:
     """Write text and return its SHA-256 digest."""
-
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -115,7 +112,6 @@ def write_text(path: Path, text: str) -> str:
 
 def main() -> int:
     """Export synchronisation benchmark registry artefacts."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
     parser.add_argument("--doc-path", type=Path, default=DOC_PATH)

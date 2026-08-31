@@ -84,7 +84,6 @@ def classify_advantage_status(
     exact_oom_at_max_n: bool,
 ) -> dict[str, Any]:
     """Return conservative claim classification for the current evidence."""
-
     exact_crossover_supported = bool(np.isfinite(crossover_qubits))
     return {
         "current_label": "exact_hilbert_space_crossover_only",
@@ -125,7 +124,6 @@ def evaluate_s2_matrix_readiness(
     claim_boundary_path: Path | None = DEFAULT_S2_CLAIM_BOUNDARY,
 ) -> dict[str, Any]:
     """Evaluate whether the S2 benchmark matrix can justify IBM advantage runs."""
-
     protocol = _load_json_if_present(protocol_path)
     progress = _load_json_if_present(progress_path)
     claim_boundary = _load_json_if_present(claim_boundary_path)
@@ -214,7 +212,6 @@ def build_audit_payload(
     s2_claim_boundary_path: Path | None = DEFAULT_S2_CLAIM_BOUNDARY,
 ) -> dict[str, Any]:
     """Build a serialisable audit payload from committed benchmark artefacts."""
-
     crossover_module = _load_crossover_module()
     hardware = crossover_module.load_hardware_points()
     classical = crossover_module.load_classical_points()

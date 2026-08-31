@@ -44,6 +44,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     -------
     argparse.Namespace
         Parsed options controlling the run.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
@@ -79,6 +80,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         Process exit code (``0`` when the co-simulation passed, ``1``
         otherwise — the artifact is written either way; failure evidence is
         still evidence).
+
     """
     args = _parse_args(argv)
     out_dir = Path(args.out_dir)

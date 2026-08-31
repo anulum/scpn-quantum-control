@@ -31,7 +31,6 @@ from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
 
 def main() -> int:
     """Write the differentiable benchmark evidence bundle from CLI arguments."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=Path("data/differentiable_phase_qnode"))
     parser.add_argument("--cpu-affinity", default=os.environ.get("SCPN_BENCH_CPU_AFFINITY"))

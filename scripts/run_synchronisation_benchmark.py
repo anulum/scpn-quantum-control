@@ -55,7 +55,6 @@ _BENCHMARK_SUMMARIES = {
 
 def current_commit() -> str:
     """Return the current Git commit or unknown when unavailable."""
-
     completed = subprocess.run(
         ["git", "rev-parse", "HEAD"],
         cwd=REPO_ROOT,
@@ -68,7 +67,6 @@ def current_commit() -> str:
 
 def write_json(path: Path, payload: dict[str, Any]) -> str:
     """Write deterministic JSON and return its SHA-256 digest."""
-
     path.parent.mkdir(parents=True, exist_ok=True)
     encoded = json.dumps(payload, indent=2, sort_keys=True) + "\n"
     path.write_text(encoded, encoding="utf-8")
@@ -77,7 +75,6 @@ def write_json(path: Path, payload: dict[str, Any]) -> str:
 
 def markdown(payload: dict[str, Any]) -> str:
     """Render a public benchmark result summary."""
-
     benchmark_id = str(payload["benchmark_id"])
     title = _BENCHMARK_TITLES.get(benchmark_id, "Synchronisation Benchmark")
     summary = _BENCHMARK_SUMMARIES.get(
@@ -113,7 +110,6 @@ def markdown(payload: dict[str, Any]) -> str:
 
 def write_text(path: Path, text: str) -> str:
     """Write text and return its SHA-256 digest."""
-
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -121,7 +117,6 @@ def write_text(path: Path, text: str) -> str:
 
 def main() -> int:
     """Run the selected no-QPU synchronisation benchmark."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--benchmark-id",

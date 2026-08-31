@@ -7,10 +7,9 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — run frontier campaign script
 
-"""
-Master Orchestrator — Frontier Advanced Tests (Batch 4)
-Attempts all 8 frontier tests cleanly in sequence.
-Uses only real analysis classes and StructuredAnsatz (no mocks).
+"""Run all eight frontier tests cleanly in sequence.
+
+Use only real analysis classes and ``StructuredAnsatz`` without mocks.
 Implementation-gated paths are recorded as failures rather than
 substituting synthetic scientific outputs.
 """

@@ -47,6 +47,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     -------
     argparse.Namespace
         Parsed options controlling the run.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -84,6 +85,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     -------
     int
         Process exit code (``0`` on success).
+
     """
     args = _parse_args(argv)
     protocol = default_decisive_advantage_protocol()

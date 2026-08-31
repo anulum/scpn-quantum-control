@@ -26,7 +26,6 @@ BENCHMARK_IDS = (RING_N4_BENCHMARK_ID, CHAIN_N8_BENCHMARK_ID)
 
 def run_command(command: list[str]) -> None:
     """Run one gate command and fail closed on non-zero status."""
-
     print(f"[sync-benchmark-gate] {' '.join(command)}", flush=True)
     completed = subprocess.run(command, cwd=REPO_ROOT, check=False)
     if completed.returncode != 0:
@@ -35,7 +34,6 @@ def run_command(command: list[str]) -> None:
 
 def main() -> int:
     """Run the full no-QPU synchronisation benchmark gate."""
-
     run_command([sys.executable, "scripts/export_synchronisation_benchmark_registry.py"])
     for benchmark_id in BENCHMARK_IDS:
         run_command(

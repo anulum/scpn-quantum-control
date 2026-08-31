@@ -239,7 +239,6 @@ def retrieve_completed_job(
     credentials_vault: Path,
 ) -> tuple[str, list[dict[str, Any]]]:
     """Retrieve raw counts for a completed larger-system Phase 3 job."""
-
     token, instance = _parse_vault(credentials_vault)
     from qiskit_ibm_runtime import QiskitRuntimeService
 
@@ -270,7 +269,6 @@ def raw_payload_from_rows(
     timestamp_utc: str,
 ) -> dict[str, Any]:
     """Build the repository raw-count artefact from retrieved IBM rows."""
-
     circuits: list[dict[str, Any]] = []
     for row in result_rows:
         meta = dict(row["metadata"])
@@ -339,7 +337,6 @@ def _exact_expectation(meta: Mapping[str, Any]) -> float:
 
 def reference_rows_for_submission(submission: Mapping[str, Any]) -> list[dict[str, Any]]:
     """Build exact reference rows for the submitted larger-system channels."""
-
     seen: set[tuple[str, str, str, int, str, str]] = set()
     rows: list[dict[str, Any]] = []
     for meta in _submission_metadata_rows(submission):
@@ -397,7 +394,6 @@ def analyse_large_system_payload(
     reference_rows: Sequence[Mapping[str, Any]],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     """Reduce raw Phase 3 larger-system counts into scale and ZNE channel rows."""
-
     n_qubits = int(raw_payload["n_qubits"])
     references = _reference_lookup(reference_rows)
     circuits = list(raw_payload.get("circuits", []))
@@ -629,7 +625,6 @@ def write_analysis_outputs(
     result_tag: str,
 ) -> AnalysisOutputs:
     """Write reference, scale, channel, JSON, and Markdown analysis artefacts."""
-
     reference_path = output_dir / f"phase3_large_system_reference_rows_{result_tag}.csv"
     scale_path = output_dir / f"phase3_large_system_scale_rows_{result_tag}.csv"
     channel_path = output_dir / f"phase3_large_system_channel_summary_{result_tag}.csv"
@@ -676,7 +671,6 @@ def write_analysis_outputs(
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Retrieve and reduce one completed larger-system Phase 3 submission."""
-
     args = _parse_args(argv)
     submission_json = args.submission_json.resolve()
     submission = json.loads(submission_json.read_text(encoding="utf-8"))

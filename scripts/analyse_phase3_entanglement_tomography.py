@@ -43,7 +43,6 @@ def _bitstrings(width: int) -> list[str]:
 
 def pauli_expectation_from_counts(counts: Mapping[str, int], pauli_label: str) -> float:
     """Estimate a Pauli expectation value from basis-rotated bitstring counts."""
-
     total = sum(int(value) for value in counts.values())
     if total <= 0:
         raise ValueError("counts must contain at least one shot")
@@ -70,7 +69,6 @@ def estimate_single_qubit_readout_matrices(
     The calibration can be partial at the bitstring level, but each qubit must
     have at least one prepared-0 and one prepared-1 calibration marginal.
     """
-
     prepared_counts = [
         {
             "0": {"0": 0, "1": 0},
@@ -139,7 +137,6 @@ def estimate_correlated_readout_matrix(
     width: int,
 ) -> list[list[float]]:
     """Estimate the full correlated assignment matrix from all basis states."""
-
     bitstrings = _bitstrings(width)
     bitstring_index = {bitstring: index for index, bitstring in enumerate(bitstrings)}
     columns: dict[str, np.ndarray] = {}
@@ -173,7 +170,6 @@ def build_readout_mitigation_model(
     width: int,
 ) -> dict[str, Any]:
     """Build the strongest readout mitigation model supported by calibration data."""
-
     prepared = {
         str(circuit.get("meta", {}).get("initial", "")).replace(" ", "")[-width:]
         for circuit in readout_circuits
@@ -212,7 +208,6 @@ def mitigated_pauli_expectation(
     model: Mapping[str, Any],
 ) -> float:
     """Estimate a Pauli expectation using the selected readout mitigation model."""
-
     if model["method"] == "full_correlated_readout_inverse":
         width = len(pauli_label)
         total = sum(int(value) for value in counts.values())
@@ -244,7 +239,6 @@ def readout_mitigated_pauli_expectation(
     readout_matrices: Sequence[Mapping[str, float]],
 ) -> float:
     """Estimate a Pauli expectation after tensor-product readout inversion."""
-
     width = len(pauli_label)
     if len(readout_matrices) != width:
         raise ValueError("readout matrix count must match pauli_label width")
@@ -308,7 +302,6 @@ def analyse_counts_artifact(
     reference_csv: Path,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Reduce a completed live counts artefact into observable rows."""
-
     payload = json.loads(counts_path.read_text(encoding="utf-8"))
     references = _load_reference_rows(reference_csv)
     grouped: dict[tuple[str, str, str, int, str, str], list[float]] = defaultdict(list)
@@ -491,7 +484,6 @@ def write_outputs(
     result_tag: str = TODAY,
 ) -> tuple[Path, Path, Path]:
     """Write analysis JSON, CSV, and Markdown artefacts."""
-
     output_dir.mkdir(parents=True, exist_ok=True)
     docs_dir.mkdir(parents=True, exist_ok=True)
     json_path = output_dir / f"entanglement_tomography_summary_{result_tag}.json"
@@ -509,7 +501,6 @@ def write_outputs(
 
 def parse_args() -> argparse.Namespace:
     """Parse analysis command-line options."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("counts_artifact", type=Path)
     parser.add_argument("--reference-csv", type=Path, default=DEFAULT_REFERENCE_CSV)
@@ -525,7 +516,6 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     """Analyse an approved entanglement/tomography counts artefact."""
-
     args = parse_args()
     rows, summary = analyse_counts_artifact(args.counts_artifact, args.reference_csv)
     json_path, csv_path, md_path = write_outputs(

@@ -103,7 +103,6 @@ def _eligibility_status(n_qubits: int, prepared: set[str]) -> str:
 
 def audit_dataset(path: Path) -> dict[str, Any]:
     """Return one readout-mitigation eligibility marker."""
-
     payload = json.loads(path.read_text(encoding="utf-8"))
     rows = _rows(payload)
     metadata_rows = [_metadata(row) for row in rows]
@@ -203,7 +202,6 @@ def _allowed_mitigation(status: str) -> str:
 
 def build_summary(paths: tuple[Path, ...]) -> dict[str, Any]:
     """Build the complete eligibility marker payload."""
-
     markers = [audit_dataset(path) for path in paths if path.exists()]
     return {
         "date": DATE,
@@ -220,7 +218,6 @@ def build_summary(paths: tuple[Path, ...]) -> dict[str, Any]:
 
 def main() -> int:
     """Run the readout-mitigation eligibility audit CLI."""
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     ns = parser.parse_args()

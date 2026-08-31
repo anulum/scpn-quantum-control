@@ -20,7 +20,6 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 def main() -> int:
     """Run the capability manifest freshness gate."""
-
     command = [
         sys.executable,
         "tools/capability_manifest.py",

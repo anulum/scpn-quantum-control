@@ -6,9 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — March 2026 Hardware Campaign
-"""
-March 2026 IBM Heron r2 Hardware Campaign — scpn-quantum-control
-================================================================
+"""Run the March 2026 IBM Heron r2 hardware campaign.
 
 Backend:  ibm_fez (Heron r2, 156 qubits)
 Budget:   10 min (600s) QPU/month (free tier)

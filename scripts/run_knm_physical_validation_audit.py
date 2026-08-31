@@ -510,7 +510,6 @@ def load_measured_couplings(path: Path | None) -> dict[str, Any] | None:
       ]
     }
     """
-
     if path is None or not path.exists():
         return None
     raw = json.loads(path.read_text(encoding="utf-8"))
@@ -561,7 +560,6 @@ def evaluate_candidate_systems(
     the physical-magnitude gate unless a future artifact supplies locked
     normalisation and uncertainty provenance.
     """
-
     paths = _candidate_paths(candidate_dir)
     if not paths:
         return {
@@ -734,7 +732,6 @@ def measured_system_promotion_readiness(
     promotion_tolerance: float = DEFAULT_PROMOTION_TOLERANCE,
 ) -> dict[str, Any]:
     """Return the strict promotion-readiness gate for measured K_nm candidates."""
-
     required_edges = n_layers * (n_layers - 1) // 2
     if not comparison.get("available"):
         return {

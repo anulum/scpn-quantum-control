@@ -28,7 +28,6 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 def main() -> int:
     """Export planner fixtures."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-dir", type=Path, default=REPO_ROOT / DEFAULT_OUT_DIR)
     parser.add_argument("--doc-path", type=Path, default=REPO_ROOT / DEFAULT_DOC_PATH)

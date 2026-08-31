@@ -111,7 +111,7 @@ def chain_coupling(n: int) -> np.typing.NDArray[np.float64]:
 
 
 def evolution_body(n: int, reps: int) -> QuantumCircuit:
-    """Initial state plus first-order Trotter evolution, no measurement.
+    """Build the initial-state and first-order Trotter evolution circuit.
 
     Matches ``hardware.circuit_export.build_trotter_circuit`` (per-qubit
     ``ry(ω_k mod 2π)`` preparation, ``PauliEvolutionGate`` with ``LieTrotter``)

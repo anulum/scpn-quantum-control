@@ -129,7 +129,6 @@ def _aggregate(rows: list[dict[str, object]]) -> list[dict[str, object]]:
 
 def main() -> int:
     """Run the baseline VQE methods benchmark CLI."""
-
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     rows = []
     for n in [3, 4]:

@@ -32,7 +32,6 @@ DEFAULT_ACTUAL = None
 
 def main() -> int:
     """Run the synchronisation benchmark comparator."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expected", type=Path, default=None)
     parser.add_argument("--actual", type=Path, default=None)

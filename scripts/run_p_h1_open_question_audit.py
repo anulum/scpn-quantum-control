@@ -101,7 +101,6 @@ def build_audit_payload(
     command: list[str] | None = None,
 ) -> dict[str, Any]:
     """Build a complete p_h1 audit payload with command and backend provenance."""
-
     derivation = derive_p_h1()
     finite = finite_size_scaling(
         n_values=n_values,

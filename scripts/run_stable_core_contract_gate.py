@@ -28,7 +28,6 @@ def build_stable_core_contract_gate_commands(
     expected_markdown: Path = DEFAULT_EXPECTED_MARKDOWN,
 ) -> tuple[tuple[str, ...], ...]:
     """Return the deterministic command sequence for the stable-core gate."""
-
     return (
         (
             sys.executable,
@@ -43,7 +42,6 @@ def build_stable_core_contract_gate_commands(
 
 def run_command(command: tuple[str, ...]) -> None:
     """Run one gate command and fail closed on non-zero return code."""
-
     print(f"[stable-core-contract-gate] {' '.join(command)}", flush=True)
     completed = subprocess.run(command, cwd=REPO_ROOT, check=False)
     if completed.returncode != 0:
@@ -52,7 +50,6 @@ def run_command(command: tuple[str, ...]) -> None:
 
 def main() -> int:
     """Run stable-core contract fixture gate."""
-
     for command in build_stable_core_contract_gate_commands():
         run_command(command)
     return 0

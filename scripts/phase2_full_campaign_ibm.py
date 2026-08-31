@@ -6,7 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Phase 2 Full Campaign (180-min promo)
-"""Phase 2 — full DLA parity campaign on 180-minute promotional allocation.
+r"""Phase 2 — full DLA parity campaign on 180-minute promotional allocation.
 
 DO NOT RUN until IBM confirms the 180-min promo is active on the account.
 This script targets ~150 minutes of QPU time (50-minute safety margin).
@@ -178,7 +178,7 @@ def odd_parity_init(n: int) -> str:
 
 
 def build_experiment_a() -> list[tuple[dict, QuantumCircuit]]:
-    """A: High-statistics n = 4 DLA parity."""
+    """Build experiment A for high-statistics four-qubit DLA parity."""
     circuits: list[tuple[dict, QuantumCircuit]] = []
     n = 4
     depths = [2, 4, 6, 8, 10, 14, 20, 30, 40, 50]
@@ -207,7 +207,7 @@ def build_experiment_a() -> list[tuple[dict, QuantumCircuit]]:
 def build_scaling_experiment(
     label: str, n: int, depths: list[int], reps: int
 ) -> list[tuple[dict, QuantumCircuit]]:
-    """Generic scaling experiment: n qubits, depth sweep, 2 sectors, reps."""
+    """Build a scaling experiment over depths, parity sectors, and repeats."""
     circuits: list[tuple[dict, QuantumCircuit]] = []
     sectors = {"even": even_parity_init(n), "odd": odd_parity_init(n)}
     for depth in depths:

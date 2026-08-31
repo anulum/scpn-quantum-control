@@ -237,7 +237,6 @@ def _fisher_by_group(pairs: list[CorrectedPair]) -> dict[str, dict[str, float | 
 
 def main() -> int:
     """Run the Phase 2 parity-readout mitigation cross-check CLI."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write-json", action="store_true")
     args = parser.parse_args()

@@ -61,7 +61,6 @@ except ImportError:
 
     def build_knm_paper27(L: int = 16, K_base: float = 0.45, K_alpha: float = 0.3) -> np.ndarray:
         """Build the local fallback Paper-27 K_nm coupling matrix."""
-
         n = L
         idx = np.arange(n)
         matrix = K_base * np.exp(-K_alpha * np.abs(idx[:, None] - idx[None, :]))
@@ -80,7 +79,6 @@ except ImportError:
         K: np.ndarray, omega: np.ndarray, delta: float = 0.0, *, max_dense_gib: float | None = None
     ) -> np.ndarray:
         """Build the local fallback dense Hamiltonian matrix."""
-
         del delta, max_dense_gib
         k_matrix = K
         n = int(k_matrix.shape[0])
@@ -322,7 +320,6 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     """Run the GPU-methods benchmark CLI."""
-
     ns = _parse_args()
     ns.output_dir.mkdir(parents=True, exist_ok=True)
     rows: list[dict[str, Any]] = []

@@ -148,7 +148,6 @@ def _write_json(path: Path, payload: Mapping[str, Any]) -> str:
 
 def hydrate_artifact(path: Path) -> tuple[dict[str, Any], str]:
     """Fetch IBM jobs referenced by an async artifact and attach count rows."""
-
     payload = json.loads(path.read_text(encoding="utf-8"))
     roles = payload.get("pending_job_roles")
     if not isinstance(roles, Mapping) or "main" not in roles or "readout" not in roles:

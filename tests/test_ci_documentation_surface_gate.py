@@ -31,7 +31,6 @@ def test_configured_python_documentation_scope_is_fail_closed() -> None:
     }
     assert documentation_exemptions == {
         "tests/**",
-        "scripts/**",
         "notebooks/**",
         "data/**",
     }
@@ -59,13 +58,24 @@ def test_configured_python_documentation_scope_is_fail_closed() -> None:
         and isinstance(gate.elts[0].value, str)
         and isinstance(gate.elts[1], ast.List)
     }
-    owned_paths = ["src/", "tests/", "examples/", "figures/", "tools/", "run_hardware.py"]
+    owned_paths = [
+        "src/",
+        "tests/",
+        "examples/",
+        "figures/",
+        "tools/",
+        "scripts/",
+        "run_hardware.py",
+    ]
     assert commands["ruff check"][-len(owned_paths) :] == owned_paths
     assert commands["ruff format"][-len(owned_paths) :] == owned_paths
 
     workflow = Path(".github/workflows/ci-static-analysis.yml").read_text(encoding="utf-8")
-    assert "ruff check src/ tests/ examples/ figures/ tools/ run_hardware.py" in workflow
-    assert "ruff format --check src/ tests/ examples/ figures/ tools/ run_hardware.py" in workflow
+    assert "ruff check src/ tests/ examples/ figures/ tools/ scripts/ run_hardware.py" in workflow
+    assert (
+        "ruff format --check src/ tests/ examples/ figures/ tools/ scripts/ run_hardware.py"
+        in workflow
+    )
 
 
 def test_ci_lint_job_gates_documentation_surface() -> None:

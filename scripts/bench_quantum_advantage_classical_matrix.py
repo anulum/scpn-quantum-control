@@ -53,7 +53,6 @@ class BenchmarkRow:
 
     def as_dict(self) -> dict[str, Any]:
         """Serialise the benchmark row for JSON output."""
-
         return {
             "n_qubits": self.n_qubits,
             "dim": self.dim,
@@ -291,7 +290,6 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     """Run the classical/Rust/GPU guardrail benchmark CLI."""
-
     args = _parse_args(argv)
     sizes = [int(token.strip()) for token in args.sizes.split(",") if token.strip()]
     if any(n < 2 for n in sizes):

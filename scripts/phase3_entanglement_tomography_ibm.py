@@ -202,7 +202,6 @@ def _two_qubit_errors(backend: Any, edges: Iterable[tuple[int, int]]) -> list[fl
 
 def select_layout(backend: Any) -> LayoutCandidate:
     """Select one connected four-qubit window before outcome data exists."""
-
     n_qubits = int(getattr(backend, "num_qubits", 0))
     edges = _coupling_edges(backend)
     if n_qubits < N_QUBITS or not edges:
@@ -236,7 +235,6 @@ def select_layout(backend: Any) -> LayoutCandidate:
 
 def parse_physical_qubits(value: str) -> tuple[int, int, int, int]:
     """Parse an explicit four-qubit physical layout."""
-
     try:
         qubits = tuple(int(part.strip()) for part in value.split(","))
     except ValueError as exc:
@@ -254,7 +252,6 @@ def select_pinned_layout(
     backend: Any, physical_qubits: tuple[int, int, int, int]
 ) -> LayoutCandidate:
     """Validate and return an explicitly requested connected four-qubit layout."""
-
     n_qubits = int(getattr(backend, "num_qubits", 0))
     if max(physical_qubits) >= n_qubits:
         raise RuntimeError(f"pinned layout exceeds backend width {n_qubits}: {physical_qubits}")
@@ -282,7 +279,6 @@ def select_pinned_layout(
 
 def apply_measurement_basis(circuit: QuantumCircuit, basis_setting: str) -> QuantumCircuit:
     """Return a measured circuit for one reduced-Pauli basis setting."""
-
     if len(basis_setting) != circuit.num_qubits:
         raise ValueError("basis_setting length must match circuit width")
     measured = QuantumCircuit(circuit.num_qubits, circuit.num_qubits)
@@ -316,7 +312,6 @@ def _float_row(row: Mapping[str, Any], key: str) -> float:
 
 def load_rows_csv(path: Path) -> list[dict[str, str]]:
     """Load analysed reduced-Pauli rows for subset planning."""
-
     with path.open("r", encoding="utf-8", newline="") as handle:
         return list(csv.DictReader(handle))
 
@@ -325,7 +320,6 @@ def select_zne_subset_rows(
     rows: Sequence[Mapping[str, Any]], *, dla_channel_count: int = 4
 ) -> list[dict[str, Any]]:
     """Select a preregistered small ZNE subset from analysed row deviations."""
-
     by_channel = {
         (str(row["label"]), str(row["basis_setting"])): dict(row)
         for row in rows
@@ -368,7 +362,6 @@ def select_zne_subset_rows(
 
 def parse_noise_scales(value: str) -> tuple[int, ...]:
     """Parse odd positive ZNE noise scale factors."""
-
     try:
         scales = tuple(int(part.strip()) for part in value.split(",") if part.strip())
     except ValueError as exc:
@@ -403,7 +396,6 @@ def build_zne_subset_circuits(
     list[tuple[dict[str, Any], QuantumCircuit]], list[tuple[dict[str, Any], QuantumCircuit]]
 ]:
     """Build folded circuits for the preregistered Phase 3 ZNE subset."""
-
     if str(SRC_DIR) not in sys.path:
         sys.path.insert(0, str(SRC_DIR))
     from scpn_quantum_control.mitigation.zne import gate_fold_circuit
@@ -465,7 +457,6 @@ def build_circuits(
     list[tuple[dict[str, Any], QuantumCircuit]], list[tuple[dict[str, Any], QuantumCircuit]]
 ]:
     """Build the promoted entanglement/tomography main and readout circuits."""
-
     readiness = _readiness_module()
     specs = readiness.promoted_circuit_specs()
     settings = readiness.basis_settings(readiness.observable_map())
@@ -532,7 +523,6 @@ def transpile_with_layouts(
     optimization_level: int,
 ) -> list[QuantumCircuit]:
     """Transpile each circuit with the preregistered physical layout."""
-
     return [
         transpile(
             circuit,
@@ -551,7 +541,6 @@ def transpile_sources_for_main(
     optimization_level: int,
 ) -> list[QuantumCircuit]:
     """Transpile source circuits paired with the measured main circuits."""
-
     return [
         transpile(
             _source_circuit_from_meta(meta),
@@ -576,7 +565,6 @@ def readiness(
     basis_expansion_limit: float = BASIS_EXPANSION_LIMIT,
 ) -> dict[str, Any]:
     """Evaluate live transpilation and budget readiness guards."""
-
     all_isa = list(main_isa_circuits) + list(readout_isa_circuits)
     depths = [int(circuit.depth()) for circuit in all_isa]
     total_gates = [sum(circuit.count_ops().values()) for circuit in all_isa]
@@ -721,7 +709,6 @@ def _result_rows(
 
 def parse_args() -> argparse.Namespace:
     """Parse Phase 3 entanglement/tomography runner options."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", default=DEFAULT_BACKEND)
     parser.add_argument("--submit", action="store_true")
@@ -757,7 +744,6 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     """Run live readiness checks and optionally submit ISA circuits."""
-
     args = parse_args()
     if args.submit and args.submit_async:
         print("ERROR: --submit and --submit-async are mutually exclusive", file=sys.stderr)

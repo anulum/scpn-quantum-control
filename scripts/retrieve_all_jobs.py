@@ -7,9 +7,9 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — retrieve all jobs script
 
-"""
-Job Retrieval Script — Pull real IBM bitstrings from queued jobs
-and update all result JSON files with actual measurement counts.
+"""Retrieve real IBM bitstrings and update result JSON files.
+
+Replace queued-job placeholders with actual measurement counts.
 """
 
 import asyncio

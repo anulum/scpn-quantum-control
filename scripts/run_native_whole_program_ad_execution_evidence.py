@@ -27,7 +27,6 @@ from scpn_quantum_control.compiler import (
 
 def _render_markdown(payload: dict[str, object]) -> str:
     """Return a Markdown summary for the captured execution evidence."""
-
     cases = payload["cases"]
     assert isinstance(cases, list)
     lines = [
@@ -62,7 +61,6 @@ def _render_markdown(payload: dict[str, object]) -> str:
 
 def main() -> int:
     """Write the native execution evidence artefact from CLI arguments."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=Path("data/differentiable_phase_qnode"))
     parser.add_argument("--stamp", default=date.today().strftime("%Y%m%d"))

@@ -57,7 +57,6 @@ def _target_valid(target: str) -> bool:
 
 def build_api_contract(review: dict[str, Any] | None = None) -> dict[str, Any]:
     """Build the future ``quantum_kuramoto`` API contract payload."""
-
     payload = _load_review() if review is None else review
     if payload.get("schema") != "s6_quantum_kuramoto_boundary_review_v1":
         raise ValueError("unexpected boundary-review schema")

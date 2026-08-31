@@ -187,7 +187,6 @@ def _run_json(cmd: list[str], timeout_s: int = 60) -> tuple[list[dict[str, Any]]
 
 def main() -> int:
     """Run the multi-language K_nm benchmark CLI."""
-
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     SRC_DIR.mkdir(parents=True, exist_ok=True)
     rows: list[dict[str, Any]] = []

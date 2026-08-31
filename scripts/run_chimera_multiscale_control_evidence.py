@@ -24,7 +24,6 @@ DEFAULT_MARKDOWN = REPO_ROOT / "data/chimera_multiscale_control/evidence.md"
 
 def build_parser() -> argparse.ArgumentParser:
     """Return the command-line parser for local evidence generation."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--check",
@@ -44,7 +43,6 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     """Build and write or check evidence, returning a process exit code."""
-
     args = build_parser().parse_args(argv)
     evidence = build_chimera_multiscale_evidence(population_size=args.population_size)
     json_path, markdown_path = write_chimera_multiscale_evidence(

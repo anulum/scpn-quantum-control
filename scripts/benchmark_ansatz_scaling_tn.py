@@ -67,7 +67,6 @@ def _make_ansatz(name: str, n_qubits: int, reps: int):
 
 def ansatz_scaling_rows(n_values: list[int], reps_values: list[int]) -> list[dict[str, object]]:
     """Return circuit-size rows for the three ansatz families."""
-
     rows: list[dict[str, object]] = []
     for n_qubits in n_values:
         for reps in reps_values:
@@ -139,7 +138,6 @@ def mps_truncation_rows(
     sparse_max_qubits: int,
 ) -> list[dict[str, object]]:
     """Return exact-ground-state MPS truncation diagnostics where feasible."""
-
     rows: list[dict[str, object]] = []
     for n_qubits in n_values:
         if n_qubits <= exact_max_qubits:
@@ -195,7 +193,6 @@ def mps_truncation_rows(
 
 def _load_best_vqe_reference_rows(path: Path) -> dict[int, dict[str, object]]:
     """Return the best committed VQE aggregate row for each qubit count."""
-
     if not path.exists():
         return {}
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -222,7 +219,6 @@ def reference_comparison_rows(
     Missing VQE rows are recorded as skipped rows. This avoids presenting
     unrun optimisation data for larger systems as a measured result.
     """
-
     best_vqe = _load_best_vqe_reference_rows(vqe_summary_path)
     rows: list[dict[str, object]] = []
     for n_qubits in n_values:
@@ -289,7 +285,6 @@ def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
 
 def main() -> int:
     """Run the ansatz/tensor-network scaling benchmark CLI."""
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--n-values", default="4,6,8,10,12")
     parser.add_argument("--reps-values", default="1,2")

@@ -28,7 +28,6 @@ DEFAULT_EXPECTED = (
 
 def main() -> int:
     """Run fixture comparison."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expected", type=Path, default=DEFAULT_EXPECTED)
     parser.add_argument("--json", action="store_true")

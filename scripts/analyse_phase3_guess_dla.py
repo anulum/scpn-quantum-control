@@ -48,7 +48,6 @@ class WitnessRow:
 
     def to_row(self) -> dict[str, object]:
         """Serialise the witness cell for JSON and CSV artefacts."""
-
         return {
             "sector": self.sector,
             "initial": self.initial,
@@ -83,7 +82,6 @@ class FitRow:
 
     def to_row(self) -> dict[str, object]:
         """Serialise the fitted GUESS witness row for artefact output."""
-
         return {
             "sector": self.sector,
             "initial": self.initial,

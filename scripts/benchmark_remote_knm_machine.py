@@ -35,7 +35,6 @@ from typing import Any
 
 def build_knm_python(n: int, k0: float, alpha: float) -> list[list[float]]:
     """Construct the exponentially decaying dense coupling matrix."""
-
     matrix: list[list[float]] = []
     for row_index in range(n):
         row: list[float] = []
@@ -50,7 +49,6 @@ def build_knm_python(n: int, k0: float, alpha: float) -> list[list[float]]:
 
 def time_python(n: int, iterations: int, k0: float, alpha: float) -> dict[str, Any]:
     """Time the built-in Python implementation."""
-
     samples: list[float] = []
     checksum = 0.0
     for _ in range(iterations):
@@ -69,7 +67,6 @@ def summarise_samples(
     checksum: float,
 ) -> dict[str, Any]:
     """Summarise raw timing samples."""
-
     return {
         "language": language,
         "n": n,
@@ -85,7 +82,6 @@ def summarise_samples(
 
 def write_rust_source(path: Path) -> None:
     """Write the Rust benchmark implementation."""
-
     path.write_text(
         textwrap.dedent(
             """
@@ -143,7 +139,6 @@ def write_rust_source(path: Path) -> None:
 
 def write_go_source(path: Path) -> None:
     """Write the Go benchmark implementation."""
-
     path.write_text(
         textwrap.dedent(
             """
@@ -212,7 +207,6 @@ def write_go_source(path: Path) -> None:
 
 def run_json_command(command: list[str], cwd: Path) -> dict[str, Any]:
     """Run a benchmark command and parse its JSON output."""
-
     completed = subprocess.run(
         command,
         cwd=cwd,
@@ -225,7 +219,6 @@ def run_json_command(command: list[str], cwd: Path) -> dict[str, Any]:
 
 def command_failure(language: str, n: int, reason: str) -> dict[str, Any]:
     """Return a structured unavailable row."""
-
     return {
         "language": language,
         "n": n,
@@ -244,7 +237,6 @@ def benchmark_compiled_language(
     workspace: Path,
 ) -> list[dict[str, Any]]:
     """Compile and run a generated Rust or Go kernel."""
-
     if shutil.which(compiler) is None:
         return [command_failure(language, n, f"{compiler} not found") for n in ns.sizes]
 
@@ -286,13 +278,11 @@ def benchmark_compiled_language(
 
 def sha256_file(path: Path) -> str:
     """Compute a SHA-256 digest for an artefact."""
-
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def machine_metadata() -> dict[str, Any]:
     """Collect machine metadata without requiring privileged access."""
-
     return {
         "hostname": socket.gethostname(),
         "platform": platform.platform(),
@@ -310,7 +300,6 @@ def machine_metadata() -> dict[str, Any]:
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=Path("data/rust_vqe_methods"))
     parser.add_argument("--label", default=None)
@@ -323,7 +312,6 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     """Run benchmarks and write JSON/CSV artefacts."""
-
     ns = parse_args()
     ns.output_dir.mkdir(parents=True, exist_ok=True)
     label = ns.label or socket.gethostname().replace(".", "_")

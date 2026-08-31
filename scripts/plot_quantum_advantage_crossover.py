@@ -155,7 +155,6 @@ def _metadata_depth(payload: dict, fallback_depth: int) -> int:
 
 def load_hardware_points(results_dir: Path = RESULTS_DIR) -> list[HardwarePoint]:
     """Load and validate the committed IBM hardware scaling series."""
-
     points: list[HardwarePoint] = []
     row_provenance = _table_row_provenance()
     for filename, expected_n, fallback_depth, qpu_budget_ms in HARDWARE_SPECS:
@@ -196,7 +195,6 @@ def load_classical_points(
     path: Path = RESULTS_DIR / "classical_baselines_2026-03-30.json",
 ) -> list[ClassicalPoint]:
     """Load exact-diagonalisation and ODE baseline timings."""
-
     payload = _read_json(path)
     points = []
     row_provenance = _table_row_provenance()
@@ -222,7 +220,6 @@ def load_classical_points(
 
 def fit_exact_classical(points: list[ClassicalPoint]) -> LogFit:
     """Fit exponential exact-diagonalisation scaling from finite timings."""
-
     finite = [p for p in points if p.exact_diag_ms is not None and p.exact_diag_ms > 0]
     if len(finite) < 3:
         raise ValueError("Need at least three finite exact-diagonalisation timings")
@@ -238,7 +235,6 @@ def fit_exact_classical(points: list[ClassicalPoint]) -> LogFit:
 
 def fit_hardware_budget(points: list[HardwarePoint]) -> PowerFit:
     """Fit a conservative power-law envelope through hardware QPU budgets."""
-
     n = np.array([p.n_qubits for p in points], dtype=float)
     log_n = np.log10(n)
     log_y = np.log10([p.qpu_budget_ms for p in points])
@@ -252,7 +248,6 @@ def fit_hardware_budget(points: list[HardwarePoint]) -> PowerFit:
 
 def estimate_crossover_qubits(exact_fit: LogFit, hardware_fit: PowerFit) -> float:
     """Estimate where exact simulation time crosses the QPU budget envelope."""
-
     grid = np.linspace(4.0, 40.0, 7201)
     delta = exact_fit.predict(grid) - hardware_fit.predict(grid)
     crossed = np.flatnonzero(delta >= 0.0)
@@ -271,7 +266,6 @@ def build_crossover_model(
     classical_points: list[ClassicalPoint] | None = None,
 ) -> tuple[LogFit, PowerFit, float]:
     """Return fitted models and their first crossover point."""
-
     hardware = hardware_points if hardware_points is not None else load_hardware_points()
     classical = classical_points if classical_points is not None else load_classical_points()
     exact_fit = fit_exact_classical(classical)
@@ -285,7 +279,6 @@ def plot_quantum_advantage_crossover(
     docs_output_dir: Path | None = DOCS_PUBLICATION_DIR,
 ) -> tuple[Path, Path, float]:
     """Generate the PNG/PDF crossover figure and return output paths."""
-
     import matplotlib
 
     matplotlib.use("Agg")

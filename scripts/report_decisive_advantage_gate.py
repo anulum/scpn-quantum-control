@@ -48,6 +48,7 @@ def _rows_from_payload(payload: Any) -> list[dict[str, Any]]:
     ------
     ValueError
         If the payload is neither a list nor a mapping carrying a ``rows`` list.
+
     """
     if isinstance(payload, list):
         return [dict(row) for row in payload]
@@ -74,6 +75,7 @@ def build_report(
     dict
         A JSON-ready report with the protocol manifest and, if rows are given,
         the validation result and decision outcome.
+
     """
     report: dict[str, Any] = {"protocol": protocol.to_dict()}
     if rows is not None:
@@ -94,6 +96,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     -------
     argparse.Namespace
         Parsed ``rows`` and ``out_dir`` options.
+
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -118,6 +121,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     -------
     int
         Process exit code (``0`` on success).
+
     """
     args = _parse_args(argv)
     protocol = default_decisive_advantage_protocol()

@@ -54,7 +54,6 @@ class TimingSummary:
 
     def to_json_dict(self) -> dict[str, float | int]:
         """Return a JSON-stable timing record."""
-
         return {
             "median_ms": self.median_ms,
             "min_ms": self.min_ms,
@@ -65,7 +64,6 @@ class TimingSummary:
 
 def _distribution_name(package: str) -> str:
     """Return an installed package version or ``unavailable``."""
-
     try:
         return metadata.version(package)
     except metadata.PackageNotFoundError:
@@ -74,7 +72,6 @@ def _distribution_name(package: str) -> str:
 
 def _time_call(call: Callable[[], object], samples: int) -> TimingSummary:
     """Time ``call`` for ``samples`` iterations and return milliseconds."""
-
     durations: list[float] = []
     for _ in range(samples):
         start = time.perf_counter_ns()
@@ -92,7 +89,6 @@ def _time_call(call: Callable[[], object], samples: int) -> TimingSummary:
 
 def _validate_sizes(sizes: Sequence[int]) -> tuple[int, ...]:
     """Return validated positive benchmark sizes."""
-
     if not sizes:
         raise ValueError("at least one size is required")
     validated = tuple(int(size) for size in sizes)
@@ -103,7 +99,6 @@ def _validate_sizes(sizes: Sequence[int]) -> tuple[int, ...]:
 
 def _build_row(size: int, *, samples: int, n_steps: int, dt: float) -> dict[str, Any]:
     """Build one sparse-ring scaling row."""
-
     coupling = ring_sparse_coupling(size, coupling_strength=0.05)
     theta = np.linspace(0.0, 2.0 * np.pi, size, endpoint=False, dtype=np.float64)
     omega = np.zeros(size, dtype=np.float64)
@@ -141,7 +136,6 @@ def _build_row(size: int, *, samples: int, n_steps: int, dt: float) -> dict[str,
 
 def _order_parameter(theta: NDArray[np.float64]) -> float:
     """Return the Kuramoto order-parameter magnitude for one phase vector."""
-
     return float(abs(np.mean(np.exp(1j * theta))))
 
 
@@ -153,7 +147,6 @@ def build_artifact(
     dt: float,
 ) -> dict[str, Any]:
     """Build the sparse Kuramoto CPU scaling artifact."""
-
     if samples < 1:
         raise ValueError("samples must be positive")
     if n_steps < 0:
@@ -184,7 +177,6 @@ def build_artifact(
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the benchmark and write the JSON artifact."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--sizes", type=int, nargs="+", default=list(DEFAULT_SIZES))

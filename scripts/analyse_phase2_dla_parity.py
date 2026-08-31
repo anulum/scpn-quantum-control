@@ -164,7 +164,6 @@ def _summarise(payload: dict[str, Any]) -> dict[str, Any]:
 
 def main() -> int:
     """Run the Phase 2 DLA parity raw-count reproduction CLI."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--verify-integrity", action="store_true")

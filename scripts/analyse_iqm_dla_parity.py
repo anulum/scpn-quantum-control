@@ -261,7 +261,6 @@ def _write_markdown(path: Path, summary: dict[str, Any]) -> None:
 
 def main() -> int:
     """Run the IQM minimal DLA/parity analysis CLI."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--iqm-input", type=Path, default=DEFAULT_IQM_INPUT)
     parser.add_argument("--ibm-input", type=Path, default=DEFAULT_IBM_INPUT)

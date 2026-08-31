@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multi-tier benchmark for daido_order_parameter_hessian (m=2)
-"""Wall-time micro-benchmark for the ``daido_order_parameter_hessian`` chain (m = 2).
+r"""Wall-time micro-benchmark for the ``daido_order_parameter_hessian`` chain (m = 2).
 
 Measures every installed tier (Rust, Julia, Python floor) of the Kuramoto order
 Daido Hessian :math:`\\partial^2 r_m / \\partial \\theta_i \\partial \\theta_j` at m = 2

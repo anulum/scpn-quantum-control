@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multi-tier benchmark for order_parameter_hessian
-"""Wall-time micro-benchmark for the ``order_parameter_hessian`` dispatch chain.
+r"""Wall-time micro-benchmark for the ``order_parameter_hessian`` dispatch chain.
 
 Measures every installed tier (Rust, Julia, Python floor) of the Kuramoto order
 parameter Hessian :math:`\\partial^2 r / \\partial \\theta_i \\partial \\theta_j`

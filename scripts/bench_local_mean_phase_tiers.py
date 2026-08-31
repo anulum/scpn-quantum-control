@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multi-tier benchmark for the network-local mean phase and Jacobian
-"""Wall-time micro-benchmark for the network-local mean phase and its Jacobian.
+r"""Wall-time micro-benchmark for the network-local mean phase and its Jacobian.
 
 Measures every installed tier (Rust, Julia, Python floor) of the network-local order
 parameter :math:`r_j = |\\sum_k A_{jk} e^{i\\theta_k}| / \\sum_k A_{jk}` and its Jacobian on a

@@ -206,12 +206,11 @@ ignore = [
 "tests/test_kyma_v2_rigor.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/test_kuramoto_visualisation.py" = ["E402", "I001"]  # importorskip(matplotlib) before local import
 # Docstring (D) scope: the 2026-06-17 broadcast mandates NumPy docstrings on the
-# PUBLIC API. tests/ are not public API (design exemption); scripts/ adopt in a
-# staged follow-up. examples/ and figures/ completed this ratchet on 2026-08-31.
-# The per-file entries below are the shrink-list ratchet: each closeout deletes
-# its line.
+# PUBLIC API. tests/ are not public API (design exemption). examples/, figures/,
+# scripts/, tools/, and the root CLI completed this ratchet on 2026-08-31. The
+# per-file entries below are the shrink-list ratchet: each closeout deletes its
+# line.
 "tests/**" = ["D"]
-"scripts/**" = ["D"]
 "notebooks/**" = ["D"]
 "data/**" = ["D"]
 [tool.ruff.lint.isort]

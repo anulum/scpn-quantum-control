@@ -19,7 +19,6 @@ from types import ModuleType
 
 def _load_comparator_module() -> ModuleType:
     """Load comparator helpers without requiring ``scripts`` as import package."""
-
     spec = importlib.util.spec_from_file_location(
         "_stable_core_preflight_fixture_comparator",
         Path(__file__).resolve().parent / "compare_stable_core_preflight_fixtures.py",
@@ -38,7 +37,6 @@ DEFAULT_DOC = REPO_ROOT / "docs" / "stable_core_preflight_fixtures.md"
 
 def main() -> int:
     """Export stable-core preflight fixtures."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--json-path", type=Path, default=DEFAULT_JSON)
     parser.add_argument("--doc-path", type=Path, default=DEFAULT_DOC)

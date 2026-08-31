@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multi-tier benchmark for the Kuramoto interaction energy and gradient
-"""Wall-time micro-benchmark for the Kuramoto interaction energy and its gradient.
+r"""Wall-time micro-benchmark for the Kuramoto interaction energy and its gradient.
 
 Measures every installed tier (Rust, Julia, Python floor) of the Kuramoto interaction energy
 :math:`E = -\\tfrac12 \\sum_{jk} K_{jk} \\cos(\\theta_j - \\theta_k)` and its gradient on a

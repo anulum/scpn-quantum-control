@@ -54,7 +54,6 @@ BREADTH_CLAIM_BOUNDARY = (
 
 def main() -> int:
     """Write the breadth artifact plus the refreshed Enzyme/MLIR audit."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=DATA_DIR)
     args = parser.parse_args()
@@ -76,7 +75,6 @@ def build_enzyme_mlir_breadth_artifact(
     benchmark_attachment: EnzymeMLIRBenchmarkAttachment,
 ) -> EnzymeMLIRCompilerADBreadthArtifact:
     """Build the committed Enzyme/MLIR breadth artifact from raw evidence."""
-
     execution_payload = _json_mapping(ENZYME_EXECUTION_PATH)
     observed_cases = (
         _success_case(

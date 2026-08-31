@@ -184,7 +184,6 @@ def build_fim_trotter_circuit(
     t_step: float = T_STEP,
 ) -> QuantumCircuit:
     """Build the n=4 Kuramoto-XY + FIM pilot circuit without measurement submission."""
-
     qc = QuantumCircuit(N_QUBITS, N_QUBITS)
     _prep_bitstring(qc, initial_bitstring)
     k_matrix = _kuramoto_k_matrix(N_QUBITS)

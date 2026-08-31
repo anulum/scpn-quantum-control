@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multi-tier benchmark for the networked Kuramoto force and Jacobian
-"""Wall-time micro-benchmark for the networked Kuramoto force and stability Jacobian.
+r"""Wall-time micro-benchmark for the networked Kuramoto force and stability Jacobian.
 
 Measures every installed tier (Rust, Julia, Python floor) of the networked Kuramoto force
 :math:`F_j = \\sum_k K_{jk} \\sin(\\theta_k - \\theta_j)` and its stability Jacobian on a

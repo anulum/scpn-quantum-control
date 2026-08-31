@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multi-tier benchmark for order_parameter_gradient
-"""Wall-time micro-benchmark for the ``order_parameter_gradient`` dispatch chain.
+r"""Wall-time micro-benchmark for the ``order_parameter_gradient`` dispatch chain.
 
 Measures every installed tier (Rust, Julia, Python floor) of the Kuramoto order
 parameter gradient :math:`\\partial r / \\partial \\theta` on the same input sizes

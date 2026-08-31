@@ -59,7 +59,6 @@ def _total(counts: dict[str, int]) -> int:
 
 def summarise(payload: dict[str, Any]) -> dict[str, Any]:
     """Summarise Phase 2 B-C scaling rows from a raw-count payload."""
-
     rows = [
         c
         for c in payload["circuits"]
@@ -122,7 +121,6 @@ def summarise(payload: dict[str, Any]) -> dict[str, Any]:
 
 def main() -> int:
     """Run the Phase 2 B-C scaling raw-count reproduction CLI."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", type=Path)
     parser.add_argument("--sha256", default="")

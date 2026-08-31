@@ -175,7 +175,6 @@ def _two_qubit_errors(backend: Any, edges: Iterable[tuple[int, int]]) -> list[fl
 
 def select_layouts(backend: Any, *, n_layouts: int = 3) -> list[LayoutCandidate]:
     """Select connected four-qubit windows before outcome data exists."""
-
     n_qubits = int(getattr(backend, "num_qubits", 0))
     edges = _coupling_edges(backend)
     if n_qubits < 4 or not edges:
@@ -213,7 +212,6 @@ def build_circuits(
     list[tuple[dict[str, Any], QuantumCircuit]], list[tuple[dict[str, Any], QuantumCircuit]]
 ]:
     """Build preregistered logical circuits and attach physical-layout metadata."""
-
     main: list[tuple[dict[str, Any], QuantumCircuit]] = []
     for layout in layouts:
         for depth in DEPTHS:

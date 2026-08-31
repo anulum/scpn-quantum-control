@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multi-tier benchmark for the Sakaguchi–Kuramoto mean-field force and Jacobian
-"""Wall-time micro-benchmark for the mean-field force and stability Jacobian (K = 1).
+r"""Wall-time micro-benchmark for the mean-field force and stability Jacobian (K = 1).
 
 Measures every installed tier (Rust, Julia, Python floor) of the Daido m-th-harmonic
 mean-field force :math:`F_j = K (S_m \\cos m\\theta_j - C_m \\sin m\\theta_j)` (m = 2) and its stability Jacobian

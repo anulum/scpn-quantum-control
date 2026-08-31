@@ -123,7 +123,7 @@ def calibration_circuits() -> tuple[QuantumCircuit, ...]:
 
 
 def basis_metadata() -> list[dict[str, Any]]:
-    """Committed per-pub basis metadata — the record the March artefact lacks."""
+    """Return committed per-PUB basis metadata missing from the March artefact."""
     return [
         {
             "pub_index": index,

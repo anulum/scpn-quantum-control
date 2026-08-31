@@ -60,7 +60,7 @@ def prep_bitstring(qc: QuantumCircuit, bitstring: str) -> None:
 
 
 def build_kuramoto_k_matrix(n: int) -> np.ndarray:
-    """Standard SCPN exponential-decay coupling matrix."""
+    """Build the standard SCPN exponential-decay coupling matrix."""
     k = np.zeros((n, n))
     for i in range(n):
         for j in range(n):
@@ -75,8 +75,7 @@ def build_xy_trotter_circuit(
     n_trotter_steps: int,
     t_step: float = T_STEP,
 ) -> QuantumCircuit:
-    """Build a Kuramoto-XY Trotter circuit with a computational-basis
-    initial state.
+    """Build a Kuramoto-XY Trotter circuit from a computational-basis state.
 
     H_XY = Σ K_nm (X_n X_m + Y_n Y_m) + Σ ω_n Z_n
     """
@@ -115,7 +114,7 @@ def build_readout_baseline_circuit(n: int, bitstring: str) -> QuantumCircuit:
 
 
 def build_experiment_a() -> list[tuple[dict, QuantumCircuit]]:
-    """A: DLA parity n=4, depth sweep, 2 sectors, 2 reps."""
+    """Build experiment A for the DLA parity depth and sector sweep."""
     circuits: list[tuple[dict, QuantumCircuit]] = []
     depths = [2, 4, 6, 8, 10, 14, 20, 30]
     sectors = {

@@ -20,7 +20,6 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 def run(command: list[str]) -> None:
     """Run one command and fail closed on non-zero status."""
-
     print(f"[symmetry-sector-gate] {' '.join(command)}", flush=True)
     completed = subprocess.run(command, cwd=REPO_ROOT, check=False)
     if completed.returncode != 0:
@@ -29,7 +28,6 @@ def run(command: list[str]) -> None:
 
 def main() -> int:
     """Run the full planner fixture gate."""
-
     run([sys.executable, "scripts/export_symmetry_sector_mitigation_fixtures.py"])
     run([sys.executable, "scripts/compare_symmetry_sector_mitigation_fixtures.py"])
     return 0

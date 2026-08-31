@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multi-tier benchmark for daido_order_parameter and its gradient
-"""Wall-time micro-benchmark for the ``daido_order_parameter`` dispatch chains (m = 2).
+r"""Wall-time micro-benchmark for the ``daido_order_parameter`` dispatch chains (m = 2).
 
 Measures every installed tier (Rust, Julia, Python floor) of the m-th Daido order
 parameter :math:`r_m = |\\langle e^{i m \\theta} \\rangle|` and its gradient at the

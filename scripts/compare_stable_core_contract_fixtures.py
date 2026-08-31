@@ -51,7 +51,6 @@ def write_stable_core_contract_fixtures(
     markdown_path: Path,
 ) -> dict[str, str]:
     """Write deterministic stable-core contract fixture artifacts."""
-
     payload = stable_core_contract_fixtures_payload()
     json_text = stable_core_contract_fixtures_json(payload)
     markdown_text = stable_core_contract_fixtures_markdown(payload)
@@ -69,7 +68,6 @@ def write_stable_core_contract_fixtures(
 
 def stable_core_contract_fixtures_payload() -> dict[str, Any]:
     """Build deterministic fixture payloads from stable-core contracts."""
-
     problems: tuple[Problem, ...] = (
         build_problem(
             problem_id="ring4",
@@ -235,13 +233,11 @@ def stable_core_contract_fixtures_payload() -> dict[str, Any]:
 
 def stable_core_contract_fixtures_json(payload: dict[str, Any]) -> str:
     """Return deterministic JSON text for stable-core contract fixtures."""
-
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
 
 def stable_core_contract_fixtures_markdown(payload: dict[str, Any]) -> str:
     """Render a deterministic markdown summary for fixture artifacts."""
-
     lines = [
         "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
         "<!-- Commercial license available -->",
@@ -373,7 +369,6 @@ def compare_stable_core_contract_fixtures(
     actual_markdown_path: Path | None = None,
 ) -> dict[str, Any]:
     """Compare committed stable-core contract artifacts with regenerated ones."""
-
     blockers: list[str] = []
 
     if (actual_json_path is None) != (actual_markdown_path is None):
@@ -454,7 +449,6 @@ def _comparison_result(
     blockers: list[str],
 ) -> bool:
     """Populate blockers and report whether artifacts match exactly."""
-
     valid = True
     expected_json = _load_json(expected_json_path, blockers)
     actual_json = _load_json(actual_json_path, blockers)
@@ -489,19 +483,16 @@ def _comparison_result(
 
 def _normalise_markdown(text: str) -> str:
     """Normalise markdown line endings for deterministic comparisons."""
-
     return text.replace("\r\n", "\n")
 
 
 def _normalised_json(payload: dict[str, Any]) -> str:
     """Canonical JSON text for deterministic drift checks."""
-
     return json.dumps(payload, sort_keys=True, indent=2) + "\n"
 
 
 def _load_json(path: Path, blockers: list[str]) -> dict[str, Any] | None:
     """Load JSON payload with deterministic blocker recording."""
-
     try:
         return json.loads(_load_text(path, blockers))
     except json.JSONDecodeError as exc:
@@ -511,7 +502,6 @@ def _load_json(path: Path, blockers: list[str]) -> dict[str, Any] | None:
 
 def _load_text(path: Path, blockers: list[str]) -> str:
     """Load text with deterministic blocker recording."""
-
     try:
         return path.read_text(encoding="utf-8")
     except OSError as exc:
@@ -532,7 +522,6 @@ def _sha256_path(path: Path) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point for stable-core contract fixture comparison."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expected-json", type=Path, default=DEFAULT_EXPECTED_JSON)
     parser.add_argument("--expected-markdown", type=Path, default=DEFAULT_EXPECTED_MARKDOWN)

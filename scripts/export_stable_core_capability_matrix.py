@@ -23,7 +23,6 @@ DEFAULT_DOC = REPO_ROOT / "docs" / "stable_core_backend_capability_matrix.md"
 
 def main() -> int:
     """Export backend capability matrix artifacts."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--json-path", type=Path, default=DEFAULT_JSON)
     parser.add_argument("--doc-path", type=Path, default=DEFAULT_DOC)

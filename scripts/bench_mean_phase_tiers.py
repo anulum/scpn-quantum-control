@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multi-tier benchmark for mean_phase and its gradient
-"""Wall-time micro-benchmark for the ``mean_phase`` dispatch chains.
+r"""Wall-time micro-benchmark for the ``mean_phase`` dispatch chains.
 
 Measures every installed tier (Rust, Julia, Python floor) of the Kuramoto mean phase
 :math:`\\psi = \\operatorname{atan2}(\\langle\\sin\\theta\\rangle, \\langle\\cos\\theta\\rangle)`

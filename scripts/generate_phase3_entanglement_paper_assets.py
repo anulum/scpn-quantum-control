@@ -74,7 +74,6 @@ def _group(
 
 def build_label_summary(rows: Sequence[Mapping[str, str]]) -> list[dict[str, Any]]:
     """Aggregate deviation metrics by source circuit label."""
-
     output: list[dict[str, Any]] = []
     for key, group_rows in sorted(_group(rows, ["family", "label"]).items()):
         signed = [_float(row["deviation_from_exact"]) for row in group_rows]
@@ -96,7 +95,6 @@ def build_label_summary(rows: Sequence[Mapping[str, str]]) -> list[dict[str, Any
 
 def build_basis_summary(rows: Sequence[Mapping[str, str]]) -> list[dict[str, Any]]:
     """Aggregate deviation metrics by reduced-Pauli basis setting."""
-
     output: list[dict[str, Any]] = []
     for key, group_rows in sorted(_group(rows, ["basis_setting"]).items()):
         signed = [_float(row["deviation_from_exact"]) for row in group_rows]
@@ -117,7 +115,6 @@ def build_top_deviations(
     rows: Sequence[Mapping[str, str]], *, limit: int = 12
 ) -> list[dict[str, Any]]:
     """Return the largest absolute deviations from exact references."""
-
     selected = sorted(rows, key=lambda row: _float(row["absolute_deviation"]), reverse=True)[
         :limit
     ]
@@ -143,7 +140,6 @@ def build_backend_comparison(
     backend_rows: Mapping[str, Sequence[Mapping[str, str]]],
 ) -> list[dict[str, Any]]:
     """Aggregate raw and readout-mitigated deviations by backend."""
-
     output: list[dict[str, Any]] = []
     for backend, rows in sorted(backend_rows.items()):
         raw_abs = [_float(row["absolute_deviation"]) for row in rows]
@@ -163,7 +159,6 @@ def build_backend_comparison(
 
 def channel_class(basis_setting: str) -> str:
     """Classify a reduced-Pauli basis for readout-amplification summaries."""
-
     if basis_setting in {"IIXX", "IIYY", "XXII", "YYII"}:
         return "transverse_edge"
     if basis_setting in {"IXXI", "IYYI"}:
@@ -179,7 +174,6 @@ def build_full_readout_amplification_summary(
     rows: Sequence[Mapping[str, str]], *, limit: int = 12
 ) -> dict[str, list[dict[str, Any]]]:
     """Summarise where full correlated readout inversion amplifies deviations."""
-
     enriched: list[dict[str, Any]] = []
     for row in rows:
         raw = _float(row["absolute_deviation"])
@@ -220,7 +214,6 @@ def build_full_readout_amplification_summary(
 
 def write_markdown_table(path: Path, title: str, rows: Sequence[Mapping[str, Any]]) -> None:
     """Write a compact Markdown table for direct manuscript review."""
-
     path.parent.mkdir(parents=True, exist_ok=True)
     if not rows:
         path.write_text(f"# {title}\n\nNo rows.\n", encoding="utf-8")
@@ -243,7 +236,6 @@ def write_markdown_table(path: Path, title: str, rows: Sequence[Mapping[str, Any
 
 def plot_heatmap(rows: Sequence[Mapping[str, str]], figure_dir: Path) -> tuple[Path, Path]:
     """Plot signed measured-minus-exact deviations by label and basis setting."""
-
     labels = [
         "dla_even_shallow",
         "dla_odd_shallow",

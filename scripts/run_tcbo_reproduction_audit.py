@@ -48,7 +48,6 @@ def _git_commit() -> str:
 
 def _jsonable(value: Any) -> Any:
     """Convert NumPy scalars and arrays returned by cross-repo code to JSON."""
-
     if isinstance(value, np.generic):
         return value.item()
     if isinstance(value, np.ndarray):
@@ -62,7 +61,6 @@ def _jsonable(value: Any) -> Any:
 
 def classify_observer_source(source: str) -> dict[str, Any]:
     """Classify whether the active observer implements the required topology."""
-
     lowered = source.lower()
     coupling_weighted_tokens = (
         "k_ij",
@@ -96,7 +94,6 @@ def deterministic_phase_stream(
     seed: int,
 ) -> Iterable[np.ndarray]:
     """Yield deterministic multichannel phase traces for TCBO observer replay."""
-
     rng = np.random.default_rng(seed)
     offsets = np.linspace(0.0, 2.0 * np.pi, n_layers, endpoint=False)
     layer_gain = np.linspace(0.85, 1.15, n_layers)
@@ -227,7 +224,6 @@ def build_coupling_weighted_reconstruction_payload(
     preregistered_dataset_id: str | None,
 ) -> dict[str, Any]:
     """Run the local coupling-weighted simplicial-complex reconstruction."""
-
     from scpn_quantum_control.analysis.tcbo_weighted_complex import (
         tcbo_weighted_threshold_scan,
         tcbo_weighted_uncertainty_replay,
@@ -302,7 +298,6 @@ def build_audit_payload(
     command: list[str] | None = None,
 ) -> dict[str, Any]:
     """Execute the local TCBO code path and return a serialisable audit payload."""
-
     modules = _load_tcbo_modules(codebase_path)
     observer_module = modules["observer"]
     coupling_module = modules["coupling"]

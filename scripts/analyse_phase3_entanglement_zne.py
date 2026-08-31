@@ -142,7 +142,6 @@ def analyse_zne_counts_artifact(
     reference_csv: Path,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     """Reduce a completed ZNE counts artefact into scale and channel rows."""
-
     payload = json.loads(counts_path.read_text(encoding="utf-8"))
     references = _load_reference_rows(reference_csv)
     tomography = _tomography_module()
@@ -410,7 +409,6 @@ def write_outputs(
     result_tag: str = TODAY,
 ) -> tuple[Path, Path, Path, Path]:
     """Write ZNE JSON, scale CSV, channel CSV, and Markdown manifest."""
-
     output_dir.mkdir(parents=True, exist_ok=True)
     docs_dir.mkdir(parents=True, exist_ok=True)
     json_path = output_dir / f"entanglement_zne_summary_{result_tag}.json"
@@ -432,7 +430,6 @@ def write_outputs(
 
 def parse_args() -> argparse.Namespace:
     """Parse analysis command-line options."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("counts_artifact", type=Path, nargs="?", default=DEFAULT_COUNTS)
     parser.add_argument("--reference-csv", type=Path, default=DEFAULT_REFERENCE_CSV)
@@ -448,7 +445,6 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     """Analyse an approved Phase 3 ZNE raw-count artefact."""
-
     args = parse_args()
     scale_rows, channel_rows, summary = analyse_zne_counts_artifact(
         args.counts_artifact,

@@ -23,7 +23,6 @@ PREFLIGHT_GATE_SCRIPT = Path("scripts") / "run_stable_core_preflight_gate.py"
 
 def build_stable_core_release_gate_commands() -> tuple[tuple[str, ...], ...]:
     """Return commands for the stable-core release gate in deterministic order."""
-
     return (
         (sys.executable, str(CAPABILITY_GATE_SCRIPT)),
         (sys.executable, str(CONTRACT_GATE_SCRIPT)),
@@ -33,7 +32,6 @@ def build_stable_core_release_gate_commands() -> tuple[tuple[str, ...], ...]:
 
 def run_command(command: tuple[str, ...]) -> None:
     """Run one gate command and fail closed if the command exits non-zero."""
-
     print(f"[stable-core-release-gate] {' '.join(command)}", flush=True)
     completed = subprocess.run(command, cwd=REPO_ROOT, check=False)
     if completed.returncode != 0:
@@ -42,7 +40,6 @@ def run_command(command: tuple[str, ...]) -> None:
 
 def main() -> int:
     """Run stable-core release gate."""
-
     for command in build_stable_core_release_gate_commands():
         run_command(command)
     return 0

@@ -195,7 +195,6 @@ def write_markdown(path: Path, summary: dict[str, Any]) -> None:
 
 def main() -> int:
     """Run one layout-pinned IQM repeat analysis from the command line."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", type=Path)
     parser.add_argument("--ibm-input", type=Path, default=DEFAULT_IBM_INPUT)

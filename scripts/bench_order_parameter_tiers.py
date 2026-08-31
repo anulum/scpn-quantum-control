@@ -28,7 +28,6 @@ Usage
 
 Notes
 -----
-
 * Julia pays a one-off JIT boot cost on first call (~20 s). The
   benchmark explicitly warms Julia before the measurement loop so
   subsequent calls reflect steady-state performance, not boot
@@ -38,6 +37,7 @@ Notes
   figure is the per-call median-of-repeats.
 * The Rust tier delegates to ``scpn_quantum_engine.order_parameter``.
   If that wheel is missing, the Rust row is marked ``unavailable``.
+
 """
 
 from __future__ import annotations
@@ -125,7 +125,6 @@ def _cpu_info() -> dict:
 
 def main(argv: list[str] | None = None) -> int:
     """Run the order-parameter tier benchmark CLI."""
-
     args = _parse_args(argv or sys.argv[1:])
     sizes = [int(s) for s in args.sizes.split(",") if s.strip()]
 

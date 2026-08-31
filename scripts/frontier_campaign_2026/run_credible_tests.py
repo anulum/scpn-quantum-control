@@ -7,9 +7,10 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — run credible tests script
 
-"""
-Focused runner: T1, T4, T7 — tests whose observables are computed
-entirely from real QPU bitstring counts (DLAParityWitness, SyncOrderParameter).
+"""Run the QPU-bitstring credibility tests T1, T4, and T7.
+
+Compute observables entirely from real QPU bitstring counts through
+``DLAParityWitness`` and ``SyncOrderParameter``.
 These three produce results with direct scientific credibility.
 """
 

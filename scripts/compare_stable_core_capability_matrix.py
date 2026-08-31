@@ -43,7 +43,6 @@ def write_stable_core_capability_artifacts(
     markdown_path: Path,
 ) -> dict[str, str]:
     """Write deterministic stable-core capability artefacts to the target paths."""
-
     payload = stable_core_capability_payload()
     json_text = normalised_stable_core_json(payload)
     markdown_text = stable_core_capability_markdown(payload)
@@ -66,7 +65,6 @@ def compare_stable_core_capability_matrix(
     actual_markdown_path: Path | None = None,
 ) -> dict[str, Any]:
     """Compare committed stable-core capability artefacts with generated ones."""
-
     blockers: list[str] = []
 
     if (actual_json_path is None) != (actual_markdown_path is None):
@@ -148,7 +146,6 @@ def _comparison_result(
     blockers: list[str],
 ) -> bool:
     """Populate blockers and return whether the artefacts match exactly."""
-
     valid = True
     expected_json = _load_json(expected_json_path, blockers)
     actual_json = _load_json(actual_json_path, blockers)
@@ -184,19 +181,16 @@ def _comparison_result(
 
 def _normalise_markdown(text: str) -> str:
     """Normalise markdown line endings for deterministic comparisons."""
-
     return text.replace("\r\n", "\n")
 
 
 def _normalised_json(payload: dict[str, Any]) -> str:
     """Deterministic JSON canonical form for drift checks."""
-
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
 
 def _load_json(path: Path, blockers: list[str]) -> dict[str, Any] | None:
     """Load and decode JSON with blocker recording."""
-
     try:
         return json.loads(_load_text(path, blockers))
     except json.JSONDecodeError as exc:
@@ -206,7 +200,6 @@ def _load_json(path: Path, blockers: list[str]) -> dict[str, Any] | None:
 
 def _load_text(path: Path, blockers: list[str]) -> str:
     """Load file text with deterministic blocker reporting."""
-
     try:
         return path.read_text(encoding="utf-8")
     except OSError as exc:
@@ -224,7 +217,6 @@ def _sha256_path(path: Path) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point for stable core capability matrix comparison."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--expected-json", type=Path, default=DEFAULT_EXPECTED_JSON)
     parser.add_argument("--expected-markdown", type=Path, default=DEFAULT_EXPECTED_MARKDOWN)

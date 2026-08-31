@@ -114,7 +114,6 @@ def _popcount_series(summary: dict[str, Any]) -> list[DecayFit]:
 
 def main() -> int:
     """Run the offline Phase 2 GUESS-readiness calibration summary."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--write-json", action="store_true")
     args = parser.parse_args()

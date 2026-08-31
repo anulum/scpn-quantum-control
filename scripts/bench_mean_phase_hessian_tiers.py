@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Multi-tier benchmark for mean_phase_hessian
-"""Wall-time micro-benchmark for the ``mean_phase_hessian`` dispatch chain.
+r"""Wall-time micro-benchmark for the ``mean_phase_hessian`` dispatch chain.
 
 Measures every installed tier (Rust, Julia, Python floor) of the Kuramoto mean
 phase Hessian :math:`\\partial^2 \\psi / \\partial \\theta_i \\partial \\theta_j`

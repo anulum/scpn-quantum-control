@@ -72,7 +72,6 @@ def build_fim_trotter_circuit(
     ZZ evolution with coefficient -2*lambda/n. Qiskit RZZ(theta) implements
     exp(-i theta ZZ / 2), hence theta = -4*lambda*t_step/n.
     """
-
     qc = QuantumCircuit(N_QUBITS, N_QUBITS)
     _prep_bitstring(qc, initial_bitstring)
     k_matrix = _kuramoto_k_matrix(N_QUBITS)
