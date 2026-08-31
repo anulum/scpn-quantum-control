@@ -24,6 +24,7 @@ def _assert_allclose(
 
 
 def test_program_ad_linalg_eigvalsh_distinct_symmetric_gradient_matches_spectral_adjoint() -> None:
+    """Match the eigvalsh gradient to its symmetric spectral adjoint."""
     from scpn_quantum_control.differentiable import whole_program_value_and_grad
 
     values = np.array([2.0, 0.35, -0.2, 3.0], dtype=np.float64)
@@ -45,6 +46,7 @@ def test_program_ad_linalg_eigvalsh_distinct_symmetric_gradient_matches_spectral
 
 
 def test_program_ad_linalg_eigvalsh_direct_rule_returns_spectral_jvp_and_vjp() -> None:
+    """Return eigvalsh spectral JVP and VJP values from the direct rule."""
     from scpn_quantum_control.differentiable import program_ad_linalg_eigvalsh_derivative_rule
 
     rule = program_ad_linalg_eigvalsh_derivative_rule((2, 2))
@@ -67,6 +69,7 @@ def test_program_ad_linalg_eigvalsh_direct_rule_returns_spectral_jvp_and_vjp() -
 
 
 def test_program_ad_linalg_eigvalsh_fails_closed_on_nonsymmetric_or_degenerate_inputs() -> None:
+    """Reject nonsymmetric or degenerate eigvalsh inputs."""
     from scpn_quantum_control.differentiable import whole_program_value_and_grad
 
     nonsymmetric = np.array([1.0, 0.25, -0.5, 2.0], dtype=np.float64)
@@ -86,6 +89,7 @@ def test_program_ad_linalg_eigvalsh_fails_closed_on_nonsymmetric_or_degenerate_i
 
 
 def test_program_ad_linalg_eigvalsh_registry_contract_and_root_export() -> None:
+    """Expose the eigvalsh rule through the registry and package root."""
     import scpn_quantum_control as scpn
     from scpn_quantum_control.differentiable import (
         primitive_contract_for,
@@ -106,6 +110,7 @@ def test_program_ad_linalg_eigvalsh_registry_contract_and_root_export() -> None:
 
 
 def test_program_ad_linalg_eigvalsh_reverse_adjoint_replay_matches_spectral_adjoint() -> None:
+    """Match replayed eigvalsh adjoints to the spectral formula."""
     from scpn_quantum_control.differentiable import (
         program_adjoint_gradient,
         whole_program_value_and_grad,
@@ -132,6 +137,7 @@ def test_program_ad_linalg_eigvalsh_reverse_adjoint_replay_matches_spectral_adjo
 
 
 def test_program_ad_linalg_svdvals_gradient_and_adjoint_match_singular_vector_adjoint() -> None:
+    """Match SVD-value gradients and adjoints to singular-vector results."""
     from scpn_quantum_control.differentiable import (
         program_adjoint_gradient,
         whole_program_value_and_grad,
@@ -156,6 +162,7 @@ def test_program_ad_linalg_svdvals_gradient_and_adjoint_match_singular_vector_ad
 
 
 def test_program_ad_linalg_svdvals_direct_rule_returns_singular_value_jvp_and_vjp() -> None:
+    """Return singular-value JVP and VJP values from the direct rule."""
     from scpn_quantum_control.differentiable import program_ad_linalg_svdvals_derivative_rule
 
     rule = program_ad_linalg_svdvals_derivative_rule((2, 3))
@@ -178,6 +185,7 @@ def test_program_ad_linalg_svdvals_direct_rule_returns_singular_value_jvp_and_vj
 
 
 def test_program_ad_linalg_svdvals_fails_closed_on_vector_return_or_degenerate_values() -> None:
+    """Reject invalid SVD-value returns and degenerate spectra."""
     from scpn_quantum_control.differentiable import whole_program_value_and_grad
 
     values = np.array([2.0, 0.3, -0.2, 1.1], dtype=np.float64)
@@ -208,6 +216,7 @@ def test_program_ad_linalg_svdvals_fails_closed_on_vector_return_or_degenerate_v
 
 
 def test_program_ad_linalg_svdvals_registry_contract_and_root_export() -> None:
+    """Expose the SVD-value rule through the registry and package root."""
     import scpn_quantum_control as scpn
     from scpn_quantum_control.differentiable import (
         primitive_contract_for,
@@ -226,6 +235,7 @@ def test_program_ad_linalg_svdvals_registry_contract_and_root_export() -> None:
 
 
 def test_program_ad_linalg_pinv_gradient_and_adjoint_match_rank_constant_formula() -> None:
+    """Match pseudoinverse derivatives to the constant-rank formula."""
     from scpn_quantum_control.differentiable import (
         program_adjoint_gradient,
         whole_program_value_and_grad,
@@ -250,6 +260,7 @@ def test_program_ad_linalg_pinv_gradient_and_adjoint_match_rank_constant_formula
 
 
 def test_program_ad_linalg_pinv_direct_rule_returns_jvp_and_vjp() -> None:
+    """Return pseudoinverse JVP and VJP values from the direct rule."""
     from scpn_quantum_control.differentiable import program_ad_linalg_pinv_derivative_rule
 
     rule = program_ad_linalg_pinv_derivative_rule((2, 3))
@@ -281,6 +292,7 @@ def test_program_ad_linalg_pinv_direct_rule_returns_jvp_and_vjp() -> None:
 
 
 def test_program_ad_linalg_pinv_fails_closed_on_rank_loss_vector_or_hermitian_mode() -> None:
+    """Reject pseudoinverse rank loss, vectors, and Hermitian mode."""
     from scpn_quantum_control.differentiable import whole_program_value_and_grad
 
     rank_deficient = np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float64)
@@ -308,6 +320,7 @@ def test_program_ad_linalg_pinv_fails_closed_on_rank_loss_vector_or_hermitian_mo
 
 
 def test_program_ad_linalg_pinv_registry_contract_and_root_export() -> None:
+    """Expose the pseudoinverse rule through the registry and package root."""
     import scpn_quantum_control as scpn
     from scpn_quantum_control.differentiable import (
         primitive_contract_for,
@@ -343,6 +356,7 @@ def _expected_symmetric_eigh_adjoint(
 
 
 def test_program_ad_linalg_eigh_gradient_and_adjoint_include_eigenvectors() -> None:
+    """Include eigenvector terms in eigh gradients and adjoints."""
     from scpn_quantum_control.differentiable import (
         program_adjoint_gradient,
         whole_program_value_and_grad,
@@ -375,6 +389,7 @@ def test_program_ad_linalg_eigh_gradient_and_adjoint_include_eigenvectors() -> N
 
 
 def test_program_ad_linalg_eigh_direct_rule_returns_value_jvp_and_vjp() -> None:
+    """Return eigh value JVP and VJP results from the direct rule."""
     from scpn_quantum_control.differentiable import program_ad_linalg_eigh_derivative_rule
 
     rule = program_ad_linalg_eigh_derivative_rule((2, 2))
@@ -411,6 +426,7 @@ def test_program_ad_linalg_eigh_direct_rule_returns_value_jvp_and_vjp() -> None:
 
 
 def test_program_ad_linalg_eigh_fails_closed_on_nonsymmetric_or_degenerate_inputs() -> None:
+    """Reject nonsymmetric or degenerate eigh inputs."""
     from scpn_quantum_control.differentiable import whole_program_value_and_grad
 
     nonsymmetric = np.array([1.0, 0.25, -0.5, 2.0], dtype=np.float64)
@@ -439,6 +455,7 @@ def test_program_ad_linalg_eigh_fails_closed_on_nonsymmetric_or_degenerate_input
 
 
 def test_program_ad_linalg_eigh_registry_contract_and_root_export() -> None:
+    """Expose the eigh rule through the registry and package root."""
     import scpn_quantum_control as scpn
     from scpn_quantum_control.differentiable import (
         primitive_contract_for,
@@ -469,6 +486,7 @@ def _expected_real_simple_eigvals_adjoint(
 
 
 def test_program_ad_linalg_eigvals_gradient_and_adjoint_for_real_simple_spectrum() -> None:
+    """Match eigvals derivatives for a real simple spectrum."""
     from scpn_quantum_control.differentiable import (
         program_adjoint_gradient,
         whole_program_value_and_grad,
@@ -492,6 +510,7 @@ def test_program_ad_linalg_eigvals_gradient_and_adjoint_for_real_simple_spectrum
 
 
 def test_program_ad_linalg_eigvals_direct_rule_returns_value_jvp_and_vjp() -> None:
+    """Return eigvals value JVP and VJP results from the direct rule."""
     from scpn_quantum_control.differentiable import program_ad_linalg_eigvals_derivative_rule
 
     rule = program_ad_linalg_eigvals_derivative_rule((2, 2))
@@ -516,6 +535,7 @@ def test_program_ad_linalg_eigvals_direct_rule_returns_value_jvp_and_vjp() -> No
 
 
 def test_program_ad_linalg_eigvals_fails_closed_on_complex_or_degenerate_spectrum() -> None:
+    """Reject complex or degenerate eigvals spectra."""
     from scpn_quantum_control.differentiable import whole_program_value_and_grad
 
     complex_spectrum = np.array([0.0, -1.0, 1.0, 0.0], dtype=np.float64)
@@ -535,6 +555,7 @@ def test_program_ad_linalg_eigvals_fails_closed_on_complex_or_degenerate_spectru
 
 
 def test_program_ad_linalg_eigvals_registry_contract_and_root_export() -> None:
+    """Expose the eigvals rule through the registry and package root."""
     import scpn_quantum_control as scpn
     from scpn_quantum_control.differentiable import (
         primitive_contract_for,
@@ -553,6 +574,7 @@ def test_program_ad_linalg_eigvals_registry_contract_and_root_export() -> None:
 
 
 def test_program_ad_linalg_eig_matches_real_simple_eigensystem_differential() -> None:
+    """Match eig derivatives for a real simple eigensystem."""
     from scpn_quantum_control.differentiable import (
         program_adjoint_gradient,
         whole_program_value_and_grad,
@@ -606,6 +628,7 @@ def test_program_ad_linalg_eig_matches_real_simple_eigensystem_differential() ->
 
 
 def test_program_ad_linalg_eig_fails_closed_invalid_spectral_contracts() -> None:
+    """Reject invalid eig spectral contracts."""
     from scpn_quantum_control.differentiable import whole_program_value_and_grad
 
     def eig_value_sum(flat_values: Any) -> object:
@@ -633,6 +656,7 @@ def test_program_ad_linalg_eig_fails_closed_invalid_spectral_contracts() -> None
 def test_program_ad_linalg_conditioning_diagnostics_cover_norm_svd_solve_and_rank_boundary() -> (
     None
 ):
+    """Classify norm, SVD, solve, and rank-boundary conditioning."""
     import scpn_quantum_control as scpn
     from scpn_quantum_control.differentiable import (
         ProgramADLinalgConditioningDiagnostic,

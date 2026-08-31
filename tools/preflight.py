@@ -369,6 +369,9 @@ if TYPE_CHECKING:
         whole_program_frontend_contracts_quality_gates as _whole_program_frontend_contracts_quality_gates,
     )
     from tools import (
+        whole_program_trace_value_quality_gates as _whole_program_trace_value_quality_gates,
+    )
+    from tools import (
         wirtinger_implicit_product_quality_gates as _wirtinger_implicit_product_quality_gates,
     )
     from tools import (
@@ -417,6 +420,9 @@ else:
     _chimera_control_quality_gates = import_module("tools.chimera_control_quality_gates")
     _whole_program_frontend_contracts_quality_gates = import_module(
         "tools.whole_program_frontend_contracts_quality_gates"
+    )
+    _whole_program_trace_value_quality_gates = import_module(
+        "tools.whole_program_trace_value_quality_gates"
     )
     _variational_metric_quality_gates = import_module("tools.variational_metric_quality_gates")
     _varqite_quality_gates = import_module("tools.varqite_quality_gates")
@@ -868,79 +874,12 @@ PHASE_QNODE_VECTOR_COVERAGE_COHORT = [
     "tests/test_phase_qnode_vector_transforms.py",
 ]
 
-WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = [
-    "src/scpn_quantum_control/whole_program_trace_values.py",
-    "src/scpn_quantum_control/whole_program_trace_predicates.py",
-    "tests/test_whole_program_trace_predicates.py",
-    "tests/test_whole_program_trace_values.py",
-    "tests/test_whole_program_trace_value_operators.py",
-    "tests/test_whole_program_trace_value_selection.py",
-    "tests/test_whole_program_trace_value_signal.py",
-    "tests/test_whole_program_trace_value_linalg.py",
-    "tests/test_whole_program_trace_value_shapes.py",
-]
-
-WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT = [
-    "tests/test_program_ad_adjoint_generation.py",
-    "tests/test_program_ad_adjoint_generation_docstrings.py",
-    "tests/test_program_ad_alias_contracts.py",
-    "tests/test_program_ad_alias_effects.py",
-    "tests/test_program_ad_array_indexing_registry.py",
-    "tests/test_program_ad_array_indexing_quality.py",
-    "tests/test_program_ad_binary_elementwise_registry.py",
-    "tests/test_program_ad_broadcast_assembly.py",
-    "tests/test_program_ad_cumulative_primitives.py",
-    "tests/test_program_ad_cumulative_primitives_docstrings.py",
-    "tests/test_program_ad_effect_ir.py",
-    "tests/test_program_ad_elementwise_registry.py",
-    "tests/test_program_ad_fail_closed_boundaries.py",
-    "tests/test_program_ad_finite_difference_gradient_check.py",
-    "tests/test_program_ad_finite_difference_stencils.py",
-    "tests/test_program_ad_interpolation.py",
-    "tests/test_program_ad_interpolation_primitives_docstrings.py",
-    "tests/test_program_ad_like_constructors.py",
-    "tests/test_program_ad_linalg_core.py",
-    "tests/test_program_ad_linalg_direct_rules.py",
-    "tests/test_program_ad_linalg_matrix_ops.py",
-    "tests/test_program_ad_linalg_registry.py",
-    "tests/test_program_ad_linalg_spectral.py",
-    "tests/test_program_ad_product_contractions.py",
-    "tests/test_program_ad_reduction_norms.py",
-    "tests/test_program_ad_reduction_primitives_docstrings.py",
-    "tests/test_program_ad_registry.py",
-    "tests/test_program_ad_runtime_registry_dispatch.py",
-    "tests/test_program_ad_selection_direct_rules.py",
-    "tests/test_program_ad_selection_folds.py",
-    "tests/test_program_ad_selection_order_statistics.py",
-    "tests/test_program_ad_selection_primitives_docstrings.py",
-    "tests/test_program_ad_selection_registry.py",
-    "tests/test_program_ad_shape_transforms.py",
-    "tests/test_program_ad_signal_primitives.py",
-    "tests/test_program_ad_split_assembly.py",
-    "tests/test_program_ad_stack_block_assembly.py",
-    "tests/test_program_ad_static_array_assembly.py",
-    "tests/test_program_ad_stencil_primitives_docstrings.py",
-    "tests/test_program_ad_structural_finite_difference_gradient_check.py",
-    "tests/test_program_ad_trapezoid.py",
-    "tests/test_program_ad_triangular_diagonal_assembly.py",
-    "tests/test_program_ad_unary_ufuncs.py",
-    "tests/test_program_adjoint_replay.py",
-    "tests/test_whole_program_ad_contracts.py",
-    "tests/test_whole_program_ad_finite_difference_gradient_check.py",
-    "tests/test_whole_program_ad_numpy_structural.py",
-    "tests/test_whole_program_ad_runtime.py",
-    "tests/test_whole_program_frontend.py",
-    "tests/test_whole_program_frontend_contracts.py",
-    "tests/test_whole_program_trace_metadata.py",
-    "tests/test_whole_program_trace_predicates.py",
-    "tests/test_whole_program_trace_runtime.py",
-    "tests/test_whole_program_trace_value_linalg.py",
-    "tests/test_whole_program_trace_value_operators.py",
-    "tests/test_whole_program_trace_value_selection.py",
-    "tests/test_whole_program_trace_value_shapes.py",
-    "tests/test_whole_program_trace_value_signal.py",
-    "tests/test_whole_program_trace_values.py",
-]
+WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = (
+    _whole_program_trace_value_quality_gates.WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET
+)
+WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT = (
+    _whole_program_trace_value_quality_gates.WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT
+)
 
 MLIR_LEAF_COVERAGE_DATA_FILE = ".coverage.mlir-leaf-quality"
 MLIR_LEAF_COVERAGE_SOURCE = "src/scpn_quantum_control/compiler"
@@ -951,9 +890,11 @@ MLIR_LEAF_COVERAGE_INCLUDE = (
 )
 PHASE_QNODE_AFFINITY_COVERAGE_DATA_FILE = ".coverage.phase-qnode-affinity"
 PHASE_QNODE_VECTOR_COVERAGE_DATA_FILE = ".coverage.phase-qnode-vector"
-WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE = ".coverage.whole-program-trace-values"
+WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE = (
+    _whole_program_trace_value_quality_gates.WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE
+)
 WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_INCLUDE = (
-    "*/whole_program_trace_values.py,*/whole_program_trace_predicates.py"
+    _whole_program_trace_value_quality_gates.WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_INCLUDE
 )
 
 _PYTEST_BASE = [
@@ -1357,32 +1298,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     ),
     *_phase_jax_qnode_quality_gates.build_static_quality_gates(_PY),
     *_phase_torch_bridge_quality_gates.build_static_quality_gates(_PY),
-    (
-        "mypy-strict-whole-program-trace-values",
-        [
-            _PY,
-            "-m",
-            "mypy",
-            "--strict",
-            "--explicit-package-bases",
-            *WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET,
-        ],
-    ),
-    (
-        "ruff D whole-program trace-value quality ratchet",
-        [
-            _PY,
-            "-m",
-            "ruff",
-            "check",
-            "--isolated",
-            "--select",
-            "D,D413",
-            "--config",
-            'lint.pydocstyle.convention = "numpy"',
-            *WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET,
-        ],
-    ),
+    *_whole_program_trace_value_quality_gates.build_static_quality_gates(_PY),
     ("test-quality", [_PY, "tools/audit_test_quality.py"]),
     ("module-size-policy", [_PY, "tools/audit_module_size_policy.py"]),
     (
@@ -2038,66 +1954,9 @@ PHASE_QNODE_VECTOR_COVERAGE_GATES: list[tuple[str, list[str]]] = [
 PHASE_JAX_QNODE_COVERAGE_GATES = _phase_jax_qnode_quality_gates.build_coverage_gates(_PY)
 PHASE_TORCH_BRIDGE_COVERAGE_GATES = _phase_torch_bridge_quality_gates.build_coverage_gates(_PY)
 
-WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES: list[tuple[str, list[str]]] = [
-    (
-        "whole-program trace-value focused coverage",
-        [
-            _PY,
-            "-m",
-            "coverage",
-            "run",
-            f"--rcfile={devnull}",
-            f"--data-file={WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE}",
-            "--branch",
-            "-m",
-            "pytest",
-            "-q",
-            *WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT,
-        ],
-    ),
-    (
-        "whole-program trace-value exact coverage threshold",
-        [
-            _PY,
-            "-m",
-            "coverage",
-            "report",
-            f"--rcfile={devnull}",
-            f"--data-file={WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE}",
-            "--precision=2",
-            "--fail-under=100",
-            f"--include={WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_INCLUDE}",
-        ],
-    ),
-    (
-        "program AD alias-contract exact coverage threshold",
-        [
-            _PY,
-            "-m",
-            "coverage",
-            "report",
-            f"--rcfile={devnull}",
-            f"--data-file={WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE}",
-            "--precision=2",
-            "--fail-under=100",
-            "--include=*/program_ad_alias_contracts.py",
-        ],
-    ),
-    (
-        "program AD shape-transform exact coverage threshold",
-        [
-            _PY,
-            "-m",
-            "coverage",
-            "report",
-            f"--rcfile={devnull}",
-            f"--data-file={WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE}",
-            "--precision=2",
-            "--fail-under=100",
-            "--include=*/program_ad_shape_transforms.py",
-        ],
-    ),
-]
+WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES = (
+    _whole_program_trace_value_quality_gates.build_coverage_gates(_PY)
+)
 
 BANDIT_GATE: tuple[str, list[str]] = (
     "bandit",

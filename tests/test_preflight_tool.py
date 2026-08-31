@@ -329,7 +329,9 @@ def test_static_gates_include_whole_program_trace_value_quality_ratchets() -> No
     assert "--explicit-package-bases" in strict_cmd
     assert strict_cmd[-len(cohort) :] == cohort
     assert "--isolated" in docstring_cmd
-    assert "D,D413" in docstring_cmd
+    assert "--preview" in docstring_cmd
+    assert "D,D413,D417,D420" in docstring_cmd
+    assert "lint.explicit-preview-rules = true" in docstring_cmd
     assert 'lint.pydocstyle.convention = "numpy"' in docstring_cmd
     assert docstring_cmd[-len(cohort) :] == cohort
 
@@ -585,7 +587,7 @@ def test_ci_and_preflight_share_whole_program_trace_value_cohorts() -> None:
         ci_paths = [
             line.strip()
             for line in workflow[block_start:block_end].splitlines()
-            if line.strip().startswith(("src/", "tests/"))
+            if line.strip().startswith(("src/", "tests/", "tools/"))
         ]
         assert ci_paths == _preflight.WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET
 

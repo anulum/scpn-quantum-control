@@ -116,6 +116,7 @@ class ProgramADLinalgConditioningDiagnostic:
     )
 
     def __post_init__(self) -> None:
+        """Validate and normalize the linalg conditioning diagnostic."""
         if not self.primitive:
             raise ValueError("conditioning diagnostic primitive must be non-empty")
         if any(dimension < 0 for dimension in self.shape):

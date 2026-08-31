@@ -511,6 +511,7 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/whole_program_trace_values.py
           src/scpn_quantum_control/whole_program_trace_predicates.py
+          src/scpn_quantum_control/program_ad_linalg_primitives.py
           tests/test_whole_program_trace_predicates.py
           tests/test_whole_program_trace_values.py
           tests/test_whole_program_trace_value_operators.py
@@ -518,12 +519,17 @@ jobs:
           tests/test_whole_program_trace_value_signal.py
           tests/test_whole_program_trace_value_linalg.py
           tests/test_whole_program_trace_value_shapes.py
+          tests/test_program_ad_linalg_spectral.py
+          tools/whole_program_trace_value_quality_gates.py
+          tests/test_whole_program_trace_value_quality_gate.py
       - name: Ruff NumPy docstrings for whole-program trace-value quality cohort
         run: >-
-          python -m ruff check --isolated --select D,D413
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/whole_program_trace_values.py
           src/scpn_quantum_control/whole_program_trace_predicates.py
+          src/scpn_quantum_control/program_ad_linalg_primitives.py
           tests/test_whole_program_trace_predicates.py
           tests/test_whole_program_trace_values.py
           tests/test_whole_program_trace_value_operators.py
@@ -531,6 +537,9 @@ jobs:
           tests/test_whole_program_trace_value_signal.py
           tests/test_whole_program_trace_value_linalg.py
           tests/test_whole_program_trace_value_shapes.py
+          tests/test_program_ad_linalg_spectral.py
+          tools/whole_program_trace_value_quality_gates.py
+          tests/test_whole_program_trace_value_quality_gate.py
       - name: Ruff docstring ratchet for differentiable module hardening
         run: >-
           ruff check --isolated --select D,D413
