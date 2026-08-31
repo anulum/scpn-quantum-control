@@ -1347,6 +1347,11 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/analog_mapping/platforms.py
           tests/test_analog_mapping_feasibility.py
+          src/scpn_quantum_control/hardware/analog_native_readiness.py
+          tests/test_analog_native_readiness.py
+          tests/test_analog_native_readiness_branches.py
+          scripts/export_s10_analog_native_readiness.py
+          tests/test_export_s10_analog_native_readiness.py
           tools/analog_platform_catalogue_quality_gates.py
           tests/test_analog_platform_catalogue_quality_gate.py
       - name: Ruff preview NumPy docs for analog platform catalogue
@@ -1356,19 +1361,28 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/analog_mapping/platforms.py
           tests/test_analog_mapping_feasibility.py
+          src/scpn_quantum_control/hardware/analog_native_readiness.py
+          tests/test_analog_native_readiness.py
+          tests/test_analog_native_readiness_branches.py
+          scripts/export_s10_analog_native_readiness.py
+          tests/test_export_s10_analog_native_readiness.py
           tools/analog_platform_catalogue_quality_gates.py
           tests/test_analog_platform_catalogue_quality_gate.py
       - name: Run analog platform catalogue focused coverage
         run: >-
           python -m coverage run --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-analog-platform-catalogue-quality.coverage --branch
-          -m pytest -q tests/test_analog_mapping_feasibility.py
+          -m pytest -q
+          tests/test_analog_mapping_feasibility.py
+          tests/test_analog_native_readiness.py
+          tests/test_analog_native_readiness_branches.py
+          tests/test_export_s10_analog_native_readiness.py
       - name: Enforce analog platform catalogue exact coverage
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-analog-platform-catalogue-quality.coverage
           --precision=2 --fail-under=100
-          --include=*/analog_mapping/platforms.py
+          --include=*/analog_mapping/platforms.py,*/hardware/analog_native_readiness.py
 
   hardware-hal-quality:
     needs: [lint, analog-platform-catalogue-quality]

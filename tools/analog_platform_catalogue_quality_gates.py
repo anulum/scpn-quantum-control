@@ -13,24 +13,48 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 
+ANALOG_PLATFORM_CATALOGUE_SOURCE = "src/scpn_quantum_control/analog_mapping/platforms.py"
+"""Static analog platform catalogue and feasibility source."""
+ANALOG_NATIVE_READINESS_SOURCE = "src/scpn_quantum_control/hardware/analog_native_readiness.py"
+"""S10 no-submit primitive-comparison and provider-readiness source."""
+ANALOG_NATIVE_READINESS_TEST = "tests/test_analog_native_readiness.py"
+"""Public primitive-comparison, provider-row, payload, and rendering tests."""
+ANALOG_NATIVE_READINESS_BRANCH_TEST = "tests/test_analog_native_readiness_branches.py"
+"""Problem-array validation branch tests."""
+ANALOG_NATIVE_READINESS_EXPORTER = "scripts/export_s10_analog_native_readiness.py"
+"""Executable S10 JSON and Markdown exporter."""
+ANALOG_NATIVE_READINESS_EXPORT_TEST = "tests/test_export_s10_analog_native_readiness.py"
+"""Real filesystem exporter test."""
 ANALOG_PLATFORM_CATALOGUE_QUALITY_RATCHET = [
-    "src/scpn_quantum_control/analog_mapping/platforms.py",
+    ANALOG_PLATFORM_CATALOGUE_SOURCE,
     "tests/test_analog_mapping_feasibility.py",
+    ANALOG_NATIVE_READINESS_SOURCE,
+    ANALOG_NATIVE_READINESS_TEST,
+    ANALOG_NATIVE_READINESS_BRANCH_TEST,
+    ANALOG_NATIVE_READINESS_EXPORTER,
+    ANALOG_NATIVE_READINESS_EXPORT_TEST,
     "tools/analog_platform_catalogue_quality_gates.py",
     "tests/test_analog_platform_catalogue_quality_gate.py",
 ]
 """Complete strict-typing and preview-documentation owner."""
 
-ANALOG_PLATFORM_CATALOGUE_COVERAGE_COHORT = ["tests/test_analog_mapping_feasibility.py"]
-"""Real catalogue, feasibility, model-comparison, and evidence suite."""
+ANALOG_PLATFORM_CATALOGUE_COVERAGE_COHORT = [
+    "tests/test_analog_mapping_feasibility.py",
+    ANALOG_NATIVE_READINESS_TEST,
+    ANALOG_NATIVE_READINESS_BRANCH_TEST,
+    ANALOG_NATIVE_READINESS_EXPORT_TEST,
+]
+"""Real catalogue, readiness, provider-plan, and exporter suites."""
 
 ANALOG_PLATFORM_CATALOGUE_COVERAGE_DATA_FILE = (
-    "/tmp/scpn-qc-analog-platform-catalogue-quality.coverage"
+    "/tmp/scpn-qc-analog-platform-catalogue-quality.coverage"  # nosec B108
 )
 """Isolated coverage database for the analog platform catalogue."""
 
-ANALOG_PLATFORM_CATALOGUE_COVERAGE_INCLUDE = "*/analog_mapping/platforms.py"
-"""Production catalogue loader enforced at exact branch coverage."""
+ANALOG_PLATFORM_CATALOGUE_COVERAGE_INCLUDE = (
+    "*/analog_mapping/platforms.py,*/hardware/analog_native_readiness.py"
+)
+"""Production catalogue and S10 readiness sources at exact branch coverage."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -105,10 +129,16 @@ def build_coverage_gates(python: str) -> list[Gate]:
 
 
 __all__ = [
+    "ANALOG_NATIVE_READINESS_BRANCH_TEST",
+    "ANALOG_NATIVE_READINESS_EXPORTER",
+    "ANALOG_NATIVE_READINESS_EXPORT_TEST",
+    "ANALOG_NATIVE_READINESS_SOURCE",
+    "ANALOG_NATIVE_READINESS_TEST",
     "ANALOG_PLATFORM_CATALOGUE_COVERAGE_COHORT",
     "ANALOG_PLATFORM_CATALOGUE_COVERAGE_DATA_FILE",
     "ANALOG_PLATFORM_CATALOGUE_COVERAGE_INCLUDE",
     "ANALOG_PLATFORM_CATALOGUE_QUALITY_RATCHET",
+    "ANALOG_PLATFORM_CATALOGUE_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]

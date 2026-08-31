@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.hardware.analog_kuramoto import AnalogProviderTarget
 from scpn_quantum_control.hardware.analog_native_readiness import (
@@ -24,7 +25,7 @@ from scpn_quantum_control.hardware.analog_native_readiness import (
 )
 
 
-def _inputs() -> tuple[np.ndarray, np.ndarray]:
+def _inputs() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     K_nm = np.array(
         [
             [0.0, 0.50, -0.25, 0.125],
@@ -39,6 +40,7 @@ def _inputs() -> tuple[np.ndarray, np.ndarray]:
 
 
 def test_native_primitive_comparison_blocks_analog_advantage_claims() -> None:
+    """Primitive comparison remains bounded and non-promotional."""
     K_nm, omega = _inputs()
     comparison = compare_native_to_digital_primitives(
         K_nm,
@@ -57,6 +59,7 @@ def test_native_primitive_comparison_blocks_analog_advantage_claims() -> None:
 
 
 def test_provider_rows_cover_targets_without_submission() -> None:
+    """All declared provider rows remain no-submit execution plans."""
     K_nm, omega = _inputs()
     rows = provider_readiness_rows(K_nm, omega)
     by_provider = {row.provider: row for row in rows}
@@ -74,6 +77,7 @@ def test_provider_rows_cover_targets_without_submission() -> None:
 
 
 def test_analog_native_payload_records_boundary_and_falsifier() -> None:
+    """The public payload records its falsifier and blocked claims."""
     payload = analog_native_payload()
 
     assert payload["schema"] == ANALOG_NATIVE_SCHEMA
@@ -85,6 +89,7 @@ def test_analog_native_payload_records_boundary_and_falsifier() -> None:
 
 
 def test_analog_native_markdown_records_gate_and_provider_table() -> None:
+    """Rendered readiness notes expose the gate and provider table."""
     markdown = analog_native_markdown(analog_native_payload())
 
     assert "scpn-bench s10-analog-native-readiness" in markdown
@@ -93,6 +98,7 @@ def test_analog_native_markdown_records_gate_and_provider_table() -> None:
 
 
 def test_readiness_config_and_inputs_fail_closed() -> None:
+    """Invalid budgets and problem dimensions fail closed."""
     K_nm, omega = _inputs()
     with pytest.raises(ValueError, match="trotter_steps"):
         AnalogNativeReadinessConfig(trotter_steps=0)

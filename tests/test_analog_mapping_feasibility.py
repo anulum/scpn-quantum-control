@@ -11,11 +11,12 @@ from __future__ import annotations
 
 import json
 from dataclasses import replace
-from typing import Any, cast
+from typing import Any
 
 import numpy as np
 import pytest
 
+import scpn_quantum_control.analog_mapping.platforms as platforms_module
 from scpn_quantum_control.analog_mapping import (
     ANALOG_MAPPING_EVIDENCE_SCHEMA,
     ANALOG_MAPPING_SCHEMA,
@@ -37,6 +38,28 @@ from scpn_quantum_control.analog_mapping import (
     reconstruct_compiled_couplings,
     write_analog_mapping_evidence,
 )
+
+
+class _CatalogueResource:
+    def __init__(self, payload: object) -> None:
+        self._payload = payload
+
+    def joinpath(self, _name: str) -> _CatalogueResource:
+        return self
+
+    def read_text(self, *, encoding: str) -> str:
+        assert encoding == "utf-8"
+        return json.dumps(self._payload)
+
+
+def _install_catalogue_payload(monkeypatch: pytest.MonkeyPatch, payload: object) -> None:
+    resource = _CatalogueResource(payload)
+
+    def fake_files(_package: object) -> _CatalogueResource:
+        return resource
+
+    monkeypatch.setattr(platforms_module, "files", fake_files)
+    platforms_module.load_platform_profiles.cache_clear()
 
 
 def _ring_request(*, tolerance: float = 1e-4) -> MappingRequest:
@@ -76,6 +99,62 @@ def test_unknown_profile_fails_with_catalogue_context() -> None:
     """Report known catalogue identifiers for an unknown profile."""
     with pytest.raises(KeyError, match="known: scpn_circuit_qed_design_v1"):
         platform_profile("missing")
+
+
+@pytest.mark.parametrize(
+    ("payload", "match"),
+    [
+        ([], "unknown schema"),
+        ({"schema": "wrong"}, "unknown schema"),
+        (
+            {"schema": platforms_module.PLATFORM_CATALOGUE_SCHEMA, "profiles": "invalid"},
+            "must contain profiles",
+        ),
+        (
+            {"schema": platforms_module.PLATFORM_CATALOGUE_SCHEMA, "profiles": []},
+            "must contain profiles",
+        ),
+    ],
+)
+def test_catalogue_rejects_invalid_envelopes(
+    monkeypatch: pytest.MonkeyPatch, payload: object, match: str
+) -> None:
+    """The public catalogue loader rejects malformed envelopes."""
+    _install_catalogue_payload(monkeypatch, payload)
+    try:
+        with pytest.raises(ValueError, match=match):
+            platforms_module.load_platform_profiles()
+    finally:
+        platforms_module.load_platform_profiles.cache_clear()
+
+
+@pytest.mark.parametrize("row", [None, {}])
+def test_catalogue_rejects_malformed_profile_rows(
+    monkeypatch: pytest.MonkeyPatch, row: object
+) -> None:
+    """The public catalogue loader rejects non-object and incomplete rows."""
+    payload = {"schema": platforms_module.PLATFORM_CATALOGUE_SCHEMA, "profiles": [row]}
+    _install_catalogue_payload(monkeypatch, payload)
+    try:
+        with pytest.raises(ValueError, match="profile row"):
+            platforms_module.load_platform_profiles()
+    finally:
+        platforms_module.load_platform_profiles.cache_clear()
+
+
+def test_catalogue_rejects_duplicate_profile_ids(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The public catalogue loader requires stable profile identifiers."""
+    row = load_platform_profiles()[0].to_dict()
+    payload = {
+        "schema": platforms_module.PLATFORM_CATALOGUE_SCHEMA,
+        "profiles": [row, row],
+    }
+    _install_catalogue_payload(monkeypatch, payload)
+    try:
+        with pytest.raises(ValueError, match="profile ids must be unique"):
+            platforms_module.load_platform_profiles()
+    finally:
+        platforms_module.load_platform_profiles.cache_clear()
 
 
 def test_mapping_request_is_immutable_and_digest_is_deterministic() -> None:
@@ -127,7 +206,12 @@ def test_mapping_request_rejects_non_positive_scales(field: str) -> None:
     """Reject non-positive duration, scale, and tolerance values."""
     request = _ring_request()
     with pytest.raises(ValueError, match=field):
-        replace(request, **{field: 0.0})
+        if field == "duration":
+            replace(request, duration=0.0)
+        elif field == "coupling_scale":
+            replace(request, coupling_scale=0.0)
+        else:
+            replace(request, comparison_tolerance=0.0)
 
 
 def test_topology_classifier_covers_ring_complete_and_sparse() -> None:
@@ -427,4 +511,4 @@ def test_report_and_bundle_invariants_refuse_promotion() -> None:
     ):
         replace(bundle, no_provider_contact=False)
     evaluation = CalibrationEvaluation(scale=1.0, loss=0.0, gradient=0.0)
-    assert cast(dict[str, Any], evaluation.to_dict())["scale"] == pytest.approx(1.0)
+    assert evaluation.to_dict()["scale"] == pytest.approx(1.0)

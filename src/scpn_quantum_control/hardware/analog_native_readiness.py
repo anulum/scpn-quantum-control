@@ -48,6 +48,7 @@ class AnalogNativeReadinessConfig:
     coupling_scale: float = 1.0
 
     def __post_init__(self) -> None:
+        """Reject non-positive comparison budgets and step counts."""
         _require_positive(self.duration, "duration")
         _require_positive(self.fixed_tolerance, "fixed_tolerance")
         _require_positive(self.coupling_scale, "coupling_scale")
