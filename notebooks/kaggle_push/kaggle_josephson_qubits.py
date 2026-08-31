@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Josephson Junctions = Exact Kuramoto
+"""Evaluate Josephson Junctions = Exact Kuramoto."""
+
 import json
 
 import numpy as np
@@ -112,6 +114,7 @@ print(
 
 # Simulate the Josephson Kuramoto array
 def simulate_jj_array(K_scale, omega, K_nm, noise_T=0.01, dt=0.01, T=300, n_trials=15):
+    """Simulate coherence in the Josephson-junction array."""
     N = len(omega)
     n_steps = int(T / dt)
     R_trials = []

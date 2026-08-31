@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Power Grid Synchronisation = Kuramoto
+"""Evaluate Power Grid Synchronisation = Kuramoto."""
+
 import json
 
 import numpy as np
@@ -14,6 +16,7 @@ FINDINGS = []
 
 
 def add_finding(tag, description, data):
+    """Record and print one labelled investigation finding."""
     FINDINGS.append({"tag": tag, "description": description, "data": data})
     print(f"[FINDING] {tag}: {description}")
     for k, v in data.items():
@@ -21,6 +24,7 @@ def add_finding(tag, description, data):
 
 
 def order_param(theta):
+    """Compute the complex Kuramoto order parameter magnitude and phase."""
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
 
@@ -53,6 +57,7 @@ for simplex in tri.simplices:
 
 # Swing equation: d(delta)/dt = omega, M*d(omega)/dt = P - D*omega - sum K sin(delta_i - delta_j)
 def swing_rhs(t, y):
+    """Evaluate the second-order power-grid swing equations."""
     delta = y[:N]
     omega = y[N:]
     ddelta = omega
@@ -98,6 +103,7 @@ freq_instability = []
 for noise_amp in noise_levels:
 
     def swing_noisy(t, y, noise=noise_amp):
+        """Evaluate grid swing dynamics with stochastic power injection."""
         delta = y[:N]
         omega = y[N:]
         ddelta = omega
@@ -152,6 +158,7 @@ for frac in line_fractions:
                 adj_degraded[j, i] = 0
 
     def swing_cascade(t, y, _adj=adj_degraded):
+        """Evaluate swing dynamics on the degraded grid adjacency."""
         delta = y[:N]
         omega = y[N:]
         ddelta = omega
@@ -195,6 +202,7 @@ M_low = M * 0.2  # batteries have ~5x less inertia than turbines
 
 
 def swing_low_inertia(t, y):
+    """Evaluate the low-inertia grid swing dynamics."""
     delta = y[:N]
     omega = y[N:]
     ddelta = omega
@@ -219,6 +227,7 @@ for step in range(2000):
         P_disturbed[0] -= 2.0  # large generator trips
 
     def swing_h(t, y, _P=P_disturbed):
+        """Evaluate high-inertia disturbed-grid swing dynamics."""
         delta = y[:N]
         omega = y[N:]
         ddelta = omega
@@ -241,6 +250,7 @@ for step in range(2000):
         P_disturbed[0] -= 2.0
 
     def swing_l(t, y, _P=P_disturbed):
+        """Evaluate low-inertia disturbed-grid swing dynamics."""
         delta = y[:N]
         omega = y[N:]
         ddelta = omega

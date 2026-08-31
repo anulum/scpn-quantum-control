@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Aging as Progressive K Decay
+"""Evaluate Aging as Progressive K Decay."""
+
 import json
 
 import numpy as np
@@ -238,6 +240,7 @@ N_cortical = 30
 
 
 def simulate_cortical_aging(K, noise=0.1, dt=0.005, T=200, n_trials=10):
+    """Simulate age-dependent cortical coherence loss."""
     n_steps = int(T / dt)
     R_trials = []
     for _ in range(n_trials):

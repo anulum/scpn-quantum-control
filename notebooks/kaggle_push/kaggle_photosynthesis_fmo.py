@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — FMO Photosynthesis as Kuramoto System
+"""Evaluate FMO Photosynthesis as Kuramoto System."""
+
 import json
 
 import numpy as np
@@ -88,6 +90,7 @@ print(f"Structural correlation (normalised |J| vs K_nm): r={r_struct:.4f}, p={p_
 
 # Decay profiles
 def decay_profile(K, N):
+    """Compute the mean coupling profile by separation distance."""
     profile = []
     for d in range(1, N):
         vals = []
@@ -163,6 +166,7 @@ K_fmo_kuramoto = J_abs / np.max(J_abs)
 
 
 def simulate_fmo_kuramoto(K_scale, dt=0.01, T=300, n_trials=15):
+    """Simulate coherence in the FMO oscillator model."""
     n_steps = int(T / dt)
     R_trials = []
     for _ in range(n_trials):

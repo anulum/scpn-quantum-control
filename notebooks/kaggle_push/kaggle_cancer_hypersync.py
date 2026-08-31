@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Cancer + Parkinson's: Both Sides of K_c
+"""Evaluate Cancer + Parkinson's: Both Sides of K_c."""
+
 import json
 
 import numpy as np

@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Orbital Resonances as Planetary Kuramoto
+"""Evaluate Orbital Resonances as Planetary Kuramoto."""
+
 import json
 
 import numpy as np
@@ -14,6 +16,7 @@ FINDINGS = []
 
 
 def add_finding(tag, description, data):
+    """Record and print one labelled investigation finding."""
     FINDINGS.append({"tag": tag, "description": description, "data": data})
     print(f"[FINDING] {tag}: {description}")
     for k, v in data.items():
@@ -21,6 +24,7 @@ def add_finding(tag, description, data):
 
 
 def order_param(theta):
+    """Compute the complex Kuramoto order parameter magnitude and phase."""
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
 
@@ -57,6 +61,7 @@ K_eg = 0.03
 
 # Simulate libration
 def laplace_rhs(t, y):
+    """Evaluate the damped Laplace-resonance dynamics."""
     phi_ie, dphi_ie, phi_eg, dphi_eg = y
     ddphi_ie = -K_ie * np.sin(phi_ie) - 0.001 * dphi_ie  # tidal damping
     ddphi_eg = -K_eg * np.sin(phi_eg) - 0.001 * dphi_eg

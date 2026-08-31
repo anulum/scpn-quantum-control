@@ -5,9 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — QuTiP vs Qiskit Comparison (NB48)
-"""
-Notebook 48: QuTiP Lindblad vs Qiskit Unitary vs Our Lindblad
-==============================================================
+"""Compare QuTiP Lindblad, Qiskit unitary, and local Lindblad evolution.
 
 Compares three approaches to simulating the same 4-oscillator
 Kuramoto-XY system:

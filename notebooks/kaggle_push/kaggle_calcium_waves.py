@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Calcium Waves as Spatial Kuramoto
+"""Evaluate Calcium Waves as Spatial Kuramoto."""
+
 import json
 
 import numpy as np
@@ -170,6 +172,7 @@ print("=" * 70)
 # Spiral waves are phase singularities: integral of grad(theta) around
 # a closed loop = +/- 2*pi
 def count_spirals(theta):
+    """Count phase-winding defects in the spatial oscillator field."""
     count = 0
     charges = []
     for i in range(1, Nx - 1):

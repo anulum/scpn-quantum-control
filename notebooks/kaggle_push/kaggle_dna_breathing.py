@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — DNA Breathing Modes as Coupled Oscillators
+"""Evaluate DNA Breathing Modes as Coupled Oscillators."""
+
 import json
 
 import numpy as np
@@ -66,6 +68,7 @@ omega_map = {"A": 0.8, "T": 0.8, "G": 1.0, "C": 1.0}  # normalised
 
 
 def simulate_dna_kuramoto(sequence, K_stack, noise=0.05, dt=0.01, T=300, n_trials=15):
+    """Simulate sequence-dependent DNA breathing coherence."""
     N = len(sequence)
     omega = np.array([omega_map[bp] for bp in sequence])
 
@@ -170,6 +173,7 @@ K_bubble[20:37] = 0.1  # weakened coupling in bubble
 
 
 def simulate_bubble(K_array, omega, noise=0.3, dt=0.01, T=200, n_trials=10):
+    """Estimate local DNA-bubble opening from oscillator trajectories."""
     N = len(omega)
     R_local = np.zeros(N)
 

@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Kaggle JAX GPU Validation Notebook
+"""Evaluate Kaggle JAX GPU Validation Notebook."""
+
 import json
 import subprocess
 import sys
@@ -94,7 +96,7 @@ def entanglement_scan_jax(K_topo, omega, k_range):
 # Cell 4: Reference (numpy, no JAX)
 # ============================================================
 def entanglement_scan_numpy(K_topo, omega, k_range):
-    """Reference scan using pure numpy."""
+    """Compute the reference scan using NumPy."""
     n = len(omega)
     n_A = n // 2 or 1
     results = {"entropy": [], "schmidt_gap": [], "spectral_gap": []}
@@ -166,6 +168,7 @@ OMEGA_N_16 = np.array(
 
 
 def build_knm(L, K_base=0.45, K_alpha=0.3):
+    """Build the exponentially decaying coupling matrix."""
     idx = np.arange(L)
     K = K_base * np.exp(-K_alpha * np.abs(idx[:, None] - idx[None, :]))
     anchors = {(0, 1): 0.302, (1, 2): 0.201, (2, 3): 0.252, (3, 4): 0.154}

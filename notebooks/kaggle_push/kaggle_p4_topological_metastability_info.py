@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Paper 4 Test: Topological Phases + Metastability + Phi
+"""Evaluate Paper 4 Test: Topological Phases + Metastability + Phi."""
+
 import json
 
 import numpy as np
@@ -13,6 +15,7 @@ FINDINGS = []
 
 
 def add_finding(tag, description, data):
+    """Record and print one labelled investigation finding."""
     FINDINGS.append({"tag": tag, "description": description, "data": data})
     print(f"[FINDING] {tag}: {description}")
     for k, v in data.items():
@@ -20,6 +23,7 @@ def add_finding(tag, description, data):
 
 
 def order_param(theta):
+    """Compute the complex Kuramoto order parameter magnitude and phase."""
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
 
@@ -66,6 +70,7 @@ for step in range(10000):
 
 # Compute winding number around loops
 def winding_number(phases, cx, cy, radius, Nx):
+    """Compute the phase winding around a sampled closed ring."""
     ring = []
     for angle_step in range(16):
         a = 2 * np.pi * angle_step / 16

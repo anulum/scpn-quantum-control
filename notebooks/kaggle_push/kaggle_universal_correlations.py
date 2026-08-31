@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Universal Correlation Hunt
+"""Evaluate Universal Correlation Hunt."""
+
 import json
 import subprocess
 import sys
@@ -36,6 +38,7 @@ OMEGA_N_16 = np.array(
 
 
 def build_knm(L, K_base=0.45, K_alpha=0.3):
+    """Build the exponentially decaying coupling matrix."""
     idx = np.arange(L)
     K = K_base * np.exp(-K_alpha * np.abs(idx[:, None] - idx[None, :]))
     anchors = {(0, 1): 0.302, (1, 2): 0.201, (2, 3): 0.252, (3, 4): 0.154}
@@ -135,6 +138,7 @@ print("=" * 70)
 
 
 def build_hamiltonian(K, omega, n):
+    """Build the dense Kuramoto-XY Hamiltonian."""
     dim = 1 << n
     h = np.zeros((dim, dim))
     for idx in range(dim):

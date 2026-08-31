@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Fractal Self-Similarity of K_nm Across Scales
+"""Evaluate Fractal Self-Similarity of K_nm Across Scales."""
+
 import json
 
 import numpy as np
@@ -36,6 +38,7 @@ print("=" * 70)
 
 # Coarse-grain 8x8 -> 4x4 by averaging 2x2 blocks
 def coarse_grain(K, block_size=2):
+    """Coarse-grain the coupling matrix into block averages."""
     N = K.shape[0]
     N_new = N // block_size
     K_cg = np.zeros((N_new, N_new))
@@ -64,6 +67,7 @@ for row in K_2:
 
 # Self-similarity test: normalise each matrix and compare structure
 def normalise_offdiag(K):
+    """Normalise the off-diagonal coupling entries."""
     mask = ~np.eye(K.shape[0], dtype=bool)
     vals = K[mask]
     if np.max(vals) > 0:
@@ -81,6 +85,7 @@ K2_norm = normalise_offdiag(K_2)
 
 # Extract decay profiles (coupling vs distance)
 def decay_profile(K):
+    """Compute the mean coupling profile by separation distance."""
     N = K.shape[0]
     max_d = N - 1
     profile = []
@@ -270,6 +275,7 @@ print("=" * 70)
 # Build known fractal coupling matrices for comparison
 # Hierarchical: K_ij = 2^(-level(i,j))
 def hierarchical_K(N):
+    """Build the hierarchical coupling matrix."""
     K = np.zeros((N, N))
     for i in range(N):
         for j in range(N):
@@ -283,6 +289,7 @@ def hierarchical_K(N):
 
 # Small-world: exponential decay + random long-range
 def small_world_K(N, alpha=0.3, p_long=0.1, seed=42):
+    """Build a seeded distance-decay small-world coupling matrix."""
     rng = np.random.RandomState(seed)
     K = np.zeros((N, N))
     for i in range(N):

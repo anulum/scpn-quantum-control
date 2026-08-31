@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Protein Folding as Kuramoto Synchronisation
+"""Evaluate Protein Folding as Kuramoto Synchronisation."""
+
 import json
 import math
 import subprocess

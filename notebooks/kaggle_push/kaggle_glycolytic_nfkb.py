@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Metabolic + Immune Oscillations as Kuramoto
+"""Evaluate Metabolic + Immune Oscillations as Kuramoto."""
+
 import json
 
 import numpy as np
@@ -57,6 +59,7 @@ N_glyc = 30
 
 
 def simulate_glycolytic(K, freq_spread, dt=0.01, T=300, n_trials=10):
+    """Simulate glycolytic oscillator coherence."""
     n_steps = int(T / dt)
     R_trials = []
     for _ in range(n_trials):

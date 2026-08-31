@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — SCPN as Reservoir Computer
+"""Evaluate SCPN as Reservoir Computer."""
+
 import json
 
 import numpy as np

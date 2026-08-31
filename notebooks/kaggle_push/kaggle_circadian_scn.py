@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Circadian SCN Master Clock as Kuramoto Network
+"""Evaluate Circadian SCN Master Clock as Kuramoto Network."""
+
 import json
 
 import numpy as np
@@ -13,6 +15,7 @@ FINDINGS = []
 
 
 def add_finding(tag, description, data):
+    """Record and print one labelled investigation finding."""
     FINDINGS.append({"tag": tag, "description": description, "data": data})
     print(f"[FINDING] {tag}: {description}")
     for k, v in data.items():
@@ -20,6 +23,7 @@ def add_finding(tag, description, data):
 
 
 def order_param(theta):
+    """Compute the complex Kuramoto order parameter magnitude and phase."""
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
 
@@ -42,8 +46,11 @@ theta0 = np.random.uniform(0, 2 * np.pi, N)
 
 # Light forcing: 12h light / 12h dark
 def light_phase_response(theta, t_hours):
-    """Phase response to light: advances in early subjective night,
-    delays in late subjective night. Type 1 PRC."""
+    """Compute the phase response to light.
+
+    Advance in early subjective night and delay in late subjective night;
+    this is a type-I PRC.
+    """
     hour_of_day = t_hours % 24
     if 6 <= hour_of_day <= 18:  # light on
         return 0.02 * np.sin(theta)  # advance/delay depending on phase

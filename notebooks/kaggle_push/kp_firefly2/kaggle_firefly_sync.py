@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Firefly Synchronisation: The Original Kuramoto
+"""Evaluate Firefly Synchronisation: The Original Kuramoto."""
+
 import json
 
 import numpy as np
@@ -14,6 +16,7 @@ FINDINGS = []
 
 
 def add_finding(tag, description, data):
+    """Record and print one labelled investigation finding."""
     FINDINGS.append({"tag": tag, "description": description, "data": data})
     print(f"[FINDING] {tag}: {description}")
     for k, v in data.items():
@@ -38,12 +41,14 @@ theta0 = np.random.uniform(0, 2 * np.pi, N)
 
 # Kuramoto order parameter
 def order_param(theta):
+    """Compute the complex Kuramoto order parameter magnitude and phase."""
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
 
 
 # Classic sine coupling
 def kuramoto_rhs(t, theta, K):
+    """Evaluate the Kuramoto phase derivatives."""
     dtheta = np.copy(omegas)
     sin_diff = np.sin(theta[:, None] - theta[None, :])
     dtheta += (K / N) * np.sum(-sin_diff, axis=1)  # note sign convention
@@ -111,6 +116,7 @@ epsilon = 0.15  # phase advance per flash received
 
 # Phase Response Curve: Type I (advance only near threshold)
 def prc_type1(phase):
+    """Evaluate the non-negative type-I phase-response curve."""
     return np.maximum(0, np.sin(phase))  # advance only in rising phase
 
 
@@ -178,6 +184,7 @@ theta3 = np.random.uniform(0, 2 * np.pi, N3)
 
 
 def kuramoto_spatial(t, theta, K_mat):
+    """Evaluate spatially weighted Kuramoto phase derivatives."""
     dtheta = np.copy(omegas3)
     for i in range(len(theta)):
         dtheta[i] += np.sum(K_mat[i] * np.sin(theta - theta[i])) / N3
@@ -268,6 +275,7 @@ for Ni in N_sizes:
     theta_i = np.random.uniform(0, 2 * np.pi, Ni)
 
     def rhs_i(t, theta, K=K_test, om=omegas_i, n=Ni):
+        """Evaluate the finite-size Kuramoto phase derivatives."""
         dth = np.copy(om)
         sin_diff = np.sin(theta[:, None] - theta[None, :])
         dth += (K / n) * np.sum(-sin_diff, axis=1)

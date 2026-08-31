@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Paper 4: Decoherence Cascade + Adaptive Plasticity
+"""Evaluate Paper 4: Decoherence Cascade + Adaptive Plasticity."""
+
 import json
 
 import numpy as np
@@ -14,6 +16,7 @@ FINDINGS = []
 
 
 def add_finding(tag, description, data):
+    """Record and print one labelled investigation finding."""
     FINDINGS.append({"tag": tag, "description": description, "data": data})
     print(f"[FINDING] {tag}: {description}")
     for k, v in data.items():
@@ -21,6 +24,7 @@ def add_finding(tag, description, data):
 
 
 def order_param(theta):
+    """Compute the complex Kuramoto order parameter magnitude and phase."""
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
 

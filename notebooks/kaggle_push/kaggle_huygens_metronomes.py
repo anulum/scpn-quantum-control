@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Huygens' Metronomes: The First Sync Observation
+"""Evaluate Huygens' Metronomes: The First Sync Observation."""
+
 import json
 
 import numpy as np
@@ -14,6 +16,7 @@ FINDINGS = []
 
 
 def add_finding(tag, description, data):
+    """Record and print one labelled investigation finding."""
     FINDINGS.append({"tag": tag, "description": description, "data": data})
     print(f"[FINDING] {tag}: {description}")
     for k, v in data.items():
@@ -21,6 +24,7 @@ def add_finding(tag, description, data):
 
 
 def order_param(theta):
+    """Compute the complex Kuramoto order parameter magnitude and phase."""
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
 
@@ -42,6 +46,7 @@ T_nat = 2 * np.pi / omega_nat
 # Full nonlinear model for 2 pendula on platform
 def huygens_2(t, y):
     # y = [theta1, theta2, dtheta1, dtheta2, X, dX]
+    """Evaluate the coupled two-pendulum support dynamics."""
     th1, th2, dth1, dth2, X, dX = y
     cos1, cos2 = np.cos(th1), np.cos(th2)
     sin1, sin2 = np.sin(th1), np.sin(th2)

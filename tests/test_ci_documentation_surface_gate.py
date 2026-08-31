@@ -31,7 +31,6 @@ def test_configured_python_documentation_scope_is_fail_closed() -> None:
     }
     assert documentation_exemptions == {
         "tests/**",
-        "notebooks/**",
         "data/**",
     }
 
@@ -65,16 +64,20 @@ def test_configured_python_documentation_scope_is_fail_closed() -> None:
         "figures/",
         "tools/",
         "scripts/",
+        "notebooks/",
         "run_hardware.py",
     ]
     assert commands["ruff check"][-len(owned_paths) :] == owned_paths
     assert commands["ruff format"][-len(owned_paths) :] == owned_paths
 
     workflow = Path(".github/workflows/ci-static-analysis.yml").read_text(encoding="utf-8")
-    assert "ruff check src/ tests/ examples/ figures/ tools/ scripts/ run_hardware.py" in workflow
     assert (
-        "ruff format --check src/ tests/ examples/ figures/ tools/ scripts/ run_hardware.py"
+        "ruff check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ run_hardware.py"
         in workflow
+    )
+    assert (
+        "ruff format --check src/ tests/ examples/ figures/ tools/ scripts/ notebooks/ "
+        "run_hardware.py" in workflow
     )
 
 

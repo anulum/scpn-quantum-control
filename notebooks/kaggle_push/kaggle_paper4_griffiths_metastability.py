@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Paper 4 Tests: Griffiths Phase + Metastability
+"""Evaluate Paper 4 Tests: Griffiths Phase + Metastability."""
+
 import json
 
 import numpy as np
@@ -333,6 +335,7 @@ print("=" * 70)
 
 
 def simulate_with_psi(K, eta_psi=0.0, phi_macro=0.0, dt=0.005, T=300, n_trials=10):
+    """Simulate coherence with the configured psi-field coupling."""
     n_steps = int(T / dt)
     R_trials = []
     for _ in range(n_trials):

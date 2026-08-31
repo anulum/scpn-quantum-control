@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Belousov-Zhabotinsky Reaction as Chemical Kuramoto
+"""Evaluate Belousov-Zhabotinsky Reaction as Chemical Kuramoto."""
+
 import json
 
 import numpy as np
@@ -14,6 +16,7 @@ FINDINGS = []
 
 
 def add_finding(tag, description, data):
+    """Record and print one labelled investigation finding."""
     FINDINGS.append({"tag": tag, "description": description, "data": data})
     print(f"[FINDING] {tag}: {description}")
     for k, v in data.items():
@@ -21,6 +24,7 @@ def add_finding(tag, description, data):
 
 
 def order_param(theta):
+    """Compute the complex Kuramoto order parameter magnitude and phase."""
     z = np.mean(np.exp(1j * theta))
     return np.abs(z), np.angle(z)
 
@@ -51,6 +55,7 @@ theta0 = np.random.uniform(0, 2 * np.pi, N)
 
 
 def bz_kuramoto(t, theta):
+    """Evaluate the reduced Belousov-Zhabotinsky phase dynamics."""
     dtheta = np.copy(omegas)
     for i in range(N):
         dtheta[i] += np.sum(K_matrix[i] * np.sin(theta - theta[i]))

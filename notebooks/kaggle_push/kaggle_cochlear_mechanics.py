@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Cochlear Hair Cells as Kuramoto Chain
+"""Evaluate Cochlear Hair Cells as Kuramoto Chain."""
+
 import json
 
 import numpy as np
@@ -71,6 +73,7 @@ print(f"Frequency gradient: {omega_cochlea[0]:.3f} (base) -> {omega_cochlea[-1]:
 def simulate_cochlea(
     K_coupling, omega, input_freq=None, input_amp=0.0, noise=0.01, dt=0.01, T=200
 ):
+    """Simulate the driven cochlear oscillator chain."""
     N = len(omega)
     n_steps = int(T / dt)
     theta = np.random.uniform(0, 2 * np.pi, N)

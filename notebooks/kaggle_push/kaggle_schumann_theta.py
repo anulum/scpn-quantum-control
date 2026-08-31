@@ -5,6 +5,8 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Schumann Resonance and EEG Theta Band
+"""Evaluate Schumann Resonance and EEG Theta Band."""
+
 import json
 
 import numpy as np
