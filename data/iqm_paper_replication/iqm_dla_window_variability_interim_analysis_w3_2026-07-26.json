@@ -20,7 +20,7 @@
   "s1_per_depth_heterogeneity_holm": {
     "4": {
       "p_value": 0.0103318392154678,
-      "holm_adjusted_p": 0.0309955176464033,
+      "holm_adjusted_p": 0.0309955176464034,
       "rejects_homogeneity": false
     },
     "8": {
