@@ -220,7 +220,7 @@ def test_statistical_helpers_cover_degenerate_and_boundary_inputs() -> None:
         0.0184785269742919
     )
     assert analysis._portable_json_value({"values": [0.017380951513840573, True]}) == {
-        "values": [0.017380951513841, True]
+        "values": [0.0173809515138, True]
     }
     middle = analysis._clopper_pearson(3, 6)
     assert 0.0 < middle[0] < middle[1] < 1.0

@@ -5,12 +5,12 @@
   "analysable": false,
   "primary_d10_heterogeneity": {
     "windows": 4,
-    "weighted_mean_difference": 0.017318692325834,
-    "cochran_q": 14.261521854189,
+    "weighted_mean_difference": 0.0173186923258,
+    "cochran_q": 14.2615218542,
     "degrees_of_freedom": 3,
-    "p_value": 0.0025699488388519,
-    "tau_dl": 0.021276771182328,
-    "mean_shot_noise_se": 0.010981624464914,
+    "p_value": 0.00256994883885,
+    "tau_dl": 0.0212767711823,
+    "mean_shot_noise_se": 0.0109816244649,
     "alpha": 0.05,
     "analysable": false,
     "achieved_windows": 4,
@@ -19,37 +19,37 @@
   },
   "s1_per_depth_heterogeneity_holm": {
     "4": {
-      "p_value": 0.017380951513841,
-      "holm_adjusted_p": 0.052142854541523,
+      "p_value": 0.0173809515138,
+      "holm_adjusted_p": 0.0521428545414,
       "rejects_homogeneity": false
     },
     "8": {
-      "p_value": 0.07906949010074,
-      "holm_adjusted_p": 0.15813898020148,
+      "p_value": 0.0790694901007,
+      "holm_adjusted_p": 0.158138980201,
       "rejects_homogeneity": false
     },
     "12": {
-      "p_value": 0.26551050559581,
-      "holm_adjusted_p": 0.26551050559581,
+      "p_value": 0.265510505596,
+      "holm_adjusted_p": 0.265510505596,
       "rejects_homogeneity": false
     }
   },
   "s2_tau_profile": {
     "4": {
-      "tau_dl": 0.016227727757591,
-      "mean_shot_noise_se": 0.010515176431144
+      "tau_dl": 0.0162277277576,
+      "mean_shot_noise_se": 0.0105151764311
     },
     "8": {
-      "tau_dl": 0.012272944126599,
-      "mean_shot_noise_se": 0.010926083474092
+      "tau_dl": 0.0122729441266,
+      "mean_shot_noise_se": 0.0109260834741
     },
     "10": {
-      "tau_dl": 0.021276771182328,
-      "mean_shot_noise_se": 0.010981624464914
+      "tau_dl": 0.0212767711823,
+      "mean_shot_noise_se": 0.0109816244649
     },
     "12": {
-      "tau_dl": 0.0062385548851301,
-      "mean_shot_noise_se": 0.011012326656472
+      "tau_dl": 0.00623855488513,
+      "mean_shot_noise_se": 0.0110123266565
     }
   },
   "s3_d4_sign_stability": {
@@ -84,28 +84,28 @@
           "leak_even": 0.367431640625,
           "leak_odd": 0.379150390625,
           "difference_even_minus_odd": -0.01171875,
-          "shot_noise_se": 0.010687100253015,
+          "shot_noise_se": 0.010687100253,
           "shots_per_arm": 4096
         },
         "8": {
           "leak_even": 0.43359375,
           "leak_odd": 0.452392578125,
           "difference_even_minus_odd": -0.018798828125,
-          "shot_noise_se": 0.010974532656436,
+          "shot_noise_se": 0.0109745326564,
           "shots_per_arm": 4096
         },
         "10": {
           "leak_even": 0.45556640625,
           "leak_odd": 0.461669921875,
           "difference_even_minus_odd": -0.006103515625,
-          "shot_noise_se": 0.011010431631027,
+          "shot_noise_se": 0.011010431631,
           "shots_per_arm": 4096
         },
         "12": {
           "leak_even": 0.464111328125,
           "leak_odd": 0.467041015625,
           "difference_even_minus_odd": -0.0029296875,
-          "shot_noise_se": 0.011022279778194,
+          "shot_noise_se": 0.0110222797782,
           "shots_per_arm": 4096
         }
       }
@@ -128,28 +128,28 @@
           "leak_even": 0.349365234375,
           "leak_odd": 0.320556640625,
           "difference_even_minus_odd": 0.02880859375,
-          "shot_noise_se": 0.010424454424064,
+          "shot_noise_se": 0.0104244544241,
           "shots_per_arm": 4096
         },
         "8": {
           "leak_even": 0.425537109375,
           "leak_odd": 0.41748046875,
           "difference_even_minus_odd": 0.008056640625,
-          "shot_noise_se": 0.01091119386605,
+          "shot_noise_se": 0.0109111938661,
           "shots_per_arm": 4096
         },
         "10": {
           "leak_even": 0.449951171875,
           "leak_odd": 0.446044921875,
           "difference_even_minus_odd": 0.00390625,
-          "shot_noise_se": 0.010988541221239,
+          "shot_noise_se": 0.0109885412212,
           "shots_per_arm": 4096
         },
         "12": {
           "leak_even": 0.447021484375,
           "leak_odd": 0.458251953125,
           "difference_even_minus_odd": -0.01123046875,
-          "shot_noise_se": 0.01099816188327,
+          "shot_noise_se": 0.0109981618833,
           "shots_per_arm": 4096
         }
       }
@@ -172,28 +172,28 @@
           "leak_even": 0.3466796875,
           "leak_odd": 0.320556640625,
           "difference_even_minus_odd": 0.026123046875,
-          "shot_noise_se": 0.010414891336943,
+          "shot_noise_se": 0.0104148913369,
           "shots_per_arm": 4096
         },
         "8": {
           "leak_even": 0.421875,
           "leak_odd": 0.42138671875,
           "difference_even_minus_odd": 0.00048828125,
-          "shot_noise_se": 0.010911984036007,
+          "shot_noise_se": 0.010911984036,
           "shots_per_arm": 4096
         },
         "10": {
           "leak_even": 0.445068359375,
           "leak_odd": 0.422119140625,
           "difference_even_minus_odd": 0.02294921875,
-          "shot_noise_se": 0.010947730556878,
+          "shot_noise_se": 0.0109477305569,
           "shots_per_arm": 4096
         },
         "12": {
           "leak_even": 0.474853515625,
           "leak_odd": 0.45703125,
           "difference_even_minus_odd": 0.017822265625,
-          "shot_noise_se": 0.011021123858538,
+          "shot_noise_se": 0.0110211238585,
           "shots_per_arm": 4096
         }
       }
@@ -216,28 +216,28 @@
           "leak_even": 0.3515625,
           "leak_odd": 0.348876953125,
           "difference_even_minus_odd": 0.002685546875,
-          "shot_noise_se": 0.01054112265929,
+          "shot_noise_se": 0.0105411226593,
           "shots_per_arm": 4096
         },
         "8": {
           "leak_even": 0.43115234375,
           "leak_odd": 0.41064453125,
           "difference_even_minus_odd": 0.0205078125,
-          "shot_noise_se": 0.010907051372257,
+          "shot_noise_se": 0.0109070513723,
           "shots_per_arm": 4096
         },
         "10": {
           "leak_even": 0.47412109375,
           "leak_odd": 0.42578125,
           "difference_even_minus_odd": 0.04833984375,
-          "shot_noise_se": 0.010980071829581,
+          "shot_noise_se": 0.0109800718296,
           "shots_per_arm": 4096
         },
         "12": {
           "leak_even": 0.461181640625,
           "leak_odd": 0.453369140625,
           "difference_even_minus_odd": 0.0078125,
-          "shot_noise_se": 0.011007795288416,
+          "shot_noise_se": 0.0110077952884,
           "shots_per_arm": 4096
         }
       }

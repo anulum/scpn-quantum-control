@@ -5,12 +5,12 @@
   "analysable": false,
   "primary_d10_heterogeneity": {
     "windows": 2,
-    "weighted_mean_difference": -0.0010886724540812,
-    "cochran_q": 0.41406886470201,
+    "weighted_mean_difference": -0.00108867245408,
+    "cochran_q": 0.414068864702,
     "degrees_of_freedom": 1,
-    "p_value": 0.51991150151222,
+    "p_value": 0.519911501512,
     "tau_dl": 0.0,
-    "mean_shot_noise_se": 0.010999470089355,
+    "mean_shot_noise_se": 0.0109994700894,
     "alpha": 0.05,
     "analysable": false,
     "achieved_windows": 2,
@@ -19,37 +19,37 @@
   },
   "s1_per_depth_heterogeneity_holm": {
     "4": {
-      "p_value": 0.0066351517762762,
-      "holm_adjusted_p": 0.019905455328829,
+      "p_value": 0.00663515177628,
+      "holm_adjusted_p": 0.0199054553288,
       "rejects_homogeneity": false
     },
     "8": {
-      "p_value": 0.082680338527549,
-      "holm_adjusted_p": 0.1653606770551,
+      "p_value": 0.0826803385275,
+      "holm_adjusted_p": 0.165360677055,
       "rejects_homogeneity": false
     },
     "12": {
-      "p_value": 0.59396520995121,
-      "holm_adjusted_p": 0.59396520995121,
+      "p_value": 0.593965209951,
+      "holm_adjusted_p": 0.593965209951,
       "rejects_homogeneity": false
     }
   },
   "s2_tau_profile": {
     "4": {
-      "tau_dl": 0.026641905239428,
-      "mean_shot_noise_se": 0.010553326905407
+      "tau_dl": 0.0266419052394,
+      "mean_shot_noise_se": 0.0105533269054
     },
     "8": {
-      "tau_dl": 0.015519692058358,
-      "mean_shot_noise_se": 0.010942725781819
+      "tau_dl": 0.0155196920584,
+      "mean_shot_noise_se": 0.0109427257818
     },
     "10": {
       "tau_dl": 0.0,
-      "mean_shot_noise_se": 0.010999470089355
+      "mean_shot_noise_se": 0.0109994700894
     },
     "12": {
       "tau_dl": 0.0,
-      "mean_shot_noise_se": 0.011010201019398
+      "mean_shot_noise_se": 0.0110102010194
     }
   },
   "s3_d4_sign_stability": {
@@ -84,28 +84,28 @@
           "leak_even": 0.367431640625,
           "leak_odd": 0.379150390625,
           "difference_even_minus_odd": -0.01171875,
-          "shot_noise_se": 0.010687100253015,
+          "shot_noise_se": 0.010687100253,
           "shots_per_arm": 4096
         },
         "8": {
           "leak_even": 0.43359375,
           "leak_odd": 0.452392578125,
           "difference_even_minus_odd": -0.018798828125,
-          "shot_noise_se": 0.010974532656436,
+          "shot_noise_se": 0.0109745326564,
           "shots_per_arm": 4096
         },
         "10": {
           "leak_even": 0.45556640625,
           "leak_odd": 0.461669921875,
           "difference_even_minus_odd": -0.006103515625,
-          "shot_noise_se": 0.011010431631027,
+          "shot_noise_se": 0.011010431631,
           "shots_per_arm": 4096
         },
         "12": {
           "leak_even": 0.464111328125,
           "leak_odd": 0.467041015625,
           "difference_even_minus_odd": -0.0029296875,
-          "shot_noise_se": 0.011022279778194,
+          "shot_noise_se": 0.0110222797782,
           "shots_per_arm": 4096
         }
       }
@@ -128,28 +128,28 @@
           "leak_even": 0.349365234375,
           "leak_odd": 0.320556640625,
           "difference_even_minus_odd": 0.02880859375,
-          "shot_noise_se": 0.010424454424064,
+          "shot_noise_se": 0.0104244544241,
           "shots_per_arm": 4096
         },
         "8": {
           "leak_even": 0.425537109375,
           "leak_odd": 0.41748046875,
           "difference_even_minus_odd": 0.008056640625,
-          "shot_noise_se": 0.01091119386605,
+          "shot_noise_se": 0.0109111938661,
           "shots_per_arm": 4096
         },
         "10": {
           "leak_even": 0.449951171875,
           "leak_odd": 0.446044921875,
           "difference_even_minus_odd": 0.00390625,
-          "shot_noise_se": 0.010988541221239,
+          "shot_noise_se": 0.0109885412212,
           "shots_per_arm": 4096
         },
         "12": {
           "leak_even": 0.447021484375,
           "leak_odd": 0.458251953125,
           "difference_even_minus_odd": -0.01123046875,
-          "shot_noise_se": 0.01099816188327,
+          "shot_noise_se": 0.0109981618833,
           "shots_per_arm": 4096
         }
       }
