@@ -101,6 +101,18 @@ def test_live_inventory_is_complete_unique_and_bounded() -> None:
     assert modularity.main() == 0
 
 
+def test_automatic_ci_passes_a_boolean_to_the_reusable_parity_workflow() -> None:
+    """Keep automatic events from forwarding an empty dispatch input."""
+    policy = inventory.load_ci_workflow_policy()
+    coordinator = (inventory.REPOSITORY_ROOT / policy["coordinator"]).read_text(encoding="utf-8")
+    parity_call = coordinator.split("  framework-parity:", maxsplit=1)[1].split(
+        "  security:", maxsplit=1
+    )[0]
+
+    assert "github.event_name == 'workflow_dispatch'" in parity_call
+    assert "&& inputs.run_isolated_benchmark" in parity_call
+
+
 def test_inventory_reconstructs_real_jobs_and_resolves_owners() -> None:
     """Expose physical category ownership through one ordered compatibility view."""
     source = inventory.read_ci_workflow_source()

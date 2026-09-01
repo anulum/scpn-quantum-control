@@ -79,7 +79,7 @@ jobs:
     needs: static-analysis
     uses: ./.github/workflows/ci-framework-parity.yml
     with:
-      run_isolated_benchmark: ${{ inputs.run_isolated_benchmark }}
+      run_isolated_benchmark: ${{ github.event_name == 'workflow_dispatch' && inputs.run_isolated_benchmark }}
   security:
     needs: static-analysis
     uses: ./.github/workflows/ci-security.yml
