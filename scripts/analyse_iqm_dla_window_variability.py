@@ -122,7 +122,8 @@ def _holm(p_values: dict[int, float]) -> dict[int, float]:
     running = 0.0
     m = len(ordered)
     for rank, (depth, p) in enumerate(ordered):
-        running = max(running, (m - rank) * p)
+        portable_p = _portable_float(p)
+        running = max(running, _portable_float((m - rank) * portable_p))
         adjusted[depth] = min(1.0, running)
     return adjusted
 

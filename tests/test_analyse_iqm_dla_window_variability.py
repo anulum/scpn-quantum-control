@@ -215,6 +215,9 @@ def test_statistical_helpers_cover_degenerate_and_boundary_inputs() -> None:
     assert analysis._portable_float(0.010131910199918112) == analysis._portable_float(
         0.010131910199918114
     )
+    assert analysis._holm({4: 0.017380951513840573}) == analysis._holm(
+        {4: 0.01738095151384056}
+    )
     assert analysis._portable_json_value({"values": [0.017380951513840573, True]}) == {
         "values": [0.0173809515138406, True]
     }
