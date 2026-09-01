@@ -266,9 +266,7 @@ def _public_safe_wording(row: _ClaimRow) -> str:
         "bounded_candidate": "Candidate statement (not promoted)",
         "hard_gap": "Hard-gap statement (not promoted)",
         "blocked": "Blocked statement (not promoted)",
-    }.get(row.promotion_status)
-    if status_label is None:
-        raise ValueError(f"unknown promotion status: {row.promotion_status!r}")
+    }[row.promotion_status]
     return f"{status_label}: {row.claim_text} Claim boundary: {row.claim_boundary}"
 
 
