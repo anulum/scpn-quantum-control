@@ -99,6 +99,54 @@ def test_phase_jax_cloud_validation_batch_schedules_gtx1060_gap(
     json.dumps(payload)
 
 
+@pytest.mark.parametrize(
+    ("accelerator_backend", "devices", "expected_status", "reason_fragment"),
+    (
+        ("cuda", ("CPU 0", "CPU 1"), "skipped_incompatible_local_hardware", "no CUDA/GPU"),
+        ("cuda", ("NVIDIA GPU 0", "NVIDIA GPU 1"), "local_accelerator_ready", ""),
+        ("rocm", ("CPU 0", "CPU 1"), "skipped_incompatible_local_hardware", "no ROCm/GPU"),
+        ("rocm", ("AMD GPU 0", "AMD GPU 1"), "local_accelerator_ready", ""),
+    ),
+)
+def test_phase_jax_cloud_validation_batch_classifies_backend_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+    accelerator_backend: str,
+    devices: tuple[str, str],
+    expected_status: str,
+    reason_fragment: str,
+) -> None:
+    """Classify present and absent accelerator metadata for both backends."""
+    fake_jax = _FakeJAX()
+    fake_jax.local_device_count_value = len(devices)
+    monkeypatch.setattr(fake_jax, "local_devices", lambda: devices)
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+
+    result = plan_jax_cloud_validation_batch(accelerator_backend=accelerator_backend)
+
+    assert result.local_execution_status == expected_status
+    assert (
+        result.local_skip_reason == reason_fragment or reason_fragment in result.local_skip_reason
+    )
+    assert result.ready_for_cloud_dispatch is bool(reason_fragment)
+    assert bool(result.blocked_local_routes) is bool(reason_fragment)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    (
+        ({"runner": "  "}, "runner must be a non-empty string"),
+        ({"accelerator_backend": "metal"}, "accelerator_backend must be 'cuda' or 'rocm'"),
+    ),
+)
+def test_phase_jax_cloud_validation_batch_rejects_invalid_plan_inputs(
+    kwargs: dict[str, str],
+    message: str,
+) -> None:
+    """Reject empty runner labels and unsupported accelerator backends."""
+    with pytest.raises(ValueError, match=message):
+        plan_jax_cloud_validation_batch(**kwargs)
+
+
 def test_phase_jax_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -> None:
     result = run_jax_phase_qnode_lowering_matrix()
 
