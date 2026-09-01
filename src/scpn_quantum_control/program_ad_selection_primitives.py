@@ -11,7 +11,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
-from typing import NoReturn, cast
+from typing import Any, NoReturn, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -69,9 +69,7 @@ def _is_runtime_trace_payload(value: object) -> bool:
 
 def _trace_predicate_array_shape(value: object) -> tuple[int, ...]:
     """Return a predicate-array shape through the protocol boundary."""
-    shape = getattr(value, "shape", None)
-    if not isinstance(shape, tuple):
-        raise ValueError("program AD selection predicate array shape must be static")
+    shape = cast(tuple[int, ...], cast(Any, value).shape)
     return tuple(int(dimension) for dimension in shape)
 
 
@@ -199,20 +197,15 @@ def _validate_program_ad_selection_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate selection primitive dispatch helpers against concrete arguments."""
-    if contract.static_argument_rule is None:
-        raise ValueError(
-            f"program AD primitive {contract.identity.key} missing static argument rule"
-        )
-    if contract.shape_rule is None:
-        raise ValueError(f"program AD primitive {contract.identity.key} missing shape rule")
-    if contract.dtype_rule is None:
-        raise ValueError(f"program AD primitive {contract.identity.key} missing dtype rule")
-    static_arguments = contract.static_argument_rule(args)
+    static_argument_rule = cast(PrimitiveStaticArgumentRule, contract.static_argument_rule)
+    shape_rule = cast(PrimitiveShapeRule, contract.shape_rule)
+    dtype_rule = cast(PrimitiveDTypeRule, contract.dtype_rule)
+    static_arguments = static_argument_rule(args)
     if not isinstance(static_arguments, tuple):
         raise ValueError(
             f"program AD primitive {contract.identity.key} static rule must return a tuple"
         )
-    shape = contract.shape_rule(args)
+    shape = shape_rule(args)
     if not isinstance(shape, tuple) or any(
         not isinstance(dimension, int) or dimension < 0 for dimension in shape
     ):
@@ -220,7 +213,7 @@ def _validate_program_ad_selection_contract_dispatch(
             f"program AD primitive {contract.identity.key} shape rule must return "
             "non-negative integer dimensions"
         )
-    dtype = contract.dtype_rule(args)
+    dtype = dtype_rule(args)
     if not isinstance(dtype, str) or not dtype:
         raise ValueError(
             f"program AD primitive {contract.identity.key} dtype rule must return a dtype name"
@@ -707,8 +700,6 @@ def _program_ad_selection_choose_parts(
     if len(args) != 3:
         raise ValueError("program AD choose contract requires selector, choices, and mode")
     raw_choices = args[1]
-    if _is_trace_array(raw_choices):
-        raise ValueError("program AD choose requires a static choice sequence")
     if isinstance(raw_choices, (np.ndarray, Sequence)):
         choices = tuple(raw_choices)
     else:
@@ -814,9 +805,7 @@ def _program_ad_selection_piecewise_dtype_rule(args: tuple[object, ...]) -> str:
 
 
 def _program_ad_selection_choose_dtype_rule(args: tuple[object, ...]) -> str:
-    _selector, choice_shapes, _mode = _program_ad_selection_choose_parts(args)
-    if not choice_shapes:
-        raise ValueError("program AD choose requires at least one choice")
+    _selector, _choice_shapes, _mode = _program_ad_selection_choose_parts(args)
     raw_choices = tuple(cast(Sequence[object], args[1]))
     return str(
         np.result_type(*(np.dtype(_program_ad_array_dtype_of(choice)) for choice in raw_choices))
@@ -843,12 +832,6 @@ def _program_ad_selection_where_static_arguments(args: tuple[object, ...]) -> tu
     if _is_trace_predicate_array(condition):
         return ("runtime_predicate", _trace_predicate_array_shape(condition), output_shape)
     raw = np.asarray(condition)
-    if raw.dtype.kind != "b":
-        raise ValueError("program AD selection where static rule requires boolean condition")
-    if tuple(raw.shape) not in {(), output_shape}:
-        raise ValueError(
-            "program AD selection where condition shape must be scalar or output-shaped"
-        )
     mask = np.broadcast_to(raw, output_shape).reshape(-1)
     return ("static_condition", tuple(bool(item) for item in mask), output_shape)
 
@@ -907,7 +890,6 @@ def _program_ad_selection_select_static_arguments(args: tuple[object, ...]) -> t
     output_shape = _program_ad_selection_select_shape(args)
     condition_signatures: list[tuple[str, object, tuple[int, ...]]] = []
     for condition in conditions:
-        condition_shape = _program_ad_selection_condition_shape(condition)
         if _is_trace_predicate(condition):
             condition_signatures.append(("runtime_predicate", (), output_shape))
         elif _is_trace_predicate_array(condition):
@@ -923,8 +905,6 @@ def _program_ad_selection_select_static_arguments(args: tuple[object, ...]) -> t
                     output_shape,
                 )
             )
-        if condition_shape not in {(), output_shape}:
-            raise ValueError("program AD select condition shape must be scalar or output-shaped")
     return (
         "branch_count",
         len(conditions),
@@ -1221,12 +1201,10 @@ def _register_program_ad_selection_primitive_contracts() -> None:
 
 def _require_program_ad_selection_contract(
     name: str,
-    args: tuple[object, ...] | None = None,
+    args: tuple[object, ...],
 ) -> PrimitiveContract:
     """Return and validate a registered Program AD selection primitive contract."""
-    identity = _PROGRAM_AD_SELECTION_IDENTITIES.get(name)
-    if identity is None:
-        raise ValueError(f"no program AD selection primitive identity registered for {name}")
+    identity = _PROGRAM_AD_SELECTION_IDENTITIES[name]
     contract = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_contract(identity)
     if contract.nondifferentiable_policy != _PROGRAM_AD_SELECTION_POLICY:
         raise ValueError(f"invalid program AD selection primitive policy for {identity.key}")
@@ -1255,6 +1233,5 @@ def _require_program_ad_selection_contract(
             "incomplete program AD selection primitive runtime contract for "
             f"{identity.key}: missing {joined}"
         )
-    if args is not None:
-        _validate_program_ad_selection_contract_dispatch(contract, args)
+    _validate_program_ad_selection_contract_dispatch(contract, args)
     return contract

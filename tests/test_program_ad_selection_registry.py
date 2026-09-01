@@ -10,11 +10,14 @@
 
 from __future__ import annotations
 
+import importlib
+from collections.abc import Callable
 from typing import Any, cast
 
 import numpy as np
 import pytest
 
+from scpn_quantum_control import differentiable as differentiable_module
 from scpn_quantum_control.differentiable import (
     program_adjoint_gradient,
     whole_program_value_and_grad,
@@ -36,13 +39,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTransformRule:
     """Return a registry transform snapshot from a primitive contract."""
-
     return PrimitiveTransformRule(
         identity=contract.identity,
         derivative_rule=contract.derivative_rule,
@@ -57,9 +58,29 @@ def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTrans
     )
 
 
+def _selection_transform(
+    contract: PrimitiveContract,
+    **overrides: object,
+) -> PrimitiveTransformRule:
+    """Return one selection transform with explicit contract-field overrides."""
+    fields: dict[str, object] = {
+        "identity": contract.identity,
+        "derivative_rule": contract.derivative_rule,
+        "batching_rule": contract.batching_rule,
+        "lowering_rule": contract.lowering_rule,
+        "lowering_metadata": contract.lowering_metadata,
+        "shape_rule": contract.shape_rule,
+        "dtype_rule": contract.dtype_rule,
+        "static_argument_rule": contract.static_argument_rule,
+        "nondifferentiable_policy": contract.nondifferentiable_policy,
+        "effect": contract.effect,
+    }
+    fields.update(overrides)
+    return PrimitiveTransformRule(**cast(Any, fields))
+
+
 def test_program_ad_selection_primitives_are_registry_policy_gated() -> None:
     """Selection primitives should expose first-class primitive registry contracts."""
-
     vector = np.array([-1.0, 0.25, 2.0], dtype=np.float64)
     condition = np.array([True, False, True])
     upper = np.array([0.5, 0.75, 2.0], dtype=np.float64)
@@ -252,7 +273,6 @@ def test_program_ad_selection_primitives_are_registry_policy_gated() -> None:
 
 def test_program_ad_selection_boundary_metadata_is_explicit() -> None:
     """Selection contracts should expose fail-closed branch and clipping boundaries."""
-
     expected_boundaries = {
         "where": "predicate_branch_boundary",
         "clip": "clipping_boundary_and_bound_order",
@@ -276,7 +296,6 @@ def test_program_ad_selection_boundary_metadata_is_explicit() -> None:
 
 def test_program_ad_selection_primitives_validate_registry_rules_at_dispatch() -> None:
     """Selection trace execution should validate registry shape, dtype, and static rules."""
-
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.selection:{name}")
         for name in ("where", "clip", "sort")
@@ -363,7 +382,6 @@ def test_program_ad_selection_primitives_validate_registry_rules_at_dispatch() -
 
 def test_program_ad_selection_fold_primitives_validate_registry_rules_at_dispatch() -> None:
     """Selection fold primitives should execute through registry validation rules."""
-
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.selection:{name}")
         for name in ("select", "piecewise", "choose", "compress", "extract")
@@ -468,7 +486,6 @@ def test_program_ad_selection_fold_primitives_validate_registry_rules_at_dispatc
 
 def test_program_ad_index_selection_primitives_validate_registry_rules_at_dispatch() -> None:
     """Index-valued selection boundaries should still validate registry metadata."""
-
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.selection:{name}")
         for name in ("argmax", "argmin", "argsort")
@@ -555,3 +572,322 @@ def test_program_ad_index_selection_primitives_validate_registry_rules_at_dispat
         "argmin": {"shape", "dtype", "static"},
         "argsort": {"shape", "dtype", "static"},
     }
+
+
+def test_program_ad_selection_contract_facets_reject_malformed_arguments() -> None:
+    """Public selection contract facets should reject malformed static signatures."""
+    vector = np.array([1.0, -2.0, 3.0], dtype=np.float64)
+    matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
+    boolean = np.array([True, False, True])
+
+    where = cast(Any, primitive_contract_for("scpn.program_ad.selection:where"))
+    for facet in (where.shape_rule, where.dtype_rule, where.static_argument_rule):
+        with pytest.raises(ValueError, match="condition, true, false"):
+            facet((boolean, vector))
+    with pytest.raises(ValueError, match="broadcasting rules"):
+        where.shape_rule((True, np.ones(2), np.ones(3)))
+    with pytest.raises(ValueError, match="condition must be boolean"):
+        where.shape_rule((np.array([1, 0, 1]), vector, vector))
+    with pytest.raises(ValueError, match="scalar or output-shaped"):
+        where.shape_rule((np.array([True]), vector, vector))
+    with pytest.raises(ValueError, match="real numeric arrays"):
+        where.dtype_rule((boolean, np.array([1.0j]), vector))
+    with pytest.raises(ValueError, match="condition must be boolean"):
+        where.static_argument_rule((np.array([1, 0, 1]), vector, vector))
+
+    clip = cast(Any, primitive_contract_for("scpn.program_ad.selection:clip"))
+    for facet in (clip.shape_rule, clip.dtype_rule, clip.static_argument_rule):
+        with pytest.raises(ValueError, match="source, lower, and upper"):
+            facet((vector, -1.0))
+    with pytest.raises(ValueError, match="bounds must broadcast"):
+        clip.shape_rule((matrix, np.ones(4), 1.0))
+    with pytest.raises(ValueError, match="bounds must broadcast"):
+        clip.shape_rule((np.ones(1), np.ones(2), 1.0))
+    with pytest.raises(ValueError, match="real numeric arrays"):
+        clip.dtype_rule((vector, -1.0, np.array(["bad"])))
+
+    sort = cast(Any, primitive_contract_for("scpn.program_ad.selection:sort"))
+    for facet in (sort.shape_rule, sort.dtype_rule, sort.static_argument_rule):
+        with pytest.raises(ValueError, match="source, axis, and kind"):
+            facet(())
+    with pytest.raises(ValueError, match="static integer"):
+        sort.shape_rule((matrix, True, "stable"))
+    with pytest.raises(ValueError, match="out of bounds"):
+        sort.shape_rule((matrix, 2, "stable"))
+    with pytest.raises(ValueError, match="NumPy sort kind"):
+        sort.static_argument_rule((matrix, 1, "invalid"))
+    assert sort.static_argument_rule((matrix, -1)) == ("axis", 1, "kind", "quicksort")
+    assert sort.static_argument_rule((matrix, None)) == ("axis", None, "kind", "quicksort")
+
+    for name in ("argmax", "argmin"):
+        contract = cast(Any, primitive_contract_for(f"scpn.program_ad.selection:{name}"))
+        with pytest.raises(ValueError, match="source and optional axis"):
+            contract.shape_rule(())
+        with pytest.raises(ValueError, match="source and optional axis"):
+            contract.static_argument_rule(())
+        with pytest.raises(ValueError, match="source operand"):
+            contract.dtype_rule(())
+        with pytest.raises(ValueError, match="out of bounds"):
+            contract.shape_rule((matrix, 3))
+        assert contract.static_argument_rule((matrix, None)) == ("axis", None)
+        assert contract.static_argument_rule((matrix, -1)) == ("axis", 1)
+
+    argsort = cast(Any, primitive_contract_for("scpn.program_ad.selection:argsort"))
+    for facet in (argsort.shape_rule, argsort.static_argument_rule):
+        with pytest.raises(ValueError, match="source, axis, and kind"):
+            facet(())
+        with pytest.raises(ValueError, match="NumPy sort kind"):
+            facet((matrix, 1, "invalid"))
+    assert argsort.static_argument_rule((matrix, None)) == (
+        "axis",
+        None,
+        "kind",
+        "quicksort",
+    )
+    assert argsort.static_argument_rule((matrix, -1, "stable")) == (
+        "axis",
+        1,
+        "kind",
+        "stable",
+    )
+
+
+def test_program_ad_selection_fold_contracts_reject_malformed_arguments() -> None:
+    """Public fold contract facets should validate sequences, shapes, masks, and modes."""
+    vector = np.array([1.0, -2.0, 3.0], dtype=np.float64)
+    boolean = np.array([True, False, True])
+
+    select = cast(Any, primitive_contract_for("scpn.program_ad.selection:select"))
+    with pytest.raises(ValueError, match="conditions, choices, and default"):
+        select.shape_rule(((boolean,), (vector,)))
+    with pytest.raises(ValueError, match="static condition sequence"):
+        select.shape_rule((boolean, (vector,), 0.0))
+    with pytest.raises(ValueError, match="static choice sequence"):
+        select.shape_rule(((boolean,), vector, 0.0))
+    with pytest.raises(ValueError, match="matching condition and choice counts"):
+        select.shape_rule(((boolean,), (vector, vector), 0.0))
+    with pytest.raises(ValueError, match="choices must broadcast"):
+        select.shape_rule(((True,), (np.ones(2),), np.ones(3)))
+    with pytest.raises(ValueError, match="condition shape"):
+        select.shape_rule(((np.array([True, False]),), (vector,), vector))
+    with pytest.raises(ValueError, match="real numeric arrays"):
+        select.dtype_rule(((boolean,), (np.array(["bad"]),), 0.0))
+
+    piecewise = cast(Any, primitive_contract_for("scpn.program_ad.selection:piecewise"))
+    with pytest.raises(ValueError, match="source, conditions, functions"):
+        piecewise.shape_rule((vector, (boolean,)))
+    with pytest.raises(ValueError, match="static condition sequence"):
+        piecewise.shape_rule((vector, boolean, (lambda item: item,)))
+    with pytest.raises(ValueError, match="static function sequence"):
+        piecewise.shape_rule((vector, (boolean,), np.array([1.0])))
+    with pytest.raises(ValueError, match="one function per condition"):
+        piecewise.shape_rule((vector, (boolean, boolean), (lambda item: item,)))
+    with pytest.raises(ValueError, match="condition shape"):
+        piecewise.shape_rule((vector, (np.array([True, False]),), (lambda item: item,)))
+    with pytest.raises(ValueError, match="real numeric arrays"):
+        piecewise.dtype_rule((np.array(["bad"]), (True,), (lambda item: item,)))
+
+    choose = cast(Any, primitive_contract_for("scpn.program_ad.selection:choose"))
+    with pytest.raises(ValueError, match="selector, choices, and mode"):
+        choose.shape_rule((np.array([0]), (vector,)))
+    with pytest.raises(ValueError, match="static choice sequence"):
+        choose.shape_rule((np.array([0]), object(), "raise"))
+    with pytest.raises(ValueError, match="at least one choice"):
+        choose.shape_rule((np.array([0]), (), "raise"))
+    with pytest.raises(ValueError, match="mode must be"):
+        choose.shape_rule((np.array([0]), (vector,), 1))
+    with pytest.raises(ValueError, match="static integer selector"):
+        choose.shape_rule((np.array([0.5]), (vector,), "raise"))
+    with pytest.raises(ValueError, match="out of bounds"):
+        choose.shape_rule((np.array([2]), (vector,), "raise"))
+    with pytest.raises(ValueError, match="mode must be"):
+        choose.shape_rule((np.array([0]), (vector,), "invalid"))
+    with pytest.raises(ValueError, match="broadcast-compatible"):
+        choose.shape_rule((np.array([0, 0]), (np.ones(3),), "raise"))
+    assert choose.static_argument_rule((np.array([-1, 1]), (vector, vector), "wrap"))[1] == (
+        1,
+        1,
+    )
+    assert choose.static_argument_rule((np.array([-1, 3]), (vector, vector), "clip"))[1] == (
+        0,
+        1,
+    )
+    with pytest.raises(ValueError, match="real numeric arrays"):
+        choose.dtype_rule((np.array([0]), (np.array(["bad"]),), "raise"))
+    trace_choices = whole_program_value_and_grad(
+        lambda values: np.sum(np.choose(np.array([0, 1, 0]), values)),
+        vector,
+    )
+    assert trace_choices.value == pytest.approx(0.0)
+    _assert_allclose(trace_choices.gradient, [2.0, 1.0, 0.0])
+
+
+def test_program_ad_selection_mask_contracts_reject_malformed_arguments() -> None:
+    """Compress and extract facets should validate static boolean mask contracts."""
+    vector = np.array([1.0, -2.0, 3.0], dtype=np.float64)
+    matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
+
+    compress = cast(Any, primitive_contract_for("scpn.program_ad.selection:compress"))
+    with pytest.raises(ValueError, match="condition, array, and axis"):
+        compress.shape_rule((np.array([True]), vector))
+    with pytest.raises(ValueError, match="one-dimensional condition"):
+        compress.shape_rule((np.array([[True]]), vector, None))
+    with pytest.raises(ValueError, match="static boolean condition"):
+        compress.shape_rule((np.array([1, 0]), vector, None))
+    with pytest.raises(ValueError, match="flattened array"):
+        compress.shape_rule((np.array([False, False, False, True]), vector, None))
+    with pytest.raises(ValueError, match="static integer axis"):
+        compress.shape_rule((np.array([True]), matrix, True))
+    with pytest.raises(ValueError, match="selected axis"):
+        compress.shape_rule((np.array([False, False, True]), matrix, 0))
+    assert compress.shape_rule((np.array([True, False]), matrix, 0)) == (1, 3)
+    assert compress.static_argument_rule((np.array([True, False]), matrix, -2))[-1] == 0
+    with pytest.raises(ValueError, match="real numeric arrays"):
+        compress.dtype_rule((np.array([True]), np.array(["bad"]), None))
+
+    extract = cast(Any, primitive_contract_for("scpn.program_ad.selection:extract"))
+    with pytest.raises(ValueError, match="condition and array"):
+        extract.shape_rule((np.array([True]),))
+    with pytest.raises(ValueError, match="condition and array"):
+        extract.static_argument_rule((np.array([True]),))
+    with pytest.raises(ValueError, match="static boolean condition"):
+        extract.shape_rule((np.array([1, 0, 1]), vector))
+    with pytest.raises(ValueError, match="condition size"):
+        extract.shape_rule((np.array([True]), vector))
+    with pytest.raises(ValueError, match="real numeric arrays"):
+        extract.dtype_rule((np.array([True]), np.array(["bad"])))
+
+
+def test_program_ad_selection_batching_contracts_cover_mapped_and_refusal_paths() -> None:
+    """Selection batching should support mapped values and reject ambiguous axes."""
+    where = cast(Any, primitive_contract_for("scpn.program_ad.selection:where").batching_rule)
+    condition = np.array([[True, False], [False, True]])
+    true_values = np.array([[1.0, 2.0], [3.0, 4.0]])
+    false_values = np.array([[-1.0, -2.0], [-3.0, -4.0]])
+    _assert_allclose(
+        where(np.where, (condition[0], true_values[0], false_values[0]), (None, None, None), 0),
+        [1.0, -2.0],
+    )
+    _assert_allclose(
+        where(np.where, (condition, true_values, false_values), (0, 0, 0), 1),
+        [[1.0, -3.0], [-2.0, 4.0]],
+    )
+    with pytest.raises(ValueError, match="three operands"):
+        where(np.where, (condition,), (0,), 0)
+    with pytest.raises(ValueError, match="one batch size"):
+        where(np.where, (condition, true_values[:1], false_values), (0, 0, 0), 0)
+
+    sort = cast(Any, primitive_contract_for("scpn.program_ad.selection:sort").batching_rule)
+    source = np.array([[3.0, 1.0], [4.0, 2.0]])
+    _assert_allclose(sort(np.sort, (source[0], -1, "stable"), (None, None, None), 0), [1, 3])
+    _assert_allclose(
+        sort(np.sort, (source, -1, "stable"), (0, None, None), 1),
+        [[1.0, 2.0], [3.0, 4.0]],
+    )
+    with pytest.raises(ValueError, match="source, axis, and kind"):
+        sort(np.sort, (source, -1), (0,), 0)
+    with pytest.raises(ValueError, match="static axis and kind"):
+        sort(np.sort, (source, -1, "stable"), (0, 0, None), 0)
+
+    for name in ("argmax", "argmin", "argsort"):
+        batching = cast(
+            Any,
+            primitive_contract_for(f"scpn.program_ad.selection:{name}").batching_rule,
+        )
+        with pytest.raises(ValueError, match="integer index selection is nondifferentiable"):
+            batching(np.argmax, (source,), (0,), 0)
+
+
+def test_program_ad_selection_runtime_validates_altered_contract_outputs() -> None:
+    """Public trace execution should reject invalid registry classifications and facets."""
+    original = primitive_contract_for("scpn.program_ad.selection:where")
+    values = np.array([-1.0, 0.5, 2.0], dtype=np.float64)
+
+    def execute() -> object:
+        return whole_program_value_and_grad(
+            lambda vector: np.sum(np.where(vector > 0.0, vector, -vector)),
+            values,
+        )
+
+    cases: list[tuple[dict[str, object], str]] = [
+        ({"nondifferentiable_policy": "invalid"}, "invalid program AD selection primitive policy"),
+        ({"effect": "stateful"}, "invalid program AD selection primitive effect"),
+        (
+            {
+                "batching_rule": None,
+                "lowering_metadata": {},
+                "shape_rule": None,
+                "dtype_rule": None,
+                "static_argument_rule": None,
+            },
+            "batching_rule, lowering_metadata, mlir_op",
+        ),
+        ({"lowering_metadata": {"nondifferentiable_boundary": "x"}}, "mlir_op"),
+        (
+            {"lowering_metadata": {"mlir_op": "x"}},
+            "nondifferentiable_boundary",
+        ),
+        (
+            {
+                "lowering_metadata": {
+                    "mlir_op": "x",
+                    "nondifferentiable_boundary": "x",
+                    "nondifferentiable_boundary_policy": "invalid",
+                }
+            },
+            "nondifferentiable_boundary_policy",
+        ),
+    ]
+    try:
+        for overrides, message in cases:
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _selection_transform(original, **overrides),
+                overwrite=True,
+            )
+            with pytest.raises(ValueError, match=message):
+                execute()
+
+        invalid_facets: list[tuple[str, Callable[[tuple[object, ...]], object], str]] = [
+            ("static_argument_rule", lambda _args: [], "static rule must return a tuple"),
+            ("shape_rule", lambda _args: [3], "shape rule must return"),
+            ("shape_rule", lambda _args: (-1,), "non-negative integer dimensions"),
+            ("dtype_rule", lambda _args: "", "dtype rule must return a dtype name"),
+            ("dtype_rule", lambda _args: 1, "dtype rule must return a dtype name"),
+        ]
+        for field, invalid_rule, message in invalid_facets:
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _selection_transform(original, **{field: invalid_rule}),
+                overwrite=True,
+            )
+            with pytest.raises(ValueError, match=message):
+                execute()
+    finally:
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(original),
+            overwrite=True,
+        )
+
+
+def test_program_ad_selection_runtime_supports_scalar_trace_predicates() -> None:
+    """Public where and select dispatch should preserve scalar runtime predicates."""
+    values = np.array([1.0, -2.0, 3.0], dtype=np.float64)
+
+    result = whole_program_value_and_grad(
+        lambda vector: np.sum(
+            np.where(vector[0] > 0.0, vector, -vector)
+            + np.select([vector[1] < 0.0], [2.0 * vector], default=-vector)
+        ),
+        values,
+    )
+
+    assert result.value == pytest.approx(6.0)
+    _assert_allclose(result.gradient, [3.0, 3.0, 3.0])
+
+
+def test_program_ad_selection_public_facade_reload_preserves_registered_contracts() -> None:
+    """Reloading the public differentiable facade should keep selection registration idempotent."""
+    reloaded = importlib.reload(differentiable_module)
+
+    assert reloaded.primitive_contract_for("scpn.program_ad.selection:where").identity == (
+        PrimitiveIdentity("scpn.program_ad.selection", "where", "1")
+    )
