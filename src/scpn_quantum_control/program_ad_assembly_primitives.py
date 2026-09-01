@@ -102,20 +102,15 @@ def _validate_program_ad_assembly_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate assembly primitive dispatch helpers against concrete arguments."""
-    if contract.static_argument_rule is None:
-        raise ValueError(
-            f"program AD primitive {contract.identity.key} missing static argument rule"
-        )
-    if contract.shape_rule is None:
-        raise ValueError(f"program AD primitive {contract.identity.key} missing shape rule")
-    if contract.dtype_rule is None:
-        raise ValueError(f"program AD primitive {contract.identity.key} missing dtype rule")
-    static_arguments = contract.static_argument_rule(args)
+    static_argument_rule = cast(PrimitiveStaticArgumentRule, contract.static_argument_rule)
+    shape_rule = cast(PrimitiveShapeRule, contract.shape_rule)
+    dtype_rule = cast(PrimitiveDTypeRule, contract.dtype_rule)
+    static_arguments = static_argument_rule(args)
     if not isinstance(static_arguments, tuple):
         raise ValueError(
             f"program AD primitive {contract.identity.key} static rule must return a tuple"
         )
-    shape = contract.shape_rule(args)
+    shape = shape_rule(args)
     if not isinstance(shape, tuple) or any(
         not isinstance(dimension, int) or dimension < 0 for dimension in shape
     ):
@@ -123,7 +118,7 @@ def _validate_program_ad_assembly_contract_dispatch(
             f"program AD primitive {contract.identity.key} shape rule must return "
             "non-negative integer dimensions"
         )
-    dtype = contract.dtype_rule(args)
+    dtype = dtype_rule(args)
     if not isinstance(dtype, str) or not dtype:
         raise ValueError(
             f"program AD primitive {contract.identity.key} dtype rule must return a dtype name"
@@ -373,8 +368,6 @@ def _program_ad_assembly_derivative_rule(name: str) -> CustomDerivativeRule:
 
 
 def _program_ad_assembly_like_reference_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if not args:
-        raise ValueError("program AD like-constructor requires a reference operand")
     source_shape = _program_ad_array_shape_of(args[0])
     if int(np.prod(source_shape)) == 0:
         raise ValueError("program AD like-constructor requires at least one element")
@@ -790,8 +783,6 @@ def _program_ad_assembly_split_selected_indices(
     *,
     axis: object,
 ) -> tuple[NDArray[np.int64], ...]:
-    if split_name not in _PROGRAM_AD_ASSEMBLY_SPLIT_NAMES:
-        raise ValueError(f"unsupported program AD assembly split primitive {split_name}")
     shape = _program_ad_array_normalise_static_shape("assembly split source", source_shape)
     axis_index = _program_ad_assembly_split_axis(axis, rank=len(shape))
     sections = _program_ad_assembly_split_sections(indices_or_sections)
@@ -902,18 +893,12 @@ def _program_ad_assembly_diagonal_static_parts(
     axis2_value = _normalise_axis("axis2", int(axis2), len(source_shape))
     if axis1_value == axis2_value:
         raise ValueError("program AD assembly diagonal requires distinct axes")
-    try:
-        output = np.diagonal(
-            np.empty(source_shape, dtype=np.float64),
-            offset=int(offset),
-            axis1=axis1_value,
-            axis2=axis2_value,
-        )
-    except (TypeError, ValueError, np.exceptions.AxisError) as exc:
-        raise ValueError(
-            "program AD assembly diagonal requires static offset and axes "
-            "compatible with source shape"
-        ) from exc
+    output = np.diagonal(
+        np.empty(source_shape, dtype=np.float64),
+        offset=int(offset),
+        axis1=axis1_value,
+        axis2=axis2_value,
+    )
     return (
         source_shape,
         int(offset),
@@ -940,19 +925,6 @@ def _program_ad_assembly_diagonal_static_arguments(
     args: tuple[object, ...],
 ) -> tuple[object, ...]:
     return _program_ad_assembly_diagonal_static_parts(args)
-
-
-def _program_ad_assembly_split_move_output_batch_axis(output: object, out_axes: int) -> object:
-    if isinstance(output, tuple):
-        return tuple(
-            _program_ad_assembly_split_move_output_batch_axis(item, out_axes) for item in output
-        )
-    if isinstance(output, list):
-        return [
-            _program_ad_assembly_split_move_output_batch_axis(item, out_axes) for item in output
-        ]
-    array = _as_real_numeric_array("program AD assembly split batched output", output)
-    return np.moveaxis(array, 0, _normalise_axis("out_axes", out_axes, array.ndim))
 
 
 def _program_ad_assembly_split_stack_outputs(outputs: Sequence[object], out_axes: int) -> object:
@@ -1587,8 +1559,7 @@ def _program_ad_assembly_stack_batching_rule(
             "program AD assembly stack batched output",
             function(operands, axis),
         )
-    if adjusted_axis is None:
-        raise ValueError("program AD assembly stack batching requires a mapped operand axis")
+    adjusted_axis_value = cast(int, adjusted_axis)
 
     outputs: list[NDArray[np.float64]] = []
     for batch_index in range(batch_size):
@@ -1602,7 +1573,7 @@ def _program_ad_assembly_stack_batching_rule(
         outputs.append(
             _as_real_numeric_array(
                 "program AD assembly stack batched output",
-                function(tuple(sliced_operands), adjusted_axis),
+                function(tuple(sliced_operands), adjusted_axis_value),
             )
         )
     stacked = np.stack(outputs, axis=0)

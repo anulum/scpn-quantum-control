@@ -309,3 +309,96 @@ def test_program_ad_assembly_split_batching_rule_maps_partition_outputs() -> Non
         batching_rule(split_fn, (batch, [1, 2], 2), (0, 0, None), 0)
     with pytest.raises(ValueError, match="cannot map the split axis"):
         batching_rule(split_fn, (batch, [1, 2], 0), (0, None, None), 0)
+
+
+def test_program_ad_assembly_split_contract_rejects_invalid_static_partitions() -> None:
+    """Split contract facets should fail closed on malformed public metadata."""
+    split_contract = primitive_contract_for("scpn.program_ad.assembly:split")
+    assert split_contract.shape_rule is not None
+    assert split_contract.dtype_rule is not None
+
+    invalid_shape_cases = (
+        ((), "source, sections, and axis"),
+        ((np.ones(2), True, 0), "static integer sections"),
+        ((np.ones(2), 0, 0), "positive static sections"),
+        ((np.ones(2), [0.5], 0), "static integer split indices"),
+        ((np.ones(2), 2, True), "static integer axis"),
+        ((np.array(1.0), 1, 0), "ranked source arrays"),
+        ((np.ones(3), 2, 0), "compatible with source shape"),
+    )
+    for args, message in invalid_shape_cases:
+        with pytest.raises(ValueError, match=message):
+            split_contract.shape_rule(cast(tuple[object, ...], args))
+
+    with pytest.raises(ValueError, match="source, sections, and axis"):
+        split_contract.dtype_rule(())
+    with pytest.raises(ValueError, match="unsupported program AD assembly split"):
+        program_ad_assembly_split_derivative_rule((2,), 2, split_name="unknown")
+    with pytest.raises(ValueError, match="ranked source arrays"):
+        program_ad_assembly_split_derivative_rule((), 1)
+
+
+def test_program_ad_assembly_split_batching_rejects_unstable_partition_shapes() -> None:
+    """Split batching should reject empty batches and changing result structures."""
+    contract = primitive_contract_for("scpn.program_ad.assembly:split")
+    assert contract.batching_rule is not None
+    batching_rule = contract.batching_rule
+
+    with pytest.raises(ValueError, match="source, sections, and axis"):
+        batching_rule(np.split, (), (), 0)
+    _assert_allclose(
+        batching_rule(
+            lambda source, sections, axis: np.split(source, sections, axis=axis),
+            (np.array([1.0, 2.0]), 2, 0),
+            (None, None, None),
+            0,
+        ),
+        [np.array([1.0]), np.array([2.0])],
+    )
+
+    with pytest.raises(ValueError, match="non-empty outputs"):
+        batching_rule(
+            lambda source, _sections, _axis: (source,),
+            (np.empty((0, 2)), 1, 1),
+            (0, None, None),
+            0,
+        )
+
+    changing_tuple_batch = np.array([[0.0, 1.0], [1.0, 2.0]])
+
+    def changing_tuple(
+        source: FloatArray, _sections: object, _axis: int
+    ) -> tuple[FloatArray, ...]:
+        if source[0] == 0.0:
+            return (source,)
+        return (source[:1], source[1:])
+
+    with pytest.raises(ValueError, match="stable output partitions"):
+        batching_rule(
+            changing_tuple,
+            (changing_tuple_batch, 1, 1),
+            (0, None, None),
+            0,
+        )
+
+    def changing_list(source: FloatArray, _sections: object, _axis: int) -> list[FloatArray]:
+        if source[0] == 0.0:
+            return [source]
+        return [source[:1], source[1:]]
+
+    with pytest.raises(ValueError, match="stable output partitions"):
+        batching_rule(
+            changing_list,
+            (changing_tuple_batch, 1, 1),
+            (0, None, None),
+            0,
+        )
+
+    stable_list = batching_rule(
+        lambda source, _sections, _axis: [source[:1], source[1:]],
+        (changing_tuple_batch, 1, 1),
+        (0, None, None),
+        0,
+    )
+    assert isinstance(stable_list, list)
+    assert len(stable_list) == 2

@@ -17,6 +17,7 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+import scpn_quantum_control.program_ad_assembly_primitives as assembly_primitives
 from scpn_quantum_control.differentiable import (
     program_adjoint_gradient,
     whole_program_value_and_grad,
@@ -138,6 +139,27 @@ def _without_static_argument_rule(contract: PrimitiveContract) -> PrimitiveTrans
         nondifferentiable_policy=contract.nondifferentiable_policy,
         effect=contract.effect,
     )
+
+
+def _assembly_transform(
+    contract: PrimitiveContract,
+    **overrides: object,
+) -> PrimitiveTransformRule:
+    """Return one assembly transform with explicit contract-field overrides."""
+    fields: dict[str, object] = {
+        "identity": contract.identity,
+        "derivative_rule": contract.derivative_rule,
+        "batching_rule": contract.batching_rule,
+        "lowering_rule": contract.lowering_rule,
+        "lowering_metadata": contract.lowering_metadata,
+        "shape_rule": contract.shape_rule,
+        "dtype_rule": contract.dtype_rule,
+        "static_argument_rule": contract.static_argument_rule,
+        "nondifferentiable_policy": contract.nondifferentiable_policy,
+        "effect": contract.effect,
+    }
+    fields.update(overrides)
+    return PrimitiveTransformRule(**cast(Any, fields))
 
 
 def test_program_ad_runtime_dispatch_requires_complete_registry_contracts() -> None:
@@ -357,6 +379,135 @@ def test_program_ad_assembly_primitives_validate_registry_rules_at_dispatch() ->
         "vsplit": {"shape", "dtype", "static"},
         "zeros_like": {"shape", "dtype", "static"},
     }
+
+
+def test_program_ad_assembly_runtime_rejects_incomplete_registry_contract() -> None:
+    """Assembly dispatch should report every missing compiler and validation facet."""
+    identity = "scpn.program_ad.assembly:concatenate"
+    original = primitive_contract_for(identity)
+    incomplete = _assembly_transform(
+        original,
+        batching_rule=None,
+        lowering_metadata={},
+        shape_rule=None,
+        dtype_rule=None,
+        static_argument_rule=None,
+    )
+    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(incomplete, overwrite=True)
+    try:
+        with pytest.raises(
+            ValueError,
+            match=(
+                "batching_rule, lowering_metadata, mlir_op, nondifferentiable_boundary, "
+                "nondifferentiable_boundary_policy, shape_rule, dtype_rule, static_argument_rule"
+            ),
+        ):
+            whole_program_value_and_grad(
+                lambda values: np.sum(np.concatenate((values[:1], values[1:]))),
+                np.array([1.0, 2.0], dtype=np.float64),
+                trace=False,
+            )
+    finally:
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(original),
+            overwrite=True,
+        )
+
+
+@pytest.mark.parametrize(
+    ("overrides", "message"),
+    (
+        ({"nondifferentiable_policy": "invalid"}, "invalid program AD assembly primitive policy"),
+        ({"effect": "stateful"}, "invalid program AD assembly primitive effect"),
+    ),
+)
+def test_program_ad_assembly_runtime_rejects_wrong_policy_or_effect(
+    overrides: dict[str, object],
+    message: str,
+) -> None:
+    """Assembly execution should reject altered policy and effect classifications."""
+    identity = "scpn.program_ad.assembly:concatenate"
+    original = primitive_contract_for(identity)
+    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+        _assembly_transform(original, **overrides),
+        overwrite=True,
+    )
+    try:
+        with pytest.raises(ValueError, match=message):
+            whole_program_value_and_grad(
+                lambda values: np.sum(np.concatenate((values[:1], values[1:]))),
+                np.array([1.0, 2.0], dtype=np.float64),
+                trace=False,
+            )
+    finally:
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(original),
+            overwrite=True,
+        )
+
+
+@pytest.mark.parametrize(
+    ("field", "replacement", "message"),
+    (
+        ("static_argument_rule", lambda _args: ["not", "a", "tuple"], "must return a tuple"),
+        ("shape_rule", lambda _args: (-1,), "non-negative integer dimensions"),
+        ("dtype_rule", lambda _args: "", "must return a dtype name"),
+    ),
+)
+def test_program_ad_assembly_runtime_validates_contract_outputs(
+    field: str,
+    replacement: Callable[[tuple[object, ...]], object],
+    message: str,
+) -> None:
+    """Assembly dispatch should validate public contract callable result types."""
+    identity = "scpn.program_ad.assembly:concatenate"
+    original = primitive_contract_for(identity)
+    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+        _assembly_transform(original, **{field: replacement}),
+        overwrite=True,
+    )
+    try:
+        with pytest.raises(ValueError, match=message):
+            whole_program_value_and_grad(
+                lambda values: np.sum(np.concatenate((values[:1], values[1:]))),
+                np.array([1.0, 2.0], dtype=np.float64),
+                trace=False,
+            )
+    finally:
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(original),
+            overwrite=True,
+        )
+
+
+def test_program_ad_assembly_trace_contract_rejects_direct_execution() -> None:
+    """Registry trace contracts should not masquerade as flat direct rules."""
+    contract = primitive_contract_for("scpn.program_ad.assembly:concatenate")
+    values = np.array([1.0, 2.0], dtype=np.float64)
+
+    with pytest.raises(ValueError, match="operator-intercepted trace dispatch"):
+        contract.derivative_rule.value_fn(values)
+    assert contract.derivative_rule.jvp_rule is not None
+    with pytest.raises(ValueError, match="operator-intercepted trace dispatch"):
+        contract.derivative_rule.jvp_rule(values, values)
+
+
+def test_program_ad_assembly_private_registry_guards_remain_fail_closed() -> None:
+    """Internal registration entry points should reject unknown names and be idempotent."""
+    with pytest.raises(ValueError, match="unsupported program AD assembly primitive"):
+        assembly_primitives._program_ad_assembly_derivative_rule("unknown")
+    with pytest.raises(ValueError, match="unsupported program AD assembly primitive"):
+        assembly_primitives._program_ad_assembly_lowering_metadata("unknown")
+    with pytest.raises(ValueError, match="unsupported program AD assembly triangular primitive"):
+        assembly_primitives._program_ad_assembly_triangular_batching_rule_for("unknown")
+    with pytest.raises(ValueError, match="no program AD assembly primitive identity"):
+        assembly_primitives._require_program_ad_assembly_contract("unknown")
+
+    assert (
+        assembly_primitives._require_program_ad_assembly_contract("concatenate").identity.name
+        == "concatenate"
+    )
+    assembly_primitives._register_program_ad_assembly_primitive_contracts()
 
 
 def test_program_ad_reduction_and_cumulative_primitives_validate_registry_rules_at_dispatch() -> (

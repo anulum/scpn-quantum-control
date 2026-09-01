@@ -350,3 +350,75 @@ def test_program_ad_broadcast_arrays_rejects_invalid_contracts() -> None:
             ),
             np.arange(1.0, 7.0, dtype=np.float64),
         )
+
+
+def test_program_ad_broadcast_contract_rules_reject_malformed_public_arguments() -> None:
+    """Broadcast contract facets should reject missing and incompatible arguments."""
+    broadcast_to = primitive_contract_for("scpn.program_ad.assembly:broadcast_to")
+    broadcast_arrays = primitive_contract_for("scpn.program_ad.assembly:broadcast_arrays")
+    assert broadcast_to.shape_rule is not None
+    assert broadcast_to.dtype_rule is not None
+    assert broadcast_arrays.shape_rule is not None
+    assert broadcast_arrays.dtype_rule is not None
+
+    with pytest.raises(ValueError, match="requires source and output shape"):
+        broadcast_to.shape_rule(())
+    with pytest.raises(ValueError, match="requires source and output shape"):
+        broadcast_to.dtype_rule(())
+    with pytest.raises(ValueError, match="requires at least one operand"):
+        broadcast_arrays.shape_rule(())
+    with pytest.raises(ValueError, match="requires at least one operand"):
+        broadcast_arrays.dtype_rule(())
+    with pytest.raises(ValueError, match="compatible with broadcasting rules"):
+        broadcast_arrays.shape_rule(
+            (
+                np.ones((2,), dtype=np.float64),
+                np.ones((3,), dtype=np.float64),
+            )
+        )
+
+
+def test_program_ad_broadcast_batching_contract_covers_static_and_output_boundaries() -> None:
+    """Broadcast batching should validate arity and preserve unbatched public calls."""
+    broadcast_to = primitive_contract_for("scpn.program_ad.assembly:broadcast_to")
+    broadcast_arrays = primitive_contract_for("scpn.program_ad.assembly:broadcast_arrays")
+    assert broadcast_to.batching_rule is not None
+    assert broadcast_arrays.batching_rule is not None
+
+    with pytest.raises(ValueError, match="requires source and output shape"):
+        broadcast_to.batching_rule(np.broadcast_to, (), (), 0)
+    _assert_allclose(
+        broadcast_to.batching_rule(
+            np.broadcast_to,
+            (np.array([1.0, -2.0]), (2, 2)),
+            (None, None),
+            0,
+        ),
+        np.array([[1.0, -2.0], [1.0, -2.0]]),
+    )
+
+    with pytest.raises(ValueError, match="requires operands"):
+        broadcast_arrays.batching_rule(np.broadcast_arrays, (), (), 0)
+    with pytest.raises(ValueError, match="one axis per operand"):
+        broadcast_arrays.batching_rule(
+            np.broadcast_arrays,
+            (np.array([1.0]),),
+            (),
+            0,
+        )
+    unbatched = broadcast_arrays.batching_rule(
+        np.broadcast_arrays,
+        (np.array([[1.0], [-2.0]]), np.array([0.5, 1.5])),
+        (None, None),
+        0,
+    )
+    assert isinstance(unbatched, tuple)
+    assert len(unbatched) == 2
+
+    with pytest.raises(ValueError, match="tuple/list outputs"):
+        broadcast_arrays.batching_rule(
+            lambda *_args: np.array([1.0]),
+            (np.ones((2, 1)), np.ones((2, 1))),
+            (0, 0),
+            0,
+        )

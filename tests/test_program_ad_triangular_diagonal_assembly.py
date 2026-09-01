@@ -535,3 +535,118 @@ def test_program_ad_assembly_triangular_and_diagonal_batching_rules_map_outer_ax
             (1, None, None, None),
             0,
         )
+
+
+def test_program_ad_triangular_contract_rejects_invalid_static_metadata() -> None:
+    """Triangular factories and contract facets should reject malformed metadata."""
+    contract = primitive_contract_for("scpn.program_ad.assembly:tril")
+    assert contract.shape_rule is not None
+    assert contract.dtype_rule is not None
+
+    for args, message in (
+        ((), "requires source and k"),
+        ((np.ones(3), 0), "rank >= 2"),
+        ((np.ones((2, 2)), True), "static integer k"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            contract.shape_rule(cast(tuple[object, ...], args))
+    with pytest.raises(ValueError, match="requires source and k"):
+        contract.dtype_rule(())
+    with pytest.raises(ValueError, match="rank >= 2"):
+        program_ad_assembly_tril_derivative_rule((3,))
+    with pytest.raises(ValueError, match="static integer k"):
+        program_ad_assembly_triu_derivative_rule((2, 2), k=True)
+
+
+def test_program_ad_diagonal_contract_rejects_invalid_static_metadata() -> None:
+    """Diagonal contract facets should enforce rank, integer, and distinct-axis bounds."""
+    contract = primitive_contract_for("scpn.program_ad.assembly:diagonal")
+    assert contract.shape_rule is not None
+    assert contract.dtype_rule is not None
+
+    cases = (
+        ((), "source, offset, axis1, and axis2"),
+        ((np.ones(3), 0, 0, 1), "rank >= 2"),
+        ((np.ones((2, 2)), True, 0, 1), "static integer offset"),
+        ((np.ones((2, 2)), 0, True, 1), "static integer axes"),
+        ((np.ones((2, 2)), 0, 0, True), "static integer axes"),
+        ((np.ones((2, 2)), 0, 1, 1), "distinct axes"),
+    )
+    for args, message in cases:
+        with pytest.raises(ValueError, match=message):
+            contract.shape_rule(cast(tuple[object, ...], args))
+    with pytest.raises(ValueError, match="source, offset, axis1, and axis2"):
+        contract.dtype_rule(())
+
+
+def test_program_ad_triangular_diagonal_batching_rejects_invalid_contracts() -> None:
+    """Triangular and diagonal batching should reject dynamic structural metadata."""
+    triangular = primitive_contract_for("scpn.program_ad.assembly:tril")
+    diagonal = primitive_contract_for("scpn.program_ad.assembly:diagonal")
+    assert triangular.batching_rule is not None
+    assert diagonal.batching_rule is not None
+
+    def tril_fn(source: FloatArray, k: int) -> FloatArray:
+        return cast(FloatArray, np.tril(source, k=k))
+
+    def diagonal_fn(source: FloatArray, offset: int, axis1: int, axis2: int) -> FloatArray:
+        return cast(
+            FloatArray,
+            np.diagonal(source, offset=offset, axis1=axis1, axis2=axis2),
+        )
+
+    matrix = np.arange(6.0).reshape(2, 3)
+    cube = np.arange(24.0).reshape(2, 3, 4)
+
+    with pytest.raises(ValueError, match="requires source and k"):
+        triangular.batching_rule(tril_fn, (), (), 0)
+    with pytest.raises(ValueError, match="keeps k static"):
+        triangular.batching_rule(tril_fn, (cube, 0), (0, 0), 0)
+    with pytest.raises(ValueError, match="static integer k"):
+        triangular.batching_rule(tril_fn, (cube, True), (0, None), 0)
+    _assert_allclose(
+        triangular.batching_rule(tril_fn, (matrix, 0), (None, None), 0),
+        np.tril(matrix),
+    )
+    with pytest.raises(ValueError, match="outer batch axis"):
+        triangular.batching_rule(tril_fn, (matrix, 0), (0, None), 0)
+
+    with pytest.raises(ValueError, match="source, offset, axis1, and axis2"):
+        diagonal.batching_rule(diagonal_fn, (), (), 0)
+    with pytest.raises(ValueError, match="keeps offset and axes static"):
+        diagonal.batching_rule(diagonal_fn, (cube, 0, 1, 2), (0, 0, None, None), 0)
+    for args, message in (
+        ((cube, True, 1, 2), "static integer offset"),
+        ((cube, 0, True, 2), "static integer axes"),
+        ((cube, 0, 1, True), "static integer axes"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            diagonal.batching_rule(
+                diagonal_fn,
+                cast(tuple[object, ...], args),
+                (0, None, None, None),
+                0,
+            )
+    _assert_allclose(
+        diagonal.batching_rule(diagonal_fn, (matrix, 0, 0, 1), (None, None, None, None), 0),
+        np.diagonal(matrix),
+    )
+    with pytest.raises(ValueError, match="outer batch axis"):
+        diagonal.batching_rule(diagonal_fn, (matrix, 0, 0, 1), (0, None, None, None), 0)
+    with pytest.raises(ValueError, match="distinct diagonal axes"):
+        diagonal.batching_rule(diagonal_fn, (cube, 0, 1, 1), (0, None, None, None), 0)
+
+    last_axis_batch = np.arange(24.0).reshape(3, 4, 2)
+    expected = np.stack(
+        [np.diagonal(last_axis_batch[:, :, index]) for index in range(2)],
+        axis=0,
+    )
+    _assert_allclose(
+        diagonal.batching_rule(
+            diagonal_fn,
+            (last_axis_batch, 0, 0, 1),
+            (2, None, None, None),
+            0,
+        ),
+        expected,
+    )

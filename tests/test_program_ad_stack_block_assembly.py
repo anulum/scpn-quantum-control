@@ -844,3 +844,362 @@ def test_program_ad_assembly_block_batching_rule_maps_nested_batches() -> None:
     )
     with pytest.raises(ValueError, match="axes matching layout"):
         contract.batching_rule(block_fn, (layout,), (((0,),),), 0)
+
+
+def test_program_ad_stack_contract_facets_reject_malformed_public_arguments() -> None:
+    """Stack-family contract callables should fail closed on malformed inputs."""
+    vector = np.array([1.0, -2.0], dtype=np.float64)
+    contracts: dict[str, Any] = {
+        name: cast(Any, primitive_contract_for(f"scpn.program_ad.assembly:{name}"))
+        for name in ("concatenate", "stack", "append", "block")
+    }
+    for contract in contracts.values():
+        assert contract.shape_rule is not None
+        assert contract.dtype_rule is not None
+
+    for name in ("concatenate", "stack"):
+        contract = contracts[name]
+        for stack_args, message in (
+            ((), "requires operands and axis"),
+            ((vector, 0), "static operand sequence"),
+            (((), 0), "requires operands"),
+        ):
+            with pytest.raises(ValueError, match=message):
+                contract.shape_rule(cast(tuple[object, ...], stack_args))
+        with pytest.raises(ValueError, match="requires operands and axis"):
+            contract.dtype_rule(())
+
+    with pytest.raises(ValueError, match="static integer axis or None"):
+        contracts["concatenate"].shape_rule(((vector, vector), True))
+    with pytest.raises(ValueError, match="source, values, and axis"):
+        contracts["append"].shape_rule((vector,))
+    with pytest.raises(ValueError, match="source, values, and axis"):
+        contracts["append"].dtype_rule((vector,))
+    with pytest.raises(ValueError, match="static integer axis or None"):
+        contracts["append"].shape_rule((vector, vector, True))
+
+    for block_args, message in (
+        ((), "one nested layout argument"),
+        ((vector,), "requires a nested layout"),
+        (((),), "non-empty nested layout"),
+        ((([],),), "non-empty nested layout"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            contracts["block"].shape_rule(cast(tuple[object, ...], block_args))
+    with pytest.raises(ValueError, match="non-empty nested layout"):
+        contracts["block"].dtype_rule((([],),))
+
+
+def test_program_ad_convenience_and_like_contract_facets_reject_bad_inputs() -> None:
+    """Convenience stacks and like constructors should validate public contract arguments."""
+    vector = np.array([1.0, -2.0], dtype=np.float64)
+    for name in ("hstack", "vstack", "column_stack", "dstack"):
+        contract = primitive_contract_for(f"scpn.program_ad.assembly:{name}")
+        assert contract.shape_rule is not None
+        for args, message in (
+            ((), "one operand sequence"),
+            ((vector,), "static operand sequence"),
+            (((),), "requires operands"),
+        ):
+            with pytest.raises(ValueError, match=message):
+                contract.shape_rule(cast(tuple[object, ...], args))
+
+    zeros = primitive_contract_for("scpn.program_ad.assembly:zeros_like")
+    ones = primitive_contract_for("scpn.program_ad.assembly:ones_like")
+    full = primitive_contract_for("scpn.program_ad.assembly:full_like")
+    assert zeros.shape_rule is not None
+    assert ones.shape_rule is not None
+    assert full.shape_rule is not None
+    assert full.static_argument_rule is not None
+
+    with pytest.raises(ValueError, match="zeros_like requires one"):
+        zeros.shape_rule(())
+    with pytest.raises(ValueError, match="ones_like requires one"):
+        ones.shape_rule(())
+    with pytest.raises(ValueError, match="reference and scalar fill"):
+        full.shape_rule((vector,))
+    with pytest.raises(ValueError, match="at least one element"):
+        zeros.shape_rule((np.array([], dtype=np.float64),))
+
+    trace_array = type(
+        "TraceADArray",
+        (),
+        {"context": object(), "shape": [2]},
+    )()
+    with pytest.raises(ValueError, match="trace array shape must be static"):
+        zeros.shape_rule((trace_array,))
+
+    valid_trace_array = type(
+        "TraceADArray",
+        (),
+        {"context": object(), "shape": (2,)},
+    )()
+    with pytest.raises(ValueError, match="fill value must be scalar"):
+        full.static_argument_rule((vector, valid_trace_array))
+    trace_scalar = type("TraceADScalar", (), {"context": object()})()
+    assert full.static_argument_rule((vector, trace_scalar)) == ((2,), "trace_scalar")
+    for fill, message in (
+        (np.array([1.0, 2.0]), "must be scalar"),
+        (np.array([1.0 + 2.0j]), "real numeric"),
+        (np.inf, "finite"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            full.static_argument_rule((vector, fill))
+
+    concatenate = primitive_contract_for("scpn.program_ad.assembly:concatenate")
+    assert concatenate.dtype_rule is not None
+    with pytest.raises(ValueError, match="real numeric arrays"):
+        concatenate.dtype_rule(((np.array(["bad"]), vector), 0))
+
+
+def test_program_ad_stack_batching_contract_rejects_inconsistent_axes() -> None:
+    """Concatenate and stack batching should enforce one stable mapped axis."""
+    concatenate = primitive_contract_for("scpn.program_ad.assembly:concatenate")
+    stack = primitive_contract_for("scpn.program_ad.assembly:stack")
+    assert concatenate.batching_rule is not None
+    assert stack.batching_rule is not None
+    concat_rule = cast(Any, concatenate.batching_rule)
+    stack_rule = cast(Any, stack.batching_rule)
+    left = np.arange(8.0).reshape(2, 2, 2)
+    right = np.arange(8.0, 16.0).reshape(2, 2, 2)
+
+    with pytest.raises(ValueError, match="requires operands and axis"):
+        concat_rule(np.concatenate, (), (), 0)
+    with pytest.raises(ValueError, match="keeps axis static"):
+        concat_rule(np.concatenate, ((left, right), 1), ((0, 0), 0), 0)
+    with pytest.raises(ValueError, match="one operand axis per operand"):
+        concat_rule(np.concatenate, ((left, right), 1), (0, None), 0)
+    with pytest.raises(ValueError, match="keeps axis static"):
+        concat_rule(np.concatenate, ((left, right), True), ((0, 0), None), 0)
+    with pytest.raises(ValueError, match="maps every operand"):
+        concat_rule(np.concatenate, ((left, right), 1), ((0, None), None), 0)
+    with pytest.raises(ValueError, match="non-empty"):
+        concat_rule(
+            np.concatenate,
+            ((np.empty((0, 2)), np.empty((0, 2))), 1),
+            ((0, 0), None),
+            0,
+        )
+    with pytest.raises(ValueError, match="share one batch size"):
+        concat_rule(
+            np.concatenate,
+            ((np.ones((2, 2)), np.ones((3, 2))), 1),
+            ((0, 0), None),
+            0,
+        )
+    with pytest.raises(ValueError, match="cannot map the concatenate axis"):
+        concat_rule(np.concatenate, ((left, right), 0), ((0, 0), None), 0)
+    _assert_allclose(
+        concat_rule(
+            np.concatenate,
+            ((np.array([1.0]), np.array([2.0])), 0),
+            (None, None),
+            0,
+        ),
+        np.array([1.0, 2.0]),
+    )
+    _assert_allclose(
+        concat_rule(
+            np.concatenate, ((np.array([1.0]), np.array([2.0])), None), ((None, None), None), 0
+        ),
+        np.array([1.0, 2.0]),
+    )
+    _assert_allclose(
+        concat_rule(
+            np.concatenate,
+            ((np.array([[1.0], [2.0]]), np.array([3.0])), None),
+            ((0, None), None),
+            0,
+        ),
+        np.array([[1.0, 3.0], [2.0, 3.0]]),
+    )
+    with pytest.raises(ValueError, match="one adjusted axis"):
+        concat_rule(np.concatenate, ((left, right), 1), ((0, 2), None), 0)
+
+    with pytest.raises(ValueError, match="requires operands and axis"):
+        stack_rule(np.stack, (), (), 0)
+    with pytest.raises(ValueError, match="keeps axis static"):
+        stack_rule(np.stack, ((left, right), True), ((0, 0), None), 0)
+    with pytest.raises(ValueError, match="one operand axis per operand"):
+        stack_rule(np.stack, ((left, right), 1), (0, None), 0)
+    with pytest.raises(ValueError, match="non-empty"):
+        stack_rule(
+            np.stack,
+            ((np.empty((0, 2)), np.empty((0, 2))), 1),
+            ((0, 0), None),
+            0,
+        )
+    with pytest.raises(ValueError, match="share one batch size"):
+        stack_rule(
+            np.stack,
+            ((np.ones((2, 2)), np.ones((3, 2))), 1),
+            ((0, 0), None),
+            0,
+        )
+    _assert_allclose(
+        stack_rule(
+            np.stack,
+            ((np.array([1.0]), np.array([2.0])), 0),
+            (None, None),
+            0,
+        ),
+        np.array([[1.0], [2.0]]),
+    )
+    _assert_allclose(
+        stack_rule(np.stack, ((np.array([1.0]), np.array([2.0])), 0), ((None, None), None), 0),
+        np.array([[1.0], [2.0]]),
+    )
+    _assert_allclose(
+        stack_rule(
+            np.stack,
+            ((np.array([[1.0], [2.0]]), np.array([3.0])), 1),
+            ((0, None), None),
+            0,
+        ),
+        np.array([[[1.0], [3.0]], [[2.0], [3.0]]]),
+    )
+    with pytest.raises(ValueError, match="one adjusted axis"):
+        stack_rule(np.stack, ((left, right), 1), ((0, 2), None), 0)
+
+
+def test_program_ad_append_and_convenience_batching_cover_static_mixed_operands() -> None:
+    """Append and convenience batching should preserve static leaves and reject drift."""
+    append = primitive_contract_for("scpn.program_ad.assembly:append")
+    hstack = primitive_contract_for("scpn.program_ad.assembly:hstack")
+    assert append.batching_rule is not None
+    assert hstack.batching_rule is not None
+    append_rule = cast(Any, append.batching_rule)
+    hstack_rule = cast(Any, hstack.batching_rule)
+
+    with pytest.raises(ValueError, match="source, values, and axis"):
+        append_rule(np.append, (), (), 0)
+    with pytest.raises(ValueError, match="keeps axis static"):
+        append_rule(np.append, (np.ones((2, 2)), np.ones((2, 2)), True), (0, 0, None), 0)
+    with pytest.raises(ValueError, match="maps source and values"):
+        append_rule(np.append, (np.ones((2, 2)), np.ones((2,)), 1), (0, None, None), 0)
+    with pytest.raises(ValueError, match="non-empty"):
+        append_rule(
+            np.append,
+            (np.empty((0, 2)), np.empty((0, 1)), 1),
+            (0, 0, None),
+            0,
+        )
+    with pytest.raises(ValueError, match="share one batch size"):
+        append_rule(
+            np.append,
+            (np.ones((2, 2)), np.ones((3, 1)), 1),
+            (0, 0, None),
+            0,
+        )
+    _assert_allclose(
+        append_rule(np.append, (np.array([1.0]), np.array([2.0]), None), (None, None, None), 0),
+        np.array([1.0, 2.0]),
+    )
+    _assert_allclose(
+        append_rule(
+            np.append,
+            (np.array([[1.0], [2.0]]), np.array([3.0]), None),
+            (0, None, None),
+            0,
+        ),
+        np.array([[1.0, 3.0], [2.0, 3.0]]),
+    )
+    with pytest.raises(ValueError, match="one adjusted axis"):
+        append_rule(
+            np.append,
+            (np.ones((2, 2, 2)), np.ones((2, 2, 2)), 1),
+            (0, 2, None),
+            0,
+        )
+
+    with pytest.raises(ValueError, match="requires operands"):
+        hstack_rule(np.hstack, (), (), 0)
+    with pytest.raises(ValueError, match="one operand axis per operand"):
+        hstack_rule(np.hstack, ((np.ones((2, 1)),),), (0,), 0)
+    with pytest.raises(ValueError, match="non-empty"):
+        hstack_rule(np.hstack, ((np.empty((0, 1)),),), ((0,),), 0)
+    with pytest.raises(ValueError, match="share one batch size"):
+        hstack_rule(
+            np.hstack,
+            ((np.ones((2, 1)), np.ones((3, 1))),),
+            ((0, 0),),
+            0,
+        )
+    _assert_allclose(
+        hstack_rule(
+            np.hstack,
+            ((np.array([1.0]), np.array([2.0])),),
+            (None,),
+            0,
+        ),
+        np.array([1.0, 2.0]),
+    )
+    mixed = hstack_rule(
+        np.hstack,
+        ((np.ones((2, 1)), np.array([2.0])),),
+        ((0, None),),
+        0,
+    )
+    _assert_allclose(mixed, np.array([[1.0, 2.0], [1.0, 2.0]]))
+    _assert_allclose(
+        hstack_rule(np.hstack, ((np.array([1.0]), np.array([2.0])),), ((None, None),), 0),
+        np.array([1.0, 2.0]),
+    )
+
+
+def test_program_ad_block_and_like_batching_cover_static_and_error_routes() -> None:
+    """Block and like batching should validate nested axes and static fill values."""
+    block = primitive_contract_for("scpn.program_ad.assembly:block")
+    zeros = primitive_contract_for("scpn.program_ad.assembly:zeros_like")
+    full = primitive_contract_for("scpn.program_ad.assembly:full_like")
+    assert block.batching_rule is not None
+    assert zeros.batching_rule is not None
+    assert full.batching_rule is not None
+    block_rule = cast(Any, block.batching_rule)
+    zeros_rule = cast(Any, zeros.batching_rule)
+    full_rule = cast(Any, full.batching_rule)
+
+    with pytest.raises(ValueError, match="one nested layout argument"):
+        block_rule(np.block, (), (), 0)
+    static_layout = ((np.array([[1.0]]), np.array([[2.0]])),)
+    _assert_allclose(
+        block_rule(np.block, (static_layout,), (None,), 0),
+        np.array([[1.0, 2.0]]),
+    )
+    with pytest.raises(ValueError, match="non-empty nested layout"):
+        block_rule(np.block, (([],),), (None,), 0)
+    with pytest.raises(ValueError, match="non-empty nested layout"):
+        block_rule(np.block, (([],),), (([],),), 0)
+    with pytest.raises(ValueError, match="axes matching layout"):
+        block_rule(np.block, ((np.ones((2, 1)),),), ((True,),), 0)
+    with pytest.raises(ValueError, match="equal batch sizes"):
+        block_rule(
+            np.block,
+            (((np.ones((2, 1, 1)), np.ones((3, 1, 1))),),),
+            (((0, 0),),),
+            0,
+        )
+    _assert_allclose(
+        block_rule(np.block, (static_layout,), (((None, None),),), 0),
+        np.array([[1.0, 2.0]]),
+    )
+    mixed_layout = ((np.ones((2, 1, 1)), np.array([[2.0]])),)
+    _assert_allclose(
+        block_rule(np.block, (mixed_layout,), (((0, None),),), 0),
+        np.array([[[1.0, 2.0]], [[1.0, 2.0]]]),
+    )
+
+    with pytest.raises(ValueError, match="axes must match arguments"):
+        zeros_rule(np.zeros_like, (np.ones((2, 1)),), (), 0)
+    with pytest.raises(ValueError, match="requires a reference"):
+        zeros_rule(np.zeros_like, (), (), 0)
+    _assert_allclose(
+        zeros_rule(np.zeros_like, (np.ones(2),), (None,), 0),
+        np.zeros(2),
+    )
+    with pytest.raises(ValueError, match="keeps fill values static"):
+        full_rule(np.full_like, (np.ones((2, 1)), 3.0), (0, 0), 0)
+    _assert_allclose(
+        full_rule(np.full_like, (np.ones((2, 1)), 3.0), (0, None), 0),
+        np.full((2, 1), 3.0),
+    )
