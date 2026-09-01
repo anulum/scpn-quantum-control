@@ -896,8 +896,6 @@ def _bytecode_basic_blocks(
             block_instructions = tuple(instructions[start_index:next_start_index])
         else:
             block_instructions = tuple(instructions[start_index:])
-        if not block_instructions:
-            continue
         terminator = block_instructions[-1]
         successors: set[int] = set()
         jump_target = jump_targets.get(terminator.offset)
@@ -1148,8 +1146,6 @@ def _symbol_scope_entries(
         bytecode_offset: int | None = None,
         line_is_absolute: bool = True,
     ) -> None:
-        if not symbol or not role:
-            return
         ensure_symbol(symbol)
         symbol_roles[symbol].add(role)
         if line_number is not None and line_number > 0:
@@ -1220,8 +1216,6 @@ def _symbol_scope_entries(
     entries: list[WholeProgramSymbolScopeEntry] = []
     for symbol in sorted(symbol_roles):
         roles = tuple(sorted(symbol_roles[symbol]))
-        if not roles:
-            continue
         entries.append(
             WholeProgramSymbolScopeEntry(
                 symbol=symbol,

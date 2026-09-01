@@ -83,6 +83,9 @@ def test_batch_certificate_uses_explicit_partial_mask_and_complete_couplings() -
     assert certificate.forecast_model_digest == model.model_digest
     assert len(certificate.observation_mask_digest) == 64
     assert "not arbitrary" in certificate.claim_boundary
+    payload = certificate.to_dict()
+    assert isinstance(payload["scores"], list)
+    assert len(payload["scores"]) == dataset.test.n_samples
 
 
 @pytest.mark.parametrize(

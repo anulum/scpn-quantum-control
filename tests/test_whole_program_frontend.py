@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+import ast
 import dis
 from collections.abc import AsyncIterator, Callable
 from types import SimpleNamespace
@@ -19,6 +20,7 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+import scpn_quantum_control.whole_program_frontend as frontend_module
 from scpn_quantum_control.differentiable import (
     compile_whole_program_frontend as facade_compile_whole_program_frontend,
 )
@@ -325,3 +327,368 @@ def test_whole_program_frontend_normalises_python313_boolean_line_markers() -> N
     assert _instruction_line_number(python313_instruction) == 123
     assert _instruction_line_number(legacy_instruction) == 77
     assert _instruction_line_number(missing_instruction) is None
+
+
+def test_frontend_metadata_and_introspection_fail_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Validate source metadata and unavailable source/bytecode fallbacks."""
+    metadata_type = frontend_module._ObjectiveSourceMetadata
+    for factory, message in (
+        (lambda: metadata_type("", 1, 1), "source"),
+        (lambda: metadata_type("x", 0, 1), "start_line"),
+        (lambda: metadata_type("x", 2, 1), "end_line"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            factory()
+
+    def objective(value: object) -> object:
+        return value
+
+    monkeypatch.setattr(frontend_module.inspect, "getsourcelines", lambda _value: (["  \n"], 1))
+    assert frontend_module._objective_source_metadata(objective) is None
+    assert frontend_module._objective_source(objective) is None
+
+    def unavailable(_value: object) -> object:
+        raise TypeError("unavailable")
+
+    monkeypatch.setattr(frontend_module.inspect, "getsourcelines", unavailable)
+    assert frontend_module._objective_source_metadata(objective) is None
+    monkeypatch.setattr(frontend_module.dis, "get_instructions", unavailable)
+    assert frontend_module._objective_bytecode(objective) == ()
+    assert frontend_module._normalise_positive_line_number(None) is None
+    assert frontend_module._normalise_positive_line_number(0) is None
+
+
+def test_frontend_source_helpers_cover_alias_effect_and_region_variants() -> None:
+    """Parse representative alias, mutation, async, loop, and region syntax."""
+    source = """
+async def objective(values):
+    items = []
+    alias = items
+    obj = Box()
+    obj.value = values[0]
+    copied = obj.value
+    external.value = copied
+    external_copy = external.value
+    other[0] = copied
+    items.append(copied)
+    if values[0]:
+        obj.value = copied
+        (left_value, right_value) = values
+        alias[0] = copied
+    else:
+        copied += 1
+    for left, right in []:
+        copied = copied + left
+        if right:
+            continue
+        break
+    while copied:
+        del items[0]
+        copied = await obj.step()
+    return np.sin(values[0]) if copied else numpy.cos(values[0])
+"""
+    tree = ast.parse(source)
+    features = frontend_module._source_ir_features(source)
+    details = {(feature.kind, feature.detail) for feature in features}
+    assert any(kind == "list_alias" for kind, _detail in details)
+    assert any(kind == "object_attribute_alias" for kind, _detail in details)
+    assert any(kind == "control_path_alias" for kind, _detail in details)
+    assert any(kind == "loop_carried_state" for kind, _detail in details)
+    assert {"break", "continue"}.issubset({detail for kind, detail in details if kind == "loop"})
+    assert frontend_module._source_regions(source, features)
+    unsupported = frontend_module._source_ir_features(
+        None, unsupported_python_semantics=("synthetic",)
+    )
+    assert unsupported[0].detail == "synthetic"
+    assert frontend_module._source_ir_features("def broken(") == ()
+    assert frontend_module._source_regions("def broken(", ()) == ()
+
+    assignment = ast.parse("target = " + "+".join(["value"] * 50)).body[0]
+    assert isinstance(assignment, ast.Assign)
+    assert frontend_module._stable_ast_expression_label(assignment.value, 1).endswith("...")
+    call = ast.parse("Box()", mode="eval").body
+    assert frontend_module._is_local_object_constructor_call(call)
+    assert not frontend_module._is_local_object_constructor_call(ast.Constant(value=1))
+    assert not frontend_module._is_local_object_constructor_call(
+        ast.parse("np.sin(1)", mode="eval").body
+    )
+    assert not frontend_module._is_local_object_constructor_call(
+        ast.parse("(lambda: value)()", mode="eval").body
+    )
+
+    attribute = ast.parse("root.child.value", mode="eval").body
+    subscript = ast.parse("root.child[0][1]", mode="eval").body
+    assert isinstance(attribute, ast.Attribute)
+    assert isinstance(subscript, ast.Subscript)
+    assert frontend_module._ast_attribute_root(attribute) == "root"
+    factory_attribute = ast.parse("factory().value", mode="eval").body
+    assert isinstance(factory_attribute, ast.Attribute)
+    assert frontend_module._ast_attribute_root(factory_attribute) == ""
+    assert frontend_module._ast_subscript_root(subscript) == "root"
+    assert frontend_module._ast_subscript_root(ast.parse("factory()[0]", mode="eval").body) == ""
+    child_call = ast.parse("root.child()", mode="eval").body
+    assert isinstance(child_call, ast.Call)
+    assert frontend_module._ast_call_name(child_call.func) == "root.child"
+    lambda_call = ast.parse("(lambda: value)()", mode="eval").body
+    assert isinstance(lambda_call, ast.Call)
+    assert frontend_module._ast_call_name(lambda_call.func) == ""
+    assert tree
+
+
+def test_frontend_semantics_cover_signatures_and_unsupported_syntax(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Classify accepted signatures and every located unsupported construct."""
+    captured = SimpleNamespace(value=1.0)
+
+    def objective(
+        value: object = None, *args: object, flag: bool = True, **kwargs: object
+    ) -> object:
+        del args, flag, kwargs
+        return captured.value if value is None else value
+
+    accepted = frontend_module._accepted_python_semantics(
+        objective,
+        "def f():\n return [item for item in (x for x in values)]",
+    )
+    assert {
+        "closure",
+        "default_argument",
+        "keyword_only_parameter",
+        "var_keyword_parameter",
+        "var_positional_parameter",
+        "list_comprehension",
+        "generator_expression",
+    }.issubset(set(accepted))
+
+    monkeypatch.setattr(
+        frontend_module.inspect,
+        "signature",
+        lambda _value: (_ for _ in ()).throw(ValueError("no signature")),
+    )
+    assert frontend_module._accepted_python_semantics(objective, None) == ("closure",)
+
+    source = """
+@decorator
+async def objective(value):
+    assert value
+    with value:
+        try:
+            await value.step()
+            async for item in value:
+                yield {entry for entry in item}
+        except Exception:
+            raise RuntimeError
+    return objective(value)
+
+@decorator
+def synchronous_objective():
+    return captured.value
+    """
+    diagnostics = frontend_module._unsupported_python_semantic_diagnostics(
+        objective=objective,
+        source=source,
+        source_start_line=10,
+        bytecode_instructions=(),
+        source_regions=(),
+    )
+    assert {
+        "async_function",
+        "decorator",
+        "await_expression",
+        "async_for",
+        "set_or_dict_comprehension",
+        "generator",
+        "context_manager",
+        "exception_control_flow",
+        "recursion",
+        "object_attribute",
+    }.issubset({diagnostic.semantic for diagnostic in diagnostics})
+    assert "filtered_comprehension" not in frontend_module._unsupported_python_semantics(
+        objective, "def objective(values):\n return [value for value in values]"
+    )
+    assert (
+        frontend_module._unsupported_python_semantic_diagnostics(
+            objective=objective,
+            source="def broken(",
+            source_start_line=None,
+            bytecode_instructions=(),
+            source_regions=(),
+        )
+        == ()
+    )
+
+
+def test_frontend_compile_reports_each_missing_static_surface(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The public compiler records absent static surfaces without execution."""
+    with pytest.raises(ValueError, match="callable"):
+        compile_whole_program_frontend(cast(Callable[..., object], 1))
+
+    def objective(value: object) -> object:
+        return value
+
+    monkeypatch.setattr(frontend_module, "_objective_source_metadata", lambda _value: None)
+    monkeypatch.setattr(frontend_module, "_objective_bytecode", lambda _value: ())
+    monkeypatch.setattr(frontend_module, "_symbol_scope_entries", lambda **_kwargs: ())
+    report = compile_whole_program_frontend(objective)
+    assert {
+        "bytecode_frontend_missing",
+        "bytecode_basic_blocks_missing",
+        "source_frontend_missing",
+        "symbol_scope_entries_missing",
+    }.issubset(set(report.hard_gaps))
+
+    metadata = frontend_module._ObjectiveSourceMetadata("def broken(", 1, 1)
+    monkeypatch.setattr(frontend_module, "_objective_source_metadata", lambda _value: metadata)
+    report = compile_whole_program_frontend(objective)
+    assert "source_regions_missing" in report.hard_gaps
+    assert "source_ast_parse_failed" in report.hard_gaps
+
+    metadata = frontend_module._ObjectiveSourceMetadata(
+        "def objective(value):\n return value", 1, 2
+    )
+    monkeypatch.setattr(frontend_module, "_objective_source_metadata", lambda _value: metadata)
+    monkeypatch.setattr(
+        frontend_module,
+        "_source_regions",
+        lambda _source, _features: (
+            frontend_module.WholeProgramSourceRegion(
+                region_id="entry",
+                kind="entry",
+                detail="module",
+                line_start=1,
+                line_end=2,
+                parent_region_id=None,
+                feature_kinds=(),
+            ),
+        ),
+    )
+    monkeypatch.setattr(frontend_module, "_source_bytecode_line_map", lambda **_kwargs: ())
+    report = compile_whole_program_frontend(objective)
+    assert "source_bytecode_line_map_missing" in report.hard_gaps
+
+
+def test_frontend_bytecode_and_scalar_helpers_cover_defensive_edges() -> None:
+    """Decode synthetic jumps, symbols, roles, lines, and invalid source text."""
+    instruction_type = frontend_module.WholeProgramBytecodeInstruction
+    jump = instruction_type(0, "JUMP_FORWARD", "to 8", 1, None)
+    bad_jump = instruction_type(2, "JUMP_FORWARD", "to target", 1, None)
+    negative_jump = instruction_type(4, "JUMP_FORWARD", "to -1", 1, None)
+    plain = instruction_type(6, "LOAD_CONST", "1", 1, None)
+    assert frontend_module._bytecode_jump_target(jump) == 8
+    assert frontend_module._bytecode_jump_target(bad_jump) is None
+    assert frontend_module._bytecode_jump_target(negative_jump) is None
+    assert frontend_module._bytecode_jump_target(plain) is None
+    assert (
+        frontend_module._bytecode_jump_target(
+            instruction_type(8, "JUMP_FORWARD", "forward 8", 1, None)
+        )
+        is None
+    )
+    assert frontend_module._bytecode_basic_blocks(()) == ()
+    assert frontend_module._bytecode_is_unconditional_jump("JUMP_FORWARD")
+    assert not frontend_module._bytecode_is_unconditional_jump("JUMP_IF_FALSE")
+
+    assert (
+        frontend_module._bytecode_symbol_name(
+            instruction_type(0, "LOAD_GLOBAL", "NULL + value", 1, None)
+        )
+        == "value"
+    )
+    assert frontend_module._bytecode_symbol_name(plain) is None
+    assert (
+        frontend_module._bytecode_symbol_name(instruction_type(0, "LOAD_GLOBAL", "()", 1, None))
+        is None
+    )
+    assert (
+        frontend_module._bytecode_symbol_name(
+            instruction_type(0, "LOAD_GLOBAL", "NULL + 1", 1, None)
+        )
+        is None
+    )
+    assert frontend_module._bytecode_symbol_role("LOAD_FAST") == "bytecode_load"
+    assert frontend_module._bytecode_symbol_role("STORE_FAST") == "bytecode_store"
+    assert frontend_module._bytecode_symbol_role("DELETE_FAST") == "bytecode_delete"
+    assert frontend_module._bytecode_symbol_role("OTHER") == "bytecode_reference"
+    assert frontend_module._ast_name_role(ast.Load()) == "source_load"
+    assert frontend_module._ast_name_role(ast.Store()) == "source_store"
+    assert frontend_module._ast_name_role(ast.Del()) == "source_delete"
+    assert frontend_module._single_absolute_line({1, 2}) is None
+    assert frontend_module._source_relative_line(2, 5) == 2
+    assert frontend_module._source_relative_line(5, None) == 5
+    assert frontend_module._source_ast_node_count(None) == 0
+    assert frontend_module._source_ast_node_count("def broken(") == 0
+    assert frontend_module._source_parse_failed(None) is False
+    assert frontend_module._source_parse_failed("def broken(") is True
+    assert frontend_module._source_has_node(None, ast.If) is False
+    assert frontend_module._source_has_node("if value", ast.If) is True
+    assert frontend_module._source_mentions_numpy(None) is False
+    assert frontend_module._ast_name_role(ast.expr_context()) == "source_reference"
+
+
+def test_frontend_line_map_scope_and_capture_fallbacks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Cover line remapping, uninspectable callables, and source parse fallbacks."""
+    instruction_type = frontend_module.WholeProgramBytecodeInstruction
+    line_map = frontend_module._source_bytecode_line_map(
+        bytecode_instructions=(instruction_type(0, "LOAD_FAST", "value", 2, None),),
+        source_ir_features=(),
+        source_regions=(),
+        source_start_line=5,
+    )
+    assert line_map[0].absolute_line_number == 6
+
+    class CallableWithoutCode:
+        def __call__(self, value: object) -> object:
+            return value
+
+    opaque = CallableWithoutCode()
+    assert frontend_module._captured_or_global_names(opaque) == set()
+    assert frontend_module._symbol_scope_entries(
+        objective=opaque,
+        source=None,
+        bytecode_instructions=(),
+        source_regions=(),
+        source_start_line=None,
+    )
+
+    def objective(value: object) -> object:
+        def nested() -> object:
+            return value
+
+        return nested()
+
+    monkeypatch.setattr(
+        frontend_module.inspect,
+        "signature",
+        lambda _value: (_ for _ in ()).throw(TypeError("no signature")),
+    )
+    entries = frontend_module._symbol_scope_entries(
+        objective=objective,
+        source="def broken(",
+        bytecode_instructions=frontend_module._objective_bytecode(objective),
+        source_regions=(),
+        source_start_line=None,
+    )
+    assert any("cell" in entry.roles for entry in entries if entry.symbol == "value")
+
+    def closure_factory() -> object:
+        token = object()
+
+        def closure() -> object:
+            return token
+
+        return closure
+
+    closure = closure_factory()
+
+    class NonMappingGlobals:
+        __code__ = closure.__code__
+        __globals__: list[object] = []
+
+    assert "token" in frontend_module._captured_or_global_names(NonMappingGlobals())

@@ -1108,8 +1108,6 @@ class CustomDerivativeCheckResult:
             raise ValueError("custom and reference JVP values must have matching shapes")
         if self.custom_vjp.value.shape != self.reference_vjp.value.shape:
             raise ValueError("custom and reference VJP values must have matching shapes")
-        if self.custom_jvp.jvp.shape != self.reference_jvp.jvp.shape:
-            raise ValueError("custom and reference JVP outputs must have matching shapes")
         if self.custom_vjp.vjp.shape != self.reference_vjp.vjp.shape:
             raise ValueError("custom and reference VJP outputs must have matching shapes")
         adjoint_inner_error = _as_real_scalar(

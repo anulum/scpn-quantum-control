@@ -212,5 +212,8 @@ def test_statistical_helpers_cover_degenerate_and_boundary_inputs() -> None:
     }
     assert analysis._clopper_pearson(0, 6)[0] == 0.0
     assert analysis._clopper_pearson(6, 6)[1] == 1.0
+    assert analysis._portable_float(0.010131910199918112) == analysis._portable_float(
+        0.010131910199918114
+    )
     middle = analysis._clopper_pearson(3, 6)
     assert 0.0 < middle[0] < middle[1] < 1.0

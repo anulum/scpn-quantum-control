@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.benchmarks.kyma_v2 import task
 
@@ -27,6 +28,12 @@ def test_pairs_are_the_six_disjoint_free_cluster_pairs() -> None:
     assert task.N_PAIRS == 6
     assert task.PAIRS[task.HELD_OUT_R1_PAIR] == (0, 1)
     assert task.PAIRS[task.HELD_OUT_R2_PAIR] == (2, 3)
+
+
+def test_probe_config_horizon_is_steps_times_dt() -> None:
+    """Expose the configured integration horizon as a derived value."""
+    config = task.ProbeConfigV2(steps=25, dt=0.04)
+    assert config.horizon == pytest.approx(1.0)
 
 
 def test_pair_members_are_the_two_clusters() -> None:

@@ -42,6 +42,12 @@ ALPHA = 0.05
 SECTORS = {"even": "0011", "odd": "0001"}
 READOUT_STATES = ("0011", "0001", "0000", "1111")
 MINIMUM_WINDOWS = 6
+PORTABLE_SIGNIFICANT_DIGITS = 15
+
+
+def _portable_float(value: float) -> float:
+    """Round derived statistics to a cross-runtime JSON representation."""
+    return float(format(value, f".{PORTABLE_SIGNIFICANT_DIGITS}g"))
 
 
 def _parity(bitstring: str) -> int:
@@ -94,7 +100,7 @@ def _cochran_q(deltas: list[float], variances: list[float]) -> dict[str, Any]:
         "cochran_q": q,
         "degrees_of_freedom": df,
         "p_value": p_value,
-        "tau_dl": math.sqrt(tau_squared),
+        "tau_dl": _portable_float(math.sqrt(tau_squared)),
         "mean_shot_noise_se": math.sqrt(len(variances) / s1),
     }
 

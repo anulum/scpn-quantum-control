@@ -75,6 +75,300 @@ def test_public_result_contract_validators_have_docstrings() -> None:
     assert missing == []
 
 
+def test_shared_result_validation_helpers_cover_fail_closed_edges() -> None:
+    """Shared normalizers reject malformed custody and uncertainty evidence."""
+    with pytest.raises(ValueError, match="claim_boundary"):
+        result_contracts._normalise_claim_boundary("test", " ")
+    for token in (True, None, 1.5, [], " "):
+        with pytest.raises(ValueError, match="token|non-empty"):
+            result_contracts._normalise_provenance_token("test", token)
+
+    record = _parameter_shift_record()
+    gradient = np.array([record.gradient_contribution])
+    covariance = np.diag([record.variance_contribution])
+    with pytest.raises(ValueError, match="reconstruct gradient"):
+        result_contracts._validate_parameter_shift_record_reconstruction(
+            gradient + 1.0, covariance, (record,)
+        )
+    with pytest.raises(ValueError, match="covariance diagonal"):
+        result_contracts._validate_parameter_shift_record_reconstruction(
+            gradient, covariance + np.eye(1), (record,)
+        )
+    two_records = (
+        record,
+        _parameter_shift_record(parameter_index=1, parameter_name="y"),
+    )
+    with pytest.raises(ValueError, match="diagonal independent covariance"):
+        result_contracts._validate_parameter_shift_record_reconstruction(
+            np.array([record.gradient_contribution] * 2),
+            np.array(
+                [
+                    [record.variance_contribution, 0.1],
+                    [0.1, record.variance_contribution],
+                ]
+            ),
+            two_records,
+        )
+
+    interval = _centered_confidence_interval(np.array([1.0]), np.array([0.2]))
+    with pytest.raises(ValueError, match="non-negative"):
+        result_contracts._validate_stochastic_uncertainty_moments(
+            "test",
+            np.array([1.0]),
+            np.array([0.1]),
+            np.array([[-0.01]]),
+            np.array([0.2]),
+            None,
+        )
+    with pytest.raises(ValueError, match="centered"):
+        result_contracts._validate_stochastic_uncertainty_moments(
+            "test",
+            np.array([2.0]),
+            np.array([0.1]),
+            np.array([[0.01]]),
+            np.array([0.2]),
+            interval,
+        )
+
+
+def test_result_contracts_cover_remaining_boundary_records() -> None:
+    """Exercise remaining public record guards and alternative valid shapes."""
+    gradient = _base_gradient()
+    invalid_gradients = (
+        (lambda: replace(gradient, claim_boundary=" "), "claim_boundary"),
+        (lambda: replace(gradient, gradient=np.array([np.inf, 0.0])), "finite"),
+        (lambda: replace(gradient, parameter_names=("x",)), "parameter_names length"),
+        (lambda: replace(gradient, trainable=(True, cast(bool, 1))), "booleans"),
+    )
+    for factory, message in invalid_gradients:
+        with pytest.raises(ValueError, match=message):
+            factory()
+
+    provenance = result_contracts.FiniteShotSampleProvenance(
+        sample_seed=1,
+        shot_batch_id=" batch ",
+        source_class="caller_supplied",
+    )
+    assert provenance.to_dict() == {
+        "sample_seed": "1",
+        "shot_batch_id": "batch",
+        "source_class": "caller_supplied",
+    }
+
+    record = _parameter_shift_record()
+    frozen_record = replace(
+        record,
+        trainable=False,
+        gradient_contribution=0.0,
+        variance_contribution=0.0,
+    )
+    assert frozen_record.trainable is False
+    invalid_records = (
+        (lambda: replace(record, gradient_contribution=9.0), "gradient_contribution"),
+        (lambda: replace(record, variance_contribution=9.0), "variance_contribution"),
+        (
+            lambda: replace(record, trainable=False, gradient_contribution=0.1),
+            "zero for non-trainable",
+        ),
+    )
+    for factory, message in invalid_records:
+        with pytest.raises(ValueError, match=message):
+            factory()
+
+    empty_sparse = result_contracts.SparseMatrixResult(
+        row_indices=np.array([], dtype=np.int64),
+        column_indices=np.array([], dtype=np.int64),
+        values=np.array([], dtype=np.float64),
+        shape=(1, 1),
+        method="coo",
+        parameter_names=("x",),
+        trainable=(True,),
+    )
+    assert empty_sparse.values.size == 0
+
+    allocation = result_contracts.ShotAllocationResult(
+        shots=np.ones((1, 2, 2), dtype=np.float64),
+        predicted_standard_error=np.ones(2),
+        covariance=np.eye(2),
+        target_standard_error=1.0,
+        total_shots=4,
+        method="termwise",
+        parameter_names=("x", "y"),
+        trainable=(True, True),
+    )
+    assert allocation.shots.shape == (1, 2, 2)
+
+    step = _levenberg_marquardt_step()
+    for factory, message in (
+        (lambda: replace(step, step=np.array([np.nan, 0.0])), "finite"),
+        (lambda: replace(step, candidate_values=np.array([np.nan, 0.0])), "finite"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            factory()
+    with pytest.raises(ValueError, match="candidate_residual"):
+        replace(_levenberg_marquardt_trial(), candidate_residual=np.array([np.nan]))
+
+    with pytest.raises(ValueError, match="standard_errors"):
+        result_contracts.LeastSquaresCovarianceResult(
+            covariance=np.eye(2),
+            standard_errors=np.array([1.0, -1.0]),
+            residual_variance=0.0,
+            degrees_of_freedom=1,
+            condition_number=1.0,
+            parameter_names=("x", "y"),
+            trainable=(True, True),
+        )
+    with pytest.raises(ValueError, match="trainable mask length"):
+        result_contracts.FisherVectorProductResult(
+            value=np.ones(2),
+            tangent=np.ones(2),
+            product=np.ones(2),
+            residual_projection=np.ones(2),
+            damping=0.0,
+            method="fisher",
+            evaluations=1,
+            parameter_names=("x", "y"),
+            trainable=(True,),
+        )
+    with pytest.raises(ValueError, match="row count"):
+        result_contracts.ImplicitSensitivityResult(
+            sensitivity=np.ones((1, 2)),
+            hessian=np.eye(2),
+            cross_derivative=np.ones((1, 2)),
+            damping=0.0,
+            condition_number=1.0,
+            method="implicit",
+            parameter_names=("x", "y"),
+            trainable=(True, True),
+            hyperparameter_names=("a", "b"),
+        )
+    with pytest.raises(ValueError, match="row count"):
+        result_contracts.FixedPointSensitivityResult(
+            sensitivity=np.ones((1, 2)),
+            state_jacobian=np.eye(2),
+            parameter_jacobian=np.ones((1, 2)),
+            system_matrix=np.eye(2),
+            damping=0.0,
+            condition_number=1.0,
+            method="fixed",
+            parameter_names=("x", "y"),
+            trainable=(True, True),
+            hyperparameter_names=("a", "b"),
+        )
+
+
+def test_stochastic_result_status_edges_and_custom_vjp_shape() -> None:
+    """Reject interval/status drift and mismatched custom VJP dimensions."""
+    gradient = np.array([0.5, -0.25], dtype=np.float64)
+    radius = np.array([0.2, 0.2], dtype=np.float64)
+    interval = _centered_confidence_interval(
+        gradient,
+        radius,
+        status="passed",
+        reasons=(),
+    )
+    spsa = result_contracts.SPSAGradientResult(
+        gradient=gradient,
+        standard_error=np.array([0.1, 0.1]),
+        covariance=np.diag([0.01, 0.01]),
+        confidence_radius=radius,
+        records=(_spsa_probe(),),
+        perturbation_radius=0.1,
+        repetitions=1,
+        seed=123,
+        confidence_z=1.96,
+        method="seeded_spsa",
+        evaluations=2,
+        total_shots=32,
+        parameter_names=("x", "y"),
+        trainable=(True, True),
+        claim_boundary="finite-shot SPSA simulation evidence",
+        hardware_execution=False,
+        confidence_interval=interval,
+        failure_policy_status="passed",
+    )
+    score = result_contracts.ScoreFunctionGradientResult(
+        gradient=gradient,
+        standard_error=np.array([0.1, 0.1]),
+        covariance=np.diag([0.01, 0.01]),
+        confidence_radius=radius,
+        records=(_score_sample(0), _score_sample(1)),
+        baseline=0.75,
+        sample_count=2,
+        confidence_z=1.96,
+        method="score_function",
+        parameter_names=("x", "y"),
+        trainable=(True, True),
+        claim_boundary="score-function simulation evidence",
+        hardware_execution=False,
+        confidence_interval=interval,
+        failure_policy_status="passed",
+    )
+    bad_shape_interval = _centered_confidence_interval(
+        np.array([0.5]), np.array([0.2]), status="passed", reasons=()
+    )
+    invalid_results = (
+        (lambda: replace(spsa, confidence_interval=bad_shape_interval), "SPSA.*shape"),
+        (lambda: replace(spsa, failure_policy_status="failed"), "SPSA.*confidence_interval"),
+        (
+            lambda: replace(spsa, confidence_interval=None, failure_policy_status="passed"),
+            "SPSA.*requires",
+        ),
+        (lambda: replace(score, confidence_interval=bad_shape_interval), "score-function.*shape"),
+        (lambda: replace(score, failure_policy_status="failed"), "score-function.*interval"),
+        (
+            lambda: replace(score, confidence_interval=None, failure_policy_status="passed"),
+            "score-function.*requires",
+        ),
+    )
+    for factory, message in invalid_results:
+        with pytest.raises(ValueError, match=message):
+            factory()
+    assert (
+        replace(
+            spsa,
+            confidence_interval=None,
+            failure_policy_status="not_evaluated",
+            failure_reasons=(),
+        ).confidence_interval
+        is None
+    )
+    assert (
+        replace(
+            score,
+            confidence_interval=None,
+            failure_policy_status="not_evaluated",
+            failure_reasons=(),
+        ).confidence_interval
+        is None
+    )
+    with pytest.raises(ValueError, match="failure_reasons"):
+        replace(score, failure_reasons=("unexpected",))
+
+    short_vjp = result_contracts.VJPResult(
+        value=np.array([1.0, 2.0]),
+        cotangent=np.array([0.5, -0.25]),
+        vjp=np.array([0.1]),
+        method="exact",
+        step=0.0,
+        evaluations=1,
+        parameter_names=("x",),
+        trainable=(True,),
+    )
+    with pytest.raises(ValueError, match="VJP outputs"):
+        result_contracts.CustomDerivativeCheckResult(
+            custom_jvp=_jvp(),
+            custom_vjp=_vjp(),
+            reference_jvp=_jvp(),
+            reference_vjp=short_vjp,
+            adjoint_inner_error=0.0,
+            jvp_l2_error=0.0,
+            vjp_l2_error=0.0,
+            tolerance=1.0e-9,
+            passed=True,
+        )
+
+
 def _base_gradient() -> GradientResult:
     return GradientResult(
         value=1.0,
