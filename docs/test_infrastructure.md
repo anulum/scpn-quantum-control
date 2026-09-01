@@ -583,8 +583,8 @@ Test matrix: Python 3.11, 3.12, 3.13.
 Coverage target: 90% line coverage on the Python 3.12 lane, enforced by
 `tools/audit_coverage_policy.py` from branch-enabled `coverage.xml`. Branch data
 is mandatory but observational until the policy records an evidence-backed
-branch threshold. The current remote baseline is 96.6283% line coverage and
-93.6379% observed branch coverage at origin `8b47cddd` (CI run `33466180741`).
+branch threshold. The current remote baseline is 97.2116% line coverage and
+95.0064% observed branch coverage at origin `9854a09d` (CI run `33479377146`).
 Coverage recovery must stay module-specific; coverage-bucket tests remain
 forbidden.
 
@@ -592,7 +592,7 @@ The separate 100% recovery register is
 `data/coverage/coverage_debt_register.json`. It is generated and audited by
 `tools/audit_coverage_debt.py` under `tools/coverage_debt_policy.json`; it does
 not replace or raise the aggregate 90% line gate. The current register derives
-from exact-head Python 3.12 CI run `33466180741`, honours the justified
+from exact-head Python 3.12 CI run `33479377146`, honours the justified
 exclusions ledger, and records absent optional-dependency paths as unmeasured.
 Debt is ordered first by public claim-ledger ownership, then explicit runtime
 hot paths, unmeasured paths, large known line debt, and remaining measured

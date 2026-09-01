@@ -1,41 +1,13 @@
 {
   "baseline": {
     "artifact_name": "coverage-gap-audit-3.12",
-    "artifact_sha256": "de8b958dfb067decb6b71a7513d209b94c4b095649ed0497d46263db9c796d59",
-    "origin_commit": "8b47cddd30020a066c182878edd019ff65f80ba9",
+    "artifact_sha256": "53eb8316ed0d2bc6f39385c79ba22022f4a7a5f671860c29ad312cff3828d1bf",
+    "origin_commit": "9854a09d837a48746f49be2251373f636068fe38",
     "python_version": "3.12",
-    "remote_ci_run": 33466180741,
-    "source_url": "https://github.com/anulum/scpn-quantum-control/actions/runs/33466180741"
+    "remote_ci_run": 33479377146,
+    "source_url": "https://github.com/anulum/scpn-quantum-control/actions/runs/33479377146"
   },
   "debt": [
-    {
-      "claim_ids": [
-        "ci_benchmark_evidence",
-        "differentiable_isolated_benchmark_plan"
-      ],
-      "covered_lines": 216,
-      "line_percent": 99.53999999999999,
-      "missing_lines": 1,
-      "path": "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
-      "priority": "P0_claim_bearing",
-      "priority_reason": "Public claim ledger: ci_benchmark_evidence, differentiable_isolated_benchmark_plan",
-      "status": "below_target",
-      "valid_lines": 217
-    },
-    {
-      "claim_ids": [
-        "public_claim_table",
-        "support_surface_alignment"
-      ],
-      "covered_lines": 92,
-      "line_percent": 98.92,
-      "missing_lines": 1,
-      "path": "src/scpn_quantum_control/differentiable_claim_rendering.py",
-      "priority": "P0_claim_bearing",
-      "priority_reason": "Public claim ledger: public_claim_table, support_surface_alignment",
-      "status": "below_target",
-      "valid_lines": 93
-    },
     {
       "claim_ids": [],
       "covered_lines": 91,
@@ -60,17 +32,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 735,
-      "line_percent": 79.03,
-      "missing_lines": 195,
-      "path": "src/scpn_quantum_control/program_ad_assembly_primitives.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 930
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 80,
       "line_percent": 33.06,
       "missing_lines": 162,
@@ -79,28 +40,6 @@
       "priority_reason": "At least 50 executable lines are uncovered.",
       "status": "below_target",
       "valid_lines": 242
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 503,
-      "line_percent": 76.33,
-      "missing_lines": 156,
-      "path": "src/scpn_quantum_control/program_ad_product_primitives.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 659
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 611,
-      "line_percent": 81.58,
-      "missing_lines": 138,
-      "path": "src/scpn_quantum_control/program_ad_reduction_primitives.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 749
     },
     {
       "claim_ids": [],
@@ -123,17 +62,6 @@
       "priority_reason": "At least 50 executable lines are uncovered.",
       "status": "below_target",
       "valid_lines": 243
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 472,
-      "line_percent": 80.67999999999999,
-      "missing_lines": 113,
-      "path": "src/scpn_quantum_control/program_ad_selection_primitives.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 585
     },
     {
       "claim_ids": [],
@@ -302,9 +230,9 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 307,
-      "line_percent": 87.97,
-      "missing_lines": 42,
+      "covered_lines": 308,
+      "line_percent": 88.25,
+      "missing_lines": 41,
       "path": "src/scpn_quantum_control/program_ad_cumulative_primitives.py",
       "priority": "P4_standard",
       "priority_reason": "Measured below the 100% per-file recovery target.",
@@ -379,9 +307,9 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 238,
-      "line_percent": 88.48,
-      "missing_lines": 31,
+      "covered_lines": 239,
+      "line_percent": 88.85,
+      "missing_lines": 30,
       "path": "src/scpn_quantum_control/program_ad_signal_primitives.py",
       "priority": "P4_standard",
       "priority_reason": "Measured below the 100% per-file recovery target.",
@@ -412,17 +340,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 204,
-      "line_percent": 88.31,
-      "missing_lines": 27,
-      "path": "src/scpn_quantum_control/program_ad_interpolation_primitives.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 231
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 305,
       "line_percent": 92.15,
       "missing_lines": 26,
@@ -442,6 +359,17 @@
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
       "valid_lines": 206
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": 205,
+      "line_percent": 88.74,
+      "missing_lines": 26,
+      "path": "src/scpn_quantum_control/program_ad_interpolation_primitives.py",
+      "priority": "P4_standard",
+      "priority_reason": "Measured below the 100% per-file recovery target.",
+      "status": "below_target",
+      "valid_lines": 231
     },
     {
       "claim_ids": [],
@@ -1088,7 +1016,7 @@
     "justified_exclusions_path": "docs/release_coverage_exclusions.json",
     "justified_exclusions_sha256": "28afc4dde9e15eaa8e2868c603695f53daa91fbf72c55a50bc3e925e3aab7b91"
   },
-  "policy_sha256": "5dae0a87617e88f638f811b102dce60bc26cb1fcded39696772e60faa3d57cb7",
+  "policy_sha256": "9af3ac7f4b30c8aedec2356e2fff7bd039532c4f2c1b1e599253793415633a8f",
   "schema_version": 1,
   "source_inventory": {
     "baseline_report_file_count": 739,
@@ -1098,20 +1026,20 @@
     "sha256": "948b2b2088bb16e97a5e1a92375d0307f011fa0ba4fe9afd0089fccee13fcc04"
   },
   "summary": {
-    "debt_file_count": 97,
-    "fully_covered_file_count": 598,
+    "debt_file_count": 91,
+    "fully_covered_file_count": 604,
     "justified_exclusion_file_count": 44,
-    "known_missing_line_count": 3500,
+    "known_missing_line_count": 2893,
     "measured_non_excluded_file_count": 695,
     "priority_counts": {
-      "P0_claim_bearing": 2,
+      "P0_claim_bearing": 0,
       "P1_runtime_hot_path": 0,
       "P2_unmeasured": 0,
-      "P3_high_line_debt": 22,
+      "P3_high_line_debt": 18,
       "P4_standard": 73
     },
     "status_counts": {
-      "below_target": 97
+      "below_target": 91
     },
     "unmeasured_debt_file_count": 0
   },

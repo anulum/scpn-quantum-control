@@ -487,8 +487,8 @@ def test_live_policy_records_latest_remote_line_baseline() -> None:
     assert policy.line_minimum_percent == 90.0
     assert policy.branch.mode == "observe"
     assert policy.branch.require_data is True
-    assert policy.baseline.origin_commit == "8b47cddd30020a066c182878edd019ff65f80ba9"
-    assert policy.baseline.remote_ci_run == 33466180741
-    assert policy.baseline.covered_lines == 100304
-    assert policy.baseline.measured_lines == 103804
-    assert policy.baseline.branch_percent == 93.6379
+    assert policy.baseline.origin_commit == "9854a09d837a48746f49be2251373f636068fe38"
+    assert policy.baseline.remote_ci_run == 33479377146
+    assert policy.baseline.covered_lines == 100859
+    assert policy.baseline.measured_lines == 103752
+    assert policy.baseline.branch_percent == 95.0064

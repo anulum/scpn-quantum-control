@@ -809,12 +809,12 @@ def test_live_policy_records_latest_remote_debt_baseline() -> None:
     policy = audit.load_policy(repo_root / "tools" / "coverage_debt_policy.json")
     register = json.loads((repo_root / policy.register_path).read_text(encoding="utf-8"))
 
-    assert policy.baseline.origin_commit == "8b47cddd30020a066c182878edd019ff65f80ba9"
-    assert policy.baseline.remote_ci_run == 33466180741
+    assert policy.baseline.origin_commit == "9854a09d837a48746f49be2251373f636068fe38"
+    assert policy.baseline.remote_ci_run == 33479377146
     assert policy.baseline.artifact_sha256 == (
-        "de8b958dfb067decb6b71a7513d209b94c4b095649ed0497d46263db9c796d59"
+        "53eb8316ed0d2bc6f39385c79ba22022f4a7a5f671860c29ad312cff3828d1bf"
     )
     assert policy.baseline_invalidated_paths == ()
-    assert register["summary"]["debt_file_count"] == 97
-    assert register["summary"]["known_missing_line_count"] == 3500
+    assert register["summary"]["debt_file_count"] == 91
+    assert register["summary"]["known_missing_line_count"] == 2893
     assert register["summary"]["unmeasured_debt_file_count"] == 0
