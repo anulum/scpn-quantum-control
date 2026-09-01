@@ -344,6 +344,38 @@ def test_cuda_probe_records_runtime_versions_when_device_probe_fails(
     assert _evidence._probe_requested_accelerator("cuda") == ((), (), {"jax": "test"})
 
 
+def test_public_accelerator_capture_records_discovered_jax_devices(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeDevice:
+        def __str__(self) -> str:
+            return "NVIDIA L40S"
+
+    fake_jax = ModuleType("jax")
+
+    def fake_devices(kind: str) -> tuple[FakeDevice, ...]:
+        assert kind == "gpu"
+        return (FakeDevice(), FakeDevice())
+
+    fake_jax.devices = fake_devices  # type: ignore[attr-defined]
+    monkeypatch.setitem(__import__("sys").modules, "jax", fake_jax)
+    monkeypatch.setattr(importlib_metadata, "version", lambda _package: "test-version")
+
+    metadata = capture_accelerator_metadata({"SCPN_BENCH_ACCELERATOR_BACKEND": "cuda"})
+
+    assert metadata.requested_backend == "cuda"
+    assert metadata.detected_backend == "cuda"
+    assert metadata.device_ids == ("0", "1")
+    assert metadata.device_names == ("NVIDIA L40S", "NVIDIA L40S")
+    assert metadata.runtime_versions == {
+        "jax": "test-version",
+        "jaxlib": "test-version",
+        "jax-cuda12-plugin": "test-version",
+        "jax-cuda12-pjrt": "test-version",
+    }
+    assert not metadata.cpu_fallback_detected
+
+
 def test_jax_runtime_versions_skip_missing_packages(monkeypatch: pytest.MonkeyPatch) -> None:
     def fake_version(package: str) -> str:
         if package == "jax":
