@@ -79,7 +79,8 @@ def test_shared_result_validation_helpers_cover_fail_closed_edges() -> None:
     """Shared normalizers reject malformed custody and uncertainty evidence."""
     with pytest.raises(ValueError, match="claim_boundary"):
         result_contracts._normalise_claim_boundary("test", " ")
-    for token in (True, None, 1.5, [], " "):
+    invalid_tokens: tuple[object, ...] = (True, None, 1.5, [], " ")
+    for token in invalid_tokens:
         with pytest.raises(ValueError, match="token|non-empty"):
             result_contracts._normalise_provenance_token("test", token)
 
@@ -134,7 +135,7 @@ def test_shared_result_validation_helpers_cover_fail_closed_edges() -> None:
 def test_result_contracts_cover_remaining_boundary_records() -> None:
     """Exercise remaining public record guards and alternative valid shapes."""
     gradient = _base_gradient()
-    invalid_gradients = (
+    invalid_gradients: tuple[tuple[Callable[[], object], str], ...] = (
         (lambda: replace(gradient, claim_boundary=" "), "claim_boundary"),
         (lambda: replace(gradient, gradient=np.array([np.inf, 0.0])), "finite"),
         (lambda: replace(gradient, parameter_names=("x",)), "parameter_names length"),
@@ -163,7 +164,7 @@ def test_result_contracts_cover_remaining_boundary_records() -> None:
         variance_contribution=0.0,
     )
     assert frozen_record.trainable is False
-    invalid_records = (
+    invalid_records: tuple[tuple[Callable[[], object], str], ...] = (
         (lambda: replace(record, gradient_contribution=9.0), "gradient_contribution"),
         (lambda: replace(record, variance_contribution=9.0), "variance_contribution"),
         (
@@ -199,10 +200,11 @@ def test_result_contracts_cover_remaining_boundary_records() -> None:
     assert allocation.shots.shape == (1, 2, 2)
 
     step = _levenberg_marquardt_step()
-    for factory, message in (
+    invalid_steps: tuple[tuple[Callable[[], object], str], ...] = (
         (lambda: replace(step, step=np.array([np.nan, 0.0])), "finite"),
         (lambda: replace(step, candidate_values=np.array([np.nan, 0.0])), "finite"),
-    ):
+    )
+    for factory, message in invalid_steps:
         with pytest.raises(ValueError, match=message):
             factory()
     with pytest.raises(ValueError, match="candidate_residual"):
