@@ -40,8 +40,8 @@ def test_static_gate_is_strict_and_completely_documented() -> None:
     assert "lint.explicit-preview-rules = true" in ruff
 
 
-def test_coverage_gate_reuses_execution_and_covers_linalg_product_exactly() -> None:
-    """Require shared real execution and exact trace/linalg/product coverage."""
+def test_coverage_gate_reuses_execution_and_covers_program_ad_exactly() -> None:
+    """Require shared execution and exact trace/linalg/product/reduction coverage."""
     gates = dict(quality_gates.build_coverage_gates("/python"))
     run = gates["whole-program trace-value focused coverage"]
     report = gates["whole-program trace-value exact coverage threshold"]
@@ -53,6 +53,7 @@ def test_coverage_gate_reuses_execution_and_covers_linalg_product_exactly() -> N
     assert f"--include={quality_gates.WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_INCLUDE}" in report
     assert any("*/program_ad_linalg_primitives.py" in argument for argument in report)
     assert any("*/program_ad_product_primitives.py" in argument for argument in report)
+    assert any("*/program_ad_reduction_primitives.py" in argument for argument in report)
 
 
 def test_preflight_reexports_helper_defined_gates() -> None:

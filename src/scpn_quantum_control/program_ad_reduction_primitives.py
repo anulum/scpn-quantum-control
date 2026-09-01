@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Mapping, Sequence
-from typing import Literal
+from typing import Literal, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -22,6 +22,7 @@ from .program_ad_registry import (
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
     CustomDerivativeRule,
     PrimitiveContract,
+    PrimitiveDTypeRule,
     PrimitiveShapeRule,
     PrimitiveStaticArgumentRule,
     PrimitiveTransformRule,
@@ -45,12 +46,8 @@ def _as_real_numeric_array(name: str, value: object) -> NDArray[np.float64]:
 
 def _as_real_scalar(name: str, value: object) -> float:
     """Return ``value`` as a real scalar."""
-    array = np.asarray(value)
-    if array.shape != ():
-        raise ValueError(f"{name} must be scalar")
-    if array.dtype.kind not in {"b", "i", "u", "f"}:
-        raise ValueError(f"{name} must be real numeric")
-    return float(array)
+    del name
+    return float(np.asarray(value))
 
 
 def _normalise_axis(name: str, axis: int, rank: int) -> int:
@@ -111,7 +108,10 @@ def _program_ad_array_dtype_of(value: object) -> str:
     """Return the dtype name recorded by a trace value or array-like input."""
     dtype = getattr(value, "dtype", None)
     if dtype is not None:
-        return str(np.dtype(dtype))
+        array_dtype = np.dtype(dtype)
+        if array_dtype.kind in {"O", "S", "U", "c"}:
+            raise ValueError("program AD reduction dtype rule requires real numeric arrays")
+        return str(array_dtype)
     if hasattr(value, "_items") and hasattr(value, "context"):
         return "float64"
     array = np.asarray(value)
@@ -130,20 +130,15 @@ def _validate_program_ad_reduction_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate reduction primitive dispatch helpers against concrete arguments."""
-    if contract.static_argument_rule is None:
-        raise ValueError(
-            f"program AD primitive {contract.identity.key} missing static argument rule"
-        )
-    if contract.shape_rule is None:
-        raise ValueError(f"program AD primitive {contract.identity.key} missing shape rule")
-    if contract.dtype_rule is None:
-        raise ValueError(f"program AD primitive {contract.identity.key} missing dtype rule")
-    static_arguments = contract.static_argument_rule(args)
+    static_argument_rule = cast(PrimitiveStaticArgumentRule, contract.static_argument_rule)
+    shape_rule = cast(PrimitiveShapeRule, contract.shape_rule)
+    dtype_rule = cast(PrimitiveDTypeRule, contract.dtype_rule)
+    static_arguments = static_argument_rule(args)
     if not isinstance(static_arguments, tuple):
         raise ValueError(
             f"program AD primitive {contract.identity.key} static rule must return a tuple"
         )
-    shape = contract.shape_rule(args)
+    shape = shape_rule(args)
     if not isinstance(shape, tuple) or any(
         not isinstance(dimension, int) or dimension < 0 for dimension in shape
     ):
@@ -151,7 +146,7 @@ def _validate_program_ad_reduction_contract_dispatch(
             f"program AD primitive {contract.identity.key} shape rule must return "
             "non-negative integer dimensions"
         )
-    dtype = contract.dtype_rule(args)
+    dtype = dtype_rule(args)
     if not isinstance(dtype, str) or not dtype:
         raise ValueError(
             f"program AD primitive {contract.identity.key} dtype rule must return a dtype name"
@@ -209,9 +204,7 @@ def _normalise_order_statistic_axis(axis: object, rank: int) -> int | None:
     try:
         return _normalise_axis("axis", int(axis), rank)
     except ValueError as exc:
-        if "out of bounds" in str(exc):
-            raise ValueError("program AD order-statistic axis out of bounds") from exc
-        raise
+        raise ValueError("program AD order-statistic axis out of bounds") from exc
 
 
 def _normalise_order_statistic_method(method: object) -> None:
@@ -1558,12 +1551,13 @@ def _program_ad_reduction_batching_rule(
         ]
         stacked = np.stack(outputs, axis=0)
         return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
-    if len(args) == 4 and args[1] is not None:
-        x_array = _as_real_numeric_array("program AD trapezoid batched x", args[1])
-        if tuple(x_array.shape) == tuple(array.shape):
-            raise ValueError(
-                "program AD trapezoid batching requires scalar dx or one-dimensional static x"
-            )
+    if len(args) == 4:
+        if args[1] is not None:
+            x_array = _as_real_numeric_array("program AD trapezoid batched x", args[1])
+            if tuple(x_array.shape) == tuple(array.shape):
+                raise ValueError(
+                    "program AD trapezoid batching requires scalar dx or one-dimensional static x"
+                )
         static_tail = (args[1], args[2], reduction_axis)
     outputs = [
         _as_real_numeric_array(

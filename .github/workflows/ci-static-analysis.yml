@@ -514,6 +514,7 @@ jobs:
           src/scpn_quantum_control/whole_program_trace_predicates.py
           src/scpn_quantum_control/program_ad_linalg_primitives.py
           src/scpn_quantum_control/program_ad_product_primitives.py
+          src/scpn_quantum_control/program_ad_reduction_primitives.py
           tests/test_whole_program_trace_predicates.py
           tests/test_whole_program_trace_values.py
           tests/test_whole_program_trace_value_operators.py
@@ -524,6 +525,8 @@ jobs:
           tests/test_program_ad_linalg_spectral.py
           tests/test_program_ad_linalg_exact_contracts.py
           tests/test_program_ad_product_contractions.py
+          tests/test_program_ad_reduction_norms.py
+          tests/test_program_ad_reduction_primitives_docstrings.py
           tools/whole_program_trace_value_quality_gates.py
           tests/test_whole_program_trace_value_quality_gate.py
       - name: Ruff NumPy docstrings for whole-program trace-value quality cohort
@@ -535,6 +538,7 @@ jobs:
           src/scpn_quantum_control/whole_program_trace_predicates.py
           src/scpn_quantum_control/program_ad_linalg_primitives.py
           src/scpn_quantum_control/program_ad_product_primitives.py
+          src/scpn_quantum_control/program_ad_reduction_primitives.py
           tests/test_whole_program_trace_predicates.py
           tests/test_whole_program_trace_values.py
           tests/test_whole_program_trace_value_operators.py
@@ -545,6 +549,8 @@ jobs:
           tests/test_program_ad_linalg_spectral.py
           tests/test_program_ad_linalg_exact_contracts.py
           tests/test_program_ad_product_contractions.py
+          tests/test_program_ad_reduction_norms.py
+          tests/test_program_ad_reduction_primitives_docstrings.py
           tools/whole_program_trace_value_quality_gates.py
           tests/test_whole_program_trace_value_quality_gate.py
       - name: Ruff docstring ratchet for differentiable module hardening

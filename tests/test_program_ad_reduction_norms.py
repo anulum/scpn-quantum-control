@@ -44,7 +44,6 @@ from scpn_quantum_control.differentiable import (
 
 def test_program_ad_reduction_derivative_rules_are_extracted_identities() -> None:
     """Reduction factories should be re-exported through the compatibility facade."""
-
     assert (
         program_ad_reduction_sum_derivative_rule
         is reduction_primitives.program_ad_reduction_sum_derivative_rule
@@ -91,13 +90,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTransformRule:
     """Return a mutable registry transform that exactly mirrors a contract."""
-
     return PrimitiveTransformRule(
         identity=contract.identity,
         derivative_rule=contract.derivative_rule,
@@ -112,9 +109,29 @@ def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTrans
     )
 
 
+def _reduction_transform(
+    contract: PrimitiveContract,
+    **overrides: object,
+) -> PrimitiveTransformRule:
+    """Return one reduction transform with explicit contract-field overrides."""
+    fields: dict[str, object] = {
+        "identity": contract.identity,
+        "derivative_rule": contract.derivative_rule,
+        "batching_rule": contract.batching_rule,
+        "lowering_rule": contract.lowering_rule,
+        "lowering_metadata": contract.lowering_metadata,
+        "shape_rule": contract.shape_rule,
+        "dtype_rule": contract.dtype_rule,
+        "static_argument_rule": contract.static_argument_rule,
+        "nondifferentiable_policy": contract.nondifferentiable_policy,
+        "effect": contract.effect,
+    }
+    fields.update(overrides)
+    return PrimitiveTransformRule(**cast(Any, fields))
+
+
 def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:
     """Scalar reductions should expose primitive registry contracts."""
-
     matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
     expected_shapes = {
         "sum": (2,),
@@ -210,7 +227,6 @@ def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:
 
 def test_program_ad_reduction_boundary_metadata_is_explicit() -> None:
     """Reduction contracts should expose fail-closed static-axis boundaries."""
-
     expected_boundaries = {
         "sum": "static_axis_and_stable_output_shape",
         "prod": "static_axis_zero_factor_sensitive",
@@ -234,7 +250,6 @@ def test_program_ad_reduction_boundary_metadata_is_explicit() -> None:
 
 def test_program_ad_reduction_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported reduction primitives must execute through registry validation rules."""
-
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.reduction:{name}")
         for name in (
@@ -343,7 +358,6 @@ def test_program_ad_reduction_primitives_validate_registry_rules_at_dispatch() -
 
 def test_program_ad_reduction_static_derivative_factories_are_direct_kernels() -> None:
     """Static reduction factories should expose exact axis-aware JVP and VJP rules."""
-
     matrix = np.array([[1.0, 2.0, 3.0], [4.0, 0.0, -2.0]], dtype=np.float64)
     values = matrix.reshape(-1)
     tangent = np.array([0.5, -1.0, 0.25, 2.0, -0.75, 1.25], dtype=np.float64)
@@ -411,7 +425,6 @@ def test_program_ad_reduction_static_derivative_factories_are_direct_kernels() -
 
 def test_program_ad_variance_static_derivative_factories_are_direct_kernels() -> None:
     """Variance/std factories should expose exact axis-aware JVP and VJP rules."""
-
     matrix = np.array([[1.0, 3.0, 6.0], [2.0, 5.0, 9.0]], dtype=np.float64)
     values = matrix.reshape(-1)
     tangent = np.array([0.25, -0.5, 1.0, -1.5, 0.75, 2.0], dtype=np.float64)
@@ -461,7 +474,6 @@ def test_program_ad_variance_static_derivative_factories_are_direct_kernels() ->
 
 def test_program_ad_order_statistic_static_derivative_factories_are_direct_kernels() -> None:
     """Order-statistic factories should expose exact strict-order JVP and VJP rules."""
-
     matrix = np.array([[3.0, -1.0, 2.0], [0.5, 4.0, -2.0]], dtype=np.float64)
     values = matrix.reshape(-1)
     tangent = np.array([0.25, -0.5, 1.5, -1.0, 0.75, 2.0], dtype=np.float64)
@@ -540,7 +552,6 @@ def test_program_ad_order_statistic_static_derivative_factories_are_direct_kerne
 
 def test_program_ad_reduction_primitives_expose_direct_value_jvp_kernels() -> None:
     """Flat reduction primitive contracts should expose exact direct value/JVP rules."""
-
     values = np.array([2.0, 0.0, -3.0, 4.0], dtype=np.float64)
     tangent = np.array([0.5, -1.0, 0.25, 2.0], dtype=np.float64)
 
@@ -685,7 +696,6 @@ def test_program_ad_variance_and_std_reductions_match_analytic_gradients() -> No
 
 def test_program_ad_variance_and_std_reject_invalid_ddof() -> None:
     """Program AD variance/std should fail closed on unsupported or singular ddof."""
-
     with pytest.raises(ValueError, match="integer ddof"):
         whole_program_value_and_grad(
             lambda values: np.var(values, ddof=0.5),
@@ -700,7 +710,6 @@ def test_program_ad_variance_and_std_reject_invalid_ddof() -> None:
 
 def test_program_ad_axis_norms_match_euclidean_adjoint() -> None:
     """Program AD axis-aware Euclidean norms should replay exact vector adjoints."""
-
     row_weights = np.array([1.25, -0.5], dtype=np.float64)
     column_weights = np.array([0.75, -1.5, 0.25], dtype=np.float64)
 
@@ -735,7 +744,6 @@ def test_program_ad_axis_norms_match_euclidean_adjoint() -> None:
 
 def test_program_ad_axis_norms_fail_closed_on_unsupported_contracts() -> None:
     """Program AD axis norms should reject non-Euclidean, dynamic, and singular contracts."""
-
     with pytest.raises(ValueError, match="Euclidean norm"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.linalg.norm(np.reshape(values, (2, 2)), ord=1, axis=1)),
@@ -755,7 +763,6 @@ def test_program_ad_axis_norms_fail_closed_on_unsupported_contracts() -> None:
 
 def test_program_ad_frobenius_matrix_norms_match_exact_adjoint() -> None:
     """Program AD Frobenius matrix norms should replay exact static two-axis adjoints."""
-
     batch_weights = np.array([0.75, -1.25], dtype=np.float64)
 
     def objective(values: Any) -> object:
@@ -786,7 +793,6 @@ def test_program_ad_frobenius_matrix_norms_match_exact_adjoint() -> None:
 
 def test_program_ad_frobenius_matrix_norms_fail_closed_on_unsupported_contracts() -> None:
     """Program AD Frobenius norms should reject unsupported matrix-norm boundaries."""
-
     with pytest.raises(ValueError, match="matrix norms support only Frobenius"):
         whole_program_value_and_grad(
             lambda values: np.linalg.norm(np.reshape(values, (2, 2)), ord=1, axis=(0, 1)),
@@ -886,3 +892,373 @@ def test_program_ad_cumulative_product_method_handles_zero_factor() -> None:
 
     assert result.value == pytest.approx(0.0)
     _assert_allclose(result.gradient, [-22.0, 0.0, 0.0, 0.0], atol=1.0e-12)
+
+
+def test_program_ad_reduction_contract_facets_reject_malformed_arguments() -> None:
+    """Public reduction facets should reject malformed axes, ddof, q, and dtypes."""
+    contracts: dict[str, Any] = {
+        name: cast(Any, primitive_contract_for(f"scpn.program_ad.reduction:{name}"))
+        for name in (
+            "sum",
+            "var",
+            "std",
+            "max",
+            "quantile",
+            "percentile",
+            "trapezoid",
+        )
+    }
+    matrix = np.arange(6.0).reshape(2, 3)
+    with pytest.raises(ValueError, match="array and optional axis"):
+        contracts["sum"].shape_rule((matrix, 0, 1))
+    with pytest.raises(ValueError, match="static integer or None"):
+        contracts["sum"].shape_rule((matrix, True))
+    with pytest.raises(ValueError, match="out of bounds"):
+        contracts["sum"].shape_rule((matrix, 2))
+    with pytest.raises(ValueError, match="at least one element"):
+        contracts["sum"].shape_rule((np.empty((0, 2)), None))
+
+    for args, message in (
+        ((matrix, None), "array, axis, and ddof"),
+        ((matrix, True, 0), "static integer or None"),
+        ((matrix, 0, 0.5), "integer ddof"),
+        ((matrix, 0, -1), "non-negative ddof"),
+        ((matrix, 0, 2), "positive denominator"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            contracts["var"].shape_rule(args)
+    with pytest.raises(ValueError, match="at least one element"):
+        contracts["std"].shape_rule((np.empty((0, 2)), None, 0))
+
+    with pytest.raises(ValueError, match="static arguments"):
+        contracts["max"].shape_rule((matrix, None, 0))
+    with pytest.raises(ValueError, match="static integer or None"):
+        contracts["max"].shape_rule((matrix, True))
+    with pytest.raises(ValueError, match="axis out of bounds"):
+        contracts["max"].shape_rule((matrix, 2))
+    with pytest.raises(ValueError, match="at least one element"):
+        contracts["max"].shape_rule((np.empty((0, 2)), None))
+    with pytest.raises(ValueError, match="method must be static string"):
+        contracts["quantile"].shape_rule((matrix, 0.5, None, 1))
+    with pytest.raises(ValueError, match="only supports method='linear'"):
+        contracts["quantile"].shape_rule((matrix, 0.5, None, "nearest"))
+    with pytest.raises(ValueError, match="quantile rule requires"):
+        contracts["quantile"].static_argument_rule((matrix, 0.5))
+    with pytest.raises(ValueError, match="percentile rule requires"):
+        contracts["percentile"].static_argument_rule((matrix, 50.0))
+
+    with pytest.raises(ValueError, match="requires y, x, dx, and axis"):
+        contracts["trapezoid"].shape_rule((matrix,))
+    assert contracts["trapezoid"].shape_rule((matrix, None, 0.5, 1)) == (2,)
+    assert contracts["trapezoid"].static_argument_rule((matrix, None, 0.5, 1)) == (
+        None,
+        0.5,
+        1,
+    )
+    with pytest.raises(ValueError, match="dx must be a real numeric scalar"):
+        contracts["trapezoid"].static_argument_rule((matrix, None, np.ones(2), 1))
+    with pytest.raises(ValueError, match="dx must be a real numeric scalar"):
+        contracts["trapezoid"].static_argument_rule((matrix, None, 1.0j, 1))
+    x = np.array([0.0, 0.25, 1.0])
+    assert contracts["trapezoid"].static_argument_rule((matrix, x, 1.0, 1))[0] == (
+        "x",
+        (3,),
+        (0.0, 0.25, 1.0),
+    )
+
+    with pytest.raises(ValueError, match="requires an array operand"):
+        contracts["sum"].dtype_rule(())
+    with pytest.raises(ValueError, match="real numeric arrays"):
+        contracts["sum"].dtype_rule((np.array(["bad"]),))
+    traced = type("TraceValue", (), {"_items": (), "context": object()})()
+    assert contracts["sum"].dtype_rule((traced,)) == "float64"
+    typed = type("TypedValue", (), {"dtype": np.dtype("float32"), "shape": [2]})()
+    assert contracts["sum"].dtype_rule((typed,)) == "float32"
+    assert contracts["sum"].shape_rule((typed, None)) == ()
+    assert contracts["sum"].shape_rule((1.0, None)) == ()
+    assert contracts["sum"].dtype_rule((1.0,)) == "float64"
+    with pytest.raises(ValueError, match="real numeric arrays"):
+        contracts["sum"].dtype_rule((object(),))
+
+
+def test_program_ad_order_statistic_static_metadata_rejects_invalid_values() -> None:
+    """Order-statistic factories should validate scalar q and strict values."""
+    trace_q = type("TraceQ", (), {"value": 0.5, "node": object()})()
+    for q, message in (
+        (trace_q, "q must be static"),
+        (np.array([0.5]), "scalar q"),
+        (True, "static real numeric"),
+        (np.inf, "q must be finite"),
+        (-0.1, "must be in \\[0, 1\\]"),
+        (1.1, "must be in \\[0, 1\\]"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            program_ad_reduction_quantile_derivative_rule((2,), q=q)
+    for q in (-1.0, 101.0):
+        with pytest.raises(ValueError, match="must be in \\[0, 100\\]"):
+            program_ad_reduction_percentile_derivative_rule((2,), q=q)
+
+    median = program_ad_reduction_median_derivative_rule((1,))
+    _assert_allclose(median.value_fn(np.array([2.0])), [2.0])
+    with pytest.raises(ValueError, match="at least one element"):
+        reduction_primitives._require_strict_order_statistic_values(
+            np.array([], dtype=np.float64), "np.median"
+        )
+    with pytest.raises(ValueError, match="finite values"):
+        median.value_fn(np.array([np.inf]))
+
+
+def test_program_ad_reduction_registered_var_std_and_order_rules_are_exact() -> None:
+    """Registered flat statistical rules should expose exact value, JVP, and VJP kernels."""
+    values = np.array([1.0, 3.0, 6.0], dtype=np.float64)
+    tangent = np.array([0.5, -1.0, 0.25], dtype=np.float64)
+    for name, numpy_function in (("var", np.var), ("std", np.std)):
+        rule = custom_derivative_rule_for(f"scpn.program_ad.reduction:{name}")
+        assert rule.jvp_rule is not None
+        assert rule.vjp_rule is not None
+        gradient = (
+            2.0 * (values - np.mean(values)) / values.size
+            if name == "var"
+            else (values - np.mean(values)) / (values.size * np.std(values))
+        )
+        _assert_allclose(rule.value_fn(values), [numpy_function(values)])
+        _assert_allclose(rule.jvp_rule(values, tangent), [np.dot(gradient, tangent)])
+        _assert_allclose(rule.vjp_rule(values, np.array([1.5])), 1.5 * gradient)
+
+    std = custom_derivative_rule_for("scpn.program_ad.reduction:std")
+    assert std.jvp_rule is not None
+    assert std.vjp_rule is not None
+    _assert_allclose(std.value_fn(np.ones(2)), [0.0])
+    for callback, extra in (
+        (std.jvp_rule, (np.ones(2),)),
+        (std.vjp_rule, (np.ones(1),)),
+    ):
+        with pytest.raises(ValueError, match="zero variance"):
+            callback(np.ones(2), *extra)
+
+    order_values = np.array([3.0, -1.0, 2.0, 5.0])
+    order_tangent = np.array([0.5, -0.25, 1.0, 2.0])
+    quantile = custom_derivative_rule_for("scpn.program_ad.reduction:quantile")
+    assert quantile.jvp_rule is not None
+    assert quantile.vjp_rule is not None
+    _assert_allclose(quantile.value_fn(order_values), [2.5])
+    _assert_allclose(quantile.jvp_rule(order_values, order_tangent), [0.75])
+    _assert_allclose(quantile.vjp_rule(order_values, np.array([2.0])), [1.0, 0.0, 1.0, 0.0])
+
+
+def test_program_ad_reduction_direct_rules_reject_invalid_flat_payloads() -> None:
+    """Direct reduction rules should enforce non-empty values and tangent/cotangent sizes."""
+    rule = custom_derivative_rule_for("scpn.program_ad.reduction:sum")
+    assert rule.jvp_rule is not None
+    assert rule.vjp_rule is not None
+    with pytest.raises(ValueError, match="at least one value"):
+        rule.value_fn(np.array([], dtype=np.float64))
+    with pytest.raises(ValueError, match="tangent shape must match"):
+        rule.jvp_rule(np.ones(2), np.ones(3))
+    with pytest.raises(ValueError, match="one scalar cotangent"):
+        rule.vjp_rule(np.ones(2), np.ones(2))
+    with pytest.raises(ValueError, match="real numeric array"):
+        rule.value_fn(cast(Any, np.array(["bad"])))
+
+    for factory in (
+        program_ad_reduction_sum_derivative_rule,
+        program_ad_reduction_mean_derivative_rule,
+        program_ad_reduction_prod_derivative_rule,
+    ):
+        with pytest.raises(ValueError, match="non-negative dimensions"):
+            factory((-1,))
+        static_rule = factory((2,))
+        with pytest.raises(ValueError, match="requires 2 values"):
+            static_rule.value_fn(np.ones(3))
+        assert static_rule.vjp_rule is not None
+        with pytest.raises(ValueError, match="cotangent with 1 values"):
+            static_rule.vjp_rule(np.ones(2), np.ones(2))
+
+
+def test_program_ad_reduction_flat_static_factories_cover_scalar_routes() -> None:
+    """Axis-free static factories should exercise scalar output JVP and VJP routes."""
+    values = np.array([1.0, 3.0, 6.0])
+    tangent = np.array([0.5, -1.0, 0.25])
+    for factory, numpy_function in cast(
+        Any,
+        (
+            (program_ad_reduction_mean_derivative_rule, np.mean),
+            (program_ad_reduction_prod_derivative_rule, np.prod),
+        ),
+    ):
+        rule = factory((3,), axis=None)
+        assert rule.jvp_rule is not None
+        assert rule.vjp_rule is not None
+        _assert_allclose(rule.value_fn(values), [numpy_function(values)])
+        assert np.asarray(rule.jvp_rule(values, tangent)).shape == (1,)
+        assert np.asarray(rule.vjp_rule(values, np.array([2.0]))).shape == (3,)
+
+    for factory, numpy_function in cast(
+        Any,
+        (
+            (program_ad_reduction_var_derivative_rule, np.var),
+            (program_ad_reduction_std_derivative_rule, np.std),
+        ),
+    ):
+        rule = factory((3,), axis=None, ddof=0)
+        assert rule.jvp_rule is not None
+        assert rule.vjp_rule is not None
+        _assert_allclose(rule.value_fn(values), [numpy_function(values)])
+        assert np.asarray(rule.jvp_rule(values, tangent)).shape == (1,)
+        assert np.asarray(rule.vjp_rule(values, np.array([2.0]))).shape == (3,)
+
+    order = program_ad_reduction_quantile_derivative_rule((4,), q=0.25, axis=None)
+    assert order.jvp_rule is not None
+    assert order.vjp_rule is not None
+    order_values = np.array([4.0, 1.0, 3.0, 8.0])
+    _assert_allclose(order.value_fn(order_values), [2.5])
+    assert np.asarray(order.jvp_rule(order_values, np.ones(4))).shape == (1,)
+    assert np.asarray(order.vjp_rule(order_values, np.array([2.0]))).shape == (4,)
+    scalar = program_ad_reduction_sum_derivative_rule(())
+    assert "scalar" in scalar.name
+
+    constant_std = program_ad_reduction_std_derivative_rule((2,), axis=None)
+    assert constant_std.jvp_rule is not None
+    assert constant_std.vjp_rule is not None
+    with pytest.raises(ValueError, match="zero variance"):
+        constant_std.jvp_rule(np.ones(2), np.ones(2))
+    with pytest.raises(ValueError, match="zero variance"):
+        constant_std.vjp_rule(np.ones(2), np.ones(1))
+
+
+def test_program_ad_reduction_batching_covers_static_reduction_families() -> None:
+    """Reduction batching should preserve static metadata across every argument family."""
+    batching = cast(Any, primitive_contract_for("scpn.program_ad.reduction:sum").batching_rule)
+    matrix = np.arange(6.0).reshape(2, 3)
+    with pytest.raises(ValueError, match="axes must match argument count"):
+        batching(np.sum, (matrix, 1), (0,), 0)
+    with pytest.raises(ValueError, match="requires an array operand"):
+        batching(np.sum, (), (), 0)
+    _assert_allclose(batching(np.sum, (matrix, 1), (None, None), 0), np.sum(matrix, axis=1))
+    with pytest.raises(ValueError, match="static axes only"):
+        batching(np.sum, (matrix, 1), (0, 0), 0)
+    with pytest.raises(ValueError, match="cannot reduce the mapped batch axis"):
+        batching(np.sum, (matrix, 0), (0, None), 0)
+    _assert_allclose(batching(np.sum, (matrix, 1), (0, None), 0), np.sum(matrix, axis=1))
+    _assert_allclose(batching(np.sum, (matrix, 0), (1, None), 0), np.sum(matrix, axis=0))
+
+    variance = cast(Any, primitive_contract_for("scpn.program_ad.reduction:var").batching_rule)
+    _assert_allclose(
+        variance(np.var, (matrix, 1, 0), (0, None, None), 0),
+        np.var(matrix, axis=1),
+    )
+    _assert_allclose(
+        variance(np.var, (matrix, None, 0), (0, None, None), 0),
+        np.var(matrix, axis=1),
+    )
+    quantile = cast(
+        Any, primitive_contract_for("scpn.program_ad.reduction:quantile").batching_rule
+    )
+    _assert_allclose(
+        quantile(np.quantile, (matrix, 0.5, 1, "linear"), (0, None, None, None), 0),
+        np.quantile(matrix, 0.5, axis=1),
+    )
+    _assert_allclose(
+        quantile(np.quantile, (matrix, 0.5, None, "linear"), (0, None, None, None), 0),
+        np.quantile(matrix, 0.5, axis=1),
+    )
+
+    trapezoid = cast(
+        Any, primitive_contract_for("scpn.program_ad.reduction:trapezoid").batching_rule
+    )
+    _assert_allclose(
+        trapezoid(np.trapezoid, (matrix, None, 0.5, 1), (0, None, None, None), 0),
+        np.trapezoid(matrix, dx=0.5, axis=1),
+    )
+    x = np.array([0.0, 0.25, 1.0])
+    _assert_allclose(
+        trapezoid(np.trapezoid, (matrix, x, 1.0, 1), (0, None, None, None), 0),
+        np.trapezoid(matrix, x=x, axis=1),
+    )
+    with pytest.raises(ValueError, match="one-dimensional static x"):
+        trapezoid(np.trapezoid, (matrix, matrix, 1.0, 1), (0, None, None, None), 0)
+
+
+@pytest.mark.parametrize(
+    ("overrides", "message"),
+    (
+        ({"nondifferentiable_policy": "invalid"}, "invalid program AD reduction primitive policy"),
+        ({"effect": "stateful"}, "invalid program AD reduction primitive effect"),
+    ),
+)
+def test_program_ad_reduction_runtime_rejects_wrong_policy_or_effect(
+    overrides: dict[str, object],
+    message: str,
+) -> None:
+    """Public reduction execution should reject altered registry classifications."""
+    original = primitive_contract_for("scpn.program_ad.reduction:sum")
+    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+        _reduction_transform(original, **overrides), overwrite=True
+    )
+    try:
+        with pytest.raises(ValueError, match=message):
+            whole_program_value_and_grad(lambda values: np.sum(values), np.array([1.0, 2.0]))
+    finally:
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(original), overwrite=True
+        )
+
+
+def test_program_ad_reduction_runtime_rejects_incomplete_and_invalid_contracts() -> None:
+    """Public reduction execution should validate complete contracts and callable results."""
+    original = primitive_contract_for("scpn.program_ad.reduction:sum")
+    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+        _reduction_transform(
+            original,
+            batching_rule=None,
+            lowering_metadata={},
+            shape_rule=None,
+            dtype_rule=None,
+            static_argument_rule=None,
+        ),
+        overwrite=True,
+    )
+    try:
+        with pytest.raises(ValueError, match="batching_rule, lowering_metadata, mlir_op"):
+            whole_program_value_and_grad(lambda values: np.sum(values), np.array([1.0, 2.0]))
+    finally:
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(original), overwrite=True
+        )
+
+    for field, replacement, message in (
+        ("static_argument_rule", lambda _args: ["bad"], "must return a tuple"),
+        ("shape_rule", lambda _args: (-1,), "non-negative integer dimensions"),
+        ("dtype_rule", lambda _args: "", "must return a dtype name"),
+    ):
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _reduction_transform(original, **{field: replacement}), overwrite=True
+        )
+        try:
+            with pytest.raises(ValueError, match=message):
+                whole_program_value_and_grad(lambda values: np.sum(values), np.array([1.0, 2.0]))
+        finally:
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
+
+
+def test_program_ad_reduction_private_registration_guards_remain_fail_closed() -> None:
+    """Internal registration invariants should reject unknown names and stay idempotent."""
+    with pytest.raises(ValueError, match="unsupported program AD reduction primitive"):
+        reduction_primitives._program_ad_reduction_derivative_rule("unknown")
+    with pytest.raises(ValueError, match="no program AD reduction primitive identity"):
+        reduction_primitives._require_program_ad_reduction_contract("unknown")
+    assert (
+        reduction_primitives._require_program_ad_reduction_contract("sum").identity.name == "sum"
+    )
+    unsupported = reduction_primitives._program_ad_reduction_static_rule("unknown", (2,), None)
+    assert unsupported.jvp_rule is not None
+    assert unsupported.vjp_rule is not None
+    with pytest.raises(ValueError, match="unsupported program AD reduction primitive"):
+        unsupported.value_fn(np.ones(2))
+    with pytest.raises(ValueError, match="unsupported program AD reduction primitive"):
+        unsupported.jvp_rule(np.ones(2), np.ones(2))
+    with pytest.raises(ValueError, match="unsupported program AD reduction primitive"):
+        unsupported.vjp_rule(np.ones(2), np.ones(1))
+    reduction_primitives._register_program_ad_reduction_primitive_contracts()
