@@ -480,13 +480,15 @@ def test_main_supports_default_xml_explicit_xml_json_and_errors(
 
 
 def test_live_policy_records_latest_remote_line_baseline() -> None:
+    """Pin the exact-head hosted line and observed-branch baseline."""
     repo_root = Path(__file__).resolve().parents[1]
     policy = _audit.load_policy(repo_root / "tools" / "coverage_policy.json")
 
     assert policy.line_minimum_percent == 90.0
     assert policy.branch.mode == "observe"
     assert policy.branch.require_data is True
-    assert policy.baseline.origin_commit == "4c3a4fee4935ca4eb8c75bb7f33b3262038faeaa"
-    assert policy.baseline.remote_ci_run == 29180328986
-    assert policy.baseline.covered_lines == 75731
-    assert policy.baseline.measured_lines == 81858
+    assert policy.baseline.origin_commit == "8b47cddd30020a066c182878edd019ff65f80ba9"
+    assert policy.baseline.remote_ci_run == 33466180741
+    assert policy.baseline.covered_lines == 100304
+    assert policy.baseline.measured_lines == 103804
+    assert policy.baseline.branch_percent == 93.6379

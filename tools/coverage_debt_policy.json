@@ -9,18 +9,13 @@
   "high_line_debt_minimum": 50,
   "baseline": {
     "artifact_name": "coverage-gap-audit-3.12",
-    "artifact_sha256": "8c8f60fa2bac006ebcf67e62b42271ec5c2736a933dfd136da5c1ca7147381a9",
-    "origin_commit": "4c3a4fee4935ca4eb8c75bb7f33b3262038faeaa",
+    "artifact_sha256": "de8b958dfb067decb6b71a7513d209b94c4b095649ed0497d46263db9c796d59",
+    "origin_commit": "8b47cddd30020a066c182878edd019ff65f80ba9",
     "python_version": "3.12",
-    "remote_ci_run": 29180328986,
-    "source_url": "https://github.com/anulum/scpn-quantum-control/actions/runs/29180328986"
+    "remote_ci_run": 33466180741,
+    "source_url": "https://github.com/anulum/scpn-quantum-control/actions/runs/33466180741"
   },
-  "baseline_invalidated_paths": [
-    {
-      "path": "src/scpn_quantum_control/compiler/mlir.py",
-      "reason": "Executable ownership changed in decomposition commit de9b58c3ad4debd2ea193b9cf6481e5edc4532b4; retain the path as unmeasured until branch-enabled remote CI refreshes it."
-    }
-  ],
+  "baseline_invalidated_paths": [],
   "runtime_hot_paths": [
     {
       "path": "src/scpn_quantum_control/qpu_compute_runtime.py",

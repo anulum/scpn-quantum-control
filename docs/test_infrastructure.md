@@ -583,22 +583,22 @@ Test matrix: Python 3.11, 3.12, 3.13.
 Coverage target: 90% line coverage on the Python 3.12 lane, enforced by
 `tools/audit_coverage_policy.py` from branch-enabled `coverage.xml`. Branch data
 is mandatory but observational until the policy records an evidence-backed
-branch threshold. The pre-branch remote baseline is 92.5151% line coverage at
-origin `4c3a4fee` (CI run `29180328986`). Coverage recovery must stay
-module-specific; coverage-bucket tests remain forbidden.
+branch threshold. The current remote baseline is 96.6283% line coverage and
+93.6379% observed branch coverage at origin `8b47cddd` (CI run `33466180741`).
+Coverage recovery must stay module-specific; coverage-bucket tests remain
+forbidden.
 
 The separate 100% recovery register is
 `data/coverage/coverage_debt_register.json`. It is generated and audited by
 `tools/audit_coverage_debt.py` under `tools/coverage_debt_policy.json`; it does
 not replace or raise the aggregate 90% line gate. The current register derives
-from Python 3.12 CI run `29180328986`, honors the justified exclusions ledger,
-and marks source paths added or executably decomposed after that run as
-unmeasured until remote CI refreshes them. Debt is ordered first by public
-claim-ledger ownership, then explicit runtime hot paths, unmeasured paths,
-large known line debt, and remaining measured gaps. CI rejects new unregistered
-debt or increased missing-line counts on previously measured rows while
-accepting improvements and first measurements of explicitly unmeasured rows.
-Refresh only from a downloaded CI artifact:
+from exact-head Python 3.12 CI run `33466180741`, honours the justified
+exclusions ledger, and records absent optional-dependency paths as unmeasured.
+Debt is ordered first by public claim-ledger ownership, then explicit runtime
+hot paths, unmeasured paths, large known line debt, and remaining measured
+gaps. CI rejects new unregistered debt or increased missing-line counts on
+previously measured rows while accepting improvements and first measurements
+of explicitly unmeasured rows. Refresh only from a downloaded CI artifact:
 
 ```bash
 python tools/audit_coverage_debt.py \

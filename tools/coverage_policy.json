@@ -8,12 +8,12 @@
     "require_data": true
   },
   "baseline": {
-    "branch_percent": null,
-    "covered_lines": 75731,
-    "line_percent": 92.5151,
-    "measured_lines": 81858,
-    "origin_commit": "4c3a4fee4935ca4eb8c75bb7f33b3262038faeaa",
-    "remote_ci_run": 29180328986,
+    "branch_percent": 93.6379,
+    "covered_lines": 100304,
+    "line_percent": 96.6283,
+    "measured_lines": 103804,
+    "origin_commit": "8b47cddd30020a066c182878edd019ff65f80ba9",
+    "remote_ci_run": 33466180741,
     "source": "coverage-gap-audit-3.12"
   },
   "branch_promotion": {

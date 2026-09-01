@@ -1,149 +1,13 @@
 {
   "baseline": {
     "artifact_name": "coverage-gap-audit-3.12",
-    "artifact_sha256": "8c8f60fa2bac006ebcf67e62b42271ec5c2736a933dfd136da5c1ca7147381a9",
-    "origin_commit": "4c3a4fee4935ca4eb8c75bb7f33b3262038faeaa",
+    "artifact_sha256": "de8b958dfb067decb6b71a7513d209b94c4b095649ed0497d46263db9c796d59",
+    "origin_commit": "8b47cddd30020a066c182878edd019ff65f80ba9",
     "python_version": "3.12",
-    "remote_ci_run": 29180328986,
-    "source_url": "https://github.com/anulum/scpn-quantum-control/actions/runs/29180328986"
+    "remote_ci_run": 33466180741,
+    "source_url": "https://github.com/anulum/scpn-quantum-control/actions/runs/33466180741"
   },
   "debt": [
-    {
-      "claim_ids": [
-        "differentiable_isolated_benchmark_plan"
-      ],
-      "covered_lines": 202,
-      "line_percent": 85.96000000000001,
-      "missing_lines": 33,
-      "path": "src/scpn_quantum_control/phase/qnode_affinity_benchmark.py",
-      "priority": "P0_claim_bearing",
-      "priority_reason": "Public claim ledger: differentiable_isolated_benchmark_plan",
-      "status": "below_target",
-      "valid_lines": 235
-    },
-    {
-      "claim_ids": [
-        "framework_overlay_parity"
-      ],
-      "covered_lines": 98,
-      "line_percent": 76.55999999999999,
-      "missing_lines": 30,
-      "path": "src/scpn_quantum_control/differentiable_framework_overlay.py",
-      "priority": "P0_claim_bearing",
-      "priority_reason": "Public claim ledger: framework_overlay_parity",
-      "status": "below_target",
-      "valid_lines": 128
-    },
-    {
-      "claim_ids": [
-        "phase_qnode_claim_boundary"
-      ],
-      "covered_lines": 962,
-      "line_percent": 97.86,
-      "missing_lines": 21,
-      "path": "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
-      "priority": "P0_claim_bearing",
-      "priority_reason": "Public claim ledger: phase_qnode_claim_boundary",
-      "status": "below_target",
-      "valid_lines": 983
-    },
-    {
-      "claim_ids": [
-        "phase_qnode_claim_boundary"
-      ],
-      "covered_lines": 223,
-      "line_percent": 92.15,
-      "missing_lines": 19,
-      "path": "src/scpn_quantum_control/phase/qnode_tape.py",
-      "priority": "P0_claim_bearing",
-      "priority_reason": "Public claim ledger: phase_qnode_claim_boundary",
-      "status": "below_target",
-      "valid_lines": 242
-    },
-    {
-      "claim_ids": [
-        "differentiable_architecture_rustification_map",
-        "differentiable_baseline_scorecard",
-        "differentiable_dependency_environment_map",
-        "differentiable_isolated_benchmark_plan",
-        "differentiable_rust_python_inventory",
-        "phase_qnode_claim_boundary"
-      ],
-      "covered_lines": 143,
-      "line_percent": 92.86,
-      "missing_lines": 11,
-      "path": "src/scpn_quantum_control/differentiable_api.py",
-      "priority": "P0_claim_bearing",
-      "priority_reason": "Public claim ledger: differentiable_architecture_rustification_map, differentiable_baseline_scorecard, differentiable_dependency_environment_map, differentiable_isolated_benchmark_plan, differentiable_rust_python_inventory, phase_qnode_claim_boundary",
-      "status": "below_target",
-      "valid_lines": 154
-    },
-    {
-      "claim_ids": [
-        "differentiable_dependency_environment_map"
-      ],
-      "covered_lines": 128,
-      "line_percent": 92.75,
-      "missing_lines": 10,
-      "path": "src/scpn_quantum_control/differentiable_dependency_environment_map.py",
-      "priority": "P0_claim_bearing",
-      "priority_reason": "Public claim ledger: differentiable_dependency_environment_map",
-      "status": "below_target",
-      "valid_lines": 138
-    },
-    {
-      "claim_ids": [
-        "differentiable_architecture_rustification_map",
-        "differentiable_rust_python_inventory"
-      ],
-      "covered_lines": 151,
-      "line_percent": 93.78999999999999,
-      "missing_lines": 10,
-      "path": "src/scpn_quantum_control/differentiable_rust_python_inventory.py",
-      "priority": "P0_claim_bearing",
-      "priority_reason": "Public claim ledger: differentiable_architecture_rustification_map, differentiable_rust_python_inventory",
-      "status": "below_target",
-      "valid_lines": 161
-    },
-    {
-      "claim_ids": [
-        "phase_qnode_claim_boundary"
-      ],
-      "covered_lines": 194,
-      "line_percent": 95.57,
-      "missing_lines": 9,
-      "path": "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
-      "priority": "P0_claim_bearing",
-      "priority_reason": "Public claim ledger: phase_qnode_claim_boundary",
-      "status": "below_target",
-      "valid_lines": 203
-    },
-    {
-      "claim_ids": [
-        "differentiable_architecture_rustification_map"
-      ],
-      "covered_lines": 139,
-      "line_percent": 94.56,
-      "missing_lines": 8,
-      "path": "src/scpn_quantum_control/differentiable_architecture_map.py",
-      "priority": "P0_claim_bearing",
-      "priority_reason": "Public claim ledger: differentiable_architecture_rustification_map",
-      "status": "below_target",
-      "valid_lines": 147
-    },
-    {
-      "claim_ids": [
-        "phase_qnode_claim_boundary"
-      ],
-      "covered_lines": 155,
-      "line_percent": 95.67999999999999,
-      "missing_lines": 7,
-      "path": "src/scpn_quantum_control/phase/qnode_transforms.py",
-      "priority": "P0_claim_bearing",
-      "priority_reason": "Public claim ledger: phase_qnode_claim_boundary",
-      "status": "below_target",
-      "valid_lines": 162
-    },
     {
       "claim_ids": [
         "ci_benchmark_evidence",
@@ -163,1543 +27,14 @@
         "public_claim_table",
         "support_surface_alignment"
       ],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
+      "covered_lines": 92,
+      "line_percent": 98.92,
+      "missing_lines": 1,
       "path": "src/scpn_quantum_control/differentiable_claim_rendering.py",
       "priority": "P0_claim_bearing",
       "priority_reason": "Public claim ledger: public_claim_table, support_surface_alignment",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 2216,
-      "line_percent": 80.12,
-      "missing_lines": 550,
-      "path": "src/scpn_quantum_control/whole_program_trace_values.py",
-      "priority": "P1_runtime_hot_path",
-      "priority_reason": "Whole-program AD traced-value execution core.",
       "status": "below_target",
-      "valid_lines": 2766
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 290,
-      "line_percent": 97.97,
-      "missing_lines": 6,
-      "path": "src/scpn_quantum_control/control/realtime_runtime.py",
-      "priority": "P1_runtime_hot_path",
-      "priority_reason": "Closed-loop real-time control runtime.",
-      "status": "below_target",
-      "valid_lines": 296
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/active_sensing_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/adjoint_replay_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/advanced_witnesses_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/advantage_language_protocol.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analog_mapping/__init__.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analog_mapping/calibrate.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analog_mapping/compare.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analog_mapping/contracts.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analog_mapping/evidence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analog_mapping/feasibility.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analog_mapping/platforms.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analysis/adaptive_fim_evidence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analysis/dla_parity_exact_baseline.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analysis/enaqt_evidence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analysis/entanglement_sync_evidence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analysis/research_lane_registry.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analysis/rl_research_governance.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analysis/theory_hook_promotion.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/analysis/two_colour_schedule.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/applications/honesty_kits.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/applications/quantum_reservoir_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/attested_result_pack.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/benchmarks/closed_loop_publication_run.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/benchmarks/decisive_advantage_protocol.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/benchmarks/decisive_run_harness.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/benchmarks/hls_cosimulation_evidence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_benchmark.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_per_size.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/benchmarks/layout_method_comparison.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/benchmarks/layout_relaxation_experiment.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/campaign_harness_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/chimera_control/__init__.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/chimera_control/evidence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/chimera_control/objectives.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/chimera_control/observables.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/chimera_control/schema.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/chimera_control/synthetic.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/chimera_control/topology.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/circuit_cutting_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/cloud_native_deployment_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/codesign/__init__.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/codesign/adapters.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/codesign/components.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/codesign/contracts.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/codesign/evidence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/codesign/loop.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/codesign/policies.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/codesign/replay.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/competitive_baseline_watch.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/compiler/mlir.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "source_changed_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/compiler/mlir_enzyme_audit.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/compiler/mlir_phase_qnode_runtime.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/compiler/mlir_transform_plan_assembly.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/compiler/mlir_workload_compilation.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/compiler_boundary_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/control_stack_compose_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/control_stack_runtime_adapters.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/custom_derivatives_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/differentiable_dependency_environment_evidence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/differentiable_notebook_curriculum.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/dla_topology_control/__init__.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/dla_topology_control/evidence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/dla_topology_control/objectives.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/dla_topology_control/optimizer.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/dla_topology_control/parity.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/dla_topology_control/projection.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/dla_topology_control/schema.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/error_mitigation_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/fault_tolerant_resource_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/forecasting/multimodal_bridge.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/forecasting/multimodal_forecaster.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/forecasting/multimodal_report.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/forecasting/multimodal_schema.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/forecasting/partial_observation.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/forecasting/synthetic_multimodal.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/forecasting/uncertainty.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/geometric_control_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/governed_route_matrix.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/hardware/dynq_layout_pass.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/hardware/error_aware_chain.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/hardware/iqm_lattice_calibration.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/hardware/kuramoto_layout_cost.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/hardware/kuramoto_layout_optimiser.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/hardware/kuramoto_layout_relaxation.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/hardware_safe_execution.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/hermetic_reproduction_kit.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/identity_observer_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/jax_nqs_baseline_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/kyma_mechanism_benchmark_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/l16/director_contracts.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/l16/director_evidence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/l16/director_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/metamorphic_ad_verification.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/migration_guides_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/ml_examples/__init__.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/ml_examples/contracts.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/ml_examples/evidence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/ml_examples/qgnn_convergence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/ml_examples/qnn_convergence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/ml_examples/qsnn_convergence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/ml_examples/suite.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/multi_hal_federation_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/neural_operator_baseline_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/open_system_mcwf_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/pgbo_qgt_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/phase_qnode_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/polyglot_edge_ad_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/polyglot_parity_certificate.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/program_ad_fuzz_assurance.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/public_api_stability.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/qpu_compute_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/quantum_sync_challenge_oracle_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/resource_budget_gate.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/scorecard_acceptance_engine.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/ssgf_geometry_gradient_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/stable_core_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/stochastic_estimators_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/structured_log_fallback.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/studio_executive_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/surrogates/__init__.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/surrogates/fidelity.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/surrogates/hybrid.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/surrogates/models.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/surrogates/report.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/surrogates/train.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/thermo_readiness_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/topology_kernel_product/__init__.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/topology_kernel_product/classifier.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/topology_kernel_product/evidence.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/topology_kernel_product/kernels.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/topology_kernel_product/schema.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/topology_kernel_product/synthetic.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/unsuitable_scenario_registry.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/visualisation_dashboard_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/whole_program_ad_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": null,
-      "line_percent": null,
-      "missing_lines": null,
-      "path": "src/scpn_quantum_control/wirtinger_implicit_product.py",
-      "priority": "P2_unmeasured",
-      "priority_reason": "No current executable-line baseline; refresh from remote CI.",
-      "status": "unmeasured_since_baseline",
-      "valid_lines": null
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 183,
-      "line_percent": 32.910000000000004,
-      "missing_lines": 373,
-      "path": "src/scpn_quantum_control/phase/jax_qnode_transforms.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 556
+      "valid_lines": 93
     },
     {
       "claim_ids": [],
@@ -1714,17 +49,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 1062,
-      "line_percent": 80.45,
-      "missing_lines": 258,
-      "path": "src/scpn_quantum_control/program_ad_linalg_primitives.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 1320
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 76,
       "line_percent": 27.54,
       "missing_lines": 200,
@@ -1736,9 +60,9 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 734,
-      "line_percent": 78.92,
-      "missing_lines": 196,
+      "covered_lines": 735,
+      "line_percent": 79.03,
+      "missing_lines": 195,
       "path": "src/scpn_quantum_control/program_ad_assembly_primitives.py",
       "priority": "P3_high_line_debt",
       "priority_reason": "At least 50 executable lines are uncovered.",
@@ -1758,9 +82,9 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 498,
-      "line_percent": 75.57000000000001,
-      "missing_lines": 161,
+      "covered_lines": 503,
+      "line_percent": 76.33,
+      "missing_lines": 156,
       "path": "src/scpn_quantum_control/program_ad_product_primitives.py",
       "priority": "P3_high_line_debt",
       "priority_reason": "At least 50 executable lines are uncovered.",
@@ -1780,20 +104,20 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 80,
-      "line_percent": 37.74,
-      "missing_lines": 132,
+      "covered_lines": 89,
+      "line_percent": 41.199999999999996,
+      "missing_lines": 127,
       "path": "src/scpn_quantum_control/phase/torch_aot_autograd_export.py",
       "priority": "P3_high_line_debt",
       "priority_reason": "At least 50 executable lines are uncovered.",
       "status": "below_target",
-      "valid_lines": 212
+      "valid_lines": 216
     },
     {
       "claim_ids": [],
-      "covered_lines": 116,
-      "line_percent": 47.74,
-      "missing_lines": 127,
+      "covered_lines": 123,
+      "line_percent": 50.62,
+      "missing_lines": 120,
       "path": "src/scpn_quantum_control/phase/qnode_framework_parity.py",
       "priority": "P3_high_line_debt",
       "priority_reason": "At least 50 executable lines are uncovered.",
@@ -1802,9 +126,9 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 462,
-      "line_percent": 78.97,
-      "missing_lines": 123,
+      "covered_lines": 472,
+      "line_percent": 80.67999999999999,
+      "missing_lines": 113,
       "path": "src/scpn_quantum_control/program_ad_selection_primitives.py",
       "priority": "P3_high_line_debt",
       "priority_reason": "At least 50 executable lines are uncovered.",
@@ -1813,31 +137,9 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 31,
-      "line_percent": 20.53,
-      "missing_lines": 120,
-      "path": "src/scpn_quantum_control/studio/executive_differentiate.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 151
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 92,
-      "line_percent": 44.440000000000005,
-      "missing_lines": 115,
-      "path": "src/scpn_quantum_control/phase/torch_dynamic_shape_export.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 207
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 31,
-      "line_percent": 21.990000000000002,
-      "missing_lines": 110,
+      "covered_lines": 35,
+      "line_percent": 24.82,
+      "missing_lines": 106,
       "path": "src/scpn_quantum_control/phase/pennylane_import.py",
       "priority": "P3_high_line_debt",
       "priority_reason": "At least 50 executable lines are uncovered.",
@@ -1846,36 +148,25 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 641,
-      "line_percent": 86.16,
-      "missing_lines": 103,
-      "path": "src/scpn_quantum_control/compiler/mlir_whole_program_native.py",
+      "covered_lines": 449,
+      "line_percent": 81.49,
+      "missing_lines": 102,
+      "path": "src/scpn_quantum_control/phase/jax_qnode_transforms.py",
       "priority": "P3_high_line_debt",
       "priority_reason": "At least 50 executable lines are uncovered.",
       "status": "below_target",
-      "valid_lines": 744
+      "valid_lines": 551
     },
     {
       "claim_ids": [],
-      "covered_lines": 242,
-      "line_percent": 74.00999999999999,
-      "missing_lines": 85,
-      "path": "src/scpn_quantum_control/whole_program_frontend_contracts.py",
+      "covered_lines": 117,
+      "line_percent": 54.93,
+      "missing_lines": 96,
+      "path": "src/scpn_quantum_control/phase/torch_dynamic_shape_export.py",
       "priority": "P3_high_line_debt",
       "priority_reason": "At least 50 executable lines are uncovered.",
       "status": "below_target",
-      "valid_lines": 327
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 524,
-      "line_percent": 86.9,
-      "missing_lines": 79,
-      "path": "src/scpn_quantum_control/program_ad_array_indexing.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 603
+      "valid_lines": 213
     },
     {
       "claim_ids": [],
@@ -1898,39 +189,6 @@
       "priority_reason": "At least 50 executable lines are uncovered.",
       "status": "below_target",
       "valid_lines": 747
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 631,
-      "line_percent": 90.01,
-      "missing_lines": 70,
-      "path": "src/scpn_quantum_control/whole_program_frontend.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 701
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 611,
-      "line_percent": 89.85,
-      "missing_lines": 69,
-      "path": "src/scpn_quantum_control/program_ad_shape_transforms.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 680
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 339,
-      "line_percent": 83.28999999999999,
-      "missing_lines": 68,
-      "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 407
     },
     {
       "claim_ids": [],
@@ -1964,17 +222,6 @@
       "priority_reason": "At least 50 executable lines are uncovered.",
       "status": "below_target",
       "valid_lines": 123
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 0,
-      "line_percent": 0.0,
-      "missing_lines": 64,
-      "path": "src/scpn_quantum_control/studio/program_ad_replay_artifact.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 64
     },
     {
       "claim_ids": [],
@@ -2033,50 +280,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 292,
-      "line_percent": 85.38,
-      "missing_lines": 50,
-      "path": "src/scpn_quantum_control/phase/provider_gradient.py",
-      "priority": "P3_high_line_debt",
-      "priority_reason": "At least 50 executable lines are uncovered.",
-      "status": "below_target",
-      "valid_lines": 342
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 237,
-      "line_percent": 82.87,
-      "missing_lines": 49,
-      "path": "src/scpn_quantum_control/phase/differentiable_audit_contracts.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 286
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 419,
-      "line_percent": 89.53,
-      "missing_lines": 49,
-      "path": "src/scpn_quantum_control/phase/param_shift.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 468
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 444,
-      "line_percent": 90.06,
-      "missing_lines": 49,
-      "path": "src/scpn_quantum_control/program_ad_alias_contracts.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 493
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 47,
       "line_percent": 50.0,
       "missing_lines": 47,
@@ -2099,9 +302,9 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 305,
-      "line_percent": 87.39,
-      "missing_lines": 44,
+      "covered_lines": 307,
+      "line_percent": 87.97,
+      "missing_lines": 42,
       "path": "src/scpn_quantum_control/program_ad_cumulative_primitives.py",
       "priority": "P4_standard",
       "priority_reason": "Measured below the 100% per-file recovery target.",
@@ -2110,25 +313,14 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 757,
-      "line_percent": 94.63000000000001,
-      "missing_lines": 43,
-      "path": "src/scpn_quantum_control/program_ad_adjoint_generation.py",
+      "covered_lines": 152,
+      "line_percent": 80.0,
+      "missing_lines": 38,
+      "path": "src/scpn_quantum_control/jax_nqs_baseline_product.py",
       "priority": "P4_standard",
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
-      "valid_lines": 800
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 356,
-      "line_percent": 89.45,
-      "missing_lines": 42,
-      "path": "src/scpn_quantum_control/phase/qnode_circuit_contracts.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 398
+      "valid_lines": 190
     },
     {
       "claim_ids": [],
@@ -2162,17 +354,6 @@
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
       "valid_lines": 203
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 194,
-      "line_percent": 85.84,
-      "missing_lines": 32,
-      "path": "src/scpn_quantum_control/differentiable_competitive_baselines.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 226
     },
     {
       "claim_ids": [],
@@ -2220,28 +401,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 341,
-      "line_percent": 92.16,
-      "missing_lines": 29,
-      "path": "src/scpn_quantum_control/phase/objectives.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 370
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 202,
-      "line_percent": 87.45,
-      "missing_lines": 29,
-      "path": "src/scpn_quantum_control/program_ad_interpolation_primitives.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 231
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 185,
       "line_percent": 87.26,
       "missing_lines": 27,
@@ -2250,6 +409,17 @@
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
       "valid_lines": 212
+    },
+    {
+      "claim_ids": [],
+      "covered_lines": 204,
+      "line_percent": 88.31,
+      "missing_lines": 27,
+      "path": "src/scpn_quantum_control/program_ad_interpolation_primitives.py",
+      "priority": "P4_standard",
+      "priority_reason": "Measured below the 100% per-file recovery target.",
+      "status": "below_target",
+      "valid_lines": 231
     },
     {
       "claim_ids": [],
@@ -2330,17 +500,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 1428,
-      "line_percent": 98.48,
-      "missing_lines": 22,
-      "path": "src/scpn_quantum_control/differentiable_result_contracts.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 1450
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 146,
       "line_percent": 86.9,
       "missing_lines": 22,
@@ -2385,47 +544,14 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 188,
-      "line_percent": 91.25999999999999,
-      "missing_lines": 18,
-      "path": "src/scpn_quantum_control/phase/provider_hardware_safety_audit.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 206
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 147,
-      "line_percent": 89.63,
+      "covered_lines": 159,
+      "line_percent": 90.34,
       "missing_lines": 17,
-      "path": "src/scpn_quantum_control/compiler/mlir_native_execution_evidence.py",
+      "path": "src/scpn_quantum_control/analog_mapping/contracts.py",
       "priority": "P4_standard",
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
-      "valid_lines": 164
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 141,
-      "line_percent": 89.24,
-      "missing_lines": 17,
-      "path": "src/scpn_quantum_control/control/qpetri.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 158
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 155,
-      "line_percent": 90.12,
-      "missing_lines": 17,
-      "path": "src/scpn_quantum_control/phase/hardware_gradient_campaign.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 172
+      "valid_lines": 176
     },
     {
       "claim_ids": [],
@@ -2440,58 +566,14 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 262,
-      "line_percent": 93.91000000000001,
-      "missing_lines": 17,
-      "path": "src/scpn_quantum_control/program_ad_alias_analysis.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 279
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 187,
-      "line_percent": 92.12,
+      "covered_lines": 189,
+      "line_percent": 92.2,
       "missing_lines": 16,
       "path": "src/scpn_quantum_control/phase/jax_compatibility.py",
       "priority": "P4_standard",
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
-      "valid_lines": 203
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 46,
-      "line_percent": 74.19,
-      "missing_lines": 16,
-      "path": "src/scpn_quantum_control/studio/federation.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 62
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 218,
-      "line_percent": 93.56,
-      "missing_lines": 15,
-      "path": "src/scpn_quantum_control/phase/gradient_support_matrix.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 233
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 166,
-      "line_percent": 91.71000000000001,
-      "missing_lines": 15,
-      "path": "src/scpn_quantum_control/phase/qnode_provider_transforms.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 181
+      "valid_lines": 205
     },
     {
       "claim_ids": [],
@@ -2503,17 +585,6 @@
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
       "valid_lines": 383
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 193,
-      "line_percent": 93.24,
-      "missing_lines": 14,
-      "path": "src/scpn_quantum_control/hardware/classical.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 207
     },
     {
       "claim_ids": [],
@@ -2547,17 +618,6 @@
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
       "valid_lines": 224
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 114,
-      "line_percent": 89.75999999999999,
-      "missing_lines": 13,
-      "path": "src/scpn_quantum_control/compiler/mlir_llvm_jit_claim_gate.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 127
     },
     {
       "claim_ids": [],
@@ -2616,17 +676,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 121,
-      "line_percent": 91.67,
-      "missing_lines": 11,
-      "path": "src/scpn_quantum_control/hardware/provider_capability_core.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 132
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 155,
       "line_percent": 93.37,
       "missing_lines": 11,
@@ -2646,28 +695,6 @@
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
       "valid_lines": 83
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 270,
-      "line_percent": 96.09,
-      "missing_lines": 11,
-      "path": "src/scpn_quantum_control/program_ad_adjoint.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 281
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 111,
-      "line_percent": 91.74,
-      "missing_lines": 10,
-      "path": "src/scpn_quantum_control/benchmarks/kuramoto_external_competitors.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 121
     },
     {
       "claim_ids": [],
@@ -2737,50 +764,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 109,
-      "line_percent": 93.16,
-      "missing_lines": 8,
-      "path": "src/scpn_quantum_control/analysis/graph_topology_scan.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 117
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 78,
-      "line_percent": 90.7,
-      "missing_lines": 8,
-      "path": "src/scpn_quantum_control/differentiable_api_contracts.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 86
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 127,
-      "line_percent": 94.07,
-      "missing_lines": 8,
-      "path": "src/scpn_quantum_control/phase/hardware_gradient_publication.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 135
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 147,
-      "line_percent": 94.84,
-      "missing_lines": 8,
-      "path": "src/scpn_quantum_control/phase/pulse_shaping.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 155
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 270,
       "line_percent": 97.11999999999999,
       "missing_lines": 8,
@@ -2789,28 +772,6 @@
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
       "valid_lines": 278
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 141,
-      "line_percent": 94.63000000000001,
-      "missing_lines": 8,
-      "path": "src/scpn_quantum_control/phase/xy_kuramoto.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 149
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 107,
-      "line_percent": 93.04,
-      "missing_lines": 8,
-      "path": "src/scpn_quantum_control/studio/reference_validation.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 115
     },
     {
       "claim_ids": [],
@@ -2825,36 +786,25 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 100,
-      "line_percent": 93.46,
+      "covered_lines": 226,
+      "line_percent": 97.0,
       "missing_lines": 7,
-      "path": "src/scpn_quantum_control/analysis/magnetisation_sectors.py",
+      "path": "src/scpn_quantum_control/phase/gradient_support_matrix.py",
       "priority": "P4_standard",
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
-      "valid_lines": 107
+      "valid_lines": 233
     },
     {
       "claim_ids": [],
-      "covered_lines": 242,
-      "line_percent": 97.19,
-      "missing_lines": 7,
-      "path": "src/scpn_quantum_control/bench_cli.py",
+      "covered_lines": 90,
+      "line_percent": 93.75,
+      "missing_lines": 6,
+      "path": "src/scpn_quantum_control/analog_mapping/compare.py",
       "priority": "P4_standard",
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
-      "valid_lines": 249
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 120,
-      "line_percent": 94.49,
-      "missing_lines": 7,
-      "path": "src/scpn_quantum_control/phase/qsvt_evolution.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 127
+      "valid_lines": 96
     },
     {
       "claim_ids": [],
@@ -2869,6 +819,17 @@
     },
     {
       "claim_ids": [],
+      "covered_lines": 143,
+      "line_percent": 95.97,
+      "missing_lines": 6,
+      "path": "src/scpn_quantum_control/benchmarks/iqm_layout_transfer_per_size.py",
+      "priority": "P4_standard",
+      "priority_reason": "Measured below the 100% per-file recovery target.",
+      "status": "below_target",
+      "valid_lines": 149
+    },
+    {
+      "claim_ids": [],
       "covered_lines": 133,
       "line_percent": 95.67999999999999,
       "missing_lines": 6,
@@ -2880,25 +841,14 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 124,
-      "line_percent": 95.38,
+      "covered_lines": 51,
+      "line_percent": 89.47,
       "missing_lines": 6,
-      "path": "src/scpn_quantum_control/phase/provider_gradient_audit.py",
+      "path": "src/scpn_quantum_control/ml_examples/qnn_convergence.py",
       "priority": "P4_standard",
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
-      "valid_lines": 130
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 103,
-      "line_percent": 94.5,
-      "missing_lines": 6,
-      "path": "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 109
+      "valid_lines": 57
     },
     {
       "claim_ids": [],
@@ -2910,39 +860,6 @@
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
       "valid_lines": 236
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 109,
-      "line_percent": 94.78,
-      "missing_lines": 6,
-      "path": "src/scpn_quantum_control/studio/evidence_bundle.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 115
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 90,
-      "line_percent": 94.74000000000001,
-      "missing_lines": 5,
-      "path": "src/scpn_quantum_control/analysis/krylov_complexity.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 95
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 132,
-      "line_percent": 96.35000000000001,
-      "missing_lines": 5,
-      "path": "src/scpn_quantum_control/analysis/monte_carlo_xy.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 137
     },
     {
       "claim_ids": [],
@@ -2979,28 +896,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 135,
-      "line_percent": 96.43,
-      "missing_lines": 5,
-      "path": "src/scpn_quantum_control/psi_field/lattice.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 140
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 110,
-      "line_percent": 95.65,
-      "missing_lines": 5,
-      "path": "src/scpn_quantum_control/qec/multiscale_qec.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 115
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 148,
       "line_percent": 97.37,
       "missing_lines": 4,
@@ -3023,47 +918,14 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 66,
-      "line_percent": 94.28999999999999,
-      "missing_lines": 4,
-      "path": "src/scpn_quantum_control/phase/jax_maturity.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 70
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 42,
-      "line_percent": 91.3,
-      "missing_lines": 4,
-      "path": "src/scpn_quantum_control/psi_field/infoton.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 46
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 51,
-      "line_percent": 92.73,
-      "missing_lines": 4,
-      "path": "src/scpn_quantum_control/whole_program_ad_api.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 55
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 92,
-      "line_percent": 96.84,
+      "covered_lines": 99,
+      "line_percent": 97.06,
       "missing_lines": 3,
-      "path": "src/scpn_quantum_control/analysis/otoc.py",
+      "path": "src/scpn_quantum_control/analog_mapping/feasibility.py",
       "priority": "P4_standard",
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
-      "valid_lines": 95
+      "valid_lines": 102
     },
     {
       "claim_ids": [],
@@ -3078,14 +940,14 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 183,
-      "line_percent": 98.39,
+      "covered_lines": 204,
+      "line_percent": 98.55000000000001,
       "missing_lines": 3,
-      "path": "src/scpn_quantum_control/cosimulation/quantum_classical.py",
+      "path": "src/scpn_quantum_control/hardware/classical.py",
       "priority": "P4_standard",
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
-      "valid_lines": 186
+      "valid_lines": 207
     },
     {
       "claim_ids": [],
@@ -3100,17 +962,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 108,
-      "line_percent": 97.3,
-      "missing_lines": 3,
-      "path": "src/scpn_quantum_control/phase/qiskit_runtime.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 111
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 120,
       "line_percent": 97.56,
       "missing_lines": 3,
@@ -3119,105 +970,6 @@
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
       "valid_lines": 123
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 153,
-      "line_percent": 98.08,
-      "missing_lines": 3,
-      "path": "src/scpn_quantum_control/qec/biological_surface_code.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 156
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 264,
-      "line_percent": 98.88,
-      "missing_lines": 3,
-      "path": "src/scpn_quantum_control/qec/dla_protected_subspace.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 267
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 114,
-      "line_percent": 98.28,
-      "missing_lines": 2,
-      "path": "src/scpn_quantum_control/bridge/knm_hamiltonian.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 116
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 126,
-      "line_percent": 98.44000000000001,
-      "missing_lines": 2,
-      "path": "src/scpn_quantum_control/bridge/sparse_hamiltonian.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 128
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 208,
-      "line_percent": 99.05000000000001,
-      "missing_lines": 2,
-      "path": "src/scpn_quantum_control/codegen/ultrascale_hls.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 210
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 38,
-      "line_percent": 95.0,
-      "missing_lines": 2,
-      "path": "src/scpn_quantum_control/fep/predictive_coding.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 40
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 61,
-      "line_percent": 96.83,
-      "missing_lines": 2,
-      "path": "src/scpn_quantum_control/fep/variational_free_energy.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 63
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 201,
-      "line_percent": 99.00999999999999,
-      "missing_lines": 2,
-      "path": "src/scpn_quantum_control/forecasting/real_data_sync.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 203
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 184,
-      "line_percent": 98.92,
-      "missing_lines": 2,
-      "path": "src/scpn_quantum_control/hardware/hybrid_digital_analog.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 186
     },
     {
       "claim_ids": [],
@@ -3265,58 +1017,14 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 32,
-      "line_percent": 94.12,
-      "missing_lines": 2,
-      "path": "src/scpn_quantum_control/psi_field/observables.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 34
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 121,
-      "line_percent": 98.37,
-      "missing_lines": 2,
-      "path": "src/scpn_quantum_control/sensing/nv_magnetometry_20T.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 123
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 34,
-      "line_percent": 94.44,
-      "missing_lines": 2,
-      "path": "src/scpn_quantum_control/studio/manifest.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 36
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 128,
-      "line_percent": 99.22,
+      "covered_lines": 65,
+      "line_percent": 98.48,
       "missing_lines": 1,
-      "path": "src/scpn_quantum_control/analysis/finite_size_scaling.py",
+      "path": "src/scpn_quantum_control/analog_mapping/evidence.py",
       "priority": "P4_standard",
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
-      "valid_lines": 129
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 64,
-      "line_percent": 98.46000000000001,
-      "missing_lines": 1,
-      "path": "src/scpn_quantum_control/analysis/persistent_homology.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 65
+      "valid_lines": 66
     },
     {
       "claim_ids": [],
@@ -3342,17 +1050,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 234,
-      "line_percent": 99.57000000000001,
-      "missing_lines": 1,
-      "path": "src/scpn_quantum_control/control/realtime_feedback.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 235
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 10,
       "line_percent": 90.91,
       "missing_lines": 1,
@@ -3375,28 +1072,6 @@
     },
     {
       "claim_ids": [],
-      "covered_lines": 64,
-      "line_percent": 98.46000000000001,
-      "missing_lines": 1,
-      "path": "src/scpn_quantum_control/hardware/provenance.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 65
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 57,
-      "line_percent": 98.28,
-      "missing_lines": 1,
-      "path": "src/scpn_quantum_control/mitigation/symmetry_decay.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 58
-    },
-    {
-      "claim_ids": [],
       "covered_lines": 101,
       "line_percent": 99.02,
       "missing_lines": 1,
@@ -3405,28 +1080,6 @@
       "priority_reason": "Measured below the 100% per-file recovery target.",
       "status": "below_target",
       "valid_lines": 102
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 128,
-      "line_percent": 99.22,
-      "missing_lines": 1,
-      "path": "src/scpn_quantum_control/phase/tensor_jump.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 129
-    },
-    {
-      "claim_ids": [],
-      "covered_lines": 217,
-      "line_percent": 99.53999999999999,
-      "missing_lines": 1,
-      "path": "src/scpn_quantum_control/qec/dla_protected_scar.py",
-      "priority": "P4_standard",
-      "priority_reason": "Measured below the 100% per-file recovery target.",
-      "status": "below_target",
-      "valid_lines": 218
     }
   ],
   "inputs": {
@@ -3435,34 +1088,32 @@
     "justified_exclusions_path": "docs/release_coverage_exclusions.json",
     "justified_exclusions_sha256": "28afc4dde9e15eaa8e2868c603695f53daa91fbf72c55a50bc3e925e3aab7b91"
   },
-  "policy_sha256": "5a3e983209347fed3c5b55e6bd1ecc3598e731629e8b90690181fb52b6e03f33",
+  "policy_sha256": "5dae0a87617e88f638f811b102dce60bc26cb1fcded39696772e60faa3d57cb7",
   "schema_version": 1,
   "source_inventory": {
-    "baseline_report_file_count": 587,
+    "baseline_report_file_count": 739,
     "baseline_rows_not_in_live_source": 0,
     "file_count": 739,
     "path": "src/scpn_quantum_control",
     "sha256": "948b2b2088bb16e97a5e1a92375d0307f011fa0ba4fe9afd0089fccee13fcc04"
   },
   "summary": {
-    "debt_file_count": 308,
-    "fully_covered_file_count": 387,
+    "debt_file_count": 97,
+    "fully_covered_file_count": 598,
     "justified_exclusion_file_count": 44,
-    "known_missing_line_count": 6085,
-    "measured_non_excluded_file_count": 558,
+    "known_missing_line_count": 3500,
+    "measured_non_excluded_file_count": 695,
     "priority_counts": {
-      "P0_claim_bearing": 12,
-      "P1_runtime_hot_path": 2,
-      "P2_unmeasured": 136,
-      "P3_high_line_debt": 32,
-      "P4_standard": 126
+      "P0_claim_bearing": 2,
+      "P1_runtime_hot_path": 0,
+      "P2_unmeasured": 0,
+      "P3_high_line_debt": 22,
+      "P4_standard": 73
     },
     "status_counts": {
-      "below_target": 171,
-      "source_changed_since_baseline": 1,
-      "unmeasured_since_baseline": 136
+      "below_target": 97
     },
-    "unmeasured_debt_file_count": 137
+    "unmeasured_debt_file_count": 0
   },
   "target_line_percent": 100.0
 }

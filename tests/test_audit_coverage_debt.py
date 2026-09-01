@@ -801,3 +801,20 @@ def test_main_rejects_conflicting_or_incomplete_modes(tmp_path: Path) -> None:
         audit.main([*common, "--write-register", "--refresh-metadata"])
     with pytest.raises(SystemExit, match="2"):
         audit.main([*common, "--check-current"])
+
+
+def test_live_policy_records_latest_remote_debt_baseline() -> None:
+    """Pin the exact-head hosted artifact and regenerated debt totals."""
+    repo_root = Path(__file__).resolve().parents[1]
+    policy = audit.load_policy(repo_root / "tools" / "coverage_debt_policy.json")
+    register = json.loads((repo_root / policy.register_path).read_text(encoding="utf-8"))
+
+    assert policy.baseline.origin_commit == "8b47cddd30020a066c182878edd019ff65f80ba9"
+    assert policy.baseline.remote_ci_run == 33466180741
+    assert policy.baseline.artifact_sha256 == (
+        "de8b958dfb067decb6b71a7513d209b94c4b095649ed0497d46263db9c796d59"
+    )
+    assert policy.baseline_invalidated_paths == ()
+    assert register["summary"]["debt_file_count"] == 97
+    assert register["summary"]["known_missing_line_count"] == 3500
+    assert register["summary"]["unmeasured_debt_file_count"] == 0
