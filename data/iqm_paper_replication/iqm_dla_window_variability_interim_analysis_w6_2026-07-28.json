@@ -101,7 +101,7 @@
           12,
           13
         ],
-        "mean_cz_fidelity": 0.993875915174,
+        "mean_cz_fidelity": 0.993875915173,
         "mean_readout_error": 0.0215125,
         "readout_error_by_qubit": {
           "2": 0.0182,
@@ -124,7 +124,7 @@
           12,
           13
         ],
-        "mean_cz_fidelity": 0.993875915174,
+        "mean_cz_fidelity": 0.993875915173,
         "mean_readout_error": 0.0215125,
         "readout_error_by_qubit": {
           "2": 0.0182,
