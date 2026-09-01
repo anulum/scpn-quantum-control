@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1339
+    "test_files": 1340
   },
   "documentation": {
     "examples": [
@@ -9055,6 +9055,7 @@
       "tests/test_program_ad_like_constructors.py",
       "tests/test_program_ad_linalg_core.py",
       "tests/test_program_ad_linalg_direct_rules.py",
+      "tests/test_program_ad_linalg_exact_contracts.py",
       "tests/test_program_ad_linalg_matrix_ops.py",
       "tests/test_program_ad_linalg_registry.py",
       "tests/test_program_ad_linalg_spectral.py",
