@@ -13,7 +13,7 @@
     "python_model_source_modules": 697,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1340
+    "test_files": 1341
   },
   "documentation": {
     "examples": [
@@ -8787,6 +8787,7 @@
       "tests/test_mlir_executable_kernel.py",
       "tests/test_mlir_matrix_2x2_native_compilation_integration.py",
       "tests/test_mlir_matrix_native_compilation_integration.py",
+      "tests/test_mlir_matrix_native_compilation_validation.py",
       "tests/test_mlir_native_compilation_integration.py",
       "tests/test_mlir_phase_qnode_runtime.py",
       "tests/test_mlir_records.py",
