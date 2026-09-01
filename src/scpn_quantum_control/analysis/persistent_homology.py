@@ -33,11 +33,10 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.typing import NDArray
 
+_RIPSER_AVAILABLE = True
 try:
     from ripser import ripser
-
-    _RIPSER_AVAILABLE = True
-except ImportError:
+except ImportError:  # pragma: no cover - exercised only without the optional ripser extra.
     _RIPSER_AVAILABLE = False
 
 

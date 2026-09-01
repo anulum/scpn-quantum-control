@@ -43,10 +43,9 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
+_RIPSER_AVAILABLE = True
 try:
     from ripser import ripser
-
-    _RIPSER_AVAILABLE = True
 except ImportError:  # pragma: no cover - exercised only without the optional ripser extra.
     _RIPSER_AVAILABLE = False
 

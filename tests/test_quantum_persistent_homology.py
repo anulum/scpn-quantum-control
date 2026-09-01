@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.analysis.quantum_persistent_homology as qph_mod
 from scpn_quantum_control.analysis import persistent_homology as ph_mod
@@ -30,11 +31,11 @@ def _deterministic_ripser(monkeypatch: pytest.MonkeyPatch) -> None:
     """Exercise the public pipeline without requiring the optional wheel."""
 
     def fake_ripser(
-        distance: np.ndarray,
+        distance: NDArray[np.float64],
         *,
         maxdim: int,
         distance_matrix: bool,
-    ) -> dict[str, list[np.ndarray]]:
+    ) -> dict[str, list[NDArray[np.float64]]]:
         assert maxdim == 1
         assert distance_matrix is True
         h0 = np.column_stack((np.zeros(distance.shape[0]), np.full(distance.shape[0], np.inf)))
