@@ -521,6 +521,7 @@ jobs:
           tests/test_whole_program_trace_value_linalg.py
           tests/test_whole_program_trace_value_shapes.py
           tests/test_program_ad_linalg_spectral.py
+          tests/test_program_ad_linalg_exact_contracts.py
           tools/whole_program_trace_value_quality_gates.py
           tests/test_whole_program_trace_value_quality_gate.py
       - name: Ruff NumPy docstrings for whole-program trace-value quality cohort
@@ -539,6 +540,7 @@ jobs:
           tests/test_whole_program_trace_value_linalg.py
           tests/test_whole_program_trace_value_shapes.py
           tests/test_program_ad_linalg_spectral.py
+          tests/test_program_ad_linalg_exact_contracts.py
           tools/whole_program_trace_value_quality_gates.py
           tests/test_whole_program_trace_value_quality_gate.py
       - name: Ruff docstring ratchet for differentiable module hardening

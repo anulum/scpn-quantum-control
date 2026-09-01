@@ -50,6 +50,17 @@ def _portable_float(value: float) -> float:
     return float(format(value, f".{PORTABLE_SIGNIFICANT_DIGITS}g"))
 
 
+def _portable_json_value(value: Any) -> Any:
+    """Normalize every derived float before persistent JSON comparison."""
+    if isinstance(value, float):
+        return _portable_float(value)
+    if isinstance(value, list):
+        return [_portable_json_value(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _portable_json_value(item) for key, item in value.items()}
+    return value
+
+
 def _parity(bitstring: str) -> int:
     return bitstring.replace(" ", "").count("1") % 2
 
@@ -280,7 +291,10 @@ def main(argv: list[str] | None = None) -> int:
     }
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    out_path.write_text(
+        json.dumps(_portable_json_value(report), indent=2) + "\n",
+        encoding="utf-8",
+    )
 
     print(f"analysis: {out_path}")
     if primary:

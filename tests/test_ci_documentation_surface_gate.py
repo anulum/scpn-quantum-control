@@ -564,7 +564,7 @@ def test_ci_optional_runtime_locks_and_preview_rules_are_explicit() -> None:
     workflow = read_ci_workflow_source()
 
     assert workflow.count("requirements-ci-jax-py312-linux.txt") == 3
-    assert workflow.count("requirements-ci-torch-cpu-py312-linux.txt") == 2
+    assert workflow.count("requirements-ci-torch-cpu-py312-linux.txt") == 3
     preview_commands = len(re.findall(r"ruff check --isolated\s+--preview\s+--select", workflow))
     explicit_preview_configs = workflow.count("lint.explicit-preview-rules = true")
     assert preview_commands == explicit_preview_configs

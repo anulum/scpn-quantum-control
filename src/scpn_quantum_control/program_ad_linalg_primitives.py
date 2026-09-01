@@ -779,9 +779,7 @@ def program_ad_linalg_multi_dot_derivative_rule(
             varied = operands[:index] + (tangent_operand,) + operands[index + 1 :]
             contribution = _as_flat_multi_dot_result(np.linalg.multi_dot(varied))
             total = contribution if total is None else total + contribution
-        if total is None:
-            raise ValueError("program AD linalg multi_dot direct rule requires operands")
-        return total.astype(np.float64)
+        return cast(NDArray[np.float64], total).astype(np.float64)
 
     def vjp_rule(
         values: NDArray[np.float64],
@@ -941,13 +939,10 @@ def _program_ad_linalg_diag_positions(
     offset: int,
 ) -> tuple[tuple[int, int], ...]:
     if len(source_shape) == 1:
-        size = source_shape[0] + abs(offset)
         positions = tuple(
             (index, index + offset) if offset >= 0 else (index - offset, index)
             for index in range(source_shape[0])
         )
-        if any(row < 0 or row >= size or col < 0 or col >= size for row, col in positions):
-            raise ValueError("program AD linalg diag offset is inconsistent with vector shape")
         return positions
     if len(source_shape) == 2:
         rows, cols = source_shape
@@ -1041,8 +1036,6 @@ def program_ad_linalg_diagflat_derivative_rule(
     if any(dimension <= 0 for dimension in static_shape):
         raise ValueError("program AD linalg diagflat derivative rule dimensions must be positive")
     source_size = _program_ad_shape_static_size(static_shape)
-    if source_size <= 0:
-        raise ValueError("program AD linalg diagflat derivative rule requires non-empty input")
     offset = _program_ad_linalg_offset("diagflat", k)
     output_shape = (source_size + abs(offset), source_size + abs(offset))
     output_size = _program_ad_shape_static_size(output_shape)
@@ -1074,8 +1067,6 @@ def program_ad_linalg_diagflat_derivative_rule(
         split_source("values", values)
         cotangent_matrix = split_output("cotangent", cotangent)
         adjoint_flat = np.diag(cotangent_matrix, k=offset)
-        if adjoint_flat.size != source_size:
-            raise ValueError("program AD linalg diagflat VJP diagonal size must match source")
         return _program_ad_float64_vector_result(adjoint_flat.reshape(static_shape))
 
     return CustomDerivativeRule(
@@ -1861,8 +1852,6 @@ def program_ad_linalg_svdvals_derivative_rule(
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for fixed-shape SVD singular values."""
     static_shape = _program_ad_linalg_rank2_shape("svd", matrix_shape)
-    if any(dimension <= 0 for dimension in static_shape):
-        raise ValueError("program AD linalg svd derivative rule requires positive dimensions")
     output_size = min(static_shape)
     matrix_size = _program_ad_shape_static_size(static_shape)
 
@@ -1926,8 +1915,6 @@ def program_ad_linalg_pinv_derivative_rule(
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for fixed-shape full-rank pseudoinverse."""
     static_shape = _program_ad_linalg_rank2_shape("pinv", matrix_shape)
-    if any(dimension <= 0 for dimension in static_shape):
-        raise ValueError("program AD linalg pinv derivative rule requires positive dimensions")
     cutoff = _program_ad_linalg_normalise_rcond(rcond)
     output_shape = (static_shape[1], static_shape[0])
     input_size = _program_ad_shape_static_size(static_shape)
@@ -2197,14 +2184,10 @@ def _program_ad_linalg_multi_dot_shape(args: tuple[object, ...]) -> tuple[int, .
             if result_shape[1] != next_shape[0]:
                 raise ValueError("program AD linalg multi_dot shape rule dimensions must align")
             result_shape = (result_shape[0],)
-        elif len(result_shape) == 2 and len(next_shape) == 2:
+        else:
             if result_shape[1] != next_shape[0]:
                 raise ValueError("program AD linalg multi_dot shape rule dimensions must align")
             result_shape = (result_shape[0], next_shape[1])
-        else:
-            raise ValueError(
-                "program AD linalg multi_dot shape rule encountered scalar intermediate"
-            )
     return result_shape
 
 

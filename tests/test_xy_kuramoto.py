@@ -354,6 +354,7 @@ def test_order_parameter_falls_back_when_rust_engine_is_absent(
 
 def test_order_parameter_uses_native_expectations(monkeypatch: pytest.MonkeyPatch) -> None:
     """Compute the order parameter from the optional native expectation batch."""
+    from qiskit.quantum_info import Statevector
 
     class NativeEngine:
         @staticmethod
@@ -362,7 +363,7 @@ def test_order_parameter_uses_native_expectations(monkeypatch: pytest.MonkeyPatc
 
     monkeypatch.setattr(xy_mod, "optional_rust_engine", lambda: NativeEngine())
     solver = QuantumKuramotoSolver(2, np.zeros((2, 2)), np.zeros(2))
-    state = xy_mod.Statevector.from_label("00")
+    state = Statevector.from_label("00")
 
     order, phase = solver.measure_order_parameter(state)
 

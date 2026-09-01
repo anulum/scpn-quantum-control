@@ -13,6 +13,7 @@ import numpy as np
 import pytest
 
 import scpn_quantum_control.analysis.quantum_persistent_homology as qph_mod
+from scpn_quantum_control.analysis import persistent_homology as ph_mod
 from scpn_quantum_control.analysis.quantum_persistent_homology import (
     QuantumPHResult,
     _correlator_from_counts,
@@ -42,6 +43,8 @@ def _deterministic_ripser(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(qph_mod, "_RIPSER_AVAILABLE", True)
     monkeypatch.setattr(qph_mod, "ripser", fake_ripser, raising=False)
+    monkeypatch.setattr(ph_mod, "_RIPSER_AVAILABLE", True)
+    monkeypatch.setattr(ph_mod, "ripser", fake_ripser, raising=False)
 
 
 class TestCorrelatorFromCounts:
