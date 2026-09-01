@@ -11,14 +11,17 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, cast
 
 import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+import scpn_quantum_control.phase.torch_checkpoint_matrix as torch_checkpoint_matrix
 from scpn_quantum_control.phase import (
     TORCH_CHECKPOINT_MATRIX_SCHEMA,
+    TORCH_CHECKPOINT_SCHEMA,
     PhaseTorchCheckpointMatrixResult,
     run_torch_long_lived_checkpoint_matrix,
 )
@@ -143,3 +146,47 @@ def test_torch_checkpoint_matrix_rejects_unknown_route() -> None:
 
     with pytest.raises(KeyError, match="unknown PyTorch checkpoint matrix route"):
         result.route_status("missing")
+
+
+@pytest.mark.parametrize(
+    ("runtime", "message"),
+    (
+        (SimpleNamespace(__version__="test"), "torch.load"),
+        (
+            SimpleNamespace(__version__="test", load=lambda *_args, **_kwargs: []),
+            "checkpoint payload must be a mapping",
+        ),
+        (
+            SimpleNamespace(
+                __version__="test",
+                load=lambda *_args, **_kwargs: {"checkpoint_schema": 1},
+            ),
+            "checkpoint_schema.*must be a string",
+        ),
+        (
+            SimpleNamespace(
+                __version__="test",
+                load=lambda *_args, **_kwargs: {
+                    "checkpoint_schema": TORCH_CHECKPOINT_SCHEMA,
+                    "module_state_dict": [],
+                },
+            ),
+            "module_state_dict.*must be a mapping",
+        ),
+    ),
+)
+def test_torch_checkpoint_matrix_rejects_malformed_runtime_payloads(
+    monkeypatch: pytest.MonkeyPatch,
+    runtime: object,
+    message: str,
+) -> None:
+    """Reject absent loader APIs and malformed repeated checkpoint payloads."""
+    monkeypatch.setattr(torch_checkpoint_matrix, "_load_torch", lambda: runtime)
+
+    with pytest.raises(RuntimeError, match=message):
+        run_torch_long_lived_checkpoint_matrix(
+            features=_features(),
+            labels=_labels(),
+            initial_params=_params(),
+            replay_count=1,
+        )

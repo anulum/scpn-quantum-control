@@ -141,3 +141,35 @@ def test_torch_export_shape_scenario_rejects_bad_shapes() -> None:
             labels=(0.0, 1.0),
             initial_params=(0.1, 0.2),
         )
+
+
+@pytest.mark.parametrize("name", ("", "two words", ".", "..", "nested/name", "nested\\name"))
+def test_torch_export_shape_scenario_rejects_unsafe_names(name: str) -> None:
+    """Keep scenario names safe as plain export artifact stems."""
+    with pytest.raises(ValueError, match="scenario name"):
+        PhaseTorchExportShapeScenario(
+            name=name,
+            features=((0.0,),),
+            labels=(0.0,),
+            initial_params=(0.1,),
+        )
+
+
+def test_torch_export_shape_scenario_rejects_empty_feature_rows() -> None:
+    """Reject a non-empty feature matrix with zero-width rows."""
+    with pytest.raises(ValueError, match="at least one column"):
+        PhaseTorchExportShapeScenario(
+            name="empty_row",
+            features=((),),
+            labels=(0.0,),
+            initial_params=(),
+        )
+
+
+def test_torch_export_shape_matrix_rejects_file_as_export_directory(tmp_path: Path) -> None:
+    """Require the export destination to be a directory."""
+    export_file = tmp_path / "not-a-directory"
+    export_file.write_text("occupied", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="export_dir must be a directory"):
+        run_torch_export_shape_matrix(export_dir=export_file)

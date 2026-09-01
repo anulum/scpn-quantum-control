@@ -11,12 +11,14 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, cast
 
 import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+import scpn_quantum_control.phase.torch_export as torch_export
 from scpn_quantum_control.phase import (
     PhaseTorchExportAuditResult,
     run_torch_module_export_audit,
@@ -115,3 +117,124 @@ def test_torch_module_export_audit_rejects_unknown_route(tmp_path: Path) -> None
 
     with pytest.raises(KeyError, match="unknown PyTorch export route"):
         result.route_status("missing")
+
+
+def _fake_export_runtime(*, state_dict: object, graph_nodes: object) -> object:
+    """Return a bounded fake export API that persists one local artifact."""
+    holder: dict[str, object] = {}
+
+    def export(module: object, _args: tuple[()]) -> object:
+        program = SimpleNamespace(
+            module=lambda: module,
+            state_dict=state_dict,
+            graph_signature="",
+            graph_module=SimpleNamespace(graph=SimpleNamespace(nodes=graph_nodes)),
+        )
+        holder["program"] = program
+        return program
+
+    def save(_program: object, path: str) -> None:
+        Path(path).write_bytes(b"bounded-export")
+
+    return SimpleNamespace(
+        export=export,
+        save=save,
+        load=lambda _path: holder["program"],
+    )
+
+
+def test_torch_module_export_audit_requires_export_namespace(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Fail closed when the active runtime has no torch.export namespace."""
+    monkeypatch.setattr(torch_export, "_load_torch", lambda: SimpleNamespace(export=None))
+
+    with pytest.raises(RuntimeError, match="torch.export is unavailable"):
+        run_torch_module_export_audit(
+            features=_features(),
+            labels=_labels(),
+            initial_params=_params(),
+            export_path=tmp_path / "missing-export.pt2",
+        )
+
+
+@pytest.mark.parametrize("missing_api", ("export", "save", "load"))
+def test_torch_module_export_audit_requires_all_export_apis(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    missing_api: str,
+) -> None:
+    """Require export, save, and load before constructing the bounded module."""
+    export_api = SimpleNamespace(
+        export=lambda *_args: object(),
+        save=lambda *_args: None,
+        load=lambda *_args: object(),
+    )
+    setattr(export_api, missing_api, None)
+    monkeypatch.setattr(torch_export, "_load_torch", lambda: SimpleNamespace(export=export_api))
+
+    with pytest.raises(RuntimeError, match=rf"torch.export.{missing_api}"):
+        run_torch_module_export_audit(
+            features=_features(),
+            labels=_labels(),
+            initial_params=_params(),
+            export_path=tmp_path / "missing-api.pt2",
+        )
+
+
+def test_torch_module_export_audit_requires_exported_program_module(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Reject an exported program that cannot expose its executable module."""
+    export_api = SimpleNamespace(
+        export=lambda *_args: object(),
+        save=lambda *_args: None,
+        load=lambda *_args: object(),
+    )
+    monkeypatch.setattr(torch_export, "_load_torch", lambda: SimpleNamespace(export=export_api))
+
+    with pytest.raises(RuntimeError, match=r"ExportedProgram must expose module\(\)"):
+        run_torch_module_export_audit(
+            features=_features(),
+            labels=_labels(),
+            initial_params=_params(),
+            export_path=tmp_path / "missing-module.pt2",
+        )
+
+
+def test_torch_module_export_audit_requires_mapping_state_dict(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Reject a replayable export that reports malformed state metadata."""
+    export_api = _fake_export_runtime(state_dict=[], graph_nodes=())
+    monkeypatch.setattr(torch_export, "_load_torch", lambda: SimpleNamespace(export=export_api))
+
+    with pytest.raises(RuntimeError, match="state_dict must be a mapping"):
+        run_torch_module_export_audit(
+            features=_features(),
+            labels=_labels(),
+            initial_params=_params(),
+            export_path=tmp_path / "bad-state.pt2",
+        )
+
+
+def test_torch_module_export_audit_handles_absent_graph_nodes(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Fail the signature route when a replayable export has no graph nodes."""
+    export_api = _fake_export_runtime(state_dict={}, graph_nodes=None)
+    monkeypatch.setattr(torch_export, "_load_torch", lambda: SimpleNamespace(export=export_api))
+
+    result = run_torch_module_export_audit(
+        features=_features(),
+        labels=_labels(),
+        initial_params=_params(),
+        export_path=tmp_path / "no-graph.pt2",
+    )
+
+    assert result.graph_node_count == 0
+    assert result.route_status("exported_program_graph_signature") == "failed"

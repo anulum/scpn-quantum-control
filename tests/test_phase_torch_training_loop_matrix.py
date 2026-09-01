@@ -102,6 +102,7 @@ def test_default_torch_training_loop_scenarios_are_distinct() -> None:
     assert len({scenario.name for scenario in scenarios}) == len(scenarios)
     assert {scenario.fullgraph for scenario in scenarios} == {False, True}
     assert any(scenario.dynamic for scenario in scenarios)
+    assert scenarios[0].to_dict()["name"] == scenarios[0].name
 
 
 def test_torch_training_loop_matrix_rejects_empty_scenarios() -> None:
@@ -127,3 +128,55 @@ def test_torch_training_loop_matrix_rejects_unknown_route() -> None:
 
     with pytest.raises(KeyError, match="unknown PyTorch training-loop matrix route"):
         result.route_status("missing")
+
+
+@pytest.mark.parametrize(
+    (
+        "name",
+        "features",
+        "labels",
+        "initial_params",
+        "learning_rate",
+        "steps",
+        "message",
+    ),
+    (
+        ("", ((0.0,),), (0.0,), (0.1,), 0.1, 1, "name must be non-empty"),
+        ("two words", ((0.0,),), (0.0,), (0.1,), 0.1, 1, "name must not contain"),
+        ("empty", (), (), (), 0.1, 1, "features must be non-empty"),
+        ("empty_row", ((),), (0.0,), (), 0.1, 1, "rows must be non-empty"),
+        ("ragged", ((0.0,), (0.0, 1.0)), (0.0, 1.0), (0.1,), 0.1, 1, "share one width"),
+        ("labels", ((0.0,),), (), (0.1,), 0.1, 1, "labels must match"),
+        ("params", ((0.0,),), (0.0,), (), 0.1, 1, "initial_params must match"),
+        ("learning_rate", ((0.0,),), (0.0,), (0.1,), 0.0, 1, "learning_rate must be positive"),
+        ("steps", ((0.0,),), (0.0,), (0.1,), 0.1, 0, "steps must be a positive integer"),
+        ("bool_steps", ((0.0,),), (0.0,), (0.1,), 0.1, True, "steps must be a positive integer"),
+    ),
+)
+def test_torch_training_loop_scenario_rejects_invalid_controls(
+    name: str,
+    features: tuple[tuple[float, ...], ...],
+    labels: tuple[float, ...],
+    initial_params: tuple[float, ...],
+    learning_rate: float,
+    steps: int,
+    message: str,
+) -> None:
+    """Reject malformed shape and optimizer controls at scenario construction."""
+    with pytest.raises(ValueError, match=message):
+        PhaseTorchTrainingLoopScenario(
+            name=name,
+            features=features,
+            labels=labels,
+            initial_params=initial_params,
+            learning_rate=learning_rate,
+            steps=steps,
+            fullgraph=False,
+            dynamic=False,
+        )
+
+
+def test_torch_training_loop_matrix_rejects_invalid_tolerance() -> None:
+    """Reject non-finite and negative aggregate tolerances before execution."""
+    with pytest.raises(ValueError, match="finite non-negative"):
+        run_torch_training_loop_matrix(tolerance=-1.0)

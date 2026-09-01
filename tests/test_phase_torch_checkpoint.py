@@ -18,11 +18,12 @@ import pytest
 from numpy.typing import NDArray
 
 from scpn_quantum_control.phase import (
+    TORCH_CHECKPOINT_SCHEMA,
     PhaseTorchCheckpointAuditResult,
     run_torch_module_checkpoint_audit,
 )
 
-pytest.importorskip("torch")
+torch = pytest.importorskip("torch")
 
 
 def _features() -> NDArray[np.float64]:
@@ -131,3 +132,58 @@ def test_torch_module_checkpoint_audit_rejects_unknown_route() -> None:
 
     with pytest.raises(KeyError, match="unknown PyTorch checkpoint route"):
         result.route_status("missing")
+
+
+@pytest.mark.parametrize(
+    ("attribute", "message"), (("save", "torch.save"), ("load", "torch.load"))
+)
+def test_torch_module_checkpoint_audit_requires_checkpoint_runtime_apis(
+    monkeypatch: pytest.MonkeyPatch,
+    attribute: str,
+    message: str,
+) -> None:
+    """Fail closed when the active PyTorch runtime lacks save or load."""
+    monkeypatch.delattr(torch, attribute)
+
+    with pytest.raises(RuntimeError, match=message):
+        run_torch_module_checkpoint_audit(
+            features=_features(),
+            labels=_labels(),
+            initial_params=_params(),
+        )
+
+
+@pytest.mark.parametrize(
+    ("payload", "message"),
+    (
+        ([], "checkpoint payload must be a mapping"),
+        ({"checkpoint_schema": 1}, "checkpoint_schema.*must be a string"),
+        ({"checkpoint_schema": "wrong"}, "schema does not match"),
+        (
+            {"checkpoint_schema": TORCH_CHECKPOINT_SCHEMA, "module_state_dict": []},
+            "module_state_dict.*must be a mapping",
+        ),
+        (
+            {
+                "checkpoint_schema": TORCH_CHECKPOINT_SCHEMA,
+                "module_state_dict": {},
+                "optimizer_state_dict": [],
+            },
+            "optimizer_state_dict.*must be a mapping",
+        ),
+    ),
+)
+def test_torch_module_checkpoint_audit_rejects_malformed_loaded_payloads(
+    monkeypatch: pytest.MonkeyPatch,
+    payload: object,
+    message: str,
+) -> None:
+    """Reject malformed data returned by the weights-only checkpoint loader."""
+    monkeypatch.setattr(torch, "load", lambda *_args, **_kwargs: payload)
+
+    with pytest.raises(RuntimeError, match=message):
+        run_torch_module_checkpoint_audit(
+            features=_features(),
+            labels=_labels(),
+            initial_params=_params(),
+        )

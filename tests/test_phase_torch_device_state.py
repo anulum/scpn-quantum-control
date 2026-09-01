@@ -10,18 +10,20 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from typing import Any, cast
 
 import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+import scpn_quantum_control.phase.torch_device_state as torch_device_state
 from scpn_quantum_control.phase import (
     PhaseTorchDeviceStateAuditResult,
     run_torch_module_device_state_audit,
 )
 
-pytest.importorskip("torch")
+torch = pytest.importorskip("torch")
 
 
 def _features() -> NDArray[np.float64]:
@@ -125,3 +127,71 @@ def test_torch_module_device_state_audit_rejects_unknown_route() -> None:
 
     with pytest.raises(KeyError, match="unknown PyTorch device-state route"):
         result.route_status("missing")
+
+
+def test_torch_module_device_state_audit_rejects_empty_target_devices() -> None:
+    """Require at least one requested device route."""
+    with pytest.raises(ValueError, match="at least one route"):
+        run_torch_module_device_state_audit(
+            features=_features(),
+            labels=_labels(),
+            initial_params=_params(),
+            target_devices=(),
+        )
+
+
+def test_torch_module_device_state_audit_requires_device_factory(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Fail closed when the active runtime cannot construct device objects."""
+    runtime = SimpleNamespace(__version__="test", device=None)
+    monkeypatch.setattr(torch_device_state, "_load_torch", lambda: runtime)
+
+    with pytest.raises(RuntimeError, match="torch.device"):
+        run_torch_module_device_state_audit(
+            features=_features(),
+            labels=_labels(),
+            initial_params=_params(),
+            target_devices=("cpu",),
+        )
+
+
+def test_torch_module_device_state_audit_exercises_cuda_replay_classification(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Classify a smoke-admitted CUDA route through its real replay path."""
+    runtime = SimpleNamespace(
+        __version__=torch.__version__,
+        device=lambda *_args: torch.device("cpu"),
+    )
+    monkeypatch.setattr(torch_device_state, "_load_torch", lambda: runtime)
+    monkeypatch.setattr(
+        torch_device_state,
+        "_torch_cuda_metadata",
+        lambda _runtime: (True, 1, ("simulated-cuda",), True, ""),
+    )
+
+    result = run_torch_module_device_state_audit(
+        features=_features(),
+        labels=_labels(),
+        initial_params=_params(),
+        target_devices=("cuda",),
+    )
+
+    assert result.cuda_smoke_passed
+    assert result.route_status("cuda_module_state_transfer") == "failed"
+
+
+def test_torch_module_device_state_audit_requires_module_to_method(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Fail closed when the bounded module cannot move to the target device."""
+    monkeypatch.setattr(torch_device_state, "torch_bounded_qnn_module", lambda **_kwargs: object())
+
+    with pytest.raises(RuntimeError, match="callable to"):
+        run_torch_module_device_state_audit(
+            features=_features(),
+            labels=_labels(),
+            initial_params=_params(),
+            target_devices=("cpu",),
+        )

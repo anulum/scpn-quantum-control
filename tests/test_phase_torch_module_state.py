@@ -158,6 +158,10 @@ class _OptimizerWithoutStep:
         """Pretend to clear gradients."""
 
 
+class _OptimizerWithoutZeroGradOrStep:
+    """Optimizer-like object without gradient clearing or stepping."""
+
+
 def _features() -> NDArray[np.float64]:
     """Return a deterministic two-parameter bounded phase-QNN fixture."""
     return np.array(
@@ -341,4 +345,9 @@ def test_torch_module_state_runtime_helper_fail_closed_edges() -> None:
         torch_module_state._optimizer_step(
             _CallableLossWithoutGradient(),
             _OptimizerWithoutStep(),
+        )
+    with pytest.raises(RuntimeError, match="step"):
+        torch_module_state._optimizer_step(
+            _CallableLossWithoutGradient(),
+            _OptimizerWithoutZeroGradOrStep(),
         )
