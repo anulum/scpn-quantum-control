@@ -828,6 +828,7 @@ MLIR_LEAF_QUALITY_RATCHET = [
     "src/scpn_quantum_control/compiler/mlir_enzyme_audit.py",
     "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
     "src/scpn_quantum_control/compiler/mlir_executable_kernel.py",
+    "src/scpn_quantum_control/compiler/mlir_matrix_native_compilation.py",
     "src/scpn_quantum_control/compiler/mlir_phase_qnode_runtime.py",
     "src/scpn_quantum_control/compiler/mlir_transform_plan_assembly.py",
     "src/scpn_quantum_control/compiler/mlir_workload_compilation.py",
@@ -847,6 +848,7 @@ MLIR_LEAF_QUALITY_RATCHET = [
     "tests/test_mlir_scalar_native_compilation_integration.py",
     "tests/test_mlir_vector_native_compilation_integration.py",
     "tests/test_mlir_matrix_native_compilation_integration.py",
+    "tests/test_mlir_matrix_native_compilation_validation.py",
     "tests/test_mlir_matrix_2x2_native_compilation_integration.py",
     "tests/test_mlir_symmetric_native_compilation_integration.py",
 ]
@@ -866,6 +868,7 @@ MLIR_LEAF_COVERAGE_COHORT = [
     "tests/test_mlir_scalar_native_compilation_integration.py",
     "tests/test_mlir_vector_native_compilation_integration.py",
     "tests/test_mlir_matrix_native_compilation_integration.py",
+    "tests/test_mlir_matrix_native_compilation_validation.py",
     "tests/test_mlir_matrix_2x2_native_compilation_integration.py",
     "tests/test_mlir_symmetric_native_compilation_integration.py",
 ]
@@ -885,7 +888,8 @@ MLIR_LEAF_COVERAGE_DATA_FILE = ".coverage.mlir-leaf-quality"
 MLIR_LEAF_COVERAGE_SOURCE = "src/scpn_quantum_control/compiler"
 MLIR_LEAF_COVERAGE_INCLUDE = (
     "*/mlir_enzyme_audit.py,*/mlir_enzyme_evidence.py,*/mlir_executable_kernel.py,"
-    "*/mlir_phase_qnode_runtime.py,*/mlir_transform_plan_assembly.py,"
+    "*/mlir_matrix_native_compilation.py,*/mlir_phase_qnode_runtime.py,"
+    "*/mlir_transform_plan_assembly.py,"
     "*/mlir_workload_compilation.py"
 )
 PHASE_QNODE_AFFINITY_COVERAGE_DATA_FILE = ".coverage.phase-qnode-affinity"

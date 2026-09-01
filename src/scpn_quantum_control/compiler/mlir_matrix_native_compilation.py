@@ -893,10 +893,6 @@ def _call_native_matrix_quadratic_form_unary(
             "native matrix quadratic form LLVM/JIT kernel requires "
             "dimension * dimension + dimension values"
         )
-    if output_size not in {1, expected_value_count}:
-        raise ValueError(
-            "native matrix quadratic form LLVM/JIT output_size must be one or input-sized"
-        )
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
@@ -931,10 +927,6 @@ def _call_native_matrix_quadratic_form_binary(
             f"native matrix quadratic form LLVM/JIT kernel requires "
             f"{expected_vector_size} {label} value(s)"
         )
-    if output_size not in {1, expected_value_count}:
-        raise ValueError(
-            "native matrix quadratic form LLVM/JIT output_size must be one or input-sized"
-        )
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
@@ -958,10 +950,6 @@ def _call_native_matrix_vector_product_unary(
         raise ValueError(
             "native matrix-vector product LLVM/JIT kernel requires "
             "dimension * dimension + dimension values"
-        )
-    if output_size not in {checked_dimension, expected_value_count}:
-        raise ValueError(
-            "native matrix-vector product LLVM/JIT output_size must be dimension or input-sized"
         )
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
@@ -997,10 +985,6 @@ def _call_native_matrix_vector_product_binary(
             f"native matrix-vector product LLVM/JIT kernel requires "
             f"{expected_vector_size} {label} value(s)"
         )
-    if output_size not in {checked_dimension, expected_value_count}:
-        raise ValueError(
-            "native matrix-vector product LLVM/JIT output_size must be dimension or input-sized"
-        )
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
@@ -1025,10 +1009,6 @@ def _call_native_matrix_matrix_product_unary(
         raise ValueError(
             "native matrix-matrix product LLVM/JIT kernel requires "
             "2 * dimension * dimension values"
-        )
-    if output_size not in {matrix_size, expected_value_count}:
-        raise ValueError(
-            "native matrix-matrix product LLVM/JIT output_size must be matrix-sized or input-sized"
         )
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
@@ -1065,10 +1045,6 @@ def _call_native_matrix_matrix_product_binary(
             f"native matrix-matrix product LLVM/JIT kernel requires "
             f"{expected_vector_size} {label} value(s)"
         )
-    if output_size not in {matrix_size, expected_value_count}:
-        raise ValueError(
-            "native matrix-matrix product LLVM/JIT output_size must be matrix-sized or input-sized"
-        )
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
@@ -1092,8 +1068,6 @@ def _call_native_matrix_trace_unary(
         raise ValueError(
             "native matrix trace LLVM/JIT kernel requires dimension * dimension values"
         )
-    if output_size not in {1, matrix_size}:
-        raise ValueError("native matrix trace LLVM/JIT output_size must be one or matrix-sized")
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
@@ -1126,8 +1100,6 @@ def _call_native_matrix_trace_binary(
         raise ValueError(
             f"native matrix trace LLVM/JIT kernel requires {expected_vector_size} {label} value(s)"
         )
-    if output_size not in {1, matrix_size}:
-        raise ValueError("native matrix trace LLVM/JIT output_size must be one or matrix-sized")
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
     function(
@@ -1150,10 +1122,6 @@ def _call_native_matrix_frobenius_norm_squared_unary(
     if checked_values.size != matrix_size:
         raise ValueError(
             "native matrix Frobenius-squared LLVM/JIT kernel requires dimension * dimension values"
-        )
-    if output_size not in {1, matrix_size}:
-        raise ValueError(
-            "native matrix Frobenius-squared LLVM/JIT output_size must be one or matrix-sized"
         )
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)
@@ -1187,10 +1155,6 @@ def _call_native_matrix_frobenius_norm_squared_binary(
         raise ValueError(
             "native matrix Frobenius-squared LLVM/JIT kernel requires "
             f"{expected_vector_size} {label} value(s)"
-        )
-    if output_size not in {1, matrix_size}:
-        raise ValueError(
-            "native matrix Frobenius-squared LLVM/JIT output_size must be one or matrix-sized"
         )
     output = np.zeros(output_size, dtype=np.float64)
     double_pointer = ctypes.POINTER(ctypes.c_double)

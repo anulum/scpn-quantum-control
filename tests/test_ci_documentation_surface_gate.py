@@ -280,10 +280,12 @@ def test_ci_mlir_leaf_job_enforces_exact_branch_coverage() -> None:
     assert "Run MLIR leaf focused coverage" in workflow
     assert "tests/test_mlir_toolchain_probe_hardening.py" in workflow
     assert "tests/test_phase_qnode_compiler_lowering.py" in workflow
+    assert "tests/test_mlir_matrix_native_compilation_validation.py" in workflow
     assert "--data-file=.coverage.mlir-leaf-quality" in workflow
     assert "--source=src/scpn_quantum_control/compiler" in workflow
     assert "Enforce MLIR leaf exact coverage" in workflow
     assert "*/mlir_enzyme_audit.py" in workflow
+    assert "*/mlir_matrix_native_compilation.py" in workflow
     assert "*/mlir_phase_qnode_runtime.py" in workflow
     assert "*/mlir_transform_plan_assembly.py" in workflow
     assert "*/mlir_workload_compilation.py" in workflow
