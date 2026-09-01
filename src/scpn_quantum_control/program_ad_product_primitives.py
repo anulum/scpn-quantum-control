@@ -25,7 +25,9 @@ from .program_ad_registry import (
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
     CustomDerivativeRule,
     PrimitiveContract,
+    PrimitiveDTypeRule,
     PrimitiveShapeRule,
+    PrimitiveStaticArgumentRule,
     PrimitiveTransformRule,
 )
 from .program_ad_shape_transforms import (
@@ -65,20 +67,15 @@ def _validate_program_ad_product_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate product primitive dispatch helpers against concrete arguments."""
-    if contract.static_argument_rule is None:
-        raise ValueError(
-            f"program AD primitive {contract.identity.key} missing static argument rule"
-        )
-    if contract.shape_rule is None:
-        raise ValueError(f"program AD primitive {contract.identity.key} missing shape rule")
-    if contract.dtype_rule is None:
-        raise ValueError(f"program AD primitive {contract.identity.key} missing dtype rule")
-    static_arguments = contract.static_argument_rule(args)
+    static_argument_rule = cast(PrimitiveStaticArgumentRule, contract.static_argument_rule)
+    shape_rule = cast(PrimitiveShapeRule, contract.shape_rule)
+    dtype_rule = cast(PrimitiveDTypeRule, contract.dtype_rule)
+    static_arguments = static_argument_rule(args)
     if not isinstance(static_arguments, tuple):
         raise ValueError(
             f"program AD primitive {contract.identity.key} static rule must return a tuple"
         )
-    shape = contract.shape_rule(args)
+    shape = shape_rule(args)
     if not isinstance(shape, tuple) or any(
         not isinstance(dimension, int) or dimension < 0 for dimension in shape
     ):
@@ -86,7 +83,7 @@ def _validate_program_ad_product_contract_dispatch(
             f"program AD primitive {contract.identity.key} shape rule must return "
             "non-negative integer dimensions"
         )
-    dtype = contract.dtype_rule(args)
+    dtype = dtype_rule(args)
     if not isinstance(dtype, str) or not dtype:
         raise ValueError(
             f"program AD primitive {contract.identity.key} dtype rule must return a dtype name"
@@ -122,7 +119,6 @@ def _parse_static_einsum_subscripts(
         shape = tuple(int(dimension) for dimension in raw_shape)
         if len(labels) != len(shape):
             raise ValueError("whole-program AD np.einsum labels must match operand rank")
-        local_dimensions: dict[str, int] = {}
         for label, dimension in zip(labels, shape, strict=True):
             if dimension <= 0:
                 raise ValueError("whole-program AD np.einsum operand dimensions must be positive")
@@ -130,11 +126,7 @@ def _parse_static_einsum_subscripts(
             previous = dimensions.get(label)
             if previous is not None and previous != dimension:
                 raise ValueError("whole-program AD np.einsum label dimensions must agree")
-            local_previous = local_dimensions.get(label)
-            if local_previous is not None and local_previous != dimension:
-                raise ValueError("whole-program AD np.einsum repeated-label dimensions must agree")
             dimensions[label] = dimension
-            local_dimensions[label] = dimension
     missing_output = set(output_labels) - seen_labels
     if missing_output:
         raise ValueError("whole-program AD np.einsum output labels must appear in operands")

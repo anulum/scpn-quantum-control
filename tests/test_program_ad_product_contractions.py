@@ -40,13 +40,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTransformRule:
     """Return a mutable registry transform that exactly mirrors a contract."""
-
     return PrimitiveTransformRule(
         identity=contract.identity,
         derivative_rule=contract.derivative_rule,
@@ -61,9 +59,29 @@ def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTrans
     )
 
 
+def _product_transform(
+    contract: PrimitiveContract,
+    **overrides: object,
+) -> PrimitiveTransformRule:
+    """Return one product transform with explicit contract-field overrides."""
+    fields: dict[str, object] = {
+        "identity": contract.identity,
+        "derivative_rule": contract.derivative_rule,
+        "batching_rule": contract.batching_rule,
+        "lowering_rule": contract.lowering_rule,
+        "lowering_metadata": contract.lowering_metadata,
+        "shape_rule": contract.shape_rule,
+        "dtype_rule": contract.dtype_rule,
+        "static_argument_rule": contract.static_argument_rule,
+        "nondifferentiable_policy": contract.nondifferentiable_policy,
+        "effect": contract.effect,
+    }
+    fields.update(overrides)
+    return PrimitiveTransformRule(**cast(Any, fields))
+
+
 def test_program_ad_product_factories_remain_facade_compatible() -> None:
     """Product factories should re-export the extracted module implementations."""
-
     assert (
         program_ad_product_einsum_derivative_rule
         is product_primitives.program_ad_product_einsum_derivative_rule
@@ -88,7 +106,6 @@ def test_program_ad_product_factories_remain_facade_compatible() -> None:
 
 def test_program_ad_einsum_handles_explicit_ranked_tensor_contractions() -> None:
     """Program AD np.einsum should support explicit static tensor contractions."""
-
     weights = np.array([[1.0, -2.0], [0.5, 3.0]], dtype=np.float64)
     vector = np.array([2.0, -0.25], dtype=np.float64)
 
@@ -125,7 +142,6 @@ def test_program_ad_einsum_handles_explicit_ranked_tensor_contractions() -> None
 
 def test_program_ad_einsum_registry_contract_and_direct_rule() -> None:
     """Program AD einsum should be registry-gated and expose exact fixed-shape rules."""
-
     subscripts = "abc,c,ab->"
     shapes = ((2, 2, 2), (2,), (2, 2))
     tensor = np.arange(1.0, 9.0, dtype=np.float64).reshape(shapes[0])
@@ -182,7 +198,6 @@ def test_program_ad_einsum_registry_contract_and_direct_rule() -> None:
 
 def test_program_ad_product_primitives_are_registry_policy_gated() -> None:
     """Dot, vdot, inner, outer, and matmul should expose primitive registry contracts."""
-
     left_vector = np.array([1.0, 2.0, 3.0], dtype=np.float64)
     right_vector = np.array([4.0, 5.0, 6.0], dtype=np.float64)
     matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
@@ -291,7 +306,6 @@ def test_program_ad_product_primitives_are_registry_policy_gated() -> None:
 
 def test_program_ad_vdot_flattens_operands_with_exact_adjoint() -> None:
     """Program AD vdot should apply exact flattened real inner-product semantics."""
-
     left_weights = np.linspace(-1.5, 2.5, 6, dtype=np.float64).reshape(2, 3)
     right_weights = np.linspace(-2.0, 1.0, 6, dtype=np.float64).reshape(2, 3)
 
@@ -316,7 +330,6 @@ def test_program_ad_vdot_flattens_operands_with_exact_adjoint() -> None:
 
 def test_program_ad_vdot_fails_closed_size_mismatch() -> None:
     """Program AD vdot should reject flattened size mismatches explicitly."""
-
     with pytest.raises(ValueError, match="vdot flattened operands must have matching size"):
         whole_program_value_and_grad(
             lambda values: np.vdot(values[:2], values[2:5]),
@@ -326,7 +339,6 @@ def test_program_ad_vdot_fails_closed_size_mismatch() -> None:
 
 def test_program_ad_product_boundary_metadata_is_explicit() -> None:
     """Product contracts should expose fail-closed contraction boundaries."""
-
     expected_factories = {
         "dot": "not_required",
         "vdot": "not_required",
@@ -366,7 +378,6 @@ def test_program_ad_product_boundary_metadata_is_explicit() -> None:
 
 def test_program_ad_product_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported product primitives must execute through registry validation rules."""
-
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.product:{name}")
         for name in ("dot", "vdot", "inner", "outer", "matmul", "tensordot", "einsum")
@@ -492,7 +503,6 @@ def test_program_ad_product_primitives_validate_registry_rules_at_dispatch() -> 
 
 def test_program_ad_product_primitives_expose_direct_value_jvp_kernels() -> None:
     """Flat product primitive contracts should expose exact direct value/JVP rules."""
-
     left = np.array([1.0, -2.0, 3.0], dtype=np.float64)
     right = np.array([0.5, 4.0, -1.5], dtype=np.float64)
     left_tangent = np.array([0.2, -0.1, 0.4], dtype=np.float64)
@@ -588,7 +598,6 @@ def test_program_ad_product_primitives_expose_direct_value_jvp_kernels() -> None
 
 def test_program_ad_product_matmul_static_derivative_factory_supports_rank1_rank2() -> None:
     """Static matmul factories should support vector and rectangular matrix contracts."""
-
     matrix = np.array([[1.0, -2.0, 0.5], [0.75, 3.0, -1.25]], dtype=np.float64)
     vector = np.array([0.25, -1.5, 2.0], dtype=np.float64)
     tangent_matrix = np.array([[0.2, -0.3, 0.4], [0.1, 0.5, -0.25]], dtype=np.float64)
@@ -672,7 +681,6 @@ def test_program_ad_product_matmul_static_derivative_factory_supports_rank1_rank
 
 def test_program_ad_product_inner_outer_static_derivative_factories() -> None:
     """Static inner and outer factories should expose exact product adjoints."""
-
     left = np.array([[1.0, -2.0, 0.5], [0.75, 3.0, -1.25]], dtype=np.float64)
     right = np.array([[0.25, -1.0, 1.5], [1.25, 0.5, -0.75]], dtype=np.float64)
     tangent_left = np.array([[0.2, -0.3, 0.4], [0.1, 0.5, -0.25]], dtype=np.float64)
@@ -738,7 +746,6 @@ def test_program_ad_product_inner_outer_static_derivative_factories() -> None:
 
 def test_program_ad_product_tensordot_registry_contract_and_direct_rule() -> None:
     """Static tensordot contracts should expose exact contraction JVP/VJP rules."""
-
     left = np.linspace(-0.7, 1.6, 24, dtype=np.float64).reshape(2, 3, 4)
     right = np.linspace(1.2, -0.5, 24, dtype=np.float64).reshape(4, 3, 2)
     tangent_left = np.linspace(0.3, -0.2, 24, dtype=np.float64).reshape(left.shape)
@@ -810,7 +817,6 @@ def test_program_ad_product_tensordot_registry_contract_and_direct_rule() -> Non
 
 def test_program_ad_tensordot_static_axes_preserves_high_rank_adjoint() -> None:
     """Program AD should differentiate static high-rank tensordot contractions exactly."""
-
     left_shape = (2, 3, 2)
     right_shape = (2, 3, 2)
     axes = ((2, 1), (0, 1))
@@ -844,3 +850,354 @@ def test_program_ad_tensordot_static_axes_preserves_high_rank_adjoint() -> None:
             * weights
         )
     _assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+
+
+def test_program_ad_product_contract_facets_reject_malformed_arguments() -> None:
+    """Public product contract facets should reject invalid ranks, shapes, and dtypes."""
+    contracts: dict[str, Any] = {
+        name: cast(Any, primitive_contract_for(f"scpn.program_ad.product:{name}"))
+        for name in ("dot", "vdot", "inner", "outer", "matmul", "tensordot", "einsum")
+    }
+    vector = np.ones(2, dtype=np.float64)
+    matrix = np.ones((2, 2), dtype=np.float64)
+
+    matmul_cases: tuple[tuple[tuple[object, ...], str], ...] = (
+        ((), "requires two operands"),
+        ((vector, np.ones(3)), "vector dimensions must align"),
+        ((matrix, np.ones(3)), "matrix-vector dimensions must align"),
+        ((np.ones(3), matrix), "vector-matrix dimensions must align"),
+        ((matrix, np.ones((3, 2))), "matrix-matrix dimensions must align"),
+        ((np.ones((1, 1, 1)), vector), "rank-1 and rank-2"),
+    )
+    for args, message in matmul_cases:
+        with pytest.raises(ValueError, match=message):
+            contracts["matmul"].shape_rule(args)
+    with pytest.raises(ValueError, match="scalar dot results only"):
+        contracts["dot"].shape_rule((matrix, matrix))
+
+    for name, args, message in (
+        ("vdot", (), "requires two operands"),
+        ("vdot", (vector, np.ones(3)), "matching size"),
+        ("inner", (), "requires two operands"),
+        ("inner", (np.array(1.0), vector), "non-scalar operands"),
+        ("inner", (matrix, np.ones((2, 3))), "last dimensions must align"),
+        ("outer", (), "requires two operands"),
+        ("outer", (np.empty(0), vector), "non-empty operands"),
+        ("tensordot", (vector, vector), "two operands and axes"),
+        ("einsum", (), "subscripts and operands"),
+        ("einsum", (vector, vector), "static subscripts"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            contracts[name].shape_rule(args)
+
+    with pytest.raises(ValueError, match="requires operands"):
+        contracts["dot"].dtype_rule(())
+    with pytest.raises(ValueError, match="real numeric arrays"):
+        contracts["dot"].dtype_rule((np.array(["bad"]), vector))
+    with pytest.raises(ValueError, match="requires two operands"):
+        contracts["dot"].static_argument_rule((vector,))
+
+    invalid_trace = type("TraceADArray", (), {"context": object(), "shape": [2]})()
+    with pytest.raises(ValueError, match="trace array shape must be static"):
+        contracts["outer"].shape_rule((invalid_trace, vector))
+    valid_trace = type("TraceADArray", (), {"context": object(), "shape": (2,)})()
+    assert contracts["dot"].dtype_rule((valid_trace, vector)) == "float64"
+    with pytest.raises(ValueError, match="dimensions must be positive"):
+        contracts["einsum"].shape_rule(("i->i", np.empty(0)))
+    assert contracts["matmul"].shape_rule((vector, np.ones((2, 3)))) == (3,)
+
+
+@pytest.mark.parametrize(
+    ("subscripts", "shapes", "message"),
+    (
+        ("...i,i->", ((2,), (2,)), "ellipsis forms"),
+        ("i,i", ((2,), (2,)), "explicit output"),
+        ("i->i->i", ((2,),), "one explicit output separator"),
+        ("i,j->", ((2,),), "operand count"),
+        ("i->ii", ((2,),), "output labels must be unique"),
+        ("1->1", ((2,),), "alphabetic labels"),
+        ("ij->i", ((2,),), "labels must match operand rank"),
+        ("i->i", ((0,),), "dimensions must be positive"),
+        ("i,i->i", ((2,), (3,)), "label dimensions must agree"),
+        ("i->j", ((2,),), "output labels must appear"),
+    ),
+)
+def test_program_ad_einsum_factory_rejects_invalid_static_signatures(
+    subscripts: str,
+    shapes: tuple[tuple[int, ...], ...],
+    message: str,
+) -> None:
+    """The public fixed-signature einsum factory should fail closed."""
+    with pytest.raises(ValueError, match=message):
+        program_ad_product_einsum_derivative_rule(subscripts, shapes)
+
+
+def test_program_ad_tensordot_factory_rejects_invalid_static_axes() -> None:
+    """The public tensordot factory should validate every static-axis form."""
+    cases: tuple[tuple[tuple[int, ...], tuple[int, ...], object, str], ...] = (
+        ((2,), (2,), True, "static integer or pair"),
+        ((2,), (2,), -1, "non-negative"),
+        ((2,), (2,), 2, "exceeds operand rank"),
+        ((2,), (2,), "bad", "static integer or pair"),
+        ((2, 2), (2, 2), ((0, 1), (0,)), "equal length"),
+        ((2, 3), (2, 4), ((1,), (0,)), "contracted dimensions must align"),
+        ((2, 2), (2, 2), ((True,), (0,)), "static integers"),
+        ((2, 2), (2, 2), (True, 0), "static integers"),
+        ((2, 2), (2, 2), (object(), 0), "static integers"),
+        ((2, 2), (2, 2), ((0, 0), (0, 1)), "unique"),
+        ((2, 0), (2, 2), 1, "dimensions must be positive"),
+    )
+    for left_shape, right_shape, axes, message in cases:
+        with pytest.raises(ValueError, match=message):
+            program_ad_product_tensordot_derivative_rule(left_shape, right_shape, axes=axes)
+
+    integer_axis_rule = program_ad_product_tensordot_derivative_rule((2, 3), (3, 4), axes=(1, 0))
+    ndarray_axis_rule = program_ad_product_tensordot_derivative_rule(
+        (2, 3),
+        (3, 4),
+        axes=(np.array([1]), np.array([0])),
+    )
+    assert "axes_1_by_0" in integer_axis_rule.name
+    assert "axes_1_by_0" in ndarray_axis_rule.name
+
+
+def test_program_ad_product_direct_rules_reject_malformed_vectors() -> None:
+    """Registered direct rules should reject invalid flattened tangents and cotangents."""
+    values = np.arange(4.0, dtype=np.float64)
+    for name in ("dot", "vdot", "inner", "outer"):
+        rule = custom_derivative_rule_for(f"scpn.program_ad.product:{name}")
+        assert rule.jvp_rule is not None
+        with pytest.raises(ValueError, match="tangent shape must match"):
+            rule.jvp_rule(values, np.arange(2.0, dtype=np.float64))
+
+    for name in ("dot", "vdot", "inner"):
+        rule = custom_derivative_rule_for(f"scpn.program_ad.product:{name}")
+        assert rule.vjp_rule is not None
+        with pytest.raises(ValueError, match="one scalar cotangent"):
+            rule.vjp_rule(values, np.ones(2, dtype=np.float64))
+
+    outer_rule = custom_derivative_rule_for("scpn.program_ad.product:outer")
+    assert outer_rule.vjp_rule is not None
+    with pytest.raises(ValueError, match="cotangent shape must match"):
+        outer_rule.vjp_rule(values, np.ones(3, dtype=np.float64))
+
+    matmul_rule = custom_derivative_rule_for("scpn.program_ad.product:matmul")
+    assert matmul_rule.jvp_rule is not None
+    assert matmul_rule.vjp_rule is not None
+    matrix_values = np.arange(8.0, dtype=np.float64)
+    with pytest.raises(ValueError, match="tangent shape must match"):
+        matmul_rule.jvp_rule(matrix_values, np.arange(2.0, dtype=np.float64))
+    with pytest.raises(ValueError, match="cotangent shape must match"):
+        matmul_rule.vjp_rule(matrix_values, np.ones(3, dtype=np.float64))
+    with pytest.raises(ValueError, match="two equal flat operands"):
+        matmul_rule.value_fn(np.arange(3.0, dtype=np.float64))
+    with pytest.raises(ValueError, match="two square matrices"):
+        matmul_rule.value_fn(np.arange(6.0, dtype=np.float64))
+
+
+def test_program_ad_product_static_factories_reject_malformed_flat_payloads() -> None:
+    """Fixed-signature product rules should enforce value and cotangent sizes."""
+    matmul = program_ad_product_matmul_derivative_rule((2,), (2,))
+    inner = program_ad_product_inner_derivative_rule((2,), (2,))
+    outer = program_ad_product_outer_derivative_rule((2,), (2,))
+    tensordot = program_ad_product_tensordot_derivative_rule((2,), (2,), axes=1)
+    einsum = program_ad_product_einsum_derivative_rule("i,i->", ((2,), (2,)))
+    for rule in (matmul, inner, outer, tensordot, einsum):
+        with pytest.raises(ValueError, match="flattened left|values size"):
+            rule.value_fn(np.ones(3, dtype=np.float64))
+
+    for rule, message in (
+        (matmul, "cotangent shape"),
+        (inner, "cotangent shape"),
+        (outer, "cotangent shape"),
+        (tensordot, "cotangent size"),
+        (einsum, "cotangent size"),
+    ):
+        assert rule.vjp_rule is not None
+        with pytest.raises(ValueError, match=message):
+            rule.vjp_rule(np.arange(4.0, dtype=np.float64), np.ones(2, dtype=np.float64))
+
+    assert matmul.vjp_rule is not None
+    _assert_allclose(
+        matmul.vjp_rule(np.arange(4.0, dtype=np.float64), np.array([2.0])),
+        np.array([4.0, 6.0, 0.0, 2.0]),
+    )
+
+    for factory, args, message in (
+        (program_ad_product_matmul_derivative_rule, ((), (2,)), "rank-1 or rank-2"),
+        (program_ad_product_matmul_derivative_rule, ((-1,), (-1,)), "non-negative"),
+        (program_ad_product_matmul_derivative_rule, ((2,), (3,)), "dimensions must align"),
+        (program_ad_product_matmul_derivative_rule, ((2, 3), (2,)), "dimensions must align"),
+        (program_ad_product_matmul_derivative_rule, ((2,), (3, 4)), "dimensions must align"),
+        (program_ad_product_inner_derivative_rule, ((), (2,)), "non-scalar operands"),
+        (program_ad_product_inner_derivative_rule, ((0,), (0,)), "dimensions must be positive"),
+        (program_ad_product_outer_derivative_rule, ((0,), (2,)), "dimensions must be positive"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            factory(*args)
+    with pytest.raises(ValueError, match="requires operands"):
+        program_ad_product_einsum_derivative_rule("->", ())
+
+
+def test_program_ad_product_registered_static_rules_require_configuration() -> None:
+    """Generic einsum and tensordot direct rules should refuse missing signatures."""
+    for name in ("einsum", "tensordot"):
+        rule = custom_derivative_rule_for(f"scpn.program_ad.product:{name}")
+        assert rule.jvp_rule is not None
+        assert rule.vjp_rule is not None
+        with pytest.raises(ValueError, match="requires fixed"):
+            rule.value_fn(np.ones(2, dtype=np.float64))
+        with pytest.raises(ValueError, match="requires fixed"):
+            rule.jvp_rule(np.ones(2, dtype=np.float64), np.ones(2, dtype=np.float64))
+        with pytest.raises(ValueError, match="requires fixed"):
+            rule.vjp_rule(np.ones(2, dtype=np.float64), np.ones(1, dtype=np.float64))
+
+
+def test_program_ad_product_batching_covers_binary_and_static_contractions() -> None:
+    """Product batching should cover unbatched, mapped, mixed, and invalid axes."""
+    binary = cast(Any, primitive_contract_for("scpn.program_ad.product:dot").batching_rule)
+    left = np.array([[1.0, 2.0], [3.0, 4.0]])
+    right = np.array([0.5, -1.0])
+    with pytest.raises(ValueError, match="two operands and two axes"):
+        binary(np.dot, (left,), (0,), 0)
+    _assert_allclose(binary(np.dot, (right, right), (None, None), 0), np.dot(right, right))
+    _assert_allclose(binary(np.dot, (left, right), (0, None), 0), left @ right)
+    _assert_allclose(binary(np.dot, (left, left), (0, 0), 0), np.array([5.0, 25.0]))
+    with pytest.raises(ValueError, match="share one batch size"):
+        binary(np.dot, (left, np.ones((3, 2))), (0, 0), 0)
+
+    einsum = cast(Any, primitive_contract_for("scpn.program_ad.product:einsum").batching_rule)
+    with pytest.raises(ValueError, match="axes must match arguments"):
+        einsum(np.einsum, ("i,i->", right, right), (None, None), 0)
+    with pytest.raises(ValueError, match="static subscripts"):
+        einsum(np.einsum, ("i,i->", right, right), (0, None, None), 0)
+    with pytest.raises(ValueError, match="requires operands"):
+        einsum(np.einsum, ("->",), (None,), 0)
+    _assert_allclose(
+        einsum(np.einsum, ("i,i->", right, right), (None, None, None), 0),
+        np.einsum("i,i->", right, right),
+    )
+    _assert_allclose(
+        einsum(np.einsum, ("i,i->", left, right), (None, 0, None), 0),
+        left @ right,
+    )
+    with pytest.raises(ValueError, match="share one batch size"):
+        einsum(
+            np.einsum,
+            ("i,i->", left, np.ones((3, 2))),
+            (None, 0, 0),
+            0,
+        )
+
+    tensordot = cast(
+        Any,
+        primitive_contract_for("scpn.program_ad.product:tensordot").batching_rule,
+    )
+    with pytest.raises(ValueError, match="axes must match arguments"):
+        tensordot(np.tensordot, (right, right, 1), (None, None), 0)
+    with pytest.raises(ValueError, match="requires static axes"):
+        tensordot(np.tensordot, (right, right, 1), (None, None, 0), 0)
+    _assert_allclose(
+        tensordot(np.tensordot, (right, right, 1), (None, None, None), 0),
+        np.tensordot(right, right, axes=1),
+    )
+    _assert_allclose(
+        tensordot(np.tensordot, (left, right, 1), (0, None, None), 0),
+        left @ right,
+    )
+    with pytest.raises(ValueError, match="share one batch size"):
+        tensordot(
+            np.tensordot,
+            (left, np.ones((3, 2)), 1),
+            (0, 0, None),
+            0,
+        )
+
+
+@pytest.mark.parametrize(
+    ("overrides", "message"),
+    (
+        ({"nondifferentiable_policy": "invalid"}, "invalid program AD product primitive policy"),
+        ({"effect": "stateful"}, "invalid program AD product primitive effect"),
+    ),
+)
+def test_program_ad_product_runtime_rejects_wrong_policy_or_effect(
+    overrides: dict[str, object],
+    message: str,
+) -> None:
+    """Public product execution should reject altered registry classifications."""
+    original = primitive_contract_for("scpn.program_ad.product:dot")
+    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+        _product_transform(original, **overrides),
+        overwrite=True,
+    )
+    try:
+        with pytest.raises(ValueError, match=message):
+            whole_program_value_and_grad(
+                lambda values: np.dot(values, values),
+                np.array([1.0, 2.0]),
+                trace=False,
+            )
+    finally:
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(original),
+            overwrite=True,
+        )
+
+
+def test_program_ad_product_runtime_rejects_incomplete_or_invalid_contract_outputs() -> None:
+    """Public product execution should validate complete contracts and callable results."""
+    original = primitive_contract_for("scpn.program_ad.product:dot")
+    incomplete = _product_transform(
+        original,
+        batching_rule=None,
+        lowering_metadata={},
+        shape_rule=None,
+        dtype_rule=None,
+        static_argument_rule=None,
+    )
+    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(incomplete, overwrite=True)
+    try:
+        with pytest.raises(ValueError, match="batching_rule, lowering_metadata, mlir_op"):
+            whole_program_value_and_grad(
+                lambda values: np.dot(values, values),
+                np.array([1.0, 2.0]),
+                trace=False,
+            )
+    finally:
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(original),
+            overwrite=True,
+        )
+
+    for field, replacement, message in (
+        ("static_argument_rule", lambda _args: ["bad"], "must return a tuple"),
+        ("shape_rule", lambda _args: (-1,), "non-negative integer dimensions"),
+        ("dtype_rule", lambda _args: "", "must return a dtype name"),
+    ):
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _product_transform(original, **{field: replacement}),
+            overwrite=True,
+        )
+        try:
+            with pytest.raises(ValueError, match=message):
+                whole_program_value_and_grad(
+                    lambda values: np.dot(values, values),
+                    np.array([1.0, 2.0]),
+                    trace=False,
+                )
+        finally:
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original),
+                overwrite=True,
+            )
+
+
+def test_program_ad_product_private_registration_guards_remain_fail_closed() -> None:
+    """Internal registration invariants should reject unknown names and stay idempotent."""
+    with pytest.raises(ValueError, match="unsupported program AD product primitive"):
+        product_primitives._program_ad_product_derivative_rule("unknown")
+    with pytest.raises(ValueError, match="no program AD product primitive identity"):
+        product_primitives._require_program_ad_product_contract("unknown")
+    assert product_primitives._require_program_ad_product_contract("dot").identity.name == "dot"
+    product_primitives._register_program_ad_product_primitive_contracts()

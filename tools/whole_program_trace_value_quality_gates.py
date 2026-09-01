@@ -13,12 +13,15 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 PROGRAM_AD_LINALG_SOURCE = "src/scpn_quantum_control/program_ad_linalg_primitives.py"
+PROGRAM_AD_PRODUCT_SOURCE = "src/scpn_quantum_control/program_ad_product_primitives.py"
 PROGRAM_AD_LINALG_SPECTRAL_TEST = "tests/test_program_ad_linalg_spectral.py"
 PROGRAM_AD_LINALG_EXACT_CONTRACTS_TEST = "tests/test_program_ad_linalg_exact_contracts.py"
+PROGRAM_AD_PRODUCT_TEST = "tests/test_program_ad_product_contractions.py"
 WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/whole_program_trace_values.py",
     "src/scpn_quantum_control/whole_program_trace_predicates.py",
     PROGRAM_AD_LINALG_SOURCE,
+    PROGRAM_AD_PRODUCT_SOURCE,
     "tests/test_whole_program_trace_predicates.py",
     "tests/test_whole_program_trace_values.py",
     "tests/test_whole_program_trace_value_operators.py",
@@ -28,6 +31,7 @@ WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = [
     "tests/test_whole_program_trace_value_shapes.py",
     PROGRAM_AD_LINALG_SPECTRAL_TEST,
     PROGRAM_AD_LINALG_EXACT_CONTRACTS_TEST,
+    PROGRAM_AD_PRODUCT_TEST,
     "tools/whole_program_trace_value_quality_gates.py",
     "tests/test_whole_program_trace_value_quality_gate.py",
 ]
@@ -56,7 +60,7 @@ WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT = [
     "tests/test_program_ad_linalg_registry.py",
     PROGRAM_AD_LINALG_SPECTRAL_TEST,
     PROGRAM_AD_LINALG_EXACT_CONTRACTS_TEST,
-    "tests/test_program_ad_product_contractions.py",
+    PROGRAM_AD_PRODUCT_TEST,
     "tests/test_program_ad_reduction_norms.py",
     "tests/test_program_ad_reduction_primitives_docstrings.py",
     "tests/test_program_ad_registry.py",
@@ -96,7 +100,7 @@ WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT = [
 WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE = ".coverage.whole-program-trace-values"
 WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_INCLUDE = (
     "*/whole_program_trace_values.py,*/whole_program_trace_predicates.py,"
-    "*/program_ad_linalg_primitives.py"
+    "*/program_ad_linalg_primitives.py,*/program_ad_product_primitives.py"
 )
 
 
@@ -182,6 +186,8 @@ def build_coverage_gates(python: str) -> list[Gate]:
 __all__ = [
     "PROGRAM_AD_LINALG_SOURCE",
     "PROGRAM_AD_LINALG_SPECTRAL_TEST",
+    "PROGRAM_AD_PRODUCT_SOURCE",
+    "PROGRAM_AD_PRODUCT_TEST",
     "WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT",
     "WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE",
     "WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_INCLUDE",
