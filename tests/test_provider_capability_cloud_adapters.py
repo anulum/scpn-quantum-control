@@ -17,6 +17,7 @@ import pytest
 
 import scpn_quantum_control.hardware.provider_capability_cloud_adapters as cloud_adapters
 import scpn_quantum_control.hardware.provider_capability_discovery as provider_capability_discovery
+from scpn_quantum_control.hardware.aggregators import resolve_aggregator_provider_route
 from scpn_quantum_control.hardware.provider_capability_discovery import (
     OpenPulseControlReadiness,
     ProviderCapabilitySnapshot,
@@ -43,7 +44,6 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
 
 def test_provider_capability_contract_is_exported_from_hardware_package() -> None:
     """The generic capability probe should be available from the HAL facade."""
-
     from scpn_quantum_control.hardware import (
         OpenPulseControlReadiness as ExportedOpenPulseReadiness,
     )
@@ -412,6 +412,7 @@ def test_qiskit_runtime_snapshot_reads_backend_metadata_without_submission() -> 
 
 
 def test_normalize_calibration_timestamp_handles_datetime_and_string() -> None:
+    """Normalize timezone-aware datetimes and trimmed provider strings."""
     dt = datetime(2026, 5, 22, 10, 5, 0, tzinfo=timezone.utc)
     assert normalize_calibration_timestamp(dt) == "2026-05-22T10:05:00Z"
     assert normalize_calibration_timestamp(" 2026-05-22T10:05:00Z ") == "2026-05-22T10:05:00Z"
@@ -445,7 +446,7 @@ def test_qiskit_runtime_snapshot_blocks_offline_backend_without_submission() -> 
 
 
 def test_qbraid_device_snapshot_reads_profile_without_submission() -> None:
-    """qBraid metadata adapters should consume injected device profiles only."""
+    """QBraid metadata adapters should consume injected device profiles only."""
 
     class Profile:
         device_id = "qbraid_qpu_rigetti"
@@ -481,7 +482,7 @@ def test_qbraid_device_snapshot_reads_profile_without_submission() -> None:
 
 
 def test_qbraid_catalog_snapshot_normalises_program_specs_without_submission() -> None:
-    """qBraid catalogue program specs should map onto route-level HAL IR tokens."""
+    """QBraid catalogue program specs should map onto route-level HAL IR tokens."""
 
     class ProgramSpec:
         def __init__(self, alias: str) -> None:
@@ -626,6 +627,188 @@ def test_broker_snapshot_rejects_missing_declared_ir_formats() -> None:
             ir_format="quil",
             metadata_probe=lambda resolved: snapshot_from_qbraid_device(resolved, Device()),
         )
+
+
+def test_cloud_ir_and_availability_normalizers_cover_declared_metadata_variants() -> None:
+    """Normalize route fallbacks, provider tokens, and unknown availability offline."""
+    azure_route = resolve_aggregator_provider_route(
+        aggregator="azure_quantum",
+        provider="quantinuum",
+        ir_format="openqasm3",
+    )
+    assert cloud_adapters._azure_supported_ir_formats(azure_route, {}) == ("openqasm3",)
+    assert cloud_adapters._azure_ir_format_token("rigetti.quil") == "quil"
+    assert cloud_adapters._azure_ir_format_token("pasqal.ir") == "pasqal_ir"
+    assert cloud_adapters._azure_ir_format_token("CUSTOM-IR") == "custom_ir"
+    assert cloud_adapters._azure_native_features({"input_formats": ("qir",)}) == ("gate_model",)
+    assert cloud_adapters._azure_native_features({"input_formats": ("pasqal.ir",)}) == (
+        "neutral_atom",
+    )
+    assert cloud_adapters._azure_online_state({}) is None
+    assert cloud_adapters._azure_online_state({"status": "unexpected"}) is None
+
+    braket_route = resolve_aggregator_provider_route(
+        aggregator="aws_braket",
+        provider="rigetti",
+        ir_format="openqasm3",
+    )
+    assert cloud_adapters._braket_supported_ir_formats(
+        braket_route,
+        (),
+        {"input_formats": ("vendor_ir",)},
+    ) == ("vendor_ir",)
+    assert cloud_adapters._braket_supported_ir_formats(
+        braket_route,
+        ("braket.ir.jaqcd.program",),
+    ) == ("braket_ir",)
+    assert cloud_adapters._braket_supported_ir_formats(braket_route, ()) == ("openqasm3",)
+    assert cloud_adapters._braket_action_names(("first", "second")) == (
+        "first",
+        "second",
+    )
+    assert cloud_adapters._braket_action_entries(42) == ()
+    assert cloud_adapters._braket_basis_gates(42, {}) == ()
+
+
+def test_cloud_numeric_and_broker_normalizers_cover_edge_metadata() -> None:
+    """Normalize bounded counts, queues, broker IR aliases, and raw passthrough."""
+    assert cloud_adapters._braket_max_shots({"max_shots": 123}) == 123
+    assert cloud_adapters._positive_int(True) is None
+    assert cloud_adapters._positive_int(0) is None
+
+    class Device:
+        queue_depth = 0
+
+    assert cloud_adapters._braket_queue_depth(Device()) == 0
+    assert cloud_adapters._qiskit_native_features(
+        {},
+        {"operation_names": ("measure", "reset", "while_loop")},
+        (),
+    ) == (
+        "conditional_control",
+        "conditional_reset",
+        "cross_shot_batches",
+        "mid_circuit_measurement",
+    )
+    assert cloud_adapters._qiskit_native_features({}, {}, ()) == ("cross_shot_batches",)
+    assert cloud_adapters._qiskit_online_state({}, {"operational": True}) is True
+    assert cloud_adapters._qiskit_online_state({}, {"status": "online"}) is True
+    assert cloud_adapters._qiskit_online_state({}, {}) is None
+
+    aliases = {
+        "cirq.Circuit": "cirq",
+        "braket.circuit": "braket_ir",
+        "pennylane.tape": "pennylane",
+        "qubo": "pyqubo",
+        "pytket.circuit": "tket",
+        "qir.v1": "qir",
+        "mlir": "mlir",
+        "vendor.program": "vendor.program",
+    }
+    assert {token: cloud_adapters._broker_ir_format_token(token) for token in aliases} == aliases
+
+    class StrangeworksBackend:
+        id = "metadata_light"
+        n_qubits = 8
+
+    with pytest.raises(ValueError, match="Strangeworks IR formats"):
+        probe_aggregator_provider_capability(
+            aggregator="strangeworks",
+            provider="quantinuum",
+            ir_format="openqasm3",
+            metadata_probe=lambda resolved: snapshot_from_strangeworks_backend(
+                resolved,
+                StrangeworksBackend(),
+            ),
+        )
+
+
+def test_calibration_timestamp_normalizer_handles_optional_sdk_objects() -> None:
+    """Normalize naive SDK timestamps and fail closed on malformed isoformat methods."""
+
+    class Timestamp:
+        def isoformat(self) -> str:
+            return " 2026-05-22T10:05:00Z "
+
+    class BlankTimestamp:
+        def isoformat(self) -> str:
+            return " "
+
+    class InvalidTimestamp:
+        def isoformat(self) -> int:
+            return 42
+
+    class BrokenTimestamp:
+        def isoformat(self) -> str:
+            raise RuntimeError("unavailable SDK timestamp")
+
+    assert normalize_calibration_timestamp(None) is None
+    assert normalize_calibration_timestamp(" ") is None
+    assert normalize_calibration_timestamp(datetime(2026, 5, 22, 10, 5)) == (
+        "2026-05-22T10:05:00Z"
+    )
+    assert normalize_calibration_timestamp(Timestamp()) == "2026-05-22T10:05:00Z"
+    assert normalize_calibration_timestamp(BlankTimestamp()) is None
+    assert normalize_calibration_timestamp(InvalidTimestamp()) is None
+    assert normalize_calibration_timestamp(BrokenTimestamp()) is None
+    assert normalize_calibration_timestamp(object()) is None
+
+
+def test_qiskit_openpulse_profile_handles_absent_and_malformed_topology() -> None:
+    """Keep channel maps deterministic for absent, mapping, and malformed topology."""
+    empty_profile = cloud_adapters._qiskit_openpulse_profile({})
+    assert empty_profile == {
+        "supports_pulse_control": False,
+        "supports_drive_channel_access": False,
+        "supports_measure_channel_access": False,
+        "supports_control_channel_access": False,
+        "n_control_channels": 0,
+        "channel_map": {},
+    }
+    mapped_profile = cloud_adapters._qiskit_openpulse_profile(
+        {
+            "num_qubits": 2,
+            "meas_map": ((0,), (1,)),
+            "coupling_map": {(0, 1): True, ("invalid", 0): True, (0, 1, 2): True},
+        }
+    )
+    assert mapped_profile["channel_map"]["q0"] == {
+        "drive": "d0",
+        "measure": "m0",
+        "control_neighbours": [1],
+    }
+    assert mapped_profile["channel_map"]["q1"]["control_neighbours"] == []
+    assert cloud_adapters._first_coupling_map({"coupling_map": 42}) == ()
+
+
+def test_qiskit_snapshot_preserves_fail_closed_empty_openpulse_features(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Avoid claiming pulse features when the extracted profile reports none."""
+    profile = {
+        "supports_pulse_control": False,
+        "supports_drive_channel_access": False,
+        "supports_measure_channel_access": False,
+        "supports_control_channel_access": False,
+        "n_control_channels": 0,
+        "channel_map": {},
+    }
+    monkeypatch.setattr(cloud_adapters, "_qiskit_openpulse_profile", lambda *_sources: profile)
+
+    class Backend:
+        name = "ibm_metadata_only"
+        num_qubits = 4
+        supported_ir_formats = ("openqasm3",)
+
+    route = resolve_aggregator_provider_route(
+        aggregator="direct",
+        provider="ibm_quantum",
+        ir_format="openqasm3",
+    )
+    snapshot = snapshot_from_qiskit_runtime_backend(route, Backend())
+
+    assert snapshot.native_features == ("cross_shot_batches",)
+    assert snapshot.metadata["openpulse_profile"] == profile
 
 
 def test_cloud_adapter_leaf_has_no_discovery_backedge() -> None:

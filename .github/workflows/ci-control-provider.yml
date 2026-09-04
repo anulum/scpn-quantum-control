@@ -528,6 +528,7 @@ jobs:
           src/scpn_quantum_control/hardware/iqm_backend.py
           src/scpn_quantum_control/hardware/aggregators.py
           src/scpn_quantum_control/hardware/provider_capability_core.py
+          src/scpn_quantum_control/hardware/provider_capability_cloud_adapters.py
           src/scpn_quantum_control/hardware/provider_capability_gate_adapters.py
           tests/test_async_runner.py
           tests/test_circuit_cutting.py
@@ -537,6 +538,7 @@ jobs:
           tests/test_aggregators_branches.py
           tests/test_hardware_hal_provider_conformance.py
           tests/test_provider_capability_core.py
+          tests/test_provider_capability_cloud_adapters.py
           tests/test_provider_capability_gate_adapters.py
           tools/hardware_hal_quality_gates.py
           tests/test_hardware_hal_quality_gate.py
@@ -552,6 +554,7 @@ jobs:
           src/scpn_quantum_control/hardware/iqm_backend.py
           src/scpn_quantum_control/hardware/aggregators.py
           src/scpn_quantum_control/hardware/provider_capability_core.py
+          src/scpn_quantum_control/hardware/provider_capability_cloud_adapters.py
           src/scpn_quantum_control/hardware/provider_capability_gate_adapters.py
           tests/test_hardware_hal.py
           tests/test_async_runner.py
@@ -562,6 +565,7 @@ jobs:
           tests/test_aggregators_branches.py
           tests/test_hardware_hal_provider_conformance.py
           tests/test_provider_capability_core.py
+          tests/test_provider_capability_cloud_adapters.py
           tests/test_provider_capability_gate_adapters.py
           tools/hardware_hal_quality_gates.py
           tests/test_hardware_hal_quality_gate.py
@@ -585,6 +589,7 @@ jobs:
           tests/test_aggregators_branches.py
           tests/test_hardware_hal_provider_conformance.py
           tests/test_provider_capability_core.py
+          tests/test_provider_capability_cloud_adapters.py
           tests/test_provider_capability_gate_adapters.py
       - name: Enforce hardware HAL exact coverage
         run: >-
@@ -593,4 +598,4 @@ jobs:
           --data-file=/tmp/scpn-qc-hardware-hal-quality.coverage
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/circuit_cutting.py,*/hardware/circuit_export.py,*/hardware/fast_classical.py,*/hardware/iqm_backend.py,*/hardware/aggregators.py,*/hardware/provider_capability_core.py,*/hardware/provider_capability_gate_adapters.py
+          --include=*/hardware/hal.py,*/hardware/async_runner.py,*/hardware/circuit_cutting.py,*/hardware/circuit_export.py,*/hardware/fast_classical.py,*/hardware/iqm_backend.py,*/hardware/aggregators.py,*/hardware/provider_capability_core.py,*/hardware/provider_capability_cloud_adapters.py,*/hardware/provider_capability_gate_adapters.py
