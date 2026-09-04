@@ -131,7 +131,7 @@ class PhaseTorchCheckpointMatrixResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether local matrix evidence passed without failed routes."""
+        """Whether local matrix evidence passed without failed routes."""
         return (
             self.base_checkpoint_passed
             and self.route_status("versioned_checkpoint_schema") == "passed"
@@ -144,7 +144,7 @@ class PhaseTorchCheckpointMatrixResult:
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return matrix routes that remain blocked or failed."""
+        """Matrix routes that remain blocked or failed."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:

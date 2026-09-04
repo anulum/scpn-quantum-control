@@ -182,7 +182,7 @@ class LLVMJITClaimGate:
 
     @property
     def missing_requirements(self) -> tuple[str, ...]:
-        """Return the ordered requirement keys blocking LLVM/JIT promotion."""
+        """Ordered requirement keys blocking LLVM/JIT promotion."""
         missing: list[str] = []
         if not self.executable_lowering_verified or self.executable_lowering_evidence_id is None:
             missing.append("executable_lowering")
@@ -200,7 +200,7 @@ class LLVMJITClaimGate:
 
     @property
     def promotion_ready(self) -> bool:
-        """Return whether every LLVM/JIT promotion requirement is attached."""
+        """Whether every LLVM/JIT promotion requirement is attached."""
         return not self.missing_requirements
 
     def to_dict(self) -> dict[str, object]:

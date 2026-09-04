@@ -58,7 +58,7 @@ class QuantumGradientPlan:
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when this plan intentionally refuses execution."""
+        """Whether this plan intentionally refuses execution."""
         return not self.supported
 
 
@@ -172,12 +172,12 @@ class QuantumGradientMethodExplanation:
 
     @property
     def selected_method(self) -> str:
-        """Return the method selected by the wrapped backend plan."""
+        """Method selected by the wrapped backend plan."""
         return self.selected_plan.method
 
     @property
     def supported(self) -> bool:
-        """Return whether the selected plan is executable."""
+        """Whether the selected plan is executable."""
         return self.selected_plan.supported
 
     def to_dict(self) -> dict[str, object]:

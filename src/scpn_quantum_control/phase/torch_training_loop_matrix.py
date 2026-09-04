@@ -79,12 +79,12 @@ class PhaseTorchTrainingLoopScenario:
 
     @property
     def feature_shape(self) -> tuple[int, int]:
-        """Return the scenario feature-matrix shape."""
+        """Scenario feature-matrix shape."""
         return (len(self.features), len(self.features[0]))
 
     @property
     def parameter_width(self) -> int:
-        """Return the scenario parameter-vector width."""
+        """Scenario parameter-vector width."""
         return len(self.initial_params)
 
     def feature_matrix(self) -> FloatArray:
@@ -191,22 +191,22 @@ class PhaseTorchTrainingLoopMatrixResult:
 
     @property
     def scenario_count(self) -> int:
-        """Return the number of matrix scenarios."""
+        """Number of matrix scenarios."""
         return len(self.records)
 
     @property
     def passed_count(self) -> int:
-        """Return the number of passing local scenario records."""
+        """Number of passing local scenario records."""
         return sum(1 for record in self.records if record.passed)
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return matrix routes that remain blocked or failed."""
+        """Matrix routes that remain blocked or failed."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     @property
     def passed(self) -> bool:
-        """Return whether local training-loop matrix evidence passed."""
+        """Whether local training-loop matrix evidence passed."""
         return (
             self.route_status("multi_scenario_training_loop") == "passed"
             and self.route_status("training_loop_gradient_parity") == "passed"

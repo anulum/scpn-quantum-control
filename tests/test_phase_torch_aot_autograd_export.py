@@ -319,7 +319,7 @@ class _ReplayTorch:
 
     @property
     def ones_like(self) -> object:
-        """Return a torch.ones_like stand-in only when enabled."""
+        """Torch ``ones_like`` stand-in, available only when enabled."""
         if not self._with_ones_like:
             return None
 

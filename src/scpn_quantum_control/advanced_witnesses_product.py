@@ -363,7 +363,7 @@ class PathEligibilityDecision:
 
     @property
     def allowed(self) -> bool:
-        """Return True when the path is allowed."""
+        """Whether the path is allowed."""
         return self.outcome == "allowed"
 
     def to_dict(self) -> dict[str, object]:

@@ -109,7 +109,7 @@ class PhaseTorchCheckpointAuditResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether bounded local checkpoint replay passed."""
+        """Whether bounded local checkpoint replay passed."""
         return (
             self.route_status("checkpoint_file_round_trip") == "passed"
             and self.route_status("checkpoint_weights_only_cpu_load") == "passed"
@@ -124,7 +124,7 @@ class PhaseTorchCheckpointAuditResult:
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return checkpoint routes that remain blocked or failed."""
+        """Checkpoint routes that remain blocked or failed."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:

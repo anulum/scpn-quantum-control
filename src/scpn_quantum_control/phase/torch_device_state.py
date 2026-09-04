@@ -108,7 +108,7 @@ class PhaseTorchDeviceStateAuditResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether bounded local CPU device-state replay passed."""
+        """Whether bounded local CPU device-state replay passed."""
         return (
             self.route_status("cpu_module_state_transfer") == "passed"
             and self.cpu_loss_error <= self.tolerance
@@ -118,7 +118,7 @@ class PhaseTorchDeviceStateAuditResult:
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return device-state routes that remain blocked or failed."""
+        """Device-state routes that remain blocked or failed."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:

@@ -81,7 +81,7 @@ class PhaseTorchModuleStateValidationResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether keys, shapes, and dtypes match the target module."""
+        """Whether keys, shapes, and dtypes match the target module."""
         return not self.missing_keys and not self.unexpected_keys and not self.mismatched_tensors
 
     def to_dict(self) -> dict[str, object]:
@@ -144,7 +144,7 @@ class PhaseTorchModuleStateAuditResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether the bounded local module-state routes passed."""
+        """Whether the bounded local module-state routes passed."""
         return (
             self.route_status("module_state_dict_round_trip") == "passed"
             and self.route_status("optimizer_state_dict_round_trip") == "passed"
@@ -156,7 +156,7 @@ class PhaseTorchModuleStateAuditResult:
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return module-state routes that remain blocked or failed."""
+        """Module-state routes that remain blocked or failed."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:

@@ -150,7 +150,7 @@ class DomainApplicationHonestyKit:
 
     @property
     def publication_safe(self) -> bool:
-        """Return ``False`` because a kit is not domain-publication evidence."""
+        """Always false because a kit is not domain-publication evidence."""
         return False
 
     def as_dict(self) -> dict[str, Any]:
@@ -204,7 +204,7 @@ class ApplicationHonestyAuditReport:
 
     @property
     def passed(self) -> bool:
-        """Return whether every built-in kit and dataset privacy row is valid."""
+        """Whether every built-in kit and dataset privacy row is valid."""
         return bool(self.kits) and all(row.passed for row in self.dataset_privacy)
 
     def content_digest(self) -> str:

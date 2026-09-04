@@ -93,17 +93,17 @@ class PhaseTorchDynamicShapeExportReplayCase:
 
     @property
     def feature_shape(self) -> tuple[int, int]:
-        """Return the concrete feature matrix shape for this replay case."""
+        """Concrete feature matrix shape for this replay case."""
         return (len(self.features), len(self.features[0]))
 
     @property
     def batch_size(self) -> int:
-        """Return the replay case batch size."""
+        """Replay case batch size."""
         return self.feature_shape[0]
 
     @property
     def feature_width(self) -> int:
-        """Return the replay case feature width."""
+        """Replay case feature width."""
         return self.feature_shape[1]
 
     def feature_matrix(self) -> FloatArray:
@@ -141,7 +141,7 @@ class PhaseTorchDynamicShapeExportRecord:
 
     @property
     def passed(self) -> bool:
-        """Return whether exported and loaded value replay matched reference."""
+        """Whether exported and loaded value replay matched reference."""
         return (
             np.isfinite(self.original_loss_error)
             and np.isfinite(self.loaded_loss_error)
@@ -211,17 +211,17 @@ class PhaseTorchDynamicShapeExportResult:
 
     @property
     def replay_count(self) -> int:
-        """Return the number of concrete replay cases."""
+        """Number of concrete replay cases."""
         return len(self.records)
 
     @property
     def passed_count(self) -> int:
-        """Return the number of replay cases that matched the reference loss."""
+        """Number of replay cases that matched the reference loss."""
         return sum(1 for record in self.records if record.passed)
 
     @property
     def passed(self) -> bool:
-        """Return whether the local dynamic-batch export route passed."""
+        """Whether the local dynamic-batch export route passed."""
         return (
             self.replay_count > 0
             and self.passed_count == self.replay_count
@@ -233,7 +233,7 @@ class PhaseTorchDynamicShapeExportResult:
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return dynamic-shape export routes that remain blocked or failed."""
+        """Dynamic-shape export routes that remain blocked or failed."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:

@@ -85,12 +85,12 @@ class PhaseTorchExportShapeScenario:
 
     @property
     def feature_shape(self) -> tuple[int, int]:
-        """Return the static feature matrix shape for this scenario."""
+        """Static feature matrix shape for this scenario."""
         return (len(self.features), len(self.features[0]))
 
     @property
     def parameter_width(self) -> int:
-        """Return the bounded phase-QNN parameter width for this scenario."""
+        """Bounded phase-QNN parameter width for this scenario."""
         return len(self.initial_params)
 
     def feature_matrix(self) -> FloatArray:
@@ -154,7 +154,7 @@ class PhaseTorchExportShapeMatrixRecord:
 
     @property
     def passed(self) -> bool:
-        """Return whether the static export/load replay passed."""
+        """Whether the static export/load replay passed."""
         return self.base_export_passed
 
     def to_dict(self) -> dict[str, object]:
@@ -194,17 +194,17 @@ class PhaseTorchExportShapeMatrixResult:
 
     @property
     def scenario_count(self) -> int:
-        """Return the number of static-shape export scenarios."""
+        """Number of static-shape export scenarios."""
         return len(self.records)
 
     @property
     def passed_count(self) -> int:
-        """Return the number of static scenarios that passed replay."""
+        """Number of static scenarios that passed replay."""
         return sum(1 for record in self.records if record.passed)
 
     @property
     def passed(self) -> bool:
-        """Return whether the local static-shape matrix passed."""
+        """Whether the local static-shape matrix passed."""
         return (
             self.scenario_count > 0
             and self.passed_count == self.scenario_count
@@ -215,7 +215,7 @@ class PhaseTorchExportShapeMatrixResult:
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return shape-matrix routes that remain blocked or failed."""
+        """Shape-matrix routes that remain blocked or failed."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:

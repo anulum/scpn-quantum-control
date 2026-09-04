@@ -96,7 +96,7 @@ class PhaseTorchExportAuditResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether bounded local export persistence passed."""
+        """Whether bounded local export persistence passed."""
         return (
             self.route_status("module_exported_program") == "passed"
             and self.route_status("exported_program_file_round_trip") == "passed"
@@ -109,7 +109,7 @@ class PhaseTorchExportAuditResult:
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return export routes that remain blocked or failed."""
+        """Export routes that remain blocked or failed."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:

@@ -143,7 +143,7 @@ class PhaseTorchAOTAutogradExportResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether the local AOTAutograd FX persistence audit passed."""
+        """Whether the local AOTAutograd FX persistence audit passed."""
         return (
             self.route_status("aot_autograd_forward_backward_capture") == "passed"
             and self.route_status("aot_autograd_graph_file_round_trip") == "passed"
@@ -156,7 +156,7 @@ class PhaseTorchAOTAutogradExportResult:
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return AOTAutograd routes that remain blocked or failed."""
+        """AOTAutograd routes that remain blocked or failed."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:

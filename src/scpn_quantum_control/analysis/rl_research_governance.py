@@ -154,7 +154,7 @@ class RLResearchPolicy:
 
     @property
     def policy_id(self) -> str:
-        """Return a stable digest-bound identifier for this policy."""
+        """Stable digest-bound identifier for this policy."""
         canonical = json.dumps(self.as_dict(), sort_keys=True, separators=(",", ":")).encode()
         return f"rl-policy-{hashlib.sha256(canonical).hexdigest()[:16]}"
 
@@ -274,7 +274,7 @@ class RLSeedSuiteReport:
 
     @property
     def passed(self) -> bool:
-        """Return whether admission and every deterministic seed replay passed."""
+        """Whether admission and every deterministic seed replay passed."""
         return (
             self.decision.allowed
             and bool(self.seed_results)

@@ -160,22 +160,22 @@ class ResearchLaneRecord:
 
     @property
     def family(self) -> str:
-        """Return ``analysis`` or ``gauge`` from the fully qualified module."""
+        """Module family, either ``analysis`` or ``gauge``."""
         return self.module.split(".", 2)[1]
 
     @property
     def registry_grants_productisation(self) -> bool:
-        """Return ``False`` because catalogue membership is non-promotional."""
+        """Always false because catalogue membership is non-promotional."""
         return False
 
     @property
     def registry_grants_control(self) -> bool:
-        """Return ``False``; catalogue membership grants no actuation authority."""
+        """Always false; catalogue membership grants no actuation authority."""
         return False
 
     @property
     def registry_grants_publication_claim(self) -> bool:
-        """Return ``False``; catalogue membership is not publication evidence."""
+        """Always false; catalogue membership is not publication evidence."""
         return False
 
     def as_dict(self) -> dict[str, Any]:
@@ -211,7 +211,7 @@ class ResearchLaneInventoryReport:
 
     @property
     def passed(self) -> bool:
-        """Return whether discovery and the immutable registry match exactly."""
+        """Whether discovery and the immutable registry match exactly."""
         return not self.missing_modules and not self.orphaned_records
 
     def as_dict(self) -> dict[str, Any]:

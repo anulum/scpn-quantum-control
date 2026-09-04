@@ -139,7 +139,7 @@ class JAXNQSBaselineSpec:
 
     @property
     def n_qubits(self) -> int:
-        """Return the visible-spin count."""
+        """Visible-spin count."""
         return len(self.coupling)
 
     def to_dict(self) -> dict[str, object]:

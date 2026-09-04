@@ -69,17 +69,17 @@ class SyncTrajectory:
 
     @property
     def final_local_visibility(self) -> float:
-        """Return the final mean transverse visibility, or zero for legacy rows."""
+        """Final mean transverse visibility, or zero for legacy rows."""
         return self.local_visibility_values[-1] if self.local_visibility_values else 0.0
 
     @property
     def final_phase_defined(self) -> bool:
-        """Return whether the final local phase order is observable."""
+        """Whether the final local phase order is observable."""
         return self.phase_defined_values[-1] if self.phase_defined_values else False
 
     @property
     def final_exchange_coherence(self) -> float:
-        """Return the final pairwise transverse-exchange coherence score."""
+        """Final pairwise transverse-exchange coherence score."""
         return self.exchange_coherence_values[-1] if self.exchange_coherence_values else 0.0
 
     def to_dict(self) -> dict[str, object]:

@@ -153,12 +153,12 @@ class TheoryHookPromotionRecord:
 
     @property
     def admitted_for_control(self) -> bool:
-        """Return ``False``; this registry admits no hook for actuation."""
+        """Always false; this registry admits no hook for actuation."""
         return False
 
     @property
     def admitted_for_publication_claim(self) -> bool:
-        """Return ``False``; local fixture evidence is not publication proof."""
+        """Always false; local fixture evidence is not publication proof."""
         return False
 
     def as_dict(self) -> dict[str, Any]:
@@ -264,7 +264,7 @@ class TheoryHookPromotionReport:
 
     @property
     def passed(self) -> bool:
-        """Return whether all bounded fixture checks passed."""
+        """Whether all bounded fixture checks passed."""
         return all(item.passed for item in self.evidence)
 
     def as_dict(self) -> dict[str, Any]:
