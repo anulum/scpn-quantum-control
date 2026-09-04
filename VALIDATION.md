@@ -1,8 +1,8 @@
 # Validation
 
-## BL-54 DLA and topology-constrained differentiable control
+## DLA and topology-constrained differentiable control
 
-The BL-54 validation lane exercises the public
+The topology-control validation lane exercises the public
 `scpn_quantum_control.dla_topology_control` facade, notebook 51, and the real
 evidence CLI. Focused gates cover:
 
@@ -28,9 +28,9 @@ full DLA, controllability, persistent-homology derivative, error correction,
 hardware parity preservation, provider, QPU, deployment, or application
 claim. Reproduce with `scripts/run_dla_topology_control_evidence.py --check`.
 
-## BL-60 chimera and multiscale control
+## Chimera and multiscale control
 
-The BL-60 validation lane exercises the public
+The chimera-control validation lane exercises the public
 `scpn_quantum_control.chimera_control` facade and the real evidence CLI. Its
 focused gates cover:
 
@@ -152,7 +152,7 @@ execution occurs.
 
 The bounded L16 director runs three frozen small-system scenarios through the real exact-simulator
 indicator path, verifies deterministic replay, and tests the co-design mappings
-`continue -> allow`, `adjust -> hold`, and `halt -> abort`. BL-67 policy tests
+`continue -> allow`, `adjust -> hold`, and `halt -> abort`. Execution-policy tests
 refuse both incomplete and otherwise ticketed hardware modes. Contract,
 evidence-validation, route-matrix, CLI, and atomic-write tests provide 100%
 line and branch coverage over the new director modules and touched co-design
@@ -161,7 +161,7 @@ execution occurs.
 
 ### ENAQT Transport Tests
 
-BL-87 validates a trace-preserving single-excitation Lindblad generator,
+The ENAQT lane validates a trace-preserving single-excitation Lindblad generator,
 source-to-target sink efficiency, exact zero- and high-noise endpoints,
 intermediate-optimum classification, deterministic evidence replay, memory
 budgets, compatibility aliases, and malformed-input rejection. The frozen

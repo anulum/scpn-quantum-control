@@ -219,7 +219,7 @@ generated rather than maintained in this README. The
 every current registry row and every representative supported or fail-closed
 planner case. The generated
 [Differentiable Reviewer Evidence](docs/differentiable_reviewer_evidence.md)
-page maps DP-015/030 concerns to scoped commands and explicit open-gap
+page maps reviewer concerns to scoped commands and explicit open-gap
 pointers. Broader workflow, evidence, promotion, provider, hardware, and
 benchmark boundaries remain documented in
 [Differentiable Programming](docs/differentiable_programming.md), the
@@ -279,7 +279,7 @@ boundaries,
 source-level/non-executed branch
 semantics, general Program AD execution, LLVM/JIT execution, hardware,
 provider, and performance promotion. The Rust claim boundary now reports the
-BL-02 `dynamic_boundary_fail_closed_audit` for the audited dynamic-boundary
+`dynamic_boundary_fail_closed_audit` for the audited dynamic-boundary
 fail-closed corpus.
 Python callers can use `scpn_quantum_control.program_ad_rust_bridge` for the
 typed fail-closed wrappers; `scpn_quantum_control.differentiable` re-exports
@@ -346,7 +346,7 @@ Direct entry points:
 - [Differentiable Support Matrix](docs/differentiable_support_matrix.md)
   — generated Program AD registry and quantum-gradient planner evidence
 - [Differentiable Reviewer Evidence](docs/differentiable_reviewer_evidence.md)
-  — generated DP-015/030 reproduction commands and open-gap pointers
+  — generated reviewer-evidence reproduction commands and open-gap pointers
 - [Quantum Gradients](docs/quantum_gradients.md)
   — parameter-shift, VQE gradients, verification tests, and planned backend
   gradient planner

@@ -2,11 +2,11 @@
 
 **Status: RESEARCH — ANSWERED (2026-07-16). The preregistered experiment ran
 (§6): the null hypothesis stands — the relaxation shows no gain over the discrete
-discrete baseline at matched true-cost budget. The research label stays; the
+baseline at matched true-cost budget. The research label stays; the
 discrete optimiser remains the production recommendation; no isolated-host promotion
 case exists on this evidence.**
 
-Date: 2026-07-16. Author seat: SCPN-QUANTUM-CONTROL/claude-7f6b.
+Date: 2026-07-16.
 
 > **Location note.** Originally committed (2026-07-16, commit `9f7407ff`)
 > under `docs/internal/research_synthesis/`; relocated here unchanged because
