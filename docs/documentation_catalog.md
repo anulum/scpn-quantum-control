@@ -4,7 +4,7 @@ The primary navigation stays intentionally compact. This catalog keeps every
 public guide, evidence note, contract, campaign protocol, and reference page
 discoverable without crowding the main learning path.
 
-Current inventory: **374 public pages**; **162** are in the
+Current inventory: **375 public pages**; **162** are in the
 primary navigation and the remainder are indexed here.
 
 Labels marked `catalog` are intentionally outside the primary navigation; they
@@ -71,6 +71,7 @@ are still built, link-checked, searchable, and public.
 | [IQM Garnet Depth-10 Sign-Replication Preregistration](campaigns/iqm_dla_d10_retest_prereg_2026-07-22.md) | catalog | Date: 2026-07-22 |
 | [IQM Garnet Parity-Asymmetry Depth-Profile Preregistration](campaigns/iqm_dla_depth_profile_prereg_2026-07-22.md) | catalog | Date: 2026-07-22 |
 | [IQM DLA Submission-Journal Runbook](campaigns/iqm_dla_submission_journal_runbook_2026-07-26.md) | catalog | Date: 2026-07-26 |
+| [IQM DLA window variability: calibration-epoch amendment](campaigns/iqm_dla_window_variability_epoch_amendment_2026-09-04.md) | catalog | **Status:** post-W7, pre-W8 prospective amendment |
 | [IQM Garnet Parity-Asymmetry Window-Variability Preregistration](campaigns/iqm_dla_window_variability_prereg_2026-07-22.md) | catalog | Date: 2026-07-22 |
 | [IQM Garnet Layout-Transfer Per-Size Powered Preregistration](campaigns/iqm_layout_transfer_per_size_prereg_2026-07-22.md) | catalog | Date: 2026-07-22 |
 | [IQM Garnet Per-Size Layout-Transfer Readiness](campaigns/iqm_layout_transfer_per_size_readiness_2026-07-26.md) | catalog | This package implements the provider-free gates frozen in iqm_layout_transfer_per_size_prereg_2026-07-22.md. It does not authorize a provider call or hardware execution. |

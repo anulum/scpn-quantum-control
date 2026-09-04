@@ -44,7 +44,9 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
         in report
     )
     assert quality_gates.DIFFERENTIABLE_PROGRAMMING_QUANTUM_TEST in run
-    assert "*/benchmarks/differentiable_programming_quantum.py" in report
+    assert "*/benchmarks/differentiable_programming_quantum.py" in (
+        quality_gates.DIFFERENTIABLE_PROGRAMMING_CONTRACTS_COVERAGE_INCLUDE
+    )
 
 
 def test_aggregate_preflight_uses_helper_defined_gates() -> None:

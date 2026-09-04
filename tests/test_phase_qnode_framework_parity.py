@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import importlib
 from types import SimpleNamespace
 from typing import cast
 
@@ -16,6 +17,7 @@ import numpy as np
 import pytest
 
 import scpn_quantum_control.phase.qnode_framework_parity as framework_parity
+from scpn_quantum_control.phase.qnode_circuit import execute_phase_qnode_circuit
 from scpn_quantum_control.phase.qnode_framework_parity import (
     ParityScenario,
     run_phase_qnode_framework_parity_suite,
@@ -215,7 +217,7 @@ def test_tensorflow_adapter_contracts_without_claiming_tensorflow_execution(
         cos=lambda value: _ScalarValue(float(np.cos(value))),
     )
     monkeypatch.setattr(
-        framework_parity.importlib,
+        importlib,
         "import_module",
         lambda name: fake_tf if name == "tensorflow" else __import__(name),
     )
@@ -263,7 +265,7 @@ def test_tensorflow_matrix_facade_matches_registered_reference() -> None:
     )
     params = np.array([0.37, -0.29, 0.23], dtype=np.float64)
     circuit = framework_parity._scenario_circuit("registered_two_qubit_entangling_statevector")
-    reference = framework_parity.execute_phase_qnode_circuit(circuit, params).value
+    reference = execute_phase_qnode_circuit(circuit, params).value
 
     observed = framework_parity._registered_two_qubit_tensorflow_objective(tf, params)
 
