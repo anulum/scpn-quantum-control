@@ -25,7 +25,7 @@ from typing import Final
 
 _TASK_CODE: Final[re.Pattern[str]] = re.compile(
     r"(?ix)(?<![A-Za-z0-9])(?:"
-    r"(?:bl|st|dp|rg|hg|qwc|ws|kt|lock|kimi|aud)[_-]?\d+"
+    r"(?:bl|st|dp|rg|hg|qwc|ws|kt|lock|kimi|aud)[_-]?\d+(?:[._-]?[a-z])?"
     r"|fu[_-](?:\d+|[a-z])"
     r"|co\d+[_-][a-z]+[_-]\d+"
     r"|sec[_-]?\d+"
@@ -34,7 +34,7 @@ _TASK_CODE: Final[re.Pattern[str]] = re.compile(
 )
 _PATH_TASK_CODE: Final[re.Pattern[str]] = re.compile(
     r"(?ix)(?:^|[/_.-])(?:"
-    r"(?:bl|st|dp|rg|hg|qwc|ws|kt|lock|kimi|aud)[_-]?\d+"
+    r"(?:bl|st|dp|rg|hg|qwc|ws|kt|lock|kimi|aud)[_-]?\d+(?:[._-]?[a-z])?"
     r"|fu[_-](?:\d+|[a-z])"
     r"|co\d+[_-][a-z]+[_-]\d+"
     r"|sec[_-]?\d+"

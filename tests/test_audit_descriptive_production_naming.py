@@ -161,6 +161,18 @@ def test_python_docstrings_and_runtime_messages_fail(tmp_path: Path) -> None:
     }
 
 
+def test_letter_suffixed_work_item_code_fails(tmp_path: Path) -> None:
+    """A letter suffix must not hide an internal code from the audit."""
+    source = tmp_path / "src" / "package" / "surface.py"
+    _write(source, '"""Calibration capture formerly tracked as AUD-4b."""\n')
+
+    findings = audit_paths(tmp_path, ("src/package/surface.py",))
+
+    assert [(finding.kind, finding.value) for finding in findings] == [
+        ("module description", "Calibration capture formerly tracked as AUD-4b."),
+    ]
+
+
 def test_public_documentation_body_and_json_prose_fail(tmp_path: Path) -> None:
     """Catch internal codes outside headings and identifier-like JSON values."""
     public_doc = "docs/product.md"

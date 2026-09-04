@@ -648,14 +648,12 @@ class HardwareRunner:
         A `provenance` block is embedded at the top level of the
         output document describing the git state, installed package
         versions, Python runtime, and host of the writer. Outsiders
-        use it to trace published numbers back to a specific commit;
-        see the internal gap audit
-        §C8 for the motivation.
+        use it to trace published numbers back to a specific commit.
 
         A `calibration` block records the device state (backend name,
         ``seed_transpiler``, median T1/T2 and readout error, calibration
         date) the run was measured against, so every pack carries the
-        calibration snapshot needed to reproduce it (audit AUD-4b).
+        calibration snapshot needed to reproduce it.
         """
         from .provenance import capture_provenance
 

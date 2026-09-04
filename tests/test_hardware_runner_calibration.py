@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for HardwareRunner reproducibility hooks
-"""Tests for the AUD-4 reproducibility hooks on HardwareRunner.
+"""Tests for the reproducibility hooks on HardwareRunner.
 
 Covers the deterministic ``seed_transpiler`` (default + override, and that it
 reaches the connected pass manager) and ``calibration_snapshot`` (the
@@ -97,7 +97,7 @@ class TestCalibrationSnapshot:
 
 
 class TestSaveResultEmbedsCalibration:
-    """AUD-4b: every saved pack carries a ``calibration`` snapshot block."""
+    """Every saved pack carries a ``calibration`` snapshot block."""
 
     def test_single_result_carries_calibration(self, tmp_path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
