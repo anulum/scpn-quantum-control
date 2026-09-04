@@ -78,13 +78,14 @@ def test_paths_json_workflows_and_other_languages_fail(tmp_path: Path) -> None:
         "JSON machine name",
         "documentation heading",
         "source identifier",
+        "source text",
         "tracked path",
         "workflow name",
     }
 
 
-def test_descriptive_names_and_human_traceability_prose_pass(tmp_path: Path) -> None:
-    """Internal comments may retain traceability outside runtime surfaces."""
+def test_internal_traceability_comment_fails_on_public_source(tmp_path: Path) -> None:
+    """Internal traceability belongs in coordination records, not source comments."""
     source = tmp_path / "src" / "package" / "surface.py"
     _write(
         source,
@@ -103,7 +104,38 @@ def test_descriptive_names_and_human_traceability_prose_pass(tmp_path: Path) -> 
             ]
         ),
     )
-    assert audit_paths(tmp_path, ("src/package/surface.py",)) == ()
+    findings = audit_paths(tmp_path, ("src/package/surface.py",))
+    assert [(finding.kind, finding.line) for finding in findings] == [("source comment", 9)]
+
+
+def test_root_docs_notebooks_tests_and_hyphenated_polyglot_text_fail(
+    tmp_path: Path,
+) -> None:
+    """The audit covers every public surface previously missed by the scanner."""
+    _write(tmp_path / "ROADMAP.md", "# Product\n\nCompleted BL-19.\n")
+    _write(
+        tmp_path / "notebooks" / "study.ipynb",
+        '{"cells": [{"cell_type": "markdown", "source": ["BL-20 study"]}]}',
+    )
+    _write(tmp_path / "tests" / "test_surface.py", '"""Validate BL-21."""\n')
+    _write(tmp_path / "studio-web" / "src" / "panel.tsx", "// Product panel (ST-12)\n")
+
+    findings = audit_paths(
+        tmp_path,
+        (
+            "ROADMAP.md",
+            "notebooks/study.ipynb",
+            "tests/test_surface.py",
+            "studio-web/src/panel.tsx",
+        ),
+    )
+
+    assert {finding.kind for finding in findings} == {
+        "JSON machine name",
+        "module description",
+        "public documentation text",
+        "source text",
+    }
 
 
 def test_python_docstrings_and_runtime_messages_fail(tmp_path: Path) -> None:
@@ -142,6 +174,16 @@ def test_public_documentation_body_and_json_prose_fail(tmp_path: Path) -> None:
         "JSON machine name",
         "public documentation text",
     }
+
+
+def test_opaque_embedded_payload_is_not_misclassified_as_naming_debt(
+    tmp_path: Path,
+) -> None:
+    """Do not interpret incidental tokens inside long encoded payloads as names."""
+    evidence = "data/product.json"
+    _write(tmp_path / evidence, '{"encoded": "' + "A" * 4096 + "BL-19" + '"}')
+
+    assert audit_paths(tmp_path, (evidence,)) == ()
 
 
 def test_counted_baseline_allows_removal_but_rejects_duplicates(tmp_path: Path) -> None:

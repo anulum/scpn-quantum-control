@@ -12,9 +12,11 @@ from __future__ import annotations
 import argparse
 import ast
 import hashlib
+import io
 import json
 import re
 import subprocess  # nosec B404
+import tokenize
 from collections import Counter
 from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
@@ -42,7 +44,15 @@ _PATH_TASK_CODE: Final[re.Pattern[str]] = re.compile(
 _MACHINE_NAME: Final[re.Pattern[str]] = re.compile(r"[A-Za-z0-9_.:/-]+")
 _IDENTIFIER: Final[re.Pattern[str]] = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 _PRODUCTION_ROOTS: Final[frozenset[str]] = frozenset(
-    {"src", "tools", "scripts", "studio-web", "scpn_quantum_engine"}
+    {
+        "oscillatools",
+        "scpn_quantum_engine",
+        "scripts",
+        "src",
+        "studio-web",
+        "tests",
+        "tools",
+    }
 )
 _GENERIC_CODE_SUFFIXES: Final[frozenset[str]] = frozenset(
     {
@@ -65,6 +75,21 @@ _GENERIC_CODE_SUFFIXES: Final[frozenset[str]] = frozenset(
 )
 _BASELINE_SCHEMA: Final = "scpn_qc.descriptive_production_naming_baseline.v1"
 _BASELINE_PATH: Final = Path("tools/descriptive_production_naming_baseline.json")
+_PUBLIC_ROOT_DOCUMENTS: Final[frozenset[str]] = frozenset(
+    {
+        "CHANGELOG.md",
+        "CONTRIBUTING.md",
+        "README.md",
+        "ROADMAP.md",
+        "VALIDATION.md",
+    }
+)
+_EXACT_NEGATIVE_FIXTURES: Final[frozenset[str]] = frozenset(
+    {
+        "tests/test_audit_descriptive_production_naming.py",
+        "tests/test_bench_cli_branches.py",
+    }
+)
 
 
 @dataclass(frozen=True, order=True)
@@ -102,12 +127,24 @@ def _docstring_nodes(tree: ast.AST) -> set[int]:
 
 
 def _python_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
-    """Yield task-coded Python identifiers, docs, and runtime strings."""
+    """Yield task-coded Python identifiers, docs, comments, and runtime strings."""
     text = path.read_text(encoding="utf-8")
     tree = ast.parse(text, filename=display_path)
     lines = text.splitlines()
     if len(lines) >= 7 and _TASK_CODE.search(lines[6]):
         yield NamingFinding(display_path, 7, "module heading", lines[6].strip())
+    for token in tokenize.generate_tokens(io.StringIO(text).readline):
+        if (
+            token.type == tokenize.COMMENT
+            and token.start[0] != 7
+            and _TASK_CODE.search(token.string)
+        ):
+            yield NamingFinding(
+                display_path,
+                token.start[0],
+                "source comment",
+                token.string.strip(),
+            )
     module_doc = ast.get_docstring(tree, clean=False)
     module_doc_node_id: int | None = None
     if module_doc and _TASK_CODE.search(module_doc):
@@ -172,7 +209,7 @@ def _json_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
         elif isinstance(value, list):
             for child in value:
                 yield from walk(child)
-        elif isinstance(value, str) and _TASK_CODE.search(value):
+        elif isinstance(value, str) and len(value) <= 4096 and _TASK_CODE.search(value):
             yield value
 
     for value in walk(payload):
@@ -180,7 +217,7 @@ def _json_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
 
 
 def _workflow_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
-    """Yield task-coded workflow job IDs and step names."""
+    """Yield task-coded workflow names, comments, values, and job IDs."""
     for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         stripped = line.strip()
         if stripped.startswith("name:") or stripped.startswith("- name:"):
@@ -190,6 +227,8 @@ def _workflow_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
             job_id = stripped[:-1]
             if _TASK_CODE.search(job_id):
                 yield NamingFinding(display_path, line_number, "workflow job ID", job_id)
+        elif _TASK_CODE.search(line):
+            yield NamingFinding(display_path, line_number, "workflow text", stripped)
 
 
 def _documentation_text(path: Path, display_path: str) -> Iterator[NamingFinding]:
@@ -202,8 +241,10 @@ def _documentation_text(path: Path, display_path: str) -> Iterator[NamingFinding
 
 
 def _generic_code_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
-    """Yield task-coded identifiers from non-Python production sources."""
+    """Yield task-coded text from non-Python production sources."""
     for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        if _TASK_CODE.search(line):
+            yield NamingFinding(display_path, line_number, "source text", line.strip())
         for name in _IDENTIFIER.findall(line):
             if _TASK_CODE.search(name):
                 yield NamingFinding(display_path, line_number, "source identifier", name)
@@ -213,6 +254,8 @@ def audit_paths(root: Path, relative_paths: Iterable[str]) -> tuple[NamingFindin
     """Audit the supplied repository-relative paths."""
     findings: set[NamingFinding] = set()
     for relative in relative_paths:
+        if relative in _EXACT_NEGATIVE_FIXTURES:
+            continue
         if _PATH_TASK_CODE.search(relative):
             findings.add(NamingFinding(relative, 0, "tracked path", relative))
         path = root / relative
@@ -226,18 +269,18 @@ def audit_paths(root: Path, relative_paths: Iterable[str]) -> tuple[NamingFindin
             findings.update(_generic_code_names(path, relative))
         elif relative.startswith(".github/workflows/") and path.suffix in {".yml", ".yaml"}:
             findings.update(_workflow_names(path, relative))
-        elif (
-            first_part == "docs"
-            and "internal" not in Path(relative).parts
-            and path.suffix == ".md"
+        elif path.suffix == ".md" and (
+            relative in _PUBLIC_ROOT_DOCUMENTS
+            or (first_part == "docs" and "internal" not in Path(relative).parts)
         ):
             findings.update(_documentation_text(path, relative))
         public_json = (
             first_part in _PRODUCTION_ROOTS
             or first_part == "data"
+            or first_part == "notebooks"
             or (first_part == "docs" and "internal" not in Path(relative).parts)
         )
-        if public_json and path.suffix == ".json":
+        if public_json and path.suffix in {".ipynb", ".json"}:
             findings.update(_json_names(path, relative))
     return tuple(sorted(findings))
 
