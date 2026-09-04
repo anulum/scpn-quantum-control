@@ -403,6 +403,22 @@ jobs:
           tests/test_phase_torch_autograd_function.py
           tools/phase_torch_bridge_quality_gates.py
           tests/test_phase_torch_bridge_quality_gate.py
+      - name: Type-check Phase-QNode framework parity quality cohort
+        run: >-
+          python -m mypy --strict --explicit-package-bases
+          src/scpn_quantum_control/phase/qnode_framework_parity.py
+          tests/test_phase_qnode_framework_parity.py
+          tools/phase_qnode_framework_parity_quality_gates.py
+          tests/test_phase_qnode_framework_parity_quality_gate.py
+      - name: Ruff NumPy docstrings for Phase-QNode framework parity quality cohort
+        run: >-
+          python -m ruff check --isolated --preview --select D,D413,D417,D420
+          --config 'lint.explicit-preview-rules = true'
+          --config 'lint.pydocstyle.convention = "numpy"'
+          src/scpn_quantum_control/phase/qnode_framework_parity.py
+          tests/test_phase_qnode_framework_parity.py
+          tools/phase_qnode_framework_parity_quality_gates.py
+          tests/test_phase_qnode_framework_parity_quality_gate.py
       - name: Type-check adjoint replay product quality cohort
         run: >-
           python -m mypy --strict --explicit-package-bases

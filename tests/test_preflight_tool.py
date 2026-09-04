@@ -1341,6 +1341,8 @@ def test_main_uses_coverage_pytest_by_default(
         "phase-jax-qnode exact coverage threshold",
         "phase-torch-bridge focused coverage",
         "phase-torch-bridge exact coverage threshold",
+        "phase-qnode-framework-parity focused coverage",
+        "phase-qnode-framework-parity exact coverage threshold",
         "whole-program trace-value focused coverage",
         "whole-program trace-value exact coverage threshold",
         "program AD alias-contract exact coverage threshold",

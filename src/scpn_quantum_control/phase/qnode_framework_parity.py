@@ -95,22 +95,22 @@ class PhaseQNodeFrameworkParitySuiteResult:
 
     @property
     def frameworks(self) -> tuple[str, ...]:
-        """Return frameworks in evaluation order."""
+        """Frameworks in evaluation order."""
         return tuple(record.framework for record in self.records)
 
     @property
     def record_count(self) -> int:
-        """Return row count."""
+        """Number of parity rows."""
         return len(self.records)
 
     @property
     def dependency_sparse(self) -> bool:
-        """Return true when at least one optional dependency was unavailable."""
+        """Whether at least one optional dependency was unavailable."""
         return any(record.status == "dependency_missing" for record in self.records)
 
     @property
     def passed(self) -> bool:
-        """Return true when every installed framework agrees with SCPN."""
+        """Whether every installed framework agrees with SCPN."""
         return all(record.status in {"passed", "dependency_missing"} for record in self.records)
 
     def record_by_framework(self, framework: str) -> PhaseQNodeFrameworkParityRecord:

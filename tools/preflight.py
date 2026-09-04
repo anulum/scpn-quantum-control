@@ -255,6 +255,9 @@ if TYPE_CHECKING:
     )
     from tools import phase_jax_qnode_quality_gates as _phase_jax_qnode_quality_gates
     from tools import phase_objectives_quality_gates as _phase_objectives_quality_gates
+    from tools import (
+        phase_qnode_framework_parity_quality_gates as _phase_qnode_framework_parity_quality_gates,
+    )
     from tools import phase_qnode_product_quality_gates as _phase_qnode_product_quality_gates
     from tools import phase_results_quality_gates as _phase_results_quality_gates
     from tools import phase_torch_bridge_quality_gates as _phase_torch_bridge_quality_gates
@@ -670,6 +673,9 @@ else:
     )
     _phase_artifact_quality_gates = import_module("tools.phase_artifact_quality_gates")
     _phase_jax_qnode_quality_gates = import_module("tools.phase_jax_qnode_quality_gates")
+    _phase_qnode_framework_parity_quality_gates = import_module(
+        "tools.phase_qnode_framework_parity_quality_gates"
+    )
     _phase_torch_bridge_quality_gates = import_module("tools.phase_torch_bridge_quality_gates")
     _phase_results_quality_gates = import_module("tools.phase_results_quality_gates")
     _phase_qnode_product_quality_gates = import_module("tools.phase_qnode_product_quality_gates")
@@ -1335,6 +1341,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     ),
     *_phase_jax_qnode_quality_gates.build_static_quality_gates(_PY),
     *_phase_torch_bridge_quality_gates.build_static_quality_gates(_PY),
+    *_phase_qnode_framework_parity_quality_gates.build_static_quality_gates(_PY),
     *_whole_program_trace_value_quality_gates.build_static_quality_gates(_PY),
     ("test-quality", [_PY, "tools/audit_test_quality.py"]),
     ("module-size-policy", [_PY, "tools/audit_module_size_policy.py"]),
@@ -1990,6 +1997,9 @@ PHASE_QNODE_VECTOR_COVERAGE_GATES: list[tuple[str, list[str]]] = [
 
 PHASE_JAX_QNODE_COVERAGE_GATES = _phase_jax_qnode_quality_gates.build_coverage_gates(_PY)
 PHASE_TORCH_BRIDGE_COVERAGE_GATES = _phase_torch_bridge_quality_gates.build_coverage_gates(_PY)
+PHASE_QNODE_FRAMEWORK_PARITY_COVERAGE_GATES = (
+    _phase_qnode_framework_parity_quality_gates.build_coverage_gates(_PY)
+)
 
 WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES = (
     _whole_program_trace_value_quality_gates.build_coverage_gates(_PY)
@@ -2283,6 +2293,7 @@ def main() -> int:
             gates.extend(PHASE_QNODE_VECTOR_COVERAGE_GATES)
             gates.extend(PHASE_JAX_QNODE_COVERAGE_GATES)
             gates.extend(PHASE_TORCH_BRIDGE_COVERAGE_GATES)
+            gates.extend(PHASE_QNODE_FRAMEWORK_PARITY_COVERAGE_GATES)
             gates.extend(WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_GATES)
             gates.append(STUDIO_PROGRAM_AD_BROWSER_COVERAGE_GATE)
             gates.append(("pytest + coverage", _PYTEST_COV))
