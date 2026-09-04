@@ -325,6 +325,8 @@ jobs:
         run: >-
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/phase/differentiable_audit_contracts.py
+          src/scpn_quantum_control/phase/differentiable_audit.py
+          tests/test_phase_differentiable_audit_edges.py
           tools/differentiable_audit_contracts_quality_gates.py
           tests/test_differentiable_audit_contracts_quality_gate.py
       - name: Ruff NumPy docstrings for differentiable audit-contract quality cohort
@@ -332,8 +334,10 @@ jobs:
           python -m ruff check --isolated --select D,D413
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/phase/differentiable_audit_contracts.py
+          src/scpn_quantum_control/phase/differentiable_audit.py
           tests/test_phase_differentiable_audit.py
           tests/test_phase_differentiable_audit_contracts.py
+          tests/test_phase_differentiable_audit_edges.py
           tools/differentiable_audit_contracts_quality_gates.py
           tests/test_differentiable_audit_contracts_quality_gate.py
       - name: Run differentiable audit-contract focused coverage
@@ -345,6 +349,7 @@ jobs:
           -m pytest -q
           tests/test_phase_differentiable_audit.py
           tests/test_phase_differentiable_audit_contracts.py
+          tests/test_phase_differentiable_audit_edges.py
       - name: Enforce differentiable audit-contract exact coverage
         run: >-
           python -m coverage report
@@ -352,7 +357,7 @@ jobs:
           --data-file=/tmp/scpn-qc-differentiable-audit-contracts-quality.coverage
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/phase/differentiable_audit_contracts.py
+          --include=*/phase/differentiable_audit_contracts.py,*/phase/differentiable_audit.py
   dla-topology-optimizer-quality:
     runs-on: ubuntu-latest
     env:

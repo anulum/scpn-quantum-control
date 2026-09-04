@@ -38,7 +38,9 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
     )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/phase/differentiable_audit_contracts.py" in report
+    include = next(argument for argument in report if argument.startswith("--include="))
+    assert "phase/differentiable_audit_contracts.py" in include
+    assert "phase/differentiable_audit.py" in include
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -64,5 +66,7 @@ def test_ci_runs_and_aggregates_differentiable_audit_contracts_gate() -> None:
         assert path in block
     assert "--fail-under=100" in block
     assert "phase/differentiable_audit_contracts.py" in block
+    assert "phase/differentiable_audit.py" in block
+    assert "tests/test_phase_differentiable_audit_edges.py" in block
     aggregate = workflow[workflow.index("  ci-gate:") :]
     assert "differentiable-audit-contracts-quality" in aggregate
