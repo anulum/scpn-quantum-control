@@ -19,7 +19,7 @@
 # SBOM format: CycloneDX 1.5 JSON. Consumers use `grype`, `osv-scanner`,
 # or any CycloneDX-compliant scanner.
 #
-# Consumption posture (adjudicated 2026-07-07, QWC-2.8): this workflow is
+# Consumption posture (adjudicated 2026-07-07): this workflow is
 # generation + validation only, BY DESIGN. Vulnerability consumption of the
 # same dependency surface already runs blocking on every push/PR in ci.yml:
 # `pip-audit` over the full hash-pinned CI lock (Python) and `cargo audit

@@ -10,13 +10,13 @@
 # `pytest-nbmake` so they stay executable. BLOCKING since 2026-07-16:
 # promoted from `continue-on-error: true` after three consecutive
 # genuinely green scheduled execute jobs (the staged-rollout condition
-# this header always carried; external review KIMI-10 flagged the
+# this header always carried; external review flagged the
 # non-blocking state as a silent-failure risk).
 #
 # The FIM investigation notebooks run in a separate weekly batch job
 # (`execute-fim-batch`, four shards, schedule + dispatch only — never
 # on pull requests) so exploratory breakage is surfaced instead of
-# rotting silently (KIMI-10 remainder). Excluded from all CI execution
+# rotting silently. Excluded from all CI execution
 # BY DESIGN: NB14 and NB39 read `SCPN_IBM_TOKEN` and submit live
 # SamplerV2 jobs (quantum-second spend requires per-submit owner
 # approval — CI must never trigger it); NB15, NB19, NB22, and NB30 read
@@ -95,7 +95,7 @@ jobs:
             --body "The weekly core tutorial notebook execution failed: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
 
   execute-fim-batch:
-    # Weekly exploratory batch (KIMI-10 remainder): NB15..47 except the
+    # Weekly exploratory batch: NB15..47 except the
     # live-hardware submitters NB14/NB39. Never runs on pull requests —
     # exploratory runtimes must not gate merges; scheduled failures open
     # an issue instead.
