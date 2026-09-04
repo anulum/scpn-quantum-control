@@ -30,7 +30,6 @@ def _require_torch_backend() -> None:
 
 def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
     """Quantum-gradient rows should expose parameter-shift verification evidence."""
-
     results = run_quantum_gradient_benchmark_suite()
     dp_any = cast(Any, dp_benchmarks)
 

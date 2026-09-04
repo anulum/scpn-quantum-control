@@ -61,6 +61,8 @@ jobs:
           python -m mypy --strict --explicit-package-bases
           src/scpn_quantum_control/benchmarks/differentiable_programming_contracts.py
           tests/test_differentiable_programming_contracts.py
+          src/scpn_quantum_control/benchmarks/differentiable_programming_quantum.py
+          tests/test_differentiable_programming_quantum.py
           tools/differentiable_programming_contracts_quality_gates.py
           tests/test_differentiable_programming_contracts_quality_gate.py
       - name: ruff D differentiable-programming-contracts quality ratchet
@@ -70,6 +72,8 @@ jobs:
           --config 'lint.pydocstyle.convention = "numpy"'
           src/scpn_quantum_control/benchmarks/differentiable_programming_contracts.py
           tests/test_differentiable_programming_contracts.py
+          src/scpn_quantum_control/benchmarks/differentiable_programming_quantum.py
+          tests/test_differentiable_programming_quantum.py
           tools/differentiable_programming_contracts_quality_gates.py
           tests/test_differentiable_programming_contracts_quality_gate.py
       - name: differentiable-programming-contracts focused coverage
@@ -77,12 +81,13 @@ jobs:
           python -m coverage run --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-differentiable-programming-contracts-quality.coverage
           --branch -m pytest -q tests/test_differentiable_programming_contracts.py
+          tests/test_differentiable_programming_quantum.py
       - name: differentiable-programming-contracts exact coverage threshold
         run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-differentiable-programming-contracts-quality.coverage
           --precision=2 --show-missing --fail-under=100
-          --include=*/benchmarks/differentiable_programming_contracts.py
+          --include=*/benchmarks/differentiable_programming_contracts.py,*/benchmarks/differentiable_programming_quantum.py
   neural-operator-cost-model-quality:
     runs-on: ubuntu-latest
     env:

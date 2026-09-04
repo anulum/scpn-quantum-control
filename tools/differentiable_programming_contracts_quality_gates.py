@@ -19,25 +19,35 @@ DIFFERENTIABLE_PROGRAMMING_CONTRACTS_SOURCE = (
 """Dependency-light differentiable benchmark result contracts."""
 DIFFERENTIABLE_PROGRAMMING_CONTRACTS_TEST = "tests/test_differentiable_programming_contracts.py"
 """Public validation, facade-alias, and leaf-ownership tests."""
+DIFFERENTIABLE_PROGRAMMING_QUANTUM_SOURCE = (
+    "src/scpn_quantum_control/benchmarks/differentiable_programming_quantum.py"
+)
+"""Optional-runtime quantum-gradient benchmark builders."""
+DIFFERENTIABLE_PROGRAMMING_QUANTUM_TEST = "tests/test_differentiable_programming_quantum.py"
+"""Torch, JAX, reference-gradient, and leaf-boundary tests."""
 DIFFERENTIABLE_PROGRAMMING_CONTRACTS_QUALITY_RATCHET = [
     DIFFERENTIABLE_PROGRAMMING_CONTRACTS_SOURCE,
     DIFFERENTIABLE_PROGRAMMING_CONTRACTS_TEST,
+    DIFFERENTIABLE_PROGRAMMING_QUANTUM_SOURCE,
+    DIFFERENTIABLE_PROGRAMMING_QUANTUM_TEST,
     "tools/differentiable_programming_contracts_quality_gates.py",
     "tests/test_differentiable_programming_contracts_quality_gate.py",
 ]
 """Strict-typing and complete-preview-documentation owner."""
 DIFFERENTIABLE_PROGRAMMING_CONTRACTS_COVERAGE_COHORT = [
     DIFFERENTIABLE_PROGRAMMING_CONTRACTS_TEST,
+    DIFFERENTIABLE_PROGRAMMING_QUANTUM_TEST,
 ]
-"""Real public-surface suite that owns exact contract coverage."""
+"""Real public-surface suites that own exact contract and quantum coverage."""
 DIFFERENTIABLE_PROGRAMMING_CONTRACTS_COVERAGE_DATA_FILE = (
     "/tmp/scpn-qc-differentiable-programming-contracts-quality.coverage"  # nosec B108
 )
 """Isolated coverage database for the benchmark-contract owner."""
 DIFFERENTIABLE_PROGRAMMING_CONTRACTS_COVERAGE_INCLUDE = (
-    "*/benchmarks/differentiable_programming_contracts.py"
+    "*/benchmarks/differentiable_programming_contracts.py,"
+    "*/benchmarks/differentiable_programming_quantum.py"
 )
-"""Contract leaf enforced at exact statement and branch coverage."""
+"""Contract and quantum leaves enforced at exact statement and branch coverage."""
 
 
 def build_static_quality_gates(python: str) -> list[Gate]:
@@ -118,6 +128,8 @@ __all__ = [
     "DIFFERENTIABLE_PROGRAMMING_CONTRACTS_QUALITY_RATCHET",
     "DIFFERENTIABLE_PROGRAMMING_CONTRACTS_SOURCE",
     "DIFFERENTIABLE_PROGRAMMING_CONTRACTS_TEST",
+    "DIFFERENTIABLE_PROGRAMMING_QUANTUM_SOURCE",
+    "DIFFERENTIABLE_PROGRAMMING_QUANTUM_TEST",
     "build_coverage_gates",
     "build_static_quality_gates",
 ]
