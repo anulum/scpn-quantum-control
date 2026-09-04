@@ -56,7 +56,7 @@ fn ascending_copy(values: &[f64]) -> Vec<f64> {
     // `total_cmp` is a total order over every f64 (NaN sorts to the end)
     // and never returns `None`, so this helper cannot panic even if a
     // future caller forgets the `validate_finite` guard the public
-    // percentile entry point applies. Removes the AUD-12 NaN-panic risk.
+    // percentile entry point applies. Removes the NaN-panic risk.
     v.sort_by(|x, y| x.total_cmp(y));
     v
 }
@@ -159,7 +159,7 @@ mod tests {
 
     #[test]
     fn ascending_copy_does_not_panic_on_nan() {
-        // AUD-12: a NaN in the slice must not panic (total_cmp never
+        // A NaN in the slice must not panic (total_cmp never
         // returns None). NaN sorts to the end; the finite prefix is ordered.
         let out = ascending_copy(&[2.0, f64::NAN, 1.0]);
         assert_eq!(out.len(), 3);
