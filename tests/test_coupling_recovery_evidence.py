@@ -28,7 +28,7 @@ from scpn_quantum_control.phase import run_coupling_recovery_suite
 def payload() -> dict[str, Any]:
     """Build one real bounded evidence payload through the public facade."""
     suite = run_coupling_recovery_suite()
-    return coupling_recovery_evidence_payload(suite, artifact_id="pytest-bl17")
+    return coupling_recovery_evidence_payload(suite, artifact_id="pytest-coupling-recovery")
 
 
 def test_coupling_recovery_payload_carries_rows_and_boundaries(
@@ -36,7 +36,7 @@ def test_coupling_recovery_payload_carries_rows_and_boundaries(
 ) -> None:
     """Carry executable rows, boundaries, and conservative classifications."""
     assert payload["schema"] == COUPLING_RECOVERY_EVIDENCE_SCHEMA
-    assert payload["artifact_id"] == "pytest-bl17"
+    assert payload["artifact_id"] == "pytest-coupling-recovery"
     assert payload["artifact_date"] == "2026-07-09"
     assert payload["classification"] == "functional_non_isolated"
     assert payload["production_eligible"] is False

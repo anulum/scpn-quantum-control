@@ -8,7 +8,7 @@
 r"""Contract tests for differentiating through the Kuramoto MPC optimum by the implicit function theorem.
 
 These exercise real JAX and skip without the optional ``[jax]`` extra. The load-bearing claim is the
-RG1 second witness of the design: at a converged, non-degenerate optimum the level-2 implicit-function
+second witness of the design: at a converged, non-degenerate optimum the level-2 implicit-function
 gradient must reproduce the level-1 gradient obtained by differentiating *through* the unrolled solver,
 and a central finite difference, to machine-ish tolerance — with the level-1 gradient converging onto
 the level-2 gradient as the solver tightens. The remaining tests pin the reverse-mode pullback against a

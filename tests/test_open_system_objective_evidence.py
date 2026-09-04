@@ -28,13 +28,15 @@ from scpn_quantum_control.phase import run_open_system_objective_suite
 def payload() -> dict[str, Any]:
     """Build one real open-system evidence payload through the public facade."""
     suite = run_open_system_objective_suite()
-    return open_system_objective_evidence_payload(suite, artifact_id="pytest-bl16")
+    return open_system_objective_evidence_payload(
+        suite, artifact_id="pytest-open-system-objective"
+    )
 
 
 def test_open_system_payload_carries_rows_and_boundaries(payload: dict[str, Any]) -> None:
     """Expose bounded rows, metadata, and hard-gap boundaries."""
     assert payload["schema"] == OPEN_SYSTEM_OBJECTIVE_EVIDENCE_SCHEMA
-    assert payload["artifact_id"] == "pytest-bl16"
+    assert payload["artifact_id"] == "pytest-open-system-objective"
     assert payload["artifact_date"] == "2026-07-09"
     assert payload["classification"] == "functional_non_isolated"
     assert payload["production_eligible"] is False
