@@ -112,8 +112,7 @@ class TestSaveResult:
         with open(path) as f:
             data = json.load(f)
         # Batch results are wrapped in { results, provenance, calibration }
-        # since the C8 provenance change (commit 819aded) and the AUD-4b
-        # calibration-snapshot wiring.
+        # since provenance capture and calibration-snapshot wiring were added.
         assert set(data.keys()) == {"results", "provenance", "calibration"}
         assert len(data["results"]) == 3
         assert "git" in data["provenance"]

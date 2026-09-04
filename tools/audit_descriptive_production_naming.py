@@ -25,7 +25,8 @@ from typing import Final
 
 _TASK_CODE: Final[re.Pattern[str]] = re.compile(
     r"(?ix)(?<![A-Za-z0-9])(?:"
-    r"(?:bl|st|dp|rg|hg|qwc|ws|kt|lock|kimi|aud)[_-]?\d+(?:[._-]?[a-z])?"
+    r"(?:bl|st|dp|rg|hg|qwc|ws|lock|kimi|aud)[_-]?\d+(?:[._-]?[a-z])?"
+    r"|kt-\d+(?:[._-]?[a-z])?"
     r"|fu[_-](?:\d+|[a-z])"
     r"|co\d+[_-][a-z]+[_-]\d+"
     r"|sec[_-]?\d+"
@@ -34,7 +35,8 @@ _TASK_CODE: Final[re.Pattern[str]] = re.compile(
 )
 _PATH_TASK_CODE: Final[re.Pattern[str]] = re.compile(
     r"(?ix)(?:^|[/_.-])(?:"
-    r"(?:bl|st|dp|rg|hg|qwc|ws|kt|lock|kimi|aud)[_-]?\d+(?:[._-]?[a-z])?"
+    r"(?:bl|st|dp|rg|hg|qwc|ws|lock|kimi|aud)[_-]?\d+(?:[._-]?[a-z])?"
+    r"|kt-\d+(?:[._-]?[a-z])?"
     r"|fu[_-](?:\d+|[a-z])"
     r"|co\d+[_-][a-z]+[_-]\d+"
     r"|sec[_-]?\d+"
@@ -91,11 +93,7 @@ _EXACT_NEGATIVE_FIXTURES: Final[frozenset[str]] = frozenset(
     }
 )
 _EXACT_NEGATIVE_VALUES: Final[frozenset[tuple[str, str]]] = frozenset(
-    {
-        ("tests/test_binding_spec.py", "ws_0"),
-        ("tests/test_binding_spec.py", "ws_1"),
-        ("tests/test_binding_spec.py", "ws_2"),
-    }
+    ("tests/test_binding_spec.py", f"ws_{index}") for index in range(3)
 )
 
 

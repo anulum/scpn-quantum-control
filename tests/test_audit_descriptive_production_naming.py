@@ -185,6 +185,17 @@ def test_exact_stale_contract_fixture_does_not_hide_other_codes(tmp_path: Path) 
     ]
 
 
+def test_scientific_thermal_energy_symbol_is_permitted(tmp_path: Path) -> None:
+    """Do not mistake thermal energy at body temperature for a task code."""
+    notebook = tmp_path / "notebooks" / "biochemical_validation.ipynb"
+    _write(
+        notebook,
+        '{"cells": [{"cell_type": "code", "source": ["kT_37C = 1.38e-23 * 310"]}]}',
+    )
+
+    assert audit_paths(tmp_path, ("notebooks/biochemical_validation.ipynb",)) == ()
+
+
 def test_public_documentation_body_and_json_prose_fail(tmp_path: Path) -> None:
     """Catch internal codes outside headings and identifier-like JSON values."""
     public_doc = "docs/product.md"
