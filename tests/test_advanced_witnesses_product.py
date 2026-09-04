@@ -366,13 +366,13 @@ def test_shadow_refuses_unrestricted_campaign() -> None:
         materialise_shadow_probe(n_qubits=2, n_shots=20, unrestricted_shadow=True)
 
 
-def test_bl18_refuses_invent_green_topology_cert() -> None:
+def test_harmonic_compose_refuses_invent_green_topology_cert() -> None:
     """Harmonic compose refuses invent-green topology certification."""
     with pytest.raises(ValueError, match="topology"):
         materialise_harmonic_order_parameter_compose(invent_green_topology_cert=True)
 
 
-def test_bl18_refuses_invent_green_live_qpu() -> None:
+def test_harmonic_compose_refuses_invent_green_live_qpu() -> None:
     """Harmonic compose refuses invent-green live QPU."""
     with pytest.raises(ValueError, match="live QPU"):
         materialise_harmonic_order_parameter_compose(invent_green_live_qpu=True)

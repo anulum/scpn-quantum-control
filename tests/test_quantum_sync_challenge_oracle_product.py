@@ -244,12 +244,12 @@ def test_integrity_rejects_blank_invalid() -> None:
     with pytest.raises(ValueError, match="invent_green_advantage"):
         assert_quantum_sync_challenge_oracle_product_integrity(invent)
 
-    no_bl52 = dict(registry)
+    no_route_matrix_pointer = dict(registry)
     brows = [dict(row) for row in families]
     brows[0]["route_matrix_pointer"] = ""
-    no_bl52["families"] = brows
+    no_route_matrix_pointer["families"] = brows
     with pytest.raises(ValueError, match="route_matrix_pointer"):
-        assert_quantum_sync_challenge_oracle_product_integrity(no_bl52)
+        assert_quantum_sync_challenge_oracle_product_integrity(no_route_matrix_pointer)
 
     bad_status = dict(registry)
     srows = [dict(row) for row in families]

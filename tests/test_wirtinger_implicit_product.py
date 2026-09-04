@@ -213,12 +213,12 @@ def test_integrity_rejects_blank_invalid() -> None:
     with pytest.raises(ValueError, match="symbol_name"):
         assert_wirtinger_implicit_product_integrity(no_symbol)
 
-    no_bl53 = dict(registry)
+    no_unsuitable_scenario_pointer = dict(registry)
     brows = [dict(row) for row in surfaces]
     brows[0]["unsuitable_scenario_pointer"] = ""
-    no_bl53["surfaces"] = brows
+    no_unsuitable_scenario_pointer["surfaces"] = brows
     with pytest.raises(ValueError, match="unsuitable_scenario_pointer"):
-        assert_wirtinger_implicit_product_integrity(no_bl53)
+        assert_wirtinger_implicit_product_integrity(no_unsuitable_scenario_pointer)
 
     no_default = dict(registry)
     renamed = [dict(row) for row in surfaces]

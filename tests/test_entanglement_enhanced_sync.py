@@ -261,7 +261,7 @@ def test_compare_all_initial_states_uses_one_observable_contract() -> None:
 
 
 def test_matched_control_study_refuses_entanglement_specific_attribution() -> None:
-    """Retain the separable coherence control and BL-65 certificate."""
+    """Retain the separable coherence control and causal-attribution boundary."""
     comparisons = compare_initial_states_with_dephased_controls(
         build_knm_paper27(L=4),
         OMEGA_N_16[:4],

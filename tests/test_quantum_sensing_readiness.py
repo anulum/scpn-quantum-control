@@ -162,7 +162,7 @@ def test_qfi_criticality_sensing_tail_inputs_fail_closed() -> None:
 
 
 def test_analysis_subpackage_exports_criticality_sensing_tail() -> None:
-    """The public analysis namespace exposes the QWC-4.4 sensing API."""
+    """The public analysis namespace exposes the criticality sensing API."""
     from scpn_quantum_control import analysis
 
     assert analysis.CRITICALITY_TAIL_SCHEMA == CRITICALITY_TAIL_SCHEMA
