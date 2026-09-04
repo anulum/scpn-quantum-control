@@ -553,6 +553,7 @@ jobs:
           src/scpn_quantum_control/program_ad_linalg_primitives.py
           src/scpn_quantum_control/program_ad_product_primitives.py
           src/scpn_quantum_control/program_ad_reduction_primitives.py
+          src/scpn_quantum_control/program_ad_cumulative_primitives.py
           src/scpn_quantum_control/program_ad_selection_primitives.py
           tests/test_whole_program_trace_predicates.py
           tests/test_whole_program_trace_values.py
@@ -566,6 +567,8 @@ jobs:
           tests/test_program_ad_product_contractions.py
           tests/test_program_ad_reduction_norms.py
           tests/test_program_ad_reduction_primitives_docstrings.py
+          tests/test_program_ad_cumulative_primitives.py
+          tests/test_program_ad_cumulative_primitives_docstrings.py
           tests/test_program_ad_selection_direct_rules.py
           tests/test_program_ad_selection_registry.py
           tests/test_program_ad_selection_primitives_docstrings.py
@@ -581,6 +584,7 @@ jobs:
           src/scpn_quantum_control/program_ad_linalg_primitives.py
           src/scpn_quantum_control/program_ad_product_primitives.py
           src/scpn_quantum_control/program_ad_reduction_primitives.py
+          src/scpn_quantum_control/program_ad_cumulative_primitives.py
           src/scpn_quantum_control/program_ad_selection_primitives.py
           tests/test_whole_program_trace_predicates.py
           tests/test_whole_program_trace_values.py
@@ -594,6 +598,8 @@ jobs:
           tests/test_program_ad_product_contractions.py
           tests/test_program_ad_reduction_norms.py
           tests/test_program_ad_reduction_primitives_docstrings.py
+          tests/test_program_ad_cumulative_primitives.py
+          tests/test_program_ad_cumulative_primitives_docstrings.py
           tests/test_program_ad_selection_direct_rules.py
           tests/test_program_ad_selection_registry.py
           tests/test_program_ad_selection_primitives_docstrings.py

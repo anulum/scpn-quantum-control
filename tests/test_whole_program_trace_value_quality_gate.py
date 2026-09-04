@@ -54,6 +54,7 @@ def test_coverage_gate_reuses_execution_and_covers_program_ad_exactly() -> None:
     assert any("*/program_ad_linalg_primitives.py" in argument for argument in report)
     assert any("*/program_ad_product_primitives.py" in argument for argument in report)
     assert any("*/program_ad_reduction_primitives.py" in argument for argument in report)
+    assert any("*/program_ad_cumulative_primitives.py" in argument for argument in report)
     assert any("*/program_ad_selection_primitives.py" in argument for argument in report)
 
 

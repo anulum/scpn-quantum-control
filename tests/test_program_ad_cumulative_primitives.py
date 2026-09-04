@@ -11,12 +11,14 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import replace
 from typing import Any, cast
 
 import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+from scpn_quantum_control import program_ad_cumulative_primitives as cumulative
 from scpn_quantum_control.differentiable import (
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
     PrimitiveContract,
@@ -584,3 +586,122 @@ def test_program_ad_cumulative_diff_static_vjp_detects_internal_shape_mismatch(
             order=1,
             axis=0,
         )
+
+
+def test_program_ad_cumulative_contract_facets_fail_closed() -> None:
+    """Exercise cumulative shape, dtype, static-argument, and batching boundaries."""
+    matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
+    cumsum = primitive_contract_for("scpn.program_ad.cumulative:cumsum")
+    diff = primitive_contract_for("scpn.program_ad.cumulative:diff")
+    assert cumsum.shape_rule is not None
+    assert cumsum.dtype_rule is not None
+    assert cumsum.static_argument_rule is not None
+    assert cumsum.batching_rule is not None
+    assert diff.shape_rule is not None
+    assert diff.static_argument_rule is not None
+
+    with pytest.raises(ValueError, match="array and static parameters"):
+        cumsum.static_argument_rule((matrix, 0, 1, 2))
+    with pytest.raises(ValueError, match="static integer or None"):
+        cumsum.static_argument_rule((matrix, "axis"))
+    with pytest.raises(ValueError, match="array and axis"):
+        cumsum.shape_rule((matrix, 0, 1))
+    with pytest.raises(ValueError, match="at least one element"):
+        cumsum.shape_rule((np.empty((0,), dtype=np.float64),))
+    with pytest.raises(ValueError, match="requires an array operand"):
+        cumsum.dtype_rule(())
+
+    assert diff.static_argument_rule((matrix,)) == (1, 1)
+    with pytest.raises(ValueError, match="non-negative integer n"):
+        diff.static_argument_rule((matrix, "order", 1))
+    with pytest.raises(ValueError, match="non-negative integer n"):
+        diff.static_argument_rule((matrix, -1, 1))
+    with pytest.raises(ValueError, match="array, order, and axis"):
+        diff.shape_rule((matrix, 1, 0, "extra"))
+    with pytest.raises(ValueError, match="axis must be a static integer"):
+        diff.shape_rule((matrix, 1, "axis"))
+    with pytest.raises(ValueError, match="axis must be a static integer"):
+        diff.static_argument_rule((matrix, 1, "axis"))
+
+    batching = cumsum.batching_rule
+    function = cast(Callable[..., object], np.cumsum)
+    with pytest.raises(ValueError, match="axes must match argument count"):
+        batching(function, (matrix,), (), 0)
+    with pytest.raises(ValueError, match="requires an array operand"):
+        batching(function, (), (), 0)
+    unbatched = batching(function, (matrix, 1), (None, None), 0)
+    _assert_allclose(unbatched, np.cumsum(matrix, axis=1))
+    with pytest.raises(ValueError, match="static parameters only"):
+        batching(function, (matrix, 0), (0, 0), 0)
+    mapped = batching(function, (matrix, 0), (0, None), 1)
+    _assert_allclose(mapped, np.cumsum(matrix, axis=1).T)
+
+
+def test_program_ad_cumulative_contract_guards_reject_corruption() -> None:
+    """Reject malformed cumulative registry facets and preserve valid registration."""
+    original = primitive_contract_for("scpn.program_ad.cumulative:cumsum")
+    args = (np.arange(4.0, dtype=np.float64), None)
+    validate = cumulative._validate_program_ad_cumulative_contract_dispatch
+
+    direct_cases = (
+        (replace(original, static_argument_rule=None), "missing static argument rule"),
+        (replace(original, shape_rule=None), "missing shape rule"),
+        (replace(original, dtype_rule=None), "missing dtype rule"),
+        (
+            replace(original, static_argument_rule=cast(Any, lambda _args: [])),
+            "static rule must return a tuple",
+        ),
+        (
+            replace(original, shape_rule=cast(Any, lambda _args: (-1,))),
+            "non-negative integer dimensions",
+        ),
+        (
+            replace(original, shape_rule=cast(Any, lambda _args: ("bad",))),
+            "non-negative integer dimensions",
+        ),
+        (
+            replace(original, dtype_rule=cast(Any, lambda _args: 1)),
+            "return a dtype name",
+        ),
+        (
+            replace(original, dtype_rule=cast(Any, lambda _args: "")),
+            "return a dtype name",
+        ),
+    )
+    for contract, message in direct_cases:
+        with pytest.raises(ValueError, match=message):
+            validate(contract, args)
+
+    assert cumulative._require_program_ad_cumulative_contract("cumsum") == original
+    with pytest.raises(ValueError, match="no program AD cumulative primitive identity"):
+        cumulative._require_program_ad_cumulative_contract("missing")
+
+    invalid_contracts = (
+        (replace(original, nondifferentiable_policy="wrong"), "invalid .* policy"),
+        (replace(original, effect="stateful"), "invalid .* effect"),
+        (
+            replace(
+                original,
+                batching_rule=None,
+                lowering_metadata={},
+                shape_rule=None,
+                dtype_rule=None,
+                static_argument_rule=None,
+            ),
+            "missing batching_rule, lowering_metadata, mlir_op",
+        ),
+    )
+    try:
+        for contract, message in invalid_contracts:
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(contract), overwrite=True
+            )
+            with pytest.raises(ValueError, match=message):
+                cumulative._require_program_ad_cumulative_contract("cumsum")
+    finally:
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(original), overwrite=True
+        )
+
+    cumulative._register_program_ad_cumulative_primitive_contracts()
+    assert primitive_contract_for("scpn.program_ad.cumulative:cumsum") == original

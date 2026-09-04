@@ -15,12 +15,15 @@ Gate = tuple[str, list[str]]
 PROGRAM_AD_LINALG_SOURCE = "src/scpn_quantum_control/program_ad_linalg_primitives.py"
 PROGRAM_AD_PRODUCT_SOURCE = "src/scpn_quantum_control/program_ad_product_primitives.py"
 PROGRAM_AD_REDUCTION_SOURCE = "src/scpn_quantum_control/program_ad_reduction_primitives.py"
+PROGRAM_AD_CUMULATIVE_SOURCE = "src/scpn_quantum_control/program_ad_cumulative_primitives.py"
 PROGRAM_AD_SELECTION_SOURCE = "src/scpn_quantum_control/program_ad_selection_primitives.py"
 PROGRAM_AD_LINALG_SPECTRAL_TEST = "tests/test_program_ad_linalg_spectral.py"
 PROGRAM_AD_LINALG_EXACT_CONTRACTS_TEST = "tests/test_program_ad_linalg_exact_contracts.py"
 PROGRAM_AD_PRODUCT_TEST = "tests/test_program_ad_product_contractions.py"
 PROGRAM_AD_REDUCTION_TEST = "tests/test_program_ad_reduction_norms.py"
 PROGRAM_AD_REDUCTION_DOCSTRING_TEST = "tests/test_program_ad_reduction_primitives_docstrings.py"
+PROGRAM_AD_CUMULATIVE_TEST = "tests/test_program_ad_cumulative_primitives.py"
+PROGRAM_AD_CUMULATIVE_DOCSTRING_TEST = "tests/test_program_ad_cumulative_primitives_docstrings.py"
 PROGRAM_AD_SELECTION_DIRECT_TEST = "tests/test_program_ad_selection_direct_rules.py"
 PROGRAM_AD_SELECTION_REGISTRY_TEST = "tests/test_program_ad_selection_registry.py"
 PROGRAM_AD_SELECTION_DOCSTRING_TEST = "tests/test_program_ad_selection_primitives_docstrings.py"
@@ -30,6 +33,7 @@ WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = [
     PROGRAM_AD_LINALG_SOURCE,
     PROGRAM_AD_PRODUCT_SOURCE,
     PROGRAM_AD_REDUCTION_SOURCE,
+    PROGRAM_AD_CUMULATIVE_SOURCE,
     PROGRAM_AD_SELECTION_SOURCE,
     "tests/test_whole_program_trace_predicates.py",
     "tests/test_whole_program_trace_values.py",
@@ -43,6 +47,8 @@ WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = [
     PROGRAM_AD_PRODUCT_TEST,
     PROGRAM_AD_REDUCTION_TEST,
     PROGRAM_AD_REDUCTION_DOCSTRING_TEST,
+    PROGRAM_AD_CUMULATIVE_TEST,
+    PROGRAM_AD_CUMULATIVE_DOCSTRING_TEST,
     PROGRAM_AD_SELECTION_DIRECT_TEST,
     PROGRAM_AD_SELECTION_REGISTRY_TEST,
     PROGRAM_AD_SELECTION_DOCSTRING_TEST,
@@ -58,8 +64,8 @@ WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT = [
     "tests/test_program_ad_array_indexing_quality.py",
     "tests/test_program_ad_binary_elementwise_registry.py",
     "tests/test_program_ad_broadcast_assembly.py",
-    "tests/test_program_ad_cumulative_primitives.py",
-    "tests/test_program_ad_cumulative_primitives_docstrings.py",
+    PROGRAM_AD_CUMULATIVE_TEST,
+    PROGRAM_AD_CUMULATIVE_DOCSTRING_TEST,
     "tests/test_program_ad_effect_ir.py",
     "tests/test_program_ad_elementwise_registry.py",
     "tests/test_program_ad_fail_closed_boundaries.py",
@@ -115,7 +121,8 @@ WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE = ".coverage.whole-program-trace-va
 WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_INCLUDE = (
     "*/whole_program_trace_values.py,*/whole_program_trace_predicates.py,"
     "*/program_ad_linalg_primitives.py,*/program_ad_product_primitives.py,"
-    "*/program_ad_reduction_primitives.py,*/program_ad_selection_primitives.py"
+    "*/program_ad_reduction_primitives.py,*/program_ad_cumulative_primitives.py,"
+    "*/program_ad_selection_primitives.py"
 )
 
 
@@ -206,6 +213,9 @@ __all__ = [
     "PROGRAM_AD_REDUCTION_SOURCE",
     "PROGRAM_AD_REDUCTION_TEST",
     "PROGRAM_AD_REDUCTION_DOCSTRING_TEST",
+    "PROGRAM_AD_CUMULATIVE_SOURCE",
+    "PROGRAM_AD_CUMULATIVE_TEST",
+    "PROGRAM_AD_CUMULATIVE_DOCSTRING_TEST",
     "PROGRAM_AD_SELECTION_SOURCE",
     "PROGRAM_AD_SELECTION_DIRECT_TEST",
     "PROGRAM_AD_SELECTION_REGISTRY_TEST",
