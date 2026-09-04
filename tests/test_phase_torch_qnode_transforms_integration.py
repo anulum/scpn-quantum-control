@@ -149,8 +149,10 @@ def test_torch_phase_qnode_transform_audit_checks_grad_jacrev_and_vmap() -> None
 def test_torch_phase_qnode_transform_audit_fails_closed_without_torch_func(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Verify that PyTorch phase QNode transform audit fails closed without PyTorch
-    func.
+    """Verify that the transform audit fails closed without ``torch.func``.
+
+    The public facade must reject a partial PyTorch installation before it
+    attempts registered Phase-QNode execution.
     """
     fake_torch = _FakeTorchWithoutFunc()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)

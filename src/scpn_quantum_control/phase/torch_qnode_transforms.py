@@ -63,46 +63,25 @@ def _as_parameter_matrix(name: str, values: object, *, width: int | None = None)
     return matrix.astype(np.float64, copy=True)
 
 
-def _torch_batch_to_numpy(values: object) -> FloatArray:
+def _torch_to_numpy_compatible(values: object) -> object:
     candidate = values
-    detach = getattr(candidate, "detach", None)
-    if callable(detach):
-        candidate = detach()
-    cpu = getattr(candidate, "cpu", None)
-    if callable(cpu):
-        candidate = cpu()
-    numpy_method = getattr(candidate, "numpy", None)
-    if callable(numpy_method):
-        candidate = numpy_method()
-    return _as_parameter_matrix("values", candidate)
+    for method_name in ("detach", "cpu", "numpy"):
+        method = getattr(candidate, method_name, None)
+        if callable(method):
+            candidate = method()
+    return candidate
+
+
+def _torch_batch_to_numpy(values: object) -> FloatArray:
+    return _as_parameter_matrix("values", _torch_to_numpy_compatible(values))
 
 
 def _torch_matrix_to_numpy(name: str, values: object) -> FloatArray:
-    candidate = values
-    detach = getattr(candidate, "detach", None)
-    if callable(detach):
-        candidate = detach()
-    cpu = getattr(candidate, "cpu", None)
-    if callable(cpu):
-        candidate = cpu()
-    numpy_method = getattr(candidate, "numpy", None)
-    if callable(numpy_method):
-        candidate = numpy_method()
-    return _as_parameter_matrix(name, candidate)
+    return _as_parameter_matrix(name, _torch_to_numpy_compatible(values))
 
 
 def _torch_scalar_to_float(values: object) -> float:
-    candidate = values
-    detach = getattr(candidate, "detach", None)
-    if callable(detach):
-        candidate = detach()
-    cpu = getattr(candidate, "cpu", None)
-    if callable(cpu):
-        candidate = cpu()
-    numpy_method = getattr(candidate, "numpy", None)
-    if callable(numpy_method):
-        candidate = numpy_method()
-    scalar = np.asarray(candidate, dtype=float)
+    scalar = np.asarray(_torch_to_numpy_compatible(values), dtype=float)
     if scalar.shape not in ((), (1,)):
         raise ValueError(f"PyTorch scalar value must be scalar-like, got {scalar.shape}")
     value = float(scalar.reshape(-1)[0])
@@ -527,10 +506,6 @@ def torch_phase_qnode_transform_audit(
     report = phase_qnode_support_report(circuit, parameter_values)
     if not report.supported:
         raise PhaseQNodeSupportError(report)
-    for row in parameter_batch:
-        row_report = phase_qnode_support_report(circuit, row)
-        if not row_report.supported:
-            raise PhaseQNodeSupportError(row_report)
 
     def value_function(parameter_tensor: Any) -> Any:
         value, _state = _torch_phase_qnode_value_and_state(

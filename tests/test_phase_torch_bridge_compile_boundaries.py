@@ -15,11 +15,13 @@ from typing import Any, cast
 import numpy as np
 import pytest
 
+import scpn_quantum_control.phase.torch_qnode_transforms as qnode_transforms
 from scpn_quantum_control.phase import (
     PauliTerm,
     PhaseQNodeCircuit,
     PhaseQNodeOperation,
     PhaseTorchCompileBoundaryAuditResult,
+    PhaseTorchPhaseQNodeCompileResult,
     run_torch_phase_qnode_lowering_matrix,
     torch_phase_qnode_compile_boundary_audit,
 )
@@ -29,7 +31,6 @@ pytest.importorskip("torch")  # the audit requires the optional PyTorch runtime
 
 def _phase_circuit() -> PhaseQNodeCircuit:
     """Return a deterministic registered circuit with two trainable parameters."""
-
     return PhaseQNodeCircuit(
         n_qubits=2,
         operations=(
@@ -41,14 +42,21 @@ def _phase_circuit() -> PhaseQNodeCircuit:
     )
 
 
-def test_torch_phase_qnode_compile_boundary_audit_is_fail_closed() -> None:
-    """The public audit should classify compile routes without promoting gaps."""
-
-    result = torch_phase_qnode_compile_boundary_audit(
+@pytest.fixture(scope="module")
+def compile_boundary_result() -> PhaseTorchCompileBoundaryAuditResult:
+    """Execute the expensive real compiler-boundary audit once per test module."""
+    return torch_phase_qnode_compile_boundary_audit(
         _phase_circuit(),
         np.array([0.37, -0.21], dtype=np.float64),
         tolerance=1.0e-8,
     )
+
+
+def test_torch_phase_qnode_compile_boundary_audit_is_fail_closed(
+    compile_boundary_result: PhaseTorchCompileBoundaryAuditResult,
+) -> None:
+    """The public audit should classify compile routes without promoting gaps."""
+    result = compile_boundary_result
 
     assert isinstance(result, PhaseTorchCompileBoundaryAuditResult)
     assert result.passed
@@ -78,13 +86,11 @@ def test_torch_phase_qnode_compile_boundary_audit_is_fail_closed() -> None:
     assert "no persistent export" in str(payload["claim_boundary"])
 
 
-def test_torch_phase_qnode_compile_boundary_result_rejects_unknown_route() -> None:
+def test_torch_phase_qnode_compile_boundary_result_rejects_unknown_route(
+    compile_boundary_result: PhaseTorchCompileBoundaryAuditResult,
+) -> None:
     """Route lookups should fail closed for unknown compile-boundary rows."""
-
-    result = torch_phase_qnode_compile_boundary_audit(
-        _phase_circuit(),
-        np.array([0.37, -0.21], dtype=np.float64),
-    )
+    result = compile_boundary_result
 
     with pytest.raises(KeyError, match="unknown PyTorch compile-boundary route"):
         result.route_status("missing")
@@ -92,7 +98,6 @@ def test_torch_phase_qnode_compile_boundary_result_rejects_unknown_route() -> No
 
 def test_torch_phase_qnode_lowering_matrix_exposes_boundary_diagnostic() -> None:
     """The lowering matrix should advertise the diagnostic without promotion."""
-
     matrix = run_torch_phase_qnode_lowering_matrix()
     payload = matrix.to_dict()
     routes = cast(dict[str, dict[str, Any]], payload["routes"])
@@ -105,3 +110,66 @@ def test_torch_phase_qnode_lowering_matrix_exposes_boundary_diagnostic() -> None
         "fullgraph" in routes["registered_phase_qnode_torch_compile_boundary_diagnostic"]["reason"]
     )
     assert "registered_phase_qnode_torch_compile_fullgraph_lowering" in matrix.open_gaps
+
+
+def test_torch_phase_qnode_compile_boundary_audit_records_missing_runtime() -> None:
+    """The public boundary audit should preserve execution failures as blockers."""
+    result = qnode_transforms.torch_phase_qnode_compile_boundary_audit(
+        _phase_circuit(),
+        np.array([0.37, -0.21], dtype=np.float64),
+        _torch_loader=object,
+    )
+
+    assert not result.passed
+    assert result.non_fullgraph_value == result.parameter_shift_value
+    np.testing.assert_array_equal(result.non_fullgraph_gradient, result.parameter_shift_gradient)
+    assert result.max_abs_reference_error > result.tolerance
+    assert all(route.status == "blocked" for route in result.routes)
+    assert result.routes[0].exception_type == "RuntimeError"
+
+
+def test_compile_boundary_exception_reason_preserves_empty_exception_type() -> None:
+    """An empty exception should retain a useful representation in diagnostics."""
+    assert qnode_transforms._compile_boundary_exception_reason(RuntimeError()) == (
+        "RuntimeError: RuntimeError()"
+    )
+
+
+def test_torch_phase_qnode_compile_boundary_audit_records_reference_mismatch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The public boundary audit should block successful but incorrect execution."""
+    bad_result = PhaseTorchPhaseQNodeCompileResult(
+        value=10.0,
+        gradient=np.array([10.0, 10.0], dtype=np.float64),
+        parameter_shift_value=0.0,
+        parameter_shift_gradient=np.zeros(2, dtype=np.float64),
+        torch_value=10.0,
+        torch_gradient=np.array([10.0, 10.0], dtype=np.float64),
+        max_abs_error=10.0,
+        l2_error=10.0,
+        tolerance=1.0e-8,
+        passed=False,
+        torch_compile_supported=True,
+        compiled_value_supported=True,
+        compiled_gradient_supported=True,
+        fullgraph=False,
+        dynamic=False,
+    )
+    monkeypatch.setattr(
+        qnode_transforms,
+        "torch_phase_qnode_compile_audit",
+        lambda *_args, **_kwargs: bad_result,
+    )
+
+    result = qnode_transforms.torch_phase_qnode_compile_boundary_audit(
+        _phase_circuit(),
+        np.array([0.37, -0.21], dtype=np.float64),
+        _torch_loader=object,
+    )
+
+    assert not result.passed
+    assert result.routes[0].status == "blocked"
+    assert "disagrees with the SCPN parameter-shift reference" in result.routes[0].reason
+    assert result.non_fullgraph_value == bad_result.value
+    np.testing.assert_array_equal(result.non_fullgraph_gradient, bad_result.gradient)

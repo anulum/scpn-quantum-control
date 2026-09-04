@@ -234,6 +234,9 @@ from .torch_qnode_transforms import (
     _torch_term_product_expectation as _torch_term_product_expectation,
 )
 from .torch_qnode_transforms import (
+    _torch_to_numpy_compatible as _torch_to_numpy_compatible,
+)
+from .torch_qnode_transforms import (
     torch_phase_qnode_compile_audit as _torch_phase_qnode_compile_audit,
 )
 from .torch_qnode_transforms import (

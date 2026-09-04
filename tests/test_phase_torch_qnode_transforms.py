@@ -33,6 +33,7 @@ QNODE_FUNCTIONS: tuple[tuple[str, str], ...] = (
 )
 PRIVATE_HELPERS = (
     "_as_parameter_matrix",
+    "_torch_to_numpy_compatible",
     "_torch_batch_to_numpy",
     "_torch_matrix_to_numpy",
     "_torch_scalar_to_float",

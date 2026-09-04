@@ -17,6 +17,7 @@ Gate = tuple[str, list[str]]
 PHASE_TORCH_BRIDGE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/phase/torch_bridge.py",
     "src/scpn_quantum_control/phase/torch_maturity.py",
+    "src/scpn_quantum_control/phase/torch_qnode_transforms.py",
     "src/scpn_quantum_control/phase/torch_module_state.py",
     "src/scpn_quantum_control/phase/torch_checkpoint.py",
     "src/scpn_quantum_control/phase/torch_checkpoint_matrix.py",
@@ -37,6 +38,10 @@ PHASE_TORCH_BRIDGE_QUALITY_RATCHET = [
     "tests/test_phase_torch_aot_autograd_export.py",
     "tests/test_phase_torch_dynamic_shape_export.py",
     "tests/test_optional_torch_export_contracts.py",
+    "tests/test_phase_torch_qnode_transforms.py",
+    "tests/test_phase_torch_qnode_transforms_integration.py",
+    "tests/test_phase_torch_bridge_qnode_edge_routes.py",
+    "tests/test_phase_torch_bridge_compile_boundaries.py",
     "tools/phase_torch_bridge_quality_gates.py",
     "tests/test_phase_torch_bridge_quality_gate.py",
 ]
@@ -55,6 +60,8 @@ PHASE_TORCH_BRIDGE_COVERAGE_COHORT = [
     "tests/test_phase_torch_maturity_integration.py",
     "tests/test_phase_torch_qnode_transforms.py",
     "tests/test_phase_torch_qnode_transforms_integration.py",
+    "tests/test_phase_torch_bridge_qnode_edge_routes.py",
+    "tests/test_phase_torch_bridge_compile_boundaries.py",
     "tests/test_phase_torch_module_state.py",
     "tests/test_phase_torch_checkpoint.py",
     "tests/test_phase_torch_checkpoint_matrix.py",
@@ -73,7 +80,8 @@ PHASE_TORCH_BRIDGE_COVERAGE_DATA_FILE = f"{gettempdir()}/scpn-qc-phase-torch-bri
 """Isolated coverage database for the Phase-QNode Torch facade."""
 
 PHASE_TORCH_BRIDGE_COVERAGE_INCLUDE = (
-    "*/torch_bridge.py,*/torch_maturity.py,*/torch_module_state.py,"
+    "*/torch_bridge.py,*/torch_maturity.py,*/torch_qnode_transforms.py,"
+    "*/torch_module_state.py,"
     "*/torch_checkpoint.py,*/torch_checkpoint_matrix.py,*/torch_device_state.py,"
     "*/torch_export.py,*/torch_export_shape_matrix.py,*/torch_training_loop_matrix.py,"
     "*/torch_aot_autograd_export.py,*/torch_dynamic_shape_export.py"

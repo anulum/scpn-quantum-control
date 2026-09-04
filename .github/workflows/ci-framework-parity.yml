@@ -97,6 +97,8 @@ jobs:
           tests/test_phase_torch_maturity_integration.py
           tests/test_phase_torch_qnode_transforms.py
           tests/test_phase_torch_qnode_transforms_integration.py
+          tests/test_phase_torch_bridge_qnode_edge_routes.py
+          tests/test_phase_torch_bridge_compile_boundaries.py
           tests/test_phase_torch_module_state.py
           tests/test_phase_torch_checkpoint.py
           tests/test_phase_torch_checkpoint_matrix.py
@@ -115,7 +117,7 @@ jobs:
           --data-file=/tmp/scpn-qc-phase-torch-bridge.coverage
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/torch_bridge.py,*/torch_maturity.py,*/torch_module_state.py,*/torch_checkpoint.py,*/torch_checkpoint_matrix.py,*/torch_device_state.py,*/torch_export.py,*/torch_export_shape_matrix.py,*/torch_training_loop_matrix.py,*/torch_aot_autograd_export.py,*/torch_dynamic_shape_export.py
+          --include=*/torch_bridge.py,*/torch_maturity.py,*/torch_qnode_transforms.py,*/torch_module_state.py,*/torch_checkpoint.py,*/torch_checkpoint_matrix.py,*/torch_device_state.py,*/torch_export.py,*/torch_export_shape_matrix.py,*/torch_training_loop_matrix.py,*/torch_aot_autograd_export.py,*/torch_dynamic_shape_export.py
       - name: Run differentiable parity tests
         run: >
           pytest

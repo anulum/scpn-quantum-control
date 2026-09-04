@@ -14,6 +14,7 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+import scpn_quantum_control.phase.torch_qnode_transforms as qnode_transforms
 from scpn_quantum_control.phase import (
     DenseHermitianObservable,
     PauliCovarianceObservable,
@@ -23,6 +24,7 @@ from scpn_quantum_control.phase import (
     PhaseQNodeSupportError,
     SparsePauliHamiltonian,
     torch_phase_qnode_compile_audit,
+    torch_phase_qnode_compile_boundary_audit,
     torch_phase_qnode_transform_audit,
     torch_phase_qnode_value_and_grad,
 )
@@ -34,7 +36,6 @@ FloatArray = NDArray[np.float64]
 
 def _all_gate_circuit() -> tuple[PhaseQNodeCircuit, FloatArray]:
     """Return a compact circuit that covers the registered PyTorch gate families."""
-
     operations = (
         PhaseQNodeOperation("h", (0,)),
         PhaseQNodeOperation("x", (1,)),
@@ -77,7 +78,6 @@ def _all_gate_circuit() -> tuple[PhaseQNodeCircuit, FloatArray]:
 
 def test_torch_phase_qnode_value_and_grad_covers_registered_gate_families() -> None:
     """The PyTorch statevector route should execute all registered local gate families."""
-
     circuit, params = _all_gate_circuit()
 
     result = torch_phase_qnode_value_and_grad(circuit, params, tolerance=1e-8)
@@ -92,7 +92,6 @@ def test_torch_phase_qnode_value_and_grad_covers_registered_gate_families() -> N
 
 def test_torch_phase_qnode_observable_routes_cover_dense_and_covariance() -> None:
     """The PyTorch statevector route should execute dense and covariance observables."""
-
     dense = DenseHermitianObservable(
         np.array([[1.0, 0.25], [0.25, -1.0]], dtype=np.complex128),
     )
@@ -130,7 +129,6 @@ def test_torch_phase_qnode_observable_routes_cover_dense_and_covariance() -> Non
 
 def test_torch_phase_qnode_routes_fail_closed_for_unsupported_circuits() -> None:
     """PyTorch Phase-QNode routes should reject unsupported registered-circuit reports."""
-
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(PhaseQNodeOperation("rx", (0,), parameter_index=1),),
@@ -148,11 +146,12 @@ def test_torch_phase_qnode_routes_fail_closed_for_unsupported_circuits() -> None
         )
     with pytest.raises(PhaseQNodeSupportError):
         torch_phase_qnode_compile_audit(circuit, params)
+    with pytest.raises(PhaseQNodeSupportError):
+        torch_phase_qnode_compile_boundary_audit(circuit, params)
 
 
 def test_torch_phase_qnode_transform_audit_rejects_bad_batch_row() -> None:
     """Transform audits should validate every row in the parameter batch."""
-
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(PhaseQNodeOperation("rx", (0,), parameter_index=0),),
@@ -165,4 +164,51 @@ def test_torch_phase_qnode_transform_audit_rejects_bad_batch_row() -> None:
             circuit,
             params,
             params_batch=np.array([[0.2], [np.nan]], dtype=np.float64),
+        )
+
+
+def test_torch_phase_qnode_transform_audit_rejects_vector_batch() -> None:
+    """Transform audits should reject a batch without a row dimension."""
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(PhaseQNodeOperation("rx", (0,), parameter_index=0),),
+        observable="z",
+    )
+
+    with pytest.raises(ValueError, match="two-dimensional"):
+        torch_phase_qnode_transform_audit(
+            circuit,
+            np.array([0.2], dtype=np.float64),
+            params_batch=np.array([0.2], dtype=np.float64),
+        )
+
+
+def test_torch_phase_qnode_value_and_grad_rejects_missing_autograd_result(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The public statevector route should fail closed on a missing gradient."""
+    torch_module = pytest.importorskip("torch")
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(PhaseQNodeOperation("rx", (0,), parameter_index=0),),
+        observable="z",
+    )
+
+    class _BackwardValue:
+        """Minimal scalar exposing the backward protocol."""
+
+        def backward(self) -> None:
+            """Leave the trainable tensor gradient unset."""
+
+    monkeypatch.setattr(
+        qnode_transforms,
+        "_torch_phase_qnode_value_and_state",
+        lambda *_args: (_BackwardValue(), object()),
+    )
+
+    with pytest.raises(RuntimeError, match="did not produce a gradient"):
+        qnode_transforms.torch_phase_qnode_value_and_grad(
+            circuit,
+            np.array([0.2], dtype=np.float64),
+            _torch_loader=lambda: torch_module,
         )
