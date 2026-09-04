@@ -4,7 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
-// scpn-quantum-control — studio-web Kuramoto Play kernel binding (ST-11)
+// scpn-quantum-control — studio-web Kuramoto Play kernel binding
 
 /**
  * Browser-side driver for the bounded Kuramoto live simulator.

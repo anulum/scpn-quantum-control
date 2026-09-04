@@ -4,7 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
-// scpn-quantum-control — studio-web 3D Lab panel (ST-21)
+// scpn-quantum-control — studio-web 3D Lab panel
 
 import { useEffect, useMemo, useState } from "react";
 
@@ -157,7 +157,7 @@ function BlochEquatorFigure({ scene, orbit }: { scene: BlochEquatorScene; orbit:
 }
 
 /**
- * The 3D Lab panel (ST-21). It captures the full phase trajectory θ_i(t) by
+ * The 3D Lab panel captures the full phase trajectory θ_i(t) by
  * chaining single RK4 steps of the SAME shipped WASM kernel the Play panel
  * uses, proves the capture bit-identical to the kernel's one-shot run, and
  * renders two orbitable scenes: the phase-space cylinder and the
@@ -214,7 +214,7 @@ export function Lab3DPanel({
   if (kernel.phase === "loading") {
     return (
       <section className="qsp-lab">
-        <h3>3D Lab (ST-21)</h3>
+        <h3>3D Lab</h3>
         <p className="qsp-meta" role="status">
           loading the WASM simulator kernel…
         </p>
@@ -224,7 +224,7 @@ export function Lab3DPanel({
   if (kernel.phase === "error") {
     return (
       <section className="qsp-lab">
-        <h3>3D Lab (ST-21)</h3>
+        <h3>3D Lab</h3>
         <p className="qsp-badge qsp-badge-unverifiable" role="alert">
           unverifiable — {kernel.reason}
         </p>
@@ -234,7 +234,7 @@ export function Lab3DPanel({
 
   return (
     <section className="qsp-lab">
-      <h3>3D Lab (ST-21)</h3>
+      <h3>3D Lab</h3>
       <p className="qsp-meta">
         Full phase trajectory θ<sub>i</sub>(t), captured by chaining single RK4 steps of the same
         shipped Rust kernel and verified bit-identical to its one-shot run. Lab fail-closed

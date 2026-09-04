@@ -4,7 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
-// scpn-quantum-control — studio-web Kuramoto Play panel (ST-11)
+// scpn-quantum-control — studio-web Kuramoto Play panel
 
 import { useEffect, useMemo, useState } from "react";
 
@@ -125,7 +125,7 @@ export function KuramotoPlayPanel({
   if (kernel.phase === "loading") {
     return (
       <section className="qsp-play">
-        <h3>Kuramoto Play (ST-11)</h3>
+        <h3>Kuramoto Play</h3>
         <p className="qsp-meta" role="status">
           loading the WASM simulator kernel…
         </p>
@@ -135,7 +135,7 @@ export function KuramotoPlayPanel({
   if (kernel.phase === "error") {
     return (
       <section className="qsp-play">
-        <h3>Kuramoto Play (ST-11)</h3>
+        <h3>Kuramoto Play</h3>
         <p className="qsp-badge qsp-badge-unverifiable" role="alert">
           unverifiable — {kernel.reason}
         </p>
@@ -150,7 +150,7 @@ export function KuramotoPlayPanel({
 
   return (
     <section className="qsp-play">
-      <h3>Kuramoto Play (ST-11)</h3>
+      <h3>Kuramoto Play</h3>
       <p className="qsp-meta">
         Live order parameter <code>R(t)</code>, integrated in your browser by the
         shipped Rust kernel. Fail-closed boundary:{" "}

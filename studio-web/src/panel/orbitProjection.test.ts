@@ -4,7 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
-// scpn-quantum-control — 3D Lab orbital projection tests (ST-21)
+// scpn-quantum-control — 3D Lab orbital projection tests
 
 import { describe, expect, it } from "vitest";
 
