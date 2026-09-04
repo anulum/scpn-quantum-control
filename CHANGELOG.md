@@ -590,7 +590,7 @@
   tests, evidence, campaign documentation, and manuscript with stable
   responsibility-descriptive terminology. Campaign identifiers and scientific
   results remain unchanged.
-- 2026-07-29 — DLA and topology-constrained differentiable control (BL-54):
+- 2026-07-29 — DLA and topology-constrained differentiable control:
   added exact finite parity-sector JVP/VJP and leakage gradients, a projected
   synthetic optimisation trace, fixed-active-set topology-ledger JVP/VJP rules,
   explicit non-smooth/discrete support reports, existing projected-optimiser
@@ -598,16 +598,16 @@
   DLA classification, controllability, persistent-homology derivatives, active
   budget rescaling, positive connectivity thresholds, error correction,
   hardware, provider, QPU, deployment, and application claims are refused;
-  S54.5 QGNN wiring is explicitly descoped because no typed parity/topology
+  Optional QGNN wiring is explicitly descoped because no typed parity/topology
   consumer exists.
-- 2026-07-29 — Chimera and multiscale synchronisation control (BL-60):
+- 2026-07-29 — Chimera and multiscale synchronisation control:
   added immutable nested hierarchy/target contracts, exact finite two-
   population Kuramoto–Sakaguchi regimes, multiscale Shanahan observables,
   composed analytic cluster targets, an unapplied backtracking phase proposal,
   topology-ledger projection custody, notebook 50, and deterministic evidence.
   Thermodynamic-limit, biological/EEG, stability, controllability, provider,
   QPU, hardware, deployment, and market-efficacy claims are refused; optional
-  BL-32 F5–F6 catalogue rows are explicitly descoped.
+  Optional challenge-family F5–F6 catalogue rows are explicitly descoped.
 - 2026-07-29 — Multimodal forecasting under partial observation:
   added immutable simulation-only series/graph/event/mask custody, disjoint
   synthetic train/calibration/test trajectories, a training-only missingness-
@@ -639,7 +639,7 @@
   negative control pass, but the product control also differs; therefore
   entanglement-specific, shifted-critical-coupling, spontaneous-synchronisation,
   advantage, provider, and hardware claims are refused.
-- 2026-07-28 — Bounded ENAQT optimal-noise evidence (BL-87): replaced the
+- 2026-07-28 — Bounded ENAQT optimal-noise evidence: replaced the
   degenerate phase proxy with finite-horizon target-sink population in a
   trace-preserving single-excitation Lindblad model. One disordered-chain
   interior optimum and two negative controls replay deterministically. The
@@ -717,11 +717,11 @@ control, or broad quantum-advantage claim is promoted by this release.
   public module-level symbols, all committed notebooks, and all public
   documentation pages; added an evidence-bounded solutions and market-value
   guide while preserving authored README content.
-- BL-54 DLA/topology differentiable-control boundaries, topology-aware
+- DLA/topology differentiable-control boundaries, topology-aware
   quantum-kernel product, domain application honesty kits, theory-
   hook promotion registry, deep-analysis research-lane registry, and
   preregistered deterministic RL-adjacent research governance.
-- 2026-07-29 — BL-60 finite synthetic chimera and multiscale control facade,
+- 2026-07-29 — Finite synthetic chimera and multiscale control facade,
   exact generator, nested observables, analytic target/proposal surfaces,
   topology-constraint composition, notebook, public guide/API reference, and
   canonical JSON/Markdown evidence artefacts.
@@ -741,7 +741,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   dephased-control comparison API, governed research-observation certificate,
   evidence CLI, public scientific-boundary guide, and committed deterministic
   JSON/Markdown evidence.
-- 2026-07-28 — BL-87 site-basis ENAQT scanner, explicit transfer-efficiency
+- 2026-07-28 — Site-basis ENAQT scanner, explicit transfer-efficiency
   contract, two negative controls, primary-source boundary, evidence CLI,
   public guide, and digest-bound local evidence artefacts.
 - 2026-07-28 — Bounded L16 indicator suite, conservative co-design
@@ -753,7 +753,7 @@ control, or broad quantum-advantage claim is promoted by this release.
 - 2026-07-28 — Simulator-first quantum-classical co-design package,
   versioned replay format, policy-gated control/observer adapters, public guide,
   and measured functional non-isolated evidence artefact.
-- 2026-07-26 — Fault-tolerant synchronisation resource product (BL-36):
+- 2026-07-26 — Fault-tolerant synchronisation resource product:
   `scpn_quantum_control.fault_tolerant_resource_product` composes existing QEC
   formulas into a digest-bound conservative distance/qubit/T-count/sensitivity
   report with verified primary-source pins and explicit NISQ, repetition,
@@ -782,77 +782,77 @@ control, or broad quantum-advantage claim is promoted by this release.
   host fallback, and Julia Program AD fail closed; the existing Julia optional
   tier remains honestly classified as Kuramoto-only. Docs:
   `docs/polyglot_edge_ad_product.md`.
-- 2026-07-24 — Advanced witnesses product (BL-44):
+- 2026-07-24 — Advanced witnesses product:
   `scpn_quantum_control.advanced_witnesses_product` productises Krylov/OTOC/
   classical-shadow catalogue with `WitnessEstimate` provenance and small-system
   probes over ambient `analysis/krylov_complexity`, `otoc`, `shadow_tomography`
-  (BL-18 order-parameter compose); refuse invent-green OTOC advantage /
+  (order-parameter composition); refuse invent-green OTOC advantage /
   topology certification / live QPU / unrestricted shadows. Docs:
-  `docs/advanced_witnesses_product.md`. Twenty-sixth P1 A-product after
-  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73/99/101/100/51/59/50/71.
+  `docs/advanced_witnesses_product.md`. Twenty-sixth priority product in the
+  original productisation sequence.
 - 2026-07-24 — PGBO quantum geometric tensor product:
   `scpn_quantum_control.pgbo_qgt_product` productises QGT/Fubini–Study/Berry
   curvature catalogue and small-system `compute_pgbo_tensor` probes with
   fail-closed N caps over ambient `pgbo.quantum_bridge`; refuse invent-green
   experimental geometry / live QPU / unbounded N / FD-as-exact-AD. Docs:
   `docs/pgbo_qgt_product.md`.
-- 2026-07-24 — Geometric quantum control product (BL-50):
+- 2026-07-24 — Geometric quantum control product:
   `scpn_quantum_control.geometric_control_product` productises QFI/McLachlan/QNG
   taxonomy, metric spectrum diagnostics, and regularised natural-gradient
   direction probes over ambient `variational_metric` + `natural_gradient`
-  (BL-13 compose); refuse invent-green advantage at criticality / live QPU.
-  Docs: `docs/geometric_control_product.md`. Twenty-fourth P1 A-product after
-  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73/99/101/100/51/59.
-- 2026-07-24 — Differentiable error-mitigation taxonomy product (BL-59):
+  (variational-metric composition); refuse invent-green advantage at
+  criticality / live QPU. Docs: `docs/geometric_control_product.md`.
+  Twenty-fourth priority product in the original productisation sequence.
+- 2026-07-24 — Differentiable error-mitigation taxonomy product:
   `scpn_quantum_control.error_mitigation_product` productises mitigator
   differentiability taxonomy (ZNE/PEC/readout/symmetry/DD/CPDR/mitiq/Studio)
   with local ZNE + readout probes over ambient `mitigation/*`; refuse
   invent-green ideal-gradient restore, live QPU mitigation, mitiq hard-dep.
-  Docs: `docs/error_mitigation_product.md`. Twenty-third P1 A-product after
-  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73/99/101/100/51.
-- 2026-07-24 — Open-system MCWF completeness product (BL-51):
+  Docs: `docs/error_mitigation_product.md`. Twenty-third priority product in
+  the original productisation sequence.
+- 2026-07-24 — Open-system MCWF completeness product:
   `scpn_quantum_control.open_system_mcwf_product` productises Lindblad/MCWF
   surfaces, seeded ensemble variance certificates, and sim noise-model I/O over
   ambient `phase.tensor_jump` + `open_system_objectives`; refuse invent-green
   hardware noise fidelity, adjoint Lindblad, non-Markovian process-tensor AD.
-  Docs: `docs/open_system_mcwf_product.md`. Twenty-second P1 A-product after
-  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73/99/101/100.
-- 2026-07-24 — Thermodynamics readiness product (BL-100):
+  Docs: `docs/open_system_mcwf_product.md`. Twenty-second priority product in
+  the original productisation sequence.
+- 2026-07-24 — Thermodynamics readiness product:
   `scpn_quantum_control.thermo_readiness_product` productises S9 claim-bounded
   readiness over ambient `thermodynamics.readiness` (K-sweep probe,
   machine-checked CLAIM_BOUNDARY) and inventories FEP modules as research-only
   (deep-analysis research lane / tier C); refuse invent-green peak claim,
   hardware submit, and FEP
-  product promotion. Docs: `docs/thermo_readiness_product.md`. Twenty-first P1
-  A-product after BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73/99/101.
-- 2026-07-24 — Cloud-native deployment boundary product (BL-101):
+  product promotion. Docs: `docs/thermo_readiness_product.md`. Twenty-first
+  priority product in the original productisation sequence.
+- 2026-07-24 — Cloud-native deployment boundary product:
   `scpn_quantum_control.cloud_native_deployment_product` productises batch/
   worker deploy patterns and threat-model rows over ambient
   `deployment.cloud_native` dry-run K8s/Compose manifests; refuse secret env,
   always-on QPU, live cluster create. Docs:
-  `docs/cloud_native_deployment_product.md`. Twentieth P1 A-product after
-  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73/99.
-- 2026-07-24 — Campaign harness productisation (BL-99):
+  `docs/cloud_native_deployment_product.md`. Twentieth priority product in the
+  original productisation sequence.
+- 2026-07-24 — Campaign harness productisation:
   `scpn_quantum_control.campaign_harness_product` productises reusable AppQSim,
   IQM layout-transfer, closed-loop publication, and ambient benchmark_harness
   registry templates with prereg digests and hardware-safe no-submit dry-run probes;
   refuse invent-green live submit and unattested claims. Docs:
-  `docs/campaign_harness_product.md`. Nineteenth P1 A-product after
-  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32/73.
-- 2026-07-24 — KYMA / KYMA v2 mechanism benchmark product (BL-73):
+  `docs/campaign_harness_product.md`. Nineteenth priority product in the
+  original productisation sequence.
+- 2026-07-24 — KYMA / KYMA v2 mechanism benchmark product:
   `scpn_quantum_control.kyma_mechanism_benchmark_product` productises prereg
   suite catalogue, frozen design-constant digests (teacher dynamics only),
   realisability/non-separability certificate probes; refuse post-hoc retune and
   invent-green advantage without protocol id. Docs:
-  `docs/kyma_mechanism_benchmark_product.md`. Eighteenth P1 A-product after
-  BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66/32.
-- 2026-07-24 — Quantum Sync Challenge oracle product (BL-32):
+  `docs/kyma_mechanism_benchmark_product.md`. Eighteenth priority product in
+  the original productisation sequence.
+- 2026-07-24 — Quantum Sync Challenge oracle product:
   `scpn_quantum_control.quantum_sync_challenge_oracle_product` productises
   problem families F1–F4 + hardware schema row, metrics/baselines catalogue,
   anti-cheat instance digests, ambient sync-witness suite probe; refuse
   invent-green advantage, unvalidated leaderboard ranks, hardware auto-exec.
-  Docs: `docs/quantum_sync_challenge_oracle_product.md`. Seventeenth P1
-  A-product after BL-90/91/81/49/96/92/93/64/39/41/40/34/62/67/75/66.
+  Docs: `docs/quantum_sync_challenge_oracle_product.md`. Seventeenth priority
+  product in the original productisation sequence.
 - 2026-07-24 — QIR / CUDA-Q compiler boundary product:
   `scpn_quantum_control.compiler_boundary_product` productises external-compiler
   boundary register (QIR, CUDA-Q, Catalyst, MLIR/Enzyme, future TN) with status
@@ -874,8 +874,8 @@ control, or broad quantum-advantage claim is promoted by this release.
   `scpn_quantum_control.studio_executive_product` productises executive verb
   catalogue with governed-route pointers, fail-closed unsupported-route and
   invent-green full-coverage refuses, and honesty×answer-rate coverage-frontier
-  probes. Docs: `docs/studio_executive_product.md`. Thirteenth P1 A-product after
-  BL-90/91/81/49/96/92/93/64/39/41/40/34.
+  probes. Docs: `docs/studio_executive_product.md`. Thirteenth priority product
+  in the original productisation sequence.
 - 2026-07-24 — Fixture-driven visualisation dashboard product:
   `scpn_quantum_control.visualisation_dashboard_product` productises static
   panel catalogue rows, secrets/token export scanning, materialised
@@ -899,38 +899,38 @@ control, or broad quantum-advantage claim is promoted by this release.
   Program AD adjoint generation and executable step replay, checkpoint-policy
   contracts, reversibility predicates, and refuse invent-green mid-circuit
   measurement, Catalyst parity, and hardware adjoint. Docs:
-  `docs/adjoint_replay_product.md`. Ninth P1 A-product after
-  BL-90/91/81/49/96/92/93/64.
-- 2026-07-24 — Wirtinger + implicit differentiation product (BL-64):
+  `docs/adjoint_replay_product.md`. Ninth priority product in the original
+  productisation sequence.
+- 2026-07-24 — Wirtinger + implicit differentiation product:
   `scpn_quantum_control.wirtinger_implicit_product` productises the Wirtinger
   partials / holomorphic / CR real-objective gradient catalogue, implicit
   stationary/fixed-point sensitivity demos, and refuse complex objectives
   without a Wirtinger contract (unsuitable-scenario registry plus metamorphic
   AD verification). Docs:
-  `docs/wirtinger_implicit_product.md`. Eighth P1 A-product after
-  BL-90/91/81/49/96/92/93.
+  `docs/wirtinger_implicit_product.md`. Eighth priority product in the original
+  productisation sequence.
 - 2026-07-24 — Stochastic estimators & policies product:
   `scpn_quantum_control.stochastic_estimators_product` productises the finite-shot
   estimator catalogue (SPSA, score-function, parameter-shift shot allocation),
   confidence-policy contracts composing hardware-safe shot-budget honesty,
   dry-run refusal of invent-green hardware shots, and a materialised local SPSA
   demo probe. Docs:
-  `docs/stochastic_estimators_product.md`. Seventh P1 A-product after
-  BL-90/91/81/49/96/92.
-- 2026-07-24 — Custom / registered derivatives product (BL-92):
+  `docs/stochastic_estimators_product.md`. Seventh priority product in the
+  original productisation sequence.
+- 2026-07-24 — Custom / registered derivatives product:
   `scpn_quantum_control.custom_derivatives_product` productises the safe
   extension registration contract, public register/query helpers with
   fail-closed blank/unknown/duplicate paths, and a documented scaled-linear
   example rule over ambient CustomDerivativeRegistry. Docs:
-  `docs/custom_derivatives_product.md`. Sixth P1 A-product after
-  BL-90/91/81/49/96.
+  `docs/custom_derivatives_product.md`. Sixth priority product in the original
+  productisation sequence.
 - 2026-07-24 — Rust Program AD fuzz assurance product:
   `scpn_quantum_control.program_ad_fuzz_assurance` productises ambient
   `scpn_quantum_engine/fuzz` target catalogue, time-boxed CI-optional policy
   (continuous default false; invent-green forbidden), and dry-run probe helpers
   that refuse continuous multi-hour cargo-fuzz claims without executing
-  cargo-fuzz. Docs: `docs/program_ad_fuzz_assurance.md`. Fifth P1 A-product
-  after BL-90/91/81/49.
+  cargo-fuzz. Docs: `docs/program_ad_fuzz_assurance.md`. Fifth priority product
+  in the original productisation sequence.
 - 2026-07-24 — Bit-exact polyglot parity certificates:
   `scpn_quantum_control.polyglot_parity_certificate` productises versioned
   certificate schema, family catalogue (scalar→spectral bounds), sample
@@ -946,22 +946,22 @@ control, or broad quantum-advantage claim is promoted by this release.
   SemVer-intent surface in the public API stability programme and a substrate
   for hermetic reproduction kits and scorecard acceptance. Docs:
   `docs/stable_core_product.md`.
-- 2026-07-24 — Whole-program AD product surface (BL-91):
+- 2026-07-24 — Whole-program AD product surface:
   `scpn_quantum_control.whole_program_ad_product` productises versioned
   frontend→IR→adjoint/replay journeys, layered architecture map, fail-closed
-  unknown ids, unsupported-frontend→BL-53 refuse, and refuse invent-green for
+  unknown ids, unsupported-frontend refusal, and refuse invent-green for
   hardware, polyglot parity-certificate, and edge/WASM runtime residuals.
   Ambient `whole_program_*`/`program_ad_*` remains experimental_workbench under
-  public API stability policy. Docs: `docs/whole_program_ad_product.md`. Second P1 A-product
-  after BL-90.
-- 2026-07-24 — Phase-QNode product surface (BL-90):
+  public API stability policy. Docs: `docs/whole_program_ad_product.md`. Second
+  priority product in the original productisation sequence.
+- 2026-07-24 — Phase-QNode product surface:
   `scpn_quantum_control.phase_qnode_product` productises versioned Phase-QNode
   user journeys (build→differentiate→dry-run and related), support badges,
   public module map, fail-closed unknown journey ids, and refuse invent-green
   hardware requests. Ambient `phase/qnode_*` remains experimental_workbench
   under public API stability policy. Docs: `docs/phase_qnode_product.md`. First P1 A-product
   item after completed P0 integrity spine.
-- 2026-07-24 — qpu_compute product surface (BL-95):
+- 2026-07-24 — qpu_compute product surface:
   `scpn_quantum_control.qpu_compute_product` productises typed compute plan
   kinds (dry-run simulator default, would-live refuse, ticketed prep),
   `dry_run_compute_plan` validation without provider submission, and
@@ -981,7 +981,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   would-submit and over-budget), and secret-free `build_audit_record`. Never
   submits QPU jobs or invents hardware results. Docs:
   `docs/hardware_safe_execution.md`.
-- 2026-07-23 — Continuous competitive baseline watch (BL-61):
+- 2026-07-23 — Continuous competitive baseline watch:
   `scpn_quantum_control.competitive_baseline_watch` productises a versioned
   watch catalogue over the committed competitive-baseline refresh inventory
   (nine competitors). Inventory query, pin/version honesty
@@ -1033,7 +1033,7 @@ control, or broad quantum-advantage claim is promoted by this release.
   execution routes carry canonical classifications and source SHA-256 evidence.
   The optional GPU overlay remains explicitly unlocked until an exact lock and
   compatible modern-GPU artefact exist; no GPU or hardware claim is promoted.
-- 2026-07-18 — Public-claim honesty (KIMI due-diligence audit, AUD-1): the IBM v2
+- 2026-07-18 — Public-claim honesty: the IBM v2
   "DUAL PROTECTION on IBM hardware" finding is retired **as a scientific claim, not as
   data**, and added to the retired-claims register (`data/retired_claims.json`, id
   `fim-dual-protection-hardware`). `F_FIM=0.9158 > F_XY=0.8484` (all-zero survival) is a
@@ -1136,8 +1136,8 @@ surfaces or new Zenodo versions.
   `docs/campaigns/qkd_qber_basis_metadata_prereg_2026-07-17.md`
   (18 circuits ≈ 20 estimated QPU seconds, hard cap 60 s, per-submit
   owner GO required).
-- 2026-07-17 — Weekly FIM notebook batch in Notebook CI (KIMI-10
-  remainder): the 32 exploratory investigation notebooks (NB15–47 minus
+- 2026-07-17 — Weekly FIM notebook batch in Notebook CI: the 32 exploratory
+  investigation notebooks (NB15–47 minus
   the live-hardware submitters) execute every Monday in four sharded
   jobs (`execute-fim-batch`, schedule + manual dispatch only, never on
   pull requests), so exploratory breakage surfaces instead of rotting
@@ -1229,7 +1229,7 @@ surfaces or new Zenodo versions.
   kernels, provider and hardware execution, polyglot compute, and benchmark
   claims are unchanged.
 - 2026-07-14 — Added a generated differentiable reviewer-evidence page that
-  maps all five DP-015 criticisms and the seven DP-030 evidence-package rows
+  maps all five reviewer criticisms and the seven evidence-package rows
   to scoped runnable commands or stable public open-gap pointers. The gate
   validates repository paths, changelog markers, capability-manifest surfaces,
   support-matrix counts, and roadmap markers. Its inventory covers
