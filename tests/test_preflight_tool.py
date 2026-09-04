@@ -86,6 +86,7 @@ def test_static_gates_include_descriptive_production_naming() -> None:
         "tools/audit_descriptive_production_naming.py"
     )
     strict_cmd = gate_map["mypy-strict-descriptive-production-naming"]
+    assert "--explicit-package-bases" in strict_cmd
     assert "tools/audit_descriptive_production_naming.py" in strict_cmd
     assert "tests/test_audit_descriptive_production_naming.py" in strict_cmd
 

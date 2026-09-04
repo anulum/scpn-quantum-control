@@ -1364,6 +1364,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "-m",
             "mypy",
             "--strict",
+            "--explicit-package-bases",
             "tools/audit_descriptive_production_naming.py",
             "tests/test_audit_descriptive_production_naming.py",
         ],
