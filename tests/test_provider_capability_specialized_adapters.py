@@ -14,6 +14,7 @@ import inspect
 
 import scpn_quantum_control.hardware.provider_capability_discovery as provider_capability_discovery
 import scpn_quantum_control.hardware.provider_capability_specialized_adapters as specialized_adapters
+from scpn_quantum_control.hardware.aggregators import resolve_aggregator_provider_route
 from scpn_quantum_control.hardware.provider_capability_discovery import (
     probe_aggregator_provider_capability,
     snapshot_from_dwave_solver,
@@ -21,6 +22,162 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
     snapshot_from_quandela_processor,
     snapshot_from_quera_bloqade,
 )
+
+
+def test_dwave_snapshot_normalizes_fallback_metadata_without_submission() -> None:
+    """Exercise D-Wave route fallbacks, status text, limits, and topology metadata."""
+    resolved = resolve_aggregator_provider_route(aggregator="direct", provider="dwave")
+    declared = snapshot_from_dwave_solver(
+        resolved,
+        {
+            "solver": "Advantage_metadata",
+            "num_qubits": 5_000,
+            "supported_problem_types": ("MLIR", "custom-format"),
+            "target_status": "enabled",
+            "max_reads": 500,
+            "queue_depth": 0,
+            "topology_type": "chimera",
+        },
+    )
+    assert declared.supported_ir_formats == ("mlir", "custom_format")
+    assert declared.online is True
+    assert declared.max_shots == 500
+    assert declared.queue_depth == 0
+    assert declared.metadata["topology"] == "chimera"
+
+    fallback = snapshot_from_dwave_solver(
+        resolved,
+        {
+            "solver": "Advantage_fallback",
+            "num_qubits": 5_000,
+            "availability": "disabled",
+            "parameters": {"num_reads": [False, -1, "unbounded"]},
+            "topology": {"type": "zephyr"},
+        },
+    )
+    assert fallback.supported_ir_formats == resolved.route.ir_formats
+    assert fallback.online is False
+    assert fallback.max_shots is None
+    assert fallback.metadata["topology"] == "zephyr"
+
+    unknown = snapshot_from_dwave_solver(
+        resolved,
+        {
+            "solver": "Advantage_unknown",
+            "num_qubits": 5_000,
+            "state": "paused",
+            "parameters": {"num_reads": "unbounded"},
+            "topology": {"type": ""},
+        },
+    )
+    absent = snapshot_from_dwave_solver(
+        resolved,
+        {"solver": "Advantage_absent", "num_qubits": 5_000},
+    )
+    assert unknown.online is None
+    assert unknown.metadata["topology"] is None
+    assert absent.online is None
+
+
+def test_quera_snapshot_normalizes_fallback_metadata_without_submission() -> None:
+    """Exercise QuEra route fallbacks, unknown IR tokens, and textual states."""
+    resolved = resolve_aggregator_provider_route(aggregator="direct", provider="quera")
+    declared = snapshot_from_quera_bloqade(
+        resolved,
+        {
+            "target": "aquila-metadata",
+            "num_atoms": 256,
+            "supported_ir_formats": ("custom-format",),
+            "target_status": "enabled",
+        },
+    )
+    fallback = snapshot_from_quera_bloqade(
+        resolved,
+        {"target": "aquila-fallback", "num_atoms": 256, "availability": "disabled"},
+    )
+    unknown = snapshot_from_quera_bloqade(
+        resolved,
+        {"target": "aquila-unknown", "num_atoms": 256, "state": "paused"},
+    )
+    absent = snapshot_from_quera_bloqade(
+        resolved,
+        {"target": "aquila-absent", "num_atoms": 256},
+    )
+
+    assert declared.supported_ir_formats == ("custom_format",)
+    assert declared.online is True
+    assert fallback.supported_ir_formats == resolved.route.ir_formats
+    assert fallback.online is False
+    assert unknown.online is None
+    assert absent.online is None
+
+
+def test_pasqal_snapshot_normalizes_fallback_metadata_without_submission() -> None:
+    """Exercise Pasqal route fallbacks, digital features, and textual states."""
+    resolved = resolve_aggregator_provider_route(aggregator="direct", provider="pasqal")
+    declared = snapshot_from_pasqal_target(
+        resolved,
+        {
+            "target": "Fresnel-metadata",
+            "num_atoms": 100,
+            "supported_ir_formats": ("custom-format",),
+            "target_status": "enabled",
+            "digital_mode": True,
+        },
+    )
+    fallback = snapshot_from_pasqal_target(
+        resolved,
+        {"target": "Fresnel-fallback", "num_atoms": 100, "availability": "disabled"},
+    )
+    unknown = snapshot_from_pasqal_target(
+        resolved,
+        {"target": "Fresnel-unknown", "num_atoms": 100, "state": "paused"},
+    )
+    absent = snapshot_from_pasqal_target(
+        resolved,
+        {"target": "Fresnel-absent", "num_atoms": 100},
+    )
+
+    assert declared.supported_ir_formats == ("custom_format",)
+    assert declared.online is True
+    assert "digital_analog" in declared.native_features
+    assert fallback.supported_ir_formats == resolved.route.ir_formats
+    assert fallback.online is False
+    assert unknown.online is None
+    assert absent.online is None
+
+
+def test_quandela_snapshot_normalizes_fallback_metadata_without_submission() -> None:
+    """Exercise Quandela route fallbacks, unknown IR tokens, and textual states."""
+    resolved = resolve_aggregator_provider_route(aggregator="direct", provider="quandela")
+    declared = snapshot_from_quandela_processor(
+        resolved,
+        {
+            "processor": "Ascella-metadata",
+            "modes": 12,
+            "supported_ir_formats": ("custom-format",),
+            "target_status": "enabled",
+        },
+    )
+    fallback = snapshot_from_quandela_processor(
+        resolved,
+        {"processor": "Ascella-fallback", "modes": 12, "availability": "disabled"},
+    )
+    unknown = snapshot_from_quandela_processor(
+        resolved,
+        {"processor": "Ascella-unknown", "modes": 12, "state": "paused"},
+    )
+    absent = snapshot_from_quandela_processor(
+        resolved,
+        {"processor": "Ascella-absent", "modes": 12},
+    )
+
+    assert declared.supported_ir_formats == ("custom_format",)
+    assert declared.online is True
+    assert fallback.supported_ir_formats == resolved.route.ir_formats
+    assert fallback.online is False
+    assert unknown.online is None
+    assert absent.online is None
 
 
 def test_direct_dwave_snapshot_reads_solver_metadata_without_submission() -> None:
@@ -74,7 +231,6 @@ def test_direct_dwave_snapshot_reads_solver_metadata_without_submission() -> Non
 
 def test_direct_dwave_snapshot_blocks_offline_solver_without_submission() -> None:
     """Direct D-Wave offline metadata should block before sampler calls."""
-
     metadata = {
         "solver": "Advantage_offline",
         "status": "offline",
@@ -152,7 +308,6 @@ def test_direct_quera_snapshot_reads_bloqade_metadata_without_submission() -> No
 
 def test_direct_quera_snapshot_blocks_offline_bloqade_target_without_submission() -> None:
     """Direct QuEra/Bloqade offline metadata should block before routine execution."""
-
     metadata = {
         "target": "aquila-offline",
         "status": "maintenance",
@@ -229,7 +384,6 @@ def test_direct_pasqal_snapshot_reads_target_metadata_without_submission() -> No
 
 def test_direct_pasqal_snapshot_blocks_offline_target_without_submission() -> None:
     """Direct Pasqal offline metadata should block before Pulser submission."""
-
     metadata = {
         "target": "pasqal-maintenance",
         "availability": "maintenance",
@@ -310,7 +464,6 @@ def test_direct_quandela_snapshot_reads_processor_metadata_without_submission() 
 
 def test_direct_quandela_snapshot_blocks_offline_processor_without_submission() -> None:
     """Direct Quandela offline metadata should block before processor sampling."""
-
     metadata = {
         "processor": "ascella-maintenance",
         "status": "maintenance",
