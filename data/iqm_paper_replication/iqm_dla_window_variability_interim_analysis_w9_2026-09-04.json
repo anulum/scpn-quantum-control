@@ -1,0 +1,468 @@
+{
+  "campaign": "iqm_dla_window_variability_prereg_2026-07-22",
+  "kind": "primary_decision_rule",
+  "achieved_windows": 9,
+  "analysable": true,
+  "primary_d10_heterogeneity": {
+    "windows": 9,
+    "weighted_mean_difference": 0.0170031666453,
+    "cochran_q": 18.4682847534,
+    "degrees_of_freedom": 8,
+    "p_value": 0.0179770221472,
+    "tau_dl": 0.0124874441191,
+    "mean_shot_noise_se": 0.0109163357957,
+    "alpha": 0.05,
+    "analysable": true,
+    "achieved_windows": 9,
+    "minimum_windows": 6,
+    "drift_exceeds_shot_noise": true
+  },
+  "s1_per_depth_heterogeneity_holm": {
+    "4": {
+      "p_value": 0.0163279055745,
+      "holm_adjusted_p": 0.032655811149,
+      "rejects_homogeneity": true
+    },
+    "8": {
+      "p_value": 7.00565725587e-05,
+      "holm_adjusted_p": 0.000210169717676,
+      "rejects_homogeneity": true
+    },
+    "12": {
+      "p_value": 0.340805895845,
+      "holm_adjusted_p": 0.340805895845,
+      "rejects_homogeneity": false
+    }
+  },
+  "s2_tau_profile": {
+    "4": {
+      "tau_dl": 0.0119145358692,
+      "mean_shot_noise_se": 0.0102828845652
+    },
+    "8": {
+      "tau_dl": 0.0190111212677,
+      "mean_shot_noise_se": 0.0108215605655
+    },
+    "10": {
+      "tau_dl": 0.0124874441191,
+      "mean_shot_noise_se": 0.0109163357957
+    },
+    "12": {
+      "tau_dl": 0.00391567796919,
+      "mean_shot_noise_se": 0.0109785108078
+    }
+  },
+  "s3_d4_sign_stability": {
+    "windows": 9,
+    "positive_windows": 8,
+    "fraction_positive": 0.888888888889,
+    "clopper_pearson_95": [
+      0.517503485082663,
+      0.9971908632534008
+    ]
+  },
+  "s4_calibration_covariates": {
+    "caveat": "descriptive only per the preregistration; no test, no claim",
+    "covariates": null
+  },
+  "per_window": [
+    {
+      "window": 1,
+      "date": "2026-07-22",
+      "job_ids": [
+        "019f8a0a-5e7d-7a00-9fad-85f18b6ca001",
+        "019f8a0a-6032-79f3-9306-94518d499717"
+      ],
+      "readout_parity_confusion": {
+        "0011": 0.10107421875,
+        "0001": 0.08203125,
+        "0000": 0.06103515625,
+        "1111": 0.12109375
+      },
+      "depths": {
+        "4": {
+          "leak_even": 0.367431640625,
+          "leak_odd": 0.379150390625,
+          "difference_even_minus_odd": -0.01171875,
+          "shot_noise_se": 0.010687100253,
+          "shots_per_arm": 4096
+        },
+        "8": {
+          "leak_even": 0.43359375,
+          "leak_odd": 0.452392578125,
+          "difference_even_minus_odd": -0.018798828125,
+          "shot_noise_se": 0.0109745326564,
+          "shots_per_arm": 4096
+        },
+        "10": {
+          "leak_even": 0.45556640625,
+          "leak_odd": 0.461669921875,
+          "difference_even_minus_odd": -0.006103515625,
+          "shot_noise_se": 0.011010431631,
+          "shots_per_arm": 4096
+        },
+        "12": {
+          "leak_even": 0.464111328125,
+          "leak_odd": 0.467041015625,
+          "difference_even_minus_odd": -0.0029296875,
+          "shot_noise_se": 0.0110222797782,
+          "shots_per_arm": 4096
+        }
+      }
+    },
+    {
+      "window": 2,
+      "date": "2026-07-26",
+      "job_ids": [
+        "019f9c59-6fbf-7d43-96ea-d341a781617f",
+        "019f9c59-7290-7472-bbcf-bdc67959ce67"
+      ],
+      "readout_parity_confusion": {
+        "0011": 0.0634765625,
+        "0001": 0.0517578125,
+        "0000": 0.046875,
+        "1111": 0.0615234375
+      },
+      "depths": {
+        "4": {
+          "leak_even": 0.349365234375,
+          "leak_odd": 0.320556640625,
+          "difference_even_minus_odd": 0.02880859375,
+          "shot_noise_se": 0.0104244544241,
+          "shots_per_arm": 4096
+        },
+        "8": {
+          "leak_even": 0.425537109375,
+          "leak_odd": 0.41748046875,
+          "difference_even_minus_odd": 0.008056640625,
+          "shot_noise_se": 0.0109111938661,
+          "shots_per_arm": 4096
+        },
+        "10": {
+          "leak_even": 0.449951171875,
+          "leak_odd": 0.446044921875,
+          "difference_even_minus_odd": 0.00390625,
+          "shot_noise_se": 0.0109885412212,
+          "shots_per_arm": 4096
+        },
+        "12": {
+          "leak_even": 0.447021484375,
+          "leak_odd": 0.458251953125,
+          "difference_even_minus_odd": -0.01123046875,
+          "shot_noise_se": 0.0109981618833,
+          "shots_per_arm": 4096
+        }
+      }
+    },
+    {
+      "window": 3,
+      "date": "2026-07-26",
+      "job_ids": [
+        "019f9eec-e2da-7eb2-8fc1-9d19a0fc8406",
+        "019f9eec-e3dd-7ec0-89ba-109b3f738d54"
+      ],
+      "readout_parity_confusion": {
+        "0011": 0.05517578125,
+        "0001": 0.04541015625,
+        "0000": 0.046875,
+        "1111": 0.07861328125
+      },
+      "depths": {
+        "4": {
+          "leak_even": 0.3466796875,
+          "leak_odd": 0.320556640625,
+          "difference_even_minus_odd": 0.026123046875,
+          "shot_noise_se": 0.0104148913369,
+          "shots_per_arm": 4096
+        },
+        "8": {
+          "leak_even": 0.421875,
+          "leak_odd": 0.42138671875,
+          "difference_even_minus_odd": 0.00048828125,
+          "shot_noise_se": 0.010911984036,
+          "shots_per_arm": 4096
+        },
+        "10": {
+          "leak_even": 0.445068359375,
+          "leak_odd": 0.422119140625,
+          "difference_even_minus_odd": 0.02294921875,
+          "shot_noise_se": 0.0109477305569,
+          "shots_per_arm": 4096
+        },
+        "12": {
+          "leak_even": 0.474853515625,
+          "leak_odd": 0.45703125,
+          "difference_even_minus_odd": 0.017822265625,
+          "shot_noise_se": 0.0110211238585,
+          "shots_per_arm": 4096
+        }
+      }
+    },
+    {
+      "window": 4,
+      "date": "2026-07-27",
+      "job_ids": [
+        "019fa180-3c0a-7bf2-9d75-a2f838ec4ce8",
+        "019fa180-3ff2-7f81-8cdb-b5ca1a508a94"
+      ],
+      "readout_parity_confusion": {
+        "0011": 0.10205078125,
+        "0001": 0.064453125,
+        "0000": 0.041015625,
+        "1111": 0.12451171875
+      },
+      "depths": {
+        "4": {
+          "leak_even": 0.3515625,
+          "leak_odd": 0.348876953125,
+          "difference_even_minus_odd": 0.002685546875,
+          "shot_noise_se": 0.0105411226593,
+          "shots_per_arm": 4096
+        },
+        "8": {
+          "leak_even": 0.43115234375,
+          "leak_odd": 0.41064453125,
+          "difference_even_minus_odd": 0.0205078125,
+          "shot_noise_se": 0.0109070513723,
+          "shots_per_arm": 4096
+        },
+        "10": {
+          "leak_even": 0.47412109375,
+          "leak_odd": 0.42578125,
+          "difference_even_minus_odd": 0.04833984375,
+          "shot_noise_se": 0.0109800718296,
+          "shots_per_arm": 4096
+        },
+        "12": {
+          "leak_even": 0.461181640625,
+          "leak_odd": 0.453369140625,
+          "difference_even_minus_odd": 0.0078125,
+          "shot_noise_se": 0.0110077952884,
+          "shots_per_arm": 4096
+        }
+      }
+    },
+    {
+      "window": 5,
+      "date": "2026-07-28",
+      "job_ids": [
+        "019fa6fc-5028-7ba1-92c7-7aef6da38bbd",
+        "019fa6fc-513d-7120-8a3c-eaf47599bc48"
+      ],
+      "readout_parity_confusion": {
+        "0011": 0.05419921875,
+        "0001": 0.05517578125,
+        "0000": 0.044921875,
+        "1111": 0.08837890625
+      },
+      "depths": {
+        "4": {
+          "leak_even": 0.299072265625,
+          "leak_odd": 0.26611328125,
+          "difference_even_minus_odd": 0.032958984375,
+          "shot_noise_se": 0.00994276894947,
+          "shots_per_arm": 4096
+        },
+        "8": {
+          "leak_even": 0.387451171875,
+          "leak_odd": 0.349365234375,
+          "difference_even_minus_odd": 0.0380859375,
+          "shot_noise_se": 0.010650726307,
+          "shots_per_arm": 4096
+        },
+        "10": {
+          "leak_even": 0.4033203125,
+          "leak_odd": 0.401611328125,
+          "difference_even_minus_odd": 0.001708984375,
+          "shot_noise_se": 0.0108362806055,
+          "shots_per_arm": 4096
+        },
+        "12": {
+          "leak_even": 0.427001953125,
+          "leak_odd": 0.435546875,
+          "difference_even_minus_odd": -0.008544921875,
+          "shot_noise_se": 0.0109432694586,
+          "shots_per_arm": 4096
+        }
+      }
+    },
+    {
+      "window": 6,
+      "date": "2026-07-28",
+      "job_ids": [
+        "019fa9ca-73eb-7cf1-abf2-6304d3751eac",
+        "019fa9ca-74dd-7b62-9120-5f3fed18afa0"
+      ],
+      "readout_parity_confusion": {
+        "0011": 0.07568359375,
+        "0001": 0.0625,
+        "0000": 0.0458984375,
+        "1111": 0.07421875
+      },
+      "depths": {
+        "4": {
+          "leak_even": 0.331298828125,
+          "leak_odd": 0.2978515625,
+          "difference_even_minus_odd": 0.033447265625,
+          "shot_noise_se": 0.0102540474553,
+          "shots_per_arm": 4096
+        },
+        "8": {
+          "leak_even": 0.42138671875,
+          "leak_odd": 0.36767578125,
+          "difference_even_minus_odd": 0.0537109375,
+          "shot_noise_se": 0.0107836303208,
+          "shots_per_arm": 4096
+        },
+        "10": {
+          "leak_even": 0.432861328125,
+          "leak_odd": 0.41162109375,
+          "difference_even_minus_odd": 0.021240234375,
+          "shot_noise_se": 0.0109115939593,
+          "shots_per_arm": 4096
+        },
+        "12": {
+          "leak_even": 0.446533203125,
+          "leak_odd": 0.428955078125,
+          "difference_even_minus_odd": 0.017578125,
+          "shot_noise_se": 0.0109608447375,
+          "shots_per_arm": 4096
+        }
+      }
+    },
+    {
+      "window": 7,
+      "date": "2026-09-04",
+      "job_ids": [
+        "01a06c65-b706-70a0-ba93-e0f46d62e246",
+        "01a06c65-b958-7953-95f0-ea17f001e67e"
+      ],
+      "readout_parity_confusion": {
+        "0011": 0.056640625,
+        "0001": 0.05712890625,
+        "0000": 0.04345703125,
+        "1111": 0.0703125
+      },
+      "depths": {
+        "4": {
+          "leak_even": 0.3115234375,
+          "leak_odd": 0.2744140625,
+          "difference_even_minus_odd": 0.037109375,
+          "shot_noise_se": 0.0100485584975,
+          "shots_per_arm": 4096
+        },
+        "8": {
+          "leak_even": 0.393798828125,
+          "leak_odd": 0.370849609375,
+          "difference_even_minus_odd": 0.02294921875,
+          "shot_noise_se": 0.0107351992917,
+          "shots_per_arm": 4096
+        },
+        "10": {
+          "leak_even": 0.419677734375,
+          "leak_odd": 0.396240234375,
+          "difference_even_minus_odd": 0.0234375,
+          "shot_noise_se": 0.0108566458428,
+          "shots_per_arm": 4096
+        },
+        "12": {
+          "leak_even": 0.435546875,
+          "leak_odd": 0.424072265625,
+          "difference_even_minus_odd": 0.011474609375,
+          "shot_noise_se": 0.0109384014565,
+          "shots_per_arm": 4096
+        }
+      }
+    },
+    {
+      "window": 8,
+      "date": "2026-09-04",
+      "job_ids": [
+        "01a06c9c-7b48-75a2-ac25-3547ec7fe11a",
+        "01a06c9c-7c33-7fe0-8fe3-915f859570ef"
+      ],
+      "readout_parity_confusion": {
+        "0011": 0.05859375,
+        "0001": 0.0458984375,
+        "0000": 0.04052734375,
+        "1111": 0.0654296875
+      },
+      "depths": {
+        "4": {
+          "leak_even": 0.318115234375,
+          "leak_odd": 0.2998046875,
+          "difference_even_minus_odd": 0.018310546875,
+          "shot_noise_se": 0.0102082774233,
+          "shots_per_arm": 4096
+        },
+        "8": {
+          "leak_even": 0.389404296875,
+          "leak_odd": 0.380615234375,
+          "difference_even_minus_odd": 0.0087890625,
+          "shot_noise_se": 0.0107519514511,
+          "shots_per_arm": 4096
+        },
+        "10": {
+          "leak_even": 0.414306640625,
+          "leak_odd": 0.3857421875,
+          "difference_even_minus_odd": 0.028564453125,
+          "shot_noise_se": 0.0108208263691,
+          "shots_per_arm": 4096
+        },
+        "12": {
+          "leak_even": 0.430419921875,
+          "leak_odd": 0.440673828125,
+          "difference_even_minus_odd": -0.01025390625,
+          "shot_noise_se": 0.0109557773409,
+          "shots_per_arm": 4096
+        }
+      }
+    },
+    {
+      "window": 9,
+      "date": "2026-09-04",
+      "job_ids": [
+        "01a06cb8-65fc-7282-907f-1ddfa0827d1b",
+        "01a06cb8-6700-7570-8893-054c649aa6c2"
+      ],
+      "readout_parity_confusion": {
+        "0011": 0.08154296875,
+        "0001": 0.06884765625,
+        "0000": 0.04736328125,
+        "1111": 0.0771484375
+      },
+      "depths": {
+        "4": {
+          "leak_even": 0.307373046875,
+          "leak_odd": 0.28662109375,
+          "difference_even_minus_odd": 0.020751953125,
+          "shot_noise_se": 0.0100943340981,
+          "shots_per_arm": 4096
+        },
+        "8": {
+          "leak_even": 0.40966796875,
+          "leak_odd": 0.374267578125,
+          "difference_even_minus_odd": 0.035400390625,
+          "shot_noise_se": 0.010780474182,
+          "shots_per_arm": 4096
+        },
+        "10": {
+          "leak_even": 0.4228515625,
+          "leak_odd": 0.4140625,
+          "difference_even_minus_odd": 0.0087890625,
+          "shot_noise_se": 0.0109001915556,
+          "shots_per_arm": 4096
+        },
+        "12": {
+          "leak_even": 0.436279296875,
+          "leak_odd": 0.4375,
+          "difference_even_minus_odd": -0.001220703125,
+          "shot_noise_se": 0.010960170946,
+          "shots_per_arm": 4096
+        }
+      }
+    }
+  ],
+  "batching_disclosure": "each window is one batched pass (mains one job, readout one job); repetitions are execution-order replicates inside the window and the WINDOW is the independent unit (frozen in the preregistration)",
+  "interpretation_boundary": "device-noise statement only: exact statevector baseline fixes noiseless parity leakage at zero; S4 is descriptive, no causal attribution of drift"
+}
