@@ -15,21 +15,28 @@ Gate = tuple[str, list[str]]
 GRADIENT_BACKEND_SOURCE = "src/scpn_quantum_control/phase/gradient_backend.py"
 PROVIDER_GRADIENT_SOURCE = "src/scpn_quantum_control/phase/provider_gradient.py"
 QISKIT_RUNTIME_SOURCE = "src/scpn_quantum_control/phase/qiskit_runtime.py"
+QISKIT_BRIDGE_CONTRACTS_SOURCE = "src/scpn_quantum_control/phase/qiskit_bridge_contracts.py"
 GRADIENT_BACKEND_SOURCES = [
     GRADIENT_BACKEND_SOURCE,
     PROVIDER_GRADIENT_SOURCE,
     QISKIT_RUNTIME_SOURCE,
+    QISKIT_BRIDGE_CONTRACTS_SOURCE,
 ]
 GRADIENT_BACKEND_COVERAGE_COHORT = [
     "tests/test_phase_gradient_backend.py",
     "tests/test_phase_provider_gradient.py",
     "tests/test_phase_provider_gradient_branches.py",
+    "tests/test_phase_qiskit_bridge_contracts.py",
+    "tests/test_phase_qiskit_bridge_contract_edges.py",
+    "tests/test_phase_qiskit_gradients.py",
     "tests/test_phase_qiskit_runtime.py",
 ]
 GRADIENT_BACKEND_TYPING_RATCHET = [
     *GRADIENT_BACKEND_SOURCES,
     "tests/test_phase_provider_gradient.py",
     "tests/test_phase_provider_gradient_branches.py",
+    "tests/test_phase_qiskit_bridge_contracts.py",
+    "tests/test_phase_qiskit_bridge_contract_edges.py",
     "tools/gradient_backend_quality_gates.py",
     "tests/test_gradient_backend_quality_gate.py",
 ]
@@ -38,6 +45,8 @@ GRADIENT_BACKEND_DOCSTRING_RATCHET = [
     "tests/test_phase_gradient_backend.py",
     "tests/test_phase_provider_gradient.py",
     "tests/test_phase_provider_gradient_branches.py",
+    "tests/test_phase_qiskit_bridge_contracts.py",
+    "tests/test_phase_qiskit_bridge_contract_edges.py",
     "tools/gradient_backend_quality_gates.py",
     "tests/test_gradient_backend_quality_gate.py",
 ]
@@ -108,7 +117,7 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 "--precision=2",
                 "--fail-under=100",
                 "--include=*/phase/gradient_backend.py,*/phase/provider_gradient.py,"
-                "*/phase/qiskit_runtime.py",
+                "*/phase/qiskit_runtime.py,*/phase/qiskit_bridge_contracts.py",
             ],
         ),
     ]
@@ -122,6 +131,7 @@ __all__ = [
     "GRADIENT_BACKEND_SOURCES",
     "GRADIENT_BACKEND_TYPING_RATCHET",
     "PROVIDER_GRADIENT_SOURCE",
+    "QISKIT_BRIDGE_CONTRACTS_SOURCE",
     "QISKIT_RUNTIME_SOURCE",
     "build_coverage_gates",
     "build_static_quality_gates",

@@ -317,8 +317,11 @@ jobs:
           src/scpn_quantum_control/phase/gradient_backend.py
           src/scpn_quantum_control/phase/provider_gradient.py
           src/scpn_quantum_control/phase/qiskit_runtime.py
+          src/scpn_quantum_control/phase/qiskit_bridge_contracts.py
           tests/test_phase_provider_gradient.py
           tests/test_phase_provider_gradient_branches.py
+          tests/test_phase_qiskit_bridge_contracts.py
+          tests/test_phase_qiskit_bridge_contract_edges.py
           tools/gradient_backend_quality_gates.py
           tests/test_gradient_backend_quality_gate.py
       - run: >-
@@ -328,9 +331,12 @@ jobs:
           src/scpn_quantum_control/phase/gradient_backend.py
           src/scpn_quantum_control/phase/provider_gradient.py
           src/scpn_quantum_control/phase/qiskit_runtime.py
+          src/scpn_quantum_control/phase/qiskit_bridge_contracts.py
           tests/test_phase_gradient_backend.py
           tests/test_phase_provider_gradient.py
           tests/test_phase_provider_gradient_branches.py
+          tests/test_phase_qiskit_bridge_contracts.py
+          tests/test_phase_qiskit_bridge_contract_edges.py
           tools/gradient_backend_quality_gates.py
           tests/test_gradient_backend_quality_gate.py
       - run: >-
@@ -340,12 +346,15 @@ jobs:
           tests/test_phase_gradient_backend.py
           tests/test_phase_provider_gradient.py
           tests/test_phase_provider_gradient_branches.py
+          tests/test_phase_qiskit_bridge_contracts.py
+          tests/test_phase_qiskit_bridge_contract_edges.py
+          tests/test_phase_qiskit_gradients.py
           tests/test_phase_qiskit_runtime.py
       - run: >-
           python -m coverage report --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-gradient-backend-quality.coverage
           --precision=2 --show-missing --fail-under=100
-          --include=*/phase/gradient_backend.py,*/phase/provider_gradient.py,*/phase/qiskit_runtime.py
+          --include=*/phase/gradient_backend.py,*/phase/provider_gradient.py,*/phase/qiskit_runtime.py,*/phase/qiskit_bridge_contracts.py
   differentiable-exact-modes-quality:
     runs-on: ubuntu-latest
     env:
