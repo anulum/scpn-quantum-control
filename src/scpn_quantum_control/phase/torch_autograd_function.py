@@ -95,7 +95,7 @@ class PhaseTorchAutogradFunctionResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether the bounded local custom-autograd audit passed."""
+        """Whether the bounded local custom-autograd audit passed."""
         return (
             self.route_status("custom_autograd_backward") == "passed"
             and self.route_status("tensor_backward_integration") == "passed"
@@ -106,7 +106,7 @@ class PhaseTorchAutogradFunctionResult:
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return routes that remain blocked or failed."""
+        """Routes that remain blocked or failed."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:
