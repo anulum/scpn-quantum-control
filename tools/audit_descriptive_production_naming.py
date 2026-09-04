@@ -90,6 +90,13 @@ _EXACT_NEGATIVE_FIXTURES: Final[frozenset[str]] = frozenset(
         "tests/test_bench_cli_branches.py",
     }
 )
+_EXACT_NEGATIVE_VALUES: Final[frozenset[tuple[str, str]]] = frozenset(
+    {
+        ("tests/test_binding_spec.py", "ws_0"),
+        ("tests/test_binding_spec.py", "ws_1"),
+        ("tests/test_binding_spec.py", "ws_2"),
+    }
+)
 
 
 @dataclass(frozen=True, order=True)
@@ -284,7 +291,13 @@ def audit_paths(root: Path, relative_paths: Iterable[str]) -> tuple[NamingFindin
         )
         if public_json and path.suffix in {".ipynb", ".json"}:
             findings.update(_json_names(path, relative))
-    return tuple(sorted(findings))
+    return tuple(
+        sorted(
+            finding
+            for finding in findings
+            if (finding.path, finding.value) not in _EXACT_NEGATIVE_VALUES
+        )
+    )
 
 
 def tracked_paths(root: Path) -> tuple[str, ...]:

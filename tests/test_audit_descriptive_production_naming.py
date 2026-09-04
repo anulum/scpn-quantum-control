@@ -173,6 +173,18 @@ def test_letter_suffixed_work_item_code_fails(tmp_path: Path) -> None:
     ]
 
 
+def test_exact_stale_contract_fixture_does_not_hide_other_codes(tmp_path: Path) -> None:
+    """Allow only the exact obsolete values rejected by the binding-spec test."""
+    source = tmp_path / "tests" / "test_binding_spec.py"
+    _write(source, 'STALE = ("ws_0", "ws_1", "ws_2")\nOTHER = "BL-19"\n')
+
+    findings = audit_paths(tmp_path, ("tests/test_binding_spec.py",))
+
+    assert [(finding.kind, finding.value) for finding in findings] == [
+        ("machine-facing string", "BL-19"),
+    ]
+
+
 def test_public_documentation_body_and_json_prose_fail(tmp_path: Path) -> None:
     """Catch internal codes outside headings and identifier-like JSON values."""
     public_doc = "docs/product.md"
