@@ -29,6 +29,13 @@ AMENDMENT = "iqm_dla_window_variability_epoch_amendment_2026-09-04"
 MINIMUM_EPOCHS = 6
 
 
+def _report_status(records: list[dict[str, Any]]) -> str:
+    """Label prospective W1-W7 evidence separately from post-amendment runs."""
+    if records and max(record["window"] for record in records) <= 7:
+        return "post_w7_pre_w8_sensitivity"
+    return "post_amendment_epoch_sensitivity"
+
+
 def _object(path: Path) -> dict[str, Any]:
     """Load one JSON object, rejecting non-object roots."""
     value = json.loads(path.read_text(encoding="utf-8"))
@@ -224,7 +231,7 @@ def main(argv: list[str] | None = None) -> int:
     report = {
         "schema": SCHEMA,
         "amendment": AMENDMENT,
-        "status": "post_w7_pre_w8_sensitivity",
+        "status": _report_status(records),
         "frozen_window_level_reference": {
             "sha256": hashlib.sha256(frozen_path.read_bytes()).hexdigest(),
             "primary_d10_heterogeneity": frozen_report.get("primary_d10_heterogeneity"),

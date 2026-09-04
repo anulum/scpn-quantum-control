@@ -73,6 +73,14 @@ def test_real_w1_w7_reproduces_committed_epoch_sensitivity(tmp_path: Path) -> No
     ]
 
 
+def test_status_advances_after_first_post_amendment_window() -> None:
+    """W8+ reports must not retain the prospective pre-W8 status label."""
+    records = analysis._records(list(COUNTS), list(CALIBRATIONS))
+    assert analysis._report_status(records) == "post_w7_pre_w8_sensitivity"
+    records.append({**records[-1], "window": 8})
+    assert analysis._report_status(records) == "post_amendment_epoch_sensitivity"
+
+
 def test_same_epoch_pools_raw_shots_without_new_degree_of_freedom() -> None:
     """Technical replicates double arm precision but remain one epoch."""
     records = analysis._records(list(COUNTS[:3]), list(CALIBRATIONS[:3]))
