@@ -128,8 +128,8 @@ def test_l16_actions_drive_real_codesign_safety_interlocks() -> None:
         observer_inputs_from_l16("invented")
 
 
-def test_bl67_policy_refuses_unauthorised_and_hardware_execution() -> None:
-    """Allow local simulation but refuse both incomplete and ticketed hardware modes."""
+def test_execution_policy_refuses_unauthorised_and_hardware_execution() -> None:
+    """Allow local simulation but refuse incomplete and hardware-enabled modes."""
     scenario = frozen_l16_scenarios()[0]
     local = run_l16_indicator_scenario(
         scenario,

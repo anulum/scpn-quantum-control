@@ -322,7 +322,7 @@ def test_discovery_agent_requires_policy_after_real_problem_validation() -> None
     assert asyncio.run(enabled.run_discovery_loop()).spec.seed == 0
 
 
-def test_pulse_optimizer_is_disabled_and_bl58_blocked() -> None:
+def test_pulse_optimizer_is_disabled_and_unimplemented() -> None:
     """Neither default nor enabled research policy can execute pulse RL."""
     disabled = RLPulseOptimizer(object(), episodes=1)
     enabled = RLPulseOptimizer(object(), episodes=1, policy=_policy())

@@ -103,7 +103,7 @@ def test_probe_refresh_never_invent_green() -> None:
         probe_refresh("missing")
 
 
-def test_probe_feed_bl56_blocked() -> None:
+def test_scorecard_feed_is_blocked_without_accepted_evidence() -> None:
     """Keep scorecard feeds blocked without accepted evidence packages."""
     feed = probe_feed("pennylane", feed_target="scorecard_acceptance")
     assert feed.allowed is False
@@ -113,7 +113,7 @@ def test_probe_feed_bl56_blocked() -> None:
     assert "refuse invent-green" in feed.reason
 
 
-def test_probe_feed_bl52_pending_pointers() -> None:
+def test_route_matrix_feed_has_pending_pointers() -> None:
     """Expose bounded route pointers without mutating the route matrix."""
     feed = probe_feed("catalyst", feed_target="governed_route_matrix")
     assert feed.allowed is False

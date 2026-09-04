@@ -165,7 +165,7 @@ def test_joss_paper_state_of_the_field_heading_is_permitted() -> None:
     assert not scan_for_self_promotion(text)
 
 
-# Representative barred framing — one per HG1-enumerated failure mode. A guard that
+# Representative barred framing — one per self-promotion failure mode. A guard that
 # never fires is worthless, so each of these must be caught.
 _SELF_PROMOTIONAL_SAMPLES: tuple[str, ...] = (
     "the definitive Kuramoto toolkit for research",  # uniqueness superlative + product
@@ -213,8 +213,8 @@ def test_guard_permits_neutral_and_bounded_language(sample: str) -> None:
     assert not hits, f"the guard over-fired on legitimate language {sample!r}: {hits}"
 
 
-def test_forbidden_pattern_set_covers_the_hg1_enumerated_vocabulary() -> None:
-    """The pattern set must still cover every HG1-enumerated failure mode.
+def test_forbidden_pattern_set_covers_each_self_promotion_failure_mode() -> None:
+    """The pattern set must still cover every self-promotion failure mode.
 
     Guards against the vocabulary being quietly gutted, which would leave a guard
     that passes while enforcing nothing. Each probe is a minimal string that only the
@@ -233,4 +233,4 @@ def test_forbidden_pattern_set_covers_the_hg1_enumerated_vocabulary() -> None:
     uncovered = [
         name for name, probe in coverage_probes.items() if not scan_for_self_promotion(probe)
     ]
-    assert not uncovered, f"HG1-enumerated vocabulary no longer guarded: {uncovered}"
+    assert not uncovered, f"self-promotion vocabulary no longer guarded: {uncovered}"
