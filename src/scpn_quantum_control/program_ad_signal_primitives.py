@@ -34,6 +34,8 @@ from .program_ad_registry import (
     PrimitiveTransformRule,
 )
 
+_SignalPrimitiveName = Literal["convolve", "correlate"]
+
 
 def _is_trace_array(value: object) -> bool:
     """Return whether ``value`` behaves like a whole-program trace array."""
@@ -394,14 +396,12 @@ def _program_ad_signal_direct_jvp(
     )
 
 
-def _program_ad_signal_derivative_rule(name: str) -> CustomDerivativeRule:
-    if name in {"convolve", "correlate"}:
-        return CustomDerivativeRule(
-            name=f"program_ad_signal_{name}_trace_contract",
-            value_fn=_program_ad_signal_direct_value,
-            jvp_rule=_program_ad_signal_direct_jvp,
-        )
-    raise ValueError(f"unsupported program AD signal primitive {name}")
+def _program_ad_signal_derivative_rule(name: _SignalPrimitiveName) -> CustomDerivativeRule:
+    return CustomDerivativeRule(
+        name=f"program_ad_signal_{name}_trace_contract",
+        value_fn=_program_ad_signal_direct_value,
+        jvp_rule=_program_ad_signal_direct_jvp,
+    )
 
 
 def _program_ad_signal_shape_of(name: str, value: object) -> tuple[int, ...]:
@@ -496,13 +496,11 @@ def _program_ad_signal_batching_rule(
     return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
 
 
-def _program_ad_signal_lowering_metadata(name: str) -> Mapping[str, str]:
-    factory_names = {
+def _program_ad_signal_lowering_metadata(name: _SignalPrimitiveName) -> Mapping[str, str]:
+    factory_names: Mapping[_SignalPrimitiveName, str] = {
         "convolve": "program_ad_signal_convolve_derivative_rule",
         "correlate": "program_ad_signal_correlate_derivative_rule",
     }
-    if name not in factory_names:
-        raise ValueError(f"unsupported program AD signal primitive {name}")
     return {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff signal dialect interchange; executable lowering blocked",
@@ -540,12 +538,13 @@ def _register_program_ad_signal_primitive_contracts() -> None:
     for name, identity in _PROGRAM_AD_SIGNAL_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
             continue
+        signal_name = cast(_SignalPrimitiveName, name)
         DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
             PrimitiveTransformRule(
                 identity=identity,
-                derivative_rule=_program_ad_signal_derivative_rule(name),
+                derivative_rule=_program_ad_signal_derivative_rule(signal_name),
                 batching_rule=_program_ad_signal_batching_rule,
-                lowering_metadata=_program_ad_signal_lowering_metadata(name),
+                lowering_metadata=_program_ad_signal_lowering_metadata(signal_name),
                 shape_rule=_PROGRAM_AD_SIGNAL_SHAPE_RULES[name],
                 dtype_rule=_program_ad_signal_convolve_dtype_rule,
                 static_argument_rule=_PROGRAM_AD_SIGNAL_STATIC_ARGUMENT_RULES[name],
@@ -560,20 +559,12 @@ def _validate_program_ad_signal_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate signal primitive dispatch helpers against concrete arguments."""
-    if contract.static_argument_rule is None:
-        raise ValueError(
-            f"program AD primitive {contract.identity.key} missing static argument rule"
-        )
-    if contract.shape_rule is None:
-        raise ValueError(f"program AD primitive {contract.identity.key} missing shape rule")
-    if contract.dtype_rule is None:
-        raise ValueError(f"program AD primitive {contract.identity.key} missing dtype rule")
-    static_arguments = contract.static_argument_rule(args)
+    static_arguments = cast(PrimitiveStaticArgumentRule, contract.static_argument_rule)(args)
     if not isinstance(static_arguments, tuple):
         raise ValueError(
             f"program AD primitive {contract.identity.key} static rule must return a tuple"
         )
-    shape = contract.shape_rule(args)
+    shape = cast(PrimitiveShapeRule, contract.shape_rule)(args)
     if not isinstance(shape, tuple) or any(
         not isinstance(dimension, int) or dimension < 0 for dimension in shape
     ):
@@ -581,7 +572,7 @@ def _validate_program_ad_signal_contract_dispatch(
             f"program AD primitive {contract.identity.key} shape rule must return "
             "non-negative integer dimensions"
         )
-    dtype = contract.dtype_rule(args)
+    dtype = cast(Callable[[tuple[object, ...]], str], contract.dtype_rule)(args)
     if not isinstance(dtype, str) or not dtype:
         raise ValueError(
             f"program AD primitive {contract.identity.key} dtype rule must return a dtype name"

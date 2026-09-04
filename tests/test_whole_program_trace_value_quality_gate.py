@@ -57,6 +57,7 @@ def test_coverage_gate_reuses_execution_and_covers_program_ad_exactly() -> None:
     assert any("*/program_ad_cumulative_primitives.py" in argument for argument in report)
     assert any("*/program_ad_effect_ir.py" in argument for argument in report)
     assert any("*/program_ad_selection_primitives.py" in argument for argument in report)
+    assert any("*/program_ad_signal_primitives.py" in argument for argument in report)
 
 
 def test_preflight_reexports_helper_defined_gates() -> None:

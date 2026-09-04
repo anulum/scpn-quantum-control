@@ -18,6 +18,7 @@ PROGRAM_AD_REDUCTION_SOURCE = "src/scpn_quantum_control/program_ad_reduction_pri
 PROGRAM_AD_CUMULATIVE_SOURCE = "src/scpn_quantum_control/program_ad_cumulative_primitives.py"
 PROGRAM_AD_EFFECT_IR_SOURCE = "src/scpn_quantum_control/program_ad_effect_ir.py"
 PROGRAM_AD_SELECTION_SOURCE = "src/scpn_quantum_control/program_ad_selection_primitives.py"
+PROGRAM_AD_SIGNAL_SOURCE = "src/scpn_quantum_control/program_ad_signal_primitives.py"
 PROGRAM_AD_LINALG_SPECTRAL_TEST = "tests/test_program_ad_linalg_spectral.py"
 PROGRAM_AD_LINALG_EXACT_CONTRACTS_TEST = "tests/test_program_ad_linalg_exact_contracts.py"
 PROGRAM_AD_PRODUCT_TEST = "tests/test_program_ad_product_contractions.py"
@@ -29,6 +30,8 @@ PROGRAM_AD_EFFECT_IR_TEST = "tests/test_program_ad_effect_ir.py"
 PROGRAM_AD_SELECTION_DIRECT_TEST = "tests/test_program_ad_selection_direct_rules.py"
 PROGRAM_AD_SELECTION_REGISTRY_TEST = "tests/test_program_ad_selection_registry.py"
 PROGRAM_AD_SELECTION_DOCSTRING_TEST = "tests/test_program_ad_selection_primitives_docstrings.py"
+PROGRAM_AD_SIGNAL_TEST = "tests/test_program_ad_signal_primitives.py"
+PROGRAM_AD_SIGNAL_EDGE_TEST = "tests/test_program_ad_signal_primitives_edges.py"
 WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = [
     "src/scpn_quantum_control/whole_program_trace_values.py",
     "src/scpn_quantum_control/whole_program_trace_predicates.py",
@@ -38,6 +41,7 @@ WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = [
     PROGRAM_AD_CUMULATIVE_SOURCE,
     PROGRAM_AD_EFFECT_IR_SOURCE,
     PROGRAM_AD_SELECTION_SOURCE,
+    PROGRAM_AD_SIGNAL_SOURCE,
     "tests/test_whole_program_trace_predicates.py",
     "tests/test_whole_program_trace_values.py",
     "tests/test_whole_program_trace_value_operators.py",
@@ -56,6 +60,7 @@ WHOLE_PROGRAM_TRACE_VALUE_QUALITY_RATCHET = [
     PROGRAM_AD_SELECTION_DIRECT_TEST,
     PROGRAM_AD_SELECTION_REGISTRY_TEST,
     PROGRAM_AD_SELECTION_DOCSTRING_TEST,
+    PROGRAM_AD_SIGNAL_EDGE_TEST,
     "tools/whole_program_trace_value_quality_gates.py",
     "tests/test_whole_program_trace_value_quality_gate.py",
 ]
@@ -95,7 +100,8 @@ WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT = [
     PROGRAM_AD_SELECTION_DOCSTRING_TEST,
     PROGRAM_AD_SELECTION_REGISTRY_TEST,
     "tests/test_program_ad_shape_transforms.py",
-    "tests/test_program_ad_signal_primitives.py",
+    PROGRAM_AD_SIGNAL_TEST,
+    PROGRAM_AD_SIGNAL_EDGE_TEST,
     "tests/test_program_ad_split_assembly.py",
     "tests/test_program_ad_stack_block_assembly.py",
     "tests/test_program_ad_static_array_assembly.py",
@@ -126,7 +132,8 @@ WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_INCLUDE = (
     "*/whole_program_trace_values.py,*/whole_program_trace_predicates.py,"
     "*/program_ad_linalg_primitives.py,*/program_ad_product_primitives.py,"
     "*/program_ad_reduction_primitives.py,*/program_ad_cumulative_primitives.py,"
-    "*/program_ad_effect_ir.py,*/program_ad_selection_primitives.py"
+    "*/program_ad_effect_ir.py,*/program_ad_selection_primitives.py,"
+    "*/program_ad_signal_primitives.py"
 )
 
 
@@ -226,6 +233,9 @@ __all__ = [
     "PROGRAM_AD_SELECTION_DIRECT_TEST",
     "PROGRAM_AD_SELECTION_REGISTRY_TEST",
     "PROGRAM_AD_SELECTION_DOCSTRING_TEST",
+    "PROGRAM_AD_SIGNAL_SOURCE",
+    "PROGRAM_AD_SIGNAL_TEST",
+    "PROGRAM_AD_SIGNAL_EDGE_TEST",
     "WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_COHORT",
     "WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_DATA_FILE",
     "WHOLE_PROGRAM_TRACE_VALUE_COVERAGE_INCLUDE",
