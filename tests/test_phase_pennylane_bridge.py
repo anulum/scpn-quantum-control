@@ -43,6 +43,7 @@ FloatArray = NDArray[np.float64]
 
 
 def test_pennylane_bridge_reports_gradient_agreement(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Report exact agreement with a caller-supplied PennyLane gradient."""
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
 
     result = check_pennylane_parameter_shift_agreement(
@@ -61,6 +62,7 @@ def test_pennylane_bridge_reports_gradient_agreement(monkeypatch: pytest.MonkeyP
 
 
 def test_pennylane_bridge_reports_gradient_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Report a caller-supplied PennyLane gradient mismatch."""
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
 
     def shifted_gradient(values: FloatArray) -> FloatArray:
@@ -81,6 +83,7 @@ def test_pennylane_bridge_reports_gradient_mismatch(monkeypatch: pytest.MonkeyPa
 def test_pennylane_bridge_reports_multi_frequency_gradient_agreement(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Preserve multi-frequency gradient rule metadata and agreement."""
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
 
@@ -108,6 +111,7 @@ def test_pennylane_bridge_reports_multi_frequency_gradient_agreement(
 
 
 def test_pennylane_bridge_reports_qnode_round_trip(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Report exact value and gradient agreement for a caller-supplied QNode."""
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
 
     result = check_pennylane_qnode_round_trip(
@@ -133,6 +137,7 @@ def test_pennylane_bridge_reports_qnode_round_trip(monkeypatch: pytest.MonkeyPat
 def test_pennylane_bridge_reports_multi_frequency_qnode_round_trip(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Preserve multi-frequency rule metadata through the QNode round trip."""
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
 
@@ -162,6 +167,7 @@ def test_pennylane_bridge_reports_multi_frequency_qnode_round_trip(
 def test_pennylane_bridge_builds_phase_qnode_conversion_and_round_trips(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Build and execute the registered Phase-QNode conversion surface."""
     fake_qml = _FakePennyLane()
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
     circuit = PhaseQNodeCircuit(
@@ -207,6 +213,7 @@ def test_pennylane_bridge_builds_phase_qnode_conversion_and_round_trips(
 def test_pennylane_bridge_canonicalises_conversion_metadata_before_dispatch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Canonicalise supported conversion metadata before device dispatch."""
     fake_qml = _FakePennyLane()
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
     circuit = PhaseQNodeCircuit(
@@ -249,6 +256,7 @@ def test_pennylane_bridge_rejects_unsafe_conversion_metadata(
     interface: str,
     diff_method: str,
 ) -> None:
+    """Reject unsafe conversion metadata before device dispatch."""
     fake_qml = _FakePennyLane()
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
     circuit = PhaseQNodeCircuit(
@@ -274,7 +282,6 @@ def test_pennylane_bridge_rejects_undocumented_conversion_interfaces(
     interface: str,
 ) -> None:
     """Generated-QNode conversion accepts only documented PennyLane interfaces."""
-
     fake_qml = _FakePennyLane()
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
     circuit = PhaseQNodeCircuit(
@@ -295,7 +302,6 @@ def test_pennylane_bridge_rejects_undocumented_conversion_diff_methods(
     diff_method: str,
 ) -> None:
     """Generated-QNode conversion accepts only documented PennyLane diff methods."""
-
     fake_qml = _FakePennyLane()
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
     circuit = PhaseQNodeCircuit(
@@ -318,7 +324,6 @@ def test_pennylane_bridge_rejects_non_integer_shots_before_device_dispatch(
     shots: Any,
 ) -> None:
     """Finite-shot conversion metadata must be an explicit positive integer."""
-
     fake_qml = _FakePennyLane()
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
     circuit = PhaseQNodeCircuit(
@@ -336,6 +341,7 @@ def test_pennylane_bridge_rejects_non_integer_shots_before_device_dispatch(
 def test_pennylane_bridge_converts_dense_hermitian_observable(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Convert a dense Hermitian observable through the public bridge."""
     fake_qml = _FakePennyLane()
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
     circuit = PhaseQNodeCircuit(
@@ -359,6 +365,7 @@ def test_pennylane_bridge_converts_dense_hermitian_observable(
 def test_pennylane_bridge_fails_closed_for_covariance_conversion(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Reject unsupported covariance conversion before QNode construction."""
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: _FakePennyLane())
     circuit = PhaseQNodeCircuit(
         1,
@@ -376,6 +383,7 @@ def test_pennylane_bridge_fails_closed_for_covariance_conversion(
 def test_pennylane_bridge_reports_qnode_round_trip_mismatch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Report a caller-supplied QNode value mismatch."""
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
 
     def shifted_objective(values: FloatArray) -> float:
@@ -398,6 +406,7 @@ def test_pennylane_bridge_reports_qnode_round_trip_mismatch(
 def test_pennylane_bridge_round_trip_rejects_bad_values(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Reject non-finite values returned by a caller-supplied QNode."""
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
 
     def non_finite_objective(values: FloatArray) -> float:
@@ -415,6 +424,8 @@ def test_pennylane_bridge_round_trip_rejects_bad_values(
 def test_pennylane_bridge_fails_closed_when_pennylane_missing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Fail closed when the optional PennyLane runtime is unavailable."""
+
     def unavailable() -> None:
         raise ImportError("blocked")
 
