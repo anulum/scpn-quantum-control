@@ -633,6 +633,7 @@ jobs:
           tests/test_mlir_native_compilation_integration.py
           tests/test_mlir_scalar_native_compilation_integration.py
           tests/test_mlir_vector_native_compilation_integration.py
+          tests/test_mlir_vector_native_compilation_validation.py
           tests/test_mlir_matrix_native_compilation_integration.py
           tests/test_mlir_matrix_native_compilation_validation.py
           tests/test_mlir_matrix_2x2_native_compilation_integration.py
@@ -645,7 +646,7 @@ jobs:
           --data-file=.coverage.mlir-leaf-quality
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/mlir_enzyme_audit.py,*/mlir_enzyme_evidence.py,*/mlir_executable_kernel.py,*/mlir_matrix_2x2_native_compilation.py,*/mlir_matrix_native_compilation.py,*/mlir_phase_qnode_runtime.py,*/mlir_transform_plan_assembly.py,*/mlir_workload_compilation.py
+          --include=*/mlir_enzyme_audit.py,*/mlir_enzyme_evidence.py,*/mlir_executable_kernel.py,*/mlir_matrix_2x2_native_compilation.py,*/mlir_matrix_native_compilation.py,*/mlir_phase_qnode_runtime.py,*/mlir_transform_plan_assembly.py,*/mlir_vector_native_compilation.py,*/mlir_workload_compilation.py
   phase-qnode-affinity-quality:
     runs-on: ubuntu-latest
     env:

@@ -234,6 +234,7 @@ jobs:
           src/scpn_quantum_control/compiler/mlir_matrix_native_compilation.py
           src/scpn_quantum_control/compiler/mlir_phase_qnode_runtime.py
           src/scpn_quantum_control/compiler/mlir_transform_plan_assembly.py
+          src/scpn_quantum_control/compiler/mlir_vector_native_compilation.py
           src/scpn_quantum_control/compiler/mlir_workload_compilation.py
           tests/_mlir_native_compilation_test_helpers.py
           tests/test_mlir_enzyme_audit.py
@@ -250,6 +251,7 @@ jobs:
           tests/test_mlir_native_compilation_integration.py
           tests/test_mlir_scalar_native_compilation_integration.py
           tests/test_mlir_vector_native_compilation_integration.py
+          tests/test_mlir_vector_native_compilation_validation.py
           tests/test_mlir_matrix_native_compilation_integration.py
           tests/test_mlir_matrix_native_compilation_validation.py
           tests/test_mlir_matrix_2x2_native_compilation_integration.py
@@ -266,6 +268,7 @@ jobs:
           src/scpn_quantum_control/compiler/mlir_matrix_native_compilation.py
           src/scpn_quantum_control/compiler/mlir_phase_qnode_runtime.py
           src/scpn_quantum_control/compiler/mlir_transform_plan_assembly.py
+          src/scpn_quantum_control/compiler/mlir_vector_native_compilation.py
           src/scpn_quantum_control/compiler/mlir_workload_compilation.py
           tests/_mlir_native_compilation_test_helpers.py
           tests/test_mlir_enzyme_audit.py
@@ -282,6 +285,7 @@ jobs:
           tests/test_mlir_native_compilation_integration.py
           tests/test_mlir_scalar_native_compilation_integration.py
           tests/test_mlir_vector_native_compilation_integration.py
+          tests/test_mlir_vector_native_compilation_validation.py
           tests/test_mlir_matrix_native_compilation_integration.py
           tests/test_mlir_matrix_native_compilation_validation.py
           tests/test_mlir_matrix_2x2_native_compilation_integration.py
