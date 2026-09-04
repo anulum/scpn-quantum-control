@@ -12,7 +12,8 @@ from __future__ import annotations
 
 import json
 import math
-from typing import Any
+from collections.abc import Callable
+from typing import Any, cast
 
 import numpy as np
 import pytest
@@ -35,7 +36,6 @@ from scpn_quantum_control.differentiable import (
 
 def test_program_ad_effect_ir_exports_stable_facade_identities() -> None:
     """Program AD effect-IR records should share identities across public surfaces."""
-
     assert ProgramADSSAValue is effect_ir_module.ProgramADSSAValue
     assert ProgramADEffect is effect_ir_module.ProgramADEffect
     assert ProgramADAliasEdge is effect_ir_module.ProgramADAliasEdge
@@ -132,7 +132,6 @@ def test_program_ad_effect_ir_serialization_round_trips_metadata() -> None:
 
 def test_program_ad_effect_ir_parser_fails_closed_on_malformed_payloads() -> None:
     """Program AD effect IR parsing should reject unsupported or malformed metadata."""
-
     valid: dict[str, Any] = {
         "format": "program_ad_effect_ir.v1",
         "ssa_values": [
@@ -211,7 +210,6 @@ def test_program_ad_effect_ir_parser_fails_closed_on_malformed_payloads() -> Non
 
 def test_program_ad_effect_ir_validation_paths() -> None:
     """Program AD IR dataclasses should fail closed on malformed compiler metadata."""
-
     value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
     effect = ProgramADEffect(
         index=0,
@@ -274,3 +272,107 @@ def test_program_ad_effect_ir_validation_paths() -> None:
             control_regions=(region,),
             serialization="",
         )
+
+
+def test_program_ad_effect_ir_rejects_every_record_contract_edge() -> None:
+    """Reject each malformed public record field with its specific contract."""
+    value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
+    effect = ProgramADEffect(0, "pure", "%0", ("theta",), 0, 0)
+    edge = ProgramADAliasEdge("alias", "%0", "source_alias", 0)
+    region = ProgramADControlRegion(0, "runtime_branch", "%0:gt:0", True, 1)
+    phi = ProgramADPhiNode(0, "phi:0", ("true", "false"), 0, "true", 1)
+
+    cases: tuple[tuple[Callable[[], object], str], ...] = (
+        (lambda: ProgramADSSAValue("%0", -1, 0, (), "float64"), "producer"),
+        (lambda: ProgramADSSAValue("%0", 0, -1, (), "float64"), "version"),
+        (lambda: ProgramADSSAValue("%0", 0, 0, (-1,), "float64"), "shape"),
+        (lambda: ProgramADSSAValue("%0", 0, 0, (), ""), "dtype"),
+        (lambda: ProgramADSSAValue("%0", 0, 0, (), "float64", -1), "effect"),
+        (lambda: ProgramADEffect(-1, "pure", "%0", (), 0, 0), "index"),
+        (lambda: ProgramADEffect(0, "pure", "", (), 0, 0), "target"),
+        (lambda: ProgramADEffect(0, "pure", "%0", ("",), 0, 0), "inputs"),
+        (lambda: ProgramADEffect(0, "pure", "%0", (), -1, 0), "version"),
+        (lambda: ProgramADEffect(0, "pure", "%0", (), 0, -1), "ordering"),
+        (lambda: ProgramADEffect(0, "pure", "%0", (), 0, 0, ""), "operation"),
+        (lambda: ProgramADAliasEdge("alias", "", "source_alias", 0), "target"),
+        (lambda: ProgramADAliasEdge("alias", "%0", "", 0), "kind"),
+        (lambda: ProgramADAliasEdge("alias", "%0", "source_alias", -1), "version"),
+        (lambda: ProgramADPhiNode(-1, "phi:0", ("a", "b"), None, None, None), "index"),
+        (lambda: ProgramADPhiNode(0, "", ("a", "b"), None, None, None), "target"),
+        (lambda: ProgramADPhiNode(0, "phi:0", ("a", ""), None, None, None), "incoming"),
+        (lambda: ProgramADPhiNode(0, "phi:0", ("a", "b"), -1, None, None), "control_region"),
+        (lambda: ProgramADPhiNode(0, "phi:0", ("a", "b"), None, "", None), "selected"),
+        (lambda: ProgramADPhiNode(0, "phi:0", ("a", "b"), None, None, 0), "source_line"),
+        (lambda: ProgramADControlRegion(-1, "runtime_branch", None, True, None), "index"),
+        (lambda: ProgramADControlRegion(0, "runtime_branch", "", True, None), "predicate"),
+        (
+            lambda: ProgramADControlRegion(0, "runtime_branch", None, cast(Any, "yes"), None),
+            "entered",
+        ),
+        (lambda: ProgramADControlRegion(0, "runtime_branch", None, True, 0), "source_line"),
+        (
+            lambda: ProgramADEffectIR(cast(Any, (object(),)), (), (), (), "v1"),
+            "ssa_values",
+        ),
+        (
+            lambda: ProgramADEffectIR((value,), cast(Any, (object(),)), (), (), "v1"),
+            "effects",
+        ),
+        (
+            lambda: ProgramADEffectIR((value,), (effect,), cast(Any, (object(),)), (), "v1"),
+            "alias_edges",
+        ),
+        (
+            lambda: ProgramADEffectIR((value,), (effect,), (edge,), cast(Any, (object(),)), "v1"),
+            "control_regions",
+        ),
+        (
+            lambda: ProgramADEffectIR(
+                (value,), (effect,), (edge,), (region,), "v1", cast(Any, (object(),))
+            ),
+            "phi_nodes",
+        ),
+    )
+
+    for factory, match in cases:
+        with pytest.raises(ValueError, match=match):
+            factory()
+
+    assert phi.target == "phi:0"
+
+
+def test_program_ad_effect_ir_parser_rejects_remaining_shape_and_type_edges() -> None:
+    """Exercise parser row, optional field, string, shape and offset refusals."""
+    base: dict[str, Any] = {
+        "format": "program_ad_effect_ir.v1",
+        "ssa_values": [],
+        "effects": [],
+        "alias_edges": [],
+        "control_regions": [],
+        "phi_nodes": [],
+        "bytecode_offsets": [0],
+    }
+    ssa = {
+        "name": "%0",
+        "producer": 0,
+        "version": 0,
+        "shape": [],
+        "dtype": "float64",
+        "effect": 0,
+    }
+    malformed: tuple[tuple[dict[str, Any], str], ...] = (
+        ({**base, "alias_edges": [0]}, "entries must be objects"),
+        ({**base, "ssa_values": [{**ssa, "producer": True}]}, "integer or null"),
+        ({**base, "ssa_values": [{**ssa, "name": 0}]}, "must be a string"),
+        ({**base, "ssa_values": [{**ssa, "shape": {}}]}, "shape must be a list"),
+        ({**base, "bytecode_offsets": {}}, "bytecode_offsets must be a list"),
+    )
+
+    for payload, match in malformed:
+        with pytest.raises(ValueError, match=match):
+            parse_program_ad_effect_ir(json.dumps(payload))
+
+    without_offsets = parse_program_ad_effect_ir(
+        json.dumps({key: value for key, value in base.items() if key != "bytecode_offsets"})
+    )
+    assert without_offsets.ssa_values == ()

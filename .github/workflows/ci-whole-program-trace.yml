@@ -225,7 +225,7 @@ jobs:
           --data-file=.coverage.whole-program-trace-values
           --precision=2 --show-missing
           --fail-under=100
-          --include=*/whole_program_trace_values.py,*/whole_program_trace_predicates.py,*/program_ad_linalg_primitives.py,*/program_ad_product_primitives.py,*/program_ad_reduction_primitives.py,*/program_ad_cumulative_primitives.py,*/program_ad_selection_primitives.py
+          --include=*/whole_program_trace_values.py,*/whole_program_trace_predicates.py,*/program_ad_linalg_primitives.py,*/program_ad_product_primitives.py,*/program_ad_reduction_primitives.py,*/program_ad_cumulative_primitives.py,*/program_ad_effect_ir.py,*/program_ad_selection_primitives.py
       - name: Enforce Program-AD alias-contract exact coverage
         run: >-
           python -m coverage report
