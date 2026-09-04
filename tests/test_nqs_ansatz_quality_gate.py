@@ -32,10 +32,14 @@ def test_coverage_gate_is_isolated_connected_and_exact() -> None:
     run = gates["NQS-ansatz focused coverage"]
     report = gates["NQS-ansatz exact coverage threshold"]
     assert "--branch" in run
-    assert run[-1:] == quality_gates.NQS_ANSATZ_COVERAGE_COHORT
+    assert run[-len(quality_gates.NQS_ANSATZ_COVERAGE_COHORT) :] == (
+        quality_gates.NQS_ANSATZ_COVERAGE_COHORT
+    )
     assert any(argument.startswith("--data-file=/tmp/") for argument in run)
     assert "--fail-under=100" in report
-    assert "--include=*/phase/nqs_ansatz.py" in report
+    assert "--include=*/phase/nqs_ansatz.py,*/jax_nqs_baseline_product.py" in report
+    assert quality_gates.JAX_NQS_BASELINE_PRODUCT_SOURCE in quality_gates.NQS_ANSATZ_TYPING_RATCHET
+    assert quality_gates.JAX_NQS_BASELINE_PRODUCT_TEST in quality_gates.NQS_ANSATZ_COVERAGE_COHORT
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
@@ -60,4 +64,5 @@ def test_ci_runs_and_aggregates_nqs_ansatz_gate() -> None:
         assert path in block
     assert "--fail-under=100" in block
     assert "phase/nqs_ansatz.py" in block
+    assert "jax_nqs_baseline_product.py" in block
     assert "nqs-ansatz-quality" in workflow[workflow.index("  ci-gate:") :]

@@ -18,6 +18,7 @@ from typing import Any, cast
 import numpy as np
 import pytest
 
+import scpn_quantum_control.jax_nqs_baseline_product as jax_nqs_product
 from scpn_quantum_control.advantage_language_protocol import issue_no_advantage_certificate
 from scpn_quantum_control.jax_nqs_baseline_product import (
     JAX_NQS_BASELINE_CLAIM_BOUNDARY,
@@ -69,6 +70,7 @@ def _comparison() -> JAXNQSComparison:
 
 
 def test_spec_from_arrays_copies_and_defaults_hidden_count() -> None:
+    """Copy caller arrays and derive the default hidden-unit count."""
     coupling = np.array(((0.0, 0.4), (0.4, 0.0)))
     omega = np.array((-0.1, 0.1))
     spec = JAXNQSBaselineSpec.from_arrays(coupling, omega)
@@ -83,6 +85,7 @@ def test_spec_from_arrays_copies_and_defaults_hidden_count() -> None:
 
 
 def test_spec_from_arrays_rejects_wrong_ranks() -> None:
+    """Reject coupling and field arrays with invalid ranks."""
     with pytest.raises(ValueError, match="rank-2"):
         JAXNQSBaselineSpec.from_arrays(np.array((0.0, 1.0)), np.array((0.0, 1.0)))
     with pytest.raises(ValueError, match="rank-1"):
@@ -126,11 +129,13 @@ def test_spec_from_arrays_rejects_wrong_ranks() -> None:
     ),
 )
 def test_spec_rejects_invalid_requests(changes: dict[str, object], message: str) -> None:
+    """Reject malformed, non-finite, or out-of-bound baseline requests."""
     with pytest.raises(ValueError, match=message):
         _spec(**changes)
 
 
 def test_public_bounds_are_explicit() -> None:
+    """Expose the bounded system-size claim and diagonal convention."""
     assert JAX_NQS_BASELINE_MIN_QUBITS == 2
     assert JAX_NQS_BASELINE_MAX_QUBITS == 6
     assert "2 <= N <= 6" in JAX_NQS_BASELINE_CLAIM_BOUNDARY
@@ -153,12 +158,14 @@ def test_public_bounds_are_explicit() -> None:
 def test_comparison_rejects_inconsistent_evidence(
     changes: dict[str, object], message: str
 ) -> None:
+    """Reject inconsistent energy, configuration, and history evidence."""
     dynamic_replace = cast(Any, replace)
     with pytest.raises(ValueError, match=message):
         dynamic_replace(_comparison(), **changes)
 
 
 def test_environment_requires_complete_public_provenance() -> None:
+    """Require complete JAX runtime and numerical-posture provenance."""
     environment = JAXNQSEnvironment("0.6.2", "cpu", ("CPU",), False)
     assert environment.to_dict()["numeric_posture"] == "default_float32"
     assert (
@@ -173,6 +180,7 @@ def test_environment_requires_complete_public_provenance() -> None:
 
 @pytest.mark.skipif(not is_jax_available(), reason="optional JAX runtime not installed")
 def test_real_jax_baseline_binds_exact_reference_and_claim_boundary(tmp_path: Path) -> None:
+    """Bind real JAX execution to exact-reference and no-advantage evidence."""
     product = run_jax_nqs_baseline(_spec())
 
     assert product.schema == JAX_NQS_BASELINE_PRODUCT_SCHEMA
@@ -201,7 +209,47 @@ def test_real_jax_baseline_binds_exact_reference_and_claim_boundary(tmp_path: Pa
         replace(product, evidence_sha256="0" * 64)
 
 
+def test_jax_baseline_refuses_missing_optional_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Require the public product runner to fail closed without JAX."""
+    monkeypatch.setattr(jax_nqs_product, "is_jax_available", lambda: False)
+
+    with pytest.raises(ImportError, match="optional JAX runtime"):
+        run_jax_nqs_baseline(_spec(n_iterations=1))
+
+
+def test_jax_baseline_rejects_malformed_ambient_results(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Reject ambient result lengths and parameter counts that violate the public contract."""
+    spec = _spec(n_iterations=1)
+    monkeypatch.setattr(jax_nqs_product, "is_jax_available", lambda: True)
+    monkeypatch.setattr(
+        jax_nqs_product,
+        "jax_vmc_ground_state",
+        lambda *_args, **_kwargs: {
+            "energy_history": (-1.0,),
+            "energy": -1.0,
+            "n_params": 14,
+        },
+    )
+    with pytest.raises(RuntimeError, match="energy-history length"):
+        run_jax_nqs_baseline(spec)
+
+    monkeypatch.setattr(
+        jax_nqs_product,
+        "jax_vmc_ground_state",
+        lambda *_args, **_kwargs: {
+            "energy_history": (-1.0, -1.1),
+            "energy": -1.1,
+            "n_params": 13,
+        },
+    )
+    with pytest.raises(RuntimeError, match="parameter count"):
+        run_jax_nqs_baseline(spec)
+
+
 def test_product_rejects_promoted_or_malformed_posture() -> None:
+    """Reject schema, claim, support, execution, and digest promotion."""
     environment = JAXNQSEnvironment("0.6.2", "cpu", ("CPU",), False)
     no_advantage = issue_no_advantage_certificate(context="JAX NQS exact-reference baseline")
     payload = {

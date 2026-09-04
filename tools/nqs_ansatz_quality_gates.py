@@ -13,9 +13,12 @@ from os import devnull
 
 Gate = tuple[str, list[str]]
 NQS_ANSATZ_SOURCE = "src/scpn_quantum_control/phase/nqs_ansatz.py"
-NQS_ANSATZ_COVERAGE_COHORT = ["tests/test_nqs_ansatz.py"]
+JAX_NQS_BASELINE_PRODUCT_SOURCE = "src/scpn_quantum_control/jax_nqs_baseline_product.py"
+JAX_NQS_BASELINE_PRODUCT_TEST = "tests/test_jax_nqs_baseline_product.py"
+NQS_ANSATZ_COVERAGE_COHORT = ["tests/test_nqs_ansatz.py", JAX_NQS_BASELINE_PRODUCT_TEST]
 NQS_ANSATZ_TYPING_RATCHET = [
     NQS_ANSATZ_SOURCE,
+    JAX_NQS_BASELINE_PRODUCT_SOURCE,
     *NQS_ANSATZ_COVERAGE_COHORT,
     "tools/nqs_ansatz_quality_gates.py",
     "tests/test_nqs_ansatz_quality_gate.py",
@@ -87,13 +90,15 @@ def build_coverage_gates(python: str) -> list[Gate]:
                 f"--data-file={NQS_ANSATZ_COVERAGE_DATA_FILE}",
                 "--precision=2",
                 "--fail-under=100",
-                "--include=*/phase/nqs_ansatz.py",
+                "--include=*/phase/nqs_ansatz.py,*/jax_nqs_baseline_product.py",
             ],
         ),
     ]
 
 
 __all__ = [
+    "JAX_NQS_BASELINE_PRODUCT_SOURCE",
+    "JAX_NQS_BASELINE_PRODUCT_TEST",
     "NQS_ANSATZ_COVERAGE_COHORT",
     "NQS_ANSATZ_COVERAGE_DATA_FILE",
     "NQS_ANSATZ_DOCSTRING_RATCHET",
