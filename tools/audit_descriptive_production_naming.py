@@ -129,6 +129,8 @@ def _docstring_nodes(tree: ast.AST) -> set[int]:
 def _python_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
     """Yield task-coded Python identifiers, docs, comments, and runtime strings."""
     text = path.read_text(encoding="utf-8")
+    if not _TASK_CODE.search(text):
+        return
     tree = ast.parse(text, filename=display_path)
     lines = text.splitlines()
     if len(lines) >= 7 and _TASK_CODE.search(lines[6]):
