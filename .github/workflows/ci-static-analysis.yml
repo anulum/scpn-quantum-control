@@ -230,6 +230,7 @@ jobs:
           src/scpn_quantum_control/compiler/mlir_enzyme_audit.py
           src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py
           src/scpn_quantum_control/compiler/mlir_executable_kernel.py
+          src/scpn_quantum_control/compiler/mlir_matrix_2x2_native_compilation.py
           src/scpn_quantum_control/compiler/mlir_matrix_native_compilation.py
           src/scpn_quantum_control/compiler/mlir_phase_qnode_runtime.py
           src/scpn_quantum_control/compiler/mlir_transform_plan_assembly.py
@@ -252,6 +253,7 @@ jobs:
           tests/test_mlir_matrix_native_compilation_integration.py
           tests/test_mlir_matrix_native_compilation_validation.py
           tests/test_mlir_matrix_2x2_native_compilation_integration.py
+          tests/test_mlir_matrix_2x2_native_compilation_validation.py
           tests/test_mlir_symmetric_native_compilation_integration.py
       - name: Ruff NumPy docstrings for MLIR leaf quality cohort
         run: >-
@@ -260,6 +262,7 @@ jobs:
           src/scpn_quantum_control/compiler/mlir_enzyme_audit.py
           src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py
           src/scpn_quantum_control/compiler/mlir_executable_kernel.py
+          src/scpn_quantum_control/compiler/mlir_matrix_2x2_native_compilation.py
           src/scpn_quantum_control/compiler/mlir_matrix_native_compilation.py
           src/scpn_quantum_control/compiler/mlir_phase_qnode_runtime.py
           src/scpn_quantum_control/compiler/mlir_transform_plan_assembly.py
@@ -282,6 +285,7 @@ jobs:
           tests/test_mlir_matrix_native_compilation_integration.py
           tests/test_mlir_matrix_native_compilation_validation.py
           tests/test_mlir_matrix_2x2_native_compilation_integration.py
+          tests/test_mlir_matrix_2x2_native_compilation_validation.py
           tests/test_mlir_symmetric_native_compilation_integration.py
       - name: Type-check Phase-QNode vector quality cohort
         run: >-

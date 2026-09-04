@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from dataclasses import replace
 from typing import cast
 
 import numpy as np
@@ -19,6 +21,7 @@ import scpn_quantum_control as scpn
 import scpn_quantum_control.compiler.mlir as compiler_mlir
 from scpn_quantum_control.compiler.mlir import (
     CompilerADExecutableConfig,
+    ExecutableCompilerADKernel,
     build_compiler_ad_transform_plan,
     compile_compiler_ad_transform_plan_to_mlir,
     compile_registered_primitive_to_executable,
@@ -30,6 +33,94 @@ from scpn_quantum_control.differentiable import (
     PrimitiveTransformRule,
     vmap,
 )
+
+Compiler = Callable[..., ExecutableCompilerADKernel]
+LoweringFactory = Callable[..., Callable[..., ExecutableCompilerADKernel]]
+TransformFactory = Callable[..., PrimitiveTransformRule]
+
+
+def _exercise_public_validation_contracts(
+    *,
+    identity: PrimitiveIdentity,
+    rule: CustomDerivativeRule,
+    compiler: Compiler,
+    lowering_factory: LoweringFactory,
+    transform_factory: TransformFactory,
+    values: FloatArray,
+    tangent: FloatArray,
+    cotangent: FloatArray,
+    kernel: ExecutableCompilerADKernel,
+) -> None:
+    """Exercise common fail-closed 2x2 compiler contracts through public APIs."""
+    assert rule.jvp_rule is not None
+    assert rule.vjp_rule is not None
+    reference_jvp = rule.jvp_rule
+    reference_vjp = rule.vjp_rule
+    wrong_rule = cast(CustomDerivativeRule, object())
+    non_native = CompilerADExecutableConfig()
+
+    with pytest.raises(ValueError, match="rule must be a CustomDerivativeRule"):
+        compiler(wrong_rule, sample_values=values)
+    with pytest.raises(ValueError, match="backend='native_llvm_jit'"):
+        compiler(rule, sample_values=values, config=non_native)
+    with pytest.raises(ValueError, match="requires"):
+        compiler(rule, sample_values=values[:-1])
+
+    jvp_only_rule = replace(rule, name=f"{rule.name}_jvp_only", vjp_rule=None)
+    jvp_only_kernel = compiler(jvp_only_rule, sample_values=values)
+    assert jvp_only_kernel.vjp_kernel is None
+    assert np.allclose(jvp_only_kernel.jvp(values, tangent), reference_jvp(values, tangent))
+    with pytest.raises(ValueError, match="has no VJP rule"):
+        jvp_only_kernel.vjp(values, cotangent)
+
+    vjp_only_rule = replace(rule, name=f"{rule.name}_vjp_only", jvp_rule=None)
+    vjp_only_kernel = compiler(
+        vjp_only_rule,
+        sample_values=values,
+        config=CompilerADExecutableConfig(backend="native_llvm_jit", verify=False),
+    )
+    assert vjp_only_kernel.jvp_kernel is None
+    assert np.allclose(vjp_only_kernel.vjp(values, cotangent), reference_vjp(values, cotangent))
+    with pytest.raises(ValueError, match="has no JVP rule"):
+        vjp_only_kernel.jvp(values, tangent)
+
+    lowering = lowering_factory()
+    with pytest.raises(ValueError, match="lowering requires sample_values"):
+        lowering(rule)
+    with pytest.raises(ValueError, match="rule must be a CustomDerivativeRule"):
+        lowering(
+            wrong_rule,
+            values,
+            CompilerADExecutableConfig(backend="native_llvm_jit"),
+            sample_tangent=tangent,
+            sample_cotangent=cotangent,
+        )
+    captured_lowering = lowering_factory(
+        sample_values=values,
+        config=CompilerADExecutableConfig(backend="native_llvm_jit"),
+        sample_tangent=tangent,
+        sample_cotangent=cotangent,
+    )
+    with pytest.raises(ValueError, match="rule must be a CustomDerivativeRule"):
+        captured_lowering(wrong_rule)
+
+    with pytest.raises(ValueError, match="rule must be a CustomDerivativeRule"):
+        transform_factory(identity, wrong_rule, sample_values=values)
+    with pytest.raises(ValueError, match="backend='native_llvm_jit'"):
+        transform_factory(identity, rule, sample_values=values, config=non_native)
+    transform = transform_factory(identity, jvp_only_rule, sample_values=values)
+    assert transform.identity == identity
+
+    with pytest.raises(ValueError, match="requires"):
+        kernel.value(values[:-1])
+    with pytest.raises(ValueError, match="requires"):
+        kernel.jvp(values[:-1], tangent)
+    with pytest.raises(ValueError, match="tangent value"):
+        kernel.jvp(values, tangent[:-1])
+    with pytest.raises(ValueError, match="requires"):
+        kernel.vjp(values[:-1], cotangent)
+    with pytest.raises(ValueError, match="cotangent value"):
+        kernel.vjp(values, np.append(cotangent, 0.0))
 
 
 def test_native_llvm_jit_matrix_2x2_determinant_kernel_executes_and_marks_plan_native() -> None:
@@ -194,6 +285,19 @@ def test_native_llvm_jit_matrix_2x2_determinant_kernel_executes_and_marks_plan_n
         rtol=1.0e-12,
         atol=1.0e-12,
     )
+    _exercise_public_validation_contracts(
+        identity=identity,
+        rule=rule,
+        compiler=compiler_mlir.compile_matrix_2x2_determinant_ad_to_native_llvm_jit,
+        lowering_factory=compiler_mlir.make_matrix_2x2_determinant_native_llvm_jit_lowering_rule,
+        transform_factory=(
+            compiler_mlir.make_matrix_2x2_determinant_native_llvm_jit_primitive_transform
+        ),
+        values=values,
+        tangent=tangent,
+        cotangent=cotangent,
+        kernel=kernel,
+    )
 
 
 def test_native_llvm_jit_matrix_2x2_inverse_kernel_executes_and_marks_plan_native() -> None:
@@ -356,6 +460,17 @@ def test_native_llvm_jit_matrix_2x2_inverse_kernel_executes_and_marks_plan_nativ
             "verified: scpn_quantum_engine matrix_2x2_inverse value/JVP/VJP/sum-gradient parity"
         )
     }
+    _exercise_public_validation_contracts(
+        identity=identity,
+        rule=rule,
+        compiler=compiler_mlir.compile_matrix_2x2_inverse_ad_to_native_llvm_jit,
+        lowering_factory=compiler_mlir.make_matrix_2x2_inverse_native_llvm_jit_lowering_rule,
+        transform_factory=compiler_mlir.make_matrix_2x2_inverse_native_llvm_jit_primitive_transform,
+        values=values,
+        tangent=tangent,
+        cotangent=cotangent,
+        kernel=kernel,
+    )
 
 
 def test_native_llvm_jit_matrix_2x2_solve_kernel_executes_and_marks_plan_native() -> None:
@@ -534,6 +649,17 @@ def test_native_llvm_jit_matrix_2x2_solve_kernel_executes_and_marks_plan_native(
             "verified: scpn_quantum_engine matrix_2x2_solve value/JVP/VJP/sum-gradient parity"
         )
     }
+    _exercise_public_validation_contracts(
+        identity=identity,
+        rule=rule,
+        compiler=compiler_mlir.compile_matrix_2x2_solve_ad_to_native_llvm_jit,
+        lowering_factory=compiler_mlir.make_matrix_2x2_solve_native_llvm_jit_lowering_rule,
+        transform_factory=compiler_mlir.make_matrix_2x2_solve_native_llvm_jit_primitive_transform,
+        values=values,
+        tangent=tangent,
+        cotangent=cotangent,
+        kernel=kernel,
+    )
 
 
 def test_native_llvm_jit_matrix_2x2_eigenvalues_kernel_executes_and_marks_plan_native() -> None:
@@ -776,6 +902,19 @@ def test_native_llvm_jit_matrix_2x2_eigenvalues_kernel_executes_and_marks_plan_n
     )
     assert scpn.make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform is (
         compiler_mlir.make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform
+    )
+    _exercise_public_validation_contracts(
+        identity=identity,
+        rule=rule,
+        compiler=compiler_mlir.compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit,
+        lowering_factory=compiler_mlir.make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule,
+        transform_factory=(
+            compiler_mlir.make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform
+        ),
+        values=values,
+        tangent=tangent,
+        cotangent=cotangent,
+        kernel=kernel,
     )
 
 
@@ -1043,4 +1182,17 @@ def test_native_llvm_jit_matrix_2x2_eigensystem_kernel_executes_and_marks_plan_n
     )
     assert scpn.make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform is (
         compiler_mlir.make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform
+    )
+    _exercise_public_validation_contracts(
+        identity=identity,
+        rule=rule,
+        compiler=compiler_mlir.compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit,
+        lowering_factory=compiler_mlir.make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule,
+        transform_factory=(
+            compiler_mlir.make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform
+        ),
+        values=values,
+        tangent=tangent,
+        cotangent=cotangent,
+        kernel=kernel,
     )
