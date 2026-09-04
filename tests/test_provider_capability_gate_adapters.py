@@ -12,8 +12,11 @@ from __future__ import annotations
 import ast
 import inspect
 
+import pytest
+
 import scpn_quantum_control.hardware.provider_capability_discovery as provider_capability_discovery
 import scpn_quantum_control.hardware.provider_capability_gate_adapters as gate_adapters
+from scpn_quantum_control.hardware.aggregators import resolve_aggregator_provider_route
 from scpn_quantum_control.hardware.provider_capability_discovery import (
     probe_aggregator_provider_capability,
     snapshot_from_ionq_backend,
@@ -26,7 +29,6 @@ from scpn_quantum_control.hardware.provider_capability_discovery import (
 
 def test_direct_ionq_snapshot_reads_backend_json_without_submission() -> None:
     """Direct IonQ metadata adapters should consume injected API JSON only."""
-
     backend_metadata = {
         "backend": "qpu.forte-1",
         "status": "available",
@@ -153,7 +155,6 @@ def test_direct_quantinuum_snapshot_reads_backend_metadata_without_submission() 
 
 def test_direct_quantinuum_snapshot_blocks_offline_backend_without_submission() -> None:
     """Direct Quantinuum offline metadata should block before circuit processing."""
-
     backend_metadata = {
         "name": "H1-1E",
         "status": "offline",
@@ -227,7 +228,6 @@ def test_direct_rigetti_snapshot_reads_qcs_metadata_without_submission() -> None
 
 def test_direct_rigetti_snapshot_blocks_offline_qcs_target_without_submission() -> None:
     """Direct Rigetti offline metadata should block before QCS execution."""
-
     qcs_metadata = {
         "quantum_computer": "9q-square-qvm",
         "status": "offline",
@@ -304,7 +304,6 @@ def test_direct_iqm_snapshot_reads_backend_metadata_without_submission() -> None
 
 def test_direct_iqm_snapshot_blocks_offline_backend_without_submission() -> None:
     """Direct IQM offline metadata should block before backend execution."""
-
     backend_metadata = {
         "backend": "iqm-apollo",
         "status": "offline",
@@ -378,7 +377,6 @@ def test_direct_oqc_snapshot_reads_target_metadata_without_submission() -> None:
 
 def test_direct_oqc_snapshot_blocks_offline_target_without_submission() -> None:
     """Direct OQC offline metadata should block before QCAAS submission."""
-
     metadata = {
         "target": "oqc-offline",
         "status": "offline",
@@ -497,3 +495,141 @@ def test_gate_provider_leaf_excludes_specialized_and_broker_adapters() -> None:
         "snapshot_from_quantinuum_backend",
         "snapshot_from_rigetti_qcs",
     }
+
+
+@pytest.mark.parametrize(
+    ("provider", "normalizer", "cases"),
+    (
+        (
+            "ionq",
+            gate_adapters._ionq_ir_format_token,
+            (
+                ("qis", "ionq_json"),
+                ("qasm.v3", "openqasm3"),
+                ("qir.v1", "qir"),
+                ("custom-ir", "custom_ir"),
+            ),
+        ),
+        (
+            "iqm",
+            gate_adapters._iqm_ir_format_token,
+            (
+                ("qpy", "qiskit_qpy"),
+                ("quantum_circuit", "qiskit"),
+                ("iqm.circuit", "circuit"),
+                ("openqasm", "openqasm3"),
+                ("MLIR", "mlir"),
+                ("custom-ir", "custom_ir"),
+            ),
+        ),
+        (
+            "oqc",
+            gate_adapters._oqc_ir_format_token,
+            (
+                ("qasm3", "openqasm3"),
+                ("qir.v1", "qir"),
+                ("MLIR", "mlir"),
+                ("custom-ir", "custom_ir"),
+            ),
+        ),
+        (
+            "quantinuum",
+            gate_adapters._quantinuum_ir_format_token,
+            (
+                ("pytket_circuit", "tket"),
+                ("openqasm_3", "openqasm3"),
+                ("qir.v1", "qir"),
+                ("custom-ir", "custom_ir"),
+            ),
+        ),
+        (
+            "rigetti",
+            gate_adapters._rigetti_ir_format_token,
+            (
+                ("pyquil", "quil"),
+                ("openqasm3", "openqasm3"),
+                ("MLIR", "mlir"),
+                ("custom-ir", "custom_ir"),
+            ),
+        ),
+    ),
+)
+def test_gate_provider_ir_normalizers_cover_registered_aliases_and_passthrough(
+    provider: str,
+    normalizer: object,
+    cases: tuple[tuple[str, str], ...],
+) -> None:
+    """Normalize registered aliases while preserving a canonical unknown token."""
+    assert callable(normalizer), provider
+    for raw, expected in cases:
+        assert normalizer(raw) == expected
+
+
+@pytest.mark.parametrize(
+    ("provider", "resolver", "normalizer"),
+    (
+        ("ionq", gate_adapters._ionq_supported_ir_formats, gate_adapters._ionq_ir_format_token),
+        ("iqm", gate_adapters._iqm_supported_ir_formats, gate_adapters._iqm_ir_format_token),
+        ("oqc", gate_adapters._oqc_supported_ir_formats, gate_adapters._oqc_ir_format_token),
+        (
+            "quantinuum",
+            gate_adapters._quantinuum_supported_ir_formats,
+            gate_adapters._quantinuum_ir_format_token,
+        ),
+        (
+            "rigetti",
+            gate_adapters._rigetti_supported_ir_formats,
+            gate_adapters._rigetti_ir_format_token,
+        ),
+    ),
+)
+def test_gate_provider_ir_formats_fall_back_to_the_declared_route(
+    provider: str,
+    resolver: object,
+    normalizer: object,
+) -> None:
+    """Use the governed route formats when provider metadata omits them."""
+    resolved = resolve_aggregator_provider_route(aggregator="direct", provider=provider)
+    assert callable(resolver)
+    assert callable(normalizer)
+    assert resolver(resolved, {}) == resolved.route.ir_formats
+
+
+@pytest.mark.parametrize(
+    "online_state",
+    (
+        gate_adapters._ionq_online_state,
+        gate_adapters._iqm_online_state,
+        gate_adapters._oqc_online_state,
+        gate_adapters._quantinuum_online_state,
+        gate_adapters._rigetti_online_state,
+    ),
+)
+def test_gate_provider_text_states_cover_ready_offline_unknown_and_absent(
+    online_state: object,
+) -> None:
+    """Classify secondary text metadata without guessing unknown availability."""
+    assert callable(online_state)
+    assert online_state({"target_status": "enabled"}) is True
+    assert online_state({"target_status": "disabled"}) is False
+    assert online_state({"target_status": "provisioning"}) is None
+    assert online_state({}) is None
+
+
+def test_gate_provider_feature_flags_preserve_explicit_false_and_reset() -> None:
+    """Respect explicit topology refusal and Quantinuum reset support."""
+    assert "all_to_all_connectivity" not in gate_adapters._ionq_native_features(
+        {"all_to_all": False}
+    )
+    assert "lattice_connectivity" not in gate_adapters._iqm_native_features(
+        {"lattice_connectivity": False}
+    )
+    assert "lattice_connectivity" not in gate_adapters._oqc_native_features({"topology": False})
+    assert "lattice_connectivity" not in gate_adapters._rigetti_native_features(
+        {"topology": False}
+    )
+    features = gate_adapters._quantinuum_native_features(
+        {"supports_mid_circuit_measurement": False, "supports_reset": True}
+    )
+    assert "mid_circuit_measurement" not in features
+    assert "conditional_reset" in features

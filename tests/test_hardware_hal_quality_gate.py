@@ -46,6 +46,14 @@ def test_coverage_gate_is_isolated_and_exact() -> None:
         path in quality_gates.HARDWARE_HAL_COVERAGE_COHORT
         for path in quality_gates.HARDWARE_AGGREGATOR_TESTS
     )
+    assert (
+        quality_gates.PROVIDER_CAPABILITY_GATE_ADAPTERS_SOURCE
+        in quality_gates.HARDWARE_HAL_TYPING_RATCHET
+    )
+    assert (
+        quality_gates.PROVIDER_CAPABILITY_GATE_ADAPTERS_TEST
+        in quality_gates.HARDWARE_HAL_COVERAGE_COHORT
+    )
 
 
 def test_preflight_uses_helper_defined_gates() -> None:
