@@ -347,7 +347,7 @@ class ProgramADAdjointResult:
 
     @property
     def adjoint_step_count(self) -> int:
-        """Return the number of generated reverse-adjoint steps."""
+        """Number of generated reverse-adjoint steps."""
         return len(self.adjoint_steps)
 
     def to_dict(self) -> dict[str, object]:
