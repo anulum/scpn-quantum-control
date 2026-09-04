@@ -22,27 +22,32 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 ANALYSIS_SCRIPT = REPO_ROOT / "scripts" / "analyse_iqm_dla_window_variability.py"
 DATA_ROOT = REPO_ROOT / "data" / "iqm_paper_replication"
 WINDOW_COUNTS = (
-    DATA_ROOT / "iqm_dla_window_variability_hw_counts_w1_2026-07-22.json",
-    DATA_ROOT / "iqm_dla_window_variability_hw_counts_w2_2026-07-26.json",
-    DATA_ROOT / "iqm_dla_window_variability_hw_counts_w3_2026-07-26.json",
-    DATA_ROOT / "iqm_dla_window_variability_hw_counts_w4_2026-07-27.json",
-    DATA_ROOT / "iqm_dla_window_variability_hw_counts_w5_2026-07-28.json",
-    DATA_ROOT / "iqm_dla_window_variability_hw_counts_w6_2026-07-28.json",
+    DATA_ROOT / "iqm_dla_window_variability_hardware_counts_observation_window_01_2026-07-22.json",
+    DATA_ROOT / "iqm_dla_window_variability_hardware_counts_observation_window_02_2026-07-26.json",
+    DATA_ROOT / "iqm_dla_window_variability_hardware_counts_observation_window_03_2026-07-26.json",
+    DATA_ROOT / "iqm_dla_window_variability_hardware_counts_observation_window_04_2026-07-27.json",
+    DATA_ROOT / "iqm_dla_window_variability_hardware_counts_observation_window_05_2026-07-28.json",
+    DATA_ROOT / "iqm_dla_window_variability_hardware_counts_observation_window_06_2026-07-28.json",
 )
 CALIBRATIONS = (
-    DATA_ROOT / "iqm_dla_window_variability_calibration_w1_2026-07-22.json",
-    DATA_ROOT / "iqm_dla_window_variability_calibration_w2_2026-07-26.json",
-    DATA_ROOT / "iqm_dla_window_variability_calibration_w3_2026-07-26.json",
-    DATA_ROOT / "iqm_dla_window_variability_calibration_w4_2026-07-27.json",
-    DATA_ROOT / "iqm_dla_window_variability_calibration_w5_2026-07-28.json",
-    DATA_ROOT / "iqm_dla_window_variability_calibration_w6_2026-07-28.json",
+    DATA_ROOT / "iqm_dla_window_variability_calibration_observation_window_01_2026-07-22.json",
+    DATA_ROOT / "iqm_dla_window_variability_calibration_observation_window_02_2026-07-26.json",
+    DATA_ROOT / "iqm_dla_window_variability_calibration_observation_window_03_2026-07-26.json",
+    DATA_ROOT / "iqm_dla_window_variability_calibration_observation_window_04_2026-07-27.json",
+    DATA_ROOT / "iqm_dla_window_variability_calibration_observation_window_05_2026-07-28.json",
+    DATA_ROOT / "iqm_dla_window_variability_calibration_observation_window_06_2026-07-28.json",
 )
 INTERIM_REPORTS = (
-    DATA_ROOT / "iqm_dla_window_variability_interim_analysis_w2_2026-07-26.json",
-    DATA_ROOT / "iqm_dla_window_variability_interim_analysis_w3_2026-07-26.json",
-    DATA_ROOT / "iqm_dla_window_variability_interim_analysis_w4_2026-07-27.json",
-    DATA_ROOT / "iqm_dla_window_variability_interim_analysis_w5_2026-07-28.json",
-    DATA_ROOT / "iqm_dla_window_variability_interim_analysis_w6_2026-07-28.json",
+    DATA_ROOT
+    / "iqm_dla_window_variability_analysis_through_observation_window_02_2026-07-26.json",
+    DATA_ROOT
+    / "iqm_dla_window_variability_analysis_through_observation_window_03_2026-07-26.json",
+    DATA_ROOT
+    / "iqm_dla_window_variability_analysis_through_observation_window_04_2026-07-27.json",
+    DATA_ROOT
+    / "iqm_dla_window_variability_analysis_through_observation_window_05_2026-07-28.json",
+    DATA_ROOT
+    / "iqm_dla_window_variability_analysis_through_observation_window_06_2026-07-28.json",
 )
 
 

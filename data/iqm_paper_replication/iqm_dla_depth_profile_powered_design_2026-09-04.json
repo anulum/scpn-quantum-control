@@ -1,0 +1,61 @@
+{
+  "schema": "scpn.iqm-dla-depth-profile-powered-design.v1",
+  "campaign": "iqm_dla_depth_profile_powered_epoch_prereg_2026-09-04",
+  "source": {
+    "schema": "scpn.iqm-window-variability-epoch-sensitivity.v2",
+    "path": "data/iqm_paper_replication/iqm_dla_window_variability_calibration_epoch_sensitivity_through_observation_window_10_2026-09-04.json",
+    "sha256": "4d5e1c774ed89b915d55c3aa14c2afd783b1cf887a87ee177bdf8152e9174d5f",
+    "role": "design_only_excluded_from_confirmatory_endpoint",
+    "calibration_epochs": 6,
+    "excluded_calibration_set_ids": [
+      "06b983f5-f930-4a3e-9452-da56b179c2a3",
+      "7cd21a22-a9ea-4b1c-be54-fca94f230f44",
+      "8e489d60-0508-4f9e-858b-58414a5ce3c7",
+      "a4dda86a-b9bb-49f8-8bad-803882de5683",
+      "c2097be4-1e23-49bc-adaa-8e8c01df6223",
+      "e91e028d-196a-4049-8230-30ec4f5f6736"
+    ],
+    "observed_epoch_contrasts_delta8_minus_delta12": [
+      -0.015869140625,
+      0.0009765625,
+      0.0126953125,
+      0.046630859375,
+      0.0361328125,
+      0.0202026367188
+    ],
+    "random_effects_design_mean": 0.0164243245309,
+    "dersimonian_laird_tau": 0.0149622690217
+  },
+  "frozen_design": {
+    "primary_contrast": "(delta_8 - delta_12) > 0",
+    "alpha": 0.05,
+    "sidedness": "one-sided",
+    "decision_method": "safeguarded_HKSJ_random_effects_t",
+    "distinct_calibration_epochs": 12,
+    "repetitions_per_state_depth_epoch": 12,
+    "shots_per_repetition": 1024,
+    "shots_per_arm_depth_epoch": 12288,
+    "conservative_within_epoch_variance": 8.13802083333e-05,
+    "projected_total_epoch_sd": 0.0174713966989,
+    "degrees_of_freedom": 11,
+    "critical_t": 1.7958848187,
+    "noncentrality": 3.2564957522,
+    "projected_power": 0.919571799068,
+    "target_power": 0.9,
+    "target_power_met": true
+  },
+  "matrix_and_budget": {
+    "main_circuits_per_epoch": 48,
+    "readout_circuits_per_epoch": 4,
+    "circuits_per_epoch": 52,
+    "main_shots_per_epoch": 49152,
+    "readout_shots_per_epoch": 8192,
+    "shots_per_epoch": 57344,
+    "total_shots": 688128,
+    "jobs_per_epoch": 2,
+    "estimated_total_jobs": 24,
+    "estimated_credits": 24,
+    "credit_note": "planning estimate from prior two-job calibration-epoch batching; dashboard is authoritative"
+  },
+  "admission_boundary": "each paid block requires a calibration_set_id absent from the design evidence and all prior confirmatory epochs; repeated IDs are zero-submit skips"
+}

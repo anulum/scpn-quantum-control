@@ -8,7 +8,7 @@
 """Pool same-calibration IQM windows before heterogeneity analysis.
 
 This companion leaves the frozen window-level analysis untouched. It applies
-the prospective post-W7 amendment in
+the prospective amendment after observation window 7 in
 ``docs/campaigns/iqm_dla_window_variability_epoch_amendment_2026-09-04.md``:
 windows with the same exact ``calibration_set_id`` are technical replicates,
 pooled at the raw-count level, and contribute one calibration epoch.
@@ -24,16 +24,16 @@ from typing import Any
 
 import analyse_iqm_dla_window_variability as frozen
 
-SCHEMA = "scpn.iqm-window-variability-epoch-sensitivity.v1"
+SCHEMA = "scpn.iqm-window-variability-epoch-sensitivity.v2"
 AMENDMENT = "iqm_dla_window_variability_epoch_amendment_2026-09-04"
 MINIMUM_EPOCHS = 6
 
 
 def _report_status(records: list[dict[str, Any]]) -> str:
-    """Label prospective W1-W7 evidence separately from post-amendment runs."""
+    """Distinguish the prospective snapshot from post-amendment evidence."""
     if records and max(record["window"] for record in records) <= 7:
-        return "post_w7_pre_w8_sensitivity"
-    return "post_amendment_epoch_sensitivity"
+        return "prospective_calibration_epoch_sensitivity"
+    return "post_amendment_calibration_epoch_sensitivity"
 
 
 def _object(path: Path) -> dict[str, Any]:
@@ -228,7 +228,7 @@ def main(argv: list[str] | None = None) -> int:
     if frozen_report.get("achieved_windows") != len(records):
         raise ValueError("frozen analysis and epoch inputs cover different window counts")
 
-    report = {
+    report: dict[str, Any] = {
         "schema": SCHEMA,
         "amendment": AMENDMENT,
         "status": _report_status(records),

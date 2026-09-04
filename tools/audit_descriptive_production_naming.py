@@ -25,7 +25,8 @@ from typing import Final
 
 _TASK_CODE: Final[re.Pattern[str]] = re.compile(
     r"(?ix)(?<![A-Za-z0-9])(?:"
-    r"(?:bl|st|dp|rg|hg|qwc|ws|lock|kimi|aud)[_-]?\d+(?:[._-]?[a-z])?"
+    r"qwc[_-]?\d+(?:\.\d+)+(?:[._-]?[a-z])?"
+    r"|(?:bl|st|dp|rg|hg|qwc|ws|lock|kimi|aud)[_-]?\d+(?:[._-]?[a-z])?"
     r"|kt-\d+(?:[._-]?[a-z])?"
     r"|fu[_-](?:\d+|[a-z])"
     r"|co\d+[_-][a-z]+[_-]\d+"
@@ -35,13 +36,24 @@ _TASK_CODE: Final[re.Pattern[str]] = re.compile(
 )
 _PATH_TASK_CODE: Final[re.Pattern[str]] = re.compile(
     r"(?ix)(?:^|[/_.-])(?:"
-    r"(?:bl|st|dp|rg|hg|qwc|ws|lock|kimi|aud)[_-]?\d+(?:[._-]?[a-z])?"
+    r"qwc[_-]?\d+(?:\.\d+)+(?:[._-]?[a-z])?"
+    r"|(?:bl|st|dp|rg|hg|qwc|ws|lock|kimi|aud)[_-]?\d+(?:[._-]?[a-z])?"
     r"|kt-\d+(?:[._-]?[a-z])?"
     r"|fu[_-](?:\d+|[a-z])"
     r"|co\d+[_-][a-z]+[_-]\d+"
     r"|sec[_-]?\d+"
     r"|s\d+\.\d+"
     r")(?![A-Za-z0-9])"
+)
+_CAMPAIGN_STAGE_PROSE: Final[re.Pattern[str]] = re.compile(
+    r"(?<![A-Za-z0-9])(?:W\d+|(?:post|pre)[-_]?[Ww]\d+)(?![A-Za-z0-9])"
+)
+_PATH_CAMPAIGN_STAGE: Final[re.Pattern[str]] = re.compile(r"(?i)(?:^|[/_.-])w\d+(?=$|[/_.-])")
+_QUALIFIED_CAMPAIGN_STAGE: Final[re.Pattern[str]] = re.compile(
+    r"(?i)(?:^|_)(?:pre|post)_?w\d+(?=$|_)"
+)
+_CAMPAIGN_STAGE_CONTEXT: Final[re.Pattern[str]] = re.compile(
+    r"(?i)(?:analys|calibrat|campaign|count|epoch|hardware|observ|result|sensitiv|status|submit|window)"
 )
 _MACHINE_NAME: Final[re.Pattern[str]] = re.compile(r"[A-Za-z0-9_.:/-]+")
 _IDENTIFIER: Final[re.Pattern[str]] = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
@@ -97,6 +109,19 @@ _EXACT_NEGATIVE_VALUES: Final[frozenset[tuple[str, str]]] = frozenset(
 )
 
 
+def _contains_path_campaign_stage(value: str) -> bool:
+    """Return whether a path-like value contains abbreviated window staging."""
+    path_like = "/" in value or value.endswith((".json", ".md", ".yaml", ".yml"))
+    return path_like and bool(_PATH_CAMPAIGN_STAGE.search(value))
+
+
+def _contains_identifier_campaign_stage(value: str) -> bool:
+    """Reject stage shorthand inside descriptive names, but allow bare math weights."""
+    if _QUALIFIED_CAMPAIGN_STAGE.search(value):
+        return True
+    return bool(_PATH_CAMPAIGN_STAGE.search(value) and _CAMPAIGN_STAGE_CONTEXT.search(value))
+
+
 @dataclass(frozen=True, order=True)
 class NamingFinding:
     """One production-facing name that exposes an internal work-item code."""
@@ -134,7 +159,11 @@ def _docstring_nodes(tree: ast.AST) -> set[int]:
 def _python_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
     """Yield task-coded Python identifiers, docs, comments, and runtime strings."""
     text = path.read_text(encoding="utf-8")
-    if not _TASK_CODE.search(text):
+    if not (
+        _TASK_CODE.search(text)
+        or _CAMPAIGN_STAGE_PROSE.search(text)
+        or _PATH_CAMPAIGN_STAGE.search(text)
+    ):
         return
     tree = ast.parse(text, filename=display_path)
     lines = text.splitlines()
@@ -144,7 +173,7 @@ def _python_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
         if (
             token.type == tokenize.COMMENT
             and token.start[0] != 7
-            and _TASK_CODE.search(token.string)
+            and (_TASK_CODE.search(token.string) or _CAMPAIGN_STAGE_PROSE.search(token.string))
         ):
             yield NamingFinding(
                 display_path,
@@ -154,7 +183,7 @@ def _python_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
             )
     module_doc = ast.get_docstring(tree, clean=False)
     module_doc_node_id: int | None = None
-    if module_doc and _TASK_CODE.search(module_doc):
+    if module_doc and (_TASK_CODE.search(module_doc) or _CAMPAIGN_STAGE_PROSE.search(module_doc)):
         first = tree.body[0]
         module_doc_node_id = id(first.value) if isinstance(first, ast.Expr) else None
         yield NamingFinding(
@@ -172,7 +201,7 @@ def _python_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
         elif isinstance(node, ast.Attribute):
             names = (node.attr,)
         for name in names:
-            if _TASK_CODE.search(name):
+            if _TASK_CODE.search(name) or _contains_identifier_campaign_stage(name):
                 yield NamingFinding(
                     display_path,
                     getattr(node, "lineno", 0),
@@ -182,7 +211,9 @@ def _python_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
         if not isinstance(node, ast.Constant) or not isinstance(node.value, str):
             continue
         if id(node) in docstrings:
-            if id(node) != module_doc_node_id and _TASK_CODE.search(node.value):
+            if id(node) != module_doc_node_id and (
+                _TASK_CODE.search(node.value) or _CAMPAIGN_STAGE_PROSE.search(node.value)
+            ):
                 yield NamingFinding(
                     display_path,
                     node.lineno,
@@ -190,7 +221,10 @@ def _python_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
                     node.value,
                 )
             continue
-        if node.value.startswith("docs/internal/") or not _TASK_CODE.search(node.value):
+        path_stage = _contains_path_campaign_stage(node.value)
+        if node.value.startswith("docs/internal/") or not (
+            _TASK_CODE.search(node.value) or _CAMPAIGN_STAGE_PROSE.search(node.value) or path_stage
+        ):
             continue
         kind = (
             "machine-facing string"
@@ -210,14 +244,20 @@ def _json_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
     def walk(value: object) -> Iterator[str]:
         if isinstance(value, dict):
             for key, child in value.items():
-                if _TASK_CODE.search(key):
+                if _TASK_CODE.search(key) or _contains_identifier_campaign_stage(key):
                     yield key
                 yield from walk(child)
         elif isinstance(value, list):
             for child in value:
                 yield from walk(child)
-        elif isinstance(value, str) and len(value) <= 4096 and _TASK_CODE.search(value):
-            yield value
+        elif isinstance(value, str) and len(value) <= 4096:
+            path_stage = _contains_path_campaign_stage(value)
+            if (
+                _TASK_CODE.search(value)
+                or (len(value) <= 512 and _CAMPAIGN_STAGE_PROSE.search(value))
+                or path_stage
+            ):
+                yield value
 
     for value in walk(payload):
         yield NamingFinding(display_path, 1, "JSON machine name", value)
@@ -228,20 +268,24 @@ def _workflow_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
     for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         stripped = line.strip()
         if stripped.startswith("name:") or stripped.startswith("- name:"):
-            if _TASK_CODE.search(stripped):
+            if _TASK_CODE.search(stripped) or _CAMPAIGN_STAGE_PROSE.search(stripped):
                 yield NamingFinding(display_path, line_number, "workflow name", stripped)
         elif line.startswith("  ") and not line.startswith("    ") and stripped.endswith(":"):
             job_id = stripped[:-1]
-            if _TASK_CODE.search(job_id):
+            if _TASK_CODE.search(job_id) or _contains_identifier_campaign_stage(job_id):
                 yield NamingFinding(display_path, line_number, "workflow job ID", job_id)
-        elif _TASK_CODE.search(line):
+        elif _TASK_CODE.search(line) or _CAMPAIGN_STAGE_PROSE.search(line):
             yield NamingFinding(display_path, line_number, "workflow text", stripped)
 
 
 def _documentation_text(path: Path, display_path: str) -> Iterator[NamingFinding]:
     """Yield public documentation text that exposes internal task codes."""
     for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-        if not _TASK_CODE.search(line):
+        if not (
+            _TASK_CODE.search(line)
+            or _CAMPAIGN_STAGE_PROSE.search(line)
+            or _contains_path_campaign_stage(line)
+        ):
             continue
         kind = "documentation heading" if line.startswith("#") else "public documentation text"
         yield NamingFinding(display_path, line_number, kind, line)
@@ -250,10 +294,10 @@ def _documentation_text(path: Path, display_path: str) -> Iterator[NamingFinding
 def _generic_code_names(path: Path, display_path: str) -> Iterator[NamingFinding]:
     """Yield task-coded text from non-Python production sources."""
     for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-        if _TASK_CODE.search(line):
+        if _TASK_CODE.search(line) or _CAMPAIGN_STAGE_PROSE.search(line):
             yield NamingFinding(display_path, line_number, "source text", line.strip())
         for name in _IDENTIFIER.findall(line):
-            if _TASK_CODE.search(name):
+            if _TASK_CODE.search(name) or _contains_identifier_campaign_stage(name):
                 yield NamingFinding(display_path, line_number, "source identifier", name)
 
 
@@ -263,7 +307,7 @@ def audit_paths(root: Path, relative_paths: Iterable[str]) -> tuple[NamingFindin
     for relative in relative_paths:
         if relative in _EXACT_NEGATIVE_FIXTURES:
             continue
-        if _PATH_TASK_CODE.search(relative):
+        if _PATH_TASK_CODE.search(relative) or _PATH_CAMPAIGN_STAGE.search(relative):
             findings.add(NamingFinding(relative, 0, "tracked path", relative))
         path = root / relative
         if not path.is_file():

@@ -4,7 +4,7 @@ The primary navigation stays intentionally compact. This catalog keeps every
 public guide, evidence note, contract, campaign protocol, and reference page
 discoverable without crowding the main learning path.
 
-Current inventory: **375 public pages**; **162** are in the
+Current inventory: **376 public pages**; **162** are in the
 primary navigation and the remainder are indexed here.
 
 Labels marked `catalog` are intentionally outside the primary navigation; they
@@ -69,9 +69,10 @@ are still built, link-checked, searchable, and public.
 | [IBM v2 raw-count recovery and full disclosure (2026-07-18)](campaigns/ibm_v2_recovery_2026-07-18.md) | catalog | The "IBM v2" fair-experiment campaign (2026-03-29, ibm_fez) was originally committed **aggregate-only** — fidelity/survival means plus HMAC-blinded run labels, with no raw counts and no raw job identifiers. Because it could not be independe |
 | [IQM DLA Backend-Sensitivity Preregistration (Properly Powered)](campaigns/iqm_dla_backend_sensitivity_powered_prereg_2026-07-21.md) | catalog | Date: 2026-07-21 |
 | [IQM Garnet Depth-10 Sign-Replication Preregistration](campaigns/iqm_dla_d10_retest_prereg_2026-07-22.md) | catalog | Date: 2026-07-22 |
+| [IQM Garnet powered depth-ordering preregistration](campaigns/iqm_dla_depth_profile_powered_epoch_prereg_2026-09-04.md) | catalog | Date: 2026-09-04 |
 | [IQM Garnet Parity-Asymmetry Depth-Profile Preregistration](campaigns/iqm_dla_depth_profile_prereg_2026-07-22.md) | catalog | Date: 2026-07-22 |
 | [IQM DLA Submission-Journal Runbook](campaigns/iqm_dla_submission_journal_runbook_2026-07-26.md) | catalog | Date: 2026-07-26 |
-| [IQM DLA window variability: calibration-epoch amendment](campaigns/iqm_dla_window_variability_epoch_amendment_2026-09-04.md) | catalog | **Status:** post-W7, pre-W8 prospective amendment |
+| [IQM DLA window variability: calibration-epoch amendment](campaigns/iqm_dla_window_variability_epoch_amendment_2026-09-04.md) | catalog | **Status:** prospective amendment after observation window 7 |
 | [IQM Garnet Parity-Asymmetry Window-Variability Preregistration](campaigns/iqm_dla_window_variability_prereg_2026-07-22.md) | catalog | Date: 2026-07-22 |
 | [IQM Garnet Layout-Transfer Per-Size Powered Preregistration](campaigns/iqm_layout_transfer_per_size_prereg_2026-07-22.md) | catalog | Date: 2026-07-22 |
 | [IQM Garnet Per-Size Layout-Transfer Readiness](campaigns/iqm_layout_transfer_per_size_readiness_2026-07-26.md) | catalog | This package implements the provider-free gates frozen in iqm_layout_transfer_per_size_prereg_2026-07-22.md. It does not authorize a provider call or hardware execution. |
@@ -302,7 +303,7 @@ are still built, link-checked, searchable, and public.
 | [Higher-Order, Monitored, and PT-Symmetric Kuramoto Variants](kuramoto_variants.md) | primary nav | scpn_quantum_control.phase.kuramoto_variants formalises three Kuramoto extensions that previously only existed as campaign-level experiments: |
 | [Kuramoto Visualisation Layer](kuramoto_visualisation.md) | primary nav | scpn_quantum_control.accel.kuramoto_visualisation (re-exported from the scpn_quantum_control.kuramoto facade under the visualisation capability group) renders the standard diagnostics for coupled-phase-oscillator trajectories directly from |
 | [Language Policy](language_policy.md) | catalog | This document codifies which programming language this repository uses for which part of the stack, and under what criteria a module picks a particular language. It exists so that every new module has a defensible, written rationale for its |
-| [Continuous-Relaxation Layout Search: Research Design](layout_relaxation_preregistration.md) | catalog | **Status: RESEARCH — ANSWERED (2026-07-16). The preregistered experiment ran (§6): the null hypothesis stands — the relaxation shows no gain over the discrete discrete baseline at matched true-cost budget. The research label stays; the disc |
+| [Continuous-Relaxation Layout Search: Research Design](layout_relaxation_preregistration.md) | catalog | **Status: RESEARCH — ANSWERED (2026-07-16). The preregistered experiment ran (§6): the null hypothesis stands — the relaxation shows no gain over the discrete baseline at matched true-cost budget. The research label stays; the discrete opti |
 | [Lindblad Master Equation Solver](lindblad.md) | catalog | scpn_quantum_control.phase.lindblad |
 | [Logical DLA Parity Roadmap](logical_dla_parity.md) | catalog | This note is a post-NISQ planning artefact. It estimates resources for logical-level DLA parity work and keeps the survival claim blocked until the theory and simulation prerequisites are closed. |
 | [Metamorphic AD verification catalogue](metamorphic_ad_verification.md) | catalog | This page is the operator-facing guide for **gradient correctness beyond one-off examples**: a versioned catalogue of metamorphic laws, fail-closed refuse paths (including invent-green hardware formal proofs), and pure residual band checks. |

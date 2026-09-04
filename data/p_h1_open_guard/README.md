@@ -8,8 +8,8 @@
 
 # p_h1 Open-Claim Guard Data
 
-This directory stores the QWC-5.3 public-claim guard report for the open
-`p_h1 = 0.72` threshold.
+This directory stores the public-claim guard report for the open `p_h1 = 0.72`
+threshold.
 
 Artifact:
 

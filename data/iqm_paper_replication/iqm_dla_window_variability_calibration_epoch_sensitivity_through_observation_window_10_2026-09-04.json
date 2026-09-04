@@ -1,7 +1,7 @@
 {
-  "schema": "scpn.iqm-window-variability-epoch-sensitivity.v1",
+  "schema": "scpn.iqm-window-variability-epoch-sensitivity.v2",
   "amendment": "iqm_dla_window_variability_epoch_amendment_2026-09-04",
-  "status": "post_amendment_epoch_sensitivity",
+  "status": "post_amendment_calibration_epoch_sensitivity",
   "frozen_window_level_reference": {
     "sha256": "ea17cc5a8e2a686424a032c63de126e78a749ae9b42e731f4c7efd70be3840e5",
     "primary_d10_heterogeneity": {

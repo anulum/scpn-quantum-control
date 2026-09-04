@@ -28,6 +28,7 @@ from uuid import UUID
 import pytest
 import qiskit
 
+from scripts import iqm_depth_ordering_protocol as protocol
 from scripts import run_iqm_dla_powered_block as script
 
 
@@ -260,6 +261,87 @@ def submit_args(path: Path, *extra: str) -> list[str]:
     ]
 
 
+def powered_epoch_args(
+    path: Path,
+    calibration_path: Path | None,
+    *,
+    epoch: int = 1,
+    extra: tuple[str, ...] = (),
+) -> list[str]:
+    """Return owner-gated arguments for one confirmatory calibration epoch."""
+    args = [
+        "submit",
+        "--campaign",
+        "depth-profile-powered-epoch",
+        "--quantum-computer",
+        "garnet",
+        "--epoch",
+        str(epoch),
+        "--date",
+        "2026-09-05",
+        "--out",
+        str(path),
+        "--i-have-owner-go",
+    ]
+    if calibration_path is not None:
+        args.extend(("--calibration", str(calibration_path)))
+    args.extend(extra)
+    return args
+
+
+def write_calibration(path: Path, calibration_id: UUID, *, date: str = "2026-09-05") -> None:
+    """Write a structurally complete primary-layout calibration snapshot."""
+    path.write_text(
+        json.dumps(
+            {
+                "source": "IQM Resonance garnet",
+                "date": date,
+                "calibration_set_id": str(calibration_id),
+                "calibration": {
+                    "num_qubits": 20,
+                    "edges": [[2, 7], [7, 12], [12, 13]],
+                    "edge_fidelity": {},
+                    "readout_error": {},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def write_epoch_counts(
+    path: Path,
+    calibration_id: UUID,
+    *,
+    epoch: int,
+    date: str = "2026-09-05",
+) -> None:
+    """Write one complete retrieved confirmatory count matrix."""
+    counts: dict[str, dict[str, int]] = {}
+    for label in protocol.expected_count_labels():
+        shots = protocol.READOUT_SHOTS if label.startswith("readout_") else protocol.MAIN_SHOTS
+        counts[label] = {"0000": shots - 1, "0001": 1}
+    path.write_text(
+        json.dumps(
+            {
+                "schema": protocol.RETRIEVED_COUNTS_SCHEMA,
+                "campaign": protocol.CAMPAIGN_ID,
+                "backend": "garnet",
+                "date": date,
+                "repetition": 1,
+                "window": 0,
+                "epoch": epoch,
+                "calibration_set_id": str(calibration_id),
+                "design_sha256": protocol.FROZEN_DESIGN_SHA256,
+                "layout": list(script.PRIMARY_LAYOUT),
+                "job_ids": [str(UUID(int=epoch * 2 + 10)), str(UUID(int=epoch * 2 + 11))],
+                "counts": counts,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
 def load_record(path: Path) -> dict[str, Any]:
     """Load a test journal as an object."""
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -299,6 +381,17 @@ class TestFrozenMatrix:
         assert len(mains) == 32
         assert len(readout) == 4
         assert sum(int(row["shots"]) for row in rows) == 40_960
+
+    def test_powered_depth_ordering_matrix_and_budget_are_exact(self) -> None:
+        campaign = script.CAMPAIGNS["depth-profile-powered-epoch"]
+        rows = script.build_powered_plan(
+            layout=script.PRIMARY_LAYOUT,
+            depths=campaign["depths"],
+            repetitions=campaign["repetitions"],
+        )
+        assert len([row for row in rows if row["kind"] == "dla_parity"]) == 48
+        assert len([row for row in rows if row["kind"] == "readout_baseline"]) == 4
+        assert sum(int(row["shots"]) for row in rows) == 57_344
 
 
 class TestDryRunAndBootstrap:
@@ -376,6 +469,68 @@ class TestDryRunAndBootstrap:
         assert load_record(output)["envelope_violations"]
         assert "DEPTH ENVELOPE VIOLATIONS" in capsys.readouterr().err
 
+    def test_powered_depth_ordering_dry_run_covers_the_frozen_matrix(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+    ) -> None:
+        monkeypatch.setattr(script, "_load_helper", lambda: FakeHelper())
+        monkeypatch.setattr(script, "_fake_backend", lambda: FakeDryBackend())
+        monkeypatch.setattr(qiskit, "transpile", identity_transpile)
+        output = tmp_path / "powered-depth-ordering-readiness.json"
+
+        assert (
+            script.main(
+                [
+                    "dry-run",
+                    "--campaign",
+                    "depth-profile-powered-epoch",
+                    "--date",
+                    "2026-09-05",
+                    "--out",
+                    str(output),
+                ]
+            )
+            == 0
+        )
+
+        payload = load_record(output)
+        assert payload["circuit_count"] == 52
+        assert payload["shot_count"] == 57_344
+        assert payload["design_sha256"] == protocol.FROZEN_DESIGN_SHA256
+        assert len(payload["counts"]) == 52
+
+    def test_powered_depth_ordering_dry_run_rejects_design_drift(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        """Changed frozen-design bytes stop before simulator execution."""
+        monkeypatch.setattr(script, "_load_helper", lambda: FakeHelper())
+
+        def reject_design(_path: Path) -> protocol.FrozenDesign:
+            raise ValueError("changed design")
+
+        monkeypatch.setattr(protocol, "validate_frozen_design", reject_design)
+        output = tmp_path / "powered-depth-ordering-readiness.json"
+        assert (
+            script.main(
+                [
+                    "dry-run",
+                    "--campaign",
+                    "depth-profile-powered-epoch",
+                    "--date",
+                    "2026-09-05",
+                    "--out",
+                    str(output),
+                ]
+            )
+            == 2
+        )
+        assert "No readiness simulation was attempted" in capsys.readouterr().err
+        assert not output.exists()
+
     def test_credentials_and_dynamic_backend_loading(
         self,
         monkeypatch: pytest.MonkeyPatch,
@@ -447,6 +602,131 @@ class TestSubmissionJournal:
         assert "range 1..10" in capsys.readouterr().err
         assert client.calls == 0
         assert not record.exists()
+
+    def test_first_powered_epoch_binds_design_and_calibration_before_submit(
+        self,
+        hardware_boundary: tuple[FakeClient, FakeBackend],
+        tmp_path: Path,
+    ) -> None:
+        client, _ = hardware_boundary
+        calibration = tmp_path / "calibration.json"
+        write_calibration(calibration, UUID(int=99))
+        record_path = tmp_path / "powered-epoch.json"
+
+        assert script.main(powered_epoch_args(record_path, calibration)) == 0
+
+        record = load_record(record_path)
+        assert record["epoch"] == 1
+        assert record["calibration_set_id"] == str(UUID(int=99))
+        assert record["design_sha256"] == protocol.FROZEN_DESIGN_SHA256
+        assert [(entry["group_id"], len(entry["labels"])) for entry in record["jobs"]] == [
+            ("main", 48),
+            ("readout", 4),
+        ]
+        assert client.calls == 2
+
+    def test_powered_epoch_requires_calibration_before_provider_contact(
+        self,
+        hardware_boundary: tuple[FakeClient, FakeBackend],
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        """The confirmatory campaign cannot submit without a fresh snapshot."""
+        client, _ = hardware_boundary
+        record_path = tmp_path / "powered-epoch.json"
+        assert script.main(powered_epoch_args(record_path, None)) == 2
+        assert "requires --calibration" in capsys.readouterr().err
+        assert client.calls == 0
+        assert not record_path.exists()
+
+    @pytest.mark.parametrize(
+        ("mutate", "message"),
+        [
+            (lambda payload: payload.update(date="2026-09-06"), "dates differ"),
+            (lambda payload: payload["calibration"].update(edges=[]), "lacks primary-layout"),
+        ],
+    )
+    def test_powered_epoch_rejects_invalid_calibration_without_provider_contact(
+        self,
+        hardware_boundary: tuple[FakeClient, FakeBackend],
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+        mutate: Any,
+        message: str,
+    ) -> None:
+        client, _ = hardware_boundary
+        calibration = tmp_path / "calibration.json"
+        write_calibration(calibration, UUID(int=99))
+        payload = load_record(calibration)
+        mutate(payload)
+        calibration.write_text(json.dumps(payload), encoding="utf-8")
+        record_path = tmp_path / "powered-epoch.json"
+
+        assert script.main(powered_epoch_args(record_path, calibration)) == 2
+        assert message in capsys.readouterr().err
+        assert client.calls == 0
+        assert not record_path.exists()
+
+    def test_powered_epoch_rejects_design_evidence_and_live_payload_drift(
+        self,
+        hardware_boundary: tuple[FakeClient, FakeBackend],
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        client, _ = hardware_boundary
+        design = load_record(protocol.DESIGN_PATH)
+        excluded_id = UUID(design["source"]["excluded_calibration_set_ids"][0])
+        calibration = tmp_path / "calibration.json"
+        write_calibration(calibration, excluded_id)
+        record_path = tmp_path / "powered-epoch.json"
+
+        assert script.main(powered_epoch_args(record_path, calibration)) == 2
+        assert "used as design evidence" in capsys.readouterr().err
+        assert client.calls == 0
+
+        write_calibration(calibration, UUID(int=100))
+        assert script.main(powered_epoch_args(record_path, calibration)) == 2
+        assert "provider payload calibration set differs" in capsys.readouterr().err
+        assert client.calls == 0
+        assert not record_path.exists()
+
+    def test_later_powered_epoch_requires_complete_prior_retrieval_custody(
+        self,
+        hardware_boundary: tuple[FakeClient, FakeBackend],
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        client, _ = hardware_boundary
+        prior_calibration = tmp_path / "prior-calibration.json"
+        prior_counts = tmp_path / "prior-counts.json"
+        current_calibration = tmp_path / "current-calibration.json"
+        write_calibration(prior_calibration, UUID(int=98))
+        write_epoch_counts(prior_counts, UUID(int=98), epoch=1)
+        write_calibration(current_calibration, UUID(int=99))
+        record_path = tmp_path / "powered-epoch-2.json"
+        args = powered_epoch_args(
+            record_path,
+            current_calibration,
+            epoch=2,
+            extra=(
+                "--prior-calibrations",
+                str(prior_calibration),
+                "--prior-epoch-counts",
+                str(prior_counts),
+            ),
+        )
+
+        broken = load_record(prior_counts)
+        broken["design_sha256"] = "0" * 64
+        prior_counts.write_text(json.dumps(broken), encoding="utf-8")
+        assert script.main(args) == 2
+        assert "wrong design_sha256" in capsys.readouterr().err
+        assert client.calls == 0
+
+        write_epoch_counts(prior_counts, UUID(int=98), epoch=1)
+        assert script.main(args) == 0
+        assert load_record(record_path)["epoch"] == 2
+        assert client.calls == 2
 
     def test_depth_violation_fails_before_journal_or_provider_call(
         self,

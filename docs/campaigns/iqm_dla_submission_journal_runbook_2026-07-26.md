@@ -53,7 +53,7 @@ owner-GO gates pass, use the existing campaign command and a new output path:
   --layout primary \
   --window 3 \
   --date 2026-07-26 \
-  --out data/iqm_paper_replication/iqm_dla_window_variability_submission_w3_2026-07-26.json \
+  --out data/iqm_paper_replication/iqm_dla_window_variability_submission_observation_window_03_2026-07-26.json \
   --i-have-owner-go
 ```
 
@@ -73,7 +73,7 @@ If submission exits with code `4` or a process interruption leaves a group in
 
 ```bash
 .venv-iqm/bin/python scripts/run_iqm_dla_powered_block.py recover \
-  --record data/iqm_paper_replication/iqm_dla_window_variability_submission_w3_2026-07-26.json \
+  --record data/iqm_paper_replication/iqm_dla_window_variability_submission_observation_window_03_2026-07-26.json \
   --group main \
   --job-id EXACT-IQM-JOB-UUID \
   --i-confirm-provider-job
@@ -95,5 +95,5 @@ subcommand.
 The journal proves client-side intent, provider payload identity, and durable
 job-ID custody. It does not provide provider-side request idempotency, estimate
 credit consumption, replace dashboard confirmation after an ambiguous network
-response, or relax any campaign gate. Legacy W1/W2 submission records remain
+response, or relax any campaign gate. Earlier observation-window 1 and 2 submission records remain
 valid for retrieval and are not rewritten into the new schema.

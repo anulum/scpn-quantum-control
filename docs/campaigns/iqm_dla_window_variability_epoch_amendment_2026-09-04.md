@@ -1,22 +1,22 @@
 # IQM DLA window variability: calibration-epoch amendment
 
-**Status:** post-W7, pre-W8 prospective amendment
+**Status:** prospective amendment after observation window 7
 
 **Original preregistration:** `iqm_dla_window_variability_prereg_2026-07-22.md`
 
-**Effective for provider decisions:** before any W8 submission
+**Effective for provider decisions:** before any observation-window 8 submission
 
 ## Why this amendment exists
 
 The frozen protocol used a wall-clock gap of at least 12 hours to define a new
 window. That gap is an operational spacing rule, not evidence that two hardware
 observations are statistically independent. The retained calibration evidence
-makes the issue concrete: W2 and W3 were approximately 12 hours apart but both
+makes the issue concrete: observation windows 2 and 3 were approximately 12 hours apart but both
 used calibration set `c2097be4-1e23-49bc-adaa-8e8c01df6223`.
 
-This amendment does not rewrite the preregistration or its completed W1-W7
+This amendment does not rewrite the preregistration or its completed observation windows 1 through 7
 primary result. It adds a mandatory, separately labelled sensitivity analysis
-and changes how future W8-W10 executions are counted for inference.
+and changes how subsequent observation windows 8 through 10 are counted for inference.
 
 ## Units and counting rules
 
@@ -38,7 +38,7 @@ and changes how future W8-W10 executions are counted for inference.
 5. Report the original window-level result and the epoch-pooled result together.
    Neither may be selected or suppressed based on which p-value is preferable.
 
-## Prospective W8-W10 scheduling
+## Prospective observation-window 8 through 10 scheduling
 
 The fixed 12-hour delay is removed as a sufficiency claim. A fully prepared
 window may run whenever its simulator, custody, calibration, layout, budget,
@@ -50,7 +50,7 @@ waiting an arbitrary number of hours.
 
 The original cap of ten nominal windows remains. Do not spend credits merely to
 make an epoch count equal ten, and do not exceed ten nominal windows or the
-35-credit cap without a new prospective protocol. If W10 closes with fewer
+35-credit cap without a new prospective protocol. If observation window 10 closes with fewer
 than ten distinct epochs, report that fact directly.
 
 ## Epoch-pooled sensitivity analysis
@@ -71,18 +71,19 @@ totals. The companion analyser then applies:
 
 The epoch analysis becomes interpretable at six distinct epochs, matching the
 original minimum-unit threshold. A more elaborate nested random-effects fit is
-not promoted at the current data shape: through W7 only one epoch has more than
+not promoted at the current data shape: through observation window 7 only one epoch has more than
 one nominal window, so a separate within-epoch random-effect variance is weakly
 identified. Raw-count pooling is the prespecified conservative treatment until
 enough repeated epochs exist to support a new prospective hierarchical model.
 
-## Current frozen mapping through W7
+## Current frozen mapping through observation window 7
 
-The seven nominal windows form six calibration epochs. W2 and W3 are the only
-technical-replicate pair; W1 and W4-W7 each have distinct calibration-set IDs.
+The seven nominal windows form six calibration epochs. Observation windows 2
+and 3 are the only technical-replicate pair; observation window 1 and
+observation windows 4 through 7 each have distinct calibration-set IDs.
 This mapping and both analysis tracks are materialised by
 `scripts/analyse_iqm_dla_window_variability_epochs.py` in
-`data/iqm_paper_replication/iqm_dla_window_variability_epoch_sensitivity_w7_2026-09-04.json`.
+`data/iqm_paper_replication/iqm_dla_window_variability_calibration_epoch_sensitivity_through_observation_window_07_2026-09-04.json`.
 
 All interpretation remains confined to device-noise variability. This amendment
 does not create a coherent-dynamics, causal-calibration, hardware-performance,

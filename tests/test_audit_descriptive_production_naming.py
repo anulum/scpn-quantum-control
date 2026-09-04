@@ -173,6 +173,55 @@ def test_letter_suffixed_work_item_code_fails(tmp_path: Path) -> None:
     ]
 
 
+def test_decimal_work_item_and_campaign_stage_shorthand_fail(tmp_path: Path) -> None:
+    """Decimal queue codes and abbreviated campaign stages stay internal."""
+    public_doc = "docs/campaign.md"
+    _write(
+        tmp_path / public_doc,
+        "# Calibration campaign\n\nQWC-5.3 ran in W7 before post-W7 review.\n",
+    )
+    evidence = "data/calibration_counts_w7_2026-09-04.json"
+    _write(tmp_path / evidence, '{"status": "post_w7_pre_w8_sensitivity"}')
+
+    findings = audit_paths(tmp_path, (public_doc, evidence))
+
+    assert {finding.kind for finding in findings} == {
+        "JSON machine name",
+        "public documentation text",
+        "tracked path",
+    }
+
+
+def test_campaign_stage_shorthand_fails_across_code_and_workflows(tmp_path: Path) -> None:
+    """The stage-name guard covers Python, polyglot code, JSON, and CI names."""
+    python = "src/package/surface.py"
+    _write(tmp_path / python, "def analyse_w7_results() -> None:\n    pass\n")
+    rust = "scpn_quantum_engine/src/lib.rs"
+    _write(tmp_path / rust, "fn analyse_w7_results() {}\n")
+    workflow = ".github/workflows/checks.yml"
+    _write(tmp_path / workflow, "jobs:\n  analyse_w7:\n    name: Analyse W7 results\n")
+    evidence = "data/result.json"
+    _write(tmp_path / evidence, '{"post_w7_status": "complete"}')
+
+    findings = audit_paths(tmp_path, (python, rust, workflow, evidence))
+
+    assert {finding.kind for finding in findings} == {
+        "JSON machine name",
+        "Python identifier",
+        "source identifier",
+        "workflow job ID",
+        "workflow name",
+    }
+
+
+def test_scientific_weight_identifiers_are_permitted(tmp_path: Path) -> None:
+    """Lowercase mathematical weight names are not campaign-stage labels."""
+    source = tmp_path / "src" / "package" / "weights.py"
+    _write(source, "def encode(w1: float) -> float:\n    return w1\n")
+
+    assert audit_paths(tmp_path, ("src/package/weights.py",)) == ()
+
+
 def test_exact_stale_contract_fixture_does_not_hide_other_codes(tmp_path: Path) -> None:
     """Allow only the exact obsolete values rejected by the binding-spec test."""
     source = tmp_path / "tests" / "test_binding_spec.py"
@@ -216,7 +265,10 @@ def test_opaque_embedded_payload_is_not_misclassified_as_naming_debt(
 ) -> None:
     """Do not interpret incidental tokens inside long encoded payloads as names."""
     evidence = "data/product.json"
-    _write(tmp_path / evidence, '{"encoded": "' + "A" * 4096 + "BL-19" + '"}')
+    _write(
+        tmp_path / evidence,
+        '{"encoded": "' + "A" * 600 + "W7" + "A" * 3496 + "BL-19" + '"}',
+    )
 
     assert audit_paths(tmp_path, (evidence,)) == ()
 

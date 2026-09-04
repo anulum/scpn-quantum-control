@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — calibration-epoch sensitivity tests
-"""Tests for the post-W7 calibration-epoch sensitivity analysis."""
+"""Tests for the prospective calibration-epoch sensitivity analysis."""
 
 from __future__ import annotations
 
@@ -20,10 +20,19 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts" / "analyse_iqm_dla_window_variability_epochs.py"
 DATA = REPO_ROOT / "data" / "iqm_paper_replication"
-COUNTS = tuple(sorted(DATA.glob("iqm_dla_window_variability_hw_counts_w[1-7]_*.json")))
-CALIBRATIONS = tuple(sorted(DATA.glob("iqm_dla_window_variability_calibration_w[1-7]_*.json")))
-FROZEN = DATA / "iqm_dla_window_variability_interim_analysis_w7_2026-09-04.json"
-COMMITTED = DATA / "iqm_dla_window_variability_epoch_sensitivity_w7_2026-09-04.json"
+COUNTS = tuple(
+    sorted(
+        DATA.glob("iqm_dla_window_variability_hardware_counts_observation_window_0[1-7]_*.json")
+    )
+)
+CALIBRATIONS = tuple(
+    sorted(DATA.glob("iqm_dla_window_variability_calibration_observation_window_0[1-7]_*.json"))
+)
+FROZEN = DATA / "iqm_dla_window_variability_analysis_through_observation_window_07_2026-09-04.json"
+COMMITTED = (
+    DATA
+    / "iqm_dla_window_variability_calibration_epoch_sensitivity_through_observation_window_07_2026-09-04.json"
+)
 
 
 def _load_script() -> ModuleType:
@@ -54,7 +63,9 @@ def _argv(output: Path) -> list[str]:
     ]
 
 
-def test_real_w1_w7_reproduces_committed_epoch_sensitivity(tmp_path: Path) -> None:
+def test_first_seven_observation_windows_reproduce_epoch_sensitivity(
+    tmp_path: Path,
+) -> None:
     """Real custody evidence maps seven windows to six deterministic epochs."""
     output = tmp_path / "epochs.json"
     assert analysis.main(_argv(output)) == 0
@@ -74,11 +85,11 @@ def test_real_w1_w7_reproduces_committed_epoch_sensitivity(tmp_path: Path) -> No
 
 
 def test_status_advances_after_first_post_amendment_window() -> None:
-    """W8+ reports must not retain the prospective pre-W8 status label."""
+    """Post-amendment reports must not retain the prospective status label."""
     records = analysis._records(list(COUNTS), list(CALIBRATIONS))
-    assert analysis._report_status(records) == "post_w7_pre_w8_sensitivity"
+    assert analysis._report_status(records) == "prospective_calibration_epoch_sensitivity"
     records.append({**records[-1], "window": 8})
-    assert analysis._report_status(records) == "post_amendment_epoch_sensitivity"
+    assert analysis._report_status(records) == "post_amendment_calibration_epoch_sensitivity"
 
 
 def test_same_epoch_pools_raw_shots_without_new_degree_of_freedom() -> None:

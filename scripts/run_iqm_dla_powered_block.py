@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — IQM powered DLA backend-sensitivity block runner
-"""Powered DLA backend-sensitivity block runner (Lane 1, ``.venv-iqm`` side).
+"""Powered DLA backend-sensitivity block runner for the isolated IQM environment.
 
 Implements the circuit matrix of
 ``docs/campaigns/iqm_dla_backend_sensitivity_powered_prereg_2026-07-21.md``:
@@ -15,13 +15,18 @@ Implements the circuit matrix of
 substitution recorded). Circuits come from the committed campaign builders
 (`scripts/iqm_fake_transpile_payload.py`), identical to the May 13 runs.
 
-``dry-run`` (default) targets ``IQMFakeGarnet`` and enforces the live
+``dry-run`` targets ``IQMFakeGarnet`` and enforces the live
 readiness gates: full-matrix transpilation, the depth envelope (May 13 d10
 transpiled depth 159 plus 25 %), and a full noisy execution with counts.
 ``submit`` needs ``--i-have-owner-go`` and writes a crash-safe journal before
 each provider call. A restart reuses completed groups and fails closed on an
 ambiguous call; ``recover`` can bind a dashboard-verified IQM job only after
 its complete provider payload matches the frozen pre-submit digest.
+
+The powered depth-ordering campaign additionally requires a fresh calibration
+snapshot. It refuses any calibration set used by its design evidence or an
+earlier confirmatory epoch, and verifies that the provider request still uses
+the snapshot's exact calibration set before the first submission.
 """
 
 from __future__ import annotations
@@ -40,8 +45,15 @@ from contextlib import contextmanager
 from dataclasses import asdict, is_dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Protocol, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 from uuid import UUID
+
+if TYPE_CHECKING:
+    from scripts import iqm_depth_ordering_protocol as depth_ordering
+elif __package__:
+    from . import iqm_depth_ordering_protocol as depth_ordering
+else:
+    import iqm_depth_ordering_protocol as depth_ordering
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 HELPER_PATH = REPO_ROOT / "scripts" / "iqm_fake_transpile_payload.py"
@@ -141,6 +153,18 @@ CAMPAIGNS: dict[str, dict[str, Any]] = {
         "campaign_id": "iqm_dla_depth_profile_prereg_2026-07-22",
         "depths": (8, 12),
         "envelope": {8: int(129 * 1.25), 12: int(189 * 1.25)},
+    },
+    # One complete 12-repetition block per distinct calibration epoch. Prior
+    # window-variability calibration IDs are design data and are ineligible.
+    "depth-profile-powered-epoch": {
+        "campaign_id": "iqm_dla_depth_profile_powered_epoch_prereg_2026-09-04",
+        "depths": (8, 12),
+        "envelope": {8: int(129 * 1.25), 12: int(189 * 1.25)},
+        "repetitions": 12,
+        "batch_all": True,
+        "distinct_epoch": True,
+        "epoch_count": depth_ordering.EPOCHS,
+        "design_path": depth_ordering.DESIGN_PATH,
     },
     # d10 sign-replication: 8 execution-order repetitions batched into ONE
     # main job + one readout job (frozen batching disclosure in the prereg).
@@ -435,6 +459,9 @@ def _validate_journal_header(
         "date": args.date,
         "repetition": args.repetition,
         "window": args.window,
+        "epoch": args.epoch,
+        "calibration_set_id": args.calibration_set_id,
+        "design_sha256": args.design_sha256,
         "layout": list(layout),
         "layout_choice": args.layout,
     }
@@ -460,6 +487,15 @@ def dry_run(args: argparse.Namespace) -> int:
 
     helper = _load_helper()
     campaign = CAMPAIGNS[args.campaign]
+    design_sha256 = None
+    if campaign.get("distinct_epoch"):
+        try:
+            design_sha256 = depth_ordering.validate_frozen_design(
+                Path(campaign["design_path"])
+            ).sha256
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"REFUSED: {exc}. No readiness simulation was attempted.", file=sys.stderr)
+            return 2
     layout = PRIMARY_LAYOUT if args.layout == "primary" else FALLBACK_LAYOUT
     backend = _fake_backend()
     rows = build_powered_plan(
@@ -510,6 +546,7 @@ def dry_run(args: argparse.Namespace) -> int:
         "date": args.date,
         "layout": list(layout),
         "layout_choice": args.layout,
+        "design_sha256": design_sha256,
         "depth_envelope": {str(k): int(v) for k, v in campaign["envelope"].items()},
         "envelope_violations": envelope_violations,
         "circuit_count": len(rows),
@@ -648,6 +685,9 @@ def _new_journal(
         "date": args.date,
         "repetition": args.repetition,
         "window": args.window,
+        "epoch": args.epoch,
+        "calibration_set_id": args.calibration_set_id,
+        "design_sha256": args.design_sha256,
         "layout": list(layout),
         "layout_choice": args.layout,
         "transpiled_depths": depths,
@@ -679,6 +719,27 @@ def submit(args: argparse.Namespace) -> int:
     helper = _load_helper()
     campaign = CAMPAIGNS[args.campaign]
     layout = PRIMARY_LAYOUT if args.layout == "primary" else FALLBACK_LAYOUT
+    args.calibration_set_id = None
+    args.design_sha256 = None
+    try:
+        if campaign.get("distinct_epoch"):
+            if not args.calibration:
+                raise ValueError("powered depth ordering requires --calibration")
+            admission = depth_ordering.validate_epoch_admission(
+                epoch=args.epoch,
+                layout=layout,
+                layout_choice=args.layout,
+                submission_date=args.date,
+                calibration_path=Path(args.calibration),
+                prior_calibration_paths=[Path(path) for path in args.prior_calibrations],
+                prior_count_paths=[Path(path) for path in args.prior_epoch_counts],
+                design_path=Path(campaign["design_path"]),
+            )
+            args.calibration_set_id = admission.calibration_set_id
+            args.design_sha256 = admission.design_sha256
+    except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        print(f"REFUSED: {exc}. No provider submission was attempted.", file=sys.stderr)
+        return 2
     out_path = Path(args.out)
     with _journal_lock(out_path):
         record: dict[str, Any] | None = None
@@ -757,6 +818,18 @@ def submit(args: argparse.Namespace) -> int:
             prepared[int(row["shots"])].append((row["label"], isa))
 
         expected_groups, run_requests = _build_submission_groups(backend, prepared)
+        if args.calibration_set_id is not None:
+            request_ids = {
+                str(getattr(request, "calibration_set_id", ""))
+                for request in run_requests.values()
+            }
+            if request_ids != {args.calibration_set_id}:
+                print(
+                    "REFUSED: live provider payload calibration set differs from the "
+                    "validated snapshot. Refresh calibration before submit.",
+                    file=sys.stderr,
+                )
+                return 2
         if record is None:
             record = _new_journal(
                 args=args,
@@ -957,11 +1030,15 @@ def retrieve(args: argparse.Namespace) -> int:
             print(f"{label}: {sum(counts[label].values())} shots retrieved")
 
     payload = {
+        "schema": depth_ordering.RETRIEVED_COUNTS_SCHEMA,
         "campaign": record["campaign"],
         "backend": record["quantum_computer"],
         "date": record["date"],
         "repetition": record["repetition"],
         "window": record.get("window", 0),
+        "epoch": record.get("epoch", 0),
+        "calibration_set_id": record.get("calibration_set_id"),
+        "design_sha256": record.get("design_sha256"),
         "layout": record["layout"],
         "job_ids": [entry["job_id"] for entry in jobs],
         "counts": counts,
@@ -995,6 +1072,28 @@ def main(argv: list[str] | None = None) -> int:
         type=int,
         default=0,
         help="window index for the window-variability campaign (stamped into the record)",
+    )
+    sub_submit.add_argument(
+        "--epoch",
+        type=int,
+        default=0,
+        help="powered depth-ordering distinct calibration-epoch index",
+    )
+    sub_submit.add_argument(
+        "--calibration",
+        help="current live calibration snapshot required by powered depth ordering",
+    )
+    sub_submit.add_argument(
+        "--prior-calibrations",
+        nargs="*",
+        default=(),
+        help="powered depth-ordering calibration snapshots from all earlier epochs",
+    )
+    sub_submit.add_argument(
+        "--prior-epoch-counts",
+        nargs="*",
+        default=(),
+        help="powered depth-ordering retrieved counts from all earlier epochs",
     )
     sub_submit.add_argument("--date", required=True, help="artefact date stamp (YYYY-MM-DD)")
     sub_submit.add_argument("--out", required=True, help="submission record JSON")
