@@ -26,6 +26,21 @@ analysis code, and review status.
 
 ## Architecture
 
+### HAL job identity custody
+
+`HardwareAbstractionLayer` checks adapter-returned handles before exposing them:
+submission must preserve the selected `backend_id` and requested `workload_id`;
+result retrieval and cancellation must also preserve `job_id`. A mismatch raises
+`ValueError`. Recovered handles are supported without a router-local submission
+cache. Status and metadata may change as the job progresses; accepted results
+retain the adapter's original counts, shots and metadata without rewriting.
+
+These checks bind identities, not scientific fidelity, shot-setting agreement or
+provider authenticity. They neither submit a replacement job nor promote a
+cancellation request to confirmed cancellation. A mismatch detected after submit
+or cancel does not roll back that provider operation. Reconcile its outcome
+before any resubmission; do not automatically retry a rejected submit response.
+
 ```
 Experiment Definition (experiments.py)
     │

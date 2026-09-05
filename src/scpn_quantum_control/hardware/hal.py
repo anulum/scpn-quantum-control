@@ -331,7 +331,35 @@ class HardwareAbstractionLayer:
         *,
         approval_id: str | None = None,
     ) -> QuantumJobRef:
-        """Validate and submit a workload through an injected adapter."""
+        """Submit a workload and verify the returned route and workload identity.
+
+        Parameters
+        ----------
+        backend_id
+            Registered route selected by the caller.
+        workload
+            Validated programme and requested resources.
+        approval_id
+            Explicit approval required by cloud profiles.
+
+        Returns
+        -------
+        QuantumJobRef
+            Adapter handle bound to the requested route and workload.
+
+        Raises
+        ------
+        PermissionError
+            If the adapter or required approval is absent.
+        ValueError
+            If workload admission fails or the returned identity differs.
+
+        Notes
+        -----
+        Identity rejection occurs after submission and does not undo it. Do not
+        automatically retry; reconcile the provider operation before resubmitting.
+
+        """
         profile = self.profile(backend_id)
         _validate_workload_for_profile(profile, workload)
         backend = self._backends.get(backend_id)
@@ -339,22 +367,71 @@ class HardwareAbstractionLayer:
             raise PermissionError(f"backend is not registered: {backend_id}")
         if profile.submit_requires_approval and not approval_id:
             raise PermissionError(f"submission approval required for backend: {backend_id}")
-        return backend.submit(workload, approval_id=approval_id)
+        job = backend.submit(workload, approval_id=approval_id)
+        if job.backend_id != backend_id:
+            raise ValueError("submit returned a different backend_id")
+        if job.workload_id != workload.workload_id:
+            raise ValueError("submit returned a different workload_id")
+        return job
 
     def status(self, job: QuantumJobRef) -> str:
         """Return current status by delegating to the owning adapter."""
         return self._backend_for_job(job).status(job)
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
-        """Return a result by delegating to the owning adapter."""
-        return self._backend_for_job(job).result(job)
+        """Return unmodified adapter evidence for the requested job identity.
+
+        Parameters
+        ----------
+        job
+            Original or recovered handle identifying the job and workload.
+
+        Returns
+        -------
+        QuantumJobResult
+            Adapter result with matching job, backend and workload identifiers.
+            Status and metadata may reflect later lifecycle observations.
+
+        Raises
+        ------
+        ValueError
+            If the adapter returns evidence for a different identity.
+
+        """
+        result = self._backend_for_job(job).result(job)
+        _require_same_job(job, result.job, "result")
+        return result
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
-        """Cancel a job by delegating to the owning adapter."""
+        """Request cancellation and verify the response job identity.
+
+        Parameters
+        ----------
+        job
+            Handle for the job whose cancellation is requested.
+
+        Returns
+        -------
+        QuantumJobRef
+            Adapter response preserving all three identity fields. Its status
+            is not promoted to confirmed cancellation by the router.
+
+        Raises
+        ------
+        ValueError
+            If cancellation is unsupported or the response identity differs.
+
+        Notes
+        -----
+        A rejected response does not undo the provider cancellation request.
+
+        """
         profile = self.profile(job.backend_id)
         if not profile.capabilities.supports_cancellation:
             raise ValueError(f"backend does not support cancellation: {job.backend_id}")
-        return self._backend_for_job(job).cancel(job)
+        response = self._backend_for_job(job).cancel(job)
+        _require_same_job(job, response, "cancel")
+        return response
 
     def _backend_for_job(self, job: QuantumJobRef) -> QuantumBackend:
         self.profile(job.backend_id)
@@ -362,6 +439,13 @@ class HardwareAbstractionLayer:
         if backend is None:
             raise PermissionError(f"backend is not registered: {job.backend_id}")
         return backend
+
+
+def _require_same_job(expected: QuantumJobRef, observed: QuantumJobRef, operation: str) -> None:
+    """Compare durable identifiers without freezing lifecycle observations."""
+    for field_name in ("job_id", "backend_id", "workload_id"):
+        if getattr(expected, field_name) != getattr(observed, field_name):
+            raise ValueError(f"{operation} returned a different {field_name}")
 
 
 def _validate_workload_for_profile(profile: BackendProfile, workload: QuantumWorkload) -> None:

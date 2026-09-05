@@ -10,6 +10,8 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
 from scpn_quantum_control.hardware.hal import (
@@ -23,6 +25,132 @@ from scpn_quantum_control.hardware.hal import (
     QuantumWorkload,
     built_in_backend_profiles,
 )
+
+
+@pytest.fixture
+def local_job_route() -> tuple[
+    HardwareAbstractionLayer, LocalDeterministicSimulator, QuantumWorkload
+]:
+    """Provide a real offline HAL route with a two-qubit workload."""
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    backend = LocalDeterministicSimulator(hal.profile("local_statevector"))
+    hal.register_backend(backend)
+    workload = QuantumWorkload("identity-custody", "mlir", "module {}", 2, shots=16)
+    return hal, backend, workload
+
+
+@pytest.mark.parametrize("field", ["backend_id", "workload_id"])
+def test_hal_rejects_substituted_submission_identity(
+    local_job_route: tuple[HardwareAbstractionLayer, LocalDeterministicSimulator, QuantumWorkload],
+    monkeypatch: pytest.MonkeyPatch,
+    field: str,
+) -> None:
+    """Reject a mislabelled handle after actual local adapter submission."""
+    hal, backend, workload = local_job_route
+    submit = backend.submit
+    submitted: list[QuantumJobRef] = []
+
+    def mislabelled_submit(
+        request: QuantumWorkload, *, approval_id: str | None = None
+    ) -> QuantumJobRef:
+        job = submit(request, approval_id=approval_id)
+        submitted.append(job)
+        return replace(
+            job,
+            backend_id="different" if field == "backend_id" else job.backend_id,
+            workload_id="different" if field == "workload_id" else job.workload_id,
+        )
+
+    monkeypatch.setattr(backend, "submit", mislabelled_submit)
+    with pytest.raises(ValueError, match=f"submit.*{field}"):
+        hal.submit(backend.backend_id, workload)
+    assert len(submitted) == 1
+    assert backend.result(submitted[0]).shots == workload.shots
+
+
+@pytest.mark.parametrize("field", ["job_id", "backend_id", "workload_id"])
+def test_hal_rejects_substituted_result_identity(
+    local_job_route: tuple[HardwareAbstractionLayer, LocalDeterministicSimulator, QuantumWorkload],
+    monkeypatch: pytest.MonkeyPatch,
+    field: str,
+) -> None:
+    """Refuse real counts attached to the wrong job, route or workload."""
+    hal, backend, workload = local_job_route
+    job = hal.submit(backend.backend_id, workload)
+    fetch = backend.result
+
+    def mislabelled_result(request: QuantumJobRef) -> QuantumJobResult:
+        result = fetch(request)
+        return replace(
+            result,
+            job=replace(
+                result.job,
+                job_id="different" if field == "job_id" else result.job.job_id,
+                backend_id="different" if field == "backend_id" else result.job.backend_id,
+                workload_id="different" if field == "workload_id" else result.job.workload_id,
+            ),
+        )
+
+    monkeypatch.setattr(backend, "result", mislabelled_result)
+    with pytest.raises(ValueError, match=f"result.*{field}"):
+        hal.result(job)
+
+
+@pytest.mark.parametrize("field", ["job_id", "backend_id", "workload_id"])
+def test_hal_rejects_substituted_cancellation_identity(
+    local_job_route: tuple[HardwareAbstractionLayer, LocalDeterministicSimulator, QuantumWorkload],
+    monkeypatch: pytest.MonkeyPatch,
+    field: str,
+) -> None:
+    """Reject a cancellation response referring to a different identity."""
+    hal, backend, workload = local_job_route
+    job = hal.submit(backend.backend_id, workload)
+    cancel = backend.cancel
+
+    def mislabelled_cancel(request: QuantumJobRef) -> QuantumJobRef:
+        response = cancel(request)
+        return replace(
+            response,
+            job_id="different" if field == "job_id" else response.job_id,
+            backend_id="different" if field == "backend_id" else response.backend_id,
+            workload_id="different" if field == "workload_id" else response.workload_id,
+        )
+
+    monkeypatch.setattr(backend, "cancel", mislabelled_cancel)
+    with pytest.raises(ValueError, match=f"cancel.*{field}"):
+        hal.cancel(job)
+    assert backend.status(job) == "cancelled"
+
+
+def test_hal_recovered_handle_preserves_result_evidence(
+    local_job_route: tuple[HardwareAbstractionLayer, LocalDeterministicSimulator, QuantumWorkload],
+) -> None:
+    """Allow lifecycle changes and recovery without rewriting raw evidence."""
+    hal, backend, workload = local_job_route
+    job = hal.submit(backend.backend_id, workload)
+    recovered = replace(job, status="submitted", metadata={"recovered": True})
+    fresh_router = HardwareAbstractionLayer((backend.profile,))
+    fresh_router.register_backend(backend)
+    raw = backend.result(job)
+    result = fresh_router.result(recovered)
+    assert result is raw
+    assert dict(result.counts) == dict(raw.counts)
+    assert result.metadata == raw.metadata
+    assert result.job.metadata != recovered.metadata
+    assert result.job.status != recovered.status
+    assert fresh_router.cancel(recovered).status == "cancelled"
+
+
+def test_hal_rejects_recovered_handle_with_wrong_workload(
+    local_job_route: tuple[HardwareAbstractionLayer, LocalDeterministicSimulator, QuantumWorkload],
+) -> None:
+    """Reject a misassociated recovered handle using the unmodified adapter."""
+    hal, backend, workload = local_job_route
+    job = hal.submit(backend.backend_id, workload)
+    misassociated = replace(job, workload_id="another-workload")
+    with pytest.raises(ValueError, match="result.*workload_id"):
+        hal.result(misassociated)
+    assert hal.result(job) is backend.result(job)
 
 
 def test_hal_profiles_export_backend_descriptors_for_selector_metadata() -> None:

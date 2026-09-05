@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Bind HAL submission, result and cancellation responses to the requested
+  job identities; reject substituted handles without rewriting result evidence
+  or treating lifecycle status changes as identity drift.
+
 - Reject missing or unexpected stable-core v2 model fields, including nested
   experiment models, and reject contradictory serialized qubit counts at both
   envelope boundaries. Preserve direct mapping-constructor compatibility.
