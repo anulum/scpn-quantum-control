@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Declare the analog execution-unit classifier as a public module symbol instead
+  of importing a private name across a module boundary. Admission outcomes,
+  refusal messages and the recorded unit contract and status are unchanged.
+
 - Validate analog execution-plan unit triples and record their versioned status;
   prevent approval from promoting uncalibrated design units to SDK construction
   or execution. Unsupported unit conversions now refuse without changing payloads.

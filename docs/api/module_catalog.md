@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **699 modules** across **39 package families**
-- **3909 documented public module-level symbols**
+- **3910 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2489,9 +2489,9 @@ First-class aggregator/provider route matrix for the hardware HAL.
 
 Unit vocabulary for design-plan admission, not provider SDK conversion.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/analog_execution_units.py) · Public symbols: **0**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/analog_execution_units.py) · Public symbols: **1**
 
-No public module-level class or function is declared.
+**Functions:** `execution_unit_status()`
 
 ### `scpn_quantum_control.hardware.analog_kuramoto`
 

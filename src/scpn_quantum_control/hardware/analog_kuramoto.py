@@ -30,7 +30,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from ..kuramoto_core import KuramotoProblem, build_kuramoto_problem
-from .analog_execution_units import UNIT_CONTRACT, UnitStatus, _execution_unit_status
+from .analog_execution_units import UNIT_CONTRACT, UnitStatus, execution_unit_status
 
 FloatArray: TypeAlias = NDArray[np.float64]
 IntArray: TypeAlias = NDArray[np.int64]
@@ -451,7 +451,7 @@ def prepare_provider_execution_plan(
             "use a separately approved provider runner"
         )
     _validate_execution_calibration(calibration)
-    unit_status = _execution_unit_status(calibration)
+    unit_status = execution_unit_status(calibration)
     units_ready = unit_status == "canonical_design_rates"
     limitations = tuple(export.limitations) + (
         "execution_plan_only_no_provider_contact",

@@ -14,8 +14,33 @@ UNIT_CONTRACT = "analog_execution_units.v1"
 UnitStatus = Literal["canonical_design_rates", "uncalibrated_design_units", "unverified"]
 
 
-def _execution_unit_status(calibration: Mapping[str, object]) -> UnitStatus:
-    """Classify declared design-plan units without rescaling payload values."""
+def execution_unit_status(calibration: Mapping[str, object]) -> UnitStatus:
+    """Classify declared design-plan units without rescaling payload values.
+
+    Parameters
+    ----------
+    calibration
+        Execution calibration carrying ``duration_unit``, ``coupling_unit`` and
+        ``detuning_unit``. Values are compared as declared labels; no numeric
+        field is read, converted or rescaled.
+
+    Returns
+    -------
+    UnitStatus
+        ``"canonical_design_rates"`` for the ``us, rad/us, rad/us`` design
+        convention, or ``"uncalibrated_design_units"`` for the two recognised
+        legacy design-only triples. A legacy triple stays inspectable but can
+        never enable construction or execution, even with approval.
+
+    Raises
+    ------
+    KeyError
+        If any of the three unit keys is absent from ``calibration``.
+    ValueError
+        If the declared triple is neither canonical nor a recognised legacy
+        one. Seconds, hertz and nanoseconds need an explicit calibrated
+        conversion adapter, never label substitution.
+    """
     units = tuple(calibration[key] for key in ("duration_unit", "coupling_unit", "detuning_unit"))
     if units == ("us", "rad/us", "rad/us"):
         return "canonical_design_rates"
