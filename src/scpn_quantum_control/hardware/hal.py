@@ -25,6 +25,21 @@ from types import MappingProxyType
 from typing import Protocol, runtime_checkable
 
 _TOKEN_RE = re.compile(r"^[A-Za-z0-9_.:/-]+$")
+_SUBMISSION_METADATA_KEYS = frozenset(
+    {
+        "approval_id",
+        "provider_job_id",
+        "execution_mode",
+        "backend_name",
+        "quantum_computer",
+        "ir_format",
+        "n_qubits",
+        "shots",
+        "target",
+        "workload_id",
+        "broker",
+    }
+)
 
 
 def _validate_token(value: str, field_name: str) -> None:
@@ -107,7 +122,33 @@ class BackendProfile:
 
 @dataclass(frozen=True)
 class QuantumWorkload:
-    """Provider-neutral workload handed to an injected backend adapter."""
+    """Provider-neutral workload handed to an injected backend adapter.
+
+    Parameters
+    ----------
+    workload_id
+        Stable workload identifier.
+    ir_format
+        Programme representation accepted by the selected route.
+    program
+        Non-empty encoded programme.
+    n_qubits
+        Positive logical qubit count.
+    shots
+        Positive requested sample count.
+    metadata
+        Application-specific JSON-scalar annotations. Adapter-owned submission
+        keys are reserved: approval_id, provider_job_id, execution_mode,
+        backend_name, quantum_computer, ir_format, n_qubits, shots, target,
+        workload_id and broker. Use typed workload fields and adapter arguments
+        for these settings, not annotations.
+
+    Raises
+    ------
+    ValueError
+        If fields are invalid or metadata shadows a reserved submission key.
+
+    """
 
     workload_id: str
     ir_format: str
@@ -126,7 +167,13 @@ class QuantumWorkload:
             raise ValueError("n_qubits must be a positive integer")
         if not isinstance(self.shots, int) or self.shots <= 0:
             raise ValueError("shots must be a positive integer")
-        object.__setattr__(self, "metadata", _freeze_metadata(self.metadata))
+        metadata = _freeze_metadata(self.metadata)
+        reserved = _SUBMISSION_METADATA_KEYS.intersection(metadata)
+        if reserved:
+            raise ValueError(
+                f"workload metadata contains reserved submission keys: {sorted(reserved)}"
+            )
+        object.__setattr__(self, "metadata", metadata)
 
 
 @dataclass(frozen=True)

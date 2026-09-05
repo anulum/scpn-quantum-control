@@ -153,6 +153,66 @@ def test_hal_rejects_recovered_handle_with_wrong_workload(
     assert hal.result(job) is backend.result(job)
 
 
+@pytest.mark.parametrize(
+    "key",
+    [
+        "approval_id",
+        "provider_job_id",
+        "execution_mode",
+        "backend_name",
+        "quantum_computer",
+        "ir_format",
+        "n_qubits",
+        "shots",
+        "target",
+        "workload_id",
+        "broker",
+    ],
+)
+def test_workload_rejects_adapter_owned_metadata(key: str) -> None:
+    """Refuse metadata capable of replacing submitted settings or provenance."""
+    with pytest.raises(ValueError, match=f"reserved.*{key}"):
+        QuantumWorkload("metadata-custody", "mlir", "module {}", 2, metadata={key: "override"})
+
+
+def test_workload_rejects_duplicate_shot_setting_even_when_equal() -> None:
+    """Require one authoritative shot setting instead of duplicate metadata."""
+    with pytest.raises(ValueError, match="reserved.*shots"):
+        QuantumWorkload(
+            "metadata-custody", "mlir", "module {}", 2, shots=16, metadata={"shots": 16}
+        )
+
+
+def test_iqm_adapter_preserves_requested_shots_with_real_local_execution() -> None:
+    """Exercise QPY, the IQM adapter and Aer without contacting a provider."""
+    from qiskit import QuantumCircuit
+    from qiskit_aer import AerSimulator
+
+    from scpn_quantum_control.hardware.hal_iqm import IQMHALAdapter, iqm_qiskit_workload
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    backend = AerSimulator(max_parallel_threads=1)
+    adapter = IQMHALAdapter(hal.profile("iqm_cloud"), backend=backend)
+    hal.register_backend(adapter)
+    circuit = QuantumCircuit(2)
+    circuit.x(1)
+    circuit.measure_all()
+    workload = iqm_qiskit_workload(
+        circuit,
+        workload_id="local-metadata-custody",
+        shots=16,
+        metadata={"campaign": "offline-adapter-contract", "seed": 7},
+    )
+    job = hal.submit("iqm_cloud", workload, approval_id="local-injected-adapter-only")
+    result = hal.result(job)
+    assert job.metadata["shots"] == workload.shots == result.shots == 16
+    assert result.counts == {"10": 16}
+    assert job.metadata["campaign"] == "offline-adapter-contract"
+    assert job.metadata["seed"] == 7
+    assert result.metadata["provider_job_id"] == job.metadata["provider_job_id"]
+    assert result.metadata["backend_name"] == backend.name
+
+
 def test_hal_profiles_export_backend_descriptors_for_selector_metadata() -> None:
     """Every built-in HAL route should have offline selector metadata."""
     from scpn_quantum_control.hardware import (

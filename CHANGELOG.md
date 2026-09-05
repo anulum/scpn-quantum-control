@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Reject workload metadata that shadows adapter-owned submission settings or
+  provenance before provider execution; retain application annotations and
+  adapter-produced job/result metadata.
+
 - Bind HAL submission, result and cancellation responses to the requested
   job identities; reject substituted handles without rewriting result evidence
   or treating lifecycle status changes as identity drift.

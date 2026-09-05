@@ -28,6 +28,17 @@ analysis code, and review status.
 
 ### HAL job identity custody
 
+`QuantumWorkload.metadata` contains application annotations, not execution
+settings. It rejects these adapter-owned keys before any provider operation:
+`approval_id`, `provider_job_id`, `execution_mode`, `backend_name`,
+`quantum_computer`, `ir_format`, `n_qubits`, `shots`, `target`, `workload_id`
+and `broker`. Put requested resources in the typed workload fields and route,
+target and approval choices in the relevant adapter/router arguments. For
+descriptive annotations, use application-specific names such as
+`campaign` or `analysis_target`. The restriction applies even when the duplicate
+value agrees with the typed setting; no value is silently discarded or replaced.
+Job and result metadata remain allowed to carry adapter-owned provenance.
+
 `HardwareAbstractionLayer` checks adapter-returned handles before exposing them:
 submission must preserve the selected `backend_id` and requested `workload_id`;
 result retrieval and cancellation must also preserve `job_id`. A mismatch raises
