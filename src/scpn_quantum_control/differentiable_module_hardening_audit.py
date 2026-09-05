@@ -800,6 +800,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("Fisher and metric boundaries", "gradient support errors"),
         ),
         _record(
+            "src/scpn_quantum_control/phase/qnode_count_mapping.py",
+            ("tests/test_phase_qnode_circuit_differentiation_integration.py",),
+            (
+                "explicit measurement-wire permutation",
+                "raw-count custody and malformed-count refusal",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/phase/qnode_circuit_execution.py",
             ("tests/test_phase_qnode_circuit_execution.py",),
             ("statevector execution", "density and observable kernels"),

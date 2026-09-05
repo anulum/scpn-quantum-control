@@ -4,7 +4,7 @@ This static catalog makes every ordinary Python module and every public
 module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
-- **697 modules** across **39 package families**
+- **699 modules** across **39 package families**
 - **3909 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
@@ -2485,6 +2485,14 @@ First-class aggregator/provider route matrix for the hardware HAL.
 
 **Functions:** `built_in_aggregator_provider_routes()`, `aggregator_provider_routes_for()`, `resolve_aggregator_provider_route()`
 
+### `scpn_quantum_control.hardware.analog_execution_units`
+
+Unit vocabulary for design-plan admission, not provider SDK conversion.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/analog_execution_units.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
+
 ### `scpn_quantum_control.hardware.analog_kuramoto`
 
 Native analog Kuramoto backend interface.
@@ -4144,6 +4152,14 @@ Declarative support analysis and shift planning for Phase-QNode circuits.
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/qnode_circuit_support.py) · Public symbols: **7**
 
 **Functions:** `build_registered_phase_qnode_circuit()`, `phase_qnode_depth_profile()`, `phase_qnode_support_report()`, `phase_qnode_density_support_report()`, `phase_qnode_gradient_support_report()`, `plan_phase_qnode_parameter_shift_evaluations()`, `phase_qnode_metric_support_report()`
+
+### `scpn_quantum_control.phase.qnode_count_mapping`
+
+Explicit bit-position custody for the local Fisher replay consumer.
+
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/phase/qnode_count_mapping.py) · Public symbols: **0**
+
+No public module-level class or function is declared.
 
 ### `scpn_quantum_control.phase.qnode_framework_parity`
 
