@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Validate analog execution-plan unit triples and record their versioned status;
+  prevent approval from promoting uncalibrated design units to SDK construction
+  or execution. Unsupported unit conversions now refuse without changing payloads.
+
 - Replay computational-basis bitstring counts through an explicit logical-wire
   permutation in the existing Fisher API, retaining versioned raw-count mapping
   evidence and refusing partial or ambiguous measurements. Existing vector

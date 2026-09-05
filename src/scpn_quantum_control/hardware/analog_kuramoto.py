@@ -30,6 +30,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from ..kuramoto_core import KuramotoProblem, build_kuramoto_problem
+from .analog_execution_units import UNIT_CONTRACT, UnitStatus, _execution_unit_status
 
 FloatArray: TypeAlias = NDArray[np.float64]
 IntArray: TypeAlias = NDArray[np.int64]
@@ -192,6 +193,7 @@ class ProviderAnalogExecutionPlan:
     calibration: dict[str, Any]
     payload: dict[str, Any]
     limitations: tuple[str, ...]
+    unit_status: UnitStatus = "unverified"
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serialisable execution-plan dictionary."""
@@ -207,6 +209,8 @@ class ProviderAnalogExecutionPlan:
             "calibration": self.calibration,
             "payload": self.payload,
             "limitations": list(self.limitations),
+            "unit_contract": UNIT_CONTRACT,
+            "unit_status": self.unit_status,
         }
 
 
@@ -433,6 +437,13 @@ def prepare_provider_execution_plan(
     contacting provider services. It is the executable-adapter gate: callers
     must supply calibration metadata and an explicit approval flag before the
     returned plan can be treated as constructible or executable.
+
+    The versioned design-plan unit contract accepts ``us, rad/us, rad/us``
+    for duration, coupling and detuning respectively. It performs no unit
+    conversion or provider-native calibration. The legacy design-only triples
+    ``design_time, dimensionless_native_coupling, dimensionless_detuning`` and
+    ``dt, arb, arb`` remain inspectable but cannot enable construction/execution,
+    even with approval. Other combinations raise ``ValueError``.
     """
     if allow_cloud_submission:
         raise ValueError(
@@ -440,16 +451,21 @@ def prepare_provider_execution_plan(
             "use a separately approved provider runner"
         )
     _validate_execution_calibration(calibration)
+    unit_status = _execution_unit_status(calibration)
+    units_ready = unit_status == "canonical_design_rates"
     limitations = tuple(export.limitations) + (
         "execution_plan_only_no_provider_contact",
         "cloud_submission_requires_separate_runner_approval",
     )
-    can_construct_sdk_object = bool(approved and export.sdk_available)
+    if not units_ready:
+        limitations += ("design_units_require_explicit_calibrated_conversion",)
+    can_construct_sdk_object = bool(approved and export.sdk_available and units_ready)
     can_execute = bool(can_construct_sdk_object and emulator_only)
     reason = _execution_plan_reason(
         approved=approved,
         sdk_available=export.sdk_available,
         emulator_only=emulator_only,
+        units_ready=units_ready,
     )
     return ProviderAnalogExecutionPlan(
         provider=export.provider,
@@ -463,6 +479,7 @@ def prepare_provider_execution_plan(
         calibration=dict(calibration),
         payload=export.payload,
         limitations=limitations,
+        unit_status=unit_status,
     )
 
 
@@ -832,9 +849,12 @@ def _execution_plan_reason(
     approved: bool,
     sdk_available: bool,
     emulator_only: bool,
+    units_ready: bool = True,
 ) -> str:
     if not approved:
         return "blocked_until_explicit_execution_approval"
+    if not units_ready:
+        return "blocked_until_calibrated_unit_conversion"
     if not sdk_available:
         return "blocked_until_provider_sdk_dependency_available"
     if not emulator_only:

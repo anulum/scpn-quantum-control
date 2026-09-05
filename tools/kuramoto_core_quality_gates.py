@@ -39,6 +39,7 @@ KURAMOTO_CORE_COVERAGE_COHORT = [
     "tests/test_kuramoto_input_hardening.py",
     "tests/test_kuramoto_variants.py",
     "tests/test_analog_kuramoto.py",
+    "tests/test_analog_execution_units.py",
     "tests/test_hybrid_digital_analog.py",
 ]
 """Connected public-facade tests that exercise every production branch."""

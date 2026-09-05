@@ -188,6 +188,26 @@ submission is deliberately rejected by this function; a separate provider runner
 with a project-specific approval, budget, and calibration gate is required
 before any QPU or provider-cloud claim can be made.
 
+## Execution-plan unit admission
+
+`prepare_provider_execution_plan` records `unit_contract="analog_execution_units.v1"`
+and `unit_status` in its JSON output. The supported design-plan convention is
+`duration_unit="us"`, `coupling_unit="rad/us"`, `detuning_unit="rad/us"`.
+This validates labels only: payload numbers are not rescaled and these labels
+do not prove device calibration, geometry validity or SDK-native unit alignment.
+For example, a later SDK adapter may require a different duration unit; it must
+perform and record that conversion explicitly. Hertz, seconds and mixed unit
+triples are refused here rather than silently relabelled.
+
+Legacy design triples `design_time / dimensionless_native_coupling /
+dimensionless_detuning` and `dt / arb / arb` remain inspectable with status
+`uncalibrated_design_units`. They cannot enable SDK construction or execution,
+even when approved and an SDK is available. An approved plan reports
+`blocked_until_calibrated_unit_conversion`; unapproved plans retain the approval
+block. Raw calibration and payload fields remain present. Existing readiness
+reports remain non-submitting. The new fields are additive execution-plan
+evidence, not a revision of the stable-core experiment envelope.
+
 ## Registry Integration
 
 The backend is registered as `analog_kuramoto` in the
