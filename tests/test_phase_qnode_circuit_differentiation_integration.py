@@ -9,10 +9,14 @@
 
 from __future__ import annotations
 
+import json
+from collections.abc import Mapping, Sequence
 from typing import cast
 
 import numpy as np
 import pytest
+from qiskit import QuantumCircuit
+from qiskit.primitives import StatevectorSampler
 
 from scpn_quantum_control.phase.qnode_circuit import (
     DenseHermitianObservable,
@@ -30,6 +34,159 @@ from scpn_quantum_control.phase.qnode_circuit import (
     phase_qnode_natural_gradient_metric,
     phase_qnode_quantum_fisher_information,
 )
+
+
+@pytest.mark.parametrize("swapped", [False, True])
+def test_fisher_replays_qiskit_counts_with_explicit_measurement_wires(swapped: bool) -> None:
+    """Replay real local samples with both classical-bit measurement assignments."""
+    parameters = [0.7, 1.2]
+    quantum_circuit = QuantumCircuit(2, 2)
+    quantum_circuit.ry(parameters[0], 0)
+    quantum_circuit.ry(parameters[1], 1)
+    quantum_circuit.measure([0, 1], [1, 0] if swapped else [0, 1])
+    raw = (
+        StatevectorSampler(seed=73)
+        .run([quantum_circuit], shots=4096)
+        .result()[0]
+        .data.c.get_counts()
+    )
+    original = dict(raw)
+    wires = [0, 1] if swapped else [1, 0]  # Qiskit strings display c1, c0.
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2, operations=(("ry", (0,), 0), ("ry", (1,), 1)), observable="pauli_z"
+    )
+    mapped = phase_qnode_computational_basis_fisher_information(
+        circuit, parameters, observed_counts=raw, observed_count_wires=wires, shot_count=4096
+    )
+    labels = ["00", "01", "10", "11"] if swapped else ["00", "10", "01", "11"]
+    vector = phase_qnode_computational_basis_fisher_information(
+        circuit, parameters, observed_counts=[original[label] for label in labels], shot_count=4096
+    )
+    mapped_record = json.loads(json.dumps(mapped.to_dict()))
+    mapping = mapped_record.pop("count_mapping")
+    assert mapped_record == json.loads(json.dumps(vector.to_dict()))
+    assert mapping == {
+        "schema": "phase_qnode.computational_basis_count_mapping.v1",
+        "raw_counts": original,
+        "bit_wires": wires,
+        "basis_order": "qubit_zero_most_significant",
+    }
+    assert "count_mapping" not in vector.to_dict()
+    np.testing.assert_allclose(mapped.classical_fisher_information, np.eye(2), atol=1e-12)
+    assert mapped.empirical_probabilities is not None
+    np.testing.assert_allclose(mapped.empirical_probabilities, mapped.probabilities, atol=0.025)
+    raw.clear()
+    wires.reverse()
+    mapping["raw_counts"].clear()
+    assert mapped.count_mapping is not None
+    assert mapped.count_mapping.to_dict()["raw_counts"] == original
+    assert mapped.count_mapping.bit_wires == ((0, 1) if swapped else (1, 0))
+
+
+def test_fisher_replays_three_qubit_measurement_permutation() -> None:
+    """Map a cyclic classical-register assignment, not just reversed strings."""
+    parameters = [0.7, 1.2, 1.5]
+    quantum_circuit = QuantumCircuit(3, 3)
+    for wire, angle in enumerate(parameters):
+        quantum_circuit.ry(angle, wire)
+    quantum_circuit.measure([0, 1, 2], [1, 2, 0])
+    raw = (
+        StatevectorSampler(seed=73)
+        .run([quantum_circuit], shots=8192)
+        .result()[0]
+        .data.c.get_counts()
+    )
+    circuit = PhaseQNodeCircuit(
+        n_qubits=3,
+        operations=(("ry", (0,), 0), ("ry", (1,), 1), ("ry", (2,), 2)),
+        observable="pauli_z",
+    )
+    result = phase_qnode_computational_basis_fisher_information(
+        circuit, parameters, observed_counts=raw, observed_count_wires=[1, 0, 2], shot_count=8192
+    )
+    # Canonical q0 q1 q2 outcomes -> displayed c2 c1 c0 = q1 q0 q2.
+    assert result.count_record == tuple(
+        raw[label] for label in ("000", "001", "100", "101", "010", "011", "110", "111")
+    )
+    assert result.empirical_probabilities is not None
+    np.testing.assert_allclose(result.empirical_probabilities, result.probabilities, atol=0.025)
+    np.testing.assert_allclose(result.classical_fisher_information, np.eye(3), atol=1e-12)
+
+
+@pytest.mark.parametrize(
+    ("counts", "wires", "message"),
+    [
+        ({"00": 1, "01": 2, "10": 3, "11": 4}, None, "require observed_count_wires"),
+        ({"00": 1, "01": 2, "10": 3, "11": 4}, [0, 0], "permutation"),
+        ({"00": 1, "01": 2, "10": 3, "11": 4}, [0], "permutation"),
+        ({"00": 1, "01": 2, "10": 3, "11": 4}, [0, 2], "permutation"),
+        ({"00": 1, "01": 2, "10": 3, "11": 4}, [False, 1], "permutation"),
+        ({"00": 1, "01": 2, "10": 3, "11": 4}, [0.0, 1], "permutation"),
+        ({"00": 1}, [0, 1], "every computational-basis"),
+        ({"0": 1, "01": 2, "10": 3, "11": 4}, [0, 1], "full-width binary"),
+        ({"0 0": 1, "01": 2, "10": 3, "11": 4}, [0, 1], "full-width binary"),
+        ({"ab": 1, "01": 2, "10": 3, "11": 4}, [0, 1], "full-width binary"),
+        ({0: 1, "01": 2, "10": 3, "11": 4}, [0, 1], "full-width binary"),
+        ({"00": True, "01": 2, "10": 3, "11": 4}, [0, 1], "positive integers"),
+        ({"00": 1.5, "01": 2, "10": 3, "11": 4}, [0, 1], "positive integers"),
+        ({"00": 0, "01": 2, "10": 3, "11": 4}, [0, 1], "positive integers"),
+        ({"00": -1, "01": 2, "10": 3, "11": 4}, [0, 1], "positive integers"),
+    ],
+)
+def test_fisher_refuses_ambiguous_bitstring_records(
+    counts: object, wires: object, message: str
+) -> None:
+    """Reject incomplete, nonbinary or undeclared measurement evidence at the public API."""
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2, operations=(("ry", (0,), 0), ("ry", (1,), 1)), observable="pauli_z"
+    )
+    with pytest.raises(ValueError, match=message):
+        phase_qnode_computational_basis_fisher_information(
+            circuit,
+            [0.7, 1.2],
+            observed_counts=cast(Mapping[str, int], counts),
+            observed_count_wires=cast(Sequence[int] | None, wires),
+        )
+
+
+@pytest.mark.parametrize("counts", [None, [1, 2, 3, 4]])
+def test_fisher_refuses_wire_metadata_without_bitstring_counts(counts: list[int] | None) -> None:
+    """Prevent meaningless mapping provenance on vector or expected-count replay."""
+    circuit = PhaseQNodeCircuit(n_qubits=2, operations=(("h", (0,)),), observable="pauli_z")
+    with pytest.raises(ValueError, match="requires bitstring mapping counts"):
+        phase_qnode_computational_basis_fisher_information(
+            circuit, [], observed_counts=counts, observed_count_wires=[0, 1]
+        )
+
+
+@pytest.mark.parametrize("count", [2**80, 10**1000])
+def test_fisher_mapping_preserves_integer_counts_with_finite_statistics_boundary(
+    count: int,
+) -> None:
+    """Retain arbitrary integer mapping counts but refuse unrepresentable statistics."""
+    circuit = PhaseQNodeCircuit(n_qubits=1, operations=(("ry", (0,), 0),), observable="pauli_z")
+    if count == 10**1000:
+        with pytest.raises(ValueError, match="finite float64"):
+            phase_qnode_computational_basis_fisher_information(
+                circuit,
+                [np.pi / 2],
+                observed_counts={"0": count, "1": count},
+                observed_count_wires=[0],
+            )
+        return
+    result = phase_qnode_computational_basis_fisher_information(
+        circuit, [np.pi / 2], observed_counts={"0": count, "1": count}, observed_count_wires=[0]
+    )
+    assert result.count_record == (count, count)
+    assert result.shot_count == 2 * count
+    with pytest.raises(ValueError, match="sum must equal"):
+        phase_qnode_computational_basis_fisher_information(
+            circuit,
+            [np.pi / 2],
+            observed_counts={"0": count, "1": count},
+            observed_count_wires=[0],
+            shot_count=1,
+        )
 
 
 def test_phase_qnode_parameter_shift_matches_finite_difference_for_registered_generators() -> None:

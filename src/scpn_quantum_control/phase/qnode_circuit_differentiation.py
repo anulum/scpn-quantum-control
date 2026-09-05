@@ -15,7 +15,7 @@ framework, compiler, provider, hardware, benchmark, or publication logic.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping, Sequence
 from typing import Any, cast
 
 import numpy as np
@@ -60,6 +60,7 @@ from .qnode_circuit_support import (
     phase_qnode_support_report,
     plan_phase_qnode_parameter_shift_evaluations,
 )
+from .qnode_count_mapping import _map_basis_counts, _MappedBasisCounts
 
 
 def phase_qnode_computational_basis_fisher_support_report(
@@ -218,7 +219,8 @@ def phase_qnode_computational_basis_fisher_information(
     *,
     min_probability: float = 1e-15,
     shot_count: int | None = None,
-    observed_counts: ArrayLike | None = None,
+    observed_counts: ArrayLike | Mapping[str, int] | None = None,
+    observed_count_wires: Sequence[int] | None = None,
     confidence_level: float = 0.95,
     confidence_z: float = 1.959963984540054,
 ) -> PhaseQNodeClassicalFisherResult:
@@ -247,6 +249,12 @@ def phase_qnode_computational_basis_fisher_information(
         computational-basis order, with qubit zero the most significant axis.
         Integer values and their sum are retained exactly; floating-point
         probabilities and uncertainty remain float64 approximations.
+        Alternatively, full-width binary keys mapped to positive integer counts;
+        this requires explicit ``observed_count_wires`` and every basis outcome.
+    observed_count_wires
+        Logical qubit IDs for bitstring positions from left to right, a full
+        permutation of circuit qubits. Only valid with mapping counts. Register
+        separators, partial measurements and implicit zero padding are refused.
     confidence_level
         Recorded confidence level strictly between zero and one.
     confidence_z
@@ -270,6 +278,15 @@ def phase_qnode_computational_basis_fisher_information(
     shots = _as_shot_count(shot_count)
     confidence = _as_confidence_level(confidence_level)
     z_value = _as_confidence_z(confidence_z)
+    count_mapping = None
+    replay_counts: ArrayLike | _MappedBasisCounts | None
+    if isinstance(observed_counts, Mapping):
+        count_mapping = _map_basis_counts(observed_counts, observed_count_wires, circuit.n_qubits)
+        replay_counts = count_mapping
+    else:
+        if observed_count_wires is not None:
+            raise ValueError("observed_count_wires requires bitstring mapping counts")
+        replay_counts = observed_counts
     report = phase_qnode_computational_basis_fisher_support_report(
         circuit,
         values,
@@ -293,7 +310,7 @@ def phase_qnode_computational_basis_fisher_information(
         probabilities,
         probability_derivatives,
         shots,
-        observed_counts,
+        replay_counts,
         confidence,
         z_value,
     )
@@ -330,6 +347,7 @@ def phase_qnode_computational_basis_fisher_information(
         confidence_level=finite_shot.confidence_level,
         confidence_z=finite_shot.confidence_z,
         sampling_model=finite_shot.sampling_model,
+        count_mapping=count_mapping,
     )
 
 
@@ -403,20 +421,24 @@ def _as_confidence_z(value: float) -> float:
 
 
 def _as_observed_count_record(
-    observed_counts: ArrayLike,
+    observed_counts: ArrayLike | _MappedBasisCounts,
     width: int,
     shot_count: int | None,
 ) -> tuple[tuple[int, ...], int]:
     """Return a strict positive raw-count record and its total shots."""
-    raw = np.asarray(observed_counts)
-    if raw.shape != (width,):
-        raise ValueError(f"observed_counts must have shape ({width},), got {raw.shape}")
-    if raw.dtype.kind not in {"i", "u"}:
-        raise ValueError("observed_counts must be integer counts")
-    counts = tuple(int(item) for item in raw.tolist())
+    if isinstance(observed_counts, _MappedBasisCounts):
+        counts = observed_counts.count_vector
+    else:
+        raw = np.asarray(observed_counts)
+        if raw.shape != (width,):
+            raise ValueError(f"observed_counts must have shape ({width},), got {raw.shape}")
+        if raw.dtype.kind not in {"i", "u"}:
+            raise ValueError("observed_counts must be integer counts")
+        counts = tuple(int(item) for item in raw.tolist())
     if any(count <= 0 for count in counts):
         raise ValueError("observed_counts must be strictly positive for finite-shot Fisher replay")
     total = sum(counts)
+    _as_shot_count(total)
     if shot_count is not None and total != shot_count:
         raise ValueError("observed_counts sum must equal shot_count")
     return counts, total
@@ -457,7 +479,7 @@ def _finite_shot_fisher_evidence(
     probabilities: FloatArray,
     probability_derivatives: FloatArray,
     shot_count: int | None,
-    observed_counts: ArrayLike | None,
+    observed_counts: ArrayLike | _MappedBasisCounts | None,
     confidence_level: float,
     confidence_z: float,
 ) -> _FiniteShotFisherEvidence:

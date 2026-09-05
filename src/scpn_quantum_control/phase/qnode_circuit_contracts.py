@@ -21,6 +21,8 @@ from typing import TypeAlias, cast
 import numpy as np
 from numpy.typing import NDArray
 
+from .qnode_count_mapping import _MappedBasisCounts
+
 FloatArray: TypeAlias = NDArray[np.float64]
 ComplexArray: TypeAlias = NDArray[np.complex128]
 OperationSpec: TypeAlias = tuple[object, ...]
@@ -654,6 +656,8 @@ class PhaseQNodeClassicalFisherResult:
     finite-shot fields carry a multinomial plug-in estimate, delta-method
     standard errors, and confidence radii for the same computational-basis
     measurement route.
+    Bitstring replay additionally owns versioned ``count_mapping`` evidence;
+    vector and expected-count serialization retain their existing fields.
     """
 
     classical_fisher_information: FloatArray
@@ -672,10 +676,11 @@ class PhaseQNodeClassicalFisherResult:
     confidence_level: float | None = None
     confidence_z: float | None = None
     sampling_model: str | None = None
+    count_mapping: _MappedBasisCounts | None = None
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready classical Fisher evidence."""
-        return {
+        result: dict[str, object] = {
             "classical_fisher_information": self.classical_fisher_information.tolist(),
             "probabilities": self.probabilities.tolist(),
             "probability_derivatives": self.probability_derivatives.tolist(),
@@ -697,6 +702,9 @@ class PhaseQNodeClassicalFisherResult:
             "confidence_z": self.confidence_z,
             "sampling_model": self.sampling_model,
         }
+        if self.count_mapping is not None:
+            result["count_mapping"] = self.count_mapping.to_dict()
+        return result
 
 
 @dataclass(frozen=True)

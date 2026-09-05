@@ -460,7 +460,37 @@ Computational-basis Fisher replay accepts a positive integer count vector in
 ascending basis-index order, with qubit zero as the most significant axis:
 for two qubits the entries are `00`, `01`, `10`, `11` in that wire convention.
 Provider bitstrings must be mapped explicitly into this order; this API does
-not infer provider wire or classical-register mappings. Raw integer counts and
+not infer provider wire or classical-register mappings. Pass a binary count
+mapping as `observed_counts` together with `observed_count_wires`: logical qubit
+IDs for string positions **from left to right**. For Qiskit measurements
+`q0 -> c0, q1 -> c1` in one two-bit register, displayed strings are `c1 c0`, so
+use `[1, 0]`; swapping those measurement assignments requires `[0, 1]` instead.
+The caller must establish this mapping from the actual measurement circuit,
+not from a vendor name. Full-width binary keys and a permutation of all circuit
+qubits are required. Partial measurements, register separators, padded keys,
+nonbinary modalities, missing outcomes and zero counts are refused.
+
+```python
+replay = phase_qnode_computational_basis_fisher_information(
+    circuit,
+    parameters,
+    observed_counts={"00": 61, "01": 7, "10": 29, "11": 3},
+    observed_count_wires=[1, 0],
+    shot_count=100,
+)
+assert replay.count_record == (61, 29, 7, 3)
+```
+
+Mapping replay adds a `count_mapping` evidence record to `to_dict()` with schema
+`phase_qnode.computational_basis_count_mapping.v1`, owned raw counts, the declared
+wire permutation and canonical basis order. Editing input counts or a serialized
+copy does not change that evidence. Existing vector/expected-count serialization
+is unchanged. This is a bounded local replay adapter, not a stable-core envelope
+revision, provider authentication or proof of hardware measurement semantics.
+Analytic probability derivatives still come from the local circuit; supplied
+counts do not turn them into measured hardware derivatives.
+
+Raw integer counts and
 their total are preserved without signed-64-bit wrapping, including unsigned
 counts and totals above that range. An explicit `shot_count` must match the
 exact total and fit finite float64 for uncertainty calculations. Probabilities

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Replay computational-basis bitstring counts through an explicit logical-wire
+  permutation in the existing Fisher API, retaining versioned raw-count mapping
+  evidence and refusing partial or ambiguous measurements. Existing vector
+  serialization is unchanged.
+
 - Preserve large integer count records and exact shot totals in computational-
   basis Fisher replay without signed-64-bit overflow; document the count-vector
   wire order and floating-point uncertainty boundary.
