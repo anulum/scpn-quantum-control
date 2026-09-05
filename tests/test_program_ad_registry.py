@@ -334,6 +334,32 @@ def test_primitive_contract_round_trip_from_extracted_registry() -> None:
     assert contract.nondifferentiable_policy == "fail_closed_at_boundaries"
 
 
+def test_primitive_contract_metadata_is_an_isolated_read_only_snapshot() -> None:
+    """Keep retrieved contracts stable when registry bindings or consumers change."""
+    identity = PrimitiveIdentity("scpn.test", "snapshot", "1")
+    metadata = {"mlir_op": "scpn_diff.snapshot"}
+    registry = CustomDerivativeRegistry()
+    transform = PrimitiveTransformRule(
+        identity=identity, derivative_rule=_rule(), lowering_metadata=metadata
+    )
+    registry.register_transform(transform)
+    contract = primitive_contract_for(identity, registry=registry)
+
+    metadata["mlir_op"] = "caller_changed"
+    assert isinstance(transform.lowering_metadata, dict)
+    transform.lowering_metadata["mlir_op"] = "registry_changed"
+    assert contract.lowering_metadata == {"mlir_op": "scpn_diff.snapshot"}
+    with pytest.raises(TypeError):
+        cast(dict[str, str], contract.lowering_metadata)["mlir_op"] = "consumer_changed"
+
+    copied = dict(contract.lowering_metadata)
+    copied["mlir_op"] = "explicit_copy"
+    assert contract.lowering_metadata["mlir_op"] == "scpn_diff.snapshot"
+    fresh = primitive_contract_for(identity, registry=registry)
+    assert fresh.lowering_metadata["mlir_op"] == "registry_changed"
+    assert fresh.derivative_rule is contract.derivative_rule
+
+
 def test_primitive_transform_registry_holds_complete_metadata() -> None:
     """Registry transform bindings should keep derivative and compiler facets together."""
     identity = PrimitiveIdentity("scpn.quantum", "lowered_batch", "1")

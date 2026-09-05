@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Preserve gradient-result snapshots with owned read-only arrays and copied
+  parameter metadata; expose primitive-contract lowering metadata as a copied
+  read-only mapping so later caller or registry edits cannot change a snapshot.
+
 - Complete shared Kuramoto competitive-type NumPy documentation and direct-test
   documentation, and extend the competitive-baseline owner with deterministic
   problem/row execution, strict typing, and exact joint line/branch coverage.

@@ -176,7 +176,41 @@ def _as_vector_output(value: object) -> NDArray[np.float64]:
 
 @dataclass(frozen=True)
 class GradientResult:
-    """Value, gradient, and provenance returned by a differentiable backend."""
+    """Value, gradient, and provenance returned by a differentiable backend.
+
+    The gradient is an owned, read-only snapshot. Parameter names and trainable
+    flags are copied to tuples so caller mutation cannot invalidate the record.
+    Consumers needing a writable gradient must explicitly copy it.
+
+    Parameters
+    ----------
+    value
+        Finite scalar objective value, in the objective's units.
+    gradient
+        Finite shape ``(n_parameters,)`` derivative values, in objective units
+        per corresponding parameter unit. Frozen parameters must have zero
+        entries. Construction copies the array without modifying its source.
+    method
+        Non-empty name of the differentiation method actually executed.
+    shift
+        Positive finite parameter perturbation, or None if not applicable.
+    coefficient
+        Finite shift-rule coefficient, or None if not applicable.
+    evaluations
+        Non-negative objective evaluation count reported by the backend.
+    parameter_names
+        Ordered, non-empty names matching the gradient length.
+    trainable
+        Boolean mask matching the gradient length.
+    claim_boundary
+        Non-empty statement limiting the result's evidence claims.
+
+    Raises
+    ------
+    ValueError
+        If values, dimensions, trainability or provenance violate the contract.
+
+    """
 
     value: float
     gradient: NDArray[np.float64]
@@ -195,6 +229,7 @@ class GradientResult:
         claim_boundary = _normalise_claim_boundary("gradient result", self.claim_boundary)
         if gradient.ndim != 1:
             raise ValueError("gradient must be a one-dimensional array")
+        gradient = gradient.copy()
         if not np.all(np.isfinite(gradient)):
             raise ValueError("gradient must contain only finite values")
         if not self.method:
@@ -218,8 +253,11 @@ class GradientResult:
         if any(not isinstance(flag, bool) for flag in self.trainable):
             raise ValueError("trainable mask must contain booleans")
         _require_zero_frozen_entries("gradient", gradient, self.trainable)
+        gradient.setflags(write=False)
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "gradient", gradient)
+        object.__setattr__(self, "parameter_names", tuple(self.parameter_names))
+        object.__setattr__(self, "trainable", tuple(self.trainable))
         object.__setattr__(self, "shift", shift)
         object.__setattr__(self, "coefficient", coefficient)
         object.__setattr__(self, "claim_boundary", claim_boundary)

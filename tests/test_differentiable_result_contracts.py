@@ -59,6 +59,56 @@ _PARAMETER_SHIFT_PROVENANCE = {
 }
 
 
+def test_gradient_result_owns_read_only_values_and_parameter_metadata() -> None:
+    """Prevent caller buffers and metadata lists from changing validated results."""
+    buffer = np.array([2.0, 99.0, 0.0, 99.0])
+    gradient = buffer[::2]
+    names = ["x", "frozen"]
+    trainable = [True, False]
+    result = GradientResult(
+        value=1.0,
+        gradient=gradient,
+        method="reverse_mode",
+        shift=None,
+        coefficient=None,
+        evaluations=1,
+        parameter_names=cast(tuple[str, ...], names),
+        trainable=cast(tuple[bool, ...], trainable),
+    )
+    buffer[:] = np.nan
+    names[0] = "changed"
+    trainable[1] = True
+
+    np.testing.assert_array_equal(result.gradient, [2.0, 0.0])
+    assert not np.shares_memory(result.gradient, gradient)
+    assert result.parameter_names == ("x", "frozen")
+    assert result.trainable == (True, False)
+    with pytest.raises(ValueError, match="read-only"):
+        result.gradient[1] = 3.0
+    writable = result.gradient.copy()
+    writable[1] = 3.0
+    assert result.gradient[1] == 0.0
+
+
+def test_canonical_gradient_results_preserve_snapshot_through_reconstruction() -> None:
+    """Retain actual transform results and provenance without writable aliases."""
+    result = differentiable_facade.value_and_grad(
+        lambda values: values[0] ** 2,
+        [2.0],
+        method="reverse_mode",
+    )
+    assert isinstance(result, GradientResult)
+    np.testing.assert_array_equal(result.gradient, [4.0])
+    assert result.value == 4.0
+    assert not result.gradient.flags.writeable
+    restored = replace(result)
+    assert not np.shares_memory(restored.gradient, result.gradient)
+    assert restored.method == result.method
+    assert restored.claim_boundary == result.claim_boundary
+    assert restored.parameter_names == result.parameter_names
+    np.testing.assert_array_equal(restored.gradient, result.gradient)
+
+
 def test_public_result_contract_validators_have_docstrings() -> None:
     """Public result-record validators should document their invariants."""
     missing: list[str] = []

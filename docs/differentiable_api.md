@@ -13,6 +13,22 @@ finite differences or pretending that a hardware/provider gradient exists.
 
 ## Public namespaces
 
+### Result and primitive snapshots
+
+`GradientResult` copies its gradient to an owned, read-only array and copies
+parameter names and trainable flags to tuples. Mutating an input buffer or a
+caller-supplied metadata list cannot change the validated result. Use
+`result.gradient.copy()` when a downstream algorithm needs writable storage.
+This contract applies to `GradientResult`, not every other derivative record.
+
+`PrimitiveContract.lowering_metadata` is a copied, read-only mapping. A registry
+binding may subsequently change, but an already retrieved contract retains its
+original metadata. Retrieve a fresh contract to observe the changed binding;
+use `dict(contract.lowering_metadata)` for a writable metadata copy. Callable
+rules retain their registered identities; this does not freeze callback state.
+
+### Namespace reference
+
 | Namespace | Role |
 |---|---|
 | `scpn_quantum_control.diff` / `scpn.diff` | Canonical first-path namespace for `grad`, `value_and_grad`, `jacfwd`, `jacrev`, `jacobian`, `hessian`, `jvp`, `vjp`, `vmap`, `jit_or_explain`, `gradient_tape`, `differentiable_circuit`, and `run_differentiable_circuit_contract_audit`. It wraps existing supported local routes and returns fail-closed diagnostics for unsupported JIT, provider, hardware, and performance routes. |

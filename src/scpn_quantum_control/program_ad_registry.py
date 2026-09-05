@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from types import MappingProxyType
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -125,7 +126,7 @@ class PrimitiveIdentity:
 
     @property
     def key(self) -> str:
-        """Return the canonical registry key for this primitive identity.
+        """Canonical registry key for this primitive identity.
 
         Returns
         -------
@@ -280,7 +281,7 @@ class PrimitiveContract:
     lowering_rule:
         Optional executable lowering rule.
     lowering_metadata:
-        Lowering metadata snapshot.
+        Read-only lowering metadata snapshot, copied from the supplied mapping.
     shape_rule:
         Optional shape contract.
     dtype_rule:
@@ -336,7 +337,7 @@ class PrimitiveContract:
             raise ValueError("contract lowering metadata keys must be non-empty strings")
         if any(not isinstance(value, str) or not value for value in metadata.values()):
             raise ValueError("contract lowering metadata values must be non-empty strings")
-        object.__setattr__(self, "lowering_metadata", metadata)
+        object.__setattr__(self, "lowering_metadata", MappingProxyType(metadata))
 
     @staticmethod
     def from_transform(transform: PrimitiveTransformRule) -> PrimitiveContract:
@@ -551,7 +552,7 @@ class ProgramADRegistryDispatchCoverageReport:
 
     @property
     def supported(self) -> bool:
-        """Return true only when every declared primitive has complete metadata.
+        """Whether every declared primitive has complete metadata.
 
         Returns
         -------
@@ -563,7 +564,7 @@ class ProgramADRegistryDispatchCoverageReport:
 
     @property
     def blocked_identities(self) -> tuple[str, ...]:
-        """Return primitive identities that did not resolve to complete contracts.
+        """Primitive identities that did not resolve to complete contracts.
 
         Returns
         -------
