@@ -65,4 +65,7 @@ def test_ci_runs_and_aggregates_nqs_ansatz_gate() -> None:
     assert "--fail-under=100" in block
     assert "phase/nqs_ansatz.py" in block
     assert "jax_nqs_baseline_product.py" in block
+    install = "python -m pip install --require-hashes -r requirements-ci-jax-py312-linux.txt"
+    probe = 'python -c "import jax; print(jax.__version__, jax.devices())"'
+    assert block.index(install) < block.index(probe) < block.index("python -m coverage run")
     assert "nqs-ansatz-quality" in workflow[workflow.index("  ci-gate:") :]

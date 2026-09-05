@@ -7,6 +7,8 @@
 # SCPN Quantum Control — differentiable-programming contract gate tests
 """Lock the benchmark-contract owner into preflight and required CI."""
 
+from pathlib import Path
+
 from tools import differentiable_programming_contracts_quality_gates as quality_gates
 from tools import differentiable_quality_gates, preflight
 from tools.ci_workflow_inventory import read_ci_workflow_source
@@ -77,3 +79,14 @@ def test_required_ci_runs_the_helper_defined_contract_owner() -> None:
     ):
         assert name in block
     assert "--fail-under=100" in block
+    runtime_start = block.index("Install real CPU quantum gradient runtimes")
+    coverage_start = block.index("differentiable-programming-contracts focused coverage")
+    runtime_block = block[runtime_start:coverage_start]
+    for lock in (
+        "requirements-ci-jax-py312-linux.txt",
+        "requirements-ci-torch-cpu-py312-linux.txt",
+    ):
+        assert f"python -m pip install --require-hashes -r {lock}" in runtime_block
+    assert "import jax, jax.export, flatbuffers, torch" in runtime_block
+    jax_lock = Path("requirements-ci-jax-py312-linux.txt").read_text(encoding="utf-8")
+    assert "flatbuffers==" in jax_lock

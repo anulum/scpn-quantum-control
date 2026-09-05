@@ -41,6 +41,10 @@ jobs:
           tests/test_jax_nqs_baseline_product.py
           tools/nqs_ansatz_quality_gates.py
           tests/test_nqs_ansatz_quality_gate.py
+      - name: Install real CPU JAX coverage runtime
+        run: |
+          python -m pip install --require-hashes -r requirements-ci-jax-py312-linux.txt
+          python -c "import jax; print(jax.__version__, jax.devices())"
       - run: >-
           python -m coverage run --rcfile=/dev/null
           --data-file=/tmp/scpn-qc-nqs-ansatz-quality.coverage --branch
