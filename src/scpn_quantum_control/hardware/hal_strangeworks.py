@@ -22,7 +22,13 @@ from ._count_integrity import (
     strict_provider_job_id,
     strict_shot_conservation,
 )
-from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
+from .hal import (
+    BackendProfile,
+    QuantumJobRef,
+    QuantumJobResult,
+    QuantumWorkload,
+    _resolve_stored_job,
+)
 
 
 def strangeworks_program_to_workload(
@@ -136,7 +142,29 @@ class StrangeworksComputeHALAdapter:
         return _normalise_status(getattr(status, "name", status))
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
-        """Return the completed result for a submitted backend job."""
+        """Return evidence decoded against the stored submission settings.
+
+        Parameters
+        ----------
+        job
+            Original or recovered handle. Its backend and workload identity
+            must match a submission retained by this adapter.
+
+        Returns
+        -------
+        QuantumJobResult
+            Result using stored shot and provenance metadata, including when
+            a recovered handle has different lifecycle annotations.
+
+        Raises
+        ------
+        KeyError
+            If this adapter has no retained submission for the job.
+        ValueError
+            If identity differs or provider counts violate stored settings.
+
+        """
+        job = _resolve_stored_job(job, self._jobs)
         cached = self._results.get(job.job_id)
         if cached is not None:
             return cached
@@ -166,7 +194,27 @@ class StrangeworksComputeHALAdapter:
         return result
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
-        """Request cancellation for a submitted backend job."""
+        """Request cancellation without replacing stored submission metadata.
+
+        Parameters
+        ----------
+        job
+            Handle with the same durable identity as the stored submission.
+
+        Returns
+        -------
+        QuantumJobRef
+            Updated lifecycle handle retaining original submission metadata.
+
+        Raises
+        ------
+        KeyError
+            If no submission is retained by this adapter.
+        ValueError
+            If the supplied identity differs from the stored identity.
+
+        """
+        job = _resolve_stored_job(job, self._jobs)
         provider_job = self._provider_job(job)
         cancel = getattr(provider_job, "cancel", None)
         if callable(cancel):
@@ -199,6 +247,7 @@ class StrangeworksComputeHALAdapter:
         raise TypeError("Strangeworks workspace does not expose a backend/resource lookup method")
 
     def _provider_job(self, job: QuantumJobRef) -> Any:
+        job = _resolve_stored_job(job, self._jobs)
         provider_job = self._provider_jobs.get(job.job_id)
         if provider_job is None:
             raise KeyError(f"unknown job_id: {job.job_id}")

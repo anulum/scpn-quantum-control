@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from types import SimpleNamespace
 
 import pytest
 
@@ -211,6 +212,210 @@ def test_iqm_adapter_preserves_requested_shots_with_real_local_execution() -> No
     assert job.metadata["seed"] == 7
     assert result.metadata["provider_job_id"] == job.metadata["provider_job_id"]
     assert result.metadata["backend_name"] == backend.name
+
+
+class _ReplayProviderJob:
+    """Replay locally sampled data at an injected provider SDK boundary."""
+
+    def __init__(self, payload: object) -> None:
+        """Retain the SDK-format payload and operation counters."""
+        self.payload = payload
+        self.id = "local-custody-job"
+        self.details = SimpleNamespace(status="Succeeded")
+        self.reads = 0
+        self.cancels = 0
+
+    def job_id(self) -> str:
+        """Return the stable provider identifier."""
+        return self.id
+
+    def status(self) -> str:
+        """Return a completed provider observation."""
+        return "COMPLETED"
+
+    def state(self) -> str:
+        """Return a completed Braket observation."""
+        return "COMPLETED"
+
+    def result(self, timeout: float | None = None) -> object:
+        """Return local evidence using the provider result signature."""
+        self.reads += 1
+        return self.payload
+
+    def get_results(self) -> object:
+        """Return evidence through the Azure SDK result signature."""
+        return self.result()
+
+    def cancel(self) -> None:
+        """Record the provider cancellation request."""
+        self.cancels += 1
+
+
+class _ReplaySubmission:
+    """Inject a recorded local job without a provider network connection."""
+
+    def __init__(self, job: _ReplayProviderJob) -> None:
+        """Bind a provider-shaped job and route metadata."""
+        self.job = job
+        self.name = self.id = "local-custody-route"
+        self.options = SimpleNamespace(default_shots=16)
+
+    def run(self, *args: object, **kwargs: object) -> _ReplayProviderJob:
+        """Return the recorded job through gate-provider run signatures."""
+        return self.job
+
+    def submit(self, *args: object, **kwargs: object) -> _ReplayProviderJob:
+        """Return the recorded job through the Azure submission signature."""
+        return self.job
+
+
+@pytest.fixture(params=["qiskit", "braket", "azure", "qbraid", "strangeworks"])
+def submitted_provider_record(
+    request: pytest.FixtureRequest,
+) -> tuple[QuantumBackend, QuantumJobRef, _ReplayProviderJob]:
+    """Submit through each real adapter with locally sampled SDK evidence."""
+    from qiskit import QuantumCircuit
+    from qiskit.primitives import StatevectorSampler
+
+    from scpn_quantum_control.hardware.hal_azure import AzureQuantumHALAdapter
+    from scpn_quantum_control.hardware.hal_braket import BraketAwsHALAdapter
+    from scpn_quantum_control.hardware.hal_qbraid import QbraidRuntimeHALAdapter
+    from scpn_quantum_control.hardware.hal_qiskit import (
+        QiskitRuntimeHALAdapter,
+        qiskit_circuit_to_qasm3_workload,
+        qiskit_circuit_to_workload,
+    )
+    from scpn_quantum_control.hardware.hal_strangeworks import StrangeworksComputeHALAdapter
+
+    circuit = QuantumCircuit(2)
+    circuit.x(1)
+    circuit.measure_all()
+    sampled = StatevectorSampler(seed=7).run([circuit], shots=16).result()
+    counts = sampled[0].data.meas.get_counts()
+    assert counts == {"10": 16}
+    kind = request.param
+    payload: object = {"counts": counts}
+    if kind == "qiskit":
+        payload = sampled
+    elif kind == "braket":
+        payload = SimpleNamespace(measurement_counts=counts)
+    provider_job = _ReplayProviderJob(payload)
+    transport = _ReplaySubmission(provider_job)
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    routes: dict[str, QuantumBackend] = {
+        "qiskit": QiskitRuntimeHALAdapter(
+            hal.profile("ibm_quantum"),
+            backend=transport,
+            sampler_factory=lambda **kwargs: transport,
+        ),
+        "braket": BraketAwsHALAdapter(hal.profile("aws_braket_ionq"), device=transport),
+        "azure": AzureQuantumHALAdapter(
+            hal.profile("azure_quantum_ionq_simulator"),
+            target=transport,
+        ),
+        "qbraid": QbraidRuntimeHALAdapter(hal.profile("qbraid_ionq"), device=transport),
+        "strangeworks": StrangeworksComputeHALAdapter(
+            hal.profile("strangeworks_compute"),
+            backend=transport,
+        ),
+    }
+    adapter = routes[kind]
+    build = qiskit_circuit_to_workload if kind == "qiskit" else qiskit_circuit_to_qasm3_workload
+    workload = build(circuit, workload_id="stored-request", shots=16)
+    if kind == "braket":
+        from braket.circuits import Circuit
+
+        from scpn_quantum_control.hardware.hal_braket import braket_circuit_to_workload
+
+        workload = braket_circuit_to_workload(
+            Circuit().x(0).i(1), workload_id="stored-request", shots=16
+        )
+    job = adapter.submit(workload, approval_id="local-replay-only")
+    return adapter, job, provider_job
+
+
+def test_provider_result_uses_stored_submission_metadata(
+    submitted_provider_record: tuple[QuantumBackend, QuantumJobRef, _ReplayProviderJob],
+) -> None:
+    """Ignore handle annotations when decoding or caching submitted evidence."""
+    adapter, original, provider = submitted_provider_record
+    recovered = replace(original, status="queued", metadata={"shots": 1, "n_qubits": 1})
+    result = adapter.result(recovered)
+    assert result.shots == 16
+    assert result.counts == {"10": 16}
+    assert result.job is original
+    assert result.metadata["approval_id"] == "local-replay-only"
+    assert adapter.result(replace(original, metadata={})) is result
+    assert provider.reads == 1
+
+
+def test_provider_cancel_cannot_replace_stored_submission_metadata(
+    submitted_provider_record: tuple[QuantumBackend, QuantumJobRef, _ReplayProviderJob],
+) -> None:
+    """Keep submission settings when a recovered handle is cancelled first."""
+    adapter, original, provider = submitted_provider_record
+    cancelled = adapter.cancel(replace(original, metadata={"shots": 1, "n_qubits": 1}))
+    assert cancelled.metadata == original.metadata
+    assert provider.cancels == 1
+    result = adapter.result(original)
+    assert result.shots == 16
+    assert result.job.metadata == original.metadata
+
+
+@pytest.mark.parametrize("cached", [False, True])
+def test_provider_refuses_misassociated_handle_before_access(
+    submitted_provider_record: tuple[QuantumBackend, QuantumJobRef, _ReplayProviderJob],
+    cached: bool,
+) -> None:
+    """Reject wrong routes/workloads before SDK calls or cache access."""
+    adapter, original, provider = submitted_provider_record
+    if cached:
+        adapter.result(original)
+    reads = provider.reads
+    for foreign in (
+        replace(original, backend_id="other-route"),
+        replace(original, workload_id="other-workload"),
+    ):
+        for operation in (adapter.result, adapter.cancel, adapter.status):
+            with pytest.raises(ValueError, match="different"):
+                operation(foreign)
+    assert provider.reads == reads
+    assert provider.cancels == 0
+
+
+def test_provider_unknown_handle_does_not_access_sdk(
+    submitted_provider_record: tuple[QuantumBackend, QuantumJobRef, _ReplayProviderJob],
+) -> None:
+    """Refuse jobs absent from this adapter's retained submissions."""
+    adapter, original, provider = submitted_provider_record
+    unknown = replace(original, job_id="not-retained")
+    for operation in (adapter.result, adapter.cancel, adapter.status):
+        with pytest.raises(KeyError, match="unknown job_id"):
+            operation(unknown)
+    assert provider.reads == provider.cancels == 0
+
+
+def test_provider_handle_cannot_hide_observed_shot_mismatch(
+    submitted_provider_record: tuple[QuantumBackend, QuantumJobRef, _ReplayProviderJob],
+) -> None:
+    """Reject short results even if the caller supplies a matching shot count."""
+    from qiskit import QuantumCircuit
+    from qiskit.primitives import StatevectorSampler
+
+    adapter, original, provider = submitted_provider_record
+    counts = {"10": 1}
+    provider.payload = {"counts": counts}
+    if adapter.backend_id == "ibm_quantum":
+        circuit = QuantumCircuit(2)
+        circuit.x(1)
+        circuit.measure_all()
+        provider.payload = StatevectorSampler(seed=7).run([circuit], shots=1).result()
+    elif adapter.backend_id == "aws_braket_ionq":
+        provider.payload = SimpleNamespace(measurement_counts=counts)
+    altered = replace(original, metadata={**original.metadata, "shots": 1})
+    with pytest.raises(ValueError, match="mismatch"):
+        adapter.result(altered)
+    assert provider.reads == 1
 
 
 def test_hal_profiles_export_backend_descriptors_for_selector_metadata() -> None:

@@ -21,7 +21,13 @@ from ._count_integrity import (
     strict_provider_job_id,
     strict_shot_conservation,
 )
-from .hal import BackendProfile, QuantumJobRef, QuantumJobResult, QuantumWorkload
+from .hal import (
+    BackendProfile,
+    QuantumJobRef,
+    QuantumJobResult,
+    QuantumWorkload,
+    _resolve_stored_job,
+)
 
 
 def braket_circuit_to_workload(
@@ -193,7 +199,29 @@ class BraketAwsHALAdapter:
         return _normalise_status(getattr(state, "name", state))
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
-        """Return the completed result for a submitted backend job."""
+        """Return evidence decoded against the stored submission settings.
+
+        Parameters
+        ----------
+        job
+            Original or recovered handle. Its backend and workload identity
+            must match a submission retained by this adapter.
+
+        Returns
+        -------
+        QuantumJobResult
+            Result using stored shot and provenance metadata, including when
+            a recovered handle has different lifecycle annotations.
+
+        Raises
+        ------
+        KeyError
+            If this adapter has no retained submission for the job.
+        ValueError
+            If identity differs or provider counts violate stored settings.
+
+        """
+        job = _resolve_stored_job(job, self._jobs)
         cached = self._results.get(job.job_id)
         if cached is not None:
             return cached
@@ -219,7 +247,27 @@ class BraketAwsHALAdapter:
         return result
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
-        """Request cancellation for a submitted backend job."""
+        """Request cancellation without replacing stored submission metadata.
+
+        Parameters
+        ----------
+        job
+            Handle with the same durable identity as the stored submission.
+
+        Returns
+        -------
+        QuantumJobRef
+            Updated lifecycle handle retaining original submission metadata.
+
+        Raises
+        ------
+        KeyError
+            If no submission is retained by this adapter.
+        ValueError
+            If the supplied identity differs from the stored identity.
+
+        """
+        job = _resolve_stored_job(job, self._jobs)
         task = self._task(job)
         task.cancel()
         cancelled = QuantumJobRef(
@@ -242,6 +290,7 @@ class BraketAwsHALAdapter:
         return AwsDevice(self._device_arn)
 
     def _task(self, job: QuantumJobRef) -> Any:
+        job = _resolve_stored_job(job, self._jobs)
         task = self._tasks.get(job.job_id)
         if task is None:
             raise KeyError(f"unknown job_id: {job.job_id}")

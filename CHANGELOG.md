@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Resolve Qiskit Runtime, AWS Braket, Azure, qBraid and Strangeworks job handles
+  against stored submission settings before provider or cached-result access;
+  prevent recovered-handle annotations from altering shot checks or retained
+  cancellation metadata.
+
 - Reject workload metadata that shadows adapter-owned submission settings or
   provenance before provider execution; retain application annotations and
   adapter-produced job/result metadata.

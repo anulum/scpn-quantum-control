@@ -39,6 +39,15 @@ descriptive annotations, use application-specific names such as
 value agrees with the typed setting; no value is silently discarded or replaced.
 Job and result metadata remain allowed to carry adapter-owned provenance.
 
+The Qiskit Runtime, AWS Braket, Azure Quantum, qBraid and Strangeworks adapters
+resolve supplied handles against their retained submission record before result,
+status or cancellation access, including cached results. Backend/workload
+mismatches raise `ValueError`; an unknown job ID raises `KeyError`. Supplied
+status or metadata annotations do not replace the stored expected shots,
+qubit width or approval/provenance fields. Cancellation retains those fields.
+This supports reconstructed handles only while the adapter still retains the
+original record; it does not provide persistence or recovery after process loss.
+
 `HardwareAbstractionLayer` checks adapter-returned handles before exposing them:
 submission must preserve the selected `backend_id` and requested `workload_id`;
 result retrieval and cancellation must also preserve `job_id`. A mismatch raises

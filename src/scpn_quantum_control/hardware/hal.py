@@ -495,6 +495,15 @@ def _require_same_job(expected: QuantumJobRef, observed: QuantumJobRef, operatio
             raise ValueError(f"{operation} returned a different {field_name}")
 
 
+def _resolve_stored_job(job: QuantumJobRef, jobs: Mapping[str, QuantumJobRef]) -> QuantumJobRef:
+    """Resolve a known identity without trusting caller lifecycle metadata."""
+    stored = jobs.get(job.job_id)
+    if stored is None:
+        raise KeyError(f"unknown job_id: {job.job_id}")
+    _require_same_job(stored, job, "job lookup")
+    return stored
+
+
 def _validate_workload_for_profile(profile: BackendProfile, workload: QuantumWorkload) -> None:
     if workload.ir_format not in profile.ir_formats:
         accepted = ", ".join(profile.ir_formats)
