@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **699 modules** across **39 package families**
-- **3913 documented public module-level symbols**
+- **3914 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -3305,11 +3305,11 @@ Probabilistic Error Cancellation for local depolarizing channels.
 
 Full-basis readout confusion-matrix mitigation utilities.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/mitigation/readout_matrix.py) · Public symbols: **11**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/mitigation/readout_matrix.py) · Public symbols: **12**
 
 **Classes:** `ReadoutConfusionMatrix`
 
-**Functions:** `computational_basis_labels()`, `bitstring_index()`, `counts_to_probabilities()`, `build_readout_confusion_matrix()`, `mitigate_probabilities()`, `mitigate_counts()`, `probability_state_retention()`, `probability_parity_leakage()`, `probability_magnetisation_leakage()`, `probability_mean_magnetisation()`
+**Functions:** `computational_basis_labels()`, `label_index_map()`, `bitstring_index()`, `counts_to_probabilities()`, `build_readout_confusion_matrix()`, `mitigate_probabilities()`, `mitigate_counts()`, `probability_state_retention()`, `probability_parity_leakage()`, `probability_magnetisation_leakage()`, `probability_mean_magnetisation()`
 
 ### `scpn_quantum_control.mitigation.symmetry_decay`
 

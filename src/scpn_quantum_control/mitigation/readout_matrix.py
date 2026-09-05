@@ -39,19 +39,102 @@ def computational_basis_labels(n_qubits: int) -> tuple[str, ...]:
     return tuple(format(index, f"0{n_qubits}b") for index in range(2**n_qubits))
 
 
+def label_index_map(labels: Sequence[str]) -> dict[str, int]:
+    """Return a unique label-to-position mapping for a readout label order.
+
+    The position a label occupies in ``labels`` is authoritative. It coincides
+    with the label's numeric value only for the canonical big-endian order, so a
+    permuted or partial order must be resolved through this mapping rather than
+    by parsing the bitstring.
+
+    Parameters
+    ----------
+    labels
+        Readout labels in the order the probability vector uses. Surrounding
+        spaces inside a label are ignored, as they are in count keys.
+
+    Returns
+    -------
+    dict of str to int
+        Cleaned label to its position in ``labels``.
+
+    Raises
+    ------
+    ValueError
+        If ``labels`` is empty or repeats a label, since a repeated label cannot
+        resolve to one position.
+    """
+    if not labels:
+        raise ValueError("labels must not be empty")
+    mapping: dict[str, int] = {}
+    for index, label in enumerate(labels):
+        clean = label.replace(" ", "")
+        if clean in mapping:
+            raise ValueError(f"labels must not repeat a bitstring: {clean!r}")
+        mapping[clean] = index
+    return mapping
+
+
 def bitstring_index(bitstring: str, labels: Sequence[str] | None = None) -> int:
-    """Return the computational-basis index for ``bitstring``."""
+    """Return the position of ``bitstring`` in a readout label order.
+
+    Parameters
+    ----------
+    bitstring
+        Computational-basis outcome; embedded spaces are ignored.
+    labels
+        Label order to resolve against. When ``None`` the canonical big-endian
+        numeric value is returned instead.
+
+    Returns
+    -------
+    int
+        Position within ``labels``, or the numeric value when ``labels`` is
+        ``None``.
+
+    Raises
+    ------
+    ValueError
+        If ``labels`` repeats a bitstring, or does not contain ``bitstring``.
+    """
     clean = bitstring.replace(" ", "")
-    if labels is not None and clean not in labels:
+    if labels is None:
+        return int(clean, 2)
+    mapping = label_index_map(labels)
+    if clean not in mapping:
         raise ValueError(f"unknown bitstring label: {bitstring!r}")
-    return int(clean, 2)
+    return mapping[clean]
 
 
 def counts_to_probabilities(
     counts: Mapping[str, int],
     labels: Sequence[str],
 ) -> NDArray[np.float64]:
-    """Convert a count dictionary into a probability vector over ``labels``."""
+    """Convert a count dictionary into a probability vector over ``labels``.
+
+    Each count is placed at the position its label occupies in ``labels``.
+    Outcomes absent from ``counts`` stay zero; they are not shifted, and the
+    label order is never re-derived from the bitstring value.
+
+    Parameters
+    ----------
+    counts
+        Observed counts keyed by computational-basis outcome.
+    labels
+        Readout label order defining the returned vector's positions.
+
+    Returns
+    -------
+    numpy.ndarray
+        Probabilities over ``labels``, summing to one.
+
+    Raises
+    ------
+    ValueError
+        If ``labels`` is empty or repeats a bitstring, a count is negative, the
+        counts are empty or total zero, or a count key is absent from ``labels``.
+    """
+    mapping = label_index_map(labels)
     total_count = 0
     for value in counts.values():
         count = int(value)
@@ -62,12 +145,11 @@ def counts_to_probabilities(
     if total <= 0.0:
         raise ValueError("empty count dictionary")
     probabilities = np.zeros(len(labels), dtype=np.float64)
-    label_set = set(labels)
     for bitstring, count in counts.items():
         clean = bitstring.replace(" ", "")
-        if clean not in label_set:
+        if clean not in mapping:
             raise ValueError(f"count dictionary contains unknown bitstring {bitstring!r}")
-        probabilities[bitstring_index(clean, labels)] += int(count) / total
+        probabilities[mapping[clean]] += int(count) / total
     return probabilities
 
 

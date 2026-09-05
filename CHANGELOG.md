@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Fixed
+
+- Place readout counts at the position their label occupies in the supplied
+  label order. A permuted or partial order previously resolved each outcome by
+  its numeric bitstring value, silently mis-placing probabilities and raising an
+  index error for a label subset. Repeated and empty label orders are now
+  refused as ambiguous, and `bitstring_index` resolves against the supplied
+  labels. The canonical big-endian order, which every internal caller uses, is
+  unchanged.
+
 - Inventory declared provider routes without contacting a provider, keyed by
   provider, broker, device, modality and observation date. Direct and
   broker-hosted access to the same provider stay separate rows. Each operation
