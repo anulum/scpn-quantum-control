@@ -7,7 +7,7 @@
 |---|---:|
 | Package version | 1.1.0 |
 | Public API exports | 841 |
-| Python source modules | 697 |
+| Python source modules | 699 |
 | Public Python classes | 1374 |
 | Domain package families | 38 |
 | API documentation pages | 14 |
@@ -16,8 +16,8 @@
 | Notebook files | 109 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 1349 |
-| Public documentation pages | 375 |
+| Python test files | 1354 |
+| Public documentation pages | 376 |
 | GitHub Actions workflows | 44 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.

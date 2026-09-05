@@ -567,8 +567,35 @@ def test_ci_optional_runtime_locks_and_preview_rules_are_explicit() -> None:
     """Focused gates must install locked runtimes without enabling new preview rules."""
     workflow = read_ci_workflow_source()
 
-    assert workflow.count("requirements-ci-jax-py312-linux.txt") == 3
-    assert workflow.count("requirements-ci-torch-cpu-py312-linux.txt") == 3
+    sections = re.split(r"^  ([a-z0-9_-]+):\n", workflow, flags=re.MULTILINE)
+    jobs = dict(zip(sections[1::2], sections[2::2]))
+    expected_owners = {
+        "requirements-ci-jax-py312-linux.txt": {
+            "kyma-v2-dynamics-quality",
+            "kyma-dynamics-quality",
+            "kyma-v2-coupling-quality",
+            "nqs-ansatz-quality",
+            "whole-program-ad-product-quality",
+        },
+        "requirements-ci-torch-cpu-py312-linux.txt": {
+            "gpu-batch-vqe-quality",
+            "whole-program-ad-product-quality",
+            "neural-operator-baseline-product-quality",
+            "phase-qnode-product-quality",
+        },
+    }
+    dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
+    copied_files = {
+        source
+        for line in dockerfile.splitlines()
+        if line.startswith("COPY ") and not line.startswith("COPY --")
+        for source in line.split()[1:-1]
+    }
+    for lock, owners in expected_owners.items():
+        install = f"python -m pip install --require-hashes -r {lock}"
+        assert {job for job, block in jobs.items() if install in block} == owners
+        assert lock in copied_files, f"Docker reproduction image must include {lock}"
+        assert Path(lock).is_file()
     preview_commands = len(re.findall(r"ruff check --isolated\s+--preview\s+--select", workflow))
     explicit_preview_configs = workflow.count("lint.explicit-preview-rules = true")
     assert preview_commands == explicit_preview_configs

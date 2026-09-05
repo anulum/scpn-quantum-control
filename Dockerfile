@@ -54,6 +54,9 @@ COPY requirements-ci-cross-platform-smoke.txt requirements-ci-py311-linux.txt re
 # the minimal-install and Quimb hash closures.
 COPY requirements-ci-minimal-install-py312-linux.in requirements-ci-quimb-py312-linux.in ./
 COPY requirements-ci-minimal-install-py312-linux.txt requirements-ci-quimb-py312-linux.txt ./
+# Optional-runtime contract tests inspect these locks without installing the
+# heavyweight runtimes in the reproduction image.
+COPY requirements-ci-jax-py312-linux.txt requirements-ci-torch-cpu-py312-linux.txt ./
 COPY src/ src/
 COPY oscillatools/src/ oscillatools/src/
 # The standalone-package decision and real wheel tests require the complete
