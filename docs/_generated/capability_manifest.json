@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 376,
-    "python_model_classes": 1374,
+    "python_model_classes": 1376,
     "python_model_source_modules": 699,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1355
+    "test_files": 1356
   },
   "documentation": {
     "examples": [
@@ -4817,6 +4817,10 @@
         "path": "src/scpn_quantum_control/phase/qnode_provider_transforms.py"
       },
       {
+        "name": "ProviderRouteCatalogueEntry",
+        "path": "src/scpn_quantum_control/hardware/provider_capability_core.py"
+      },
+      {
         "name": "PublicApiSymbolRecord",
         "path": "src/scpn_quantum_control/public_api_stability.py"
       },
@@ -5447,6 +5451,10 @@
       {
         "name": "RouteExplanation",
         "path": "src/scpn_quantum_control/governed_route_matrix.py"
+      },
+      {
+        "name": "RouteVerbSupport",
+        "path": "src/scpn_quantum_control/hardware/provider_capability_core.py"
       },
       {
         "name": "RoutedLayoutMetrics",
@@ -9124,6 +9132,7 @@
       "tests/test_provider_capability_specialized_adapters.py",
       "tests/test_provider_gradient_audit_quality_gate.py",
       "tests/test_provider_isolated_smoke_workflow.py",
+      "tests/test_provider_route_catalogue.py",
       "tests/test_psi_field.py",
       "tests/test_psi_lattice_quality_gate.py",
       "tests/test_public_api.py",

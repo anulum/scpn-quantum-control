@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Inventory declared provider routes without contacting a provider, keyed by
+  provider, broker, device, modality and observation date. Direct and
+  broker-hosted access to the same provider stay separate rows. Each operation
+  records source-declared and dated observed support in separate fields;
+  unknown support is preserved rather than narrowed, a positive claim requires
+  its source or its dated conformance owner, and an observation contradicting an
+  explicit non-declaration is refused.
+
 - Declare the analog execution-unit classifier as a public module symbol instead
   of importing a private name across a module boundary. Admission outcomes,
   refusal messages and the recorded unit contract and status are unchanged.

@@ -9,17 +9,35 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+import re
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from typing import Any, Literal, get_args
 
-from .aggregators import ResolvedAggregatorProviderRoute, resolve_aggregator_provider_route
+from .aggregators import (
+    AggregatorProviderRoute,
+    ResolvedAggregatorProviderRoute,
+    built_in_aggregator_provider_routes,
+    resolve_aggregator_provider_route,
+)
 from .openpulse_control import (
     OpenPulseCalibrationWorkflow,
     build_rabi_amplitude_calibration_workflow,
 )
 
 CapabilityDecisionStatus = Literal["ready", "blocked", "unknown"]
+
+RouteVerb = Literal["metadata", "compile", "submit", "retrieve", "cancel", "result_formats"]
+"""Operations a provider route can advertise, inventoried independently."""
+
+ROUTE_VERBS: tuple[RouteVerb, ...] = get_args(RouteVerb)
+
+DIRECT_AGGREGATOR = "direct"
+"""Aggregator label meaning the provider is reached without a broker."""
+
+ROUTE_CATALOGUE_CONTRACT = "provider_route_catalogue.v1"
+
+_OBSERVATION_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 ProviderMetadataProbe = Callable[[ResolvedAggregatorProviderRoute], "ProviderCapabilitySnapshot"]
@@ -287,6 +305,285 @@ def assess_provider_capability_snapshot(
     )
 
 
+@dataclass(frozen=True)
+class RouteVerbSupport:
+    """Support evidence for one operation on one provider route.
+
+    Source-declared support and dated observed support are held in separate
+    fields so a documented capability is never mistaken for a demonstrated one.
+    ``None`` means unknown and is preserved as unknown; it is never narrowed to
+    ``True`` or ``False`` to make an inventory row look complete.
+
+    Parameters
+    ----------
+    verb
+        Operation this record describes.
+    declared
+        Whether the route's own source material advertises the operation.
+        ``None`` when the source says nothing about it.
+    declared_source
+        Where the declaration was read, required when ``declared`` is ``True``.
+    declared_on
+        ``YYYY-MM-DD`` date the declaration was read, required when ``declared``
+        is ``True``.
+    observed
+        Whether conformance evidence demonstrated the operation. ``None`` when
+        nothing has been observed.
+    observed_on
+        ``YYYY-MM-DD`` date of the observation, required when ``observed`` is
+        ``True``.
+    conformance_owner
+        Repository-relative ``tests/test_*`` path that owns the demonstration,
+        required when ``observed`` is ``True``.
+
+    Raises
+    ------
+    ValueError
+        If the verb is unknown, a date is not ``YYYY-MM-DD``, a required
+        provenance field is missing for an advertised or observed operation, or
+        an observation contradicts an explicit non-declaration.
+    """
+
+    verb: RouteVerb
+    declared: bool | None = None
+    declared_source: str | None = None
+    declared_on: str | None = None
+    observed: bool | None = None
+    observed_on: str | None = None
+    conformance_owner: str | None = None
+
+    def __post_init__(self) -> None:
+        """Validate provenance completeness without inventing support values."""
+        if self.verb not in ROUTE_VERBS:
+            raise ValueError(f"unknown route verb: {self.verb!r}")
+        for field_name in ("declared", "observed"):
+            value = getattr(self, field_name)
+            if value is not None and not isinstance(value, bool):
+                raise ValueError(f"{field_name} must be True, False or None")
+        if self.declared is True:
+            _require_text(self.declared_source, "declared_source")
+            _require_observation_date(self.declared_on, "declared_on")
+        if self.observed is True:
+            _require_observation_date(self.observed_on, "observed_on")
+            _require_text(self.conformance_owner, "conformance_owner")
+            owner = str(self.conformance_owner)
+            if not owner.startswith("tests/test_"):
+                raise ValueError("conformance_owner must be a tests/test_* path")
+            if self.declared is False:
+                raise ValueError(
+                    "observed support contradicts an explicit non-declaration; "
+                    "resolve the source before recording the observation"
+                )
+        for field_name in ("declared_on", "observed_on"):
+            value = getattr(self, field_name)
+            if value is not None:
+                _require_observation_date(value, field_name)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return the verb record with unknown support preserved as null."""
+        return {
+            "verb": self.verb,
+            "declared": self.declared,
+            "declared_source": self.declared_source,
+            "declared_on": self.declared_on,
+            "observed": self.observed,
+            "observed_on": self.observed_on,
+            "conformance_owner": self.conformance_owner,
+        }
+
+
+@dataclass(frozen=True)
+class ProviderRouteCatalogueEntry:
+    """One inventory row keyed by provider, broker, device, modality and time.
+
+    ``broker`` is ``None`` for a direct provider route, which keeps provider and
+    broker identities distinct: the same provider and device reached through a
+    broker is a different row, never a merged one.
+
+    Parameters
+    ----------
+    route_id
+        Identifier of the declared route this row inventories.
+    provider
+        Provider identity, independent of who hosts the access path.
+    broker
+        Aggregator hosting the route, or ``None`` for a direct route.
+    device
+        Backend identifier the route resolves to.
+    modality
+        Target family of the device.
+    observed_at
+        ``YYYY-MM-DD`` date this row's evidence was assembled.
+    verbs
+        One record per operation, in ``ROUTE_VERBS`` order.
+    submit_requires_approval
+        Whether the declared route marks submission as approval-gated.
+
+    Raises
+    ------
+    ValueError
+        If an identity field is empty, the date is malformed, or the verb
+        records are not exactly one per operation in canonical order.
+    """
+
+    route_id: str
+    provider: str
+    broker: str | None
+    device: str
+    modality: str
+    observed_at: str
+    verbs: tuple[RouteVerbSupport, ...]
+    submit_requires_approval: bool = True
+
+    def __post_init__(self) -> None:
+        """Validate inventory identity and canonical verb coverage."""
+        for field_name in ("route_id", "provider", "device", "modality"):
+            _require_text(getattr(self, field_name), field_name)
+        if self.broker is not None:
+            _require_text(self.broker, "broker")
+            if self.broker == DIRECT_AGGREGATOR:
+                raise ValueError("a direct route must record broker as None")
+        _require_observation_date(self.observed_at, "observed_at")
+        if tuple(record.verb for record in self.verbs) != ROUTE_VERBS:
+            raise ValueError(
+                f"verbs must hold exactly one record per operation in {ROUTE_VERBS} order"
+            )
+
+    @property
+    def inventory_key(self) -> tuple[str, str | None, str, str, str]:
+        """Return the provider/broker/device/modality/time inventory key."""
+        return (self.provider, self.broker, self.device, self.modality, self.observed_at)
+
+    @property
+    def is_direct(self) -> bool:
+        """Return whether the provider is reached without a broker."""
+        return self.broker is None
+
+    def support(self, verb: RouteVerb) -> RouteVerbSupport:
+        """Return the record for one operation.
+
+        Parameters
+        ----------
+        verb
+            Operation to look up.
+
+        Returns
+        -------
+        RouteVerbSupport
+            The stored record, including unknown support as ``None``.
+
+        Raises
+        ------
+        KeyError
+            If the verb is not part of the canonical operation set.
+        """
+        for record in self.verbs:
+            if record.verb == verb:
+                return record
+        raise KeyError(verb)
+
+    @property
+    def observed_verbs(self) -> tuple[RouteVerb, ...]:
+        """Return operations with demonstrated support, in canonical order."""
+        return tuple(record.verb for record in self.verbs if record.observed is True)
+
+    @property
+    def unverified(self) -> bool:
+        """Return whether no operation on this route has been demonstrated."""
+        return not self.observed_verbs
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-ready inventory row with its contract label."""
+        return {
+            "contract": ROUTE_CATALOGUE_CONTRACT,
+            "route_id": self.route_id,
+            "provider": self.provider,
+            "broker": self.broker,
+            "device": self.device,
+            "modality": self.modality,
+            "observed_at": self.observed_at,
+            "submit_requires_approval": self.submit_requires_approval,
+            "unverified": self.unverified,
+            "verbs": [record.to_dict() for record in self.verbs],
+        }
+
+
+def build_provider_route_catalogue(
+    *,
+    observed_at: str,
+    routes: Sequence[AggregatorProviderRoute] | None = None,
+    evidence: Mapping[str, Sequence[RouteVerbSupport]] | None = None,
+) -> tuple[ProviderRouteCatalogueEntry, ...]:
+    """Inventory declared provider routes without contacting any provider.
+
+    Identity comes from the declared route table. Support comes only from
+    explicitly supplied evidence: a route with no evidence yields a row whose
+    every operation is unknown, never one that is assumed available. No network
+    call, credential read or submission occurs.
+
+    Parameters
+    ----------
+    observed_at
+        ``YYYY-MM-DD`` date recorded on every row of this inventory.
+    routes
+        Declared routes to inventory. Defaults to the built-in route table.
+    evidence
+        Per-route support records, keyed by ``route_id``. Records for an unknown
+        route or a duplicated verb are rejected rather than ignored.
+
+    Returns
+    -------
+    tuple of ProviderRouteCatalogueEntry
+        One row per declared route, in the order the routes were supplied.
+
+    Raises
+    ------
+    ValueError
+        If the date is malformed, the routes contain a duplicate ``route_id``,
+        or the evidence names an unknown route or repeats a verb.
+    """
+    _require_observation_date(observed_at, "observed_at")
+    declared_routes = (
+        tuple(routes) if routes is not None else built_in_aggregator_provider_routes()
+    )
+    route_ids = [route.route_id for route in declared_routes]
+    if len(set(route_ids)) != len(route_ids):
+        raise ValueError("routes must not repeat a route_id")
+    supplied = dict(evidence or {})
+    unknown_routes = sorted(set(supplied) - set(route_ids))
+    if unknown_routes:
+        raise ValueError(f"evidence names routes absent from the inventory: {unknown_routes}")
+
+    entries: list[ProviderRouteCatalogueEntry] = []
+    for route in declared_routes:
+        records = tuple(supplied.get(route.route_id, ()))
+        seen = [record.verb for record in records]
+        if len(set(seen)) != len(seen):
+            raise ValueError(f"{route.route_id}: evidence repeats a verb")
+        by_verb = {record.verb: record for record in records}
+        entries.append(
+            ProviderRouteCatalogueEntry(
+                route_id=route.route_id,
+                provider=route.provider,
+                broker=None if route.aggregator == DIRECT_AGGREGATOR else route.aggregator,
+                device=route.backend_id,
+                modality=route.target_family,
+                observed_at=observed_at,
+                verbs=tuple(
+                    by_verb.get(verb, RouteVerbSupport(verb=verb)) for verb in ROUTE_VERBS
+                ),
+                submit_requires_approval=route.submit_requires_approval,
+            )
+        )
+    return tuple(entries)
+
+
+def _require_observation_date(value: Any, field_name: str) -> None:
+    _require_text(value, field_name)
+    if not _OBSERVATION_DATE_RE.match(str(value)):
+        raise ValueError(f"{field_name} must be an ISO YYYY-MM-DD observation date")
+
+
 def _require_text(value: Any, field_name: str) -> None:
     if not isinstance(value, str) or not value:
         raise ValueError(f"{field_name} must be non-empty text")
@@ -300,12 +597,19 @@ def _require_string_tuple(value: tuple[str, ...], field_name: str) -> None:
 
 
 __all__ = [
+    "DIRECT_AGGREGATOR",
+    "ROUTE_CATALOGUE_CONTRACT",
+    "ROUTE_VERBS",
     "CapabilityDecisionStatus",
     "OpenPulseControlReadiness",
     "ProviderCapabilityDecision",
     "ProviderCapabilitySnapshot",
     "ProviderMetadataProbe",
+    "ProviderRouteCatalogueEntry",
+    "RouteVerb",
+    "RouteVerbSupport",
     "assess_provider_capability_snapshot",
     "build_openpulse_control_readiness",
+    "build_provider_route_catalogue",
     "probe_aggregator_provider_capability",
 ]

@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **699 modules** across **39 package families**
-- **3910 documented public module-level symbols**
+- **3913 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -3021,11 +3021,11 @@ No-submit metadata adapters for cloud and broker quantum provider routes.
 
 Provider-neutral no-submit capability contracts and readiness decisions.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/provider_capability_core.py) · Public symbols: **6**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/provider_capability_core.py) · Public symbols: **9**
 
-**Classes:** `ProviderCapabilitySnapshot`, `ProviderCapabilityDecision`, `OpenPulseControlReadiness`
+**Classes:** `ProviderCapabilitySnapshot`, `ProviderCapabilityDecision`, `OpenPulseControlReadiness`, `RouteVerbSupport`, `ProviderRouteCatalogueEntry`
 
-**Functions:** `build_openpulse_control_readiness()`, `probe_aggregator_provider_capability()`, `assess_provider_capability_snapshot()`
+**Functions:** `build_openpulse_control_readiness()`, `probe_aggregator_provider_capability()`, `assess_provider_capability_snapshot()`, `build_provider_route_catalogue()`
 
 ### `scpn_quantum_control.hardware.provider_capability_discovery`
 

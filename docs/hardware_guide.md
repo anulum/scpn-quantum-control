@@ -420,6 +420,65 @@ register_backend("my_backend", MyBackendClass)
 
 ---
 
+## Provider Route Inventory
+
+`build_provider_route_catalogue` inventories every declared aggregator/provider
+route without contacting a provider. It reads the declared route table and
+recorded evidence only: no credential is read, no workload is submitted, and no
+network call is made.
+
+Each row is keyed by provider, broker, device, modality and observation date.
+A route reached without a broker records `broker` as `None`, so the same
+provider and device offered through a broker is a separate row rather than a
+merged one.
+
+```python
+from scpn_quantum_control.hardware.provider_capability_core import (
+    build_provider_route_catalogue,
+)
+
+catalogue = build_provider_route_catalogue(observed_at="2026-09-05")
+direct = next(row for row in catalogue if row.route_id == "direct/iqm")
+brokered = next(row for row in catalogue if row.route_id == "qbraid/iqm")
+
+direct.is_direct        # True; broker is None
+brokered.broker         # "qbraid"
+direct.inventory_key    # ("iqm", None, "iqm_cloud", "iqm", "2026-09-05")
+direct.unverified       # True until evidence is supplied
+```
+
+### Support is recorded twice, and unknown stays unknown
+
+Every operation — `metadata`, `compile`, `submit`, `retrieve`, `cancel` and
+`result_formats` — carries a `RouteVerbSupport` record holding source-declared
+support and dated observed support in **separate** fields. `None` means unknown
+and is preserved as unknown; it is never narrowed to `True` or `False` to make a
+row look complete.
+
+Provenance is mandatory for any positive claim. Declaring support requires the
+source it was read from and the date it was read. Recording an observation
+requires the date and a repository-relative `tests/test_*` conformance owner,
+and an observation that contradicts an explicit non-declaration is refused
+outright rather than silently accepted.
+
+```python
+from scpn_quantum_control.hardware.provider_capability_core import RouteVerbSupport
+
+RouteVerbSupport(
+    verb="metadata",
+    declared=True,
+    declared_source="hardware/aggregators.py route table",
+    declared_on="2026-09-05",
+    observed=True,
+    observed_on="2026-09-05",
+    conformance_owner="tests/test_hardware_hal_iqm_adapters.py",
+)
+```
+
+A route with no evidence reports `unverified` and every operation unknown. That
+is the honest default: the inventory records what is declared and what has been
+demonstrated, and never infers one from the other.
+
 ## Circuit Tools
 
 ### Circuit Cutting (`circuit_cutting.py`, `cutting_runner.py`)
