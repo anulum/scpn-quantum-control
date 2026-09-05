@@ -801,7 +801,7 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
         ),
         _record(
             "src/scpn_quantum_control/phase/qnode_count_mapping.py",
-            ("tests/test_phase_qnode_circuit_differentiation_integration.py",),
+            ("tests/test_phase_qnode_count_mapping.py",),
             (
                 "explicit measurement-wire permutation",
                 "raw-count custody and malformed-count refusal",
