@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import pytest
 
@@ -31,6 +33,7 @@ from scpn_quantum_control.phase.qnode_circuit import (
 
 
 def test_phase_qnode_parameter_shift_matches_finite_difference_for_registered_generators() -> None:
+    """Compare registered generator shifts with central differences of the executed circuit."""
     circuit = PhaseQNodeCircuit(
         n_qubits=2,
         operations=(
@@ -64,6 +67,7 @@ def test_phase_qnode_parameter_shift_matches_finite_difference_for_registered_ge
 
 
 def test_phase_qnode_covariance_gradient_uses_product_rule() -> None:
+    """Check the covariance value and product-rule derivative against analytic sine terms."""
     circuit = PhaseQNodeCircuit(
         n_qubits=2,
         operations=(("ry", (0,), 0), ("cnot", (0, 1))),
@@ -82,6 +86,7 @@ def test_phase_qnode_covariance_gradient_uses_product_rule() -> None:
 
 
 def test_phase_qnode_dense_hermitian_gradient_matches_finite_difference() -> None:
+    """Compare dense-observable gradients against perturbed circuit execution."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("ry", (0,), 0),),
@@ -104,6 +109,7 @@ def test_phase_qnode_dense_hermitian_gradient_matches_finite_difference() -> Non
 
 
 def test_phase_qnode_quantum_fisher_information_matches_ry_reference() -> None:
+    """Check unit quantum Fisher information for a single Ry rotation."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("ry", (0,), 0),),
@@ -120,6 +126,7 @@ def test_phase_qnode_quantum_fisher_information_matches_ry_reference() -> None:
 
 
 def test_phase_qnode_quantum_fisher_information_is_gauge_invariant_psd() -> None:
+    """Check metric symmetry, semidefiniteness and the QFI scaling relation."""
     circuit = PhaseQNodeCircuit(
         n_qubits=2,
         operations=(
@@ -145,6 +152,7 @@ def test_phase_qnode_quantum_fisher_information_is_gauge_invariant_psd() -> None
 
 
 def test_phase_qnode_computational_basis_fisher_matches_ry_reference() -> None:
+    """Check Ry basis probabilities and their classical Fisher information."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("ry", (0,), 0),),
@@ -166,6 +174,7 @@ def test_phase_qnode_computational_basis_fisher_matches_ry_reference() -> None:
 
 
 def test_phase_qnode_computational_basis_fisher_is_bounded_by_qfi() -> None:
+    """Verify that the measurement Fisher matrix does not exceed pure-state QFI."""
     circuit = PhaseQNodeCircuit(
         n_qubits=2,
         operations=(
@@ -192,6 +201,7 @@ def test_phase_qnode_computational_basis_fisher_is_bounded_by_qfi() -> None:
 
 
 def test_phase_qnode_computational_basis_fisher_reports_finite_shot_uncertainty() -> None:
+    """Check expected-count uncertainty and confidence-radius serialisation."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("ry", (0,), 0),),
@@ -235,6 +245,7 @@ def test_phase_qnode_computational_basis_fisher_reports_finite_shot_uncertainty(
 
 
 def test_phase_qnode_computational_basis_fisher_replays_raw_count_record() -> None:
+    """Replay positive raw counts without replacing the analytic reference."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("ry", (0,), 0),),
@@ -277,7 +288,73 @@ def test_phase_qnode_computational_basis_fisher_replays_raw_count_record() -> No
     )
 
 
+@pytest.mark.parametrize("count,dtype", [(2**62, "int64"), (2**63 + 5, "uint64")])
+@pytest.mark.parametrize("declare_shots", [False, True])
+def test_fisher_replay_preserves_large_integer_counts(
+    count: int, dtype: str, declare_shots: bool
+) -> None:
+    """Preserve raw counts and totals beyond signed NumPy accumulation limits."""
+    circuit = PhaseQNodeCircuit(1, (("ry", (0,), 0),), "pauli_z")
+    counts = np.array([count, count], dtype=dtype)
+    result = phase_qnode_computational_basis_fisher_information(
+        circuit,
+        [np.pi / 2],
+        observed_counts=counts,
+        shot_count=2 * count if declare_shots else None,
+    )
+    assert result.count_record == (count, count)
+    assert result.shot_count == 2 * count
+    assert result.empirical_probabilities is not None
+    assert result.finite_shot_classical_fisher_information is not None
+    np.testing.assert_allclose(result.empirical_probabilities, [0.5, 0.5])
+    np.testing.assert_allclose(result.finite_shot_classical_fisher_information, [[1.0]])
+    assert result.fisher_standard_error is not None
+    assert np.all(np.isfinite(result.fisher_standard_error))
+    assert result.to_dict()["count_record"] == [count, count]
+
+
+def test_fisher_replay_uses_qubit_zero_as_most_significant_basis_axis() -> None:
+    """Bind an asymmetric two-qubit record to the executed basis ordering."""
+    circuit = PhaseQNodeCircuit(2, (("ry", (0,), 0), ("ry", (1,), 1)), "pauli_z")
+    angles = np.array([0.4, 1.1])
+    local = [np.array([np.cos(angle / 2) ** 2, np.sin(angle / 2) ** 2]) for angle in angles]
+    result = phase_qnode_computational_basis_fisher_information(
+        circuit, angles, observed_counts=np.array([61, 29, 7, 3])
+    )
+    np.testing.assert_allclose(result.probabilities, np.kron(local[0], local[1]))
+    assert result.empirical_probabilities is not None
+    np.testing.assert_allclose(result.empirical_probabilities, [0.61, 0.29, 0.07, 0.03])
+    assert result.count_record == (61, 29, 7, 3)
+
+
+def test_fisher_rejects_shot_total_outside_float_representation() -> None:
+    """Reject shot totals that cannot enter the floating uncertainty model."""
+    circuit = PhaseQNodeCircuit(1, (("ry", (0,), 0),), "pauli_z")
+    with pytest.raises(ValueError, match="shot_count"):
+        phase_qnode_computational_basis_fisher_information(circuit, [0.4], shot_count=10**1000)
+
+
+@pytest.mark.parametrize("shots", [True, 1.5, "4", [4]])
+def test_fisher_rejects_non_integer_scalar_shot_declarations(shots: object) -> None:
+    """Keep strict scalar-integer admission while allowing large Python totals."""
+    circuit = PhaseQNodeCircuit(1, (("ry", (0,), 0),), "pauli_z")
+    with pytest.raises(ValueError, match="shot_count"):
+        phase_qnode_computational_basis_fisher_information(
+            circuit, [0.4], shot_count=cast(int, shots)
+        )
+
+
+def test_fisher_accepts_numpy_integer_shot_scalar() -> None:
+    """Retain the existing NumPy scalar shot-count interface."""
+    circuit = PhaseQNodeCircuit(1, (("ry", (0,), 0),), "pauli_z")
+    result = phase_qnode_computational_basis_fisher_information(
+        circuit, [0.4], shot_count=cast(int, np.uint64(16))
+    )
+    assert result.shot_count == 16
+
+
 def test_phase_qnode_computational_basis_fisher_validates_finite_shot_inputs() -> None:
+    """Reject invalid shot declarations, count shapes and singular replay outcomes."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("ry", (0,), 0),),
@@ -315,6 +392,7 @@ def test_phase_qnode_computational_basis_fisher_validates_finite_shot_inputs() -
 
 
 def test_phase_qnode_computational_basis_fisher_fails_closed_at_singular_probability() -> None:
+    """Propagate the support refusal at a zero-probability boundary."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("ry", (0,), 0),),
@@ -334,6 +412,7 @@ def test_phase_qnode_computational_basis_fisher_fails_closed_at_singular_probabi
 
 
 def test_phase_qnode_natural_gradient_metric_provider_returns_fubini_study_metric() -> None:
+    """Evaluate the natural-gradient callback against the single-rotation metric."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("rx", (0,), 0),),
@@ -345,6 +424,7 @@ def test_phase_qnode_natural_gradient_metric_provider_returns_fubini_study_metri
 
 
 def test_phase_qnode_quantum_fisher_information_fails_closed_for_unsupported_routes() -> None:
+    """Reject quantum Fisher evaluation for an unregistered gate."""
     circuit = PhaseQNodeCircuit(
         n_qubits=1,
         operations=(("u3", (0,), 0),),

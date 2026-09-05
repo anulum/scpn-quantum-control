@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Preserve large integer count records and exact shot totals in computational-
+  basis Fisher replay without signed-64-bit overflow; document the count-vector
+  wire order and floating-point uncertainty boundary.
+
 - Resolve Qiskit Runtime, AWS Braket, Azure, qBraid and Strangeworks job handles
   against stored submission settings before provider or cached-result access;
   prevent recovered-handle annotations from altering shot checks or retained

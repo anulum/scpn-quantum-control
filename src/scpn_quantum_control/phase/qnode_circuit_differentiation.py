@@ -229,6 +229,41 @@ def phase_qnode_computational_basis_fisher_information(
     uncertainty model around that reference distribution. ``observed_counts``
     replays a strictly positive raw-count record as a plug-in finite-shot
     Fisher estimate while preserving the exact analytic reference matrix.
+
+    Parameters
+    ----------
+    circuit
+        Registered local pure-state circuit.
+    parameters
+        Ordered real circuit parameter vector.
+    min_probability
+        Strictly positive probability threshold for the Fisher denominator.
+    shot_count
+        Optional positive integer sample total, representable as finite float64
+        for uncertainty calculations. Must equal the exact raw-count sum when
+        both inputs are supplied.
+    observed_counts
+        Positive integer vector of length ``2**circuit.n_qubits`` in ascending
+        computational-basis order, with qubit zero the most significant axis.
+        Integer values and their sum are retained exactly; floating-point
+        probabilities and uncertainty remain float64 approximations.
+    confidence_level
+        Recorded confidence level strictly between zero and one.
+    confidence_z
+        Positive normal-approximation multiplier for confidence radii.
+
+    Returns
+    -------
+    PhaseQNodeClassicalFisherResult
+        Exact local reference and optional count-replay uncertainty evidence.
+
+    Raises
+    ------
+    ValueError
+        If count, shape, shot or uncertainty inputs violate the contract.
+    PhaseQNodeSupportError
+        If the circuit or probability boundary is unsupported.
+
     """
     values = _as_parameter_vector(parameters)
     threshold = _as_min_probability(min_probability)
@@ -335,12 +370,19 @@ def _as_shot_count(value: int | None) -> int | None:
     """Return a validated optional positive shot count."""
     if value is None:
         return None
-    raw = np.asarray(value)
-    if raw.shape != () or raw.dtype.kind not in {"i", "u"}:
-        raise ValueError("shot_count must be a positive integer")
-    count = int(raw.item())
+    if isinstance(value, int) and not isinstance(value, bool):
+        count = value
+    else:
+        raw = np.asarray(value)
+        if raw.shape != () or raw.dtype.kind not in {"i", "u"}:
+            raise ValueError("shot_count must be a positive integer")
+        count = int(raw.item())
     if count < 1:
         raise ValueError("shot_count must be a positive integer")
+    try:
+        float(count)
+    except OverflowError as exc:
+        raise ValueError("shot_count must be representable as finite float64") from exc
     return count
 
 
@@ -371,13 +413,13 @@ def _as_observed_count_record(
         raise ValueError(f"observed_counts must have shape ({width},), got {raw.shape}")
     if raw.dtype.kind not in {"i", "u"}:
         raise ValueError("observed_counts must be integer counts")
-    counts = np.asarray(raw, dtype=np.int64)
-    if np.any(counts <= 0):
+    counts = tuple(int(item) for item in raw.tolist())
+    if any(count <= 0 for count in counts):
         raise ValueError("observed_counts must be strictly positive for finite-shot Fisher replay")
-    total = int(np.sum(counts, dtype=np.int64))
+    total = sum(counts)
     if shot_count is not None and total != shot_count:
         raise ValueError("observed_counts sum must equal shot_count")
-    return tuple(int(item) for item in counts.tolist()), total
+    return counts, total
 
 
 def _classical_fisher_from_probabilities(

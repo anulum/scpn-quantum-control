@@ -456,6 +456,18 @@ is sent to pure-state gradients or metrics, when unsupported gates or
 observables are present, or when computational-basis Fisher information is
 singular at a zero-probability outcome.
 
+Computational-basis Fisher replay accepts a positive integer count vector in
+ascending basis-index order, with qubit zero as the most significant axis:
+for two qubits the entries are `00`, `01`, `10`, `11` in that wire convention.
+Provider bitstrings must be mapped explicitly into this order; this API does
+not infer provider wire or classical-register mappings. Raw integer counts and
+their total are preserved without signed-64-bit wrapping, including unsigned
+counts and totals above that range. An explicit `shot_count` must match the
+exact total and fit finite float64 for uncertainty calculations. Probabilities
+and delta-method errors still use float64 and are not arbitrary-precision
+statistical estimates. A zero-count outcome remains unsupported for this
+strictly positive Fisher replay contract.
+
 ## Minimal parameter-shift call
 
 ```python
