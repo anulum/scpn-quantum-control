@@ -11,6 +11,13 @@
 //! Enumerates all 2^horizon action sequences and evaluates cost in parallel
 //! via rayon. Returns the optimal action sequence, cost, and full cost landscape.
 //! Used by the QAOA-MPC module for benchmarking against quantum optimisers.
+//!
+//! The tracking cost is `C(u) = sum_t ||u_t * v - r||^2` with `v = B * 1` the
+//! row sums of the actuation matrix, `u_t` a binary on/off decision and `r` the
+//! target. The residual stays a vector: collapsing it to `||B||` and `||r||`
+//! would discard the target's sign and its direction relative to `B`. This must
+//! stay numerically identical to the Python fallback in
+//! `scpn_quantum_control.hardware.classical.classical_brute_mpc`.
 
 use ndarray::Array1;
 use numpy::{PyArray1, PyReadonlyArray1};
@@ -30,6 +37,10 @@ type BruteMpcResult<'py> = PyResult<(
 
 /// Brute-force optimal binary MPC: enumerate all 2^horizon action sequences.
 /// Parallelised with rayon for horizon > 10.
+///
+/// Evaluates `C(u) = sum_t ||u_t * v - r||^2` where `v = B * 1` is the row-sum
+/// actuation vector of the `dim x dim` matrix `b_flat` (row-major) and `r` is
+/// `target`. Bit `t` of an enumeration index carries `u_t`.
 ///
 /// Returns (optimal_actions, optimal_cost, all_costs, n_evaluated).
 #[pyfunction]
@@ -62,8 +73,9 @@ pub fn brute_mpc<'py>(
     validate_finite(t_data, "target")?;
     let n_actions = 1usize << horizon;
 
-    let b_norm: f64 = b_data.iter().map(|x| x * x).sum::<f64>().sqrt();
-    let t_norm: f64 = t_data.iter().map(|x| x * x).sum::<f64>().sqrt();
+    let actuation: Vec<f64> = (0..dim)
+        .map(|row| b_data[row * dim..(row + 1) * dim].iter().sum())
+        .collect();
 
     let costs: Vec<f64> = (0..n_actions)
         .into_par_iter()
@@ -71,8 +83,10 @@ pub fn brute_mpc<'py>(
             let mut cost = 0.0;
             for t in 0..horizon {
                 let action = ((idx >> t) & 1) as f64;
-                let diff = b_norm * action - t_norm / horizon as f64;
-                cost += diff * diff;
+                for (component, target_component) in actuation.iter().zip(t_data.iter()) {
+                    let residual = action * component - target_component;
+                    cost += residual * residual;
+                }
             }
             cost
         })
@@ -104,29 +118,72 @@ pub fn brute_mpc<'py>(
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn test_brute_mpc_trivial() {
-        // horizon=1: 2 actions (0 or 1)
-        // Cost for action 0: (0 - t_norm/1)² = t_norm²
-        // Cost for action 1: (b_norm - t_norm)²
-        // If b_norm ≈ t_norm, action 1 wins
-        let b = vec![1.0, 0.0];
-        let t = vec![1.0, 0.0];
-        let b_norm: f64 = b.iter().map(|x| x * x).sum::<f64>().sqrt();
-        let t_norm: f64 = t.iter().map(|x| x * x).sum::<f64>().sqrt();
-        let horizon = 1;
-        let n_actions = 1usize << horizon;
-
-        let costs: Vec<f64> = (0..n_actions)
-            .map(|idx| {
-                let action = ((idx >> 0) & 1) as f64;
-                let diff = b_norm * action - t_norm;
-                diff * diff
-            })
+    /// Independent oracle: the cost straight from its definition, with no
+    /// algebraic rearrangement shared with the kernel under test.
+    fn oracle(b_flat: &[f64], target: &[f64], dim: usize, horizon: usize) -> Vec<f64> {
+        let actuation: Vec<f64> = (0..dim)
+            .map(|row| b_flat[row * dim..(row + 1) * dim].iter().sum())
             .collect();
+        (0..1usize << horizon)
+            .map(|idx| {
+                let mut cost = 0.0;
+                for t in 0..horizon {
+                    let action = ((idx >> t) & 1) as f64;
+                    for i in 0..dim {
+                        let residual = action * actuation[i] - target[i];
+                        cost += residual * residual;
+                    }
+                }
+                cost
+            })
+            .collect()
+    }
 
-        // action=1 → cost = 0 (b_norm = t_norm = 1)
-        assert!(costs[1] < 1e-12, "matching norms → zero cost for action=1");
-        assert!(costs[0] > 0.5, "action=0 → cost = t_norm² = 1");
+    /// Reproduce the recorded defect: a negative target must not be treated
+    /// like its positive twin. The norm-only surrogate returned `[1, 0]` and
+    /// selected `u = 1`; the documented cost is `(u + 1)^2 = [1, 4]`.
+    #[test]
+    fn signed_target_is_not_collapsed_to_a_norm() {
+        let costs = oracle(&[1.0], &[-1.0], 1, 1);
+        assert!((costs[0] - 1.0).abs() < 1e-12, "u=0 costs (0+1)^2 = 1");
+        assert!((costs[1] - 4.0).abs() < 1e-12, "u=1 costs (1+1)^2 = 4");
+        assert!(costs[0] < costs[1], "the optimum is u=0, not u=1");
+
+        let flipped = oracle(&[1.0], &[1.0], 1, 1);
+        assert!(
+            (flipped[1] - 0.0).abs() < 1e-12,
+            "flipping the target's sign must change the landscape"
+        );
+        assert!(costs[1] != flipped[1], "a norm-only cost would tie these");
+    }
+
+    /// A rotated target changes the answer even at fixed norms, because the
+    /// `v . r` cross-term survives.
+    #[test]
+    fn rotated_target_changes_the_optimum() {
+        let b = vec![0.6, -0.8, 0.8, 0.6];
+        let aligned = oracle(&b, &[-0.2, 1.4], 2, 2);
+        let rotated = oracle(&b, &[1.4, -0.2], 2, 2);
+        assert!(
+            aligned
+                .iter()
+                .zip(rotated.iter())
+                .any(|(a, r)| (a - r).abs() > 1e-9),
+            "equal-norm targets with different directions must differ"
+        );
+    }
+
+    /// Sparse and multi-step landscapes stay consistent with the definition.
+    #[test]
+    fn multi_step_landscape_matches_the_definition() {
+        let b = vec![1.0, 0.0, 0.0, 1.0];
+        let target = vec![0.8, 0.6];
+        let costs = oracle(&b, &target, 2, 3);
+        assert_eq!(costs.len(), 8);
+        let per_step_off = 0.8f64.powi(2) + 0.6f64.powi(2);
+        let per_step_on = (1.0f64 - 0.8).powi(2) + (1.0f64 - 0.6).powi(2);
+        assert!((costs[0] - 3.0 * per_step_off).abs() < 1e-12);
+        assert!((costs[7] - 3.0 * per_step_on).abs() < 1e-12);
+        assert!((costs[1] - (per_step_on + 2.0 * per_step_off)).abs() < 1e-12);
     }
 }

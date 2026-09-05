@@ -249,13 +249,26 @@ Matrix exponential evolution: psi(t+dt) = exp(-iHdt) psi(t).
 Returns time series of R(t) and energy E(t) for direct comparison
 with Trotter evolution on quantum hardware.
 
-### `classical_brute_mpc(K, omega, horizon, theta_init)`
+### `classical_brute_mpc(B_matrix, target, horizon)`
 
-Brute-force model predictive control: enumerate all 2^horizon action
-sequences and select the one maximising R(t_final).
+Brute-force binary model predictive control: enumerate all 2^horizon on/off
+action sequences and select the one minimising the tracking cost
+
+```
+C(u) = sum_t ||u_t * v - target||^2,   v = B_matrix @ ones
+```
+
+where `u_t` in `{0, 1}` switches the whole actuation vector on or off at
+timestep `t`. The residual stays a vector, so the target's sign and its
+direction relative to `B_matrix` both change the optimum; a norm-only cost
+would treat `target` and `-target` as identical.
+
+`B_matrix` is `(dim, dim)`, `target` has length `dim`, and bit `t` of an index
+into the returned `all_costs` carries `u_t`.
 
 **Rust acceleration**: `scpn_quantum_engine.brute_mpc()` with rayon
-parallel enumeration at 5-50x speedup.
+parallel enumeration. See the performance table for the current measurement
+status.
 
 ---
 

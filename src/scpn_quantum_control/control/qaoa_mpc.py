@@ -5,10 +5,12 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Qaoa Mpc
-"""QAOA for MPC trajectory optimization.
+"""QAOA for MPC trajectory optimisation.
 
-Discretizes the MPC action space to binary (coil on/off per timestep),
-maps the quadratic cost to an Ising Hamiltonian, then solves via QAOA.
+Discretises the MPC action space to binary (coil on/off per timestep),
+maps the quadratic tracking cost to an Ising Hamiltonian, then solves via QAOA.
+The cost keeps the vector residual ``u_t * (B @ ones) - target``; collapsing it
+to norms would discard the target's sign and its direction relative to ``B``.
 """
 
 from __future__ import annotations
@@ -23,8 +25,10 @@ from scipy.optimize import minimize
 class QAOA_MPC:
     """QAOA-based model predictive controller.
 
-    Cost: C = sum_t ||B*u(t) - target||^2  discretized to binary u_t in {0,1}.
-    This quadratic-in-binary is equivalent to an Ising Hamiltonian.
+    Cost: ``C = sum_t ||u_t * (B @ ones) - target||^2`` with binary
+    ``u_t in {0, 1}``, one coil on/off decision per timestep. The residual stays
+    a vector, so a sign flip or rotation of ``target`` changes the optimum. This
+    quadratic-in-binary form is equivalent to an Ising Hamiltonian.
     """
 
     def __init__(
@@ -67,10 +71,17 @@ class QAOA_MPC:
     def build_cost_hamiltonian(self) -> SparsePauliOp:
         """Map per-timestep quadratic binary cost to Ising Hamiltonian.
 
-        C(u) = sum_t (a*u_t - b)^2,  a=||B||, b=||target||/H.
-        Expanding with u_t^2=u_t and u_t=(1-Z_t)/2:
-            C = const + h_z * sum_t Z_t
-        where h_z = -(a^2 - 2ab)/2.  No ZZ terms (timesteps are independent).
+        The tracking cost is ``C(u) = sum_t ||u_t * v - r||^2`` with
+        ``v = B @ ones`` and ``r`` the target. Using ``u_t^2 = u_t`` for binary
+        ``u_t`` and ``u_t = (1 - Z_t)/2``::
+
+            q  = ||v||^2 - 2 * (v . r)
+            C  = H*q/2 + H*||r||^2 - (q/2) * sum_t Z_t
+
+        so ``h_z = -q/2``. There are no ZZ terms because the timesteps are
+        independent; the coupling this mapping preserves is the ``v . r``
+        cross-term inside the norm, which a norm-only surrogate discards along
+        with the target's sign.
 
         Returns
         -------
@@ -78,10 +89,10 @@ class QAOA_MPC:
             Diagonal identity-and-Z cost Hamiltonian for the control horizon.
 
         """
-        a = float(np.linalg.norm(self.B))
-        b = float(np.linalg.norm(self.target)) / self.horizon
-        h_z = -(a**2 - 2.0 * a * b) / 2.0
-        c0 = (a**2 - 2.0 * a * b) * self.horizon / 2.0 + self.horizon * b**2
+        actuation = self.B.sum(axis=1)
+        q = float(actuation @ actuation) - 2.0 * float(actuation @ self.target)
+        h_z = -q / 2.0
+        c0 = q * self.horizon / 2.0 + self.horizon * float(self.target @ self.target)
 
         pauli_list = [("I" * self.n_qubits, c0)]
         for t in range(self.horizon):

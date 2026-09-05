@@ -49,18 +49,17 @@ def test_hamiltonian_matches_classical_cost() -> None:
     target = np.array([0.8, 0.6])
     horizon = 4
 
+    from scpn_quantum_control.hardware.classical import classical_brute_mpc
+
     mpc = QAOA_MPC(B, target, horizon=horizon, p_layers=1)
     H = mpc.build_cost_hamiltonian()
     H_mat = np.real(np.diag(np.array(H.to_matrix())))
 
-    a = float(np.linalg.norm(B))
-    b = float(np.linalg.norm(target)) / horizon
+    classical_costs = classical_brute_mpc(B, target, horizon)["all_costs"]
 
     for idx in range(2**horizon):
-        actions = np.array([(idx >> bit) & 1 for bit in range(horizon)])
-        classical_cost = sum((a * actions[t] - b) ** 2 for t in range(horizon))
-        assert abs(H_mat[idx] - classical_cost) < 1e-10, (
-            f"bitstring {idx:04b}: H={H_mat[idx]:.6f}, classical={classical_cost:.6f}"
+        assert abs(H_mat[idx] - classical_costs[idx]) < 1e-10, (
+            f"bitstring {idx:04b}: H={H_mat[idx]:.6f}, classical={classical_costs[idx]:.6f}"
         )
 
 
@@ -159,3 +158,58 @@ def test_optimize_reuses_prebuilt_cost_hamiltonian() -> None:
     result = mpc.optimize(seed=42)
     assert mpc._cost_ham is expected
     assert result.shape == (1,)
+
+
+def _qaoa_reference_costs(b_matrix: np.ndarray, target: np.ndarray, horizon: int) -> np.ndarray:
+    """Enumerate the documented MPC cost straight from its definition."""
+    actuation = np.asarray(b_matrix, dtype=float).sum(axis=1)
+    goal = np.asarray(target, dtype=float)
+    costs = []
+    for index in range(2**horizon):
+        total = 0.0
+        for step in range(horizon):
+            residual = ((index >> step) & 1) * actuation - goal
+            total += float(np.dot(residual, residual))
+        costs.append(total)
+    return np.array(costs)
+
+
+@pytest.mark.parametrize(
+    ("b_matrix", "target", "horizon"),
+    [
+        (np.array([[1.0]]), np.array([-1.0]), 1),
+        (np.eye(2), np.array([0.8, 0.6]), 3),
+        (np.array([[0.6, -0.8], [0.8, 0.6]]), np.array([-0.3, 1.1]), 2),
+    ],
+)
+def test_cost_hamiltonian_diagonal_equals_the_documented_cost(
+    b_matrix: np.ndarray, target: np.ndarray, horizon: int
+) -> None:
+    """The Ising mapping must reproduce the cost it claims to encode."""
+    controller = QAOA_MPC(b_matrix, target, horizon=horizon, p_layers=1)
+    diagonal = np.real(np.diag(controller.build_cost_hamiltonian().to_matrix()))
+    np.testing.assert_allclose(
+        diagonal, _qaoa_reference_costs(b_matrix, target, horizon), atol=1e-9
+    )
+
+
+def test_cost_hamiltonian_separates_a_sign_flipped_target() -> None:
+    """A norm-only mapping would give these two targets the same Hamiltonian."""
+    positive = QAOA_MPC(np.array([[1.0]]), np.array([1.0]), horizon=1, p_layers=1)
+    negative = QAOA_MPC(np.array([[1.0]]), np.array([-1.0]), horizon=1, p_layers=1)
+    positive_diagonal = np.real(np.diag(positive.build_cost_hamiltonian().to_matrix()))
+    negative_diagonal = np.real(np.diag(negative.build_cost_hamiltonian().to_matrix()))
+    np.testing.assert_allclose(positive_diagonal, [1.0, 0.0], atol=1e-9)
+    np.testing.assert_allclose(negative_diagonal, [1.0, 4.0], atol=1e-9)
+
+
+def test_cost_hamiltonian_agrees_with_the_brute_force_kernel() -> None:
+    """The quantum mapping and the classical enumerator share one cost."""
+    from scpn_quantum_control.hardware.classical import classical_brute_mpc
+
+    b_matrix = np.array([[0.6, -0.8], [0.8, 0.6]])
+    target = np.array([-0.3, 1.1])
+    controller = QAOA_MPC(b_matrix, target, horizon=3, p_layers=1)
+    diagonal = np.real(np.diag(controller.build_cost_hamiltonian().to_matrix()))
+    brute = classical_brute_mpc(b_matrix, target, 3)
+    np.testing.assert_allclose(diagonal, brute["all_costs"], atol=1e-9)

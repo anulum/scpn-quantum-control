@@ -222,7 +222,7 @@ convergence.
 | `xy_kuramoto.py` | `classical_kuramoto_reference()` | R(t) within 5% for K >> Δω |
 | `trotter_upde.py` | `classical_exact_evolution()` | Per-layer phase tracks classical at n={2,3,4,6} |
 | `phase_vqe.py` | `classical_exact_diag()` | Ground energy within 0.1% (simulator) |
-| `qaoa_mpc.py` | `classical_brute_mpc()` | Optimal action for small horizons |
+| `qaoa_mpc.py` | `classical_brute_mpc()` | Ising diagonal equals the enumerated cost; optimal action for small horizons |
 | `pec.py` | Analytical quasi-prob coefficients | q_I + 3·q_XYZ = 1, overhead = γ^n_gates |
 | `quantum_advantage.py` | Classical expm timing | Exponential fit crossover at n>>14 |
 | `fault_tolerant.py` | Distance-d repetition code | Syndrome detects injected bit-flip |

@@ -1282,8 +1282,15 @@ Standalone Rust paths (no Python parity comparison; absolute wall time):
 | `expectation_pauli_fast` | 10 qubits, single-Z | 0.02 ms |
 | `pec_sample_parallel` | 100 000 samples, 5 gates | 14.04 ms |
 | `mc_xy_simulate` | 8 osc, 5k therm + 2k meas | 1.39 ms |
-| `brute_mpc` | dim=3, horizon=4 | 0.27 ms |
+| `brute_mpc` | dim=3, horizon=4 | stale — see note |
 | `parity_filter_mask` | 10 000 × 20-bit | 0.14 ms |
+
+The `brute_mpc` row is **stale and deliberately not replaced**. Its kernel now
+evaluates a `dim`-length vector residual per timestep instead of two scalar
+operations, so the previously recorded 0.27 ms no longer describes the code. It
+was not re-measured here: the compiled extension is not built in this
+environment, and an isolated-core run with recorded host load is required before
+any replacement figure may be published. No estimate is substituted.
 
 ### Cross-language outlook
 

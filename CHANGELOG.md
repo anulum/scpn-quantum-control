@@ -4,6 +4,16 @@
 
 ### Fixed
 
+- Evaluate the binary MPC tracking cost on the vector residual
+  `u_t * (B @ ones) - target` instead of collapsing it to `||B||` and
+  `||target||`. The norm-only surrogate discarded the target's sign and its
+  direction relative to the actuation matrix, so a sign-flipped target produced
+  an identical cost landscape and the optimiser could select the opposite
+  action. Corrected identically in the Python fallback, the Rust kernel and the
+  QAOA Ising mapping, whose diagonal now equals the enumerated cost. The
+  recorded `brute_mpc` performance figure is marked stale pending an
+  isolated-core re-measurement.
+
 - Place readout counts at the position their label occupies in the supplied
   label order. A permuted or partial order previously resolved each outcome by
   its numeric bitstring value, silently mis-placing probabilities and raising an

@@ -381,8 +381,33 @@ def classical_brute_mpc(
 ) -> dict[str, Any]:
     """Brute-force optimal binary MPC: enumerate all 2^horizon action sequences.
 
-    Tries Rust parallel path first (rayon), falls back to Python.
-    Returns optimal actions, optimal cost, all costs for comparison.
+    Evaluates the tracking cost ``C(u) = sum_t ||u_t * v - r||^2`` where
+    ``v = B @ ones`` is the row-sum actuation vector, ``u_t`` in ``{0, 1}``
+    switches the whole actuation vector on or off at timestep ``t``, and ``r``
+    is the target. The residual stays a vector, so the target's sign and its
+    direction relative to ``B`` both change the result.
+
+    Tries the Rust parallel path first (rayon), falls back to Python. Both paths
+    evaluate the same cost.
+
+    Parameters
+    ----------
+    B_matrix
+        Square actuation matrix of shape ``(dim, dim)``.
+    target
+        Target state vector of length ``dim``, in the same units as
+        ``B_matrix @ ones``.
+    horizon
+        Positive number of binary timesteps; the enumeration is over
+        ``2 ** horizon`` sequences.
+
+    Returns
+    -------
+    dict
+        ``optimal_actions`` (int array of shape ``(horizon,)``),
+        ``optimal_cost`` (float), ``all_costs`` (float array of shape
+        ``(2 ** horizon,)``, indexed so bit ``t`` of the index is ``u_t``) and
+        ``n_evaluated`` (int).
     """
     try:
         _engine = optional_rust_engine()
@@ -409,15 +434,15 @@ def classical_brute_mpc(
     best_actions: NDArray[np.int64] = np.zeros(horizon, dtype=int)
     all_costs = np.zeros(n_actions)
 
-    b_norm = float(np.linalg.norm(B_matrix))
-    t_norm = float(np.linalg.norm(target))
+    actuation = np.asarray(B_matrix, dtype=np.float64).sum(axis=1)
+    residual_target = np.asarray(target, dtype=np.float64)
 
     for idx in range(n_actions):
         actions = np.array([(idx >> bit) & 1 for bit in range(horizon)])
         cost = 0.0
         for t in range(horizon):
-            diff = b_norm * actions[t] - t_norm / horizon
-            cost += diff**2
+            residual = actions[t] * actuation - residual_target
+            cost += float(residual @ residual)
         all_costs[idx] = cost
         if cost < best_cost:
             best_cost = cost

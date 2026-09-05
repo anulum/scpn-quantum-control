@@ -208,16 +208,18 @@ class TestRustPythonParity:
         actions_rs = np.array(actions_rs)
         costs_rs = np.array(costs_rs)
 
-        # Python manual
+        # Python manual: the documented cost, from its definition.
         n_actions = 2**horizon
-        b_norm = float(np.linalg.norm(B))
-        t_norm = float(np.linalg.norm(target))
+        actuation = B.sum(axis=1)
         best_cost = np.inf
         best_actions = np.zeros(horizon, dtype=int)
         all_costs = np.zeros(n_actions)
         for idx in range(n_actions):
             acts = np.array([(idx >> bit) & 1 for bit in range(horizon)])
-            cost = sum((b_norm * acts[t] - t_norm / horizon) ** 2 for t in range(horizon))
+            cost = 0.0
+            for t in range(horizon):
+                residual = acts[t] * actuation - target
+                cost += float(residual @ residual)
             all_costs[idx] = cost
             if cost < best_cost:
                 best_cost = cost

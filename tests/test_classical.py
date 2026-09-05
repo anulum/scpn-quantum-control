@@ -299,3 +299,64 @@ class TestClassicalAccelerationContracts:
             "qubit": 0,
             "pauli_idx": 1,
         }
+
+
+def _mpc_reference_costs(b_matrix: np.ndarray, target: np.ndarray, horizon: int) -> np.ndarray:
+    """Enumerate the documented MPC cost straight from its definition.
+
+    Independent of the production kernels: this builds each residual vector and
+    squares it, with none of the algebraic expansion the Ising mapping uses.
+    """
+    actuation = np.asarray(b_matrix, dtype=float).sum(axis=1)
+    goal = np.asarray(target, dtype=float)
+    costs = []
+    for index in range(2**horizon):
+        total = 0.0
+        for step in range(horizon):
+            residual = ((index >> step) & 1) * actuation - goal
+            total += float(np.dot(residual, residual))
+        costs.append(total)
+    return np.array(costs)
+
+
+def test_brute_mpc_reproduces_the_documented_signed_cost() -> None:
+    """A negative target is not interchangeable with its positive twin."""
+    result = classical_brute_mpc(np.array([[1.0]]), np.array([-1.0]), 1)
+    np.testing.assert_allclose(result["all_costs"], [1.0, 4.0], atol=1e-12)
+    np.testing.assert_array_equal(result["optimal_actions"], [0])
+
+    flipped = classical_brute_mpc(np.array([[1.0]]), np.array([1.0]), 1)
+    np.testing.assert_allclose(flipped["all_costs"], [1.0, 0.0], atol=1e-12)
+    np.testing.assert_array_equal(flipped["optimal_actions"], [1])
+
+
+@pytest.mark.parametrize(
+    ("b_matrix", "target", "horizon"),
+    [
+        (np.array([[1.0]]), np.array([-1.0]), 1),
+        (np.eye(2), np.array([0.8, 0.6]), 3),
+        (np.array([[0.6, -0.8], [0.8, 0.6]]), np.array([-0.3, 1.1]), 2),
+        (np.array([[2.0, 0.5], [-1.0, 0.25]]), np.array([0.0, 0.0]), 2),
+    ],
+)
+def test_brute_mpc_matches_the_independent_cost_oracle(
+    b_matrix: np.ndarray, target: np.ndarray, horizon: int
+) -> None:
+    """Every enumerated cost equals the definition, including rotated targets."""
+    result = classical_brute_mpc(b_matrix, target, horizon)
+    expected = _mpc_reference_costs(b_matrix, target, horizon)
+    np.testing.assert_allclose(result["all_costs"], expected, atol=1e-12)
+    assert result["optimal_cost"] == pytest.approx(float(expected.min()), abs=1e-12)
+    best = int(np.argmin(expected))
+    np.testing.assert_array_equal(
+        result["optimal_actions"], [(best >> step) & 1 for step in range(horizon)]
+    )
+
+
+def test_brute_mpc_keeps_the_target_cross_term() -> None:
+    """Equal-norm targets pointing differently must not share a landscape."""
+    b_matrix = np.array([[0.6, -0.8], [0.8, 0.6]])
+    aligned = classical_brute_mpc(b_matrix, np.array([-0.2, 1.4]), 2)["all_costs"]
+    rotated = classical_brute_mpc(b_matrix, np.array([1.4, -0.2]), 2)["all_costs"]
+    assert np.linalg.norm([-0.2, 1.4]) == pytest.approx(np.linalg.norm([1.4, -0.2]))
+    assert not np.allclose(aligned, rotated, atol=1e-9)

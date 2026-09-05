@@ -312,7 +312,7 @@ Time points are parallelised with rayon.
 
 | Function | Description | Complexity |
 |----------|-------------|------------|
-| `brute_mpc(B_flat, target, dim, horizon)` | Brute-force binary MPC (rayon parallel) | O(2^horizon × horizon) |
+| `brute_mpc(B_flat, target, dim, horizon)` | Brute-force binary MPC, cost `sum_t \|\|u_t·(B·1) − target\|\|²` (rayon parallel) | O(2^horizon × horizon × dim) |
 
 ### Symmetry-Decay ZNE (GUESS)
 

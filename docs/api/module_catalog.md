@@ -1949,7 +1949,7 @@ ITER-specific disruption classifier with 11 physics-based features.
 
 ### `scpn_quantum_control.control.qaoa_mpc`
 
-QAOA for MPC trajectory optimization.
+QAOA for MPC trajectory optimisation.
 
 [Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/control/qaoa_mpc.py) · Public symbols: **1**
 
