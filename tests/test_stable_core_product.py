@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any, cast
 
 import pytest
@@ -54,6 +55,68 @@ from scpn_quantum_control.stable_core_product import (
     validate_model_schema_version,
     wrap_model_envelope,
 )
+
+
+@pytest.mark.parametrize("kind", ["problem", "backend", "experiment", "result"])
+def test_versioned_body_rejects_field_drift(kind: str) -> None:
+    """Reject missing and unexpected fields at both envelope boundaries."""
+    experiment = build_demo_experiment()
+    bodies = {
+        "problem": experiment.problem.to_dict(),
+        "backend": experiment.backend.to_dict(),
+        "experiment": experiment.to_dict(),
+        "result": build_result(
+            experiment_id="e", backend_id="b", status="succeeded", observables={"r": 1.0}
+        ).to_dict(),
+    }
+    body = bodies[kind]
+    envelope = wrap_model_envelope(cast(Any, kind), body)
+    mutations = [{**body, "unrecognised_setting": 1}]
+    mutations.extend(
+        {key: value for key, value in body.items() if key != missing} for missing in body
+    )
+    for changed in mutations:
+        with pytest.raises(ValueError, match="key drift"):
+            wrap_model_envelope(cast(Any, kind), changed)
+        with pytest.raises(ValueError, match="key drift"):
+            unwrap_model_envelope({**envelope, "body": changed})
+
+
+@pytest.mark.parametrize("count", [True, 0, -1, 1, 3, 2.0, "2", None])
+def test_versioned_problem_rejects_qubit_count_drift(count: object) -> None:
+    """Reject qubit declarations that decoding would otherwise discard."""
+    envelope = serialise_problem(build_demo_experiment().problem)
+    body = dict(cast(dict[str, object], envelope["body"]))
+    body["n_qubits"] = count
+    with pytest.raises(ValueError, match="n_qubits"):
+        deserialise_problem({**envelope, "body": body})
+
+
+@pytest.mark.parametrize("nested", ["problem", "backend"])
+def test_versioned_experiment_rejects_nested_field_drift(nested: str) -> None:
+    """Validate nested model fields before reconstructing an experiment."""
+    envelope = serialise_experiment(build_demo_experiment())
+    body = cast(dict[str, Any], envelope["body"])
+    body[nested]["unrecognised_setting"] = 1
+    with pytest.raises(ValueError, match="key drift"):
+        deserialise_experiment(envelope)
+    body[nested] = None
+    with pytest.raises(ValueError, match="mapping"):
+        deserialise_experiment(envelope)
+
+
+def test_versioned_experiment_preserves_extension_metadata() -> None:
+    """Preserve settings and units inside metadata through real JSON bytes."""
+    envelope = serialise_experiment(build_demo_experiment())
+    body = cast(dict[str, Any], envelope["body"])
+    for model in (body, body["problem"], body["backend"]):
+        model["metadata"] = {
+            "units": "rad/s",
+            "requested": {"shots": 100},
+            "effective": {"shots": 80},
+        }
+    restored = deserialise_experiment(json.loads(canonical_json_bytes(envelope)))
+    assert canonical_json_bytes(restored.to_dict()) == canonical_json_bytes(body)
 
 
 def test_list_contracts_and_filters() -> None:

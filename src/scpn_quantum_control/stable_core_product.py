@@ -468,6 +468,59 @@ def _require_exact_keys(name: str, value: Mapping[str, object], expected: frozen
         )
 
 
+_MODEL_BODY_KEYS: Final[dict[str, frozenset[str]]] = {
+    "problem": frozenset(
+        {"problem_id", "kind", "n_qubits", "coupling_matrix", "omega", "initial_state", "metadata"}
+    ),
+    "backend": frozenset(
+        {"backend_id", "kind", "capabilities", "hardware_submission_allowed", "metadata"}
+    ),
+    "experiment": frozenset(
+        {"experiment_id", "problem", "backend", "objective", "seed", "shots", "metadata"}
+    ),
+    "result": frozenset(
+        {
+            "experiment_id",
+            "backend_id",
+            "status",
+            "observables",
+            "artifacts",
+            "blockers",
+            "metadata",
+        }
+    ),
+}
+
+
+def _validate_model_body(kind: ContractKind, body: Mapping[str, Any]) -> None:
+    """Reject versioned field loss and contradictory problem dimensions.
+
+    Parameters
+    ----------
+    kind
+        Validated envelope kind.
+    body
+        Serialized model fields, including nested experiment models.
+
+    Raises
+    ------
+    ValueError
+        If fields drift or a problem declares inconsistent dimensions.
+
+    """
+    _require_exact_keys(f"{kind} body", body, _MODEL_BODY_KEYS[kind])
+    if kind == "experiment":
+        _validate_model_body("problem", _require_mapping("problem", body["problem"]))
+        _validate_model_body("backend", _require_mapping("backend", body["backend"]))
+    elif kind == "problem":
+        count = body["n_qubits"]
+        if isinstance(count, bool) or not isinstance(count, int) or count <= 0:
+            raise ValueError("n_qubits must be a positive integer")
+        problem = problem_from_dict(body)
+        if count != problem.n_qubits:
+            raise ValueError("n_qubits must match coupling_matrix and omega dimensions")
+
+
 def problem_from_dict(payload: Mapping[str, Any]) -> Problem:
     """Rebuild a :class:`Problem` from a JSON-compatible mapping.
 
@@ -689,6 +742,7 @@ def wrap_model_envelope(
     version = validate_model_schema_version(schema_version)
     if not isinstance(body, Mapping) or not body:
         raise ValueError("body must be a non-empty mapping")
+    _validate_model_body(kind, body)
     return {
         "schema_version": version,
         "kind": kind,
@@ -730,6 +784,7 @@ def unwrap_model_envelope(envelope: Mapping[str, Any]) -> tuple[str, ContractKin
     body = data.get("body")
     if not isinstance(body, Mapping) or not body:
         raise ValueError("envelope body must be a non-empty mapping")
+    _validate_model_body(kind, body)
     return version, kind, dict(body)
 
 

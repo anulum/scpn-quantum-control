@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Reject missing or unexpected stable-core v2 model fields, including nested
+  experiment models, and reject contradictory serialized qubit counts at both
+  envelope boundaries. Preserve direct mapping-constructor compatibility.
+
 - Preserve gradient-result snapshots with owned read-only arrays and copied
   parameter metadata; expose primitive-contract lowering metadata as a copied
   read-only mapping so later caller or registry edits cannot change a snapshot.

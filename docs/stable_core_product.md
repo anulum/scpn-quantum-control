@@ -73,6 +73,18 @@ assert rt.digest_sha256
 
 ### Model conversion and round-trip proof
 
+Versioned wrapping and unwrapping require the complete `to_dict()` field set
+for each model, including nested experiment problems and backends. Missing or
+unexpected fields are rejected rather than defaulted or discarded. A problem's
+`n_qubits` must be a positive integer (not a boolean) matching its matrix and
+frequency dimensions. This enforces the existing v2 layout without adding fields
+or changing the schema version.
+
+Use `metadata` for application-specific extensions such as units and requested
+versus effective settings. The direct `*_from_dict()` convenience constructors
+retain their existing defaults; they are not versioned envelope validators.
+These field checks do not establish physical unit correctness or provider fidelity.
+
 | Model | From mapping | To envelope | From envelope |
 |---|---|---|---|
 | `Problem` | `problem_from_dict()` | `serialise_problem()` | `deserialise_problem()` |
