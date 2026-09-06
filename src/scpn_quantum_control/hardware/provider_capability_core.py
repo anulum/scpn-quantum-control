@@ -342,6 +342,7 @@ class RouteVerbSupport:
         If the verb is unknown, a date is not ``YYYY-MM-DD``, a required
         provenance field is missing for an advertised or observed operation, or
         an observation contradicts an explicit non-declaration.
+
     """
 
     verb: RouteVerb
@@ -424,6 +425,7 @@ class ProviderRouteCatalogueEntry:
     ValueError
         If an identity field is empty, the date is malformed, or the verb
         records are not exactly one per operation in canonical order.
+
     """
 
     route_id: str
@@ -476,6 +478,7 @@ class ProviderRouteCatalogueEntry:
         ------
         KeyError
             If the verb is not part of the canonical operation set.
+
         """
         for record in self.verbs:
             if record.verb == verb:
@@ -541,6 +544,7 @@ def build_provider_route_catalogue(
     ValueError
         If the date is malformed, the routes contain a duplicate ``route_id``,
         or the evidence names an unknown route or repeats a verb.
+
     """
     _require_observation_date(observed_at, "observed_at")
     declared_routes = (

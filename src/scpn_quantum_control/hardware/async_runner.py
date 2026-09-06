@@ -522,6 +522,7 @@ class AsyncHardwareRunner:
                     while one is running, ``"completed"`` once a result is
                     held, or ``"ambiguous"`` when the submission raised and it
                     is unknown whether the provider accepted the work.
+
                 """
                 if self._failure is not None:
                     return "ambiguous"
@@ -568,6 +569,7 @@ class AsyncHardwareRunner:
                 BaseException
                     The recorded submission failure, re-raised unchanged on
                     every subsequent await.
+
                 """
                 if self._failure is not None:
                     raise self._failure
