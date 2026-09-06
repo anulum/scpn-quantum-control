@@ -9,8 +9,11 @@
 
 from __future__ import annotations
 
+from typing import NoReturn
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.analysis import qrc_phase_detector as qrc_module
 from scpn_quantum_control.analysis.qrc_phase_detector import (
@@ -33,7 +36,7 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestGenerateTrainingData:
-    def test_returns_correct_shapes(self):
+    def test_returns_correct_shapes(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -43,7 +46,7 @@ class TestGenerateTrainingData:
         assert X.shape[1] > 0
         assert y.shape == (4,)
 
-    def test_labels_correct(self):
+    def test_labels_correct(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -54,7 +57,7 @@ class TestGenerateTrainingData:
         assert y[2] == 1.0  # 2.0 >= 1.5
         assert y[3] == 1.0  # 3.0 >= 1.5
 
-    def test_features_vary_with_K(self):
+    def test_features_vary_with_K(self) -> None:
         """Different K values should produce different features."""
         n = 3
         T = _ring_topology(n)
@@ -63,12 +66,14 @@ class TestGenerateTrainingData:
         X, _ = generate_training_data(omega, T, k_range, k_threshold=2.0)
         assert not np.allclose(X[0], X[1])
 
-    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+    def test_rejects_dense_budget_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
 
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(
@@ -85,13 +90,15 @@ class TestGenerateTrainingData:
                 max_dense_gib=1e-12,
             )
 
-    def test_training_data_propagates_dense_budget(self, monkeypatch):
+    def test_training_data_propagates_dense_budget(self, monkeypatch: pytest.MonkeyPatch) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
         seen_budgets = []
 
-        def fake_features(K, omega_arg, max_weight, *, max_dense_gib):  # noqa: ARG001
+        def fake_features(
+            K: object, omega_arg: object, max_weight: object, *, max_dense_gib: float
+        ) -> NDArray[np.float64]:  # noqa: ARG001
             seen_budgets.append(max_dense_gib)
             return np.array([1.0, 0.0])
 
@@ -111,13 +118,13 @@ class TestGenerateTrainingData:
 
 
 class TestTrainLinearReadout:
-    def test_weights_correct_shape(self):
+    def test_weights_correct_shape(self) -> None:
         X = np.random.default_rng(42).standard_normal((10, 5))
         y = np.array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1], dtype=float)
         W = train_linear_readout(X, y, alpha=1.0)
         assert W.shape == (5,)
 
-    def test_perfect_separation(self):
+    def test_perfect_separation(self) -> None:
         """Linearly separable data with bias column should give perfect accuracy."""
         # Add bias column (ones) so ridge regression can learn intercept
         X = np.hstack(
@@ -133,7 +140,7 @@ class TestTrainLinearReadout:
 
 
 class TestClassify:
-    def test_threshold_at_half(self):
+    def test_threshold_at_half(self) -> None:
         X = np.array([[1.0], [-1.0]])
         W = np.array([1.0])
         preds = classify(X, W)
@@ -142,7 +149,7 @@ class TestClassify:
 
 
 class TestQRCPhaseDetection:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -153,7 +160,7 @@ class TestQRCPhaseDetection:
         assert 0.0 <= result.accuracy <= 1.0
         assert result.n_features > 0
 
-    def test_3qubit_pipeline(self):
+    def test_3qubit_pipeline(self) -> None:
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -164,7 +171,7 @@ class TestQRCPhaseDetection:
         assert result.n_train == 6
         assert result.n_test == 2
 
-    def test_well_separated_high_accuracy(self):
+    def test_well_separated_high_accuracy(self) -> None:
         """With clear separation, accuracy should be reasonable."""
         n = 3
         T = _ring_topology(n)
@@ -176,21 +183,21 @@ class TestQRCPhaseDetection:
         # Should get at least 50% (better than random)
         assert result.accuracy >= 0.5
 
-    def test_qrc_pipeline_propagates_dense_budget(self, monkeypatch):
+    def test_qrc_pipeline_propagates_dense_budget(self, monkeypatch: pytest.MonkeyPatch) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
         seen_budgets = []
 
         def fake_training_data(
-            omega_arg,
-            topology_arg,
-            k_range,
-            k_threshold,
-            max_weight,
+            omega_arg: object,
+            topology_arg: object,
+            k_range: NDArray[np.float64],
+            k_threshold: float,
+            max_weight: object,
             *,
-            max_dense_gib,
-        ):  # noqa: ARG001
+            max_dense_gib: float,
+        ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:  # noqa: ARG001
             seen_budgets.append(max_dense_gib)
             X = np.column_stack([np.asarray(k_range), np.ones(len(k_range))])
             y = (np.asarray(k_range) >= k_threshold).astype(float)
@@ -217,7 +224,7 @@ class TestQRCPhaseDetection:
 
 
 class TestQRCPhysics:
-    def test_features_finite(self):
+    def test_features_finite(self) -> None:
         """All reservoir features must be finite."""
         n = 2
         T = _ring_topology(n)
@@ -225,7 +232,7 @@ class TestQRCPhysics:
         X, _ = generate_training_data(omega, T, np.array([1.0, 3.0]), k_threshold=2.0)
         assert np.all(np.isfinite(X))
 
-    def test_readout_weights_finite(self):
+    def test_readout_weights_finite(self) -> None:
         X = np.random.default_rng(42).standard_normal((8, 4))
         y = np.array([0, 0, 0, 0, 1, 1, 1, 1], dtype=float)
         W = train_linear_readout(X, y, alpha=1.0)
@@ -238,7 +245,7 @@ class TestQRCPhysics:
 
 
 class TestQRCPipeline:
-    def test_pipeline_topology_to_phase_detection(self):
+    def test_pipeline_topology_to_phase_detection(self) -> None:
         """Full pipeline: ring topology → QRC features → linear readout → phase.
         Verifies QRC phase detector is wired end-to-end.
         """
