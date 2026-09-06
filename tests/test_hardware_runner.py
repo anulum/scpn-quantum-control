@@ -7,9 +7,14 @@
 # SCPN Quantum Control — Tests for Hardware Runner
 """Tests for hardware runner + experiments using local AerSimulator."""
 
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any, NoReturn
+
 import numpy as np
 import pytest
-from scipy.optimize import minimize
+from numpy.typing import NDArray
+from scipy.optimize import OptimizeResult, minimize
 
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.hardware.classical import (
@@ -21,13 +26,13 @@ from scpn_quantum_control.hardware.classical import (
 from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
 
 
-def test_connect_simulator(sim_runner):
+def test_connect_simulator(sim_runner: HardwareRunner) -> None:
     """Connect the runner to its local simulator backend."""
     assert sim_runner.backend is not None
     assert "aer" in sim_runner.backend_name.lower() or sim_runner.use_simulator
 
 
-def test_connect_simulator_exposes_non_submit_descriptor(sim_runner):
+def test_connect_simulator_exposes_non_submit_descriptor(sim_runner: HardwareRunner) -> None:
     """Expose a simulator descriptor that cannot submit work."""
     descriptor = sim_runner.backend_descriptor
     assert descriptor.name == "qiskit_aer"
@@ -37,7 +42,7 @@ def test_connect_simulator_exposes_non_submit_descriptor(sim_runner):
     assert descriptor.submit_requires_approval is False
 
 
-def test_transpile_simple_circuit(sim_runner):
+def test_transpile_simple_circuit(sim_runner: HardwareRunner) -> None:
     """Transpile a measured Bell circuit for the local backend."""
     from qiskit import QuantumCircuit
 
@@ -49,7 +54,7 @@ def test_transpile_simple_circuit(sim_runner):
     assert isa.num_qubits >= 2
 
 
-def test_run_sampler_bell(sim_runner):
+def test_run_sampler_bell(sim_runner: HardwareRunner) -> None:
     """Sample a Bell circuit for exactly the requested shot count."""
     from qiskit import QuantumCircuit
 
@@ -64,7 +69,7 @@ def test_run_sampler_bell(sim_runner):
     assert total == 1000
 
 
-def test_save_result(sim_runner):
+def test_save_result(sim_runner: HardwareRunner) -> None:
     """Persist a job result with its identity and counts intact."""
     jr = JobResult(
         job_id="test_123",
@@ -82,7 +87,7 @@ def test_save_result(sim_runner):
     assert data["job_id"] == "test_123"
 
 
-def test_log_job_creates_jobs_json(sim_runner):
+def test_log_job_creates_jobs_json(sim_runner: HardwareRunner) -> None:
     """_log_job appends entries to jobs.json."""
     import json
 
@@ -98,25 +103,25 @@ def test_log_job_creates_jobs_json(sim_runner):
     assert "job_def" in ids
 
 
-def test_retrieve_job_requires_connect():
+def test_retrieve_job_requires_connect() -> None:
     """retrieve_job raises RuntimeError without hardware service."""
     runner = HardwareRunner(use_simulator=True)
     with pytest.raises(RuntimeError, match="call connect"):
         runner.retrieve_job("fake_id")
 
 
-def test_run_sampler_simulator_rejects_dense_budget_before_backend_run(tmp_path):
+def test_run_sampler_simulator_rejects_dense_budget_before_backend_run(tmp_path: Path) -> None:
     """Reject an oversized sampler allocation before backend execution."""
     from qiskit import QuantumCircuit
 
     class FakePassManager:
-        def run(self, circuit):
+        def run(self, circuit: QuantumCircuit) -> QuantumCircuit:
             return circuit
 
     class BackendMustNotRun:
         name = "fake_statevector_backend"
 
-        def run(self, *_args, **_kwargs):
+        def run(self, *_args: object, **_kwargs: object) -> NoReturn:
             raise AssertionError("backend.run must not execute after budget rejection")
 
     runner = HardwareRunner(
@@ -135,7 +140,7 @@ def test_run_sampler_simulator_rejects_dense_budget_before_backend_run(tmp_path)
         runner.run_sampler(qc, shots=8, name="budget_reject")
 
 
-def test_run_estimator_simulator_rejects_dense_budget_before_statevector(tmp_path):
+def test_run_estimator_simulator_rejects_dense_budget_before_statevector(tmp_path: Path) -> None:
     """Reject an oversized estimator allocation before statevector creation."""
     from qiskit import QuantumCircuit
     from qiskit.quantum_info import SparsePauliOp
@@ -158,7 +163,7 @@ def test_run_estimator_simulator_rejects_dense_budget_before_statevector(tmp_pat
         )
 
 
-def test_circuit_stats(sim_runner):
+def test_circuit_stats(sim_runner: HardwareRunner) -> None:
     """Report basic transpiled-circuit resource statistics."""
     from qiskit import QuantumCircuit
 
@@ -176,14 +181,14 @@ def test_circuit_stats(sim_runner):
 # ── Classical reference tests ──
 
 
-def test_classical_kuramoto():
+def test_classical_kuramoto() -> None:
     """Return bounded samples from the classical Kuramoto reference."""
     ref = classical_kuramoto_reference(4, t_max=0.5, dt=0.1)
     assert len(ref["R"]) == 6
     assert all(0.0 <= r <= 1.5 for r in ref["R"])
 
 
-def test_classical_exact_diag():
+def test_classical_exact_diag() -> None:
     """Return the complete four-qubit eigenspectrum and positive gap."""
     ref = classical_exact_diag(4)
     assert ref["ground_energy"] < 0  # XY Hamiltonian should have negative ground
@@ -191,14 +196,14 @@ def test_classical_exact_diag():
     assert len(ref["eigenvalues"]) == 16  # 2^4
 
 
-def test_classical_exact_evolution():
+def test_classical_exact_evolution() -> None:
     """Return finite samples from classical exact evolution."""
     ref = classical_exact_evolution(3, 0.3, 0.1)
     assert len(ref["R"]) == 4
     assert all(np.isfinite(r) for r in ref["R"])
 
 
-def test_classical_exact_evolution_n1():
+def test_classical_exact_evolution_n1() -> None:
     """n=1: single oscillator, R from single-qubit XY expectations."""
     ref = classical_exact_evolution(1, 0.2, 0.1)
     assert len(ref["R"]) == 3
@@ -206,14 +211,14 @@ def test_classical_exact_evolution_n1():
         assert 0.0 <= r <= 1.0 + 1e-10
 
 
-def test_classical_exact_diag_n1():
+def test_classical_exact_diag_n1() -> None:
     """n=1: single qubit Hamiltonian has 2 eigenvalues."""
     ref = classical_exact_diag(1)
     assert len(ref["eigenvalues"]) == 2
     assert ref["spectral_gap"] > 0
 
 
-def test_classical_brute_mpc():
+def test_classical_brute_mpc() -> None:
     """Enumerate the complete binary horizon and retain its optimum."""
     B = np.eye(2)
     target = np.array([0.8, 0.6])
@@ -226,7 +231,7 @@ def test_classical_brute_mpc():
 # ── Full experiment pipeline on simulator ──
 
 
-def test_kuramoto_4osc_on_simulator(sim_runner):
+def test_kuramoto_4osc_on_simulator(sim_runner: HardwareRunner) -> None:
     """Run the four-oscillator experiment through the local simulator."""
     from scpn_quantum_control.hardware.experiments import kuramoto_4osc_experiment
 
@@ -236,12 +241,16 @@ def test_kuramoto_4osc_on_simulator(sim_runner):
     assert len(result["classical_R"]) > 0
 
 
-def test_qaoa_mpc_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
+def test_qaoa_mpc_on_simulator(
+    sim_runner: HardwareRunner, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Quick QAOA test with minimal iterations."""
     import scpn_quantum_control.hardware.experiment_control as _ctl_mod
     from scpn_quantum_control.hardware.experiments import qaoa_mpc_4_experiment
 
-    def limited_minimize(fn, x0, **kwargs):
+    def limited_minimize(
+        fn: Callable[..., float], x0: NDArray[np.float64], **kwargs: Any
+    ) -> OptimizeResult:
         kwargs.setdefault("options", {})["maxiter"] = 5
         return minimize(fn, x0, **kwargs)
 
@@ -251,12 +260,14 @@ def test_qaoa_mpc_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
     assert "qaoa_p1" in result
 
 
-def test_vqe_4q_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
+def test_vqe_4q_on_simulator(sim_runner: HardwareRunner, monkeypatch: pytest.MonkeyPatch) -> None:
     """VQE should converge below exact ground energy + tolerance."""
     import scpn_quantum_control.hardware.experiment_vqe as _vqe_mod
     from scpn_quantum_control.hardware.experiments import vqe_4q_experiment
 
-    def limited_minimize(fn, x0, **kwargs):
+    def limited_minimize(
+        fn: Callable[..., float], x0: NDArray[np.float64], **kwargs: Any
+    ) -> OptimizeResult:
         kwargs.setdefault("options", {})["maxiter"] = 20
         return minimize(fn, x0, **kwargs)
 
@@ -271,7 +282,7 @@ def test_vqe_4q_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.mark.slow
-def test_upde_16_snapshot_on_simulator(sim_runner):
+def test_upde_16_snapshot_on_simulator(sim_runner: HardwareRunner) -> None:
     """16-layer UPDE snapshot: produces R and per-qubit expectations.
 
     Marked slow: 16-qubit Trotter circuit takes ~5 min on AerSimulator.
@@ -287,7 +298,7 @@ def test_upde_16_snapshot_on_simulator(sim_runner):
     assert len(result["hw_exp_x"]) == 16
 
 
-def test_kuramoto_4osc_zne_on_simulator(sim_runner):
+def test_kuramoto_4osc_zne_on_simulator(sim_runner: HardwareRunner) -> None:
     """ZNE experiment: produces R per scale and extrapolated value."""
     from scpn_quantum_control.hardware.experiments import kuramoto_4osc_zne_experiment
 
@@ -300,7 +311,7 @@ def test_kuramoto_4osc_zne_on_simulator(sim_runner):
     assert np.isfinite(result["classical_R"])
 
 
-def test_noise_baseline_on_simulator(sim_runner):
+def test_noise_baseline_on_simulator(sim_runner: HardwareRunner) -> None:
     """Baseline circuit: low depth, R close to classical."""
     from scpn_quantum_control.hardware.experiments import noise_baseline_experiment
 
@@ -313,7 +324,7 @@ def test_noise_baseline_on_simulator(sim_runner):
     assert len(result["hw_exp_z"]) == 4
 
 
-def test_kuramoto_8osc_zne_on_simulator(sim_runner):
+def test_kuramoto_8osc_zne_on_simulator(sim_runner: HardwareRunner) -> None:
     """8-osc ZNE: produces R per scale and finite extrapolated value."""
     from scpn_quantum_control.hardware.experiments import kuramoto_8osc_zne_experiment
 
@@ -327,12 +338,16 @@ def test_kuramoto_8osc_zne_on_simulator(sim_runner):
     assert np.isfinite(result["classical_R"])
 
 
-def test_vqe_8q_hardware_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
+def test_vqe_8q_hardware_on_simulator(
+    sim_runner: HardwareRunner, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """VQE 8q hardware path: returns hw_energy, sim_energy, exact_energy."""
     import scpn_quantum_control.hardware.experiment_vqe as _vqe_mod
     from scpn_quantum_control.hardware.experiments import vqe_8q_hardware_experiment
 
-    def limited_minimize(fn, x0, **kwargs):
+    def limited_minimize(
+        fn: Callable[..., float], x0: NDArray[np.float64], **kwargs: Any
+    ) -> OptimizeResult:
         kwargs.setdefault("options", {})["maxiter"] = 20
         return minimize(fn, x0, **kwargs)
 
@@ -346,7 +361,7 @@ def test_vqe_8q_hardware_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatc
 
 
 @pytest.mark.slow
-def test_upde_16_dd_on_simulator(sim_runner):
+def test_upde_16_dd_on_simulator(sim_runner: HardwareRunner) -> None:
     """16-layer UPDE with DD: R + per-qubit expectations for 16 layers.
 
     Marked slow: 16-qubit circuits take significant time on AerSimulator.
@@ -363,7 +378,7 @@ def test_upde_16_dd_on_simulator(sim_runner):
     assert len(result["hw_exp_x_dd"]) == 16
 
 
-def test_kuramoto_4osc_trotter2_on_simulator(sim_runner):
+def test_kuramoto_4osc_trotter2_on_simulator(sim_runner: HardwareRunner) -> None:
     """Trotter-2: produces R per step, comparison data."""
     from scpn_quantum_control.hardware.experiments import kuramoto_4osc_trotter2_experiment
 
@@ -375,7 +390,7 @@ def test_kuramoto_4osc_trotter2_on_simulator(sim_runner):
     assert all(np.isfinite(r) for r in result["hw_R"])
 
 
-def test_sync_threshold_on_simulator(sim_runner):
+def test_sync_threshold_on_simulator(sim_runner: HardwareRunner) -> None:
     """Sync threshold sweep: R should increase with K_base."""
     from scpn_quantum_control.hardware.experiments import sync_threshold_experiment
 
@@ -387,12 +402,16 @@ def test_sync_threshold_on_simulator(sim_runner):
         assert np.isfinite(entry["classical_R"])
 
 
-def test_ansatz_comparison_hw_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
+def test_ansatz_comparison_hw_on_simulator(
+    sim_runner: HardwareRunner, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Ansatz comparison: all three produce finite hw_energy."""
     import scpn_quantum_control.hardware.experiment_vqe as _vqe_mod
     from scpn_quantum_control.hardware.experiments import ansatz_comparison_hw_experiment
 
-    def limited_minimize(fn, x0, **kwargs):
+    def limited_minimize(
+        fn: Callable[..., float], x0: NDArray[np.float64], **kwargs: Any
+    ) -> OptimizeResult:
         kwargs.setdefault("options", {})["maxiter"] = 15
         return minimize(fn, x0, **kwargs)
 
@@ -405,7 +424,7 @@ def test_ansatz_comparison_hw_on_simulator(sim_runner, monkeypatch: pytest.Monke
         assert np.isfinite(entry["sim_energy"])
 
 
-def test_zne_higher_order_on_simulator(sim_runner):
+def test_zne_higher_order_on_simulator(sim_runner: HardwareRunner) -> None:
     """ZNE higher-order: produces extrapolations for multiple polynomial orders."""
     from scpn_quantum_control.hardware.experiments import zne_higher_order_experiment
 
@@ -422,7 +441,7 @@ def test_zne_higher_order_on_simulator(sim_runner):
     assert np.isfinite(result["extrapolations"]["order_2"]["zne_R"])
 
 
-def test_decoherence_scaling_on_simulator(sim_runner):
+def test_decoherence_scaling_on_simulator(sim_runner: HardwareRunner) -> None:
     """Decoherence scaling: produces data points and gamma fit."""
     from scpn_quantum_control.hardware.experiments import decoherence_scaling_experiment
 
@@ -435,7 +454,7 @@ def test_decoherence_scaling_on_simulator(sim_runner):
     assert np.isfinite(result["fit_gamma"])
 
 
-def test_vqe_landscape_on_simulator(sim_runner):
+def test_vqe_landscape_on_simulator(sim_runner: HardwareRunner) -> None:
     """VQE landscape: energy variance for barren plateau detection."""
     from scpn_quantum_control.hardware.experiments import vqe_landscape_experiment
 
@@ -449,7 +468,7 @@ def test_vqe_landscape_on_simulator(sim_runner):
         assert land["min_energy"] < land["max_energy"]
 
 
-def test_transpile_with_dd(sim_runner):
+def test_transpile_with_dd(sim_runner: HardwareRunner) -> None:
     """DD pass should not crash; on simulator it falls back to original circuit."""
     from qiskit import QuantumCircuit
 
@@ -467,7 +486,7 @@ def test_transpile_with_dd(sim_runner):
 # ── Bloch vector tests ──
 
 
-def test_bloch_vector_magnitude_bounded(tmp_path):
+def test_bloch_vector_magnitude_bounded(tmp_path: Path) -> None:
     """Bloch magnitudes from valid expectations must be in [0, 1]."""
     import json
 
@@ -492,7 +511,7 @@ def test_bloch_vector_magnitude_bounded(tmp_path):
 # ── Sparse eigensolver test ──
 
 
-def test_exact_diag_sparse_path():
+def test_exact_diag_sparse_path() -> None:
     """Sparse eigensolver (k_eigenvalues) should agree with dense on ground energy."""
     ref_dense = classical_exact_diag(4)
     ref_sparse = classical_exact_diag(4, k_eigenvalues=6)
@@ -504,12 +523,16 @@ def test_exact_diag_sparse_path():
 # ── Endianness agreement tests ──
 
 
-def test_bell_test_4q_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
+def test_bell_test_4q_on_simulator(
+    sim_runner: HardwareRunner, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """CHSH Bell test: S values are finite, S_sim shows entanglement."""
     import scpn_quantum_control.phase.phase_vqe as vqe_mod
     from scpn_quantum_control.hardware.experiments import bell_test_4q_experiment
 
-    def limited_minimize(fn, x0, **kwargs):
+    def limited_minimize(
+        fn: Callable[..., float], x0: NDArray[np.float64], **kwargs: Any
+    ) -> OptimizeResult:
         kwargs.setdefault("options", {})["maxiter"] = 30
         return minimize(fn, x0, **kwargs)
 
@@ -523,12 +546,16 @@ def test_bell_test_4q_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
     assert "correlators_sim" in result
 
 
-def test_correlator_4q_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
+def test_correlator_4q_on_simulator(
+    sim_runner: HardwareRunner, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """ZZ correlator: 4×4 symmetric matrix with finite Frobenius error."""
     import scpn_quantum_control.phase.phase_vqe as vqe_mod
     from scpn_quantum_control.hardware.experiments import correlator_4q_experiment
 
-    def limited_minimize(fn, x0, **kwargs):
+    def limited_minimize(
+        fn: Callable[..., float], x0: NDArray[np.float64], **kwargs: Any
+    ) -> OptimizeResult:
         kwargs.setdefault("options", {})["maxiter"] = 30
         return minimize(fn, x0, **kwargs)
 
@@ -542,12 +569,16 @@ def test_correlator_4q_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch)
     assert result["max_correlation_hw"] > 0
 
 
-def test_qkd_qber_4q_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
+def test_qkd_qber_4q_on_simulator(
+    sim_runner: HardwareRunner, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """QKD QBER: error rates in [0,1], dict keys present."""
     import scpn_quantum_control.phase.phase_vqe as vqe_mod
     from scpn_quantum_control.hardware.experiments import qkd_qber_4q_experiment
 
-    def limited_minimize(fn, x0, **kwargs):
+    def limited_minimize(
+        fn: Callable[..., float], x0: NDArray[np.float64], **kwargs: Any
+    ) -> OptimizeResult:
         kwargs.setdefault("options", {})["maxiter"] = 30
         return minimize(fn, x0, **kwargs)
 
@@ -562,7 +593,7 @@ def test_qkd_qber_4q_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
     assert np.isfinite(result["key_rate_hw"])
 
 
-def test_classical_evolution_matches_qiskit():
+def test_classical_evolution_matches_qiskit() -> None:
     """Classical expm evolution R must match Qiskit Statevector evolution.
 
     This verifies that _build_initial_state and _expectation_pauli use

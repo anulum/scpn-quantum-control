@@ -101,6 +101,7 @@
         "tests/test_hardware_optional_imports.py",
         "tests/test_hardware_result_pack_evidence.py",
         "tests/test_hardware_result_packs.py",
+        "tests/test_hardware_runner.py",
         "tests/test_hardware_runner_branches.py",
         "tests/test_hardware_safe_execution.py",
         "tests/test_hardware_safe_execution_quality_gate.py",
