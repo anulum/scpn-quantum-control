@@ -36,7 +36,9 @@ def test_strangeworks_adapter_uses_injected_backend_and_approval_gate() -> None:
     class FakeBackend:
         id = "rigetti.qvm"
 
-        def run(self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]):
+        def run(
+            self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]
+        ) -> FakeJob:
             assert run_input == "DECLARE ro BIT[2]"
             assert shots == 10
             assert name == "sw_rigetti"
@@ -86,7 +88,9 @@ def test_strangeworks_adapter_can_load_backend_from_workspace() -> None:
     class FakeBackend:
         name = "ionq.simulator"
 
-        def run(self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]):
+        def run(
+            self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]
+        ) -> FakeJob:
             assert run_input == "OPENQASM 3.0;"
             assert shots == 3
             assert name == "workspace_route"
@@ -138,7 +142,9 @@ def test_strangeworks_adapter_rejects_provider_job_without_id() -> None:
             return {"counts": {"0": 1}}
 
     class FakeBackend:
-        def run(self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]):
+        def run(
+            self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]
+        ) -> FakeJob:
             del run_input, shots, name, metadata
             return FakeJob()
 
@@ -241,7 +247,9 @@ def test_strangeworks_adapter_rejects_shot_mismatch() -> None:
     class FakeBackend:
         id = "rigetti.qvm"
 
-        def run(self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]):
+        def run(
+            self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]
+        ) -> FakeJob:
             del run_input, name, metadata
             assert shots == 11
             return FakeJob()

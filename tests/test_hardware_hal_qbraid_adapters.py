@@ -44,7 +44,9 @@ def test_qbraid_adapter_uses_injected_device_and_approval_gate() -> None:
     class FakeDevice:
         id = "ionq_qpu.aria-1"
 
-        def run(self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]):
+        def run(
+            self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]
+        ) -> FakeJob:
             assert run_input.startswith("OPENQASM 3.0")
             assert shots == 12
             assert name == "qbraid_bell"
@@ -91,7 +93,9 @@ def test_qbraid_adapter_can_load_device_from_provider() -> None:
     class FakeDevice:
         id = "ionq_qpu.aria-1"
 
-        def run(self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]):
+        def run(
+            self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]
+        ) -> FakeJob:
             assert run_input == "OPENQASM 3.0;\nqubit[1] q;"
             assert shots == 3
             assert name == "provider_route"
@@ -151,7 +155,9 @@ def test_qbraid_adapter_rejects_provider_job_without_id() -> None:
             return FakeResult()
 
     class FakeDevice:
-        def run(self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]):
+        def run(
+            self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]
+        ) -> FakeJob:
             del run_input, shots, name, metadata
             return FakeJob()
 
@@ -256,7 +262,9 @@ def test_qbraid_adapter_rejects_shot_mismatch() -> None:
     class FakeDevice:
         id = "ionq_qpu.aria-1"
 
-        def run(self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]):
+        def run(
+            self, run_input: str, *, shots: int, name: str, metadata: dict[str, object]
+        ) -> FakeJob:
             del run_input, name, metadata
             assert shots == 13
             return FakeJob()

@@ -29,7 +29,7 @@ def test_azure_quantum_adapter_uses_injected_target_and_approval_gate() -> None:
         id = "azure-job-1"
         details = FakeDetails()
 
-        def get_results(self):
+        def get_results(self) -> dict[str, dict[str, int]]:
             return {"histogram": {"00": 7, "11": 9}}
 
         def cancel(self) -> None:
@@ -38,7 +38,14 @@ def test_azure_quantum_adapter_uses_injected_target_and_approval_gate() -> None:
     class FakeTarget:
         name = "ionq.simulator"
 
-        def submit(self, input_data, name: str, shots: int, input_params=None, **kwargs):
+        def submit(
+            self,
+            input_data: str,
+            name: str,
+            shots: int,
+            input_params: dict[str, int] | None = None,
+            **kwargs: object,
+        ) -> FakeJob:
             assert input_data.startswith("OPENQASM 3.0")
             assert name == "azure_bell"
             assert shots == 16
@@ -91,11 +98,18 @@ def test_azure_adapter_rejects_provider_job_without_id() -> None:
     class FakeJob:
         details = type("FakeDetails", (), {"status": "Succeeded"})()
 
-        def get_results(self):
+        def get_results(self) -> dict[str, dict[str, int]]:
             return {"histogram": {"0": 1}}
 
     class FakeTarget:
-        def submit(self, input_data, name: str, shots: int, input_params=None, **kwargs):
+        def submit(
+            self,
+            input_data: str,
+            name: str,
+            shots: int,
+            input_params: dict[str, int] | None = None,
+            **kwargs: object,
+        ) -> FakeJob:
             del input_data, name, shots, input_params, kwargs
             return FakeJob()
 
@@ -188,13 +202,20 @@ def test_azure_adapter_rejects_shot_mismatch() -> None:
         id = "azure-job-shot-mismatch"
         details = FakeDetails()
 
-        def get_results(self):
+        def get_results(self) -> dict[str, dict[str, int]]:
             return {"histogram": {"00": 7, "11": 9}}
 
     class FakeTarget:
         name = "ionq.simulator"
 
-        def submit(self, input_data, name: str, shots: int, input_params=None, **kwargs):
+        def submit(
+            self,
+            input_data: str,
+            name: str,
+            shots: int,
+            input_params: dict[str, int] | None = None,
+            **kwargs: object,
+        ) -> FakeJob:
             del input_data, name, input_params, kwargs
             assert shots == 20
             return FakeJob()

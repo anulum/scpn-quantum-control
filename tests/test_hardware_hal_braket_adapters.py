@@ -70,7 +70,7 @@ def test_braket_aws_adapter_uses_injected_device_and_approval_gate() -> None:
     class FakeDevice:
         name = "fake-braket-device"
 
-        def run(self, circuit, shots: int):
+        def run(self, circuit: Circuit, shots: int) -> FakeTask:
             assert shots == 6
             assert isinstance(circuit, Circuit)
             return FakeTask()
@@ -102,7 +102,7 @@ def test_braket_aws_adapter_rejects_task_without_id() -> None:
         def state(self) -> str:
             return "COMPLETED"
 
-        def result(self):
+        def result(self) -> object:
             return type("FakeTaskResult", (), {"measurement_counts": {"0": 1}})()
 
         def cancel(self) -> None:
@@ -111,7 +111,7 @@ def test_braket_aws_adapter_rejects_task_without_id() -> None:
     class FakeDevice:
         name = "fake-braket-device"
 
-        def run(self, circuit, shots: int):
+        def run(self, circuit: Circuit, shots: int) -> FakeTask:
             del circuit, shots
             return FakeTask()
 
@@ -211,7 +211,7 @@ def test_braket_aws_adapter_rejects_shot_mismatch() -> None:
     class FakeDevice:
         name = "fake-braket-device"
 
-        def run(self, circuit, shots: int):
+        def run(self, circuit: Circuit, shots: int) -> FakeTask:
             del circuit
             assert shots == 7
             return FakeTask()

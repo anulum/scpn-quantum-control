@@ -10,6 +10,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator, Sequence
+
 import pytest
 from qiskit import QuantumCircuit
 
@@ -72,7 +74,7 @@ def test_qiskit_runtime_adapter_uses_injected_sampler_and_approval_gate() -> Non
         data = FakeData()
 
     class FakeRuntimeResult:
-        def __iter__(self):
+        def __iter__(self) -> Iterator[FakePubResult]:
             return iter((FakePubResult(),))
 
     class FakeRuntimeJob:
@@ -90,11 +92,11 @@ def test_qiskit_runtime_adapter_uses_injected_sampler_and_approval_gate() -> Non
             self.cancelled = True
 
     class FakeSampler:
-        def __init__(self, mode):
+        def __init__(self, mode: object) -> None:
             assert mode is FakeBackend
             self.options = type("Options", (), {})()
 
-        def run(self, circuits):
+        def run(self, circuits: Sequence[QuantumCircuit]) -> FakeRuntimeJob:
             assert len(circuits) == 1
             return FakeRuntimeJob()
 
@@ -138,7 +140,7 @@ def test_qiskit_runtime_adapter_rejects_shot_mismatch() -> None:
         data = FakeData()
 
     class FakeRuntimeResult:
-        def __iter__(self):
+        def __iter__(self) -> Iterator[FakePubResult]:
             return iter((FakePubResult(),))
 
     class FakeRuntimeJob:
@@ -156,11 +158,11 @@ def test_qiskit_runtime_adapter_rejects_shot_mismatch() -> None:
             self.cancelled = True
 
     class FakeSampler:
-        def __init__(self, mode):
+        def __init__(self, mode: object) -> None:
             assert mode is FakeBackend
             self.options = type("Options", (), {})()
 
-        def run(self, circuits):
+        def run(self, circuits: Sequence[QuantumCircuit]) -> FakeRuntimeJob:
             assert len(circuits) == 1
             return FakeRuntimeJob()
 
@@ -209,7 +211,7 @@ def test_qiskit_runtime_adapter_sums_overlapping_pub_results() -> None:
         data = FakeDataSecond()
 
     class FakeRuntimeResult:
-        def __iter__(self):
+        def __iter__(self) -> Iterator[object]:
             return iter((FakePubResultFirst(), FakePubResultSecond()))
 
     class FakeRuntimeJob:
@@ -227,11 +229,11 @@ def test_qiskit_runtime_adapter_sums_overlapping_pub_results() -> None:
             self.cancelled = True
 
     class FakeSampler:
-        def __init__(self, mode):
+        def __init__(self, mode: object) -> None:
             assert mode is FakeBackend
             self.options = type("Options", (), {})()
 
-        def run(self, circuits):
+        def run(self, circuits: Sequence[QuantumCircuit]) -> FakeRuntimeJob:
             assert len(circuits) == 1
             return FakeRuntimeJob()
 
