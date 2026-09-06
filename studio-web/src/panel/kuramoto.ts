@@ -22,11 +22,14 @@
 
 import committedScenarioJson from "../../../data/studio/kuramoto_scenario_meanfield_20260708.json";
 
+/** Schema version stamped into the kernel's binary input. */
 export const KURAMOTO_INPUT_VERSION = 1;
+/** Name of the kernel export the panel binds to. */
 export const KURAMOTO_SIMULATE_EXPORT = "scpn_kuramoto_simulate";
 // Resolved module-relative: built chunks live under assets/, the shipped
 // kernels one level up under wasm/ — page-relative paths 404 when the panel
 // is federated under a different origin path (e.g. the Hub's /platform/).
+/** Resolved URL of the shipped kernel module. */
 export const KERNEL_WASM_URL = new URL(
   "../wasm/scpn_quantum_studio_wasm_kernel.wasm",
   import.meta.url,
@@ -35,20 +38,31 @@ const HEADER_LEN = 32;
 const KERNEL_OK = 0;
 const ALLOC_FAILED = -1;
 
+/** The two coupling kernels the simulator exposes. */
 export type KuramotoMode = "mean-field" | "networked";
 const MODE_CODES: Readonly<Record<KuramotoMode, number>> = { "mean-field": 0, networked: 1 };
 
+/**
+ * A validated simulation request for the WASM Kuramoto kernel.
+ */
 export interface KuramotoRequest {
+  /** Which coupling kernel to run. */
   readonly mode: KuramotoMode;
+  /** Per-oscillator natural frequencies; its length fixes `n`. */
   readonly omega: readonly number[];
+  /** Initial phases, one per oscillator. */
   readonly theta0: readonly number[];
+  /** Number of integration steps; a positive integer. */
   readonly steps: number;
+  /** Integration step size; finite and strictly positive. */
   readonly dt: number;
+  /** Global coupling strength. */
   readonly coupling: number;
   /** Row-major n×n matrix; required for the networked kernel, omitted otherwise. */
   readonly kNm?: readonly number[];
 }
 
+/** One completed simulation: the R(t) trajectory and the final phases. */
 export interface KuramotoRun {
   /** `steps + 1` order-parameter samples, index 0 is the initial state. */
   readonly orderParameter: Float64Array;
@@ -56,30 +70,68 @@ export interface KuramotoRun {
   readonly thetaFinal: Float64Array;
 }
 
+/**
+ * A simulation outcome that cannot throw: a run, or the reason it was
+ * refused. A refused run is shown as such rather than as a flat trajectory.
+ */
 export type SimulateResult =
-  | { readonly ok: true; readonly run: KuramotoRun }
-  | { readonly ok: false; readonly reason: string };
+  | {
+      /** Discriminant: the kernel produced a trajectory. */
+      readonly ok: true;
+      /** The trajectory and final phases. */
+      readonly run: KuramotoRun;
+    }
+  | {
+      /** Discriminant: the request was refused. */
+      readonly ok: false;
+      /** Why it was refused. */
+      readonly reason: string;
+    };
 
 /** The kernel simulate closure: a validated request to an R(t) trajectory. */
 export type KernelSimulate = (request: KuramotoRequest) => SimulateResult;
 
+/**
+ * The WASM kernel's export surface, as the panel binds it.
+ */
 export interface KuramotoExports {
+  /** The kernel's linear memory, which the panel reads results out of. */
   readonly memory: WebAssembly.Memory;
+  /** Allocate `len` bytes inside the kernel and return the pointer. */
   readonly scpn_alloc: (len: number) => number;
+  /** Release a pointer previously obtained from `scpn_alloc`. */
   readonly scpn_free: (ptr: number, len: number) => void;
+  /** Run one simulation; returns a status code, not a value. */
   readonly scpn_kuramoto_simulate: (
     inputPtr: number,
     inputLen: number,
     outputPtr: number,
     outputLen: number,
   ) => number;
+  /** The kernel's own oscillator ceiling. */
   readonly scpn_kuramoto_max_oscillators: () => number;
+  /** The kernel's own step ceiling. */
   readonly scpn_kuramoto_max_steps: () => number;
+}
+
+/**
+ * An instantiated kernel: the closure that runs it, and the bounds it declares.
+ *
+ * The bounds travel with the closure because a caller must know the kernel's
+ * own ceilings before building a request, not after it is refused.
+ */
+export interface KuramotoKernel {
+  /** Run one validated request. */
+  readonly simulate: KernelSimulate;
+  /** The ceilings this kernel build declares. */
+  readonly bounds: KuramotoBounds;
 }
 
 /** The kernel's declared fail-closed bounds, read from the WASM itself. */
 export interface KuramotoBounds {
+  /** Largest oscillator count the kernel accepts. */
   readonly maxOscillators: number;
+  /** Largest step count the kernel accepts. */
   readonly maxSteps: number;
 }
 
@@ -130,6 +182,7 @@ export function encodeKuramotoInput(request: KuramotoRequest): Uint8Array | null
 }
 
 /** Read the kernel's declared bounds from its exports. */
+/** Read the kernel's fail-closed bounds from the module itself, not from a constant. */
 export function readBounds(exports: KuramotoExports): KuramotoBounds {
   return {
     maxOscillators: exports.scpn_kuramoto_max_oscillators(),
@@ -144,6 +197,12 @@ export function readBounds(exports: KuramotoExports): KuramotoBounds {
  * own allocator, runs the integrator, decodes the `[R(t) ; θ_final]` output,
  * and always frees every buffer. A malformed request, allocation failure, or a
  * negative status code surfaces as a fail-closed result, never a fabricated run.
+ */
+/**
+ * Bind the kernel exports into a simulate closure that owns its allocations.
+ *
+ * Every buffer taken from `scpn_alloc` is released on both the success and the
+ * failure path, so a refused request does not leak kernel memory.
  */
 export function bindKuramoto(exports: KuramotoExports): KernelSimulate {
   return (request: KuramotoRequest): SimulateResult => {
@@ -187,7 +246,7 @@ export function bindKuramoto(exports: KuramotoExports): KernelSimulate {
 /** Instantiate the WASM kernel and return its simulate closure plus bounds. */
 export async function instantiateKuramoto(
   wasmBytes: BufferSource,
-): Promise<{ simulate: KernelSimulate; bounds: KuramotoBounds }> {
+): Promise<KuramotoKernel> {
   const { instance } = await WebAssembly.instantiate(wasmBytes, {});
   const exports = instance.exports as unknown as KuramotoExports;
   return { simulate: bindKuramoto(exports), bounds: readBounds(exports) };
@@ -196,7 +255,7 @@ export async function instantiateKuramoto(
 /** Fetch and instantiate the deployed kernel (browser runtime path). */
 export async function fetchKuramoto(
   url: string = KERNEL_WASM_URL,
-): Promise<{ simulate: KernelSimulate; bounds: KuramotoBounds }> {
+): Promise<KuramotoKernel> {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`kernel fetch failed: ${response.status}`);
@@ -204,22 +263,49 @@ export async function fetchKuramoto(
   return instantiateKuramoto(await response.arrayBuffer());
 }
 
+/**
+ * A committed Play scenario with the trajectory it is expected to reproduce.
+ */
 export interface KuramotoScenario {
+  /** Identifier of the artefact this scenario came from. */
   readonly artifactId: string;
+  /** Bounds the artefact was recorded under, checked against the live kernel. */
   readonly boundaries: KuramotoBounds;
+  /** Coupling kernel the scenario runs. */
   readonly mode: KuramotoMode;
+  /** Oscillator count. */
   readonly n: number;
+  /** Number of integration steps. */
   readonly steps: number;
+  /** Integration step size. */
   readonly dt: number;
+  /** Global coupling strength. */
   readonly coupling: number;
+  /** Per-oscillator natural frequencies. */
   readonly omega: readonly number[];
+  /** Initial phases. */
   readonly theta0: readonly number[];
+  /** The R(t) samples a correct run must reproduce. */
   readonly expectedOrderParameter: readonly number[];
 }
 
+/**
+ * A load result that cannot throw: either a parsed `value` or the `reason` the
+ * artefact was refused.
+ */
 export type Loaded<T> =
-  | { readonly ok: true; readonly value: T }
-  | { readonly ok: false; readonly reason: string };
+  | {
+      /** Discriminant: the artefact parsed. */
+      readonly ok: true;
+      /** The parsed value. */
+      readonly value: T;
+    }
+  | {
+      /** Discriminant: the artefact was refused. */
+      readonly ok: false;
+      /** Why it was refused. */
+      readonly reason: string;
+    };
 
 function numberArray(value: unknown): number[] | null {
   if (!Array.isArray(value) || value.some((entry) => typeof entry !== "number")) {
