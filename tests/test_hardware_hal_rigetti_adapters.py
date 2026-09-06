@@ -15,7 +15,11 @@ from typing import Any
 import pytest
 
 from scpn_quantum_control.hardware import hal_rigetti as rigetti_mod
-from scpn_quantum_control.hardware.hal import HardwareAbstractionLayer, QuantumWorkload
+from scpn_quantum_control.hardware.hal import (
+    HardwareAbstractionLayer,
+    QuantumJobRef,
+    QuantumWorkload,
+)
 from scpn_quantum_control.hardware.hal_rigetti import RigettiQCSHALAdapter, rigetti_quil_workload
 
 
@@ -313,7 +317,7 @@ def test_rigetti_qcs_adapter_rejects_unknown_jobs() -> None:
         hal.profile("rigetti_qcs"),
         quantum_computer=_FakeRigettiQuantumComputer(),
     )
-    unknown = rigetti_mod.QuantumJobRef(
+    unknown = QuantumJobRef(
         job_id="rigetti_qcs:missing",
         backend_id="rigetti_qcs",
         workload_id="missing",

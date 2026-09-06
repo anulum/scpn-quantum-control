@@ -233,7 +233,9 @@ def test_iqm_hal_adapter_rejects_provider_job_without_id() -> None:
         def cancel(self) -> None:
             self.cancelled = True
 
-    class MissingIdBackend(_FakeIQMBackend):
+    class MissingIdBackend:
+        name = "fake_garnet"
+
         def run(self, circuits: list[QuantumCircuit], *, shots: int) -> MissingIdJob:
             del circuits, shots
             return MissingIdJob()

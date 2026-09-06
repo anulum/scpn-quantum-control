@@ -158,7 +158,9 @@ def test_raw_count_custody_survives_caller_and_consumer_mutation() -> None:
     counts.clear()
     wires.reverse()
     returned = result.count_mapping.to_dict()
-    returned["raw_counts"].clear()
+    raw_counts = returned["raw_counts"]
+    assert isinstance(raw_counts, dict)
+    raw_counts.clear()
     assert isinstance(returned["bit_wires"], list)
     returned["bit_wires"].append(99)
     assert result.count_mapping.to_dict()["raw_counts"] == original

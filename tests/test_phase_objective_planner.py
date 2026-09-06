@@ -90,7 +90,9 @@ def test_objective_planner_audit_records_supported_and_blocked_routes() -> None:
     assert audit.hybrid_plan.supported
     assert len(audit.blocked_plans) == 3
     assert payload["passed"] is True
-    assert payload["hardware_plan"]["supported"] is False
+    hardware_plan = payload["hardware_plan"]
+    assert isinstance(hardware_plan, dict)
+    assert hardware_plan["supported"] is False
     assert "planning audit" in audit.claim_boundary
 
 
