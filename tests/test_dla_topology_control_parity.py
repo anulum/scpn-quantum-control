@@ -60,7 +60,7 @@ def test_projector_jvp_vjp_match_central_difference_and_adjoint_identity() -> No
 def test_absolute_leakage_gradient_matches_real_and_imaginary_directions() -> None:
     """Match the absolute outside-sector mass gradient to finite differences."""
     projector = ParitySectorProjector(2, ParitySector.EVEN)
-    state = np.array([1.0 + 0.2j, 0.4 - 0.7j, -0.3 + 0.5j, 0.8 - 0.1j])
+    state = np.array([1.0 + 0.2j, 0.4 - 0.7j, -0.3 + 0.5j, 0.8 - 0.1j], dtype=complex)
     evaluation = projector.leakage_value_and_gradient(state)
     assert evaluation.value == pytest.approx(abs(state[1]) ** 2 + abs(state[2]) ** 2)
     epsilon = 1.0e-6
@@ -84,8 +84,8 @@ def test_absolute_leakage_gradient_matches_real_and_imaginary_directions() -> No
 def test_normalised_leakage_gradient_matches_directional_difference() -> None:
     """Differentiate the outside-sector fraction through its norm quotient."""
     projector = ParitySectorProjector(2, ParitySector.ODD)
-    state = np.array([0.7 + 0.2j, 0.5 - 0.3j, -0.4 + 0.1j, 0.2 + 0.6j])
-    direction = np.array([0.3j, -0.2, 0.4 + 0.1j, -0.1j])
+    state = np.array([0.7 + 0.2j, 0.5 - 0.3j, -0.4 + 0.1j, 0.2 + 0.6j], dtype=complex)
+    direction = np.array([0.3j, -0.2, 0.4 + 0.1j, -0.1j], dtype=complex)
     evaluation = projector.leakage_value_and_gradient(state, normalised=True)
     epsilon = 1.0e-6
     central = (
@@ -147,9 +147,13 @@ def test_leakage_evaluation_contract_rejects_invalid_custody() -> None:
     }
     for key in ("value", "state_norm_squared"):
         with pytest.raises(ValueError, match=key):
-            ParityLeakageEvaluation(**(valid | {key: -1.0}))
+            # One field per case is replaced with an invalid value; the
+            # rejection is the subject and mypy cannot express a failing call.
+            ParityLeakageEvaluation(**(valid | {key: -1.0}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="gradient"):
-        ParityLeakageEvaluation(**(valid | {"gradient": np.ones((2, 2))}))
+        # One field per case is replaced with an invalid value; the
+        # rejection is the subject and mypy cannot express a failing call.
+        ParityLeakageEvaluation(**(valid | {"gradient": np.ones((2, 2))}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="gradient"):
         ParityLeakageEvaluation(
             **(valid | {"gradient": np.array([1.0, np.nan], dtype=np.complex128)})

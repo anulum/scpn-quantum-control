@@ -127,7 +127,9 @@ def test_differentiable_baseline_scorecard_rejects_structural_drift(
     scorecard = run_differentiable_baseline_scorecard()
 
     with pytest.raises(ValueError, match=message):
-        replace(scorecard, **changes)
+        # `changes` carries one invalid field per parametrised case; the
+        # rejection is the subject and mypy cannot express a failing call.
+        replace(scorecard, **changes)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError, match="categories must contain unique values"):
         replace(scorecard, rows=(scorecard.rows[0], scorecard.rows[0]))
@@ -239,7 +241,9 @@ def test_differentiable_baseline_scorecard_validation_result_rejects_drift(
     assert validation.passed
 
     with pytest.raises(ValueError, match=message):
-        replace(validation, **changes)
+        # `changes` carries one invalid field per parametrised case; the
+        # rejection is the subject and mypy cannot express a failing call.
+        replace(validation, **changes)  # type: ignore[arg-type]
 
 
 def test_differentiable_baseline_scorecard_rejects_external_evidence_paths(
@@ -525,7 +529,9 @@ def test_differentiable_promotion_language_result_rejects_drift(
     assert audit.passed
 
     with pytest.raises(ValueError, match=message):
-        replace(audit, **changes)
+        # `changes` carries one invalid field per parametrised case; the
+        # rejection is the subject and mypy cannot express a failing call.
+        replace(audit, **changes)  # type: ignore[arg-type]
 
 
 def test_differentiable_baseline_scorecard_markdown_and_facade_dispatch() -> None:

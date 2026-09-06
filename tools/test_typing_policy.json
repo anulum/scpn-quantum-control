@@ -161,6 +161,7 @@
         "tests/test_differentiable_api_contracts.py",
         "tests/test_differentiable_architecture_map.py",
         "tests/test_differentiable_audit_contracts_quality_gate.py",
+        "tests/test_differentiable_baseline_scorecard.py",
         "tests/test_differentiable_batch_helpers.py",
         "tests/test_differentiable_benchmark_evidence.py",
         "tests/test_differentiable_benchmark_report.py",
