@@ -20,6 +20,8 @@
 //! bounded set, or a malformed payload, fails closed with a negative status
 //! rather than a fabricated gradient.
 
+#![deny(missing_docs)]
+
 use scpn_quantum_program_ad_replay::program_ad_ir::interpret_program_ad_effect_ir_value_and_gradient;
 
 /// Maximum UTF-8 effect-IR size shared with the Python artifact packer.
@@ -31,13 +33,27 @@ pub const MAX_PROGRAM_AD_REPLAY_INPUTS: usize = 4_096;
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 #[repr(i32)]
 pub enum ProgramAdStatus {
+    /// The replay completed; the output buffer holds the scalar value followed
+    /// by the reverse-mode gradient.
     Ok = 0,
+    /// The input or the output pointer was null.
     NullPointer = -1,
+    /// The payload does not match the declared layout: a length header of zero
+    /// or above its bound, an overflow while computing the section bounds, or a
+    /// total size other than exactly the one the headers describe.
     InvalidLength = -2,
+    /// The effect-IR section is not valid UTF-8.
     InvalidUtf8 = -3,
+    /// The bounded interpreter rejected the effect-IR.
     ReplayError = -4,
+    /// The interpreter ran and reported the program lies outside the bounded
+    /// set, so no gradient is produced rather than an unsupported one.
     Unsupported = -5,
+    /// The caller's output buffer is not exactly eight bytes per returned
+    /// scalar, including the case where that size overflows.
     OutputMismatch = -6,
+    /// A scalar input was NaN or infinite; the replay fails closed rather than
+    /// propagating it into the gradient.
     NonFiniteInput = -7,
 }
 

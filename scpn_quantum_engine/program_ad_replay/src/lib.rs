@@ -16,6 +16,8 @@
 //! way keeps a single source of truth: the browser recompute runs the same code
 //! the engine does, not a fork.
 
+#![deny(missing_docs)]
+
 pub mod program_ad_cumulative_reduction;
 pub mod program_ad_interpolation_reduction;
 pub mod program_ad_ir;

@@ -189,37 +189,49 @@ pub fn check_domain_range(start: usize, end: usize, n: usize, name: &str) -> Res
     Ok(())
 }
 
-// Convenience wrappers that return PyResult directly
+// Convenience wrappers that return PyResult directly. Each defers to the
+// `check_` function of the same name, which carries the rule itself; these
+// exist so a PyO3 entry point can use `?` without converting at every call.
+/// [`check_finite`] as a `PyResult`.
 pub fn validate_finite(arr: &[f64], name: &str) -> PyResult<()> {
     to_pyresult(check_finite(arr, name))
 }
+/// [`check_positive`] as a `PyResult`.
 pub fn validate_positive(val: f64, name: &str) -> PyResult<()> {
     to_pyresult(check_positive(val, name))
 }
+/// [`check_range`] as a `PyResult`.
 pub fn validate_range(val: f64, lo: f64, hi: f64, name: &str) -> PyResult<()> {
     to_pyresult(check_range(val, lo, hi, name))
 }
+/// [`check_n`] as a `PyResult`.
 pub fn validate_n(n: usize, name: &str) -> PyResult<()> {
     to_pyresult(check_n(n, name))
 }
+/// [`check_flat_square`] as a `PyResult`.
 pub fn validate_flat_square(arr: &[f64], n: usize, name: &str) -> PyResult<()> {
     to_pyresult(check_flat_square(arr, n, name))
 }
+/// [`check_vector_len`] as a `PyResult`.
 pub fn validate_vector_len(len: usize, expected: usize, name: &str) -> PyResult<()> {
     to_pyresult(check_vector_len(len, expected, name))
 }
+/// [`check_square_matrix`] as a `PyResult`.
 pub fn validate_square_matrix(rows: usize, cols: usize, n: usize, name: &str) -> PyResult<()> {
     to_pyresult(check_square_matrix(rows, cols, n, name))
 }
+/// [`check_finite_array`] as a `PyResult`.
 pub fn validate_finite_array<D: Dimension>(
     array: &ArrayView<'_, f64, D>,
     name: &str,
 ) -> PyResult<()> {
     to_pyresult(check_finite_array(array, name))
 }
+/// [`check_finite_scalar`] as a `PyResult`.
 pub fn validate_finite_scalar(value: f64, name: &str) -> PyResult<()> {
     to_pyresult(check_finite_scalar(value, name))
 }
+/// [`check_symmetric`] as a `PyResult`.
 pub fn validate_symmetric(
     matrix: &ArrayView<'_, f64, ndarray::Ix2>,
     atol: f64,
@@ -227,9 +239,15 @@ pub fn validate_symmetric(
 ) -> PyResult<()> {
     to_pyresult(check_symmetric(matrix, atol, name))
 }
+/// [`check_domain_range`] as a `PyResult`.
 pub fn validate_domain_range(start: usize, end: usize, n: usize, name: &str) -> PyResult<()> {
     to_pyresult(check_domain_range(start, end, n, name))
 }
+/// Borrow a NumPy array as a slice, requiring C-contiguous storage.
+///
+/// Unlike the other wrappers this one has no `check_` counterpart: it is the
+/// point where a Python buffer becomes a Rust slice, and a non-contiguous
+/// array is rejected rather than copied or strided over.
 pub fn validate_contiguous_slice<'a, T: Element>(
     arr: &'a PyReadonlyArray1<'_, T>,
     name: &str,

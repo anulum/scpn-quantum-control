@@ -16,23 +16,36 @@ const PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY: &str =
 /// One SSA value record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub struct ProgramADSSAValue {
+    /// Canonical SSA name this record defines.
     pub name: String,
+    /// Index of the effect that produced the value.
     pub producer: usize,
+    /// Monotonic version of this name, distinguishing repeated assignments.
     pub version: usize,
+    /// Array shape as emitted by the tracer; empty for a scalar.
     pub shape: Vec<usize>,
+    /// Element type name as emitted by the tracer.
     pub dtype: String,
+    /// Index of the effect this value belongs to in the ordered effect list.
     pub effect: usize,
 }
 
 /// One ordered effect record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub struct ProgramADEffect {
+    /// Position of this effect in the emitted list.
     pub index: usize,
+    /// Effect category, which decides how the replay interprets the record.
     pub kind: String,
+    /// SSA name this effect writes.
     pub target: String,
+    /// SSA names this effect reads, in operand order.
     pub inputs: Vec<String>,
+    /// Version of the written target, matching its SSA value record.
     pub version: usize,
+    /// Total order of execution, which the replay follows rather than `index`.
     pub ordering: usize,
+    /// Operation name for an op-effect; absent for effects that carry none.
     #[serde(default)]
     pub operation: Option<String>,
 }
@@ -40,80 +53,127 @@ pub struct ProgramADEffect {
 /// One alias edge record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub struct ProgramADAliasEdge {
+    /// SSA name the view is taken from.
     pub source: String,
+    /// SSA name that denotes the view.
     pub target: String,
+    /// Kind of aliasing, such as a reshape, transpose or slice view.
     pub kind: String,
+    /// Version of the target name at the point the edge was recorded.
     pub version: usize,
 }
 
 /// One control-flow region record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub struct ProgramADControlRegion {
+    /// Position of this region in the emitted list.
     pub index: usize,
+    /// Region category, such as a branch or a loop body.
     pub kind: String,
+    /// SSA name of the controlling predicate, when the region has one.
     pub predicate: Option<String>,
+    /// Whether the traced execution actually entered this region.
     pub entered: bool,
+    /// Source line the region came from, when the tracer recorded one.
     pub source_line: Option<usize>,
 }
 
 /// One metadata-only phi record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub struct ProgramADPhiNode {
+    /// Position of this phi record in the emitted list.
     pub index: usize,
+    /// SSA name the phi defines.
     pub target: String,
+    /// Candidate SSA names reaching the merge point.
     pub incoming: Vec<String>,
+    /// Index of the control region this phi belongs to, when it has one.
     pub control_region: Option<usize>,
+    /// Which incoming name the traced run selected, when it is recorded.
     pub selected: Option<String>,
+    /// Source line the merge came from, when the tracer recorded one.
     pub source_line: Option<usize>,
 }
 
 /// Parsed Rust view of a `program_ad_effect_ir.v1` payload.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub struct ProgramADEffectIR {
+    /// Schema identifier the payload declares; the parser fails closed on any
+    /// value other than the one it implements.
     pub format: String,
+    /// Every SSA value the trace defined.
     pub ssa_values: Vec<ProgramADSSAValue>,
+    /// Every recorded effect, to be replayed in `ordering`, not list order.
     pub effects: Vec<ProgramADEffect>,
+    /// View relationships between SSA names.
     pub alias_edges: Vec<ProgramADAliasEdge>,
+    /// Control regions the trace passed through.
     pub control_regions: Vec<ProgramADControlRegion>,
+    /// Metadata-only merge records; absent in payloads that emit none.
     #[serde(default)]
     pub phi_nodes: Vec<ProgramADPhiNode>,
+    /// Bytecode offsets the trace was taken at, for source correlation.
     pub bytecode_offsets: Vec<usize>,
 }
 
 /// JSON-ready summary for Rust Program AD IR metadata inspection.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ProgramADEffectIRMetadataSummary {
+    /// Schema identifier the summarised payload declared.
     pub format: String,
+    /// Number of SSA value records.
     pub ssa_value_count: usize,
+    /// Number of effect records.
     pub effect_count: usize,
+    /// Number of alias edges.
     pub alias_edge_count: usize,
+    /// Number of control regions.
     pub control_region_count: usize,
+    /// Number of phi records.
     pub phi_node_count: usize,
+    /// Number of recorded bytecode offsets.
     pub bytecode_offset_count: usize,
+    /// What this summary may and may not be cited as evidence for.
     pub claim_boundary: String,
 }
 
 /// JSON-ready result for bounded Rust scalar Program AD IR interpretation.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct ProgramADRustInterpreterResult {
+    /// Whether the whole program lay inside the bounded set. When false, no
+    /// value is produced rather than a partial one.
     pub supported: bool,
+    /// The interpreted scalar, present only when `supported` holds.
     pub value: Option<f64>,
+    /// Number of effects in the payload.
     pub effect_count: usize,
+    /// Number of effects the bounded interpreter could execute.
     pub supported_effect_count: usize,
+    /// Why the program was refused, one entry per distinct reason.
     pub blocked_reasons: Vec<String>,
+    /// What this result may and may not be cited as evidence for.
     pub claim_boundary: String,
 }
 
 /// JSON-ready result for bounded Rust Program AD value and gradient replay.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct ProgramADRustValueAndGradientResult {
+    /// Whether the whole program lay inside the bounded set. When false,
+    /// neither a value nor a gradient is produced.
     pub supported: bool,
+    /// The replayed scalar, present only when `supported` holds.
     pub value: Option<f64>,
+    /// Reverse-mode gradient, ordered to match `parameter_targets`.
     pub gradient: Vec<f64>,
+    /// SSA names the gradient is taken with respect to, in gradient order.
     pub parameter_targets: Vec<String>,
+    /// Number of effects in the payload.
     pub effect_count: usize,
+    /// Number of effects the bounded interpreter could execute.
     pub supported_effect_count: usize,
+    /// Why the program was refused, one entry per distinct reason.
     pub blocked_reasons: Vec<String>,
+    /// What this result may and may not be cited as evidence for.
     pub claim_boundary: String,
 }
 

@@ -200,6 +200,13 @@ pub fn run_realtime_feedback_loop<'py>(
     ))
 }
 
+/// Decide a synchronisation feedback action from the current order parameter.
+///
+/// Returns `(direction, gain, error)` where `direction` is `1` to increase
+/// coupling, `-1` to decrease it and `0` inside the deadband. The gain is
+/// bounded on both sides — capped at `max_gain` when increasing and floored at
+/// its reciprocal when decreasing — so a large excursion cannot produce an
+/// unbounded correction.
 pub fn feedback_policy_inner(
     r_value: f64,
     target_r: f64,

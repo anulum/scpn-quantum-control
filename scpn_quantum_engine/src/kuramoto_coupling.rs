@@ -1469,10 +1469,10 @@ mod tests {
         // so the per-node phase tracks the global mean phase of the remaining oscillators.
         for j in 0..n {
             let (mut c, mut s) = (0.0_f64, 0.0_f64);
-            for k in 0..n {
+            for (k, &phase) in theta.iter().enumerate() {
                 if k != j {
-                    c += theta[k].cos();
-                    s += theta[k].sin();
+                    c += phase.cos();
+                    s += phase.sin();
                 }
             }
             assert!((local[j] - s.atan2(c)).abs() < 1e-12);

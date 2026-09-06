@@ -24,6 +24,9 @@ use pyo3::prelude::*;
 use crate::kuramoto_autodiff::networked_force_into;
 use crate::kuramoto_common::validate_phase_vector;
 
+type KuramotoNoisyTrajectoryResult<'py> =
+    PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)>;
+
 /// Kuramoto order parameter ``r = |⟨e^{iθ}⟩| = √((Σcos)² + (Σsin)²) / N`` of a phase vector.
 fn order_parameter(theta: &[f64]) -> f64 {
     let mut cos_sum = 0.0_f64;
@@ -82,7 +85,7 @@ pub fn kuramoto_noisy_trajectory<'py>(
     diffusion: f64,
     dt: f64,
     noise: PyReadonlyArray2<'_, f64>,
-) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
+) -> KuramotoNoisyTrajectoryResult<'py> {
     let phases = validate_phase_vector(&theta0, "theta0")?;
     let frequencies = validate_phase_vector(&omega, "omega")?;
     let n = phases.len();

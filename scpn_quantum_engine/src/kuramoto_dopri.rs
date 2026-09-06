@@ -18,6 +18,12 @@ use pyo3::prelude::*;
 use crate::kuramoto_autodiff::networked_force_into;
 use crate::kuramoto_common::validate_phase_vector;
 
+type KuramotoDopriTrajectoryResult<'py> = PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)>;
+
 /// Pure Rust adaptive Dormand–Prince (DOPRI5) forward trajectory of the networked phase flow.
 ///
 /// Error-controlled embedded 4/5 pair with the standard elementary step controller, mirroring the
@@ -138,9 +144,8 @@ pub fn kuramoto_dopri_trajectory_inner(
         if error <= 1.0 {
             time += step;
             y.copy_from_slice(&proposed);
-            for j in 0..n {
-                deriv[0][j] = deriv[6][j];
-            }
+            let (first, rest) = deriv.split_at_mut(1);
+            first[0].copy_from_slice(&rest[5]);
             times.push(time);
             phases_flat.extend_from_slice(&y);
             steps.push(step);
@@ -176,11 +181,7 @@ pub fn kuramoto_dopri_trajectory<'py>(
     min_factor: f64,
     max_factor: f64,
     max_steps: i64,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray2<f64>>,
-    Bound<'py, PyArray1<f64>>,
-)> {
+) -> KuramotoDopriTrajectoryResult<'py> {
     let theta0 = validate_phase_vector(&theta0, "theta0")?;
     let frequencies = validate_phase_vector(&omega, "omega")?;
     let matrix = coupling.as_array();

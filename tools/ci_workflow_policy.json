@@ -15,7 +15,8 @@
       "workflow": ".github/workflows/ci-static-analysis.yml",
       "caller_needs": [],
       "jobs": [
-        "lint"
+        "lint",
+        "rust-lint"
       ]
     },
     {
@@ -382,6 +383,7 @@
   ],
   "job_order": [
     "lint",
+    "rust-lint",
     "native-wheels",
     "stable-core-product-quality",
     "open-system-completeness-quality",

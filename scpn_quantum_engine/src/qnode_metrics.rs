@@ -6,6 +6,13 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // scpn-quantum-engine — Phase-QNode metric and transform kernels
 
+//! Phase-QNode metric and derivative-transform kernels.
+//!
+//! Quantum-geometric quantities at a parameter point — the Fubini-Study metric,
+//! the quantum and classical Fisher information — and the derivative transforms
+//! that consume a Jacobian or Hessian. Each kernel has a pure `_inner` form
+//! returning an error string, wrapped by a PyO3 entry point that converts it.
+
 use ndarray::{Array2, Array3};
 use numpy::{PyArray1, PyArray2, PyArray3, PyReadonlyArray1, PyReadonlyArray2, PyReadonlyArray3};
 use pyo3::exceptions::PyValueError;
@@ -13,16 +20,25 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 
 #[derive(Debug, Clone, PartialEq)]
+/// Fubini-Study geometry of a parameterised state at one parameter point.
 pub struct FubiniStudyMetricResult {
+    /// The real Fubini-Study metric tensor, one row and column per parameter.
     pub fubini_study_metric: Vec<Vec<f64>>,
+    /// The quantum Fisher information, four times the metric by definition.
     pub quantum_fisher_information: Vec<Vec<f64>>,
+    /// Norm of the state derivative with respect to each parameter.
     pub derivative_norms: Vec<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+/// Classical Fisher information of the computational-basis outcome
+/// distribution, with the quantities it was built from.
 pub struct ComputationalBasisFisherResult {
+    /// The classical Fisher information matrix over the parameters.
     pub classical_fisher_information: Vec<Vec<f64>>,
+    /// Outcome probabilities the information was computed from.
     pub probabilities: Vec<f64>,
+    /// Derivative of each outcome probability with respect to each parameter.
     pub probability_derivatives: Vec<Vec<f64>>,
 }
 
@@ -129,6 +145,11 @@ fn complex_inner_product(
     (real, imag)
 }
 
+/// Fubini-Study metric and quantum Fisher information at one parameter point.
+///
+/// Takes the state and its per-parameter derivatives split into real and
+/// imaginary parts, which is how they cross the NumPy boundary. Returns an
+/// error string rather than a partial result when the shapes disagree.
 pub fn fubini_study_metric_inner<R, I>(
     state_re: &[f64],
     state_im: &[f64],
@@ -179,6 +200,10 @@ where
     })
 }
 
+/// Classical Fisher information of the computational-basis distribution.
+///
+/// `min_probability` floors the outcome probabilities so a near-zero outcome
+/// cannot dominate the information through division by it.
 pub fn computational_basis_fisher_inner<R, I>(
     state_re: &[f64],
     state_im: &[f64],
@@ -265,6 +290,9 @@ where
     Ok((matrix.len(), columns))
 }
 
+/// Jacobian-vector product: the forward-mode directional derivative.
+///
+/// The tangent must have one entry per Jacobian column.
 pub fn vector_jvp_inner<R>(jacobian: &[R], tangent: &[f64]) -> Result<Vec<f64>, String>
 where
     R: AsRef<[f64]>,
@@ -289,6 +317,9 @@ where
         .collect())
 }
 
+/// Vector-Jacobian product: the reverse-mode pullback.
+///
+/// The cotangent must have one entry per Jacobian row.
 pub fn vector_vjp_inner<R>(jacobian: &[R], cotangent: &[f64]) -> Result<Vec<f64>, String>
 where
     R: AsRef<[f64]>,
@@ -310,6 +341,9 @@ where
     Ok(result)
 }
 
+/// Hessian-vector product for a square Hessian.
+///
+/// A non-square input is rejected rather than interpreted as a Jacobian.
 pub fn hessian_vector_product_inner<R>(hessian: &[R], vector: &[f64]) -> Result<Vec<f64>, String>
 where
     R: AsRef<[f64]>,
@@ -337,6 +371,11 @@ where
         .collect())
 }
 
+/// Per-output Hessian blocks of a vector-valued function.
+///
+/// Each block is checked for symmetry within `symmetry_tolerance`, since an
+/// asymmetric block indicates the tensor did not come from a second
+/// derivative and would silently misstate the curvature.
 pub fn vector_hessian_tensor_inner(
     tensor: &[Vec<Vec<f64>>],
     symmetry_tolerance: f64,
@@ -435,6 +474,7 @@ fn read_array3_components(values: PyReadonlyArray3<'_, f64>) -> Vec<Vec<Vec<f64>
 }
 
 #[pyfunction]
+/// Python entry point for [`fubini_study_metric_inner`].
 pub fn phase_qnode_fubini_study_metric_rust<'py>(
     py: Python<'py>,
     state_re: PyReadonlyArray1<'_, f64>,
@@ -458,6 +498,7 @@ pub fn phase_qnode_fubini_study_metric_rust<'py>(
 }
 
 #[pyfunction]
+/// Python entry point for [`computational_basis_fisher_inner`].
 pub fn phase_qnode_computational_basis_fisher_rust<'py>(
     py: Python<'py>,
     state_re: PyReadonlyArray1<'_, f64>,
@@ -490,6 +531,7 @@ pub fn phase_qnode_computational_basis_fisher_rust<'py>(
 }
 
 #[pyfunction]
+/// Python entry point for [`vector_jvp_inner`].
 pub fn phase_qnode_vector_jvp_rust<'py>(
     py: Python<'py>,
     jacobian: PyReadonlyArray2<'_, f64>,
@@ -501,6 +543,7 @@ pub fn phase_qnode_vector_jvp_rust<'py>(
 }
 
 #[pyfunction]
+/// Python entry point for [`vector_vjp_inner`].
 pub fn phase_qnode_vector_vjp_rust<'py>(
     py: Python<'py>,
     jacobian: PyReadonlyArray2<'_, f64>,
@@ -513,6 +556,7 @@ pub fn phase_qnode_vector_vjp_rust<'py>(
 }
 
 #[pyfunction]
+/// Python entry point for [`hessian_vector_product_inner`].
 pub fn phase_qnode_hessian_vector_product_rust<'py>(
     py: Python<'py>,
     hessian: PyReadonlyArray2<'_, f64>,
@@ -526,6 +570,7 @@ pub fn phase_qnode_hessian_vector_product_rust<'py>(
 
 #[pyfunction]
 #[pyo3(signature = (hessian_tensor, symmetry_tolerance=1e-12))]
+/// Python entry point for [`vector_hessian_tensor_inner`].
 pub fn phase_qnode_vector_hessian_tensor_rust<'py>(
     py: Python<'py>,
     hessian_tensor: PyReadonlyArray3<'_, f64>,
@@ -539,6 +584,11 @@ pub fn phase_qnode_vector_hessian_tensor_rust<'py>(
 }
 
 #[pyfunction]
+/// Check that a complex derivative pair satisfies the engine's contract.
+///
+/// The real and imaginary parts must share a shape and be finite throughout,
+/// so a malformed pair is rejected at the boundary rather than propagated
+/// into a metric.
 pub fn phase_qnode_complex_derivative_contract_rust<'py>(
     py: Python<'py>,
 ) -> PyResult<Bound<'py, PyDict>> {

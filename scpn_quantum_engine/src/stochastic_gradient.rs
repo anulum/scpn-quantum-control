@@ -6,40 +6,72 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // scpn-quantum-engine — stochastic gradient uncertainty kernels
 
+//! Stochastic gradient estimators and their uncertainty.
+//!
+//! Parameter-shift, SPSA and score-function estimators, each returning the
+//! gradient together with the standard error, covariance and confidence radius
+//! that describe how well it is known — a gradient without its uncertainty is
+//! not a usable measurement on finite shots. Each kernel has a pure `_inner`
+//! form returning an error string, wrapped by a PyO3 entry point.
+
 use ndarray::Array2;
 use numpy::{PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
+/// Parameter-shift gradient with its shot-noise uncertainty.
 pub struct StochasticGradientUncertaintyResult {
+    /// Estimated gradient, one entry per parameter; a non-trainable parameter
+    /// holds zero rather than an unestimated value.
     pub gradient: Vec<f64>,
+    /// Standard error of each gradient entry.
     pub standard_error: Vec<f64>,
+    /// Covariance between gradient entries.
     pub covariance: Vec<Vec<f64>>,
+    /// Half-width of the confidence interval at the requested level.
     pub confidence_radius: Vec<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+/// SPSA gradient estimate with its uncertainty.
 pub struct SPSAGradientKernelResult {
+    /// Estimated gradient, one entry per parameter; a non-trainable parameter
+    /// holds zero rather than an unestimated value.
     pub gradient: Vec<f64>,
+    /// Standard error of each gradient entry.
     pub standard_error: Vec<f64>,
+    /// Covariance between gradient entries.
     pub covariance: Vec<Vec<f64>>,
+    /// Half-width of the confidence interval at the requested level.
     pub confidence_radius: Vec<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+/// Score-function (REINFORCE) gradient estimate with its uncertainty.
 pub struct ScoreFunctionGradientKernelResult {
+    /// Estimated gradient, one entry per parameter; a non-trainable parameter
+    /// holds zero rather than an unestimated value.
     pub gradient: Vec<f64>,
+    /// Standard error of each gradient entry.
     pub standard_error: Vec<f64>,
+    /// Covariance between gradient entries.
     pub covariance: Vec<Vec<f64>>,
+    /// Half-width of the confidence interval at the requested level.
     pub confidence_radius: Vec<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+/// Confidence interval around a gradient, with an explicit admission verdict.
 pub struct GradientConfidenceIntervalKernelResult {
+    /// Lower bound per parameter.
     pub lower: Vec<f64>,
+    /// Upper bound per parameter.
     pub upper: Vec<f64>,
+    /// Whether the interval satisfies the requested admission limits.
     pub status: String,
+    /// Which limits were exceeded, one entry per distinct reason; empty when
+    /// the interval was admitted.
     pub failure_reasons: Vec<String>,
 }
 
@@ -140,6 +172,13 @@ fn validate_shots(name: &str, values: &[Vec<f64>]) -> Result<(), String> {
     clippy::too_many_arguments,
     reason = "kernel inputs mirror the finite-shot parameter-shift evidence schema"
 )]
+/// Parameter-shift gradient and its shot-noise uncertainty.
+///
+/// Combines the plus and minus shifted evaluations with their per-term
+/// variances and shot counts, so the reported error reflects the sampling
+/// actually performed rather than an assumed shot budget. Parameters marked
+/// non-trainable are excluded from the estimate instead of being estimated
+/// and discarded.
 pub fn stochastic_parameter_shift_uncertainty_inner(
     plus_values: &[Vec<f64>],
     minus_values: &[Vec<f64>],
@@ -233,6 +272,11 @@ pub fn stochastic_parameter_shift_uncertainty_inner(
     clippy::too_many_arguments,
     reason = "kernel inputs mirror the SPSA evidence schema"
 )]
+/// SPSA gradient estimate from a simultaneous perturbation.
+///
+/// Variances and shot counts are optional: without them the uncertainty comes
+/// from the spread across perturbations alone, and the distinction matters
+/// because the two answer different questions about the same estimate.
 pub fn spsa_gradient_inner(
     plus_values: &[f64],
     minus_values: &[f64],
@@ -422,6 +466,11 @@ pub fn spsa_gradient_inner(
     })
 }
 
+/// Score-function (REINFORCE) gradient from sampled rewards.
+///
+/// `baseline` is subtracted from each reward to reduce variance without
+/// biasing the estimator. At least two samples are required, since a single
+/// reward admits no variance estimate.
 pub fn score_function_gradient_inner(
     rewards: &[f64],
     score_vectors: &[Vec<f64>],
@@ -505,6 +554,11 @@ pub fn score_function_gradient_inner(
     })
 }
 
+/// Confidence interval around a gradient, admitted against explicit limits.
+///
+/// When `max_standard_error` or `max_confidence_radius` is given, the result
+/// carries a status and the reasons any limit was exceeded, so a caller sees
+/// why an interval was refused rather than only that it was.
 pub fn gradient_confidence_interval_inner(
     gradient: &[f64],
     standard_error: &[f64],
@@ -648,6 +702,7 @@ fn nested_to_array2(values: Vec<Vec<f64>>) -> Result<Array2<f64>, String> {
     clippy::too_many_arguments,
     reason = "public PyO3 ABI mirrors the finite-shot parameter-shift evidence schema"
 )]
+/// Python entry point for [`stochastic_parameter_shift_uncertainty_inner`].
 pub fn parameter_shift_gradient_uncertainty_rust<'py>(
     py: Python<'py>,
     plus_values: PyReadonlyArray2<'_, f64>,
@@ -698,6 +753,7 @@ pub fn parameter_shift_gradient_uncertainty_rust<'py>(
     clippy::too_many_arguments,
     reason = "public PyO3 ABI mirrors the SPSA evidence schema"
 )]
+/// Python entry point for [`spsa_gradient_inner`].
 pub fn spsa_gradient_rust<'py>(
     py: Python<'py>,
     plus_values: PyReadonlyArray1<'_, f64>,
@@ -742,6 +798,7 @@ pub fn spsa_gradient_rust<'py>(
     baseline=0.0,
     confidence_z=1.959963984540054
 ))]
+/// Python entry point for [`score_function_gradient_inner`].
 pub fn score_function_gradient_rust<'py>(
     py: Python<'py>,
     rewards: PyReadonlyArray1<'_, f64>,
@@ -777,6 +834,7 @@ pub fn score_function_gradient_rust<'py>(
     max_standard_error=None,
     max_confidence_radius=None
 ))]
+/// Python entry point for [`gradient_confidence_interval_inner`].
 pub fn gradient_confidence_interval_rust<'py>(
     py: Python<'py>,
     gradient: PyReadonlyArray1<'_, f64>,

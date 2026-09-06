@@ -37,14 +37,28 @@ const HEADER_LEN: usize = 32;
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 #[repr(i32)]
 pub enum KuramotoStatus {
+    /// The simulation ran and the output buffer holds the returned series.
     Ok = 0,
+    /// The input or the output pointer was null.
     NullPointer = -1,
+    /// The payload is shorter than the fixed header, its total size is not
+    /// exactly the one the header's counts describe, or the required output
+    /// size overflows.
     InvalidLength = -2,
+    /// The payload declares a schema version this kernel does not implement.
     InvalidVersion = -3,
+    /// The oscillator count is zero or above [`MAX_OSCILLATORS`].
     InvalidOscillatorCount = -4,
+    /// A frequency, phase, coupling or step size is NaN or infinite, or the
+    /// step size is not strictly positive.
     InvalidFloat = -5,
+    /// The step count is zero or above [`MAX_STEPS`].
     InvalidSteps = -6,
+    /// The mode code names neither coupling kernel.
     InvalidMode = -7,
+    /// The caller's output buffer is not exactly eight bytes per element of
+    /// [`output_len`]. Returned by the FFI entry point, which is where the
+    /// caller's buffer is first known.
     OutputMismatch = -8,
 }
 
@@ -57,7 +71,9 @@ impl From<KuramotoStatus> for i32 {
 /// The two coupling kernels the simulator exposes.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum KuramotoMode {
+    /// All-to-all coupling of uniform strength; the matrix is not carried.
     MeanField,
+    /// Pairwise coupling read from the request's `n × n` matrix.
     Networked,
 }
 
@@ -74,12 +90,19 @@ impl KuramotoMode {
 /// A validated Kuramoto simulation request.
 #[derive(Debug, Clone)]
 pub struct KuramotoInput {
+    /// Which coupling kernel the simulation uses.
     pub mode: KuramotoMode,
+    /// Number of oscillators; at least one and at most [`MAX_OSCILLATORS`].
     pub n: usize,
+    /// Number of integration steps; at least one and at most [`MAX_STEPS`].
     pub steps: usize,
+    /// Integration step size, finite and strictly positive.
     pub dt: f64,
+    /// Global coupling strength, finite.
     pub coupling: f64,
+    /// Per-oscillator natural frequencies, `n` entries, all finite.
     pub omega: Vec<f64>,
+    /// Initial phases, `n` entries, all finite.
     pub theta0: Vec<f64>,
     /// Row-major `n × n` coupling matrix; empty for the mean-field kernel.
     pub k_nm: Vec<f64>,

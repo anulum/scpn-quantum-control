@@ -174,7 +174,7 @@ mod tests {
         let n = 2;
         let dim = 1usize << n;
         let mut labels = Vec::with_capacity(dim);
-        let n_i32 = n as i32;
+        let n_i32 = n;
         for k in 0..dim {
             let popcount = (k as u64).count_ones() as i32;
             labels.push(n_i32 - 2 * popcount);

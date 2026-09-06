@@ -430,7 +430,7 @@ mod tests {
     #[test]
     fn test_independent_duplicate() {
         let op = vec![1.0, 0.0, 0.0, 1.0];
-        assert!(!is_independent_fast(&op, &[op.clone()], 1e-10));
+        assert!(!is_independent_fast(&op, std::slice::from_ref(&op), 1e-10));
     }
 
     #[test]

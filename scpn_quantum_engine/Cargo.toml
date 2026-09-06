@@ -67,3 +67,9 @@ criterion = { version = "0.5", features = ["html_reports"] }
 [[bench]]
 name = "hot_paths"
 harness = false
+
+[lints.clippy]
+# Every default-level clippy finding is a build failure, not a message someone
+# may scroll past. The crate carried 26 of them while nothing ran clippy at all;
+# denying here keeps the count at zero instead of re-measuring it later.
+all = { level = "deny", priority = -1 }

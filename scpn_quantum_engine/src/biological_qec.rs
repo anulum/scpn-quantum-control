@@ -229,6 +229,12 @@ fn reconstruct_path_edges(source: usize, target: usize, dj: &DijkstraResult) -> 
 }
 
 #[pyfunction]
+/// Decode Z errors on a biological surface code from an X syndrome.
+///
+/// The Python-facing wrapper around [`biological_decode_inner`]: it validates
+/// that the edge arrays share one length, that the syndrome is binary and as
+/// long as `n_nodes`, and rejects the call rather than decoding a malformed
+/// graph. Returns the correction as an array over the code's qubits.
 pub fn biological_decode_z_errors<'py>(
     py: Python<'py>,
     edge_u: PyReadonlyArray1<'_, i64>,

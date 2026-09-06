@@ -20,6 +20,12 @@ use pyo3::prelude::*;
 use crate::kuramoto_autodiff::networked_force_into;
 use crate::kuramoto_common::validate_phase_vector;
 
+type KuramotoSymplecticInertialTrajectoryResult<'py> = PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray2<f64>>,
+)>;
+
 /// Pure Rust damped velocity-Verlet forward trajectory of the inertial networked flow.
 ///
 /// Advances ``(θ, v)`` by a half-step exponential velocity decay ``e^{-γ dt/(2m)}``, a
@@ -96,11 +102,7 @@ pub fn kuramoto_symplectic_inertial_trajectory<'py>(
     damping: f64,
     dt: f64,
     n_steps: i64,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray2<f64>>,
-    Bound<'py, PyArray2<f64>>,
-)> {
+) -> KuramotoSymplecticInertialTrajectoryResult<'py> {
     let theta0 = validate_phase_vector(&theta0, "theta0")?;
     let speed = validate_phase_vector(&velocities, "velocities")?;
     let frequencies = validate_phase_vector(&omega, "omega")?;

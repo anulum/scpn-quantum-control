@@ -129,6 +129,13 @@ pub fn xy_observables(theta: &[f64], k: &[f64], n: usize) -> (f64, f64, f64) {
     (energy, cos_sum, sin_sum)
 }
 
+#[expect(
+    clippy::identity_op,
+    clippy::erasing_op,
+    reason = "row-major indices are written out as `row * dim + col` so each \
+              assertion names the matrix element it checks; collapsing \
+              `0 * dim` or `1 * dim` would hide which element that is"
+)]
 #[cfg(test)]
 mod tests {
     use super::*;

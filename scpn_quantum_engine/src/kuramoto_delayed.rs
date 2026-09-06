@@ -25,6 +25,9 @@ use pyo3::prelude::*;
 
 use crate::kuramoto_common::validate_phase_vector;
 
+type KuramotoDelayedTrajectoryResult<'py> =
+    PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray2<f64>>)>;
+
 /// Evaluate the delayed networked coupling force into ``out`` (length ``n``).
 ///
 /// ``F_j = Σ_k K_jk sin(θ_k(t−τ) − θ_j(t))`` reads the delayed phases ``lagged`` for every neighbour
@@ -152,7 +155,7 @@ pub fn kuramoto_delayed_trajectory<'py>(
     coupling: PyReadonlyArray2<'_, f64>,
     dt: f64,
     n_steps: i64,
-) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray2<f64>>)> {
+) -> KuramotoDelayedTrajectoryResult<'py> {
     let frequencies = validate_phase_vector(&omega, "omega")?;
     let n = frequencies.len();
     let history = initial_history.as_array();

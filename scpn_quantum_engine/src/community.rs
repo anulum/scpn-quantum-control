@@ -141,7 +141,7 @@ fn validate_region_encoding(offsets: &[i64], qubits: &[i64], n_qubits: usize) ->
             offsets.len()
         )));
     }
-    for (region_idx, pair) in offsets.chunks_exact(2).enumerate() {
+    for (region_idx, pair) in offsets.as_chunks::<2>().0.iter().enumerate() {
         let start = pair[0];
         let end = pair[1];
         if start < 0 || end < 0 {

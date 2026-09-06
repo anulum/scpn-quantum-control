@@ -19,6 +19,12 @@ use pyo3::prelude::*;
 use crate::kuramoto_autodiff::networked_force_into;
 use crate::kuramoto_common::validate_phase_vector;
 
+type KuramotoInertialTrajectoryResult<'py> = PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray2<f64>>,
+)>;
+
 /// Evaluate the inertial phase-space vector field ``[θ̇, v̇]`` into ``out`` (length ``2n``).
 ///
 /// The concatenated state is ``[θ (n), v (n)]``; the swing equation gives ``θ̇ = v`` and
@@ -159,11 +165,7 @@ pub fn kuramoto_inertial_trajectory<'py>(
     damping: f64,
     dt: f64,
     n_steps: i64,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray2<f64>>,
-    Bound<'py, PyArray2<f64>>,
-)> {
+) -> KuramotoInertialTrajectoryResult<'py> {
     let theta0 = validate_phase_vector(&theta0, "theta0")?;
     let speed = validate_phase_vector(&velocities, "velocities")?;
     let frequencies = validate_phase_vector(&omega, "omega")?;

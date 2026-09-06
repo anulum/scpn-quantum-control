@@ -26,6 +26,12 @@ type QpetriCampaignAggregateResult<'py> = PyResult<(
 )>;
 
 #[pyfunction]
+/// Per-transition activity from a marking, its input weights and thresholds.
+///
+/// `w_in_flat` is the row-major `n_transitions x n_places` input-weight matrix.
+/// Every array is validated for contiguity, finiteness and the length its
+/// declared dimensions imply before a value is read, so a shape mismatch is a
+/// rejection rather than a silently reinterpreted buffer.
 pub fn qpetri_transition_activity<'py>(
     py: Python<'py>,
     w_in_flat: PyReadonlyArray1<'_, f64>,
@@ -101,6 +107,10 @@ pub fn qpetri_transition_activity<'py>(
 }
 
 #[pyfunction]
+/// Shannon entropy and purity of a place-occupancy distribution.
+///
+/// Returns `(entropy, purity)`. Each probability must lie in `[0, 1]`; a zero
+/// contributes nothing to the entropy rather than an undefined logarithm.
 pub fn qpetri_state_metrics(probabilities: PyReadonlyArray1<'_, f64>) -> PyResult<(f64, f64)> {
     let probs = validate_contiguous_slice(&probabilities, "probabilities")?;
     validate_finite(probs, "probabilities")?;
@@ -118,6 +128,11 @@ pub fn qpetri_state_metrics(probabilities: PyReadonlyArray1<'_, f64>) -> PyResul
 }
 
 #[pyfunction]
+/// Sample a shot-noised marking from per-place occupancy probabilities.
+///
+/// Draws `shots` Bernoulli trials per place from a `seed`-seeded generator and
+/// returns the observed frequencies, so the same seed reproduces the same
+/// marking exactly. `shots` must be positive.
 pub fn qpetri_sample_marking<'py>(
     py: Python<'py>,
     probabilities: PyReadonlyArray1<'_, f64>,
@@ -152,6 +167,10 @@ pub fn qpetri_sample_marking<'py>(
     clippy::too_many_arguments,
     reason = "public PyO3 ABI mirrors the Python Quantum Petri campaign wrapper"
 )]
+/// Aggregate one Quantum Petri campaign into its per-step summaries.
+///
+/// The flattened marking and activity arrays are read against the declared
+/// step, place and transition counts, each of which must match exactly.
 pub fn qpetri_campaign_aggregate<'py>(
     py: Python<'py>,
     output_markings_flat: PyReadonlyArray1<'_, f64>,

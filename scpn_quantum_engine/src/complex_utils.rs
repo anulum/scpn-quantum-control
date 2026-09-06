@@ -12,6 +12,7 @@
 use ndarray::{Array1, Array2};
 use num_complex::Complex;
 
+/// Double-precision complex scalar used throughout the engine.
 pub type C64 = Complex<f64>;
 
 /// Construct a complex number from real and imaginary parts.

@@ -149,6 +149,13 @@ pub fn build_sparse_xy_hamiltonian<'py>(
     ))
 }
 
+#[expect(
+    clippy::identity_op,
+    clippy::erasing_op,
+    reason = "row-major indices are written out as `row * dim + col` so each \
+              assertion names the matrix element it checks; collapsing \
+              `0 * dim` or `1 * dim` would hide which element that is"
+)]
 #[cfg(test)]
 mod tests {
     #[test]
@@ -156,8 +163,8 @@ mod tests {
         // 2-qubit XY with K[0,1]=1, ω=[0,0]
         let n = 2;
         let dim = 1usize << n;
-        let k = vec![0.0, 1.0, 1.0, 0.0]; // K[0,1]=K[1,0]=1
-        let w = vec![0.0, 0.0];
+        let k = [0.0, 1.0, 1.0, 0.0]; // K[0,1]=K[1,0]=1
+        let w = [0.0, 0.0];
         let mut h = vec![0.0f64; dim * dim];
 
         for idx in 0..dim {
@@ -202,7 +209,7 @@ mod tests {
         // 2 qubits, K[0,1]=1: H should connect |01⟩↔|10⟩ with −2
         let n = 2;
         let dim = 1usize << n;
-        let k = vec![0.0, 1.0, 1.0, 0.0];
+        let k = [0.0, 1.0, 1.0, 0.0];
         let mut h = vec![0.0f64; dim * dim];
 
         for idx in 0..dim {

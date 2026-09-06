@@ -13,6 +13,8 @@
 //! digest. The digest covers the structural XY compile terms, not QPU execution
 //! or floating measurement results.
 
+#![deny(missing_docs)]
+
 use sha2::{Digest, Sha256};
 
 pub mod kuramoto;
@@ -23,15 +25,26 @@ const HEADER_LEN: usize = 24;
 const DIGEST_LEN: usize = 32;
 const MAX_QUBITS: u32 = 64;
 
+/// Fail-closed status codes for the XY compile-digest FFI.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 #[repr(i32)]
 pub enum KernelStatus {
+    /// The digest was computed and written to the output buffer.
     Ok = 0,
+    /// The input or the output pointer was null.
     NullPointer = -1,
+    /// The payload is shorter than the fixed header, or its total size is not
+    /// exactly the one the header's counts describe.
     InvalidLength = -2,
+    /// The payload declares a schema version this kernel does not implement.
     InvalidVersion = -3,
+    /// The qubit count is zero or above the kernel's maximum.
     InvalidQubitCount = -4,
+    /// A time, coupling or frequency value is NaN or infinite, so the digest is
+    /// refused rather than taken over a value that cannot be reproduced.
     InvalidFloat = -5,
+    /// The Trotter step count or order is zero, which would make the step size
+    /// undefined.
     InvalidTrotter = -6,
 }
 
@@ -41,13 +54,21 @@ impl From<KernelStatus> for i32 {
     }
 }
 
+/// A decoded XY compilation request, validated against the kernel's bounds.
 #[derive(Debug, Clone)]
 pub struct CompileInput {
+    /// Number of qubits in the chain; at least one and at most the kernel's
+    /// maximum.
     pub n_qubits: u32,
+    /// Total evolution time, finite.
     pub time: f64,
+    /// Number of Trotter steps the evolution is split into; non-zero.
     pub trotter_steps: u32,
+    /// Trotter product-formula order; non-zero.
     pub trotter_order: u32,
+    /// Row-major `n_qubits * n_qubits` coupling matrix, all entries finite.
     pub k_nm: Vec<f64>,
+    /// Per-qubit natural frequencies, `n_qubits` entries, all finite.
     pub omega: Vec<f64>,
 }
 
@@ -71,6 +92,12 @@ fn push_f64(hasher: &mut Sha256, value: f64) {
     hasher.update(value.to_le_bytes());
 }
 
+/// Decode the canonical little-endian compile request.
+///
+/// Layout: a fixed header carrying the schema version, qubit count, time and
+/// Trotter parameters, followed by the row-major coupling matrix and the
+/// per-qubit frequencies. Every bound is checked before any value is read, and
+/// the total length must match the header exactly rather than merely suffice.
 pub fn parse_compile_input(bytes: &[u8]) -> Result<CompileInput, KernelStatus> {
     if bytes.len() < HEADER_LEN {
         return Err(KernelStatus::InvalidLength);
@@ -139,6 +166,12 @@ pub fn parse_compile_input(bytes: &[u8]) -> Result<CompileInput, KernelStatus> {
     })
 }
 
+/// Compute the schema-tagged SHA-256 digest identifying an XY compilation.
+///
+/// The digest covers the schema tag, every declared parameter and the derived
+/// step size, so two requests agree on it only when they would compile to the
+/// same circuit. It re-validates its input rather than trusting that the caller
+/// obtained it from [`parse_compile_input`].
 pub fn xy_compile_digest(input: &CompileInput) -> Result<[u8; DIGEST_LEN], KernelStatus> {
     let n = input.n_qubits as usize;
     if n == 0 || input.n_qubits > MAX_QUBITS {

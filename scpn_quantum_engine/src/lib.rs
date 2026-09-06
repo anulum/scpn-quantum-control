@@ -26,6 +26,8 @@
 //! - DLA-protected logical memory diagnostics
 //! - Kuramoto witness-discovery candidate features
 
+#![deny(missing_docs)]
+
 use pyo3::prelude::*;
 
 pub mod analog;

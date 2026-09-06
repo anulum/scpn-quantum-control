@@ -60,14 +60,24 @@ struct ProgramADRegistryDispatchCoverageRowSnapshot {
 /// JSON-ready metadata mirror of Python Program AD registry coverage.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ProgramADRegistryMetadataMirrorSummary {
+    /// Whether the mirrored snapshot validated; false leaves the counts at
+    /// their zero values rather than reporting partial coverage.
     pub supported: bool,
+    /// Number of primitives the Python registry declares.
     pub primitive_count: usize,
+    /// How many of those primitives the registry records coverage for.
     pub covered_primitives: usize,
+    /// Primitive count per family, keyed by family name in sorted order.
     pub family_counts: BTreeMap<String, usize>,
+    /// Primitive count per facet, keyed by facet name in sorted order.
     pub facet_counts: BTreeMap<String, usize>,
+    /// Number of operations the registry marks executable.
     pub executable_operation_count: usize,
+    /// Names of those executable operations.
     pub executable_operations: Vec<String>,
+    /// Why the snapshot was refused, one entry per distinct reason.
     pub blocked_reasons: Vec<String>,
+    /// What this mirror may and may not be cited as evidence for.
     pub claim_boundary: String,
 }
 

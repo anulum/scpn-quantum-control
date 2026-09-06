@@ -18,3 +18,9 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 scpn-quantum-program-ad-replay = { path = "../program_ad_replay" }
+
+[lints.clippy]
+# Every default-level clippy finding is a build failure, not a message someone
+# may scroll past. The crate carried 26 of them while nothing ran clippy at all;
+# denying here keeps the count at zero instead of re-measuring it later.
+all = { level = "deny", priority = -1 }
