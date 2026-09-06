@@ -383,7 +383,7 @@ def test_brute_mpc_rejects_non_finite_target() -> None:
 
 
 def test_brute_mpc_matches_two_dimensional_reference() -> None:
-    # CR-20260904-R02 replaced the norm-only surrogate with the vector residual
+    # The norm-only surrogate was replaced with the vector residual
     # sum_t ||u_t*v - target||^2, where v = B @ ones. This expectation was left
     # on the old surrogate, which selected u = 0 at cost 1/3, and only passed
     # because the installed extension predated the repair. The costs below come
@@ -938,7 +938,7 @@ def r_values_error_pattern() -> str:
     return r"r_values must be a C-contiguous NumPy array"
 
 
-# --- CR-20260904-R09: FEP FFI numerical domain contract ---------------------
+# --- FEP FFI numerical domain contract -------------------------------------
 #
 # free_energy_gradient_rust and variational_free_energy_rust take their
 # dimension from mu and then index x, K and Gamma with it. Before this

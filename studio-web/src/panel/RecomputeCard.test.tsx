@@ -60,7 +60,7 @@ describe("RecomputeCard", () => {
   });
 
   it("renders a loud mismatch when the digest disagrees", async () => {
-    // CR-20260904-R15: the badge used to read "claim forged". A digest
+    // The badge used to read "claim forged". A digest
     // disagreement is a disagreement; it does not by itself establish who
     // produced the claim or why it differs.
     render(<RecomputeCard unit={UNIT} loadKernel={async () => forgingKernel} />);
@@ -128,7 +128,7 @@ describe("RecomputeCard", () => {
   });
 
   it("never shows the previous unit's verdict when a load resolves after the swap", async () => {
-    // CR-20260904-R15 acceptance: rerender from A to B before the deferred
+    // Acceptance: rerender from A to B before the deferred
     // kernel load resolves. A's verdict must not appear beside B's claim.
     const gate = deferred<KernelRecompute>();
     const { rerender } = render(

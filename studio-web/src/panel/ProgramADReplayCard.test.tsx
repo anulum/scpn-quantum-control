@@ -79,7 +79,7 @@ describe("ProgramADReplayCard", () => {
   });
 
   it("reports a mismatch when the claimed gradient disagrees", async () => {
-    // CR-20260904-R15: the badge used to read "claim forged". A numeric
+    // The badge used to read "claim forged". A numeric
     // disagreement is a disagreement; it does not by itself establish forgery.
     const disagreeing: ProgramAdUnit = { ...unit(), expectedGradient: [6, 99] };
     render(<ProgramADReplayCard unit={disagreeing} loadKernel={async () => replay} />);
@@ -151,7 +151,7 @@ describe("ProgramADReplayCard", () => {
   });
 
   it("never shows the previous unit's verdict when a load resolves after the swap", async () => {
-    // CR-20260904-R15 acceptance: rerender from A to B before the deferred
+    // Acceptance: rerender from A to B before the deferred
     // kernel load resolves. A's verdict must not appear beside B's claim.
     const gate = deferred<KernelReplay>();
     const { rerender } = render(

@@ -172,7 +172,7 @@ class TestToNumpyEdgeCases:
         """to_numpy should handle plain lists.
 
         This test claimed list handling but passed an ndarray, so it could not
-        see CR-20260904-R13: under NumPy 2 the old ``copy=False`` policy raised
+        under NumPy 2 the old ``copy=False`` policy raised
         ValueError for every ordinary sequence. It now passes what it says.
         """
         set_backend("numpy")
@@ -194,7 +194,7 @@ class TestMockedJaxPath:
     """``to_numpy`` no longer has per-backend branches.
 
     These three exercised branches keyed on the module-global backend.
-    CR-20260904-R13 replaced that with dispatch on the object handed in, so they
+    That was replaced with dispatch on the object handed in, so they
     now assert what actually decides the path. They are kept rather than deleted
     because each still covers a real input shape; the full contract has a
     dedicated owner in ``tests/test_backend_dispatch_conversion_contract.py``.

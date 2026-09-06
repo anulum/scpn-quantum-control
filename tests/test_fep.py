@@ -254,7 +254,7 @@ class TestNegativeCases:
         """A custom generator without its Jacobian is refused, not approximated.
 
         This test previously asserted that the gradient substituted the identity
-        Jacobian. CR-20260904-R08 established that the substituted value is the
+        Jacobian. A substituted identity Jacobian yields the gradient of a
         gradient of a different model, so the recorded expectation was wrong
         rather than merely incomplete. The full contract has a dedicated owner
         in ``tests/test_fep_generative_model_contract.py``.

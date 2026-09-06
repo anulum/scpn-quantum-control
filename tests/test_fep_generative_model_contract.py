@@ -139,7 +139,7 @@ class _CallRecorder:
 
 
 class TestReviewedDefect:
-    """The exact case recorded in CR-20260904-R08."""
+    """A Jacobian supplied without its model differentiates a different model."""
 
     def test_recorded_case_now_matches_its_finite_difference(self) -> None:
         """g(mu)=2mu at mu=0.4 gives 2.0, the value the card derived."""

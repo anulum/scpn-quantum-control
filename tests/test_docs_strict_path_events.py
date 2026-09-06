@@ -158,7 +158,7 @@ class TestTheMatcher:
 
 
 class TestTheThreeRecordedGaps:
-    """The exact edit shapes CR-20260904-R17 names."""
+    """The edit shapes a docs build must react to."""
 
     @pytest.mark.parametrize("event", ["push", "pull_request"])
     def test_a_package_only_edit_triggers(self, event: str) -> None:
