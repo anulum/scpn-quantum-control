@@ -138,6 +138,8 @@
         "tests/test_compiler_boundary_product_quality_gate.py",
         "tests/test_compiler_isolated_benchmark_evidence.py",
         "tests/test_compiler_promotion_batch.py",
+        "tests/test_control_module_contracts.py",
+        "tests/test_control_plasma_knm.py",
         "tests/test_control_stack_compose_product.py",
         "tests/test_control_stack_compose_product_quality_gate.py",
         "tests/test_control_stack_runtime_adapters.py",

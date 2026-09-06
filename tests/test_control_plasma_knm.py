@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import sys
 from types import SimpleNamespace
+from typing import NoReturn
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -28,11 +29,11 @@ from scpn_quantum_control.bridge.control_plasma_knm import (
 # ---------------------------------------------------------------------------
 
 
-def _make_import_error(*args, **kwargs):
+def _make_import_error(*args: object, **kwargs: object) -> NoReturn:
     raise ImportError("Unable to import scpn_control.phase.plasma_knm")
 
 
-def _make_mock_module(L: int = 8):
+def _make_mock_module(L: int = 8) -> MagicMock:
     """Return a mock scpn_control.phase.plasma_knm module."""
     K = np.eye(L) * 0.3
     zeta = np.ones(L) * 0.1
@@ -58,22 +59,22 @@ class TestImportErrorPaths:
     """All public functions must raise ImportError when scpn_control is absent."""
 
     @patch(_PATCH_TARGET, side_effect=_make_import_error)
-    def test_build_knm_plasma_raises(self, _mock):
+    def test_build_knm_plasma_raises(self, _mock: MagicMock) -> None:
         with pytest.raises(ImportError, match="scpn_control"):
             build_knm_plasma()
 
     @patch(_PATCH_TARGET, side_effect=_make_import_error)
-    def test_plasma_omega_raises(self, _mock):
+    def test_plasma_omega_raises(self, _mock: MagicMock) -> None:
         with pytest.raises(ImportError, match="scpn_control"):
             plasma_omega()
 
     @patch(_PATCH_TARGET, side_effect=_make_import_error)
-    def test_build_knm_plasma_from_config_raises(self, _mock):
+    def test_build_knm_plasma_from_config_raises(self, _mock: MagicMock) -> None:
         with pytest.raises(ImportError, match="scpn_control"):
             build_knm_plasma_from_config(R0=6.2, a=2.0, B0=5.3, Ip=15.0, n_e=10.1)
 
     @patch(_PATCH_TARGET, side_effect=_make_import_error)
-    def test_build_knm_plasma_spec_raises(self, _mock):
+    def test_build_knm_plasma_spec_raises(self, _mock: MagicMock) -> None:
         with pytest.raises(ImportError, match="scpn_control"):
             build_knm_plasma_spec()
 
@@ -87,18 +88,18 @@ class TestBuildKnmPlasma:
     """build_knm_plasma returns correct ndarray."""
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
-    def test_returns_ndarray(self, _mock):
+    def test_returns_ndarray(self, _mock: MagicMock) -> None:
         result = build_knm_plasma()
         assert isinstance(result, np.ndarray)
         assert result.dtype == np.float64
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(4))
-    def test_shape_matches_L(self, _mock):
+    def test_shape_matches_L(self, _mock: MagicMock) -> None:
         result = build_knm_plasma(L=4)
         assert result.shape == (4, 4)
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
-    def test_default_params_forwarded(self, mock_import):
+    def test_default_params_forwarded(self, mock_import: MagicMock) -> None:
         build_knm_plasma()
         mod = mock_import.return_value
         mod.build_knm_plasma.assert_called_once_with(
@@ -115,26 +116,26 @@ class TestBuildKnmPlasmaSpec:
     """build_knm_plasma_spec returns portable dict."""
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
-    def test_returns_dict_with_expected_keys(self, _mock):
+    def test_returns_dict_with_expected_keys(self, _mock: MagicMock) -> None:
         result = build_knm_plasma_spec()
         assert set(result.keys()) == {"K", "zeta", "layer_names"}
         assert isinstance(result["K"], np.ndarray)
         assert result["K"].dtype == np.float64
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
-    def test_zeta_is_ndarray(self, _mock):
+    def test_zeta_is_ndarray(self, _mock: MagicMock) -> None:
         result = build_knm_plasma_spec()
         assert isinstance(result["zeta"], np.ndarray)
         assert result["zeta"].dtype == np.float64
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
-    def test_layer_names_is_list(self, _mock):
+    def test_layer_names_is_list(self, _mock: MagicMock) -> None:
         result = build_knm_plasma_spec()
         assert isinstance(result["layer_names"], list)
         assert len(result["layer_names"]) == 8
 
     @patch(_PATCH_TARGET)
-    def test_none_zeta_passthrough(self, mock_import):
+    def test_none_zeta_passthrough(self, mock_import: MagicMock) -> None:
         mod = _make_mock_module(4)
         mod.build_knm_plasma.return_value = SimpleNamespace(
             K=np.eye(4), zeta=None, layer_names=None
@@ -149,13 +150,13 @@ class TestBuildKnmPlasmaFromConfig:
     """build_knm_plasma_from_config with tokamak parameters."""
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
-    def test_returns_ndarray(self, _mock):
+    def test_returns_ndarray(self, _mock: MagicMock) -> None:
         result = build_knm_plasma_from_config(R0=6.2, a=2.0, B0=5.3, Ip=15.0, n_e=10.1)
         assert isinstance(result, np.ndarray)
         assert result.dtype == np.float64
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
-    def test_forwards_all_params(self, mock_import):
+    def test_forwards_all_params(self, mock_import: MagicMock) -> None:
         build_knm_plasma_from_config(
             R0=6.2, a=2.0, B0=5.3, Ip=15.0, n_e=10.1, mode="enhanced", L=4
         )
@@ -176,18 +177,18 @@ class TestPlasmaOmega:
     """plasma_omega returns omega vector."""
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
-    def test_returns_ndarray(self, _mock):
+    def test_returns_ndarray(self, _mock: MagicMock) -> None:
         result = plasma_omega()
         assert isinstance(result, np.ndarray)
         assert result.dtype == np.float64
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(8))
-    def test_shape_default_L(self, _mock):
+    def test_shape_default_L(self, _mock: MagicMock) -> None:
         result = plasma_omega()
         assert result.shape == (8,)
 
     @patch(_PATCH_TARGET, return_value=_make_mock_module(4))
-    def test_forwards_L(self, mock_import):
+    def test_forwards_L(self, mock_import: MagicMock) -> None:
         plasma_omega(L=4)
         mod = mock_import.return_value
         mod.plasma_omega.assert_called_once_with(L=4)
@@ -201,7 +202,7 @@ class TestPlasmaOmega:
 class TestImportMechanism:
     """Verify sys.path manipulation in _import_plasma_knm_module."""
 
-    def test_module_not_found_raises_import_error(self):
+    def test_module_not_found_raises_import_error(self) -> None:
         """Without scpn_control installed, direct call raises."""
         from scpn_quantum_control.bridge.control_plasma_knm import (
             _import_plasma_knm_module,
@@ -210,7 +211,7 @@ class TestImportMechanism:
         with pytest.raises(ImportError, match="scpn_control"):
             _import_plasma_knm_module()
 
-    def test_syspath_restored_after_failure(self):
+    def test_syspath_restored_after_failure(self) -> None:
         """sys.path must not leak after a failed import."""
         from scpn_quantum_control.bridge.control_plasma_knm import (
             _import_plasma_knm_module,
@@ -230,7 +231,7 @@ class TestImportMechanism:
 class TestExports:
     """__all__ must list exactly the public API."""
 
-    def test_all_exports(self):
+    def test_all_exports(self) -> None:
         from scpn_quantum_control.bridge import control_plasma_knm
 
         expected = {

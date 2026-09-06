@@ -23,7 +23,7 @@ from scpn_quantum_control.qec.control_qec import ControlQEC
 
 
 class TestQDisruptionIter:
-    def test_default_rng(self):
+    def test_default_rng(self) -> None:
         from scpn_quantum_control.control.q_disruption_iter import (
             generate_synthetic_iter_data,
         )
@@ -33,7 +33,7 @@ class TestQDisruptionIter:
         assert y.shape[0] == 20
 
     @pytest.mark.parametrize("n_samples", [1, 10, 50, 100])
-    def test_shape_varies_with_n_samples(self, n_samples):
+    def test_shape_varies_with_n_samples(self, n_samples: int) -> None:
         from scpn_quantum_control.control.q_disruption_iter import (
             generate_synthetic_iter_data,
         )
@@ -46,7 +46,7 @@ class TestQDisruptionIter:
         assert X.shape[0] == n_samples
         assert y.shape[0] == n_samples
 
-    def test_labels_binary(self):
+    def test_labels_binary(self) -> None:
         from scpn_quantum_control.control.q_disruption_iter import (
             generate_synthetic_iter_data,
         )
@@ -56,7 +56,7 @@ class TestQDisruptionIter:
         )
         assert set(np.unique(y)).issubset({0, 1})
 
-    def test_features_finite(self):
+    def test_features_finite(self) -> None:
         from scpn_quantum_control.control.q_disruption_iter import (
             generate_synthetic_iter_data,
         )
@@ -66,7 +66,7 @@ class TestQDisruptionIter:
         )
         assert np.all(np.isfinite(X))
 
-    def test_reproducible_with_rng(self):
+    def test_reproducible_with_rng(self) -> None:
         from scpn_quantum_control.control.q_disruption_iter import (
             generate_synthetic_iter_data,
         )
@@ -82,7 +82,7 @@ class TestQDisruptionIter:
 
 
 class TestQPetri:
-    def test_w_out_shape_mismatch_raises(self):
+    def test_w_out_shape_mismatch_raises(self) -> None:
         from scpn_quantum_control.control.qpetri import QuantumPetriNet
 
         W_in = np.array([[1.0, 0.0], [0.0, 1.0]])
@@ -97,7 +97,7 @@ class TestQPetri:
                 thresholds=thresholds,
             )
 
-    def test_valid_construction(self):
+    def test_valid_construction(self) -> None:
         from scpn_quantum_control.control.qpetri import QuantumPetriNet
 
         n_p, n_t = 2, 2
@@ -114,7 +114,7 @@ class TestQPetri:
         assert net.n_places == n_p
         assert net.n_transitions == n_t
 
-    def test_encode_marking(self):
+    def test_encode_marking(self) -> None:
         from scpn_quantum_control.control.qpetri import QuantumPetriNet
 
         W_in = np.eye(2)
@@ -130,7 +130,7 @@ class TestQPetri:
         qc = net.encode_marking(np.array([1.0, 0.0]))
         assert qc.num_qubits == 2
 
-    def test_step_returns_marking(self):
+    def test_step_returns_marking(self) -> None:
         from scpn_quantum_control.control.qpetri import QuantumPetriNet
 
         W_in = np.eye(2)
@@ -149,35 +149,35 @@ class TestQPetri:
 
 
 class TestVQLSGradShafranov:
-    def test_denominator_near_zero_returns_array(self):
+    def test_denominator_near_zero_returns_array(self) -> None:
         from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 
         solver = VQLS_GradShafranov(n_qubits=2)
         result = solver.solve(maxiter=1, seed=42)
         assert isinstance(result, np.ndarray)
 
-    def test_solve_returns_correct_shape(self):
+    def test_solve_returns_correct_shape(self) -> None:
         from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 
         solver = VQLS_GradShafranov(n_qubits=2)
         result = solver.solve(maxiter=5, seed=42)
         assert result.shape == (4,)  # 2^n_qubits
 
-    def test_solve_output_finite(self):
+    def test_solve_output_finite(self) -> None:
         from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 
         solver = VQLS_GradShafranov(n_qubits=2)
         result = solver.solve(maxiter=5, seed=42)
         assert np.all(np.isfinite(result))
 
-    def test_imaginary_tolerance_zero_raises(self):
+    def test_imaginary_tolerance_zero_raises(self) -> None:
         from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 
         solver = VQLS_GradShafranov(n_qubits=2, imag_tol=0.0)
         with pytest.raises(ValueError, match="imaginary norm"):
             solver.solve(reps=1, maxiter=1, seed=0)
 
-    def test_reproducible_with_seed(self):
+    def test_reproducible_with_seed(self) -> None:
         from scpn_quantum_control.control.vqls_gs import VQLS_GradShafranov
 
         s1 = VQLS_GradShafranov(n_qubits=2)
@@ -187,7 +187,7 @@ class TestVQLSGradShafranov:
         np.testing.assert_array_equal(r1, r2)
 
 
-def test_qaoa_optimize_triggers_lazy_build():
+def test_qaoa_optimize_triggers_lazy_build() -> None:
     """QAOA_MPC.optimize() calls build_cost_hamiltonian lazily if not called yet."""
     B = np.eye(2)
     target = np.array([0.5, 0.5])
@@ -197,7 +197,7 @@ def test_qaoa_optimize_triggers_lazy_build():
     assert len(actions) == 2
 
 
-def test_qaoa_zz_circuit_path():
+def test_qaoa_zz_circuit_path() -> None:
     """Verify ZZ terms are translated into two-qubit QAOA cost evolution."""
 
     B = np.eye(2)
@@ -213,7 +213,7 @@ def test_qaoa_zz_circuit_path():
     assert ops.get("rzz", 0) > 0 or ops.get("rz", 0) > 0, "expected ZZ rotation gates"
 
 
-def test_vqls_cost_handles_near_zero_state():
+def test_vqls_cost_handles_near_zero_state() -> None:
     """VQLS cost returns 1.0 when xAtAx < 1e-15."""
     solver = VQLS_GradShafranov(n_qubits=4)
     psi = solver.solve(maxiter=5)
@@ -221,7 +221,7 @@ def test_vqls_cost_handles_near_zero_state():
     assert np.linalg.norm(psi) > 0, "VQLS returned zero vector"
 
 
-def test_qec_odd_defects_duplication():
+def test_qec_odd_defects_duplication() -> None:
     """Odd number of defects triggers defect duplication."""
     qec = ControlQEC(distance=3)
     err_x = np.zeros(2 * 3**2, dtype=np.int8)
@@ -233,14 +233,14 @@ def test_qec_odd_defects_duplication():
     assert corr.shape == err_x.shape
 
 
-def test_qec_simulate_errors_default_rng():
+def test_qec_simulate_errors_default_rng() -> None:
     """simulate_errors with rng=None creates its own."""
     qec = ControlQEC(distance=3)
     err_x, err_z = qec.simulate_errors(p_error=0.1)
     assert err_x.shape == err_z.shape
 
 
-def test_qec_residual_syndrome_failure():
+def test_qec_residual_syndrome_failure() -> None:
     """High error rate causes correction failure."""
     qec = ControlQEC(distance=3)
     rng = np.random.default_rng(42)
@@ -254,7 +254,7 @@ def test_qec_residual_syndrome_failure():
     assert failures >= 5
 
 
-def test_qec_odd_syndrome_defects():
+def test_qec_odd_syndrome_defects() -> None:
     """Verify odd syndrome defects are paired by duplicating one defect."""
     from scpn_quantum_control.qec.control_qec import ControlQEC
 
@@ -274,7 +274,7 @@ def test_qec_odd_syndrome_defects():
     pytest.skip("no odd syndrome found in 100 random samples")
 
 
-def test_qec_decode_and_correct_failure():
+def test_qec_decode_and_correct_failure() -> None:
     """Verify heavy uncorrectable errors make correction fail closed."""
     from scpn_quantum_control.qec.control_qec import ControlQEC
 
@@ -288,7 +288,7 @@ def test_qec_decode_and_correct_failure():
     assert failures > 0, "Expected some correction failures at p=0.4"
 
 
-def test_qec_basic_syndrome():
+def test_qec_basic_syndrome() -> None:
     """ControlQEC should produce syndromes with correct shape."""
     from scpn_quantum_control.qec.control_qec import ControlQEC
 
@@ -301,7 +301,7 @@ def test_qec_basic_syndrome():
     assert len(syn_x) > 0
 
 
-def test_qec_no_error_clean_syndrome():
+def test_qec_no_error_clean_syndrome() -> None:
     """Zero errors should produce all-zero syndrome."""
     from scpn_quantum_control.qec.control_qec import ControlQEC
 
@@ -315,7 +315,7 @@ def test_qec_no_error_clean_syndrome():
 
 
 class TestL16Actions:
-    def test_adjust_action(self):
+    def test_adjust_action(self) -> None:
         from scpn_quantum_control.l16.quantum_director import compute_l16_lyapunov
 
         K = build_knm_paper27(L=2) * 0.01
@@ -323,7 +323,7 @@ class TestL16Actions:
         result = compute_l16_lyapunov(K, omega)
         assert result.action in ("continue", "adjust", "halt")
 
-    def test_halt_action(self):
+    def test_halt_action(self) -> None:
         from scpn_quantum_control.l16.quantum_director import compute_l16_lyapunov
 
         K = np.zeros((2, 2))
@@ -332,7 +332,7 @@ class TestL16Actions:
         assert result.action in ("continue", "adjust", "halt")
 
 
-def test_quantum_director_halt_action():
+def test_quantum_director_halt_action() -> None:
     """Verifies 153-156: L16 returns 'halt' when stability score <= 0.4."""
     from scpn_quantum_control.l16.quantum_director import compute_l16_lyapunov
 
@@ -343,7 +343,7 @@ def test_quantum_director_halt_action():
     assert result.action in ("continue", "adjust", "halt")
 
 
-def test_quantum_director_adjust_action():
+def test_quantum_director_adjust_action() -> None:
     """Verifies 153-154: L16 returns 'adjust' when 0.4 < score <= 0.7."""
     from scpn_quantum_control.l16.quantum_director import compute_l16_lyapunov
 
@@ -355,7 +355,7 @@ def test_quantum_director_adjust_action():
     assert 0.0 <= result.stability_score <= 1.0
 
 
-def test_cpdr_zero_slope():
+def test_cpdr_zero_slope() -> None:
     """Verifies 201: CPDR returns raw value when regression slope ~ 0."""
     from scpn_quantum_control.mitigation.cpdr import cpdr_mitigate
 
@@ -365,7 +365,7 @@ def test_cpdr_zero_slope():
     assert hasattr(result, "mitigated_value")
 
 
-def test_control_qec_correction_failure():
+def test_control_qec_correction_failure() -> None:
     """Verifies 222: decode_and_correct returns False for heavy uncorrectable error."""
     from scpn_quantum_control.qec.control_qec import ControlQEC
 
@@ -377,7 +377,7 @@ def test_control_qec_correction_failure():
     assert isinstance(result, bool)
 
 
-def test_error_budget_max_distance():
+def test_error_budget_max_distance() -> None:
     """Verifies 89: minimum_code_distance returns max_distance when no d satisfies target."""
     from scpn_quantum_control.qec.error_budget import minimum_code_distance
 
@@ -386,7 +386,7 @@ def test_error_budget_max_distance():
     assert d == 7
 
 
-def test_error_budget_zero_comm_bound():
+def test_error_budget_zero_comm_bound() -> None:
     """Verifies 128-129: n_steps=1, eps_trotter=0 when comm_bound near zero."""
     from scpn_quantum_control.qec.error_budget import compute_error_budget
 
@@ -397,7 +397,7 @@ def test_error_budget_zero_comm_bound():
     assert result.trotter_error == 0.0
 
 
-def test_quantum_costs_single_qubit():
+def test_quantum_costs_single_qubit() -> None:
     """Verifies 97-98: compute_c4_tcbo returns (1.0, 0.0) for single-qubit."""
     from qiskit.quantum_info import Statevector
 
@@ -409,7 +409,7 @@ def test_quantum_costs_single_qubit():
     assert entropy == 0.0
 
 
-def test_quantum_costs_no_correlators():
+def test_quantum_costs_no_correlators() -> None:
     """Verifies 127-128: compute_c_pgbo returns (1.0, 0.0) when no pairs."""
     from qiskit.quantum_info import Statevector
 
@@ -421,7 +421,7 @@ def test_quantum_costs_no_correlators():
     assert var == 0.0
 
 
-def test_quantum_outer_cycle_single_node():
+def test_quantum_outer_cycle_single_node() -> None:
     """Verify labelled surrogate path for a single-node classical cost."""
     import pytest
 
