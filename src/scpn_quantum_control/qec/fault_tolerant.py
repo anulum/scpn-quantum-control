@@ -26,6 +26,7 @@ from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
 from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from ..dense_budget import require_dense_allocation
 
 
 @dataclass
@@ -136,8 +137,43 @@ class RepetitionCodeUPDE:
 
         return qc
 
-    def step_with_qec(self, dt: float = 0.1) -> dict[str, Any]:
-        """Execute one QEC-protected Trotter step and extract syndromes."""
+    def step_with_qec(
+        self, dt: float = 0.1, *, max_dense_gib: float | None = None
+    ) -> dict[str, Any]:
+        """Execute one QEC-protected Trotter step and extract syndromes.
+
+        The protected circuit carries both data and ancilla qubits, so the dense
+        state is ``2**physical_qubit_count()``. Admission is checked before the
+        circuit is built, so an inadmissible code distance refuses without
+        entering the allocator.
+
+        Parameters
+        ----------
+        dt
+            Trotter step size.
+        max_dense_gib
+            Optional dense-allocation budget in GiB. ``None`` uses the active
+            process budget.
+
+        Returns
+        -------
+        dict
+            Per-oscillator syndromes and the detected-error count.
+
+        Raises
+        ------
+        DenseAllocationError
+            If the physical-qubit statevector exceeds the budget.
+
+        """
+        require_dense_allocation(
+            self.physical_qubit_count(),
+            dtype=np.complex128,
+            rank=1,
+            object_count=1,
+            max_gib=max_dense_gib,
+            label="QEC protected-step statevector",
+        )
         qc = self.build_step_circuit(dt)
         sv = Statevector.from_instruction(qc)
 

@@ -16,6 +16,8 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.typing import NDArray
 
+from ..dense_budget import require_dense_allocation
+
 
 @dataclass(frozen=True)
 class ReadoutConfusionMatrix:
@@ -63,6 +65,7 @@ def label_index_map(labels: Sequence[str]) -> dict[str, int]:
     ValueError
         If ``labels`` is empty or repeats a label, since a repeated label cannot
         resolve to one position.
+
     """
     if not labels:
         raise ValueError("labels must not be empty")
@@ -96,6 +99,7 @@ def bitstring_index(bitstring: str, labels: Sequence[str] | None = None) -> int:
     ------
     ValueError
         If ``labels`` repeats a bitstring, or does not contain ``bitstring``.
+
     """
     clean = bitstring.replace(" ", "")
     if labels is None:
@@ -133,6 +137,7 @@ def counts_to_probabilities(
     ValueError
         If ``labels`` is empty or repeats a bitstring, a count is negative, the
         counts are empty or total zero, or a count key is absent from ``labels``.
+
     """
     mapping = label_index_map(labels)
     total_count = 0
@@ -156,13 +161,51 @@ def counts_to_probabilities(
 def build_readout_confusion_matrix(
     calibration_counts: Mapping[str, Mapping[str, int]],
     n_qubits: int,
+    *,
+    max_dense_gib: float | None = None,
 ) -> ReadoutConfusionMatrix:
     """Build a full-basis readout confusion matrix from calibration counts.
 
     ``calibration_counts`` must map prepared computational-basis labels to
     observed count dictionaries. Missing prepared states are rejected; this keeps
     the mitigation claim distinct from partial exact-state corrections.
+
+    The matrix is full-basis, so it is ``2**n_qubits`` square. Admission is
+    checked before the basis labels are enumerated, because that tuple is itself
+    ``2**n_qubits`` entries long and would be the first exponential allocation
+    to run.
+
+    Parameters
+    ----------
+    calibration_counts
+        Prepared-state label to observed counts.
+    n_qubits
+        Number of measured qubits.
+    max_dense_gib
+        Optional dense-allocation budget in GiB. ``None`` uses the active
+        process budget.
+
+    Returns
+    -------
+    ReadoutConfusionMatrix
+        The calibrated matrix with its label order and condition number.
+
+    Raises
+    ------
+    DenseAllocationError
+        If the full-basis matrix exceeds the budget.
+    ValueError
+        If a prepared computational-basis state has no calibration counts.
+
     """
+    require_dense_allocation(
+        n_qubits,
+        dtype=np.float64,
+        rank=2,
+        object_count=1,
+        max_gib=max_dense_gib,
+        label="readout confusion matrix",
+    )
     labels = computational_basis_labels(n_qubits)
     missing = [label for label in labels if label not in calibration_counts]
     if missing:

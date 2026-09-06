@@ -21,6 +21,8 @@ from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp, Statevector
 from scipy.optimize import minimize
 
+from ..dense_budget import require_dense_allocation
+
 
 class QAOA_MPC:
     """QAOA-based model predictive controller.
@@ -152,20 +154,51 @@ class QAOA_MPC:
 
         return qc
 
-    def optimize(self, seed: int | None = None) -> NDArray[np.int64]:
+    def optimize(
+        self, seed: int | None = None, *, max_dense_gib: float | None = None
+    ) -> NDArray[np.int64]:
         """Run QAOA optimization, return binary action sequence.
+
+        The circuit is simulated densely, so the horizon sets a ``2**horizon``
+        statevector. Admission is checked once here, before the optimiser runs,
+        rather than inside the cost function that the optimiser calls up to two
+        hundred times: a budget that cannot hold the state should refuse before
+        any allocator is entered, not on the first iteration.
+
+        Two objects of the statevector's size are accounted for. The state
+        itself is live throughout, and the expectation value against the cost
+        Hamiltonian, and later ``probabilities()``, each need a second array of
+        the same dimension while the first is still held.
 
         Parameters
         ----------
         seed
             Optional seed for the variational parameter initialization.
+        max_dense_gib
+            Optional dense-allocation budget in GiB. ``None`` uses the active
+            process budget.
 
         Returns
         -------
         numpy.ndarray
             Integer array of zero/one actions shaped ``(horizon,)``.
 
+        Raises
+        ------
+        DenseAllocationError
+            If the statevector for ``horizon`` qubits exceeds the budget.
+        RuntimeError
+            If the cost Hamiltonian could not be constructed.
+
         """
+        require_dense_allocation(
+            self.n_qubits,
+            dtype=np.complex128,
+            rank=1,
+            object_count=2,
+            max_gib=max_dense_gib,
+            label="QAOA-MPC statevector",
+        )
         if self._cost_ham is None:
             self.build_cost_hamiltonian()
         if self._cost_ham is None:

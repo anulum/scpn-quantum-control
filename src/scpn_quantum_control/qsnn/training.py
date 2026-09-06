@@ -19,6 +19,7 @@ from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
+from ..dense_budget import require_dense_allocation
 from ..differentiable import (
     DifferentiableOptimizer,
     GradientResult,
@@ -142,7 +143,46 @@ def _training_diagnostics(loss_history: tuple[float, ...]) -> QSNNTrainingDiagno
 class QSNNTrainer:
     """Gradient-based trainer for QuantumDenseLayer via parameter-shift rule."""
 
-    def __init__(self, layer: QuantumDenseLayer, lr: float = 0.01):
+    def __init__(
+        self,
+        layer: QuantumDenseLayer,
+        lr: float = 0.01,
+        *,
+        max_dense_gib: float | None = None,
+    ) -> None:
+        """Bind a layer to the parameter-shift trainer.
+
+        Every forward pass simulates the layer densely, so the qubit count fixes
+        a ``2**n_qubits`` statevector. Admission is checked here rather than in
+        the forward pass: the size is known at construction and cannot change,
+        so an inadmissible layer is refused before a training run starts instead
+        of part way through an epoch. No public entry point can bypass this
+        check, because all of them go through this constructor.
+
+        Parameters
+        ----------
+        layer
+            Quantum dense layer to train.
+        lr
+            Learning rate for the descent optimiser.
+        max_dense_gib
+            Optional dense-allocation budget in GiB. ``None`` uses the active
+            process budget.
+
+        Raises
+        ------
+        DenseAllocationError
+            If a forward-pass statevector for the layer exceeds the budget.
+
+        """
+        require_dense_allocation(
+            layer.n_qubits,
+            dtype=np.complex128,
+            rank=1,
+            object_count=1,
+            max_gib=max_dense_gib,
+            label="QSNN forward-pass statevector",
+        )
         self.layer = layer
         self.lr = lr
         self.optimizer = DifferentiableOptimizer(learning_rate=lr)

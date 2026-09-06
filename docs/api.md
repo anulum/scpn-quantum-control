@@ -1090,13 +1090,20 @@ QuantumDenseLayer(n_neurons: int, n_inputs: int, weights: np.ndarray | None = No
 ### `training.QSNNTrainer`
 
 ```python
-QSNNTrainer(layer: QuantumDenseLayer, lr: float = 0.01)
+QSNNTrainer(layer: QuantumDenseLayer, lr: float = 0.01, *, max_dense_gib: float | None = None)
     .parameter_shift_gradient(inputs, target) -> np.ndarray
     .train_epoch(X, y) -> float  # mean loss
     .train(X, y, epochs=10) -> list[float]  # loss history
     .train_with_diagnostics(X, y, epochs=10) -> QSNNTrainingRun
     .train_with_parameter_shift_descent(X, y, backend="statevector", max_steps=100) -> QSNNParameterShiftDescentRun
 ```
+
+Every forward pass simulates the layer densely, so the layer's qubit count
+fixes a `2**n_qubits` statevector. The constructor checks that against the
+active dense budget and raises `DenseAllocationError` if it does not fit, before
+any training run starts; `max_dense_gib` overrides the budget for a single
+trainer. The check lives in the constructor because the size is fixed there and
+no entry point can bypass it.
 
 `QSNNTrainer.parameter_shift_gradient()` delegates to the native
 `scpn_quantum_control.differentiable` parameter-shift primitive. The training
@@ -2064,8 +2071,15 @@ Hardware-in-the-loop variant using real IBM QPU measurement counts for topologic
 ```python
 QAOA_MPC(B_matrix, target_state, horizon, p_layers=2)
     .build_cost_hamiltonian() -> SparsePauliOp
-    .optimize() -> np.ndarray  # action sequence
+    .optimize(seed=None, *, max_dense_gib=None) -> np.ndarray  # action sequence
 ```
+
+`horizon` is the qubit count, so the circuit is simulated as a `2**horizon`
+statevector. `optimize()` checks admission once before the optimiser runs — not
+inside the cost function COBYLA calls up to two hundred times — and raises
+`DenseAllocationError` if the budget cannot hold it. Two objects of the
+statevector's size are accounted for: the state is live while the expectation
+value, and later `probabilities()`, build a second array of the same dimension.
 
 ### `closed_loop_analysis`
 
