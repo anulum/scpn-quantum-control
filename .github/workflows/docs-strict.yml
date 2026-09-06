@@ -24,8 +24,11 @@ on:
       - "docs/**"
       - "mkdocs.yml"
       - "src/**"
+      - "oscillatools/**"
       - "scpn_quantum_engine/**"
       - "studio-web/**"
+      - "pyproject.toml"
+      - "requirements-ci-*.txt"
       - ".github/workflows/docs-strict.yml"
   pull_request:
     branches: [main]
@@ -33,8 +36,12 @@ on:
       - "docs/**"
       - "mkdocs.yml"
       - "src/**"
+      - "oscillatools/**"
       - "scpn_quantum_engine/**"
       - "studio-web/**"
+      - "pyproject.toml"
+      - "requirements-ci-*.txt"
+      - ".github/workflows/docs-strict.yml"
   workflow_dispatch:
 
 permissions:
