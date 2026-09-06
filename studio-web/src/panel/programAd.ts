@@ -22,18 +22,27 @@
 
 import committedUnitJson from "../../../data/studio/program_ad_replay_rational_20260714.json";
 
+/** Schema identifier the committed replay unit must declare. */
 export const PROGRAM_AD_SCHEMA = "scpn_qc_studio_program_ad_replay_v2";
+/** Identifier of the committed replay artefact this panel renders. */
 export const PROGRAM_AD_ARTIFACT_ID = "studio-program-ad-replay-rational-20260714";
+/** What a successful in-browser recompute proves, stated so the card cannot overclaim. */
 export const PROGRAM_AD_CLAIM_BOUNDARY =
   "bit-exact reverse-mode value+gradient of a bounded rational scalar program f(x, y) = x*x + 2*y; recompute proves the browser reproduces the engine's bounded replay and is not a claim about transcendental, linalg, or unbounded programs";
+/** Digest the decoded input must match before the kernel is given it. */
 export const PROGRAM_AD_INPUT_SHA256 =
   "sha256:8a5055efa19e51da321ede4245702eadf42aed1fbbb3d3ea0061e2ec9a25285f";
+/** Largest effect-IR payload the kernel accepts, shared with the Python packer. */
 export const MAX_PROGRAM_AD_REPLAY_IR_BYTES = 1_048_576;
+/** Largest scalar-input arity the kernel accepts, shared with the Python packer. */
 export const MAX_PROGRAM_AD_REPLAY_INPUTS = 4_096;
+/** Largest whole payload the two bounds above allow, headers included. */
 export const MAX_PROGRAM_AD_REPLAY_INPUT_BYTES =
   4 + MAX_PROGRAM_AD_REPLAY_IR_BYTES + 4 + MAX_PROGRAM_AD_REPLAY_INPUTS * 8;
+/** Name of the kernel export the panel binds to. */
 export const KERNEL_EXPORT = "scpn_program_ad_replay";
 // Module-relative for federated loading (see kuramoto.ts KERNEL_WASM_URL).
+/** Resolved URL of the shipped replay kernel module. */
 export const KERNEL_WASM_URL = new URL(
   "../wasm/scpn_quantum_studio_program_ad_wasm.wasm",
   import.meta.url,
@@ -43,40 +52,94 @@ const ALLOC_FAILED = -1;
 const INVALID_LENGTH = -2;
 const CANONICAL_PARAMETER_TARGETS = ["%0", "%1"] as const;
 
+/**
+ * One committed replay unit: an input, and the value and gradient it must reproduce.
+ */
 export interface ProgramAdUnit {
+  /** Schema identifier the artefact declares. */
   readonly schema: string;
+  /** Identifier of the artefact this unit came from. */
   readonly artifactId: string;
+  /** What a successful recompute does and does not prove. */
   readonly claimBoundary: string;
+  /** The effect-IR payload, hex-encoded as committed. */
   readonly inputHex: string;
+  /** Digest the decoded payload must hash to before it is replayed. */
   readonly inputSha256: string;
+  /** Scalar the bounded replay must produce. */
   readonly expectedValue: number;
+  /** Reverse-mode gradient the replay must produce, in `parameterTargets` order. */
   readonly expectedGradient: readonly number[];
+  /** SSA names the gradient is taken with respect to. */
   readonly parameterTargets: readonly string[];
 }
 
+/** A load result that cannot throw: a parsed `value`, or the `reason` it was refused. */
 export type Loaded<T> =
-  | { readonly ok: true; readonly value: T }
-  | { readonly ok: false; readonly reason: string };
+  | {
+      /** Discriminant: the artefact parsed. */
+      readonly ok: true;
+      /** The parsed value. */
+      readonly value: T;
+    }
+  | {
+      /** Discriminant: the artefact was refused. */
+      readonly ok: false;
+      /** Why it was refused. */
+      readonly reason: string;
+    };
 
+/** A replay outcome: the recomputed pair, or the kernel's fail-closed status code. */
 export type ReplayResult =
-  | { readonly ok: true; readonly value: number; readonly gradient: number[] }
-  | { readonly ok: false; readonly code: number };
+  | {
+      /** Discriminant: the kernel replayed the program. */
+      readonly ok: true;
+      /** The recomputed scalar. */
+      readonly value: number;
+      /** The recomputed reverse-mode gradient. */
+      readonly gradient: number[];
+    }
+  | {
+      /** Discriminant: the kernel refused. */
+      readonly ok: false;
+      /** The kernel's status code, which names the reason. */
+      readonly code: number;
+    };
 
 /** The kernel replay closure: input bytes + gradient arity to a value+gradient. */
 export type KernelReplay = (input: Uint8Array, gradientLength: number) => ReplayResult;
 
+/** The three states a recompute card can show; there is no silent fourth. */
 export type ReplayDisplay = "match" | "mismatch" | "unverifiable";
 
+/**
+ * The outcome shown to a reader after a recompute attempt.
+ */
 export interface ReplayVerdict {
+  /** Which of the three states the card renders. */
   readonly display: ReplayDisplay;
+  /** Why the recompute could not be trusted; present unless it matched. */
   readonly reason?: string;
-  readonly recomputed?: { readonly value: number; readonly gradient: number[] };
+  /** What the browser actually produced, when it produced anything. */
+  readonly recomputed?: {
+    /** The scalar the browser produced. */
+    readonly value: number;
+    /** The gradient the browser produced, in the unit's target order. */
+    readonly gradient: number[];
+  };
 }
 
+/**
+ * The replay kernel's export surface, as the panel binds it.
+ */
 export interface KernelExports {
+  /** The kernel's linear memory, which the panel reads results out of. */
   readonly memory: WebAssembly.Memory;
+  /** Allocate `len` bytes inside the kernel and return the pointer. */
   readonly scpn_alloc: (len: number) => number;
+  /** Release a pointer previously obtained from `scpn_alloc`. */
   readonly scpn_free: (ptr: number, len: number) => void;
+  /** Run one replay; returns a status code, not a value. */
   readonly scpn_program_ad_replay: (
     inputPtr: number,
     inputLen: number,
@@ -142,6 +205,7 @@ function unitContractError(unit: ProgramAdUnit): string | null {
 }
 
 /** Parse the committed artefact into a guarded unit (exported for tests). */
+/** Parse the committed replay unit into a guarded value. */
 export function parseProgramAdUnit(raw: unknown): Loaded<ProgramAdUnit> {
   if (!isRecord(raw) || !isRecord(raw["program"]) || !isRecord(raw["expected"])) {
     return { ok: false, reason: "program-AD artefact is missing its blocks" };
@@ -185,6 +249,7 @@ export function parseProgramAdUnit(raw: unknown): Loaded<ProgramAdUnit> {
 }
 
 /** Decode a bounded lowercase hex string to bytes, or null when malformed. */
+/** Decode a hex payload, or return `null` rather than a partial buffer. */
 export function hexToBytes(hex: string): Uint8Array | null {
   if (
     hex.length === 0 ||
@@ -208,6 +273,7 @@ function bytesToHex(bytes: Uint8Array): string {
 }
 
 /** Return the Web-Crypto SHA-256 binding for exact replay input bytes. */
+/** SHA-256 of the decoded input, formatted as the artefact records it. */
 export async function digestProgramAdInput(input: Uint8Array): Promise<string> {
   if (globalThis.crypto?.subtle === undefined) {
     throw new Error("Web Crypto SHA-256 is unavailable");
@@ -224,6 +290,12 @@ export async function digestProgramAdInput(input: Uint8Array): Promise<string> {
  * runs the replay, reads the `[value ; gradient]` block, and always frees every
  * buffer. An allocation failure or negative status surfaces as a fail-closed
  * result instead of a fabricated gradient.
+ */
+/**
+ * Bind the kernel exports into a replay closure that owns its allocations.
+ *
+ * Every buffer taken from `scpn_alloc` is released on both the success and the
+ * failure path, so a refused replay does not leak kernel memory.
  */
 export function bindProgramAd(exports: KernelExports): KernelReplay {
   return (input: Uint8Array, gradientLength: number): ReplayResult => {
@@ -267,12 +339,14 @@ export function bindProgramAd(exports: KernelExports): KernelReplay {
 }
 
 /** Instantiate the WASM kernel and return a replay closure. */
+/** Instantiate the replay kernel from bytes already in hand. */
 export async function instantiateProgramAd(wasmBytes: BufferSource): Promise<KernelReplay> {
   const { instance } = await WebAssembly.instantiate(wasmBytes, {});
   return bindProgramAd(instance.exports as unknown as KernelExports);
 }
 
 /** Fetch and instantiate the deployed kernel (browser runtime path). */
+/** Fetch and instantiate the deployed replay kernel (browser runtime path). */
 export async function fetchProgramAd(url: string = KERNEL_WASM_URL): Promise<KernelReplay> {
   const response = await fetch(url);
   if (!response.ok) {
@@ -288,6 +362,12 @@ export async function fetchProgramAd(url: string = KERNEL_WASM_URL): Promise<Ker
  * short-circuits to `unverifiable` before the kernel runs. A faithful unit
  * whose recomputed value+gradient are bit-identical to the claim renders
  * `match`; a claim the recomputation disagrees with renders `mismatch`.
+ */
+/**
+ * Recompute a committed unit in the browser and judge the result.
+ *
+ * The digest is checked before the kernel runs, so a payload that does not
+ * match the artefact is refused rather than replayed and compared.
  */
 export async function verifyProgramAdUnit(
   unit: ProgramAdUnit,
@@ -332,4 +412,5 @@ export async function verifyProgramAdUnit(
 }
 
 /** The committed rational program-AD unit, guarded. */
+/** The committed replay unit, parsed at module load. */
 export const programAdUnit: Loaded<ProgramAdUnit> = parseProgramAdUnit(committedUnitJson);
