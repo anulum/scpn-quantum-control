@@ -14,7 +14,7 @@ import pytest
 from scripts.analyse_s1_feedback_hardware import analyse_package
 
 
-def _package():
+def _package() -> dict[str, object]:
     return {
         "experiment_id": "s1",
         "target_r": 0.7,
@@ -51,7 +51,9 @@ def test_analyse_package_reports_feedback_target_error_improvement() -> None:
 
 def test_analyse_package_rejects_missing_required_arms() -> None:
     package = _package()
-    package["arms"] = [package["arms"][0]]
+    arms = package["arms"]
+    assert isinstance(arms, list)
+    package["arms"] = [arms[0]]
 
     with pytest.raises(ValueError, match="at least two arms"):
         analyse_package(package)
@@ -59,7 +61,15 @@ def test_analyse_package_rejects_missing_required_arms() -> None:
 
 def test_analyse_package_rejects_invalid_counts() -> None:
     package = _package()
-    package["arms"][0]["records"][0]["counts"] = {"000": -1}
+    arms = package["arms"]
+    assert isinstance(arms, list)
+    first_arm = arms[0]
+    assert isinstance(first_arm, dict)
+    records = first_arm["records"]
+    assert isinstance(records, list)
+    first_record = records[0]
+    assert isinstance(first_record, dict)
+    first_record["counts"] = {"000": -1}
 
     with pytest.raises(ValueError, match="non-negative integer"):
         analyse_package(package)

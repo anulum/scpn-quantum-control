@@ -15,7 +15,11 @@ from typing import Any
 import pytest
 
 from scpn_quantum_control.hardware import hal_quantinuum as quantinuum_mod
-from scpn_quantum_control.hardware.hal import HardwareAbstractionLayer, QuantumWorkload
+from scpn_quantum_control.hardware.hal import (
+    HardwareAbstractionLayer,
+    QuantumJobRef,
+    QuantumWorkload,
+)
 from scpn_quantum_control.hardware.hal_quantinuum import (
     QuantinuumCloudHALAdapter,
     quantinuum_tket_workload,
@@ -45,15 +49,15 @@ class _FakeQuantinuumBackend:
         self.compiled.append(circuit)
         return f"compiled::{circuit}"
 
-    def process_circuit(self, circuit: Any, *, n_shots: int) -> str:
+    def process_circuit(self, circuit: Any, *, n_shots: int) -> object:
         self.processed.append({"circuit": circuit, "n_shots": n_shots})
         return "quantinuum-handle-1"
 
-    def circuit_status(self, handle: str) -> _FakeQuantinuumStatus:
+    def circuit_status(self, handle: object) -> _FakeQuantinuumStatus:
         assert handle == "quantinuum-handle-1"
         return _FakeQuantinuumStatus("COMPLETED")
 
-    def get_result(self, handle: str) -> _FakeQuantinuumResult:
+    def get_result(self, handle: object) -> _FakeQuantinuumResult:
         assert handle == "quantinuum-handle-1"
         return _FakeQuantinuumResult({(0, 1): 2, (1, 1): 1})
 
@@ -314,7 +318,7 @@ def test_quantinuum_adapter_rejects_unknown_jobs() -> None:
         HardwareAbstractionLayer.with_builtin_profiles().profile("quantinuum_cloud"),
         backend=_FakeQuantinuumBackend(),
     )
-    unknown = quantinuum_mod.QuantumJobRef(
+    unknown = QuantumJobRef(
         job_id="quantinuum_cloud:missing:000000000000",
         backend_id="quantinuum_cloud",
         workload_id="missing",
@@ -428,11 +432,13 @@ def test_quantinuum_adapter_accepts_structured_handle_identifier() -> None:
             del circuit, n_shots
             return HandleWithId()
 
-        def circuit_status(self, handle: HandleWithId) -> _FakeQuantinuumStatus:
+        def circuit_status(self, handle: object) -> _FakeQuantinuumStatus:
+            assert isinstance(handle, HandleWithId)
             assert handle.id == "quantinuum-structured-handle-1"
             return _FakeQuantinuumStatus("COMPLETED")
 
-        def get_result(self, handle: HandleWithId) -> _FakeQuantinuumResult:
+        def get_result(self, handle: object) -> _FakeQuantinuumResult:
+            assert isinstance(handle, HandleWithId)
             assert handle.id == "quantinuum-structured-handle-1"
             return _FakeQuantinuumResult({(0,): 1})
 

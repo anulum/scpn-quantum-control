@@ -62,6 +62,7 @@
     {
       "activation_criterion": "Promote adapter-owner slices after intentional invalid-input calls use narrow suppressions and no live provider access is introduced.",
       "files": [
+        "tests/test_analyse_s1_feedback_hardware.py",
         "tests/test_attested_result_pack.py",
         "tests/test_attested_result_pack_quality_gate.py",
         "tests/test_compile_budget.py",
@@ -92,6 +93,7 @@
         "tests/test_hardware_hal_qiskit_adapters.py",
         "tests/test_hardware_hal_quality_gate.py",
         "tests/test_hardware_hal_quandela_adapters.py",
+        "tests/test_hardware_hal_quantinuum_adapters.py",
         "tests/test_hardware_hal_quera_bloqade_adapters.py",
         "tests/test_hardware_hal_rigetti_adapters.py",
         "tests/test_hardware_hal_status_normalisation_contract.py",
