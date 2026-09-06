@@ -13,7 +13,7 @@
     "python_model_source_modules": 699,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1362
+    "test_files": 1363
   },
   "documentation": {
     "examples": [
@@ -8184,6 +8184,7 @@
       "tests/_program_ad_rust_bridge_test_fixtures.py",
       "tests/conftest.py",
       "tests/test_accelerator_detection_boundaries.py",
+      "tests/test_active_queue_status_assertions.py",
       "tests/test_active_sensing_product.py",
       "tests/test_adapt_vqe.py",
       "tests/test_adapt_vqe_branch_contracts.py",
