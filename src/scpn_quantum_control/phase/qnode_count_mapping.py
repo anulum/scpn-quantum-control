@@ -56,7 +56,9 @@ def _map_basis_counts(
             raise ValueError("counts require full-width binary keys without register separators")
         if isinstance(count, bool) or not isinstance(count, Integral) or count <= 0:
             raise ValueError("bitstring counts must be strictly positive integers")
-        index = sum(int(bit) << (n_qubits - 1 - int(wire)) for bit, wire in zip(key, wires))
+        index = sum(
+            int(bit) << (n_qubits - 1 - int(wire)) for bit, wire in zip(key, wires, strict=True)
+        )
         vector[index] = int(count)
         raw.append((key, int(count)))
     return _MappedBasisCounts(tuple(raw), tuple(int(wire) for wire in wires), tuple(vector))

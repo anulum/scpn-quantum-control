@@ -203,7 +203,7 @@ def knm_to_xxz_hamiltonian(
 
     if not pauli_list:
         return SparsePauliOp.from_list([("I" * n, 0.0)])
-    labels, coeffs = zip(*pauli_list)
+    labels, coeffs = zip(*pauli_list, strict=True)
     return SparsePauliOp(list(labels), list(coeffs)).simplify()
 
 

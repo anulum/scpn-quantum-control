@@ -210,12 +210,12 @@ def weighted_gradient_sum(
     value = float(
         sum(
             float(weight) * component.value
-            for weight, component in zip(weight_arr, component_tuple)
+            for weight, component in zip(weight_arr, component_tuple, strict=True)
         )
     )
     gradient = np.zeros_like(reference.gradient)
     evaluations = 0
-    for weight, component in zip(weight_arr, component_tuple):
+    for weight, component in zip(weight_arr, component_tuple, strict=True):
         gradient += float(weight) * component.gradient
         evaluations += component.evaluations
     return WeightedGradientResult(

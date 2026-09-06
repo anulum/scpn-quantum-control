@@ -181,9 +181,7 @@ def metrological_gain_vs_k(
     k_critical = critical_coupling_finite_graph(frequencies, fiedler_eigenvalue(graph))
     rows: list[SensingGainRow] = []
     for k_value, qfi_value, gap in zip(
-        qfi_result.k_values,
-        qfi_result.max_qfi,
-        qfi_result.spectral_gap,
+        qfi_result.k_values, qfi_result.max_qfi, qfi_result.spectral_gap, strict=True
     ):
         r_value = order_parameter_steady_state(float(k_value), k_critical)
         classical_fisher = _classical_fisher_proxy(

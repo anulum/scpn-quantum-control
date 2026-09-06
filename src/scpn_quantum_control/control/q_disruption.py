@@ -94,7 +94,7 @@ class QuantumDisruptionClassifier:
         for _ in range(epochs):
             grad = np.zeros_like(self.params)
 
-            for xi, yi in zip(X, y):
+            for xi, yi in zip(X, y, strict=True):
                 pred = self._forward_with_params(xi, self.params)
 
                 for p_idx in range(len(self.params)):

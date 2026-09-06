@@ -499,7 +499,9 @@ def _compile_coupling_terms(
         zero_threshold,
     )
     terms: list[AnalogCouplingTerm] = []
-    for row, col, strength, phase, radius in zip(rows, cols, strengths, phases, radii):
+    for row, col, strength, phase, radius in zip(
+        rows, cols, strengths, phases, radii, strict=True
+    ):
         terms.append(
             AnalogCouplingTerm(
                 source=int(row),

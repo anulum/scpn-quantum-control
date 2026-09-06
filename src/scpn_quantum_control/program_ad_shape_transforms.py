@@ -590,7 +590,7 @@ def _program_ad_shape_moveaxis_order(
     destination_axes: tuple[int, ...],
 ) -> tuple[int, ...]:
     order = [axis for axis in range(rank) if axis not in set(source_axes)]
-    for destination_axis, source_axis in sorted(zip(destination_axes, source_axes)):
+    for destination_axis, source_axis in sorted(zip(destination_axes, source_axes, strict=True)):
         order.insert(destination_axis, source_axis)
     return tuple(order)
 
@@ -1156,7 +1156,7 @@ def _program_ad_shape_normalise_tile_signature(
     rank = max(len(source_shape), len(reps_tuple))
     source_aligned = (1,) * (rank - len(source_shape)) + source_shape
     reps_aligned = (1,) * (rank - len(reps_tuple)) + reps_tuple
-    target = tuple(int(size * rep) for size, rep in zip(source_aligned, reps_aligned))
+    target = tuple(int(size * rep) for size, rep in zip(source_aligned, reps_aligned, strict=True))
     return reps_tuple, reps_aligned, target
 
 

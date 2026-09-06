@@ -323,7 +323,7 @@ def metric_bootstrap(
     values = np.empty(n_resamples, dtype=np.float64)
     for i in range(n_resamples):
         resampled_counts = {
-            bits: int(count) for bits, count in zip(bitstrings, draws[i]) if count > 0
+            bits: int(count) for bits, count in zip(bitstrings, draws[i], strict=True) if count > 0
         }
         values[i] = float(metric(resampled_counts))
     alpha = (1.0 - coverage) / 2.0

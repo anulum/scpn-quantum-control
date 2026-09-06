@@ -305,7 +305,7 @@ def ph_sync_scan(
     p_h1_values = []
     n_h1_values = []
 
-    for x_counts, y_counts in zip(x_counts_list, y_counts_list):
+    for x_counts, y_counts in zip(x_counts_list, y_counts_list, strict=True):
         result = quantum_persistent_homology(x_counts, y_counts, n_qubits, persistence_threshold)
         p_h1_values.append(result.p_h1)
         n_h1_values.append(result.n_h1_persistent)

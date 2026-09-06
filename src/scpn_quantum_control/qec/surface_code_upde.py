@@ -306,7 +306,7 @@ class SurfaceCodeUPDE:
         data_i = self._osc_data_qubits(osc_i)
         data_j = self._osc_data_qubits(osc_j)
         distributed_angle = angle / len(data_i)
-        for di, dj in zip(data_i, data_j):
+        for di, dj in zip(data_i, data_j, strict=True):
             qc.rzz(distributed_angle, di, dj)
 
     def x_syndrome_extract(self, osc: int, qc: QuantumCircuit) -> None:

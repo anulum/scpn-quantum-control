@@ -150,7 +150,7 @@ def value_and_reverse_mode_grad(
     gradient = np.array(
         [
             node.adjoint if parameter.trainable else 0.0
-            for node, parameter in zip(reverse_values, parameter_meta)
+            for node, parameter in zip(reverse_values, parameter_meta, strict=True)
         ],
         dtype=np.float64,
     )

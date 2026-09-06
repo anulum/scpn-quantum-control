@@ -105,7 +105,7 @@ class RepetitionCodeUPDE:
         """
         data_i = list(self._osc_data_range(osc_i))
         data_j = list(self._osc_data_range(osc_j))
-        for di, dj in zip(data_i, data_j):
+        for di, dj in zip(data_i, data_j, strict=True):
             qc.rzz(angle / self.d, di, dj)
 
     def syndrome_extract(self, osc: int, qc: QuantumCircuit) -> None:

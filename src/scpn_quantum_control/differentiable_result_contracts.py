@@ -1401,7 +1401,7 @@ class SparseMatrixResult:
         if rows.size:
             if int(rows.max()) >= self.shape[0] or int(columns.max()) >= self.shape[1]:
                 raise ValueError("sparse indices must be inside matrix shape")
-            coordinates = set(zip(rows.tolist(), columns.tolist()))
+            coordinates = set(zip(rows.tolist(), columns.tolist(), strict=True))
             if len(coordinates) != rows.size:
                 raise ValueError("sparse indices must not contain duplicate coordinates")
         if not np.all(np.isfinite(values)):

@@ -365,7 +365,7 @@ def partition_kuramoto_couplings(
             coefficient=float(K[int(row), int(col)]),
             route=HybridRoute.ANALOG if int(code) == 1 else HybridRoute.DIGITAL,
         )
-        for row, col, code in zip(rows, cols, route_codes)
+        for row, col, code in zip(rows, cols, route_codes, strict=True)
     )
     analog.setflags(write=False)
     digital.setflags(write=False)

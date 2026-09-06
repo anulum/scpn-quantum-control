@@ -113,7 +113,7 @@ def _measure_in_basis(
     Returns majority-vote bit array.
     """
     bits: NDArray[np.uint8] = np.zeros(len(qubits), dtype=np.uint8)
-    for i, (q, basis) in enumerate(zip(qubits, bases)):
+    for i, (q, basis) in enumerate(zip(qubits, bases, strict=True)):
         label = ["I"] * n_total
         label[q] = basis
         op = SparsePauliOp("".join(reversed(label)))

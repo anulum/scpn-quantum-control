@@ -153,7 +153,7 @@ class ProjectedScipyOptimizer:
 
         def unpack(values: NDArray[np.float64]) -> FloatArray:
             K = np.zeros_like(initial)
-            for value, (i, j) in zip(values, upper):
+            for value, (i, j) in zip(values, upper, strict=True):
                 K[i, j] = float(value)
                 K[j, i] = float(value)
             return objective.ledger.project(K)

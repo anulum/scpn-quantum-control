@@ -37,7 +37,9 @@ class PersistenceDiagram:
     @property
     def lifetimes(self) -> tuple[float, ...]:
         """Finite death-birth lifetimes."""
-        return tuple(float(death - birth) for birth, death in zip(self.births, self.deaths))
+        return tuple(
+            float(death - birth) for birth, death in zip(self.births, self.deaths, strict=True)
+        )
 
 
 @dataclass(frozen=True)

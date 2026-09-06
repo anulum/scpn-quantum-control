@@ -158,7 +158,7 @@ def _qaoa_cost_from_counts(
         raise ValueError("measurement counts are required")
     total = sum(counts.values())
     energy = 0.0
-    for pauli, coeff in zip(cost_ham.paulis, cost_ham.coeffs):
+    for pauli, coeff in zip(cost_ham.paulis, cost_ham.coeffs, strict=True):
         label = str(pauli)
         exp_val = 0.0
         for bitstring, count in counts.items():

@@ -361,7 +361,7 @@ class QSNNTrainer:
         """One epoch over dataset. Returns mean loss."""
         X, y = self._validate_dataset(X, y)
         total_loss = 0.0
-        for xi, yi in zip(X, y):
+        for xi, yi in zip(X, y, strict=True):
             pred = self._forward_probs(xi)
             total_loss += float(np.mean((pred - yi) ** 2))
 

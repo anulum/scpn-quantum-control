@@ -13,7 +13,7 @@
     "python_model_source_modules": 699,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1366
+    "test_files": 1367
   },
   "documentation": {
     "examples": [
@@ -8891,6 +8891,7 @@
       "tests/test_p_h1_open_guard_quality_gate.py",
       "tests/test_p_h1_open_question_audit.py",
       "tests/test_package_studio_release.py",
+      "tests/test_paired_sequence_length_admission.py",
       "tests/test_pairing_correlator.py",
       "tests/test_param_shift.py",
       "tests/test_param_shift_contracts.py",

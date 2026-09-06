@@ -102,7 +102,7 @@ class QAOA_MPC:
             z_str[t] = "Z"
             pauli_list.append(("".join(reversed(z_str)), h_z))
 
-        labels, coeffs = zip(*pauli_list)
+        labels, coeffs = zip(*pauli_list, strict=True)
         self._cost_ham = SparsePauliOp(list(labels), list(coeffs)).simplify()
         return self._cost_ham
 
@@ -140,7 +140,7 @@ class QAOA_MPC:
 
         for layer in range(self.p):
             # Cost unitary: exp(-i*gamma*C)
-            for term, coeff in zip(self._cost_ham.paulis, self._cost_ham.coeffs):
+            for term, coeff in zip(self._cost_ham.paulis, self._cost_ham.coeffs, strict=True):
                 label = str(term)
                 z_qubits = [i for i, c in enumerate(reversed(label)) if c == "Z"]
                 angle = 2.0 * gamma[layer] * float(coeff.real)

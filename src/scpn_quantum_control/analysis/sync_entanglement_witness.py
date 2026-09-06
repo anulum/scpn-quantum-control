@@ -398,7 +398,7 @@ def R_entanglement_scan(
         "K_base": list(K_base_range),
         "R_ground": R_ground_vals,
         "R_sep_max": R_sep_vals,
-        "R_gap": [rg - rs for rg, rs in zip(R_ground_vals, R_sep_vals)],
+        "R_gap": [rg - rs for rg, rs in zip(R_ground_vals, R_sep_vals, strict=True)],
         "entangled": entangled_flags,
         "energy": E_vals,
     }
