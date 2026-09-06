@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import ast
 import inspect
+from collections.abc import Callable
 
 import numpy as np
 import pytest
@@ -141,28 +142,30 @@ def test_qnode_executable_facade_defines_no_duplicate_contract_classes() -> None
         ),
         (lambda: contracts.SparsePauliHamiltonian(()), "terms must be non-empty"),
         (
-            lambda: contracts.DenseHermitianObservable(np.ones((2, 3))),
+            lambda: contracts.DenseHermitianObservable(np.ones((2, 3), dtype=complex)),
             "matrix must be square",
         ),
         (
-            lambda: contracts.DenseHermitianObservable(np.empty((0, 0))),
+            lambda: contracts.DenseHermitianObservable(np.empty((0, 0), dtype=complex)),
             "positive power of two",
         ),
         (
-            lambda: contracts.DenseHermitianObservable(np.eye(3)),
+            lambda: contracts.DenseHermitianObservable(np.eye(3, dtype=complex)),
             "positive power of two",
         ),
         (
-            lambda: contracts.DenseHermitianObservable(np.array([[np.nan]])),
+            lambda: contracts.DenseHermitianObservable(np.array([[np.nan]], dtype=complex)),
             "finite values",
         ),
         (
-            lambda: contracts.DenseHermitianObservable(np.array([[0, 1], [0, 0]])),
+            lambda: contracts.DenseHermitianObservable(np.array([[0, 1], [0, 0]], dtype=complex)),
             "must be Hermitian",
         ),
     ],
 )
-def test_public_value_records_refuse_invalid_constructor_inputs(factory, message: str) -> None:
+def test_public_value_records_refuse_invalid_constructor_inputs(
+    factory: Callable[[], object], message: str
+) -> None:
     """Exercise every value-record validation refusal through public constructors."""
     with pytest.raises(ValueError, match=message):
         factory()
@@ -171,7 +174,9 @@ def test_public_value_records_refuse_invalid_constructor_inputs(factory, message
 @pytest.mark.parametrize(
     "circuit_type", [contracts.PhaseQNodeCircuit, contracts.PhaseQNodeDensityCircuit]
 )
-def test_public_circuit_records_refuse_invalid_structure(circuit_type) -> None:
+def test_public_circuit_records_refuse_invalid_structure(
+    circuit_type: Callable[..., object],
+) -> None:
     """Exercise common circuit-size, operation, and qubit-bound refusals."""
     with pytest.raises(ValueError, match="positive integer"):
         circuit_type(True, (("x", (0,)),), "z")
@@ -201,7 +206,7 @@ def test_public_observable_records_serialize_and_validate_qubit_bounds() -> None
     y = contracts.PauliTerm(-0.5, ((0, "Y"),))
     sparse = contracts.SparsePauliHamiltonian((x, y))
     covariance = contracts.PauliCovarianceObservable(x, y)
-    dense = contracts.DenseHermitianObservable(np.eye(2), label="")
+    dense = contracts.DenseHermitianObservable(np.eye(2, dtype=complex), label="")
     assert sparse.to_dict()["terms"] == [x.to_dict(), y.to_dict()]
     assert covariance.to_dict() == {"left": x.to_dict(), "right": y.to_dict()}
     assert dense.to_dict()["label"] == "dense_hermitian"
@@ -211,17 +216,19 @@ def test_public_observable_records_serialize_and_validate_qubit_bounds() -> None
     )
     with pytest.raises(ValueError, match="dimension must match"):
         contracts.PhaseQNodeCircuit(
-            1, (("x", (0,)),), contracts.DenseHermitianObservable(np.eye(4))
+            1, (("x", (0,)),), contracts.DenseHermitianObservable(np.eye(4, dtype=complex))
         )
     with pytest.raises(ValueError, match="observable qubit exceeds"):
         contracts.PhaseQNodeCircuit(1, (("x", (0,)),), contracts.PauliTerm(1.0, ((1, "z"),)))
 
 
 @pytest.mark.parametrize("value", [[1.0], True, 1.0 + 0.0j, object(), "1"])
-def test_public_pauli_term_rejects_non_scalar_real_coefficients(value) -> None:
+def test_public_pauli_term_rejects_non_scalar_real_coefficients(value: object) -> None:
     """Reject non-scalar or non-real coefficient representations."""
     with pytest.raises(ValueError, match="finite real scalar"):
-        contracts.PauliTerm(value, ((0, "z"),))
+        # The parametrised values are non-scalar or non-real on purpose; the
+        # rejection is the subject and mypy cannot express a failing call.
+        contracts.PauliTerm(value, ((0, "z"),))  # type: ignore[arg-type]
 
 
 def test_public_records_serialize_optional_and_fallback_paths() -> None:
