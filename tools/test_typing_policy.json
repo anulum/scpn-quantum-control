@@ -348,7 +348,16 @@
         "tests/test_program_ad_alias_analysis_quality_gate.py",
         "tests/test_qec_decoder_boundary_docs.py",
         "tests/test_qec_properties.py",
-        "tests/test_qec_validators_fuzz.py"
+        "tests/test_qec_validators_fuzz.py",
+        "tests/test_qfi_fss_differentiable_example.py",
+        "tests/test_studio_qec_readiness_bundle.py",
+        "tests/test_studio_qec_readiness_bundle_quality_gate.py",
+        "tests/test_symmetry_sector_compiler_branches.py",
+        "tests/test_topology_control_core.py",
+        "tests/test_topology_control_integration.py",
+        "tests/test_topology_control_objectives_quality_gate.py",
+        "tests/test_xy_compiler.py",
+        "tests/test_xy_compiler_quality_gate.py"
       ],
       "id": "scientific_runtime_contracts",
       "order": 3,
