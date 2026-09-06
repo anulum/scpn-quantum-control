@@ -16,9 +16,15 @@ via juliacall. The Julia process reuses a single Main module across
 calls so the JIT warm-up cost is paid once per Python process.
 """
 
+"""
+    order_parameter
+
+Kuramoto order parameter of one phase configuration.
+
+<exp(i θ)> — mean of complex unit-modulus vector. Julia's
+sum / length uses SIMD + BLAS where applicable.
+"""
 function order_parameter(theta::AbstractVector{<:Real})::Float64
-    # <exp(i θ)> — mean of complex unit-modulus vector. Julia's
-    # sum / length uses SIMD + BLAS where applicable.
     n = length(theta)
     if n == 0
         return 0.0
@@ -30,8 +36,14 @@ function order_parameter(theta::AbstractVector{<:Real})::Float64
     return abs(z) / n
 end
 
+"""
+    order_parameters_batch
+
+Order parameter for each time-slice of a batch.
+
+Batch of T time-slices × N oscillators. Returns R(t_k) for k = 1..T.
+"""
 function order_parameters_batch(theta_batch::AbstractMatrix{<:Real})::Vector{Float64}
-    # Batch of T time-slices × N oscillators. Returns R(t_k) for k = 1..T.
     T = size(theta_batch, 1)
     out = Vector{Float64}(undef, T)
     @inbounds for t in 1:T
@@ -40,11 +52,17 @@ function order_parameters_batch(theta_batch::AbstractMatrix{<:Real})::Vector{Flo
     return out
 end
 
+"""
+    order_parameter_gradient
+
+Gradient of the order parameter.
+
+Gradient ∂r/∂θ_j of the Kuramoto order parameter r = |<exp(i θ)>|.
+With C = <cos θ>, S = <sin θ> and r = hypot(C, S):
+∂r/∂θ_j = (S cos θ_j - C sin θ_j) / (N r) = (1/N) sin(ψ - θ_j),
+where ψ = atan2(S, C). The incoherent state r = 0 returns the zero subgradient.
+"""
 function order_parameter_gradient(theta::AbstractVector{<:Real})::Vector{Float64}
-    # Gradient ∂r/∂θ_j of the Kuramoto order parameter r = |<exp(i θ)>|.
-    # With C = <cos θ>, S = <sin θ> and r = hypot(C, S):
-    #     ∂r/∂θ_j = (S cos θ_j - C sin θ_j) / (N r) = (1/N) sin(ψ - θ_j),
-    # where ψ = atan2(S, C). The incoherent state r = 0 returns the zero subgradient.
     n = length(theta)
     out = Vector{Float64}(undef, n)
     n == 0 && return out
@@ -68,12 +86,18 @@ function order_parameter_gradient(theta::AbstractVector{<:Real})::Vector{Float64
     return out
 end
 
+"""
+    order_parameter_hessian
+
+Hessian of the order parameter.
+
+Hessian ∂²r/∂θ_i∂θ_j of the Kuramoto order parameter r = |<exp(i θ)>|.
+With C = <cos θ>, S = <sin θ>, r = hypot(C, S) and alignment
+a_j = cos(ψ − θ_j) = (C cos θ_j + S sin θ_j) / r:
+H_ij = a_i a_j / (N² r) − δ_ij a_j / N.
+Symmetric, row sums zero; the incoherent state r = 0 returns the zero matrix.
+"""
 function order_parameter_hessian(theta::AbstractVector{<:Real})::Matrix{Float64}
-    # Hessian ∂²r/∂θ_i∂θ_j of the Kuramoto order parameter r = |<exp(i θ)>|.
-    # With C = <cos θ>, S = <sin θ>, r = hypot(C, S) and alignment
-    # a_j = cos(ψ − θ_j) = (C cos θ_j + S sin θ_j) / r:
-    #     H_ij = a_i a_j / (N² r) − δ_ij a_j / N.
-    # Symmetric, row sums zero; the incoherent state r = 0 returns the zero matrix.
     n = length(theta)
     out = Matrix{Float64}(undef, n, n)
     n == 0 && return out
@@ -104,9 +128,15 @@ function order_parameter_hessian(theta::AbstractVector{<:Real})::Matrix{Float64}
     return out
 end
 
+"""
+    mean_phase
+
+Circular mean phase of a configuration.
+
+Circular mean phase ψ = atan2(<sin θ>, <cos θ>). The 1/N scaling cancels inside
+atan2, so the raw sums suffice. Empty input and the incoherent state map to 0.0.
+"""
 function mean_phase(theta::AbstractVector{<:Real})::Float64
-    # Circular mean phase ψ = atan2(<sin θ>, <cos θ>). The 1/N scaling cancels inside
-    # atan2, so the raw sums suffice. Empty input and the incoherent state map to 0.0.
     n = length(theta)
     n == 0 && return 0.0
     c = 0.0
@@ -118,9 +148,15 @@ function mean_phase(theta::AbstractVector{<:Real})::Float64
     return atan(s, c)
 end
 
+"""
+    mean_phase_gradient
+
+Gradient of the circular mean phase.
+
+Gradient ∂ψ/∂θ_j = (C cos θ_j + S sin θ_j) / (N r²) with C = <cos θ>, S = <sin θ>,
+r = hypot(C, S). The components sum to one; the incoherent state r = 0 returns zeros.
+"""
 function mean_phase_gradient(theta::AbstractVector{<:Real})::Vector{Float64}
-    # Gradient ∂ψ/∂θ_j = (C cos θ_j + S sin θ_j) / (N r²) with C = <cos θ>, S = <sin θ>,
-    # r = hypot(C, S). The components sum to one; the incoherent state r = 0 returns zeros.
     n = length(theta)
     out = Vector{Float64}(undef, n)
     n == 0 && return out
@@ -144,10 +180,16 @@ function mean_phase_gradient(theta::AbstractVector{<:Real})::Vector{Float64}
     return out
 end
 
+"""
+    mean_phase_hessian
+
+Hessian of the circular mean phase.
+
+Hessian ∂²ψ/∂θ_i∂θ_j of the mean phase ψ = atan2(S, C). With c_k = cos(ψ − θ_k),
+s_k = sin(ψ − θ_k): H_ij = δ_ij s_j/(N r) − (s_i c_j + c_i s_j)/(N² r²).
+Symmetric, row sums zero; the incoherent state r = 0 returns the zero matrix.
+"""
 function mean_phase_hessian(theta::AbstractVector{<:Real})::Matrix{Float64}
-    # Hessian ∂²ψ/∂θ_i∂θ_j of the mean phase ψ = atan2(S, C). With c_k = cos(ψ − θ_k),
-    # s_k = sin(ψ − θ_k): H_ij = δ_ij s_j/(N r) − (s_i c_j + c_i s_j)/(N² r²).
-    # Symmetric, row sums zero; the incoherent state r = 0 returns the zero matrix.
     n = length(theta)
     out = Matrix{Float64}(undef, n, n)
     n == 0 && return out
@@ -182,8 +224,14 @@ function mean_phase_hessian(theta::AbstractVector{<:Real})::Matrix{Float64}
     return out
 end
 
+"""
+    daido_order_parameter
+
+Daido order parameter at harmonic `m`.
+
+m-th Daido order parameter r_m = |<exp(i m θ)>|, detecting m-cluster synchronisation.
+"""
 function daido_order_parameter(theta::AbstractVector{<:Real}, m::Integer)::Float64
-    # m-th Daido order parameter r_m = |<exp(i m θ)>|, detecting m-cluster synchronisation.
     n = length(theta)
     n == 0 && return 0.0
     mf = Float64(m)
@@ -194,9 +242,15 @@ function daido_order_parameter(theta::AbstractVector{<:Real}, m::Integer)::Float
     return abs(z) / n
 end
 
+"""
+    daido_order_parameter_gradient
+
+Gradient of the Daido order parameter.
+
+Gradient ∂r_m/∂θ_j = (m/N) sin(ψ_m − m θ_j) = (m/(N r_m))(S_m cos(m θ_j) − C_m sin(m θ_j)).
+Components sum to zero; the incoherent state r_m = 0 returns zeros.
+"""
 function daido_order_parameter_gradient(theta::AbstractVector{<:Real}, m::Integer)::Vector{Float64}
-    # Gradient ∂r_m/∂θ_j = (m/N) sin(ψ_m − m θ_j) = (m/(N r_m))(S_m cos(m θ_j) − C_m sin(m θ_j)).
-    # Components sum to zero; the incoherent state r_m = 0 returns zeros.
     n = length(theta)
     out = Vector{Float64}(undef, n)
     n == 0 && return out
@@ -221,9 +275,15 @@ function daido_order_parameter_gradient(theta::AbstractVector{<:Real}, m::Intege
     return out
 end
 
+"""
+    daido_order_parameter_hessian
+
+Hessian of the Daido order parameter.
+
+Hessian ∂²r_m/∂θ_i∂θ_j = m² (a_i a_j/(N² r_m) − δ_ij a_j/N) with
+a_k = cos(ψ_m − m θ_k). Symmetric, row sums zero; the incoherent state returns zeros.
+"""
 function daido_order_parameter_hessian(theta::AbstractVector{<:Real}, m::Integer)::Matrix{Float64}
-    # Hessian ∂²r_m/∂θ_i∂θ_j = m² (a_i a_j/(N² r_m) − δ_ij a_j/N) with
-    # a_k = cos(ψ_m − m θ_k). Symmetric, row sums zero; the incoherent state returns zeros.
     n = length(theta)
     out = Matrix{Float64}(undef, n, n)
     n == 0 && return out

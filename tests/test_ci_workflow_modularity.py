@@ -95,7 +95,7 @@ def test_live_inventory_is_complete_unique_and_bounded() -> None:
     jobs = [job for category in policy["categories"] for job in category["jobs"]]
 
     assert len(policy["categories"]) == 20
-    assert len(jobs) == len(set(jobs)) == len(policy["job_order"]) == 191
+    assert len(jobs) == len(set(jobs)) == len(policy["job_order"]) == 192
     assert set(jobs) == set(policy["job_order"])
     assert modularity.audit_ci_workflow_modularity(policy) == []
     assert modularity.main() == 0

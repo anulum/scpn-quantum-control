@@ -6,6 +6,13 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Julia tier for the Kuramoto interaction energy and gradient
 
+"""
+    kuramoto_interaction_energy
+
+Interaction energy of a phase configuration.
+
+E = −½ Σ_jk K_jk cos(θ_j − θ_k).
+"""
 function kuramoto_interaction_energy(
     theta::AbstractVector{<:Real},
     coupling::AbstractMatrix{<:Real},
@@ -22,6 +29,13 @@ function kuramoto_interaction_energy(
     return -0.5 * acc
 end
 
+"""
+    kuramoto_interaction_energy_gradient
+
+Gradient of the interaction energy.
+
+∂E/∂θ_j = ½ Σ_k (K_jk + K_kj) sin(θ_j − θ_k).
+"""
 function kuramoto_interaction_energy_gradient(
     theta::AbstractVector{<:Real},
     coupling::AbstractMatrix{<:Real},
@@ -40,6 +54,13 @@ function kuramoto_interaction_energy_gradient(
     return out
 end
 
+"""
+    kuramoto_interaction_energy_hessian
+
+Hessian of the interaction energy.
+
+H_il = −½(K_il + K_li) cos(θ_i − θ_l) for l ≠ i; H_ii = −Σ_{l≠i} H_il.
+"""
 function kuramoto_interaction_energy_hessian(
     theta::AbstractVector{<:Real},
     coupling::AbstractMatrix{<:Real},

@@ -37,6 +37,11 @@ end
     return sqrt(cos_sum * cos_sum + sin_sum * sin_sum) / n
 end
 
+"""
+    kuramoto_noisy_trajectory
+
+Kuramoto trajectory under additive phase noise.
+"""
 function kuramoto_noisy_trajectory(
     theta0::AbstractVector{<:Real},
     omega::AbstractVector{<:Real},

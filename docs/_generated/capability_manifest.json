@@ -13,7 +13,7 @@
     "python_model_source_modules": 699,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1369
+    "test_files": 1370
   },
   "documentation": {
     "examples": [
@@ -8246,6 +8246,7 @@
       "tests/test_audit_coverage_policy.py",
       "tests/test_audit_dependency_security_waiver.py",
       "tests/test_audit_descriptive_production_naming.py",
+      "tests/test_audit_julia_documentation.py",
       "tests/test_audit_license_readiness.py",
       "tests/test_audit_mock_stub_usage.py",
       "tests/test_audit_release_readiness.py",

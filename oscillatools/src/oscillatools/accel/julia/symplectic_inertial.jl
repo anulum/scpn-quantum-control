@@ -23,6 +23,11 @@
     end
 end
 
+"""
+    kuramoto_symplectic_inertial_trajectory
+
+Symplectic integrator for the inertial Kuramoto model.
+"""
 function kuramoto_symplectic_inertial_trajectory(
     theta0::AbstractVector{<:Real},
     velocities::AbstractVector{<:Real},

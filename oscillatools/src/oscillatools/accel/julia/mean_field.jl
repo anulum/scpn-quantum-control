@@ -6,8 +6,14 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Julia tier for the Kuramoto mean-field force and Jacobian
 
+"""
+    mean_field_force
+
+Mean-field coupling force.
+
+F_j = K (S cos θ_j − C sin θ_j), with C = <cos θ>, S = <sin θ>.
+"""
 function mean_field_force(theta::AbstractVector{<:Real}, coupling::Real)::Vector{Float64}
-    # F_j = K (S cos θ_j − C sin θ_j), with C = <cos θ>, S = <sin θ>.
     n = length(theta)
     out = Vector{Float64}(undef, n)
     n == 0 && return out
@@ -26,8 +32,14 @@ function mean_field_force(theta::AbstractVector{<:Real}, coupling::Real)::Vector
     return out
 end
 
+"""
+    mean_field_jacobian
+
+Jacobian of the mean-field force.
+
+J_jk = (K/N) cos(θ_j − θ_k) − K δ_jk (C cos θ_j + S sin θ_j). Symmetric, rows sum to zero.
+"""
 function mean_field_jacobian(theta::AbstractVector{<:Real}, coupling::Real)::Matrix{Float64}
-    # J_jk = (K/N) cos(θ_j − θ_k) − K δ_jk (C cos θ_j + S sin θ_j). Symmetric, rows sum to zero.
     n = length(theta)
     out = Matrix{Float64}(undef, n, n)
     n == 0 && return out
@@ -50,6 +62,13 @@ function mean_field_jacobian(theta::AbstractVector{<:Real}, coupling::Real)::Mat
     return out
 end
 
+"""
+    daido_mean_field_force
+
+Daido mean-field force at harmonic `m`.
+
+F_j = K (S_m cos m θ_j − C_m sin m θ_j), C_m = ⟨cos m θ⟩, S_m = ⟨sin m θ⟩.
+"""
 function daido_mean_field_force(
     theta::AbstractVector{<:Real},
     coupling::Real,
@@ -75,6 +94,13 @@ function daido_mean_field_force(
     return out
 end
 
+"""
+    daido_mean_field_jacobian
+
+Jacobian of the Daido mean-field force.
+
+J_jl = K m [(1/N) cos(m(θ_j − θ_l)) − δ_jl (C_m cos m θ_j + S_m sin m θ_j)].
+"""
 function daido_mean_field_jacobian(
     theta::AbstractVector{<:Real},
     coupling::Real,
@@ -104,6 +130,13 @@ function daido_mean_field_jacobian(
     return out
 end
 
+"""
+    triadic_mean_field_force
+
+Triadic (second-harmonic) mean-field force.
+
+F_j = K [2 C S cos 2θ_j − (C² − S²) sin 2θ_j], C = ⟨cos θ⟩, S = ⟨sin θ⟩.
+"""
 function triadic_mean_field_force(
     theta::AbstractVector{<:Real},
     coupling::Real,
@@ -130,6 +163,14 @@ function triadic_mean_field_force(
     return out
 end
 
+"""
+    triadic_mean_field_jacobian
+
+Jacobian of the triadic mean-field force.
+
+J_jl = (2K/N) (C cos(2θ_j − θ_l) + S sin(2θ_j − θ_l)) off-diagonal; the diagonal adds
+−2K (2 C S sin 2θ_j + (C² − S²) cos 2θ_j). Non-symmetric, every row sums to zero.
+"""
 function triadic_mean_field_jacobian(
     theta::AbstractVector{<:Real},
     coupling::Real,

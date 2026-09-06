@@ -43,6 +43,11 @@ const _DOPRI_ERROR = (
     end
 end
 
+"""
+    kuramoto_dopri_trajectory
+
+Adaptive Dormand-Prince trajectory with step-size control.
+"""
 function kuramoto_dopri_trajectory(
     theta0::AbstractVector{<:Real},
     omega::AbstractVector{<:Real},

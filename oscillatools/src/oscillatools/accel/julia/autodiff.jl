@@ -6,6 +6,13 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Julia tier for the differentiable networked-Kuramoto Euler integrator
 
+"""
+    kuramoto_euler_trajectory
+
+Explicit-Euler Kuramoto trajectory on a coupling matrix.
+
+θ_{n+1} = θ_n + dt (ω + F(θ_n)), F_j = Σ_k K_jk sin(θ_k − θ_j).
+"""
 function kuramoto_euler_trajectory(
     theta0::AbstractVector{<:Real},
     omega::AbstractVector{<:Real},
@@ -36,6 +43,14 @@ function kuramoto_euler_trajectory(
     return traj
 end
 
+"""
+    kuramoto_euler_vjp
+
+Reverse-mode adjoint of the Euler trajectory.
+
+λ_n = λ_{n+1} + dt J(θ_n)ᵀ λ_{n+1}; ∂L/∂ω = dt Σ λ_{n+1};
+∂L/∂K_pq = dt Σ λ_{n+1,p} sin(θ_q − θ_p).
+"""
 function kuramoto_euler_vjp(
     trajectory::AbstractMatrix{<:Real},
     coupling::AbstractMatrix{<:Real},
@@ -83,6 +98,11 @@ function kuramoto_euler_vjp(
     return (adjoint, g_omega, g_coupling)
 end
 
+"""
+    _networked_force!
+
+Accumulate the networked coupling force into a preallocated buffer.
+"""
 function _networked_force!(
     theta::AbstractVector{Float64},
     coupling::AbstractMatrix{<:Real},
@@ -100,6 +120,11 @@ function _networked_force!(
     return out
 end
 
+"""
+    kuramoto_rk4_trajectory
+
+Fourth-order Runge-Kutta Kuramoto trajectory.
+"""
 function kuramoto_rk4_trajectory(
     theta0::AbstractVector{<:Real},
     omega::AbstractVector{<:Real},
@@ -147,6 +172,11 @@ function kuramoto_rk4_trajectory(
     return traj
 end
 
+"""
+    _add_dt_jt_product!
+
+Accumulate `dt * J(theta)' * lambda` into a preallocated buffer.
+"""
 function _add_dt_jt_product!(
     theta::AbstractVector{Float64},
     coupling::AbstractMatrix{<:Real},
@@ -170,6 +200,11 @@ function _add_dt_jt_product!(
     return out
 end
 
+"""
+    kuramoto_rk4_vjp
+
+Reverse-mode adjoint of the RK4 trajectory.
+"""
 function kuramoto_rk4_vjp(
     trajectory::AbstractMatrix{<:Real},
     omega::AbstractVector{<:Real},

@@ -6,6 +6,13 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Julia tier for the networked Kuramoto force and Jacobian
 
+"""
+    networked_kuramoto_force
+
+Coupling force on an explicit network.
+
+F_j = Σ_k K_jk sin(θ_k − θ_j).
+"""
 function networked_kuramoto_force(
     theta::AbstractVector{<:Real},
     coupling::AbstractMatrix{<:Real},
@@ -24,6 +31,13 @@ function networked_kuramoto_force(
     return out
 end
 
+"""
+    networked_kuramoto_jacobian
+
+Jacobian of the networked coupling force.
+
+J_jl = K_jl cos(θ_l − θ_j) for l ≠ j; J_jj = −Σ_{k≠j} K_jk cos(θ_k − θ_j).
+"""
 function networked_kuramoto_jacobian(
     theta::AbstractVector{<:Real},
     coupling::AbstractMatrix{<:Real},

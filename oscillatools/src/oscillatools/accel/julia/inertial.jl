@@ -33,6 +33,11 @@ end
     end
 end
 
+"""
+    kuramoto_inertial_trajectory
+
+Second-order (inertial) Kuramoto trajectory.
+"""
 function kuramoto_inertial_trajectory(
     theta0::AbstractVector{<:Real},
     velocities::AbstractVector{<:Real},

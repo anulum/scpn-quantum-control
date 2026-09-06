@@ -6,8 +6,14 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Julia tier for the Daido m-th Fourier-mode phase and gradient
 
+"""
+    daido_mode_phase
+
+Daido mode phase at harmonic `m`.
+
+ψ_m = atan2(Σ sin mθ, Σ cos mθ).
+"""
 function daido_mode_phase(theta::AbstractVector{<:Real}, m::Integer)::Float64
-    # ψ_m = atan2(Σ sin mθ, Σ cos mθ).
     n = length(theta)
     n == 0 && return 0.0
     re = 0.0
@@ -20,8 +26,14 @@ function daido_mode_phase(theta::AbstractVector{<:Real}, m::Integer)::Float64
     return atan(im, re)
 end
 
+"""
+    daido_mode_phase_gradient
+
+Gradient of the Daido mode phase.
+
+∂ψ_m/∂θ_j = (m / (N r_m²)) (C_m cos mθ_j + S_m sin mθ_j).
+"""
 function daido_mode_phase_gradient(theta::AbstractVector{<:Real}, m::Integer)::Vector{Float64}
-    # ∂ψ_m/∂θ_j = (m / (N r_m²)) (C_m cos mθ_j + S_m sin mθ_j).
     n = length(theta)
     out = zeros(Float64, n)
     n == 0 && return out
@@ -45,9 +57,15 @@ function daido_mode_phase_gradient(theta::AbstractVector{<:Real}, m::Integer)::V
     return out
 end
 
+"""
+    daido_mode_phase_hessian
+
+Hessian of the Daido mode phase.
+
+H_ij = m² [δ_ij s_j/(N r_m) − (s_i c_j + c_i s_j)/(N² r_m²)], s_k = sin(ψ_m − m θ_k),
+c_k = cos(ψ_m − m θ_k). Symmetric, rows sum to zero; the incoherent mode returns zeros.
+"""
 function daido_mode_phase_hessian(theta::AbstractVector{<:Real}, m::Integer)::Matrix{Float64}
-    # H_ij = m² [δ_ij s_j/(N r_m) − (s_i c_j + c_i s_j)/(N² r_m²)], s_k = sin(ψ_m − m θ_k),
-    # c_k = cos(ψ_m − m θ_k). Symmetric, rows sum to zero; the incoherent mode returns zeros.
     n = length(theta)
     out = zeros(Float64, n, n)
     n == 0 && return out

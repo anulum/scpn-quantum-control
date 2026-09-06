@@ -42,6 +42,11 @@ end
     end
 end
 
+"""
+    kuramoto_delayed_trajectory
+
+Kuramoto trajectory with a uniform coupling delay.
+"""
 function kuramoto_delayed_trajectory(
     initial_history::AbstractMatrix{<:Real},
     omega::AbstractVector{<:Real},

@@ -6,6 +6,13 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Julia tier for the network-local order parameter and Jacobian
 
+"""
+    local_order_parameter
+
+Per-node local order parameter over an adjacency matrix.
+
+r_j = |Σ_k A_jk e^{iθ_k}| / Σ_k A_jk.
+"""
 function local_order_parameter(
     theta::AbstractVector{<:Real},
     adjacency::AbstractMatrix{<:Real},
@@ -32,6 +39,13 @@ function local_order_parameter(
     return out
 end
 
+"""
+    local_order_parameter_jacobian
+
+Jacobian of the local order parameter.
+
+∂r_j/∂θ_l = (A_jl / (d_j |Z_j|)) (S_j cos θ_l − C_j sin θ_l).
+"""
 function local_order_parameter_jacobian(
     theta::AbstractVector{<:Real},
     adjacency::AbstractMatrix{<:Real},
@@ -62,6 +76,13 @@ function local_order_parameter_jacobian(
     return out
 end
 
+"""
+    local_mean_phase
+
+Per-node local mean phase over an adjacency matrix.
+
+ψ_j = atan2(Σ_k A_jk sin θ_k, Σ_k A_jk cos θ_k). |Z_j| = 0 yields ψ_j = 0.
+"""
 function local_mean_phase(
     theta::AbstractVector{<:Real},
     adjacency::AbstractMatrix{<:Real},
@@ -87,6 +108,13 @@ function local_mean_phase(
     return out
 end
 
+"""
+    local_mean_phase_jacobian
+
+Jacobian of the local mean phase.
+
+∂ψ_j/∂θ_l = A_jl (C_j cos θ_l + S_j sin θ_l) / |Z_j|². |Z_j| = 0 yields a zero row.
+"""
 function local_mean_phase_jacobian(
     theta::AbstractVector{<:Real},
     adjacency::AbstractMatrix{<:Real},

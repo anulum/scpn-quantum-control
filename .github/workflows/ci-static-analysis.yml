@@ -696,3 +696,31 @@ jobs:
             cargo clippy --manifest-path "$manifest" --all-targets --locked
             echo "::endgroup::"
           done
+
+  julia-lint:
+    # The Julia tier had no tool that understood it. A text scan is not the
+    # instrument: it was five times wrong about the TypeScript surface, and a
+    # `#` comment above a definition reads like documentation while the parser
+    # never turns it into one. This job runs Julia's own parser, and the tool
+    # raises rather than reporting a clean surface when Julia is absent.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install the pinned Julia tier
+        run: python -m pip install --require-hashes -r requirements-ci-julia-tier.txt
+      - name: Expose the pinned Julia on PATH
+        # juliapkg installs the interpreter into a private depot rather than on
+        # PATH. Putting it there keeps the gate to the single lookup its own
+        # tests exercise, instead of adding a CI-only branch nothing verifies.
+        run: |
+          python -c "import juliapkg, pathlib; print(pathlib.Path(juliapkg.executable()).parent)" >> "$GITHUB_PATH"
+      - name: Record the interpreter the findings were measured against
+        run: julia --version
+      - name: Enforce Julia documentation coverage
+        run: python tools/audit_julia_documentation.py
+      - name: Verify the gate itself
+        run: python -m pytest -q tests/test_audit_julia_documentation.py

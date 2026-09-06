@@ -6,6 +6,13 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Julia tier for the Kuramoto–Sakaguchi force and Jacobian
 
+"""
+    sakaguchi_force
+
+Sakaguchi-Kuramoto force with a phase lag.
+
+F_j = Σ_{k≠j} K_jk sin(θ_k − θ_j − α).
+"""
 function sakaguchi_force(
     theta::AbstractVector{<:Real},
     coupling::AbstractMatrix{<:Real},
@@ -27,6 +34,13 @@ function sakaguchi_force(
     return out
 end
 
+"""
+    sakaguchi_jacobian
+
+Jacobian of the Sakaguchi-Kuramoto force.
+
+J_jl = K_jl cos(θ_l − θ_j − α) for l ≠ j; J_jj = −Σ_{k≠j} K_jk cos(θ_k − θ_j − α).
+"""
 function sakaguchi_jacobian(
     theta::AbstractVector{<:Real},
     coupling::AbstractMatrix{<:Real},
@@ -50,6 +64,13 @@ function sakaguchi_jacobian(
     return out
 end
 
+"""
+    sakaguchi_mean_field_force
+
+Sakaguchi mean-field force with a phase lag.
+
+F_j = K [(S cos θ_j − C sin θ_j) cos α − (C cos θ_j + S sin θ_j) sin α].
+"""
 function sakaguchi_mean_field_force(
     theta::AbstractVector{<:Real},
     coupling::Real,
@@ -80,6 +101,13 @@ function sakaguchi_mean_field_force(
     return out
 end
 
+"""
+    sakaguchi_mean_field_jacobian
+
+Jacobian of the Sakaguchi mean-field force.
+
+J_jl = (K/N) cos(θ_j − θ_l + α) − δ_jl K (C cos(θ_j + α) + S sin(θ_j + α)).
+"""
 function sakaguchi_mean_field_jacobian(
     theta::AbstractVector{<:Real},
     coupling::Real,

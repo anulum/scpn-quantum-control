@@ -16,7 +16,8 @@
       "caller_needs": [],
       "jobs": [
         "lint",
-        "rust-lint"
+        "rust-lint",
+        "julia-lint"
       ]
     },
     {
@@ -384,6 +385,7 @@
   "job_order": [
     "lint",
     "rust-lint",
+    "julia-lint",
     "native-wheels",
     "stable-core-product-quality",
     "open-system-completeness-quality",
