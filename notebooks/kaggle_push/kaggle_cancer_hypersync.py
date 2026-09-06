@@ -123,7 +123,7 @@ print(f"  K=2.0 (moderate coupling), R={R_normal:.3f}")
 print("\nCancer progression:")
 cancer_K = [2.0, 3.0, 5.0, 8.0, 12.0]
 cancer_labels = ["normal", "dysplasia", "carcinoma_in_situ", "invasive", "metastatic"]
-for K, label in zip(cancer_K, cancer_labels):
+for K, label in zip(cancer_K, cancer_labels, strict=True):
     R, _, chi = simulate_with_susceptibility(K, freq_spread=0.1, n_trials=10)
     print(f"  {label:25s}: K={K:.1f}, R={R:.3f}, chi={chi:.4f}")
 

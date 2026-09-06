@@ -24,7 +24,7 @@ def pec_overhead_figure() -> None:
     fig, ax = plt.subplots(figsize=(7, 4.5))
     gate_counts = np.arange(1, 35)
     colors = ["#2ca02c", "#ff7f0e", "#d62728", "#9467bd"]
-    for p, color in zip([0.005, 0.01, 0.02, 0.05], colors):
+    for p, color in zip([0.005, 0.01, 0.02, 0.05], colors, strict=True):
         coeffs = pauli_twirl_decompose(p)
         gamma = float(np.sum(np.abs(coeffs)))
         overhead = gamma**gate_counts
@@ -118,7 +118,7 @@ def surface_code_budget_figure() -> None:
 
     fig, ax = plt.subplots(figsize=(7, 4.5))
     colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]
-    for n_osc, color in zip(osc_counts, colors):
+    for n_osc, color in zip(osc_counts, colors, strict=True):
         budgets = []
         for d in distances:
             sc = SurfaceCodeUPDE(n_osc=n_osc, code_distance=d)

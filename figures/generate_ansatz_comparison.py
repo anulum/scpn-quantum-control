@@ -67,7 +67,7 @@ def main() -> None:
     ax1.set_ylabel("Relative energy error (%)", fontsize=11)
     ax1.set_title("VQE Ansatz Comparison (4-qubit Kuramoto XY)", fontsize=12)
     ax1.set_ylim(0, max(errors) * 1.4)
-    for bar, err, n_p in zip(bars, errors, n_params_list):
+    for bar, err, n_p in zip(bars, errors, n_params_list, strict=True):
         ax1.text(
             bar.get_x() + bar.get_width() / 2,
             bar.get_height() + max(errors) * 0.02,
@@ -86,7 +86,7 @@ def main() -> None:
     )
     ax2.set_ylabel("Number of parameters", fontsize=11)
     ax2.set_title("Parameter Count", fontsize=12)
-    for bar, n_p in zip(ax2.patches, n_params_list):
+    for bar, n_p in zip(ax2.patches, n_params_list, strict=True):
         ax2.text(
             bar.get_x() + bar.get_width() / 2,
             bar.get_height() + 0.3,

@@ -151,7 +151,7 @@ enzyme_rates = {
 
 print("Enzymatic turnover rates as oscillator frequencies:")
 rates = list(enzyme_rates.values())
-for (name, rate), omega_i in zip(enzyme_rates.items(), OMEGA_N_16[:4]):
+for (name, rate), omega_i in zip(enzyme_rates.items(), OMEGA_N_16[:4], strict=True):
     ratio = omega_i / rate
     print(f"  {name}: k_cat = {rate} s^-1, omega_SCPN = {omega_i:.3f}, ratio = {ratio:.3f}")
 

@@ -139,7 +139,7 @@ scales = [b["scale_m"] for b in bio_piezo if b["piezo_d_pCN"] > 0]
 piezos = [b["piezo_d_pCN"] for b in bio_piezo if b["piezo_d_pCN"] > 0]
 names = [b["name"] for b in bio_piezo if b["piezo_d_pCN"] > 0]
 
-for name, s, p in zip(names, scales, piezos):
+for name, s, p in zip(names, scales, piezos, strict=True):
     print(f"  {name:30s}: scale={s:.1e}m, d={p:.2f} pC/N")
 
 log_scales = np.log10(scales)
@@ -161,7 +161,7 @@ scales_r = [b["scale_m"] for b in bio_piezo if b["resonance_Hz"] > 0]
 freqs_r = [b["resonance_Hz"] for b in bio_piezo if b["resonance_Hz"] > 0]
 names_r = [b["name"] for b in bio_piezo if b["resonance_Hz"] > 0]
 
-for name, s, f in zip(names_r, scales_r, freqs_r):
+for name, s, f in zip(names_r, scales_r, freqs_r, strict=True):
     # Speed of sound in tissue: ~1500 m/s
     # Expected resonance: f ~ v / (2*L) = 1500 / (2*scale)
     f_expected = 1500 / (2 * s)

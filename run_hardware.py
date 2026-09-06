@@ -118,7 +118,9 @@ def _print_summary(name: str, result: dict):
 
     if "hw_R" in result and "classical_R" in result:
         if isinstance(result["hw_R"], list):
-            for i, (hr, cr) in enumerate(zip(result["hw_R"], result["classical_R"][1:])):
+            for i, (hr, cr) in enumerate(
+                zip(result["hw_R"], result["classical_R"][1:], strict=False)
+            ):
                 print(
                     f"  t={result['hw_times'][i]:.2f}  hw_R={hr:.4f}  exact_R={cr:.4f}  err={abs(hr - cr):.4f}"
                 )

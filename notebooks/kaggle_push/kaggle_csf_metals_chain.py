@@ -180,7 +180,7 @@ metal_names = list(metal_ions.keys())
 log_metal_freqs = np.log10(metal_freqs)
 
 # Sort by frequency
-sorted_metals = sorted(zip(metal_names, metal_freqs), key=lambda x: x[1])
+sorted_metals = sorted(zip(metal_names, metal_freqs, strict=True), key=lambda x: x[1])
 print("\nMetal oscillation hierarchy (sorted):")
 for name, freq in sorted_metals:
     log_f = np.log10(freq)
