@@ -32,7 +32,7 @@ class DependencyDriftReport:
 
     @property
     def in_sync(self) -> bool:
-        """Return True when requirements pin the declared runtime surface."""
+        """True when requirements pin the declared runtime surface."""
         return (
             not self.missing_from_requirements
             and not self.extra_in_requirements
@@ -60,7 +60,7 @@ class DependencyDriftReport:
 
     @property
     def order_mismatch(self) -> bool:
-        """Return True when the dependency names match but order differs."""
+        """True when the dependency names match but order differs."""
         return (
             _requirement_names(self.project_dependencies)
             != _requirement_names(self.runtime_requirements)

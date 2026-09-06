@@ -303,7 +303,7 @@ class WaiverAuditResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every waiver condition holds."""
+        """Whether every waiver condition holds."""
         return not self.errors
 
 

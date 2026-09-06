@@ -36,7 +36,7 @@ class BoundaryAudit:
 
     @property
     def covered(self) -> bool:
-        """Return True when at least one test file matches the boundary."""
+        """True when at least one test file matches the boundary."""
         return bool(self.matching_files)
 
 

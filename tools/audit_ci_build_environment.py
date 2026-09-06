@@ -157,7 +157,7 @@ class BuildEnvironmentAuditResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every build-environment condition holds."""
+        """Whether every build-environment condition holds."""
         return not self.errors
 
 

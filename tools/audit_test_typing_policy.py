@@ -82,17 +82,17 @@ class TestTypingPolicy:
 
     @property
     def enforced_cohorts(self) -> tuple[TestTypingCohort, ...]:
-        """Return cohorts currently executed by the strict gate."""
+        """Cohorts currently executed by the strict gate."""
         return tuple(cohort for cohort in self.cohorts if cohort.status == "enforced")
 
     @property
     def enforced_paths(self) -> tuple[str, ...]:
-        """Return the deterministic file set executed by strict mypy."""
+        """The deterministic file set executed by strict mypy."""
         return tuple(path for cohort in self.enforced_cohorts for path in cohort.files)
 
     @property
     def registered_paths(self) -> tuple[str, ...]:
-        """Return every concrete test path assigned to any cohort."""
+        """Every concrete test path assigned to any cohort."""
         return tuple(path for cohort in self.cohorts for path in cohort.files)
 
 
@@ -108,7 +108,7 @@ class AuditResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether registry validation and requested typing passed."""
+        """Whether registry validation and requested typing passed."""
         return not self.errors and self.mypy_returncode in {None, 0}
 
 

@@ -80,12 +80,12 @@ class CoverageMetrics:
 
     @property
     def line_percent(self) -> float:
-        """Return aggregate line coverage as a percentage."""
+        """Aggregate line coverage as a percentage."""
         return self.line_rate * 100.0
 
     @property
     def branch_percent(self) -> float:
-        """Return aggregate branch coverage as a percentage."""
+        """Aggregate branch coverage as a percentage."""
         return self.branch_rate * 100.0
 
 
@@ -99,7 +99,7 @@ class AuditResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether all active coverage requirements pass."""
+        """Whether all active coverage requirements pass."""
         return not self.errors
 
 

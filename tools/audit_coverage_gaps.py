@@ -35,12 +35,12 @@ class CoverageFileAudit:
 
     @property
     def line_percent(self) -> float | None:
-        """Return line coverage as a percentage."""
+        """Line coverage as a percentage, or ``None`` when unmeasured."""
         return None if self.line_rate is None else self.line_rate * 100.0
 
     @property
     def is_gap(self) -> bool:
-        """Return True when this row must fail release gating."""
+        """True when this row must fail release gating."""
         return self.status in {"missing_from_report", "below_threshold"}
 
 

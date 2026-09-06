@@ -42,7 +42,7 @@ class TestFunctionAudit:
 
     @property
     def has_behavioural_contract(self) -> bool:
-        """Return True when the test constrains behaviour beyond execution."""
+        """True when the test constrains behaviour beyond execution."""
         return self.assertions > 0 or self.raises_contracts > 0 or self.behavioural_calls > 0
 
 

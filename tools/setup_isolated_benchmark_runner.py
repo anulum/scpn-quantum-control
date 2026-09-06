@@ -48,12 +48,12 @@ class IsolatedRunnerSetupPlan:
 
     @property
     def archive_name(self) -> str:
-        """Return the expected Linux x64 GitHub Actions runner archive name."""
+        """The expected Linux x64 GitHub Actions runner archive name."""
         return f"actions-runner-linux-x64-{self.runner_version}.tar.gz"
 
     @property
     def download_url(self) -> str:
-        """Return the GitHub Actions runner release archive URL."""
+        """The GitHub Actions runner release archive URL."""
         return (
             "https://github.com/actions/runner/releases/download/"
             f"v{self.runner_version}/{self.archive_name}"
@@ -61,7 +61,7 @@ class IsolatedRunnerSetupPlan:
 
     @property
     def validated_download_url(self) -> str:
-        """Return the release archive URL after fail-closed validation."""
+        """The release archive URL after fail-closed validation."""
         return _validated_runner_download_url(
             self.download_url, expected_archive=self.archive_name
         )

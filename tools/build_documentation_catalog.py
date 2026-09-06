@@ -60,7 +60,7 @@ class ModuleRecord:
 
     @property
     def symbol_count(self) -> int:
-        """Return the number of public module-level classes and functions."""
+        """The number of public module-level classes and functions."""
         return len(self.classes) + len(self.functions)
 
 

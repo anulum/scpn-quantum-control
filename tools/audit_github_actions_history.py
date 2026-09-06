@@ -38,7 +38,7 @@ class WorkflowRun:
 
     @property
     def workflow_key(self) -> tuple[str, str]:
-        """Return the workflow/branch key used for later-success evidence."""
+        """The workflow/branch key used for later-success evidence."""
         return (self.workflow_name, self.head_branch)
 
 

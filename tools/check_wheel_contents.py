@@ -116,7 +116,7 @@ class WheelAudit:
 
     @property
     def passed(self) -> bool:
-        """Return whether the wheel has no validation findings."""
+        """Whether the wheel has no validation findings."""
         return not self.errors
 
     def as_dict(self) -> dict[str, object]:

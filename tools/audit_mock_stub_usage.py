@@ -68,13 +68,13 @@ class MockStubFinding:
 
     @property
     def appears_third_party_boundary(self) -> bool:
-        """Return True when the finding appears to mock an external boundary."""
+        """True when the finding appears to mock an external boundary."""
         lowered = self.context.lower()
         return any(term in lowered for term in BOUNDARY_TERMS)
 
     @property
     def touches_scientific_result_terms(self) -> bool:
-        """Return True when the finding mentions result-like scientific data."""
+        """True when the finding mentions result-like scientific data."""
         lowered = self.context.lower()
         return any(term in lowered for term in SCIENTIFIC_RESULT_TERMS)
 
