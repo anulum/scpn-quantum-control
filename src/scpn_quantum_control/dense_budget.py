@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Final
 
 import numpy as np
@@ -20,6 +21,27 @@ DEFAULT_DENSE_RAM_FRACTION: Final = 0.30
 DEFAULT_DENSE_BUDGET_CAP_GIB: Final = 8.0
 DEFAULT_DENSE_EIGENSOLVER_OBJECTS: Final = 4
 GIB: Final = 1024**3
+
+DEFAULT_CGROUP_ROOT: Final = Path("/sys/fs/cgroup")
+"""Mount point the kernel exposes cgroup limits under.
+
+Overridable per call so the container contract can be tested against an injected
+filesystem instead of a real container.
+"""
+
+CGROUP_V2_LIMIT: Final = "memory.max"
+CGROUP_V2_USAGE: Final = "memory.current"
+CGROUP_V1_LIMIT: Final = "memory/memory.limit_in_bytes"
+CGROUP_V1_USAGE: Final = "memory/memory.usage_in_bytes"
+
+CGROUP_UNLIMITED_THRESHOLD: Final = 1 << 62
+"""Above this, a numeric cgroup limit means "no limit".
+
+cgroup v2 writes the literal ``max``. cgroup v1 has no such spelling and writes
+a sentinel near the pointer maximum instead, commonly
+``9223372036854771712``, so any value this large is read as unlimited rather
+than as an allowance larger than any real machine.
+"""
 
 
 class DenseAllocationError(MemoryError):
@@ -72,8 +94,19 @@ def dense_object_bytes(
     return int((dim**rank) * np.dtype(dtype).itemsize)
 
 
-def available_memory_bytes() -> int | None:
-    """Return available host memory when discoverable without extra dependencies."""
+def host_available_memory_bytes() -> int | None:
+    """Return available host memory when discoverable without extra dependencies.
+
+    This is what the machine has free, which is not what a containerised process
+    is allowed to use. Callers that need the process allowance should use
+    :func:`available_memory_bytes`.
+
+    Returns
+    -------
+    int | None
+        Free host bytes, or ``None`` when the platform does not report them.
+
+    """
     try:
         pages = os.sysconf("SC_AVPHYS_PAGES")
         page_size = os.sysconf("SC_PAGE_SIZE")
@@ -87,6 +120,102 @@ def available_memory_bytes() -> int | None:
     ):
         return None
     return pages * page_size
+
+
+def _read_cgroup_int(path: Path) -> int | None:
+    """Return one non-negative integer from a cgroup file, or ``None``.
+
+    Every failure mode a real mount presents is treated the same way: a missing
+    file, an unreadable one, the literal ``max``, and any malformed content all
+    yield ``None``, so a control file that cannot be understood never becomes a
+    number that widens the budget.
+
+    Parameters
+    ----------
+    path
+        Absolute path to the cgroup control file.
+
+    Returns
+    -------
+    int | None
+        The parsed value, or ``None`` when it is absent or not a plain integer.
+
+    """
+    try:
+        raw = path.read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    if not raw or raw == "max":
+        return None
+    try:
+        value = int(raw)
+    except ValueError:
+        return None
+    return value if value >= 0 else None
+
+
+def cgroup_headroom_bytes(cgroup_root: Path | None = None) -> int | None:
+    """Return the memory a cgroup still allows this process, if it is limited.
+
+    cgroup v2 is consulted first and v1 second, matching the order a host
+    mounts them. Headroom is the limit minus current use, so a container that
+    has already consumed most of its allowance reports what is left rather than
+    what it was granted.
+
+    Parameters
+    ----------
+    cgroup_root
+        Mount point to read from; defaults to :data:`DEFAULT_CGROUP_ROOT`.
+        Supplying one is how the container contract is tested without a
+        container.
+
+    Returns
+    -------
+    int | None
+        Remaining bytes, or ``None`` when no readable limit applies — no cgroup
+        mount, an unlimited limit, or control files that cannot be parsed.
+
+    """
+    root = DEFAULT_CGROUP_ROOT if cgroup_root is None else cgroup_root
+    for limit_name, usage_name in (
+        (CGROUP_V2_LIMIT, CGROUP_V2_USAGE),
+        (CGROUP_V1_LIMIT, CGROUP_V1_USAGE),
+    ):
+        limit = _read_cgroup_int(root / limit_name)
+        if limit is None or limit >= CGROUP_UNLIMITED_THRESHOLD:
+            continue
+        usage = _read_cgroup_int(root / usage_name) or 0
+        return max(0, limit - usage)
+    return None
+
+
+def available_memory_bytes(cgroup_root: Path | None = None) -> int | None:
+    """Return the memory this process may actually use.
+
+    The smaller of free host memory and any cgroup headroom. On an unrestricted
+    host this is the host figure unchanged; inside a memory-limited container it
+    is the container's remaining allowance, which is the number the previous
+    implementation could not see.
+
+    Parameters
+    ----------
+    cgroup_root
+        Mount point to read cgroup limits from; defaults to
+        :data:`DEFAULT_CGROUP_ROOT`.
+
+    Returns
+    -------
+    int | None
+        Usable bytes, or ``None`` when neither source reports anything.
+
+    """
+    host = host_available_memory_bytes()
+    headroom = cgroup_headroom_bytes(cgroup_root)
+    if host is None:
+        return headroom
+    if headroom is None:
+        return host
+    return min(host, headroom)
 
 
 def dense_budget_bytes(max_gib: float | None = None) -> int:

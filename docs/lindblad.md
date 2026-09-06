@@ -92,7 +92,10 @@ LindbladKuramotoSolver(
 | `max_dense_gib` | `float | None` | Optional positive dense-workspace budget in GiB. |
 
 If `max_dense_gib` is omitted, dense allocation uses `SCPN_MAX_DENSE_GIB`
-when set, otherwise the shared host-aware default. `build()` estimates the
+when set, otherwise the shared default. That default is the smaller of the
+host's free memory and any cgroup headroom this process still has, so inside a
+memory-limited container it follows the container's allowance rather than the
+machine's. `build()` estimates the
 simultaneous Hamiltonian, density-matrix, work-array, and channel-operator
 footprint and raises `DenseAllocationError` before an over-budget allocation.
 

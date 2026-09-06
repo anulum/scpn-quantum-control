@@ -201,7 +201,14 @@ statevector simulation stores `2^n` amplitudes.
 closed with a clear, typed error before allocating, against a configurable budget
 (host-memory fraction with a cap, overridable by environment variable or call
 argument). The dense path uses `dense_budget` (`require_dense_allocation`,
-`SCPN_MAX_DENSE_GIB`); the sparse Pauli-operator path uses `compile_budget`
+`SCPN_MAX_DENSE_GIB`). Its default is container-aware: the effective allowance
+is the smaller of free host memory and the remaining cgroup headroom, read from
+`memory.max`/`memory.current` under cgroup v2 or
+`memory.limit_in_bytes`/`memory.usage_in_bytes` under v1, with an unlimited,
+missing or unparsable control file leaving the host figure in place. An
+explicit `max_gib` argument and `SCPN_MAX_DENSE_GIB` both still take precedence,
+so an operator override keeps its meaning inside a container. The sparse
+Pauli-operator path uses `compile_budget`
 (`require_pauli_operator_budget`, `SCPN_MAX_PAULI_GIB`); the local statevector
 path uses `max_statevector_gib`. Input validation (square/finite/symmetric/
 real-dtype `K_nm`, matching `omega`) runs at problem construction

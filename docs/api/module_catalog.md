@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **699 modules** across **39 package families**
-- **3918 documented public module-level symbols**
+- **3920 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -5333,11 +5333,11 @@ Fail-closed **custom / registered derivatives** product surface.
 
 Memory guards for dense Hilbert-space allocations.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/dense_budget.py) · Public symbols: **9**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/dense_budget.py) · Public symbols: **11**
 
 **Classes:** `DenseAllocationError`, `DenseAllocationEstimate`
 
-**Functions:** `hilbert_dimension()`, `dense_object_bytes()`, `available_memory_bytes()`, `dense_budget_bytes()`, `estimate_dense_allocation()`, `require_dense_allocation()`, `require_dense_eigensolver_workspace()`
+**Functions:** `hilbert_dimension()`, `dense_object_bytes()`, `host_available_memory_bytes()`, `cgroup_headroom_bytes()`, `available_memory_bytes()`, `dense_budget_bytes()`, `estimate_dense_allocation()`, `require_dense_allocation()`, `require_dense_eigensolver_workspace()`
 
 ### `scpn_quantum_control.diff`
 
