@@ -13,6 +13,7 @@ from typing import cast
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.analysis.dla_parity_theorem import project_to_parity_sector
 from scpn_quantum_control.dla_topology_control.parity import (
@@ -22,7 +23,7 @@ from scpn_quantum_control.dla_topology_control.parity import (
 from scpn_quantum_control.dla_topology_control.schema import ParitySector
 
 
-def _complex_vector(size: int) -> np.ndarray:
+def _complex_vector(size: int) -> NDArray[np.complex128]:
     return np.arange(size, dtype=np.float64) + 1j * np.arange(size, dtype=np.float64)[::-1]
 
 
