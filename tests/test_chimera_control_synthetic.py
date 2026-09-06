@@ -77,7 +77,9 @@ def test_reference_regime_factories_freeze_published_couplings() -> None:
 def test_synthetic_config_rejects_invalid_values(kwargs: dict[str, object], message: str) -> None:
     """Reject invalid configuration values at the public construction boundary."""
     with pytest.raises(ValueError, match=message):
-        SyntheticChimeraConfig(**kwargs)
+        # The parametrised mapping carries one invalid field per case; the
+        # rejection is the subject and mypy cannot express a failing call.
+        SyntheticChimeraConfig(**kwargs)  # type: ignore[arg-type]
 
 
 def test_block_coupling_is_symmetric_normalised_and_read_only() -> None:
@@ -157,7 +159,8 @@ def test_run_contract_rejects_inconsistent_custody(
     }
     values.update(changes)
     with pytest.raises(ValueError, match=message):
-        SyntheticChimeraRun(**values)
+        # As above: one field is overridden with an invalid value per case.
+        SyntheticChimeraRun(**values)  # type: ignore[arg-type]
 
 
 def test_run_contract_rejects_non_finite_or_wrong_rank_arrays() -> None:

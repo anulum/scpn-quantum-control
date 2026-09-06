@@ -10,14 +10,16 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from scpn_quantum_control.mitigation import (
     SymmetrySectorProblem,
     plan_symmetry_sector_mitigation,
 )
 
 
-def _problem(**overrides) -> SymmetrySectorProblem:
-    kwargs = {
+def _problem(**overrides: Any) -> SymmetrySectorProblem:
+    kwargs: dict[str, Any] = {
         "n_qubits": 4,
         "coupling_matrix": (
             (0.0, 0.45, 0.0, 0.45),
