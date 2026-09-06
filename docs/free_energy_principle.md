@@ -364,6 +364,21 @@ for _ in range(100):
     assert kl_divergence_gaussian(mu_q, sigma_q, mu_p, sigma_p) >= -1e-10
 ```
 
+Both covariances must be finite, symmetric and positive definite, and the two
+means must be finite and share their dimension. Anything else is rejected with a
+`ValueError` naming the offending argument, rather than producing a number that
+cannot be a divergence — a negative-definite covariance has no log-determinant
+of the required sign, and silently taking its magnitude yields a negative "KL".
+
+The divergence is evaluated through Cholesky factors of both covariances: no
+explicit inverse is formed, and `log|Σ|` is taken as `2 Σ log L_ii`, which needs
+no sign correction. Accuracy therefore follows the conditioning of the
+covariances; `KL[p || p]` returns a residual bounded by machine epsilon times
+the condition number rather than exactly zero, and that residual is never
+clamped. Where a precision matrix is inverted to form a prior covariance, the
+ridge added first is the documented constant `PRECISION_RIDGE`, and the
+regularised matrix must still be positive definite.
+
 ## 6. Technical Reference
 
 ### Classes
