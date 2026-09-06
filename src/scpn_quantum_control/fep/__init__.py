@@ -23,6 +23,8 @@ from .predictive_coding import (
     predictive_coding_step,
 )
 from .variational_free_energy import (
+    COVARIANCE_SYMMETRY_ATOL,
+    PRECISION_RIDGE,
     FreeEnergyResult,
     evidence_lower_bound,
     kl_divergence_gaussian,
@@ -32,6 +34,8 @@ from .variational_free_energy import (
 __all__ = [
     "FreeEnergyResult",
     "variational_free_energy",
+    "COVARIANCE_SYMMETRY_ATOL",
+    "PRECISION_RIDGE",
     "kl_divergence_gaussian",
     "evidence_lower_bound",
     "PredictiveCodingResult",

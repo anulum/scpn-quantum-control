@@ -33,6 +33,7 @@ from scpn_quantum_control.fep.predictive_coding import (
     predictive_coding_step,
 )
 from scpn_quantum_control.fep.variational_free_energy import (
+    COVARIANCE_SYMMETRY_ATOL,
     evidence_lower_bound,
     free_energy_gradient,
     kl_divergence_gaussian,
@@ -81,11 +82,11 @@ class TestErrorHandling:
     """Exercise numerical and optional-acceleration failure boundaries."""
 
     def test_kl_singular_covariance(self) -> None:
-        """Singular covariance should raise or return inf."""
+        """A singular covariance is a domain error, not a leaked solver error."""
         mu = np.array([0.0])
         sigma_q = np.array([[1.0]])
         sigma_p = np.array([[0.0]])  # singular
-        with pytest.raises(np.linalg.LinAlgError):
+        with pytest.raises(ValueError, match="sigma_p must be positive definite"):
             kl_divergence_gaussian(mu, sigma_q, mu, sigma_p)
 
     def test_free_energy_with_zero_precision(self) -> None:
@@ -472,3 +473,115 @@ class TestPerformance:
             predictive_coding_step(x, beliefs, K, learning_rate=0.001)
         elapsed = time.perf_counter() - t0
         assert elapsed < 0.2, f"100 calls took {elapsed:.3f}s"
+
+
+def _kl_gaussian_1d(mu_q: float, sd_q: float, mu_p: float, sd_p: float) -> float:
+    """Closed-form KL between two univariate Gaussians, in nats.
+
+    Independent of the implementation: this is the textbook scalar expression,
+    not the matrix algebra the production path evaluates.
+    """
+    return float(np.log(sd_p / sd_q) + (sd_q**2 + (mu_q - mu_p) ** 2) / (2.0 * sd_p**2) - 0.5)
+
+
+class TestGaussianKLContract:
+    """The divergence must match analysis and refuse anything that is not a covariance."""
+
+    @pytest.mark.parametrize(
+        ("mu_q", "sd_q", "mu_p", "sd_p"),
+        [(0.0, 1.0, 0.0, 2.0), (1.5, 0.3, -2.0, 1.7), (0.0, 5.0, 0.0, 0.2)],
+    )
+    def test_matches_the_closed_form_in_one_dimension(
+        self, mu_q: float, sd_q: float, mu_p: float, sd_p: float
+    ) -> None:
+        """The matrix path reproduces the scalar closed form exactly."""
+        value = kl_divergence_gaussian(
+            np.array([mu_q]), np.array([[sd_q**2]]), np.array([mu_p]), np.array([[sd_p**2]])
+        )
+        assert value == pytest.approx(_kl_gaussian_1d(mu_q, sd_q, mu_p, sd_p), abs=1e-12)
+
+    def test_diagonal_case_decomposes_into_independent_dimensions(self) -> None:
+        """A diagonal pair must equal the sum of its per-dimension divergences."""
+        sd_q = np.array([0.5, 2.0, 1.3])
+        sd_p = np.array([1.1, 0.7, 3.0])
+        mu_q = np.array([0.2, -1.0, 0.4])
+        mu_p = np.array([-0.3, 0.8, 0.0])
+
+        value = kl_divergence_gaussian(mu_q, np.diag(sd_q**2), mu_p, np.diag(sd_p**2))
+        expected = sum(
+            _kl_gaussian_1d(a, b, c, d) for a, b, c, d in zip(mu_q, sd_q, mu_p, sd_p, strict=True)
+        )
+        assert value == pytest.approx(expected, abs=1e-12)
+
+    def test_stays_non_negative_across_random_spd_pairs(self) -> None:
+        """KL is a divergence: no valid input may produce a negative value."""
+        rng = np.random.default_rng(11)
+        for _ in range(200):
+            n = int(rng.integers(1, 5))
+            left = rng.normal(size=(n, n))
+            right = rng.normal(size=(n, n))
+            sigma_q = left @ left.T + n * np.eye(n)
+            sigma_p = right @ right.T + n * np.eye(n)
+            value = kl_divergence_gaussian(
+                rng.normal(size=n), sigma_q, rng.normal(size=n), sigma_p
+            )
+            assert value >= 0.0
+
+    def test_self_divergence_degrades_gracefully_with_conditioning(self) -> None:
+        """KL[p || p] stays near zero as the covariance becomes ill-conditioned.
+
+        The residual is bounded by machine epsilon times the condition number,
+        which is the accuracy a Cholesky solve can deliver. It is asserted as a
+        bound rather than as exact zero, and it is never clamped.
+        """
+        rotation = np.array([[3.0, 4.0], [-4.0, 3.0]]) / 5.0
+        for condition in (1e2, 1e6, 1e10):
+            spectrum = np.diag(np.array([1.0, 1.0 / condition]))
+            sigma = rotation @ spectrum @ rotation.T
+            value = kl_divergence_gaussian(np.zeros(2), sigma, np.zeros(2), sigma)
+            assert abs(value) <= 100.0 * np.finfo(float).eps * condition
+
+    @pytest.mark.parametrize(
+        ("kwargs", "message"),
+        [
+            ({"sigma_q": np.array([[-1.0]])}, "sigma_q must be positive definite"),
+            ({"sigma_p": np.array([[-1.0]])}, "sigma_p must be positive definite"),
+            ({"sigma_q": np.array([[0.0]])}, "sigma_q must be positive definite"),
+            ({"sigma_q": np.array([[np.nan]])}, "sigma_q must be finite"),
+            ({"mu_q": np.array([np.inf])}, "mu_q must be finite"),
+            ({"mu_p": np.array([np.nan])}, "mu_p must be finite"),
+            ({"sigma_q": np.eye(2)}, r"sigma_q must have shape \(1, 1\)"),
+            ({"mu_p": np.zeros(2)}, "must share a dimension"),
+            ({"mu_q": np.zeros((1, 1))}, "mu_q must be a one-dimensional vector"),
+        ],
+    )
+    def test_rejects_inputs_that_are_not_gaussian_parameters(
+        self, kwargs: dict[str, Any], message: str
+    ) -> None:
+        """Every invalid parameter fails closed with a named reason."""
+        call = {
+            "mu_q": np.zeros(1),
+            "sigma_q": np.eye(1),
+            "mu_p": np.zeros(1),
+            "sigma_p": np.eye(1),
+        }
+        call.update(kwargs)
+        with pytest.raises(ValueError, match=message):
+            kl_divergence_gaussian(**call)
+
+    def test_asymmetric_matrix_is_not_a_covariance(self) -> None:
+        """An asymmetric matrix must be refused, not silently symmetrised."""
+        with pytest.raises(ValueError, match="sigma_q must be symmetric"):
+            kl_divergence_gaussian(
+                np.zeros(2), np.array([[1.0, 2.0], [0.0, 1.0]]), np.zeros(2), np.eye(2)
+            )
+
+    def test_symmetry_tolerance_admits_rounding_but_not_a_real_asymmetry(self) -> None:
+        """The tolerance covers float noise, not a materially asymmetric matrix."""
+        noise = COVARIANCE_SYMMETRY_ATOL / 10.0
+        nearly = np.array([[2.0, 0.5 + noise], [0.5, 2.0]])
+        assert kl_divergence_gaussian(np.zeros(2), nearly, np.zeros(2), np.eye(2)) >= 0.0
+
+        clearly = np.array([[2.0, 0.5 + 1e-6], [0.5, 2.0]])
+        with pytest.raises(ValueError, match="sigma_q must be symmetric"):
+            kl_divergence_gaussian(np.zeros(2), clearly, np.zeros(2), np.eye(2))

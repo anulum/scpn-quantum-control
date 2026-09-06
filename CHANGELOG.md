@@ -4,6 +4,18 @@
 
 ### Fixed
 
+- Reject inputs that are not Gaussian parameters in the variational free-energy
+  KL divergence, and compute it through Cholesky factors. A negative-definite
+  covariance previously returned a negative divergence, which is impossible by
+  definition, because the sign from `slogdet` was discarded; an asymmetric
+  matrix was accepted as a covariance; a singular covariance leaked a solver
+  error out of the public function; and a non-finite mean produced `NaN`. Means
+  and covariances are now validated as finite, matching, symmetric and positive
+  definite, the solves go through the Cholesky factor instead of an explicit
+  inverse, and the log-determinants carry no separate sign. The ridge added to a
+  precision matrix before inversion is a named, documented constant rather than
+  a silent correction.
+
 - Keep IQM compilation bound to the device that will run the circuit. A failed
   targeted transpilation fell back to compiling with no backend at all, so a
   circuit with no coupling map, basis gates or qubit layout could still be
