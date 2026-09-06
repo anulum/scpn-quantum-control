@@ -380,15 +380,36 @@ def test_brute_mpc_rejects_non_finite_target() -> None:
 
 
 def test_brute_mpc_matches_two_dimensional_reference() -> None:
+    # CR-20260904-R02 replaced the norm-only surrogate with the vector residual
+    # sum_t ||u_t*v - target||^2, where v = B @ ones. This expectation was left
+    # on the old surrogate, which selected u = 0 at cost 1/3, and only passed
+    # because the installed extension predated the repair. The costs below come
+    # from enumerating the same eight action sequences in NumPy, independently
+    # of the kernel.
     b_flat = np.ascontiguousarray(np.eye(2, dtype=np.float64).ravel())
     target = np.ascontiguousarray([0.8, 0.6], dtype=np.float64)
 
     actions, cost, costs, n_evaluated = engine.brute_mpc(b_flat, target, 2, 3)
 
+    actuation = np.eye(2).sum(axis=1)
+    expected_costs = [
+        sum(
+            float((step * actuation - target) @ (step * actuation - target))
+            for step in [(index >> t) & 1 for t in range(3)]
+        )
+        for index in range(8)
+    ]
+    best = int(np.argmin(expected_costs))
+
     assert n_evaluated == 8
-    np.testing.assert_array_equal(np.asarray(actions), np.zeros(3, dtype=np.int64))
-    assert cost == pytest.approx(1.0 / 3.0)
-    assert np.asarray(costs).shape == (8,)
+    np.testing.assert_array_equal(
+        np.asarray(actions),
+        np.array([(best >> t) & 1 for t in range(3)], dtype=np.int64),
+    )
+    np.testing.assert_array_equal(np.asarray(actions), np.ones(3, dtype=np.int64))
+    assert cost == pytest.approx(expected_costs[best])
+    assert cost == pytest.approx(0.6)
+    np.testing.assert_allclose(np.asarray(costs), np.array(expected_costs), atol=1e-12)
 
 
 def test_analog_coupling_terms_rejects_non_contiguous_couplings() -> None:
