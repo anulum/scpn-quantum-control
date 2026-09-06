@@ -1047,14 +1047,104 @@ __all__ = [
     "sakaguchi_jacobian",
     "last_sakaguchi_force_tier_used",
     "last_sakaguchi_jacobian_tier_used",
+    "DEFAULT_RANDOM_STATE_MAX_GIB",
+    "RANDOM_STATE_BYTES_PER_AMPLITUDE",
+    "rust_random_state",
 ]
+
+import math
+from typing import Final
 
 import numpy as np
 from numpy.typing import NDArray
 
+RANDOM_STATE_BYTES_PER_AMPLITUDE: Final[int] = 48
+"""Peak bytes held per amplitude while a random state is being built.
 
-def rust_random_state(n_qubits: int, seed: int = 42) -> NDArray[np.complex128]:
-    """Return a normalized complex random state vector for fallback tests."""
-    np.random.seed(seed)
-    state = np.random.randn(2**n_qubits) + 1j * np.random.randn(2**n_qubits)
-    return np.asarray(state / np.linalg.norm(state), dtype=np.complex128)
+The returned vector is complex128, sixteen bytes per amplitude, but building it
+also holds two float64 draws and one complex temporary at the same time, so the
+peak is three times the size of the result. Admission is checked against the
+peak rather than the result, because the peak is what has to fit.
+"""
+
+DEFAULT_RANDOM_STATE_MAX_GIB: Final[float] = 1.0
+"""Default admission budget for one random state, in GiB.
+
+This package deliberately does not reach for the ``scpn_quantum_control``
+dense-budget owner: that package depends on this one, and importing it here
+would invert the dependency. The budget is therefore local, explicit and
+overridable per call.
+"""
+
+_GIB: Final[int] = 1024**3
+
+
+def rust_random_state(
+    n_qubits: int,
+    seed: int = 42,
+    *,
+    max_gib: float = DEFAULT_RANDOM_STATE_MAX_GIB,
+) -> NDArray[np.complex128]:
+    """Return a normalised complex random state vector for fallback tests.
+
+    The draws come from a generator local to this call. The previous
+    implementation called :func:`numpy.random.seed`, which reseeds and then
+    consumes the caller's global generator, so ``rust_random_state(1, 42)``
+    silently replaced an unrelated stream the caller had seeded itself.
+
+    The generator is a legacy :class:`numpy.random.RandomState` rather than a
+    modern :class:`numpy.random.Generator`, and that is a deliberate
+    compatibility choice. ``RandomState(seed).randn(...)`` reproduces exactly
+    the bytes the global ``numpy.random.seed(seed)`` path produced, so every
+    state this function has ever returned for a given seed is unchanged. A
+    modern generator would have produced different values for every seed, which
+    would silently invalidate any comparison against an earlier run.
+
+    Parameters
+    ----------
+    n_qubits
+        Non-negative qubit count. The returned vector has ``2**n_qubits``
+        amplitudes.
+    seed
+        Non-negative seed for the local generator. The same seed always gives
+        the same vector, and different seeds give different vectors.
+    max_gib
+        Admission budget in GiB for the peak memory of one call. See
+        :data:`RANDOM_STATE_BYTES_PER_AMPLITUDE`.
+
+    Returns
+    -------
+    numpy.ndarray
+        Complex128 vector of shape ``(2**n_qubits,)`` with unit Euclidean norm.
+
+    Raises
+    ------
+    ValueError
+        If ``n_qubits`` or ``seed`` is not a non-negative integer, if
+        ``max_gib`` is not positive and finite, or if the draw degenerates to a
+        zero vector that cannot be normalised.
+    MemoryError
+        If the peak allocation for ``n_qubits`` exceeds ``max_gib``.
+    """
+    if isinstance(n_qubits, bool) or not isinstance(n_qubits, int) or n_qubits < 0:
+        raise ValueError(f"n_qubits must be a non-negative integer, got {n_qubits!r}")
+    if isinstance(seed, bool) or not isinstance(seed, int) or seed < 0:
+        raise ValueError(f"seed must be a non-negative integer, got {seed!r}")
+    if not (math.isfinite(max_gib) and max_gib > 0.0):
+        raise ValueError(f"max_gib must be positive and finite, got {max_gib!r}")
+
+    dimension = 2**n_qubits
+    peak_bytes = dimension * RANDOM_STATE_BYTES_PER_AMPLITUDE
+    budget_bytes = int(max_gib * _GIB)
+    if peak_bytes > budget_bytes:
+        raise MemoryError(
+            f"random state for n_qubits={n_qubits} needs about "
+            f"{peak_bytes / _GIB:.2f} GiB at peak, above the {max_gib:.2f} GiB budget"
+        )
+
+    generator = np.random.RandomState(seed)
+    state = generator.randn(dimension) + 1j * generator.randn(dimension)
+    norm = float(np.linalg.norm(state))
+    if not (math.isfinite(norm) and norm > 0.0):
+        raise ValueError(f"random draw could not be normalised, norm was {norm!r}")
+    return np.asarray(state / norm, dtype=np.complex128)
