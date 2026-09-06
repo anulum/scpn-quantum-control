@@ -14,7 +14,7 @@ import hashlib
 import json
 import math
 from collections.abc import Mapping, Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from numbers import Real
 from time import time_ns
 from typing import Any, cast
@@ -341,7 +341,7 @@ def _require_params(gate: str, params: Sequence[float], expected: int) -> None:
 
 
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _provider_job_id(workload: QuantumWorkload) -> str:

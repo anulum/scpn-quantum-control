@@ -25,7 +25,7 @@ import json
 import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from statistics import mean
 from typing import Any
@@ -208,7 +208,10 @@ def _two_qubit_count(circuit: QuantumCircuit) -> int:
 
 def _bind_ansatz(ansatz: QuantumCircuit, params: np.ndarray) -> QuantumCircuit:
     return ansatz.assign_parameters(
-        {parameter: float(value) for parameter, value in zip(ansatz.parameters, params)}
+        {
+            parameter: float(value)
+            for parameter, value in zip(ansatz.parameters, params, strict=True)
+        }
     )
 
 
@@ -403,7 +406,7 @@ def build_summary(
         decision = "blocked_no_vqs_candidate_passed_promotion_gate"
     return {
         "schema": "scpn_phase3_vqs_alternative_readiness_v1",
-        "generated_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "generated_at_utc": datetime.now(UTC).replace(microsecond=0).isoformat(),
         "hardware_submission": False,
         "qpu_minutes_spent": 0.0,
         "basis_gates": list(BASIS_GATES),

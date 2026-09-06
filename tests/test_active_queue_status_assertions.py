@@ -21,10 +21,10 @@ historical text stays exactly as written.
 from __future__ import annotations
 
 import re
+import tomllib
 from pathlib import Path
 
 import pytest
-import tomllib
 
 TODO = Path("docs/internal/TODO.md")
 """The canonical internal queue."""

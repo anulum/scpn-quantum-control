@@ -33,7 +33,7 @@ import hashlib
 import json
 import secrets
 from collections.abc import Mapping, Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -243,7 +243,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     selected = scoped_entries(raw_job_id_entries(manifest), scope)
     raw_ids = sorted({entry["raw_value"] for entry in selected})
     nonces, minted = load_or_extend_nonces(args.nonces, raw_ids)
-    generated_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    generated_utc = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     payload = build_payload(manifest, scope, nonces, generated_utc)
     serialised = json.dumps(payload, indent=2)
     assert_no_private_leak(serialised, manifest, nonces)

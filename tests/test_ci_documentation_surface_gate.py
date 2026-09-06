@@ -12,10 +12,10 @@ from __future__ import annotations
 
 import ast
 import re
+import tomllib
 from pathlib import Path
 
 import pytest
-import tomllib
 
 from scpn_quantum_control import TraceADArray, TraceADScalar
 from scpn_quantum_control.control import realtime_runtime
@@ -568,7 +568,9 @@ def test_ci_optional_runtime_locks_and_preview_rules_are_explicit() -> None:
     workflow = read_ci_workflow_source()
 
     sections = re.split(r"^  ([a-z0-9_-]+):\n", workflow, flags=re.MULTILINE)
-    jobs = dict(zip(sections[1::2], sections[2::2]))
+    # Strided key/value split: an odd trailing section leaves the two slices
+    # different lengths on purpose, so truncation is the intended behaviour.
+    jobs = dict(zip(sections[1::2], sections[2::2], strict=False))
     expected_owners = {
         "requirements-ci-jax-py312-linux.txt": {
             "kyma-v2-dynamics-quality",

@@ -24,14 +24,10 @@ import argparse
 import hashlib
 import json
 import sys
+import tomllib
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:  # pragma: no cover - retained for downstream legacy interpreters
-    import tomli as tomllib
 
 VERDICT_SCHEMA = "scpn-quantum-control.native-speedup-verdict.v1"
 REPO_ROOT = Path(__file__).resolve().parents[1]

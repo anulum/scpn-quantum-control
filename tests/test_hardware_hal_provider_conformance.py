@@ -12,15 +12,10 @@ from __future__ import annotations
 import importlib
 import json
 import re
-import sys
+import tomllib
 from pathlib import Path
 
 import pytest
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    import tomli as tomllib
 
 from scpn_quantum_control.hardware.aggregators import (
     aggregator_provider_routes_for,

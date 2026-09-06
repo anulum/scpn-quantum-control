@@ -222,7 +222,7 @@ def mitigated_pauli_expectation(
         mitigated = np.linalg.inv(np.array(model["assignment_matrix"], dtype=float)) @ observed
         active = [index for index, basis in enumerate(pauli_label) if basis != "I"]
         expectation = 0.0
-        for bitstring, probability in zip(bitstrings, mitigated):
+        for bitstring, probability in zip(bitstrings, mitigated, strict=True):
             parity = sum(1 for index in active if bitstring[index] == "1")
             expectation += (-1.0 if parity % 2 else 1.0) * float(probability)
         return float(expectation)
@@ -254,7 +254,7 @@ def readout_mitigated_pauli_expectation(
     mitigated = np.linalg.inv(_tensor_assignment_matrix(readout_matrices)) @ observed
     active = [index for index, basis in enumerate(pauli_label) if basis != "I"]
     expectation = 0.0
-    for bitstring, probability in zip(bitstrings, mitigated):
+    for bitstring, probability in zip(bitstrings, mitigated, strict=True):
         parity = sum(1 for index in active if bitstring[index] == "1")
         expectation += (-1.0 if parity % 2 else 1.0) * float(probability)
     return float(expectation)

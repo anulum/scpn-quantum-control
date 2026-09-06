@@ -17,7 +17,7 @@ import importlib.util
 import json
 import sys
 from collections.abc import Mapping, Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -51,7 +51,7 @@ def _extract_counts_symbol() -> Any:
 
 
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
 
 
 def _json_safe(value: Any) -> Any:
@@ -123,7 +123,7 @@ def _rows_from_result(
             f"result length {len(result)} does not match metadata length {len(metas)}"
         )
     rows: list[dict[str, Any]] = []
-    for meta, pub_result in zip(metas, result):
+    for meta, pub_result in zip(metas, result, strict=True):
         metadata = _metadata_from_pub_result(pub_result)
         metadata.setdefault("depth", None)
         metadata.setdefault("total_gates", None)

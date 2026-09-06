@@ -27,7 +27,7 @@ from __future__ import annotations
 import json
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 # Ensure project is importable
@@ -50,14 +50,14 @@ def main() -> None:
     print("=" * 60)
 
     start = time.perf_counter()
-    ts = datetime.now(timezone.utc).isoformat()
+    ts = datetime.now(UTC).isoformat()
     print(f"\n[{ts}] Connecting to ibm_fez...")
 
     runner = HardwareRunner(use_simulator=False)
     runner.connect()
     print(f"  Connected: {runner._backend.name}")
 
-    print(f"\n[{datetime.now(timezone.utc).isoformat()}] Running noise_baseline (500 shots)...")
+    print(f"\n[{datetime.now(UTC).isoformat()}] Running noise_baseline (500 shots)...")
     result = noise_baseline_experiment(runner, shots=500)
 
     elapsed = time.perf_counter() - start

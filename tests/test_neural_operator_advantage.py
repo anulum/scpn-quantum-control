@@ -16,7 +16,7 @@ digest, and the study is deterministic on the content under fixed seeds.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import numpy as np
 import pytest
@@ -37,7 +37,7 @@ from scpn_quantum_control.forecasting.neural_operator_cost_model import (  # noq
 _N = 6
 _DT = 0.05
 _STEPS = 8  # horizon = 0.4
-_FIXED_CLOCK = datetime(2026, 7, 3, 12, 0, 0, tzinfo=timezone.utc)
+_FIXED_CLOCK = datetime(2026, 7, 3, 12, 0, 0, tzinfo=UTC)
 
 
 def _network(seed: int) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
@@ -176,7 +176,7 @@ def test_payload_digest_is_host_independent_of_provenance() -> None:
 
 def test_default_clock_records_current_utc() -> None:
     """Record a current UTC timestamp through the unmodified public default clock."""
-    before = datetime.now(timezone.utc)
+    before = datetime.now(UTC)
     omega, coupling = _network(seed=11)
     study = evaluate_neural_operator_advantage(
         omega,
@@ -195,7 +195,7 @@ def test_default_clock_records_current_utc() -> None:
         measure_wall_clock=False,
     )
     generated = datetime.fromisoformat(study.generated_utc)
-    after = datetime.now(timezone.utc)
+    after = datetime.now(UTC)
     assert before <= generated <= after
 
 

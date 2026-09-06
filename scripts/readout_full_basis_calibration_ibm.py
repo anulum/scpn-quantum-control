@@ -14,7 +14,7 @@ import argparse
 import json
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from statistics import mean
 from typing import Any
@@ -36,7 +36,7 @@ SHOTS = 8192
 
 
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
 
 
 def _bitstrings(n: int) -> list[str]:
@@ -209,7 +209,7 @@ def main() -> int:
     if results:
         payload["job_ids"].append(results[0].job_id)
     circuit_rows: list[dict[str, Any]] = []
-    for meta, result in zip([m for m, _ in circuits], results):
+    for meta, result in zip([m for m, _ in circuits], results, strict=True):
         circuit_rows.append(
             {
                 "meta": meta,

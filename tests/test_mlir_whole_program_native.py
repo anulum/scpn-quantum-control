@@ -338,7 +338,10 @@ def test_whole_program_ad_trace_native_llvm_jit_executes_branchless_scalar_ir() 
     np.testing.assert_allclose(
         kernel.batch_jvp(batch, batch_tangents),
         np.array(
-            [float(np.dot(item[1], row)) for item, row in zip(batch_reference, batch_tangents)],
+            [
+                float(np.dot(item[1], row))
+                for item, row in zip(batch_reference, batch_tangents, strict=True)
+            ],
             dtype=np.float64,
         ),
         rtol=1.0e-10,
@@ -346,7 +349,12 @@ def test_whole_program_ad_trace_native_llvm_jit_executes_branchless_scalar_ir() 
     )
     np.testing.assert_allclose(
         kernel.batch_vjp(batch, batch_cotangents),
-        np.vstack([scale * item[1] for scale, item in zip(batch_cotangents, batch_reference)]),
+        np.vstack(
+            [
+                scale * item[1]
+                for scale, item in zip(batch_cotangents, batch_reference, strict=True)
+            ]
+        ),
         rtol=1.0e-10,
         atol=1.0e-10,
     )

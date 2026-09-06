@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -130,7 +130,7 @@ def main() -> int:
     print(f"Result type: {type(result).__name__}")
     print(f"Number of pubs: {len(result)}")
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
     output = {
         "experiment": "pipe_cleaner_ibm_kingston",
         "timestamp_utc": timestamp,

@@ -25,7 +25,7 @@ import sys
 import time
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from statistics import mean
 from types import ModuleType
@@ -103,7 +103,7 @@ def _hardware_runner_symbols() -> tuple[type[Any], Any]:
 
 
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
 
 
 def _summary(values: Sequence[float | int]) -> dict[str, float | int | None]:
@@ -572,7 +572,8 @@ def readiness(
     source_depths = [max(int(circuit.depth()), 1) for circuit in source_isa_circuits]
     main_depths = [int(circuit.depth()) for circuit in main_isa_circuits]
     expansion_ratios = [
-        main_depth / source_depth for source_depth, main_depth in zip(source_depths, main_depths)
+        main_depth / source_depth
+        for source_depth, main_depth in zip(source_depths, main_depths, strict=True)
     ]
     accepted = (
         bool(depths)
@@ -691,7 +692,7 @@ def _result_rows(
     isa_circuits: Sequence[QuantumCircuit],
 ) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    for meta, counts, circuit in zip(metas, counts_rows, isa_circuits):
+    for meta, counts, circuit in zip(metas, counts_rows, isa_circuits, strict=True):
         rows.append(
             {
                 "meta": meta,

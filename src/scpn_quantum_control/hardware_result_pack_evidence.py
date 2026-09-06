@@ -24,7 +24,7 @@ import shlex
 import shutil
 import subprocess  # nosec B404
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -75,7 +75,7 @@ def sha256(path: Path) -> str:
 
 def utc_stamp() -> str:
     """Return a filesystem-safe UTC timestamp."""
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
 
 
 def run_json_command(command: list[str], *, cwd: Path, output_path: Path) -> dict[str, Any]:

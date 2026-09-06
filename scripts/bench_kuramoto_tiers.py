@@ -49,7 +49,7 @@ import os
 import sys
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -519,7 +519,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.pin_core is not None and hasattr(os, "sched_setaffinity"):
         os.sched_setaffinity(0, {args.pin_core})
 
-    generated_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    generated_utc = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     provenance = capture_provenance()
     parameters: dict[str, Any] = {
         "tiers": sorted(tiers),

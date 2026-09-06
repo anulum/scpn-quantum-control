@@ -53,6 +53,7 @@ class TestCrossDomainValidation:
             result.system_names,
             result.topology_correlations,
             result.frequency_correlations,
+            strict=True,
         ):
             print(f"    {name}: ρ={rho:.3f}, freq r={freq:.3f}")
         print(f"  Best: {result.best_system} (ρ={result.best_correlation:.3f})")

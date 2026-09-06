@@ -293,10 +293,7 @@ def test_platform_sdk_range_matches_the_studio_extra() -> None:
     version CI actually resolves (this drifted once: the manifest said <0.11
     while the extra allowed <0.12 and CI ran 0.11.0).
     """
-    if sys.version_info >= (3, 11):
-        import tomllib
-    else:  # pragma: no cover - retained for downstream legacy interpreters
-        import tomli as tomllib
+    import tomllib
 
     repo_root = Path(__file__).resolve().parents[1]
     with (repo_root / "pyproject.toml").open("rb") as handle:

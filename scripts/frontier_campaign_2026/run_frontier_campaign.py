@@ -17,9 +17,10 @@ substituting synthetic scientific outputs.
 import asyncio
 import json
 import time
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from campaign_io import campaign_path
 from test_dla_tensor_network import run_dla_tn_mapping

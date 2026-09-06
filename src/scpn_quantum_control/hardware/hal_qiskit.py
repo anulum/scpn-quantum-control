@@ -13,7 +13,7 @@ from __future__ import annotations
 import base64
 import io
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, cast
 
 from qiskit import QuantumCircuit, qasm3, qpy, transpile
@@ -381,7 +381,7 @@ def _backend_name(backend: Any) -> str:
 
 
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _provider_job_id(provider_job: Any, *, provider_name: str) -> str:

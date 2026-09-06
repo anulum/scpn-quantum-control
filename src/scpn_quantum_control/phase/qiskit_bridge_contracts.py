@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TypeAlias
 
 import numpy as np
@@ -720,7 +720,7 @@ def _utc_timestamp(field_name: str, value: object) -> datetime:
         raise ValueError(f"{field_name} must be an ISO-8601 UTC timestamp") from exc
     if timestamp.tzinfo is None:
         raise ValueError(f"{field_name} must include a UTC offset")
-    return timestamp.astimezone(timezone.utc).replace(microsecond=0)
+    return timestamp.astimezone(UTC).replace(microsecond=0)
 
 
 def _normalise_qiskit_runtime_primitive(primitive_name: str) -> str:

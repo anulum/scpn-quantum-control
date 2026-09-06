@@ -25,7 +25,7 @@ def test_iter_feature_spec_defaults():
     assert len(spec.names) == 11
     assert len(spec.mins) == 11
     assert len(spec.maxs) == 11
-    assert all(mn < mx for mn, mx in zip(spec.mins, spec.maxs))
+    assert all(mn < mx for mn, mx in zip(spec.mins, spec.maxs, strict=True))
 
 
 def test_normalize_clamps_to_unit():

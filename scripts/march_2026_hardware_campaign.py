@@ -54,7 +54,7 @@ import json
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 # Add project root to path
@@ -192,7 +192,7 @@ def create_campaign_log(results_dir: Path) -> dict:
     return {
         "campaign_id": CAMPAIGN_ID,
         "backend": BACKEND,
-        "start_time": datetime.now(timezone.utc).isoformat(),
+        "start_time": datetime.now(UTC).isoformat(),
         "budget_total_s": BUDGET_TOTAL_S,
         "budget_queued_s": BUDGET_QUEUED_S,
         "budget_available_s": BUDGET_AVAILABLE_S,
@@ -277,7 +277,7 @@ def run_campaign(args):
             "est_qpu_s": exp["est_qpu_s"],
             "preprint_figure": exp["preprint_figure"],
             "description": exp["description"],
-            "start_time": datetime.now(timezone.utc).isoformat(),
+            "start_time": datetime.now(UTC).isoformat(),
             "status": "running",
         }
 
@@ -294,7 +294,7 @@ def run_campaign(args):
             elapsed = time.time() - t0
             exp_log["wall_time_s"] = elapsed
             exp_log["status"] = "completed"
-            exp_log["end_time"] = datetime.now(timezone.utc).isoformat()
+            exp_log["end_time"] = datetime.now(UTC).isoformat()
 
             # Save individual result
             result_path = results_dir / f"{exp['name']}_result.json"
@@ -309,7 +309,7 @@ def run_campaign(args):
             exp_log["wall_time_s"] = elapsed
             exp_log["status"] = "failed"
             exp_log["error"] = str(e)
-            exp_log["end_time"] = datetime.now(timezone.utc).isoformat()
+            exp_log["end_time"] = datetime.now(UTC).isoformat()
             print(f"\nFAILED after {elapsed:.1f}s: {e}")
 
         campaign_log["experiments"].append(exp_log)
@@ -322,7 +322,7 @@ def run_campaign(args):
         print()
 
     # Finalize
-    campaign_log["end_time"] = datetime.now(timezone.utc).isoformat()
+    campaign_log["end_time"] = datetime.now(UTC).isoformat()
     campaign_log["status"] = "completed"
     total_wall = sum(e.get("wall_time_s", 0) for e in campaign_log["experiments"])
     completed = sum(1 for e in campaign_log["experiments"] if e["status"] == "completed")

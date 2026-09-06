@@ -22,7 +22,7 @@ def main() -> None:
     print("ITER Disruption Classifier Demo")
     print("=" * 50)
     print(f"Features ({len(spec.names)}):")
-    for name, lo, hi in zip(spec.names, spec.mins, spec.maxs):
+    for name, lo, hi in zip(spec.names, spec.mins, spec.maxs, strict=True):
         print(f"  {name:>15}: [{lo:.1f}, {hi:.1f}]")
 
     X, y = generate_synthetic_iter_data(

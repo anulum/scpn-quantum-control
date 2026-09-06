@@ -37,7 +37,7 @@ import shutil
 import socket
 import subprocess  # nosec B404
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -131,7 +131,7 @@ def capture_provenance() -> dict[str, Any]:
     `"unknown"` / `"not installed"` rather than raising.
     """
     return {
-        "captured_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "captured_at_utc": datetime.now(UTC).isoformat(timespec="seconds"),
         "git": {
             "commit": _git("rev-parse", "HEAD"),
             "short": _git("rev-parse", "--short", "HEAD"),

@@ -191,7 +191,7 @@ def test_entanglement_scan_jax(mock_jax, monkeypatch):
     def fake_vmap(fn):
         def inner(batch):
             results = [fn(h) for h in batch]
-            return tuple(np.array(x) for x in zip(*results))
+            return tuple(np.array(x) for x in zip(*results, strict=True))
 
         return inner
 

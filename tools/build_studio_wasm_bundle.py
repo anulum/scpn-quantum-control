@@ -29,10 +29,9 @@ import json
 import shutil
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 from typing import Final
-
-import tomllib
 
 REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[1]
 KERNEL_CRATE_DIR: Final[Path] = REPO_ROOT / "scpn_quantum_engine" / "studio_wasm_kernel"

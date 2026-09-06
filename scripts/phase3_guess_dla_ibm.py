@@ -23,7 +23,7 @@ import sys
 import time
 from collections import defaultdict
 from collections.abc import Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from statistics import mean
 from typing import Any
@@ -64,7 +64,7 @@ DEFAULT_LAYOUT = (5, 6, 7, 8)
 
 
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
 
 
 def _summary(values: Sequence[float | int]) -> dict[str, float | int]:
@@ -187,7 +187,7 @@ def readiness(
     total_gates = [sum(circuit.count_ops().values()) for circuit in isa_circuits]
     two_qubit_gates = [_two_qubit_gate_count(circuit) for circuit in isa_circuits]
     by_depth_scale: dict[tuple[int, int], list[int]] = defaultdict(list)
-    for (meta, _), circuit in zip(circuits, isa_circuits):
+    for (meta, _), circuit in zip(circuits, isa_circuits, strict=True):
         if meta["block"] == "main":
             by_depth_scale[(int(meta["depth"]), int(meta["noise_scale"]))].append(circuit.depth())
     overhead_failures: list[dict[str, Any]] = []
@@ -275,7 +275,7 @@ def _result_rows(
     isa_circuits: Sequence[QuantumCircuit],
 ) -> list[dict[str, Any]]:
     rows = []
-    for meta, counts, circuit in zip(metas, counts_rows, isa_circuits):
+    for meta, counts, circuit in zip(metas, counts_rows, isa_circuits, strict=True):
         rows.append(
             {
                 "meta": meta,

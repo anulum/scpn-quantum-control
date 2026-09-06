@@ -122,11 +122,11 @@
         "data/differentiable_phase_qnode/external_validation_environment_manifest_20260616.json"
       ],
       "evidence_sha256": [
-        "c4c16a3bb255843a94ec6e90b919857b206842c461a8aa344809062fe97f2261",
+        "04c0c96f10fa156156e52527519ad8057c6e5a95cb3939b6aeef5481aa595359",
         "d78257a8c5d5d1e9d9da695ce878f43bd2f6f7c35027a12bdbd2ae274cf4f390",
         "537ae37c2a31e2abdb3cab4f0728bb88c5f22643626f3c722d7e5f721978438b",
         "a5c6d5ca3d64d56934b8507edb675127883b163b866bf89c607966f025d4292c",
-        "8ef2f01c490a52b5833c224ab857ffd9da71c1bd0488862e6d6296caf84c0721"
+        "181ccc6dd5f0da5343cce8ce2fa2183c6f58b4cbad55de1d2331ed526a2f435b"
       ],
       "evidence_status": "locked",
       "blockers": [],
@@ -329,7 +329,7 @@
         "src/scpn_quantum_control/phase/torch_maturity.py"
       ],
       "evidence_sha256": [
-        "c4c16a3bb255843a94ec6e90b919857b206842c461a8aa344809062fe97f2261",
+        "04c0c96f10fa156156e52527519ad8057c6e5a95cb3939b6aeef5481aa595359",
         "bbc9d36825b9965fabaac9fe152c67549fc305507037d05fb0094dc767a55b2e",
         "b103d89b86a5a8bd9ebe2946622be84165d40b2cc6603a4d5241bb7eb1845136"
       ],

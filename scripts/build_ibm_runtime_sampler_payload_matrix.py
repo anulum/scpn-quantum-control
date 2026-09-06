@@ -15,7 +15,7 @@ import hashlib
 import json
 import math
 from collections.abc import Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -118,7 +118,7 @@ def _sha256(path: Path) -> str:
 
 
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -186,7 +186,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     document = {
         "schema": "scpn_ibm_runtime_sampler_payload_matrix_v1",
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
         "backend": backend_name,
         "backend_qubits": backend_qubits,
         "rows": rows,

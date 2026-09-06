@@ -12,7 +12,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -107,7 +107,7 @@ def test_private_manifest_records_raw_values_but_not_salt() -> None:
     manifest = build_private_manifest(
         result.entries,
         salt="private-secret-salt",
-        created_utc=datetime(2026, 5, 13, tzinfo=timezone.utc),
+        created_utc=datetime(2026, 5, 13, tzinfo=UTC),
     )
 
     assert manifest["schema"] == MANIFEST_SCHEMA

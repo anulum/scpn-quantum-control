@@ -21,7 +21,7 @@ from __future__ import annotations
 import json
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -38,7 +38,7 @@ from phase1_mini_bench_ibm_kingston import (  # noqa: E402
 
 def main() -> int:
     """Submit or dry-run the post-cycle IBM Kingston micro-probe."""
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
     results_dir = REPO_ROOT / ".coordination" / "ibm_runs"
     results_dir.mkdir(parents=True, exist_ok=True)
     results_path = results_dir / f"micro_probe_{timestamp}.json"
@@ -137,7 +137,7 @@ def main() -> int:
     print()
 
     # Analyse
-    for meta, jr in zip(metas, results):
+    for meta, jr in zip(metas, results, strict=True):
         stats = analyse_counts(jr.counts or {}, meta)
         print(
             f"  {meta['sector']:<6} rep={meta['rep']}: leakage={stats.get('parity_leakage', 'N/A'):.4f}"
@@ -151,7 +151,7 @@ def main() -> int:
         "wall_time_s": wall,
         "circuits": [
             {"meta": m, "counts": r.counts, "stats": analyse_counts(r.counts or {}, m)}
-            for m, r in zip(metas, results)
+            for m, r in zip(metas, results, strict=True)
         ],
     }
     with open(results_path, "w") as f:

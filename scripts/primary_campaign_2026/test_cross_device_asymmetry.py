@@ -40,7 +40,7 @@ async def run_test():
         jobs.append(job)
 
     res = await asyncio.gather(*(j.result() for j in jobs))
-    for b, r in zip(backends, res):
+    for b, r in zip(backends, res, strict=True):
         results[b] = r
 
     with open(result_path("cross_device_asymmetry.json"), "w") as f:

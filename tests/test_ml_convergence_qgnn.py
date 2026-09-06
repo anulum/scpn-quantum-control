@@ -26,7 +26,9 @@ def test_qgnn_example_converges_monotonically_and_replays() -> None:
     assert certificate.deterministic_replay
     assert all(
         current <= previous
-        for previous, current in zip(certificate.loss_history, certificate.loss_history[1:])
+        for previous, current in zip(
+            certificate.loss_history, certificate.loss_history[1:], strict=False
+        )
     )
     assert dict(certificate.details)["nodes_per_graph"] == 3
 

@@ -43,7 +43,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _distribution_version
 from typing import Any
@@ -189,7 +189,7 @@ Clock = Callable[[], str]
 
 def _utc_now() -> str:
     """Return the current UTC time as an ISO-8601 ``Z`` string."""
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _final_r_from_trajectory(trajectory: NDArray[np.float64]) -> float:

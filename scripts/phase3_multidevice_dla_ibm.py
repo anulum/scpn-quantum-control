@@ -28,7 +28,7 @@ import json
 import sys
 import time
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from statistics import mean
 from typing import Any
@@ -61,7 +61,7 @@ PHASE2_AG_OBSERVED_MAX_DEPTH = 1014
 
 
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
 
 
 def _summary(values: list[float | int]) -> dict[str, float | int]:
@@ -152,7 +152,7 @@ def readiness(
     total_gates = [sum(c.count_ops().values()) for c in isa]
     ecr_gates = [c.count_ops().get("ecr", 0) for c in isa]
     by_depth: dict[int, list[int]] = defaultdict(list)
-    for meta, circuit in zip((m for m, _ in all_circuits), isa):
+    for meta, circuit in zip((m for m, _ in all_circuits), isa, strict=True):
         by_depth[int(meta["depth"])].append(circuit.depth())
 
     depth_summary = _summary(depths)
@@ -307,7 +307,7 @@ def main() -> int:
         payload["job_ids"].append(readout_job)
 
     circuits_out: list[dict[str, Any]] = []
-    for meta, result in zip([m for m, _ in main_circuits], main_results):
+    for meta, result in zip([m for m, _ in main_circuits], main_results, strict=True):
         circuits_out.append(
             {
                 "meta": meta,
@@ -317,7 +317,7 @@ def main() -> int:
                 "metadata": result.metadata,
             }
         )
-    for meta, result in zip([m for m, _ in readout_circuits], readout_results):
+    for meta, result in zip([m for m, _ in readout_circuits], readout_results, strict=True):
         circuits_out.append(
             {
                 "meta": meta,

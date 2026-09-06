@@ -65,7 +65,7 @@ def main():
     bar_colors = [colors[r["ansatz"]] for r in results]
 
     bars = ax2.bar(names, gaps, color=bar_colors, edgecolor="black", linewidth=0.6)
-    for bar, gap in zip(bars, gaps):
+    for bar, gap in zip(bars, gaps, strict=True):
         ax2.text(
             bar.get_x() + bar.get_width() / 2,
             gap + max(gaps) * 0.02,

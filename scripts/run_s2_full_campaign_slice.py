@@ -17,7 +17,7 @@ import hashlib
 import json
 import sys
 from collections.abc import Mapping, Sequence
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -137,7 +137,7 @@ def execute_slice(
     unplanned_rows = sorted(executed_labels - selected_labels)
     summary = {
         "schema": "scpn_s2_full_campaign_slice_v1",
-        "generated_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "generated_at_utc": datetime.now(UTC).replace(microsecond=0).isoformat(),
         "date": TODAY,
         "hardware_submission": False,
         "qpu_minutes_spent": 0.0,

@@ -25,8 +25,9 @@ The trainable components are:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from itertools import combinations
-from typing import Callable, cast
+from typing import cast
 
 import jax
 import jax.numpy as jnp

@@ -74,7 +74,7 @@ def _calibration_covariates() -> dict[str, dict[str, Any]]:
         layout = json.loads(counts_path.read_text(encoding="utf-8"))["layout"]
         payload = json.loads(calibration_path.read_text(encoding="utf-8"))
         calibration = payload["calibration"]
-        edge_keys = [f"{left}-{right}" for left, right in zip(layout, layout[1:])]
+        edge_keys = [f"{left}-{right}" for left, right in zip(layout, layout[1:], strict=False)]
         cz_fidelity = {key: calibration["edge_fidelity"][key] for key in edge_keys}
         readout_error = {str(qubit): calibration["readout_error"][str(qubit)] for qubit in layout}
         covariates[str(index)] = {

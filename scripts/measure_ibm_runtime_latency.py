@@ -23,7 +23,7 @@ import statistics
 import sys
 import time
 from collections.abc import Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -76,7 +76,7 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
 
 
 def _sha256(path: Path) -> str:
@@ -195,7 +195,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     payload: dict[str, Any] = {
         "schema": "scpn_ibm_runtime_latency_campaign_v1",
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
         "backend": args.backend,
         "hardware_submission": bool(args.submit),
         "claim_boundary": (

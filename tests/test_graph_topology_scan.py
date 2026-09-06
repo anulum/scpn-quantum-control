@@ -300,7 +300,7 @@ class TestScanGraphTopologies:
     def test_deterministic(self):
         r1 = _run_scan(n=6, n_samples=3, seed=42)
         r2 = _run_scan(n=6, n_samples=3, seed=42)
-        for a, b in zip(r1, r2):
+        for a, b in zip(r1, r2, strict=True):
             assert a.graph_family == b.graph_family
             assert a.p_h1_mean == b.p_h1_mean
 

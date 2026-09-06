@@ -13,7 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -124,7 +124,7 @@ def run_partial(
             if execute
             else "scpn_iqm_partial_layout_repeat_v1_plan"
         ),
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
         "provider": "iqm",
         "platform": "IQM Resonance" if execute else f"IQM fake {fake_backend}",
         "quantum_computer": quantum_computer if execute else None,
@@ -178,7 +178,7 @@ def main() -> int:
     parser.add_argument("--quantum-computer", default="garnet")
     parser.add_argument(
         "--label",
-        default=datetime.now(timezone.utc).strftime("calibration_repeat_%Y%m%dT%H%M%SZ"),
+        default=datetime.now(UTC).strftime("calibration_repeat_%Y%m%dT%H%M%SZ"),
     )
     parser.add_argument("--output-dir", type=Path, default=PUBLIC_DIR)
     args = parser.parse_args()

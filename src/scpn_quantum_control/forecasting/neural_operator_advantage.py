@@ -44,7 +44,7 @@ import json
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import numpy as np
@@ -86,7 +86,7 @@ DETERMINISM = (
 
 
 def _utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _wrapped_angle_error(a: NDArray[np.float64], b: NDArray[np.float64]) -> float:

@@ -21,7 +21,7 @@ import importlib.util
 import json
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -309,7 +309,7 @@ def run_plan(
             if execute
             else "scpn_iqm_dla_layout_pinned_repeat_v1_plan"
         ),
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
         "provider": "iqm",
         "platform": "IQM Resonance" if execute else f"IQM fake {fake_backend}",
         "quantum_computer": quantum_computer if execute else None,

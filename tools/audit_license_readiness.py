@@ -13,17 +13,11 @@ import argparse
 import json
 import os
 import subprocess
-import sys
+import tomllib
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:  # pragma: no cover - Python < 3.11 runtime fallback
-    import tomli as tomllib
-
 
 EXPECTED_PROJECT_LICENSE = "AGPL-3.0-or-later"
 EXPECTED_LICENSE_CLASSIFIER = (

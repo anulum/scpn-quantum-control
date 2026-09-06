@@ -16,7 +16,7 @@ import json
 import os
 from collections.abc import Iterable, MutableMapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -252,7 +252,7 @@ def build_private_manifest(
     created_utc: datetime | None = None,
 ) -> dict[str, Any]:
     """Build a deterministic private mapping manifest."""
-    timestamp = created_utc or datetime.now(timezone.utc)
+    timestamp = created_utc or datetime.now(UTC)
     return {
         "created_utc": timestamp.isoformat().replace("+00:00", "Z"),
         "entries": [_entry_to_mapping(entry) for entry in entries],

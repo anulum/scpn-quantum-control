@@ -24,7 +24,7 @@ import time
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from statistics import mean
 from typing import Any
@@ -75,7 +75,7 @@ class LayoutCandidate:
 
 
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
 
 
 def _summary(values: Sequence[float | int]) -> dict[str, float | int]:
@@ -295,7 +295,7 @@ def readiness(
     ecr_gates = [circuit.count_ops().get("ecr", 0) for circuit in isa_circuits]
     by_layout: dict[str, list[int]] = defaultdict(list)
     by_preregistered_depth: dict[int, list[int]] = defaultdict(list)
-    for (meta, _), circuit in zip(circuits, isa_circuits):
+    for (meta, _), circuit in zip(circuits, isa_circuits, strict=True):
         by_layout[str(meta["layout_id"])].append(circuit.depth())
         by_preregistered_depth[int(meta["depth"])].append(circuit.depth())
     accepted = max(depths) <= max_depth and max(total_gates) <= max_total_gates
@@ -387,7 +387,7 @@ def _result_rows(
     isa_circuits: Sequence[QuantumCircuit],
 ) -> list[dict[str, Any]]:
     rows = []
-    for meta, counts, circuit in zip(metas, counts_rows, isa_circuits):
+    for meta, counts, circuit in zip(metas, counts_rows, isa_circuits, strict=True):
         rows.append(
             {
                 "meta": meta,

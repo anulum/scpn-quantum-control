@@ -8,7 +8,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from scpn_quantum_control.hardware.ibm_latency_probe import (
     derive_timing_windows,
@@ -27,7 +27,7 @@ def test_parse_timestamp_normalises_naive_datetime_to_utc() -> None:
     raw = datetime(2026, 5, 22, 0, 0, 1)
     parsed = parse_timestamp(raw)
     assert parsed is not None
-    assert parsed.tzinfo == timezone.utc
+    assert parsed.tzinfo == UTC
 
 
 def test_derive_timing_windows_from_provider_fields() -> None:

@@ -43,7 +43,7 @@ import tempfile
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, is_dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol, cast
 from uuid import UUID
@@ -257,7 +257,7 @@ def build_powered_plan(
 
 def _utc_now() -> str:
     """Return a stable UTC timestamp for journal transitions."""
-    return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+    return datetime.now(UTC).isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 
 def _json_default(value: object) -> object:

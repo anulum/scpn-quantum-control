@@ -45,10 +45,9 @@ import hashlib
 import json
 import sys
 import tarfile
+import tomllib
 from pathlib import Path
 from typing import Any, Final
-
-import tomllib
 
 REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[1]
 DEFAULT_DIST_DIR: Final[Path] = REPO_ROOT / "studio-web" / "dist"

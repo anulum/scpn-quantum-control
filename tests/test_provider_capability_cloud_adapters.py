@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import ast
 import inspect
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -349,7 +349,7 @@ def test_qiskit_runtime_snapshot_reads_backend_metadata_without_submission() -> 
         meas_map = ([0], [1], [2])
 
     class Properties:
-        last_update_date = datetime(2026, 5, 20, 8, 0, tzinfo=timezone.utc)
+        last_update_date = datetime(2026, 5, 20, 8, 0, tzinfo=UTC)
 
     class Backend:
         name = "ibm_marrakesh"
@@ -413,7 +413,7 @@ def test_qiskit_runtime_snapshot_reads_backend_metadata_without_submission() -> 
 
 def test_normalize_calibration_timestamp_handles_datetime_and_string() -> None:
     """Normalize timezone-aware datetimes and trimmed provider strings."""
-    dt = datetime(2026, 5, 22, 10, 5, 0, tzinfo=timezone.utc)
+    dt = datetime(2026, 5, 22, 10, 5, 0, tzinfo=UTC)
     assert normalize_calibration_timestamp(dt) == "2026-05-22T10:05:00Z"
     assert normalize_calibration_timestamp(" 2026-05-22T10:05:00Z ") == "2026-05-22T10:05:00Z"
 

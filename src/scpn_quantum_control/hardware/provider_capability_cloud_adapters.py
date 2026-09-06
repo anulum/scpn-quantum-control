@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from .aggregators import ResolvedAggregatorProviderRoute
@@ -716,11 +716,7 @@ def normalize_calibration_timestamp(value: Any) -> str | None:
         stripped = value.strip()
         return stripped if stripped else None
     if isinstance(value, datetime):
-        dt = (
-            value.astimezone(timezone.utc)
-            if value.tzinfo is not None
-            else value.replace(tzinfo=timezone.utc)
-        )
+        dt = value.astimezone(UTC) if value.tzinfo is not None else value.replace(tzinfo=UTC)
         return dt.isoformat().replace("+00:00", "Z")
     isoformat = _optional_attr(value, "isoformat")
     if callable(isoformat):

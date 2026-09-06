@@ -19,7 +19,7 @@ import json
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from statistics import mean, stdev
 from typing import Any
@@ -77,7 +77,7 @@ def _parse_vault(path: Path) -> tuple[str | None, str | None]:
 
 
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
 
 
 def _display_path(path: Path) -> str:
@@ -196,7 +196,7 @@ def _mitigated_expectation(
     mitigated = np.linalg.pinv(assignment) @ observed
     active = [index for index, basis in enumerate(pauli_label) if basis != "I"]
     expectation = 0.0
-    for bitstring, probability in zip(bitstrings, mitigated):
+    for bitstring, probability in zip(bitstrings, mitigated, strict=True):
         parity = sum(1 for index in active if bitstring[index] == "1")
         expectation += (-1.0 if parity % 2 else 1.0) * float(probability)
     return float(expectation)

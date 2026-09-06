@@ -20,7 +20,7 @@ import hashlib
 import json
 import sys
 import types
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -83,7 +83,7 @@ class FakeJob:
         self,
         *,
         status: str = "DONE",
-        creation: datetime | None = datetime(2026, 3, 28, 12, 0, tzinfo=timezone.utc),
+        creation: datetime | None = datetime(2026, 3, 28, 12, 0, tzinfo=UTC),
         metrics: Any = None,
         metrics_error: bool = False,
     ) -> None:

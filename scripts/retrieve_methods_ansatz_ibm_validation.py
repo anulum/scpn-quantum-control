@@ -16,7 +16,7 @@ import hashlib
 import importlib.util
 import json
 from collections.abc import Mapping, Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -128,7 +128,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not rows:
         print("raw_counts_available=false")
         return 2
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     raw_payload = {
         "schema": "scpn_rust_vqe_methods_ansatz_ibm_raw_counts_v1",
         "experiment_id": submission["experiment_id"],

@@ -25,7 +25,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -234,7 +234,7 @@ def main(argv: list[str] | None = None) -> int:
 
     record: dict[str, object] = {
         "schema": _SCHEMA,
-        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "generated_utc": datetime.now(UTC).isoformat(),
         "n_oscillators": args.n,
         "dt": args.dt,
         "n_steps": args.n_steps,

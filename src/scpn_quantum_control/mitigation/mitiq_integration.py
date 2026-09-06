@@ -14,7 +14,7 @@ Requires: pip install mitiq
 Reference: LaRose et al., Quantum 6, 774 (2022).
 """
 
-from typing import Any, Optional
+from typing import Any
 
 try:
     from mitiq import ddd, zne
@@ -67,8 +67,8 @@ def _qiskit_executor(circuit: QuantumCircuit, shots: int = 8192) -> float:
 
 def zne_mitigated_expectation(
     circuit: QuantumCircuit,
-    executor: Optional[Any] = None,
-    scale_factors: Optional[list[float]] = None,
+    executor: Any | None = None,
+    scale_factors: list[float] | None = None,
     shots: int = 8192,
 ) -> float:
     """Run ZNE (Zero Noise Extrapolation) via Mitiq.
@@ -115,7 +115,7 @@ def zne_mitigated_expectation(
 
 def ddd_mitigated_expectation(
     circuit: QuantumCircuit,
-    executor: Optional[Any] = None,
+    executor: Any | None = None,
     shots: int = 8192,
 ) -> float:
     """Run DDD (Digital Dynamical Decoupling) via Mitiq.

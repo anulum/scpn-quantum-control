@@ -10,8 +10,9 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from types import ModuleType, SimpleNamespace
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
 import pytest

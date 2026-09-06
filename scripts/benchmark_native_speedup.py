@@ -33,21 +33,16 @@ import json
 import os
 import platform
 import subprocess
-import sys
 import time
+import tomllib
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:  # pragma: no cover - retained for downstream legacy interpreters
-    import tomli as tomllib
 
 from scpn_quantum_control.accel.rust_import import optional_rust_engine
 from scpn_quantum_control.bridge import build_knm_paper27
@@ -336,7 +331,7 @@ def main(argv: list[str] | None = None) -> int:
     report = build_report(
         tuple(args.sizes),
         evidence_class=args.evidence_class,
-        generated_utc=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        generated_utc=datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
     )
 
     if args.json_out is not None:

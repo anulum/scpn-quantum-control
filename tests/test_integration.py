@@ -34,7 +34,7 @@ def test_quantum_vs_classical_kuramoto_4osc():
     classical = classical_exact_evolution(n, n_steps * dt, dt, K, omega)
 
     # R values should be within 0.15 of each other (Trotter error at reps=10)
-    for q_r, c_r in zip(q_result["R"], classical["R"]):
+    for q_r, c_r in zip(q_result["R"], classical["R"], strict=True):
         assert abs(q_r - c_r) < 0.15, f"quantum R={q_r:.4f} vs classical R={c_r:.4f}"
 
 
@@ -117,7 +117,7 @@ def test_quantum_vs_classical_parametrized(n_osc):
     q_result = quantum.run(t_max=n_steps * dt, dt=dt, trotter_per_step=10)
     classical = classical_exact_evolution(n_osc, n_steps * dt, dt, K, omega)
 
-    for q_r, c_r in zip(q_result["R"], classical["R"]):
+    for q_r, c_r in zip(q_result["R"], classical["R"], strict=True):
         assert abs(q_r - c_r) < 0.2, f"n={n_osc}: quantum R={q_r:.4f} vs classical R={c_r:.4f}"
 
 

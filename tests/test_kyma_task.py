@@ -70,7 +70,7 @@ def test_held_out_conjunction_is_test_only_and_absent_from_training() -> None:
     # Held-out conjunction never appears jointly in training.
     joint_train = [
         (int(r1), int(r2))
-        for r1, r2 in zip(batch.r1_pair[train], batch.r2_pair[train])
+        for r1, r2 in zip(batch.r1_pair[train], batch.r2_pair[train], strict=True)
         if r1 >= 0 and r2 >= 0
     ]
     assert cfg.held_out not in joint_train
@@ -86,10 +86,14 @@ def test_constituent_single_relations_are_in_training() -> None:
     batch = build_trials(cfg, seed=3)
     train = ~batch.is_test
     r1_singles = {
-        int(p) for p, q in zip(batch.r1_pair[train], batch.r2_pair[train]) if p >= 0 and q < 0
+        int(p)
+        for p, q in zip(batch.r1_pair[train], batch.r2_pair[train], strict=True)
+        if p >= 0 and q < 0
     }
     r2_singles = {
-        int(q) for p, q in zip(batch.r1_pair[train], batch.r2_pair[train]) if q >= 0 and p < 0
+        int(q)
+        for p, q in zip(batch.r1_pair[train], batch.r2_pair[train], strict=True)
+        if q >= 0 and p < 0
     }
     assert cfg.held_out[0] in r1_singles  # R1-on-P* seen alone
     assert cfg.held_out[1] in r2_singles  # R2-on-Q* seen alone

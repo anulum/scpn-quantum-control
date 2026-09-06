@@ -17,8 +17,8 @@ import json
 import platform
 import statistics
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 import numpy as np
 

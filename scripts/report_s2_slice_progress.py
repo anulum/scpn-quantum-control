@@ -16,7 +16,7 @@ import ast
 import csv
 import json
 from collections.abc import Iterable, Mapping, Sequence
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -97,7 +97,7 @@ def aggregate_slices(sizes: Iterable[int], *, data_dir: Path = DATA_DIR) -> dict
     any_advantage = any(item["advantage_claim"] for item in slice_summaries)
     return {
         "schema": "scpn_s2_slice_progress_v1",
-        "generated_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "generated_at_utc": datetime.now(UTC).replace(microsecond=0).isoformat(),
         "date": TODAY,
         "sizes": [item["n_qubits"] for item in slice_summaries],
         "slice_count": len(slice_summaries),

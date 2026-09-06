@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 import os
 from collections.abc import Mapping, Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from importlib import import_module
 from typing import Any
 
@@ -367,7 +367,7 @@ def _coerce_float(value: object, *, field_name: str) -> float:
 
 
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _normalise_status(value: object, *, default: str = "unknown") -> str:

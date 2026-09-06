@@ -15,7 +15,7 @@ import argparse
 import json
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -81,7 +81,7 @@ def submit(
 
     sampler = Sampler(mode=backend)
     sampler.options.default_shots = shots
-    submitted_at = datetime.now(timezone.utc).isoformat()
+    submitted_at = datetime.now(UTC).isoformat()
     job = sampler.run(circuits)
     job_id = job.job_id()
     pending = {
@@ -119,7 +119,7 @@ def submit(
     completed = {
         **pending,
         "status": "completed",
-        "completed_at_utc": datetime.now(timezone.utc).isoformat(),
+        "completed_at_utc": datetime.now(UTC).isoformat(),
         "wait_wall_time_s": wall_time_s,
         "result_rows": result_rows,
     }

@@ -63,9 +63,9 @@ EXPERIMENT_ORDER = (
 
 BACKEND = "ibm_fez"
 #: The 2026-03-29 ~12:20 UTC submission cluster of nine jobs.
-CLUSTER_AFTER = dt.datetime(2026, 3, 29, 12, 20, 30, tzinfo=dt.timezone.utc)
-CLUSTER_BEFORE = dt.datetime(2026, 3, 29, 12, 21, 0, tzinfo=dt.timezone.utc)
-CALIBRATION_DATE = dt.datetime(2026, 3, 29, tzinfo=dt.timezone.utc)
+CLUSTER_AFTER = dt.datetime(2026, 3, 29, 12, 20, 30, tzinfo=dt.UTC)
+CLUSTER_BEFORE = dt.datetime(2026, 3, 29, 12, 21, 0, tzinfo=dt.UTC)
+CALIBRATION_DATE = dt.datetime(2026, 3, 29, tzinfo=dt.UTC)
 
 PACK_SCHEMA = "scpn.ibm_v2_recovered_raw_counts.v1"
 

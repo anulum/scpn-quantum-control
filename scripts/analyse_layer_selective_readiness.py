@@ -25,7 +25,7 @@ import math
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from statistics import mean
 from typing import Any
@@ -168,7 +168,7 @@ def build_readiness(payload: Mapping[str, Any], *, input_path: Path) -> dict[str
     ready = not missing_methods and bool(layout_resources)
     return {
         "schema": "scpn_phase3_layer_selective_readiness_v1",
-        "generated_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "generated_at_utc": datetime.now(UTC).replace(microsecond=0).isoformat(),
         "source_artifact": str(input_path.relative_to(REPO_ROOT)),
         "source_sha256": _sha256(input_path),
         "backend": payload.get("backend"),

@@ -98,7 +98,7 @@ def _run(args: argparse.Namespace) -> int:
 
     backend = _fake_garnet()
     counts: dict[str, dict[str, int]] = {}
-    for label, circuit in zip(labels, circuits):
+    for label, circuit in zip(labels, circuits, strict=True):
         shots = main_shots if label.startswith("main_") else readout_shots
         # Circuits are already routed to the lattice; this only translates the
         # r/cz basis to the backend's native gate objects (layout preserved).

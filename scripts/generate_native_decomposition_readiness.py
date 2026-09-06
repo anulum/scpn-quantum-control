@@ -25,7 +25,7 @@ import json
 import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from statistics import mean
 
@@ -334,7 +334,7 @@ def build_summary(
         decision = "ready_for_live_backend_transpilation"
     return {
         "schema": "scpn_phase3_native_decomposition_readiness_v1",
-        "generated_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "generated_at_utc": datetime.now(UTC).replace(microsecond=0).isoformat(),
         "hardware_submission": False,
         "qpu_minutes_spent": 0.0,
         "basis_gates": list(BASIS_GATES),

@@ -131,10 +131,10 @@ def test_executable_ad_kernel_batching_rule_dispatches_native_value_jvp_and_vjp(
 
     expected_values = np.asarray([kernel.value(row) for row in values])
     expected_jvps = np.asarray(
-        [kernel.jvp(row, tangent) for row, tangent in zip(values, tangents)]
+        [kernel.jvp(row, tangent) for row, tangent in zip(values, tangents, strict=True)]
     )
     expected_vjps = np.asarray(
-        [kernel.vjp(row, cotangent) for row, cotangent in zip(values, cotangents)]
+        [kernel.vjp(row, cotangent) for row, cotangent in zip(values, cotangents, strict=True)]
     )
     np.testing.assert_allclose(
         cast(FloatArray, batched_value), expected_values, rtol=1.0e-12, atol=1.0e-12

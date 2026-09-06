@@ -99,7 +99,7 @@ import argparse
 import json
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -326,7 +326,7 @@ def main() -> int:
         print("Run with --dry-run first to verify transpile budget.", file=sys.stderr)
         return 1
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
     results_dir = REPO_ROOT / ".coordination" / "ibm_runs"
     results_dir.mkdir(parents=True, exist_ok=True)
     results_path = results_dir / f"phase2_full_{timestamp}.json"
@@ -515,7 +515,7 @@ def main() -> int:
     if batch1:
         job_ids.append(batch1[0].job_id)
     print(f"Batch 1 done in {wall_1:.1f}s ({wall_1 / 60:.1f} min). Job: {job_ids[-1]}")
-    for meta, jr in zip(metas_main, batch1):
+    for meta, jr in zip(metas_main, batch1, strict=True):
         stats = analyse_counts(jr.counts or {}, meta)
         all_results.append(
             {"meta": meta, "counts": jr.counts, "stats": stats, "job_id": jr.job_id}
@@ -554,7 +554,7 @@ def main() -> int:
         if batch2:
             job_ids.append(batch2[0].job_id)
         print(f"Batch 2 done in {wall_2:.1f}s. Job: {job_ids[-1]}")
-        for meta, jr in zip(metas_baseline, batch2):
+        for meta, jr in zip(metas_baseline, batch2, strict=True):
             stats = analyse_counts(jr.counts or {}, meta)
             all_results.append(
                 {"meta": meta, "counts": jr.counts, "stats": stats, "job_id": jr.job_id}

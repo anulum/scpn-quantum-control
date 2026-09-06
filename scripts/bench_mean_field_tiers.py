@@ -27,7 +27,7 @@ import platform
 import sys
 import time
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from functools import partial
 from pathlib import Path
 from statistics import median
@@ -174,7 +174,7 @@ def main(argv: list[str] | None = None) -> int:
 
     rng = np.random.default_rng(20260623)
     payload = {
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at_utc": datetime.now(UTC).isoformat(timespec="seconds"),
         "runner": {
             "hostname": platform.node(),
             "platform": platform.platform(),

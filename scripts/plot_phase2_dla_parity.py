@@ -49,7 +49,7 @@ def _plot_n4(summary: dict[str, Any]) -> None:
     ax.fill_between([4, 20], 0, 9.6, color="#cde8d5", alpha=0.35, label="Phase 1 prediction band")
     ax.scatter(depths, asym, s=72, c=colours, edgecolor="#101010", linewidth=0.7, zorder=3)
     ax.plot(depths, asym, color="#124e78", linewidth=1.8, alpha=0.85)
-    for depth, value, p_value in zip(depths, asym, p_values):
+    for depth, value, p_value in zip(depths, asym, p_values, strict=True):
         if p_value < 0.05:
             ax.annotate(
                 "*", (depth, value), xytext=(0, 9), textcoords="offset points", ha="center"
@@ -76,7 +76,7 @@ def _plot_scaling(summary: dict[str, Any]) -> None:
         asym = 100 * np.asarray([row["asymmetry_relative"] for row in group], dtype=float)
         p_values = np.asarray([row["welch_p"] for row in group], dtype=float)
         ax.plot(depths, asym, marker=marker, color=colour, linewidth=1.8, label=f"n={n_qubits}")
-        for depth, value, p_value in zip(depths, asym, p_values):
+        for depth, value, p_value in zip(depths, asym, p_values, strict=True):
             if p_value < 0.05:
                 ax.annotate(
                     "*", (depth, value), xytext=(0, 9), textcoords="offset points", ha="center"

@@ -26,7 +26,7 @@ def main():
 
     print("\nTime | R (order parameter)")
     print("-" * 30)
-    for t, R in zip(result["times"], result["R"]):
+    for t, R in zip(result["times"], result["R"], strict=True):
         bar = "#" * int(R * 20)
         print(f"{t:5.2f} | {R:.4f} {bar}")
 

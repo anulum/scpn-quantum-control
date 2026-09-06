@@ -21,6 +21,7 @@ import json
 import re
 import stat
 import sys
+import tomllib
 import zipfile
 import zlib
 from collections.abc import Mapping, Sequence
@@ -30,8 +31,6 @@ from email.parser import BytesParser
 from email.policy import compat32
 from pathlib import Path, PurePosixPath
 from typing import Final, cast
-
-import tomllib
 
 _DISTRIBUTION_PATTERN: Final = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 _VERSION_PATTERN: Final = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+!-]*$")

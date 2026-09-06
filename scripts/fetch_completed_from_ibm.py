@@ -31,7 +31,7 @@ import json
 import os
 import sys
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -165,7 +165,7 @@ def main():
         return 0
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    timestamp_run = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+    timestamp_run = datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
     log_entries: list[str] = []
 
     for job in done_jobs:

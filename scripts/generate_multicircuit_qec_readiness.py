@@ -28,7 +28,7 @@ import sys
 import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from statistics import mean
 from typing import Any
@@ -403,7 +403,7 @@ def build_summary(
         decision = "blocked_encoded_resource_overhead_exceeds_ceiling"
     return {
         "schema": "scpn_phase3_multicircuit_qec_readiness_v1",
-        "generated_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "generated_at_utc": datetime.now(UTC).replace(microsecond=0).isoformat(),
         "hardware_submission": False,
         "qpu_minutes_spent": 0.0,
         "distance": DISTANCE,

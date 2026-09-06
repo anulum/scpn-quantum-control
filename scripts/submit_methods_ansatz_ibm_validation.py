@@ -19,7 +19,7 @@ import sys
 import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -402,7 +402,7 @@ def _readiness_payload(
     return {
         "schema": "scpn_rust_vqe_methods_ansatz_ibm_readiness_v1",
         "experiment_id": args.experiment_id,
-        "timestamp_utc": datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
+        "timestamp_utc": datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ"),
         "backend": args.backend,
         "backend_status": status,
         "status": "ready_for_submission" if ready else "blocked",

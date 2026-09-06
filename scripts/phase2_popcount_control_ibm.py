@@ -15,7 +15,7 @@ import argparse
 import json
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -152,7 +152,7 @@ def main() -> int:
         print("ERROR: real QPU submission requires --confirm-qpu", file=sys.stderr)
         return 1
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
     results_dir = REPO_ROOT / ".coordination" / "ibm_runs"
     results_dir.mkdir(parents=True, exist_ok=True)
     results_path = results_dir / f"phase2_popcount_control_{timestamp}.json"
@@ -251,7 +251,7 @@ def main() -> int:
     print(f"Main block completed in {(time.time() - t0) / 60:.2f} minutes")
     if main_results:
         job_ids.append(main_results[0].job_id)
-    for (meta, _), result in zip(main_items, main_results):
+    for (meta, _), result in zip(main_items, main_results, strict=True):
         rows.append(
             {
                 "meta": meta,
@@ -272,7 +272,7 @@ def main() -> int:
     print(f"Readout block completed in {(time.time() - t0) / 60:.2f} minutes")
     if readout_results:
         job_ids.append(readout_results[0].job_id)
-    for (meta, _), result in zip(readout_items, readout_results):
+    for (meta, _), result in zip(readout_items, readout_results, strict=True):
         rows.append(
             {
                 "meta": meta,

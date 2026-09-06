@@ -12,11 +12,10 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import tomllib
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
-
-import tomllib
 
 SCHEMA = "scpn-rust-kernel-execution-audit/v1"
 CLAIM_BOUNDARY = (

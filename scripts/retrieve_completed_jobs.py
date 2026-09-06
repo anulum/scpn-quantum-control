@@ -24,7 +24,7 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -204,7 +204,7 @@ def run(*, private_map: Path, status_only: bool = False):
 
     # Summary
     summary = {
-        "checked_utc": datetime.now(timezone.utc).isoformat(),
+        "checked_utc": datetime.now(UTC).isoformat(),
         "total_jobs": len(PUBLIC_JOBS),
         "done": sum(1 for r in results_log if r.get("status") in ("DONE", "JobStatus.DONE")),
         "queued": sum(1 for r in results_log if "QUEUED" in r.get("status", "")),

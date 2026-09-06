@@ -26,10 +26,10 @@ errors) before they landed here.
 from __future__ import annotations
 
 import json
+import tomllib
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
-import tomllib
 from scpn_studio_platform.manifest import (
     CapabilityManifest,
     TransportProfile,

@@ -31,7 +31,7 @@ import hashlib
 import json
 import sys
 from collections.abc import Mapping, Sequence
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -243,7 +243,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     service = load_runtime_service(args.instance, vault)
     token = getattr(getattr(service, "_account", None), "token", None)
 
-    retrieved_at = datetime.now(timezone.utc)
+    retrieved_at = datetime.now(UTC)
     payload = build_receipts(
         service,
         commitments,

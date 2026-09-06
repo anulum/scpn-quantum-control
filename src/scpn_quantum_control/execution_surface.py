@@ -11,14 +11,9 @@ from __future__ import annotations
 
 import json
 import re
-import sys
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:  # pragma: no cover - retained for static analyzers and older local interpreters
-    import tomli as tomllib
 
 
 @dataclass(frozen=True)

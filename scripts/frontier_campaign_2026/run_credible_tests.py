@@ -19,9 +19,10 @@ import json
 import os
 import sys
 import time
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 # Resolve imports when run from this directory
 sys.path.insert(0, str(Path(__file__).parent))

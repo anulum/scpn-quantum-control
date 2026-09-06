@@ -24,7 +24,7 @@ import math
 import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -109,12 +109,12 @@ def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--qpu-seconds-ceiling", type=float, default=QPU_SECONDS_CEILING)
     parser.add_argument("--gpu-seconds-ceiling", type=float, default=GPU_SECONDS_CEILING)
     parser.add_argument("--probe-ibm-budget", action="store_true")
-    parser.add_argument("--date-tag", default=datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+    parser.add_argument("--date-tag", default=datetime.now(UTC).strftime("%Y-%m-%d"))
     return parser.parse_args(argv)
 
 
 def _timestamp() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
 
 
 def _sha256(path: Path) -> str:
@@ -550,7 +550,7 @@ def build_payload(args: argparse.Namespace) -> dict[str, Any]:
     two_backend_seconds = 2.0 * qpu_seconds_ready
     return {
         "schema": "scpn_large_system_submission_extension_readiness_v1",
-        "generated_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "generated_at_utc": datetime.now(UTC).replace(microsecond=0).isoformat(),
         "backend": _backend_name(backend),
         "backend_mode": "generic_estimator"
         if args.backend == "generic_line"

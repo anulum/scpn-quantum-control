@@ -28,7 +28,7 @@ import sys
 from collections import deque
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from itertools import permutations
 from pathlib import Path
 from statistics import mean
@@ -374,7 +374,7 @@ def build_summary(
         decision = "blocked_no_resource_gain"
     return {
         "schema": "scpn_phase3_layer_selective_comparator_matrix_v1",
-        "generated_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "generated_at_utc": datetime.now(UTC).replace(microsecond=0).isoformat(),
         "backend": _backend_status(backend).get("name"),
         "backend_status": _backend_status(backend),
         "hardware_submission": False,

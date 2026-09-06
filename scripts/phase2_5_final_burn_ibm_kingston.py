@@ -28,7 +28,7 @@ import argparse
 import json
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -95,7 +95,7 @@ def main() -> int:
     parser.add_argument("--shots", type=int, default=2048)
     args = parser.parse_args()
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
     results_dir = REPO_ROOT / ".coordination" / "ibm_runs"
     results_dir.mkdir(parents=True, exist_ok=True)
     results_path = results_dir / f"phase2_5_final_burn_{timestamp}.json"
@@ -195,7 +195,7 @@ def main() -> int:
     print()
 
     all_results_raw: list[dict] = []
-    for meta, jr in zip(metas, batch):
+    for meta, jr in zip(metas, batch, strict=True):
         stats = analyse_counts(jr.counts or {}, meta)
         all_results_raw.append(
             {"meta": meta, "counts": jr.counts, "stats": stats, "job_id": jr.job_id}

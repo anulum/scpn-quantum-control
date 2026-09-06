@@ -184,11 +184,13 @@ def _linear_fit(xs: Sequence[float], ys: Sequence[float]) -> tuple[float, float,
     y_mean = mean(ys)
     denom = sum((x - x_mean) ** 2 for x in xs)
     slope = (
-        0.0 if denom == 0.0 else sum((x - x_mean) * (y - y_mean) for x, y in zip(xs, ys)) / denom
+        0.0
+        if denom == 0.0
+        else sum((x - x_mean) * (y - y_mean) for x, y in zip(xs, ys, strict=True)) / denom
     )
     intercept = y_mean - slope * x_mean
     preds = [slope * x + intercept for x in xs]
-    ss_res = sum((y - pred) ** 2 for y, pred in zip(ys, preds))
+    ss_res = sum((y - pred) ** 2 for y, pred in zip(ys, preds, strict=True))
     ss_tot = sum((y - y_mean) ** 2 for y in ys)
     r_squared = 1.0 - ss_res / ss_tot if ss_tot > 0.0 else 0.0
     rmse = math.sqrt(ss_res / len(xs))
@@ -219,7 +221,8 @@ def build_fit_rows(witness_rows: Sequence[WitnessRow]) -> tuple[FitRow, ...]:
             xs = [float(row.noise_scale) for row in scale_rows]
             ys = [math.log(value) for value in survivals]
             slope, intercept, r_squared, rmse = _linear_fit(xs, ys)
-            monotone = all(a >= b for a, b in zip(survivals, survivals[1:]))
+            # Adjacent pairs: the sliced sequence is shorter by one on purpose.
+            monotone = all(a >= b for a, b in zip(survivals, survivals[1:], strict=False))
             usable = bool(monotone and r_squared >= 0.90 and rmse <= 0.08)
             fits.append(
                 FitRow(

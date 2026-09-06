@@ -91,7 +91,7 @@ def _ag_series(summary: dict[str, Any]) -> list[DecayFit]:
     odd = [(int(row["depth"]), float(row["leakage_odd"])) for row in rows]
     mean_series = [
         (depth, mean([even_value, odd_value]))
-        for (depth, even_value), (_, odd_value) in zip(even, odd)
+        for (depth, even_value), (_, odd_value) in zip(even, odd, strict=True)
     ]
     return [
         _fit_decay("phase2_ag_n4", "even", even),

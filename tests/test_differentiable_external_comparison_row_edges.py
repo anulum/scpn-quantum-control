@@ -9,10 +9,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from collections.abc import Callable as CallableABC
 from dataclasses import replace
 from pathlib import Path
-from typing import Any, Callable, cast
+from typing import Any, cast
 
 import pytest
 from _differentiable_external_comparison_edges import (

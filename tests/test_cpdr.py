@@ -117,7 +117,7 @@ class TestGenerateTrainingCircuits:
 
         t1 = generate_training_circuits(qc, n_training=3, seed=42)
         t2 = generate_training_circuits(qc, n_training=3, seed=42)
-        for a, b in zip(t1, t2):
+        for a, b in zip(t1, t2, strict=True):
             p_a = [float(p) for inst in a.data for p in inst.operation.params]
             p_b = [float(p) for inst in b.data for p in inst.operation.params]
             assert p_a == p_b

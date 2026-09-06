@@ -44,7 +44,7 @@ import argparse
 import json
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -161,7 +161,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H%M%SZ")
     results_path = REPO_ROOT / ".coordination" / "ibm_runs" / f"pipe_cleaner_{timestamp}.json"
     results_path.parent.mkdir(parents=True, exist_ok=True)
 

@@ -203,7 +203,7 @@ class TestQFIPhysics:
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
         result = qfi_vs_coupling(omega, T, k_range=np.array([2.0, 4.0]))
-        for mq, tq in zip(result.max_qfi, result.total_qfi):
+        for mq, tq in zip(result.max_qfi, result.total_qfi, strict=True):
             assert tq >= mq - 1e-10
 
 

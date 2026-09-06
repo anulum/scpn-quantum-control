@@ -292,7 +292,7 @@ def plot_trotter_tradeoff():
     # Left: R vs depth
     ax1.plot(depths, hw_R, "o-", color="#d62728", markersize=10, lw=2, label="Hardware R")
     ax1.axhline(exact_R, ls="--", color="black", lw=1, alpha=0.6, label=f"Exact R = {exact_R}")
-    for _i, (d, r, rep) in enumerate(zip(depths, hw_R, reps)):
+    for _i, (d, r, rep) in enumerate(zip(depths, hw_R, reps, strict=True)):
         ax1.annotate(
             f"{rep} rep{'s' if rep > 1 else ''}",
             (d, r),
@@ -308,7 +308,7 @@ def plot_trotter_tradeoff():
 
     # Right: error vs reps
     ax2.bar(reps, errors, color=["#2ca02c", "#ff7f0e", "#d62728"], edgecolor="black", width=0.6)
-    for _i, (rep, err) in enumerate(zip(reps, errors)):
+    for _i, (rep, err) in enumerate(zip(reps, errors, strict=True)):
         ax2.text(rep, err + 0.5, f"{err:.1f}%", ha="center", fontsize=10, fontweight="bold")
     ax2.set_xlabel("Trotter Reps", fontsize=11)
     ax2.set_ylabel("Relative Error (%)", fontsize=11)
@@ -352,7 +352,7 @@ def plot_upde16_bars():
     fig, ax = plt.subplots(figsize=(12, 5))
     bars = ax.bar(layers, abs_x, color=colors, edgecolor="black", linewidth=0.6)
 
-    for bar, v in zip(bars, abs_x):
+    for bar, v in zip(bars, abs_x, strict=True):
         ax.text(bar.get_x() + bar.get_width() / 2, v + 0.01, f"{v:.2f}", ha="center", fontsize=8)
 
     # Legend

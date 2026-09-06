@@ -25,7 +25,7 @@ import platform
 import subprocess
 import sys
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -50,7 +50,7 @@ from scpn_quantum_control.hardware.iqm_backend import (  # noqa: E402
     IQMQuantumBackend,
 )
 
-DATE = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+DATE = datetime.now(UTC).strftime("%Y-%m-%d")
 DEFAULT_OUT_DIR = REPO_ROOT / "data" / "iqm_paper_replication"
 FIM_PROTOCOL_PATH = (
     REPO_ROOT / "data" / "scpn_fim_hamiltonian" / "fim_ibm_candidate_protocol_2026-05-05.json"
@@ -392,7 +392,7 @@ def generate(
     return {
         "schema": "scpn_iqm_paper_replication_readiness_v1",
         "date": DATE,
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "generated_at_utc": datetime.now(UTC).isoformat(),
         "command": "python scripts/prepare_iqm_paper_replication.py",
         "environment": {"python": platform.python_version(), "platform": platform.platform()},
         "provider": "iqm",

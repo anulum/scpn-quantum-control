@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -145,7 +145,7 @@ def submit_and_log(name, circuits, backend, shots=SHOTS):
         "n_circuits": n_circuits,
         "shots": shots,
         "depths": depths,
-        "submitted": datetime.now(timezone.utc).isoformat(),
+        "submitted": datetime.now(UTC).isoformat(),
         "status": "QUEUED",
     }
 

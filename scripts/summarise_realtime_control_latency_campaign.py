@@ -16,7 +16,7 @@ import glob
 import hashlib
 import json
 import statistics
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -200,7 +200,7 @@ def main() -> int:
         raise RuntimeError("no Rust IBM latency run found for consolidation")
     consolidated = {
         "schema": "scpn_realtime_control_latency_consolidation_v1",
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
         "source_files": {
             "local_summary": str(args.local_summary),
             "ibm_campaigns": ibm["paths"],
