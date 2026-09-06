@@ -25,6 +25,7 @@ from _differentiable_external_comparison_edges import (
 from numpy.typing import NDArray
 
 import scpn_quantum_control.benchmarks.differentiable_external_comparison as comparison
+import scpn_quantum_control.benchmarks.differentiable_external_contracts as contracts
 
 
 def test_framework_row_classifies_import_error_as_dependency_gap() -> None:
@@ -50,7 +51,7 @@ def test_framework_row_classifies_import_error_as_dependency_gap() -> None:
 
 def test_jsonify_operations_normalises_numpy_scalars() -> None:
     """Operation JSON payloads should normalize NumPy scalar values."""
-    payload = comparison._jsonify_operations(
+    payload = contracts._jsonify_operations(
         ((np.int64(1), (np.float64(0.25), np.int64(2))),),
     )
 

@@ -67,7 +67,9 @@ def test_hierarchy_level_rejects_malformed_communities(
         HierarchyLevel(name, communities)
 
     with pytest.raises(ValueError, match="indices must be integers"):
-        HierarchyLevel("fine", ((0, 1.5),))
+        # A float index is the defect under test; mypy cannot express
+        # "this call is meant to be rejected".
+        HierarchyLevel("fine", ((0, 1.5),))  # type: ignore[arg-type]
 
 
 def test_multiscale_hierarchy_rejects_invalid_node_count_and_empty_levels() -> None:
@@ -76,7 +78,8 @@ def test_multiscale_hierarchy_rejects_invalid_node_count_and_empty_levels() -> N
     with pytest.raises(ValueError, match="greater than one"):
         MultiscaleHierarchy(1, (fine,))
     with pytest.raises(ValueError, match="greater than one"):
-        MultiscaleHierarchy(2.5, (fine,))
+        # A non-integer node count is the defect under test.
+        MultiscaleHierarchy(2.5, (fine,))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="at least one level"):
         MultiscaleHierarchy(2, ())
 

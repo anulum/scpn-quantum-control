@@ -47,7 +47,11 @@ def test_optimizer_comparison_serializes_per_start_records() -> None:
     assert suite.passed
     assert len(records) == 2
     assert payload["start_count"] == 1
-    assert payload["records"][0]["start_index"] == 0
+    audit_records = payload["records"]
+    assert isinstance(audit_records, list)
+    first_record = audit_records[0]
+    assert isinstance(first_record, dict)
+    assert first_record["start_index"] == 0
     assert records[1].metric_source == "array"
     assert records[1].max_metric_condition_number is not None
     assert records[1].max_metric_condition_number > 1.0

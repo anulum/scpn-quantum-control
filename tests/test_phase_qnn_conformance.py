@@ -134,7 +134,8 @@ def test_qnn_conformance_unsuitable_scenarios_are_explicit() -> None:
         "variance or covariance estimate"
         in scenario_by_name["finite_shot_without_uncertainty"].required_evidence
     )
-    assert (
-        scenario_by_name["external_gradient_without_provenance"].to_dict()["required_evidence"][0]
-        == "source class"
-    )
+    required_evidence = scenario_by_name["external_gradient_without_provenance"].to_dict()[
+        "required_evidence"
+    ]
+    assert isinstance(required_evidence, list)
+    assert required_evidence[0] == "source class"
