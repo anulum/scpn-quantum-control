@@ -9,6 +9,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from typing import Any
+
 import pytest
 
 from scpn_quantum_control.hardware.feedback_hardware_scheduler import (
@@ -57,7 +60,7 @@ def test_approval_gated_scheduler_records_approved_submission() -> None:
     """Record provider identity and package evidence for approved work."""
     manifest = _manifest()
 
-    def submitter(command: FeedbackCommand, package: dict[str, object]) -> FeedbackResult:
+    def submitter(command: FeedbackCommand, package: Mapping[str, Any]) -> FeedbackResult:
         assert package["experiment_id"] == "s1"
         return FeedbackResult(job_id="job-1", qpu_seconds=1.5, metadata={"ok": True})
 
@@ -87,7 +90,7 @@ def test_approval_gated_scheduler_rejects_provider_and_hash_mismatch() -> None:
     provider_calls: list[FeedbackCommand] = []
 
     def record_provider_call(
-        command: FeedbackCommand, package: dict[str, object]
+        command: FeedbackCommand, package: Mapping[str, Any]
     ) -> FeedbackResult:
         provider_calls.append(command)
         return FeedbackResult(qpu_seconds=0.0)
@@ -179,7 +182,7 @@ def test_approval_gated_scheduler_enforces_estimated_and_reported_qpu_budget() -
     manifest = _manifest()
     provider_calls = 0
 
-    def costly_submitter(command: FeedbackCommand, package: dict[str, object]) -> FeedbackResult:
+    def costly_submitter(command: FeedbackCommand, package: Mapping[str, Any]) -> FeedbackResult:
         nonlocal provider_calls
         provider_calls += 1
         return FeedbackResult(qpu_seconds=5.0)
@@ -224,7 +227,9 @@ def test_hardware_approval_record_rejects_invalid_boundaries(
     } | kwargs
 
     with pytest.raises(ValueError, match=message):
-        HardwareApprovalRecord(**params)
+        # Each case overrides one field with an invalid value; the rejection is
+        # the subject of the test and mypy cannot express a call meant to fail.
+        HardwareApprovalRecord(**params)  # type: ignore[arg-type]
 
 
 def test_approval_gated_scheduler_rejects_empty_provider_and_manifest() -> None:

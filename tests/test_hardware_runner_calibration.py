@@ -16,9 +16,12 @@ snapshot from a backend that exposes median calibration).
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from qiskit.transpiler import PassManager
+from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
 from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
 
@@ -34,9 +37,9 @@ class TestSeedTranspiler:
         captured: dict[str, object] = {}
         import scpn_quantum_control.hardware.runner as runner_mod
 
-        real = runner_mod.generate_preset_pass_manager
+        real = generate_preset_pass_manager
 
-        def _spy(*args: object, **kwargs: object):
+        def _spy(*args: object, **kwargs: object) -> PassManager:
             captured.update(kwargs)
             return real(*args, **kwargs)
 
@@ -99,7 +102,7 @@ class TestCalibrationSnapshot:
 class TestSaveResultEmbedsCalibration:
     """Every saved pack carries a ``calibration`` snapshot block."""
 
-    def test_single_result_carries_calibration(self, tmp_path) -> None:
+    def test_single_result_carries_calibration(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         path = runner.save_result(
@@ -109,7 +112,7 @@ class TestSaveResultEmbedsCalibration:
         assert "calibration" in data
         assert data["calibration"]["seed_transpiler"] == 20260718
 
-    def test_list_result_carries_calibration(self, tmp_path) -> None:
+    def test_list_result_carries_calibration(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         path = runner.save_result(
@@ -119,7 +122,7 @@ class TestSaveResultEmbedsCalibration:
         data = json.loads(path.read_text())
         assert data["calibration"]["backend"] == runner.backend_name
 
-    def test_calibration_fail_open_when_not_connected(self, tmp_path) -> None:
+    def test_calibration_fail_open_when_not_connected(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         # No connect(): save must still succeed with a fail-open record.
         record = runner._calibration_for_pack()
