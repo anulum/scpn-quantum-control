@@ -51,7 +51,7 @@ The FEP maps onto the SCPN hierarchy as follows:
 | FEP Concept | SCPN Entity | Module |
 |-------------|-------------|--------|
 | Belief mean $\mu$ | Oscillator phases $\theta_i$ | `phase/phase_vqe.py` |
-| Prior precision $\Pi$ | K_nm coupling matrix | `bridge/knm_hamiltonian.py` |
+| Prior precision $\Pi$ | K_nm coupling matrix, when positive definite | `bridge/knm_hamiltonian.py` |
 | Sensory precision $\Gamma$ | Measurement confidence | Identity (simulation) |
 | Generative model $g$ | Forward prediction | Coupling-weighted mean |
 | Prediction error $\varepsilon$ | Phase mismatch | Hierarchical PC |
@@ -430,9 +430,18 @@ Single gradient descent step. Returns `PredictiveCodingResult`.
 |-----------|------|---------|-------------|
 | `observations` | `ndarray` | required | Measured phases $x_i$ |
 | `beliefs` | `ndarray` | required | Current beliefs $\mu_i$ |
-| `K` | `ndarray` | required | K_nm coupling (prior precision) |
+| `K` | `ndarray` | required | K_nm coupling, used for the prediction errors |
 | `learning_rate` | `float` | `0.01` | Gradient step size |
 | `sigma` | `ndarray \| None` | `0.1 × I` | Belief covariance |
+| `prior_precision` | `ndarray \| None` | `K` | Prior precision $\Pi$, positive definite |
+
+The coupling matrix and the prior precision are separate objects. A K_nm
+matrix with a zero diagonal is a valid coupling — a layer is not coupled to
+itself — but it is not a precision, because the prior covariance $\Pi^{-1}$
+then does not exist. Passing `K` for both roles is correct only when `K` is
+positive definite; otherwise supply `prior_precision`, for example the graph
+Laplacian of `K` with a positive shift, which is what the bundled FEP
+application plugin uses.
 
 #### `variational_free_energy` — Full Signature
 
@@ -487,8 +496,9 @@ Computes $(F, \text{complexity}, \text{accuracy})$ tuple for diagonal $\Sigma$.
 
 - **Ridge regularisation:** K_nm + $10^{-10} I$ ensures invertibility.
   Without this, zero eigenvalues in K_nm cause singular matrix errors.
-- **Log-determinant:** uses `numpy.linalg.slogdet` for numerical stability
-  (avoids overflow from large determinants).
+- **Log-determinant:** taken from a Cholesky factor as $2 \sum_i \log L_{ii}$,
+  which needs no separate sign and cannot silently return the magnitude of a
+  negative determinant.
 - **Gradient at MAP:** residual $\|\nabla F\| \sim 10^{-10}$ due to ridge
   regularisation. This is not a bug — it is the price of numerical stability.
 - **Convergence criterion:** PC step uses fixed learning rate. Adaptive

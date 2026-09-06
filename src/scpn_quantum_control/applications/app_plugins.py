@@ -346,12 +346,16 @@ class FEPApplicationPlugin(_PackagedDatasetPlugin):
             precision,
             sensory_precision=sensory_precision,
         )
+        # K_nm carries the coupling for the prediction errors; the Gaussian
+        # prior needs a positive-definite precision, which is the same shifted
+        # Laplacian used for the free energy above.
         step = predictive_coding_step(
             observations,
             beliefs,
             artifact.K_nm,
             learning_rate=0.05,
             sigma=sigma,
+            prior_precision=precision,
         )
         update_norm = float(np.linalg.norm(step.beliefs - beliefs))
         return self._base_result(

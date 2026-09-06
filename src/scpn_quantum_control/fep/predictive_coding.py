@@ -113,34 +113,64 @@ def predictive_coding_step(
     K: NDArray[np.float64],
     learning_rate: float = 0.01,
     sigma: NDArray[np.float64] | None = None,
+    prior_precision: NDArray[np.float64] | None = None,
 ) -> PredictiveCodingResult:
     """Single predictive coding update step.
 
-    1. Compute prediction errors ε_i
-    2. Update beliefs: μ_i ← μ_i − lr × ∂F/∂μ_i
-    3. Compute total free energy
+    1. Compute prediction errors ``ε_i`` from the coupling matrix.
+    2. Update beliefs ``μ_i ← μ_i − lr × ∂F/∂μ_i``.
+    3. Report the free energy of the updated beliefs.
 
-    Args:
-        observations: measured phases, shape (n,)
-        beliefs: current beliefs, shape (n,)
-        K: K_nm coupling matrix, shape (n, n)
-        learning_rate: gradient step size
-        sigma: belief covariance (default: 0.1 × I)
+    The coupling matrix and the prior precision are distinct objects that this
+    step used to conflate. ``K`` weights the hierarchical prediction, where a
+    zero diagonal is normal because a layer is not coupled to itself, while the
+    prior precision defines the Gaussian prior ``N(0, Π⁻¹)`` and must therefore
+    be positive definite. Passing ``K`` for both is correct only when ``K`` is
+    itself a valid precision; otherwise supply ``prior_precision`` explicitly,
+    for example a graph Laplacian of ``K`` with a positive shift.
+
+    Parameters
+    ----------
+    observations
+        Measured phases ``x_i`` of shape ``(n,)``.
+    beliefs
+        Current beliefs ``μ_i`` of shape ``(n,)``.
+    K
+        Coupling matrix of shape ``(n, n)``, used for the prediction errors and,
+        unless ``prior_precision`` is given, as the prior precision.
+    learning_rate
+        Gradient step size, dimensionless.
+    sigma
+        Belief covariance of shape ``(n, n)``; defaults to ``0.1 I``.
+    prior_precision
+        Prior precision ``Π`` of shape ``(n, n)``, finite and positive definite
+        once ``PRECISION_RIDGE`` is added. Defaults to ``K``.
 
     Returns
     -------
-        PredictiveCodingResult with updated beliefs and errors.
+    PredictiveCodingResult
+        Updated beliefs, prediction errors and the free energy after the step.
+
+    Raises
+    ------
+    ValueError
+        If the prior precision is not a finite positive-definite matrix of the
+        belief dimension, or if any other argument violates the free energy
+        contract.
 
     """
     n = len(observations)
     if sigma is None:
         sigma = 0.1 * np.eye(n)
+    precision = K if prior_precision is None else prior_precision
 
     errors = hierarchical_prediction_error(observations, beliefs, K)
-    grad = free_energy_gradient(mu=beliefs, sigma=sigma, x_observed=observations, K_precision=K)
+    grad = free_energy_gradient(
+        mu=beliefs, sigma=sigma, x_observed=observations, K_precision=precision
+    )
     new_beliefs = beliefs - learning_rate * grad
     fe = variational_free_energy(
-        mu=new_beliefs, sigma=sigma, x_observed=observations, K_precision=K
+        mu=new_beliefs, sigma=sigma, x_observed=observations, K_precision=precision
     )
 
     return PredictiveCodingResult(

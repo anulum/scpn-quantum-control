@@ -585,3 +585,123 @@ class TestGaussianKLContract:
         clearly = np.array([[2.0, 0.5 + 1e-6], [0.5, 2.0]])
         with pytest.raises(ValueError, match="sigma_q must be symmetric"):
             kl_divergence_gaussian(np.zeros(2), clearly, np.zeros(2), np.eye(2))
+
+
+class TestCouplingAndPriorPrecisionAreDistinct:
+    """A coupling matrix is not automatically a prior precision.
+
+    ``predictive_coding_step`` uses ``K`` twice: to weight the hierarchical
+    prediction, where a zero diagonal is normal because a layer is not coupled
+    to itself, and as the precision of the Gaussian prior ``N(0, Π⁻¹)``, which
+    must be positive definite. The two roles are separable, and the second one
+    now has its own argument.
+    """
+
+    @staticmethod
+    def _ring_coupling() -> NDArray[np.float64]:
+        """Return a zero-diagonal symmetric coupling matrix.
+
+        Returns
+        -------
+        numpy.ndarray
+            A four-node ring with unit couplings and no self-coupling.
+
+        """
+        coupling = np.zeros((4, 4))
+        for index in range(4):
+            coupling[index, (index + 1) % 4] = 1.0
+            coupling[(index + 1) % 4, index] = 1.0
+        return coupling
+
+    @staticmethod
+    def _shifted_laplacian(coupling: NDArray[np.float64]) -> NDArray[np.float64]:
+        """Return a positive-definite precision derived from a coupling matrix.
+
+        Parameters
+        ----------
+        coupling
+            Symmetric non-negative coupling matrix.
+
+        Returns
+        -------
+        numpy.ndarray
+            ``L + 0.25 I``, where ``L`` is the graph Laplacian of ``coupling``.
+
+        """
+        laplacian = np.diag(np.sum(coupling, axis=1)) - coupling
+        return np.asarray(laplacian + 0.25 * np.eye(coupling.shape[0]))
+
+    def test_zero_diagonal_coupling_is_not_accepted_as_a_precision(self) -> None:
+        """The prior covariance of a zero-diagonal coupling does not exist."""
+        coupling = self._ring_coupling()
+
+        with pytest.raises(ValueError, match="must be positive definite"):
+            predictive_coding_step(np.ones(4) * 0.1, np.zeros(4), coupling)
+
+    def test_explicit_prior_precision_admits_a_zero_diagonal_coupling(self) -> None:
+        """The step runs when the prior is given its own valid precision."""
+        coupling = self._ring_coupling()
+        observations = np.array([0.5, -0.2, 0.1, 0.0])
+        beliefs = np.zeros(4)
+
+        result = predictive_coding_step(
+            observations,
+            beliefs,
+            coupling,
+            learning_rate=0.05,
+            prior_precision=self._shifted_laplacian(coupling),
+        )
+
+        assert np.all(np.isfinite(result.beliefs))
+        assert np.isfinite(result.free_energy)
+
+    def test_prediction_errors_still_come_from_the_coupling(self) -> None:
+        """The precision argument does not displace ``K`` in the error term."""
+        coupling = self._ring_coupling()
+        observations = np.array([0.5, -0.2, 0.1, 0.0])
+        beliefs = np.array([0.1, 0.0, -0.1, 0.2])
+
+        result = predictive_coding_step(
+            observations,
+            beliefs,
+            coupling,
+            prior_precision=self._shifted_laplacian(coupling),
+        )
+
+        expected = hierarchical_prediction_error(observations, beliefs, coupling)
+        assert result.prediction_errors == pytest.approx(expected)
+
+    def test_belief_update_follows_the_supplied_precision(self) -> None:
+        """Two precisions over one coupling give two different updates."""
+        coupling = self._ring_coupling()
+        observations = np.array([0.5, -0.2, 0.1, 0.0])
+        beliefs = np.array([0.1, 0.0, -0.1, 0.2])
+        laplacian = self._shifted_laplacian(coupling)
+
+        from_laplacian = predictive_coding_step(
+            observations, beliefs, coupling, prior_precision=laplacian
+        )
+        from_identity = predictive_coding_step(
+            observations, beliefs, coupling, prior_precision=np.eye(4)
+        )
+
+        assert not np.allclose(from_laplacian.beliefs, from_identity.beliefs)
+        expected = beliefs - 0.01 * free_energy_gradient(
+            mu=beliefs,
+            sigma=0.1 * np.eye(4),
+            x_observed=observations,
+            K_precision=laplacian,
+        )
+        assert from_laplacian.beliefs == pytest.approx(expected)
+
+    def test_default_prior_precision_is_the_coupling_argument(self) -> None:
+        """Omitting the precision keeps the historical single-matrix call."""
+        K = build_knm_paper27(L=4)
+        observations = np.array([0.5, 0.3, -0.2, 0.1])
+        beliefs = np.zeros(4)
+
+        implicit = predictive_coding_step(observations, beliefs, K)
+        explicit = predictive_coding_step(observations, beliefs, K, prior_precision=K)
+
+        assert implicit.beliefs == pytest.approx(explicit.beliefs)
+        assert implicit.free_energy == pytest.approx(explicit.free_energy)
