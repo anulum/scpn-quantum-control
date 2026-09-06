@@ -4,6 +4,15 @@
 
 ### Fixed
 
+- Report the device and shot count an asynchronous IBM submission actually used.
+  A named backend that failed to resolve was quietly replaced by the least-busy
+  device, and a shot request above the runtime's per-job limit was silently
+  reduced, with neither recorded anywhere on the result — so a caller could not
+  tell which machine ran the work or how many shots backed the statistics. An
+  unresolvable named backend now raises `BackendSubstitutionError`; substitution
+  is available as an explicit opt-in and is recorded; the shot cap is reported;
+  and every submission returns its requested and effective device and shots.
+
 - Cross the provider boundary once per asynchronously submitted job. Awaiting a
   submitted batch previously re-ran the whole submission on every call, so two
   sequential awaits or a concurrent gather issued that many provider

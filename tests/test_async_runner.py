@@ -24,6 +24,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+import scpn_quantum_control.hardware as hardware_package
 from scpn_quantum_control.dense_budget import DenseAllocationError
 
 # ---------------------------------------------------------------------------
@@ -815,10 +816,26 @@ class TestSubmitCircuitBatchProvenance:
 
         ansatz = _FakeAnsatz()
         runner = ar.AsyncHardwareRunner(backend="missing_backend", shots=8)
+
+        # A named device that cannot be resolved must not be swapped silently:
+        # the results would describe a different machine than the caller asked
+        # for. Refusal is a configuration error, not a provider fault.
+        refusing = runner.submit_circuit_batch(
+            ansatz,
+            lambda **kwargs: {"should_not_run": 1.0},
+            enable_zne=True,
+        )
+        with pytest.raises(ar.BackendSubstitutionError, match="missing_backend"):
+            asyncio.run(refusing.result())
+
+        # Substitution is available, but only as an explicit opt-in, and it is
+        # recorded on the result so a reader can tell which device ran.
+        ansatz = _FakeAnsatz()
         job = runner.submit_circuit_batch(
             ansatz,
             lambda **kwargs: {"should_not_run": 1.0},
             enable_zne=True,
+            allow_backend_substitution=True,
         )
 
         result = asyncio.run(job.result())
@@ -829,6 +846,91 @@ class TestSubmitCircuitBatchProvenance:
         assert result["status"] == "QUEUED_ON_IBM"
         assert result["counts_available"] is False
         assert "should_not_run" not in result
+        assert result["requested_backend"] == "missing_backend"
+        assert result["backend_name"] == "least_busy_backend"
+        assert result["backend_substituted"] is True
+        assert "backend unavailable" in result["backend_substitution_reason"]
+        assert result["requested_shots"] == 8
+        assert result["effective_shots"] == 8
+        assert result["shots_capped"] is False
+
+    def test_submit_circuit_batch_records_the_runtime_shot_cap(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A capped shot count is reported, not silently substituted."""
+
+        class _FakeCircuit:
+            num_clbits = 0
+
+            def measure_all(self) -> None:
+                return None
+
+        class _FakeAnsatz:
+            def build_circuit(self) -> _FakeCircuit:
+                return _FakeCircuit()
+
+        class _FakeBackend:
+            name = "ibm_fez"
+
+        class _FakeService:
+            def __init__(self, **kwargs: Any) -> None:
+                return None
+
+            def backend(self, target: str) -> _FakeBackend:
+                return _FakeBackend()
+
+        recorded: dict[str, Any] = {}
+
+        class _FakeOptions:
+            def __init__(self) -> None:
+                self.default_shots = 0
+
+        class _FakeJob:
+            def job_id(self) -> str:
+                return "queued_job"
+
+            def result(self, timeout: float | None = None) -> Any:
+                raise TimeoutError("still queued")
+
+        class _FakeSampler:
+            def __init__(self, mode: Any) -> None:
+                self.options = _FakeOptions()
+
+            def run(self, circuits: Any, **kwargs: Any) -> _FakeJob:
+                recorded["default_shots"] = self.options.default_shots
+                return _FakeJob()
+
+        class _FakePassManager:
+            def run(self, circuit: Any) -> Any:
+                return circuit
+
+        qiskit_ibm = types.ModuleType("qiskit_ibm_runtime")
+        qiskit_ibm.QiskitRuntimeService = _FakeService  # type: ignore[attr-defined]
+        qiskit_ibm.SamplerV2 = _FakeSampler  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit_ibm_runtime", qiskit_ibm)
+
+        preset = types.ModuleType("qiskit.transpiler.preset_passmanagers")
+        preset.generate_preset_pass_manager = (  # type: ignore[attr-defined]
+            lambda *args, **kwargs: _FakePassManager()
+        )
+        monkeypatch.setitem(sys.modules, "qiskit.transpiler.preset_passmanagers", preset)
+
+        passes = types.ModuleType("qiskit.transpiler.passes")
+        passes.ALAPScheduleAnalysis = object  # type: ignore[attr-defined]
+        passes.PadDynamicalDecoupling = object  # type: ignore[attr-defined]
+        monkeypatch.setitem(sys.modules, "qiskit.transpiler.passes", passes)
+        monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
+
+        runner = ar.AsyncHardwareRunner(backend="ibm_fez", shots=20000)
+        job = runner.submit_circuit_batch(_FakeAnsatz(), lambda **kwargs: {})
+        result = asyncio.run(job.result())
+
+        assert recorded["default_shots"] == ar._IBM_RUNTIME_MAX_SHOTS
+        assert result["requested_shots"] == 20000
+        assert result["effective_shots"] == ar._IBM_RUNTIME_MAX_SHOTS
+        assert result["shots_capped"] is True
+        assert result["backend_name"] == "ibm_fez"
+        assert result["backend_substituted"] is False
 
     def test_submit_circuit_batch_submission_error_without_local_fallback(
         self, monkeypatch: pytest.MonkeyPatch
@@ -1038,3 +1140,11 @@ class TestSubmissionIsIssuedOnce:
         assert wrapper.submission_state == "not_started"
         assert wrapper.submission_error is None
         assert calls["n"] == 0
+
+
+def test_backend_substitution_error_is_importable_from_the_package() -> None:
+    """Callers must be able to catch the refusal without a private import."""
+    from scpn_quantum_control.hardware import BackendSubstitutionError
+
+    assert issubclass(BackendSubstitutionError, RuntimeError)
+    assert "BackendSubstitutionError" in hardware_package.__all__

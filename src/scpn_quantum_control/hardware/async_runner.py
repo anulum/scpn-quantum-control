@@ -43,6 +43,16 @@ is re-raised on every later await instead of being resubmitted; recovery is an
 explicit caller decision, readable through ``submission_state`` and
 ``submission_error``.
 
+The device and the shot count are reported, never substituted quietly. A named
+backend that cannot be resolved raises :class:`BackendSubstitutionError` instead
+of running elsewhere; passing ``allow_backend_substitution=True`` accepts a
+different device and records the swap. IBM Runtime caps a sampler job at
+``_IBM_RUNTIME_MAX_SHOTS`` shots, so a larger request is capped and reported
+rather than silently reduced — statistical error follows the effective count,
+not the requested one. Every submission returns ``requested_backend``,
+``backend_name``, ``backend_substituted``, ``requested_shots``,
+``effective_shots`` and ``shots_capped``.
+
 Tests exercise the class with a mock Sampler / Service, so CI does not
 need an IBM token. Real hardware usage is the same API surface.
 
@@ -76,6 +86,19 @@ from typing import Any
 
 from ..dense_budget import DenseAllocationError
 from .runner import HardwareRunner, JobResult, _require_local_statevector_simulator
+
+_IBM_RUNTIME_MAX_SHOTS = 4000
+"""Maximum shots IBM Runtime accepts in a single sampler job."""
+
+
+class BackendSubstitutionError(RuntimeError):
+    """A named backend was unavailable and substitution was not permitted.
+
+    Raised instead of quietly running on a different device. It is a
+    configuration error, not a provider fault, so it propagates to the caller
+    rather than being folded into a submission-error status or a local-simulation
+    fallback.
+    """
 
 
 def _get_logger(name: str) -> Any:
@@ -261,6 +284,7 @@ class AsyncHardwareRunner:
                 zne_job_ids: list[str] = []
                 counts = None
                 status = "NOT_SUBMITTED"
+                execution_provenance: dict[str, Any] = {}
                 shots = self.kwargs.get("shots", self.runner_obj.default_shots)
                 allow_local_simulation = bool(
                     self.kwargs.get(
@@ -296,10 +320,31 @@ class AsyncHardwareRunner:
                             if self.runner_obj.backend == "ibm_heron_r2"
                             else self.runner_obj.backend
                         )
+                        allow_backend_substitution = bool(
+                            self.kwargs.get(
+                                "allow_backend_substitution",
+                                self.runner_obj.runner_kwargs.get(
+                                    "allow_backend_substitution", False
+                                ),
+                            )
+                        )
                         try:
                             backend = service.backend(target)
-                        except Exception:
+                            execution_provenance["backend_substituted"] = False
+                        except Exception as lookup_error:
+                            if not allow_backend_substitution:
+                                raise BackendSubstitutionError(
+                                    f"requested backend {target!r} is unavailable "
+                                    f"({lookup_error}); pass "
+                                    "allow_backend_substitution=True to accept a "
+                                    "different device, which changes the device the "
+                                    "results describe"
+                                ) from lookup_error
                             backend = service.least_busy(simulator=False, operational=True)
+                            execution_provenance["backend_substituted"] = True
+                            execution_provenance["backend_substitution_reason"] = str(lookup_error)
+                        execution_provenance["requested_backend"] = target
+                        execution_provenance["backend_name"] = getattr(backend, "name", None)
 
                         # Basic error mitigation: high optimization + dynamical decoupling
                         pm = generate_preset_pass_manager(
@@ -333,7 +378,18 @@ class AsyncHardwareRunner:
                             print(f"DD skipped ({dd_err}); submitting without DD.", flush=True)
 
                         sampler = SamplerV2(mode=backend)
-                        sampler.options.default_shots = min(shots, 4000)
+                        effective_shots = min(shots, _IBM_RUNTIME_MAX_SHOTS)
+                        sampler.options.default_shots = effective_shots
+                        execution_provenance["requested_shots"] = shots
+                        execution_provenance["effective_shots"] = effective_shots
+                        execution_provenance["shots_capped"] = effective_shots < shots
+                        if effective_shots < shots:
+                            print(
+                                f"IBM Runtime caps shots at {_IBM_RUNTIME_MAX_SHOTS}: "
+                                f"requested {shots}, submitting {effective_shots}. "
+                                "Statistical error follows the effective count.",
+                                flush=True,
+                            )
 
                         print(
                             "IBM Runtime: Dispatching circuit with DD + opt_level=3"
@@ -404,6 +460,8 @@ class AsyncHardwareRunner:
                         self.job_id = None
                         status = "NO_IBM_TOKEN"
 
+                except BackendSubstitutionError:
+                    raise
                 except Exception as e:
                     if isinstance(e, DenseAllocationError):
                         raise
@@ -447,6 +505,7 @@ class AsyncHardwareRunner:
                 final_result["job_ids"] = ibm_job_ids
                 final_result["runtime"] = time.time() - self.submitted_at
                 final_result["status"] = status
+                final_result.update(execution_provenance)
                 if counts is None:
                     final_result["counts_available"] = False
 
@@ -643,6 +702,7 @@ class AsyncHardwareRunner:
 
 
 __all__ = [
+    "BackendSubstitutionError",
     "AsyncHardwareRunner",
     "AsyncJobHandle",
 ]

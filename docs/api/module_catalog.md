@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **699 modules** across **39 package families**
-- **3914 documented public module-level symbols**
+- **3915 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2517,9 +2517,9 @@ No-submit S10 analog-native Kuramoto readiness model.
 
 Concurrent IBM job submission via asyncio.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/async_runner.py) · Public symbols: **2**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/async_runner.py) · Public symbols: **3**
 
-**Classes:** `AsyncJobHandle`, `AsyncHardwareRunner`
+**Classes:** `BackendSubstitutionError`, `AsyncJobHandle`, `AsyncHardwareRunner`
 
 ### `scpn_quantum_control.hardware.backends`
 

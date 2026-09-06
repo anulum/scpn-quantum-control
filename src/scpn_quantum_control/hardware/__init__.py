@@ -45,7 +45,7 @@ from .analog_native_readiness import (
     compare_native_to_digital_primitives,
     provider_readiness_rows,
 )
-from .async_runner import AsyncHardwareRunner, AsyncJobHandle
+from .async_runner import AsyncHardwareRunner, AsyncJobHandle, BackendSubstitutionError
 from .backends import (
     BackendProtocol,
     BackendRegistrationError,
@@ -287,6 +287,7 @@ from .trapped_ion import transpile_for_trapped_ion, trapped_ion_noise_model
 
 __all__ = [
     "AsyncHardwareRunner",
+    "BackendSubstitutionError",
     "AsyncJobHandle",
     "AnalogBackendCapabilities",
     "AnalogCouplingTerm",
