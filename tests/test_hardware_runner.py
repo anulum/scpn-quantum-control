@@ -9,6 +9,7 @@
 
 import numpy as np
 import pytest
+from scipy.optimize import minimize
 
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.hardware.classical import (
@@ -235,48 +236,38 @@ def test_kuramoto_4osc_on_simulator(sim_runner):
     assert len(result["classical_R"]) > 0
 
 
-def test_qaoa_mpc_on_simulator(sim_runner):
+def test_qaoa_mpc_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
     """Quick QAOA test with minimal iterations."""
     import scpn_quantum_control.hardware.experiment_control as _ctl_mod
     from scpn_quantum_control.hardware.experiments import qaoa_mpc_4_experiment
 
-    original = _ctl_mod.minimize
-
     def limited_minimize(fn, x0, **kwargs):
         kwargs.setdefault("options", {})["maxiter"] = 5
-        return original(fn, x0, **kwargs)
+        return minimize(fn, x0, **kwargs)
 
-    _ctl_mod.minimize = limited_minimize
-    try:
-        result = qaoa_mpc_4_experiment(sim_runner, shots=200)
-        assert "brute_force_cost" in result
-        assert "qaoa_p1" in result
-    finally:
-        _ctl_mod.minimize = original
+    monkeypatch.setattr(_ctl_mod, "minimize", limited_minimize)
+    result = qaoa_mpc_4_experiment(sim_runner, shots=200)
+    assert "brute_force_cost" in result
+    assert "qaoa_p1" in result
 
 
-def test_vqe_4q_on_simulator(sim_runner):
+def test_vqe_4q_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
     """VQE should converge below exact ground energy + tolerance."""
     import scpn_quantum_control.hardware.experiment_vqe as _vqe_mod
     from scpn_quantum_control.hardware.experiments import vqe_4q_experiment
 
-    original = _vqe_mod.minimize
-
     def limited_minimize(fn, x0, **kwargs):
         kwargs.setdefault("options", {})["maxiter"] = 20
-        return original(fn, x0, **kwargs)
+        return minimize(fn, x0, **kwargs)
 
-    _vqe_mod.minimize = limited_minimize
-    try:
-        result = vqe_4q_experiment(sim_runner, shots=100, maxiter=20)
-        assert result["experiment"] == "vqe_4q"
-        assert result["n_qubits"] == 4
-        assert np.isfinite(result["vqe_energy"])
-        assert np.isfinite(result["energy_std"])
-        assert result["energy_std"] >= 0.0
-        assert len(result["energy_history"]) > 0
-    finally:
-        _vqe_mod.minimize = original
+    monkeypatch.setattr(_vqe_mod, "minimize", limited_minimize)
+    result = vqe_4q_experiment(sim_runner, shots=100, maxiter=20)
+    assert result["experiment"] == "vqe_4q"
+    assert result["n_qubits"] == 4
+    assert np.isfinite(result["vqe_energy"])
+    assert np.isfinite(result["energy_std"])
+    assert result["energy_std"] >= 0.0
+    assert len(result["energy_history"]) > 0
 
 
 @pytest.mark.slow
@@ -336,27 +327,22 @@ def test_kuramoto_8osc_zne_on_simulator(sim_runner):
     assert np.isfinite(result["classical_R"])
 
 
-def test_vqe_8q_hardware_on_simulator(sim_runner):
+def test_vqe_8q_hardware_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
     """VQE 8q hardware path: returns hw_energy, sim_energy, exact_energy."""
     import scpn_quantum_control.hardware.experiment_vqe as _vqe_mod
     from scpn_quantum_control.hardware.experiments import vqe_8q_hardware_experiment
 
-    original = _vqe_mod.minimize
-
     def limited_minimize(fn, x0, **kwargs):
         kwargs.setdefault("options", {})["maxiter"] = 20
-        return original(fn, x0, **kwargs)
+        return minimize(fn, x0, **kwargs)
 
-    _vqe_mod.minimize = limited_minimize
-    try:
-        result = vqe_8q_hardware_experiment(sim_runner, shots=100, maxiter=20)
-        assert result["experiment"] == "vqe_8q_hardware"
-        assert result["n_qubits"] == 8
-        assert np.isfinite(result["hw_energy"])
-        assert np.isfinite(result["sim_energy"])
-        assert np.isfinite(result["exact_energy"])
-    finally:
-        _vqe_mod.minimize = original
+    monkeypatch.setattr(_vqe_mod, "minimize", limited_minimize)
+    result = vqe_8q_hardware_experiment(sim_runner, shots=100, maxiter=20)
+    assert result["experiment"] == "vqe_8q_hardware"
+    assert result["n_qubits"] == 8
+    assert np.isfinite(result["hw_energy"])
+    assert np.isfinite(result["sim_energy"])
+    assert np.isfinite(result["exact_energy"])
 
 
 @pytest.mark.slow
@@ -401,27 +387,22 @@ def test_sync_threshold_on_simulator(sim_runner):
         assert np.isfinite(entry["classical_R"])
 
 
-def test_ansatz_comparison_hw_on_simulator(sim_runner):
+def test_ansatz_comparison_hw_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
     """Ansatz comparison: all three produce finite hw_energy."""
     import scpn_quantum_control.hardware.experiment_vqe as _vqe_mod
     from scpn_quantum_control.hardware.experiments import ansatz_comparison_hw_experiment
 
-    original = _vqe_mod.minimize
-
     def limited_minimize(fn, x0, **kwargs):
         kwargs.setdefault("options", {})["maxiter"] = 15
-        return original(fn, x0, **kwargs)
+        return minimize(fn, x0, **kwargs)
 
-    _vqe_mod.minimize = limited_minimize
-    try:
-        result = ansatz_comparison_hw_experiment(sim_runner, shots=100, maxiter=15)
-        assert result["experiment"] == "ansatz_comparison_hw"
-        assert len(result["comparison"]) == 3
-        for entry in result["comparison"]:
-            assert np.isfinite(entry["hw_energy"])
-            assert np.isfinite(entry["sim_energy"])
-    finally:
-        _vqe_mod.minimize = original
+    monkeypatch.setattr(_vqe_mod, "minimize", limited_minimize)
+    result = ansatz_comparison_hw_experiment(sim_runner, shots=100, maxiter=15)
+    assert result["experiment"] == "ansatz_comparison_hw"
+    assert len(result["comparison"]) == 3
+    for entry in result["comparison"]:
+        assert np.isfinite(entry["hw_energy"])
+        assert np.isfinite(entry["sim_energy"])
 
 
 def test_zne_higher_order_on_simulator(sim_runner):
@@ -523,77 +504,62 @@ def test_exact_diag_sparse_path():
 # ── Endianness agreement tests ──
 
 
-def test_bell_test_4q_on_simulator(sim_runner):
+def test_bell_test_4q_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
     """CHSH Bell test: S values are finite, S_sim shows entanglement."""
     import scpn_quantum_control.phase.phase_vqe as vqe_mod
     from scpn_quantum_control.hardware.experiments import bell_test_4q_experiment
 
-    original = vqe_mod.minimize
-
     def limited_minimize(fn, x0, **kwargs):
         kwargs.setdefault("options", {})["maxiter"] = 30
-        return original(fn, x0, **kwargs)
+        return minimize(fn, x0, **kwargs)
 
-    vqe_mod.minimize = limited_minimize
-    try:
-        result = bell_test_4q_experiment(sim_runner, shots=500, maxiter=30)
-        assert result["experiment"] == "bell_test_4q"
-        assert np.isfinite(result["S_hw"])
-        assert np.isfinite(result["S_sim"])
-        assert result["S_sim"] > 0
-        assert "correlators_hw" in result
-        assert "correlators_sim" in result
-    finally:
-        vqe_mod.minimize = original
+    monkeypatch.setattr(vqe_mod, "minimize", limited_minimize)
+    result = bell_test_4q_experiment(sim_runner, shots=500, maxiter=30)
+    assert result["experiment"] == "bell_test_4q"
+    assert np.isfinite(result["S_hw"])
+    assert np.isfinite(result["S_sim"])
+    assert result["S_sim"] > 0
+    assert "correlators_hw" in result
+    assert "correlators_sim" in result
 
 
-def test_correlator_4q_on_simulator(sim_runner):
+def test_correlator_4q_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
     """ZZ correlator: 4×4 symmetric matrix with finite Frobenius error."""
     import scpn_quantum_control.phase.phase_vqe as vqe_mod
     from scpn_quantum_control.hardware.experiments import correlator_4q_experiment
 
-    original = vqe_mod.minimize
-
     def limited_minimize(fn, x0, **kwargs):
         kwargs.setdefault("options", {})["maxiter"] = 30
-        return original(fn, x0, **kwargs)
+        return minimize(fn, x0, **kwargs)
 
-    vqe_mod.minimize = limited_minimize
-    try:
-        result = correlator_4q_experiment(sim_runner, shots=500, maxiter=30)
-        assert result["experiment"] == "correlator_4q"
-        corr = np.array(result["corr_hw"])
-        assert corr.shape == (4, 4)
-        np.testing.assert_allclose(corr, corr.T, atol=1e-10)
-        assert np.isfinite(result["frobenius_error"])
-        assert result["max_correlation_hw"] > 0
-    finally:
-        vqe_mod.minimize = original
+    monkeypatch.setattr(vqe_mod, "minimize", limited_minimize)
+    result = correlator_4q_experiment(sim_runner, shots=500, maxiter=30)
+    assert result["experiment"] == "correlator_4q"
+    corr = np.array(result["corr_hw"])
+    assert corr.shape == (4, 4)
+    np.testing.assert_allclose(corr, corr.T, atol=1e-10)
+    assert np.isfinite(result["frobenius_error"])
+    assert result["max_correlation_hw"] > 0
 
 
-def test_qkd_qber_4q_on_simulator(sim_runner):
+def test_qkd_qber_4q_on_simulator(sim_runner, monkeypatch: pytest.MonkeyPatch):
     """QKD QBER: error rates in [0,1], dict keys present."""
     import scpn_quantum_control.phase.phase_vqe as vqe_mod
     from scpn_quantum_control.hardware.experiments import qkd_qber_4q_experiment
 
-    original = vqe_mod.minimize
-
     def limited_minimize(fn, x0, **kwargs):
         kwargs.setdefault("options", {})["maxiter"] = 30
-        return original(fn, x0, **kwargs)
+        return minimize(fn, x0, **kwargs)
 
-    vqe_mod.minimize = limited_minimize
-    try:
-        result = qkd_qber_4q_experiment(sim_runner, shots=500, maxiter=30)
-        assert result["experiment"] == "qkd_qber_4q"
-        assert 0.0 <= result["qber_z_hw"] <= 1.0
-        assert 0.0 <= result["qber_x_hw"] <= 1.0
-        assert 0.0 <= result["qber_sim"] <= 1.0
-        assert isinstance(result["secure_hw"], bool)
-        assert isinstance(result["secure_sim"], bool)
-        assert np.isfinite(result["key_rate_hw"])
-    finally:
-        vqe_mod.minimize = original
+    monkeypatch.setattr(vqe_mod, "minimize", limited_minimize)
+    result = qkd_qber_4q_experiment(sim_runner, shots=500, maxiter=30)
+    assert result["experiment"] == "qkd_qber_4q"
+    assert 0.0 <= result["qber_z_hw"] <= 1.0
+    assert 0.0 <= result["qber_x_hw"] <= 1.0
+    assert 0.0 <= result["qber_sim"] <= 1.0
+    assert isinstance(result["secure_hw"], bool)
+    assert isinstance(result["secure_sim"], bool)
+    assert np.isfinite(result["key_rate_hw"])
 
 
 def test_classical_evolution_matches_qiskit():
