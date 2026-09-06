@@ -20,7 +20,17 @@ use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use crate::validation::{validate_contiguous_slice, validate_finite, validate_n};
+use crate::validation::{
+    validate_contiguous_slice, validate_finite, validate_finite_array, validate_finite_scalar,
+    validate_n, validate_square_matrix, validate_symmetric, validate_vector_len,
+};
+
+/// Absolute tolerance admitted between a covariance-like matrix and its transpose.
+///
+/// Mirrors `COVARIANCE_SYMMETRY_ATOL` in
+/// `scpn_quantum_control.fep.variational_free_energy`, so both tiers admit the
+/// same domain.
+pub const COVARIANCE_SYMMETRY_ATOL: f64 = 1e-10;
 
 fn log_det_spd_with_ridge(
     matrix: &ndarray::ArrayView2<'_, f64>,
@@ -59,6 +69,24 @@ fn log_det_spd_with_ridge(
 ///
 /// where K_reg = K + ridge×I (prior precision), Γ = sensory precision.
 /// With identity generative model and Jacobian.
+///
+/// # Contract
+///
+/// The dimension `n` comes from `mu`. Every other argument is validated
+/// against it before any indexing: `x_observed` must have length `n`, and
+/// `k_precision` and `sensory_precision` must both be exactly `n`×`n`. All
+/// four, and `ridge`, must be finite. Non-contiguous views are supported and
+/// read through their strides rather than rejected.
+///
+/// Symmetry is deliberately not required here. The gradient uses `k_precision`
+/// as a general linear map, so an asymmetric matrix is a meaningful input; the
+/// free-energy export, which needs a log-determinant, does require it.
+///
+/// # Errors
+///
+/// Returns `ValueError` when `mu` is empty, when a length or shape disagrees
+/// with `n`, or when any element or `ridge` is not finite. It never panics on
+/// an admissible-looking but mis-shaped argument.
 #[pyfunction]
 pub fn free_energy_gradient_rust<'py>(
     py: Python<'py>,
@@ -74,6 +102,14 @@ pub fn free_energy_gradient_rust<'py>(
     let gamma = sensory_precision.as_array();
     let n = mu_arr.len();
     validate_n(n, "mu")?;
+    validate_vector_len(x_arr.len(), n, "x_observed")?;
+    validate_square_matrix(k_arr.nrows(), k_arr.ncols(), n, "k_precision")?;
+    validate_square_matrix(gamma.nrows(), gamma.ncols(), n, "sensory_precision")?;
+    validate_finite_array(&mu_arr, "mu")?;
+    validate_finite_array(&x_arr, "x_observed")?;
+    validate_finite_array(&k_arr, "k_precision")?;
+    validate_finite_array(&gamma, "sensory_precision")?;
+    validate_finite_scalar(ridge, "ridge")?;
 
     let mut grad = Array1::<f64>::zeros(n);
 
@@ -172,6 +208,26 @@ pub fn prediction_error_inner(
 /// accuracy = 0.5 × (x − μ)ᵀ Γ (x − μ)
 ///
 /// Returns (free_energy, complexity, accuracy).
+///
+/// # Contract
+///
+/// The dimension `n` comes from `mu`, and `x_observed`, `k_precision` and
+/// `sensory_precision` are validated against it before any indexing, as for
+/// the gradient export. `sigma_diag` must be positive and finite, `ridge`
+/// finite.
+///
+/// `k_precision` must additionally be symmetric within
+/// [`COVARIANCE_SYMMETRY_ATOL`] and positive definite once the ridge is added.
+/// Its log-determinant is taken from a Cholesky factor, which reads only the
+/// lower triangle: without the symmetry check an asymmetric matrix would
+/// silently yield the determinant of its symmetrised triangle rather than an
+/// error.
+///
+/// # Errors
+///
+/// Returns `ValueError` for an empty `mu`, a length or shape disagreement, a
+/// non-finite element or parameter, an asymmetric `k_precision`, or a
+/// `k_precision + ridge·I` that is not positive definite.
 #[pyfunction]
 pub fn variational_free_energy_rust(
     mu: PyReadonlyArray1<'_, f64>,
@@ -189,6 +245,15 @@ pub fn variational_free_energy_rust(
     let k_arr = k_precision.as_array();
     let gamma = sensory_precision.as_array();
     let n = mu_arr.len();
+    validate_vector_len(x_arr.len(), n, "x_observed")?;
+    validate_square_matrix(k_arr.nrows(), k_arr.ncols(), n, "k_precision")?;
+    validate_square_matrix(gamma.nrows(), gamma.ncols(), n, "sensory_precision")?;
+    validate_finite_array(&mu_arr, "mu")?;
+    validate_finite_array(&x_arr, "x_observed")?;
+    validate_finite_array(&k_arr, "k_precision")?;
+    validate_finite_array(&gamma, "sensory_precision")?;
+    validate_finite_scalar(ridge, "ridge")?;
+    validate_symmetric(&k_arr, COVARIANCE_SYMMETRY_ATOL, "k_precision")?;
 
     // Complexity: KL[q || prior] for diagonal Σ = sigma_diag × I
     // KL = 0.5 × (tr(K_reg × Σ) + μᵀ K_reg μ − n − log|K_reg| − log|Σ|)

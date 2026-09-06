@@ -498,6 +498,15 @@ Available via `import scpn_quantum_engine`:
 Computes $\partial F / \partial \mu$ for identity generative model.
 All parameters are numpy arrays. Returns `ndarray[f64]`.
 
+The dimension $n$ comes from `mu`. `x_observed` must have length $n$, and both
+matrices must be exactly $n \times n$; all four arguments and `ridge` must be
+finite. Violations raise `ValueError` naming the argument. Non-contiguous views
+are read through their strides and are not rejected.
+
+Symmetry is not required here: the gradient uses `k_precision` as a general
+linear map. The free-energy export, which needs a log-determinant, does require
+it.
+
 #### `hierarchical_prediction_error_rust(observations, beliefs, k)`
 
 Computes precision-weighted prediction errors. Returns `ndarray[f64]`.
@@ -505,6 +514,22 @@ Computes precision-weighted prediction errors. Returns `ndarray[f64]`.
 #### `variational_free_energy_rust(mu, x_observed, k_precision, sensory_precision, sigma_diag, ridge)`
 
 Computes $(F, \text{complexity}, \text{accuracy})$ tuple for diagonal $\Sigma$.
+
+Same length, shape and finiteness contract as the gradient export, plus
+`sigma_diag` positive and finite. `k_precision` must additionally be symmetric
+within $10^{-10}$ — the same absolute tolerance as `COVARIANCE_SYMMETRY_ATOL`
+in the Python tier — and positive definite once the ridge is added. The
+symmetry check exists because the log-determinant is taken from a Cholesky
+factor, which reads only the lower triangle: without it, an asymmetric matrix
+returns the determinant of its symmetrised triangle instead of an error.
+
+Both exports validate the whole contract before any indexing. Before this, an
+undersized argument reached an ndarray bounds panic that crosses PyO3 as
+`pyo3_runtime.PanicException`, a `BaseException` that ordinary Python error
+handling does not catch, and a merely mis-shaped argument — a $2 \times 3$ read
+as $2 \times 2$ — produced a silently wrong number. The contract is exercised
+against a freshly built extension by the `fep-ffi-contract-quality` job in
+`.github/workflows/ci-native-integration.yml`.
 
 ### Internal Functions
 

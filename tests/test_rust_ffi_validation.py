@@ -8,13 +8,16 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 engine = pytest.importorskip("scpn_quantum_engine")
 
 
-def _require_engine_symbol(name: str):
+def _require_engine_symbol(name: str) -> Any:
     symbol = getattr(engine, name, None)
     if symbol is None:
         pytest.skip(f"scpn_quantum_engine does not export {name}")
@@ -933,3 +936,359 @@ def test_kuramoto_witness_candidate_features_rejects_non_finite_candidate() -> N
 
 def r_values_error_pattern() -> str:
     return r"r_values must be a C-contiguous NumPy array"
+
+
+# --- CR-20260904-R09: FEP FFI numerical domain contract ---------------------
+#
+# free_energy_gradient_rust and variational_free_energy_rust take their
+# dimension from mu and then index x, K and Gamma with it. Before this
+# contract, an undersized argument reached an ndarray bounds panic that crosses
+# PyO3 as pyo3_runtime.PanicException — a BaseException, so ordinary Python
+# error handling does not catch it — and a merely mis-shaped argument, such as
+# a 2x3 read as 2x2, produced a silently wrong number instead. Both tiers now
+# admit the same domain as the Python contract established by R07 and R08.
+
+
+def _fep_domain_contract_exports() -> tuple[Any, Any]:
+    """Return the two FEP exports, skipping if the extension lacks them.
+
+    Returns
+    -------
+    tuple
+        ``(free_energy_gradient_rust, variational_free_energy_rust)``.
+    """
+    return (
+        _require_engine_symbol("free_energy_gradient_rust"),
+        _require_engine_symbol("variational_free_energy_rust"),
+    )
+
+
+def _fep_domain_contract_reference_gradient(
+    mu: NDArray[np.float64],
+    x_observed: NDArray[np.float64],
+    k_precision: NDArray[np.float64],
+    sensory_precision: NDArray[np.float64],
+    ridge: float,
+) -> NDArray[np.float64]:
+    """Return ``(K + ridge·I) μ − Γ (x − μ)`` computed independently in NumPy.
+
+    Parameters
+    ----------
+    mu, x_observed, k_precision, sensory_precision, ridge
+        The same arguments passed to the native export.
+
+    Returns
+    -------
+    numpy.ndarray
+        The expected gradient.
+    """
+    ridged = np.asarray(k_precision, dtype=np.float64) + ridge * np.eye(mu.size)
+    gamma = np.asarray(sensory_precision, dtype=np.float64)
+    return np.asarray(ridged @ mu - gamma @ (x_observed - mu), dtype=np.float64)
+
+
+def _fep_domain_contract_reference_free_energy(
+    mu: NDArray[np.float64],
+    x_observed: NDArray[np.float64],
+    k_precision: NDArray[np.float64],
+    sensory_precision: NDArray[np.float64],
+    sigma_diag: float,
+    ridge: float,
+) -> tuple[float, float, float]:
+    """Return the documented free energy computed independently in NumPy.
+
+    The log-determinant here comes from ``numpy.linalg.slogdet`` rather than a
+    Cholesky factor, so the oracle does not restate the native implementation.
+
+    Parameters
+    ----------
+    mu, x_observed, k_precision, sensory_precision, sigma_diag, ridge
+        The same arguments passed to the native export.
+
+    Returns
+    -------
+    tuple
+        ``(free_energy, complexity, accuracy)``.
+    """
+    n = mu.size
+    ridged = np.asarray(k_precision, dtype=np.float64) + ridge * np.eye(n)
+    sign, log_det_k = np.linalg.slogdet(ridged)
+    assert sign > 0, "the oracle requires a positive-definite ridged precision"
+    complexity = 0.5 * float(
+        sigma_diag * float(np.trace(ridged))
+        + float(mu @ ridged @ mu)
+        - n
+        - float(log_det_k)
+        - n * float(np.log(sigma_diag))
+    )
+    error = x_observed - mu
+    accuracy = 0.5 * float(error @ np.asarray(sensory_precision, dtype=np.float64) @ error)
+    return complexity + accuracy, complexity, accuracy
+
+
+def test_fep_domain_contract_gradient_refusal_is_an_ordinary_exception() -> None:
+    """A mis-shaped argument raises something Python code can actually catch."""
+    gradient, _ = _fep_domain_contract_exports()
+
+    try:
+        gradient(np.zeros(2), np.zeros(1), np.eye(2), np.eye(2), 1e-10)
+    except Exception as exc:  # noqa: BLE001 - the point is that Exception catches it
+        assert isinstance(exc, ValueError)
+    else:
+        raise AssertionError("a short x_observed must be refused")
+
+
+def test_fep_domain_contract_gradient_rejects_short_observation() -> None:
+    """x_observed shorter than mu used to index out of bounds and panic."""
+    gradient, _ = _fep_domain_contract_exports()
+
+    with pytest.raises(ValueError, match=r"x_observed length 1 != 2"):
+        gradient(np.array([0.2, -0.1]), np.zeros(1), np.eye(2), np.eye(2), 1e-10)
+
+
+def test_fep_domain_contract_gradient_rejects_long_observation() -> None:
+    """A longer x_observed is a disagreement, not a silently truncated read."""
+    gradient, _ = _fep_domain_contract_exports()
+
+    with pytest.raises(ValueError, match=r"x_observed length 3 != 2"):
+        gradient(np.array([0.2, -0.1]), np.zeros(3), np.eye(2), np.eye(2), 1e-10)
+
+
+def test_fep_domain_contract_gradient_rejects_undersized_precision() -> None:
+    """A prior precision smaller than n used to panic."""
+    gradient, _ = _fep_domain_contract_exports()
+
+    with pytest.raises(ValueError, match=r"k_precision shape 1x1 != 2x2"):
+        gradient(np.array([0.2, -0.1]), np.zeros(2), np.eye(1), np.eye(2), 1e-10)
+
+
+def test_fep_domain_contract_gradient_rejects_rectangular_precision() -> None:
+    """A 2x3 precision fits every index and used to be read as its 2x2 block.
+
+    This case never panicked. It returned a number computed from part of a
+    matrix that is not a precision, which is worse, because nothing reported it.
+    """
+    gradient, _ = _fep_domain_contract_exports()
+
+    with pytest.raises(ValueError, match=r"k_precision shape 2x3 != 2x2"):
+        gradient(np.array([0.2, -0.1]), np.zeros(2), np.ones((2, 3)), np.eye(2), 1e-10)
+
+
+def test_fep_domain_contract_gradient_rejects_undersized_sensory_precision() -> None:
+    """A sensory precision smaller than n used to panic."""
+    gradient, _ = _fep_domain_contract_exports()
+
+    with pytest.raises(ValueError, match=r"sensory_precision shape 1x1 != 2x2"):
+        gradient(np.array([0.2, -0.1]), np.zeros(2), np.eye(2), np.eye(1), 1e-10)
+
+
+def test_fep_domain_contract_gradient_rejects_empty_belief() -> None:
+    """An empty mu has no dimension to validate the other arguments against."""
+    gradient, _ = _fep_domain_contract_exports()
+
+    with pytest.raises(ValueError, match=r"mu must be > 0"):
+        gradient(np.zeros(0), np.zeros(0), np.zeros((0, 0)), np.zeros((0, 0)), 1e-10)
+
+
+@pytest.mark.parametrize(
+    ("argument", "expected"),
+    [
+        ("mu", r"mu\[0\] is not finite"),
+        ("x_observed", r"x_observed\[0\] is not finite"),
+        ("k_precision", r"k_precision\[0\] is not finite"),
+        ("sensory_precision", r"sensory_precision\[0\] is not finite"),
+        ("ridge", r"ridge must be finite"),
+    ],
+)
+def test_fep_domain_contract_gradient_rejects_non_finite(argument: str, expected: str) -> None:
+    """A non-finite argument produced a NaN gradient instead of a refusal.
+
+    Parameters
+    ----------
+    argument
+        Name of the argument made non-finite.
+    expected
+        Regular expression the refusal message must match.
+    """
+    gradient, _ = _fep_domain_contract_exports()
+    arguments: dict[str, object] = {
+        "mu": np.array([0.2, -0.1]),
+        "x_observed": np.zeros(2),
+        "k_precision": np.eye(2),
+        "sensory_precision": np.eye(2),
+        "ridge": 1e-10,
+    }
+    if argument == "ridge":
+        arguments["ridge"] = float("nan")
+    else:
+        poisoned = np.array(arguments[argument], dtype=np.float64, copy=True)
+        poisoned.reshape(-1)[0] = np.nan
+        arguments[argument] = poisoned
+
+    with pytest.raises(ValueError, match=expected):
+        gradient(*arguments.values())
+
+
+def test_fep_domain_contract_gradient_supports_non_contiguous_views() -> None:
+    """A strided slice is read through its strides, not rejected."""
+    gradient, _ = _fep_domain_contract_exports()
+    dense_mu = np.array([0.2, 9.0, -0.1, 9.0])
+    dense_x = np.array([0.5, 9.0, 0.25, 9.0])
+    strided_mu = dense_mu[::2]
+    strided_x = dense_x[::2]
+    assert not strided_mu.flags["C_CONTIGUOUS"]
+
+    strided_result = np.asarray(gradient(strided_mu, strided_x, np.eye(2), np.eye(2), 1e-10))
+    contiguous_result = np.asarray(
+        gradient(
+            np.ascontiguousarray(strided_mu),
+            np.ascontiguousarray(strided_x),
+            np.eye(2),
+            np.eye(2),
+            1e-10,
+        )
+    )
+
+    np.testing.assert_allclose(strided_result, contiguous_result, atol=0.0)
+
+
+def test_fep_domain_contract_gradient_matches_an_independent_reference() -> None:
+    """The admitted domain still computes the documented gradient."""
+    gradient, _ = _fep_domain_contract_exports()
+    mu = np.array([0.2, -0.1, 0.7])
+    x_observed = np.array([0.5, 0.25, -0.3])
+    k_precision = np.array([[2.0, 0.1, 0.0], [0.1, 1.5, 0.2], [0.0, 0.2, 1.1]])
+    sensory_precision = np.diag([3.0, 4.0, 0.5])
+
+    native = np.asarray(gradient(mu, x_observed, k_precision, sensory_precision, 1e-10))
+    expected = _fep_domain_contract_reference_gradient(
+        mu, x_observed, k_precision, sensory_precision, 1e-10
+    )
+
+    np.testing.assert_allclose(native, expected, rtol=0.0, atol=1e-12)
+
+
+def test_fep_domain_contract_free_energy_rejects_short_observation() -> None:
+    """x_observed shorter than mu used to panic in the accuracy term."""
+    _, free_energy = _fep_domain_contract_exports()
+
+    with pytest.raises(ValueError, match=r"x_observed length 1 != 2"):
+        free_energy(np.array([0.2, -0.1]), np.zeros(1), np.eye(2), np.eye(2), 0.1, 1e-10)
+
+
+def test_fep_domain_contract_free_energy_rejects_rectangular_precision() -> None:
+    """A 3x2 precision used to panic inside the log-determinant."""
+    _, free_energy = _fep_domain_contract_exports()
+
+    with pytest.raises(ValueError, match=r"k_precision shape 3x2 != 2x2"):
+        free_energy(np.array([0.2, -0.1]), np.zeros(2), np.ones((3, 2)), np.eye(2), 0.1, 1e-10)
+
+
+def test_fep_domain_contract_free_energy_rejects_undersized_sensory_precision() -> None:
+    """A sensory precision smaller than n used to panic."""
+    _, free_energy = _fep_domain_contract_exports()
+
+    with pytest.raises(ValueError, match=r"sensory_precision shape 1x1 != 2x2"):
+        free_energy(np.array([0.2, -0.1]), np.zeros(2), np.eye(2), np.eye(1), 0.1, 1e-10)
+
+
+def test_fep_domain_contract_free_energy_rejects_asymmetric_precision() -> None:
+    """An asymmetric precision used to yield its symmetrised triangle's value.
+
+    The Cholesky factorisation reads only the lower triangle, so the call
+    succeeded and returned a free energy for a matrix the caller never supplied.
+    """
+    _, free_energy = _fep_domain_contract_exports()
+    asymmetric = np.array([[2.0, 1.0], [0.0, 2.0]])
+
+    with pytest.raises(ValueError, match=r"k_precision must be symmetric within"):
+        free_energy(np.array([0.2, -0.1]), np.zeros(2), asymmetric, np.eye(2), 0.1, 1e-10)
+
+
+def test_fep_domain_contract_free_energy_admits_symmetry_rounding() -> None:
+    """Rounding below the shared tolerance is admitted, as in the Python tier."""
+    _, free_energy = _fep_domain_contract_exports()
+    rounded = np.array([[2.0, 1.0], [1.0 + 1e-12, 2.0]])
+
+    result = free_energy(np.array([0.2, -0.1]), np.zeros(2), rounded, np.eye(2), 0.1, 1e-10)
+
+    assert all(np.isfinite(value) for value in result)
+
+
+@pytest.mark.parametrize(
+    ("argument", "expected"),
+    [
+        ("mu", r"mu\[0\] is not finite"),
+        ("x_observed", r"x_observed\[0\] is not finite"),
+        ("k_precision", r"k_precision\[0\] is not finite"),
+        ("sensory_precision", r"sensory_precision\[0\] is not finite"),
+        ("ridge", r"ridge must be finite"),
+    ],
+)
+def test_fep_domain_contract_free_energy_rejects_non_finite(argument: str, expected: str) -> None:
+    """A non-finite argument produced a NaN free energy instead of a refusal.
+
+    Parameters
+    ----------
+    argument
+        Name of the argument made non-finite.
+    expected
+        Regular expression the refusal message must match.
+    """
+    _, free_energy = _fep_domain_contract_exports()
+    arguments: dict[str, object] = {
+        "mu": np.array([0.2, -0.1]),
+        "x_observed": np.zeros(2),
+        "k_precision": np.eye(2),
+        "sensory_precision": np.eye(2),
+        "sigma_diag": 0.1,
+        "ridge": 1e-10,
+    }
+    if argument == "ridge":
+        arguments["ridge"] = float("nan")
+    else:
+        poisoned = np.array(arguments[argument], dtype=np.float64, copy=True)
+        poisoned.reshape(-1)[0] = np.nan
+        arguments[argument] = poisoned
+
+    with pytest.raises(ValueError, match=expected):
+        free_energy(*arguments.values())
+
+
+def test_fep_domain_contract_free_energy_rejects_non_positive_sigma_diag() -> None:
+    """The existing sigma_diag guard is unchanged by the new contract."""
+    _, free_energy = _fep_domain_contract_exports()
+
+    with pytest.raises(ValueError, match=r"sigma_diag must be positive and finite"):
+        free_energy(np.array([0.2, -0.1]), np.zeros(2), np.eye(2), np.eye(2), 0.0, 1e-10)
+
+
+def test_fep_domain_contract_free_energy_matches_an_independent_reference() -> None:
+    """The admitted domain still computes the documented free energy."""
+    _, free_energy = _fep_domain_contract_exports()
+    mu = np.array([0.2, -0.1, 0.7])
+    x_observed = np.array([0.5, 0.25, -0.3])
+    k_precision = np.array([[2.0, 0.1, 0.0], [0.1, 1.5, 0.2], [0.0, 0.2, 1.1]])
+    sensory_precision = np.diag([3.0, 4.0, 0.5])
+
+    native = free_energy(mu, x_observed, k_precision, sensory_precision, 0.1, 1e-10)
+    expected = _fep_domain_contract_reference_free_energy(
+        mu, x_observed, k_precision, sensory_precision, 0.1, 1e-10
+    )
+
+    np.testing.assert_allclose(np.asarray(native), np.asarray(expected), rtol=0.0, atol=1e-10)
+
+
+def test_fep_domain_contract_free_energy_supports_non_contiguous_views() -> None:
+    """A strided belief slice is read through its strides, not rejected."""
+    _, free_energy = _fep_domain_contract_exports()
+    dense = np.array([0.2, 9.0, -0.1, 9.0])
+    strided = dense[::2]
+    assert not strided.flags["C_CONTIGUOUS"]
+
+    strided_result = free_energy(strided, np.zeros(2), np.eye(2), np.eye(2), 0.1, 1e-10)
+    contiguous_result = free_energy(
+        np.ascontiguousarray(strided), np.zeros(2), np.eye(2), np.eye(2), 0.1, 1e-10
+    )
+
+    np.testing.assert_allclose(np.asarray(strided_result), np.asarray(contiguous_result))

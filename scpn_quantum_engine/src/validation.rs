@@ -15,6 +15,7 @@
 //! Core functions return `Result<(), String>` for testability.
 //! PyO3 wrappers convert to `PyResult<()>` at call site via `map_err`.
 
+use ndarray::{ArrayView, Dimension};
 use numpy::{Element, PyReadonlyArray1};
 use pyo3::exceptions::PyValueError;
 use pyo3::PyResult;
@@ -94,6 +95,86 @@ pub fn check_statevec_len(len: usize, n: usize, name: &str) -> Result<(), String
     Ok(())
 }
 
+/// Validate that an array's length matches the dimension established elsewhere.
+///
+/// The FEP exports take their dimension from `mu` and then index every other
+/// argument with it. Without this check an undersized argument reaches an
+/// ndarray bounds panic, which crosses PyO3 as `PanicException` — a
+/// `BaseException` that ordinary Python error handling does not catch.
+pub fn check_vector_len(len: usize, expected: usize, name: &str) -> Result<(), String> {
+    if len != expected {
+        return Err(format!("{name} length {len} != {expected}"));
+    }
+    Ok(())
+}
+
+/// Validate that a matrix is exactly `n` by `n`.
+///
+/// Both dimensions are checked. A matrix that is merely large enough to index
+/// — a 2x3 read as 2x2 — silently contributes a sub-block to the result, which
+/// is worse than a panic because nothing reports it.
+pub fn check_square_matrix(rows: usize, cols: usize, n: usize, name: &str) -> Result<(), String> {
+    if rows != n || cols != n {
+        return Err(format!("{name} shape {rows}x{cols} != {n}x{n}"));
+    }
+    Ok(())
+}
+
+/// Validate that every element of an array view is finite.
+///
+/// Works on any dimensionality and on non-contiguous views, so a strided
+/// NumPy slice is checked rather than rejected. The reported index is the
+/// position in logical iteration order.
+pub fn check_finite_array<D: Dimension>(
+    array: &ArrayView<'_, f64, D>,
+    name: &str,
+) -> Result<(), String> {
+    for (index, &value) in array.iter().enumerate() {
+        if !value.is_finite() {
+            return Err(format!("{name}[{index}] is not finite ({value})"));
+        }
+    }
+    Ok(())
+}
+
+/// Validate that a scalar parameter is finite.
+///
+/// Separate from [`check_positive`] because some parameters, such as a ridge,
+/// admit zero and negative values but never NaN or infinity.
+pub fn check_finite_scalar(value: f64, name: &str) -> Result<(), String> {
+    if !value.is_finite() {
+        return Err(format!("{name} must be finite, got {value}"));
+    }
+    Ok(())
+}
+
+/// Validate that a square matrix equals its transpose within `atol`.
+///
+/// A Cholesky factorisation reads only one triangle, so an asymmetric matrix
+/// silently yields the determinant of its symmetrised lower triangle instead of
+/// an error. The tolerance is absolute, matching the Python contract.
+pub fn check_symmetric(
+    matrix: &ArrayView<'_, f64, ndarray::Ix2>,
+    atol: f64,
+    name: &str,
+) -> Result<(), String> {
+    let n = matrix.nrows();
+    for i in 0..n {
+        for j in 0..i {
+            let difference = (matrix[[i, j]] - matrix[[j, i]]).abs();
+            // Positive predicate, as in `check_positive`: a NaN difference is
+            // not finite, so a matrix containing NaN fails CLOSED here rather
+            // than slipping through a negated comparison.
+            if !(difference.is_finite() && difference <= atol) {
+                return Err(format!(
+                    "{name} must be symmetric within {atol}: [{i},{j}] and [{j},{i}] differ by {difference}"
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
 /// Validate domain range indices.
 pub fn check_domain_range(start: usize, end: usize, n: usize, name: &str) -> Result<(), String> {
     if start >= n {
@@ -123,6 +204,28 @@ pub fn validate_n(n: usize, name: &str) -> PyResult<()> {
 }
 pub fn validate_flat_square(arr: &[f64], n: usize, name: &str) -> PyResult<()> {
     to_pyresult(check_flat_square(arr, n, name))
+}
+pub fn validate_vector_len(len: usize, expected: usize, name: &str) -> PyResult<()> {
+    to_pyresult(check_vector_len(len, expected, name))
+}
+pub fn validate_square_matrix(rows: usize, cols: usize, n: usize, name: &str) -> PyResult<()> {
+    to_pyresult(check_square_matrix(rows, cols, n, name))
+}
+pub fn validate_finite_array<D: Dimension>(
+    array: &ArrayView<'_, f64, D>,
+    name: &str,
+) -> PyResult<()> {
+    to_pyresult(check_finite_array(array, name))
+}
+pub fn validate_finite_scalar(value: f64, name: &str) -> PyResult<()> {
+    to_pyresult(check_finite_scalar(value, name))
+}
+pub fn validate_symmetric(
+    matrix: &ArrayView<'_, f64, ndarray::Ix2>,
+    atol: f64,
+    name: &str,
+) -> PyResult<()> {
+    to_pyresult(check_symmetric(matrix, atol, name))
 }
 pub fn validate_domain_range(start: usize, end: usize, n: usize, name: &str) -> PyResult<()> {
     to_pyresult(check_domain_range(start, end, n, name))
@@ -236,6 +339,87 @@ mod tests {
         let err = check_statevec_len(1, usize::BITS as usize, "psi").unwrap_err();
         assert!(err.contains("overflows"));
         assert!(check_statevec_len(usize::MAX, 10_000, "psi").is_err());
+    }
+
+    #[test]
+    fn test_check_vector_len_matches_and_mismatches() {
+        assert!(check_vector_len(4, 4, "x_observed").is_ok());
+        let err = check_vector_len(3, 4, "x_observed").unwrap_err();
+        assert_eq!(err, "x_observed length 3 != 4");
+    }
+
+    #[test]
+    fn test_check_square_matrix_requires_both_dimensions() {
+        assert!(check_square_matrix(2, 2, 2, "k").is_ok());
+        // A 2x3 read as 2x2 would index without panicking and quietly use a
+        // sub-block, so the column count must be checked too.
+        assert_eq!(
+            check_square_matrix(2, 3, 2, "k").unwrap_err(),
+            "k shape 2x3 != 2x2"
+        );
+        assert_eq!(
+            check_square_matrix(3, 2, 2, "k").unwrap_err(),
+            "k shape 3x2 != 2x2"
+        );
+    }
+
+    #[test]
+    fn test_check_finite_array_reports_the_offending_index() {
+        let ok = ndarray::Array2::<f64>::zeros((2, 2));
+        assert!(check_finite_array(&ok.view(), "k").is_ok());
+
+        let mut bad = ndarray::Array2::<f64>::zeros((2, 2));
+        bad[[1, 0]] = f64::NAN;
+        let err = check_finite_array(&bad.view(), "k").unwrap_err();
+        assert!(err.starts_with("k[2] is not finite"), "got {err}");
+
+        let mut infinite = ndarray::Array1::<f64>::zeros(3);
+        infinite[2] = f64::NEG_INFINITY;
+        assert!(check_finite_array(&infinite.view(), "mu").is_err());
+    }
+
+    #[test]
+    fn test_check_finite_array_reads_non_contiguous_views() {
+        // A strided NumPy slice arrives as a non-contiguous view. It must be
+        // checked through its strides, not rejected and not skipped.
+        let dense = ndarray::Array1::from_vec(vec![1.0, f64::NAN, 2.0, 3.0]);
+        let strided = dense.slice(ndarray::s![..;2]);
+        assert!(check_finite_array(&strided, "mu").is_ok());
+        let other = dense.slice(ndarray::s![1..;2]);
+        assert!(check_finite_array(&other, "mu").is_err());
+    }
+
+    #[test]
+    fn test_check_finite_scalar() {
+        assert!(check_finite_scalar(0.0, "ridge").is_ok());
+        assert!(check_finite_scalar(-1.0, "ridge").is_ok());
+        assert_eq!(
+            check_finite_scalar(f64::NAN, "ridge").unwrap_err(),
+            "ridge must be finite, got NaN"
+        );
+        assert!(check_finite_scalar(f64::INFINITY, "ridge").is_err());
+    }
+
+    #[test]
+    fn test_check_symmetric_accepts_rounding_and_rejects_real_asymmetry() {
+        let symmetric = ndarray::arr2(&[[2.0, 1.0], [1.0, 3.0]]);
+        assert!(check_symmetric(&symmetric.view(), 1e-10, "k").is_ok());
+
+        let rounded = ndarray::arr2(&[[2.0, 1.0], [1.0 + 1e-12, 3.0]]);
+        assert!(check_symmetric(&rounded.view(), 1e-10, "k").is_ok());
+
+        let asymmetric = ndarray::arr2(&[[2.0, 1.0], [0.0, 3.0]]);
+        let err = check_symmetric(&asymmetric.view(), 1e-10, "k").unwrap_err();
+        assert!(err.contains("must be symmetric within"), "got {err}");
+        assert!(err.contains("[1,0] and [0,1]"), "got {err}");
+    }
+
+    #[test]
+    fn test_check_symmetric_fails_closed_on_nan() {
+        // Written as a positive predicate: a NaN difference must reject, not
+        // slip through a negated comparison.
+        let with_nan = ndarray::arr2(&[[2.0, f64::NAN], [1.0, 3.0]]);
+        assert!(check_symmetric(&with_nan.view(), 1e-10, "k").is_err());
     }
 
     #[test]
