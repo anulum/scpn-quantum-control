@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from types import MappingProxyType
 from typing import Any, TypeAlias, cast
 
@@ -24,7 +24,7 @@ IntArray: TypeAlias = NDArray[np.int64]
 JsonScalar = str | int | float | bool | None
 
 
-class KuramotoVariant(str, Enum):
+class KuramotoVariant(StrEnum):
     """Supported Kuramoto trajectory variants."""
 
     HIGHER_ORDER = "higher_order"

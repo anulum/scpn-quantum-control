@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import asdict, dataclass
-from enum import Enum
+from enum import StrEnum
 
 import numpy as np
 from numpy.typing import NDArray
@@ -36,7 +36,7 @@ def _array_digest(values: FloatArray) -> str:
     return digest.hexdigest()
 
 
-class ReservoirTaskKind(str, Enum):
+class ReservoirTaskKind(StrEnum):
     """Synthetic task families admitted by the reservoir certificate suite."""
 
     CLASSIFICATION = "classification"

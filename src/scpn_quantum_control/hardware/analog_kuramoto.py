@@ -22,7 +22,7 @@ into their concrete SDK objects.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from importlib.util import find_spec
 from typing import Any, Protocol, TypeAlias, runtime_checkable
 
@@ -36,7 +36,7 @@ FloatArray: TypeAlias = NDArray[np.float64]
 IntArray: TypeAlias = NDArray[np.int64]
 
 
-class AnalogKuramotoPlatform(str, Enum):
+class AnalogKuramotoPlatform(StrEnum):
     """Supported analog Kuramoto hardware families."""
 
     NEUTRAL_ATOMS = "neutral_atoms"
@@ -44,7 +44,7 @@ class AnalogKuramotoPlatform(str, Enum):
     CONTINUOUS_VARIABLE = "continuous_variable"
 
 
-class AnalogProviderTarget(str, Enum):
+class AnalogProviderTarget(StrEnum):
     """Provider-specific analogue export targets."""
 
     PULSER = "pulser"

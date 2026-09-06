@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 import numpy as np
@@ -33,7 +33,7 @@ from numpy.typing import NDArray
 from .realtime_feedback import RealtimeSyncFeedbackController
 
 
-class ResponseClass(str, Enum):
+class ResponseClass(StrEnum):
     """Closed-loop response verdict."""
 
     CONVERGED = "converged"
@@ -42,7 +42,7 @@ class ResponseClass(str, Enum):
     UNSETTLED = "unsettled"
 
 
-class ExecutionMode(str, Enum):
+class ExecutionMode(StrEnum):
     """Where a closed-loop run is authorised to execute."""
 
     SIMULATION = "simulation"

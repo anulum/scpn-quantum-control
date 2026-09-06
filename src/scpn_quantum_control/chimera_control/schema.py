@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import TypeAlias
 
 import numpy as np
@@ -25,7 +25,7 @@ CHIMERA_CONTROL_CLAIM_BOUNDARY = (
 )
 
 
-class SyntheticRegime(str, Enum):
+class SyntheticRegime(StrEnum):
     """Named finite synthetic regimes served by the two-population generator.
 
     ``CHIMERA_TRANSIENT`` uses the Abrams–Mirollo–Strogatz–Wiley strong-

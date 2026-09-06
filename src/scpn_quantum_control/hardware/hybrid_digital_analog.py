@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Protocol, TypeAlias, runtime_checkable
 
 import numpy as np
@@ -28,7 +28,7 @@ FloatArray: TypeAlias = NDArray[np.float64]
 IntArray: TypeAlias = NDArray[np.int64]
 
 
-class HybridRoute(str, Enum):
+class HybridRoute(StrEnum):
     """Execution route assigned to a Kuramoto coupling term."""
 
     DIGITAL = "digital"

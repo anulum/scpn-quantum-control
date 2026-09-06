@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Final, Protocol
 
 import numpy as np
@@ -23,7 +23,7 @@ CODESIGN_CLAIM_BOUNDARY: Final[str] = (
 )
 
 
-class CoDesignMode(str, Enum):
+class CoDesignMode(StrEnum):
     """Supported directions through the bounded co-design loop."""
 
     CLASSICAL_TO_QUANTUM = "classical_to_quantum"
@@ -31,7 +31,7 @@ class CoDesignMode(str, Enum):
     HYBRID_REPLAY = "hybrid_replay"
 
 
-class SafetyAction(str, Enum):
+class SafetyAction(StrEnum):
     """Fail-closed action selected by a loop safety policy."""
 
     ALLOW = "allow"
@@ -40,7 +40,7 @@ class SafetyAction(str, Enum):
     ABORT = "abort"
 
 
-class StaleGradientAction(str, Enum):
+class StaleGradientAction(StrEnum):
     """Action selected when a gradient is missing or too old."""
 
     HOLD = "hold"

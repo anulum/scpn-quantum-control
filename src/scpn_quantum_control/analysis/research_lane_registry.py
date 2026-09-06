@@ -31,7 +31,7 @@ import hashlib
 import json
 from collections.abc import Iterable
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 from pathlib import Path
 from typing import Any
 
@@ -45,7 +45,7 @@ _REGISTRY_MODULE = "scpn_quantum_control.analysis.research_lane_registry"
 _PACKAGE_PREFIX = "scpn_quantum_control."
 
 
-class ResearchLaneMaturity(str, Enum):
+class ResearchLaneMaturity(StrEnum):
     """Human-reviewed implementation maturity.
 
     ``RESEARCH`` marks exploratory scientific code. ``PROTOTYPE`` marks a
@@ -60,7 +60,7 @@ class ResearchLaneMaturity(str, Enum):
     PRODUCT_CANDIDATE = "product_candidate"
 
 
-class ResearchLaneDiffHook(str, Enum):
+class ResearchLaneDiffHook(StrEnum):
     """Relationship between a lane and differentiable-control work."""
 
     NONE = "none"
@@ -70,7 +70,7 @@ class ResearchLaneDiffHook(str, Enum):
     DEFERRED = "deferred_owner_gate"
 
 
-class ResearchLaneClaimStatus(str, Enum):
+class ResearchLaneClaimStatus(StrEnum):
     """Strongest claim class currently carried by a lane's own evidence."""
 
     RESEARCH_ONLY = "research_only"

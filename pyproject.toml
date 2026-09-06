@@ -177,11 +177,6 @@ ignore = [
     "E501",   # line length handled by formatter
     "SIM108", # ternary can reduce readability for physics code
     "D105",   # numpy convention: magic-method contracts are language-defined
-    # Ruff classifies the StrEnum rewrite as an unsafe fix because StrEnum
-    # changes what str(member) returns, and all 24 occurrences are serialisation
-    # schemas. That migration needs round-trip evidence per enum and its own
-    # task; it must not ride on a lint-configuration change.
-    "UP042",
 ]
 
 [tool.ruff.lint.per-file-ignores]

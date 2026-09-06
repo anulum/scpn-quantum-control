@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from types import MappingProxyType
 from typing import Any, TypeAlias, cast
 
@@ -25,7 +25,7 @@ FloatArray: TypeAlias = NDArray[np.float64]
 JsonScalar = str | int | float | bool | None
 
 
-class WitnessSearchMode(str, Enum):
+class WitnessSearchMode(StrEnum):
     """Candidate proposal modes used by the discovery loop."""
 
     INITIAL = "initial"

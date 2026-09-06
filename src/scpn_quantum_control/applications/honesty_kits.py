@@ -23,7 +23,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Literal
 
 from .dataset_catalog import (
@@ -48,7 +48,7 @@ FORECASTING_DOMAIN_TAGS: frozenset[str] = frozenset(
 )
 
 
-class ApplicationSupportStatus(str, Enum):
+class ApplicationSupportStatus(StrEnum):
     """Public support grade for a domain-facing application route.
 
     ``BOUNDED_RESEARCH`` means that the named software path is tested for its
@@ -60,7 +60,7 @@ class ApplicationSupportStatus(str, Enum):
     SIMULATION_ONLY = "simulation_only"
 
 
-class ApplicationDataOrigin(str, Enum):
+class ApplicationDataOrigin(StrEnum):
     """Admitted input provenance for an honesty kit."""
 
     SYNTHETIC = "synthetic"

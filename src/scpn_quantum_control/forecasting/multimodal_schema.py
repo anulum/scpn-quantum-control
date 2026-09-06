@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 
 import numpy as np
@@ -22,7 +22,7 @@ BoolArray = NDArray[np.bool_]
 DatasetSplit = Literal["train", "calibration", "test"]
 
 
-class SyntheticDomainTag(str, Enum):
+class SyntheticDomainTag(StrEnum):
     """Allowed simulation-only domain tags for multimodal forecasting."""
 
     SYNTHETIC = "synthetic"

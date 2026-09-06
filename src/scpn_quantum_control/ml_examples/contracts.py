@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import asdict, dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Final
 
 ML_CONVERGENCE_SCHEMA: Final[str] = "ml_convergence_examples.v1"
@@ -22,7 +22,7 @@ ML_CONVERGENCE_CLAIM_BOUNDARY: Final[str] = (
 )
 
 
-class ModelFamily(str, Enum):
+class ModelFamily(StrEnum):
     """Model families covered by the ML convergence evidence suite."""
 
     QNN = "qnn"
@@ -30,7 +30,7 @@ class ModelFamily(str, Enum):
     QSNN = "qsnn"
 
 
-class FrameworkStatus(str, Enum):
+class FrameworkStatus(StrEnum):
     """Complete framework-row outcomes without blank or inferred support."""
 
     RAN = "ran"

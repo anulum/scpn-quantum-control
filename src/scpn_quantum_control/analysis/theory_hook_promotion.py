@@ -26,7 +26,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 import numpy as np
@@ -39,7 +39,7 @@ THEORY_HOOK_PROMOTION_BOUNDARY = (
 )
 
 
-class TheoryHookTier(str, Enum):
+class TheoryHookTier(StrEnum):
     """Evidence tier assigned to a theory hook.
 
     ``BOUNDED`` identifies a small, testable research diagnostic with an
@@ -51,7 +51,7 @@ class TheoryHookTier(str, Enum):
     RESEARCH_ONLY = "D"
 
 
-class TheoryHookRole(str, Enum):
+class TheoryHookRole(StrEnum):
     """Permitted role of a hook in the SCPN Quantum Control stack."""
 
     OPTIONAL_CONTROL_CONSTRAINT = "optional_control_constraint"
@@ -62,7 +62,7 @@ class TheoryHookRole(str, Enum):
     SPECTRAL_DIAGNOSTIC = "spectral_diagnostic"
 
 
-class TheoryHookStatus(str, Enum):
+class TheoryHookStatus(StrEnum):
     """Promotion state after applying the theory-hook evidence checklist."""
 
     BOUNDED_CANDIDATE = "bounded_candidate"

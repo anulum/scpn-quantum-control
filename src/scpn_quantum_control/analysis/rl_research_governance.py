@@ -23,7 +23,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass, replace
-from enum import Enum
+from enum import StrEnum
 from operator import index
 from typing import Any, TypeAlias
 
@@ -48,7 +48,7 @@ RL_ENVIRONMENT_API = "not_applicable_static_candidate_search"
 DEFAULT_RL_RESEARCH_SEEDS = (104729, 130363, 155921)
 
 
-class RLResearchLane(str, Enum):
+class RLResearchLane(StrEnum):
     """Governed RL-adjacent route."""
 
     WITNESS_DISCOVERY = "witness_discovery"
