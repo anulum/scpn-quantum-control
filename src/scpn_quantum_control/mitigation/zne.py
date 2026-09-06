@@ -32,10 +32,41 @@ class ZNEResult:
 
 
 def gate_fold_circuit(circuit: QuantumCircuit, scale: int) -> QuantumCircuit:
-    """Global unitary folding: G -> G (G^dag G)^((scale-1)/2).
+    """Amplify noise by global unitary folding: ``G -> G (G^dag G)^((scale-1)/2)``.
 
-    ``scale`` must be an odd positive integer. scale=1 returns the original
-    circuit. Measurement gates are stripped before folding and re-appended.
+    The trailing measurement and barrier instructions are detached before
+    folding and re-attached afterwards **at their original qubit and clbit
+    positions**, so a partial, permuted or multi-register readout keeps the
+    observable it started with. The returned circuit reuses the input's
+    registers, bits, name, metadata and global phase; only the unitary body is
+    repeated.
+
+    Parameters
+    ----------
+    circuit
+        Circuit whose unitary body is folded. Classical operations may appear
+        only in the trailing measurement/barrier block; a mid-circuit classical
+        operation is rejected rather than silently dropped.
+    scale
+        Odd positive noise-scale factor. ``scale=1`` returns an unchanged copy;
+        ``scale=2k+1`` appends ``k`` inverse-forward pairs.
+
+    Returns
+    -------
+    qiskit.QuantumCircuit
+        Folded circuit with the same measurement mapping as ``circuit``.
+
+    Raises
+    ------
+    ValueError
+        If ``scale`` is not an odd positive integer, or if the circuit carries a
+        classical operation outside its trailing measurement block.
+
+    References
+    ----------
+    Giurgica-Tiron et al., "Digital zero noise extrapolation for quantum error
+    mitigation", IEEE QCE 2020.
+
     """
     if scale < 1 or scale % 2 == 0:
         raise ValueError(f"scale must be odd positive integer, got {scale}")
@@ -43,10 +74,10 @@ def gate_fold_circuit(circuit: QuantumCircuit, scale: int) -> QuantumCircuit:
         return circuit.copy()
 
     data = list(circuit.data)
-    measurement_removed = False
+    trailing: list[Any] = []
     while data and data[-1].operation.name in {"barrier", "measure"}:
-        measurement_removed = measurement_removed or data[-1].operation.name == "measure"
-        data.pop()
+        trailing.append(data.pop())
+    trailing.reverse()
 
     base = QuantumCircuit(circuit.num_qubits)
     for instruction in data:
@@ -55,15 +86,21 @@ def gate_fold_circuit(circuit: QuantumCircuit, scale: int) -> QuantumCircuit:
         qubits = [base.qubits[circuit.find_bit(qubit).index] for qubit in instruction.qubits]
         base._append(instruction.operation.copy(), qubits)
 
-    folded = base.copy()
+    body = base.copy()
     n_folds = (scale - 1) // 2
     base_inv = base.inverse()
     for _ in range(n_folds):
-        folded.compose(base_inv, inplace=True)
-        folded.compose(base, inplace=True)
+        body.compose(base_inv, inplace=True)
+        body.compose(base, inplace=True)
 
-    if measurement_removed:
-        folded.measure_all()
+    folded = circuit.copy_empty_like()
+    folded.compose(body, qubits=folded.qubits[: circuit.num_qubits], inplace=True)
+    for instruction in trailing:
+        folded.append(
+            instruction.operation.copy(),
+            [folded.qubits[circuit.find_bit(qubit).index] for qubit in instruction.qubits],
+            [folded.clbits[circuit.find_bit(clbit).index] for clbit in instruction.clbits],
+        )
 
     return folded
 

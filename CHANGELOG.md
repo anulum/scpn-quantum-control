@@ -4,6 +4,17 @@
 
 ### Fixed
 
+- Preserve the measurement mapping when folding circuits for zero-noise
+  extrapolation. Folding previously rebuilt the circuit and called
+  `measure_all()`, which widened a partial readout to every qubit, replaced
+  named classical registers with a single generated one, reset a permuted
+  qubit-to-clbit map to the identity, dropped trailing barriers and discarded
+  the global phase — so the mitigated circuit could measure a different
+  observable than the one submitted. The trailing readout block is now
+  re-attached at its original positions and the input's registers, bits, name,
+  metadata and global phase are reused. The recorded `gate_fold_circuit`
+  performance figure is marked stale pending an isolated-core re-measurement.
+
 - Evaluate the binary MPC tracking cost on the vector residual
   `u_t * (B @ ones) - target` instead of collapsing it to `||B||` and
   `||target||`. The norm-only surrogate discarded the target's sign and its

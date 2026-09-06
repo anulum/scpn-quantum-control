@@ -70,8 +70,13 @@ Global unitary folding. `scale` must be an odd positive integer:
 - scale=3: `G G† G` (one fold, 3x noise)
 - scale=5: `G G† G G† G` (two folds, 5x noise)
 
-Measurements are stripped before folding and re-appended. The inverse
-`G†` is computed via `circuit.inverse()`.
+The trailing measurement and barrier block is detached before folding and
+re-attached afterwards **at its original qubit and clbit positions**, so a
+partial, permuted or multi-register readout measures exactly what it measured
+before. The returned circuit reuses the input's registers, bits, name, metadata
+and global phase; only the unitary body is repeated. A classical operation
+outside that trailing block is rejected rather than dropped. The inverse `G†` is
+computed via `circuit.inverse()`.
 
 ```python
 from scpn_quantum_control.mitigation import gate_fold_circuit
@@ -548,9 +553,15 @@ Measured on ML350 Gen8 (128 GB RAM, Xeon E5-2620v2):
 
 | Operation | System | Wall Time |
 |-----------|--------|-----------|
-| `gate_fold_circuit` (scale=5) | 4 qubits, depth 20 | 0.2 ms |
+| `gate_fold_circuit` (scale=5) | 4 qubits, depth 20 | stale — see note |
 | `zne_extrapolate` (3 points, linear) | — | 0.01 ms |
 | `pauli_twirl_decompose` (p=0.01) | 1 qubit | 0.01 ms |
+
+The `gate_fold_circuit` row is **stale and deliberately not replaced**. The
+folding path now re-attaches the trailing readout at its original positions
+instead of calling `measure_all()`, so the recorded figure was measured against
+different code. Publishing a replacement requires an isolated-core run with
+recorded host load; no estimate is substituted here.
 | `pec_sample` (1000 samples) | 2 qubits | 450 ms |
 | `generate_training_circuits` (20) | 4 qubits | 3 ms |
 | `cpdr_mitigate` | — | 0.05 ms |

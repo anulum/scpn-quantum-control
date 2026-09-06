@@ -9,7 +9,9 @@
 
 import numpy as np
 import pytest
-from qiskit import QuantumCircuit
+from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
+from qiskit.primitives import StatevectorSampler
+from qiskit.quantum_info import Operator
 
 from scpn_quantum_control.mitigation.zne import (
     ZNEResult,
@@ -242,3 +244,113 @@ def test_pipeline_knm_to_zne():
 
     print(f"\n  PIPELINE Knm→ZNE (3q, scales 1,3,5): {dt:.1f} ms")
     print(f"  R(s=1)={R_values[0]:.4f}, R_ZNE={result.zero_noise_estimate:.4f}")
+
+
+def _measure_map(circuit: QuantumCircuit) -> list[tuple[list[int], list[int]]]:
+    """Return the (qubit indices, clbit indices) of every measurement, in order."""
+    return [
+        (
+            [circuit.find_bit(qubit).index for qubit in instruction.qubits],
+            [circuit.find_bit(clbit).index for clbit in instruction.clbits],
+        )
+        for instruction in circuit.data
+        if instruction.operation.name == "measure"
+    ]
+
+
+@pytest.mark.parametrize("scale", [3, 5])
+def test_folding_preserves_a_partial_measurement(scale: int) -> None:
+    """A one-bit readout must not become a two-bit measure-all."""
+    circuit = QuantumCircuit(2, 1)
+    circuit.h(0)
+    circuit.cx(0, 1)
+    circuit.measure(1, 0)
+
+    folded = gate_fold_circuit(circuit, scale)
+
+    assert folded.num_clbits == 1
+    assert _measure_map(folded) == [([1], [0])]
+
+
+@pytest.mark.parametrize("scale", [3, 5])
+def test_folding_preserves_a_permuted_multi_register_readout(scale: int) -> None:
+    """Named registers and a non-identity qubit-to-clbit map both survive."""
+    qubits = QuantumRegister(2, "q")
+    first = ClassicalRegister(1, "a")
+    second = ClassicalRegister(1, "b")
+    circuit = QuantumCircuit(qubits, first, second)
+    circuit.h(0)
+    circuit.cx(0, 1)
+    circuit.measure(0, second[0])
+    circuit.measure(1, first[0])
+
+    folded = gate_fold_circuit(circuit, scale)
+
+    assert [(register.name, register.size) for register in folded.cregs] == [
+        ("a", 1),
+        ("b", 1),
+    ]
+    assert _measure_map(folded) == _measure_map(circuit)
+
+
+def test_folding_preserves_the_global_phase() -> None:
+    """Global phase is physical metadata and must survive folding."""
+    circuit = QuantumCircuit(1)
+    circuit.h(0)
+    circuit.global_phase = 0.7
+
+    assert gate_fold_circuit(circuit, 3).global_phase == pytest.approx(0.7)
+
+
+def test_folding_preserves_a_trailing_barrier() -> None:
+    """A trailing barrier is detached with the readout, not discarded."""
+    circuit = QuantumCircuit(2)
+    circuit.h(0)
+    circuit.barrier()
+
+    folded = gate_fold_circuit(circuit, 3)
+
+    assert sum(1 for item in folded.data if item.operation.name == "barrier") == 1
+
+
+@pytest.mark.parametrize("scale", [1, 3, 5, 7])
+def test_folding_repeats_the_body_without_changing_the_unitary(scale: int) -> None:
+    """G (G^dag G)^k is G, and the gate count grows exactly with the scale."""
+    circuit = QuantumCircuit(2)
+    circuit.h(0)
+    circuit.cx(0, 1)
+    circuit.rz(0.37, 1)
+    circuit.global_phase = 0.21
+
+    folded = gate_fold_circuit(circuit, scale)
+
+    np.testing.assert_allclose(Operator(folded).data, Operator(circuit).data, atol=1e-12)
+    assert folded.size() == scale * circuit.size()
+
+
+def test_folded_partial_readout_samples_the_same_distribution() -> None:
+    """The mitigated circuit must measure what the original measured."""
+    circuit = QuantumCircuit(2, 1)
+    circuit.x(0)
+    circuit.cx(0, 1)
+    circuit.measure(1, 0)
+
+    sampler = StatevectorSampler(seed=7)
+    original = sampler.run([circuit], shots=512).result()[0].data.c.get_counts()
+    folded = (
+        sampler.run([gate_fold_circuit(circuit, 3)], shots=512).result()[0].data.c.get_counts()
+    )
+
+    assert original == {"1": 512}
+    assert folded == original
+
+
+def test_folding_rejects_a_mid_circuit_classical_operation() -> None:
+    """A measurement that is not part of the trailing block fails closed."""
+    circuit = QuantumCircuit(2, 1)
+    circuit.h(0)
+    circuit.measure(0, 0)
+    circuit.cx(0, 1)
+
+    with pytest.raises(ValueError, match="mid-circuit classical operations"):
+        gate_fold_circuit(circuit, 3)
