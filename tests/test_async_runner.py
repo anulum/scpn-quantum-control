@@ -921,3 +921,120 @@ class TestSubmitCircuitBatchProvenance:
         assert result["status"] == "DONE_LOCAL_SIMULATION"
         assert result["job_id"] == "local_simulated"
         assert result["observable_seen"] == 2.0
+
+
+class TestSubmissionIsIssuedOnce:
+    """The provider boundary must be crossed once per submitted job.
+
+    Every case replaces ``_run_blocking`` — the single point that reaches the
+    provider — with a counter, so a duplicate submission is observable without
+    contacting any runtime.
+    """
+
+    @staticmethod
+    def _wrapper() -> Any:
+        from scpn_quantum_control.hardware.async_runner import AsyncHardwareRunner
+
+        runner = AsyncHardwareRunner.__new__(AsyncHardwareRunner)
+        runner.default_shots = 8
+        runner.runner_kwargs = {}
+        return AsyncHardwareRunner.submit_circuit_batch(
+            runner, ansatz=object(), observable=object()
+        )
+
+    def test_sequential_awaits_reuse_one_submission(self) -> None:
+        """Awaiting twice must not submit twice."""
+        calls = {"n": 0}
+        wrapper = self._wrapper()
+
+        def _submit() -> dict[str, Any]:
+            calls["n"] += 1
+            return {"attempt": calls["n"]}
+
+        wrapper._run_blocking = _submit
+
+        async def _drive() -> tuple[dict[str, Any], dict[str, Any]]:
+            return await wrapper.result(), await wrapper.result()
+
+        first, second = asyncio.run(_drive())
+
+        assert calls["n"] == 1
+        assert first == second == {"attempt": 1}
+        assert wrapper.submission_state == "completed"
+
+    def test_concurrent_awaits_share_one_in_flight_submission(self) -> None:
+        """Three awaits started together join a single provider call."""
+        calls = {"n": 0}
+        wrapper = self._wrapper()
+
+        def _submit() -> dict[str, Any]:
+            calls["n"] += 1
+            time.sleep(0.05)
+            return {"attempt": calls["n"]}
+
+        wrapper._run_blocking = _submit
+
+        async def _drive() -> list[dict[str, Any]]:
+            return list(await asyncio.gather(wrapper.result(), wrapper.result(), wrapper.result()))
+
+        results = asyncio.run(_drive())
+
+        assert calls["n"] == 1
+        assert results == [{"attempt": 1}] * 3
+
+    def test_cancelling_one_awaiter_does_not_resubmit_for_the_next(self) -> None:
+        """A cancelled waiter leaves the submission in flight, not orphaned."""
+        calls = {"n": 0}
+        wrapper = self._wrapper()
+
+        def _submit() -> dict[str, Any]:
+            calls["n"] += 1
+            time.sleep(0.2)
+            return {"attempt": calls["n"]}
+
+        wrapper._run_blocking = _submit
+
+        async def _drive() -> dict[str, Any]:
+            waiter = asyncio.ensure_future(wrapper.result())
+            await asyncio.sleep(0.02)
+            waiter.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await waiter
+            assert wrapper.submission_state == "in_flight"
+            return await wrapper.result()
+
+        assert asyncio.run(_drive()) == {"attempt": 1}
+        assert calls["n"] == 1
+
+    def test_a_failed_submission_is_recorded_and_never_retried(self) -> None:
+        """An ambiguous outcome is held for recovery, not resubmitted."""
+        calls = {"n": 0}
+        wrapper = self._wrapper()
+        failure = RuntimeError("provider boundary raised after possible acceptance")
+
+        def _submit() -> dict[str, Any]:
+            calls["n"] += 1
+            raise failure
+
+        wrapper._run_blocking = _submit
+
+        async def _drive() -> None:
+            for _ in range(3):
+                with pytest.raises(RuntimeError):
+                    await wrapper.result()
+
+        asyncio.run(_drive())
+
+        assert calls["n"] == 1
+        assert wrapper.submission_state == "ambiguous"
+        assert wrapper.submission_error is failure
+
+    def test_state_is_not_started_before_the_first_await(self) -> None:
+        """Constructing a wrapper must not reach the provider."""
+        calls = {"n": 0}
+        wrapper = self._wrapper()
+        wrapper._run_blocking = lambda: calls.__setitem__("n", calls["n"] + 1) or {}
+
+        assert wrapper.submission_state == "not_started"
+        assert wrapper.submission_error is None
+        assert calls["n"] == 0

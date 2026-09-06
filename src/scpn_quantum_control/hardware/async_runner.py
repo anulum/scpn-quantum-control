@@ -34,6 +34,15 @@ synchronously, so wrapping it with ``to_thread`` is the correct way to
 concurrency without rewriting the library. Cancellation propagates via
 the standard ``asyncio.CancelledError`` mechanics.
 
+Submission happens **once per job**. The wrapper returned by
+:meth:`AsyncHardwareRunner.submit_circuit_batch` holds a single in-flight
+submission task, so sequential awaits, concurrent ``gather`` and a cancelled
+awaiter all share one crossing of the provider boundary. A submission that
+raises is recorded as ambiguous — the provider may already hold the work — and
+is re-raised on every later await instead of being resubmitted; recovery is an
+explicit caller decision, readable through ``submission_state`` and
+``submission_error``.
+
 Tests exercise the class with a mock Sampler / Service, so CI does not
 need an IBM token. Real hardware usage is the same API surface.
 
@@ -235,6 +244,10 @@ class AsyncHardwareRunner:
                 self.kwargs = kwargs
                 self.job_id: str | None = None
                 self.submitted_at = time.time()
+                self._result: dict[str, Any] | None = None
+                self._failure: BaseException | None = None
+                self._task: asyncio.Task[dict[str, Any]] | None = None
+                self._start_lock = asyncio.Lock()
 
             def _run_blocking(self) -> dict[str, Any]:
                 import os
@@ -439,10 +452,79 @@ class AsyncHardwareRunner:
 
                 return final_result
 
-            async def result(self) -> dict[str, Any]:
-                import asyncio
+            @property
+            def submission_state(self) -> str:
+                """Return the provider-boundary state of this wrapper.
 
-                return await asyncio.to_thread(self._run_blocking)
+                Returns
+                -------
+                str
+                    ``"not_started"`` before any submission, ``"in_flight"``
+                    while one is running, ``"completed"`` once a result is
+                    held, or ``"ambiguous"`` when the submission raised and it
+                    is unknown whether the provider accepted the work.
+                """
+                if self._failure is not None:
+                    return "ambiguous"
+                if self._result is not None:
+                    return "completed"
+                if self._task is not None:
+                    return "in_flight"
+                return "not_started"
+
+            @property
+            def submission_error(self) -> BaseException | None:
+                """Return the recorded failure, or ``None`` if there is none.
+
+                A recorded failure is deliberately not retried: the provider may
+                already hold the work, so recovery is an explicit caller
+                decision rather than an automatic resubmission.
+                """
+                return self._failure
+
+            async def _shared_submission(self) -> asyncio.Task[dict[str, Any]]:
+                """Return the one in-flight submission task, starting it once."""
+                async with self._start_lock:
+                    if self._task is None:
+                        self._task = asyncio.ensure_future(asyncio.to_thread(self._run_blocking))
+                    return self._task
+
+            async def result(self) -> dict[str, Any]:
+                """Await this job's result, submitting at most once.
+
+                Sequential and concurrent awaits share a single provider
+                submission. A cancelled awaiter does not cancel the underlying
+                submission, so a later await joins the same work instead of
+                issuing a second one. Once the submission has failed, every
+                later await re-raises the recorded failure rather than
+                resubmitting.
+
+                Returns
+                -------
+                dict
+                    The submission result payload.
+
+                Raises
+                ------
+                BaseException
+                    The recorded submission failure, re-raised unchanged on
+                    every subsequent await.
+                """
+                if self._failure is not None:
+                    raise self._failure
+                if self._result is not None:
+                    return self._result
+
+                task = await self._shared_submission()
+                try:
+                    outcome = await asyncio.shield(task)
+                except asyncio.CancelledError:
+                    raise
+                except BaseException as exc:
+                    self._failure = exc
+                    raise
+                self._result = outcome
+                return outcome
 
         return JobWrapper(self, ansatz, observable, kwargs)
 

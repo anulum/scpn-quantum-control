@@ -4,6 +4,15 @@
 
 ### Fixed
 
+- Cross the provider boundary once per asynchronously submitted job. Awaiting a
+  submitted batch previously re-ran the whole submission on every call, so two
+  sequential awaits or a concurrent gather issued that many provider
+  submissions. The wrapper now holds a single in-flight submission task shared
+  by all awaiters, a cancelled awaiter no longer orphans or duplicates it, and a
+  failed submission is recorded as ambiguous and re-raised rather than retried,
+  since the provider may already hold the work. The state is readable through
+  the new `submission_state` and `submission_error` properties.
+
 - Preserve the measurement mapping when folding circuits for zero-noise
   extrapolation. Folding previously rebuilt the circuit and called
   `measure_all()`, which widened a partial readout to every qubit, replaced
