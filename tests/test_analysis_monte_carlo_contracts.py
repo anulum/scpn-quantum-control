@@ -12,7 +12,7 @@ from __future__ import annotations
 from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
 
-def test_monte_carlo_rust_engine_path():
+def test_monte_carlo_rust_engine_path() -> None:
     """Verifies 96-109: Rust engine import path in mc_simulate."""
     from scpn_quantum_control.analysis.monte_carlo_xy import MCResult, mc_simulate
 
@@ -23,7 +23,7 @@ def test_monte_carlo_rust_engine_path():
     assert result.n_oscillators == 4
 
 
-def test_monte_carlo_finite_size_default_n_values():
+def test_monte_carlo_finite_size_default_n_values() -> None:
     """Verifies 267: n_values defaults to [4,8,16,32] when None."""
     from scpn_quantum_control.analysis.monte_carlo_xy import finite_size_scaling
 
@@ -31,7 +31,7 @@ def test_monte_carlo_finite_size_default_n_values():
     assert len(result.n_values) == 1
 
 
-def test_finite_size_power_fit_few_points():
+def test_finite_size_power_fit_few_points() -> None:
     """Verifies 137-138: _fit_power_ansatz returns None with < 2 points."""
     from scpn_quantum_control.analysis.finite_size_scaling import _fit_power_ansatz
 
@@ -40,25 +40,25 @@ def test_finite_size_power_fit_few_points():
 
 
 class TestFiniteSizeScalingEdge:
-    def test_fit_bkt_ansatz_single_point(self):
+    def test_fit_bkt_ansatz_single_point(self) -> None:
         from scpn_quantum_control.analysis.finite_size_scaling import _fit_bkt_ansatz
 
         result = _fit_bkt_ansatz([4], [1.0])
         assert result is None
 
-    def test_fit_power_ansatz_single_point(self):
+    def test_fit_power_ansatz_single_point(self) -> None:
         from scpn_quantum_control.analysis.finite_size_scaling import _fit_power_ansatz
 
         result = _fit_power_ansatz([4], [1.0])
         assert result is None
 
-    def test_fit_bkt_ansatz_valid(self):
+    def test_fit_bkt_ansatz_valid(self) -> None:
         from scpn_quantum_control.analysis.finite_size_scaling import _fit_bkt_ansatz
 
         result = _fit_bkt_ansatz([4, 8, 16], [2.0, 1.8, 1.6])
         assert result is not None
 
-    def test_fit_power_ansatz_valid(self):
+    def test_fit_power_ansatz_valid(self) -> None:
         from scpn_quantum_control.analysis.finite_size_scaling import _fit_power_ansatz
 
         result = _fit_power_ansatz([4, 8, 16], [2.0, 1.8, 1.6])

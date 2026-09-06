@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 import pytest
 
 from scpn_quantum_control.hardware.feedback_provider_metadata import (
@@ -126,7 +128,7 @@ def test_snapshot_from_qiskit_backend_accepts_target_operation_view() -> None:
         basis_gates = ["rz", "sx", "x", "cz"]
 
     class OperationView:
-        def __iter__(self):
+        def __iter__(self) -> Iterator[str]:
             return iter(["measure", "reset", "if_else"])
 
     class Target:

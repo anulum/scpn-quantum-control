@@ -12,8 +12,10 @@ from __future__ import annotations
 import importlib
 import sys
 
+import pytest
 
-def test_noise_model_module_import_does_not_require_aer(monkeypatch) -> None:
+
+def test_noise_model_module_import_does_not_require_aer(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setitem(sys.modules, "qiskit_aer.noise", None)
 
     module = importlib.import_module("scpn_quantum_control.hardware.noise_model")
@@ -23,7 +25,7 @@ def test_noise_model_module_import_does_not_require_aer(monkeypatch) -> None:
     assert callable(module.heron_r2_noise_model)
 
 
-def test_trapped_ion_module_import_does_not_require_aer(monkeypatch) -> None:
+def test_trapped_ion_module_import_does_not_require_aer(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setitem(sys.modules, "qiskit_aer.noise", None)
 
     module = importlib.import_module("scpn_quantum_control.hardware.trapped_ion")

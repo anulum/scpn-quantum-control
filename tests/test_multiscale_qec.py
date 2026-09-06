@@ -16,6 +16,7 @@ from __future__ import annotations
 import builtins
 import importlib
 import time
+from typing import Any
 
 import numpy as np
 import pytest
@@ -170,7 +171,7 @@ class TestNegativeCases:
         """Reloading without the Rust extension selects the Python fallback path."""
         real_import = builtins.__import__
 
-        def blocked_import(name, *args, **kwargs):
+        def blocked_import(name: str, *args: Any, **kwargs: Any) -> Any:
             if name == "scpn_quantum_engine":
                 raise ImportError("forced Rust import failure")
             return real_import(name, *args, **kwargs)

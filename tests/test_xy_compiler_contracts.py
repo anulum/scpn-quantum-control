@@ -11,9 +11,10 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 
-def _system(n: int = 4):
+def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
@@ -21,7 +22,7 @@ def _system(n: int = 4):
     return n, K, omega
 
 
-def _zero_coupling(n: int = 4):
+def _zero_coupling(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Decoupled system — K=0, eigenstates are product states."""
     K = np.zeros((n, n))
     omega = np.linspace(0.8, 1.2, n)
@@ -32,14 +33,14 @@ class TestXYCompiler:
     """Tests for XY-optimised gate decomposition."""
 
     @pytest.mark.parametrize("n", [2, 3, 4, 6])
-    def test_compile_returns_correct_qubit_count(self, n):
+    def test_compile_returns_correct_qubit_count(self, n: int) -> None:
         from scpn_quantum_control.phase.xy_compiler import compile_xy_trotter
 
         _, K, omega = _system(n)
         qc = compile_xy_trotter(K, omega, t=0.1, reps=3)
         assert qc.num_qubits == n
 
-    def test_order2_deeper_than_order1(self):
+    def test_order2_deeper_than_order1(self) -> None:
         from scpn_quantum_control.phase.xy_compiler import compile_xy_trotter
 
         _, K, omega = _system(4)
@@ -48,7 +49,7 @@ class TestXYCompiler:
         assert qc2.depth() >= qc1.depth()
         assert qc2.size() >= qc1.size()
 
-    def test_depth_comparison_values(self):
+    def test_depth_comparison_values(self) -> None:
         from scpn_quantum_control.phase.xy_compiler import depth_comparison
 
         _, K, omega = _system(4)
@@ -58,7 +59,7 @@ class TestXYCompiler:
         assert isinstance(result["reduction_pct"], (int, float))
 
     @pytest.mark.parametrize("angle", [0.0, 0.1, 0.5, np.pi / 4, np.pi / 2])
-    def test_xy_gate_is_unitary(self, angle):
+    def test_xy_gate_is_unitary(self, angle: float) -> None:
         """XY gate must be unitary for all rotation angles."""
         from qiskit import QuantumCircuit
         from qiskit.quantum_info import Operator
@@ -71,7 +72,7 @@ class TestXYCompiler:
         product = op.data @ op.data.conj().T
         np.testing.assert_allclose(product, np.eye(4), atol=1e-10)
 
-    def test_xy_gate_zero_angle_is_identity(self):
+    def test_xy_gate_zero_angle_is_identity(self) -> None:
         """XY gate at angle=0 should be identity."""
         from qiskit import QuantumCircuit
         from qiskit.quantum_info import Operator
@@ -83,7 +84,7 @@ class TestXYCompiler:
         op = Operator(qc)
         np.testing.assert_allclose(np.abs(op.data), np.eye(4), atol=1e-10)
 
-    def test_reps_increases_depth(self):
+    def test_reps_increases_depth(self) -> None:
         from scpn_quantum_control.phase.xy_compiler import compile_xy_trotter
 
         _, K, omega = _system(3)
