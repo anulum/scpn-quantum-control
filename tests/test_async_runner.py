@@ -1103,7 +1103,8 @@ class TestSubmissionIsIssuedOnce:
             with pytest.raises(asyncio.CancelledError):
                 await waiter
             assert wrapper.submission_state == "in_flight"
-            return await wrapper.result()
+            resumed: dict[str, Any] = await wrapper.result()
+            return resumed
 
         assert asyncio.run(_drive()) == {"attempt": 1}
         assert calls["n"] == 1
@@ -1135,7 +1136,12 @@ class TestSubmissionIsIssuedOnce:
         """Constructing a wrapper must not reach the provider."""
         calls = {"n": 0}
         wrapper = self._wrapper()
-        wrapper._run_blocking = lambda: calls.__setitem__("n", calls["n"] + 1) or {}
+
+        def _record_call() -> dict[str, Any]:
+            calls["n"] += 1
+            return {}
+
+        wrapper._run_blocking = _record_call
 
         assert wrapper.submission_state == "not_started"
         assert wrapper.submission_error is None

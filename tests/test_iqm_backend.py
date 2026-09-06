@@ -49,27 +49,34 @@ class _FakeJob:
         return _FakeResult(self._counts)
 
 
-class _FakeIQMBackend(GenericBackendV2):
-    """A local stand-in that is a real transpilation target.
+def _fake_iqm_backend() -> Any:
+    """Return a real transpilation target whose ``run`` records the shots.
 
-    Derived from ``GenericBackendV2`` so the adapter compiles against an actual
-    coupling map and basis-gate set, which is what a real IQM device provides.
-    A bare object would not be a valid target, and the adapter now refuses those
-    rather than compiling without one.
+    A genuine ``GenericBackendV2`` instance is used rather than a subclass, so
+    the adapter compiles against an actual coupling map and basis-gate set —
+    which is what a real IQM device provides, and what a bare object cannot
+    stand in for. Only ``run`` is replaced, because the stub job it returns is
+    the one thing a local test cannot get from the real target.
+
+    Returns
+    -------
+    Any
+        The backend. Qiskit ships no type information, so a precise annotation
+        here would be a fiction rather than a check.
+
     """
+    backend: Any = GenericBackendV2(num_qubits=5, seed=7)
+    backend.name = "fake_garnet"
+    backend.received_shots = None
 
-    def __init__(self) -> None:
-        super().__init__(num_qubits=5, seed=7)
-        self.name = "fake_garnet"
-        self.received_shots: int | None = None
-
-    def run(  # type: ignore[override]  # the fake returns a stub job, not a real one
-        self, circuits: list[QuantumCircuit], *, shots: int
-    ) -> _FakeJob:
+    def _run(circuits: list[QuantumCircuit], *, shots: int) -> _FakeJob:
         assert len(circuits) == 1
         assert circuits[0].num_qubits == 5
-        self.received_shots = shots
+        backend.received_shots = shots
         return _FakeJob({"00": 31, "11": 33})
+
+    backend.run = _run
+    return backend
 
 
 class _FakeIQMProvider:
@@ -77,8 +84,8 @@ class _FakeIQMProvider:
         self.url = url
         self.quantum_computer = quantum_computer
 
-    def get_backend(self) -> _FakeIQMBackend:
-        return _FakeIQMBackend()
+    def get_backend(self) -> Any:
+        return _fake_iqm_backend()
 
 
 def _bell_circuit() -> QuantumCircuit:
@@ -132,7 +139,7 @@ def test_iqm_backend_requires_dependency_for_backend_resolution(
 
 def test_iqm_fake_backend_resolution_and_count_run(monkeypatch: pytest.MonkeyPatch) -> None:
     """A local fake backend resolves and returns bounded circuit counts."""
-    fake_module = types.SimpleNamespace(IQMFakeGarnet=_FakeIQMBackend)
+    fake_module = types.SimpleNamespace(IQMFakeGarnet=_fake_iqm_backend)
 
     def import_module(name: str) -> Any:
         if name == "iqm.qiskit_iqm.fake_backends.fake_garnet":
@@ -242,8 +249,8 @@ def test_resolve_remote_backend_uses_backend_method_fallback() -> None:
         def __init__(self, url: str, *, quantum_computer: str | None = None) -> None:
             self.url = url
 
-        def backend(self) -> _FakeIQMBackend:
-            return _FakeIQMBackend()
+        def backend(self) -> Any:
+            return _fake_iqm_backend()
 
     def import_module(name: str) -> Any:
         if name == "iqm.qiskit_iqm.iqm_provider":
@@ -254,7 +261,7 @@ def test_resolve_remote_backend_uses_backend_method_fallback() -> None:
     backend = adapter.resolve_backend(
         IQMBackendConfig(mode="remote", server_url="https://example.iqm.invalid")
     )
-    assert isinstance(backend, _FakeIQMBackend)
+    assert backend.name == "fake_garnet"
 
 
 class _ArgCountsResult:
@@ -350,7 +357,7 @@ def test_run_counts_compiles_for_the_backend_it_submits_to() -> None:
 
     class _Adapter(IQMQuantumBackend):
         def resolve_backend(self, config: IQMBackendConfig | None = None) -> Any:
-            backend = _FakeIQMBackend()
+            backend = _fake_iqm_backend()
             resolutions.append(backend)
             return backend
 
@@ -369,7 +376,7 @@ def test_run_counts_compiles_for_the_backend_it_submits_to() -> None:
 def test_compiled_circuit_is_mapped_onto_the_target_device() -> None:
     """The submitted circuit carries the target's layout, not a logical one."""
     adapter = IQMQuantumBackend()
-    backend = _FakeIQMBackend()
+    backend = _fake_iqm_backend()
     compiled = adapter.transpile_circuit(
         _bell_circuit(), IQMBackendConfig(mode="fake"), backend=backend
     )
