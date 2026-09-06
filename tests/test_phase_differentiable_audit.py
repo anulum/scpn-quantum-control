@@ -136,7 +136,9 @@ def test_run_differentiable_workflow_audit_suite_passes_supported_lanes() -> Non
     assert suite.worst_gradient_error < 1e-5
     payload = suite.to_dict()
     assert payload["passed"] is True
-    assert "arbitrary Python program reverse-mode AD" in payload["unsupported_scenarios"]
+    unsupported = payload["unsupported_scenarios"]
+    assert isinstance(unsupported, list)
+    assert "arbitrary Python program reverse-mode AD" in unsupported
     assert "coupling_learning" in payload
 
 
@@ -210,11 +212,12 @@ def test_run_phase_gradient_benchmark_suite_passes_all_cases() -> None:
     payload = suite.to_dict()
     assert payload["passed"] is True
     assert payload["benchmark_names"] == list(suite.benchmark_names)
-    assert len(payload["reports"]) == 3
-    assert (
-        "shot-noisy hardware gradients without uncertainty certificates"
-        in payload["unsupported_scenarios"]
-    )
+    reports = payload["reports"]
+    assert isinstance(reports, list)
+    assert len(reports) == 3
+    unsupported = payload["unsupported_scenarios"]
+    assert isinstance(unsupported, list)
+    assert "shot-noisy hardware gradients without uncertainty certificates" in unsupported
 
 
 def test_run_parameter_shift_audit_suite_rejects_bad_analytic_shape() -> None:

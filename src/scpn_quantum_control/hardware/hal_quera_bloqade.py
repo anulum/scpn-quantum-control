@@ -262,7 +262,7 @@ def _extract_bitstrings(batch: Any) -> Sequence[Any] | Mapping[Any, int]:
     raise ValueError("Bloqade batch report does not contain bitstrings or counts")
 
 
-def _normalise_counts(source: Sequence[Any] | Mapping[Any, int]) -> dict[str, int]:
+def _normalise_counts(source: Sequence[Any] | Mapping[Any, object]) -> dict[str, int]:
     if isinstance(source, Mapping):
         items = source.items()
     else:

@@ -66,7 +66,10 @@ def test_support_row_rejects_blank_or_non_string_text(field: str) -> None:
     for invalid in (" ", 4):
         values[field] = invalid
         with pytest.raises(ValueError, match=field):
-            ConstraintSupportRow(**values)
+            # Each iteration puts a blank string or an int where a typed field
+            # belongs, which is the rejection under test; mypy cannot express
+            # that a call is meant to fail.
+            ConstraintSupportRow(**values)  # type: ignore[arg-type]
 
 
 def test_support_row_rejects_invalid_status_and_derivative_kind() -> None:

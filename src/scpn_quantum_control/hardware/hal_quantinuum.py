@@ -215,7 +215,7 @@ def _default_circuit_factory(workload: QuantumWorkload) -> Any:
     return circuit_cls.from_dict(dict(circuit_payload))
 
 
-def _normalise_counts(raw_counts: Mapping[Any, int]) -> dict[str, int]:
+def _normalise_counts(raw_counts: Mapping[Any, object]) -> dict[str, int]:
     counts: dict[str, int] = {}
     for raw_key, raw_count in raw_counts.items():
         count = strict_non_negative_count(raw_count)

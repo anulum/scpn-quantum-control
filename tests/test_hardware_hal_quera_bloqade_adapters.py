@@ -10,12 +10,17 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import pytest
 
 from scpn_quantum_control.hardware import hal_quera_bloqade as quera_mod
-from scpn_quantum_control.hardware.hal import HardwareAbstractionLayer, QuantumWorkload
+from scpn_quantum_control.hardware.hal import (
+    HardwareAbstractionLayer,
+    QuantumJobRef,
+    QuantumWorkload,
+)
 from scpn_quantum_control.hardware.hal_quera_bloqade import (
     QuEraBloqadeHALAdapter,
     bloqade_ahs_workload,
@@ -330,7 +335,7 @@ def test_quera_bloqade_adapter_rejects_unknown_jobs() -> None:
         HardwareAbstractionLayer.with_builtin_profiles().profile("quera_bloqade"),
         routine=_FakeBloqadeRoutine(),
     )
-    unknown = quera_mod.QuantumJobRef(
+    unknown = QuantumJobRef(
         job_id="quera_bloqade:missing",
         backend_id="quera_bloqade",
         workload_id="missing",
@@ -436,7 +441,7 @@ def test_bloqade_workload_accepts_json_string() -> None:
     """The workload helper should accept canonical JSON payloads."""
 
     workload = bloqade_ahs_workload(
-        quera_mod.json.dumps(_BLOQADE_PLAN),
+        json.dumps(_BLOQADE_PLAN),
         workload_id="json_quera",
         n_qubits=2,
         shots=2,
