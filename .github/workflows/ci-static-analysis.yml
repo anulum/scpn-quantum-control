@@ -89,6 +89,15 @@ jobs:
           python tools/audit_documentation_surface.py
           --allowlist tools/documentation_surface_allowlist.json
           --fail-on-findings
+      - name: Hold every closed documentation scope at zero
+        # Closing a scope is not holding it closed. Rust denies missing_docs,
+        # typedoc fails on an undocumented reflection and the Julia tier has its
+        # own gate; the Python scopes had none, so a new file could re-open one
+        # silently. The scan is the isolated preview one the lane is measured
+        # with, not the configured run, which passes while the lane grows.
+        run: python tools/audit_documentation_scopes.py
+      - name: Verify the documentation scope gate itself
+        run: python -m pytest -q tests/test_audit_documentation_scopes.py
       - name: Enforce the published-record freeze (read-only preprints)
         run: |
           python -m mypy --strict --explicit-package-bases \
