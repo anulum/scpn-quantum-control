@@ -48,7 +48,9 @@ def test_compile_hypergeometric_openpulse_schedule_payload() -> None:
     assert payload["schema"] == "openpulse_schedule_v1"
     assert payload["qubit"] == 2
     assert payload["dt"] == pytest.approx(2.22e-10)
-    waveform = payload["waveforms"][0]
+    waveforms = payload["waveforms"]
+    assert isinstance(waveforms, list)
+    waveform = waveforms[0]
     assert isinstance(waveform, dict)
     assert np.max(np.abs(np.asarray(waveform["samples"], dtype=float))) <= 0.7000000001
 
@@ -67,8 +69,12 @@ def test_build_rabi_amplitude_calibration_workflow_payload() -> None:
     payload = workflow.to_payload()
     assert payload["workflow_id"] == "openpulse_rabi_calibration_ibm_fez_q1"
     assert payload["hardware_submission"] is False
-    assert len(payload["points"]) == 9
-    assert payload["points"][0]["shots"] == 4096
+    points = payload["points"]
+    assert isinstance(points, list)
+    assert len(points) == 9
+    first_point = points[0]
+    assert isinstance(first_point, dict)
+    assert first_point["shots"] == 4096
 
 
 def test_estimate_rabi_pi_amplitude_rust_python_parity(monkeypatch: pytest.MonkeyPatch) -> None:

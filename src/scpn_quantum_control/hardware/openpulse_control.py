@@ -14,7 +14,7 @@ generates reproducible calibration workflows for IBM-style pulse lanes.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any
 
@@ -249,7 +249,7 @@ def build_rabi_amplitude_calibration_workflow(
     *,
     backend_name: str,
     qubit: int,
-    amplitude_grid: Sequence[float],
+    amplitude_grid: Iterable[float],
     shots: int,
     dt: float,
     sigma: int = 64,
@@ -283,8 +283,8 @@ def build_rabi_amplitude_calibration_workflow(
 
 
 def estimate_rabi_pi_amplitude(
-    amplitudes: Sequence[float],
-    excited_population: Sequence[float],
+    amplitudes: Iterable[float],
+    excited_population: Iterable[float],
 ) -> RabiPiCalibrationEstimate:
     """Estimate π-pulse amplitude from a Rabi calibration sweep."""
     amp = np.asarray(list(amplitudes), dtype=np.float64)

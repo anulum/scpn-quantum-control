@@ -249,9 +249,11 @@ def test_differential_contract_rejects_invalid_arrays_digest_and_boundary() -> N
         "content_digest": valid.content_digest,
         "claim_boundary": valid.claim_boundary,
     }
+    # Each construction overrides one field with an invalid value to prove it
+    # is rejected; mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match="equal shape"):
-        TopologyProjectionDifferential(**(values | {"tangent": np.ones((3, 3))}))
+        TopologyProjectionDifferential(**(values | {"tangent": np.ones((3, 3))}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="content_digest"):
-        TopologyProjectionDifferential(**(values | {"content_digest": "bad"}))
+        TopologyProjectionDifferential(**(values | {"content_digest": "bad"}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="claim_boundary"):
-        TopologyProjectionDifferential(**(values | {"claim_boundary": " "}))
+        TopologyProjectionDifferential(**(values | {"claim_boundary": " "}))  # type: ignore[arg-type]
