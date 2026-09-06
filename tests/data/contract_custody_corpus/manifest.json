@@ -1,0 +1,251 @@
+{
+  "cases": [
+    {
+      "case_id": "raw_round_trip_preserves_digest",
+      "expectation": "accept",
+      "family": "Result/evidence",
+      "fixture": "raw_round_trip_preserves_digest.json",
+      "fixture_sha256": "ed44b955d44f26065785b6a1359e6489307183c42f61f5436d03ca0d28fc5f2b",
+      "producer": "scpn_quantum_control.stable_core_product.serialise_experiment",
+      "rationale": "A legacy consumer round-trips unchanged raw v2 and recovers the original digest, with no companion anywhere in the path.",
+      "reader": "scpn_quantum_control.stable_core_product.round_trip_experiment",
+      "status": "executed"
+    },
+    {
+      "case_id": "raw_digest_excludes_surrounding_document",
+      "expectation": "accept",
+      "family": "Result/evidence",
+      "fixture": "raw_digest_excludes_surrounding_document.json",
+      "fixture_sha256": "ed44b955d44f26065785b6a1359e6489307183c42f61f5436d03ca0d28fc5f2b",
+      "producer": "scpn_quantum_control.stable_core_product.serialise_experiment",
+      "rationale": "Embedding the raw record in a larger document must leave the raw digest untouched while the surrounding document digests differently.",
+      "reader": "scpn_quantum_control.stable_core_product.digest_stable_core_payload",
+      "status": "executed"
+    },
+    {
+      "case_id": "raw_readable_without_companion",
+      "expectation": "accept",
+      "family": "Result/evidence",
+      "fixture": "raw_readable_without_companion.json",
+      "fixture_sha256": "ed44b955d44f26065785b6a1359e6489307183c42f61f5436d03ca0d28fc5f2b",
+      "producer": "scpn_quantum_control.stable_core_product.serialise_experiment",
+      "rationale": "Absent semantic qualification never makes a previously readable raw record unreadable; unavailable is not failure.",
+      "reader": "scpn_quantum_control.stable_core_product.deserialise_experiment",
+      "status": "executed"
+    },
+    {
+      "case_id": "companion_key_inside_raw_envelope_refused",
+      "expectation": "reject",
+      "family": "Result/evidence",
+      "fixture": "companion_key_inside_raw_envelope_refused.json",
+      "fixture_sha256": "6cea52d137dd9de4867ceb2369304bc3e1b484ce64ff69798345eea660f04d0b",
+      "producer": "scpn_quantum_control.stable_core_product.serialise_experiment",
+      "rationale": "The companion is held alongside, never added as a v2 key, and the existing reader already refuses this as envelope key drift.",
+      "reader": "scpn_quantum_control.stable_core_product.deserialise_experiment",
+      "status": "executed"
+    },
+    {
+      "case_id": "unknown_raw_model_major_refused",
+      "expectation": "reject",
+      "family": "Result/evidence",
+      "fixture": "unknown_raw_model_major_refused.json",
+      "fixture_sha256": "f1dc7262993ce3009add56fea9632becb499f884bcb7343a9158b20ae7b826b7",
+      "producer": "scpn_quantum_control.stable_core_product.serialise_experiment",
+      "rationale": "An unknown stable-core model major refuses rather than being read optimistically. This is the raw major, not the companion major.",
+      "reader": "scpn_quantum_control.stable_core_product.deserialise_experiment",
+      "status": "executed"
+    },
+    {
+      "case_id": "mismatched_raw_record_kind_refused",
+      "expectation": "reject",
+      "family": "Result/evidence",
+      "fixture": "mismatched_raw_record_kind_refused.json",
+      "fixture_sha256": "eb5b918633d99fe38b86c55a89bf6f70f15c218038e930ee7fe78f779e3b4ca6",
+      "producer": "scpn_quantum_control.stable_core_product.serialise_experiment",
+      "rationale": "A wrong kind binding refuses before qualification or persistence.",
+      "reader": "scpn_quantum_control.stable_core_product.deserialise_experiment",
+      "status": "executed"
+    },
+    {
+      "case_id": "captured_record_survives_later_mutation",
+      "expectation": "accept",
+      "family": "Result/evidence",
+      "fixture": "captured_record_survives_later_mutation.json",
+      "fixture_sha256": "ed44b955d44f26065785b6a1359e6489307183c42f61f5436d03ca0d28fc5f2b",
+      "producer": "scpn_quantum_control.stable_core_product.serialise_experiment",
+      "rationale": "Mutating the source after capture leaves the captured bytes and their digest unchanged. This is raw byte custody; companion snapshot ownership is a separate design vector.",
+      "reader": "scpn_quantum_control.stable_core_product.canonical_json_bytes",
+      "status": "executed"
+    },
+    {
+      "case_id": "planner_preserves_null_request_beside_default",
+      "expectation": "accept",
+      "family": "Execution plan",
+      "fixture": null,
+      "fixture_sha256": null,
+      "producer": "scpn_quantum_control.phase.gradient_backend.explain_quantum_gradient_method",
+      "rationale": "The real planner keeps a null caller request distinguishable from the backend default it supplied, and records why.",
+      "reader": "scpn_quantum_control.phase.gradient_backend.explain_quantum_gradient_method",
+      "status": "executed"
+    },
+    {
+      "case_id": "fisher_observed_and_expected_routes_stay_distinct",
+      "expectation": "accept",
+      "family": "Fidelity",
+      "fixture": null,
+      "fixture_sha256": null,
+      "producer": "scpn_quantum_control.phase.qnode_circuit_differentiation.phase_qnode_computational_basis_fisher_information",
+      "rationale": "The real producer labels observed replay and expected-count analysis differently and retains the raw counts only for the observed route, so equal shot counts cannot conflate them.",
+      "reader": "scpn_quantum_control.phase.qnode_circuit_differentiation.phase_qnode_computational_basis_fisher_information",
+      "status": "executed"
+    },
+    {
+      "case_id": "non_count_route_carries_no_measurement_mapping",
+      "expectation": "accept",
+      "family": "Backend observation",
+      "fixture": null,
+      "fixture_sha256": null,
+      "producer": "scpn_quantum_control.phase.qnode_circuit_differentiation.phase_qnode_computational_basis_fisher_information",
+      "rationale": "Without observed counts the real producer leaves the measurement mapping absent rather than padding a count vector into existence.",
+      "reader": "scpn_quantum_control.phase.qnode_circuit_contracts.PhaseQNodeClassicalFisherResult",
+      "status": "executed"
+    },
+    {
+      "case_id": "same_named_problem_types_remain_separable",
+      "expectation": "accept",
+      "family": "Problem identity",
+      "fixture": null,
+      "fixture_sha256": null,
+      "producer": "scpn_quantum_control.kuramoto_core.KuramotoProblem",
+      "rationale": "Both types exist with disjoint fields under one bare name. This is the source fact the producer-identity design vector rests on; no production reader binds producer identity yet.",
+      "reader": "scpn_quantum_control.benchmarks.kuramoto_competitive_types.KuramotoProblem",
+      "status": "executed"
+    },
+    {
+      "case_id": "companion_positive_base",
+      "expectation": "accept",
+      "family": "Semantic support",
+      "fixture": "companion_positive_base.json",
+      "fixture_sha256": "7fb54ff91f7d0fc24644f10674d1b0540d44992b1209747855514f4cf2f19010",
+      "producer": "scientific_semantics.v1",
+      "rationale": "The positive base, so a matrix of refusals cannot be satisfied by refusing everything.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "companion_unknown_major_refused",
+      "expectation": "reject",
+      "family": "Semantic support",
+      "fixture": "companion_unknown_major_refused.json",
+      "fixture_sha256": "d8fcc8a7e3e0401de53433fa853e90289e5688693688e72fe84b95a6131cb7ab",
+      "producer": "scientific_semantics.v1",
+      "rationale": "An unreadable companion major must refuse; this is the companion version, distinct from the raw model version.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "companion_bound_to_wrong_raw_digest_refused",
+      "expectation": "reject",
+      "family": "Result/evidence",
+      "fixture": "companion_bound_to_wrong_raw_digest_refused.json",
+      "fixture_sha256": "2c3452495880e7bfc1cd548f1a6e52679cb077e90832c006452baee60e8f54ca",
+      "producer": "scientific_semantics.v1",
+      "rationale": "A companion pointing at bytes it does not describe must refuse before qualification or persistence.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "companion_bound_to_wrong_record_kind_refused",
+      "expectation": "reject",
+      "family": "Result/evidence",
+      "fixture": "companion_bound_to_wrong_record_kind_refused.json",
+      "fixture_sha256": "6eabc1f36058c5952f7901d665abe37b56bceeda9d191b65662283d6d7958be4",
+      "producer": "scientific_semantics.v1",
+      "rationale": "A kind that contradicts the referenced record must refuse.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "frequency_unit_changed_without_conversion_refused",
+      "expectation": "reject",
+      "family": "Semantic support",
+      "fixture": "frequency_unit_changed_without_conversion_refused.json",
+      "fixture_sha256": "a12cbc5af4d50d7d8dc8f16ab065365aeb456fd84f89611dc6a19bad33fae0a0",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Hz against rad/s differ by two pi; no existing contract carries a unit for this family, so nothing today catches a silent re-uniting.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "declared_shape_and_dtype_cannot_hold_data_refused",
+      "expectation": "reject",
+      "family": "Derivative request",
+      "fixture": "declared_shape_and_dtype_cannot_hold_data_refused.json",
+      "fixture_sha256": "12cc4f20d6c92265bf3182276d66ad92de713bae3a4b385c669614106906a41b",
+      "producer": "scientific_semantics.v1",
+      "rationale": "A coupling matrix declared as a short integer vector must refuse rather than be coerced.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "parameter_order_and_tangent_change_refused",
+      "expectation": "reject",
+      "family": "Derivative request",
+      "fixture": "parameter_order_and_tangent_change_refused.json",
+      "fixture_sha256": "dacda70a1359911beee7d98f664e18208cbdd5ab67a6420a6e03555eeba3f793",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Reordering parameters or swapping the tangent convention silently relabels a gradient component.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "effective_setting_contradicts_request_refused",
+      "expectation": "reject",
+      "family": "Execution plan",
+      "fixture": "effective_setting_contradicts_request_refused.json",
+      "fixture_sha256": "9f564c74e6bf4978c4c9517f87fb723a4650aa60b20618adf6413fdf6c1b8c7d",
+      "producer": "scientific_semantics.v1",
+      "rationale": "A hundred requested against two hundred effective, with no recorded accepted transformation, is an unexplained substitution.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "null_request_with_recorded_default_accepted",
+      "expectation": "accept",
+      "family": "Execution plan",
+      "fixture": "null_request_with_recorded_default_accepted.json",
+      "fixture_sha256": "a2a0efabe0dde075b3b0cf7db862b5134250eefd5a253a4534e50aee5c825e7d",
+      "producer": "scientific_semantics.v1",
+      "rationale": "A null request beside a defaulted effective value and its origin is the provenance shape that must survive the companion.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "non_count_modality_declines_bit_mapping",
+      "expectation": "accept",
+      "family": "Backend observation",
+      "fixture": "non_count_modality_declines_bit_mapping.json",
+      "fixture_sha256": "fc9aa43257f10375d9838ebfef612abac8cbb0c0b0e845e6f6c3b3cf85363b0f",
+      "producer": "scientific_semantics.v1",
+      "rationale": "A non-count modality states that bit mapping is not applicable rather than padding counts.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    },
+    {
+      "case_id": "cross_bound_producer_identity_refused",
+      "expectation": "reject",
+      "family": "Problem identity",
+      "fixture": "cross_bound_producer_identity_refused.json",
+      "fixture_sha256": "189f64f6f3da9c09a77692e3ddbc9919d6fe11757e3bb9d971a08c16682ffe4b",
+      "producer": "scientific_semantics.v1",
+      "rationale": "Binding a core record to the same-named benchmark type must refuse; identity is module-qualified, never a bare class name.",
+      "reader": "scpn_quantum_control.semantic_record.validate_semantic_binding",
+      "status": "design_vector"
+    }
+  ],
+  "companion_module": "scpn_quantum_control.semantic_record",
+  "companion_schema": "scientific_semantics.v1",
+  "design_vectors_are_unexecuted": true,
+  "model_schema_version": "stable_core.experiment_model.v2",
+  "schema": "contract_custody_corpus.v1"
+}

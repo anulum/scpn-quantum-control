@@ -4,19 +4,17 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — CORE-G02 cross-family contract custody
-"""Execute the CORE-G02 shared accept/reject corpus against real producers.
+# SCPN Quantum Control — cross-family versioned contract custody
+"""Run the custody corpus against the readers that exist, and no others.
 
-Residual R-E records that round-trip raw-evidence custody is asserted per
-producer and nowhere across families. This module is the cross-family owner the
-workpack names. It runs the reviewer's twelve enumerated cases against the
-actual public readers, so an answer about the wire contract is obtained by
-calling the code rather than by reading a design document.
+Round-trip raw-evidence custody has been asserted per producer and nowhere
+across families. This module is that cross-family owner.
 
-Three of the cases cannot execute yet. They need the ``scientific_semantics.v1``
-companion, which does not exist in source. Those are not skipped and not marked
-expected-failure: each pins the companion's genuine absence, so the moment the
-companion lands the pin fails and the case must be wired rather than forgotten.
+The corpus separates two claims and so does this file. Executed cases invoke a
+real production reader with real inputs. Design vectors carry concrete proposed
+bytes for the semantic companion, which is specified but unbuilt; those are
+checked for byte and digest stability and are never executed, because there is
+nothing to execute them against and a constructor is not a reader.
 """
 
 from __future__ import annotations
@@ -34,22 +32,24 @@ from scpn_quantum_control import stable_core_product as scp
 from scpn_quantum_control.benchmarks.kuramoto_competitive_types import (
     KuramotoProblem as BenchmarkKuramotoProblem,
 )
-from scpn_quantum_control.hardware.hal import QuantumJobRef, QuantumJobResult
 from scpn_quantum_control.kuramoto_core import KuramotoProblem as CoreKuramotoProblem
-from scpn_quantum_control.phase.gradient_backend import QuantumGradientShotPolicy
+from scpn_quantum_control.phase.gradient_backend import explain_quantum_gradient_method
 from scpn_quantum_control.phase.qnode_circuit_contracts import (
-    PhaseQNodeClassicalFisherResult,
-    PhaseQNodeSupportReport,
+    PauliTerm,
+    PhaseQNodeCircuit,
+)
+from scpn_quantum_control.phase.qnode_circuit_differentiation import (
+    phase_qnode_computational_basis_fisher_information,
 )
 
-CORPUS_DIRECTORY: Final = Path(__file__).parent / "data" / "core_g02_contract_corpus"
-"""Frozen corpus written by ``tools/core_g02_contract_corpus.py``."""
+CORPUS_DIRECTORY: Final = Path(__file__).parent / "data" / "contract_custody_corpus"
+"""Frozen corpus written by ``tools/contract_custody_corpus.py``."""
 
 OBSERVED_SAMPLING_MODEL: Final = "multinomial_delta_method_raw_count_replay"
-"""Sampling model recorded when real observed counts back the estimate."""
+"""Label the producer records when real observed counts back the estimate."""
 
 EXPECTED_SAMPLING_MODEL: Final = "multinomial_delta_method_expected_counts"
-"""Sampling model recorded when the estimate rests on expected counts."""
+"""Label the producer records when the estimate rests on expected counts."""
 
 
 def _manifest() -> dict[str, Any]:
@@ -106,68 +106,102 @@ def _fixture(case_id: str) -> dict[str, Any]:
     return payload
 
 
+def _one_parameter_circuit() -> PhaseQNodeCircuit:
+    """Return the smallest circuit the Fisher producer accepts.
+
+    Returns
+    -------
+    PhaseQNodeCircuit
+        A single-qubit rotation measured in the computational basis.
+
+    """
+    return PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
+
+
 class TestCorpusIntegrity:
-    """The corpus must be verifiable, not merely present."""
+    """The corpus must be verifiable and must say which claim it supports."""
 
     def test_every_fixture_matches_its_recorded_digest(self) -> None:
-        """Recorded bytes and recorded digest must agree.
-
-        A frozen digest whose bytes were not kept cannot be checked later, and
-        this programme has already been bitten by exactly that.
-        """
+        """Recorded bytes and recorded digest must agree."""
         rows = [row for row in _manifest()["cases"] if row["fixture"] is not None]
 
-        assert rows, "corpus carries no byte fixtures"
+        assert rows
         for row in rows:
             payload = _fixture(row["case_id"])
 
             assert scp.digest_stable_core_payload(payload) == row["fixture_sha256"]
 
-    def test_the_corpus_covers_every_reviewer_case(self) -> None:
-        """All twelve reviewer cases are present, case four in three parts."""
-        identifiers = {row["case_id"] for row in _manifest()["cases"]}
-        stems = {identifier.split("_")[0].rstrip("abc") for identifier in identifiers}
+    def test_design_vectors_are_declared_unexecuted(self) -> None:
+        """The manifest must state plainly that proposed inputs are not evidence."""
+        manifest = _manifest()
+        vectors = [row for row in manifest["cases"] if row["status"] == "design_vector"]
 
-        assert stems == {f"{number:02d}" for number in range(1, 13)}
+        assert manifest["design_vectors_are_unexecuted"] is True
+        assert vectors
+        for row in vectors:
+            assert row["reader"].startswith(manifest["companion_module"])
 
-    def test_every_case_declares_a_producer_and_a_reader(self) -> None:
-        """A case without an exact reader cannot state an expected outcome."""
-        for row in _manifest()["cases"]:
-            assert row["producer"]
-            assert row["reader"]
-            assert row["expectation"] in {"accept", "reject"}
-            assert row["status"] in {"executable", "companion_pending"}
+    def test_executed_cases_never_name_the_absent_reader(self) -> None:
+        """An executed claim must rest on a reader that exists."""
+        manifest = _manifest()
+        executed = [row for row in manifest["cases"] if row["status"] == "executed"]
+
+        assert executed
+        for row in executed:
+            assert not row["reader"].startswith(manifest["companion_module"])
+
+    def test_the_corpus_carries_a_positive_base(self) -> None:
+        """A refusal matrix alone can be satisfied by refusing everything."""
+        vectors = [row for row in _manifest()["cases"] if row["status"] == "design_vector"]
+
+        assert any(row["expectation"] == "accept" for row in vectors)
+
+    def test_every_mapped_family_appears(self) -> None:
+        """A family with no case is a gap, whether executed or proposed."""
+        families = {row["family"] for row in _manifest()["cases"]}
+
+        assert families == {
+            "Problem identity",
+            "Semantic support",
+            "Fidelity",
+            "Derivative request",
+            "Execution plan",
+            "Backend observation",
+            "Result/evidence",
+        }
 
 
 class TestRawRecordCustody:
-    """Cases 1, 2, 3 and 11 — raw v2 custody, with no companion in the path."""
+    """Executed: raw v2 custody through its real readers."""
 
-    def test_legacy_raw_round_trip_recovers_the_original_digest(self) -> None:
-        """Case 1: a legacy consumer reads unchanged v2 and keeps its digest."""
-        row = _case("01_legacy_raw_v2_round_trip")
+    def test_round_trip_recovers_the_original_digest(self) -> None:
+        """A legacy consumer reads unchanged v2 and keeps its digest."""
+        row = _case("raw_round_trip_preserves_digest")
         experiment = scp.deserialise_experiment(_fixture(row["case_id"]))
 
         result = scp.round_trip_experiment(experiment)
 
         assert result.matched is True
         assert result.digest_sha256 == row["fixture_sha256"]
-        assert result.schema_version == scp.STABLE_CORE_MODEL_SCHEMA_VERSION
 
-    def test_raw_digest_ignores_anything_held_beside_it(self) -> None:
-        """Case 2: the raw digest is a pure function of the raw payload."""
-        payload = _fixture("02_raw_digest_invariant_under_companion")
-        alone = scp.digest_stable_core_payload(payload)
-        beside = scp.digest_stable_core_payload(
-            {"raw": payload, "companion": {"schema": "scientific_semantics.v1"}}["raw"]
+    def test_embedding_the_record_leaves_its_own_digest_alone(self) -> None:
+        """The raw digest covers the raw record and nothing around it."""
+        payload = _fixture("raw_digest_excludes_surrounding_document")
+        raw_digest = scp.digest_stable_core_payload(payload)
+        surrounding = scp.digest_stable_core_payload(
+            {"record": payload, "companion": {"schema": "scientific_semantics.v1"}}
         )
 
-        assert (
-            alone == beside == _case("02_raw_digest_invariant_under_companion")["fixture_sha256"]
-        )
+        assert raw_digest == _case("raw_digest_excludes_surrounding_document")["fixture_sha256"]
+        assert surrounding != raw_digest
 
     def test_absent_companion_leaves_the_raw_record_readable(self) -> None:
-        """Case 3: unavailable qualification never makes raw unreadable."""
-        payload = _fixture("03_absent_companion_raw_readable")
+        """Unavailable qualification never makes raw unreadable."""
+        payload = _fixture("raw_readable_without_companion")
 
         experiment = scp.deserialise_experiment(payload)
 
@@ -175,8 +209,8 @@ class TestRawRecordCustody:
         assert experiment is not None
 
     def test_mutating_the_source_after_capture_cannot_move_the_digest(self) -> None:
-        """Case 11: a captured snapshot and its digest survive later mutation."""
-        payload = _fixture("11_mutation_after_capture")
+        """Captured bytes and their digest survive a later mutation."""
+        payload = _fixture("captured_record_survives_later_mutation")
         captured = scp.canonical_json_bytes(payload)
         digest = scp.digest_stable_core_payload(payload)
 
@@ -186,207 +220,186 @@ class TestRawRecordCustody:
         assert scp.digest_stable_core_payload(json.loads(captured)) == digest
 
 
-class TestRawRecordRejection:
-    """Case 4 — three ways a binding must refuse before qualification."""
+class TestRawRecordRefusal:
+    """Executed: three bindings the real reader must refuse."""
 
-    def test_a_companion_key_added_to_v2_is_refused(self) -> None:
-        """Case 4a: Q2's "alongside, not inside" is already enforced by v2."""
-        payload = _fixture("04a_companion_key_injected_into_v2")
+    def test_a_companion_key_added_inside_v2_is_refused(self) -> None:
+        """The companion is held alongside; v2 already refuses it inside."""
+        payload = _fixture("companion_key_inside_raw_envelope_refused")
 
         with pytest.raises(ValueError, match="envelope key drift"):
             scp.deserialise_experiment(payload)
 
-    def test_an_unknown_model_major_is_refused(self) -> None:
-        """Case 4b: an unknown major refuses rather than reading optimistically."""
-        payload = _fixture("04b_unknown_model_schema_version")
+    def test_an_unknown_raw_model_major_is_refused(self) -> None:
+        """The stable-core major is meant here, not the companion major."""
+        payload = _fixture("unknown_raw_model_major_refused")
 
         with pytest.raises(ValueError, match="unknown model schema_version"):
             scp.deserialise_experiment(payload)
 
     def test_a_mismatched_record_kind_is_refused(self) -> None:
-        """Case 4c: a wrong kind binding refuses before persistence."""
-        payload = _fixture("04c_mismatched_record_kind")
+        """A wrong kind refuses before qualification or persistence."""
+        payload = _fixture("mismatched_raw_record_kind_refused")
 
         with pytest.raises(ValueError):
             scp.deserialise_experiment(payload)
 
 
-class TestProducerIdentity:
-    """Case 5 — why Q1 requires module-qualified identity."""
+class TestExecutionPlanProvenance:
+    """Executed: the real planner, not a hand-built policy object."""
 
-    def test_a_registry_keyed_by_bare_name_loses_one_of_the_two_types(self) -> None:
-        """Q1's module-qualified identity prevents exactly this harm."""
-        producers: tuple[type, type] = (CoreKuramotoProblem, BenchmarkKuramotoProblem)
-        by_bare_name = {producer.__name__: producer for producer in producers}
-        by_qualified_name = {
-            f"{producer.__module__}.{producer.__qualname__}": producer for producer in producers
-        }
+    def test_the_planner_keeps_a_null_request_beside_its_default(self) -> None:
+        """A null request and a supplied default must stay separable facts."""
+        explanation = explain_quantum_gradient_method(
+            "shots", n_params=1, finite_shot=True, shots=None, confidence_level=0.95
+        )
+        policy = explanation.shot_policy
 
-        assert len(by_bare_name) == 1
-        assert len(by_qualified_name) == 2
+        assert policy.requested_shots is None
+        assert policy.planned_shots == 4096
+        assert policy.defaulted is True
+        assert any("default" in reason for reason in policy.reasons)
 
-    def test_the_corpus_names_the_core_producer_by_qualified_identity(self) -> None:
-        """The recorded producer must be the resolvable identity, not a label."""
-        qualified = f"{CoreKuramotoProblem.__module__}.{CoreKuramotoProblem.__qualname__}"
+    def test_an_explicit_request_is_not_reported_as_defaulted(self) -> None:
+        """The default flag must describe provenance, not merely presence."""
+        explanation = explain_quantum_gradient_method(
+            "shots", n_params=1, finite_shot=True, shots=100, confidence_level=0.95
+        )
+        policy = explanation.shot_policy
 
-        assert qualified == _case("05_kuramoto_identity_no_cross_binding")["producer"]
-        assert CoreKuramotoProblem.__name__ == BenchmarkKuramotoProblem.__name__
+        assert policy.requested_shots == 100
+        assert policy.defaulted is False
 
-    def test_the_two_kuramoto_problems_have_disjoint_required_fields(self) -> None:
-        """Structural difference is what makes a silent cross-bind harmful."""
+
+class TestFidelityEvidenceProvenance:
+    """Executed: the real Fisher producer on both count routes."""
+
+    def test_observed_and_expected_routes_are_labelled_apart(self) -> None:
+        """Equal shot counts must not conflate replay with expectation."""
+        circuit = _one_parameter_circuit()
+        parameters = np.array([0.7], dtype=np.float64)
+
+        expected = phase_qnode_computational_basis_fisher_information(
+            circuit, parameters, shot_count=512
+        )
+        observed = phase_qnode_computational_basis_fisher_information(
+            circuit,
+            parameters,
+            shot_count=512,
+            observed_counts={"0": 300, "1": 212},
+            observed_count_wires=(0,),
+        )
+
+        assert expected.sampling_model == EXPECTED_SAMPLING_MODEL
+        assert observed.sampling_model == OBSERVED_SAMPLING_MODEL
+        assert expected.shot_count == observed.shot_count == 512
+
+    def test_only_the_observed_route_retains_raw_counts(self) -> None:
+        """Expected-count analysis must not acquire counts it never saw."""
+        circuit = _one_parameter_circuit()
+        parameters = np.array([0.7], dtype=np.float64)
+
+        expected = phase_qnode_computational_basis_fisher_information(
+            circuit, parameters, shot_count=512
+        )
+        observed = phase_qnode_computational_basis_fisher_information(
+            circuit,
+            parameters,
+            shot_count=512,
+            observed_counts={"0": 300, "1": 212},
+            observed_count_wires=(0,),
+        )
+
+        assert expected.count_record is None
+        assert observed.count_record == (300, 212)
+
+    def test_the_exact_reference_is_the_same_on_both_routes(self) -> None:
+        """The finite-shot evidence differs; the exact reference must not."""
+        circuit = _one_parameter_circuit()
+        parameters = np.array([0.7], dtype=np.float64)
+
+        expected = phase_qnode_computational_basis_fisher_information(
+            circuit, parameters, shot_count=512
+        )
+        observed = phase_qnode_computational_basis_fisher_information(
+            circuit,
+            parameters,
+            shot_count=512,
+            observed_counts={"0": 300, "1": 212},
+            observed_count_wires=(0,),
+        )
+
+        expected_finite = expected.finite_shot_classical_fisher_information
+        observed_finite = observed.finite_shot_classical_fisher_information
+
+        assert expected_finite is not None
+        assert observed_finite is not None
+        assert np.allclose(
+            expected.classical_fisher_information,
+            observed.classical_fisher_information,
+        )
+        assert not np.allclose(expected_finite, observed_finite)
+
+
+class TestMeasurementMappingApplicability:
+    """Executed: a route with no counts declines a mapping rather than pads."""
+
+    def test_the_expected_count_route_carries_no_measurement_mapping(self) -> None:
+        """Absence is recorded as absence, never as a padded count vector."""
+        circuit = _one_parameter_circuit()
+        parameters = np.array([0.7], dtype=np.float64)
+
+        expected = phase_qnode_computational_basis_fisher_information(
+            circuit, parameters, shot_count=512
+        )
+
+        assert expected.count_mapping is None
+
+    def test_the_observed_route_retains_its_wire_mapping(self) -> None:
+        """When a mapping does apply, its wires and vector are kept."""
+        circuit = _one_parameter_circuit()
+        parameters = np.array([0.7], dtype=np.float64)
+
+        observed = phase_qnode_computational_basis_fisher_information(
+            circuit,
+            parameters,
+            shot_count=512,
+            observed_counts={"0": 300, "1": 212},
+            observed_count_wires=(0,),
+        )
+
+        assert observed.count_mapping is not None
+        assert observed.count_mapping.bit_wires == (0,)
+        assert observed.count_mapping.count_vector == (300, 212)
+
+
+class TestProducerIdentitySourceFact:
+    """Executed only as a source fact; no production reader binds identity yet."""
+
+    def test_two_types_share_a_bare_name_and_have_disjoint_fields(self) -> None:
+        """The producer-identity design vector rests on exactly this fact."""
         core = set(CoreKuramotoProblem.__dataclass_fields__)
         benchmark = set(BenchmarkKuramotoProblem.__dataclass_fields__)
 
-        assert core != benchmark
+        assert CoreKuramotoProblem.__name__ == BenchmarkKuramotoProblem.__name__
         assert core - benchmark
         assert benchmark - core
 
+    def test_the_corpus_records_the_qualified_identity(self) -> None:
+        """The recorded producer must be resolvable, not a bare label."""
+        qualified = f"{CoreKuramotoProblem.__module__}.{CoreKuramotoProblem.__qualname__}"
 
-class TestExecutionPlanSettings:
-    """Case 9 — a null request must stay distinguishable from a default."""
-
-    def test_a_null_request_with_a_recorded_default_keeps_both_facts(self) -> None:
-        """No fabricated requested count, and the default stays visible."""
-        policy = QuantumGradientShotPolicy(
-            finite_shot=True,
-            requested_shots=None,
-            planned_shots=1024,
-            defaulted=True,
-            confidence_level=0.95,
-            seed=None,
-            reasons=("backend default applied",),
-        )
-
-        assert policy.requested_shots is None
-        assert policy.planned_shots == 1024
-        assert policy.defaulted is True
-
-    def test_requested_and_planned_shots_are_separate_fields(self) -> None:
-        """Case 8's premise: the pair is carried, and the two differ freely."""
-        policy = QuantumGradientShotPolicy(
-            finite_shot=True,
-            requested_shots=100,
-            planned_shots=200,
-            defaulted=False,
-            confidence_level=0.95,
-            seed=None,
-            reasons=(),
-        )
-
-        assert policy.requested_shots != policy.planned_shots
-        assert "effective_shots" not in QuantumGradientShotPolicy.__dataclass_fields__
+        assert qualified == _case("same_named_problem_types_remain_separable")["producer"]
 
 
-def _fisher_result(
-    *, count_record: tuple[int, ...] | None, sampling_model: str
-) -> PhaseQNodeClassicalFisherResult:
-    """Return a Fisher result differing only in how its counts were obtained.
+class TestDesignVectors:
+    """Concrete proposed bytes, frozen and deliberately not executed."""
 
-    Parameters
-    ----------
-    count_record
-        Retained observed counts, or ``None`` for the expected-count route.
-    sampling_model
-        The public label naming which route produced the estimate.
-
-    Returns
-    -------
-    PhaseQNodeClassicalFisherResult
-        A result whose exact reference fields are identical across routes, so
-        only the evidence labelling can distinguish them.
-
-    """
-    report = PhaseQNodeSupportReport(
-        supported=True,
-        gates=("RZ",),
-        observable_kind="computational_basis",
-        differentiable_parameters=(0,),
-        unsupported_gates=(),
-        unsupported_observables=(),
-        unsupported_parameters=(),
-        failure_reason="",
-        alternatives=(),
-    )
-    return PhaseQNodeClassicalFisherResult(
-        classical_fisher_information=np.array([[1.0]], dtype=np.float64),
-        probabilities=np.array([0.5, 0.5], dtype=np.float64),
-        probability_derivatives=np.array([[0.1, -0.1]], dtype=np.float64),
-        measurement="computational_basis",
-        min_probability=0.5,
-        support_report=report,
-        claim_boundary="local statevector reference only",
-        shot_count=512,
-        count_record=count_record,
-        sampling_model=sampling_model,
-    )
-
-
-class TestFidelityEvidence:
-    """Case 10 — observed counts and expected counts must never merge."""
-
-    def test_observed_and_expected_evidence_are_labelled_apart(self) -> None:
-        """``sampling_model`` is the public field that separates them."""
-        observed = _fisher_result(count_record=(256, 256), sampling_model=OBSERVED_SAMPLING_MODEL)
-        expected = _fisher_result(count_record=None, sampling_model=EXPECTED_SAMPLING_MODEL)
-
-        assert observed.shot_count == expected.shot_count
-        assert observed.sampling_model != expected.sampling_model
-        assert observed.count_record is not None
-        assert expected.count_record is None
-
-    def test_an_equal_shot_count_alone_cannot_identify_the_evidence(self) -> None:
-        """Both are integers; the integer is not the distinguishing fact."""
-        observed = _fisher_result(count_record=(512,), sampling_model=OBSERVED_SAMPLING_MODEL)
-        expected = _fisher_result(count_record=None, sampling_model=EXPECTED_SAMPLING_MODEL)
-
-        assert observed.shot_count == expected.shot_count
-        assert observed.to_dict()["sampling_model"] != expected.to_dict()["sampling_model"]
-        assert observed.to_dict()["count_record"] != expected.to_dict()["count_record"]
-
-
-class TestNonCountModality:
-    """Case 12 — a non-count result must not acquire a padded count vector."""
-
-    def test_a_result_without_counts_reports_no_counts(self) -> None:
-        """Bit mapping is not applicable, and nothing invents one."""
-        reference = QuantumJobRef(
-            job_id="job-1",
-            backend_id="backend-1",
-            workload_id="workload-1",
-            status="completed",
-        )
-
-        result = QuantumJobResult(job=reference, status="completed")
-
-        assert dict(result.counts) == {}
-        assert result.shots == 0
-
-
-class TestCompanionPendingCases:
-    """Cases 6, 7 and 8 wait on a boundary that does not exist yet.
-
-    These pins are deliberate. They pass while the companion is absent and fail
-    the moment it lands, which forces the case to be wired instead of forgotten.
-    """
-
-    def test_the_companion_owner_is_genuinely_absent(self) -> None:
-        """The three pending cases are pending for a checkable reason."""
+    def test_the_proposed_reader_does_not_exist(self) -> None:
+        """These vectors are unexecuted for a checkable reason."""
         manifest = _manifest()
 
         assert importlib.util.find_spec(manifest["companion_module"]) is None
-
-    def test_every_pending_case_names_the_companion_as_its_reader(self) -> None:
-        """A case may only be pending because it needs the companion."""
-        manifest = _manifest()
-        pending = [row for row in manifest["cases"] if row["status"] == "companion_pending"]
-
-        assert {row["case_id"] for row in pending} == {
-            "06_hz_versus_radians_per_second",
-            "07_parameter_order_and_tangent_mismatch",
-            "08_requested_versus_planned_shots",
-        }
-        for row in pending:
-            assert row["reader"].startswith(manifest["companion_module"])
 
     def test_no_existing_module_already_provides_the_companion_symbols(self) -> None:
         """Nothing may satisfy the companion contract under another name."""
@@ -398,6 +411,36 @@ class TestCompanionPendingCases:
 
             assert not hasattr(module, "ScientificSemantics")
             assert not hasattr(module, "validate_semantic_binding")
+
+    def test_every_refusal_vector_departs_from_the_base_in_one_way(self) -> None:
+        """A variant that changes everything tests nothing in particular."""
+        base = _fixture("companion_positive_base")
+        for case_id in (
+            "companion_unknown_major_refused",
+            "companion_bound_to_wrong_raw_digest_refused",
+            "companion_bound_to_wrong_record_kind_refused",
+            "frequency_unit_changed_without_conversion_refused",
+            "cross_bound_producer_identity_refused",
+        ):
+            variant = _fixture(case_id)
+            differing = [key for key in base if base[key] != variant.get(key)]
+
+            assert len(differing) == 1, (case_id, differing)
+
+    def test_the_positive_base_binds_to_the_real_raw_record(self) -> None:
+        """A proposed companion must reference bytes that actually exist."""
+        base = _fixture("companion_positive_base")
+        raw_digest = scp.digest_stable_core_payload(_fixture("raw_round_trip_preserves_digest"))
+
+        assert base["record_reference"]["digest"] == raw_digest
+
+    def test_the_unauthorised_shot_change_records_no_transformation(self) -> None:
+        """The refusal rests on the missing origin, not on the numbers alone."""
+        vector = _fixture("effective_setting_contradicts_request_refused")
+
+        assert vector["settings"]["requested"]["shots"] == 100
+        assert vector["settings"]["effective"]["shots"] == 200
+        assert vector["settings"]["origins"] == {}
 
 
 class TestCorpusReproducibility:
@@ -412,7 +455,7 @@ class TestCorpusReproducibility:
             Fixture.
 
         """
-        from tools.core_g02_contract_corpus import write_corpus
+        from tools.contract_custody_corpus import write_corpus
 
         rebuilt = write_corpus(tmp_path)
 
