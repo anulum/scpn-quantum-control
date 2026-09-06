@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **699 modules** across **39 package families**
-- **3916 documented public module-level symbols**
+- **3918 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2563,9 +2563,9 @@ Google Cirq backend adapter.
 
 Classical reference computations for hardware experiment comparison.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/classical.py) · Public symbols: **5**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/classical.py) · Public symbols: **7**
 
-**Functions:** `classical_kuramoto_reference()`, `classical_exact_diag()`, `classical_exact_evolution()`, `bloch_vectors_from_json()`, `classical_brute_mpc()`
+**Functions:** `integration_step_count()`, `integration_times()`, `classical_kuramoto_reference()`, `classical_exact_diag()`, `classical_exact_evolution()`, `bloch_vectors_from_json()`, `classical_brute_mpc()`
 
 ### `scpn_quantum_control.hardware.cutting_runner`
 

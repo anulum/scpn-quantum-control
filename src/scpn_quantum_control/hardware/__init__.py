@@ -63,11 +63,14 @@ from .backends import (
     unregister_backend,
 )
 from .classical import (
+    INTEGRATION_GRID_RELATIVE_TOLERANCE,
     bloch_vectors_from_json,
     classical_brute_mpc,
     classical_exact_diag,
     classical_exact_evolution,
     classical_kuramoto_reference,
+    integration_step_count,
+    integration_times,
 )
 from .dynq_layout_pass import DynQLayoutPass, calibration_from_target
 from .experiments import (
@@ -517,6 +520,9 @@ __all__ = [
     "classical_brute_mpc",
     "bloch_vectors_from_json",
     "classical_exact_evolution",
+    "INTEGRATION_GRID_RELATIVE_TOLERANCE",
+    "integration_step_count",
+    "integration_times",
     "JobResult",
     "trapped_ion_noise_model",
     "transpile_for_trapped_ion",

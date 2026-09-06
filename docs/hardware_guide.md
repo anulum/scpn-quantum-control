@@ -231,6 +231,21 @@ d(theta_i)/dt = omega_i + sum_j K[i,j] * sin(theta_j - theta_i)
 
 Returns `{times, theta, R}` — phase trajectories and order parameter.
 
+**Integration grid.** The trajectory takes `floor(t_max / dt)` steps and reports
+sample `s` at `s · dt`, which is where the integrator actually put the state. A
+duration that is not a multiple of `dt` therefore ends short of `t_max` rather
+than mislabelling its last sample: for `t_max = 1`, `dt = 0.3` and `omega = 1`,
+an uncoupled oscillator reaches phase 0.9 and the last reported time is 0.9.
+`t_max = 0` returns the initial condition alone. A quotient within
+`INTEGRATION_GRID_RELATIVE_TOLERANCE` of an integer is snapped to it, because
+`0.3 / 0.1` is `2.9999999999999996` in binary and a bare floor would drop the
+caller's last step.
+
+The Rust kernel and the Julia symplectic and delayed kernels already report
+`s · dt`, so all tiers return identical times for identical inputs. The shared
+rule is exposed as `integration_step_count(t_max, dt)` and
+`integration_times(n_steps, dt)`.
+
 **Rust acceleration**: `scpn_quantum_engine.kuramoto_euler()` at 33x
 speedup for n >= 8.
 
@@ -248,6 +263,11 @@ Matrix exponential evolution: psi(t+dt) = exp(-iHdt) psi(t).
 
 Returns time series of R(t) and energy E(t) for direct comparison
 with Trotter evolution on quantum hardware.
+
+Uses the same integration grid as `classical_kuramoto_reference`: the
+propagator is applied `floor(t_max / dt)` times and sample `s` is reported at
+`s · dt`. `t_max = 0` returns the initial state alone rather than applying the
+propagator once.
 
 ### `classical_brute_mpc(B_matrix, target, horizon)`
 

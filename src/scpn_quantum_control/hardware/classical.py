@@ -13,7 +13,8 @@ quantum hardware result should approximate.
 
 from __future__ import annotations
 
-from typing import Any
+import math
+from typing import Any, Final
 
 import numpy as np
 from numpy.typing import NDArray
@@ -29,6 +30,91 @@ from ..bridge.knm_hamiltonian import (
     omega_for_oscillators,
 )
 
+INTEGRATION_GRID_RELATIVE_TOLERANCE: Final[float] = 1e-9
+"""Relative tolerance used to recognise a duration that is a multiple of ``dt``.
+
+``t_max / dt`` is rarely exact in binary floating point: ``0.5 / 0.1`` is
+``4.999999999999999`` and ``2.0 / 0.1`` is ``19.999999999999996``. Taking the
+floor of those would silently drop the last step of a perfectly divisible
+interval, so a quotient within this relative tolerance of an integer is snapped
+to it. Anything further away is genuinely non-divisible and is floored.
+"""
+
+
+def integration_step_count(t_max: float, dt: float) -> int:
+    """Return how many whole ``dt`` steps fit inside ``t_max``.
+
+    This is one half of the shared integration grid contract. The step count
+    never overshoots the requested duration: a caller asking to evolve to
+    ``t_max`` does not get a state from beyond it. A duration shorter than one
+    step therefore yields zero steps, and the trajectory is the initial
+    condition alone.
+
+    Parameters
+    ----------
+    t_max
+        Requested duration in the same time units as ``dt``. Must be
+        non-negative; zero is admitted and means no evolution.
+    dt
+        Integration step, strictly positive.
+
+    Returns
+    -------
+    int
+        Number of steps, ``floor(t_max / dt)`` after snapping a quotient within
+        :data:`INTEGRATION_GRID_RELATIVE_TOLERANCE` of an integer.
+
+    Raises
+    ------
+    ValueError
+        If ``dt`` is not strictly positive and finite, or ``t_max`` is negative
+        or not finite.
+
+    """
+    if not (math.isfinite(dt) and dt > 0.0):
+        raise ValueError(f"dt must be positive and finite, got {dt}")
+    if not (math.isfinite(t_max) and t_max >= 0.0):
+        raise ValueError(f"t_max must be non-negative and finite, got {t_max}")
+    quotient = t_max / dt
+    nearest = round(quotient)
+    if abs(quotient - nearest) <= INTEGRATION_GRID_RELATIVE_TOLERANCE * max(1.0, abs(quotient)):
+        return int(nearest)
+    return int(math.floor(quotient))
+
+
+def integration_times(n_steps: int, dt: float) -> NDArray[np.float64]:
+    """Return the time of each sample on the shared integration grid.
+
+    This is the other half of the contract: sample ``s`` is reported at
+    ``s * dt``, which is where the integrator actually put the state. The
+    previous grid spread ``linspace(0, t_max, n_steps + 1)`` over the requested
+    duration while the integrator advanced by ``dt``, so for a non-divisible
+    interval every label disagreed with its own state. The same expression is
+    used by the Rust trajectory kernel, so both tiers report identical times.
+
+    Parameters
+    ----------
+    n_steps
+        Number of integration steps, from :func:`integration_step_count`.
+    dt
+        Integration step, strictly positive.
+
+    Returns
+    -------
+    numpy.ndarray
+        Shape ``(n_steps + 1,)`` array ``[0, dt, 2·dt, …, n_steps·dt]``. The
+        last entry is the end of the trajectory, which is at most ``t_max``.
+
+    Raises
+    ------
+    ValueError
+        If ``n_steps`` is negative.
+
+    """
+    if n_steps < 0:
+        raise ValueError(f"n_steps must be non-negative, got {n_steps}")
+    return np.arange(n_steps + 1, dtype=np.float64) * dt
+
 
 def classical_kuramoto_reference(
     n_osc: int,
@@ -41,19 +127,49 @@ def classical_kuramoto_reference(
     """Euler integration of classical Kuramoto with Paper 27 parameters.
 
     Returns times, theta(t), R(t) for direct comparison with quantum results.
+
+    The trajectory follows the shared integration grid: ``floor(t_max / dt)``
+    steps, with sample ``s`` reported at ``s · dt``. When ``t_max`` is not a
+    multiple of ``dt`` the trajectory therefore ends short of ``t_max`` rather
+    than mislabelling its last state, and ``t_max = 0`` returns the initial
+    condition alone instead of taking one step. The Rust and Python tiers use
+    the same expression and return identical times.
+
+    Parameters
+    ----------
+    n_osc
+        Number of oscillators.
+    t_max
+        Requested duration; non-negative and finite.
+    dt
+        Integration step; strictly positive and finite.
+    K
+        Coupling matrix of shape ``(n_osc, n_osc)``; defaults to Paper 27.
+    omega
+        Natural frequencies of shape ``(n_osc,)``; defaults to Paper 27.
+    theta0
+        Initial phases of shape ``(n_osc,)``; defaults to ``omega mod 2π``.
+
+    Returns
+    -------
+    dict
+        ``times`` of shape ``(n_steps + 1,)``, ``theta`` of shape
+        ``(n_steps + 1, n_osc)`` and ``R`` of shape ``(n_steps + 1,)``.
+
+    Raises
+    ------
+    ValueError
+        If ``dt`` is not positive and finite, or ``t_max`` is negative or not
+        finite.
+
     """
-    if dt <= 0:
-        raise ValueError(f"dt must be positive, got {dt}")
-    if t_max < 0:
-        raise ValueError(f"t_max must be non-negative, got {t_max}")
+    n_steps = integration_step_count(t_max, dt)
     if K is None:
         K = build_knm_paper27(L=n_osc)
     if omega is None:
         omega = omega_for_oscillators(n_osc)
     if theta0 is None:
         theta0 = np.array([om % (2 * np.pi) for om in omega])
-
-    n_steps = max(1, round(t_max / dt))
 
     # Rust fast path: ~100x faster for N >= 8
     try:
@@ -75,7 +191,7 @@ def classical_kuramoto_reference(
     except AttributeError:
         pass
 
-    times = np.linspace(0, t_max, n_steps + 1)
+    times = integration_times(n_steps, dt)
     theta_history = np.zeros((n_steps + 1, n_osc))
     R_history = np.zeros(n_steps + 1)
 
@@ -184,6 +300,40 @@ def classical_exact_evolution(
     For n_osc >= 13, uses scipy.sparse.linalg.expm_multiply (Krylov
     subspace) to avoid materialising the full 2^n × 2^n propagator.
     Memory: O(2^n) instead of O(2^2n).
+
+    Uses the same integration grid as
+    :func:`classical_kuramoto_reference`: the propagator is applied
+    ``floor(t_max / dt)`` times and sample ``s`` is reported at ``s · dt``, so
+    the reported time is where the state actually is. ``t_max = 0`` returns the
+    initial state alone.
+
+    Parameters
+    ----------
+    n_osc
+        Number of oscillators.
+    t_max
+        Requested duration; non-negative and finite.
+    dt
+        Integration step; strictly positive and finite.
+    K
+        Coupling matrix of shape ``(n_osc, n_osc)``; defaults to Paper 27.
+    omega
+        Natural frequencies of shape ``(n_osc,)``; defaults to Paper 27.
+    max_dense_gib
+        Admission budget for the dense propagator, in GiB.
+
+    Returns
+    -------
+    dict
+        ``times`` of shape ``(n_steps + 1,)``, ``R`` of the same shape, and the
+        per-qubit expectation entries.
+
+    Raises
+    ------
+    ValueError
+        If ``dt`` is not positive and finite, or ``t_max`` is negative or not
+        finite.
+
     """
     if K is None:
         K = build_knm_paper27(L=n_osc)
@@ -193,8 +343,8 @@ def classical_exact_evolution(
     H_op = knm_to_hamiltonian(K, omega)
     psi = _build_initial_state(n_osc, omega)
 
-    n_steps = max(1, round(t_max / dt))
-    times = np.linspace(0, t_max, n_steps + 1)
+    n_steps = integration_step_count(t_max, dt)
+    times = integration_times(n_steps, dt)
     R_history = np.zeros(n_steps + 1)
     R_history[0] = _state_order_param(psi, n_osc)
 
@@ -408,6 +558,7 @@ def classical_brute_mpc(
         ``optimal_cost`` (float), ``all_costs`` (float array of shape
         ``(2 ** horizon,)``, indexed so bit ``t`` of the index is ``u_t``) and
         ``n_evaluated`` (int).
+
     """
     try:
         _engine = optional_rust_engine()
