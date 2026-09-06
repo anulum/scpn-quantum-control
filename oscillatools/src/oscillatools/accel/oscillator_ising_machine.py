@@ -79,7 +79,7 @@ class OscillatorIsingTrajectory:
 def oscillator_ising_field(
     phases: NDArray[np.float64], coupling: NDArray[np.float64], shil_strength: float
 ) -> NDArray[np.float64]:
-    r"""The Oscillator Ising Machine field ``-Σ_j J_{ij}\sin(φ_i-φ_j) - K_s\sin(2φ_i)``.
+    r"""Evaluate the Oscillator Ising Machine field ``-Σ_j J_{ij}\sin(φ_i-φ_j) - K_s\sin(2φ_i)``.
 
     Parameters
     ----------
@@ -113,7 +113,7 @@ def oscillator_ising_field(
 def oscillator_ising_energy(
     phases: NDArray[np.float64], coupling: NDArray[np.float64], shil_strength: float
 ) -> float:
-    r"""The Lyapunov energy ``E = -½Σ_{ij} J_{ij}\cos(φ_i-φ_j) - ½K_s Σ_i\cos(2φ_i)``.
+    r"""Compute the Lyapunov energy ``E = -½Σ_{ij} J_{ij}\cos(φ_i-φ_j) - ½K_s Σ_i\cos(2φ_i)``.
 
     The Oscillator Ising Machine field is exactly ``-∇E``, so ``E`` decreases monotonically along the
     flow at fixed ``K_s``.
@@ -149,7 +149,7 @@ def ising_spins(phases: NDArray[np.float64]) -> NDArray[np.int_]:
 
 
 def ising_hamiltonian(spins: NDArray[np.int_], coupling: NDArray[np.float64]) -> float:
-    r"""The Ising Hamiltonian ``-½\,σ^{\mathsf T} J\,σ`` of a spin configuration."""
+    r"""Compute the Ising Hamiltonian ``-½\,σ^{\mathsf T} J\,σ`` of a spin configuration."""
     configuration = np.ascontiguousarray(spins, dtype=np.float64)
     matrix = np.ascontiguousarray(coupling, dtype=np.float64)
     if configuration.ndim != 1 or configuration.size < 2:
@@ -160,7 +160,7 @@ def ising_hamiltonian(spins: NDArray[np.int_], coupling: NDArray[np.float64]) ->
 
 
 def cut_value(spins: NDArray[np.int_], adjacency: NDArray[np.float64]) -> float:
-    r"""The graph cut ``¼ Σ_{ij} A_{ij}(1 - σ_iσ_j)`` of a spin partition."""
+    r"""Compute the graph cut ``¼ Σ_{ij} A_{ij}(1 - σ_iσ_j)`` of a spin partition."""
     configuration = np.ascontiguousarray(spins, dtype=np.float64)
     graph = np.ascontiguousarray(adjacency, dtype=np.float64)
     if configuration.ndim != 1 or configuration.size < 2:

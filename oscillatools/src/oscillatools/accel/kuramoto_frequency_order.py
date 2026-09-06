@@ -110,7 +110,7 @@ def effective_frequencies(phases: NDArray[np.float64], *, dt: float) -> NDArray[
 
 
 def frequency_synchronisation_index(phases: NDArray[np.float64], *, dt: float) -> float:
-    r"""Population standard deviation of the effective frequencies.
+    r"""Measure the population standard deviation of the effective frequencies.
 
     The frequency analogue of the order parameter's dispersion: zero for a
     frequency-locked state (every :math:`\Omega_i` equal) and growing with the spread of
@@ -236,12 +236,12 @@ def frequency_locked_fraction(
 
 @dataclass(frozen=True)
 class FrequencyOrder:
-    """Bundled frequency-locking diagnostics for a trajectory.
+    r"""Bundled frequency-locking diagnostics for a trajectory.
 
     Attributes
     ----------
     effective_frequencies : numpy.ndarray
-        The ``N`` observed angular frequencies :math:`\\Omega_i`.
+        The ``N`` observed angular frequencies :math:`\Omega_i`.
     synchronisation_index : float
         The population standard deviation of ``effective_frequencies``.
     locked_fraction : float

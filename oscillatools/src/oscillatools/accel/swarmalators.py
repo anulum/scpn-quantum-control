@@ -145,7 +145,7 @@ def swarmalator_field(
     coupling_phase: float,
     coupling_space: float,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    r"""The swarmalator vector field ``(ẋ, θ̇)``.
+    r"""Evaluate the swarmalator vector field ``(ẋ, θ̇)``.
 
     Parameters
     ----------
@@ -235,7 +235,7 @@ def integrate_swarmalators(
 def swarmalator_order_parameters(
     positions: NDArray[np.float64], phases: NDArray[np.float64]
 ) -> SwarmalatorOrderParameters:
-    r"""The rainbow order parameters ``S_±`` and the phase coherence of a configuration.
+    r"""Compute the rainbow order parameters ``S_±`` and the phase coherence of a configuration.
 
     Parameters
     ----------

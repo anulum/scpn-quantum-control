@@ -42,7 +42,7 @@ from .networked_kuramoto import networked_kuramoto_force, networked_kuramoto_jac
 
 @dataclass(frozen=True)
 class SynchronisationCertificate:
-    """A Lyapunov / contraction certificate for a candidate synchronised state.
+    r"""A Lyapunov / contraction certificate for a candidate synchronised state.
 
     Attributes
     ----------
@@ -59,7 +59,7 @@ class SynchronisationCertificate:
     lyapunov_value : float
         The Lyapunov potential ``V`` at the configuration.
     lyapunov_decrease_rate : float
-        ``\\dot V = -\\lVert\\dot\\theta\\rVert^2`` at the configuration (``≤ 0``).
+        ``\dot V = -\lVert\dot\theta\rVert^2`` at the configuration (``≤ 0``).
     is_certified : bool
         Whether the configuration lies in a cohesive, contracting region — certified to hold a unique,
         exponentially stable phase-locked state.
@@ -92,7 +92,7 @@ def _validate(
 
 
 def phase_cohesiveness(phases: NDArray[np.float64], coupling: NDArray[np.float64]) -> float:
-    r"""The largest coupled pairwise phase difference ``max_{K_ij≠0} |θ_i - θ_j|`` (wrapped to ``[0, π]``)."""
+    r"""Measure the largest coupled pairwise phase difference ``max_{K_ij≠0} |θ_i - θ_j|`` (wrapped to ``[0, π]``)."""
     angle, matrix = _validate(phases, coupling)
     difference = angle[:, None] - angle[None, :]
     wrapped = np.abs((difference + np.pi) % (2.0 * np.pi) - np.pi)
@@ -103,7 +103,7 @@ def phase_cohesiveness(phases: NDArray[np.float64], coupling: NDArray[np.float64
 
 
 def contraction_rate(phases: NDArray[np.float64], coupling: NDArray[np.float64]) -> float:
-    r"""The transverse contraction rate (the algebraic connectivity of ``L(w) = -J``).
+    r"""Measure the transverse contraction rate (the algebraic connectivity of ``L(w) = -J``).
 
     Returns the negative of the largest eigenvalue of the synchronisation Jacobian transverse to the
     global phase-shift mode; positive iff the configuration is contracting.
@@ -117,7 +117,7 @@ def contraction_rate(phases: NDArray[np.float64], coupling: NDArray[np.float64])
 def synchronisation_potential(
     phases: NDArray[np.float64], omega: NDArray[np.float64], coupling: NDArray[np.float64]
 ) -> float:
-    r"""The Lyapunov potential ``V = -½ Σ K_ij cos(θ_i-θ_j) - Σ ω_i θ_i`` (gradient ``∇V = -f``)."""
+    r"""Compute the Lyapunov potential ``V = -½ Σ K_ij cos(θ_i-θ_j) - Σ ω_i θ_i`` (gradient ``∇V = -f``)."""
     angle, matrix = _validate(phases, coupling)
     frequencies = _validate_omega(omega, angle.size)
     difference = angle[:, None] - angle[None, :]
@@ -128,7 +128,7 @@ def synchronisation_potential(
 def potential_decrease_rate(
     phases: NDArray[np.float64], omega: NDArray[np.float64], coupling: NDArray[np.float64]
 ) -> float:
-    r"""The Lyapunov decrease ``\dot V = -\lVert\dot\theta\rVert^2`` along the flow (``≤ 0``)."""
+    r"""Compute the Lyapunov decrease ``\dot V = -\lVert\dot\theta\rVert^2`` along the flow (``≤ 0``)."""
     angle, matrix = _validate(phases, coupling)
     frequencies = _validate_omega(omega, angle.size)
     field = frequencies + networked_kuramoto_force(angle, matrix)

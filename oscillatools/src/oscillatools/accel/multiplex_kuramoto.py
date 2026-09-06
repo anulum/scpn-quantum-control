@@ -100,7 +100,7 @@ def _field(
     inter_coupling: NDArray[np.float64],
     layers: int,
 ) -> NDArray[np.float64]:
-    """The multiplex field ``(L, N)`` reusing the networked force per layer and per node."""
+    """Evaluate the multiplex field ``(L, N)`` reusing the networked force per layer and per node."""
     intra = np.stack(
         [networked_kuramoto_force(phases[layer], intra_coupling[layer]) for layer in range(layers)]
     )
@@ -115,7 +115,7 @@ def multiplex_field(
     intra_coupling: NDArray[np.float64],
     inter_coupling: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    r"""The multiplex Kuramoto vector field ``θ̇`` (shape ``(L, N)``).
+    r"""Evaluate the multiplex Kuramoto vector field ``θ̇`` (shape ``(L, N)``).
 
     Parameters
     ----------
@@ -152,7 +152,7 @@ def multiplex_jacobian(
     intra_coupling: NDArray[np.float64],
     inter_coupling: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    r"""The ``(LN, LN)`` Jacobian of the multiplex field (row-major ``(layer, node)`` order).
+    r"""Compute the ``(LN, LN)`` Jacobian of the multiplex field (row-major ``(layer, node)`` order).
 
     Parameters
     ----------
@@ -243,7 +243,7 @@ def integrate_multiplex(
 
 
 def layer_order_parameters(phases: NDArray[np.float64]) -> NDArray[np.float64]:
-    r"""The per-layer Kuramoto order-parameter magnitudes ``r_α = |⟨e^{iθ^α}⟩|`` (shape ``(L,)``).
+    r"""Compute the per-layer Kuramoto order-parameter magnitudes ``r_α = |⟨e^{iθ^α}⟩|`` (shape ``(L,)``).
 
     Parameters
     ----------
@@ -267,7 +267,7 @@ def layer_order_parameters(phases: NDArray[np.float64]) -> NDArray[np.float64]:
 
 
 def interlayer_synchronisation(phases: NDArray[np.float64]) -> float:
-    r"""The mean per-node inter-layer coherence ``⟨|⟨e^{iθ^α}⟩_α|⟩_node``.
+    r"""Measure the mean per-node inter-layer coherence ``⟨|⟨e^{iθ^α}⟩_α|⟩_node``.
 
     This is ``1`` when every node shares a common phase across all layers (the replicas are locked).
 

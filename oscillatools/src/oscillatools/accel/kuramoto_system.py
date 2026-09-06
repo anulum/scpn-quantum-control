@@ -93,6 +93,7 @@ class KuramotoParameters:
     frustration: float = 0.0
 
     def __post_init__(self) -> None:
+        """Validate and freeze the parameters, rejecting a malformed system outright."""
         omega = np.asarray(self.natural_frequencies, dtype=np.float64)
         if omega.ndim != 1 or omega.size == 0:
             raise ValueError("natural_frequencies must be a non-empty one-dimensional array")
@@ -111,13 +112,11 @@ class KuramotoParameters:
     @property
     def size(self) -> int:
         """The oscillator count ``N``."""
-
         return int(self.natural_frequencies.size)
 
     @property
     def is_networked(self) -> bool:
         """``True`` when the coupling is a matrix (networked topology)."""
-
         return isinstance(self.coupling, np.ndarray)
 
     def with_parameter(self, name: str, value: float | NDArray[np.float64]) -> KuramotoParameters:
@@ -138,7 +137,6 @@ class KuramotoParameters:
         ValueError
             If ``name`` is not a tunable parameter.
         """
-
         if name == "natural_frequencies":
             return KuramotoParameters(
                 np.asarray(value, dtype=np.float64), self.coupling, self.frustration
@@ -162,7 +160,7 @@ PhaseRule = Callable[[NDArray[np.float64], KuramotoParameters, float], NDArray[n
 def mean_field_phase_rule(
     state: NDArray[np.float64], parameters: KuramotoParameters, time: float
 ) -> NDArray[np.float64]:
-    r"""The all-to-all Kuramoto rule :math:`\omega + F_{\mathrm{mf}}(\theta)`.
+    r"""Evaluate the all-to-all Kuramoto rule :math:`\omega + F_{\mathrm{mf}}(\theta)`.
 
     Uses the plain mean-field force when ``frustration`` is zero and the
     Sakaguchi mean-field force otherwise, so a phase-lag set through
@@ -182,7 +180,6 @@ def mean_field_phase_rule(
     ValueError
         If the parameter coupling is a matrix rather than a scalar.
     """
-
     del time  # autonomous rule; the parameter completes the f(u, p, t) contract
     coupling = parameters.coupling
     if isinstance(coupling, np.ndarray):
@@ -199,7 +196,7 @@ def mean_field_phase_rule(
 def networked_phase_rule(
     state: NDArray[np.float64], parameters: KuramotoParameters, time: float
 ) -> NDArray[np.float64]:
-    r"""The graph Kuramoto rule :math:`\omega + F_{\mathrm{net}}(\theta)`.
+    r"""Evaluate the graph Kuramoto rule :math:`\omega + F_{\mathrm{net}}(\theta)`.
 
     Uses the plain networked force when ``frustration`` is zero and the Sakaguchi
     (phase-frustrated) networked force otherwise.
@@ -218,7 +215,6 @@ def networked_phase_rule(
     ValueError
         If the parameter coupling is a scalar rather than a matrix.
     """
-
     del time  # autonomous rule; the parameter completes the f(u, p, t) contract
     coupling = parameters.coupling
     if not isinstance(coupling, np.ndarray):
@@ -241,7 +237,7 @@ PhaseRuleJacobian = Callable[[NDArray[np.float64], KuramotoParameters, float], N
 def mean_field_phase_rule_jacobian(
     state: NDArray[np.float64], parameters: KuramotoParameters, time: float
 ) -> NDArray[np.float64]:
-    r"""The state Jacobian of :func:`mean_field_phase_rule` (an ``(N, N)`` matrix).
+    r"""Compute the state Jacobian of :func:`mean_field_phase_rule` (an ``(N, N)`` matrix).
 
     Parameters
     ----------
@@ -257,7 +253,6 @@ def mean_field_phase_rule_jacobian(
     ValueError
         If the parameter coupling is a matrix rather than a scalar.
     """
-
     del time  # autonomous rule; the parameter completes the f(u, p, t) contract
     coupling = parameters.coupling
     if isinstance(coupling, np.ndarray):
@@ -273,7 +268,7 @@ def mean_field_phase_rule_jacobian(
 def networked_phase_rule_jacobian(
     state: NDArray[np.float64], parameters: KuramotoParameters, time: float
 ) -> NDArray[np.float64]:
-    r"""The state Jacobian of :func:`networked_phase_rule` (an ``(N, N)`` matrix).
+    r"""Compute the state Jacobian of :func:`networked_phase_rule` (an ``(N, N)`` matrix).
 
     Parameters
     ----------
@@ -289,7 +284,6 @@ def networked_phase_rule_jacobian(
     ValueError
         If the parameter coupling is a scalar rather than a matrix.
     """
-
     del time  # autonomous rule; the parameter completes the f(u, p, t) contract
     coupling = parameters.coupling
     if not isinstance(coupling, np.ndarray):
@@ -376,7 +370,7 @@ class KuramotoSystem:
         dt: float,
         scheme: str = "rk4",
     ) -> KuramotoSystem:
-        """Build an all-to-all mean-field system from raw arrays.
+        r"""Build an all-to-all mean-field system from raw arrays.
 
         Parameters
         ----------
@@ -385,13 +379,12 @@ class KuramotoSystem:
         coupling : float
             The scalar coupling strength ``K``.
         frustration : float, optional
-            The Sakaguchi phase-lag :math:`\\alpha`; ``0`` gives plain Kuramoto.
+            The Sakaguchi phase-lag :math:`\alpha`; ``0`` gives plain Kuramoto.
         dt : float
             The default integration step.
         scheme : str, optional
             ``"rk4"`` or ``"euler"``.
         """
-
         parameters = KuramotoParameters(
             np.asarray(natural_frequencies, dtype=np.float64), float(coupling), frustration
         )
@@ -415,7 +408,7 @@ class KuramotoSystem:
         dt: float,
         scheme: str = "rk4",
     ) -> KuramotoSystem:
-        """Build a networked/graph system from raw arrays.
+        r"""Build a networked/graph system from raw arrays.
 
         Parameters
         ----------
@@ -424,13 +417,12 @@ class KuramotoSystem:
         coupling : numpy.ndarray
             The ``(N, N)`` coupling matrix ``K_{jk}``.
         frustration : float, optional
-            The Sakaguchi phase-lag :math:`\\alpha`; ``0`` gives plain Kuramoto.
+            The Sakaguchi phase-lag :math:`\alpha`; ``0`` gives plain Kuramoto.
         dt : float
             The default integration step.
         scheme : str, optional
             ``"rk4"`` or ``"euler"``.
         """
-
         parameters = KuramotoParameters(
             np.asarray(natural_frequencies, dtype=np.float64),
             np.asarray(coupling, dtype=np.float64),
@@ -448,19 +440,16 @@ class KuramotoSystem:
     @property
     def current_state(self) -> NDArray[np.float64]:
         """A copy of the current phase state ``u``."""
-
         return self._state.copy()
 
     @property
     def initial_state(self) -> NDArray[np.float64]:
         """A copy of the state an argument-free :meth:`reinit` returns to."""
-
         return self._initial_state.copy()
 
     @property
     def current_parameters(self) -> KuramotoParameters:
         """The current (immutable) parameter container ``p``."""
-
         return self._parameters
 
     @property
@@ -470,37 +459,31 @@ class KuramotoSystem:
         Exposed so external solvers can evaluate the flow at any state rather than
         only the internal one, e.g. ``system.rule(y, system.current_parameters, t)``.
         """
-
         return self._rule
 
     @property
     def jacobian(self) -> PhaseRuleJacobian | None:
         """The analytic state Jacobian ``∂f/∂θ`` if one was supplied, else ``None``."""
-
         return self._jacobian
 
     @property
     def current_time(self) -> float:
         """The current integration time ``t``."""
-
         return self._time
 
     @property
     def dimension(self) -> int:
         """The oscillator count ``N``."""
-
         return int(self._initial_state.size)
 
     @property
     def scheme(self) -> str:
         """The fixed-step integration scheme in use."""
-
         return self._scheme
 
     @property
     def dt(self) -> float:
         """The default integration step."""
-
         return self._dt
 
     def set_state(self, state: NDArray[np.float64]) -> None:
@@ -511,7 +494,6 @@ class KuramotoSystem:
         ValueError
             If ``state`` is not an ``(N,)`` vector matching the system.
         """
-
         new_state = np.asarray(state, dtype=np.float64)
         if new_state.shape != self._state.shape:
             raise ValueError(f"state must have shape {self._state.shape}, got {new_state.shape}")
@@ -525,7 +507,6 @@ class KuramotoSystem:
         ValueError
             If ``name`` is unknown, the value is invalid, or it would change ``N``.
         """
-
         updated = self._parameters.with_parameter(name, value)
         if updated.size != self._initial_state.size:
             raise ValueError("set_parameter cannot change the number of oscillators")
@@ -549,7 +530,6 @@ class KuramotoSystem:
         ValueError
             If ``state`` is given and does not match the system shape.
         """
-
         if state is None:
             target = self._initial_state.copy()
         else:
@@ -570,7 +550,6 @@ class KuramotoSystem:
         time : float, optional
             The time to evaluate at; defaults to the current time.
         """
-
         evaluation_time = self._time if time is None else float(time)
         return np.asarray(
             self._rule(self._state, self._parameters, evaluation_time), dtype=np.float64
@@ -589,7 +568,6 @@ class KuramotoSystem:
         ValueError
             If the system was built without an analytic Jacobian.
         """
-
         if self._jacobian is None:
             raise ValueError("this system has no analytic Jacobian; supply one at construction")
         evaluation_time = self._time if time is None else float(time)
@@ -599,7 +577,6 @@ class KuramotoSystem:
 
     def _advance(self, state: NDArray[np.float64], time: float, dt: float) -> NDArray[np.float64]:
         """Return the state one fixed step later under the active scheme."""
-
         if self._scheme == "euler":
             return state + dt * self._rule(state, self._parameters, time)
         k1 = self._rule(state, self._parameters, time)
@@ -623,7 +600,6 @@ class KuramotoSystem:
         ValueError
             If ``n`` is not positive or ``dt`` is not positive.
         """
-
         if n < 1:
             raise ValueError("n must be a positive integer")
         step_size = self._dt if dt is None else float(dt)
@@ -657,7 +633,6 @@ class KuramotoSystem:
         ValueError
             If ``n_steps`` is not positive or ``dt`` is not positive.
         """
-
         if n_steps < 1:
             raise ValueError("n_steps must be a positive integer")
         step_size = self._dt if dt is None else float(dt)
@@ -672,6 +647,7 @@ class KuramotoSystem:
         return path
 
     def __repr__(self) -> str:
+        """Show the size, topology, integration scheme and the current time."""
         topology = "networked" if self._parameters.is_networked else "mean_field"
         return (
             f"KuramotoSystem(N={self.dimension}, topology={topology}, "

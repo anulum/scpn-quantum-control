@@ -87,7 +87,7 @@ def _field(
     half_width: float,
     centre: float,
 ) -> NDArray[np.float64]:
-    """The forced Ott–Antonsen vector field in real coordinates ``(x, y)``."""
+    """Evaluate the forced Ott–Antonsen vector field in real coordinates ``(x, y)``."""
     x, y = float(state[0]), float(state[1])
     real_forcing, imag_forcing = float(forcing[0]), float(forcing[1])
     linear = 0.5 * coupling - half_width
@@ -117,7 +117,7 @@ def _state_jacobian(
     half_width: float,
     centre: float,
 ) -> NDArray[np.float64]:
-    """The ``∂field/∂state`` Jacobian (2×2)."""
+    """Compute the ``∂field/∂state`` Jacobian (2×2)."""
     x, y = float(state[0]), float(state[1])
     real_forcing, imag_forcing = float(forcing[0]), float(forcing[1])
     linear = 0.5 * coupling - half_width
@@ -140,7 +140,7 @@ def _state_jacobian(
 
 
 def _forcing_jacobian(state: NDArray[np.float64]) -> NDArray[np.float64]:
-    """The ``∂field/∂forcing`` Jacobian (2×2)."""
+    """Compute the ``∂field/∂forcing`` Jacobian (2×2)."""
     x, y = float(state[0]), float(state[1])
     return np.array(
         [[0.5 * (1.0 - x * x + y * y), -x * y], [-x * y, 0.5 * (1.0 + x * x - y * y)]],

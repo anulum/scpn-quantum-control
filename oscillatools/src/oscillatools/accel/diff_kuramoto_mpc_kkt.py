@@ -128,7 +128,7 @@ def _make_implicit_plan(
     horizon_solve = backend.horizon_solve
 
     def stationarity(control: Any, phases: Any, omega: Any, coupling: Any) -> Any:
-        """The control-gradient ``∇_u J`` whose root is the horizon optimum."""
+        """Compute the control-gradient ``∇_u J`` whose root is the horizon optimum."""
         return value_and_grad(phases, control, omega, coupling, dt, target, weight)[1]
 
     def primal(phases: Any, omega: Any, coupling: Any) -> Any:

@@ -115,25 +115,21 @@ class KuramotoParameterGrid:
     @property
     def axis_names(self) -> tuple[str, ...]:
         """The swept parameter names, in grid (axis) order."""
-
         return self._axis_names
 
     @property
     def axis_values(self) -> tuple[tuple[SweptValue, ...], ...]:
         """The swept values per axis, aligned with :attr:`axis_names`."""
-
         return self._axis_values
 
     @property
     def shape(self) -> tuple[int, ...]:
         """The number of values on each axis, in axis order."""
-
         return tuple(len(values) for values in self._axis_values)
 
     @property
     def size(self) -> int:
         """The total number of grid cells (the product of the axis lengths)."""
-
         return int(np.prod(self.shape, dtype=np.int64))
 
     def points(self) -> Iterator[dict[str, SweptValue]]:
@@ -142,17 +138,19 @@ class KuramotoParameterGrid:
         The last axis varies fastest, matching :func:`itertools.product` and the
         row-major reshape used by :meth:`ParameterSweepResult.grid_values`.
         """
-
         for combination in product(*self._axis_values):
             yield dict(zip(self._axis_names, combination, strict=True))
 
     def __len__(self) -> int:
+        """Return the number of grid points, the product of the axis lengths."""
         return self.size
 
     def __iter__(self) -> Iterator[dict[str, SweptValue]]:
+        """Iterate the grid points, each a mapping from axis name to value."""
         return self.points()
 
     def __repr__(self) -> str:
+        """Show each axis with its length, and the total point count."""
         axes = ", ".join(
             f"{name}[{length}]" for name, length in zip(self._axis_names, self.shape, strict=True)
         )
@@ -182,7 +180,6 @@ class Observable:
 
     def __call__(self, trajectory: NDArray[np.float64], dt: float) -> float:
         """Evaluate the observable on ``trajectory`` sampled at ``dt``."""
-
         return float(self.measure(trajectory, dt))
 
 
@@ -202,49 +199,45 @@ def _metastability(trajectory: NDArray[np.float64], dt: float) -> float:
 
 
 def mean_order_parameter() -> Observable:
-    r"""The time-averaged Kuramoto order parameter :math:`\langle R(t)\rangle_t`.
+    r"""Compute the time-averaged Kuramoto order parameter :math:`\langle R(t)\rangle_t`.
 
     Averages the instantaneous global coherence
     :func:`~oscillatools.accel.order_parameter_observables.order_parameter`
     over the post-transient trajectory — the canonical scalar for a
     synchronisation phase diagram.
     """
-
     return Observable("mean_order_parameter", _time_averaged_order_parameter)
 
 
 def terminal_order_parameter() -> Observable:
-    r"""The Kuramoto order parameter :math:`R(T)` of the final trajectory row.
+    r"""Compute the Kuramoto order parameter :math:`R(T)` of the final trajectory row.
 
     Reports the coherence reached at the end of the integration window, the
     natural read-out when the transient has been discarded and the state has
     settled onto its attractor.
     """
-
     return Observable("terminal_order_parameter", _terminal_order_parameter)
 
 
 def metastability() -> Observable:
-    r"""The metastability index :math:`M = \operatorname{Var}_t R(t)`.
+    r"""Measure the metastability index :math:`M = \operatorname{Var}_t R(t)`.
 
     The temporal variance of the global order parameter
     (:func:`~oscillatools.accel.kuramoto_chimera.metastability_index`):
     zero for a stationary collective state and growing as the coherence wanders,
     which marks the chimera / metastable region of a phase diagram.
     """
-
     return Observable("metastability", _metastability)
 
 
 def frequency_spread() -> Observable:
-    r"""The effective-frequency spread (frequency-synchronisation index).
+    r"""Measure the effective-frequency spread (frequency-synchronisation index).
 
     The population standard deviation of the effective rotation rates
     (:func:`~oscillatools.accel.kuramoto_frequency_order.frequency_synchronisation_index`),
     evaluated at the sweep's integration step: zero for a frequency-locked state
     and growing with the spread of observed frequencies.
     """
-
     return Observable(
         "frequency_spread",
         lambda trajectory, dt: frequency_synchronisation_index(trajectory, dt=dt),
@@ -277,7 +270,6 @@ class ParameterSweepResult:
     @property
     def grid_shape(self) -> tuple[int, ...]:
         """The grid axis lengths — the shape of each :meth:`grid_values` array."""
-
         return self.grid.shape
 
     def _observable_index(self, name: str) -> int:
@@ -306,7 +298,6 @@ class ParameterSweepResult:
         ValueError
             If ``name`` was not measured.
         """
-
         column = self.measurements[:, self._observable_index(name)]
         return column.reshape(self.grid_shape)
 
@@ -316,7 +307,6 @@ class ParameterSweepResult:
         Each record merges the cell's swept parameter assignment with its measured
         observables — the tidy, row-per-cell form for tabulation or a DataFrame.
         """
-
         rows: list[dict[str, SweptValue]] = []
         for cell, point in enumerate(self.grid.points()):
             record: dict[str, SweptValue] = dict(point)
@@ -346,7 +336,6 @@ class ParameterSweepResult:
         ValueError
             If ``name`` was not measured.
         """
-
         column = self.measurements[:, self._observable_index(name)]
         cell = int(np.argmax(column) if maximise else np.argmin(column))
         point = next(
@@ -405,7 +394,6 @@ def sweep_parameter_grid(
         If ``observables`` is empty or has duplicate names, ``n_steps`` is not
         positive, or ``transient`` is negative or discards the whole trajectory.
     """
-
     if not observables:
         raise ValueError("at least one observable is required")
     names = tuple(observable.name for observable in observables)
@@ -446,7 +434,6 @@ def sweep_parameter_grid(
 
 def _apply_point(base: KuramotoParameters, point: Mapping[str, SweptValue]) -> KuramotoParameters:
     """Return ``base`` with each parameter in ``point`` replaced (re-validated)."""
-
     parameters = base
     for name, value in point.items():
         parameters = parameters.with_parameter(name, value)

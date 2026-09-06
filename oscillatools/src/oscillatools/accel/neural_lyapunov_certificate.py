@@ -108,12 +108,12 @@ class NeuralLyapunovCertificate:
 
 @dataclass(frozen=True)
 class LyapunovCertificateReport:
-    """The outcome of verifying a learned certificate on a finite sample.
+    r"""The outcome of verifying a learned certificate on a finite sample.
 
     Attributes
     ----------
     worst_decrease : float
-        The largest ``\\dot V_ψ`` found on the verification sample; the Lyapunov decrease condition
+        The largest ``\dot V_ψ`` found on the verification sample; the Lyapunov decrease condition
         holds on the sample when this is negative.
     minimum_value : float
         The smallest ``V_ψ`` found on the verification annulus (states held away from ``θ*``); the
@@ -133,7 +133,7 @@ class LyapunovCertificateReport:
 
 @dataclass(frozen=True)
 class LyapunovCounterexample:
-    """The worst Lyapunov-condition violation a gradient-ascent falsifier found.
+    r"""The worst Lyapunov-condition violation a gradient-ascent falsifier found.
 
     Attributes
     ----------
@@ -142,9 +142,9 @@ class LyapunovCounterexample:
     value : float
         ``V_ψ`` at ``state``.
     decrease : float
-        ``\\dot V_ψ`` at ``state``.
+        ``\dot V_ψ`` at ``state``.
     violation : float
-        ``max(\\dot V_ψ, -V_ψ)`` at ``state``; a value above the falsifier tolerance is a genuine
+        ``max(\dot V_ψ, -V_ψ)`` at ``state``; a value above the falsifier tolerance is a genuine
         counterexample (either the flow does not decrease ``V_ψ`` or ``V_ψ`` is non-positive there).
     """
 
@@ -377,7 +377,7 @@ def _sample_ball(
     radius: float,
     size: int,
 ) -> NDArray[np.float64]:
-    """A batch of Gaussian phase perturbations of ``θ*`` with standard deviation ``radius``."""
+    """Draw a batch of Gaussian phase perturbations of ``θ*`` with standard deviation ``radius``."""
     perturbation = rng.standard_normal((size, theta_star.size)) * radius
     return theta_star[None, :] + perturbation
 
@@ -389,7 +389,7 @@ def _sample_annulus(
     outer: float,
     size: int,
 ) -> NDArray[np.float64]:
-    """A batch of phase perturbations of ``θ*`` at radius uniform in ``[inner, outer]``.
+    """Draw a batch of phase perturbations of ``θ*`` at radius uniform in ``[inner, outer]``.
 
     Holding the states away from ``θ*`` lets the positive-definiteness of ``V_ψ`` be checked without
     the trivial ``V_ψ(θ*) = 0`` dominating the minimum.

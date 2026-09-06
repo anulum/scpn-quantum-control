@@ -84,7 +84,6 @@ class KuramotoIvpSolution:
     @property
     def terminal_phases(self) -> NDArray[np.float64]:
         """A copy of the final phase state on the solution."""
-
         return np.asarray(self.phases[-1], dtype=np.float64).copy()
 
 
@@ -94,7 +93,6 @@ def kuramoto_ode_rhs(system: KuramotoSystem) -> OdeRightHandSide:
     The returned callable evaluates the system rule at an arbitrary phase state,
     so it is independent of the system's own internal state.
     """
-
     parameters = system.current_parameters
     rule = system.rule
 
@@ -108,7 +106,6 @@ def kuramoto_ode_rhs(system: KuramotoSystem) -> OdeRightHandSide:
 
 def kuramoto_ode_jacobian(system: KuramotoSystem) -> OdeJacobian | None:
     """Return the ``jac(t, y)`` Jacobian of ``system``, or ``None`` if it has none."""
-
     parameters = system.current_parameters
     jacobian = system.jacobian
     if jacobian is None:
@@ -166,7 +163,6 @@ def solve_kuramoto_ivp(
         If ``t_span`` is not a two-element interval, or ``use_jacobian`` is set on
         a system without an analytic Jacobian.
     """
-
     span = tuple(float(value) for value in t_span)
     if len(span) != 2:
         raise ValueError("t_span must be a (t0, tf) pair")

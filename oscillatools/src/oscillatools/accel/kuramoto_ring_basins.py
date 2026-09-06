@@ -86,7 +86,7 @@ def ring_coupling_matrix(
 
 
 def twisted_state(n: int, winding: int) -> NDArray[np.float64]:
-    r"""The q-twisted state ``θ_j = 2π·winding·j / N`` on a ring of ``n`` oscillators.
+    r"""Build the q-twisted state ``θ_j = 2π·winding·j / N`` on a ring of ``n`` oscillators.
 
     Parameters
     ----------
@@ -111,7 +111,7 @@ def twisted_state(n: int, winding: int) -> NDArray[np.float64]:
 
 
 def winding_number(theta: NDArray[np.float64]) -> int:
-    r"""The winding number ``q = (1/2π) Σ_j wrap(θ_{j+1} − θ_j)`` of a ring phase configuration.
+    r"""Compute the winding number ``q = (1/2π) Σ_j wrap(θ_{j+1} − θ_j)`` of a ring phase configuration.
 
     The nearest-neighbour phase differences are wrapped to ``(−π, π]`` and summed around the ring;
     the total is an integer multiple of ``2π`` for a twisted state.
@@ -277,7 +277,7 @@ class BasinEstimate:
         return float(np.dot(self.winding_values, self.winding_counts) / self.n_converged)
 
     def basin_fraction(self, winding: int) -> float:
-        """The fraction of converged samples that reached the given winding number."""
+        """Measure the fraction of converged samples that reached the given winding number."""
         if self.n_converged == 0:
             return 0.0
         match = np.flatnonzero(self.winding_values == winding)

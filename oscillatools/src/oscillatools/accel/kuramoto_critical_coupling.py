@@ -150,7 +150,7 @@ def gaussian_critical_coupling(std: float) -> float:
 
 
 def lorentzian_order_parameter(coupling: float, half_width: float) -> float:
-    r"""Synchronisation order parameter ``r = √(1 − K_c/K)`` for a Lorentzian (closed form).
+    r"""Compute synchronisation order parameter ``r = √(1 − K_c/K)`` for a Lorentzian (closed form).
 
     Returns ``0`` below the critical coupling ``K_c = 2γ`` and the exact partially synchronised
     branch above it.

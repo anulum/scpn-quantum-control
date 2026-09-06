@@ -75,7 +75,7 @@ def master_stability_function(
     coupling_jacobian: NDArray[np.float64],
     coupling_eigenvalue: complex,
 ) -> float:
-    r"""The Pecora–Carroll master stability function ``Λ(α)``.
+    r"""Compute the Pecora–Carroll master stability function ``Λ(α)``.
 
     Returns the largest real part of the spectrum of ``J_node + α J_coupling`` — the transverse
     growth rate of the synchronous manifold for a coupling eigenvalue ``α``. The synchronous state of
@@ -116,7 +116,7 @@ def multiplex_synchronisation_stability(
     *,
     stability_tolerance: float = 1e-9,
 ) -> MultiplexSynchronisationStability:
-    r"""The multiplex decomposition of the in-phase synchronous-state stability.
+    r"""Compute the multiplex decomposition of the in-phase synchronous-state stability.
 
     For identical oscillators that share the intra-layer graph ``intra_coupling`` across all layers
     and couple between layers through ``inter_coupling``, the in-phase synchronous Jacobian is the

@@ -229,7 +229,7 @@ def hodge_decomposition(
 
 
 def topological_order_parameter(phases: NDArray[np.float64]) -> float:
-    r"""The edge order parameter ``|N^{-1}\sum_e e^{iθ_e}|`` (coherence of the edge phases)."""
+    r"""Compute the edge order parameter ``|N^{-1}\sum_e e^{iθ_e}|`` (coherence of the edge phases)."""
     angle = np.ascontiguousarray(phases, dtype=np.float64)
     if angle.ndim != 1 or angle.size < 1:
         raise ValueError("phases must be a non-empty one-dimensional array")
@@ -244,7 +244,7 @@ def topological_kuramoto_field(
     down_coupling: float,
     up_coupling: float,
 ) -> NDArray[np.float64]:
-    r"""The topological Kuramoto field ``ω - σ↓ B_1^T sin(B_1 θ) - σ↑ B_2 sin(B_2^T θ)``.
+    r"""Evaluate the topological Kuramoto field ``ω - σ↓ B_1^T sin(B_1 θ) - σ↑ B_2 sin(B_2^T θ)``.
 
     Parameters
     ----------

@@ -99,7 +99,7 @@ _SURROGATE_FUNCTIONS = {"circular_shift": _circular_shift, "phase_shuffle": _pha
 
 
 def _p_value(observed: float, null: NDArray[np.float64], alternative: str) -> float:
-    """The exact permutation p-value ``(1 + k) / (n + 1)`` for the chosen tail."""
+    """Compute the exact permutation p-value ``(1 + k) / (n + 1)`` for the chosen tail."""
     total = null.size
     if alternative == "greater":
         extreme = int(np.count_nonzero(null >= observed))

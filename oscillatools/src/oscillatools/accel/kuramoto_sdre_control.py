@@ -52,7 +52,7 @@ def _cosine_ratio(values: NDArray[np.float64]) -> NDArray[np.float64]:
 def _state_dependent_coefficient(
     phases: NDArray[np.float64], target: NDArray[np.float64], coupling: NDArray[np.float64]
 ) -> NDArray[np.float64]:
-    """The exact SDC matrix ``A(x)`` of the deviation drift (a state-dependent graph Laplacian)."""
+    """Compute the exact SDC matrix ``A(x)`` of the deviation drift (a state-dependent graph Laplacian)."""
     target_difference = target[None, :] - target[:, None]
     deviation_difference = (phases[None, :] - phases[:, None]) - target_difference
     weights = coupling * (
@@ -99,7 +99,7 @@ def kuramoto_sdre_gain(
     state_cost: float,
     control_cost: float,
 ) -> NDArray[np.float64]:
-    r"""The SDRE feedback gain ``G(θ) = R^{-1} P(θ)`` at the current phases.
+    r"""Compute the SDRE feedback gain ``G(θ) = R^{-1} P(θ)`` at the current phases.
 
     Solves the algebraic Riccati equation for the state-dependent coefficient ``A(θ)`` of the
     deviation drift (with ``B = I``, ``Q = q\,I``, ``R = r\,I``) and returns the feedback gain.
@@ -148,7 +148,7 @@ def sdre_control_input(
     state_cost: float,
     control_cost: float,
 ) -> NDArray[np.float64]:
-    r"""The full SDRE control ``u = -f(θ^⋆) - G(θ)\,(θ - θ^⋆)`` (feed-forward + feedback).
+    r"""Evaluate the full SDRE control ``u = -f(θ^⋆) - G(θ)\,(θ - θ^⋆)`` (feed-forward + feedback).
 
     Parameters
     ----------

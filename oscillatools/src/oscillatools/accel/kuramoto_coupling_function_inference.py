@@ -132,7 +132,7 @@ def _coupling_derivative(
     sine: NDArray[np.float64],
     cosine: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    """The derivative ``Γ'(x) = Σ_m m(a_m cos(m x) − b_m sin(m x))``."""
+    """Compute the derivative ``Γ'(x) = Σ_m m(a_m cos(m x) − b_m sin(m x))``."""
     harmonics = np.arange(1, sine.size + 1, dtype=np.float64)
     phases = harmonics * angle[..., None]
     return np.asarray(
@@ -232,7 +232,7 @@ def _field(
     omega: NDArray[np.float64],
     coupling: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    """The coupling-function-parametrised Kuramoto field ``ω + Σ_j K_ij Γ(θ_j − θ_i)``."""
+    """Evaluate the coupling-function-parametrised Kuramoto field ``ω + Σ_j K_ij Γ(θ_j − θ_i)``."""
     difference = phases[None, :] - phases[:, None]
     interaction = coupling * coupling_function_value(difference, sine, cosine)
     return np.asarray(omega + interaction.sum(axis=1), dtype=np.float64)

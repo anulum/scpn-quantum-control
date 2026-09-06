@@ -70,12 +70,12 @@ class SparseKuramotoCoupling:
 
     @property
     def nnz(self) -> int:
-        """Return the number of stored off-diagonal coupling entries."""
+        """The number of stored off-diagonal coupling entries."""
         return int(self.weight.size)
 
     @property
     def density(self) -> float:
-        """Return the stored-entry density relative to a dense ``N x N`` matrix."""
+        """The stored-entry density relative to a dense ``N x N`` matrix."""
         if self.n_oscillators == 0:
             return 0.0
         return float(self.nnz / (self.n_oscillators * self.n_oscillators))

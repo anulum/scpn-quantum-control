@@ -85,7 +85,7 @@ class PolicyRolloutGradients:
 def _policy_control(
     phases: NDArray[np.float64], sine: NDArray[np.float64], cosine: NDArray[np.float64]
 ) -> NDArray[np.float64]:
-    """The mean-field harmonic feedback ``u(θ)``."""
+    """Evaluate the mean-field harmonic feedback ``u(θ)``."""
     difference = phases[None, :] - phases[:, None]
     control = np.zeros(phases.size, dtype=np.float64)
     for index in range(sine.size):
@@ -101,7 +101,7 @@ def _policy_control(
 def _policy_state_jacobian(
     phases: NDArray[np.float64], sine: NDArray[np.float64], cosine: NDArray[np.float64]
 ) -> NDArray[np.float64]:
-    """The closed-loop Jacobian ``∂u/∂θ`` of the policy."""
+    """Compute the closed-loop Jacobian ``∂u/∂θ`` of the policy."""
     count = phases.size
     difference = phases[None, :] - phases[:, None]
     jacobian = np.zeros((count, count), dtype=np.float64)
@@ -123,7 +123,7 @@ def _policy_state_jacobian(
 def _policy_parameter_jacobian(
     phases: NDArray[np.float64], n_harmonics: int
 ) -> NDArray[np.float64]:
-    """The Jacobian ``∂u/∂[a; b]`` of the policy (shape ``(N, 2M)``)."""
+    """Compute the Jacobian ``∂u/∂[a; b]`` of the policy (shape ``(N, 2M)``)."""
     difference = phases[None, :] - phases[:, None]
     columns = [np.mean(np.sin((m + 1) * difference), axis=1) for m in range(n_harmonics)]
     columns.extend(np.mean(np.cos((m + 1) * difference), axis=1) for m in range(n_harmonics))
@@ -163,7 +163,7 @@ def policy_rollout_value_and_grad(
     *,
     parameter_penalty: float,
 ) -> PolicyRolloutGradients:
-    r"""The closed-loop desynchronisation cost and its exact policy gradient by forward sensitivity.
+    r"""Compute the closed-loop desynchronisation cost and its exact policy gradient by forward sensitivity.
 
     Rolls the closed-loop ``θ̇ = ω + F(θ) + u(θ)`` out from ``initial_phases`` while propagating the
     forward-mode sensitivity ``∂θ/∂[a; b]`` through the RK4 map, and returns the cost

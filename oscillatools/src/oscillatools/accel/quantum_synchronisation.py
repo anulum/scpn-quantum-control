@@ -65,7 +65,7 @@ class QuantumVanDerPolTrajectory:
 
 
 def _annihilation(dimension: int) -> NDArray[np.complex128]:
-    """The truncated annihilation operator ``a`` (``a|n⟩ = √n|n-1⟩``)."""
+    """Build the truncated annihilation operator ``a`` (``a|n⟩ = √n|n-1⟩``)."""
     operator = np.zeros((dimension, dimension), dtype=np.complex128)
     roots = np.sqrt(np.arange(1, dimension, dtype=np.float64))
     operator[np.arange(dimension - 1), np.arange(1, dimension)] = roots
@@ -73,7 +73,7 @@ def _annihilation(dimension: int) -> NDArray[np.complex128]:
 
 
 def vacuum_state(fock_dimension: int) -> NDArray[np.complex128]:
-    """The Fock vacuum density matrix ``|0⟩⟨0|`` of the given truncation."""
+    """Build the Fock vacuum density matrix ``|0⟩⟨0|`` of the given truncation."""
     if fock_dimension < 2:
         raise ValueError(f"fock_dimension must be at least two, got {fock_dimension}")
     state = np.zeros((fock_dimension, fock_dimension), dtype=np.complex128)
@@ -82,13 +82,13 @@ def vacuum_state(fock_dimension: int) -> NDArray[np.complex128]:
 
 
 def coherent_amplitude(density_matrix: NDArray[np.complex128]) -> complex:
-    r"""The coherent amplitude ``⟨a⟩ = Tr(ρ a)`` (the synchronisation order parameter)."""
+    r"""Compute the coherent amplitude ``⟨a⟩ = Tr(ρ a)`` (the synchronisation order parameter)."""
     state = _validate_density_matrix(density_matrix)
     return complex(np.trace(state @ _annihilation(state.shape[0])))
 
 
 def mean_photon_number(density_matrix: NDArray[np.complex128]) -> float:
-    r"""The mean photon number ``⟨a^\dagger a⟩`` (the limit-cycle excitation)."""
+    r"""Compute the mean photon number ``⟨a^\dagger a⟩`` (the limit-cycle excitation)."""
     state = _validate_density_matrix(density_matrix)
     annihilation = _annihilation(state.shape[0])
     return float(np.real(np.trace(state @ annihilation.conj().T @ annihilation)))
@@ -97,7 +97,7 @@ def mean_photon_number(density_matrix: NDArray[np.complex128]) -> float:
 def phase_distribution(
     density_matrix: NDArray[np.complex128], n_angles: int = 256
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    r"""The London phase distribution ``P(φ) = (2π)^{-1} Σ_{mn} ρ_{mn} e^{i(n-m)φ}``.
+    r"""Compute the London phase distribution ``P(φ) = (2π)^{-1} Σ_{mn} ρ_{mn} e^{i(n-m)φ}``.
 
     Parameters
     ----------
@@ -122,7 +122,7 @@ def phase_distribution(
 
 
 def phase_synchronisation(density_matrix: NDArray[np.complex128], n_angles: int = 256) -> float:
-    r"""The phase-synchronisation measure ``S = max_φ P(φ) - (2π)^{-1}`` (zero when phase-symmetric)."""
+    r"""Measure the phase-synchronisation measure ``S = max_φ P(φ) - (2π)^{-1}`` (zero when phase-symmetric)."""
     _, distribution = phase_distribution(density_matrix, n_angles)
     return float(np.max(distribution) - 1.0 / (2.0 * np.pi))
 

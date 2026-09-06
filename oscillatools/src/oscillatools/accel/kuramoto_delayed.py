@@ -289,7 +289,7 @@ def integrate_delayed_kuramoto(
     buffer: list[NDArray[np.float64]] = [np.array(row, dtype=np.float64) for row in history]
 
     def delayed_at(position: float) -> NDArray[np.float64]:
-        """The phase sample at fractional grid index ``position`` (linear interpolation)."""
+        """Sample the phase at fractional grid index ``position`` (linear interpolation)."""
         lower = int(np.floor(position))
         weight = position - lower
         if weight == 0.0:

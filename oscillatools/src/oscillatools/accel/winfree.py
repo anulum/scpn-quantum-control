@@ -90,7 +90,7 @@ def _field(
     coupling: float,
     interpolation: float,
 ) -> NDArray[np.float64]:
-    """The unified Kuramoto–Winfree field (mean-field, ``O(N)``)."""
+    """Evaluate the unified Kuramoto–Winfree field (mean-field, ``O(N)``)."""
     mean_field = np.mean(np.exp(1j * phases))
     kuramoto_part = np.imag(mean_field * np.exp(-1j * phases))
     pulse = 1.0 + np.mean(np.cos(phases))
@@ -107,7 +107,7 @@ def winfree_field(
     coupling: float,
     interpolation: float,
 ) -> NDArray[np.float64]:
-    r"""The unified Kuramoto–Winfree vector field ``θ̇``.
+    r"""Evaluate the unified Kuramoto–Winfree vector field ``θ̇``.
 
     Parameters
     ----------
@@ -142,7 +142,7 @@ def winfree_jacobian(
     coupling: float,
     interpolation: float,
 ) -> NDArray[np.float64]:
-    r"""The ``(N, N)`` Jacobian ``∂θ̇/∂θ`` of the unified Kuramoto–Winfree field.
+    r"""Compute the ``(N, N)`` Jacobian ``∂θ̇/∂θ`` of the unified Kuramoto–Winfree field.
 
     Parameters
     ----------

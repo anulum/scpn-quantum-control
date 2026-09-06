@@ -84,7 +84,7 @@ def phase_clusters(matrix: NDArray[np.float64], *, threshold: float = 0.9) -> ND
 
 
 def cluster_count(matrix: NDArray[np.float64], *, threshold: float = 0.9) -> int:
-    """Number of phase clusters in a thresholded coherence matrix.
+    """Count the phase clusters in a thresholded coherence matrix.
 
     Parameters
     ----------

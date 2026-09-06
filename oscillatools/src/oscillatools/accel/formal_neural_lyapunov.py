@@ -72,7 +72,7 @@ _TANH_THIRD_DERIVATIVE_BOUND = 2.0  # sup|tanh'''(x)| (attained at x = 0)
 
 @dataclass(frozen=True)
 class LyapunovLipschitzBounds:
-    """Rigorous global upper bounds used for the second-order remainder of the formal certificate.
+    r"""Rigorous global upper bounds used for the second-order remainder of the formal certificate.
 
     Every field is a genuine upper bound over the region — none is sampled. They are conservative (the
     operator-norm products overshoot the true constants), so they can only weaken the verdict, never make
@@ -82,7 +82,7 @@ class LyapunovLipschitzBounds:
     Attributes
     ----------
     decrease_curvature_bound : float
-        An upper bound on ``sup‖∇²\\dot V_ψ‖`` over the region — the curvature of the Lie derivative,
+        An upper bound on ``sup‖∇²\dot V_ψ‖`` over the region — the curvature of the Lie derivative,
         the ``M`` of the decrease remainder.
     value_curvature_bound : float
         An upper bound on ``sup‖∇²V_ψ‖`` over the region — the curvature of ``V_ψ``, the ``M`` of the
@@ -107,20 +107,20 @@ class LyapunovLipschitzBounds:
 
 @dataclass(frozen=True)
 class FormalLyapunovCertificate:
-    """The outcome of the Lipschitz-plus-grid formal verification over a region.
+    r"""The outcome of the Lipschitz-plus-grid formal verification over a region.
 
     Attributes
     ----------
     is_certified_on_region : bool
-        Whether both the decrease (``\\dot V_ψ < 0``) and positivity (``V_ψ > 0``) conditions are formally
+        Whether both the decrease (``\dot V_ψ < 0``) and positivity (``V_ψ > 0``) conditions are formally
         guaranteed on the annulus — a proof over the continuum, subject to the honest conservatism /
         small-scale limits in the module docstring.
     decrease_certified : bool
-        Whether ``\\dot V_ψ(θ) < 0`` is guaranteed for every state in the annulus.
+        Whether ``\dot V_ψ(θ) < 0`` is guaranteed for every state in the annulus.
     positivity_certified : bool
         Whether ``V_ψ(θ) > 0`` is guaranteed for every state in the annulus.
     worst_decrease_on_grid : float
-        The largest first-order decrease bound ``\\dot V_ψ(g) + ‖∇\\dot V_ψ(g)‖ ρ`` over the annulus grid.
+        The largest first-order decrease bound ``\dot V_ψ(g) + ‖∇\dot V_ψ(g)‖ ρ`` over the annulus grid.
     minimum_value_on_grid : float
         The smallest first-order value bound ``V_ψ(g) − ‖∇V_ψ(g)‖ ρ`` over the annulus grid.
     decrease_margin : float
@@ -326,7 +326,7 @@ def neural_lyapunov_lipschitz_bounds(
 def _region_grid(
     theta_star: NDArray[np.float64], outer_radius: float, resolution: int
 ) -> tuple[NDArray[np.float64], float]:
-    """A box grid over the shift-quotient (oscillator 0 fixed) and its covering radius."""
+    """Build a box grid over the shift-quotient (oscillator 0 fixed) and its covering radius."""
     count = theta_star.size
     axis = np.linspace(-outer_radius, outer_radius, resolution)
     offsets = np.array(list(itertools.product(axis, repeat=count - 1)), dtype=np.float64)

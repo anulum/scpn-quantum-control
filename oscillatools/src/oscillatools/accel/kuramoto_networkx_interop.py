@@ -52,11 +52,11 @@ class GraphLike(Protocol):
         ...
 
     def nodes(self) -> Any:
-        """The nodes in insertion order (iterable of hashables)."""
+        """Return the nodes in insertion order (iterable of hashables)."""
         ...
 
     def edges(self, data: bool = ...) -> Any:
-        """The edges as ``(u, v, attributes)`` triples when ``data=True``."""
+        """Return the edges as ``(u, v, attributes)`` triples when ``data=True``."""
         ...
 
 

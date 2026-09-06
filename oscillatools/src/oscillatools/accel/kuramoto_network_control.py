@@ -93,7 +93,7 @@ def _field(
     omega: NDArray[np.float64],
     coupling: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    """The controlled Kuramoto field ``ω + F(θ) + u``."""
+    """Evaluate the controlled Kuramoto field ``ω + F(θ) + u``."""
     return np.asarray(
         omega + networked_kuramoto_force(phases, coupling) + control, dtype=np.float64
     )

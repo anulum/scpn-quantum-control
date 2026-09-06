@@ -93,7 +93,7 @@ def stuart_landau_field(
     coupling: float,
     radius: int,
 ) -> NDArray[np.complex128]:
-    r"""The nonlocal symmetry-breaking Stuart–Landau vector field ``ż``.
+    r"""Evaluate the nonlocal symmetry-breaking Stuart–Landau vector field ``ż``.
 
     Parameters
     ----------
@@ -132,7 +132,7 @@ def stuart_landau_jacobian(
     coupling: float,
     radius: int,
 ) -> NDArray[np.float64]:
-    r"""The ``(2N, 2N)`` real Jacobian in ``[Re z; Im z]`` coordinates.
+    r"""Compute the ``(2N, 2N)`` real Jacobian in ``[Re z; Im z]`` coordinates.
 
     Parameters
     ----------

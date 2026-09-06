@@ -48,7 +48,7 @@ _GradResult = tuple[float, NDArray[np.float64], NDArray[np.float64], NDArray[np.
 
 
 def coherence_objective(theta_final: NDArray[np.float64]) -> tuple[float, NDArray[np.float64]]:
-    r"""Synchronisation cost ``L = 1 − r(θ_T)²`` and its cotangent.
+    r"""Compute synchronisation cost ``L = 1 − r(θ_T)²`` and its cotangent.
 
     Minimised when the ensemble is fully phase-locked (``r = 1``). The cotangent is
     :math:`\partial L/\partial \theta_T = -2 r\, \partial r/\partial \theta_T`, using the

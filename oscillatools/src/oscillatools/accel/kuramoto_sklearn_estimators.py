@@ -40,7 +40,6 @@ from .kuramoto_sparse_identification import SparseDynamicsModel, discover_phase_
 
 def _as_snapshots(values: NDArray[np.float64], *, name: str) -> NDArray[np.float64]:
     """Return ``values`` as a contiguous ``(n_samples, N)`` float64 snapshot array."""
-
     array = np.ascontiguousarray(values, dtype=np.float64)
     if array.ndim != 2:
         raise ValueError(f"{name} must be a two-dimensional (n_samples, N) array")
@@ -67,7 +66,6 @@ class _KuramotoInferenceEstimator:
         ``RegressorMixin`` estimator via a lazy import — the module itself never
         imports scikit-learn, keeping it an optional dependency.
         """
-
         from sklearn.base import BaseEstimator, RegressorMixin
 
         # sklearn is an untyped optional dependency, so mypy sees its bases as Any.
@@ -78,7 +76,6 @@ class _KuramotoInferenceEstimator:
 
     def get_params(self, deep: bool = True) -> dict[str, object]:
         """Return the constructor hyperparameters (the scikit-learn contract)."""
-
         return {name: getattr(self, name) for name in self._PARAMETERS}
 
     def set_params(self, **params: object) -> Self:
@@ -89,7 +86,6 @@ class _KuramotoInferenceEstimator:
         ValueError
             If a supplied name is not a declared hyperparameter.
         """
-
         for name, value in params.items():
             if name not in self._PARAMETERS:
                 raise ValueError(f"unknown parameter {name!r}; expected one of {self._PARAMETERS}")
@@ -98,12 +94,10 @@ class _KuramotoInferenceEstimator:
 
     def fit(self, phases: NDArray[np.float64], derivatives: NDArray[np.float64]) -> Self:
         """Fit the estimator to phase snapshots and their velocities."""
-
         raise NotImplementedError("subclasses implement fit")
 
     def predict(self, phases: NDArray[np.float64]) -> NDArray[np.float64]:
         """Predict phase velocities at the given phase snapshots."""
-
         raise NotImplementedError("subclasses implement predict")
 
     def score(self, phases: NDArray[np.float64], derivatives: NDArray[np.float64]) -> float:
@@ -114,7 +108,6 @@ class _KuramotoInferenceEstimator:
         A perfect prediction scores ``1.0``; scikit-learn's cross-validators
         maximise it.
         """
-
         target = _as_snapshots(derivatives, name="derivatives")
         prediction = self.predict(phases)
         residual = float(np.sum((target - prediction) ** 2))
@@ -154,7 +147,6 @@ class SparseDynamicsEstimator(_KuramotoInferenceEstimator):
 
     def fit(self, phases: NDArray[np.float64], derivatives: NDArray[np.float64]) -> Self:
         """Discover the sparse model from ``(n_samples, N)`` snapshots and velocities."""
-
         snapshots = _as_snapshots(phases, name="phases")
         velocities = _as_snapshots(derivatives, name="derivatives")
         self.discovered_model_: SparseDynamicsModel = discover_phase_dynamics(
@@ -174,7 +166,6 @@ class SparseDynamicsEstimator(_KuramotoInferenceEstimator):
         AttributeError
             If called before :meth:`fit`.
         """
-
         if not hasattr(self, "discovered_model_"):
             raise AttributeError("SparseDynamicsEstimator must be fitted before predict")
         snapshots = _as_snapshots(phases, name="phases")
@@ -206,7 +197,6 @@ class CouplingFunctionEstimator(_KuramotoInferenceEstimator):
 
     def fit(self, phases: NDArray[np.float64], derivatives: NDArray[np.float64]) -> Self:
         """Infer ``Γ`` and ``ω`` from ``(n_samples, N)`` snapshots and velocities."""
-
         snapshots = _as_snapshots(phases, name="phases")
         velocities = _as_snapshots(derivatives, name="derivatives")
         self.estimate_: CouplingFunctionEstimate = infer_coupling_function(
@@ -225,7 +215,6 @@ class CouplingFunctionEstimator(_KuramotoInferenceEstimator):
         AttributeError
             If called before :meth:`fit`.
         """
-
         if not hasattr(self, "estimate_"):
             raise AttributeError("CouplingFunctionEstimator must be fitted before predict")
         snapshots = _as_snapshots(phases, name="phases")

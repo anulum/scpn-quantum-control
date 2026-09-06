@@ -312,7 +312,7 @@ def _plant_increment(
     coupling: NDArray[np.float64],
     dt: float,
 ) -> NDArray[np.float64]:
-    """The wrapped one-step increments ``Δθ`` of the true plant for a batch of ``(θ, u)`` pairs."""
+    """Evaluate the wrapped one-step increments ``Δθ`` of the true plant for a batch of ``(θ, u)`` pairs."""
     increments = np.empty_like(states)
     for index in range(states.shape[0]):
         advanced = integrate_controlled_network(

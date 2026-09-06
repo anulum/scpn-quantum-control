@@ -242,7 +242,7 @@ def networked_delayed_trajectory(
 
 
 def last_networked_delayed_trajectory_tier_used() -> str | None:
-    """The tier (``'rust'``/``'julia'``/``'python'``) that served the last dispatched forward.
+    """Return the tier (``'rust'``/``'julia'``/``'python'``) that served the last dispatched forward.
 
     ``None`` before the first dispatched call.
     """

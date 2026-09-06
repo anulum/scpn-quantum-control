@@ -105,7 +105,7 @@ class MultiLangDispatcher:
 
     @property
     def chain(self) -> tuple[tuple[str, Callable[..., Any]], ...]:
-        """Return the ordered ``(tier_name, callable)`` chain as a read-only copy.
+        """The ordered ``(tier_name, callable)`` chain, as a read-only copy.
 
         Exposes the per-tier implementations to in-repo instrumentation (the
         tier-benchmark runner measures every tier in the chain individually)

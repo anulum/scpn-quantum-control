@@ -250,7 +250,7 @@ def networked_symplectic_inertial_trajectory(
 
 
 def last_networked_symplectic_inertial_trajectory_tier_used() -> str | None:
-    """The tier (``'rust'``/``'julia'``/``'python'``) that served the last dispatched forward.
+    """Return the tier (``'rust'``/``'julia'``/``'python'``) that served the last dispatched forward.
 
     ``None`` before the first dispatched call.
     """
