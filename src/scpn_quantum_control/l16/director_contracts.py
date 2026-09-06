@@ -105,7 +105,7 @@ class L16IndicatorCertificate:
 
     @property
     def passed(self) -> bool:
-        """Return whether bounded execution and exact replay both passed."""
+        """Whether bounded execution and exact replay both passed."""
         return self.policy_authorised and self.deterministic_replay and not self.hardware_execution
 
     def to_dict(self) -> dict[str, object]:
@@ -195,7 +195,7 @@ class L16DirectorEvidence:
 
     @property
     def functional_passed(self) -> bool:
-        """Return whether every bounded certificate and route gate passed."""
+        """Whether every bounded certificate and route gate passed."""
         routes_pass = all(
             route.closure_status
             == (
@@ -209,7 +209,7 @@ class L16DirectorEvidence:
 
     @property
     def action_diversity(self) -> bool:
-        """Return whether the frozen real scenarios produced multiple actions."""
+        """Whether the frozen real scenarios produced multiple actions."""
         return len({item.heuristic_action for item in self.certificates}) > 1
 
     def to_payload(self) -> dict[str, object]:

@@ -100,7 +100,7 @@ class ProviderGradientReadinessRecord:
 
     @property
     def blocked(self) -> bool:
-        """Return true when the scenario was intentionally blocked."""
+        """True when the scenario was intentionally blocked."""
         return not self.supported
 
     def to_dict(self) -> dict[str, object]:
@@ -127,17 +127,17 @@ class ProviderGradientReadinessAuditResult:
 
     @property
     def supported_records(self) -> tuple[ProviderGradientReadinessRecord, ...]:
-        """Return scenarios that executed and matched their gradient references."""
+        """Scenarios that executed and matched their gradient references."""
         return tuple(record for record in self.records if record.supported)
 
     @property
     def blocked_records(self) -> tuple[ProviderGradientReadinessRecord, ...]:
-        """Return scenarios that fail closed by plan or execution guard."""
+        """Scenarios that fail closed by plan or execution guard."""
         return tuple(record for record in self.records if record.blocked)
 
     @property
     def failing_records(self) -> tuple[ProviderGradientReadinessRecord, ...]:
-        """Return scenarios whose observed outcome did not match the expectation."""
+        """Scenarios whose observed outcome did not match the expectation."""
         return tuple(record for record in self.records if not record.passed)
 
     def to_dict(self) -> dict[str, object]:

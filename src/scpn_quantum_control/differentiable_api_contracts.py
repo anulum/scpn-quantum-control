@@ -135,7 +135,7 @@ class UnifiedDifferentiableAPIResult:
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when the requested operation is intentionally unsupported."""
+        """True when the requested operation is intentionally unsupported."""
         return not self.supported
 
     def to_dict(self) -> dict[str, object]:
@@ -204,7 +204,7 @@ class DifferentiabilityDiagnosticReport:
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when the requested route is intentionally blocked."""
+        """True when the requested route is intentionally blocked."""
         return not self.supported
 
     def to_dict(self) -> dict[str, object]:
@@ -261,7 +261,7 @@ class DifferentiableDashboardCapabilityRow:
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when the dashboard row is intentionally non-executable."""
+        """True when the dashboard row is intentionally non-executable."""
         return self.state in {"planned", "metadata_only", "diagnostic", "blocked", "unsupported"}
 
     def to_dict(self) -> dict[str, object]:

@@ -160,38 +160,38 @@ class TransformAlgebraAudit:
 
     @property
     def categories(self) -> tuple[str, ...]:
-        """Return sorted categories covered by this audit."""
+        """Sorted categories covered by this audit."""
         return tuple(sorted({case.category for case in self.cases}))
 
     @property
     def missing_categories(self) -> tuple[str, ...]:
-        """Return required categories missing from the audit."""
+        """Required categories missing from the audit."""
         present = set(self.categories)
         return tuple(category for category in self.required_categories if category not in present)
 
     @property
     def passed_cases(self) -> tuple[TransformAlgebraCase, ...]:
-        """Return cases whose executed residuals are within tolerance."""
+        """Cases whose executed residuals are within tolerance."""
         return tuple(case for case in self.cases if case.status == "passed")
 
     @property
     def failed_cases(self) -> tuple[TransformAlgebraCase, ...]:
-        """Return cases whose executed residuals exceeded tolerance."""
+        """Cases whose executed residuals exceeded tolerance."""
         return tuple(case for case in self.cases if case.status == "failed")
 
     @property
     def blocked_cases(self) -> tuple[TransformAlgebraCase, ...]:
-        """Return explicit fail-closed transform-algebra boundaries."""
+        """Explicit fail-closed transform-algebra boundaries."""
         return tuple(case for case in self.cases if case.status == "blocked")
 
     @property
     def support_matrix(self) -> tuple[TransformAlgebraSupportMatrixRow, ...]:
-        """Return support rows generated from executable and blocked cases."""
+        """Support rows generated from executable and blocked cases."""
         return build_transform_algebra_support_matrix(self.cases)
 
     @property
     def missing_support_rows(self) -> tuple[str, ...]:
-        """Return required support-matrix rows missing from the generated matrix."""
+        """Required support-matrix rows missing from the generated matrix."""
         present = {row.row_id for row in self.support_matrix}
         return tuple(
             row_id for row_id in REQUIRED_TRANSFORM_ALGEBRA_SUPPORT_ROWS if row_id not in present
@@ -199,12 +199,12 @@ class TransformAlgebraAudit:
 
     @property
     def failed_support_rows(self) -> tuple[TransformAlgebraSupportMatrixRow, ...]:
-        """Return generated support rows whose source cases failed."""
+        """Generated support rows whose source cases failed."""
         return tuple(row for row in self.support_matrix if row.status == "failed")
 
     @property
     def passed(self) -> bool:
-        """Return whether all executed checks passed and every category is covered."""
+        """Whether all executed checks passed and every category is covered."""
         return (
             not self.failed_cases
             and not self.missing_categories

@@ -435,12 +435,12 @@ class TraceADArray:
 
     @property
     def ndim(self) -> int:
-        """Return the rank of the derivative-carrying array."""
+        """The rank of the derivative-carrying array."""
         return len(self.shape)
 
     @property
     def size(self) -> int:
-        """Return the total number of derivative-carrying elements."""
+        """The total number of derivative-carrying elements."""
         return len(self._items)
 
     def __len__(self) -> int:
@@ -528,7 +528,7 @@ class TraceADArray:
 
     @property
     def T(self) -> TraceADArray:
-        """Return the NumPy-compatible reversed-axis transpose."""
+        """The NumPy-compatible reversed-axis transpose."""
         if self.ndim < 2:
             return self.copy()
         return _trace_transpose(self, self.context)

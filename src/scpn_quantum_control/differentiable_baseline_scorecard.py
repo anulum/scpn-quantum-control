@@ -188,7 +188,7 @@ class DifferentiableBaselineScorecardRow:
 
     @property
     def ready_for_promotion(self) -> bool:
-        """Return whether this category is at or beyond the external baseline."""
+        """Whether this category is at or beyond the external baseline."""
         return self.status in READY_STATUSES
 
     def to_dict(self) -> dict[str, object]:

@@ -37,12 +37,12 @@ _FRAMEWORKS = ("jax", "pytorch", "tensorflow")
 class _FrameworkAgreementResult(Protocol):
     @property
     def passed(self) -> bool:
-        """Return whether framework agreement passed."""
+        """Whether framework agreement passed."""
         ...
 
     @property
     def max_abs_error(self) -> float:
-        """Return the maximum absolute gradient error."""
+        """The maximum absolute gradient error."""
         ...
 
 

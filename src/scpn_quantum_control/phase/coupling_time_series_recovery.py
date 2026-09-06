@@ -342,7 +342,7 @@ class CouplingRecoverySuiteResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every recovery case satisfied its tolerance."""
+        """Whether every recovery case satisfied its tolerance."""
         return all(record.passed for record in self.records)
 
     def records_for_family(

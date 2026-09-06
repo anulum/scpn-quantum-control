@@ -49,7 +49,7 @@ class ProgramADEffectIRLike(Protocol):
 
     @property
     def serialization(self) -> str:  # pragma: no cover - structural typing only.
-        """Return the serialized ``program_ad_effect_ir.v1`` payload."""
+        """The serialized ``program_ad_effect_ir.v1`` payload."""
         ...
 
 

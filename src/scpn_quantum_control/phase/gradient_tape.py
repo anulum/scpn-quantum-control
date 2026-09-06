@@ -58,39 +58,39 @@ class TapeGradientRecord:
 
     @property
     def gradient(self) -> FloatArray:
-        """Return the recorded gradient vector."""
+        """The recorded gradient vector."""
         return self.result.gradient
 
     @property
     def value(self) -> float:
-        """Return the recorded objective value."""
+        """The recorded objective value."""
         return self.result.value
 
     @property
     def evaluations(self) -> int:
-        """Return planned quantum objective evaluations, excluding tape bookkeeping."""
+        """Planned quantum objective evaluations, excluding tape bookkeeping."""
         return self.plan.evaluations
 
     @property
     def method(self) -> str:
-        """Return the replay method recorded by the gradient result."""
+        """The replay method recorded by the gradient result."""
         return self.result.method
 
     @property
     def shift_terms(self) -> int:
-        """Return the number of parameter-shift terms used per parameter."""
+        """The number of parameter-shift terms used per parameter."""
         return self.plan.shift_terms
 
     @property
     def standard_error(self) -> FloatArray | None:
-        """Return finite-shot standard errors when the record is stochastic."""
+        """Finite-shot standard errors when the record is stochastic."""
         if isinstance(self.result, StochasticGradientResult):
             return self.result.standard_error
         return None
 
     @property
     def confidence_radius(self) -> FloatArray | None:
-        """Return finite-shot confidence radii when the record is stochastic."""
+        """Finite-shot confidence radii when the record is stochastic."""
         if isinstance(self.result, StochasticGradientResult):
             return self.result.confidence_radius
         return None
@@ -149,7 +149,7 @@ class GradientTapeContractCheck:
 
     @property
     def supported(self) -> bool:
-        """Return true when the audited behaviour is supported."""
+        """True when the audited behaviour is supported."""
         return self.status == "supported"
 
     def to_dict(self) -> dict[str, object]:
@@ -184,12 +184,12 @@ class GradientTapeContractAuditResult:
 
     @property
     def supported_checks(self) -> tuple[GradientTapeContractCheck, ...]:
-        """Return contract checks that executed as supported."""
+        """Contract checks that executed as supported."""
         return tuple(check for check in self.checks if check.supported)
 
     @property
     def fail_closed_checks(self) -> tuple[GradientTapeContractCheck, ...]:
-        """Return contract checks that intentionally failed closed."""
+        """Contract checks that intentionally failed closed."""
         return tuple(check for check in self.checks if not check.supported)
 
     def to_dict(self) -> dict[str, object]:
@@ -326,7 +326,7 @@ class QuantumGradientTape:
 
     @property
     def records(self) -> tuple[TapeGradientRecord, ...]:
-        """Return immutable view of recorded gradient evaluations."""
+        """Immutable view of recorded gradient evaluations."""
         return tuple(self._records)
 
     def clear(self) -> None:

@@ -199,7 +199,7 @@ class EnzymeNativeExecutionEvidence:
 
     @property
     def passed(self) -> bool:
-        """Return whether native Enzyme execution matched the SCPN reference."""
+        """Whether native Enzyme execution matched the SCPN reference."""
         return self.status == "success"
 
     def to_dict(self) -> dict[str, object]:
@@ -259,7 +259,7 @@ class MLIRLLVMCorrectnessEvidence:
 
     @property
     def passed(self) -> bool:
-        """Return whether every bounded MLIR/LLVM correctness check passed."""
+        """Whether every bounded MLIR/LLVM correctness check passed."""
         return all(self.checks.values())
 
     def to_dict(self) -> dict[str, object]:
@@ -320,12 +320,12 @@ class EnzymeMLIRBenchmarkAttachment:
 
     @property
     def benchmark_artifact_id(self) -> str:
-        """Return the validated benchmark artefact identifier."""
+        """The validated benchmark artefact identifier."""
         return self.validation.benchmark_artifact_id
 
     @property
     def promotion_ready(self) -> bool:
-        """Return whether the benchmark attachment satisfies promotion policy."""
+        """Whether the benchmark attachment satisfies promotion policy."""
         return (
             self.validation.promotion_ready
             and self.validation.evidence_label == "isolated_affinity"
@@ -446,12 +446,12 @@ class EnzymeMLIRCompilerADBreadthCaseEvidence:
 
     @property
     def passed(self) -> bool:
-        """Return whether this breadth case has passing raw evidence."""
+        """Whether this breadth case has passing raw evidence."""
         return self.status == "success"
 
     @property
     def max_abs_error(self) -> float:
-        """Return the largest correctness error carried by this row."""
+        """The largest correctness error carried by this row."""
         return max(float(self.value_error or 0.0), float(self.gradient_error or 0.0))
 
     def to_dict(self) -> dict[str, object]:
@@ -531,38 +531,38 @@ class EnzymeMLIRCompilerADBreadthArtifact:
 
     @property
     def transform_modes(self) -> tuple[str, ...]:
-        """Return sorted transform modes covered across breadth cases."""
+        """Sorted transform modes covered across breadth cases."""
         modes = {mode for case in self.cases for mode in case.transform_modes}
         return tuple(sorted(modes))
 
     @property
     def frontend_languages(self) -> tuple[str, ...]:
-        """Return sorted frontend or IR surfaces covered by the artefact."""
+        """Sorted frontend or IR surfaces covered by the artefact."""
         return tuple(sorted({case.frontend_language for case in self.cases}))
 
     @property
     def failed_case_ids(self) -> tuple[str, ...]:
-        """Return sorted breadth-case identifiers that remain hard gaps."""
+        """Sorted breadth-case identifiers that remain hard gaps."""
         return tuple(case.case_id for case in self.cases if not case.passed)
 
     @property
     def passed_case_ids(self) -> tuple[str, ...]:
-        """Return sorted breadth-case identifiers with passing raw evidence."""
+        """Sorted breadth-case identifiers with passing raw evidence."""
         return tuple(case.case_id for case in self.cases if case.passed)
 
     @property
     def max_abs_error(self) -> float:
-        """Return the largest correctness error recorded across passing rows."""
+        """The largest correctness error recorded across passing rows."""
         return max(case.max_abs_error for case in self.cases)
 
     @property
     def runtime_seconds(self) -> float:
-        """Return total bounded runtime across passing rows."""
+        """Total bounded runtime across passing rows."""
         return sum(float(case.runtime_seconds or 0.0) for case in self.cases)
 
     @property
     def promotion_ready(self) -> bool:
-        """Return whether the artefact can derive compiler-AD breadth evidence."""
+        """Whether the artefact can derive compiler-AD breadth evidence."""
         return (
             self.isolated_benchmark_evidence.promotion_ready
             and all(case.passed for case in self.cases)
@@ -714,7 +714,7 @@ class EnzymeMLIRCompilerADBreadthEvidence:
 
     @property
     def passed(self) -> bool:
-        """Return whether all required compiler-AD breadth cases passed."""
+        """Whether all required compiler-AD breadth cases passed."""
         return (
             frozenset(self.cases) == ENZYME_MLIR_COMPILER_AD_BREADTH_CASES
             and all(self.cases.values())
@@ -888,7 +888,7 @@ class EnzymeMLIRMaturityAuditResult:
 
     @property
     def ready_for_provider_exceedance(self) -> bool:
-        """Return whether Enzyme/MLIR can be promoted beyond bounded SCPN evidence."""
+        """Whether Enzyme/MLIR can be promoted beyond bounded SCPN evidence."""
         return (
             self.scpn_mlir_runtime_verified
             and all(status.available for status in self.toolchain.values())

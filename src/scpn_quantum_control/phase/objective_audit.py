@@ -85,7 +85,7 @@ class ComposedObjectiveAuditSuiteResult:
 
     @property
     def gradient_records(self) -> tuple[ComposedObjectiveGradientAgreement, ...]:
-        """Return gradient agreement records in audit order."""
+        """Gradient agreement records in audit order."""
         return (self.pure_gradient, self.hybrid_gradient)
 
     def to_dict(self) -> dict[str, object]:

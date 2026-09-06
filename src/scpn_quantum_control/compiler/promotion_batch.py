@@ -223,7 +223,7 @@ class CompilerPromotionBatch:
 
     @property
     def assembled_evidence_count(self) -> int:
-        """Return the number of evidence files assembled into the batch."""
+        """The number of evidence files assembled into the batch."""
         return len(self.evidence_files)
 
     def as_dict(self) -> dict[str, object]:

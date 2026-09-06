@@ -453,12 +453,12 @@ class ProviderRouteCatalogueEntry:
 
     @property
     def inventory_key(self) -> tuple[str, str | None, str, str, str]:
-        """Return the provider/broker/device/modality/time inventory key."""
+        """The provider/broker/device/modality/time inventory key."""
         return (self.provider, self.broker, self.device, self.modality, self.observed_at)
 
     @property
     def is_direct(self) -> bool:
-        """Return whether the provider is reached without a broker."""
+        """Whether the provider is reached without a broker."""
         return self.broker is None
 
     def support(self, verb: RouteVerb) -> RouteVerbSupport:
@@ -487,12 +487,12 @@ class ProviderRouteCatalogueEntry:
 
     @property
     def observed_verbs(self) -> tuple[RouteVerb, ...]:
-        """Return operations with demonstrated support, in canonical order."""
+        """Operations with demonstrated support, in canonical order."""
         return tuple(record.verb for record in self.verbs if record.observed is True)
 
     @property
     def unverified(self) -> bool:
-        """Return whether no operation on this route has been demonstrated."""
+        """Whether no operation on this route has been demonstrated."""
         return not self.observed_verbs
 
     def to_dict(self) -> dict[str, Any]:

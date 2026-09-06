@@ -41,7 +41,7 @@ class ParameterShiftQNNPredictionResult:
 
     @property
     def n_samples(self) -> int:
-        """Return the number of predicted samples."""
+        """The number of predicted samples."""
         return int(self.probabilities.size)
 
     def to_dict(self) -> dict[str, object]:
@@ -70,17 +70,17 @@ class ParameterShiftQNNTrainingResult:
 
     @property
     def best_loss(self) -> float:
-        """Return the best full-batch loss observed during training."""
+        """The best full-batch loss observed during training."""
         return self.training.best_value
 
     @property
     def loss_history(self) -> tuple[float, ...]:
-        """Return the optimizer value history as a loss history."""
+        """The optimizer value history as a loss history."""
         return self.training.value_history
 
     @property
     def best_params(self) -> FloatArray:
-        """Return the best parameter vector found during training."""
+        """The best parameter vector found during training."""
         best_params: FloatArray = np.array(
             self.training.best_params,
             dtype=np.float64,

@@ -279,7 +279,7 @@ class OpenSystemObjectiveRecord:
 
     @property
     def passed(self) -> bool:
-        """Return whether all backend-specific certificates passed."""
+        """Whether all backend-specific certificates passed."""
         invariant_passed = (
             True if self.invariant_certificate is None else self.invariant_certificate.passed
         )
@@ -367,22 +367,22 @@ class OpenSystemObjectiveSuiteResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether all executable objective records passed."""
+        """Whether all executable objective records passed."""
         return all(record.passed for record in self.records)
 
     @property
     def case_count(self) -> int:
-        """Return the number of objective cases."""
+        """The number of objective cases."""
         return len(self.cases)
 
     @property
     def record_count(self) -> int:
-        """Return the number of executable objective rows."""
+        """The number of executable objective rows."""
         return len(self.records)
 
     @property
     def backend_names(self) -> tuple[str, ...]:
-        """Return the backend names present in executable rows."""
+        """The backend names present in executable rows."""
         return tuple(dict.fromkeys(record.backend for record in self.records))
 
     def records_for_case(self, case_id: str) -> tuple[OpenSystemObjectiveRecord, ...]:

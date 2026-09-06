@@ -142,7 +142,7 @@ class ExternalComparisonRow:
 
     @property
     def closure_status(self) -> ComparisonClosureStatus:
-        """Return the row's implementation or permanent-boundary classification."""
+        """The row's implementation or permanent-boundary classification."""
         if self.status == "success":
             return "implemented"
         if self.failure_class in PERMANENT_EXTERNAL_COMPARISON_BOUNDARIES:
@@ -151,7 +151,7 @@ class ExternalComparisonRow:
 
     @property
     def closure_reason(self) -> str:
-        """Return the non-empty implementation or boundary reason for the row."""
+        """The non-empty implementation or boundary reason for the row."""
         if self.status == "success":
             return "SCPN reference comparison passed with value and gradient evidence."
         if self.closure_status == "permanent_boundary":
@@ -160,7 +160,7 @@ class ExternalComparisonRow:
 
     @property
     def artifact_fields_ready(self) -> bool:
-        """Return whether this row is serializable as an evidence artefact."""
+        """Whether this row is serializable as an evidence artefact."""
         payload = self.to_dict()
         return bool(
             self.case_id
@@ -295,7 +295,7 @@ class IdenticalCircuitGradientComparisonRow:
 
     @property
     def artifact_fields_ready(self) -> bool:
-        """Return whether the row carries the required same-circuit fields."""
+        """Whether the row carries the required same-circuit fields."""
         return bool(
             self.case_id
             and self.backend

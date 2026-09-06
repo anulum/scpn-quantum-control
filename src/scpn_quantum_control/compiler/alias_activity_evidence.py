@@ -186,22 +186,22 @@ class CompilerAliasActivityEvidence:
 
     @property
     def complete_lattice_case_count(self) -> int:
-        """Return the number of complete lattice cases."""
+        """The number of complete lattice cases."""
         return sum(1 for case in self.cases if case.status == "complete_lattice")
 
     @property
     def blocked_lattice_case_count(self) -> int:
-        """Return the number of fail-closed lattice cases."""
+        """The number of fail-closed lattice cases."""
         return sum(1 for case in self.cases if case.status == "blocked_lattice")
 
     @property
     def observed_alias_edge_kinds(self) -> tuple[str, ...]:
-        """Return the sorted alias-edge kinds observed across all cases."""
+        """The sorted alias-edge kinds observed across all cases."""
         return tuple(sorted({kind for case in self.cases for kind in case.alias_edge_kinds}))
 
     @property
     def alias_activity_verified(self) -> bool:
-        """Return whether the bounded alias-activity requirement has evidence."""
+        """Whether the bounded alias-activity requirement has evidence."""
         return (
             self.complete_lattice_case_count > 0
             and self.blocked_lattice_case_count > 0

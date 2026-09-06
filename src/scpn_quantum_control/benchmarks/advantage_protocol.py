@@ -91,7 +91,7 @@ class ScalingProtocol:
 
     @property
     def required_baselines(self) -> tuple[str, ...]:
-        """Return labels for required baseline columns."""
+        """Labels for required baseline columns."""
         return tuple(baseline.label for baseline in self.baselines if baseline.required)
 
     def to_dict(self) -> dict[str, Any]:

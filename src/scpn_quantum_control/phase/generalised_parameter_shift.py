@@ -163,12 +163,12 @@ class GeneralisedParameterShiftPlan:
 
     @property
     def parameter_count(self) -> int:
-        """Return the number of logical parameters in the plan."""
+        """The number of logical parameters in the plan."""
         return len(self.parameter_names)
 
     @property
     def shifted_evaluations(self) -> int:
-        """Return the number of plus/minus objective evaluations in the plan."""
+        """The number of plus/minus objective evaluations in the plan."""
         return 2 * len(self.terms)
 
     def terms_for_parameter(
@@ -262,17 +262,17 @@ class GeneralisedStochasticParameterShiftResult:
 
     @property
     def gradient(self) -> FloatArray:
-        """Return the stochastic gradient estimate."""
+        """The stochastic gradient estimate."""
         return self.stochastic_gradient.gradient
 
     @property
     def standard_error(self) -> FloatArray:
-        """Return per-parameter finite-shot standard errors."""
+        """Per-parameter finite-shot standard errors."""
         return self.stochastic_gradient.standard_error
 
     @property
     def confidence_radius(self) -> FloatArray:
-        """Return per-parameter confidence radii."""
+        """Per-parameter confidence radii."""
         return self.stochastic_gradient.confidence_radius
 
     def to_dict(self) -> dict[str, object]:

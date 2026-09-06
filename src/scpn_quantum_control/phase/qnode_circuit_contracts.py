@@ -204,7 +204,7 @@ class PauliTerm:
 
     @property
     def observable_kind(self) -> str:
-        """Return the public observable family represented by this term."""
+        """The public observable family represented by this term."""
         return "pauli_product" if len(self.factors) > 1 else f"pauli_{self.factors[0][1]}"
 
     def to_dict(self) -> dict[str, object]:
@@ -253,7 +253,7 @@ class DenseHermitianObservable:
 
     @property
     def observable_kind(self) -> str:
-        """Return the public observable family represented by this matrix."""
+        """The public observable family represented by this matrix."""
         return "dense_hermitian"
 
     def to_dict(self) -> dict[str, object]:
@@ -275,7 +275,7 @@ class PauliCovarianceObservable:
 
     @property
     def observable_kind(self) -> str:
-        """Return the public observable family represented by this covariance."""
+        """The public observable family represented by this covariance."""
         return "pauli_covariance"
 
     def to_dict(self) -> dict[str, object]:
@@ -598,12 +598,12 @@ class PhaseQNodeGradientEvaluationPlan:
 
     @property
     def parameter_shift_evaluations(self) -> int:
-        """Return shifted evaluations required by the plan."""
+        """Shifted evaluations required by the plan."""
         return self.planned_shifted_evaluations
 
     @property
     def generic_scalar_objective_evaluations(self) -> int:
-        """Return the matching generic-callable fallback count."""
+        """The matching generic-callable fallback count."""
         return 2 * self.parameter_count
 
     def to_dict(self) -> dict[str, object]:

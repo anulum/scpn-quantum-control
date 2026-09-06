@@ -78,27 +78,27 @@ class ParameterShiftQNNLossLandscapeCaseResult:
 
     @property
     def point_count(self) -> int:
-        """Return the number of evaluated grid points."""
+        """The number of evaluated grid points."""
         return len(self.points)
 
     @property
     def losses(self) -> tuple[float, ...]:
-        """Return all sampled losses."""
+        """All sampled losses."""
         return tuple(point.loss for point in self.points)
 
     @property
     def min_loss(self) -> float:
-        """Return the smallest sampled loss."""
+        """The smallest sampled loss."""
         return float(min(self.losses))
 
     @property
     def max_loss(self) -> float:
-        """Return the largest sampled loss."""
+        """The largest sampled loss."""
         return float(max(self.losses))
 
     @property
     def center_loss(self) -> float:
-        """Return the loss at the declared center parameters."""
+        """The loss at the declared center parameters."""
         center = tuple(float(value) for value in self.center_params)
         for point in self.points:
             if point.params == center:
@@ -107,33 +107,33 @@ class ParameterShiftQNNLossLandscapeCaseResult:
 
     @property
     def loss_span(self) -> float:
-        """Return max(loss) - min(loss) across the grid."""
+        """Max(loss) - min(loss) across the grid."""
         return float(self.max_loss - self.min_loss)
 
     @property
     def min_gradient_norm(self) -> float:
-        """Return the smallest sampled gradient norm."""
+        """The smallest sampled gradient norm."""
         return float(min(point.gradient_norm for point in self.points))
 
     @property
     def max_gradient_norm(self) -> float:
-        """Return the largest sampled gradient norm."""
+        """The largest sampled gradient norm."""
         return float(max(point.gradient_norm for point in self.points))
 
     @property
     def argmin_params(self) -> tuple[float, ...]:
-        """Return the parameters at the smallest sampled loss."""
+        """The parameters at the smallest sampled loss."""
         best = min(self.points, key=lambda point: point.loss)
         return best.params
 
     @property
     def loss_span_passed(self) -> bool:
-        """Return whether the grid has enough observable loss variation."""
+        """Whether the grid has enough observable loss variation."""
         return self.loss_span >= self.min_loss_span
 
     @property
     def passed(self) -> bool:
-        """Return whether this loss-landscape case passed."""
+        """Whether this loss-landscape case passed."""
         return self.loss_span_passed and all(np.isfinite(point.loss) for point in self.points)
 
     def to_dict(self) -> dict[str, object]:
@@ -175,27 +175,27 @@ class ParameterShiftQNNLossLandscapeSuiteResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every loss-landscape case passed."""
+        """Whether every loss-landscape case passed."""
         return all(case.passed for case in self.cases)
 
     @property
     def case_count(self) -> int:
-        """Return the number of landscape cases."""
+        """The number of landscape cases."""
         return len(self.cases)
 
     @property
     def passed_count(self) -> int:
-        """Return the number of passing landscape cases."""
+        """The number of passing landscape cases."""
         return sum(1 for case in self.cases if case.passed)
 
     @property
     def failed_count(self) -> int:
-        """Return the number of failing landscape cases."""
+        """The number of failing landscape cases."""
         return self.case_count - self.passed_count
 
     @property
     def total_point_count(self) -> int:
-        """Return the number of sampled grid points across cases."""
+        """The number of sampled grid points across cases."""
         return sum(case.point_count for case in self.cases)
 
     def case_by_name(self, name: str) -> ParameterShiftQNNLossLandscapeCaseResult:

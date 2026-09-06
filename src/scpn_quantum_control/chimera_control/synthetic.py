@@ -154,7 +154,7 @@ class SyntheticChimeraConfig:
 
     @property
     def frustration(self) -> float:
-        """Return Sakaguchi phase lag ``alpha = pi/2 - beta``."""
+        """Sakaguchi phase lag ``alpha = pi/2 - beta``."""
         return float(math.pi / 2.0 - self.beta)
 
 
@@ -223,7 +223,7 @@ class SyntheticChimeraRun:
 
     @property
     def settled_phases(self) -> FloatArray:
-        """Return a read-only view of the post-settle trajectory."""
+        """A read-only view of the post-settle trajectory."""
         settled = self.phases[self.config.settle_steps :]
         settled.setflags(write=False)
         return settled

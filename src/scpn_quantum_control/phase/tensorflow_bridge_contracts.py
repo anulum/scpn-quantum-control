@@ -303,7 +303,7 @@ class PhaseTensorFlowPhaseQNodeLoweringMatrixResult:
 
     @property
     def bounded_qnn_routes_ready(self) -> bool:
-        """Return whether the bounded TensorFlow QNN routes are declared ready."""
+        """Whether the bounded TensorFlow QNN routes are declared ready."""
         return all(
             route.status == "passed"
             for route in self.routes
@@ -312,7 +312,7 @@ class PhaseTensorFlowPhaseQNodeLoweringMatrixResult:
 
     @property
     def arbitrary_phase_qnode_lowering_ready(self) -> bool:
-        """Return whether arbitrary registered Phase-QNode TensorFlow lowering is ready."""
+        """Whether arbitrary registered Phase-QNode TensorFlow lowering is ready."""
         return all(
             route.status == "passed"
             for route in self.routes
@@ -321,12 +321,12 @@ class PhaseTensorFlowPhaseQNodeLoweringMatrixResult:
 
     @property
     def ready_for_provider_exceedance(self) -> bool:
-        """Return whether this matrix permits TensorFlow provider-exceedance claims."""
+        """Whether this matrix permits TensorFlow provider-exceedance claims."""
         return all(route.status == "passed" for route in self.routes)
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return routes that still block TensorFlow provider-exceedance claims."""
+        """Routes that still block TensorFlow provider-exceedance claims."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:

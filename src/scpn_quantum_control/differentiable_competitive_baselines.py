@@ -149,7 +149,7 @@ class CompetitiveBaselineRow:
 
     @property
     def classification(self) -> str:
-        """Return the evidence classification for this baseline source."""
+        """The evidence classification for this baseline source."""
         return BASELINE_ROW_CLASSIFICATION
 
     def age_days(self, *, as_of: date) -> int:

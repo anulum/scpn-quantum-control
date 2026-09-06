@@ -49,7 +49,7 @@ class GradientTransformNestingPlan:
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when the nested transform must not execute."""
+        """True when the nested transform must not execute."""
         return not self.supported
 
     def to_dict(self) -> dict[str, object]:
@@ -83,17 +83,17 @@ class GradientTransformNestingAuditResult:
 
     @property
     def supported_plans(self) -> tuple[GradientTransformNestingPlan, ...]:
-        """Return audit plans that are supported."""
+        """Audit plans that are supported."""
         return tuple(plan for plan in self.plans if plan.supported)
 
     @property
     def blocked_plans(self) -> tuple[GradientTransformNestingPlan, ...]:
-        """Return audit plans that fail closed."""
+        """Audit plans that fail closed."""
         return tuple(plan for plan in self.plans if plan.fail_closed)
 
     @property
     def failing_plans(self) -> tuple[GradientTransformNestingPlan, ...]:
-        """Return plans that violate the built-in support expectations."""
+        """Plans that violate the built-in support expectations."""
         expected_supported = {
             ("grad", "native", "statevector"),
             ("value_and_grad", "native", "statevector"),

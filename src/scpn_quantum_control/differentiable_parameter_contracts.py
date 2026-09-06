@@ -161,14 +161,14 @@ class ParameterShiftRule:
 
     @property
     def terms(self) -> tuple[tuple[float, float], ...]:
-        """Return ``(shift, coefficient)`` terms for symmetric plus/minus probes."""
+        """``(shift, coefficient)`` terms for symmetric plus/minus probes."""
         shifts = cast(tuple[float, ...], self.shifts)
         coefficients = cast(tuple[float, ...], self.coefficients)
         return tuple(zip(shifts, coefficients, strict=True))
 
     @property
     def is_single_term(self) -> bool:
-        """Return whether this rule is the legacy two-evaluation rule."""
+        """Whether this rule is the legacy two-evaluation rule."""
         return len(self.terms) == 1
 
 

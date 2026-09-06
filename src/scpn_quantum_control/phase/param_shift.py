@@ -110,7 +110,7 @@ class ParamShiftVQEResult:
 
     @property
     def optimal_params(self) -> FloatArray:
-        """Return the best parameters found during the descent."""
+        """The best parameters found during the descent."""
         best_params: FloatArray = np.array(self.best_params, dtype=np.float64, copy=True)
         return best_params
 
@@ -208,7 +208,7 @@ class GradientVerificationResult:
 
     @property
     def total_evaluations(self) -> int:
-        """Return objective evaluations spent on verification."""
+        """Objective evaluations spent on verification."""
         return self.parameter_shift_evaluations + self.finite_difference_evaluations
 
     def to_dict(self) -> dict[str, object]:
@@ -249,7 +249,7 @@ class HessianVerificationResult:
 
     @property
     def total_evaluations(self) -> int:
-        """Return objective evaluations spent on second-order verification."""
+        """Objective evaluations spent on second-order verification."""
         return self.parameter_shift_evaluations + self.finite_difference_evaluations
 
     def to_dict(self) -> dict[str, object]:

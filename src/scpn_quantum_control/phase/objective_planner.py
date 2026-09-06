@@ -69,7 +69,7 @@ class ComposedObjectivePlannerAuditResult:
 
     @property
     def plans(self) -> tuple[ComposedObjectiveExecutionPlan, ...]:
-        """Return all planner records in audit order."""
+        """All planner records in audit order."""
         return (
             self.pure_plan,
             self.hybrid_plan,
@@ -80,7 +80,7 @@ class ComposedObjectivePlannerAuditResult:
 
     @property
     def blocked_plans(self) -> tuple[ComposedObjectiveExecutionPlan, ...]:
-        """Return unsupported planner records."""
+        """Unsupported planner records."""
         return tuple(plan for plan in self.plans if not plan.supported)
 
     def to_dict(self) -> dict[str, object]:

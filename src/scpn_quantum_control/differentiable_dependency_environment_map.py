@@ -134,7 +134,7 @@ class DifferentiableDependencyEnvironmentProfile:
 
     @property
     def environment_ready(self) -> bool:
-        """Return whether this dependency profile can support promotion.
+        """Whether this dependency profile can support promotion.
 
         Returns
         -------

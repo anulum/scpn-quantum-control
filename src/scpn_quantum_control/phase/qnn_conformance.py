@@ -95,12 +95,12 @@ class ParameterShiftQNNConformanceCaseResult:
 
     @property
     def external_agreement_count(self) -> int:
-        """Return the number of external gradient agreements recorded."""
+        """The number of external gradient agreements recorded."""
         return len(self.external_agreement_names)
 
     @property
     def passed(self) -> bool:
-        """Return whether this conformance case passed every required check."""
+        """Whether this conformance case passed every required check."""
         training_ok = (not self.training_required) or self.training_passed
         return bool(self.finite_difference_passed and training_ok and self.external_passed)
 
@@ -141,32 +141,32 @@ class ParameterShiftQNNConformanceSuiteResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every conformance case passed."""
+        """Whether every conformance case passed."""
         return all(case.passed for case in self.cases)
 
     @property
     def case_count(self) -> int:
-        """Return the number of conformance cases."""
+        """The number of conformance cases."""
         return len(self.cases)
 
     @property
     def gradient_passed_count(self) -> int:
-        """Return the number of cases with finite-difference gradient agreement."""
+        """The number of cases with finite-difference gradient agreement."""
         return sum(1 for case in self.cases if case.finite_difference_passed)
 
     @property
     def training_passed_count(self) -> int:
-        """Return the number of required training cases that passed."""
+        """The number of required training cases that passed."""
         return sum(1 for case in self.cases if case.training_required and case.training_passed)
 
     @property
     def external_agreement_count(self) -> int:
-        """Return the total number of external gradient agreements recorded."""
+        """The total number of external gradient agreements recorded."""
         return sum(case.external_agreement_count for case in self.cases)
 
     @property
     def unsuitable_scenario_count(self) -> int:
-        """Return the number of documented unsuitable scenarios."""
+        """The number of documented unsuitable scenarios."""
         return len(self.unsuitable_scenarios)
 
     def case_by_name(self, name: str) -> ParameterShiftQNNConformanceCaseResult:

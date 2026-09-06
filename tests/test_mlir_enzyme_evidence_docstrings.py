@@ -79,6 +79,38 @@ def _member_descriptor(cls: type[object], name: str) -> object:
     return descriptor
 
 
+#: Imperative openers a *method* contract docstring is expected to use.
+_METHOD_CONTRACT_VERBS = ("Return", "Validate")
+
+
+def _assert_property_states_its_value(member_name: str, doc: str) -> None:
+    """Require a property docstring to name the value, not command a caller.
+
+    A property is a value, so its summary is a noun phrase. The repository lint
+    enforces this as ruff D421; asserting it here as well keeps the rule visible
+    at the surface it protects, and catches the case where someone documents one
+    of these evidence members by copying a method's phrasing.
+
+    The summary must also carry more than the member's own name re-spelled, so a
+    placeholder such as "Passed." cannot satisfy the contract this test exists
+    to enforce.
+    """
+    summary = doc.splitlines()[0].strip()
+    first_word = summary.split(" ", 1)[0].rstrip(".,")
+    assert first_word not in _METHOD_CONTRACT_VERBS, (
+        f"{member_name}: a property docstring states the value it holds rather "
+        f"than commanding a caller; got {summary!r}"
+    )
+    spelled_out = member_name.replace("_", " ").strip().lower()
+    assert summary.rstrip(".").lower() != spelled_out, (
+        f"{member_name}: the docstring only re-spells the member name; state "
+        f"what the value means, got {summary!r}"
+    )
+    assert len(summary.split()) >= 4, (
+        f"{member_name}: the docstring is too thin to be a contract, got {summary!r}"
+    )
+
+
 def test_enzyme_mlir_evidence_public_exports_have_contract_docstrings() -> None:
     """Compiler-AD evidence exports must document public records and builders."""
     for name in (*_PUBLIC_CLASS_MEMBERS, *_PUBLIC_FUNCTION_NAMES):
@@ -94,4 +126,7 @@ def test_enzyme_mlir_evidence_public_exports_have_contract_docstrings() -> None:
         assert isinstance(class_object, type)
         for member_name in member_names:
             member_doc = _docstring(_member_descriptor(class_object, member_name))
-            assert "Return" in member_doc or "Validate" in member_doc
+            if isinstance(getattr(class_object, member_name), property):
+                _assert_property_states_its_value(member_name, member_doc)
+            else:
+                assert any(verb in member_doc for verb in _METHOD_CONTRACT_VERBS)

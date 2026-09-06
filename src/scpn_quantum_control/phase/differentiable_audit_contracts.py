@@ -157,12 +157,12 @@ class DifferentiableQuantumAuditReport:
 
     @property
     def best_value(self) -> float:
-        """Return the best scalar objective value reached during training."""
+        """The best scalar objective value reached during training."""
         return self.training.best_value
 
     @property
     def max_gradient_error(self) -> float:
-        """Return the largest independent gradient-check error."""
+        """The largest independent gradient-check error."""
         return max(self.finite_difference.max_abs_error, self.analytic.max_abs_error)
 
     def to_dict(self) -> dict[str, object]:
@@ -209,12 +209,12 @@ class PhaseGradientBenchmarkSuiteResult:
 
     @property
     def worst_gradient_error(self) -> float:
-        """Return the largest gradient error across all benchmark reports."""
+        """The largest gradient error across all benchmark reports."""
         return max(report.max_gradient_error for report in self.reports)
 
     @property
     def best_values(self) -> tuple[float, ...]:
-        """Return best objective values for each benchmark case."""
+        """Best objective values for each benchmark case."""
         return tuple(report.best_value for report in self.reports)
 
     def to_dict(self) -> dict[str, object]:
@@ -263,7 +263,7 @@ class DifferentiableWorkflowAuditSuiteResult:
 
     @property
     def worst_gradient_error(self) -> float:
-        """Return the largest gradient error across all audit workflows."""
+        """The largest gradient error across all audit workflows."""
         return max(
             self.phase_benchmarks.worst_gradient_error,
             self.finite_shot.max_abs_error,
@@ -272,7 +272,7 @@ class DifferentiableWorkflowAuditSuiteResult:
 
     @property
     def best_training_values(self) -> tuple[float, float]:
-        """Return best training values for phase and coupling-training lanes."""
+        """Best training values for phase and coupling-training lanes."""
         return (
             min(self.phase_benchmarks.best_values),
             self.coupling_learning.best_loss,
@@ -473,27 +473,27 @@ class MLFrameworkGradientAuditSuiteResult:
 
     @property
     def executed_frameworks(self) -> tuple[str, ...]:
-        """Return frameworks whose adapters were executed."""
+        """Frameworks whose adapters were executed."""
         return tuple(record.framework for record in self.records if record.executed)
 
     @property
     def unavailable_frameworks(self) -> tuple[str, ...]:
-        """Return frameworks whose optional dependencies were unavailable."""
+        """Frameworks whose optional dependencies were unavailable."""
         return tuple(record.framework for record in self.records if record.status == "unavailable")
 
     @property
     def blocked_frameworks(self) -> tuple[str, ...]:
-        """Return frameworks available but not executable without caller-owned objects."""
+        """Frameworks available but not executable without caller-owned objects."""
         return tuple(record.framework for record in self.records if record.status == "blocked")
 
     @property
     def failed_frameworks(self) -> tuple[str, ...]:
-        """Return frameworks that executed and failed parity."""
+        """Frameworks that executed and failed parity."""
         return tuple(record.framework for record in self.records if record.status == "failed")
 
     @property
     def worst_executed_error(self) -> float:
-        """Return the largest error across executed ML adapters."""
+        """The largest error across executed ML adapters."""
         errors = [
             record.max_abs_error
             for record in self.records

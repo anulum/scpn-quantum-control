@@ -580,17 +580,17 @@ class WholeProgramCompilerFrontendReport:
 
     @property
     def bytecode_instruction_count(self) -> int:
-        """Return the number of bytecode instructions in the frontend report."""
+        """The number of bytecode instructions in the frontend report."""
         return len(self.bytecode_instructions)
 
     @property
     def source_feature_count(self) -> int:
-        """Return the number of source IR feature rows in the frontend report."""
+        """The number of source IR feature rows in the frontend report."""
         return len(self.source_ir_features)
 
     @property
     def frontend_ready(self) -> bool:
-        """Return whether bytecode and source frontend metadata passed preflight."""
+        """Whether bytecode and source frontend metadata passed preflight."""
         return (
             self.source_available
             and self.bytecode_instruction_count > 0
@@ -605,27 +605,27 @@ class WholeProgramCompilerFrontendReport:
 
     @property
     def bytecode_basic_block_count(self) -> int:
-        """Return the number of bytecode basic blocks in the frontend report."""
+        """The number of bytecode basic blocks in the frontend report."""
         return len(self.bytecode_basic_blocks)
 
     @property
     def source_region_count(self) -> int:
-        """Return the number of source regions in the frontend report."""
+        """The number of source regions in the frontend report."""
         return len(self.source_regions)
 
     @property
     def source_bytecode_line_map_count(self) -> int:
-        """Return the number of source-bytecode crosswalk rows in the report."""
+        """The number of source-bytecode crosswalk rows in the report."""
         return len(self.source_bytecode_line_map)
 
     @property
     def symbol_scope_entry_count(self) -> int:
-        """Return the number of static symbol-scope entries in the report."""
+        """The number of static symbol-scope entries in the report."""
         return len(self.symbol_scope_entries)
 
     @property
     def unsupported_semantic_diagnostic_count(self) -> int:
-        """Return the number of unsupported-semantics diagnostics in the report."""
+        """The number of unsupported-semantics diagnostics in the report."""
         return len(self.unsupported_semantic_diagnostics)
 
     def to_dict(self) -> dict[str, object]:

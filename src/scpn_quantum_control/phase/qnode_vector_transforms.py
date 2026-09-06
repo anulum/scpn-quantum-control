@@ -58,17 +58,17 @@ class PhaseQNodeVectorTransformResult:
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when execution was intentionally refused."""
+        """True when execution was intentionally refused."""
         return not self.supported
 
     @property
     def output_dim(self) -> int:
-        """Return the vector-output dimension for Jacobian records."""
+        """The vector-output dimension for Jacobian records."""
         return 0 if self.values is None else int(self.values.size)
 
     @property
     def batch_size(self) -> int:
-        """Return the batch size for vmap records."""
+        """The batch size for vmap records."""
         return 0 if self.batched_params is None else int(self.batched_params.shape[0])
 
     def to_dict(self) -> dict[str, object]:
@@ -118,27 +118,27 @@ class PhaseQNodeVectorTransformReadinessSuiteResult:
 
     @property
     def record_count(self) -> int:
-        """Return total records."""
+        """Total records."""
         return len(self.records)
 
     @property
     def supported_count(self) -> int:
-        """Return supported records."""
+        """Supported records."""
         return sum(1 for record in self.records if record.supported)
 
     @property
     def fail_closed_count(self) -> int:
-        """Return fail-closed records."""
+        """Fail-closed records."""
         return sum(1 for record in self.records if record.fail_closed)
 
     @property
     def total_parameter_shift_evaluations(self) -> int:
-        """Return total parameter-shift evaluations across supported records."""
+        """Total parameter-shift evaluations across supported records."""
         return sum(record.parameter_shift_evaluations for record in self.records)
 
     @property
     def passed(self) -> bool:
-        """Return true when supported routes execute and unsafe routes refuse."""
+        """True when supported routes execute and unsafe routes refuse."""
         supported = {record.transform for record in self.records if record.supported}
         return (
             {"jacfwd", "jacrev", "jvp", "vjp", "hessian", "vmap.grad"}.issubset(supported)

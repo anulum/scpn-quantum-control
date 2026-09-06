@@ -154,7 +154,7 @@ class DifferentiableDependencyEnvironmentEvidence:
 
     @property
     def environment_ready(self) -> bool:
-        """Return whether the evidence row is locked without blockers."""
+        """Whether the evidence row is locked without blockers."""
         return self.evidence_status == "locked" and not self.blockers
 
     def to_dict(self) -> dict[str, object]:

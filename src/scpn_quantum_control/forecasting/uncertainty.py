@@ -83,7 +83,7 @@ class ResidualIntervalCalibrator:
 
     @property
     def target_coverage(self) -> float:
-        """Return the nominal independent-sample coverage target."""
+        """The nominal independent-sample coverage target."""
         return 1.0 - self.alpha
 
     def to_dict(self) -> dict[str, object]:

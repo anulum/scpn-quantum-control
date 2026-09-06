@@ -94,12 +94,12 @@ class ApprovalGatedFeedbackHardwareScheduler:
 
     @property
     def spent_qpu_seconds(self) -> float:
-        """Return cumulative QPU seconds reported through this scheduler."""
+        """Cumulative QPU seconds reported through this scheduler."""
         return self._spent_qpu_seconds
 
     @property
     def submissions(self) -> tuple[HardwareSubmissionRecord, ...]:
-        """Return immutable submission records."""
+        """Immutable submission records."""
         return tuple(self._submissions)
 
     def submit(self, command: FeedbackCommand) -> FeedbackResult:

@@ -188,22 +188,22 @@ class MappingRequest:
 
     @property
     def n_nodes(self) -> int:
-        """Return the oscillator count."""
+        """The oscillator count."""
         return len(self.detunings)
 
     @property
     def coupling_matrix(self) -> FloatArray:
-        """Return a fresh coupling matrix."""
+        """A fresh coupling matrix."""
         return np.asarray(self.couplings, dtype=np.float64)
 
     @property
     def detuning_array(self) -> FloatArray:
-        """Return a fresh detuning vector."""
+        """A fresh detuning vector."""
         return np.asarray(self.detunings, dtype=np.float64)
 
     @property
     def digest(self) -> str:
-        """Return the deterministic request digest."""
+        """The deterministic request digest."""
         payload = json.dumps(self.to_dict(), sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 

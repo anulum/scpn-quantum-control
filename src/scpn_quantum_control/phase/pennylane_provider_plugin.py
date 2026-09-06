@@ -465,7 +465,7 @@ class PennyLanePluginMatrixResult:
 
     @property
     def local_plugin_parity_ready(self) -> bool:
-        """Return whether bounded local/default-qubit PennyLane routes pass."""
+        """Whether bounded local/default-qubit PennyLane routes pass."""
         return all(
             route.status == "passed"
             for route in self.routes
@@ -474,12 +474,12 @@ class PennyLanePluginMatrixResult:
 
     @property
     def provider_plugin_execution_ready(self) -> bool:
-        """Return whether provider-plugin execution artefacts are attached."""
+        """Whether provider-plugin execution artefacts are attached."""
         return self.route_status("provider_plugin_execution") == "passed"
 
     @property
     def hardware_plugin_execution_ready(self) -> bool:
-        """Return whether live hardware-plugin execution artefacts are attached."""
+        """Whether live hardware-plugin execution artefacts are attached."""
         return all(
             route.status == "passed"
             for route in self.routes
@@ -488,17 +488,17 @@ class PennyLanePluginMatrixResult:
 
     @property
     def provider_plugin_gradient_parity_ready(self) -> bool:
-        """Return whether provider-plugin gradient parity artefacts are attached."""
+        """Whether provider-plugin gradient parity artefacts are attached."""
         return self.route_status("provider_plugin_gradient_parity") == "passed"
 
     @property
     def ready_for_provider_exceedance(self) -> bool:
-        """Return whether the matrix permits PennyLane provider-exceedance claims."""
+        """Whether the matrix permits PennyLane provider-exceedance claims."""
         return all(route.status == "passed" for route in self.routes)
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return routes that still block PennyLane provider-exceedance claims."""
+        """Routes that still block PennyLane provider-exceedance claims."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:

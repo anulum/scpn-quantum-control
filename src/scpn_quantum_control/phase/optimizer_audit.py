@@ -104,7 +104,7 @@ class OptimizerComparisonSuiteResult:
 
     @property
     def optimizers(self) -> tuple[str, ...]:
-        """Return optimizer names in first-seen order."""
+        """Optimizer names in first-seen order."""
         names: list[str] = []
         for record in self.records:
             if record.optimizer not in names:
@@ -113,7 +113,7 @@ class OptimizerComparisonSuiteResult:
 
     @property
     def certificate_failures(self) -> tuple[OptimizerConvergenceRecord, ...]:
-        """Return records whose convergence certificate failed."""
+        """Records whose convergence certificate failed."""
         return tuple(record for record in self.records if not record.certificate_passed)
 
     def records_for_start(self, start_index: int) -> tuple[OptimizerConvergenceRecord, ...]:

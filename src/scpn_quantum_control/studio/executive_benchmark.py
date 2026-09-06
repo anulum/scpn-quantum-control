@@ -278,7 +278,7 @@ class BenchmarkActionHandler(ActionHandler):
 
     @property
     def verb(self) -> str:
-        """Return ``"benchmark"``."""
+        """``"benchmark"``."""
         return BENCHMARK_VERB
 
     def plan(self, request: ExecutiveRequest, contract: VerbContract) -> ExecutionPlan:

@@ -130,7 +130,7 @@ class ParameterShiftQNNOptimizerBenchmarkCaseResult:
 
     @property
     def optimizer_names(self) -> tuple[str, ...]:
-        """Return optimizer names in suite order."""
+        """Optimizer names in suite order."""
         return tuple(result.name for result in self.optimizer_results)
 
     def optimizer_by_name(self, name: str) -> QNNOptimizerBaselineResult:
@@ -142,17 +142,17 @@ class ParameterShiftQNNOptimizerBenchmarkCaseResult:
 
     @property
     def parameter_shift_not_worse_than_finite_difference(self) -> bool:
-        """Return whether parameter shift is no worse than finite differences."""
+        """Whether parameter shift is no worse than finite differences."""
         return self.parameter_shift_best_loss <= self.finite_difference_best_loss + self.tolerance
 
     @property
     def derivative_free_wins(self) -> bool:
-        """Return whether the derivative-free baseline beats parameter shift."""
+        """Whether the derivative-free baseline beats parameter shift."""
         return self.derivative_free_best_loss + self.tolerance < self.parameter_shift_best_loss
 
     @property
     def passed(self) -> bool:
-        """Return whether this optimizer benchmark case passed."""
+        """Whether this optimizer benchmark case passed."""
         return bool(
             self.parameter_shift_not_worse_than_finite_difference
             and not self.derivative_free_wins
@@ -199,36 +199,36 @@ class ParameterShiftQNNOptimizerBenchmarkSuiteResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every benchmark case passed."""
+        """Whether every benchmark case passed."""
         return all(case.passed for case in self.cases)
 
     @property
     def case_count(self) -> int:
-        """Return the number of benchmark cases."""
+        """The number of benchmark cases."""
         return len(self.cases)
 
     @property
     def parameter_shift_not_worse_count(self) -> int:
-        """Return cases where parameter shift is no worse than finite differences."""
+        """Cases where parameter shift is no worse than finite differences."""
         return sum(
             1 for case in self.cases if case.parameter_shift_not_worse_than_finite_difference
         )
 
     @property
     def derivative_free_win_count(self) -> int:
-        """Return cases where the derivative-free baseline wins."""
+        """Cases where the derivative-free baseline wins."""
         return sum(1 for case in self.cases if case.derivative_free_wins)
 
     @property
     def optimizer_names(self) -> tuple[str, ...]:
-        """Return optimizer names in first-case order."""
+        """Optimizer names in first-case order."""
         if not self.cases:
             return ()
         return self.cases[0].optimizer_names
 
     @property
     def optimizer_count(self) -> int:
-        """Return the number of optimizer baselines per case."""
+        """The number of optimizer baselines per case."""
         return len(self.optimizer_names)
 
     def case_by_name(self, name: str) -> ParameterShiftQNNOptimizerBenchmarkCaseResult:

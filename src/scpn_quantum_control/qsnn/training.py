@@ -96,12 +96,12 @@ class QSNNParameterShiftDescentRun:
 
     @property
     def loss_history(self) -> tuple[float, ...]:
-        """Return the optimizer value history as a QSNN loss history."""
+        """The optimizer value history as a QSNN loss history."""
         return self.training.value_history
 
     @property
     def best_loss(self) -> float:
-        """Return the best observed full-batch QSNN loss."""
+        """The best observed full-batch QSNN loss."""
         return self.training.best_value
 
     def to_dict(self) -> dict[str, object]:

@@ -84,7 +84,7 @@ class KnownGroundStateObjective:
 
     @property
     def width(self) -> int:
-        """Return the number of trainable phase parameters."""
+        """The number of trainable phase parameters."""
         return int(self.initial_params.size)
 
     def value(self, params: FloatArray) -> float:
@@ -176,7 +176,7 @@ class GroundStateOptimizerRunRecord:
 
     @property
     def passed(self) -> bool:
-        """Return whether the convergence certificate passed."""
+        """Whether the convergence certificate passed."""
         return self.certificate.passed
 
     def to_dict(self) -> dict[str, object]:
@@ -256,12 +256,12 @@ class GroundStateOptimizerConvergenceSuiteResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every executable optimizer certificate passed."""
+        """Whether every executable optimizer certificate passed."""
         return bool(self.records) and all(record.passed for record in self.records)
 
     @property
     def optimizer_names(self) -> tuple[str, ...]:
-        """Return optimizer names in first-seen order."""
+        """Optimizer names in first-seen order."""
         names: list[str] = []
         for record in self.records:
             if record.optimizer not in names:
@@ -270,12 +270,12 @@ class GroundStateOptimizerConvergenceSuiteResult:
 
     @property
     def case_count(self) -> int:
-        """Return the number of ground-state objective cases."""
+        """The number of ground-state objective cases."""
         return len(self.objectives)
 
     @property
     def record_count(self) -> int:
-        """Return the number of executable optimizer rows."""
+        """The number of executable optimizer rows."""
         return len(self.records)
 
     def records_for_case(self, case_id: str) -> tuple[GroundStateOptimizerRunRecord, ...]:

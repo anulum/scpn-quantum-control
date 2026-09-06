@@ -95,22 +95,22 @@ class ParameterShiftQNNConvergenceCaseResult:
 
     @property
     def converged(self) -> bool:
-        """Return whether the best loss reached the requested tolerance."""
+        """Whether the best loss reached the requested tolerance."""
         return self.best_loss <= self.target_loss_tolerance
 
     @property
     def loss_drop_passed(self) -> bool:
-        """Return whether the training run reduced loss enough."""
+        """Whether the training run reduced loss enough."""
         return self.loss_drop >= self.min_loss_drop
 
     @property
     def accuracy_passed(self) -> bool:
-        """Return whether prediction accuracy met the requested threshold."""
+        """Whether prediction accuracy met the requested threshold."""
         return self.accuracy is not None and self.accuracy >= self.min_accuracy
 
     @property
     def passed(self) -> bool:
-        """Return whether this convergence case passed all thresholds."""
+        """Whether this convergence case passed all thresholds."""
         return bool(self.converged and self.loss_drop_passed and self.accuracy_passed)
 
     def to_dict(self) -> dict[str, object]:
@@ -154,37 +154,37 @@ class ParameterShiftQNNConvergenceSuiteResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every convergence case passed."""
+        """Whether every convergence case passed."""
         return all(case.passed for case in self.cases)
 
     @property
     def case_count(self) -> int:
-        """Return the number of convergence cases."""
+        """The number of convergence cases."""
         return len(self.cases)
 
     @property
     def passed_count(self) -> int:
-        """Return the number of passing convergence cases."""
+        """The number of passing convergence cases."""
         return sum(1 for case in self.cases if case.passed)
 
     @property
     def failed_count(self) -> int:
-        """Return the number of failing convergence cases."""
+        """The number of failing convergence cases."""
         return self.case_count - self.passed_count
 
     @property
     def total_gradient_evaluations(self) -> int:
-        """Return total gradient-evaluation accounting across cases."""
+        """Total gradient-evaluation accounting across cases."""
         return sum(case.gradient_evaluations for case in self.cases)
 
     @property
     def total_parameter_shift_evaluations(self) -> int:
-        """Return total parameter-shift objective evaluations across cases."""
+        """Total parameter-shift objective evaluations across cases."""
         return sum(case.parameter_shift_evaluations for case in self.cases)
 
     @property
     def unsuitable_scenario_count(self) -> int:
-        """Return the number of documented unsuitable scenarios."""
+        """The number of documented unsuitable scenarios."""
         return len(self.unsuitable_scenarios)
 
     def case_by_name(self, name: str) -> ParameterShiftQNNConvergenceCaseResult:
@@ -222,22 +222,22 @@ class ParameterShiftQNNMultiSeedConvergenceRunResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether this seeded run passed all convergence thresholds."""
+        """Whether this seeded run passed all convergence thresholds."""
         return self.case.passed
 
     @property
     def best_loss(self) -> float:
-        """Return the seeded run's best loss."""
+        """The seeded run's best loss."""
         return self.case.best_loss
 
     @property
     def accuracy(self) -> float | None:
-        """Return the seeded run's final classification accuracy."""
+        """The seeded run's final classification accuracy."""
         return self.case.accuracy
 
     @property
     def parameter_shift_evaluations(self) -> int:
-        """Return the seeded run's parameter-shift evaluation count."""
+        """The seeded run's parameter-shift evaluation count."""
         return self.case.parameter_shift_evaluations
 
     def to_dict(self) -> dict[str, object]:
@@ -270,47 +270,47 @@ class ParameterShiftQNNMultiSeedConvergenceCaseResult:
 
     @property
     def seed_count(self) -> int:
-        """Return the number of seeded starts."""
+        """The number of seeded starts."""
         return len(self.seeds)
 
     @property
     def passed(self) -> bool:
-        """Return whether every seeded run passed."""
+        """Whether every seeded run passed."""
         return all(run.passed for run in self.runs)
 
     @property
     def passed_run_count(self) -> int:
-        """Return the number of passing seeded runs."""
+        """The number of passing seeded runs."""
         return sum(1 for run in self.runs if run.passed)
 
     @property
     def failed_run_count(self) -> int:
-        """Return the number of failing seeded runs."""
+        """The number of failing seeded runs."""
         return self.seed_count - self.passed_run_count
 
     @property
     def total_parameter_shift_evaluations(self) -> int:
-        """Return total parameter-shift objective evaluations across seeds."""
+        """Total parameter-shift objective evaluations across seeds."""
         return sum(run.parameter_shift_evaluations for run in self.runs)
 
     @property
     def worst_best_loss(self) -> float:
-        """Return the largest best-loss observed across seeds."""
+        """The largest best-loss observed across seeds."""
         return float(max(run.best_loss for run in self.runs))
 
     @property
     def mean_best_loss(self) -> float:
-        """Return the mean best-loss across seeds."""
+        """The mean best-loss across seeds."""
         return float(np.mean([run.best_loss for run in self.runs]))
 
     @property
     def best_loss_std(self) -> float:
-        """Return the population standard deviation of best loss across seeds."""
+        """The population standard deviation of best loss across seeds."""
         return float(np.std([run.best_loss for run in self.runs]))
 
     @property
     def worst_accuracy(self) -> float:
-        """Return the lowest accuracy across seeded runs."""
+        """The lowest accuracy across seeded runs."""
         accuracies = [run.accuracy for run in self.runs]
         if any(value is None for value in accuracies):
             return float("-inf")
@@ -353,39 +353,39 @@ class ParameterShiftQNNMultiSeedConvergenceSuiteResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every case and seed passed."""
+        """Whether every case and seed passed."""
         return all(case.passed for case in self.cases)
 
     @property
     def case_count(self) -> int:
-        """Return the number of convergence cases."""
+        """The number of convergence cases."""
         return len(self.cases)
 
     @property
     def seed_count(self) -> int:
-        """Return the number of seeds per case."""
+        """The number of seeds per case."""
         if not self.cases:
             return 0
         return self.cases[0].seed_count
 
     @property
     def total_run_count(self) -> int:
-        """Return total seeded runs across cases."""
+        """Total seeded runs across cases."""
         return sum(case.seed_count for case in self.cases)
 
     @property
     def passed_run_count(self) -> int:
-        """Return passing seeded runs across cases."""
+        """Passing seeded runs across cases."""
         return sum(case.passed_run_count for case in self.cases)
 
     @property
     def failed_run_count(self) -> int:
-        """Return failing seeded runs across cases."""
+        """Failing seeded runs across cases."""
         return self.total_run_count - self.passed_run_count
 
     @property
     def total_parameter_shift_evaluations(self) -> int:
-        """Return total parameter-shift objective evaluations across cases."""
+        """Total parameter-shift objective evaluations across cases."""
         return sum(case.total_parameter_shift_evaluations for case in self.cases)
 
     def case_by_name(self, name: str) -> ParameterShiftQNNMultiSeedConvergenceCaseResult:

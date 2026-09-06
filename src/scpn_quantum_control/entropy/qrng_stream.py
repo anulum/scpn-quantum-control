@@ -57,7 +57,7 @@ class EntropyHealthReport:
 
     @property
     def healthy(self) -> bool:
-        """Return whether FIPS passed and every recorded NIST P-value cleared 0.01."""
+        """Whether FIPS passed and every recorded NIST P-value cleared 0.01."""
         return self.fips.passed and all(p >= 0.01 for p in self.nist_p_values.values())
 
 

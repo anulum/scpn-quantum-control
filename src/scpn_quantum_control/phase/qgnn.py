@@ -70,7 +70,7 @@ class KnmGraph:
 
     @property
     def n_nodes(self) -> int:
-        """Return the number of rows in the coupling matrix."""
+        """The number of rows in the coupling matrix."""
         return int(self.coupling.shape[0])
 
 

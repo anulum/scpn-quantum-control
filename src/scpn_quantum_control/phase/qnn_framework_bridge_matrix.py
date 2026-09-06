@@ -40,7 +40,7 @@ class BoundedQNNFrameworkBridgeCapability:
 
     @property
     def supported(self) -> bool:
-        """Return whether the declared bridge route is implemented."""
+        """Whether the declared bridge route is implemented."""
         return self.implemented and self.fail_closed_reason is None
 
     def to_dict(self) -> dict[str, object]:
@@ -73,22 +73,22 @@ class BoundedQNNFrameworkBridgeMatrixResult:
 
     @property
     def framework_count(self) -> int:
-        """Return the number of declared bridge rows."""
+        """The number of declared bridge rows."""
         return len(self.capabilities)
 
     @property
     def supported_count(self) -> int:
-        """Return the number of implemented bounded bridge routes."""
+        """The number of implemented bounded bridge routes."""
         return sum(1 for capability in self.capabilities if capability.supported)
 
     @property
     def fail_closed_count(self) -> int:
-        """Return the number of explicitly blocked routes."""
+        """The number of explicitly blocked routes."""
         return self.framework_count - self.supported_count
 
     @property
     def native_framework_autodiff_count(self) -> int:
-        """Return the number of implemented native-autodiff bridge routes."""
+        """The number of implemented native-autodiff bridge routes."""
         return sum(
             1
             for capability in self.capabilities
@@ -97,7 +97,7 @@ class BoundedQNNFrameworkBridgeMatrixResult:
 
     @property
     def tensor_output_count(self) -> int:
-        """Return the number of implemented tensor-output bridge routes."""
+        """The number of implemented tensor-output bridge routes."""
         return sum(
             1
             for capability in self.capabilities
@@ -106,7 +106,7 @@ class BoundedQNNFrameworkBridgeMatrixResult:
 
     @property
     def host_boundary_count(self) -> int:
-        """Return the number of implemented routes that cross a host boundary."""
+        """The number of implemented routes that cross a host boundary."""
         return sum(
             1
             for capability in self.capabilities
@@ -115,7 +115,7 @@ class BoundedQNNFrameworkBridgeMatrixResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every supported row has a concrete public API."""
+        """Whether every supported row has a concrete public API."""
         return all(
             bool(capability.public_api) and bool(capability.gradient_route)
             for capability in self.capabilities

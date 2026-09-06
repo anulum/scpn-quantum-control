@@ -179,32 +179,32 @@ class MultimodalObservationBatch:
 
     @property
     def n_samples(self) -> int:
-        """Return the number of independent trajectory rows."""
+        """The number of independent trajectory rows."""
         return int(self.series.shape[0])
 
     @property
     def history_steps(self) -> int:
-        """Return the number of historical time steps."""
+        """The number of historical time steps."""
         return int(self.series.shape[1])
 
     @property
     def n_nodes(self) -> int:
-        """Return the oscillator-node count."""
+        """The oscillator-node count."""
         return int(self.series.shape[2])
 
     @property
     def horizon_steps(self) -> int:
-        """Return the forecast-horizon length."""
+        """The forecast-horizon length."""
         return int(self.targets.shape[1])
 
     @property
     def event_channels(self) -> int:
-        """Return the number of exogenous event channels."""
+        """The number of exogenous event channels."""
         return int(self.events.shape[2])
 
     @property
     def missing_fraction(self) -> float:
-        """Return the missing fraction across input modalities."""
+        """The missing fraction across input modalities."""
         observed = int(np.count_nonzero(self.series_mask))
         observed += int(np.count_nonzero(self.graph_mask))
         observed += int(np.count_nonzero(self.event_mask))

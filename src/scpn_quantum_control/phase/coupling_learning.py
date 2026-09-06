@@ -70,12 +70,12 @@ class CouplingLearningResult:
 
     @property
     def best_loss(self) -> float:
-        """Return the best full-observation mean-squared loss."""
+        """The best full-observation mean-squared loss."""
         return self.training.best_value
 
     @property
     def max_abs_residual(self) -> float:
-        """Return the largest absolute observation residual."""
+        """The largest absolute observation residual."""
         return float(np.max(np.abs(self.residuals)))
 
     def to_dict(self) -> dict[str, object]:

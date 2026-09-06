@@ -55,12 +55,12 @@ class DifferentiableQNNExactAnswerCase:
 
     @property
     def n_samples(self) -> int:
-        """Return the number of labelled samples."""
+        """The number of labelled samples."""
         return int(self.features.shape[0])
 
     @property
     def n_features(self) -> int:
-        """Return the number of trainable phase features."""
+        """The number of trainable phase features."""
         return int(self.features.shape[1])
 
     def to_dict(self) -> dict[str, object]:
@@ -102,7 +102,7 @@ class DifferentiableKuramotoExactAnswerCase:
 
     @property
     def n_oscillators(self) -> int:
-        """Return the oscillator count."""
+        """The oscillator count."""
         return int(self.phases.size)
 
     def to_dict(self) -> dict[str, object]:
@@ -136,12 +136,12 @@ class DifferentiableDomainBenchmarkDatasetSuite:
 
     @property
     def case_count(self) -> int:
-        """Return the total number of exact-answer cases."""
+        """The total number of exact-answer cases."""
         return len(self.qnn_cases) + len(self.kuramoto_cases)
 
     @property
     def dataset_ids(self) -> tuple[str, ...]:
-        """Return all dataset identifiers in deterministic order."""
+        """All dataset identifiers in deterministic order."""
         return tuple(case.dataset_id for case in self.qnn_cases) + tuple(
             case.dataset_id for case in self.kuramoto_cases
         )
@@ -191,17 +191,17 @@ class DifferentiableDomainBenchmarkValidationSuite:
 
     @property
     def passed(self) -> bool:
-        """Return whether every exact-answer dataset validated."""
+        """Whether every exact-answer dataset validated."""
         return all(result.passed for result in self.results)
 
     @property
     def case_count(self) -> int:
-        """Return the number of validated datasets."""
+        """The number of validated datasets."""
         return len(self.results)
 
     @property
     def max_abs_error(self) -> float:
-        """Return the worst validation error across the suite."""
+        """The worst validation error across the suite."""
         if not self.results:
             return 0.0
         return max(result.max_abs_error for result in self.results)
@@ -271,12 +271,12 @@ class DifferentiablePublishedDomainBenchmarkSuite:
 
     @property
     def case_count(self) -> int:
-        """Return the number of published-domain cases."""
+        """The number of published-domain cases."""
         return len(self.cases)
 
     @property
     def dataset_ids(self) -> tuple[str, ...]:
-        """Return published-domain dataset identifiers."""
+        """Published-domain dataset identifiers."""
         return tuple(case.dataset_id for case in self.cases)
 
     def case_by_id(self, dataset_id: str) -> DifferentiablePublishedDomainBenchmarkCase:
@@ -336,12 +336,12 @@ class DifferentiablePublishedDomainBenchmarkValidationSuite:
 
     @property
     def passed(self) -> bool:
-        """Return whether every published-domain case validated."""
+        """Whether every published-domain case validated."""
         return all(result.passed for result in self.results)
 
     @property
     def case_count(self) -> int:
-        """Return the number of validated cases."""
+        """The number of validated cases."""
         return len(self.results)
 
     def to_dict(self) -> dict[str, object]:

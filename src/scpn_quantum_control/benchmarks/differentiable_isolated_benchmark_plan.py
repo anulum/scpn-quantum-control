@@ -69,7 +69,7 @@ class DifferentiableIsolatedBenchmarkPlanRow:
 
     @property
     def promotion_ready(self) -> bool:
-        """Return whether this row already has isolated evidence and no blockers."""
+        """Whether this row already has isolated evidence and no blockers."""
         return not self.blockers and all(
             classification == "isolated_affinity" for classification in self.source_classifications
         )

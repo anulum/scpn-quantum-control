@@ -513,7 +513,7 @@ class AsyncHardwareRunner:
 
             @property
             def submission_state(self) -> str:
-                """Return the provider-boundary state of this wrapper.
+                """The provider-boundary state of this wrapper.
 
                 Returns
                 -------
@@ -534,7 +534,7 @@ class AsyncHardwareRunner:
 
             @property
             def submission_error(self) -> BaseException | None:
-                """Return the recorded failure, or ``None`` if there is none.
+                """The recorded failure, or ``None`` if there is none.
 
                 A recorded failure is deliberately not retried: the provider may
                 already hold the work, so recovery is an explicit caller

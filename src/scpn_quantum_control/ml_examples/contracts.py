@@ -130,14 +130,14 @@ class ConvergenceCertificate:
 
     @property
     def metric_reached(self) -> bool:
-        """Return whether the optional metric threshold is met."""
+        """Whether the optional metric threshold is met."""
         if self.metric_value is None or self.metric_threshold is None:
             return True
         return self.metric_value >= self.metric_threshold
 
     @property
     def passed(self) -> bool:
-        """Return whether all preregistered convergence gates passed."""
+        """Whether all preregistered convergence gates passed."""
         return bool(
             self.target_reached
             and self.loss_drop_reached
@@ -199,7 +199,7 @@ class FrameworkEvidenceRow:
 
     @property
     def gate_passed(self) -> bool:
-        """Return whether this row satisfies its required/optional gate."""
+        """Whether this row satisfies its required/optional gate."""
         if not self.required:
             return self.status is not FrameworkStatus.FAILED
         return self.status is FrameworkStatus.RAN and self.passed is True
@@ -258,7 +258,7 @@ class ConvergenceSuiteEvidence:
 
     @property
     def passed(self) -> bool:
-        """Return whether every convergence and required-framework gate passed."""
+        """Whether every convergence and required-framework gate passed."""
         return all(certificate.passed for certificate in self.certificates) and all(
             row.gate_passed for row in self.framework_rows
         )

@@ -176,7 +176,7 @@ class DifferentiableRustPythonInventoryRow:
 
     @property
     def rustification_ready(self) -> bool:
-        """Return whether this row can be a Rust promotion input.
+        """Whether this row can be a Rust promotion input.
 
         Returns
         -------

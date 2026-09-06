@@ -151,7 +151,7 @@ class MultiscaleHierarchy:
 
     @property
     def level_names(self) -> tuple[str, ...]:
-        """Return fine-to-coarse level names."""
+        """Fine-to-coarse level names."""
         return tuple(level.name for level in self.levels)
 
 

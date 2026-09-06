@@ -207,7 +207,7 @@ class BarrenPlateauTrainabilityReport:
 
     @property
     def sample_count(self) -> int:
-        """Return the number of gradient samples in the report.
+        """The number of gradient samples in the report.
 
         Returns
         -------

@@ -162,7 +162,7 @@ class FIMWitness:
 
     @property
     def count_bound(self) -> bool:
-        """Return whether a complete count triple is attached."""
+        """Whether a complete count triple is attached."""
         return (
             self.shots is not None
             and self.leakage_events is not None

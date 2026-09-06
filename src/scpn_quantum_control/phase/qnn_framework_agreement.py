@@ -110,22 +110,22 @@ class ParameterShiftQNNFrameworkAgreementResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every named framework-gradient source agreed."""
+        """Whether every named framework-gradient source agreed."""
         return all(agreement.passed for agreement in self.agreements)
 
     @property
     def framework_count(self) -> int:
-        """Return the number of framework-gradient sources checked."""
+        """The number of framework-gradient sources checked."""
         return len(self.agreements)
 
     @property
     def passed_count(self) -> int:
-        """Return the number of framework-gradient sources that passed."""
+        """The number of framework-gradient sources that passed."""
         return sum(1 for agreement in self.agreements if agreement.passed)
 
     @property
     def failed_count(self) -> int:
-        """Return the number of framework-gradient sources that failed."""
+        """The number of framework-gradient sources that failed."""
         return self.framework_count - self.passed_count
 
     def to_dict(self) -> dict[str, object]:
@@ -147,7 +147,7 @@ class ParameterShiftQNNFrameworkAgreementResult:
 
     @property
     def conformance_table(self) -> tuple[_ConformanceTableRow, ...]:
-        """Return same-circuit framework conformance rows for this case."""
+        """Same-circuit framework conformance rows for this case."""
         rows: list[_ConformanceTableRow] = [
             _scpn_exact_state_conformance_row(
                 case_name=self.name,
@@ -188,27 +188,27 @@ class ParameterShiftQNNFrameworkAgreementSuiteResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every suite case passed."""
+        """Whether every suite case passed."""
         return all(case.passed for case in self.cases)
 
     @property
     def case_count(self) -> int:
-        """Return the number of agreement cases."""
+        """The number of agreement cases."""
         return len(self.cases)
 
     @property
     def framework_count(self) -> int:
-        """Return the total number of framework-gradient checks."""
+        """The total number of framework-gradient checks."""
         return sum(case.framework_count for case in self.cases)
 
     @property
     def passed_count(self) -> int:
-        """Return the total number of passing framework-gradient checks."""
+        """The total number of passing framework-gradient checks."""
         return sum(case.passed_count for case in self.cases)
 
     @property
     def failed_count(self) -> int:
-        """Return the total number of failing framework-gradient checks."""
+        """The total number of failing framework-gradient checks."""
         return sum(case.failed_count for case in self.cases)
 
     def case_by_name(self, name: str) -> ParameterShiftQNNFrameworkAgreementResult:
@@ -235,7 +235,7 @@ class ParameterShiftQNNFrameworkAgreementSuiteResult:
 
     @property
     def conformance_table(self) -> tuple[_ConformanceTableRow, ...]:
-        """Return flattened framework conformance rows for every suite case."""
+        """Flattened framework conformance rows for every suite case."""
         rows: list[_ConformanceTableRow] = []
         for case in self.cases:
             rows.extend(case.conformance_table)

@@ -61,7 +61,7 @@ class DifferentiableBenchmarkClassificationCase:
 
     @property
     def passed(self) -> bool:
-        """Return whether the observed classification matches the contract."""
+        """Whether the observed classification matches the contract."""
         return (
             self.metadata.classification == self.expected_classification
             and self.metadata.failure_class == self.expected_failure_class

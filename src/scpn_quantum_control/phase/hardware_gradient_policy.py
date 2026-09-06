@@ -110,12 +110,12 @@ class HardwareGradientPolicy:
 
     @property
     def normalised_allowed_providers(self) -> tuple[str, ...]:
-        """Return provider identifiers in planner-normalised form."""
+        """Provider identifiers in planner-normalised form."""
         return _normalise_tuple(self.allowed_providers)
 
     @property
     def normalised_hardware_backend_aliases(self) -> tuple[str, ...]:
-        """Return hardware backend aliases in planner-normalised form."""
+        """Hardware backend aliases in planner-normalised form."""
         return _normalise_tuple(self.hardware_backend_aliases)
 
 

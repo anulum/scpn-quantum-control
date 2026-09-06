@@ -87,7 +87,7 @@ class FeedbackBudgetEstimate:
 
     @property
     def total_reserved_seconds(self) -> float:
-        """Return total requested reservation time in seconds."""
+        """Total requested reservation time in seconds."""
         return self.estimated_execution_seconds + self.queue_seconds + self.calibration_seconds
 
 
@@ -128,7 +128,7 @@ class FeedbackSubmissionPackage:
 
     @property
     def ready_platforms(self) -> tuple[str, ...]:
-        """Return platforms that satisfy the declared execution requirements."""
+        """Platforms that satisfy the declared execution requirements."""
         return tuple(
             decision.platform.name
             for decision in self.platform_readiness

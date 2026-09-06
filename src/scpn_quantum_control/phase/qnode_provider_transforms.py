@@ -79,17 +79,17 @@ class ProviderQNodeTransformResult:
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when execution was intentionally refused."""
+        """True when execution was intentionally refused."""
         return not self.supported
 
     @property
     def parameter_shift_evaluations(self) -> int:
-        """Return shifted provider callback evaluations, excluding baseline samples."""
+        """Shifted provider callback evaluations, excluding baseline samples."""
         return self.total_evaluations
 
     @property
     def batch_size(self) -> int:
-        """Return provider vmap batch size."""
+        """Provider vmap batch size."""
         return 0 if self.batched_params is None else int(self.batched_params.shape[0])
 
     def to_dict(self) -> dict[str, object]:
@@ -153,27 +153,27 @@ class ProviderQNodeTransformReadinessSuiteResult:
 
     @property
     def record_count(self) -> int:
-        """Return total records."""
+        """Total records."""
         return len(self.records)
 
     @property
     def supported_count(self) -> int:
-        """Return supported record count."""
+        """Supported record count."""
         return sum(1 for record in self.records if record.supported)
 
     @property
     def fail_closed_count(self) -> int:
-        """Return fail-closed record count."""
+        """Fail-closed record count."""
         return sum(1 for record in self.records if record.fail_closed)
 
     @property
     def total_parameter_shift_evaluations(self) -> int:
-        """Return shifted provider callback evaluations across supported records."""
+        """Shifted provider callback evaluations across supported records."""
         return sum(record.parameter_shift_evaluations for record in self.records)
 
     @property
     def passed(self) -> bool:
-        """Return true when supported records execute and unsafe records fail closed."""
+        """True when supported records execute and unsafe records fail closed."""
         supported = {record.transform for record in self.records if record.supported}
         return (
             {"grad", "value_and_grad", "jvp", "jacfwd", "vmap.grad"}.issubset(supported)

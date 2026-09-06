@@ -569,7 +569,7 @@ class CycleSample:
 
     @property
     def duration_ns(self) -> int:
-        """Return the executed cycle duration.
+        """The executed cycle duration.
 
         Returns
         -------
@@ -581,7 +581,7 @@ class CycleSample:
 
     @property
     def deadline_missed(self) -> bool:
-        """Return whether the cycle finished after its deadline.
+        """Whether the cycle finished after its deadline.
 
         Returns
         -------
@@ -683,7 +683,7 @@ class SubMicrosecondTracker:
 
     @property
     def target_period_ns(self) -> float:
-        """Return the target start-to-start period.
+        """The target start-to-start period.
 
         Returns
         -------
@@ -695,7 +695,7 @@ class SubMicrosecondTracker:
 
     @property
     def cycles_observed(self) -> int:
-        """Return the total number of recorded cycles.
+        """The total number of recorded cycles.
 
         Returns
         -------

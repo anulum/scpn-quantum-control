@@ -60,7 +60,7 @@ class DifferentiableProgrammingBenchmarkResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether implemented gradients match the analytic reference."""
+        """Whether implemented gradients match the analytic reference."""
         return (
             not self.blocked_reasons
             and self.max_abs_gradient_error <= 1.0e-12
@@ -105,7 +105,7 @@ class DifferentiableProgrammingExternalReferenceResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether program AD matches the external reference backend."""
+        """Whether program AD matches the external reference backend."""
         return self.max_abs_value_error <= 1.0e-10 and self.max_abs_gradient_error <= 1.0e-10
 
 
@@ -175,7 +175,7 @@ class QuantumGradientBenchmarkResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether parameter-shift gradients passed all reference checks."""
+        """Whether parameter-shift gradients passed all reference checks."""
         return (
             self.verification_passed
             and self.max_abs_reference_error <= 1.0e-12

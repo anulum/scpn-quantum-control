@@ -153,12 +153,12 @@ class ProviderHardwareGradientPreparationAuditResult:
 
     @property
     def blocked_records(self) -> tuple[ProviderHardwareGradientPreparationRecord, ...]:
-        """Return records that failed closed."""
+        """Records that failed closed."""
         return tuple(record for record in self.records if record.blocked)
 
     @property
     def failing_records(self) -> tuple[ProviderHardwareGradientPreparationRecord, ...]:
-        """Return records whose observed state missed the expected boundary."""
+        """Records whose observed state missed the expected boundary."""
         return tuple(record for record in self.records if not record.passed)
 
     @property

@@ -79,12 +79,12 @@ class ParameterShiftTrainingResult:
 
     @property
     def value_history(self) -> tuple[float, ...]:
-        """Return the initial value plus every recorded step value."""
+        """The initial value plus every recorded step value."""
         return (self.initial_value, *(step.value for step in self.steps))
 
     @property
     def accepted_value_history(self) -> tuple[float, ...]:
-        """Return the initial value plus accepted-step values."""
+        """The initial value plus accepted-step values."""
         return (
             self.initial_value,
             *(step.value for step in self.steps if step.accepted),

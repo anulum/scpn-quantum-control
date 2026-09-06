@@ -75,12 +75,12 @@ class DifferentiableModelTrainingEvidenceSuite:
 
     @property
     def model_names(self) -> tuple[str, ...]:
-        """Return case names in deterministic order."""
+        """Case names in deterministic order."""
         return tuple(record.name for record in self.records)
 
     @property
     def passed(self) -> bool:
-        """Return true when every registered case passes."""
+        """True when every registered case passes."""
         return bool(self.records) and all(record.passed for record in self.records)
 
     def to_dict(self) -> dict[str, object]:
@@ -125,22 +125,22 @@ class RegisteredDifferentiableTrainingSuiteAuditResult:
 
     @property
     def evidence_suite_passed(self) -> bool:
-        """Return true when the underlying registered evidence suite passes."""
+        """True when the underlying registered evidence suite passes."""
         return self.evidence_suite.passed
 
     @property
     def passed_model_families(self) -> tuple[str, ...]:
-        """Return model families with local training-suite evidence."""
+        """Model families with local training-suite evidence."""
         return tuple(record.model_family for record in self.records if record.ready)
 
     @property
     def blocked_model_families(self) -> tuple[str, ...]:
-        """Return model families still blocked from training-suite promotion."""
+        """Model families still blocked from training-suite promotion."""
         return tuple(record.model_family for record in self.records if not record.ready)
 
     @property
     def ready_for_training_suite_promotion(self) -> bool:
-        """Return true only when every requested training-suite lane is evidenced."""
+        """True only when every requested training-suite lane is evidenced."""
         return self.evidence_suite_passed and all(record.ready for record in self.records)
 
     def to_dict(self) -> dict[str, object]:

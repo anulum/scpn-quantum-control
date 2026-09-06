@@ -82,12 +82,12 @@ class AerQuantumEntropySource:
 
     @property
     def kind(self) -> QuantumSourceKind:
-        """Return the configured source kind."""
+        """The configured source kind."""
         return self._kind
 
     @property
     def bits_per_shot(self) -> int:
-        """Return the number of measured bits produced per Aer shot."""
+        """The number of measured bits produced per Aer shot."""
         return self._register_qubits
 
     def _build_circuit(self) -> Any:

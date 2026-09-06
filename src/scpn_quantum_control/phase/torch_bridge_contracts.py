@@ -295,12 +295,12 @@ class PhaseTorchTrainingLoopAuditResult:
 
     @property
     def initial_loss(self) -> float:
-        """Return the first recorded training loss."""
+        """The first recorded training loss."""
         return float(self.loss_history[0])
 
     @property
     def final_loss(self) -> float:
-        """Return the final recorded training loss."""
+        """The final recorded training loss."""
         return float(self.loss_history[-1])
 
     def to_dict(self) -> dict[str, object]:
@@ -538,12 +538,12 @@ class PhaseTorchCompileBoundaryAuditResult:
 
     @property
     def non_fullgraph_passed(self) -> bool:
-        """Return whether the non-fullgraph execution baseline passed."""
+        """Whether the non-fullgraph execution baseline passed."""
         return self.route_status("non_fullgraph_compile") == "passed"
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return compile-boundary routes that remain blocked."""
+        """Compile-boundary routes that remain blocked."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:
@@ -643,12 +643,12 @@ class PhaseTorchEcosystemMaturityAuditResult:
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return PyTorch ecosystem routes that remain blocked."""
+        """PyTorch ecosystem routes that remain blocked."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     @property
     def ready_for_provider_exceedance(self) -> bool:
-        """Return whether PyTorch ecosystem evidence permits provider exceedance."""
+        """Whether PyTorch ecosystem evidence permits provider exceedance."""
         return not self.open_gaps
 
     def route_status(self, name: str) -> str:
@@ -769,7 +769,7 @@ class PhaseTorchPhaseQNodeLoweringMatrixResult:
 
     @property
     def bounded_qnn_routes_ready(self) -> bool:
-        """Return whether the bounded QNN Torch routes are declared ready."""
+        """Whether the bounded QNN Torch routes are declared ready."""
         return all(
             route.status == "passed"
             for route in self.routes
@@ -778,7 +778,7 @@ class PhaseTorchPhaseQNodeLoweringMatrixResult:
 
     @property
     def arbitrary_phase_qnode_lowering_ready(self) -> bool:
-        """Return whether arbitrary registered Phase-QNode lowering is ready."""
+        """Whether arbitrary registered Phase-QNode lowering is ready."""
         return all(
             route.status == "passed"
             for route in self.routes
@@ -787,12 +787,12 @@ class PhaseTorchPhaseQNodeLoweringMatrixResult:
 
     @property
     def ready_for_provider_exceedance(self) -> bool:
-        """Return whether this matrix permits PyTorch provider-exceedance claims."""
+        """Whether this matrix permits PyTorch provider-exceedance claims."""
         return all(route.status == "passed" for route in self.routes)
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return routes that still block PyTorch provider-exceedance claims."""
+        """Routes that still block PyTorch provider-exceedance claims."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:

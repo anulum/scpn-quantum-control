@@ -160,7 +160,7 @@ class DifferentiableArchitectureMapLayer:
 
     @property
     def rustification_ready(self) -> bool:
-        """Return whether the layer is free of declared Rustification blockers.
+        """Whether the layer is free of declared Rustification blockers.
 
         Returns
         -------

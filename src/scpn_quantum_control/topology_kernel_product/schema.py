@@ -104,7 +104,7 @@ class TopologyKernelConfig:
 
     @property
     def feature_dim(self) -> int:
-        """Return the number of canonical undirected graph edges."""
+        """The number of canonical undirected graph edges."""
         return self.n_qubits * (self.n_qubits - 1) // 2
 
 

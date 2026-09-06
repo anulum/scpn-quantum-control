@@ -129,14 +129,14 @@ class HardwareGradientCampaignSpec:
 
     @property
     def evaluations(self) -> int:
-        """Return shifted hardware evaluations required by the method."""
+        """Shifted hardware evaluations required by the method."""
         if self.method == "spsa":
             return 2 * self.spsa_repetitions
         return 2 * self.n_params * self.shift_terms
 
     @property
     def estimated_total_shots(self) -> int:
-        """Return total shots implied by the no-submit campaign budget."""
+        """Total shots implied by the no-submit campaign budget."""
         return self.evaluations * self.shots_per_evaluation
 
     def replay_schema(self) -> HardwareGradientReplaySchema:
@@ -241,12 +241,12 @@ class HardwareGradientCampaignPlan:
 
     @property
     def approved_for_preparation(self) -> bool:
-        """Return whether policy approves preparation metadata."""
+        """Whether policy approves preparation metadata."""
         return self.policy_decision.approved
 
     @property
     def fail_closed(self) -> bool:
-        """Return whether the policy blocks this campaign."""
+        """Whether the policy blocks this campaign."""
         return self.policy_decision.fail_closed
 
     def to_dict(self) -> dict[str, object]:
@@ -271,32 +271,32 @@ class HardwareGradientCampaignSuite:
 
     @property
     def plan_count(self) -> int:
-        """Return total campaign plans."""
+        """Total campaign plans."""
         return len(self.plans)
 
     @property
     def approved_count(self) -> int:
-        """Return policy-approved preparation plans."""
+        """Policy-approved preparation plans."""
         return sum(plan.approved_for_preparation for plan in self.plans)
 
     @property
     def blocked_count(self) -> int:
-        """Return blocked plans."""
+        """Blocked plans."""
         return sum(plan.fail_closed for plan in self.plans)
 
     @property
     def hardware_execution_count(self) -> int:
-        """Return plans that performed live hardware execution."""
+        """Plans that performed live hardware execution."""
         return sum(plan.hardware_execution for plan in self.plans)
 
     @property
     def gradient_available_count(self) -> int:
-        """Return plans that contain hardware-gradient values."""
+        """Plans that contain hardware-gradient values."""
         return sum(plan.gradient_available for plan in self.plans)
 
     @property
     def passed(self) -> bool:
-        """Return whether the suite preserves no-submit boundaries."""
+        """Whether the suite preserves no-submit boundaries."""
         return (
             self.plan_count >= 2
             and self.approved_count >= 2

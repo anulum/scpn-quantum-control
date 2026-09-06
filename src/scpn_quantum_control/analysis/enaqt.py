@@ -141,22 +141,22 @@ class ENAQTResult:
 
     @property
     def optimal_r(self) -> float:
-        """Return the optimal efficiency under the legacy field name."""
+        """The optimal efficiency under the legacy field name."""
         return self.optimal_efficiency
 
     @property
     def r_values(self) -> NDArray[np.float64]:
-        """Return efficiency values under the legacy field name."""
+        """Efficiency values under the legacy field name."""
         return self.efficiency_values
 
     @property
     def coherent_r(self) -> float:
-        """Return zero-dephasing efficiency under the legacy field name."""
+        """Zero-dephasing efficiency under the legacy field name."""
         return self.coherent_efficiency
 
     @property
     def classical_r(self) -> float:
-        """Return the largest-scanned-gamma endpoint under the legacy name.
+        """The largest-scanned-gamma endpoint under the legacy name.
 
         Large but finite dephasing is not asserted to be a classical limit.
         """

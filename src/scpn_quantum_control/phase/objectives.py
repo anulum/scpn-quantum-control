@@ -150,12 +150,12 @@ class ComposedPhaseObjective:
 
     @property
     def parameter_shift_compatible(self) -> bool:
-        """Return whether every term is compatible with parameter-shift."""
+        """Whether every term is compatible with parameter-shift."""
         return all(term.parameter_shift_compatible for term in self.terms)
 
     @property
     def term_names(self) -> tuple[str, ...]:
-        """Return objective term names."""
+        """Objective term names."""
         return tuple(term.name for term in self.terms)
 
     def evaluate(self, params: ArrayLike) -> ObjectiveGradientEvaluation:
@@ -245,7 +245,7 @@ class ComposedObjectiveTrainingResult:
 
     @property
     def accepted_value_history(self) -> tuple[float, ...]:
-        """Return initial value plus accepted-step values."""
+        """Initial value plus accepted-step values."""
         return (
             self.initial_value,
             *(step.value for step in self.steps if step.accepted),

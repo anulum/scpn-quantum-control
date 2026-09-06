@@ -68,7 +68,7 @@ class ParameterShiftQNNFiniteShotProbeRecord:
 
     @property
     def total_shots(self) -> int:
-        """Return total Bernoulli shots consumed by this plus/minus pair."""
+        """Total Bernoulli shots consumed by this plus/minus pair."""
         return 2 * self.n_samples * self.shots_per_sample
 
     def to_dict(self) -> dict[str, object]:
@@ -112,22 +112,22 @@ class ParameterShiftQNNFiniteShotGradientResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether finite-shot errors fit inside confidence radii."""
+        """Whether finite-shot errors fit inside confidence radii."""
         return self.max_abs_error <= self.max_confidence_radius
 
     @property
     def probe_count(self) -> int:
-        """Return the number of shifted plus/minus loss probes."""
+        """The number of shifted plus/minus loss probes."""
         return 2 * len(self.records)
 
     @property
     def parameter_shift_evaluations(self) -> int:
-        """Return parameter-shift loss evaluations used by the estimator."""
+        """Parameter-shift loss evaluations used by the estimator."""
         return self.probe_count
 
     @property
     def total_shots(self) -> int:
-        """Return total Bernoulli shots consumed by the estimator."""
+        """Total Bernoulli shots consumed by the estimator."""
         return sum(record.total_shots for record in self.records)
 
     def to_dict(self) -> dict[str, object]:
@@ -181,17 +181,17 @@ class ParameterShiftQNNFiniteShotConvergenceCaseResult:
 
     @property
     def converged(self) -> bool:
-        """Return whether the best deterministic replay loss met tolerance."""
+        """Whether the best deterministic replay loss met tolerance."""
         return self.best_loss <= self.target_loss_tolerance
 
     @property
     def loss_drop_passed(self) -> bool:
-        """Return whether noisy-gradient training reduced loss enough."""
+        """Whether noisy-gradient training reduced loss enough."""
         return self.loss_drop >= self.min_loss_drop
 
     @property
     def passed(self) -> bool:
-        """Return whether this finite-shot convergence case passed."""
+        """Whether this finite-shot convergence case passed."""
         return bool(self.converged and self.loss_drop_passed)
 
     def to_dict(self) -> dict[str, object]:
@@ -254,32 +254,32 @@ class ParameterShiftQNNFiniteShotConvergenceSuiteResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every finite-shot convergence case passed."""
+        """Whether every finite-shot convergence case passed."""
         return all(case.passed for case in self.cases)
 
     @property
     def case_count(self) -> int:
-        """Return the number of convergence cases."""
+        """The number of convergence cases."""
         return len(self.cases)
 
     @property
     def passed_count(self) -> int:
-        """Return the number of passing cases."""
+        """The number of passing cases."""
         return sum(1 for case in self.cases if case.passed)
 
     @property
     def failed_count(self) -> int:
-        """Return the number of failing cases."""
+        """The number of failing cases."""
         return self.case_count - self.passed_count
 
     @property
     def total_shots(self) -> int:
-        """Return total Bernoulli shots consumed across cases."""
+        """Total Bernoulli shots consumed across cases."""
         return sum(case.total_shots for case in self.cases)
 
     @property
     def total_parameter_shift_evaluations(self) -> int:
-        """Return total shifted loss evaluations across cases."""
+        """Total shifted loss evaluations across cases."""
         return sum(case.total_parameter_shift_evaluations for case in self.cases)
 
     def case_by_name(self, name: str) -> ParameterShiftQNNFiniteShotConvergenceCaseResult:

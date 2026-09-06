@@ -37,7 +37,7 @@ class PhaseTensorFlowMaintenanceRoute:
 
     @property
     def fail_closed(self) -> bool:
-        """Return whether the route is intentionally non-promotional."""
+        """Whether the route is intentionally non-promotional."""
         return self.decision in {"compatibility_only", "blocked"}
 
     def __post_init__(self) -> None:
@@ -82,32 +82,32 @@ class PhaseTensorFlowMaintenanceReport:
 
     @property
     def compatibility_only(self) -> bool:
-        """Return whether TensorFlow is scoped as a compatibility-only surface."""
+        """Whether TensorFlow is scoped as a compatibility-only surface."""
         return self.strategy == "compatibility_only"
 
     @property
     def graph_xla_parity_promoted(self) -> bool:
-        """Return whether broad TensorFlow Graph/XLA parity is promoted."""
+        """Whether broad TensorFlow Graph/XLA parity is promoted."""
         return False
 
     @property
     def maintained_compatibility_routes(self) -> tuple[str, ...]:
-        """Return bounded TensorFlow routes kept under maintenance."""
+        """Bounded TensorFlow routes kept under maintenance."""
         return tuple(route.name for route in self.routes if route.decision == "compatibility_only")
 
     @property
     def blocked_routes(self) -> tuple[str, ...]:
-        """Return TensorFlow routes that remain blocked."""
+        """TensorFlow routes that remain blocked."""
         return tuple(route.name for route in self.routes if route.decision == "blocked")
 
     @property
     def ready_for_provider_exceedance(self) -> bool:
-        """Return whether TensorFlow can support provider-exceedance claims."""
+        """Whether TensorFlow can support provider-exceedance claims."""
         return False
 
     @property
     def stale_claim_blockers(self) -> tuple[str, ...]:
-        """Return claim families that must stay blocked in public surfaces."""
+        """Claim families that must stay blocked in public surfaces."""
         return (
             "arbitrary_phase_qnode_tensorflow_lowering",
             "full_tensorflow_graph_autodiff_through_simulators",

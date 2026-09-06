@@ -55,7 +55,7 @@ class AnalogMappingEvidenceBundle:
 
     @property
     def digest(self) -> str:
-        """Return SHA-256 over the bundle payload excluding the digest field."""
+        """SHA-256 over the bundle payload excluding the digest field."""
         encoded = json.dumps(self._payload(), sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 

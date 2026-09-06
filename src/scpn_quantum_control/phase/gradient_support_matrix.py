@@ -67,7 +67,7 @@ class GradientSupportPlan:
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when this request is intentionally unsupported."""
+        """True when this request is intentionally unsupported."""
         return not self.supported
 
     def to_dict(self) -> dict[str, object]:
@@ -102,17 +102,17 @@ class GradientSupportMatrixAuditResult:
 
     @property
     def supported_plans(self) -> tuple[GradientSupportPlan, ...]:
-        """Return supported audit plans."""
+        """Supported audit plans."""
         return tuple(plan for plan in self.plans if plan.supported)
 
     @property
     def blocked_plans(self) -> tuple[GradientSupportPlan, ...]:
-        """Return fail-closed audit plans."""
+        """Fail-closed audit plans."""
         return tuple(plan for plan in self.plans if plan.fail_closed)
 
     @property
     def failing_plans(self) -> tuple[GradientSupportPlan, ...]:
-        """Return audit plans that violate expected support invariants."""
+        """Audit plans that violate expected support invariants."""
         expected_supported = {
             ("ry", "pauli_expectation", "statevector", "grad", "native"),
             ("rz", "kuramoto_xy_energy", "qasm_simulator", "grad", "native"),

@@ -108,7 +108,7 @@ class GaussianRBFSurrogate:
 
     @property
     def n_parameters(self) -> int:
-        """Return the surrogate input dimension."""
+        """The surrogate input dimension."""
         return int(self.centres.shape[1])
 
     def predict(self, inputs: FloatArray) -> FloatArray:

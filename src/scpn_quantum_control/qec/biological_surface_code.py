@@ -163,7 +163,7 @@ class BiologicalMWPMDecoder:
 
     @property
     def last_decoder_backend(self) -> str:
-        """Return backend used by most recent decode call."""
+        """Backend used by most recent decode call."""
         return self._last_decoder_backend
 
     def decode_z_errors(self, syndrome_x: NDArray[np.int8]) -> NDArray[np.int8]:

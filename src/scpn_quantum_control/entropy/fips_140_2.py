@@ -49,7 +49,7 @@ class FipsHealthReport:
 
     @property
     def passed(self) -> bool:
-        """Return whether every FIPS sub-test passed."""
+        """Whether every FIPS sub-test passed."""
         return self.monobit_pass and self.poker_pass and self.runs_pass and self.long_run_pass
 
 

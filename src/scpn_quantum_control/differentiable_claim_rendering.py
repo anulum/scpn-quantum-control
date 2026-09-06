@@ -23,37 +23,37 @@ class _ClaimRow(Protocol):
 
     @property
     def claim_id(self) -> str:
-        """Return the stable claim identity."""
+        """The stable claim identity."""
         ...
 
     @property
     def claim_text(self) -> str:
-        """Return the governed claim statement."""
+        """The governed claim statement."""
         ...
 
     @property
     def evidence_artifact_ids(self) -> tuple[str, ...]:
-        """Return supporting evidence identities."""
+        """Supporting evidence identities."""
         ...
 
     @property
     def benchmark_artifact_ids(self) -> tuple[str, ...]:
-        """Return benchmark evidence identities."""
+        """Benchmark evidence identities."""
         ...
 
     @property
     def known_gaps(self) -> tuple[str, ...]:
-        """Return explicit claim limitations."""
+        """Explicit claim limitations."""
         ...
 
     @property
     def promotion_status(self) -> str:
-        """Return the internal promotion status."""
+        """The internal promotion status."""
         ...
 
     @property
     def claim_boundary(self) -> str:
-        """Return the exact public boundary."""
+        """The exact public boundary."""
         ...
 
 
@@ -62,37 +62,37 @@ class _SupportSurfaceAlignment(Protocol):
 
     @property
     def schema(self) -> str:
-        """Return the alignment schema."""
+        """The alignment schema."""
         ...
 
     @property
     def artifact_id(self) -> str:
-        """Return the alignment artefact identity."""
+        """The alignment artefact identity."""
         ...
 
     @property
     def passed(self) -> bool:
-        """Return whether the alignment passed."""
+        """Whether the alignment passed."""
         ...
 
     @property
     def claim_boundary(self) -> str:
-        """Return the alignment interpretation boundary."""
+        """The alignment interpretation boundary."""
         ...
 
     @property
     def checked_claim_ids(self) -> tuple[str, ...]:
-        """Return audited claim identities."""
+        """Audited claim identities."""
         ...
 
     @property
     def checked_paths(self) -> tuple[str, ...]:
-        """Return audited repository paths."""
+        """Audited repository paths."""
         ...
 
     @property
     def errors(self) -> tuple[str, ...]:
-        """Return ordered alignment errors."""
+        """Ordered alignment errors."""
         ...
 
 

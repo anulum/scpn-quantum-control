@@ -179,7 +179,7 @@ class ParityProjectedOptimisationTrace:
 
     @property
     def accepted_steps(self) -> int:
-        """Return the number of strict-decrease proposals accepted."""
+        """The number of strict-decrease proposals accepted."""
         return sum(step.accepted for step in self.steps)
 
 

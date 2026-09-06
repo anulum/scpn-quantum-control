@@ -49,27 +49,27 @@ class TransformAlgebraCaseLike(Protocol):
 
     @property
     def case_id(self) -> str:
-        """Return the source audit case identifier."""
+        """The source audit case identifier."""
 
     @property
     def status(self) -> TransformAlgebraSupportStatus:
-        """Return the source audit case status."""
+        """The source audit case status."""
 
     @property
     def residual(self) -> float | None:
-        """Return the source audit case residual when it executed."""
+        """The source audit case residual when it executed."""
 
     @property
     def tolerance(self) -> float:
-        """Return the source audit case tolerance."""
+        """The source audit case tolerance."""
 
     @property
     def evidence(self) -> tuple[str, ...]:
-        """Return evidence labels emitted by the source audit case."""
+        """Evidence labels emitted by the source audit case."""
 
     @property
     def blocked_reasons(self) -> tuple[str, ...]:
-        """Return fail-closed reasons emitted by the source audit case."""
+        """Fail-closed reasons emitted by the source audit case."""
 
 
 @dataclass(frozen=True)

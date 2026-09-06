@@ -67,7 +67,7 @@ class PerSizeLayoutTransferPlan:
 
     @property
     def circuit_count(self) -> int:
-        """Return 36 mains plus six readout circuits for the frozen matrix."""
+        """36 mains plus six readout circuits for the frozen matrix."""
         return sum(
             len(block.arms) * len(REPETITIONS) + len(block.readout_circuits)
             for block in self.base.blocks
@@ -75,12 +75,12 @@ class PerSizeLayoutTransferPlan:
 
     @property
     def all_gates_pass(self) -> bool:
-        """Return whether every preregistered per-size depth gate passes."""
+        """Whether every preregistered per-size depth gate passes."""
         return self.base.all_gates_pass
 
     @property
     def total_shots(self) -> int:
-        """Return the frozen full-matrix shot budget."""
+        """The frozen full-matrix shot budget."""
         main_circuits = sum(len(block.arms) * len(REPETITIONS) for block in self.base.blocks)
         readout_circuits = sum(len(block.readout_circuits) for block in self.base.blocks)
         return main_circuits * self.base.main_shots + readout_circuits * self.base.readout_shots

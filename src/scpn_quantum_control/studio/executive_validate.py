@@ -74,7 +74,7 @@ class ValidateActionHandler(ActionHandler):
 
     @property
     def verb(self) -> str:
-        """Return ``"validate"``."""
+        """``"validate"``."""
         return VALIDATE_VERB
 
     def plan(self, request: ExecutiveRequest, contract: VerbContract) -> ExecutionPlan:

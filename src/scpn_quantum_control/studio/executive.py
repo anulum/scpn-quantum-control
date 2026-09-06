@@ -232,7 +232,7 @@ class ExecutionPlan:
 
     @property
     def requires_approval(self) -> bool:
-        """Return whether executing this plan requires an explicit approval."""
+        """Whether executing this plan requires an explicit approval."""
         return self.contract.requires_approval
 
     def to_dict(self) -> dict[str, object]:
@@ -414,12 +414,12 @@ class ExecutiveRecord:
 
     @property
     def produced_schemas(self) -> tuple[str, ...]:
-        """Return the ``studio.*.v1`` families this action feeds the hub."""
+        """The ``studio.*.v1`` families this action feeds the hub."""
         return self.plan.contract.produces
 
     @property
     def claim_boundary(self) -> str:
-        """Return the plan's claim boundary."""
+        """The plan's claim boundary."""
         return self.plan.claim_boundary
 
     def to_dict(self) -> dict[str, object]:
@@ -444,7 +444,7 @@ class ActionHandler(ABC):
     @property
     @abstractmethod
     def verb(self) -> str:
-        """Return the verb this handler implements."""
+        """The verb this handler implements."""
 
     @abstractmethod
     def plan(self, request: ExecutiveRequest, contract: VerbContract) -> ExecutionPlan:

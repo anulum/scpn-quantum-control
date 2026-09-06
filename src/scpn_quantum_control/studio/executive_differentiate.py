@@ -240,7 +240,7 @@ class DifferentiateActionHandler(ActionHandler):
 
     @property
     def verb(self) -> str:
-        """Return ``"differentiate"``."""
+        """``"differentiate"``."""
         return DIFFERENTIATE_VERB
 
     def plan(self, request: ExecutiveRequest, contract: VerbContract) -> ExecutionPlan:

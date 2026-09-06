@@ -137,17 +137,17 @@ class DifferentiabilityReport:
 
     @property
     def derivative_supported(self) -> bool:
-        """Return whether every in-scope row supports the requested derivative."""
+        """Whether every in-scope row supports the requested derivative."""
         return all(row.status == "supported" for row in self.rows)
 
     @property
     def blocking_capabilities(self) -> tuple[str, ...]:
-        """Return unsupported or descoped capability names in report order."""
+        """Unsupported or descoped capability names in report order."""
         return tuple(row.capability for row in self.rows if row.status != "supported")
 
     @property
     def content_digest(self) -> str:
-        """Return a SHA-256 digest of ordered support decisions."""
+        """A SHA-256 digest of ordered support decisions."""
         payload = {
             "rows": [row.to_dict() for row in self.rows],
             "claim_boundary": self.claim_boundary,

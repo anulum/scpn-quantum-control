@@ -711,12 +711,12 @@ class PhaseJAXNestedTransformAlgebraResult:
 
     @property
     def passed(self) -> bool:
-        """Return whether every implemented bounded transform check agrees."""
+        """Whether every implemented bounded transform check agrees."""
         return self.max_abs_error <= self.tolerance
 
     @property
     def bounded_transform_algebra_ready(self) -> bool:
-        """Return whether bounded JAX transform routes pass."""
+        """Whether bounded JAX transform routes pass."""
         return self.passed and all(
             route.status == "passed"
             for route in self.routes
@@ -725,14 +725,14 @@ class PhaseJAXNestedTransformAlgebraResult:
 
     @property
     def ready_for_provider_exceedance(self) -> bool:
-        """Return whether this audit permits JAX provider-exceedance claims."""
+        """Whether this audit permits JAX provider-exceedance claims."""
         return self.bounded_transform_algebra_ready and all(
             route.status == "passed" for route in self.routes
         )
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return non-passing transform routes."""
+        """Non-passing transform routes."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:
@@ -833,7 +833,7 @@ class PhaseJAXPhaseQNodeLoweringMatrixResult:
 
     @property
     def bounded_no_host_callback_routes_ready(self) -> bool:
-        """Return whether bounded JAX QNN routes pass without host callbacks."""
+        """Whether bounded JAX QNN routes pass without host callbacks."""
         return all(
             route.status == "passed" and not route.host_callback
             for route in self.routes
@@ -842,7 +842,7 @@ class PhaseJAXPhaseQNodeLoweringMatrixResult:
 
     @property
     def arbitrary_phase_qnode_lowering_ready(self) -> bool:
-        """Return whether arbitrary registered Phase-QNode JAX lowering is ready."""
+        """Whether arbitrary registered Phase-QNode JAX lowering is ready."""
         return all(
             route.status == "passed" and not route.host_callback
             for route in self.routes
@@ -859,14 +859,14 @@ class PhaseJAXPhaseQNodeLoweringMatrixResult:
 
     @property
     def ready_for_provider_exceedance(self) -> bool:
-        """Return whether this matrix permits JAX provider-exceedance claims."""
+        """Whether this matrix permits JAX provider-exceedance claims."""
         return self.bounded_no_host_callback_routes_ready and all(
             route.status == "passed" and not route.host_callback for route in self.routes
         )
 
     @property
     def open_gaps(self) -> tuple[str, ...]:
-        """Return routes that still block JAX provider-exceedance claims."""
+        """Routes that still block JAX provider-exceedance claims."""
         return tuple(route.name for route in self.routes if route.status != "passed")
 
     def route_status(self, name: str) -> str:

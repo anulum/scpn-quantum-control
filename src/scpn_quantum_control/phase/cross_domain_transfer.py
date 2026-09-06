@@ -46,7 +46,7 @@ class _ParametricCircuitLike(Protocol):
 
     @property
     def num_parameters(self) -> int:
-        """Return the number of trainable circuit parameters."""
+        """The number of trainable circuit parameters."""
 
     def assign_parameters(self, parameters: FloatArray) -> object:
         """Bind trainable parameters and return an instruction-like circuit."""

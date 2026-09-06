@@ -82,7 +82,7 @@ class PhaseQNodeTransformResult:
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when execution was intentionally refused."""
+        """True when execution was intentionally refused."""
         return not self.supported
 
     def to_dict(self) -> dict[str, object]:
@@ -125,27 +125,27 @@ class PhaseQNodeTransformReadinessSuiteResult:
 
     @property
     def record_count(self) -> int:
-        """Return total records."""
+        """Total records."""
         return len(self.records)
 
     @property
     def supported_count(self) -> int:
-        """Return supported transform records."""
+        """Supported transform records."""
         return sum(1 for record in self.records if record.supported)
 
     @property
     def fail_closed_count(self) -> int:
-        """Return fail-closed transform records."""
+        """Fail-closed transform records."""
         return sum(1 for record in self.records if record.fail_closed)
 
     @property
     def total_parameter_shift_evaluations(self) -> int:
-        """Return total parameter-shift evaluations across supported records."""
+        """Total parameter-shift evaluations across supported records."""
         return sum(record.parameter_shift_evaluations for record in self.records)
 
     @property
     def passed(self) -> bool:
-        """Return true when default supported routes execute and blocked routes refuse."""
+        """True when default supported routes execute and blocked routes refuse."""
         supported = {record.transform for record in self.records if record.supported}
         blocked = [record for record in self.records if record.fail_closed]
         return (

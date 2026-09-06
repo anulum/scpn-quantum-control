@@ -122,27 +122,27 @@ class PhaseQNodeTapeRecord:
 
     @property
     def supported(self) -> bool:
-        """Return true when the record executed under a supported backend plan."""
+        """True when the record executed under a supported backend plan."""
         return self.plan.supported and not self.failure_reason
 
     @property
     def fail_closed(self) -> bool:
-        """Return true when the record intentionally refused execution."""
+        """True when the record intentionally refused execution."""
         return not self.supported
 
     @property
     def parameter_shift_evaluations(self) -> int:
-        """Return planned objective evaluations for the recorded derivative."""
+        """Planned objective evaluations for the recorded derivative."""
         return self.plan.evaluations
 
     @property
     def sample_record_count(self) -> int:
-        """Return shifted plus/minus sample records attached to the tape record."""
+        """Shifted plus/minus sample records attached to the tape record."""
         return len(self.sample_records)
 
     @property
     def total_shots(self) -> int | None:
-        """Return total shot budget when the record has a finite-shot plan."""
+        """Total shot budget when the record has a finite-shot plan."""
         if self.plan.shots is None:
             return None if self.supported else 0
         return self.plan.evaluations * self.plan.shots
@@ -193,32 +193,32 @@ class PhaseQNodeTapeReadinessSuiteResult:
 
     @property
     def record_count(self) -> int:
-        """Return number of suite records."""
+        """Number of suite records."""
         return len(self.records)
 
     @property
     def supported_count(self) -> int:
-        """Return number of supported records."""
+        """Number of supported records."""
         return sum(1 for record in self.records if record.supported)
 
     @property
     def fail_closed_count(self) -> int:
-        """Return number of fail-closed records."""
+        """Number of fail-closed records."""
         return sum(1 for record in self.records if record.fail_closed)
 
     @property
     def total_parameter_shift_evaluations(self) -> int:
-        """Return total planned parameter-shift evaluations."""
+        """Total planned parameter-shift evaluations."""
         return sum(record.parameter_shift_evaluations for record in self.records)
 
     @property
     def total_shots(self) -> int:
-        """Return total finite-shot budget across records."""
+        """Total finite-shot budget across records."""
         return sum(int(record.total_shots or 0) for record in self.records)
 
     @property
     def passed(self) -> bool:
-        """Return true when default supported routes pass and hardware is blocked."""
+        """True when default supported routes pass and hardware is blocked."""
         return (
             self.record_count > 0
             and all(
@@ -289,7 +289,7 @@ class PhaseQNodeTape:
 
     @property
     def records(self) -> tuple[PhaseQNodeTapeRecord, ...]:
-        """Return immutable view of QNode records."""
+        """Immutable view of QNode records."""
         return tuple(self._records)
 
     def clear(self) -> None:
