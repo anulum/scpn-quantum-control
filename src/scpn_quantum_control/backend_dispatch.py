@@ -19,7 +19,7 @@ Inspired by TensorCircuit (Tencent Quantum Lab, arXiv:2205.10091).
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Final
 
 import numpy as np
 from numpy.typing import NDArray
@@ -75,16 +75,82 @@ def get_array_module() -> Any:
     return _BACKEND_MODULES.get(_STATE.backend, np)
 
 
+_TORCH_TENSOR_PROTOCOL: Final = ("detach", "cpu", "numpy")
+"""Attributes a tensor must expose to be converted through the torch path."""
+
+
+def _has_torch_tensor_protocol(arr: Any) -> bool:
+    """Return whether ``arr`` exposes the torch tensor conversion protocol.
+
+    Dispatch is by interface rather than by the ambient backend selection,
+    because the two disagree whenever an array outlives a backend switch or a
+    caller passes an object from a backend that is not currently selected.
+    NumPy arrays are handled before this check and JAX arrays do not carry
+    ``detach``, so the three attributes together identify a torch-like tensor
+    without importing torch.
+
+    Parameters
+    ----------
+    arr
+        Candidate object.
+
+    Returns
+    -------
+    bool
+        True when every protocol attribute is present and callable.
+
+    """
+    return all(callable(getattr(arr, name, None)) for name in _TORCH_TENSOR_PROTOCOL)
+
+
 def to_numpy(arr: Any) -> NDArray[Any]:
-    """Convert any backend array to numpy."""
+    """Convert a backend array, tensor or ordinary sequence to NumPy.
+
+    The conversion is chosen from the object handed in, not from the backend
+    that happens to be selected. An array created under one backend and
+    converted after :func:`set_backend` therefore converts correctly, and a
+    plain list does not depend on the backend at all.
+
+    Copies are made where a copy is necessary. Under NumPy 2 the previous
+    ``np.array(arr, copy=False)`` meant "never copy, raise instead", so every
+    ordinary sequence raised ``ValueError`` from a method documented as
+    converting any backend array.
+
+    What each input costs:
+
+    - A ``numpy.ndarray`` is returned unchanged, including a view. No copy is
+      made and later mutations of the result are visible through the input.
+    - A torch-like tensor is detached from the autograd graph, moved to host
+      memory and viewed as an array. **The gradient history is dropped**; keep
+      the original tensor if it is needed. ``.cpu()`` copies a device tensor
+      and is a no-op for one already on the host, in which case the returned
+      array shares memory with the tensor.
+    - Anything else, including JAX arrays, lists, tuples, ranges and scalars,
+      goes through :func:`numpy.asarray`, which copies only when it must.
+
+    Parameters
+    ----------
+    arr
+        Backend array, tensor, or any object NumPy can interpret as an array.
+
+    Returns
+    -------
+    numpy.ndarray
+        NumPy view or copy of ``arr``.
+
+    Raises
+    ------
+    Exception
+        Conversion errors from the source framework propagate unchanged; a
+        torch dtype NumPy cannot represent raises from torch, not from here.
+
+    """
     if isinstance(arr, np.ndarray):
         return arr
-    if _STATE.backend == "jax":
-        return np.array(arr, copy=False)
-    if _STATE.backend == "torch":
-        result: NDArray[Any] = arr.detach().cpu().numpy()
-        return result
-    return np.array(arr, copy=False)
+    if _has_torch_tensor_protocol(arr):
+        detached: NDArray[Any] = arr.detach().cpu().numpy()
+        return detached
+    return np.asarray(arr)
 
 
 def from_numpy(arr: NDArray[Any]) -> Any:

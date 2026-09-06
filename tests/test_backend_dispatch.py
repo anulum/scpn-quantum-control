@@ -169,10 +169,16 @@ class TestAvailableBackends:
 
 class TestToNumpyEdgeCases:
     def test_non_array_input(self):
-        """to_numpy should handle plain lists via np.array."""
+        """to_numpy should handle plain lists.
+
+        This test claimed list handling but passed an ndarray, so it could not
+        see CR-20260904-R13: under NumPy 2 the old ``copy=False`` policy raised
+        ValueError for every ordinary sequence. It now passes what it says.
+        """
         set_backend("numpy")
-        result = to_numpy(np.array([1, 2, 3]))
+        result = to_numpy([1, 2, 3])
         assert isinstance(result, np.ndarray)
+        np.testing.assert_array_equal(result, np.array([1, 2, 3]))
 
     def test_from_numpy_unknown_backend_passthrough(self):
         """When backend is unknown in module dict, from_numpy returns input."""
@@ -185,49 +191,55 @@ class TestToNumpyEdgeCases:
 
 
 class TestMockedJaxPath:
-    def test_to_numpy_jax_branch(self):
-        """Exercise to_numpy jax branch with a memoryview-compatible input."""
+    """``to_numpy`` no longer has per-backend branches.
+
+    These three exercised branches keyed on the module-global backend.
+    CR-20260904-R13 replaced that with dispatch on the object handed in, so they
+    now assert what actually decides the path. They are kept rather than deleted
+    because each still covers a real input shape; the full contract has a
+    dedicated owner in ``tests/test_backend_dispatch_conversion_contract.py``.
+    """
+
+    def test_to_numpy_converts_a_buffer_under_the_jax_selection(self):
+        """A memoryview converts, and the jax selection does not change that."""
         import scpn_quantum_control.backend_dispatch as mod
 
         old_backend = mod._STATE.backend
         try:
             mod._STATE.backend = "jax"
-            # Use a numpy array subclass to bypass isinstance check but still
-            # allow copy=False. np.matrix is a subclass, but simpler: use
-            # np.asarray on a memoryview.
             buf = np.array([1.0, 2.0])
-            view = memoryview(buf)
-            result = to_numpy(view)
+            result = to_numpy(memoryview(buf))
             np.testing.assert_array_equal(result, [1.0, 2.0])
         finally:
             mod._STATE.backend = old_backend
 
-    def test_to_numpy_torch_branch(self):
-        """Exercise to_numpy torch branch with a mock tensor."""
+    def test_to_numpy_uses_the_tensor_protocol_not_the_selection(self):
+        """A mock exposing detach/cpu/numpy takes the tensor path."""
         from unittest.mock import MagicMock
 
         import scpn_quantum_control.backend_dispatch as mod
 
         old_backend = mod._STATE.backend
         try:
-            mod._STATE.backend = "torch"
+            # Deliberately the numpy selection: the object decides, not this.
+            mod._STATE.backend = "numpy"
             mock_tensor = MagicMock()
             mock_tensor.detach.return_value.cpu.return_value.numpy.return_value = np.array([3.0])
             result = to_numpy(mock_tensor)
             np.testing.assert_array_equal(result, [3.0])
+            mock_tensor.detach.assert_called_once()
         finally:
             mod._STATE.backend = old_backend
 
-    def test_to_numpy_fallback_branch(self):
-        """Exercise to_numpy fallback (unknown backend, non-ndarray)."""
+    def test_to_numpy_converts_under_an_unknown_selection(self):
+        """An unrecognised selection is simply irrelevant to the conversion."""
         import scpn_quantum_control.backend_dispatch as mod
 
         old_backend = mod._STATE.backend
         try:
             mod._STATE.backend = "unknown"
             buf = np.array([4.0, 5.0])
-            view = memoryview(buf)
-            result = to_numpy(view)
+            result = to_numpy(memoryview(buf))
             np.testing.assert_array_equal(result, [4.0, 5.0])
         finally:
             mod._STATE.backend = old_backend

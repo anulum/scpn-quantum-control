@@ -41,9 +41,25 @@ from scpn_quantum_control.backend_dispatch import (
 | `set_backend(name)` | `str → None` | Set active backend: `"numpy"`, `"jax"`, `"torch"` |
 | `get_backend()` | `() → str` | Current backend name |
 | `get_array_module()` | `() → module` | Active array module (`np`, `jnp`, or `torch`) |
-| `to_numpy(arr)` | `Any → ndarray` | Convert any backend array to numpy |
+| `to_numpy(arr)` | `Any → ndarray` | Convert an array, tensor or sequence to numpy |
 | `from_numpy(arr)` | `ndarray → Any` | Convert numpy to current backend |
 | `available_backends()` | `() → list[str]` | List installed backends |
+
+#### What `to_numpy` converts, and what it costs
+
+The conversion is chosen from the object handed in, **not** from the backend
+that happens to be selected. An array created under one backend and converted
+after a later `set_backend` call therefore converts correctly, and a plain list
+does not depend on the backend at all.
+
+| Input | Result | Cost |
+|-------|--------|------|
+| `numpy.ndarray`, including a view | the same object | no copy; later mutations of the result are visible through the input |
+| torch-like tensor (`detach`, `cpu`, `numpy`) | host array | **the gradient history is dropped**; keep the tensor if you need it. `.cpu()` copies a device tensor and is a no-op on the host, where the array then shares memory |
+| JAX array, list, tuple, range, scalar, buffer | new array | `numpy.asarray`, which copies only when it must |
+
+Conversion errors from the source framework propagate unchanged: a torch dtype
+NumPy cannot represent raises from torch, not from `to_numpy`.
 
 ### Example
 
