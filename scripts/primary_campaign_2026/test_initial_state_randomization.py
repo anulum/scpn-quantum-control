@@ -14,7 +14,7 @@ import json
 import numpy as np
 from campaign_io import parameter_path, result_path
 
-from scpn_quantum_control.accel import rust_random_state
+from oscillatools.accel import rust_random_state
 from scpn_quantum_control.analysis import DLAParityWitness
 from scpn_quantum_control.control import StructuredAnsatz
 from scpn_quantum_control.hardware import AsyncHardwareRunner
