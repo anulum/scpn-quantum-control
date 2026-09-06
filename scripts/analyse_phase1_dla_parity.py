@@ -39,9 +39,14 @@ import json
 import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from scipy import stats
+
+#: One circuit result as stored in the Phase 1 JSON files: a decoded JSON
+#: object, so string keys and values this script narrows at each use site.
+CircuitRecord = dict[str, Any]
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -63,12 +68,12 @@ class DepthPoint:
 
     @property
     def n_even(self) -> int:
-        """Return the number of even-sector repetitions."""
+        """The number of even-sector repetitions."""
         return len(self.leak_even)
 
     @property
     def n_odd(self) -> int:
-        """Return the number of odd-sector repetitions."""
+        """The number of odd-sector repetitions."""
         return len(self.leak_odd)
 
 
@@ -92,9 +97,9 @@ class DepthSummary:
     degrees_of_freedom: float
 
 
-def load_phase1_circuits() -> list[dict]:
+def load_phase1_circuits() -> list[CircuitRecord]:
     """Load all Phase 1 circuit results from the 4 JSON files."""
-    circuits: list[dict] = []
+    circuits: list[CircuitRecord] = []
     for path in PHASE1_FILES:
         if not path.exists():
             print(f"WARNING: missing {path}", file=sys.stderr)
@@ -108,7 +113,7 @@ def load_phase1_circuits() -> list[dict]:
     return circuits
 
 
-def collect_n4_depth_points(circuits: list[dict]) -> dict[int, DepthPoint]:
+def collect_n4_depth_points(circuits: list[CircuitRecord]) -> dict[int, DepthPoint]:
     """Aggregate n=4 DLA parity reps by (depth, sector)."""
     by_depth: dict[int, DepthPoint] = {}
     for entry in circuits:
@@ -198,7 +203,7 @@ def fisher_combined_pvalue(pvals: list[float]) -> tuple[float, float]:
     return (chi2, combined_p)
 
 
-def read_readout_baseline(circuits: list[dict]) -> dict[str, float]:
+def read_readout_baseline(circuits: list[CircuitRecord]) -> dict[str, float]:
     """Extract readout error rates from Experiment C baseline circuits.
 
     Returns {initial_bitstring: fidelity = P(correct)}.

@@ -87,7 +87,7 @@ class _IQMCircuitJob(Protocol):
 
     @property
     def job_id(self) -> object:
-        """Return the durable provider identifier."""
+        """The durable provider identifier."""
 
     def payload(self) -> tuple[list[object], object]:
         """Return the submitted circuits and execution parameters."""
@@ -130,7 +130,7 @@ class _IQMBackend(Protocol):
 
     @property
     def client(self) -> _IQMClient:
-        """Return the underlying client used for exact payload submission."""
+        """The underlying client used for exact payload submission."""
 
     def create_run_request(self, run_input: list[Any], *, shots: int) -> object:
         """Create and validate the exact provider payload without submitting it."""
