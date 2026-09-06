@@ -15,7 +15,7 @@
  * value+gradient. Nothing reimplements the AD in JavaScript — the WASM kernel is
  * the single source of truth.
  *
- * Fail-closed (compliance rule 7): a forged gradient renders `mismatch`; a wrong
+ * Fail-closed (compliance rule 7): a disagreeing gradient renders `mismatch`; a wrong
  * schema, malformed input, or a kernel-level rejection renders `unverifiable`.
  * A tampered unit never renders `match`.
  */
@@ -287,7 +287,7 @@ export async function fetchProgramAd(url: string = KERNEL_WASM_URL): Promise<Ker
  * Fail-closed order: a wrong schema, malformed input, or SHA-256 mismatch
  * short-circuits to `unverifiable` before the kernel runs. A faithful unit
  * whose recomputed value+gradient are bit-identical to the claim renders
- * `match`; a forged claim renders `mismatch`.
+ * `match`; a claim the recomputation disagrees with renders `mismatch`.
  */
 export async function verifyProgramAdUnit(
   unit: ProgramAdUnit,

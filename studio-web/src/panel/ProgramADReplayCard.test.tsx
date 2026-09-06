@@ -41,6 +41,25 @@ beforeAll(async () => {
   replay = await instantiateProgramAd(bytes);
 });
 
+/** A second unit, differing in both identity fields. */
+function otherUnit(): ProgramAdUnit {
+  const base = unit();
+  return {
+    ...base,
+    artifactId: `${base.artifactId}-second`,
+    inputSha256: `sha256:${"d".repeat(64)}`,
+  };
+}
+
+/** A promise whose resolution the test controls. */
+function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((res) => {
+    resolve = res;
+  });
+  return { promise, resolve };
+}
+
 afterEach(cleanup);
 
 describe("ProgramADReplayCard", () => {
@@ -59,11 +78,18 @@ describe("ProgramADReplayCard", () => {
     expect(screen.getByText(/gradient \[6, 2\]/)).toBeTruthy();
   });
 
-  it("reports a mismatch for a forged claim", async () => {
-    const forged: ProgramAdUnit = { ...unit(), expectedGradient: [6, 99] };
-    render(<ProgramADReplayCard unit={forged} loadKernel={async () => replay} />);
+  it("reports a mismatch when the claimed gradient disagrees", async () => {
+    // CR-20260904-R15: the badge used to read "claim forged". A numeric
+    // disagreement is a disagreement; it does not by itself establish forgery.
+    const disagreeing: ProgramAdUnit = { ...unit(), expectedGradient: [6, 99] };
+    render(<ProgramADReplayCard unit={disagreeing} loadKernel={async () => replay} />);
     fireEvent.click(screen.getByRole("button"));
-    await waitFor(() => expect(screen.getByText(/claim forged/)).toBeTruthy());
+    await waitFor(() =>
+      expect(
+        screen.getByText(/recomputed value or gradient does NOT match the committed claim/),
+      ).toBeTruthy(),
+    );
+    expect(screen.queryByText(/forged/)).toBeNull();
   });
 
   it("refuses a forged replay input even when its expected claim changes too", async () => {
@@ -104,5 +130,43 @@ describe("ProgramADReplayCard", () => {
     );
     fireEvent.click(screen.getByRole("button"));
     await waitFor(() => expect(screen.getByText(/unverifiable — kernel load failed/)).toBeTruthy());
+  });
+
+  it("drops a completed verdict when the unit prop is replaced", async () => {
+    const { rerender } = render(
+      <ProgramADReplayCard unit={unit()} loadKernel={async () => replay} />,
+    );
+    fireEvent.click(screen.getByRole("button"));
+    await waitFor(() =>
+      expect(
+        screen.getByText(/recomputed value \+ gradient match the committed claim/),
+      ).toBeTruthy(),
+    );
+
+    rerender(<ProgramADReplayCard unit={otherUnit()} loadKernel={async () => replay} />);
+
+    expect(
+      screen.queryByText(/recomputed value \+ gradient match the committed claim/),
+    ).toBeNull();
+  });
+
+  it("never shows the previous unit's verdict when a load resolves after the swap", async () => {
+    // CR-20260904-R15 acceptance: rerender from A to B before the deferred
+    // kernel load resolves. A's verdict must not appear beside B's claim.
+    const gate = deferred<KernelReplay>();
+    const { rerender } = render(
+      <ProgramADReplayCard unit={unit()} loadKernel={async () => gate.promise} />,
+    );
+    fireEvent.click(screen.getByRole("button"));
+    await waitFor(() => expect(screen.getByRole("button").textContent).toMatch(/Recomputing/));
+
+    rerender(<ProgramADReplayCard unit={otherUnit()} loadKernel={async () => gate.promise} />);
+    gate.resolve(replay);
+    await waitFor(() => expect(screen.getByRole("button").textContent).toMatch(/Recompute/));
+
+    expect(
+      screen.queryByText(/recomputed value \+ gradient match the committed claim/),
+    ).toBeNull();
+    expect(screen.queryByText(/does NOT match/)).toBeNull();
   });
 });

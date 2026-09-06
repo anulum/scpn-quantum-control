@@ -6,32 +6,45 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // scpn-quantum-control — studio-web program-AD gradient replay card
 
-import { useState } from "react";
-
 import type { KernelReplay, ProgramAdUnit, ReplayVerdict } from "./programAd";
 import { fetchProgramAd, verifyProgramAdUnit } from "./programAd";
+import { useUnitBoundRun } from "./useUnitBoundRun";
 
 /** Loader for the WASM kernel; overridable so tests inject a built kernel. */
 export type ReplayLoader = () => Promise<KernelReplay>;
 
-type CardState =
-  | { readonly phase: "idle" }
-  | { readonly phase: "running" }
-  | { readonly phase: "done"; readonly verdict: ReplayVerdict }
-  | { readonly phase: "error"; readonly reason: string };
-
 const DISPLAY_LABEL: Record<ReplayVerdict["display"], string> = {
   match: "recomputed value + gradient match the committed claim",
-  mismatch: "recomputed gradient does NOT match — claim forged",
+  mismatch: "recomputed value or gradient does NOT match the committed claim",
   unverifiable: "unverifiable",
 };
 
 /**
+ * Identity of the unit a verdict belongs to.
+ *
+ * Both fields are content-bound and immutable: the artifact the claim was made
+ * about, and the digest of the input it was made over. Two units agreeing on
+ * both are the same verification; any difference is a different one.
+ *
+ * @param unit - The unit currently displayed.
+ * @returns A stable identity string for that unit.
+ */
+function unitIdentity(unit: ProgramAdUnit): string {
+  return `${unit.artifactId}\u0000${unit.inputSha256}`;
+}
+
+/**
  * The program-AD gradient replay card. Pressing replay loads the standalone
  * program-AD WASM kernel, recomputes the committed rational program's gradient
- * in the browser, and reports the verdict at its true class — a forged gradient
- * reads `mismatch`, a wrong schema or kernel rejection reads `unverifiable`,
- * never a silent pass. The bounded claim boundary is shown verbatim.
+ * in the browser, and reports the verdict at its true class — a gradient that
+ * disagrees with the claim reads `mismatch`, a wrong schema or kernel rejection
+ * reads `unverifiable`, never a silent pass. The bounded claim boundary is
+ * shown verbatim.
+ *
+ * The verdict is bound to the unit's identity. Replacing the `unit` prop clears
+ * a displayed verdict before the new claim is painted, and a replay already in
+ * flight for the previous unit is discarded when it resolves rather than shown
+ * beside the new one.
  */
 export function ProgramADReplayCard({
   unit,
@@ -40,17 +53,10 @@ export function ProgramADReplayCard({
   unit: ProgramAdUnit;
   loadKernel?: ReplayLoader;
 }) {
-  const [state, setState] = useState<CardState>({ phase: "idle" });
+  const { state, run } = useUnitBoundRun<ReplayVerdict>(unitIdentity(unit));
 
-  const run = async (): Promise<void> => {
-    setState({ phase: "running" });
-    try {
-      const kernel = await loadKernel();
-      setState({ phase: "done", verdict: await verifyProgramAdUnit(unit, kernel) });
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : "kernel load failed";
-      setState({ phase: "error", reason });
-    }
+  const replay = async (): Promise<void> => {
+    await run(async () => verifyProgramAdUnit(unit, await loadKernel()), "kernel load failed");
   };
 
   return (
@@ -64,7 +70,7 @@ export function ProgramADReplayCard({
         <code>{unit.parameterTargets.join(", ")}</code>.
       </p>
       <p className="qsp-meta qsp-boundary">{unit.claimBoundary}</p>
-      <button type="button" onClick={run} disabled={state.phase === "running"}>
+      <button type="button" onClick={replay} disabled={state.phase === "running"}>
         {state.phase === "running" ? "Recomputing…" : "Recompute gradient in browser"}
       </button>
       {state.phase === "done" && (

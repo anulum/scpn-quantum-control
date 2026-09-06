@@ -227,9 +227,11 @@ cargo build --release --locked --target wasm32-unknown-unknown \
 pnpm --dir studio-web typecheck
 pnpm --dir studio-web exec vitest run \
   src/panel/programAd.test.ts src/panel/ProgramADReplayCard.test.tsx \
+  src/panel/useUnitBoundRun.test.tsx \
   --coverage \
   --coverage.include=src/panel/programAd.ts \
   --coverage.include=src/panel/ProgramADReplayCard.tsx \
+  --coverage.include=src/panel/useUnitBoundRun.ts \
   --coverage.thresholds.statements=100 \
   --coverage.thresholds.branches=100 \
   --coverage.thresholds.functions=100 \

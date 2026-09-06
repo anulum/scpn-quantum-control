@@ -6,8 +6,8 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // scpn-quantum-control — RecomputeCard render tests
 
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { RecomputeCard } from "./RecomputeCard";
 import type { KernelRecompute, RecomputeUnit } from "./recompute";
@@ -26,6 +26,24 @@ const forgingKernel: KernelRecompute = () => ({
   digest: `sha256:${"b".repeat(64)}`,
 });
 
+/** A second unit, differing in both identity fields. */
+const OTHER_UNIT: RecomputeUnit = {
+  ...UNIT,
+  claimedDigest: `sha256:${"c".repeat(64)}`,
+  inputHex: "0a0b0c0d",
+};
+
+/** A promise whose resolution the test controls. */
+function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((res) => {
+    resolve = res;
+  });
+  return { promise, resolve };
+}
+
+afterEach(cleanup);
+
 describe("RecomputeCard", () => {
   it("shows the signed claim before any recompute", () => {
     render(<RecomputeCard unit={UNIT} loadKernel={async () => matchingKernel} />);
@@ -41,12 +59,18 @@ describe("RecomputeCard", () => {
     });
   });
 
-  it("renders a loud mismatch when the digest is forged", async () => {
+  it("renders a loud mismatch when the digest disagrees", async () => {
+    // CR-20260904-R15: the badge used to read "claim forged". A digest
+    // disagreement is a disagreement; it does not by itself establish who
+    // produced the claim or why it differs.
     render(<RecomputeCard unit={UNIT} loadKernel={async () => forgingKernel} />);
     fireEvent.click(screen.getByRole("button"));
     await waitFor(() => {
-      expect(screen.getByText(/claim forged/)).toBeTruthy();
+      expect(
+        screen.getByText(/recomputed digest does NOT match the signed claim/),
+      ).toBeTruthy();
     });
+    expect(screen.queryByText(/forged/)).toBeNull();
   });
 
   it("renders unverifiable when the grade is stripped", async () => {
@@ -86,5 +110,38 @@ describe("RecomputeCard", () => {
     await waitFor(() => {
       expect(screen.getByRole("alert").textContent).toContain("kernel load failed");
     });
+  });
+
+  it("drops a completed verdict when the unit prop is replaced", async () => {
+    const { rerender } = render(
+      <RecomputeCard unit={UNIT} loadKernel={async () => matchingKernel} />,
+    );
+    fireEvent.click(screen.getByRole("button"));
+    await waitFor(() => {
+      expect(screen.getByText(/recomputed digest matches the signed claim/)).toBeTruthy();
+    });
+
+    rerender(<RecomputeCard unit={OTHER_UNIT} loadKernel={async () => matchingKernel} />);
+
+    expect(screen.queryByText(/recomputed digest matches the signed claim/)).toBeNull();
+    expect(screen.getByText(OTHER_UNIT.claimedDigest)).toBeTruthy();
+  });
+
+  it("never shows the previous unit's verdict when a load resolves after the swap", async () => {
+    // CR-20260904-R15 acceptance: rerender from A to B before the deferred
+    // kernel load resolves. A's verdict must not appear beside B's claim.
+    const gate = deferred<KernelRecompute>();
+    const { rerender } = render(
+      <RecomputeCard unit={UNIT} loadKernel={async () => gate.promise} />,
+    );
+    fireEvent.click(screen.getByRole("button"));
+    await waitFor(() => expect(screen.getByRole("button").textContent).toMatch(/Recomputing/));
+
+    rerender(<RecomputeCard unit={OTHER_UNIT} loadKernel={async () => gate.promise} />);
+    gate.resolve(matchingKernel);
+    await waitFor(() => expect(screen.getByText(OTHER_UNIT.claimedDigest)).toBeTruthy());
+
+    expect(screen.queryByText(/recomputed digest matches the signed claim/)).toBeNull();
+    expect(screen.queryByText(/does NOT match/)).toBeNull();
   });
 });

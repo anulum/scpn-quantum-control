@@ -6,31 +6,44 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // scpn-quantum-control — studio-web XY-compile recompute card
 
-import { useState } from "react";
-
 import type { KernelRecompute, RecomputeUnit, RecomputeVerdict } from "./recompute";
 import { fetchKernel, verifyRecomputeUnit } from "./recompute";
+import { useUnitBoundRun } from "./useUnitBoundRun";
 
 /** Loader for the WASM kernel; overridable so tests inject a built kernel. */
 export type KernelLoader = () => Promise<KernelRecompute>;
 
-type CardState =
-  | { readonly phase: "idle" }
-  | { readonly phase: "running" }
-  | { readonly phase: "done"; readonly verdict: RecomputeVerdict }
-  | { readonly phase: "error"; readonly reason: string };
-
 const DISPLAY_LABEL: Record<RecomputeVerdict["display"], string> = {
   match: "recomputed digest matches the signed claim",
-  mismatch: "recomputed digest does NOT match — claim forged",
+  mismatch: "recomputed digest does NOT match the signed claim",
   unverifiable: "unverifiable",
 };
 
 /**
+ * Identity of the unit a verdict belongs to.
+ *
+ * Both fields are content-bound and immutable: the digest that was claimed, and
+ * the input it was claimed over. Two units agreeing on both are the same
+ * verification; any difference is a different one.
+ *
+ * @param unit - The unit currently displayed.
+ * @returns A stable identity string for that unit.
+ */
+function unitIdentity(unit: RecomputeUnit): string {
+  return `${unit.claimedDigest}\u0000${unit.inputHex}`;
+}
+
+/**
  * The XY-compile recompute card. Pressing recompute loads the WASM kernel,
  * replays the committed unit's input in the browser, and reports the verdict
- * at its true class — a forged digest reads `mismatch`, a stripped grade or
- * kernel rejection reads `unverifiable`, never a silent pass.
+ * at its true class — a digest that disagrees with the claim reads `mismatch`,
+ * a stripped grade or kernel rejection reads `unverifiable`, never a silent
+ * pass.
+ *
+ * The verdict is bound to the unit's identity. Replacing the `unit` prop clears
+ * a displayed verdict before the new claim is painted, and a recompute already
+ * in flight for the previous unit is discarded when it resolves rather than
+ * shown beside the new one.
  */
 export function RecomputeCard({
   unit,
@@ -39,17 +52,10 @@ export function RecomputeCard({
   unit: RecomputeUnit;
   loadKernel?: KernelLoader;
 }) {
-  const [state, setState] = useState<CardState>({ phase: "idle" });
+  const { state, run } = useUnitBoundRun<RecomputeVerdict>(unitIdentity(unit));
 
-  const run = async (): Promise<void> => {
-    setState({ phase: "running" });
-    try {
-      const kernel = await loadKernel();
-      setState({ phase: "done", verdict: verifyRecomputeUnit(unit, kernel) });
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : "kernel load failed";
-      setState({ phase: "error", reason });
-    }
+  const recompute = async (): Promise<void> => {
+    await run(async () => verifyRecomputeUnit(unit, await loadKernel()), "kernel load failed");
   };
 
   return (
@@ -60,7 +66,7 @@ export function RecomputeCard({
         your browser through the WASM kernel. Signed claim:{" "}
         <code className="qsp-digest">{unit.claimedDigest}</code>
       </p>
-      <button type="button" onClick={run} disabled={state.phase === "running"}>
+      <button type="button" onClick={recompute} disabled={state.phase === "running"}>
         {state.phase === "running" ? "Recomputing…" : "Recompute in browser"}
       </button>
       {state.phase === "done" && (
