@@ -99,12 +99,17 @@ reported 6,301 errors in 388 of 968 tracked Python test files; 5,076 were
 `no-untyped-def`. Adding the whole directory to one gate would therefore mix
 mechanical annotations with intentional invalid-input tests and hide ownership.
 
-`tools/test_typing_policy.json` is the machine-readable policy. The 18-file enforced cohort set
+`tools/test_typing_policy.json` is the machine-readable policy. The 58-file enforced cohort set
 consists of the 16-file `repository_policy` cohort covering coverage,
 coverage debt, licence, release, generated-surface, commit, secret, TODO, version,
 branch, module-responsibility, CI/pre-push, local preflight, and built-wheel
-publication gate tests, plus the 2-file `claim_release_contracts`
-entanglement-sync scientific and evidence slice.
+publication gate tests, the 2-file `claim_release_contracts`
+entanglement-sync scientific and evidence slice, and the 40-file
+`hardware_provider_boundaries` cohort covering the provider adapters, HAL
+contract and conformance guards, approval, budget, attestation and result-pack
+tests. That third slice needed no annotation work: every file in it already
+passed strict mypy, and enforcing it converts existing quality into something
+that cannot regress rather than paying debt down.
 `tools/audit_test_typing_policy.py`
 validates that every enforced path is tracked and runs strict mypy over the
 exact cohort; CI and the no-test local preflight execute the same command.
