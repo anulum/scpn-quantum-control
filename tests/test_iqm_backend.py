@@ -14,12 +14,14 @@ from typing import Any
 
 import pytest
 from qiskit import QuantumCircuit
+from qiskit.providers.fake_provider import GenericBackendV2
 
 from scpn_quantum_control.hardware import backends as be
 from scpn_quantum_control.hardware.iqm_backend import (
     IQMBackendConfig,
     IQMQuantumBackend,
     IQMRunResult,
+    IQMTargetCompilationError,
     _backend_name,
     _extract_counts,
     _job_id,
@@ -47,16 +49,25 @@ class _FakeJob:
         return _FakeResult(self._counts)
 
 
-class _FakeIQMBackend:
-    name = "fake_garnet"
-    num_qubits = 20
+class _FakeIQMBackend(GenericBackendV2):
+    """A local stand-in that is a real transpilation target.
+
+    Derived from ``GenericBackendV2`` so the adapter compiles against an actual
+    coupling map and basis-gate set, which is what a real IQM device provides.
+    A bare object would not be a valid target, and the adapter now refuses those
+    rather than compiling without one.
+    """
 
     def __init__(self) -> None:
+        super().__init__(num_qubits=5, seed=7)
+        self.name = "fake_garnet"
         self.received_shots: int | None = None
 
-    def run(self, circuits: list[QuantumCircuit], *, shots: int) -> _FakeJob:
+    def run(  # type: ignore[override]  # the fake returns a stub job, not a real one
+        self, circuits: list[QuantumCircuit], *, shots: int
+    ) -> _FakeJob:
         assert len(circuits) == 1
-        assert circuits[0].num_qubits == 2
+        assert circuits[0].num_qubits == 5
         self.received_shots = shots
         return _FakeJob({"00": 31, "11": 33})
 
@@ -317,3 +328,87 @@ def test_job_id_handles_attribute_and_missing() -> None:
     """Job-id resolution handles a string attribute and a missing id."""
     assert _job_id(types.SimpleNamespace(job_id="raw-id")) == "raw-id"
     assert _job_id(types.SimpleNamespace(job_id=None)) == "iqm_job_id_unavailable"
+
+
+def test_transpilation_targets_the_backend_and_refuses_a_non_target() -> None:
+    """A backend that cannot serve as a target is rejected, not compiled around."""
+
+    class _NotABackend:
+        name = "not_a_target"
+
+    class _Adapter(IQMQuantumBackend):
+        def resolve_backend(self, config: IQMBackendConfig | None = None) -> Any:
+            return _NotABackend()
+
+    with pytest.raises(IQMTargetCompilationError, match="not_a_target"):
+        _Adapter().transpile_circuit(_bell_circuit(), IQMBackendConfig(mode="fake"))
+
+
+def test_run_counts_compiles_for_the_backend_it_submits_to() -> None:
+    """Compile and submit must share one resolution, not two."""
+    resolutions: list[Any] = []
+
+    class _Adapter(IQMQuantumBackend):
+        def resolve_backend(self, config: IQMBackendConfig | None = None) -> Any:
+            backend = _FakeIQMBackend()
+            resolutions.append(backend)
+            return backend
+
+    adapter = _Adapter()
+    result = adapter.run_counts(
+        _bell_circuit(),
+        IQMBackendConfig(mode="fake", fake_backend="garnet", shots=64, timeout_s=12.5),
+    )
+
+    assert len(resolutions) == 1, "compile and submit resolved the backend separately"
+    assert resolutions[0].received_shots == 64
+    assert result.metadata["compiled_for"] == "fake_garnet"
+    assert result.backend_name == "fake_garnet"
+
+
+def test_compiled_circuit_is_mapped_onto_the_target_device() -> None:
+    """The submitted circuit carries the target's layout, not a logical one."""
+    adapter = IQMQuantumBackend()
+    backend = _FakeIQMBackend()
+    compiled = adapter.transpile_circuit(
+        _bell_circuit(), IQMBackendConfig(mode="fake"), backend=backend
+    )
+
+    assert compiled.layout is not None
+    assert compiled.num_qubits == backend.num_qubits
+
+
+@pytest.mark.parametrize("mode", ["fake", "remote"])
+def test_missing_provider_package_fails_closed_on_every_resolution_path(mode: str) -> None:
+    """Both resolution paths refuse with installation guidance, not a raw import error.
+
+    The optional dependency is deliberately not installed alongside the main
+    Qiskit floor, so the adapter must translate the absence into an actionable
+    ``ImportError`` on every path that needs it rather than letting a bare
+    ``ModuleNotFoundError`` escape.
+    """
+
+    def import_module(name: str) -> Any:
+        raise ModuleNotFoundError(name)
+
+    adapter = IQMQuantumBackend(import_module=import_module)
+    assert adapter.is_available() is False
+
+    config = (
+        IQMBackendConfig(mode="fake", fake_backend="garnet")
+        if mode == "fake"
+        else IQMBackendConfig(mode="remote", server_url="https://example.iqm.invalid")
+    )
+    with pytest.raises(ImportError, match=r"iqm-client\[qiskit\] is required") as raised:
+        adapter.resolve_backend(config)
+
+    assert ".venv-iqm" in str(raised.value)
+    assert isinstance(raised.value.__cause__, ModuleNotFoundError)
+
+
+def test_target_compilation_error_is_importable_from_the_package() -> None:
+    """Callers must be able to catch the refusal without a private import."""
+    from scpn_quantum_control.hardware import IQMTargetCompilationError as exported
+
+    assert exported is IQMTargetCompilationError
+    assert issubclass(exported, RuntimeError)

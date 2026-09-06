@@ -4,6 +4,15 @@
 
 ### Fixed
 
+- Keep IQM compilation bound to the device that will run the circuit. A failed
+  targeted transpilation fell back to compiling with no backend at all, so a
+  circuit with no coupling map, basis gates or qubit layout could still be
+  submitted; and a single run resolved the backend twice, once for compilation
+  and once for submission, so the two could differ. Compilation now targets one
+  resolved backend, that same backend is submitted to, an uncompilable circuit
+  raises `IQMTargetCompilationError` before submission, and the result records
+  which device it was compiled for.
+
 - Report the device and shot count an asynchronous IBM submission actually used.
   A named backend that failed to resolve was quietly replaced by the least-busy
   device, and a shot request above the runtime's per-job limit was silently

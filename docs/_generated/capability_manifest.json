@@ -9,7 +9,7 @@
     "optional_extras": 43,
     "public_api_exports": 841,
     "public_documentation_pages": 376,
-    "python_model_classes": 1377,
+    "python_model_classes": 1378,
     "python_model_source_modules": 699,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
@@ -2862,6 +2862,10 @@
       },
       {
         "name": "IQMRunResult",
+        "path": "src/scpn_quantum_control/hardware/iqm_backend.py"
+      },
+      {
+        "name": "IQMTargetCompilationError",
         "path": "src/scpn_quantum_control/hardware/iqm_backend.py"
       },
       {

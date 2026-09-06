@@ -94,6 +94,16 @@ def is_iqm_available() -> bool:
     return True
 
 
+class IQMTargetCompilationError(RuntimeError):
+    """A circuit could not be compiled for the resolved IQM backend.
+
+    Raised instead of falling back to a target-free transpilation. A circuit
+    compiled without a backend has no coupling map, basis gates or qubit
+    layout, so submitting it would run something other than what the caller
+    asked for on a device it was never mapped to.
+    """
+
+
 class IQMQuantumBackend:
     """IQM provider adapter for SCPN circuit-replication workloads.
 
@@ -174,16 +184,49 @@ class IQMQuantumBackend:
         self,
         circuit: QuantumCircuit,
         config: IQMBackendConfig | None = None,
+        *,
+        backend: Any | None = None,
     ) -> QuantumCircuit:
-        """Transpile ``circuit`` for the selected IQM backend."""
+        """Transpile ``circuit`` for one resolved IQM backend.
+
+        The compilation target is always a concrete backend. A circuit that
+        cannot be compiled for that device is rejected here rather than being
+        recompiled without a target, because a target-free circuit carries no
+        coupling map, basis gates or qubit layout and must never reach a
+        submission.
+
+        Parameters
+        ----------
+        circuit
+            Logical circuit to compile.
+        config
+            Execution configuration; defaults to :class:`IQMBackendConfig`.
+        backend
+            Already-resolved backend to compile for. When omitted the backend
+            is resolved from ``config``. Callers that also submit should pass
+            the backend they will submit to, so compile and submit cannot
+            diverge.
+
+        Returns
+        -------
+        qiskit.QuantumCircuit
+            Circuit compiled for the resolved backend.
+
+        Raises
+        ------
+        IQMTargetCompilationError
+            If the circuit cannot be compiled for that backend.
+
+        """
         cfg = config or IQMBackendConfig()
-        backend = self.resolve_backend(cfg)
+        target = self.resolve_backend(cfg) if backend is None else backend
         try:
-            return transpile(circuit, backend=backend, optimization_level=cfg.optimisation_level)
-        except Exception:
-            # Some unit-test fakes and older facade objects are not full Qiskit
-            # BackendV2 instances. Real IQM backends still take the branch above.
-            return transpile(circuit, optimization_level=cfg.optimisation_level)
+            return transpile(circuit, backend=target, optimization_level=cfg.optimisation_level)
+        except Exception as exc:
+            raise IQMTargetCompilationError(
+                f"circuit cannot be compiled for IQM backend {_backend_name(target)!r} "
+                f"at optimisation level {cfg.optimisation_level}: {exc}"
+            ) from exc
 
     def run_counts(
         self,
@@ -193,7 +236,7 @@ class IQMQuantumBackend:
         """Run one measured circuit on a fake or approved remote IQM backend."""
         cfg = config or IQMBackendConfig()
         backend = self.resolve_backend(cfg)
-        isa_circuit = self.transpile_circuit(circuit, cfg)
+        isa_circuit = self.transpile_circuit(circuit, cfg, backend=backend)
 
         started = time.time()
         job = backend.run([isa_circuit], shots=cfg.shots)
@@ -214,6 +257,7 @@ class IQMQuantumBackend:
                 "optimisation_level": cfg.optimisation_level,
                 "quantum_computer": cfg.quantum_computer,
                 "fake_backend": cfg.fake_backend if cfg.mode == "fake" else None,
+                "compiled_for": _backend_name(backend),
                 "circuit_depth": isa_circuit.depth(),
                 "n_qubits": isa_circuit.num_qubits,
                 "total_gates": sum(isa_circuit.count_ops().values()),
@@ -304,6 +348,7 @@ def _job_id(job: Any) -> str:
 
 
 __all__ = [
+    "IQMTargetCompilationError",
     "IQMBackendConfig",
     "IQMQuantumBackend",
     "IQMRunResult",

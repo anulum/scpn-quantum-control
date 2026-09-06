@@ -194,6 +194,7 @@ from .iqm_backend import (
     IQMBackendConfig,
     IQMQuantumBackend,
     IQMRunResult,
+    IQMTargetCompilationError,
     iqm_factory,
     is_iqm_available,
 )
@@ -471,6 +472,7 @@ __all__ = [
     "IQMBackendConfig",
     "IQMQuantumBackend",
     "IQMRunResult",
+    "IQMTargetCompilationError",
     "iqm_factory",
     "is_iqm_available",
     "BackendProtocol",

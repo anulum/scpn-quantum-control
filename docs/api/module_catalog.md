@@ -5,7 +5,7 @@ module-level class or function discoverable without importing optional
 provider, accelerator, or scientific dependencies.
 
 - **699 modules** across **39 package families**
-- **3915 documented public module-level symbols**
+- **3916 documented public module-level symbols**
 - **841 root-package exports** governed by the stable API surface
 
 The catalog is an inventory, not a stability or product claim. Start with
@@ -2901,9 +2901,9 @@ Helpers for IBM Runtime latency telemetry extraction and normalisation.
 
 IQM backend adapter for Qiskit-compatible circuit execution.
 
-[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/iqm_backend.py) · Public symbols: **5**
+[Source](https://github.com/anulum/scpn-quantum-control/blob/main/src/scpn_quantum_control/hardware/iqm_backend.py) · Public symbols: **6**
 
-**Classes:** `IQMBackendConfig`, `IQMRunResult`, `IQMQuantumBackend`
+**Classes:** `IQMBackendConfig`, `IQMRunResult`, `IQMTargetCompilationError`, `IQMQuantumBackend`
 
 **Functions:** `is_iqm_available()`, `iqm_factory()`
 
