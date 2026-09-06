@@ -13,6 +13,7 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 
 import scpn_quantum_control.control.hardware_topological_optimizer as hardware_topology
@@ -25,7 +26,7 @@ from scpn_quantum_control.hardware.runner import HardwareRunner
 
 
 class TestHardwareTopologicalOptimizer:
-    def test_hardware_optimizer_step(self):
+    def test_hardware_optimizer_step(self) -> None:
         """Verify one cycle of hardware-in-the-loop topological gradient descent."""
         if not _RIPSER_AVAILABLE:
             pytest.skip("ripser not available")
@@ -51,7 +52,7 @@ class TestHardwareTopologicalOptimizer:
         assert res["K_updated"].shape == (n, n)
         np.testing.assert_allclose(res["K_updated"], res["K_updated"].T)
 
-    def test_hardware_optimizer_multi_step(self):
+    def test_hardware_optimizer_multi_step(self) -> None:
         """Multiple steps produce expected history length."""
         if not _RIPSER_AVAILABLE:
             pytest.skip("ripser not available")
@@ -69,7 +70,7 @@ class TestHardwareTopologicalOptimizer:
             np.testing.assert_allclose(step["K_updated"], step["K_updated"].T, atol=1e-12)
             assert np.all(step["K_updated"] >= -1e-15)
 
-    def test_hardware_optimizer_k_non_negative(self):
+    def test_hardware_optimizer_k_non_negative(self) -> None:
         """K entries must remain >= 0 with hardware path."""
         if not _RIPSER_AVAILABLE:
             pytest.skip("ripser not available")
@@ -89,25 +90,35 @@ class TestHardwareTopologicalOptimizer:
         res = opt.step(n_samples=1)
         assert np.all(res["K_updated"] >= -1e-15)
 
-    def test_hardware_finite_difference_measures_candidate_couplings(self, monkeypatch):
+    def test_hardware_finite_difference_measures_candidate_couplings(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Hardware finite differences must run circuits for K, K+delta, and K-delta."""
         monkeypatch.setattr(topology, "_RIPSER_AVAILABLE", True)
         observed_couplings: list[np.ndarray] = []
         initial_K = np.array([[0.0, 0.2], [0.2, 0.0]], dtype=float)
         delta = np.array([[0.0, 0.05], [0.05, 0.0]], dtype=float)
 
-        def fake_fast_sparse_evolution(K, omega, *, t_total, n_steps):
+        def fake_fast_sparse_evolution(
+            K: object, omega: object, *, t_total: object, n_steps: object
+        ) -> dict[str, NDArray[np.complex128]]:
             return {"final_state": np.array([1.0, 0.0, 0.0, 0.0], dtype=complex)}
 
-        def fake_build_evo_base(n, K, omega, *, t, trotter_reps):
+        def fake_build_evo_base(
+            n: int, K: NDArray[np.float64], omega: object, *, t: object, trotter_reps: object
+        ) -> QuantumCircuit:
             observed_couplings.append(np.array(K, dtype=float).copy())
             return QuantumCircuit(n)
 
-        def fake_build_xyz_circuits(base_qc, n):
+        def fake_build_xyz_circuits(
+            base_qc: QuantumCircuit, n: int
+        ) -> tuple[QuantumCircuit, QuantumCircuit, QuantumCircuit]:
             return QuantumCircuit(n, n), QuantumCircuit(n, n), QuantumCircuit(n, n)
 
         class RecordingRunner:
-            def run_sampler(self, circuits, *, shots, name):
+            def run_sampler(
+                self, circuits: object, *, shots: int, name: object
+            ) -> list[SimpleNamespace]:
                 return [
                     SimpleNamespace(counts={"00": shots}),
                     SimpleNamespace(counts={"00": shots}),
@@ -116,7 +127,7 @@ class TestHardwareTopologicalOptimizer:
         monkeypatch.setattr(topology, "fast_sparse_evolution", fake_fast_sparse_evolution)
         monkeypatch.setattr(hardware_topology, "_build_evo_base", fake_build_evo_base)
         monkeypatch.setattr(hardware_topology, "_build_xyz_circuits", fake_build_xyz_circuits)
-        monkeypatch.setattr(topology.np.random, "normal", lambda *args, **kwargs: delta)
+        monkeypatch.setattr(np.random, "normal", lambda *args, **kwargs: delta)
         monkeypatch.setattr(
             topology,
             "quantum_persistent_homology",
