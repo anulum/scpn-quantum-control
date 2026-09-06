@@ -27,6 +27,7 @@ from .variational_free_energy import (
     PRECISION_RIDGE,
     FreeEnergyResult,
     evidence_lower_bound,
+    free_energy_gradient,
     kl_divergence_gaussian,
     variational_free_energy,
 )
@@ -38,6 +39,7 @@ __all__ = [
     "PRECISION_RIDGE",
     "kl_divergence_gaussian",
     "evidence_lower_bound",
+    "free_energy_gradient",
     "PredictiveCodingResult",
     "hierarchical_prediction_error",
     "predictive_coding_step",

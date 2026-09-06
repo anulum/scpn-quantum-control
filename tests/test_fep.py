@@ -251,7 +251,14 @@ class TestNegativeCases:
         assert np.allclose(grad, expected)
 
     def test_gradient_python_generative_fn_without_jacobian(self) -> None:
-        """Python gradient defaults to identity Jacobian for custom generators."""
+        """A custom generator without its Jacobian is refused, not approximated.
+
+        This test previously asserted that the gradient substituted the identity
+        Jacobian. CR-20260904-R08 established that the substituted value is the
+        gradient of a different model, so the recorded expectation was wrong
+        rather than merely incomplete. The full contract has a dedicated owner
+        in ``tests/test_fep_generative_model_contract.py``.
+        """
         mu = np.array([0.2, -0.1])
         sigma = np.eye(2)
         x = np.array([0.5, 0.25])
@@ -261,17 +268,15 @@ class TestNegativeCases:
         def generative(values: NDArray[np.float64]) -> NDArray[np.float64]:
             return values**2
 
-        grad = free_energy_gradient(
-            mu,
-            sigma,
-            x,
-            K,
-            sensory_precision=sensory,
-            generative_fn=generative,
-        )
-
-        expected = (K + 1e-10 * np.eye(2)) @ mu - sensory @ (x - generative(mu))
-        assert np.allclose(grad, expected)
+        with pytest.raises(ValueError, match="generative_fn requires generative_jac"):
+            free_energy_gradient(
+                mu,
+                sigma,
+                x,
+                K,
+                sensory_precision=sensory,
+                generative_fn=generative,
+            )
 
     def test_gradient_python_generative_jacobian(self) -> None:
         """Python gradient uses the supplied generator Jacobian."""

@@ -13,7 +13,7 @@
     "python_model_source_modules": 699,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1356
+    "test_files": 1357
   },
   "documentation": {
     "examples": [
@@ -8586,6 +8586,7 @@
       "tests/test_feedback_submission.py",
       "tests/test_feedback_submission_branches.py",
       "tests/test_fep.py",
+      "tests/test_fep_generative_model_contract.py",
       "tests/test_figure_generator_contracts.py",
       "tests/test_fim_hamiltonian.py",
       "tests/test_fim_mechanism.py",

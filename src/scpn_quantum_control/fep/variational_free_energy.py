@@ -33,6 +33,12 @@ SCPN mapping:
     g(μ) = predicted phases at lower layer (forward model)
     x = observed phases (data from quantum measurement)
 
+A generative model is a pair. ``g`` and its Jacobian ``∂g/∂μ`` are supplied
+together or not at all: an absent Jacobian is not replaced by the identity,
+because that returns the gradient of a different model rather than an error.
+Models need not be square; for ``g: R^n -> R^m`` the Jacobian is ``(m, n)`` and
+the sensory precision is ``(m, m)``.
+
 Ref:
     - Friston, Nature Reviews Neuroscience 11, 127 (2010)
     - Friston, J. R. Soc. Interface 10, 20130475 (2013)
@@ -103,6 +109,7 @@ def _validated_mean(mu: NDArray[np.float64], name: str) -> NDArray[np.float64]:
     ------
     ValueError
         If ``mu`` is not one-dimensional or contains a non-finite entry.
+
     """
     vector = np.asarray(mu, dtype=np.float64)
     if vector.ndim != 1:
@@ -143,6 +150,7 @@ def _cholesky_of_covariance(
     ValueError
         If ``sigma`` is not a finite, ``size``-by-``size``, symmetric,
         positive-definite matrix.
+
     """
     matrix = np.asarray(sigma, dtype=np.float64)
     if matrix.shape != (size, size):
@@ -177,8 +185,163 @@ def _log_determinant(factor: tuple[NDArray[np.float64], bool]) -> float:
     -------
     float
         Natural logarithm of the determinant.
+
     """
     return 2.0 * float(np.sum(np.log(np.diagonal(factor[0]))))
+
+
+def _validated_prediction(
+    predicted: NDArray[np.float64], expected_size: int, name: str
+) -> NDArray[np.float64]:
+    """Return a generative model's output as a finite prediction vector.
+
+    A model that returns a scalar, a column vector or a vector of the wrong
+    length would otherwise broadcast against the observation and yield a
+    prediction error of a shape the caller never described, so the shape is
+    established here rather than left to NumPy broadcasting.
+
+    Parameters
+    ----------
+    predicted
+        Value returned by the generative model, in the units of ``x_observed``.
+    expected_size
+        Number of observations the prediction must explain.
+    name
+        Expression named in error messages, for example ``generative_fn(mu)``.
+
+    Returns
+    -------
+    numpy.ndarray
+        Shape ``(expected_size,)`` float64 view of ``predicted``.
+
+    Raises
+    ------
+    ValueError
+        If the prediction is not a one-dimensional, finite vector of length
+        ``expected_size``.
+
+    """
+    vector = np.asarray(predicted, dtype=np.float64)
+    if vector.ndim != 1:
+        raise ValueError(f"{name} must return a one-dimensional vector, got shape {vector.shape}")
+    if vector.size != expected_size:
+        raise ValueError(f"{name} must return {expected_size} values, got {vector.size}")
+    if not np.all(np.isfinite(vector)):
+        raise ValueError(f"{name} must return finite values")
+    return vector
+
+
+def _validated_jacobian(
+    matrix: NDArray[np.float64], rows: int, columns: int, name: str
+) -> NDArray[np.float64]:
+    """Return a generative model's Jacobian as a finite ``(rows, columns)`` matrix.
+
+    The Jacobian of a model ``g: R^n -> R^m`` has one row per prediction and one
+    column per belief coordinate. A one-dimensional or mis-shaped return value
+    contracts against the prediction error into something that still has the
+    dimension of a gradient, so the shape is checked rather than inferred from
+    whether the product happens to succeed.
+
+    Parameters
+    ----------
+    matrix
+        Value returned by the Jacobian callable.
+    rows
+        Number of predictions ``m``.
+    columns
+        Number of belief coordinates ``n``.
+    name
+        Expression named in error messages, for example ``generative_jac(mu)``.
+
+    Returns
+    -------
+    numpy.ndarray
+        Shape ``(rows, columns)`` float64 view of ``matrix``.
+
+    Raises
+    ------
+    ValueError
+        If the Jacobian does not have shape ``(rows, columns)`` or is not finite.
+
+    """
+    array = np.asarray(matrix, dtype=np.float64)
+    if array.shape != (rows, columns):
+        raise ValueError(f"{name} must return shape ({rows}, {columns}), got {array.shape}")
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"{name} must return finite values")
+    return array
+
+
+def _validated_square_matrix(
+    matrix: NDArray[np.float64], size: int, name: str
+) -> NDArray[np.float64]:
+    """Return a finite ``(size, size)`` matrix.
+
+    Parameters
+    ----------
+    matrix
+        Candidate matrix.
+    size
+        Dimension the matrix must match.
+    name
+        Argument name used in error messages.
+
+    Returns
+    -------
+    numpy.ndarray
+        Shape ``(size, size)`` float64 view of ``matrix``.
+
+    Raises
+    ------
+    ValueError
+        If the matrix is not ``size``-by-``size`` or is not finite.
+
+    """
+    array = np.asarray(matrix, dtype=np.float64)
+    if array.shape != (size, size):
+        raise ValueError(f"{name} must have shape ({size}, {size}), got {array.shape}")
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"{name} must be finite")
+    return array
+
+
+def _validated_precision(
+    sensory_precision: NDArray[np.float64] | None, size: int, name: str
+) -> NDArray[np.float64]:
+    """Resolve an optional sensory precision to a finite ``(size, size)`` matrix.
+
+    ``size`` is the number of predictions, not the number of belief
+    coordinates: for a model ``g: R^n -> R^m`` the sensory precision weights the
+    prediction error and is ``m``-by-``m``.
+
+    Definiteness is not asserted here. The likelihood precision is documented as
+    positive definite, but this function admits any finite square matrix, so a
+    caller supplying an indefinite precision receives a weighted error rather
+    than a rejection.
+
+    Parameters
+    ----------
+    sensory_precision
+        Candidate precision matrix, or ``None`` for the identity.
+    size
+        Number of predictions ``m``.
+    name
+        Argument name used in error messages.
+
+    Returns
+    -------
+    numpy.ndarray
+        Shape ``(size, size)`` float64 matrix.
+
+    Raises
+    ------
+    ValueError
+        If a supplied precision is not ``size``-by-``size`` or is not finite.
+
+    """
+    if sensory_precision is None:
+        return np.eye(size)
+    return _validated_square_matrix(sensory_precision, size, name)
 
 
 def kl_divergence_gaussian(
@@ -215,6 +378,7 @@ def kl_divergence_gaussian(
     ValueError
         If a mean is not finite and one-dimensional, if the shapes disagree, or
         if a covariance is not finite, symmetric and positive definite.
+
     """
     mean_q = _validated_mean(mu_q, "mu_q")
     mean_p = _validated_mean(mu_p, "mu_p")
@@ -252,13 +416,53 @@ def _complexity_term(
 def _accuracy_term(
     mu: NDArray[np.float64],
     x_observed: NDArray[np.float64],
-    sensory_precision: NDArray[np.float64],
+    sensory_precision: NDArray[np.float64] | None = None,
     generative_fn: Callable[..., NDArray[np.float64]] | None = None,
 ) -> float:
-    """Prediction error energy: 0.5 × (x − g(μ))ᵀ Γ (x − g(μ))."""
-    predicted = generative_fn(mu) if generative_fn is not None else mu
-    error = x_observed - predicted
-    return 0.5 * float(error @ sensory_precision @ error)
+    """Prediction error energy ``½ (x − g(μ))ᵀ Γ (x − g(μ))``.
+
+    Parameters
+    ----------
+    mu
+        Belief mean of shape ``(n,)``.
+    x_observed
+        Observations of shape ``(m,)``; ``m`` equals ``n`` for the identity
+        model.
+    sensory_precision
+        Likelihood precision ``Γ`` of shape ``(m, m)``, or ``None`` for the
+        identity.
+    generative_fn
+        Forward model ``g``, or ``None`` for the identity model.
+
+    Returns
+    -------
+    float
+        The prediction error energy in nats.
+
+    Raises
+    ------
+    ValueError
+        If ``mu`` or ``x_observed`` is not a finite vector, if the model does
+        not return a finite vector of length ``m``, or if ``sensory_precision``
+        is not a finite ``(m, m)`` matrix.
+
+    """
+    mean = _validated_mean(mu, "mu")
+    observation = _validated_mean(x_observed, "x_observed")
+    if generative_fn is None:
+        if observation.size != mean.size:
+            raise ValueError(
+                f"x_observed must have length {mean.size} for the identity generative "
+                f"model, got {observation.size}"
+            )
+        predicted = mean
+    else:
+        predicted = _validated_prediction(
+            generative_fn(mean), observation.size, "generative_fn(mu)"
+        )
+    gamma = _validated_precision(sensory_precision, predicted.size, "sensory_precision")
+    error = observation - predicted
+    return 0.5 * float(error @ gamma @ error)
 
 
 def variational_free_energy(
@@ -269,11 +473,42 @@ def variational_free_energy(
     sensory_precision: NDArray[np.float64] | None = None,
     generative_fn: Callable[..., NDArray[np.float64]] | None = None,
 ) -> FreeEnergyResult:
-    """Compute variational free energy F = complexity + accuracy."""
-    n = len(mu)
-    if sensory_precision is None:
-        sensory_precision = np.eye(n)
+    """Compute variational free energy ``F = complexity + accuracy``.
 
+    Parameters
+    ----------
+    mu
+        Belief mean of shape ``(n,)``.
+    sigma
+        Belief covariance of shape ``(n, n)``: finite, symmetric and positive
+        definite.
+    x_observed
+        Observations of shape ``(m,)``, where ``m`` is the number of values the
+        generative model predicts and equals ``n`` for the identity model.
+    K_precision
+        Prior precision of shape ``(n, n)``. ``PRECISION_RIDGE`` is added before
+        it is inverted to form the prior covariance.
+    sensory_precision
+        Likelihood precision ``Γ`` of shape ``(m, m)``, or ``None`` for the
+        identity. Note that ``m`` follows the model output, not ``mu``.
+    generative_fn
+        Forward model ``g``, or ``None`` for the identity model. It must return
+        a finite one-dimensional vector of length ``m``; a scalar or column
+        vector is rejected rather than broadcast against the observation.
+
+    Returns
+    -------
+    FreeEnergyResult
+        The free energy and its complexity/accuracy decomposition, in nats.
+
+    Raises
+    ------
+    ValueError
+        If any argument violates the shape, finiteness or definiteness contract
+        above, or if the generative model does not return a length-``m`` finite
+        vector.
+
+    """
     complexity = _complexity_term(mu, sigma, K_precision)
     accuracy = _accuracy_term(mu, x_observed, sensory_precision, generative_fn)
     free_energy = complexity + accuracy
@@ -293,7 +528,30 @@ def evidence_lower_bound(
     x_observed: NDArray[np.float64],
     K_precision: NDArray[np.float64],
 ) -> float:
-    """ELBO = −F (shorthand for optimisation targets)."""
+    """ELBO = −F (shorthand for optimisation targets).
+
+    Parameters
+    ----------
+    mu
+        Belief mean of shape ``(n,)``.
+    sigma
+        Belief covariance of shape ``(n, n)``.
+    x_observed
+        Observations of shape ``(n,)``; this shorthand uses the identity model.
+    K_precision
+        Prior precision of shape ``(n, n)``.
+
+    Returns
+    -------
+    float
+        The evidence lower bound in nats.
+
+    Raises
+    ------
+    ValueError
+        Propagated from :func:`variational_free_energy`.
+
+    """
     result = variational_free_energy(mu, sigma, x_observed, K_precision)
     return result.elbo
 
@@ -307,44 +565,109 @@ def free_energy_gradient(
     generative_fn: Callable[..., NDArray[np.float64]] | None = None,
     generative_jac: Callable[..., NDArray[np.float64]] | None = None,
 ) -> NDArray[np.float64]:
-    """Gradient ∂F/∂μ for belief update dynamics.
+    """Gradient ``∂F/∂μ`` for belief update dynamics.
 
-    dμ/dt = −∂F/∂μ = −Π_z μ + Jᵀ Γ (x − g(μ))
+    ``∂F/∂μ = Π_z μ − Jᵀ Γ (x − g(μ))``, where ``Π_z`` is the ridged prior
+    precision, ``J = ∂g/∂μ`` and ``Γ`` is the sensory precision. Belief dynamics
+    follow ``dμ/dt = −∂F/∂μ``.
 
-    where Π_z = prior precision (K_nm), J = ∂g/∂μ (Jacobian),
-    Γ = sensory precision.
+    A generative model and its Jacobian form one contract and must be supplied
+    together. Neither is inferred from the other: substituting the identity for
+    an absent Jacobian returns the gradient of a different model, which is a
+    plausible vector rather than an error, and applying a Jacobian to the
+    identity prediction returns the gradient of neither model. An incomplete
+    pair is refused before the model is called, so no belief state is updated
+    from it.
 
-    With identity generative model: ∂F/∂μ = Π_z μ − Γ(x − μ)
-    Uses Rust engine when available (identity generative model only).
+    Models are not required to be square. For ``g: R^n -> R^m`` the Jacobian is
+    ``(m, n)`` and the sensory precision is ``(m, m)``; the returned gradient
+    always has length ``n``.
+
+    ``sigma`` is accepted for signature symmetry with
+    :func:`variational_free_energy` and does not enter the gradient: the terms
+    of ``F`` that carry the belief covariance are constant in ``μ``.
+
+    The Rust engine implements the identity model only and is used when no model
+    is supplied; the arguments are validated here first, so both tiers see the
+    same admitted domain.
+
+    Parameters
+    ----------
+    mu
+        Belief mean of shape ``(n,)``, finite.
+    sigma
+        Belief covariance of shape ``(n, n)``. Unused; see above.
+    x_observed
+        Observations of shape ``(m,)``, finite.
+    K_precision
+        Prior precision of shape ``(n, n)``, finite. ``PRECISION_RIDGE`` is
+        added to its diagonal.
+    sensory_precision
+        Likelihood precision ``Γ`` of shape ``(m, m)``, or ``None`` for the
+        identity.
+    generative_fn
+        Forward model ``g`` returning a finite vector of length ``m``. Requires
+        ``generative_jac``.
+    generative_jac
+        Jacobian ``∂g/∂μ`` returning a finite ``(m, n)`` matrix. Requires
+        ``generative_fn``.
+
+    Returns
+    -------
+    numpy.ndarray
+        Gradient of shape ``(n,)``.
+
+    Raises
+    ------
+    ValueError
+        If exactly one of ``generative_fn`` and ``generative_jac`` is supplied,
+        if ``mu`` or ``x_observed`` is not a finite vector, if the identity
+        model is used and the observations do not match ``mu``, if the model or
+        its Jacobian returns a non-finite or mis-shaped value, or if
+        ``K_precision`` or ``sensory_precision`` has the wrong shape or is not
+        finite.
+
     """
-    n = len(mu)
-    if sensory_precision is None:
-        sensory_precision = np.eye(n)
+    mean = _validated_mean(mu, "mu")
+    observation = _validated_mean(x_observed, "x_observed")
+    n = mean.size
 
-    # Rust path for identity generative model
-    if _HAS_RUST and generative_fn is None and generative_jac is None:
+    if generative_fn is None or generative_jac is None:
+        if generative_jac is not None:
+            raise ValueError(
+                "generative_jac requires generative_fn: a Jacobian without its model "
+                "would differentiate the identity prediction"
+            )
+        if generative_fn is not None:
+            raise ValueError(
+                "generative_fn requires generative_jac: no derivative is inferred, and "
+                "an identity Jacobian returns the gradient of a different model"
+            )
+        if observation.size != n:
+            raise ValueError(
+                f"x_observed must have length {n} for the identity generative model, "
+                f"got {observation.size}"
+            )
+        predicted = mean
+        jacobian = np.eye(n)
+    else:
+        predicted = _validated_prediction(
+            generative_fn(mean), observation.size, "generative_fn(mu)"
+        )
+        jacobian = _validated_jacobian(
+            generative_jac(mean), predicted.size, n, "generative_jac(mu)"
+        )
+
+    prior_precision = _validated_square_matrix(K_precision, n, "K_precision")
+    gamma = _validated_precision(sensory_precision, predicted.size, "sensory_precision")
+
+    if _HAS_RUST and generative_fn is None:
         return np.asarray(
-            _grad_rust(mu, x_observed, K_precision, sensory_precision, 1e-10),
+            _grad_rust(mean, observation, prior_precision, gamma, PRECISION_RIDGE),
             dtype=np.float64,
         )
 
-    K_reg = K_precision + 1e-10 * np.eye(n)
-
-    # Prior contribution
-    grad = K_reg @ mu
-
-    # Likelihood contribution
-    if generative_fn is not None:
-        predicted = generative_fn(mu)
-        if generative_jac is not None:
-            J = generative_jac(mu)
-        else:
-            J = np.eye(n)
-    else:
-        predicted = mu
-        J = np.eye(n)
-
-    error = x_observed - predicted
-    grad -= J.T @ sensory_precision @ error
+    grad = (prior_precision + PRECISION_RIDGE * np.eye(n)) @ mean
+    grad -= jacobian.T @ gamma @ (observation - predicted)
 
     return np.asarray(grad, dtype=np.float64)

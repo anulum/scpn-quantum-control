@@ -415,7 +415,8 @@ Exact KL divergence between multivariate Gaussians.
 #### `free_energy_gradient(mu, sigma, x_observed, K_precision, sensory_precision, generative_fn, generative_jac)`
 
 Analytical gradient $\partial F / \partial \mu$. Rust-accelerated for identity
-generative model.
+generative model. A custom model and its Jacobian are one contract and must be
+supplied together; see below.
 
 #### `hierarchical_prediction_error(observations, beliefs, K)`
 
@@ -452,7 +453,7 @@ application plugin uses.
 | `x_observed` | `ndarray` | required | Observed data |
 | `K_precision` | `ndarray` | required | Prior precision (K_nm) |
 | `sensory_precision` | `ndarray \| None` | `I` | Likelihood precision $\Gamma$ |
-| `generative_fn` | `Callable \| None` | identity | Forward model $g(\mu)$ |
+| `generative_fn` | `Callable \| None` | identity | Forward model $g(\mu)$, returning a finite length-$m$ vector |
 
 #### `free_energy_gradient` — Full Signature
 
@@ -463,10 +464,30 @@ application plugin uses.
 | `x_observed` | `ndarray` | required | Observed data |
 | `K_precision` | `ndarray` | required | Prior precision |
 | `sensory_precision` | `ndarray \| None` | `I` | Likelihood precision |
-| `generative_fn` | `Callable \| None` | identity | Forward model |
-| `generative_jac` | `Callable \| None` | `I` | Jacobian $\partial g / \partial \mu$ |
+| `generative_fn` | `Callable \| None` | identity | Forward model; requires `generative_jac` |
+| `generative_jac` | `Callable \| None` | — | Jacobian $\partial g / \partial \mu$; requires `generative_fn` |
 
 When `generative_fn` and `generative_jac` are both `None`, uses Rust engine.
+Arguments are validated before that dispatch, so the Python and Rust tiers
+admit the same domain.
+
+A model and its Jacobian are supplied together or not at all. Neither is
+inferred from the other: substituting the identity for an absent Jacobian
+returns the gradient of a different model — for $g(\mu) = 2\mu$ at $\mu = 0.4$
+with $x = 0$ and $K = \Gamma = I$ it returns $1.2$ where the derivative of $F$
+is $2.0$ — and a Jacobian without its model differentiates the identity
+prediction. Either half alone raises `ValueError` before the callables run, so
+no belief state is updated from an incomplete contract.
+
+Models need not be square. For $g: \mathbb{R}^n \to \mathbb{R}^m$ the Jacobian
+is $(m, n)$, `x_observed` and the model output have length $m$, the sensory
+precision is $(m, m)$, and the gradient has length $n$. The model must return a
+finite one-dimensional vector of length $m$: a scalar or an $(m, 1)$ column is
+rejected rather than broadcast against the observation.
+
+`sigma` is accepted for symmetry with `variational_free_energy` and does not
+enter the gradient; the terms of $F$ carrying the belief covariance are constant
+in $\mu$.
 
 ### Rust Engine API
 
@@ -506,7 +527,14 @@ Computes $(F, \text{complexity}, \text{accuracy})$ tuple for diagonal $\Sigma$.
   complexity. The current implementation prioritises simplicity.
 - **Custom generative models:** when `generative_fn` is not None, Rust
   engine is bypassed. The Python path supports arbitrary callables but
-  is ~10× slower for the gradient computation.
+  is ~10× slower for the gradient computation. The gradient requires the
+  paired `generative_jac`; it is not approximated, because a numerical
+  derivative would change the accuracy of the result without saying so.
+  A caller who wants one builds it explicitly and passes it as the pair:
+  `generative_jac=lambda mu: jacobian(g, mu)` with
+  `from scpn_quantum_control.diff import jacobian`, whose return shape
+  $(m, n)$ is already the one this contract requires. Against the analytic
+  Jacobian of $g = \sin$ on three coordinates the two agree to $4×10^{-11}$.
 
 ## 7. Performance Benchmarks
 
@@ -519,6 +547,14 @@ Measured on Intel i5-11600K, Python 3.12, $n = 16$ oscillators.
 | `hierarchical_prediction_error` | 40 μs | Rust |
 | `predictive_coding_step` | 260 μs | Rust (inner) |
 | `kl_divergence_gaussian` | ~50 μs | Python (numpy linalg) |
+
+These figures predate the argument validation that `free_energy_gradient` and
+`variational_free_energy` now perform before dispatch, and the Cholesky
+factorisation that replaced the explicit inverse in `kl_divergence_gaussian`.
+They have not been re-measured on an isolated host, so they are retained as the
+last qualified measurement rather than refreshed with a loaded-workstation
+number. The validation is deliberate cost: it is what keeps an inadmissible
+argument from reaching either the Python or the native tier.
 
 ### Convergence Rate
 
@@ -539,13 +575,17 @@ Scaling is $O(n^2)$ for gradient (matrix-vector) and $O(n^3)$ for
 
 ### Test Coverage
 
-16 tests across 6 dimensions:
-- Empty/null: 3 tests (identical distributions, zero observation, perfect prediction)
-- Error handling: 2 tests (singular covariance, zero precision)
-- Negative cases: 2 tests (KL ≥ 0 property, gradient direction)
-- Pipeline integration: 4 tests (SCPN K_nm, PC convergence, ELBO consistency, imports)
-- Roundtrip: 3 tests (F decomposition, MAP gradient, PC equilibrium)
-- Performance: 2 tests (F computation, PC step budgets)
+Two owners cover this surface, both collected on 2026-09-06:
+
+| Test file | Tests | Scope |
+|-----------|-------|-------|
+| `tests/test_fep.py` | 46 | Free energy, KL contract, predictive coding, performance budgets |
+| `tests/test_fep_generative_model_contract.py` | 37 | Generative model and Jacobian contract for the gradient |
+
+`fep/predictive_coding.py` carries an exact 100% statement and branch coverage
+gate, measured from `tests/test_fep.py` alone; see
+`tools/predictive_coding_quality_gates.py`. `fep/variational_free_energy.py` is
+at 100% statement and branch coverage across the two owners together.
 
 ## 8. Citations
 
