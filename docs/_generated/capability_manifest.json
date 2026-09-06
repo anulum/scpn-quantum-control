@@ -13,7 +13,7 @@
     "python_model_source_modules": 699,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 53,
-    "test_files": 1364
+    "test_files": 1366
   },
   "documentation": {
     "examples": [
@@ -8368,6 +8368,7 @@
       "tests/test_control_stack_runtime_adapters.py",
       "tests/test_control_structured_ansatz.py",
       "tests/test_control_structured_ansatz_quality_gate.py",
+      "tests/test_core_g02_contract_corpus.py",
       "tests/test_cosimulation.py",
       "tests/test_cosimulation_branches.py",
       "tests/test_cosimulation_quality_gate.py",
@@ -9490,6 +9491,7 @@
       "tests/test_variational_workflow.py",
       "tests/test_varqite.py",
       "tests/test_varqite_quality_gate.py",
+      "tests/test_versioned_contract_custody.py",
       "tests/test_visualisation_dashboard_product.py",
       "tests/test_visualisation_dashboard_product_quality_gate.py",
       "tests/test_vortex_binding.py",
