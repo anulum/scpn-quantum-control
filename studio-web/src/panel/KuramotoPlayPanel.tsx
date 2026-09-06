@@ -8,11 +8,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import type { KernelSimulate, KuramotoBounds, KuramotoMode, KuramotoScenario } from "./kuramoto";
+import type {
+  KernelSimulate,
+  KuramotoBounds,
+  KuramotoKernel,
+  KuramotoMode,
+  KuramotoRequest,
+  KuramotoScenario,
+} from "./kuramoto";
 import { fetchKuramoto, maxOrderParameterDeviation } from "./kuramoto";
 
 /** Loader for the WASM kernel; overridable so tests inject a built kernel. */
-export type KuramotoLoader = () => Promise<{ simulate: KernelSimulate; bounds: KuramotoBounds }>;
+/** How the panel obtains a kernel; injectable so tests need no WASM fetch. */
+export type KuramotoLoader = () => Promise<KuramotoKernel>;
 
 const FIXED_DT = 0.05;
 // The committed reference and the WASM kernel differ only in float op-order.
@@ -27,7 +35,8 @@ interface Controls {
 }
 
 /** Build the deterministic request the live controls describe. */
-export function controlsToRequest(controls: Controls) {
+/** Turn the panel's controls into a kernel request, deriving omega and theta0 from them. */
+export function controlsToRequest(controls: Controls): KuramotoRequest {
   const { mode, n, coupling, spread, steps } = controls;
   const omega = Array.from({ length: n }, (_, i) =>
     n === 1 ? 0 : -spread + (2 * spread * i) / (n - 1),

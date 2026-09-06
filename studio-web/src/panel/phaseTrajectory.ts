@@ -24,9 +24,11 @@
 import type { KernelSimulate, KuramotoRequest } from "./kuramoto";
 
 /** The Lab's own fail-closed oscillator bound (stricter than the kernel's). */
+/** Oscillator ceiling the Lab panel imposes, below the kernel's own. */
 export const LAB_MAX_OSCILLATORS = 32;
 
 /** The Lab's own fail-closed step bound (stricter than the kernel's). */
+/** Step ceiling the Lab panel imposes, below the kernel's own. */
 export const LAB_MAX_STEPS = 360;
 
 /**
@@ -36,11 +38,15 @@ export const LAB_MAX_STEPS = 360;
  * versus the host's `Math`), each correctly rounded or within 1 ulp, so the
  * mean over ≤32 oscillators stays far inside this bound.
  */
+/** How far the recomputed order parameter may differ from the kernel's before parity fails. */
 export const ORDER_PARAMETER_TOLERANCE = 1e-12;
 
 /** A captured trajectory: every phase snapshot plus the kernel's R(t). */
+/** A captured run: every phase snapshot and the kernel's own order parameter. */
 export interface PhaseTrajectory {
+  /** Oscillator count. */
   readonly n: number;
+  /** Number of integration steps; there are `steps + 1` snapshots. */
   readonly steps: number;
   /** Row-major `(steps + 1) × n` phase snapshots, row 0 is the initial state. */
   readonly theta: Float64Array;
@@ -48,13 +54,26 @@ export interface PhaseTrajectory {
   readonly orderParameter: Float64Array;
 }
 
+/** A capture outcome: the trajectory, or the reason it was refused. */
 export type TrajectoryResult =
-  | { readonly ok: true; readonly trajectory: PhaseTrajectory }
-  | { readonly ok: false; readonly reason: string };
+  | {
+      /** Discriminant: the run completed. */
+      readonly ok: true;
+      /** The captured trajectory. */
+      readonly trajectory: PhaseTrajectory;
+    }
+  | {
+      /** Discriminant: the run was refused. */
+      readonly ok: false;
+      /** Why it was refused. */
+      readonly reason: string;
+    };
 
 /** The complex mean of the phases: magnitude R and mean phase ψ per snapshot. */
 export interface OrderParameterSeries {
+  /** Magnitude R at each snapshot. */
   readonly r: Float64Array;
+  /** Mean phase psi at each snapshot, in radians. */
   readonly psi: Float64Array;
 }
 
@@ -67,6 +86,7 @@ export interface OrderParameterSeries {
  * rejection, bound violation, or bit-level divergence surfaces as an explicit
  * reason — never a fabricated or silently truncated trajectory.
  */
+/** Run the kernel step by step, keeping every phase snapshot rather than only the last. */
 export function captureTrajectory(
   simulate: KernelSimulate,
   request: KuramotoRequest,
@@ -122,6 +142,7 @@ export function captureTrajectory(
 }
 
 /** Recompute R(t) and the mean phase ψ(t) in TypeScript from the snapshots. */
+/** Recompute R and psi from the stored phases, independently of the kernel. */
 export function orderParameterSeries(trajectory: PhaseTrajectory): OrderParameterSeries {
   const { n, steps, theta } = trajectory;
   const r = new Float64Array(steps + 1);
@@ -144,10 +165,24 @@ export function orderParameterSeries(trajectory: PhaseTrajectory): OrderParamete
 }
 
 /** Cross-language parity of the TypeScript R(t) against the kernel's series. */
+/** The outcome of comparing the recomputed order parameter against the kernel's. */
+export interface OrderParameterParity {
+  /** Whether every snapshot agreed within [`ORDER_PARAMETER_TOLERANCE`]. */
+  readonly verified: boolean;
+  /** The largest absolute disagreement found. */
+  readonly worst: number;
+}
+
+/**
+ * Compare the recomputed order parameter against the kernel's, within tolerance.
+ *
+ * The point is independence: if the panel derived R from the kernel's output
+ * instead of from the phases, the comparison would be with itself.
+ */
 export function kernelOrderParameterParity(
   trajectory: PhaseTrajectory,
   series: OrderParameterSeries,
-): { readonly verified: boolean; readonly worst: number } {
+): OrderParameterParity {
   let worst = 0;
   for (let index = 0; index <= trajectory.steps; index += 1) {
     worst = Math.max(worst, Math.abs(series.r[index]! - trajectory.orderParameter[index]!));

@@ -8,7 +8,7 @@
   "treatWarningsAsErrors": true,
   "validation": {
     "invalidLink": true,
-    "notDocumented": false,
+    "notDocumented": true,
     "notExported": false
   }
 }

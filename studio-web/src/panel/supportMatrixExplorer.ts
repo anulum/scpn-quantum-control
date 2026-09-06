@@ -8,44 +8,84 @@
 
 import type { SupportMatrixRowView, SupportMatrixView } from "./data";
 
+/** Filter sentinel meaning "do not narrow on this facet". */
 export const SUPPORT_MATRIX_ALL = "all";
 
+/**
+ * The reader's current filter selection; `SUPPORT_MATRIX_ALL` means unfiltered.
+ */
 export interface SupportMatrixFilters {
+  /** Free-text query matched against the operation name. */
   readonly operationQuery: string;
+  /** Selected framework, or `SUPPORT_MATRIX_ALL`. */
   readonly framework: string;
+  /** Selected backend, or `SUPPORT_MATRIX_ALL`. */
   readonly backend: string;
+  /** Selected exactness level, or `SUPPORT_MATRIX_ALL`. */
   readonly exactness: string;
+  /** Selected claim status, or `SUPPORT_MATRIX_ALL`. */
   readonly claimStatus: string;
 }
 
+/**
+ * One explorer row: a support-matrix row flattened with the facets it is filtered by.
+ */
 export interface SupportMatrixExplorerRow {
+  /** Stable row identifier, carried from the artefact. */
   readonly rowId: string;
+  /** Operation the row covers. */
   readonly operation: string;
+  /** Framework the operation is expressed in. */
   readonly framework: string;
+  /** Backend the row targets. */
   readonly backend: string;
+  /** Exactness level the row's evidence supports. */
   readonly exactness: string;
+  /** What may be claimed from this row. */
   readonly claimStatus: string;
+  /** Lane the row belongs to. */
   readonly lane: string;
+  /** Transform stack the row exercises, outermost first. */
   readonly transformStack: readonly string[];
+  /** Cases this row aggregates. */
   readonly caseIds: readonly string[];
+  /** Evidence artefacts backing the verdict. */
   readonly evidence: readonly string[];
+  /** Row verdict as the artefact states it. */
   readonly status: string;
+  /** Whether the stack is supported; false leaves `residual` meaningless. */
   readonly supported: boolean;
+  /** Numerical residual, or `null` when the row produced none. */
   readonly residual: number | null;
+  /** Tolerance the residual was judged against. */
   readonly tolerance: number;
+  /** Why the row is unsupported, one entry per distinct reason. */
   readonly blockedReasons: readonly string[];
+  /** Free-text notes carried from the artefact. */
   readonly notes: readonly string[];
 }
 
+/**
+ * The whole explorer: its rows, the facet values a reader can filter by, and the two counts shown above the table.
+ */
 export interface SupportMatrixExplorerView {
+  /** Identifier of the artefact the view was built from. */
   readonly artifactId: string;
+  /** What the matrix may and may not be cited as evidence for. */
   readonly claimBoundary: string;
+  /** Every row, unfiltered. */
   readonly rows: readonly SupportMatrixExplorerRow[];
+  /** Distinct frameworks present, for the filter control. */
   readonly frameworks: readonly string[];
+  /** Distinct backends present, for the filter control. */
   readonly backends: readonly string[];
+  /** Distinct exactness levels present, for the filter control. */
   readonly exactnessLevels: readonly string[];
+  /** Distinct claim statuses present, for the filter control. */
   readonly claimStatuses: readonly string[];
+  /** How many rows are supported. */
   readonly supportedCount: number;
+  /** How many rows fail closed — counted separately so an unsupported row is never read as an absent one. */
   readonly failClosedCount: number;
 }
 
@@ -153,6 +193,7 @@ function rowSearchText(row: SupportMatrixExplorerRow): string {
     .toLowerCase();
 }
 
+/** Flatten a support-matrix view into rows plus the facet values a reader filters by. */
 export function buildSupportMatrixExplorer(
   matrix: SupportMatrixView,
 ): SupportMatrixExplorerView {
@@ -187,6 +228,13 @@ export function buildSupportMatrixExplorer(
   };
 }
 
+/**
+ * Narrow the rows to the reader's selection.
+ *
+ * A facet set to `SUPPORT_MATRIX_ALL` does not narrow, and the operation query
+ * matches case-insensitively, so an empty selection returns every row rather
+ * than none.
+ */
 export function filterSupportMatrixRows(
   rows: readonly SupportMatrixExplorerRow[],
   filters: SupportMatrixFilters,

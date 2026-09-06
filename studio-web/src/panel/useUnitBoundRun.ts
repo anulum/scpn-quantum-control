@@ -10,10 +10,26 @@ import { useRef, useState } from "react";
 
 /** Lifecycle of one verification, parameterised by the verdict it produces. */
 export type UnitBoundState<Verdict> =
-  | { readonly phase: "idle" }
-  | { readonly phase: "running" }
-  | { readonly phase: "done"; readonly verdict: Verdict }
-  | { readonly phase: "error"; readonly reason: string };
+  | {
+      /** Nothing has been run for the current unit. */
+      readonly phase: "idle";
+    }
+  | {
+      /** A run is in flight for the current unit. */
+      readonly phase: "running";
+    }
+  | {
+      /** A run completed for the current unit. */
+      readonly phase: "done";
+      /** The verdict it produced. */
+      readonly verdict: Verdict;
+    }
+  | {
+      /** A run failed for the current unit. */
+      readonly phase: "error";
+      /** Why it failed, shown rather than swallowed. */
+      readonly reason: string;
+    };
 
 /**
  * Bind a verification result to the identity of the unit it was computed for.
@@ -39,7 +55,9 @@ export type UnitBoundState<Verdict> =
  * @returns The current lifecycle state and a `run` that owns the guard.
  */
 export function useUnitBoundRun<Verdict>(identity: string): {
+  /** Lifecycle state for the unit currently identified. */
   readonly state: UnitBoundState<Verdict>;
+  /** Start a run whose result is discarded if the unit changes underneath it. */
   readonly run: (task: () => Promise<Verdict>, fallbackReason: string) => Promise<void>;
 } {
   const [trackedIdentity, setTrackedIdentity] = useState(identity);
