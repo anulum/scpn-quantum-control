@@ -42,10 +42,12 @@ def test_fim_diagonal_matches_minus_lambda_m_squared_over_n() -> None:
 
 
 def test_fim_feedback_rejects_invalid_hamiltonian_dimensions() -> None:
+    # Both matrices carry the dtype the function requires, so the rejection
+    # under test is the shape and nothing else.
     with pytest.raises(ValueError, match="square"):
-        add_fim_feedback(np.ones((2, 3)), 1.0)
+        add_fim_feedback(np.ones((2, 3), dtype=np.complex128), 1.0)
     with pytest.raises(ValueError, match="power of two"):
-        add_fim_feedback(np.eye(3), 1.0)
+        add_fim_feedback(np.eye(3, dtype=np.complex128), 1.0)
 
 
 def test_add_fim_feedback_adds_only_diagonal_term() -> None:
@@ -64,7 +66,9 @@ def test_magnetisation_sector_indices_group_basis_states() -> None:
 def test_adjacent_gap_ratio_uses_nonzero_spacings() -> None:
     stats = adjacent_gap_ratio(np.array([0.0, 1.0, 3.0, 6.0]))
     assert stats["n_spacings"] == 3
-    np.testing.assert_allclose(stats["mean_r"], (0.5 + 2.0 / 3.0) / 2.0)
+    mean_r = stats["mean_r"]
+    assert isinstance(mean_r, float)
+    np.testing.assert_allclose(mean_r, (0.5 + 2.0 / 3.0) / 2.0)
 
 
 def test_adjacent_gap_ratio_reports_insufficient_nonzero_spacings() -> None:
@@ -132,7 +136,9 @@ def test_sector_diagnostics_preserve_fim_energy_shifts_and_detect_coupling() -> 
     hamiltonian = np.zeros((4, 4), dtype=np.complex128)
     hamiltonian[0, 1] = hamiltonian[1, 0] = 0.25
 
-    spectrum_rows = sector_spectrum_rows(add_fim_feedback(np.zeros((4, 4)), 0.5), 0.5)
+    spectrum_rows = sector_spectrum_rows(
+        add_fim_feedback(np.zeros((4, 4), dtype=np.complex128), 0.5), 0.5
+    )
     shift_by_magnetisation = {
         row["magnetisation"]: row["fim_energy_shift"] for row in spectrum_rows
     }

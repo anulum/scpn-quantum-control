@@ -18,6 +18,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 RESULTS_DIR = Path(__file__).parent.parent / "results"
 
@@ -34,7 +35,8 @@ def fim_gradient_all(phases: np.ndarray, eps: float = 0.01, cap: float = 50.0) -
     R = np.abs(np.mean(z))
     phase_diff = (mu - phases + np.pi) % (2 * np.pi) - np.pi
     sensitivity = min(1.0 / (1.0 - R**2 + eps), cap)
-    return (1.0 / n) * np.sin(phase_diff) * sensitivity
+    gradient: NDArray[np.float64] = (1.0 / n) * np.sin(phase_diff) * sensitivity
+    return gradient
 
 
 def simulate_R(
@@ -75,20 +77,20 @@ def simulate_R(
 class TestFIMGradient:
     """Test FIM gradient mathematical properties."""
 
-    def test_zero_at_perfect_sync(self):
+    def test_zero_at_perfect_sync(self) -> None:
         """FIM gradient is zero when all phases are identical."""
         theta = np.zeros(16)
         grad = fim_gradient_all(theta)
         assert np.allclose(grad, 0, atol=1e-10)
 
-    def test_direction_toward_mean(self):
+    def test_direction_toward_mean(self) -> None:
         """FIM gradient pulls each oscillator toward the collective mean."""
         theta = np.array([0.0, 0.0, 0.0, 1.0])  # 3 at 0, 1 at 1
         grad = fim_gradient_all(theta)
         # Oscillator 3 (at phase 1.0) should be pulled toward 0
         assert grad[3] < 0  # negative = toward mean
 
-    def test_scales_with_1_over_N(self):
+    def test_scales_with_1_over_N(self) -> None:
         """FIM gradient magnitude scales as 1/N."""
         theta8 = np.linspace(0, np.pi, 8)
         theta16 = np.linspace(0, np.pi, 16)
@@ -96,7 +98,7 @@ class TestFIMGradient:
         grad16 = np.max(np.abs(fim_gradient_all(theta16)))
         assert grad16 < grad8  # 1/N scaling
 
-    def test_sensitivity_increases_near_sync(self):
+    def test_sensitivity_increases_near_sync(self) -> None:
         """FIM sensitivity diverges as R→1."""
         # Desync (R≈0.5)
         theta_low = np.linspace(0, np.pi, 8)
@@ -106,7 +108,7 @@ class TestFIMGradient:
         grad_high = np.max(np.abs(fim_gradient_all(theta_high)))
         assert grad_high > grad_low
 
-    def test_capped_sensitivity(self):
+    def test_capped_sensitivity(self) -> None:
         """Sensitivity is capped at maximum value."""
         theta = np.zeros(8) + 0.001 * np.arange(8)  # nearly perfect sync
         grad = fim_gradient_all(theta, cap=50.0)
@@ -121,12 +123,12 @@ class TestFIMGradient:
 class TestFIMSolvesN16:
     """Test that FIM enables N=16 synchronisation."""
 
-    def test_no_fim_fails(self):
+    def test_no_fim_fails(self) -> None:
         """Without FIM, K_scale=12 does not fully sync N=16."""
         R = simulate_R(16, K_scale=12, fim_lambda=0.0, T=100)
         assert R < 0.8
 
-    def test_fim_succeeds(self):
+    def test_fim_succeeds(self) -> None:
         """With FIM λ=5, K_scale=12 achieves near-perfect sync."""
         R = simulate_R(16, K_scale=12, fim_lambda=5.0, T=100)
         assert R > 0.95
@@ -140,7 +142,7 @@ class TestFIMSolvesN16:
 class TestFIMAloneSyncs:
     """Test that FIM synchronises without any coupling."""
 
-    def test_fim_alone_at_lambda_10(self):
+    def test_fim_alone_at_lambda_10(self) -> None:
         """At K=0, λ=10, R should approach 1."""
         R = simulate_R(16, K_scale=0, fim_lambda=10.0, T=150)
         assert R > 0.9
@@ -154,19 +156,19 @@ class TestFIMAloneSyncs:
 class TestScalingLaw:
     """Test λ_c(N) = 0.149·N^1.02 scaling law."""
 
-    def test_scaling_law_file_exists(self):
+    def test_scaling_law_file_exists(self) -> None:
         """Scaling law results file exists."""
         path = RESULTS_DIR / "fim_scaling_law_2026-03-29.json"
         assert path.exists()
 
-    def test_scaling_exponent_near_one(self):
+    def test_scaling_exponent_near_one(self) -> None:
         """Power law exponent α should be near 1.0."""
         path = RESULTS_DIR / "fim_scaling_law_2026-03-29.json"
         data = json.loads(path.read_text())
         alpha = data["power_law_fit"]["alpha"]
         assert 0.8 < alpha < 1.3, f"α={alpha} outside expected range"
 
-    def test_scaling_r_squared(self):
+    def test_scaling_r_squared(self) -> None:
         """Power law fit R² should be > 0.9."""
         path = RESULTS_DIR / "fim_scaling_law_2026-03-29.json"
         data = json.loads(path.read_text())
@@ -182,7 +184,7 @@ class TestScalingLaw:
 class TestIBMHardware:
     """Regression tests for IBM hardware results."""
 
-    def test_ibm_v1_significant(self):
+    def test_ibm_v1_significant(self) -> None:
         """IBM v1 DLA parity result is statistically significant."""
         path = (
             Path(__file__).parent.parent
@@ -196,7 +198,7 @@ class TestIBMHardware:
         assert len(data["F_even"]) == 10
         assert len(data["F_odd"]) == 10
 
-    def test_ibm_v1_fidelities_in_range(self):
+    def test_ibm_v1_fidelities_in_range(self) -> None:
         """IBM fidelities should be between 0 and 1."""
         path = (
             Path(__file__).parent.parent
@@ -208,7 +210,7 @@ class TestIBMHardware:
         for f in data["F_even"] + data["F_odd"]:
             assert 0 < f <= 1
 
-    def test_ibm_v2_dual_protection(self):
+    def test_ibm_v2_dual_protection(self) -> None:
         """FIM ground state more robust than XY on hardware."""
         path = (
             Path(__file__).parent.parent
@@ -219,7 +221,7 @@ class TestIBMHardware:
         data = json.loads(path.read_text())
         assert data["C_fim"]["mean"] > data["C_xy"]["mean"]
 
-    def test_ibm_v2_sector_separation(self):
+    def test_ibm_v2_sector_separation(self) -> None:
         """Aligned states survive, mixed states don't."""
         path = (
             Path(__file__).parent.parent
@@ -240,7 +242,7 @@ class TestIBMHardware:
 class TestInformationTheoretic:
     """Test Φ increase under FIM."""
 
-    def test_phi_increases_with_fim(self):
+    def test_phi_increases_with_fim(self) -> None:
         path = RESULTS_DIR / "information_theoretic_2026-03-29.json"
         data = json.loads(path.read_text())
         phi_data = data["phi_data"]
@@ -258,7 +260,7 @@ class TestInformationTheoretic:
 class TestMBLMechanism:
     """Test FIM-MBL interaction."""
 
-    def test_fim_mbl_n6_toward_poisson(self):
+    def test_fim_mbl_n6_toward_poisson(self) -> None:
         """r̄ should decrease (toward Poisson 0.386) with FIM at n=6."""
         path = RESULTS_DIR / "fim_mbl_interaction_2026-03-29.json"
         data = json.loads(path.read_text())
@@ -267,7 +269,7 @@ class TestMBLMechanism:
         r_fim = [r for r in results if r["n"] == 6 and r["lambda"] == 5][0]["r_bar"]
         assert r_fim <= r_no
 
-    def test_fim_mbl_entanglement_drops_n8(self):
+    def test_fim_mbl_entanglement_drops_n8(self) -> None:
         """Entanglement entropy should decrease with FIM at n=8."""
         path = RESULTS_DIR / "fim_mbl_interaction_2026-03-29.json"
         data = json.loads(path.read_text())
@@ -276,7 +278,7 @@ class TestMBLMechanism:
         s_fim = [r for r in results if r["n"] == 8 and r["lambda"] == 5][0]["S_ent"]
         assert s_fim < s_no * 0.75  # at least 25% reduction
 
-    def test_fim_enhances_mbl_at_n8(self):
+    def test_fim_enhances_mbl_at_n8(self) -> None:
         """r̄ should decrease (toward Poisson) with FIM at n=8."""
         path = RESULTS_DIR / "fim_mbl_interaction_2026-03-29.json"
         data = json.loads(path.read_text())
@@ -294,7 +296,7 @@ class TestMBLMechanism:
 class TestTopologyUniversality:
     """Test FIM works on all topologies."""
 
-    def test_all_topologies_improve(self):
+    def test_all_topologies_improve(self) -> None:
         path = RESULTS_DIR / "topology_universality_2026-03-29.json"
         data = json.loads(path.read_text())
         for entry in data["data"]:
@@ -309,7 +311,7 @@ class TestTopologyUniversality:
 class TestThermodynamics:
     """Test linear power cost."""
 
-    def test_power_linear_in_lambda(self):
+    def test_power_linear_in_lambda(self) -> None:
         """Power should be approximately linear in λ (r > 0.95)."""
         # From NB33: P vs λ at K=12 has r=0.984
         # Verify by simulation at two points
@@ -342,7 +344,7 @@ class TestThermodynamics:
         # λ=3 should have higher power than λ=0
         assert powers[1] > powers[0]
 
-    def test_phase_space_contraction(self):
+    def test_phase_space_contraction(self) -> None:
         """FIM should contract phase space (negative divergence)."""
         # At sync, coupling divergence is negative
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
@@ -367,7 +369,7 @@ class TestThermodynamics:
 class TestCriticalExponents:
     """Test BKT universality."""
 
-    def test_beta_below_mean_field(self):
+    def test_beta_below_mean_field(self) -> None:
         """β from NB43 should be well below mean-field 0.5."""
         # Regression test: at N=16, β ≈ 0.083 (NB43 result)
         # Verify via quick R vs K sweep
@@ -379,7 +381,7 @@ class TestCriticalExponents:
         # With BKT (β→0), R jumps more sharply
         assert R_high > R_low  # basic sanity
 
-    def test_fim_preserves_universality(self):
+    def test_fim_preserves_universality(self) -> None:
         """FIM should not change the critical exponent class."""
         # R vs K shape should be similar with and without FIM
         R_no = simulate_R(8, K_scale=10, fim_lambda=0, T=80)
@@ -396,13 +398,13 @@ class TestCriticalExponents:
 class TestStability:
     """Test FIM stability properties."""
 
-    def test_basin_of_attraction(self):
+    def test_basin_of_attraction(self) -> None:
         """FIM λ=5 should sync from random ICs."""
         Rs = [simulate_R(16, 12, 5.0, seed=s, T=80) for s in range(10)]
         frac_sync = sum(1 for R in Rs if R > 0.8) / len(Rs)
         assert frac_sync > 0.8  # at least 80% converge
 
-    def test_noise_robustness(self):
+    def test_noise_robustness(self) -> None:
         """FIM should maintain sync at noise=0.2."""
         R = simulate_R(16, 12, 5.0, noise=0.2, T=100)
         assert R > 0.9
@@ -416,11 +418,11 @@ class TestStability:
 class TestTopologicalDefects:
     """Test FIM suppresses vortices."""
 
-    def test_defect_results_exist(self):
+    def test_defect_results_exist(self) -> None:
         path = RESULTS_DIR / "topological_defects_2026-03-29.json"
         assert path.exists()
 
-    def test_fim_reduces_defects(self):
+    def test_fim_reduces_defects(self) -> None:
         path = RESULTS_DIR / "topological_defects_2026-03-29.json"
         data = json.loads(path.read_text())
         d_no = [d for d in data["data"] if d["K"] == 10 and d["lam"] == 0][0]["defects"]
@@ -436,7 +438,7 @@ class TestTopologicalDefects:
 class TestMetabolicScaling:
     """Test P ∝ N prediction."""
 
-    def test_log_correlation(self):
+    def test_log_correlation(self) -> None:
         path = RESULTS_DIR / "metabolic_scaling_2026-03-29.json"
         data = json.loads(path.read_text())
         assert data["log_correlation"] > 0.95
@@ -450,11 +452,22 @@ class TestMetabolicScaling:
 class TestMeanField:
     """Test self-consistent equation."""
 
-    def test_equation_at_high_lambda(self):
+    def test_equation_at_high_lambda(self) -> None:
         """Mean-field R* should be near 1 at high λ."""
         from scipy.optimize import fsolve
 
-        def residual(R, K_eff, lam, Delta, eps=0.01):
+        def residual(
+            R: NDArray[np.float64],
+            K_eff: float,
+            lam: float,
+            Delta: float,
+            eps: float = 0.01,
+        ) -> NDArray[np.float64]:
+            """Return the self-consistency residual whose root is the order parameter.
+
+            `fsolve` calls this with a one-element array and expects array-like
+            back, so the signature says array rather than float.
+            """
             if R <= 0.01:
                 return -R
             h = K_eff * R + lam * R / (1 - R**2 + eps)
@@ -463,24 +476,26 @@ class TestMeanField:
             ratio = 2 * Delta / h
             if ratio >= 1:
                 return -R
-            return np.sqrt(1 - ratio) - R
+            residual_value: NDArray[np.float64] = np.sqrt(1 - ratio) - R
+            return residual_value
 
         # At high λ (=10), R* should be near 1
         Delta = 1.14  # fitted value from NB37
         sol = fsolve(residual, 0.9, args=(0, 10, Delta))
         assert sol[0] > 0.9, f"R*={sol[0]} too low at λ=10"
 
-    def test_equation_structure(self):
+    def test_equation_structure(self) -> None:
         """R=0 is always a fixed point (trivial solution)."""
 
         # Verify: residual(R=0) = 0 (desync is always a solution)
-        def residual(R, K_eff, lam, Delta, eps=0.01):
+        def residual(R: float, K_eff: float, lam: float, Delta: float, eps: float = 0.01) -> float:
+            """Return the self-consistency residual whose root is the order parameter."""
             if R <= 0.01:
                 return -R
             h = K_eff * R + lam * R / (1 - R**2 + eps)
             if h <= 0:
                 return -R
-            return np.sqrt(1 - 2 * Delta / h) - R
+            return float(np.sqrt(1 - 2 * Delta / h) - R)
 
         # At very weak coupling and λ, R=0 should be stable
         assert abs(residual(0.001, 0.1, 0.1, 1.14)) < 0.01
@@ -494,7 +509,7 @@ class TestMeanField:
 class TestCrossFrequency:
     """Test PAC, wavelet coherence, Granger results."""
 
-    def test_results_exist(self):
+    def test_results_exist(self) -> None:
         path = (
             Path(__file__).parent.parent
             / "results"
@@ -502,7 +517,7 @@ class TestCrossFrequency:
         )
         assert path.exists()
 
-    def test_pac_theta_beta_strongest(self):
+    def test_pac_theta_beta_strongest(self) -> None:
         path = (
             Path(__file__).parent.parent
             / "results"
@@ -554,12 +569,12 @@ class TestAllResultsPresent:
     """
 
     @pytest.mark.parametrize("filename", EXPECTED_RESULTS)
-    def test_result_file_exists(self, filename):
+    def test_result_file_exists(self, filename: str) -> None:
         path = RESULTS_DIR / filename
         assert path.exists(), f"Missing: {filename}"
 
     @pytest.mark.parametrize("filename", EXPECTED_RESULTS)
-    def test_result_file_valid_json(self, filename):
+    def test_result_file_valid_json(self, filename: str) -> None:
         path = RESULTS_DIR / filename
         data = json.loads(path.read_text())
         assert isinstance(data, dict)

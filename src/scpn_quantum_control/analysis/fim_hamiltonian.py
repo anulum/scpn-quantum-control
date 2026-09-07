@@ -97,9 +97,14 @@ def summarise_spectrum(
 
 
 def sector_spectrum_rows(
-    hamiltonian: NDArray[np.float64], lambda_fim: float
+    hamiltonian: NDArray[np.complex128], lambda_fim: float
 ) -> list[dict[str, object]]:
-    """Compute exact spectrum summaries inside each magnetisation sector."""
+    """Compute exact spectrum summaries inside each magnetisation sector.
+
+    The Hamiltonian is the complex Hermitian matrix `add_fim_feedback` returns,
+    which is what every caller supplies; `eigvalsh` yields real eigenvalues from
+    it, so the summaries below stay real.
+    """
     dimension = hamiltonian.shape[0]
     n_qubits = int(round(np.log2(dimension)))
     rows: list[dict[str, object]] = []
@@ -198,9 +203,14 @@ def commutator_frobenius_norm_with_diagonal(
 
 
 def sector_coupling_rows(
-    hamiltonian: NDArray[np.float64], lambda_fim: float
+    hamiltonian: NDArray[np.complex128], lambda_fim: float
 ) -> list[dict[str, object]]:
-    """Measure off-sector Hamiltonian coupling for each magnetisation sector."""
+    """Measure off-sector Hamiltonian coupling for each magnetisation sector.
+
+    The Hamiltonian is the complex Hermitian matrix `add_fim_feedback` returns,
+    which is what every caller supplies; the Frobenius norm and `eigvalsh` are
+    both defined on it and yield the real quantities recorded below.
+    """
     dimension = hamiltonian.shape[0]
     n_qubits = int(round(np.log2(dimension)))
     sectors = magnetisation_sector_indices(n_qubits)
