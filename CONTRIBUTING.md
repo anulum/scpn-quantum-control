@@ -23,6 +23,52 @@ maturin develop --release
 cd ..
 ```
 
+## Keeping The Local Environment Aligned
+
+A local run only means something if it ran against the environment CI runs
+against, and the pins move: locks get regenerated, action versions get bumped,
+a runner image ships a newer default. Check before trusting a local result, and
+again whenever a lock or a workflow pin changes:
+
+```bash
+python tools/audit_local_environment_parity.py
+```
+
+It reads the repository as the source of truth — the workflows for the
+interpreter and tool pins, `requirements-ci-py312-linux.txt` for distributions,
+`rust-toolchain.toml` for the toolchain — and names every axis where this
+machine says something different. It is a report, not a gate: a workstation
+legitimately differs from a runner on the optional tiers.
+
+Three pieces are not in the base lock and have to be provisioned:
+
+```bash
+# the native engine, with the arguments CI builds it with
+maturin build --release --features extension-module --out dist \
+  -m scpn_quantum_engine/Cargo.toml
+python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
+
+# the pnpm the Studio jobs pin, project-scoped rather than global
+corepack prepare pnpm@11.9.0
+
+# the Julia tier, in its own environment as CI keeps it
+python -m venv .venv-julia
+.venv-julia/bin/python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+.venv-julia/bin/python -m pip install --no-deps --require-hashes -r requirements-ci-julia-tier.txt
+```
+
+Two axes cannot be closed on a workstation and the report says so rather than
+passing them silently: `actions/setup-python` ships a different build of the
+same CPython version, and `juliapkg` reuses a system Julia when one is on PATH
+while a clean runner downloads its own.
+
+The other direction — whether a CI job installs what it runs — is a gate rather
+than a report, and runs in static analysis and in the local preflight:
+
+```bash
+python tools/audit_workflow_environment_contracts.py
+```
+
 ## Before Opening A PR
 
 Run the relevant focused tests, then the local preflight when the change is not
