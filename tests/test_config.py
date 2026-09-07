@@ -7,8 +7,16 @@
 # SCPN Quantum Control — SCPNConfig tests
 """Tests for the unified SCPNConfig settings object (audit C11)."""
 
+# Every `SCPNConfig(_env_file=None, ...)` call carries a narrow
+# `call-arg` suppression. `_env_file` is a documented parameter of
+# `BaseSettings.__init__` and is accepted at runtime — verified against
+# `inspect.signature(BaseSettings.__init__)` — but pydantic synthesises the
+# model's `__init__` from its declared fields, so the settings parameters
+# are absent from the signature mypy sees.
+
 from __future__ import annotations
 
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -17,7 +25,7 @@ from scpn_quantum_control.config import SCPNConfig, get_config, reload_config
 
 
 @pytest.fixture(autouse=True)
-def _reset_config_cache():
+def _reset_config_cache() -> Iterator[None]:
     """Make every test start from a clean config singleton."""
     get_config.cache_clear()
     yield
@@ -31,7 +39,7 @@ def _reset_config_cache():
 
 class TestDefaults:
     def test_default_instance_has_expected_values(self) -> None:
-        cfg = SCPNConfig(_env_file=None)
+        cfg = SCPNConfig(_env_file=None)  # type: ignore[call-arg]
         assert cfg.anonymous_hostname is False
         assert cfg.ibm_instance == ""
         assert cfg.ibm_backend == ""
@@ -45,12 +53,19 @@ class TestDefaults:
         assert cfg.log_format == "console"
 
     def test_explicit_kwargs_override_defaults(self) -> None:
-        cfg = SCPNConfig(_env_file=None, anonymous_hostname=True, ibm_shots=8192)
+        cfg = SCPNConfig(_env_file=None, anonymous_hostname=True, ibm_shots=8192)  # type: ignore[call-arg]
         assert cfg.anonymous_hostname is True
         assert cfg.ibm_shots == 8192
 
     def test_paths_accept_str(self) -> None:
-        cfg = SCPNConfig(_env_file=None, result_dir="/tmp/abc")
+        """Coerce a string path into the `Path` the field declares."""
+        # The point of this test is the pre-validation input form. Pydantic
+        # synthesises `__init__` from the validated field type, so the string
+        # this test exists to accept is not expressible in that signature.
+        cfg = SCPNConfig(  # type: ignore[call-arg]
+            _env_file=None,
+            result_dir="/tmp/abc",  # type: ignore[arg-type]
+        )
         assert cfg.result_dir == Path("/tmp/abc")
 
 
@@ -62,7 +77,7 @@ class TestDefaults:
 class TestEnvLayering:
     def test_env_var_populates_field(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("SCPN_ANONYMOUS_HOSTNAME", "1")
-        cfg = SCPNConfig(_env_file=None)
+        cfg = SCPNConfig(_env_file=None)  # type: ignore[call-arg]
         assert cfg.anonymous_hostname is True
 
     def test_env_var_accepts_booleans_case_insensitive(
@@ -71,14 +86,14 @@ class TestEnvLayering:
     ) -> None:
         for truthy in ("1", "true", "True", "yes"):
             monkeypatch.setenv("SCPN_GPU_ENABLE", truthy)
-            cfg = SCPNConfig(_env_file=None)
+            cfg = SCPNConfig(_env_file=None)  # type: ignore[call-arg]
             assert cfg.gpu_enable is True, f"'{truthy}' should be truthy"
 
     def test_env_var_ibm_fields(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("SCPN_IBM_CRN", "crn:v1:bluemix:public:quantum:...")
         monkeypatch.setenv("SCPN_IBM_BACKEND", "ibm_kingston")
         monkeypatch.setenv("SCPN_IBM_SHOTS", "1024")
-        cfg = SCPNConfig(_env_file=None)
+        cfg = SCPNConfig(_env_file=None)  # type: ignore[call-arg]
         assert cfg.ibm_instance.startswith("crn:v1:")
         assert cfg.ibm_backend == "ibm_kingston"
         assert cfg.ibm_shots == 1024
@@ -88,18 +103,18 @@ class TestEnvLayering:
     ) -> None:
         monkeypatch.delenv("SCPN_IBM_CRN", raising=False)
         monkeypatch.setenv("SCPN_IBM_INSTANCE", "legacy-instance")
-        cfg = SCPNConfig(_env_file=None)
+        cfg = SCPNConfig(_env_file=None)  # type: ignore[call-arg]
         assert cfg.ibm_instance == "legacy-instance"
 
     def test_ibm_crn_env_var_beats_legacy_instance(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("SCPN_IBM_CRN", "preferred-crn")
         monkeypatch.setenv("SCPN_IBM_INSTANCE", "legacy-instance")
-        cfg = SCPNConfig(_env_file=None)
+        cfg = SCPNConfig(_env_file=None)  # type: ignore[call-arg]
         assert cfg.ibm_instance == "preferred-crn"
 
     def test_explicit_kwarg_beats_env(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("SCPN_IBM_SHOTS", "100")
-        cfg = SCPNConfig(_env_file=None, ibm_shots=9999)
+        cfg = SCPNConfig(_env_file=None, ibm_shots=9999)  # type: ignore[call-arg]
         assert cfg.ibm_shots == 9999
 
 
@@ -111,31 +126,31 @@ class TestEnvLayering:
 class TestValidators:
     def test_log_level_rejects_unknown(self) -> None:
         with pytest.raises(ValueError, match="log_level"):
-            SCPNConfig(_env_file=None, log_level="CHATTY")
+            SCPNConfig(_env_file=None, log_level="CHATTY")  # type: ignore[call-arg]
 
     def test_log_level_uppercases(self) -> None:
-        cfg = SCPNConfig(_env_file=None, log_level="debug")
+        cfg = SCPNConfig(_env_file=None, log_level="debug")  # type: ignore[call-arg]
         assert cfg.log_level == "DEBUG"
 
     def test_log_format_rejects_unknown(self) -> None:
         with pytest.raises(ValueError, match="log_format"):
-            SCPNConfig(_env_file=None, log_format="yaml")
+            SCPNConfig(_env_file=None, log_format="yaml")  # type: ignore[call-arg]
 
     def test_log_format_lowercases(self) -> None:
-        cfg = SCPNConfig(_env_file=None, log_format="JSON")
+        cfg = SCPNConfig(_env_file=None, log_format="JSON")  # type: ignore[call-arg]
         assert cfg.log_format == "json"
 
     def test_ibm_channel_rejects_unknown(self) -> None:
         with pytest.raises(ValueError, match="ibm_channel"):
-            SCPNConfig(_env_file=None, ibm_channel="aws")
+            SCPNConfig(_env_file=None, ibm_channel="aws")  # type: ignore[call-arg]
 
     def test_ibm_shots_rejects_zero(self) -> None:
         with pytest.raises(ValueError):
-            SCPNConfig(_env_file=None, ibm_shots=0)
+            SCPNConfig(_env_file=None, ibm_shots=0)  # type: ignore[call-arg]
 
     def test_ibm_shots_rejects_negative(self) -> None:
         with pytest.raises(ValueError):
-            SCPNConfig(_env_file=None, ibm_shots=-1)
+            SCPNConfig(_env_file=None, ibm_shots=-1)  # type: ignore[call-arg]
 
 
 # ---------------------------------------------------------------------------
