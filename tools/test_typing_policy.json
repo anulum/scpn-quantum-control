@@ -240,6 +240,8 @@
         "tests/test_differentiable_vmap.py",
         "tests/test_dla_topology_control_e2e.py",
         "tests/test_dla_topology_control_evidence.py",
+        "tests/test_dla_topology_control_objectives.py",
+        "tests/test_dla_topology_control_optimizer.py",
         "tests/test_dla_topology_control_parity.py",
         "tests/test_dla_topology_control_projection.py",
         "tests/test_dla_topology_control_schema.py",

@@ -31,7 +31,7 @@ def _objective() -> ParityProtectedQuadraticObjective:
 def test_objective_gradient_matches_every_real_and_imaginary_coordinate() -> None:
     """Match the analytic Euclidean complex gradient to central differences."""
     objective = _objective()
-    state = np.array([0.4 + 0.1j, -0.3 + 0.2j, 0.6 - 0.4j, 0.2 + 0.5j])
+    state = np.array([0.4 + 0.1j, -0.3 + 0.2j, 0.6 - 0.4j, 0.2 + 0.5j], dtype=np.complex128)
     evaluation = objective.evaluate(state)
     epsilon = 1.0e-6
     for index in range(state.size):
@@ -101,14 +101,18 @@ def test_evaluation_contract_rejects_invalid_scalars_arrays_and_boundary() -> No
         "state": np.ones(4, dtype=np.complex128),
         "gradient": np.ones(4, dtype=np.complex128),
     }
+    # Each construction overrides one field with an invalid value to prove it
+    # is rejected; mypy cannot express a call that is meant to fail.
     for key in ("value", "target_distance", "leakage_mass"):
         with pytest.raises(ValueError, match=key):
-            ParityProtectedObjectiveEvaluation(**(valid | {key: -1.0}))
+            ParityProtectedObjectiveEvaluation(**(valid | {key: -1.0}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="state"):
-        ParityProtectedObjectiveEvaluation(**(valid | {"state": np.ones((2, 2))}))
+        ParityProtectedObjectiveEvaluation(**(valid | {"state": np.ones((2, 2))}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="gradient"):
-        ParityProtectedObjectiveEvaluation(**(valid | {"gradient": np.ones(3)}))
+        ParityProtectedObjectiveEvaluation(**(valid | {"gradient": np.ones(3)}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="gradient"):
-        ParityProtectedObjectiveEvaluation(**(valid | {"gradient": np.array([np.nan] * 4)}))
+        ParityProtectedObjectiveEvaluation(
+            **(valid | {"gradient": np.array([np.nan] * 4)})  # type: ignore[arg-type]
+        )
     with pytest.raises(ValueError, match="claim_boundary"):
-        ParityProtectedObjectiveEvaluation(**(valid | {"claim_boundary": " "}))
+        ParityProtectedObjectiveEvaluation(**(valid | {"claim_boundary": " "}))  # type: ignore[arg-type]

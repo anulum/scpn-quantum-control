@@ -140,8 +140,10 @@ def test_backtracking_stops_below_minimum_step_size() -> None:
 )
 def test_optimizer_config_rejects_invalid_values(changes: dict[str, object], message: str) -> None:
     """Reject invalid step, backtracking, and convergence configuration."""
+    # The parameters are deliberately invalid; mypy cannot express a call
+    # that is meant to fail.
     with pytest.raises(ValueError, match=message):
-        ProjectedGradientConfig(**changes)
+        ProjectedGradientConfig(**changes)  # type: ignore[arg-type]
 
 
 def test_optimizer_rejects_wrong_objective_config_and_initial_state() -> None:
@@ -149,14 +151,17 @@ def test_optimizer_rejects_wrong_objective_config_and_initial_state() -> None:
     objective = _objective()
     with pytest.raises(ValueError, match="objective"):
         optimise_parity_protected_state(
-            np.zeros(8), cast(ParityProtectedQuadraticObjective, object())
+            np.zeros(8, dtype=np.complex128),
+            cast(ParityProtectedQuadraticObjective, object()),
         )
     with pytest.raises(ValueError, match="config"):
         optimise_parity_protected_state(
-            np.zeros(8), objective, cast(ProjectedGradientConfig, object())
+            np.zeros(8, dtype=np.complex128),
+            objective,
+            cast(ProjectedGradientConfig, object()),
         )
     with pytest.raises(ValueError, match="shape"):
-        optimise_parity_protected_state(np.zeros(7), objective)
+        optimise_parity_protected_state(np.zeros(7, dtype=np.complex128), objective)
 
 
 def test_step_contract_rejects_invalid_indices_scalars_and_acceptance() -> None:
@@ -173,10 +178,12 @@ def test_step_contract_rejects_invalid_indices_scalars_and_acceptance() -> None:
         "gradient_norm": 1.0,
         "state": np.ones(4, dtype=np.complex128),
     }
+    # Each construction overrides one field with an invalid value to prove it
+    # is rejected; mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match="index"):
-        ProjectedGradientStep(**(valid | {"index": True}))
+        ProjectedGradientStep(**(valid | {"index": True}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="backtracks"):
-        ProjectedGradientStep(**(valid | {"backtracks": -1}))
+        ProjectedGradientStep(**(valid | {"backtracks": -1}))  # type: ignore[arg-type]
     for key in (
         "step_size",
         "original_value",
@@ -186,13 +193,13 @@ def test_step_contract_rejects_invalid_indices_scalars_and_acceptance() -> None:
         "gradient_norm",
     ):
         with pytest.raises(ValueError, match=key):
-            ProjectedGradientStep(**(valid | {key: -1.0}))
+            ProjectedGradientStep(**(valid | {key: -1.0}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="accepted steps"):
-        ProjectedGradientStep(**(valid | {"proposed_value": 1.0}))
+        ProjectedGradientStep(**(valid | {"proposed_value": 1.0}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="rejected steps"):
-        ProjectedGradientStep(**(valid | {"accepted": False}))
+        ProjectedGradientStep(**(valid | {"accepted": False}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="state"):
-        ProjectedGradientStep(**(valid | {"state": np.ones((2, 2))}))
+        ProjectedGradientStep(**(valid | {"state": np.ones((2, 2))}))  # type: ignore[arg-type]
 
 
 def test_trace_contract_rejects_misaligned_arrays_digest_and_boundary() -> None:
@@ -209,10 +216,12 @@ def test_trace_contract_rejects_misaligned_arrays_digest_and_boundary() -> None:
         "steps": trace.steps,
         "content_digest": trace.content_digest,
     }
+    # Each construction overrides one field with an invalid value to prove it
+    # is rejected; mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match="initial_state"):
-        ParityProjectedOptimisationTrace(**(values | {"initial_state": np.ones((2, 2))}))
+        ParityProjectedOptimisationTrace(**(values | {"initial_state": np.ones((2, 2))}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="final_state"):
-        ParityProjectedOptimisationTrace(**(values | {"final_state": np.ones(7)}))
+        ParityProjectedOptimisationTrace(**(values | {"final_state": np.ones(7)}))  # type: ignore[arg-type]
     mismatched_step = ProjectedGradientStep(
         index=0,
         accepted=False,
@@ -226,8 +235,8 @@ def test_trace_contract_rejects_misaligned_arrays_digest_and_boundary() -> None:
         state=np.ones(4, dtype=np.complex128),
     )
     with pytest.raises(ValueError, match="every step"):
-        ParityProjectedOptimisationTrace(**(values | {"steps": (mismatched_step,)}))
+        ParityProjectedOptimisationTrace(**(values | {"steps": (mismatched_step,)}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="content_digest"):
-        ParityProjectedOptimisationTrace(**(values | {"content_digest": "bad"}))
+        ParityProjectedOptimisationTrace(**(values | {"content_digest": "bad"}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="claim_boundary"):
-        ParityProjectedOptimisationTrace(**(values | {"claim_boundary": " "}))
+        ParityProjectedOptimisationTrace(**(values | {"claim_boundary": " "}))  # type: ignore[arg-type]
