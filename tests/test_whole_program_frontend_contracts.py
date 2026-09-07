@@ -235,7 +235,9 @@ def test_whole_program_frontend_exports_stay_crosswired() -> None:
     [
         (lambda: WholeProgramBytecodeInstruction(-1, "LOAD", "", 1), "offset"),
         (lambda: WholeProgramBytecodeInstruction(0, "", "", 1), "opname"),
-        (lambda: WholeProgramBytecodeInstruction(0, "LOAD", 1, 1), "argrepr"),
+        # `argrepr` is declared `str`; passing an int is the rejection under
+        # test, and mypy cannot express a call that is meant to fail.
+        (lambda: WholeProgramBytecodeInstruction(0, "LOAD", 1, 1), "argrepr"),  # type: ignore[arg-type]
         (lambda: WholeProgramBytecodeInstruction(0, "LOAD", "", 0), "line_number"),
         (lambda: WholeProgramBytecodeInstruction(0, "LOAD", "", 1, -1), "jump_target"),
         (lambda: WholeProgramSourceIRFeature("", "detail", 1), "kind"),

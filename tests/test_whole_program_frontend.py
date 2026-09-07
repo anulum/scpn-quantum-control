@@ -12,8 +12,9 @@ from __future__ import annotations
 
 import ast
 import dis
+import inspect
 from collections.abc import AsyncIterator, Callable
-from types import SimpleNamespace
+from types import FunctionType, SimpleNamespace
 from typing import cast
 
 import numpy as np
@@ -334,27 +335,28 @@ def test_frontend_metadata_and_introspection_fail_closed(
 ) -> None:
     """Validate source metadata and unavailable source/bytecode fallbacks."""
     metadata_type = frontend_module._ObjectiveSourceMetadata
-    for factory, message in (
+    invalid_metadata: tuple[tuple[Callable[[], object], str], ...] = (
         (lambda: metadata_type("", 1, 1), "source"),
         (lambda: metadata_type("x", 0, 1), "start_line"),
         (lambda: metadata_type("x", 2, 1), "end_line"),
-    ):
+    )
+    for factory, message in invalid_metadata:
         with pytest.raises(ValueError, match=message):
             factory()
 
     def objective(value: object) -> object:
         return value
 
-    monkeypatch.setattr(frontend_module.inspect, "getsourcelines", lambda _value: (["  \n"], 1))
+    monkeypatch.setattr(inspect, "getsourcelines", lambda _value: (["  \n"], 1))
     assert frontend_module._objective_source_metadata(objective) is None
     assert frontend_module._objective_source(objective) is None
 
     def unavailable(_value: object) -> object:
         raise TypeError("unavailable")
 
-    monkeypatch.setattr(frontend_module.inspect, "getsourcelines", unavailable)
+    monkeypatch.setattr(inspect, "getsourcelines", unavailable)
     assert frontend_module._objective_source_metadata(objective) is None
-    monkeypatch.setattr(frontend_module.dis, "get_instructions", unavailable)
+    monkeypatch.setattr(dis, "get_instructions", unavailable)
     assert frontend_module._objective_bytecode(objective) == ()
     assert frontend_module._normalise_positive_line_number(None) is None
     assert frontend_module._normalise_positive_line_number(0) is None
@@ -427,7 +429,9 @@ async def objective(values):
     assert isinstance(factory_attribute, ast.Attribute)
     assert frontend_module._ast_attribute_root(factory_attribute) == ""
     assert frontend_module._ast_subscript_root(subscript) == "root"
-    assert frontend_module._ast_subscript_root(ast.parse("factory()[0]", mode="eval").body) == ""
+    factory_subscript = ast.parse("factory()[0]", mode="eval").body
+    assert isinstance(factory_subscript, ast.Subscript)
+    assert frontend_module._ast_subscript_root(factory_subscript) == ""
     child_call = ast.parse("root.child()", mode="eval").body
     assert isinstance(child_call, ast.Call)
     assert frontend_module._ast_call_name(child_call.func) == "root.child"
@@ -464,7 +468,7 @@ def test_frontend_semantics_cover_signatures_and_unsupported_syntax(
     }.issubset(set(accepted))
 
     monkeypatch.setattr(
-        frontend_module.inspect,
+        inspect,
         "signature",
         lambda _value: (_ for _ in ()).throw(ValueError("no signature")),
     )
@@ -664,7 +668,7 @@ def test_frontend_line_map_scope_and_capture_fallbacks(
         return nested()
 
     monkeypatch.setattr(
-        frontend_module.inspect,
+        inspect,
         "signature",
         lambda _value: (_ for _ in ()).throw(TypeError("no signature")),
     )
@@ -677,7 +681,7 @@ def test_frontend_line_map_scope_and_capture_fallbacks(
     )
     assert any("cell" in entry.roles for entry in entries if entry.symbol == "value")
 
-    def closure_factory() -> object:
+    def closure_factory() -> Callable[[], object]:
         token = object()
 
         def closure() -> object:
@@ -686,9 +690,16 @@ def test_frontend_line_map_scope_and_capture_fallbacks(
         return closure
 
     closure = closure_factory()
+    # A nested `def` is a function object, and this stand-in copies its code
+    # object; `Callable` alone does not carry `__code__`.
+    assert isinstance(closure, FunctionType)
 
     class NonMappingGlobals:
         __code__ = closure.__code__
         __globals__: list[object] = []
 
-    assert "token" in frontend_module._captured_or_global_names(NonMappingGlobals())
+    # The stand-in is deliberately not callable — a list for `__globals__` is
+    # the shape under test — and mypy cannot express that negative case.
+    assert "token" in frontend_module._captured_or_global_names(
+        NonMappingGlobals()  # type: ignore[arg-type]
+    )
