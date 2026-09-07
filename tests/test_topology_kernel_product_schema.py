@@ -116,8 +116,10 @@ def test_kernel_matrix_is_read_only_and_normalises_identifiers() -> None:
 )
 def test_kernel_matrix_rejects_invalid_contract(changes: dict[str, object]) -> None:
     """Reject malformed matrix values, custody metadata, and claim bounds."""
+    # Each case replaces one field with an invalid value to prove it is
+    # rejected; mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError):
-        replace(_matrix(), **changes)
+        replace(_matrix(), **changes)  # type: ignore[arg-type]
 
 
 def test_dataset_is_balanced_disjoint_and_read_only() -> None:
@@ -149,8 +151,10 @@ def test_dataset_is_balanced_disjoint_and_read_only() -> None:
 )
 def test_dataset_rejects_invalid_contract(changes: dict[str, object]) -> None:
     """Reject malformed split geometry, labels, identifiers, and custody."""
+    # Each case replaces one field with an invalid value to prove it is
+    # rejected; mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError):
-        replace(_dataset(), **changes)
+        replace(_dataset(), **changes)  # type: ignore[arg-type]
 
 
 def test_kernel_evaluation_recomputes_accuracy_and_freezes_arrays() -> None:
@@ -194,5 +198,7 @@ def test_kernel_evaluation_rejects_invalid_contract(changes: dict[str, object]) 
         accuracy=0.5,
         kernel_digest=DIGEST,
     )
+    # Each case replaces one field with an invalid value to prove it is
+    # rejected; mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError):
-        replace(valid, **changes)
+        replace(valid, **changes)  # type: ignore[arg-type]
