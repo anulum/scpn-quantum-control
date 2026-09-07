@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — Rust toolchain contract
+
+# The channel is `stable` because that is what both sides already resolve to:
+# the Ubuntu runners ship a recent stable rustc and cargo, and no workflow
+# installs a toolchain. Naming it here does not change which compiler is used;
+# it states the requirement so a workstation and a runner provision the same
+# one instead of agreeing by accident.
+#
+# A pinned *version* is deliberately not set. The build tooling records the
+# resolved `rustc` into release manifests, so a version pin is an evidence
+# decision, not a convenience — it belongs to the owner and cannot be validated
+# from here without a CI run. `tools/audit_local_environment_parity.py` reports
+# the resolved version so a bump is visible rather than silent.
+#
+# The components and target are the ones the repository actually invokes:
+# `cargo fmt` and `cargo clippy` in the static-analysis gates, and the wasm
+# target for the Studio kernels, which `ci-studio.yml` and
+# `studio-remote-release.yml` currently add by hand.
+[toolchain]
+channel = "stable"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]
