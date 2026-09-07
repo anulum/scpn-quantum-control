@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 
 def _load_tool_module(module_name: str, filename: str) -> ModuleType:
     module_path = Path(__file__).resolve().parents[1] / "tools" / filename
@@ -38,7 +40,7 @@ format_audits = _audit_test_behaviour.format_audits
 main = _audit_test_behaviour.main
 
 
-def test_behaviour_audit_counts_functions_classes_and_contracts(tmp_path: Path):
+def test_behaviour_audit_counts_functions_classes_and_contracts(tmp_path: Path) -> None:
     path = tmp_path / "test_contracts.py"
     path.write_text(
         "\n".join(
@@ -73,7 +75,7 @@ def test_behaviour_audit_counts_functions_classes_and_contracts(tmp_path: Path):
     assert audit.smoke_only_tests == ("test_smoke_only",)
 
 
-def test_behaviour_tree_json_and_summary_are_deterministic(tmp_path: Path):
+def test_behaviour_tree_json_and_summary_are_deterministic(tmp_path: Path) -> None:
     tests_root = tmp_path / "tests"
     tests_root.mkdir()
     (tests_root / "test_one.py").write_text(
@@ -98,7 +100,7 @@ def test_behaviour_tree_json_and_summary_are_deterministic(tmp_path: Path):
     assert gate.valid is True
 
 
-def test_behaviour_quality_gate_blocks_low_contract_density(tmp_path: Path):
+def test_behaviour_quality_gate_blocks_low_contract_density(tmp_path: Path) -> None:
     tests_root = tmp_path / "tests"
     tests_root.mkdir()
     (tests_root / "test_mixed.py").write_text(
@@ -130,7 +132,9 @@ def test_behaviour_quality_gate_blocks_low_contract_density(tmp_path: Path):
     assert any("raises-contract density" in blocker for blocker in gate.blockers)
 
 
-def test_behaviour_cli_fail_on_smoke_only_uses_exit_status(tmp_path: Path, capsys):
+def test_behaviour_cli_fail_on_smoke_only_uses_exit_status(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     tests_root = tmp_path / "tests"
     tests_root.mkdir()
     (tests_root / "test_smoke.py").write_text(
@@ -145,7 +149,9 @@ def test_behaviour_cli_fail_on_smoke_only_uses_exit_status(tmp_path: Path, capsy
     assert "test_smoke_only" in output
 
 
-def test_behaviour_cli_quality_gate_json_and_exit_status(tmp_path: Path, capsys):
+def test_behaviour_cli_quality_gate_json_and_exit_status(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     tests_root = tmp_path / "tests"
     tests_root.mkdir()
     (tests_root / "test_contract.py").write_text(

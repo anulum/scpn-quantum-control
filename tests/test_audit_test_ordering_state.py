@@ -37,7 +37,7 @@ findings_to_json = _audit_test_ordering_state.findings_to_json
 format_findings = _audit_test_ordering_state.format_findings
 
 
-def test_detects_reload_environment_and_module_injection(tmp_path: Path):
+def test_detects_reload_environment_and_module_injection(tmp_path: Path) -> None:
     path = tmp_path / "test_ordering.py"
     path.write_text(
         "\n".join(
@@ -62,7 +62,7 @@ def test_detects_reload_environment_and_module_injection(tmp_path: Path):
     assert "module_injection" in categories
 
 
-def test_detects_random_seed_and_global_state_assignment(tmp_path: Path):
+def test_detects_random_seed_and_global_state_assignment(tmp_path: Path) -> None:
     path = tmp_path / "test_globals.py"
     path.write_text(
         "\n".join(
@@ -84,7 +84,7 @@ def test_detects_random_seed_and_global_state_assignment(tmp_path: Path):
     assert counts["global_state_assignment"] == 1
 
 
-def test_tree_audit_json_and_summary_are_deterministic(tmp_path: Path):
+def test_tree_audit_json_and_summary_are_deterministic(tmp_path: Path) -> None:
     tests_root = tmp_path / "tests"
     tests_root.mkdir()
     (tests_root / "test_one.py").write_text(
