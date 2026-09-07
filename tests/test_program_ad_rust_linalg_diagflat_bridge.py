@@ -68,7 +68,9 @@ def _rust_parity_probe(
     )
 
     assert result.program_ir is not None
-    observed_ops = {effect.operation for effect in result.program_ir.effects}
+    observed_ops = {
+        effect.operation for effect in result.program_ir.effects if effect.operation is not None
+    }
     assert expected_ops <= observed_ops
 
     rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)

@@ -488,7 +488,7 @@ def test_program_ad_assembly_triangular_and_diagonal_batching_rules_map_outer_ax
     diagonal_batching_rule = diagonal_contract.batching_rule
 
     def tril_fn(source: FloatArray, k: int) -> FloatArray:
-        return cast(FloatArray, np.tril(source, k=k))
+        return np.tril(source, k=k)
 
     def diagonal_fn(source: FloatArray, offset: int, axis1: int, axis2: int) -> FloatArray:
         return cast(FloatArray, np.diagonal(source, offset=offset, axis1=axis1, axis2=axis2))
@@ -588,7 +588,7 @@ def test_program_ad_triangular_diagonal_batching_rejects_invalid_contracts() -> 
     assert diagonal.batching_rule is not None
 
     def tril_fn(source: FloatArray, k: int) -> FloatArray:
-        return cast(FloatArray, np.tril(source, k=k))
+        return np.tril(source, k=k)
 
     def diagonal_fn(source: FloatArray, offset: int, axis1: int, axis2: int) -> FloatArray:
         return cast(
