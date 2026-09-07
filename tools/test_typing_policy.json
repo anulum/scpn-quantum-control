@@ -406,6 +406,7 @@
         "tests/test_phase_trainability.py",
         "tests/test_phase_trainability_quality_gate.py",
         "tests/test_phase_transform_nesting.py",
+        "tests/test_phase_vqe.py",
         "tests/test_program_ad_alias_analysis_quality_gate.py",
         "tests/test_qec_decoder_boundary_docs.py",
         "tests/test_qec_properties.py",
