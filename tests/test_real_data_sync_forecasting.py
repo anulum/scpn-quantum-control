@@ -27,7 +27,7 @@ from scpn_quantum_control.forecasting import (
 )
 
 
-def test_hardware_trace_loader_preserves_committed_measurements():
+def test_hardware_trace_loader_preserves_committed_measurements() -> None:
     dataset = load_hardware_kuramoto_4osc_trace()
 
     assert dataset.name == "ibm_heron_r2_kuramoto_4osc"
@@ -40,7 +40,7 @@ def test_hardware_trace_loader_preserves_committed_measurements():
     assert dataset.provenance["job_id"] == "ibm-run-ae59c470c6422e99"
 
 
-def test_hardware_forecast_improves_held_out_mse_without_holdout_fit():
+def test_hardware_forecast_improves_held_out_mse_without_holdout_fit() -> None:
     result = run_real_data_sync_forecast_benchmark(load_hardware_kuramoto_4osc_trace())
 
     assert isinstance(result, SynchronisationForecastBenchmarkResult)
@@ -55,7 +55,7 @@ def test_hardware_forecast_improves_held_out_mse_without_holdout_fit():
     )
 
 
-def test_ieee5bus_case_uses_public_topology_and_rust_or_python_baseline():
+def test_ieee5bus_case_uses_public_topology_and_rust_or_python_baseline() -> None:
     dataset = load_ieee5bus_sync_forecast_case()
 
     assert dataset.domain == "power-grid"
@@ -70,7 +70,7 @@ def test_ieee5bus_case_uses_public_topology_and_rust_or_python_baseline():
     assert np.max(np.abs(dataset.observed_order_parameter - dataset.baseline_order_parameter)) > 0
 
 
-def test_ieee5bus_forecast_passes_with_fixed_train_window():
+def test_ieee5bus_forecast_passes_with_fixed_train_window() -> None:
     dataset = load_ieee5bus_sync_forecast_case()
     result = run_real_data_sync_forecast_benchmark(dataset, min_improvement_fraction=0.01)
 
@@ -80,7 +80,7 @@ def test_ieee5bus_forecast_passes_with_fixed_train_window():
     assert result.calibrated.holdout_mae < result.baseline.holdout_mae
 
 
-def test_suite_runs_hardware_and_topology_cases():
+def test_suite_runs_hardware_and_topology_cases() -> None:
     suite = run_real_data_sync_forecast_suite(include_topology_replay=True)
 
     assert [result.dataset.name for result in suite] == [
@@ -91,7 +91,7 @@ def test_suite_runs_hardware_and_topology_cases():
     assert all(result.as_dict()["passes"] for result in suite)
 
 
-def test_result_serialisation_contains_plain_json_values():
+def test_result_serialisation_contains_plain_json_values() -> None:
     result = run_real_data_sync_forecast_benchmark(load_hardware_kuramoto_4osc_trace())
     payload = result.as_dict()
 
@@ -101,7 +101,7 @@ def test_result_serialisation_contains_plain_json_values():
     assert isinstance(payload["calibrated"]["elapsed_ms"], float)
 
 
-def test_dataset_validation_rejects_no_holdout_window():
+def test_dataset_validation_rejects_no_holdout_window() -> None:
     good = load_hardware_kuramoto_4osc_trace()
     bad = SynchronisationForecastDataset(
         name=good.name,
@@ -121,7 +121,7 @@ def test_dataset_validation_rejects_no_holdout_window():
         run_real_data_sync_forecast_benchmark(bad)
 
 
-def test_validation_rejects_unbounded_observed_trace():
+def test_validation_rejects_unbounded_observed_trace() -> None:
     good = load_hardware_kuramoto_4osc_trace()
     bad = SynchronisationForecastDataset(
         name=good.name,
@@ -141,7 +141,7 @@ def test_validation_rejects_unbounded_observed_trace():
         run_real_data_sync_forecast_benchmark(bad)
 
 
-def test_forecast_model_run_is_public_result_envelope():
+def test_forecast_model_run_is_public_result_envelope() -> None:
     result = run_real_data_sync_forecast_benchmark(load_hardware_kuramoto_4osc_trace())
 
     assert isinstance(result.baseline, ForecastModelRun)
@@ -149,7 +149,7 @@ def test_forecast_model_run_is_public_result_envelope():
     assert result.baseline.predictions.shape == result.dataset.observed_order_parameter.shape
 
 
-def test_cli_hardware_only_outputs_json():
+def test_cli_hardware_only_outputs_json() -> None:
     completed = subprocess.run(
         [
             sys.executable,

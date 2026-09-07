@@ -12,6 +12,7 @@ from __future__ import annotations
 import importlib.util
 import sys
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
@@ -19,7 +20,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "build_power_grid_measured_couplings.py"
 
 
-def _load_script_module():
+def _load_script_module() -> ModuleType:
     spec = importlib.util.spec_from_file_location(
         "_build_power_grid_measured_couplings", SCRIPT_PATH
     )
@@ -35,7 +36,7 @@ build_payload = power_grid_module.build_payload
 symmetrised_edge_value_and_uncertainty = power_grid_module.symmetrised_edge_value_and_uncertainty
 
 
-def test_symmetrised_edge_uncertainty_tracks_nonzero_and_absent_lines():
+def test_symmetrised_edge_uncertainty_tracks_nonzero_and_absent_lines() -> None:
     value, uncertainty = symmetrised_edge_value_and_uncertainty(0, 1)
 
     assert value == pytest.approx(0.0012533881486833107)
@@ -46,7 +47,7 @@ def test_symmetrised_edge_uncertainty_tracks_nonzero_and_absent_lines():
     assert absent_uncertainty == 0.0
 
 
-def test_build_payload_records_all_upper_triangle_edges_with_locked_normalisation():
+def test_build_payload_records_all_upper_triangle_edges_with_locked_normalisation() -> None:
     payload = build_payload(command=["python", "script.py"])
 
     assert payload["schema_version"] == "scpn-quantum-control.measured-couplings.v1"

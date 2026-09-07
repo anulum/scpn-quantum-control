@@ -21,7 +21,7 @@ def _build_net() -> QuantumPetriNet:
     return QuantumPetriNet(2, 2, W_in, W_out, thresholds)
 
 
-def test_step_report_payload_and_bounds():
+def test_step_report_payload_and_bounds() -> None:
     net = _build_net()
     report = net.step_report(np.array([0.6, 0.4], dtype=float))
     payload = report.to_payload()
@@ -36,7 +36,7 @@ def test_step_report_payload_and_bounds():
     assert "transition_activity" in payload
 
 
-def test_step_with_shots_is_finite_and_bounded():
+def test_step_with_shots_is_finite_and_bounded() -> None:
     net = _build_net()
     sampled = net.step(np.array([0.5, 0.5], dtype=float), shots=2000)
     assert sampled.shape == (2,)
@@ -45,13 +45,13 @@ def test_step_with_shots_is_finite_and_bounded():
     assert np.all(sampled <= 1.0)
 
 
-def test_step_with_invalid_shots_raises():
+def test_step_with_invalid_shots_raises() -> None:
     net = _build_net()
     with pytest.raises(ValueError, match="positive integer"):
         net.step(np.array([0.5, 0.5], dtype=float), shots=0)
 
 
-def test_campaign_report_aggregates():
+def test_campaign_report_aggregates() -> None:
     net = _build_net()
     markings = np.array([[0.2, 0.7], [0.7, 0.3], [0.4, 0.4]], dtype=float)
     report = net.run_campaign(markings)
@@ -62,7 +62,7 @@ def test_campaign_report_aggregates():
     assert payload["n_steps"] == 3
 
 
-def test_campaign_rust_aggregate_matches_numpy_fallback(monkeypatch: pytest.MonkeyPatch):
+def test_campaign_rust_aggregate_matches_numpy_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
     net = _build_net()
     markings = np.array([[0.2, 0.7], [0.7, 0.3], [0.4, 0.4], [0.1, 0.9]], dtype=float)
 

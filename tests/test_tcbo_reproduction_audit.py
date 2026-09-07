@@ -12,6 +12,7 @@ from __future__ import annotations
 import importlib.util
 import sys
 from pathlib import Path
+from types import ModuleType
 
 import numpy as np
 
@@ -19,7 +20,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "run_tcbo_reproduction_audit.py"
 
 
-def _load_script_module():
+def _load_script_module() -> ModuleType:
     spec = importlib.util.spec_from_file_location(
         "_run_tcbo_reproduction_audit",
         SCRIPT_PATH,
@@ -39,7 +40,7 @@ build_coupling_weighted_reconstruction_payload = (
 )
 
 
-def test_classify_observer_source_identifies_delay_embedded_vietoris_rips():
+def test_classify_observer_source_identifies_delay_embedded_vietoris_rips() -> None:
     source = """
     cloud = delay_embed_multi(signal, self.cfg.embed_dim, self.cfg.tau_delay)
     result = _compute_ripser(cloud, maxdim=1)
@@ -51,7 +52,7 @@ def test_classify_observer_source_identifies_delay_embedded_vietoris_rips():
     assert classification["uses_coupling_weighted_complex"] is False
 
 
-def test_classify_observer_source_requires_coupling_and_simplicial_terms():
+def test_classify_observer_source_requires_coupling_and_simplicial_terms() -> None:
     source = """
     weight = K_ij * abs(cos_delta)
     filtration = weighted_simplicial_complex(simplex_weights=weight)
@@ -62,7 +63,7 @@ def test_classify_observer_source_requires_coupling_and_simplicial_terms():
     assert classification["uses_coupling_weighted_complex"] is True
 
 
-def test_deterministic_phase_stream_is_reproducible():
+def test_deterministic_phase_stream_is_reproducible() -> None:
     first = list(
         deterministic_phase_stream(
             kind="incoherent_noise",
@@ -85,7 +86,7 @@ def test_deterministic_phase_stream_is_reproducible():
     assert all(np.allclose(a, b) for a, b in zip(first, second, strict=True))
 
 
-def test_coupling_weighted_reconstruction_payload_records_threshold_scan():
+def test_coupling_weighted_reconstruction_payload_records_threshold_scan() -> None:
     payload = build_coupling_weighted_reconstruction_payload(
         n_layers=4,
         seed=7,

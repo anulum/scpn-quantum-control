@@ -10,16 +10,17 @@
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 
 
-def _system(n: int = 4):
+def _system(n: int = 4) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
     omega = np.linspace(0.8, 1.2, n)
     return K, omega
 
 
-def _homogeneous_system(n: int = 4):
+def _homogeneous_system(n: int = 4) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Circulant K + uniform omega for translation symmetry tests."""
     K = np.zeros((n, n))
     for i in range(n):
@@ -33,7 +34,7 @@ def _homogeneous_system(n: int = 4):
 class TestContractionOptimiser:
     """Tensor contraction path optimiser tests."""
 
-    def test_contract_matches_einsum_matmul(self):
+    def test_contract_matches_einsum_matmul(self) -> None:
         from scpn_quantum_control.phase.contraction_optimiser import contract
 
         rng = np.random.default_rng(42)
@@ -43,7 +44,7 @@ class TestContractionOptimiser:
         expected = np.einsum("ij,jk->ik", A, B)
         np.testing.assert_allclose(result, expected, atol=1e-10)
 
-    def test_contract_matches_einsum_chain(self):
+    def test_contract_matches_einsum_chain(self) -> None:
         """Three-matrix chain contraction."""
         from scpn_quantum_control.phase.contraction_optimiser import contract
 
@@ -55,7 +56,7 @@ class TestContractionOptimiser:
         expected = A @ B @ C
         np.testing.assert_allclose(result, expected, atol=1e-10)
 
-    def test_contract_trace(self):
+    def test_contract_trace(self) -> None:
         """Trace via einsum: Tr(A) = einsum('ii->', A)."""
         from scpn_quantum_control.phase.contraction_optimiser import contract
 
@@ -63,7 +64,7 @@ class TestContractionOptimiser:
         result = contract("ii->", A)
         np.testing.assert_allclose(result, np.trace(A), atol=1e-10)
 
-    def test_contract_outer_product(self):
+    def test_contract_outer_product(self) -> None:
         from scpn_quantum_control.phase.contraction_optimiser import contract
 
         a = np.array([1.0, 2.0, 3.0])
@@ -72,7 +73,7 @@ class TestContractionOptimiser:
         expected = np.outer(a, b)
         np.testing.assert_allclose(result, expected, atol=1e-14)
 
-    def test_optimal_path_returns_valid_info(self):
+    def test_optimal_path_returns_valid_info(self) -> None:
         from scpn_quantum_control.phase.contraction_optimiser import (
             optimal_contraction_path,
         )
@@ -83,7 +84,7 @@ class TestContractionOptimiser:
         assert "method" in info
         assert isinstance(path, list)
 
-    def test_benchmark_returns_valid_results(self):
+    def test_benchmark_returns_valid_results(self) -> None:
         from scpn_quantum_control.phase.contraction_optimiser import (
             benchmark_contraction,
         )
@@ -96,14 +97,14 @@ class TestContractionOptimiser:
         assert result["speedup"] > 0
         assert np.isfinite(result["speedup"])
 
-    def test_cotengra_availability_is_bool(self):
+    def test_cotengra_availability_is_bool(self) -> None:
         from scpn_quantum_control.phase.contraction_optimiser import (
             is_cotengra_available,
         )
 
         assert isinstance(is_cotengra_available(), bool)
 
-    def test_contract_identity(self):
+    def test_contract_identity(self) -> None:
         """Contracting with identity should preserve the matrix."""
         from scpn_quantum_control.phase.contraction_optimiser import contract
 

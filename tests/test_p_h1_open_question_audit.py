@@ -13,12 +13,13 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+from types import ModuleType
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "run_p_h1_open_question_audit.py"
 
 
-def _load_script_module():
+def _load_script_module() -> ModuleType:
     spec = importlib.util.spec_from_file_location(
         "_run_p_h1_open_question_audit",
         SCRIPT_PATH,
@@ -36,7 +37,7 @@ build_audit_payload = audit_module.build_audit_payload
 main = audit_module.main
 
 
-def test_scientific_decision_keeps_p_h1_open_for_knm_graph_mismatch():
+def test_scientific_decision_keeps_p_h1_open_for_knm_graph_mismatch() -> None:
     decision = _scientific_decision(
         graph_p_h1=0.9689,
         target=0.72,
@@ -50,7 +51,7 @@ def test_scientific_decision_keeps_p_h1_open_for_knm_graph_mismatch():
     assert decision["knm_graph_candidate"]["status"] == "rejects_0.72_as_graph_derivation"
 
 
-def test_build_audit_payload_has_preregistered_gates_and_provenance():
+def test_build_audit_payload_has_preregistered_gates_and_provenance() -> None:
     payload = build_audit_payload(
         n_values=[4],
         n_seeds=1,
@@ -69,7 +70,7 @@ def test_build_audit_payload_has_preregistered_gates_and_provenance():
     assert "ibm_hardware" in payload["preregistered_gates"]
 
 
-def test_main_writes_json_payload(tmp_path):
+def test_main_writes_json_payload(tmp_path: Path) -> None:
     output = tmp_path / "p_h1_audit.json"
     code = main(
         [

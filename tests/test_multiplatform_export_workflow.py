@@ -10,9 +10,10 @@
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 
 
-def _system(n: int = 4):
+def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
@@ -20,7 +21,7 @@ def _system(n: int = 4):
     return n, K, omega
 
 
-def _homogeneous_system(n: int = 4):
+def _homogeneous_system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Circulant K + uniform omega for translation symmetry."""
     K = np.zeros((n, n))
     for i in range(n):
@@ -34,7 +35,7 @@ def _homogeneous_system(n: int = 4):
 class TestMultiPlatformPipeline:
     """XY-compiled circuits should export correctly to all formats."""
 
-    def test_xy_compiled_exports_to_qasm(self):
+    def test_xy_compiled_exports_to_qasm(self) -> None:
         """XY-compiled circuit should produce valid QASM string."""
         from scpn_quantum_control.hardware.circuit_export import to_qasm3
         from scpn_quantum_control.phase.xy_compiler import compile_xy_trotter
@@ -50,7 +51,7 @@ class TestMultiPlatformPipeline:
         assert isinstance(qasm, str)
         assert len(qasm) > 100
 
-    def test_xy_compiler_reduces_depth(self):
+    def test_xy_compiler_reduces_depth(self) -> None:
         """XY compiler should produce shallower circuits than generic Trotter."""
         from scpn_quantum_control.phase.xy_compiler import depth_comparison
 
@@ -60,7 +61,7 @@ class TestMultiPlatformPipeline:
         assert cmp["optimised_depth"] > 0
         assert cmp["generic_depth"] > 0
 
-    def test_export_all_formats_consistent(self):
+    def test_export_all_formats_consistent(self) -> None:
         """All export formats should represent the same circuit."""
         from scpn_quantum_control.hardware.circuit_export import export_all
 
@@ -73,7 +74,7 @@ class TestMultiPlatformPipeline:
         assert result["n_qubits"] == 4
         assert result["depth"] > 0
 
-    def test_ancilla_circuit_exportable(self):
+    def test_ancilla_circuit_exportable(self) -> None:
         """Ancilla Lindblad circuit should be exportable to QASM."""
         from qiskit import qasm2
 

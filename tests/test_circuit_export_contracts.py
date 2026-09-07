@@ -11,9 +11,10 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 
-def _system(n: int = 4):
+def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
@@ -21,7 +22,7 @@ def _system(n: int = 4):
     return n, K, omega
 
 
-def _zero_coupling(n: int = 4):
+def _zero_coupling(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Decoupled system — K=0, eigenstates are product states."""
     K = np.zeros((n, n))
     omega = np.linspace(0.8, 1.2, n)
@@ -32,7 +33,7 @@ class TestCircuitExport:
     """Tests for multi-platform circuit export."""
 
     @pytest.mark.parametrize("n", [2, 3, 4])
-    def test_qasm3_valid_for_multiple_sizes(self, n):
+    def test_qasm3_valid_for_multiple_sizes(self, n: int) -> None:
         from scpn_quantum_control.hardware.circuit_export import to_qasm3
 
         _, K, omega = _system(n)
@@ -42,7 +43,7 @@ class TestCircuitExport:
         assert "OPENQASM" in qasm or "qreg" in qasm or "measure" in qasm
 
     @pytest.mark.parametrize("n", [2, 3, 4])
-    def test_quil_valid_for_multiple_sizes(self, n):
+    def test_quil_valid_for_multiple_sizes(self, n: int) -> None:
         from scpn_quantum_control.hardware.circuit_export import to_quil
 
         _, K, omega = _system(n)
@@ -51,7 +52,7 @@ class TestCircuitExport:
         assert "DECLARE" in quil
         assert "MEASURE" in quil
 
-    def test_export_all_keys_and_types(self):
+    def test_export_all_keys_and_types(self) -> None:
         from qiskit import QuantumCircuit
 
         from scpn_quantum_control.hardware.circuit_export import export_all
@@ -65,7 +66,7 @@ class TestCircuitExport:
         assert result["depth"] > 0
         assert result["gate_count"] > 0
 
-    def test_build_trotter_circuit_properties(self):
+    def test_build_trotter_circuit_properties(self) -> None:
         from scpn_quantum_control.hardware.circuit_export import build_trotter_circuit
 
         _, K, omega = _system(4)
@@ -76,14 +77,14 @@ class TestCircuitExport:
         assert qc.size() > 0
 
     @pytest.mark.parametrize("reps", [1, 3, 5, 10])
-    def test_depth_scales_with_reps(self, reps):
+    def test_depth_scales_with_reps(self, reps: int) -> None:
         from scpn_quantum_control.hardware.circuit_export import build_trotter_circuit
 
         _, K, omega = _system(3)
         qc = build_trotter_circuit(K, omega, t=0.1, reps=reps)
         assert qc.depth() > 0
 
-    def test_export_formats_all_reference_same_qubits(self):
+    def test_export_formats_all_reference_same_qubits(self) -> None:
         from scpn_quantum_control.hardware.circuit_export import export_all
 
         _, K, omega = _system(3)
