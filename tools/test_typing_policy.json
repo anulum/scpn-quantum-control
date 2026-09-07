@@ -523,6 +523,7 @@
         "tests/test_qec_decoder_boundary_docs.py",
         "tests/test_qec_properties.py",
         "tests/test_qec_validators_fuzz.py",
+        "tests/test_qfi_criticality.py",
         "tests/test_qfi_fss_differentiable_example.py",
         "tests/test_qrc_phase_detector.py",
         "tests/test_qsnn_native_parameter_shift.py",
