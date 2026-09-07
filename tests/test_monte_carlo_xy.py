@@ -9,10 +9,13 @@
 
 from __future__ import annotations
 
-from types import SimpleNamespace
+from collections.abc import Mapping, Sequence
+from types import ModuleType, SimpleNamespace
+from typing import Any
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.analysis.monte_carlo_xy import (
     AHPResult,
@@ -96,7 +99,7 @@ class TestMCPythonFallback:
         theta_new = _mc_sweep(theta, K, beta=10.0, rng=rng)
         assert len(theta_new) == 4
 
-    def test_python_mc_full(self):
+    def test_python_mc_full(self) -> None:
         """Run Python path by monkeypatching away the Rust import."""
         import sys
 
@@ -108,16 +111,28 @@ class TestMCPythonFallback:
             # Force reimport to hit Python path
             orig_simulate = mc_mod.mc_simulate
 
-            def python_only(K, temperature, n_thermalize=500, n_measure=500, seed=42):
+            def python_only(
+                K: NDArray[np.float64],
+                temperature: float,
+                n_thermalize: int = 500,
+                n_measure: int = 500,
+                seed: int = 42,
+            ) -> Any:
                 # Call with ImportError on Rust
                 import builtins
 
                 real_import = builtins.__import__
 
-                def mock_import(name, *args, **kwargs):
+                def mock_import(
+                    name: str,
+                    globals: Mapping[str, object] | None = None,
+                    locals: Mapping[str, object] | None = None,
+                    fromlist: Sequence[str] | None = (),
+                    level: int = 0,
+                ) -> ModuleType:
                     if name == "scpn_quantum_engine":
                         raise ImportError("mocked")
-                    return real_import(name, *args, **kwargs)
+                    return real_import(name, globals, locals, fromlist, level)
 
                 builtins.__import__ = mock_import
                 try:
@@ -162,11 +177,11 @@ class TestFiniteSizeScaling:
         built_sizes: list[int] = []
         extracted_sizes: list[int] = []
 
-        def fake_build_knm_paper27(L):
+        def fake_build_knm_paper27(L: int) -> NDArray[np.float64]:
             built_sizes.append(L)
             return np.eye(L)
 
-        def fake_extract_a_hp(K, **kwargs):
+        def fake_extract_a_hp(K: NDArray[np.float64], **kwargs: object) -> SimpleNamespace:
             del kwargs
             extracted_sizes.append(K.shape[0])
             return SimpleNamespace(a_hp_graph=1.0 + K.shape[0] / 100.0)

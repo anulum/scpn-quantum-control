@@ -9,8 +9,12 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+from typing import Any, NoReturn
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.analysis.krylov_complexity as krylov_module
 from scpn_quantum_control.analysis.krylov_complexity import (
@@ -105,7 +109,7 @@ class TestKrylovVsCoupling:
         T = _ring(n)
         omega = OMEGA_N_16[:n]
 
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(
@@ -121,11 +125,17 @@ class TestKrylovVsCoupling:
         seen_budgets: list[float | None] = []
         seen_max_lanczos: list[int] = []
 
-        def fake_dense_matrix(K_arg, omega_arg, **kwargs):  # noqa: ARG001
-            seen_budgets.append(kwargs.get("max_dense_gib"))
+        def fake_dense_matrix(
+            K_arg: NDArray[np.float64], omega_arg: NDArray[np.float64], **kwargs: object
+        ) -> NDArray[np.complex128]:  # noqa: ARG001
+            budget = kwargs.get("max_dense_gib")
+            assert budget is None or isinstance(budget, float)
+            seen_budgets.append(budget)
             return np.diag([0.0, 1.0, 2.0, 3.0]).astype(complex)
 
-        def fake_complexity(H, O_init, t_max=10.0, n_times=50, max_lanczos=50):  # noqa: ARG001
+        def fake_complexity(
+            H: Any, O_init: Any, t_max: float = 10.0, n_times: int = 50, max_lanczos: int = 50
+        ) -> Any:  # noqa: ARG001
             seen_max_lanczos.append(max_lanczos)
             return KrylovResult(np.array([1.0]), np.array([0.0]), np.array([0.0]), 0.0, 1)
 
@@ -348,9 +358,8 @@ class TestLanczosPythonFallback:
     ) -> None:
         """A coefficient-only accelerator must not fabricate basis vectors."""
         import sys
-        from types import SimpleNamespace
 
-        def coefficient_only_lanczos_b_coefficients(*_args):
+        def coefficient_only_lanczos_b_coefficients(*_args: object) -> list[float]:
             return [1.0, 0.5]
 
         monkeypatch.setitem(

@@ -253,11 +253,13 @@ class TestQuantumAdvantageMoreEdges:
 
         observed: list[int] = []
 
-        def fake_classical(n, t_max=1.0, dt=0.1):
+        def fake_classical(n: int, t_max: float = 1.0, dt: float = 0.1) -> dict[str, float]:
             observed.append(n)
             return {"t_total_ms": float(n), "ground_energy": 0.0, "R_final": 0.0}
 
-        def fake_quantum(n, t_max=1.0, dt=0.1, trotter_reps=5):
+        def fake_quantum(
+            n: int, t_max: float = 1.0, dt: float = 0.1, trotter_reps: int = 5
+        ) -> dict[str, float]:
             return {"t_total_ms": float(n) / 2.0, "n_trotter_steps": trotter_reps}
 
         monkeypatch.setattr(qa, "classical_benchmark", fake_classical)

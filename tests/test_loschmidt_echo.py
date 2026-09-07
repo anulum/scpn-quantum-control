@@ -9,8 +9,11 @@
 
 from __future__ import annotations
 
+from typing import NoReturn
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.analysis.loschmidt_echo as le
 from scpn_quantum_control.analysis.loschmidt_echo import (
@@ -86,7 +89,7 @@ class TestLoschmidtQuench:
     def test_rejects_dense_budget_before_hamiltonian_allocation(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(le, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested)
@@ -249,7 +252,9 @@ class TestRateFunctionCap:
         final_hamiltonian = np.diag([0.0, np.pi])
         calls = iter([initial_hamiltonian, final_hamiltonian])
 
-        def fake_dense_matrix(K, omega, **kwargs):
+        def fake_dense_matrix(
+            K: NDArray[np.float64], omega: NDArray[np.float64], **kwargs: object
+        ) -> NDArray[np.complex128]:
             del K, omega
             assert kwargs == {"max_dense_gib": None}
             return next(calls)

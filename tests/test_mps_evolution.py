@@ -13,6 +13,8 @@ import importlib
 import sys
 
 import numpy as np
+from types import ModuleType
+from collections.abc import Sequence
 import pytest
 
 quimb = pytest.importorskip("quimb")
@@ -207,7 +209,12 @@ class TestMPSImportErrors:
         import scpn_quantum_control.phase.mps_evolution as mps_mod
 
         class BlockQuimbImport:
-            def find_spec(self, fullname, path=None, target=None):
+            def find_spec(
+                self,
+                fullname: str,
+                path: Sequence[str] | None = None,
+                target: ModuleType | None = None,
+            ) -> None:
                 if fullname == "quimb" or fullname.startswith("quimb."):
                     raise ImportError("blocked quimb")
                 return None

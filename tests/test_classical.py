@@ -11,10 +11,13 @@ from __future__ import annotations
 
 import json
 import tempfile
+from collections.abc import Mapping, Sequence
 from pathlib import Path
+from types import ModuleType, SimpleNamespace
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.dense_budget import DenseAllocationError
@@ -256,10 +259,16 @@ class TestClassicalAccelerationContracts:
 
         real_import = builtins.__import__
 
-        def guarded_import(name, *args, **kwargs):
+        def guarded_import(
+            name: str,
+            globals: Mapping[str, object] | None = None,
+            locals: Mapping[str, object] | None = None,
+            fromlist: Sequence[str] | None = (),
+            level: int = 0,
+        ) -> ModuleType:
             if name in {"accel", "scpn_quantum_control.accel"}:
                 raise ImportError("accel unavailable")
-            return real_import(name, *args, **kwargs)
+            return real_import(name, globals, locals, fromlist, level)
 
         monkeypatch.setattr(builtins, "__import__", guarded_import)
 
@@ -272,13 +281,18 @@ class TestClassicalAccelerationContracts:
     ) -> None:
         """The engine path receives contiguous real/imag arrays and Pauli index."""
         import sys
-        from types import SimpleNamespace
 
         from scpn_quantum_control.hardware.classical import _expectation_pauli
 
         seen: dict[str, object] = {}
 
-        def expectation_pauli_fast(psi_real, psi_imag, n, qubit, pauli_idx):
+        def expectation_pauli_fast(
+            psi_real: NDArray[np.float64],
+            psi_imag: NDArray[np.float64],
+            n: int,
+            qubit: int,
+            pauli_idx: int,
+        ) -> float:
             seen["real_contiguous"] = psi_real.flags["C_CONTIGUOUS"]
             seen["imag_contiguous"] = psi_imag.flags["C_CONTIGUOUS"]
             seen["n"] = n

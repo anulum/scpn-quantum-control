@@ -9,8 +9,11 @@
 
 from __future__ import annotations
 
+from typing import NoReturn
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.analysis.qfi as qfi_mod
 from scpn_quantum_control.analysis.qfi import QFIResult, compute_qfi, qfi_gap_tradeoff
@@ -144,7 +147,7 @@ class TestQFI:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
 
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(qfi_mod, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested)
@@ -153,11 +156,13 @@ class TestQFI:
             compute_qfi(K, omega, max_dense_gib=1e-6)
 
     def test_degenerate_excited_level_is_skipped(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        def fake_hamiltonian(K, omega):
+        def fake_hamiltonian(K: NDArray[np.float64], omega: NDArray[np.float64]) -> None:
             del K, omega
             return None
 
-        def fake_dense_matrix(K, omega, **kwargs):
+        def fake_dense_matrix(
+            K: NDArray[np.float64], omega: NDArray[np.float64], **kwargs: object
+        ) -> NDArray[np.complex128]:
             del K, omega
             assert kwargs == {"max_dense_gib": None}
             return np.diag([0.0, 0.0, 2.0, 3.0])

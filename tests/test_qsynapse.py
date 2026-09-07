@@ -69,7 +69,7 @@ class TestEffectiveWeight:
         assert syn.effective_weight() == pytest.approx(1.0)
 
     @pytest.mark.parametrize("w", [0.1, 0.3, 0.5, 0.7, 0.9])
-    def test_monotonically_increasing(self, w):
+    def test_monotonically_increasing(self, w: float) -> None:
         """Higher weight → higher effective weight."""
         syn_lo = QuantumSynapse(w - 0.05)
         syn_hi = QuantumSynapse(w + 0.05)

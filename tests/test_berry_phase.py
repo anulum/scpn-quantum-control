@@ -9,8 +9,11 @@
 
 from __future__ import annotations
 
+from typing import Any, NoReturn
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.analysis import berry_phase as berry_module
 from scpn_quantum_control.analysis.berry_phase import (
@@ -194,7 +197,7 @@ class TestGroundState:
         T = _ring_topology(4)
         omega = OMEGA_N_16[:4]
 
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(
@@ -214,7 +217,7 @@ class TestBerryPhaseBudget:
         omega = np.ones(20)
         topology = _ring_topology(20)
 
-        def fail_if_ground_state_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_ground_state_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("ground-state solve happened before scan workspace budget")
 
         monkeypatch.setattr(berry_module, "_ground_state", fail_if_ground_state_is_requested)
@@ -244,7 +247,9 @@ class TestBerryPhaseBudget:
         ]
         states = [state / np.linalg.norm(state) for state in states]
 
-        def fake_ground_state(K, omega_arg, *, max_dense_gib):  # noqa: ARG001
+        def fake_ground_state(
+            K: NDArray[np.float64], omega_arg: NDArray[np.float64], *, max_dense_gib: float
+        ) -> Any:  # noqa: ARG001
             seen_budgets.append(max_dense_gib)
             return states[len(seen_budgets) - 1], 0.5
 

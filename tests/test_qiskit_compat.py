@@ -9,6 +9,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
+from types import ModuleType
+
 from scpn_quantum_control.hardware.qiskit_compat import (
     check_qiskit_compatibility,
     get_lie_trotter,
@@ -118,13 +121,19 @@ class TestQiskit2xMocked:
         real_import = builtins.__import__
         call_count = 0
 
-        def _gated_import(name, *args, **kwargs):
+        def _gated_import(
+            name: str,
+            globals: Mapping[str, object] | None = None,
+            locals: Mapping[str, object] | None = None,
+            fromlist: Sequence[str] | None = (),
+            level: int = 0,
+        ) -> ModuleType:
             nonlocal call_count
             if name == "qiskit.circuit.library":
                 call_count += 1
                 if call_count == 1:
                     raise ImportError("forced first-call failure")
-            return real_import(name, *args, **kwargs)
+            return real_import(name, globals, locals, fromlist, level)
 
         # Remove cached module so `from ... import` actually calls __import__
         cached = sys.modules.pop("qiskit.circuit.library", None)
@@ -147,13 +156,19 @@ class TestQiskit2xMocked:
         real_import = builtins.__import__
         call_count = 0
 
-        def _gated_import(name, *args, **kwargs):
+        def _gated_import(
+            name: str,
+            globals: Mapping[str, object] | None = None,
+            locals: Mapping[str, object] | None = None,
+            fromlist: Sequence[str] | None = (),
+            level: int = 0,
+        ) -> ModuleType:
             nonlocal call_count
             if name == "qiskit.synthesis":
                 call_count += 1
                 if call_count == 1:
                     raise ImportError("forced first-call failure")
-            return real_import(name, *args, **kwargs)
+            return real_import(name, globals, locals, fromlist, level)
 
         cached = sys.modules.pop("qiskit.synthesis", None)
         cached_evo = sys.modules.pop("qiskit.synthesis.evolution", None)

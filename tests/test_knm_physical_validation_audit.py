@@ -13,6 +13,7 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
+from types import ModuleType
 
 import numpy as np
 
@@ -21,7 +22,7 @@ SCRIPT_PATH = REPO_ROOT / "scripts" / "run_knm_physical_validation_audit.py"
 BUILD_POWER_GRID_PATH = REPO_ROOT / "scripts" / "build_power_grid_measured_couplings.py"
 
 
-def _load_script_module():
+def _load_script_module() -> ModuleType:
     spec = importlib.util.spec_from_file_location(
         "_run_knm_physical_validation_audit",
         SCRIPT_PATH,
@@ -43,7 +44,7 @@ null_model_diagnostics = audit_module._null_model_diagnostics
 spectral_diagnostics = audit_module._spectral_diagnostics
 
 
-def _load_power_grid_builder():
+def _load_power_grid_builder() -> ModuleType:
     spec = importlib.util.spec_from_file_location(
         "_build_power_grid_measured_couplings",
         BUILD_POWER_GRID_PATH,

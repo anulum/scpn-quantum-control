@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.analysis.koopman import (
     MAX_OSCILLATORS_DEFAULT,
@@ -113,7 +114,11 @@ class TestBuildKoopmanGenerator:
 
         class FakeEngine:
             @staticmethod
-            def koopman_generator(k_arg, omega_arg, theta_arg):
+            def koopman_generator(
+                k_arg: NDArray[np.float64],
+                omega_arg: NDArray[np.float64],
+                theta_arg: NDArray[np.float64],
+            ) -> NDArray[np.float64]:
                 calls.append((k_arg.shape, omega_arg.shape, theta_arg.shape))
                 return expected
 
@@ -278,7 +283,7 @@ class TestKoopmanInputValidation:
     """
 
     @pytest.fixture
-    def valid_inputs(self):
+    def valid_inputs(self) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
         """Provide a finite two-oscillator coupling and frequency pair."""
         return np.array([[0.0, 0.5], [0.5, 0.0]]), np.array([1.0, 1.5])
 
@@ -310,7 +315,9 @@ class TestKoopmanInputValidation:
         with pytest.raises(ValueError, match="at least one oscillator"):
             build_koopman_generator(K, omega)
 
-    def test_K_with_nan_rejected(self, valid_inputs):
+    def test_K_with_nan_rejected(
+        self, valid_inputs: tuple[NDArray[np.float64], NDArray[np.float64]]
+    ) -> None:
         """Reject NaN coupling entries."""
         K, omega = valid_inputs
         K = K.copy()
@@ -318,7 +325,9 @@ class TestKoopmanInputValidation:
         with pytest.raises(ValueError, match="non-finite"):
             build_koopman_generator(K, omega)
 
-    def test_K_with_inf_rejected(self, valid_inputs):
+    def test_K_with_inf_rejected(
+        self, valid_inputs: tuple[NDArray[np.float64], NDArray[np.float64]]
+    ) -> None:
         """Reject infinite coupling entries."""
         K, omega = valid_inputs
         K = K.copy()
@@ -326,19 +335,25 @@ class TestKoopmanInputValidation:
         with pytest.raises(ValueError, match="non-finite"):
             build_koopman_generator(K, omega)
 
-    def test_omega_length_mismatch_rejected(self, valid_inputs):
+    def test_omega_length_mismatch_rejected(
+        self, valid_inputs: tuple[NDArray[np.float64], NDArray[np.float64]]
+    ) -> None:
         """Reject a frequency vector misaligned with the coupling matrix."""
         K, _ = valid_inputs
         with pytest.raises(ValueError, match="omega"):
             build_koopman_generator(K, np.array([1.0, 1.5, 2.0]))
 
-    def test_omega_with_nan_rejected(self, valid_inputs):
+    def test_omega_with_nan_rejected(
+        self, valid_inputs: tuple[NDArray[np.float64], NDArray[np.float64]]
+    ) -> None:
         """Reject non-finite natural frequencies."""
         K, omega = valid_inputs
         with pytest.raises(ValueError, match="non-finite"):
             build_koopman_generator(K, np.array([1.0, np.nan]))
 
-    def test_theta_ref_length_mismatch_rejected(self, valid_inputs):
+    def test_theta_ref_length_mismatch_rejected(
+        self, valid_inputs: tuple[NDArray[np.float64], NDArray[np.float64]]
+    ) -> None:
         """Reject a reference phase with the wrong oscillator count."""
         K, omega = valid_inputs
         with pytest.raises(ValueError, match="theta_ref"):

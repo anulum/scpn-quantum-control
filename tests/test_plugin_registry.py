@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.hardware.plugin_registry import PluginRegistry, registry
 
@@ -50,7 +51,9 @@ class TestRegister:
 
         @r.register("test_backend")
         class TestRunner:
-            def __init__(self, K, omega, **kwargs):
+            def __init__(
+                self, K: NDArray[np.float64], omega: NDArray[np.float64], **kwargs: object
+            ) -> None:
                 self.K = K
 
         assert "test_backend" in r._backends
@@ -104,7 +107,9 @@ class TestGetRunner:
         r = PluginRegistry()
 
         class FakeRunner:
-            def __init__(self, K, omega, **kwargs):
+            def __init__(
+                self, K: NDArray[np.float64], omega: NDArray[np.float64], **kwargs: object
+            ) -> None:
                 self.K = K
                 self.omega = omega
 
