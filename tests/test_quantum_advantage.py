@@ -18,43 +18,53 @@ from scpn_quantum_control.benchmarks.quantum_advantage import (
 )
 
 
-def test_classical_benchmark_returns_timing():
+def _measured(result: dict[str, float | None], key: str) -> float:
+    """Return one field of a benchmark that ran, asserting it was measured."""
+    value = result[key]
+    assert value is not None
+    return value
+
+
+def test_classical_benchmark_returns_timing() -> None:
+    """Report a positive total time and a finite ground energy under the limit."""
     result = classical_benchmark(4, t_max=0.5, dt=0.25)
     assert "t_total_ms" in result
-    assert result["t_total_ms"] > 0
-    assert np.isfinite(result["ground_energy"])
+    # The result declares `float | None` because the over-limit branch returns
+    # None for the energies; at n=4 the benchmark ran, so both are present.
+    assert _measured(result, "t_total_ms") > 0
+    assert np.isfinite(_measured(result, "ground_energy"))
 
 
-def test_quantum_benchmark_returns_timing():
+def test_quantum_benchmark_returns_timing() -> None:
     result = quantum_benchmark(4, t_max=0.5, dt=0.25, trotter_reps=2)
     assert "t_total_ms" in result
     assert result["t_total_ms"] > 0
 
 
-def test_advantage_result_fields():
+def test_advantage_result_fields() -> None:
     r = AdvantageResult(n_qubits=4, t_classical_ms=10.0, t_quantum_ms=5.0)
     assert r.n_qubits == 4
     assert r.crossover_predicted is None
 
 
-def test_run_scaling_small():
+def test_run_scaling_small() -> None:
     results = run_scaling_benchmark(sizes=[4, 6], t_max=0.2, dt=0.1)
     assert len(results) == 2
     assert results[0].n_qubits == 4
     assert results[1].n_qubits == 6
 
 
-def test_run_scaling_classical_grows():
+def test_run_scaling_classical_grows() -> None:
     results = run_scaling_benchmark(sizes=[4, 8], t_max=0.2, dt=0.1)
     assert results[1].t_classical_ms >= results[0].t_classical_ms * 0.1
 
 
-def test_estimate_crossover_needs_data():
+def test_estimate_crossover_needs_data() -> None:
     assert estimate_crossover([]) is None
     assert estimate_crossover([AdvantageResult(4, 1.0, 1.0)]) is None
 
 
-def test_estimate_crossover_returns_int_or_none():
+def test_estimate_crossover_returns_int_or_none() -> None:
     results = [
         AdvantageResult(4, 1.0, 2.0),
         AdvantageResult(8, 10.0, 4.0),
@@ -64,7 +74,7 @@ def test_estimate_crossover_returns_int_or_none():
     assert cross is None or isinstance(cross, int)
 
 
-def test_quantum_timing_positive():
+def test_quantum_timing_positive() -> None:
     result = quantum_benchmark(4, t_max=0.1, dt=0.1, trotter_reps=1)
     assert result["t_total_ms"] > 0
     assert result["n_trotter_steps"] > 0
@@ -75,26 +85,26 @@ def test_quantum_timing_positive():
 # ---------------------------------------------------------------------------
 
 
-def test_classical_time_increases_with_n():
+def test_classical_time_increases_with_n() -> None:
     """Larger systems → more classical time (exponential Hilbert space)."""
     r4 = classical_benchmark(4, t_max=0.1, dt=0.1)
     r8 = classical_benchmark(8, t_max=0.1, dt=0.1)
-    assert r8["t_total_ms"] > r4["t_total_ms"]
+    assert _measured(r8, "t_total_ms") > _measured(r4, "t_total_ms")
 
 
-def test_classical_beyond_limit_returns_inf():
+def test_classical_beyond_limit_returns_inf() -> None:
     """n > MAX_CLASSICAL_QUBITS → inf time."""
     result = classical_benchmark(20, t_max=0.1, dt=0.1)
     assert result["t_total_ms"] == float("inf")
 
 
-def test_quantum_ground_energy_finite():
+def test_quantum_ground_energy_finite() -> None:
     result = quantum_benchmark(3, t_max=0.2, dt=0.1, trotter_reps=2)
     if "ground_energy" in result:
         assert np.isfinite(result["ground_energy"])
 
 
-def test_advantage_result_timing_positive():
+def test_advantage_result_timing_positive() -> None:
     r = AdvantageResult(n_qubits=4, t_classical_ms=10.0, t_quantum_ms=5.0)
     assert r.t_classical_ms > 0
     assert r.t_quantum_ms > 0
@@ -105,7 +115,7 @@ def test_advantage_result_timing_positive():
 # ---------------------------------------------------------------------------
 
 
-def test_pipeline_benchmark_to_crossover():
+def test_pipeline_benchmark_to_crossover() -> None:
     """Full pipeline: run_scaling_benchmark → estimate_crossover.
     Verifies benchmarking module is wired end-to-end, not decorative.
     """

@@ -12,13 +12,15 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
+import types
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "run_quantum_advantage_gap_audit.py"
 
 
-def _load_script_module():
+def _load_script_module() -> types.ModuleType:
+    """Import the gap-audit script as a module under test."""
     spec = importlib.util.spec_from_file_location(
         "_run_quantum_advantage_gap_audit",
         SCRIPT_PATH,
@@ -36,12 +38,13 @@ classify_advantage_status = audit_module.classify_advantage_status
 evaluate_s2_matrix_readiness = audit_module.evaluate_s2_matrix_readiness
 
 
-def _write_json(path: Path, payload: dict) -> Path:
+def _write_json(path: Path, payload: dict[str, object]) -> Path:
+    """Write one JSON payload and return the path it landed at."""
     path.write_text(json.dumps(payload), encoding="utf-8")
     return path
 
 
-def test_classify_advantage_status_keeps_broad_advantage_open():
+def test_classify_advantage_status_keeps_broad_advantage_open() -> None:
     status = classify_advantage_status(
         crossover_qubits=11.6,
         max_hardware_n=16,
@@ -55,7 +58,7 @@ def test_classify_advantage_status_keeps_broad_advantage_open():
     assert status["requires_ibm_hardware"] is False
 
 
-def test_build_audit_payload_records_committed_sources_and_guardrails():
+def test_build_audit_payload_records_committed_sources_and_guardrails() -> None:
     payload = build_audit_payload(command=["python", "scripts/run_quantum_advantage_gap_audit.py"])
 
     assert payload["audit"] == "quantum_advantage_gap"

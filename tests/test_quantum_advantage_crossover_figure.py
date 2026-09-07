@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+import types
 from pathlib import Path
 
 import numpy as np
@@ -21,7 +22,8 @@ SCRIPT_PATH = REPO_ROOT / "scripts" / "plot_quantum_advantage_crossover.py"
 
 
 @pytest.fixture(scope="module")
-def crossover_module():
+def crossover_module() -> types.ModuleType:
+    """Import the crossover-plot script as a module under test."""
     spec = importlib.util.spec_from_file_location("_plot_quantum_advantage_crossover", SCRIPT_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -30,7 +32,9 @@ def crossover_module():
     return module
 
 
-def test_hardware_points_cover_full_committed_ibm_fez_scaling(crossover_module):
+def test_hardware_points_cover_full_committed_ibm_fez_scaling(
+    crossover_module: types.ModuleType,
+) -> None:
     points = crossover_module.load_hardware_points()
     assert [p.n_qubits for p in points] == [4, 6, 8, 10, 12, 14, 16]
     assert {p.backend for p in points} == {"ibm_fez"}
@@ -41,7 +45,9 @@ def test_hardware_points_cover_full_committed_ibm_fez_scaling(crossover_module):
     assert points[-1].qpu_budget_ms == 60_000.0
 
 
-def test_classical_points_keep_exact_and_ode_boundaries(crossover_module):
+def test_classical_points_keep_exact_and_ode_boundaries(
+    crossover_module: types.ModuleType,
+) -> None:
     points = crossover_module.load_classical_points()
     by_n = {p.n_qubits: p for p in points}
     assert by_n[4].exact_diag_ms == 0.1
@@ -51,7 +57,9 @@ def test_classical_points_keep_exact_and_ode_boundaries(crossover_module):
     assert by_n[16].ode_ms < 20.0
 
 
-def test_exponential_fit_and_crossover_are_conservative(crossover_module):
+def test_exponential_fit_and_crossover_are_conservative(
+    crossover_module: types.ModuleType,
+) -> None:
     hardware = crossover_module.load_hardware_points()
     classical = crossover_module.load_classical_points()
     exact_fit, hardware_fit, crossover = crossover_module.build_crossover_model(
@@ -68,7 +76,9 @@ def test_exponential_fit_and_crossover_are_conservative(crossover_module):
     assert classical_at_16 > hardware_at_16
 
 
-def test_plot_generation_writes_png_and_pdf(crossover_module, tmp_path):
+def test_plot_generation_writes_png_and_pdf(
+    crossover_module: types.ModuleType, tmp_path: Path
+) -> None:
     matplotlib = pytest.importorskip("matplotlib")
     matplotlib.use("Agg")
 
