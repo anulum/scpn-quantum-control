@@ -18,10 +18,14 @@ from scpn_quantum_control.hardware.pulse_feasibility import (
     assess_pulse_provider_fleet,
     pulse_snapshot_from_metadata,
 )
-from scpn_quantum_control.phase.pulse_shaping import build_trotter_pulse_schedule
+from scpn_quantum_control.phase.pulse_shaping import (
+    PulseSchedule,
+    build_trotter_pulse_schedule,
+)
 
 
-def _schedule():
+def _schedule() -> PulseSchedule:
+    """Build the four-qubit Trotter schedule every feasibility case measures."""
     return build_trotter_pulse_schedule(4, build_knm_paper27(4), t_step=0.2)
 
 
@@ -262,7 +266,7 @@ def test_pulse_provider_snapshot_rejects_invalid_boundaries(
     message: str,
 ) -> None:
     """Reject snapshots with invalid identity, capacity, or limit values."""
-    params = {
+    params: dict[str, object] = {
         "provider": "pulse",
         "backend_name": "target",
         "n_qubits": 4,
@@ -270,8 +274,10 @@ def test_pulse_provider_snapshot_rejects_invalid_boundaries(
         "supports_native_xy": False,
     } | kwargs
 
+    # One field per case is replaced with an invalid value; the rejection is
+    # the subject and mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match=message):
-        PulseProviderSnapshot(**params)
+        PulseProviderSnapshot(**params)  # type: ignore[arg-type]
 
 
 def test_pulse_snapshot_from_metadata_accepts_single_feature_text_and_ignores_private_blob() -> (
