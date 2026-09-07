@@ -31,38 +31,38 @@ def _product_state() -> Statevector:
     return Statevector.from_int(0, 4)
 
 
-def test_bell_state_violates_chsh():
+def test_bell_state_violates_chsh() -> None:
     sv = _bell_state()
     S = chsh_from_statevector(sv, 0, 1)
     assert S > 2.0, f"Bell state should violate CHSH, got S={S}"
 
 
-def test_bell_state_near_tsirelson():
+def test_bell_state_near_tsirelson() -> None:
     sv = _bell_state()
     S = chsh_from_statevector(sv, 0, 1)
     tsirelson = 2 * np.sqrt(2)
     assert tsirelson * 0.9 < S, f"Expected near Tsirelson bound, got S={S}"
 
 
-def test_product_state_respects_chsh():
+def test_product_state_respects_chsh() -> None:
     sv = _product_state()
     S = chsh_from_statevector(sv, 0, 1)
     assert S <= 2.0 + 1e-10, f"Product state should satisfy CHSH, got S={S}"
 
 
-def test_same_qubit_raises():
+def test_same_qubit_raises() -> None:
     sv = _bell_state()
     with pytest.raises(ValueError, match="must differ"):
         chsh_from_statevector(sv, 0, 0)
 
 
-def test_out_of_range_qubit_raises():
+def test_out_of_range_qubit_raises() -> None:
     sv = _bell_state()
     with pytest.raises(ValueError, match="out of range"):
         chsh_from_statevector(sv, 0, 5)
 
 
-def test_entanglement_map_bell():
+def test_entanglement_map_bell() -> None:
     sv = _bell_state()
     result = disposition_entanglement_map(sv)
     assert result["n_pairs"] == 1
@@ -70,13 +70,13 @@ def test_entanglement_map_bell():
     assert result["max_S"] > 2.0
 
 
-def test_entanglement_map_product():
+def test_entanglement_map_product() -> None:
     sv = _product_state()
     result = disposition_entanglement_map(sv)
     assert result["n_entangled"] == 0
 
 
-def test_entanglement_map_with_labels():
+def test_entanglement_map_with_labels() -> None:
     sv = _bell_state()
     result = disposition_entanglement_map(sv, disposition_labels=["verify", "honest_naming"])
     pair = result["pairs"][0]
@@ -84,19 +84,19 @@ def test_entanglement_map_with_labels():
     assert pair["label_b"] == "honest_naming"
 
 
-def test_entanglement_map_wrong_label_count_raises():
+def test_entanglement_map_wrong_label_count_raises() -> None:
     sv = _bell_state()
     with pytest.raises(ValueError, match="labels"):
         disposition_entanglement_map(sv, disposition_labels=["a", "b", "c"])
 
 
-def test_integration_metric_bounded():
+def test_integration_metric_bounded() -> None:
     sv = _bell_state()
     result = disposition_entanglement_map(sv)
     assert 0.0 <= result["integration_metric"] <= 1.0 + 1e-10
 
 
-def test_three_qubit_ghz_no_bipartite_entanglement():
+def test_three_qubit_ghz_no_bipartite_entanglement() -> None:
     """GHZ entanglement is genuinely tripartite — no bipartite CHSH violation."""
     qc = QuantumCircuit(3)
     qc.h(0)
@@ -108,7 +108,7 @@ def test_three_qubit_ghz_no_bipartite_entanglement():
     assert result["n_entangled"] == 0
 
 
-def test_three_qubit_two_bell_pairs():
+def test_three_qubit_two_bell_pairs() -> None:
     """Two Bell pairs in 3 qubits: (0,1) entangled, (1,2) entangled."""
     qc = QuantumCircuit(3)
     qc.h(0)

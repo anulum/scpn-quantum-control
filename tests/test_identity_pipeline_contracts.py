@@ -16,13 +16,13 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 
 
 class TestCoherenceBudget:
-    def test_invalid_qubits_raises(self):
+    def test_invalid_qubits_raises(self) -> None:
         from scpn_quantum_control.identity.coherence_budget import coherence_budget
 
         with pytest.raises(ValueError, match="n_qubits must be >= 1"):
             coherence_budget(n_qubits=0)
 
-    def test_invalid_qubits_zero_raises(self):
+    def test_invalid_qubits_zero_raises(self) -> None:
         """Duplicate test for zero qubits — different entry point."""
         from scpn_quantum_control.identity.coherence_budget import coherence_budget
 
@@ -31,7 +31,7 @@ class TestCoherenceBudget:
 
 
 class TestRobustness:
-    def test_zero_gap_transition(self):
+    def test_zero_gap_transition(self) -> None:
         from scpn_quantum_control.identity.robustness import (
             compute_robustness_certificate,
         )
@@ -41,7 +41,7 @@ class TestRobustness:
         cert = compute_robustness_certificate(K, omega)
         assert cert.transition_probability >= 0.0
 
-    def test_zero_gap_adiabatic(self):
+    def test_zero_gap_adiabatic(self) -> None:
         from scpn_quantum_control.identity.robustness import (
             compute_robustness_certificate,
         )
@@ -52,7 +52,7 @@ class TestRobustness:
         assert cert.adiabatic_bound >= 0.0
 
     @pytest.mark.parametrize("scale", [0.01, 0.1, 1.0, 5.0])
-    def test_certificate_bounded(self, scale):
+    def test_certificate_bounded(self, scale: float) -> None:
         from scpn_quantum_control.identity.robustness import (
             compute_robustness_certificate,
         )
@@ -63,7 +63,7 @@ class TestRobustness:
         assert 0.0 <= cert.transition_probability <= 1.0
         assert cert.adiabatic_bound >= 0.0
 
-    def test_certificate_has_energy_gap(self):
+    def test_certificate_has_energy_gap(self) -> None:
         from scpn_quantum_control.identity.robustness import (
             compute_robustness_certificate,
         )
@@ -74,7 +74,7 @@ class TestRobustness:
         assert hasattr(cert, "energy_gap")
         assert cert.energy_gap >= 0.0
 
-    def test_noise_scan_zero_gap(self):
+    def test_noise_scan_zero_gap(self) -> None:
         from scpn_quantum_control.identity.robustness import gap_vs_perturbation_scan
 
         K = build_knm_paper27(L=2) * 1e-12
@@ -82,7 +82,7 @@ class TestRobustness:
         result = gap_vs_perturbation_scan(K, omega, noise_range=np.array([0.1]))
         assert result["p_transition_theory"][0] >= 0.0
 
-    def test_noise_scan_multiple_points(self):
+    def test_noise_scan_multiple_points(self) -> None:
         from scpn_quantum_control.identity.robustness import gap_vs_perturbation_scan
 
         K = build_knm_paper27(L=2)
@@ -92,7 +92,7 @@ class TestRobustness:
         assert len(result["p_transition_theory"]) == 5
         assert all(0.0 <= p <= 1.0 for p in result["p_transition_theory"])
 
-    def test_perturbation_fidelity_bounded(self):
+    def test_perturbation_fidelity_bounded(self) -> None:
         from scpn_quantum_control.identity.robustness import perturbation_fidelity
 
         K = build_knm_paper27(L=2)
@@ -103,7 +103,7 @@ class TestRobustness:
 
 
 class TestIdentityPipeline:
-    def test_pipeline_knm_to_robustness(self):
+    def test_pipeline_knm_to_robustness(self) -> None:
         """Full pipeline: build_knm → robustness certificate → bounds.
         Verifies identity protection module is wired end-to-end.
         """
@@ -126,7 +126,7 @@ class TestIdentityPipeline:
         print(f"\n  PIPELINE Knm→Robustness (3q): {dt:.1f} ms")
         print(f"  Gap={cert.energy_gap:.4f}, P_transition={cert.transition_probability:.6f}")
 
-    def test_fidelity_at_depth_decreases(self):
+    def test_fidelity_at_depth_decreases(self) -> None:
         """Deeper circuits → lower fidelity (decoherence)."""
         from scpn_quantum_control.identity.coherence_budget import fidelity_at_depth
 

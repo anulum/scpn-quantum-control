@@ -20,7 +20,7 @@ from scpn_quantum_control.identity.identity_key import (
 )
 
 
-def test_fingerprint_returns_spectral():
+def test_fingerprint_returns_spectral() -> None:
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     fp = identity_fingerprint(K, omega, ansatz_reps=1, maxiter=30)
@@ -29,7 +29,7 @@ def test_fingerprint_returns_spectral():
     assert fp["spectral"]["fiedler"] > 0
 
 
-def test_fingerprint_returns_ground_energy():
+def test_fingerprint_returns_ground_energy() -> None:
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     fp = identity_fingerprint(K, omega, ansatz_reps=1, maxiter=20)
@@ -37,14 +37,14 @@ def test_fingerprint_returns_ground_energy():
     assert np.isfinite(fp["ground_energy"])
 
 
-def test_fingerprint_commitment_is_hex():
+def test_fingerprint_commitment_is_hex() -> None:
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     fp = identity_fingerprint(K, omega, ansatz_reps=1, maxiter=20)
     assert len(fp["commitment"]) == 64  # SHA-256 hex
 
 
-def test_fingerprint_n_parameters():
+def test_fingerprint_n_parameters() -> None:
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
     fp = identity_fingerprint(K, omega, ansatz_reps=1, maxiter=10)
@@ -52,7 +52,7 @@ def test_fingerprint_n_parameters():
     assert fp["n_parameters"] == 6
 
 
-def test_different_k_different_fingerprint():
+def test_different_k_different_fingerprint() -> None:
     omega = OMEGA_N_16[:3]
     K1 = build_knm_paper27(L=3, K_base=0.3)
     K2 = build_knm_paper27(L=3, K_base=0.8)
@@ -62,14 +62,14 @@ def test_different_k_different_fingerprint():
     assert fp1["spectral"]["fiedler"] != fp2["spectral"]["fiedler"]
 
 
-def test_challenge_response_correct_k():
+def test_challenge_response_correct_k() -> None:
     K = build_knm_paper27(L=3)
     challenge = os.urandom(32)
     response = prove_identity(K, challenge)
     assert verify_identity(K, challenge, response)
 
 
-def test_challenge_response_wrong_k():
+def test_challenge_response_wrong_k() -> None:
     K_real = build_knm_paper27(L=3, K_base=0.45)
     K_fake = build_knm_paper27(L=3, K_base=0.90)
     challenge = os.urandom(32)
@@ -77,7 +77,7 @@ def test_challenge_response_wrong_k():
     assert not verify_identity(K_real, challenge, response)
 
 
-def test_from_binding_spec():
+def test_from_binding_spec() -> None:
     spec = {
         "layers": [
             {"oscillator_ids": ["a", "b"], "natural_frequency": 1.0},
@@ -95,7 +95,7 @@ def test_from_binding_spec():
 # ---------------------------------------------------------------------------
 
 
-def test_fingerprint_spectral_deterministic():
+def test_fingerprint_spectral_deterministic() -> None:
     """Same K → same spectral data (fiedler, eigenvalues)."""
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
@@ -104,14 +104,14 @@ def test_fingerprint_spectral_deterministic():
     assert fp1["spectral"]["fiedler"] == fp2["spectral"]["fiedler"]
 
 
-def test_fingerprint_has_n_qubits():
+def test_fingerprint_has_n_qubits() -> None:
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
     fp = identity_fingerprint(K, omega, ansatz_reps=1, maxiter=10)
     assert fp["n_qubits"] == 4
 
 
-def test_challenge_response_different_challenges():
+def test_challenge_response_different_challenges() -> None:
     """Different challenges → different responses."""
     K = build_knm_paper27(L=3)
     c1 = os.urandom(32)
@@ -126,7 +126,7 @@ def test_challenge_response_different_challenges():
 # ---------------------------------------------------------------------------
 
 
-def test_full_identity_pipeline():
+def test_full_identity_pipeline() -> None:
     """Knm → fingerprint → challenge-response cycle, all wired end-to-end."""
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]

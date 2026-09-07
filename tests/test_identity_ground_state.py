@@ -14,7 +14,7 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 from scpn_quantum_control.identity.ground_state import IdentityAttractor
 
 
-def test_solve_returns_robustness_gap():
+def test_solve_returns_robustness_gap() -> None:
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     attractor = IdentityAttractor(K, omega, ansatz_reps=1)
@@ -24,7 +24,7 @@ def test_solve_returns_robustness_gap():
     assert np.isfinite(result["robustness_gap"])
 
 
-def test_robustness_gap_accessor():
+def test_robustness_gap_accessor() -> None:
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     attractor = IdentityAttractor(K, omega, ansatz_reps=1)
@@ -33,7 +33,7 @@ def test_robustness_gap_accessor():
     assert gap >= 0.0
 
 
-def test_robustness_gap_before_solve_raises():
+def test_robustness_gap_before_solve_raises() -> None:
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     attractor = IdentityAttractor(K, omega)
@@ -41,7 +41,7 @@ def test_robustness_gap_before_solve_raises():
         attractor.robustness_gap()
 
 
-def test_ground_state_is_normalized():
+def test_ground_state_is_normalized() -> None:
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
     attractor = IdentityAttractor(K, omega, ansatz_reps=1)
@@ -51,7 +51,7 @@ def test_ground_state_is_normalized():
     assert abs(float(np.sum(np.abs(sv) ** 2)) - 1.0) < 1e-10
 
 
-def test_result_contains_eigenvalues():
+def test_result_contains_eigenvalues() -> None:
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     attractor = IdentityAttractor(K, omega, ansatz_reps=1)
@@ -62,7 +62,7 @@ def test_result_contains_eigenvalues():
     assert result["eigenvalues"][0] <= result["eigenvalues"][1]
 
 
-def test_n_dispositions_matches_input():
+def test_n_dispositions_matches_input() -> None:
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
     attractor = IdentityAttractor(K, omega, ansatz_reps=1)
@@ -70,7 +70,7 @@ def test_n_dispositions_matches_input():
     assert result["n_dispositions"] == 4
 
 
-def test_from_binding_spec():
+def test_from_binding_spec() -> None:
     spec = {
         "layers": [
             {"oscillator_ids": ["a", "b"], "natural_frequency": 1.0},
@@ -84,21 +84,21 @@ def test_from_binding_spec():
     assert result["robustness_gap"] >= 0.0
 
 
-def test_non_square_k_raises():
+def test_non_square_k_raises() -> None:
     K = np.ones((3, 4))
     omega = np.ones(3)
     with pytest.raises(ValueError, match="square"):
         IdentityAttractor(K, omega)
 
 
-def test_mismatched_k_omega_raises():
+def test_mismatched_k_omega_raises() -> None:
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:4]
     with pytest.raises(ValueError, match="omega length"):
         IdentityAttractor(K, omega)
 
 
-def test_stronger_coupling_larger_gap():
+def test_stronger_coupling_larger_gap() -> None:
     """Stronger coupling should produce a larger energy gap (more robust)."""
     omega = OMEGA_N_16[:3]
     K_weak = build_knm_paper27(L=3, K_base=0.1)
@@ -118,7 +118,7 @@ def test_stronger_coupling_larger_gap():
 # ---------------------------------------------------------------------------
 
 
-def test_ground_energy_below_exact():
+def test_ground_energy_below_exact() -> None:
     """VQE ground energy ≥ exact ground energy (variational principle)."""
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
@@ -129,7 +129,7 @@ def test_ground_energy_below_exact():
     assert result["ground_energy"] >= exact_E - 0.5
 
 
-def test_eigenvalues_sorted():
+def test_eigenvalues_sorted() -> None:
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
     attractor = IdentityAttractor(K, omega, ansatz_reps=1)
@@ -143,7 +143,7 @@ def test_eigenvalues_sorted():
 # ---------------------------------------------------------------------------
 
 
-def test_pipeline_knm_to_identity():
+def test_pipeline_knm_to_identity() -> None:
     """Full pipeline: build_knm → IdentityAttractor → solve → robustness gap.
     Verifies identity ground state module is wired end-to-end.
     """
