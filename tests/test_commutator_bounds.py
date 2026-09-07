@@ -14,6 +14,7 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.phase import kuramoto_variants as kuramoto_variant_mod
@@ -38,6 +39,20 @@ from scpn_quantum_control.phase.trotter_error import (
 )
 
 
+def _step_float(result: dict[str, object], key: str) -> float:
+    """Return one float field of an optimal-step result, asserting its type."""
+    value = result[key]
+    assert isinstance(value, float)
+    return value
+
+
+def _step_int(result: dict[str, object], key: str) -> int:
+    """Return one integer field of an optimal-step result, asserting its type."""
+    value = result[key]
+    assert isinstance(value, int)
+    return value
+
+
 def _variant_problem() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     K_nm = np.array(
         [
@@ -54,20 +69,20 @@ def _variant_problem() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
 
 class TestCommutatorBounds:
-    def test_commutator_norm_positive(self):
+    def test_commutator_norm_positive(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         gamma = commutator_norm_bound(K, omega)
         assert gamma > 0
 
-    def test_commutator_norm_zero_for_equal_frequencies(self):
+    def test_commutator_norm_zero_for_equal_frequencies(self) -> None:
         """Key insight: Trotter error vanishes when all frequencies are equal."""
         K = build_knm_paper27(L=4)
         omega_equal = np.ones(4) * 1.0
         gamma = commutator_norm_bound(K, omega_equal)
         assert gamma == pytest.approx(0.0, abs=1e-15)
 
-    def test_bound_exceeds_empirical(self):
+    def test_bound_exceeds_empirical(self) -> None:
         """First-order analytical bound rigorously dominates the empirical spectral error."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -77,7 +92,7 @@ class TestCommutatorBounds:
         empirical = trotter_error_norm(K, omega, t, reps, order=1)
         assert bound >= empirical - 1e-12
 
-    def test_second_order_bound_exceeds_empirical(self):
+    def test_second_order_bound_exceeds_empirical(self) -> None:
         """Second-order analytical bound rigorously dominates the empirical spectral error."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -89,7 +104,7 @@ class TestCommutatorBounds:
 
     @pytest.mark.parametrize("order", [1, 2])
     @pytest.mark.parametrize("seed", [1, 7, 19, 23])
-    def test_bound_dominates_empirical_across_random_systems(self, order, seed):
+    def test_bound_dominates_empirical_across_random_systems(self, order: int, seed: int) -> None:
         """The bound must upper-bound the same-splitting empirical error, every time.
 
         This is the contract that the empirical measurement and the analytical
@@ -112,7 +127,7 @@ class TestCommutatorBounds:
 
         assert bound >= empirical - 1e-12
 
-    def test_bound_decreases_with_reps(self):
+    def test_bound_decreases_with_reps(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         b1 = trotter_error_bound(K, omega, 1.0, 1, order=1)
@@ -120,14 +135,14 @@ class TestCommutatorBounds:
         b10 = trotter_error_bound(K, omega, 1.0, 10, order=1)
         assert b1 > b5 > b10
 
-    def test_second_order_better_than_first(self):
+    def test_second_order_better_than_first(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         b1 = trotter_error_bound(K, omega, 0.5, 5, order=1)
         b2 = trotter_error_bound(K, omega, 0.5, 5, order=2)
         assert b2 < b1
 
-    def test_nested_commutator_bound_matches_exact_small_system(self):
+    def test_nested_commutator_bound_matches_exact_small_system(self) -> None:
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 
         K = build_knm_paper27(L=3)
@@ -143,7 +158,7 @@ class TestCommutatorBounds:
 
         assert actual == pytest.approx(expected, rel=1e-12, abs=1e-12)
 
-    def test_nested_commutator_bound_has_large_system_upper_bound(self):
+    def test_nested_commutator_bound_has_large_system_upper_bound(self) -> None:
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16
 
@@ -152,30 +167,30 @@ class TestCommutatorBounds:
         assert np.isfinite(bound)
         assert bound > 0.0
 
-    def test_optimal_dt_respects_epsilon(self):
+    def test_optimal_dt_respects_epsilon(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = optimal_dt(K, omega, epsilon=0.01, t_total=1.0, order=1)
-        assert result["error_bound"] <= 0.01 * 1.5  # small slack
-        assert result["n_steps"] >= 1
-        assert result["dt"] > 0
+        assert _step_float(result, "error_bound") <= 0.01 * 1.5  # small slack
+        assert _step_int(result, "n_steps") >= 1
+        assert _step_float(result, "dt") > 0
 
-    def test_optimal_dt_order2(self):
+    def test_optimal_dt_order2(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         r1 = optimal_dt(K, omega, epsilon=0.01, t_total=1.0, order=1)
         r2 = optimal_dt(K, omega, epsilon=0.01, t_total=1.0, order=2)
         # Second order should need fewer steps
-        assert r2["n_steps"] <= r1["n_steps"]
+        assert _step_int(r2, "n_steps") <= _step_int(r1, "n_steps")
 
-    def test_frequency_heterogeneity(self):
+    def test_frequency_heterogeneity(self) -> None:
         omega_uniform = np.ones(4) * 1.0
         assert frequency_heterogeneity(omega_uniform) == pytest.approx(0.0)
 
         omega_spread = np.array([0.5, 1.0, 1.5, 2.0])
         assert frequency_heterogeneity(omega_spread) > 0
 
-    def test_scpn_commutator_norm(self):
+    def test_scpn_commutator_norm(self) -> None:
         """For 16-layer SCPN, compute and record the commutator norm."""
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16
@@ -184,14 +199,14 @@ class TestCommutatorBounds:
         assert gamma > 5  # lower bound sanity
         assert gamma < 200  # upper bound sanity
 
-    def test_scpn_optimal_dt_value(self):
+    def test_scpn_optimal_dt_value(self) -> None:
         """For 16-layer SCPN at epsilon=0.01, what dt do we need?"""
         K = build_knm_paper27(L=16)
         omega = OMEGA_N_16
         result = optimal_dt(K, omega, epsilon=0.01, t_total=5.0, order=1)
         # Should require many steps for t=5.0 at epsilon=0.01
-        assert result["n_steps"] > 100
-        assert result["dt"] < 0.1
+        assert _step_int(result, "n_steps") > 100
+        assert _step_float(result, "dt") < 0.1
 
 
 # ---------------------------------------------------------------------------
@@ -200,7 +215,7 @@ class TestCommutatorBounds:
 
 
 class TestCommutatorPhysics:
-    def test_heterogeneity_drives_error(self):
+    def test_heterogeneity_drives_error(self) -> None:
         """More frequency spread → larger commutator norm → larger Trotter error."""
         K = build_knm_paper27(L=4)
         omega_narrow = np.array([1.0, 1.1, 1.2, 1.3])
@@ -209,13 +224,13 @@ class TestCommutatorPhysics:
         gamma_wide = commutator_norm_bound(K, omega_wide)
         assert gamma_wide > gamma_narrow
 
-    def test_error_bound_nonnegative(self):
+    def test_error_bound_nonnegative(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         b = trotter_error_bound(K, omega, 1.0, 5, order=1)
         assert b >= 0
 
-    def test_invalid_trotter_bound_contracts_are_rejected(self):
+    def test_invalid_trotter_bound_contracts_are_rejected(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
 
@@ -235,18 +250,20 @@ class TestCommutatorPhysics:
             (np.eye(2), np.array([0.0, np.nan]), "omega contains"),
         ],
     )
-    def test_nested_bound_validates_problem_shape_and_finiteness(self, bad_K, bad_omega, message):
+    def test_nested_bound_validates_problem_shape_and_finiteness(
+        self, bad_K: NDArray[np.float64], bad_omega: NDArray[np.float64], message: str
+    ) -> None:
         with pytest.raises(ValueError, match=message):
             nested_commutator_norm_bound(bad_K, bad_omega)
 
-    def test_frequency_heterogeneity_single_frequency_is_zero(self):
+    def test_frequency_heterogeneity_single_frequency_is_zero(self) -> None:
         assert frequency_heterogeneity(np.array([1.25])) == pytest.approx(0.0)
 
 
 class TestKuramotoVariantContracts:
     """Exercise fail-closed and native-path Kuramoto variant contracts."""
 
-    def test_variant_result_rejects_invalid_trajectory_and_diagnostics(self):
+    def test_variant_result_rejects_invalid_trajectory_and_diagnostics(self) -> None:
         """Reject malformed trajectory axes, bounds, and diagnostics."""
         times = np.array([0.0, 0.1], dtype=np.float64)
         with pytest.raises(ValueError, match="one-dimensional"):
@@ -279,10 +296,12 @@ class TestKuramotoVariantContracts:
                 times,
                 np.array([0.2, 0.3], dtype=np.float64),
                 "numpy",
-                diagnostics={"raw": {"not": "serialisable"}},
+                # A nested mapping is not a permitted diagnostic value; the
+                # rejection is the subject and mypy cannot express a failing call.
+                diagnostics={"raw": {"not": "serialisable"}},  # type: ignore[dict-item]
             )
 
-    def test_variant_specs_reject_metadata_and_shape_errors(self):
+    def test_variant_specs_reject_metadata_and_shape_errors(self) -> None:
         """Reject invalid specification shapes, metadata, and scalar ranges."""
         K_nm, omega, theta0 = _variant_problem()
         hyperedges, weights = build_triadic_ring_terms(4, weight=0.15)
@@ -292,9 +311,21 @@ class TestKuramotoVariantContracts:
         with pytest.raises(ValueError, match="theta0"):
             HigherOrderKuramotoSpec(K_nm, omega, hyperedges, weights, theta0=theta0[:-1])
         with pytest.raises(TypeError, match="metadata keys"):
-            MonitoredKuramotoSpec(K_nm, omega, theta0=theta0, metadata={1: "bad"})
+            # Non-string keys and non-serialisable values are deliberately
+            # invalid; mypy cannot express a call that is meant to fail.
+            MonitoredKuramotoSpec(
+                K_nm,
+                omega,
+                theta0=theta0,
+                metadata={1: "bad"},  # type: ignore[dict-item]
+            )
         with pytest.raises(TypeError, match="JSON-serialisable"):
-            MonitoredKuramotoSpec(K_nm, omega, theta0=theta0, metadata={"bad": object()})
+            MonitoredKuramotoSpec(
+                K_nm,
+                omega,
+                theta0=theta0,
+                metadata={"bad": object()},  # type: ignore[dict-item]
+            )
         with pytest.raises(ValueError, match="K_nm must be a square"):
             MonitoredKuramotoSpec(np.ones(4), omega, theta0=theta0)
         with pytest.raises(ValueError, match="omega must have shape"):
@@ -313,22 +344,25 @@ class TestKuramotoVariantContracts:
                 theta0=theta0,
             )
 
-    def test_default_theta_initialisation_follows_frequency_phases(self):
+    def test_default_theta_initialisation_follows_frequency_phases(self) -> None:
         """Derive immutable default phases from oscillator frequencies."""
         K_nm, omega, _theta0 = _variant_problem()
         hyperedges, weights = build_triadic_ring_terms(4, weight=0.15)
 
         spec = HigherOrderKuramotoSpec(K_nm, omega, hyperedges, weights)
 
+        # `theta0` is optional on the spec; this test asserts what the default
+        # initialisation produced, so it states that the default is present.
+        assert spec.theta0 is not None
         np.testing.assert_allclose(spec.theta0, np.mod(omega, 2.0 * np.pi))
         assert spec.theta0.flags.writeable is False
 
-    def test_missing_initial_state_guard_is_explicit(self):
+    def test_missing_initial_state_guard_is_explicit(self) -> None:
         """Fail explicitly if an internal trajectory lacks initial phases."""
         with pytest.raises(ValueError, match="theta0 was not initialised"):
             kuramoto_variant_mod._required_theta0(None)
 
-    def test_variant_time_grid_and_ring_weight_validation(self):
+    def test_variant_time_grid_and_ring_weight_validation(self) -> None:
         """Reject nonfinite ring weights and invalid integration grids."""
         K_nm, omega, theta0 = _variant_problem()
         hyperedges, weights = build_triadic_ring_terms(4, weight=0.15)
@@ -341,7 +375,7 @@ class TestKuramotoVariantContracts:
         with pytest.raises(ValueError, match="n_steps must be a positive integer"):
             simulate_higher_order_kuramoto(spec, dt=0.1, n_steps=0, prefer_rust=False)
 
-    def test_hyperedge_bounds_are_checked_before_simulation(self):
+    def test_hyperedge_bounds_are_checked_before_simulation(self) -> None:
         """Reject hyperedges that reference absent oscillators."""
         K_nm, omega, theta0 = _variant_problem()
 
@@ -354,7 +388,9 @@ class TestKuramotoVariantContracts:
                 theta0=theta0,
             )
 
-    def test_preferred_rust_backends_preserve_metadata(self, monkeypatch):
+    def test_preferred_rust_backends_preserve_metadata(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Preserve variant identity and diagnostics across native results."""
         K_nm, omega, theta0 = _variant_problem()
         hyperedges, weights = build_triadic_ring_terms(4, weight=0.15)
@@ -404,7 +440,9 @@ class TestKuramotoVariantContracts:
         assert monitored.backend == "rust:monitored_kuramoto_trajectory"
         assert monitored.diagnostics["target_r"] == pytest.approx(0.75)
         assert pt_result.backend == "rust:pt_symmetric_kuramoto_trajectory"
-        np.testing.assert_allclose(pt_result.diagnostics["pt_norm"], 1.0)
+        pt_norm = pt_result.diagnostics["pt_norm"]
+        assert isinstance(pt_norm, np.ndarray)
+        np.testing.assert_allclose(pt_norm, 1.0)
 
 
 # ---------------------------------------------------------------------------
@@ -413,7 +451,7 @@ class TestKuramotoVariantContracts:
 
 
 class TestCommutatorPipeline:
-    def test_pipeline_knm_to_optimal_dt(self):
+    def test_pipeline_knm_to_optimal_dt(self) -> None:
         """Full pipeline: build_knm → commutator norm → optimal dt for ε=0.01.
         Verifies Trotter error module is wired and produces actionable circuit params.
         """
@@ -428,7 +466,10 @@ class TestCommutatorPipeline:
         dt_ms = (time.perf_counter() - t0) * 1000
 
         assert gamma > 0
-        assert result["n_steps"] >= 1
+        assert _step_int(result, "n_steps") >= 1
 
         print(f"\n  PIPELINE Knm→Commutator→dt* (4q): {dt_ms:.1f} ms")
-        print(f"  γ = {gamma:.4f}, dt* = {result['dt']:.4f}, n_steps = {result['n_steps']}")
+        print(
+            f"  γ = {gamma:.4f}, dt* = {_step_float(result, 'dt'):.4f}, "
+            f"n_steps = {_step_int(result, 'n_steps')}"
+        )

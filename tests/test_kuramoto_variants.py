@@ -266,6 +266,9 @@ def test_specs_defensively_copy_inputs_and_expose_readonly_arrays() -> None:
     theta0[0] = 9.0
 
     assert spec.K_nm[0, 1] == 0.45
+    # `theta0` is optional on the spec; this test was constructed with one and
+    # asserts the copy is both correct and read-only, so it states that first.
+    assert spec.theta0 is not None
     assert spec.theta0[0] == 0.0
     with pytest.raises(ValueError):
         spec.K_nm[0, 1] = 0.2
