@@ -13,11 +13,12 @@ from scpn_quantum_control.benchmarks.advantage_protocol import default_s2_scalin
 from scripts.report_s2_scaling_claim_boundary import build_claim_boundary_report
 
 
-def _rows():
+def _rows() -> list[dict[str, object]]:
+    """Build one fixture row per required baseline, size-gated and skipped."""
     protocol = default_s2_scaling_protocol()
-    rows = []
+    rows: list[dict[str, object]] = []
     for baseline in protocol.required_baselines:
-        row = {key: None for key in protocol.output_schema["row_keys"]}
+        row: dict[str, object] = {key: None for key in protocol.output_schema["row_keys"]}
         row["protocol_id"] = protocol.protocol_id
         row["n_qubits"] = 4
         row["baseline"] = baseline
@@ -51,11 +52,12 @@ def test_claim_boundary_report_forbids_advantage_from_lite_rows() -> None:
 
 
 def test_ibm_readiness_requires_full_required_matrix_and_hardware_row() -> None:
+    """Declare readiness only for a complete matrix carrying a hardware row."""
     protocol = default_s2_scaling_protocol()
-    rows = []
+    rows: list[dict[str, object]] = []
     for size in protocol.sizes:
         for baseline in protocol.required_baselines:
-            row = {key: None for key in protocol.output_schema["row_keys"]}
+            row: dict[str, object] = {key: None for key in protocol.output_schema["row_keys"]}
             row["protocol_id"] = protocol.protocol_id
             row["n_qubits"] = size
             row["baseline"] = baseline
@@ -69,7 +71,7 @@ def test_ibm_readiness_requires_full_required_matrix_and_hardware_row() -> None:
             row["git_commit"] = "test"
             row["notes"] = []
             rows.append(row)
-    hardware = {key: None for key in protocol.output_schema["row_keys"]}
+    hardware: dict[str, object] = {key: None for key in protocol.output_schema["row_keys"]}
     hardware["protocol_id"] = protocol.protocol_id
     hardware["n_qubits"] = 4
     hardware["baseline"] = "qpu_hardware"
