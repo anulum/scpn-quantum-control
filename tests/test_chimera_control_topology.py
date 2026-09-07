@@ -102,22 +102,24 @@ def test_projection_report_contract_rejects_inconsistent_custody() -> None:
         "summaries_after": valid.summaries_after,
         "content_digest": valid.content_digest,
     }
+    # Each construction overrides one field with an invalid value to prove it
+    # is rejected; mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match="equal non-empty"):
-        TopologyProjectionReport(**(values | {"projected": np.zeros((2, 2))}))
+        TopologyProjectionReport(**(values | {"projected": np.zeros((2, 2))}))  # type: ignore[arg-type]
     bad = np.array(valid.candidate, copy=True)
     bad[0, 0] = np.nan
     with pytest.raises(ValueError, match="finite"):
-        TopologyProjectionReport(**(values | {"candidate": bad}))
+        TopologyProjectionReport(**(values | {"candidate": bad}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="identical levels"):
-        TopologyProjectionReport(**(values | {"summaries_after": tuple()}))
+        TopologyProjectionReport(**(values | {"summaries_after": tuple()}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="non-empty"):
         TopologyProjectionReport(
-            **(values | {"summaries_before": tuple(), "summaries_after": tuple()})
+            **(values | {"summaries_before": tuple(), "summaries_after": tuple()})  # type: ignore[arg-type]
         )
     with pytest.raises(ValueError, match="content_digest"):
-        TopologyProjectionReport(**(values | {"content_digest": "bad"}))
+        TopologyProjectionReport(**(values | {"content_digest": "bad"}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="claim_boundary"):
-        TopologyProjectionReport(**(values | {"claim_boundary": " "}))
+        TopologyProjectionReport(**(values | {"claim_boundary": " "}))  # type: ignore[arg-type]
 
 
 def test_projection_supports_a_valid_singleton_fine_level() -> None:

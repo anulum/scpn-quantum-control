@@ -10,7 +10,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import cast
 
 import numpy as np
 import pytest
@@ -129,8 +128,10 @@ def test_writer_round_trips_and_fails_closed_on_drift(
 
 def test_support_row_contract_rejects_invalid_status_and_blank_fields() -> None:
     """Reject unsupported status values and blank support-row fields."""
+    # The status and the blank fields are deliberately outside the contract;
+    # mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match="status"):
-        ChimeraSupportRow("cap", cast(object, "invalid"), "evidence", "non-claim")
+        ChimeraSupportRow("cap", "invalid", "evidence", "non-claim")  # type: ignore[arg-type]
     for key in ("capability", "evidence", "non_claim"):
         values = {
             "capability": "cap",
@@ -140,7 +141,7 @@ def test_support_row_contract_rejects_invalid_status_and_blank_fields() -> None:
         }
         values[key] = " "
         with pytest.raises(ValueError, match=key):
-            ChimeraSupportRow(**values)
+            ChimeraSupportRow(**values)  # type: ignore[arg-type]
 
 
 def test_regime_evidence_contract_rejects_invalid_custody() -> None:
@@ -162,34 +163,36 @@ def test_regime_evidence_contract_rejects_invalid_custody() -> None:
         "proposal_step_size": 0.25,
         "proposal_accepted": True,
     }
+    # Each construction overrides one field with an invalid value to prove it
+    # is rejected; mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match="trajectory_digest"):
-        SyntheticRegimeEvidence(**(valid | {"trajectory_digest": "bad"}))
+        SyntheticRegimeEvidence(**(valid | {"trajectory_digest": "bad"}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="trajectory_digest"):
-        SyntheticRegimeEvidence(**(valid | {"trajectory_digest": "z" * 64}))
+        SyntheticRegimeEvidence(**(valid | {"trajectory_digest": "z" * 64}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="trajectory_samples"):
-        SyntheticRegimeEvidence(**(valid | {"trajectory_samples": True}))
+        SyntheticRegimeEvidence(**(valid | {"trajectory_samples": True}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="trajectory_samples"):
-        SyntheticRegimeEvidence(**(valid | {"trajectory_samples": 1.5}))
+        SyntheticRegimeEvidence(**(valid | {"trajectory_samples": 1.5}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="population_mean"):
-        SyntheticRegimeEvidence(**(valid | {"population_mean": (1.0,)}))
+        SyntheticRegimeEvidence(**(valid | {"population_mean": (1.0,)}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="population_min"):
-        SyntheticRegimeEvidence(**(valid | {"population_min": (1.0, np.nan)}))
+        SyntheticRegimeEvidence(**(valid | {"population_min": (1.0, np.nan)}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match=r"population_mean values must lie in \[0, 1\]"):
-        SyntheticRegimeEvidence(**(valid | {"population_mean": (1.1, 0.5)}))
+        SyntheticRegimeEvidence(**(valid | {"population_mean": (1.1, 0.5)}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match=r"population_min values must lie in \[0, 1\]"):
-        SyntheticRegimeEvidence(**(valid | {"population_min": (-0.1, 0.1)}))
+        SyntheticRegimeEvidence(**(valid | {"population_min": (-0.1, 0.1)}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match=r"population_max values must lie in \[0, 1\]"):
-        SyntheticRegimeEvidence(**(valid | {"population_max": (1.1, 0.9)}))
+        SyntheticRegimeEvidence(**(valid | {"population_max": (1.1, 0.9)}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="population_std values"):
-        SyntheticRegimeEvidence(**(valid | {"population_std": (-0.1, 0.2)}))
+        SyntheticRegimeEvidence(**(valid | {"population_std": (-0.1, 0.2)}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="min <= mean <= max"):
-        SyntheticRegimeEvidence(**(valid | {"population_mean": (0.5, 0.5)}))
+        SyntheticRegimeEvidence(**(valid | {"population_mean": (0.5, 0.5)}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match=r"global_order_mean must lie in \[0, 1\]"):
-        SyntheticRegimeEvidence(**(valid | {"global_order_mean": 1.1}))
+        SyntheticRegimeEvidence(**(valid | {"global_order_mean": 1.1}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="strict objective decrease"):
-        SyntheticRegimeEvidence(**(valid | {"objective_after": 0.2}))
+        SyntheticRegimeEvidence(**(valid | {"objective_after": 0.2}))  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="objective_after"):
-        SyntheticRegimeEvidence(**(valid | {"objective_after": -1.0}))
+        SyntheticRegimeEvidence(**(valid | {"objective_after": -1.0}))  # type: ignore[arg-type]
 
 
 def test_complete_evidence_contract_rejects_invalid_top_level_fields(
@@ -220,6 +223,8 @@ def test_complete_evidence_contract_rejects_invalid_top_level_fields(
         ({"claim_boundary": " "}, "claim_boundary"),
         ({"content_digest": "bad"}, "content_digest"),
     )
+    # Each case overrides one field with an invalid value to prove it is
+    # rejected; mypy cannot express a call that is meant to fail.
     for replacement, message in cases:
         with pytest.raises(ValueError, match=message):
-            ChimeraMultiscaleEvidence(**(values | replacement))
+            ChimeraMultiscaleEvidence(**(values | replacement))  # type: ignore[arg-type]
