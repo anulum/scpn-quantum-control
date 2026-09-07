@@ -21,45 +21,45 @@ from scpn_quantum_control.benchmarks.gpu_baseline import (
 
 
 class TestStatevectorMemory:
-    def test_16_qubits(self):
+    def test_16_qubits(self) -> None:
         mem = statevector_memory_gb(16)
         assert mem == pytest.approx(2**16 * 16 / 1e9, rel=0.01)
 
-    def test_exponential(self):
+    def test_exponential(self) -> None:
         m20 = statevector_memory_gb(20)
         m30 = statevector_memory_gb(30)
         assert m30 / m20 == pytest.approx(1024.0)
 
 
 class TestGateCount:
-    def test_positive(self):
+    def test_positive(self) -> None:
         assert gate_count_xy_trotter(4, reps=5) > 0
 
-    def test_scales_quadratically(self):
+    def test_scales_quadratically(self) -> None:
         g4 = gate_count_xy_trotter(4, reps=1)
         g8 = gate_count_xy_trotter(8, reps=1)
         assert g8 > 3 * g4  # roughly quadratic
 
 
 class TestGPUBaselineComparison:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         result = gpu_baseline_comparison(16)
         assert isinstance(result, GPUBaselineResult)
 
-    def test_small_system_gpu_faster(self):
+    def test_small_system_gpu_faster(self) -> None:
         result = gpu_baseline_comparison(8)
         assert result.gpu_faster
 
-    def test_memory_finite(self):
+    def test_memory_finite(self) -> None:
         result = gpu_baseline_comparison(16)
         assert result.statevector_memory_gb > 0
         assert result.statevector_memory_gb < 1.0
 
-    def test_crossover_exists(self):
+    def test_crossover_exists(self) -> None:
         result = gpu_baseline_comparison(16)
         assert result.crossover_n > 16
 
-    def test_crossover_can_be_memory_limited(self, monkeypatch):
+    def test_crossover_can_be_memory_limited(self, monkeypatch: pytest.MonkeyPatch) -> None:
         from scpn_quantum_control.benchmarks import gpu_baseline as gb
 
         monkeypatch.setattr(gb, "estimate_gpu_time", lambda n, n_gates: 0.0)
@@ -70,7 +70,7 @@ class TestGPUBaselineComparison:
 
         assert result.crossover_n == 18
 
-    def test_scpn_gpu_comparison(self):
+    def test_scpn_gpu_comparison(self) -> None:
         """Record GPU vs QPU for SCPN sizes."""
         for n in [16, 24, 32]:
             r = gpu_baseline_comparison(n)
@@ -84,15 +84,15 @@ class TestGPUBaselineComparison:
 
 
 class TestScalingComparison:
-    def test_default_values(self):
+    def test_default_values(self) -> None:
         results = scaling_comparison()
         assert results["n"] == [4, 8, 16, 24, 32, 40]
 
-    def test_returns_keys(self):
+    def test_returns_keys(self) -> None:
         results = scaling_comparison(n_values=[4, 8, 16])
         assert "gpu_time_s" in results
         assert len(results["n"]) == 3
 
-    def test_gpu_time_increases(self):
+    def test_gpu_time_increases(self) -> None:
         results = scaling_comparison(n_values=[8, 16, 24])
         assert results["gpu_time_s"][2] > results["gpu_time_s"][0]

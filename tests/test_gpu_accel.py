@@ -12,6 +12,7 @@ from __future__ import annotations
 import importlib
 import sys
 from types import SimpleNamespace
+from typing import NoReturn
 
 import numpy as np
 import pytest
@@ -28,10 +29,12 @@ from scpn_quantum_control.hardware.gpu_accel import (
 
 
 class TestGPUAvailability:
-    def test_is_gpu_returns_bool(self):
+    def test_is_gpu_returns_bool(self) -> None:
         assert isinstance(is_gpu_available(), bool)
 
-    def test_import_guard_accepts_mocked_cupy_device(self, monkeypatch):
+    def test_import_guard_accepts_mocked_cupy_device(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         import scpn_quantum_control.hardware.gpu_accel as gpu_mod
 
         fake_cupy = SimpleNamespace(
@@ -46,10 +49,12 @@ class TestGPUAvailability:
         monkeypatch.setenv("SCPN_GPU_ENABLE", "0")
         importlib.reload(gpu_mod)
 
-    def test_import_guard_exposes_cupy_runtime_failure(self, monkeypatch):
+    def test_import_guard_exposes_cupy_runtime_failure(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         import scpn_quantum_control.hardware.gpu_accel as gpu_mod
 
-        def fail_device_count():
+        def fail_device_count() -> NoReturn:
             raise RuntimeError("cuda unavailable")
 
         fake_cupy = SimpleNamespace(
@@ -64,10 +69,12 @@ class TestGPUAvailability:
         monkeypatch.setenv("SCPN_GPU_ENABLE", "0")
         importlib.reload(gpu_mod)
 
-    def test_import_guard_does_not_probe_cupy_when_disabled(self, monkeypatch):
+    def test_import_guard_does_not_probe_cupy_when_disabled(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         import scpn_quantum_control.hardware.gpu_accel as gpu_mod
 
-        def fail_device_count():
+        def fail_device_count() -> NoReturn:
             raise AssertionError("CuPy must not be probed unless SCPN_GPU_ENABLE=1")
 
         fake_cupy = SimpleNamespace(
@@ -80,18 +87,18 @@ class TestGPUAvailability:
 
         assert reloaded.is_gpu_available() is False
 
-    def test_device_name_string(self):
+    def test_device_name_string(self) -> None:
         name = gpu_device_name()
         assert isinstance(name, str)
         assert len(name) > 0
 
-    def test_memory_non_negative(self):
+    def test_memory_non_negative(self) -> None:
         mem = gpu_memory_free_mb()
         assert mem >= 0
 
 
 class TestEigvalsh:
-    def test_small_matrix(self):
+    def test_small_matrix(self) -> None:
         """Works regardless of GPU availability (falls back to numpy)."""
         A = np.array([[1.0, 0.5], [0.5, 2.0]])
         eigs = eigvalsh(A)
@@ -100,7 +107,7 @@ class TestEigvalsh:
 
 
 class TestEigh:
-    def test_small_matrix(self):
+    def test_small_matrix(self) -> None:
         A = np.array([[2.0, 1.0], [1.0, 3.0]])
         eigs, vecs = eigh(A)
         assert len(eigs) == 2
@@ -108,12 +115,12 @@ class TestEigh:
 
 
 class TestExpm:
-    def test_identity(self):
+    def test_identity(self) -> None:
         n = 4
         result = expm(np.zeros((n, n), dtype=complex))
         np.testing.assert_allclose(result, np.eye(n), atol=1e-10)
 
-    def test_hermitian(self):
+    def test_hermitian(self) -> None:
         from scipy.linalg import expm as scipy_expm
 
         A = np.array([[0, 1j], [-1j, 0]], dtype=complex)
@@ -123,19 +130,19 @@ class TestExpm:
 
 
 class TestMatmul:
-    def test_small_matrix(self):
+    def test_small_matrix(self) -> None:
         A = np.array([[1.0, 2.0], [3.0, 4.0]])
         B = np.array([[5.0, 6.0], [7.0, 8.0]])
         result = matmul(A, B)
         np.testing.assert_allclose(result, A @ B, atol=1e-10)
 
-    def test_identity_matmul(self):
+    def test_identity_matmul(self) -> None:
         A = np.eye(4)
         B = np.random.default_rng(42).uniform(size=(4, 4))
         result = matmul(A, B)
         np.testing.assert_allclose(result, B, atol=1e-10)
 
-    def test_square_matmul(self):
+    def test_square_matmul(self) -> None:
         A = np.random.default_rng(42).uniform(size=(8, 8))
         result = matmul(A, A)
         np.testing.assert_allclose(result, A @ A, atol=1e-10)
@@ -144,12 +151,12 @@ class TestMatmul:
 class TestEigvalshParity:
     """Verify GPU/CPU parity across sizes."""
 
-    def test_4x4(self):
+    def test_4x4(self) -> None:
         A = np.array([[4, 1, 0, 0], [1, 3, 1, 0], [0, 1, 2, 1], [0, 0, 1, 1]], dtype=float)
         eigs = eigvalsh(A)
         np.testing.assert_allclose(eigs, np.linalg.eigvalsh(A), atol=1e-10)
 
-    def test_random_hermitian(self):
+    def test_random_hermitian(self) -> None:
         rng = np.random.default_rng(42)
         A = rng.standard_normal((6, 6))
         A = (A + A.T) / 2
@@ -159,14 +166,14 @@ class TestEigvalshParity:
 
 
 class TestExpmProperties:
-    def test_expm_unitary_for_skew_hermitian(self):
+    def test_expm_unitary_for_skew_hermitian(self) -> None:
         """exp(iH) should be unitary for Hermitian H."""
         H = np.array([[1, 0.5], [0.5, -1]], dtype=complex)
         U = expm(1j * H)
         identity = U @ U.conj().T
         np.testing.assert_allclose(identity, np.eye(2), atol=1e-10)
 
-    def test_expm_determinant_one(self):
+    def test_expm_determinant_one(self) -> None:
         """det(exp(A)) = exp(tr(A)) for traceless A."""
         A = np.array([[0, 1j], [-1j, 0]], dtype=complex)
         U = expm(A)
@@ -175,7 +182,7 @@ class TestExpmProperties:
 
 
 class TestPipelineGPU:
-    def test_hamiltonian_diag_via_gpu(self):
+    def test_hamiltonian_diag_via_gpu(self) -> None:
         """Pipeline: build H → diagonalise via gpu_accel → ground energy."""
         from scpn_quantum_control.bridge.knm_hamiltonian import (
             OMEGA_N_16,
