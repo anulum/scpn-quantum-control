@@ -23,23 +23,23 @@ from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 
 
 class TestCouplingLaplacian:
-    def test_laplacian_symmetric(self):
+    def test_laplacian_symmetric(self) -> None:
         K = build_knm_paper27(L=8)
         L = coupling_laplacian(K)
         np.testing.assert_allclose(L, L.T, atol=1e-12)
 
-    def test_laplacian_row_sums_zero(self):
+    def test_laplacian_row_sums_zero(self) -> None:
         K = build_knm_paper27(L=8)
         L = coupling_laplacian(K)
         np.testing.assert_allclose(L.sum(axis=1), 0.0, atol=1e-12)
 
-    def test_laplacian_positive_semidefinite(self):
+    def test_laplacian_positive_semidefinite(self) -> None:
         K = build_knm_paper27(L=8)
         L = coupling_laplacian(K)
         eigenvalues = np.linalg.eigvalsh(L)
         assert np.all(eigenvalues >= -1e-12)
 
-    def test_laplacian_zero_diagonal_coupling(self):
+    def test_laplacian_zero_diagonal_coupling(self) -> None:
         K = np.array([[0.0, 0.5], [0.5, 0.0]])
         L = coupling_laplacian(K)
         expected = np.array([[0.5, -0.5], [-0.5, 0.5]])
@@ -47,17 +47,17 @@ class TestCouplingLaplacian:
 
 
 class TestFiedlerEigenvalue:
-    def test_fiedler_positive_connected_graph(self):
+    def test_fiedler_positive_connected_graph(self) -> None:
         K = build_knm_paper27(L=8)
         lam2 = fiedler_eigenvalue(K)
         assert lam2 > 0, "Connected graph must have positive Fiedler value"
 
-    def test_fiedler_increases_with_coupling(self):
+    def test_fiedler_increases_with_coupling(self) -> None:
         lam_weak = fiedler_eigenvalue(build_knm_paper27(L=8, K_base=0.1))
         lam_strong = fiedler_eigenvalue(build_knm_paper27(L=8, K_base=1.0))
         assert lam_strong > lam_weak
 
-    def test_fiedler_uniform_coupling(self):
+    def test_fiedler_uniform_coupling(self) -> None:
         """Complete graph with uniform coupling: λ_2 = n × k."""
         n = 5
         k = 0.3
@@ -68,17 +68,17 @@ class TestFiedlerEigenvalue:
 
 
 class TestEstimateTBKT:
-    def test_t_bkt_positive(self):
+    def test_t_bkt_positive(self) -> None:
         K = build_knm_paper27(L=16)
         t = estimate_t_bkt(K)
         assert t > 0
 
-    def test_t_bkt_scales_with_coupling(self):
+    def test_t_bkt_scales_with_coupling(self) -> None:
         t_weak = estimate_t_bkt(build_knm_paper27(L=16, K_base=0.1))
         t_strong = estimate_t_bkt(build_knm_paper27(L=16, K_base=1.0))
         assert t_strong > t_weak
 
-    def test_t_bkt_formula(self):
+    def test_t_bkt_formula(self) -> None:
         """T_BKT = (π/2) × λ_2 / (2n)."""
         K = build_knm_paper27(L=8)
         t = estimate_t_bkt(K)
@@ -88,40 +88,40 @@ class TestEstimateTBKT:
 
 
 class TestBKTAnalysis:
-    def test_returns_bkt_result(self):
+    def test_returns_bkt_result(self) -> None:
         K = build_knm_paper27(L=16)
         result = bkt_analysis(K)
         assert isinstance(result, BKTResult)
 
-    def test_n_oscillators(self):
+    def test_n_oscillators(self) -> None:
         K = build_knm_paper27(L=10)
         result = bkt_analysis(K)
         assert result.n_oscillators == 10
 
-    def test_eta_universal(self):
+    def test_eta_universal(self) -> None:
         K = build_knm_paper27(L=16)
         result = bkt_analysis(K)
         assert result.eta_critical == 0.25
 
-    def test_stiffness_jump_nelson_kosterlitz(self):
+    def test_stiffness_jump_nelson_kosterlitz(self) -> None:
         """ρ_s = (2/π) × T_BKT."""
         K = build_knm_paper27(L=16)
         result = bkt_analysis(K)
         expected = (2.0 / np.pi) * result.t_bkt_estimate
         np.testing.assert_allclose(result.stiffness_jump, expected, atol=1e-14)
 
-    def test_critical_ratio_positive(self):
+    def test_critical_ratio_positive(self) -> None:
         K = build_knm_paper27(L=16)
         result = bkt_analysis(K)
         assert result.critical_ratio > 0
 
-    def test_p_h1_predicted_bounded(self):
+    def test_p_h1_predicted_bounded(self) -> None:
         K = build_knm_paper27(L=16)
         result = bkt_analysis(K)
         assert result.p_h1_predicted is not None
         assert 0 < result.p_h1_predicted <= 1.0
 
-    def test_p_h1_vs_target(self):
+    def test_p_h1_vs_target(self) -> None:
         """Record predicted p_h1 and compare to target 0.72.
 
         This is a MEASUREMENT, not a pass/fail assertion.
@@ -130,18 +130,18 @@ class TestBKTAnalysis:
         """
         K = build_knm_paper27(L=16)
         result = bkt_analysis(K)
+        assert isinstance(result.p_h1_predicted, float)
         deviation = abs(result.p_h1_predicted - 0.72)
         print(f"\n  BKT predicted p_h1 = {result.p_h1_predicted:.4f}")
         print("  Target p_h1 = 0.72")
         print(f"  Deviation = {deviation:.4f}")
-        assert isinstance(result.p_h1_predicted, float)
 
-    def test_p_h1_none_for_single_oscillator(self):
+    def test_p_h1_none_for_single_oscillator(self) -> None:
         K = np.array([[0.0]])
         result = bkt_analysis(K)
         assert result.p_h1_predicted is None
 
-    def test_fiedler_matches_direct(self):
+    def test_fiedler_matches_direct(self) -> None:
         K = build_knm_paper27(L=16)
         result = bkt_analysis(K)
         direct = fiedler_eigenvalue(K)
@@ -149,21 +149,21 @@ class TestBKTAnalysis:
 
 
 class TestScanSynchronizationTransition:
-    def test_scan_returns_all_keys(self):
+    def test_scan_returns_all_keys(self) -> None:
         K_vals = np.linspace(0.1, 1.0, 5)
         results = scan_synchronization_transition(K_vals, n=8)
         for key in ["K_base", "T_BKT", "fiedler", "critical_ratio", "p_h1_predicted"]:
             assert key in results
             assert len(results[key]) == 5
 
-    def test_t_bkt_monotonic(self):
+    def test_t_bkt_monotonic(self) -> None:
         K_vals = np.linspace(0.1, 2.0, 10)
         results = scan_synchronization_transition(K_vals, n=8)
         t_bkt = results["T_BKT"]
         for i in range(1, len(t_bkt)):
             assert t_bkt[i] >= t_bkt[i - 1], "T_BKT must increase with K_base"
 
-    def test_fiedler_monotonic(self):
+    def test_fiedler_monotonic(self) -> None:
         K_vals = np.linspace(0.1, 2.0, 10)
         results = scan_synchronization_transition(K_vals, n=8)
         fiedler = results["fiedler"]

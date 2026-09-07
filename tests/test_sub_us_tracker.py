@@ -22,20 +22,24 @@ from scpn_quantum_control.control.realtime_runtime import (
 )
 
 try:
-    import scpn_quantum_engine as _engine
+    import scpn_quantum_engine
 
-    _HAS_RUST = hasattr(_engine, "sub_us_jitter_percentiles") and hasattr(
-        _engine, "sub_us_tracker_summary"
+    _HAS_RUST = hasattr(scpn_quantum_engine, "sub_us_jitter_percentiles") and hasattr(
+        scpn_quantum_engine, "sub_us_tracker_summary"
     )
 except ImportError:  # pragma: no cover - engine optional
-    _engine = None
     _HAS_RUST = False
 
 _RATE = 100_000  # 10_000 ns target period
 _PERIOD = 10_000.0
 
 
-def _cadence(jitters_ns, *, durations_ns=3_000, deadline_offset_ns=5_000):
+def _cadence(
+    jitters_ns: list[int],
+    *,
+    durations_ns: int | list[int] = 3_000,
+    deadline_offset_ns: int | list[int] = 5_000,
+) -> list[CycleSample]:
     """Build a CycleSample list whose inter-start deviations equal ``jitters_ns``."""
     samples = []
     start = 0
@@ -54,7 +58,7 @@ def _cadence(jitters_ns, *, durations_ns=3_000, deadline_offset_ns=5_000):
 # --------------------------------------------------------------------------- #
 # CycleSample contract
 # --------------------------------------------------------------------------- #
-def test_cycle_sample_valid_properties():
+def test_cycle_sample_valid_properties() -> None:
     s = CycleSample(cycle_id=2, start_ns=1_000, end_ns=4_000, deadline_ns=6_000)
     assert s.duration_ns == 3_000
     assert s.deadline_missed is False
@@ -70,12 +74,13 @@ def test_cycle_sample_valid_properties():
         {"cycle_id": 0, "start_ns": 0.0, "end_ns": 1, "deadline_ns": 1},
     ],
 )
-def test_cycle_sample_rejects_non_int(kwargs):
+def test_cycle_sample_rejects_non_int(kwargs: dict[str, object]) -> None:
     with pytest.raises(TypeError):
-        CycleSample(**kwargs)
+        # Each parametrised row is a non-integer field the guard must refuse.
+        CycleSample(**kwargs)  # type: ignore[arg-type]
 
 
-def test_cycle_sample_rejects_inverted_intervals():
+def test_cycle_sample_rejects_inverted_intervals() -> None:
     with pytest.raises(ValueError, match="end_ns"):
         CycleSample(cycle_id=0, start_ns=10, end_ns=5, deadline_ns=20)
     with pytest.raises(ValueError, match="deadline_ns"):
@@ -93,7 +98,7 @@ def test_cycle_sample_rejects_inverted_intervals():
         {"ring_buffer_capacity": 0},
     ],
 )
-def test_tracker_rejects_non_positive(kwargs):
+def test_tracker_rejects_non_positive(kwargs: dict[str, int]) -> None:
     with pytest.raises(ValueError):
         SubMicrosecondTracker(**kwargs)
 
@@ -102,19 +107,20 @@ def test_tracker_rejects_non_positive(kwargs):
     "kwargs",
     [{"target_rate_hz": 1.0}, {"target_rate_hz": True}, {"ring_buffer_capacity": 4.0}],
 )
-def test_tracker_rejects_non_int(kwargs):
+def test_tracker_rejects_non_int(kwargs: dict[str, float]) -> None:
     with pytest.raises(TypeError):
-        SubMicrosecondTracker(**kwargs)
+        # Each parametrised row is a non-integer argument the guard must refuse.
+        SubMicrosecondTracker(**kwargs)  # type: ignore[arg-type]
 
 
-def test_tracker_target_period():
+def test_tracker_target_period() -> None:
     assert SubMicrosecondTracker(target_rate_hz=_RATE).target_period_ns == _PERIOD
 
 
 # --------------------------------------------------------------------------- #
 # Recording and reporting
 # --------------------------------------------------------------------------- #
-def test_perfect_cadence_has_zero_jitter():
+def test_perfect_cadence_has_zero_jitter() -> None:
     tracker = SubMicrosecondTracker(target_rate_hz=_RATE)
     for sample in _cadence([0, 0, 0, 0]):
         tracker.record(sample)
@@ -126,7 +132,7 @@ def test_perfect_cadence_has_zero_jitter():
     assert report.jitter_max_ns == 0.0
 
 
-def test_known_jitter_matches_numpy_quantile():
+def test_known_jitter_matches_numpy_quantile() -> None:
     jitters = [200, 0, 1_500, 50, 900, 0, 3_000]
     tracker = SubMicrosecondTracker(target_rate_hz=_RATE)
     for sample in _cadence(jitters):
@@ -139,7 +145,7 @@ def test_known_jitter_matches_numpy_quantile():
     assert report.jitter_max_ns == float(observed.max())
 
 
-def test_deadline_miss_count():
+def test_deadline_miss_count() -> None:
     tracker = SubMicrosecondTracker(target_rate_hz=_RATE)
     # durations: cycles 1 and 3 finish after their 5_000 ns deadline offset
     durations = [3_000, 6_000, 3_000, 7_000, 3_000]
@@ -148,17 +154,18 @@ def test_deadline_miss_count():
     assert tracker.report().deadline_misses == 2
 
 
-def test_report_before_record_raises():
+def test_report_before_record_raises() -> None:
     with pytest.raises(ValueError, match="no cycles recorded"):
         SubMicrosecondTracker().report()
 
 
-def test_record_rejects_non_sample():
+def test_record_rejects_non_sample() -> None:
     with pytest.raises(TypeError):
-        SubMicrosecondTracker().record((0, 1, 2, 3))
+        # A raw tuple where a CycleSample is required is the input under test.
+        SubMicrosecondTracker().record((0, 1, 2, 3))  # type: ignore[arg-type]
 
 
-def test_reset_clears_state():
+def test_reset_clears_state() -> None:
     tracker = SubMicrosecondTracker(target_rate_hz=_RATE)
     for sample in _cadence([500, 500]):
         tracker.record(sample)
@@ -170,7 +177,7 @@ def test_reset_clears_state():
     assert tracker.report().cycles_observed == 1
 
 
-def test_ring_buffer_overwrite_keeps_exact_counters():
+def test_ring_buffer_overwrite_keeps_exact_counters() -> None:
     tracker = SubMicrosecondTracker(target_rate_hz=_RATE, ring_buffer_capacity=4)
     durations = [3_000] * 5 + [9_000] * 5  # last five all miss the 5_000 ns deadline
     for sample in _cadence([0] * 9, durations_ns=durations):
@@ -184,7 +191,7 @@ def test_ring_buffer_overwrite_keeps_exact_counters():
 # --------------------------------------------------------------------------- #
 # Batch summary path
 # --------------------------------------------------------------------------- #
-def test_summarise_matches_tracker():
+def test_summarise_matches_tracker() -> None:
     jitters = [120, 800, 0, 4_000, 60, 900]
     # _cadence prepends a zero-jitter first cycle, so durations spans len+1 cycles
     durations = [3_000, 6_000, 3_000, 3_000, 8_000, 3_000, 3_000]
@@ -205,7 +212,7 @@ def test_summarise_matches_tracker():
     assert got.cycles_observed == expected.cycles_observed
 
 
-def test_summarise_single_cycle():
+def test_summarise_single_cycle() -> None:
     report = summarise_cycle_samples([0], [3_000], [5_000], target_rate_hz=_RATE)
     assert report.cycles_observed == 1
     assert report.jitter_max_ns == 0.0
@@ -221,12 +228,14 @@ def test_summarise_single_cycle():
         ([0, 5], [1, 6], [9, 4], "deadline_ns"),
     ],
 )
-def test_summarise_validation(start, end, deadline, err):
+def test_summarise_validation(
+    start: list[int], end: list[int], deadline: list[int], err: str
+) -> None:
     with pytest.raises(ValueError, match=err):
         summarise_cycle_samples(start, end, deadline)
 
 
-def test_summarise_rejects_2d():
+def test_summarise_rejects_2d() -> None:
     with pytest.raises(ValueError, match="one-dimensional"):
         summarise_cycle_samples(
             np.zeros((2, 2), dtype=np.int64),
@@ -235,7 +244,7 @@ def test_summarise_rejects_2d():
         )
 
 
-def test_summarise_rejects_invalid_rate():
+def test_summarise_rejects_invalid_rate() -> None:
     with pytest.raises((TypeError, ValueError)):
         summarise_cycle_samples([0], [1], [1], target_rate_hz=0)
 
@@ -247,7 +256,7 @@ def test_summarise_rejects_invalid_rate():
 @given(
     intervals=st.lists(st.integers(min_value=1, max_value=40_000), min_size=1, max_size=64),
 )
-def test_summary_is_deterministic_and_matches_numpy(intervals):
+def test_summary_is_deterministic_and_matches_numpy(intervals: list[int]) -> None:
     start = np.cumsum(np.asarray(intervals, dtype=np.int64))
     end = start + 2_000
     deadline = start + 5_000
@@ -265,25 +274,29 @@ def test_summary_is_deterministic_and_matches_numpy(intervals):
 # Python ↔ Rust parity
 # --------------------------------------------------------------------------- #
 @pytest.mark.skipif(not _HAS_RUST, reason="scpn_quantum_engine sub-µs kernels not built")
-def test_rust_python_parity_percentiles():
+def test_rust_python_parity_percentiles() -> None:
+    import scpn_quantum_engine as engine
+
     rng = np.random.default_rng(11)
     for _ in range(50):
         size = int(rng.integers(1, 256))
         jitters = np.abs(rng.normal(0.0, 750.0, size=size)).astype(np.float64)
-        rust = _engine.sub_us_jitter_percentiles(np.ascontiguousarray(jitters))
+        rust = engine.sub_us_jitter_percentiles(np.ascontiguousarray(jitters))
         numpy_ref = _jitter_percentiles_numpy(jitters)
         assert rust == numpy_ref  # bit-true
 
 
 @pytest.mark.skipif(not _HAS_RUST, reason="scpn_quantum_engine sub-µs kernels not built")
-def test_rust_python_parity_summary():
+def test_rust_python_parity_summary() -> None:
+    import scpn_quantum_engine as engine
+
     rng = np.random.default_rng(13)
     for _ in range(50):
         size = int(rng.integers(1, 256))
         start = np.cumsum(rng.integers(6_000, 14_000, size=size)).astype(np.int64)
         end = start + rng.integers(1_000, 7_000, size=size).astype(np.int64)
         deadline = start + 5_000
-        rust = _engine.sub_us_tracker_summary(
+        rust = engine.sub_us_tracker_summary(
             np.ascontiguousarray(start),
             np.ascontiguousarray(end),
             np.ascontiguousarray(deadline),
@@ -296,13 +309,15 @@ def test_rust_python_parity_summary():
 
 
 @pytest.mark.skipif(not _HAS_RUST, reason="scpn_quantum_engine sub-µs kernels not built")
-def test_dispatch_prefers_rust():
+def test_dispatch_prefers_rust() -> None:
+    import scpn_quantum_engine as engine
+
     # _sub_us_summary routes through the Rust kernel when present
     start = np.array([0, 10_000, 21_000], dtype=np.int64)
     end = start + 2_000
     deadline = start + 5_000
     routed = _sub_us_summary(start, end, deadline, _PERIOD)
-    direct = _engine.sub_us_tracker_summary(
+    direct = engine.sub_us_tracker_summary(
         np.ascontiguousarray(start),
         np.ascontiguousarray(end),
         np.ascontiguousarray(deadline),

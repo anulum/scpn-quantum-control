@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import importlib
+from typing import TYPE_CHECKING, NoReturn
 
 import numpy as np
 import pytest
@@ -31,50 +32,55 @@ from scpn_quantum_control.phase.adapt_vqe import (
     adapt_vqe,
 )
 
+if TYPE_CHECKING:
+    from scpn_quantum_control.phase.adapt_vqe import ComplexArray, FloatArray
+
 
 def _exact_ground_energy(n: int, K: np.ndarray, omega: np.ndarray) -> float:
     return float(np.linalg.eigvalsh(knm_to_dense_matrix(K, omega))[0])
 
 
 class TestOperatorPool:
-    def test_pool_non_empty(self):
+    def test_pool_non_empty(self) -> None:
         K = build_knm_paper27(L=3)
         assert len(_build_operator_pool(K, 3)) > 0
 
-    def test_pool_contains_exchange_and_local(self):
+    def test_pool_contains_exchange_and_local(self) -> None:
         K = build_knm_paper27(L=3)
         # 3 pairs + 3 single-qubit = 6 minimum
         assert len(_build_operator_pool(K, 3)) >= 6
 
-    def test_pool_operators_are_sparse_pauli(self):
+    def test_pool_operators_are_sparse_pauli(self) -> None:
         K = build_knm_paper27(L=3)
         for op in _build_operator_pool(K, 3):
             assert isinstance(op, SparsePauliOp)
 
-    def test_dense_generators_are_hermitian(self):
+    def test_dense_generators_are_hermitian(self) -> None:
         K = build_knm_paper27(L=3)
         for generator in _pool_generators_dense(K, 3):
             assert np.allclose(generator, generator.conj().T, atol=1e-12)
 
 
 class TestAnsatzAction:
-    def test_plus_reference_is_normalised_uniform(self):
+    def test_plus_reference_is_normalised_uniform(self) -> None:
         ref = _plus_reference(3)
         assert ref.shape == (8,)
         assert np.allclose(np.abs(ref), 1.0 / np.sqrt(8))
         assert np.isclose(np.vdot(ref, ref), 1.0)
 
-    def test_ansatz_zero_angles_is_identity(self):
+    def test_ansatz_zero_angles_is_identity(self) -> None:
         K = build_knm_paper27(L=2)
-        spectra = [np.linalg.eigh(g) for g in _pool_generators_dense(K, 2)]
+        spectra: list[tuple[FloatArray, ComplexArray]] = [
+            np.linalg.eigh(g) for g in _pool_generators_dense(K, 2)
+        ]
         ref = _plus_reference(2)
         out = _ansatz_state(ref, spectra, np.zeros(len(spectra)))
         assert np.allclose(out, ref)
 
-    def test_ansatz_preserves_norm(self):
+    def test_ansatz_preserves_norm(self) -> None:
         K = build_knm_paper27(L=2)
         generators = _pool_generators_dense(K, 2)
-        spectra = [np.linalg.eigh(g) for g in generators]
+        spectra: list[tuple[FloatArray, ComplexArray]] = [np.linalg.eigh(g) for g in generators]
         ref = _plus_reference(2)
         angles = np.linspace(-1.0, 1.0, len(generators))
         out = _ansatz_state(ref, spectra, angles)
@@ -82,12 +88,12 @@ class TestAnsatzAction:
 
 
 class TestGroundStateConvergence:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = build_knm_paper27(L=2)
         result = adapt_vqe(K, OMEGA_N_16[:2], seed=42)
         assert isinstance(result, ADAPTResult)
 
-    def test_reaches_exact_ground_state_2q(self):
+    def test_reaches_exact_ground_state_2q(self) -> None:
         n = 2
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -95,7 +101,7 @@ class TestGroundStateConvergence:
         result = adapt_vqe(K, omega, seed=42)
         assert abs(result.energy - exact) < 1e-6
 
-    def test_reaches_exact_ground_state_3q(self):
+    def test_reaches_exact_ground_state_3q(self) -> None:
         n = 3
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -103,7 +109,7 @@ class TestGroundStateConvergence:
         result = adapt_vqe(K, omega, seed=42)
         assert abs(result.energy - exact) < 1e-6
 
-    def test_matches_classical_exact_diag(self):
+    def test_matches_classical_exact_diag(self) -> None:
         n = 3
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -111,14 +117,14 @@ class TestGroundStateConvergence:
         result = adapt_vqe(K, omega, seed=42)
         assert abs(result.energy - exact) < 1e-6
 
-    def test_energy_below_reference(self):
+    def test_energy_below_reference(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = adapt_vqe(K, omega, seed=42)
         # The reference |+><+| energy is energies[0]; the optimum must improve on it.
         assert result.energy < result.energies[0] - 1e-6
 
-    def test_builds_a_nonempty_ansatz(self):
+    def test_builds_a_nonempty_ansatz(self) -> None:
         # Regression: the gradient-selection ADAPT terminated at 0 operators from the
         # |0...0> eigenstate and falsely reported convergence. The layered scheme must
         # build a real ansatz.
@@ -129,7 +135,7 @@ class TestGroundStateConvergence:
         assert result.n_parameters > 0
         assert len(result.selected_operators) > 0
 
-    def test_reproducible_for_fixed_seed(self):
+    def test_reproducible_for_fixed_seed(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         a = adapt_vqe(K, omega, seed=7)
@@ -137,18 +143,18 @@ class TestGroundStateConvergence:
         assert a.energy == b.energy
         assert a.n_parameters == b.n_parameters
 
-    def test_convergence_flag_set(self):
+    def test_convergence_flag_set(self) -> None:
         K = build_knm_paper27(L=2)
         result = adapt_vqe(K, OMEGA_N_16[:2], seed=42)
         assert result.converged
 
-    def test_gradient_norms_tracked_per_layer(self):
+    def test_gradient_norms_tracked_per_layer(self) -> None:
         K = build_knm_paper27(L=2)
         result = adapt_vqe(K, OMEGA_N_16[:2], seed=42)
         assert len(result.gradient_norms) == result.n_iterations
         assert all(g >= 0.0 for g in result.gradient_norms)
 
-    def test_energies_history_starts_at_reference(self):
+    def test_energies_history_starts_at_reference(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = adapt_vqe(K, omega, seed=42)
@@ -158,7 +164,7 @@ class TestGroundStateConvergence:
         assert result.energies[0] == pytest.approx(ref_energy, abs=1e-10)
         assert len(result.energies) == result.n_iterations + 1
 
-    def test_selected_operators_index_into_pool(self):
+    def test_selected_operators_index_into_pool(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         pool = _build_operator_pool(K, 3)
@@ -168,12 +174,14 @@ class TestGroundStateConvergence:
 
 
 class TestContracts:
-    def test_rejects_dense_budget_before_dense_allocation(self, monkeypatch):
+    def test_rejects_dense_budget_before_dense_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         adapt_module = importlib.import_module("scpn_quantum_control.phase.adapt_vqe")
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
 
-        def fail_if_dense_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense allocation happened before the budget gate")
 
         monkeypatch.setattr(adapt_module, "knm_to_dense_matrix", fail_if_dense_requested)
@@ -181,7 +189,7 @@ class TestContracts:
         with pytest.raises(DenseAllocationError, match="ADAPT-VQE statevector"):
             adapt_vqe(K, omega, max_iterations=1, seed=42, max_dense_gib=1e-12)
 
-    def test_rejects_oversized_system(self):
+    def test_rejects_oversized_system(self) -> None:
         K = build_knm_paper27(L=11)
         omega = OMEGA_N_16[:11]
         with pytest.raises(ValueError, match="too large"):

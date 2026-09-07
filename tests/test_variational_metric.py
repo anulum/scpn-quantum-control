@@ -14,6 +14,8 @@ assemblies against direct contractions, and the ansatz validation contract.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pytest
 from qiskit import QuantumCircuit
@@ -29,9 +31,16 @@ from scpn_quantum_control.phase.variational_metric import (
     real_time_force,
 )
 
+if TYPE_CHECKING:
+    from scpn_quantum_control.phase.variational_metric import (
+        ComplexArray,
+        FloatArray,
+        StateEvaluator,
+    )
 
-def _state_evaluator(ansatz: QuantumCircuit):
-    def state_of(values):
+
+def _state_evaluator(ansatz: QuantumCircuit) -> StateEvaluator:
+    def state_of(values: FloatArray) -> ComplexArray:
         return np.asarray(
             Statevector.from_instruction(ansatz.assign_parameters(values)).data,
             dtype=np.complex128,
@@ -40,7 +49,7 @@ def _state_evaluator(ansatz: QuantumCircuit):
     return state_of
 
 
-def _knm_ansatz_state():
+def _knm_ansatz_state() -> tuple[QuantumCircuit, FloatArray, StateEvaluator]:
     ansatz = knm_to_ansatz(build_knm_paper27(L=3), reps=2)
     rng = np.random.default_rng(7)
     theta = rng.normal(0.0, 0.6, size=ansatz.num_parameters)
@@ -50,7 +59,7 @@ def _knm_ansatz_state():
 class TestPiShiftDerivative:
     """Verify the exact π-shift state derivative."""
 
-    def test_single_qubit_ry_matches_closed_form(self):
+    def test_single_qubit_ry_matches_closed_form(self) -> None:
         """RY(θ)|0> = [cos(θ/2), sin(θ/2)]; its exact derivative is known."""
         theta_sym = Parameter("t")
         qc = QuantumCircuit(1)
@@ -65,7 +74,7 @@ class TestPiShiftDerivative:
         assert dpsi.shape == (1, 2)
         np.testing.assert_allclose(dpsi[0], expected, atol=1e-12)
 
-    def test_matches_central_finite_difference(self):
+    def test_matches_central_finite_difference(self) -> None:
         """The exact identity agrees with a converged central finite difference."""
         ansatz, theta, state_of = _knm_ansatz_state()
         dpsi = analytic_state_derivatives(state_of, theta)
@@ -79,7 +88,7 @@ class TestPiShiftDerivative:
             fd = (state_of(tp) - state_of(tm)) / (2.0 * eps)
             np.testing.assert_allclose(dpsi[k], fd, atol=1e-8)
 
-    def test_shape_and_dtype(self):
+    def test_shape_and_dtype(self) -> None:
         """Preserve the parameter-by-state shape and complex dtype."""
         ansatz, theta, state_of = _knm_ansatz_state()
         dpsi = analytic_state_derivatives(state_of, theta)
@@ -90,7 +99,7 @@ class TestPiShiftDerivative:
 class TestMetricAndForces:
     """Verify metric and force contractions against their definitions."""
 
-    def test_metric_equals_real_gram_matrix(self):
+    def test_metric_equals_real_gram_matrix(self) -> None:
         """Match the McLachlan metric to an explicit real Gram matrix."""
         ansatz, theta, state_of = _knm_ansatz_state()
         dpsi = analytic_state_derivatives(state_of, theta)
@@ -104,18 +113,18 @@ class TestMetricAndForces:
         np.testing.assert_allclose(metric, direct, atol=1e-12)
         np.testing.assert_allclose(metric, metric.T, atol=1e-12)
 
-    def test_metric_is_positive_semidefinite(self):
+    def test_metric_is_positive_semidefinite(self) -> None:
         """Require the real derivative Gram matrix to be semidefinite."""
         ansatz, theta, state_of = _knm_ansatz_state()
         dpsi = analytic_state_derivatives(state_of, theta)
         eigenvalues = np.linalg.eigvalsh(mclachlan_metric(dpsi))
         assert eigenvalues.min() > -1e-10
 
-    def test_real_time_force_matches_definition(self):
+    def test_real_time_force_matches_definition(self) -> None:
         """Match the real-time force to explicit inner products."""
         ansatz, theta, state_of = _knm_ansatz_state()
         dpsi = analytic_state_derivatives(state_of, theta)
-        dim = dpsi.shape[1]
+        dim = int(dpsi.shape[1])
         rng = np.random.default_rng(3)
         h_psi = (rng.normal(size=dim) + 1j * rng.normal(size=dim)).astype(np.complex128)
 
@@ -123,11 +132,11 @@ class TestMetricAndForces:
         direct = np.array([-np.imag(np.vdot(dpsi[i], h_psi)) for i in range(theta.size)])
         np.testing.assert_allclose(force, direct, atol=1e-12)
 
-    def test_imaginary_time_force_matches_definition(self):
+    def test_imaginary_time_force_matches_definition(self) -> None:
         """Match the imaginary-time force to explicit inner products."""
         ansatz, theta, state_of = _knm_ansatz_state()
         dpsi = analytic_state_derivatives(state_of, theta)
-        dim = dpsi.shape[1]
+        dim = int(dpsi.shape[1])
         rng = np.random.default_rng(4)
         h_psi = (rng.normal(size=dim) + 1j * rng.normal(size=dim)).astype(np.complex128)
 
@@ -139,12 +148,12 @@ class TestMetricAndForces:
 class TestAnsatzValidation:
     """Exercise every public ansatz-validation outcome."""
 
-    def test_accepts_physics_informed_ansatz(self):
+    def test_accepts_physics_informed_ansatz(self) -> None:
         """Accept the production physics-informed ansatz contract."""
         ansatz = knm_to_ansatz(build_knm_paper27(L=3), reps=2)
         assert_single_parameter_rotations(ansatz)  # must not raise
 
-    def test_rejects_non_pauli_rotation(self):
+    def test_rejects_non_pauli_rotation(self) -> None:
         """Reject parameters carried by non-Pauli rotations."""
         theta = Parameter("t")
         qc = QuantumCircuit(1)
@@ -152,7 +161,7 @@ class TestAnsatzValidation:
         with pytest.raises(ValueError, match="not a Pauli rotation"):
             assert_single_parameter_rotations(qc)
 
-    def test_rejects_multiple_parameters_in_one_gate(self):
+    def test_rejects_multiple_parameters_in_one_gate(self) -> None:
         """Reject one rotation driven by multiple free symbols."""
         a = Parameter("a")
         b = Parameter("b")
@@ -161,7 +170,7 @@ class TestAnsatzValidation:
         with pytest.raises(ValueError, match="free parameters"):
             assert_single_parameter_rotations(qc)
 
-    def test_rejects_reused_parameter(self):
+    def test_rejects_reused_parameter(self) -> None:
         """Reject a parameter reused across separate rotations."""
         a = Parameter("a")
         qc = QuantumCircuit(2)
@@ -170,7 +179,7 @@ class TestAnsatzValidation:
         with pytest.raises(ValueError, match="reused across multiple gates"):
             assert_single_parameter_rotations(qc)
 
-    def test_skips_non_circuit_doubles(self):
+    def test_skips_non_circuit_doubles(self) -> None:
         """Leave non-Qiskit test doubles outside circuit validation."""
 
         class FakeAnsatz:
@@ -178,7 +187,7 @@ class TestAnsatzValidation:
 
         assert_single_parameter_rotations(FakeAnsatz())  # must not raise
 
-    def test_ignores_unparametrised_gates(self):
+    def test_ignores_unparametrised_gates(self) -> None:
         """Ignore gates that carry no free parameters."""
         theta = Parameter("t")
         qc = QuantumCircuit(2)

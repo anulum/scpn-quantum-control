@@ -7,6 +7,8 @@
 # SCPN Quantum Control — Tests for isolated-benchmark host readiness
 """Tests for benchmarks/isolated_host_readiness.py."""
 
+from __future__ import annotations
+
 import pytest
 
 from scpn_quantum_control.benchmarks.isolated_host_readiness import (
@@ -17,18 +19,22 @@ from scpn_quantum_control.benchmarks.isolated_host_readiness import (
 )
 
 
-def _assess(**overrides):
-    kwargs = {
-        "reserved_core": 0,
-        "governor": "performance",
-        "frequency_mhz": 3200.0,
-        "load_average": (0.2, 0.3, 0.25),
-    }
-    kwargs.update(overrides)
-    return assess_host_readiness(**kwargs)
+def _assess(
+    *,
+    reserved_core: int = 0,
+    governor: str | None = "performance",
+    frequency_mhz: float | None = 3200.0,
+    load_average: tuple[float, float, float] | None = (0.2, 0.3, 0.25),
+) -> HostReadiness:
+    return assess_host_readiness(
+        reserved_core=reserved_core,
+        governor=governor,
+        frequency_mhz=frequency_mhz,
+        load_average=load_average,
+    )
 
 
-def test_ready_host_has_no_blockers():
+def test_ready_host_has_no_blockers() -> None:
     readiness = _assess()
     assert readiness.ready
     assert readiness.blockers == ()
@@ -36,56 +42,56 @@ def test_ready_host_has_no_blockers():
     assert readiness.load_is_low
 
 
-def test_powersave_governor_blocks():
+def test_powersave_governor_blocks() -> None:
     readiness = _assess(governor="powersave")
     assert not readiness.ready
     assert not readiness.governor_is_stable
     assert any("performance" in blocker for blocker in readiness.blockers)
 
 
-def test_missing_governor_blocks():
+def test_missing_governor_blocks() -> None:
     readiness = _assess(governor=None)
     assert not readiness.ready
     assert any("unreadable" in blocker for blocker in readiness.blockers)
 
 
-def test_high_load_blocks():
+def test_high_load_blocks() -> None:
     readiness = _assess(load_average=(2.5, 1.8, 1.2))
     assert not readiness.ready
     assert not readiness.load_is_low
     assert any("exceeds the isolated threshold" in blocker for blocker in readiness.blockers)
 
 
-def test_load_exactly_at_threshold_is_low():
+def test_load_exactly_at_threshold_is_low() -> None:
     readiness = _assess(load_average=(MAX_ISOLATED_LOAD, 0.5, 0.5))
     assert readiness.load_is_low
     assert readiness.ready
 
 
-def test_missing_load_blocks():
+def test_missing_load_blocks() -> None:
     readiness = _assess(load_average=None)
     assert not readiness.ready
     assert any("load average is unavailable" in blocker for blocker in readiness.blockers)
 
 
-def test_missing_frequency_blocks():
+def test_missing_frequency_blocks() -> None:
     readiness = _assess(frequency_mhz=None)
     assert not readiness.ready
     assert any("frequency is unreadable" in blocker for blocker in readiness.blockers)
 
 
-def test_multiple_blockers_accumulate():
+def test_multiple_blockers_accumulate() -> None:
     readiness = _assess(governor="ondemand", load_average=(3.0, 3.0, 3.0), frequency_mhz=None)
     assert not readiness.ready
     assert len(readiness.blockers) == 3
 
 
-def test_reserved_core_must_be_non_negative():
+def test_reserved_core_must_be_non_negative() -> None:
     with pytest.raises(ValueError):
         _assess(reserved_core=-1)
 
 
-def test_capture_host_readiness_runs_on_local_host():
+def test_capture_host_readiness_runs_on_local_host() -> None:
     # Capture must succeed and return a structurally valid verdict regardless of
     # whether this host happens to be isolation-ready.
     readiness = capture_host_readiness(0)

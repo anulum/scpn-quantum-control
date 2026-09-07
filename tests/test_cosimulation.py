@@ -7,7 +7,10 @@
 # SCPN Quantum Control — Tests for the quantum/classical co-simulation package
 """Tests for cosimulation/knm_partition.py and cosimulation/quantum_classical.py."""
 
+from __future__ import annotations
+
 from types import SimpleNamespace
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -22,16 +25,20 @@ from scpn_quantum_control.cosimulation import (
 )
 from scpn_quantum_control.cosimulation import quantum_classical as qc
 
-try:
-    import scpn_quantum_engine as _engine
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
-    _HAS_RUST = hasattr(_engine, "cosim_classical_substep")
+try:
+    import scpn_quantum_engine
+
+    _HAS_RUST = hasattr(scpn_quantum_engine, "cosim_classical_substep")
 except ImportError:  # pragma: no cover - engine optional
-    _engine = None
     _HAS_RUST = False
 
 
-def _two_scale_network(n_core: int = 6, n_total: int = 60, seed: int = 0):
+def _two_scale_network(
+    n_core: int = 6, n_total: int = 60, seed: int = 0
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Build a strong core embedded in a weakly coupled ring."""
     rng = np.random.default_rng(seed)
     K = np.zeros((n_total, n_total))
@@ -48,7 +55,7 @@ def _two_scale_network(n_core: int = 6, n_total: int = 60, seed: int = 0):
 # --------------------------------------------------------------------------- #
 # Partitioning
 # --------------------------------------------------------------------------- #
-def test_partition_selects_strong_core():
+def test_partition_selects_strong_core() -> None:
     """Select the planted strongly coupled core."""
     K, omega = _two_scale_network(n_core=6, n_total=40)
     part = partition_knm(K, omega, max_quantum_nodes=6)
@@ -58,7 +65,7 @@ def test_partition_selects_strong_core():
     assert part.cross_coupling.shape == (6, 34)
 
 
-def test_partition_conservation_is_edge_exact():
+def test_partition_conservation_is_edge_exact() -> None:
     """Conserve the complete upper-triangular coupling budget."""
     K, omega = _two_scale_network(n_core=5, n_total=30)
     part = partition_knm(K, omega, max_quantum_nodes=5)
@@ -74,7 +81,7 @@ def test_partition_conservation_is_edge_exact():
     assert 0.0 <= c.cross_fraction <= 1.0
 
 
-def test_partition_is_deterministic():
+def test_partition_is_deterministic() -> None:
     """Reproduce the same partition and growth order."""
     K, omega = _two_scale_network()
     a = partition_knm(K, omega, max_quantum_nodes=6)
@@ -83,7 +90,7 @@ def test_partition_is_deterministic():
     assert a.provenance["growth_order"] == b.provenance["growth_order"]
 
 
-def test_partition_records_asymmetry_and_symmetrises():
+def test_partition_records_asymmetry_and_symmetrises() -> None:
     """Record asymmetric input and expose symmetric coupling blocks."""
     K, omega = _two_scale_network(n_core=4, n_total=12)
     K[0, 1] += 0.4  # break symmetry
@@ -93,7 +100,7 @@ def test_partition_records_asymmetry_and_symmetrises():
     assert np.allclose(part.quantum_coupling, part.quantum_coupling.T)
 
 
-def test_partition_threshold_limits_core_growth():
+def test_partition_threshold_limits_core_growth() -> None:
     """Stop core growth below the requested coupling threshold."""
     K, omega = _two_scale_network(n_core=6, n_total=30)
     # Threshold above the weak-ring coupling stops growth at the strong core.
@@ -114,10 +121,12 @@ def test_partition_threshold_limits_core_growth():
         {"K": np.zeros((4, 4)), "omega": np.zeros(4), "coupling_threshold": -1.0},
     ],
 )
-def test_partition_rejects_bad_input(kwargs):
+def test_partition_rejects_bad_input(kwargs: dict[str, object]) -> None:
     """Reject malformed partition matrices and controls."""
     with pytest.raises(ValueError):
-        partition_knm(**kwargs)
+        # The parametrised rows mix arrays, ints and floats; a **dict splat is
+        # matched against every keyword and cannot be narrowed per row.
+        partition_knm(**kwargs)  # type: ignore[arg-type]
 
 
 # --------------------------------------------------------------------------- #
@@ -129,8 +138,10 @@ def test_partition_rejects_bad_input(kwargs):
     n=st.integers(min_value=1, max_value=12),
     seed=st.integers(min_value=0, max_value=10_000),
 )
-def test_classical_substep_rust_parity(n, seed):
+def test_classical_substep_rust_parity(n: int, seed: int) -> None:
     """Match the optional Rust and Python classical substeps."""
+    import scpn_quantum_engine as engine
+
     rng = np.random.default_rng(seed)
     theta = rng.uniform(-np.pi, np.pi, size=n)
     omega = rng.standard_normal(n)
@@ -139,17 +150,19 @@ def test_classical_substep_rust_parity(n, seed):
     da = rng.standard_normal(n)
     db = rng.standard_normal(n)
     rust = np.asarray(
-        _engine.cosim_classical_substep(theta, omega, np.ascontiguousarray(K), da, db, 0.01)
+        engine.cosim_classical_substep(theta, omega, np.ascontiguousarray(K), da, db, 0.01)
     )
     python = qc._classical_substep_python(theta, omega, K, da, db, 0.01)
     assert np.allclose(rust, python, rtol=0, atol=1e-12)
 
 
 @pytest.mark.skipif(not _HAS_RUST, reason="cosim kernel not built")
-def test_classical_substep_rejects_bad_args():
+def test_classical_substep_rejects_bad_args() -> None:
     """Reject malformed arguments at the optional Rust boundary."""
+    import scpn_quantum_engine as engine
+
     with pytest.raises(ValueError):
-        _engine.cosim_classical_substep(
+        engine.cosim_classical_substep(
             np.array([0.0]),
             np.array([0.0]),
             np.zeros((1, 1)),
@@ -158,7 +171,7 @@ def test_classical_substep_rejects_bad_args():
             0.0,
         )
     with pytest.raises(ValueError):
-        _engine.cosim_classical_substep(
+        engine.cosim_classical_substep(
             np.array([0.0, 1.0]),
             np.array([0.0]),
             np.zeros((2, 2)),
@@ -171,7 +184,7 @@ def test_classical_substep_rejects_bad_args():
 # --------------------------------------------------------------------------- #
 # Co-simulation physics
 # --------------------------------------------------------------------------- #
-def test_internal_propagator_is_unitary():
+def test_internal_propagator_is_unitary() -> None:
     """Construct a unitary internal half-step propagator."""
     K, omega = _two_scale_network(n_core=6, n_total=20)
     part = partition_knm(K, omega, max_quantum_nodes=6)
@@ -179,15 +192,19 @@ def test_internal_propagator_is_unitary():
     assert np.allclose(half @ half.conj().T, np.eye(half.shape[0]), atol=1e-10)
 
 
-def test_xy_hamiltonian_python_matches_rust():
+def test_xy_hamiltonian_python_matches_rust() -> None:
     """Match dense Python and optional Rust XY Hamiltonians."""
-    if not (_HAS_RUST and hasattr(_engine, "build_xy_hamiltonian_dense")):
+    if not _HAS_RUST:
+        pytest.skip("XY Hamiltonian kernel not built")
+    import scpn_quantum_engine as engine
+
+    if not hasattr(engine, "build_xy_hamiltonian_dense"):
         pytest.skip("XY Hamiltonian kernel not built")
     K, omega = _two_scale_network(n_core=4, n_total=8)
     part = partition_knm(K, omega, max_quantum_nodes=4)
     py = qc._xy_hamiltonian_dense_python(part.quantum_coupling, part.quantum_omega)
     flat = np.asarray(
-        _engine.build_xy_hamiltonian_dense(
+        engine.build_xy_hamiltonian_dense(
             np.ascontiguousarray(part.quantum_coupling).ravel(),
             np.ascontiguousarray(part.quantum_omega),
             4,
@@ -196,7 +213,7 @@ def test_xy_hamiltonian_python_matches_rust():
     assert np.allclose(py, flat, atol=1e-12)
 
 
-def test_optional_native_cosimulation_dispatches(monkeypatch):
+def test_optional_native_cosimulation_dispatches(monkeypatch: pytest.MonkeyPatch) -> None:
     """Dispatch Hamiltonian construction and classical stepping to native kernels."""
     K = np.array([[0.0, 0.4], [0.4, 0.0]])
     omega = np.array([0.2, -0.1])
@@ -215,7 +232,7 @@ def test_optional_native_cosimulation_dispatches(monkeypatch):
     assert np.array_equal(stepped, expected_step)
 
 
-def test_cosimulation_python_helpers_cover_sparse_and_empty_boundaries():
+def test_cosimulation_python_helpers_cover_sparse_and_empty_boundaries() -> None:
     """Exercise zero couplings, empty order parameters, and state normalization."""
     K = np.zeros((2, 2))
     omega = np.array([0.2, -0.1])
@@ -227,7 +244,7 @@ def test_cosimulation_python_helpers_cover_sparse_and_empty_boundaries():
     assert np.linalg.norm(state) == pytest.approx(1.0)
 
 
-def test_order_parameters_bounded():
+def test_order_parameters_bounded() -> None:
     """Keep every reported synchronization order parameter bounded."""
     K, omega = _two_scale_network(n_core=6, n_total=50)
     res = cosimulate(K, omega, dt=0.02, n_steps=40, max_quantum_nodes=6, seed=3)
@@ -239,7 +256,7 @@ def test_order_parameters_bounded():
     assert res.times.shape == (41,)
 
 
-def test_decoupled_core_matches_exact_quantum():
+def test_decoupled_core_matches_exact_quantum() -> None:
     """Match isolated quantum evolution when cross coupling vanishes."""
     # Zero cross coupling -> the quantum core must evolve as an isolated system.
     n = 7
@@ -272,7 +289,7 @@ def test_decoupled_core_matches_exact_quantum():
     assert np.allclose(res.quantum_expectation_y, exp_y, atol=1e-6)
 
 
-def test_decoupled_classical_matches_full_kuramoto():
+def test_decoupled_classical_matches_full_kuramoto() -> None:
     """Match the isolated classical baseline when cross coupling vanishes."""
     # Zero cross coupling -> the classical bath order parameter equals its
     # isolated all-classical baseline.
@@ -292,7 +309,7 @@ def test_decoupled_classical_matches_full_kuramoto():
     assert np.allclose(res.classical_order, res.baseline_classical_order, atol=1e-9)
 
 
-def test_reproducible_with_seed():
+def test_reproducible_with_seed() -> None:
     """Reproduce classical and quantum trajectories from a fixed seed."""
     K, omega = _two_scale_network(n_core=5, n_total=24)
     a = cosimulate(K, omega, dt=0.02, n_steps=20, max_quantum_nodes=5, seed=7)
@@ -301,7 +318,7 @@ def test_reproducible_with_seed():
     assert np.array_equal(a.quantum_expectation_x, b.quantum_expectation_x)
 
 
-def test_provenance_and_claim_boundary():
+def test_provenance_and_claim_boundary() -> None:
     """Expose integrator provenance and the mean-field claim boundary."""
     K, omega = _two_scale_network(n_core=4, n_total=16)
     res = cosimulate(K, omega, dt=0.02, n_steps=10, max_quantum_nodes=4, seed=1)
@@ -319,24 +336,40 @@ def test_provenance_and_claim_boundary():
         {"dt": 0.01, "n_steps": 0},
     ],
 )
-def test_cosimulate_rejects_bad_args(kwargs):
+def test_cosimulate_rejects_bad_args(kwargs: dict[str, float]) -> None:
     """Reject invalid integration steps and durations."""
     K, omega = _two_scale_network(n_core=4, n_total=12)
     with pytest.raises(ValueError):
-        cosimulate(K, omega, max_quantum_nodes=4, **kwargs)
+        # A **dict splat is matched against every keyword of the signature,
+        # including n_steps: int, which mypy cannot narrow per row.
+        cosimulate(K, omega, max_quantum_nodes=4, **kwargs)  # type: ignore[arg-type]
 
 
-def test_cosimulate_rejects_bad_initial_state():
+def test_cosimulate_rejects_bad_initial_state() -> None:
     """Reject malformed or zero-norm initial statevectors."""
     K, omega = _two_scale_network(n_core=4, n_total=12)
     part = partition_knm(K, omega, max_quantum_nodes=4)
     with pytest.raises(ValueError):
-        cosimulate(K, omega, dt=0.01, n_steps=5, partition=part, quantum_state0=np.zeros(8))
+        cosimulate(
+            K,
+            omega,
+            dt=0.01,
+            n_steps=5,
+            partition=part,
+            quantum_state0=np.zeros(8, dtype=np.complex128),
+        )
     with pytest.raises(ValueError):
-        cosimulate(K, omega, dt=0.01, n_steps=5, partition=part, quantum_state0=np.zeros(16))
+        cosimulate(
+            K,
+            omega,
+            dt=0.01,
+            n_steps=5,
+            partition=part,
+            quantum_state0=np.zeros(16, dtype=np.complex128),
+        )
 
 
-def test_cosimulate_rejects_bad_classical_phase_shape():
+def test_cosimulate_rejects_bad_classical_phase_shape() -> None:
     """Reject an initial classical phase vector with the wrong bath size."""
     K, omega = _two_scale_network(n_core=3, n_total=8)
     part = partition_knm(K, omega, max_quantum_nodes=3)
@@ -351,7 +384,7 @@ def test_cosimulate_rejects_bad_classical_phase_shape():
         )
 
 
-def test_cosimulate_all_quantum_partition_has_empty_classical_trajectory():
+def test_cosimulate_all_quantum_partition_has_empty_classical_trajectory() -> None:
     """Run the public simulator when every oscillator belongs to the quantum core."""
     K = np.array([[0.0, 0.4], [0.4, 0.0]])
     omega = np.array([0.2, -0.1])
@@ -364,7 +397,7 @@ def test_cosimulate_all_quantum_partition_has_empty_classical_trajectory():
 
 @settings(max_examples=10, deadline=None)
 @given(seed=st.integers(min_value=0, max_value=1000))
-def test_global_order_property(seed):
+def test_global_order_property(seed: int) -> None:
     """Keep seeded global order finite and bounded."""
     K, omega = _two_scale_network(n_core=4, n_total=20, seed=seed)
     res = cosimulate(K, omega, dt=0.02, n_steps=15, max_quantum_nodes=4, seed=seed)
