@@ -18,11 +18,13 @@ from scpn_quantum_control.hardware.feedback_dryrun import (
     build_s1_feedback_dry_run_bundle,
 )
 from scpn_quantum_control.hardware.feedback_submission import (
+    FeedbackSubmissionPackage,
     build_s1_feedback_submission_package,
 )
 
 
-def _package():
+def _package() -> FeedbackSubmissionPackage:
+    """Build the two-oscillator no-submission readiness package."""
     controller = RealtimeSyncFeedbackController(
         np.array([[0.0, 0.2], [0.2, 0.0]], dtype=np.float64),
         np.array([0.1, 0.3], dtype=np.float64),

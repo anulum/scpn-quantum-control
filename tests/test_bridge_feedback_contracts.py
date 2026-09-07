@@ -28,7 +28,7 @@ from scpn_quantum_control.qec.control_qec import ControlQEC
 class TestOrchestratorFeedback:
     """Tests for compute_orchestrator_feedback action selection."""
 
-    def test_rollback_on_weak_coupling(self):
+    def test_rollback_on_weak_coupling(self) -> None:
         from scpn_quantum_control.bridge.orchestrator_feedback import (
             compute_orchestrator_feedback,
         )
@@ -39,7 +39,7 @@ class TestOrchestratorFeedback:
         assert fb.action in ("advance", "hold", "rollback")
         assert fb.confidence >= 0.0
 
-    def test_hold_on_medium_coupling(self):
+    def test_hold_on_medium_coupling(self) -> None:
         from scpn_quantum_control.bridge.orchestrator_feedback import (
             compute_orchestrator_feedback,
         )
@@ -50,7 +50,7 @@ class TestOrchestratorFeedback:
         assert fb.action in ("advance", "hold", "rollback")
         assert 0.0 <= fb.confidence <= 1.0
 
-    def test_advance_on_strong_coupling(self):
+    def test_advance_on_strong_coupling(self) -> None:
         from scpn_quantum_control.bridge.orchestrator_feedback import (
             compute_orchestrator_feedback,
         )
@@ -60,7 +60,7 @@ class TestOrchestratorFeedback:
         fb = compute_orchestrator_feedback(K, omega, r_advance=0.01, r_hold=0.005)
         assert fb.action in ("advance", "hold", "rollback")
 
-    def test_confidence_bounded_01(self):
+    def test_confidence_bounded_01(self) -> None:
         from scpn_quantum_control.bridge.orchestrator_feedback import (
             compute_orchestrator_feedback,
         )
@@ -73,7 +73,7 @@ class TestOrchestratorFeedback:
                 f"Confidence {fb.confidence} out of [0,1] at scale={scale}"
             )
 
-    def test_feedback_has_reason(self):
+    def test_feedback_has_reason(self) -> None:
         from scpn_quantum_control.bridge.orchestrator_feedback import (
             compute_orchestrator_feedback,
         )
@@ -85,7 +85,7 @@ class TestOrchestratorFeedback:
         assert len(fb.reason) > 0
 
     @pytest.mark.parametrize("n", [2, 3, 4])
-    def test_multiple_system_sizes(self, n):
+    def test_multiple_system_sizes(self, n: int) -> None:
         from scpn_quantum_control.bridge.orchestrator_feedback import (
             compute_orchestrator_feedback,
         )
@@ -96,7 +96,7 @@ class TestOrchestratorFeedback:
         assert fb.action in ("advance", "hold", "rollback")
         assert 0.0 <= fb.confidence <= 1.0
 
-    def test_threshold_boundary(self):
+    def test_threshold_boundary(self) -> None:
         """Exact threshold values should not crash."""
         from scpn_quantum_control.bridge.orchestrator_feedback import (
             compute_orchestrator_feedback,
@@ -111,7 +111,7 @@ class TestOrchestratorFeedback:
 class TestSNNBackward:
     """Tests for quantum SNN parameter-shift gradients."""
 
-    def test_zero_shift_gradient(self):
+    def test_zero_shift_gradient(self) -> None:
         from scpn_quantum_control.bridge.snn_backward import parameter_shift_gradient
         from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
 
@@ -122,7 +122,7 @@ class TestSNNBackward:
         assert result.grad_params is not None
         assert result.grad_spikes is not None
 
-    def test_gradient_shapes(self):
+    def test_gradient_shapes(self) -> None:
         from scpn_quantum_control.bridge.snn_backward import parameter_shift_gradient
         from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
 
@@ -132,7 +132,7 @@ class TestSNNBackward:
         result = parameter_shift_gradient(layer, spike_rates, target)
         assert result.grad_spikes.shape == spike_rates.shape
 
-    def test_gradient_finite(self):
+    def test_gradient_finite(self) -> None:
         from scpn_quantum_control.bridge.snn_backward import parameter_shift_gradient
         from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
 
@@ -142,7 +142,7 @@ class TestSNNBackward:
         result = parameter_shift_gradient(layer, spike_rates, target)
         assert np.all(np.isfinite(result.grad_spikes))
 
-    def test_gradient_changes_with_target(self):
+    def test_gradient_changes_with_target(self) -> None:
         """Different targets should produce different gradients."""
         from scpn_quantum_control.bridge.snn_backward import parameter_shift_gradient
         from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
@@ -155,7 +155,7 @@ class TestSNNBackward:
 
 
 class TestKnmHamiltonianEdge:
-    def test_knm_to_dense_matrix_complex(self):
+    def test_knm_to_dense_matrix_complex(self) -> None:
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
 
         K = build_knm_paper27(L=2)
@@ -164,7 +164,7 @@ class TestKnmHamiltonianEdge:
         assert H.shape == (4, 4)
 
 
-def test_multi_inhibitor_anti_control():
+def test_multi_inhibitor_anti_control() -> None:
     """Verifies 74-82: >1 inhibitor qubit triggers multi-controlled RYGate."""
     from qiskit import QuantumCircuit
 
@@ -174,7 +174,7 @@ def test_multi_inhibitor_anti_control():
     assert ops.get("x", 0) >= 2, "anti-control pattern requires X gates on inhibitor qubits"
 
 
-def test_inhibitor_target_in_inhibitor_list():
+def test_inhibitor_target_in_inhibitor_list() -> None:
     """Verifies 82: target qubit is also in the inhibitor list (degenerate case)."""
     from qiskit import QuantumCircuit
 
@@ -185,7 +185,7 @@ def test_inhibitor_target_in_inhibitor_list():
     assert ops.get("x", 0) >= 2, "anti-control pattern requires X gates on inhibitor qubits"
 
 
-def test_spn_circuit_with_inhibitor_arcs():
+def test_spn_circuit_with_inhibitor_arcs() -> None:
     """SPN with inhibitor arcs (negative W_in) exercises the full anti-control path."""
     W_in = np.array([[-1.0, 0.5, 0.0], [0.0, 0.0, 0.8]])
     W_out = np.array([[0.0, 0.0], [0.6, 0.0], [0.0, 0.4]])
@@ -195,7 +195,7 @@ def test_spn_circuit_with_inhibitor_arcs():
     assert qc.num_qubits == 3
 
 
-def test_spn_multi_inhibitor():
+def test_spn_multi_inhibitor() -> None:
     """Two inhibitor arcs on a single transition -> multi-controlled gate."""
     W_in = np.array([[-0.5, -0.3, 0.0]])  # places 0,1 are inhibitors
     W_out = np.array([[0.0], [0.0], [0.7]])  # output to place 2
@@ -271,7 +271,7 @@ class TestBuildKuramotoRing:
         np.testing.assert_array_equal(omega_out, omega_in)
 
 
-def test_inhibitor_all_equal_target():
+def test_inhibitor_all_equal_target() -> None:
     """Verify all-self inhibitors compile to a bare Ry rotation."""
     from qiskit import QuantumCircuit
 
@@ -285,7 +285,7 @@ def test_inhibitor_all_equal_target():
     assert any(isinstance(inst.operation, RYGate) for inst in qc.data)
 
 
-def test_inhibitor_single_self():
+def test_inhibitor_single_self() -> None:
     """Verify a single self-inhibitor compiles to a bare Ry rotation."""
     from qiskit import QuantumCircuit
 
@@ -298,7 +298,7 @@ def test_inhibitor_single_self():
     assert any(isinstance(inst.operation, RYGate) for inst in qc.data)
 
 
-def test_inhibitor_multiple_inhibitors():
+def test_inhibitor_multiple_inhibitors() -> None:
     """Verify spn_to_qcircuit multi-inhibitor path."""
     from qiskit import QuantumCircuit
 
@@ -310,7 +310,7 @@ def test_inhibitor_multiple_inhibitors():
     assert ops.count("x") == 4
 
 
-def test_pipeline_contract_wiring():
+def test_pipeline_contract_wiring() -> None:
     """Pipeline: verify all contract targets (classical, SPN, QEC) are wired."""
     import time
 

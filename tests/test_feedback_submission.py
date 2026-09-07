@@ -165,8 +165,10 @@ def test_s1_feedback_submission_package_rejects_invalid_budget_boundaries(
     message: str,
 ) -> None:
     """Reject invalid workload boundaries while building packages."""
+    # One boundary per case is replaced with an invalid value; the rejection
+    # is the subject and mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match=message):
-        build_s1_feedback_submission_package(_controller(), **kwargs)
+        build_s1_feedback_submission_package(_controller(), **kwargs)  # type: ignore[arg-type]
 
 
 def test_feedback_platform_capability_rejects_invalid_target_metadata() -> None:
@@ -215,5 +217,7 @@ def test_feedback_budget_estimate_rejects_invalid_boundaries(
         "estimated_execution_seconds": 1.0,
     } | kwargs
 
+    # One field per case is replaced with an invalid value; the rejection is
+    # the subject and mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match=message):
-        FeedbackBudgetEstimate(**params)
+        FeedbackBudgetEstimate(**params)  # type: ignore[arg-type]

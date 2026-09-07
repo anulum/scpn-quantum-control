@@ -20,11 +20,13 @@ from scpn_quantum_control.hardware.feedback_capability_probe import (
     required_s1_dynamic_features,
 )
 from scpn_quantum_control.hardware.feedback_submission import (
+    FeedbackSubmissionPackage,
     build_s1_feedback_submission_package,
 )
 
 
-def _package():
+def _package() -> FeedbackSubmissionPackage:
+    """Build the two-oscillator no-submission readiness package."""
     controller = RealtimeSyncFeedbackController(
         np.array([[0.0, 0.2], [0.2, 0.0]], dtype=np.float64),
         np.array([0.1, 0.3], dtype=np.float64),
@@ -150,5 +152,7 @@ def test_backend_capability_snapshot_rejects_invalid_metadata_boundaries(
     """Reject empty identity, invalid qubit counts, and non-positive limits."""
     params = {"provider": "ibm", "backend_name": "target", "n_qubits": 4} | kwargs
 
+    # One field per case is replaced with an invalid value; the rejection is
+    # the subject and mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match=message):
-        BackendCapabilitySnapshot(**params)
+        BackendCapabilitySnapshot(**params)  # type: ignore[arg-type]

@@ -50,7 +50,7 @@ class DummyScheduler:
         return FeedbackResult(metrics={"r": metric}, qpu_seconds=self.qpu_seconds)
 
 
-def test_feedback_runner_rejects_unapproved_hardware_scheduler():
+def test_feedback_runner_rejects_unapproved_hardware_scheduler() -> None:
     """Refuse hardware-marked schedulers without explicit approval."""
     scheduler = DummyScheduler(metrics=[0.0], is_hardware=True)
     observer = ProportionalMetricObserver(initial_value=0.1, metric_name="r", target=0.5, gain=1.0)
@@ -59,7 +59,7 @@ def test_feedback_runner_rejects_unapproved_hardware_scheduler():
         FeedbackRunner(scheduler, observer, FeedbackLoopConfig(max_steps=1))
 
 
-def test_feedback_runner_records_steps_until_observer_converges():
+def test_feedback_runner_records_steps_until_observer_converges() -> None:
     """Record each local step until the observer requests termination."""
     scheduler = DummyScheduler(metrics=[0.2, 0.5])
     observer = ProportionalMetricObserver(
@@ -86,7 +86,7 @@ def test_feedback_runner_records_steps_until_observer_converges():
     assert len(scheduler.submitted) == 2
 
 
-def test_feedback_runner_enforces_qpu_budget_before_submission():
+def test_feedback_runner_enforces_qpu_budget_before_submission() -> None:
     """Refuse estimated QPU spend before scheduler submission."""
     scheduler = DummyScheduler(metrics=[0.0])
 
@@ -106,7 +106,7 @@ def test_feedback_runner_enforces_qpu_budget_before_submission():
     assert scheduler.submitted == []
 
 
-def test_feedback_runner_allows_hardware_only_when_approval_flag_is_explicit():
+def test_feedback_runner_allows_hardware_only_when_approval_flag_is_explicit() -> None:
     """Admit a hardware-marked double only with explicit approval."""
     scheduler = DummyScheduler(metrics=[0.5], is_hardware=True)
     observer = ProportionalMetricObserver(
@@ -131,7 +131,7 @@ def test_feedback_runner_allows_hardware_only_when_approval_flag_is_explicit():
     assert scheduler.submitted[0].label == "proportional"
 
 
-def test_feedback_runner_enforces_qpu_budget_after_result():
+def test_feedback_runner_enforces_qpu_budget_after_result() -> None:
     """Refuse observed QPU spend that exceeds the configured budget."""
     scheduler = DummyScheduler(metrics=[0.0], qpu_seconds=2.0)
     observer = ProportionalMetricObserver(initial_value=0.1, metric_name="r", target=0.5, gain=1.0)
@@ -145,7 +145,7 @@ def test_feedback_runner_enforces_qpu_budget_after_result():
         runner.run()
 
 
-def test_proportional_observer_clips_and_requires_metric():
+def test_proportional_observer_clips_and_requires_metric() -> None:
     """Clip proportional updates and require the configured metric."""
     observer = ProportionalMetricObserver(
         initial_value=0.9,
@@ -164,7 +164,7 @@ def test_proportional_observer_clips_and_requires_metric():
         observer.update(FeedbackResult(metrics={"other": 0.5}), ())
 
 
-def test_realtime_controller_scheduler_runs_deterministic_simulator_steps():
+def test_realtime_controller_scheduler_runs_deterministic_simulator_steps() -> None:
     """Run seeded simulator steps with complete provenance metadata."""
     controller = RealtimeSyncFeedbackController(
         K_coupling=np.array([[0.0, 0.2], [0.2, 0.0]], dtype=np.float64),
@@ -186,7 +186,7 @@ def test_realtime_controller_scheduler_runs_deterministic_simulator_steps():
     assert sum(result.counts.values()) == 32
 
 
-def test_realtime_controller_scheduler_rejects_invalid_payloads():
+def test_realtime_controller_scheduler_rejects_invalid_payloads() -> None:
     """Reject malformed simulator payload, seed, and coupling values."""
     controller = RealtimeSyncFeedbackController(
         K_coupling=np.array([[0.0, 0.2], [0.2, 0.0]], dtype=np.float64),
@@ -202,7 +202,7 @@ def test_realtime_controller_scheduler_rejects_invalid_payloads():
         scheduler.submit(FeedbackCommand(payload={"coupling_scale": 3.0}))
 
 
-def test_realtime_controller_scheduler_payload_seed_overrides_base_seed_provenance():
+def test_realtime_controller_scheduler_payload_seed_overrides_base_seed_provenance() -> None:
     """Prefer an explicit payload seed over the scheduler seed stream."""
     controller = RealtimeSyncFeedbackController(
         K_coupling=np.array([[0.0, 0.2], [0.2, 0.0]], dtype=np.float64),
@@ -219,7 +219,7 @@ def test_realtime_controller_scheduler_payload_seed_overrides_base_seed_provenan
     assert sum(result.counts.values()) == 16
 
 
-def test_feedback_loop_value_objects_reject_invalid_runtime_boundaries():
+def test_feedback_loop_value_objects_reject_invalid_runtime_boundaries() -> None:
     """Reject invalid loop, command, count, and metric values."""
     with pytest.raises(ValueError, match="max_steps"):
         FeedbackLoopConfig(max_steps=0)
@@ -231,7 +231,7 @@ def test_feedback_loop_value_objects_reject_invalid_runtime_boundaries():
         FeedbackResult(metrics=cast(dict[str, float], {"r": "not numeric"}))
 
 
-def test_realtime_controller_scheduler_accepts_empty_payload_without_seed_provenance():
+def test_realtime_controller_scheduler_accepts_empty_payload_without_seed_provenance() -> None:
     """Run an unseeded simulator step from an empty payload."""
     controller = RealtimeSyncFeedbackController(
         K_coupling=np.array([[0.0, 0.2], [0.2, 0.0]], dtype=np.float64),
@@ -260,7 +260,9 @@ def test_proportional_observer_rejects_invalid_bounds() -> None:
         )
 
 
-def test_feedback_runner_latency_sla_accepts_sub_millisecond_profile(monkeypatch) -> None:
+def test_feedback_runner_latency_sla_accepts_sub_millisecond_profile(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Accept a deterministic local profile within every SLA bound."""
     scheduler = DummyScheduler(metrics=[0.1, 0.2, 0.3])
     observer = ProportionalMetricObserver(
@@ -303,7 +305,7 @@ def test_feedback_runner_latency_sla_accepts_sub_millisecond_profile(monkeypatch
     assert all(record.latency_s <= 0.001 for record in history)
 
 
-def test_feedback_runner_latency_sla_rejects_p99_breach(monkeypatch) -> None:
+def test_feedback_runner_latency_sla_rejects_p99_breach(monkeypatch: pytest.MonkeyPatch) -> None:
     """Reject a deterministic local profile that breaches its p99 bound."""
     scheduler = DummyScheduler(metrics=[0.1, 0.2, 0.3, 0.4])
     observer = ProportionalMetricObserver(

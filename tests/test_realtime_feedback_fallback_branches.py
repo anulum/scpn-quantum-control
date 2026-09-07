@@ -70,15 +70,18 @@ def test_feedback_policy_falls_back_when_engine_lacks_kernel(
     )
     r_values = np.array([0.2, 0.75, 0.95], dtype=np.float64)
 
-    actual = rf._feedback_policy(
+    # The policy returns actions, gains and errors, and the three have
+    # different element types; zipping them compared unnamed `object`s.
+    actions, gains, errors = rf._feedback_policy(
         r_values, target_r=0.75, deadband=0.03, base_gain=0.8, max_gain=1.5
     )
-    expected = rf.feedback_policy_numpy(
+    expected_actions, expected_gains, expected_errors = rf.feedback_policy_numpy(
         r_values, target_r=0.75, deadband=0.03, base_gain=0.8, max_gain=1.5
     )
 
-    for observed, reference in zip(actual, expected, strict=True):
-        np.testing.assert_allclose(observed, reference)
+    np.testing.assert_allclose(actions, expected_actions)
+    np.testing.assert_allclose(gains, expected_gains)
+    np.testing.assert_allclose(errors, expected_errors)
 
 
 def test_feedback_policy_uses_native_batch_result(monkeypatch: pytest.MonkeyPatch) -> None:
