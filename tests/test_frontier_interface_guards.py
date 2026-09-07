@@ -26,7 +26,7 @@ from scpn_quantum_control.analysis import (
 )
 
 
-def _load_frontier_orchestrator(monkeypatch: pytest.MonkeyPatch):
+def _load_frontier_orchestrator(monkeypatch: pytest.MonkeyPatch) -> types.ModuleType:
     repo_root = Path(__file__).resolve().parents[1]
     script_dir = repo_root / "scripts/frontier_campaign_2026"
     monkeypatch.syspath_prepend(str(script_dir))
@@ -55,7 +55,7 @@ def _load_frontier_orchestrator(monkeypatch: pytest.MonkeyPatch):
     return module
 
 
-def _load_credible_runner(monkeypatch: pytest.MonkeyPatch):
+def _load_credible_runner(monkeypatch: pytest.MonkeyPatch) -> types.ModuleType:
     repo_root = Path(__file__).resolve().parents[1]
     script_dir = repo_root / "scripts/frontier_campaign_2026"
     monkeypatch.syspath_prepend(str(script_dir))
@@ -79,7 +79,7 @@ def _load_credible_runner(monkeypatch: pytest.MonkeyPatch):
     return module
 
 
-def test_dla_truncated_tensor_network_fails_until_implemented():
+def test_dla_truncated_tensor_network_fails_until_implemented() -> None:
     K_nm = np.zeros((4, 4), dtype=np.float64)
 
     with pytest.raises(NotImplementedError, match="not implemented"):
@@ -100,8 +100,11 @@ def test_dla_truncated_tensor_network_fails_until_implemented():
         ({"observable": "unsupported"}, "observable"),
     ],
 )
-def test_dla_truncated_tensor_network_rejects_invalid_configuration(kwargs, match):
-    params = {
+def test_dla_truncated_tensor_network_rejects_invalid_configuration(
+    kwargs: dict[str, object], match: str
+) -> None:
+    """Reject invalid coupling, bond dimension, cutoff, and observable."""
+    params: dict[str, object] = {
         "K_nm": np.array([[0.0, 1.0], [1.0, 0.0]], dtype=np.float64),
         "max_bond_dim": 16,
         "dla_cutoff": 1e-6,
@@ -109,11 +112,13 @@ def test_dla_truncated_tensor_network_rejects_invalid_configuration(kwargs, matc
     }
     params.update(kwargs)
 
+    # One field per case is replaced with an invalid value; the rejection is
+    # the subject and mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match=match):
-        dla_truncated_tn(**params)
+        dla_truncated_tn(**params)  # type: ignore[arg-type]
 
 
-def test_rl_pulse_optimizer_is_research_disabled_by_default():
+def test_rl_pulse_optimizer_is_research_disabled_by_default() -> None:
     optimiser = RLPulseOptimizer(runner=object(), target_sync_order=0.5, episodes=1)
 
     with pytest.raises(RLResearchGovernanceError, match="research_extra_disabled"):
@@ -135,12 +140,17 @@ def test_rl_pulse_optimizer_is_research_disabled_by_default():
         ({"episodes": True}, "episodes"),
     ],
 )
-def test_rl_pulse_optimizer_rejects_invalid_configuration(kwargs, match):
-    params = {"runner": object(), "target_sync_order": 0.5, "episodes": 1}
+def test_rl_pulse_optimizer_rejects_invalid_configuration(
+    kwargs: dict[str, object], match: str
+) -> None:
+    """Reject invalid runner, target synchrony, and episode counts."""
+    params: dict[str, object] = {"runner": object(), "target_sync_order": 0.5, "episodes": 1}
     params.update(kwargs)
 
+    # One field per case is replaced with an invalid value; the rejection is
+    # the subject and mypy cannot express a call that is meant to fail.
     with pytest.raises(ValueError, match=match):
-        RLPulseOptimizer(**params)
+        RLPulseOptimizer(**params)  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize(
@@ -152,7 +162,7 @@ def test_rl_pulse_optimizer_rejects_invalid_configuration(kwargs, match):
         "scripts/sophisticated_campaign_2026/mock_injector.py",
     ],
 )
-def test_retired_campaign_injectors_fail_fast(relative_path: str):
+def test_retired_campaign_injectors_fail_fast(relative_path: str) -> None:
     repo_root = Path(__file__).resolve().parents[1]
 
     with pytest.raises(RuntimeError, match="Local campaign injectors are retired"):
@@ -161,13 +171,13 @@ def test_retired_campaign_injectors_fail_fast(relative_path: str):
 
 def test_frontier_orchestrator_classifies_implementation_gates(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-):
+) -> None:
     orchestrator = _load_frontier_orchestrator(monkeypatch)
 
-    def success():
+    def success() -> None:
         return None
 
-    def gated():
+    def gated() -> None:
         raise NotImplementedError("future implementation")
 
     summary = asyncio.run(
@@ -187,7 +197,7 @@ def test_frontier_orchestrator_classifies_implementation_gates(
     assert Path(summary["summary_path"]).exists()
 
 
-def test_frontier_shell_launcher_delegates_to_python_orchestrator():
+def test_frontier_shell_launcher_delegates_to_python_orchestrator() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     launcher = repo_root / "scripts/frontier_campaign_2026/run_frontier_campaign.sh"
     text = launcher.read_text(encoding="utf-8")
@@ -199,14 +209,14 @@ def test_frontier_shell_launcher_delegates_to_python_orchestrator():
 
 def test_credible_runner_summary_reflects_failed_tests(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-):
+) -> None:
     monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
     runner = _load_credible_runner(monkeypatch)
 
-    def success():
+    def success() -> None:
         return None
 
-    def failure():
+    def failure() -> None:
         raise RuntimeError("hardware unavailable")
 
     summary = asyncio.run(
@@ -224,12 +234,12 @@ def test_credible_runner_summary_reflects_failed_tests(
 
 def test_credible_runner_default_results_are_campaign_local(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-):
+) -> None:
     monkeypatch.setenv("SCPN_IBM_TOKEN", "test-token")
     runner = _load_credible_runner(monkeypatch)
     monkeypatch.setattr(runner, "campaign_path", lambda *parts: tmp_path.joinpath(*parts))
 
-    def success():
+    def success() -> None:
         return None
 
     summary = asyncio.run(runner.run_credible_tests(tests=[("success_case", success)]))
@@ -239,7 +249,7 @@ def test_credible_runner_default_results_are_campaign_local(
     assert summary_path.parent == tmp_path / "results"
 
 
-def test_retrieve_all_jobs_discovers_campaign_local_results(tmp_path: Path):
+def test_retrieve_all_jobs_discovers_campaign_local_results(tmp_path: Path) -> None:
     repo_root = tmp_path
     root_result = repo_root / "results" / "root.json"
     hardware_result = (

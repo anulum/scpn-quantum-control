@@ -12,6 +12,7 @@ import importlib.util
 import json
 import sys
 import types
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -40,50 +41,77 @@ def _install_bridge(monkeypatch: pytest.MonkeyPatch, *, mode: str) -> None:
         np.fill_diagonal(K, 0.0)
         return K
 
+    # Each mode installs a differently shaped loader trio on purpose: the
+    # "missing" mode takes any arguments and raises, while the two source-backed
+    # modes take the real signatures and differ in what they return. Naming them
+    # per mode and collecting them in one mapping keeps those signatures distinct
+    # instead of redefining one name three ways.
+    loaders: dict[str, Callable[..., Any]]
+
     if mode == "missing":
 
-        def load_connectome(*args: Any) -> np.ndarray:
+        def missing_connectome(*args: Any) -> np.ndarray:
             raise FileNotFoundError("missing connectome")
 
-        def load_power_grid(*args: Any) -> np.ndarray:
+        def missing_power_grid(*args: Any) -> np.ndarray:
             raise FileNotFoundError("missing grid")
 
-        def load_tokamak_data(*args: Any) -> np.ndarray:
+        def missing_tokamak_data(*args: Any) -> np.ndarray:
             raise FileNotFoundError("missing plasma data")
+
+        loaders = {
+            "load_connectome": missing_connectome,
+            "load_power_grid": missing_power_grid,
+            "load_tokamak_data": missing_tokamak_data,
+        }
 
     elif mode == "matrix-only":
 
-        def load_connectome(name: str, n: int) -> np.ndarray:
+        def matrix_connectome(name: str, n: int) -> np.ndarray:
             return _matrix(n)
 
-        def load_power_grid(n: int) -> np.ndarray:
+        def matrix_power_grid(n: int) -> np.ndarray:
             return _matrix(n)
 
-        def load_tokamak_data() -> np.ndarray:
+        def matrix_tokamak_data() -> np.ndarray:
             return _matrix(16)
+
+        loaders = {
+            "load_connectome": matrix_connectome,
+            "load_power_grid": matrix_power_grid,
+            "load_tokamak_data": matrix_tokamak_data,
+        }
 
     elif mode == "with-omega":
 
-        def load_connectome(name: str, n: int) -> _BridgeArtifact:
+        def artifact_connectome(name: str, n: int) -> _BridgeArtifact:
             return _BridgeArtifact(n, 0.1)
 
-        def load_power_grid(n: int) -> _BridgeArtifact:
+        def artifact_power_grid(n: int) -> _BridgeArtifact:
             return _BridgeArtifact(n, 0.2)
 
-        def load_tokamak_data() -> _BridgeArtifact:
+        def artifact_tokamak_data() -> _BridgeArtifact:
             return _BridgeArtifact(16, 0.3)
+
+        loaders = {
+            "load_connectome": artifact_connectome,
+            "load_power_grid": artifact_power_grid,
+            "load_tokamak_data": artifact_tokamak_data,
+        }
 
     else:
         raise AssertionError(f"unsupported bridge mode: {mode}")
 
-    bridge.load_connectome = load_connectome
-    bridge.load_power_grid = load_power_grid
-    bridge.load_tokamak_data = load_tokamak_data
+    # The fake module starts empty, so each loader is a new attribute.
+    for attribute, loader in loaders.items():
+        monkeypatch.setattr(bridge, attribute, loader, raising=False)
     monkeypatch.setitem(sys.modules, "scpn_neurocore", package)
     monkeypatch.setitem(sys.modules, "scpn_neurocore.bridge", bridge)
 
 
-def _load_generate_params_module(monkeypatch: pytest.MonkeyPatch, *, mode: str):
+def _load_generate_params_module(
+    monkeypatch: pytest.MonkeyPatch, *, mode: str
+) -> types.ModuleType:
     _install_bridge(monkeypatch, mode=mode)
     monkeypatch.syspath_prepend(str(SCRIPT_PATH.parent))
     spec = importlib.util.spec_from_file_location(
