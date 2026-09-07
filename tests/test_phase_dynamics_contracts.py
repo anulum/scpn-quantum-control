@@ -9,8 +9,11 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.bridge.knm_hamiltonian import (
     OMEGA_N_16,
@@ -27,7 +30,7 @@ def _ring(n: int) -> np.ndarray:
     return T
 
 
-def test_ansatz_convergence_99pct():
+def test_ansatz_convergence_99pct() -> None:
     """Verifies 137-141: _convergence_99pct for negative and positive final."""
     from scpn_quantum_control.phase.ansatz_methodology import _convergence_99pct
 
@@ -42,13 +45,21 @@ def test_ansatz_convergence_99pct():
     assert _convergence_99pct([1.2, 1.1, 1.0]) == 0
 
 
-def test_ansatz_benchmark_default_sizes(monkeypatch):
+def test_ansatz_benchmark_default_sizes(monkeypatch: pytest.MonkeyPatch) -> None:
     """Default benchmark sweep uses five sizes and three ansatz families."""
     from scpn_quantum_control.phase import ansatz_methodology as module
 
     calls = []
 
-    def fake_benchmark(K, omega, ansatz_name, maxiter, reps, gradient_samples, seed):
+    def fake_benchmark(
+        K: NDArray[np.float64],
+        omega: NDArray[np.float64],
+        ansatz_name: str,
+        maxiter: int,
+        reps: int,
+        gradient_samples: int,
+        seed: int,
+    ) -> Any:
         calls.append((K.shape, len(omega), ansatz_name, maxiter, reps, gradient_samples, seed))
         return module.AnsatzBenchmarkResult(
             ansatz_name=ansatz_name,
@@ -79,7 +90,7 @@ def test_ansatz_benchmark_default_sizes(monkeypatch):
     assert all(call[3:] == (7, 1, 2, 11) for call in calls)
 
 
-def test_ansatz_efficient_su2_branch_metadata(monkeypatch):
+def test_ansatz_efficient_su2_branch_metadata(monkeypatch: pytest.MonkeyPatch) -> None:
     """EfficientSU2 benchmark behaviour assembles result metadata."""
     from scpn_quantum_control.phase import ansatz_methodology as module
 
@@ -114,7 +125,7 @@ def test_ansatz_efficient_su2_branch_metadata(monkeypatch):
     assert result.relative_error == pytest.approx(0.25)
 
 
-def test_avqds_sparse_h_mat():
+def test_avqds_sparse_h_mat() -> None:
     """Verifies 90: avqds H_mat.toarray() sparse path."""
     from scpn_quantum_control.phase.avqds import avqds_simulate
 
@@ -125,7 +136,7 @@ def test_avqds_sparse_h_mat():
     assert len(result.energies) > 0
 
 
-def test_avqds_evolution_toarray():
+def test_avqds_evolution_toarray() -> None:
     """Verifies 123: avqds_simulate H_mat toarray in evolution loop."""
     from scpn_quantum_control.phase.avqds import avqds_simulate
 
@@ -135,40 +146,40 @@ def test_avqds_evolution_toarray():
     assert len(result.parameters_history) > 0
 
 
-def test_avqds_sparse_matrix_conversion_contract(monkeypatch):
+def test_avqds_sparse_matrix_conversion_contract(monkeypatch: pytest.MonkeyPatch) -> None:
     """Sparse-like Hamiltonian matrices are densified before dynamics."""
     from scpn_quantum_control.phase import avqds as module
 
     toarray_calls = []
 
     class SparseLike:
-        def __init__(self, matrix):
+        def __init__(self, matrix: NDArray[np.float64]) -> None:
             self.matrix = matrix
 
-        def toarray(self):
+        def toarray(self) -> NDArray[np.float64]:
             toarray_calls.append(self.matrix.shape)
             return self.matrix
 
     class Hamiltonian:
-        def to_matrix(self):
+        def to_matrix(self) -> SparseLike:
             return SparseLike(np.eye(2, dtype=complex))
 
     class Ansatz:
         num_parameters = 1
 
-        def assign_parameters(self, params):
+        def assign_parameters(self, params: Any) -> Any:
             return params
 
     class FakeStatevector:
-        def __init__(self, data):
+        def __init__(self, data: NDArray[np.complex128]) -> None:
             self.data = data
 
         @classmethod
-        def from_instruction(cls, assigned):
+        def from_instruction(cls, assigned: Any) -> Any:
             theta = float(np.asarray(assigned)[0])
             return cls(np.array([np.cos(theta), np.sin(theta)], dtype=complex))
 
-        def expectation_value(self, hamiltonian):
+        def expectation_value(self, hamiltonian: Any) -> complex:
             matrix = hamiltonian.to_matrix().toarray()
             return complex(np.vdot(self.data, matrix @ self.data))
 
@@ -190,7 +201,7 @@ def test_avqds_sparse_matrix_conversion_contract(monkeypatch):
     assert np.isfinite(result.final_energy)
 
 
-def test_floquet_subharmonic_few_freqs():
+def test_floquet_subharmonic_few_freqs() -> None:
     """Verifies 142/153: _subharmonic_ratio returns 0.0 with few points."""
     from scpn_quantum_control.phase.floquet_kuramoto import _subharmonic_ratio
 
@@ -199,7 +210,7 @@ def test_floquet_subharmonic_few_freqs():
     assert val == 0.0
 
 
-def test_floquet_subharmonic_zero_power():
+def test_floquet_subharmonic_zero_power() -> None:
     """Verifies 172: _subharmonic_ratio returns 0.0 when p_omega ~ 0."""
     from scpn_quantum_control.phase.floquet_kuramoto import _subharmonic_ratio
 
@@ -208,7 +219,7 @@ def test_floquet_subharmonic_zero_power():
     assert val == 0.0
 
 
-def test_qsvt_spectral_norm_large():
+def test_qsvt_spectral_norm_large() -> None:
     """Verifies 85-89: hamiltonian_spectral_norm uses sparse eigsh for n >= 14."""
     from scpn_quantum_control.phase.qsvt_evolution import hamiltonian_spectral_norm
 
@@ -218,7 +229,7 @@ def test_qsvt_spectral_norm_large():
     assert norm > 0.0
 
 
-def test_trotter_error_invalid_order():
+def test_trotter_error_invalid_order() -> None:
     """Verifies 133: trotter_error_bound raises for order != 1 or 2."""
     from scpn_quantum_control.phase.trotter_error import trotter_error_bound
 
@@ -228,7 +239,7 @@ def test_trotter_error_invalid_order():
         trotter_error_bound(K, omega, t=1.0, reps=5, order=3)
 
 
-def test_trotter_optimal_dt_invalid_order():
+def test_trotter_optimal_dt_invalid_order() -> None:
     """Verifies 156: optimal_dt raises for order != 1 or 2."""
     from scpn_quantum_control.phase.trotter_error import optimal_dt
 
@@ -238,7 +249,7 @@ def test_trotter_optimal_dt_invalid_order():
         optimal_dt(K, omega, epsilon=0.01, t_total=1.0, order=3)
 
 
-def test_varqite_ground_state():
+def test_varqite_ground_state() -> None:
     """Verify varqite_ground_state computation."""
     from scpn_quantum_control.phase.varqite import varqite_ground_state
 
@@ -249,34 +260,34 @@ def test_varqite_ground_state():
     assert hasattr(result, "energy_history")
 
 
-def test_varqite_matrices_densify_sparse_hamiltonian(monkeypatch):
+def test_varqite_matrices_densify_sparse_hamiltonian(monkeypatch: pytest.MonkeyPatch) -> None:
     """Sparse-like Hamiltonian matrices are densified before McLachlan solves."""
     from scpn_quantum_control.phase import varqite as module
 
     toarray_calls = []
 
     class SparseLike:
-        def __init__(self, matrix):
+        def __init__(self, matrix: NDArray[np.float64]) -> None:
             self.matrix = matrix
 
-        def toarray(self):
+        def toarray(self) -> NDArray[np.float64]:
             toarray_calls.append(self.matrix.shape)
             return self.matrix
 
     class Hamiltonian:
-        def to_matrix(self):
+        def to_matrix(self) -> SparseLike:
             return SparseLike(np.diag([0.0, 1.0]))
 
     class Ansatz:
-        def assign_parameters(self, params):
+        def assign_parameters(self, params: Any) -> Any:
             return np.asarray(params, dtype=float)
 
     class FakeStatevector:
-        def __init__(self, data):
+        def __init__(self, data: NDArray[np.complex128]) -> None:
             self.data = data
 
         @classmethod
-        def from_instruction(cls, assigned):
+        def from_instruction(cls, assigned: Any) -> Any:
             # RY(θ)|0> = [cos(θ/2), sin(θ/2)] — a genuine single-Pauli rotation,
             # so the exact π-shift derivative identity applies to this double.
             theta = float(np.asarray(assigned)[0])
@@ -298,7 +309,7 @@ def test_varqite_matrices_densify_sparse_hamiltonian(monkeypatch):
     assert np.all(np.isfinite(C))
 
 
-def test_adapt_vqe_full_loop():
+def test_adapt_vqe_full_loop() -> None:
     """Verifies 154-170: ADAPT-VQE runs multi-iteration loop."""
     from scpn_quantum_control.phase.adapt_vqe import adapt_vqe
 
@@ -309,7 +320,7 @@ def test_adapt_vqe_full_loop():
     assert hasattr(result, "converged")
 
 
-def test_adapt_vqe_ansatz_action_is_unitary():
+def test_adapt_vqe_ansatz_action_is_unitary() -> None:
     """The layered ansatz applies exp(-iθG) gates and preserves the state norm."""
     import numpy as np
 
@@ -321,13 +332,16 @@ def test_adapt_vqe_ansatz_action_is_unitary():
 
     K = build_knm_paper27(L=2)
     generators = _pool_generators_dense(K, 2)
-    spectra = [np.linalg.eigh(g) for g in generators]
+    spectra = [
+        (decomposition.eigenvalues, decomposition.eigenvectors.astype(np.complex128))
+        for decomposition in (np.linalg.eigh(g) for g in generators)
+    ]
     out = _ansatz_state(_plus_reference(2), spectra, np.linspace(-0.5, 0.5, len(generators)))
     assert np.isclose(np.vdot(out, out).real, 1.0, atol=1e-12)
 
 
 class TestQRCEdge:
-    def test_boundary_detection(self):
+    def test_boundary_detection(self) -> None:
         from scpn_quantum_control.analysis.qrc_phase_detector import qrc_phase_detection
 
         T = _ring(3)
@@ -338,7 +352,7 @@ class TestQRCEdge:
         # Boundary detection may or may not find crossing
         assert result.accuracy >= 0
 
-    def test_generate_data_weight1(self):
+    def test_generate_data_weight1(self) -> None:
         from scpn_quantum_control.analysis.qrc_phase_detector import generate_training_data
 
         X, y = generate_training_data(OMEGA_N_16[:2], _ring(2), np.array([1.0]), 0.5, max_weight=1)
@@ -346,7 +360,7 @@ class TestQRCEdge:
 
 
 class TestFloquetDefaults:
-    def test_default_amplitudes(self):
+    def test_default_amplitudes(self) -> None:
         from scpn_quantum_control.phase.floquet_kuramoto import scan_drive_amplitude
 
         result = scan_drive_amplitude(
@@ -359,7 +373,7 @@ class TestFloquetDefaults:
         )
         assert len(result["amplitude"]) == 10
 
-    def test_subharmonic_ratio_short_signal(self):
+    def test_subharmonic_ratio_short_signal(self) -> None:
         from scpn_quantum_control.phase.floquet_kuramoto import floquet_evolve
 
         result = floquet_evolve(
@@ -375,7 +389,7 @@ class TestFloquetDefaults:
 
 
 class TestConcordanceDefaults:
-    def test_default_k_range(self):
+    def test_default_k_range(self) -> None:
         from scpn_quantum_control.analysis.critical_concordance import critical_concordance
 
         result = critical_concordance(OMEGA_N_16[:2], _ring(2))
@@ -383,13 +397,13 @@ class TestConcordanceDefaults:
 
 
 class TestBerryDefaults:
-    def test_default_k_range(self):
+    def test_default_k_range(self) -> None:
         from scpn_quantum_control.analysis.berry_phase import berry_phase_scan
 
         result = berry_phase_scan(OMEGA_N_16[:2], _ring(2))
         assert len(result.k_values) == 29
 
-    def test_single_step(self):
+    def test_single_step(self) -> None:
         from scpn_quantum_control.analysis.berry_phase import berry_phase_scan
 
         result = berry_phase_scan(OMEGA_N_16[:2], _ring(2), k_range=np.array([1.0, 2.0]))
@@ -397,7 +411,7 @@ class TestBerryDefaults:
 
 
 class TestMpembaEdge:
-    def test_high_gamma(self):
+    def test_high_gamma(self) -> None:
         from scpn_quantum_control.analysis.quantum_mpemba import mpemba_experiment
 
         result = mpemba_experiment(
@@ -407,7 +421,7 @@ class TestMpembaEdge:
 
 
 class TestNESSDefaults:
-    def test_default_k_range(self):
+    def test_default_k_range(self) -> None:
         from scpn_quantum_control.analysis.lindblad_ness import ness_vs_coupling
 
         result = ness_vs_coupling(OMEGA_N_16[:2], _ring(2))
@@ -415,13 +429,13 @@ class TestNESSDefaults:
 
 
 class TestAdiabaticDefaults:
-    def test_default_T_values(self):
+    def test_default_T_values(self) -> None:
         from scpn_quantum_control.phase.adiabatic_preparation import adiabatic_time_scaling
 
         result = adiabatic_time_scaling(OMEGA_N_16[:2], _ring(2), K_target=2.0, n_steps_per_T=5)
         assert len(result["T_total"]) == 5
 
-    def test_default_k_range_ramp(self):
+    def test_default_k_range_ramp(self) -> None:
         from scpn_quantum_control.phase.adiabatic_preparation import adiabatic_ramp
 
         result = adiabatic_ramp(OMEGA_N_16[:2], _ring(2), K_target=1.0)
@@ -429,13 +443,13 @@ class TestAdiabaticDefaults:
 
 
 class TestXXZDefaults:
-    def test_default_ranges(self):
+    def test_default_ranges(self) -> None:
         from scpn_quantum_control.analysis.xxz_phase_diagram import anisotropy_phase_diagram
 
         result = anisotropy_phase_diagram(OMEGA_N_16[:2], _ring(2))
         assert len(result.delta_values) == 6
 
-    def test_default_scan(self):
+    def test_default_scan(self) -> None:
         from scpn_quantum_control.analysis.xxz_phase_diagram import scan_coupling_at_delta
 
         result = scan_coupling_at_delta(OMEGA_N_16[:2], _ring(2), delta=0.5)
@@ -443,13 +457,13 @@ class TestXXZDefaults:
 
 
 class TestPairingDefaults:
-    def test_default_delta_range(self):
+    def test_default_delta_range(self) -> None:
         from scpn_quantum_control.analysis.pairing_correlator import pairing_vs_anisotropy
 
         result = pairing_vs_anisotropy(OMEGA_N_16[:2], _ring(2), K_base=2.0)
         assert len(result["delta"]) == 6
 
-    def test_zero_std_correlation(self):
+    def test_zero_std_correlation(self) -> None:
         """All-zeros coupling → no pairing correlation."""
         from scpn_quantum_control.analysis.pairing_correlator import pairing_map
 
@@ -458,13 +472,13 @@ class TestPairingDefaults:
 
 
 class TestEntropyDefaults:
-    def test_default_k_range(self):
+    def test_default_k_range(self) -> None:
         from scpn_quantum_control.analysis.entanglement_entropy import entanglement_vs_coupling
 
         result = entanglement_vs_coupling(OMEGA_N_16[:2], _ring(2))
         assert len(result.k_values) == 20
 
-    def test_2qubit_bipartition(self):
+    def test_2qubit_bipartition(self) -> None:
         """2-qubit: n_A = 1 (half-chain)."""
         from scpn_quantum_control.analysis.entanglement_entropy import entanglement_at_coupling
 
@@ -473,13 +487,13 @@ class TestEntropyDefaults:
 
 
 class TestKrylovDefaults:
-    def test_default_k_range(self):
+    def test_default_k_range(self) -> None:
         from scpn_quantum_control.analysis.krylov_complexity import krylov_vs_coupling
 
         result = krylov_vs_coupling(OMEGA_N_16[:2], _ring(2))
         assert len(result["K_base"]) == 10
 
-    def test_zero_operator(self):
+    def test_zero_operator(self) -> None:
         """Zero operator → empty Lanczos."""
         from scpn_quantum_control.analysis.krylov_complexity import krylov_complexity
 
@@ -490,7 +504,7 @@ class TestKrylovDefaults:
 
 
 class TestMagicDefaults:
-    def test_default_k_range(self):
+    def test_default_k_range(self) -> None:
         from scpn_quantum_control.analysis.magic_nonstabilizerness import magic_vs_coupling
 
         result = magic_vs_coupling(OMEGA_N_16[:2], _ring(2))
@@ -498,13 +512,13 @@ class TestMagicDefaults:
 
 
 class TestXXZEdge:
-    def test_large_delta(self):
+    def test_large_delta(self) -> None:
         K = 2.0 * _ring(2)
         omega = OMEGA_N_16[:2]
         H = knm_to_xxz_hamiltonian(K, omega, delta=2.0)
         assert H.to_matrix().shape == (4, 4)
 
-    def test_zero_coupling_xxz(self):
+    def test_zero_coupling_xxz(self) -> None:
         K = np.zeros((2, 2))
         omega = OMEGA_N_16[:2]
         H = knm_to_xxz_hamiltonian(K, omega, delta=1.0)
@@ -514,13 +528,13 @@ class TestXXZEdge:
 
 
 class TestSyncWitnessEdge:
-    def test_2qubit_separable_bound(self):
+    def test_2qubit_separable_bound(self) -> None:
         from scpn_quantum_control.analysis.sync_entanglement_witness import R_separable_bound
 
         bound = R_separable_bound(2)
         assert 0 < bound <= 1.0
 
-    def test_3qubit_separable_bound(self):
+    def test_3qubit_separable_bound(self) -> None:
         from scpn_quantum_control.analysis.sync_entanglement_witness import R_separable_bound
 
         bound = R_separable_bound(3)
@@ -528,7 +542,7 @@ class TestSyncWitnessEdge:
 
 
 class TestQSLDefaults:
-    def test_default_k_base_range(self):
+    def test_default_k_base_range(self) -> None:
         from scpn_quantum_control.analysis.quantum_speed_limit import qsl_vs_coupling
 
         K = build_knm_paper27(L=2)
@@ -538,7 +552,7 @@ class TestQSLDefaults:
 
 
 class TestCrossDomainTransferDefaults:
-    def test_with_custom_systems(self):
+    def test_with_custom_systems(self) -> None:
         from scpn_quantum_control.phase.cross_domain_transfer import (
             PhysicalSystem,
             transfer_experiment,
@@ -552,7 +566,7 @@ class TestCrossDomainTransferDefaults:
 
 
 class TestAdaptVQE:
-    def test_adapt_vqe_runs_optimisation(self):
+    def test_adapt_vqe_runs_optimisation(self) -> None:
         from scpn_quantum_control.phase.adapt_vqe import adapt_vqe
 
         K = build_knm_paper27(L=2)

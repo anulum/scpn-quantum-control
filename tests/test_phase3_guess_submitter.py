@@ -15,6 +15,8 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 
 def _load_module() -> ModuleType:
     script = Path(__file__).resolve().parents[1] / "scripts" / "phase3_guess_dla_ibm.py"
@@ -54,7 +56,7 @@ def test_folded_circuit_depth_increases_with_noise_scale() -> None:
     assert depth6_even[1] < depth6_even[3] < depth6_even[5]
 
 
-def test_submit_requires_budget_confirmation(monkeypatch) -> None:
+def test_submit_requires_budget_confirmation(monkeypatch: pytest.MonkeyPatch) -> None:
     module = _load_module()
     monkeypatch.setattr(sys, "argv", ["phase3_guess_dla_ibm.py", "--submit"])
 

@@ -35,6 +35,8 @@ import importlib.util
 import math
 import sys
 from pathlib import Path
+from types import ModuleType
+from typing import Any
 
 import pytest
 
@@ -42,7 +44,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 ANALYSE_SCRIPT = REPO_ROOT / "scripts" / "analyse_phase1_dla_parity.py"
 
 
-def _load_module():
+def _load_module() -> ModuleType:
     spec = importlib.util.spec_from_file_location("_analyse_phase1", ANALYSE_SCRIPT)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -55,12 +57,12 @@ def _load_module():
 
 
 @pytest.fixture(scope="module")
-def analyse():
+def analyse() -> ModuleType:
     return _load_module()
 
 
 @pytest.fixture(scope="module")
-def summaries(analyse):
+def summaries(analyse: ModuleType) -> list[Any]:
     circuits = analyse.load_phase1_circuits()
     by_depth = analyse.collect_n4_depth_points(circuits)
     return [analyse.summarise_depth(by_depth[d]) for d in sorted(by_depth.keys())]
@@ -69,7 +71,7 @@ def summaries(analyse):
 class TestPhase1Dataset:
     """Raw-data presence and coverage checks."""
 
-    def test_all_four_phase1_files_exist(self, analyse):
+    def test_all_four_phase1_files_exist(self, analyse: ModuleType) -> None:
         missing = [p for p in analyse.PHASE1_FILES if not p.exists()]
         assert not missing, (
             f"Phase 1 dataset incomplete — missing files: {missing}. The "
@@ -77,7 +79,7 @@ class TestPhase1Dataset:
             f"data/phase1_dla_parity/."
         )
 
-    def test_circuit_count_at_least_claimed_floor(self, analyse):
+    def test_circuit_count_at_least_claimed_floor(self, analyse: ModuleType) -> None:
         circuits = analyse.load_phase1_circuits()
         assert len(circuits) >= 300, (
             f"Expected ≥ 300 circuits across the Phase 1 sub-phases; "
@@ -85,7 +87,7 @@ class TestPhase1Dataset:
             f"still contains a non-empty 'circuits' block."
         )
 
-    def test_eight_distinct_n4_depth_points(self, analyse):
+    def test_eight_distinct_n4_depth_points(self, analyse: ModuleType) -> None:
         circuits = analyse.load_phase1_circuits()
         by_depth = analyse.collect_n4_depth_points(circuits)
         assert len(by_depth) == 8, (
@@ -97,7 +99,7 @@ class TestPhase1Dataset:
 class TestPhase1Statistics:
     """Check the headline numbers quoted in CHANGELOG and preprint."""
 
-    def test_peak_asymmetry_at_depth_6(self, summaries):
+    def test_peak_asymmetry_at_depth_6(self, summaries: list[Any]) -> None:
         depth_6 = next((s for s in summaries if s.depth == 6), None)
         assert depth_6 is not None, "Depth 6 missing from summaries"
         pct = 100.0 * depth_6.asymmetry_relative
@@ -106,7 +108,7 @@ class TestPhase1Statistics:
             f"claim of +17.48% (CHANGELOG v0.9.5)."
         )
 
-    def test_mean_asymmetry_depths_ge_4(self, summaries):
+    def test_mean_asymmetry_depths_ge_4(self, summaries: list[Any]) -> None:
         deep = [s for s in summaries if s.depth >= 4]
         assert deep, "No depth ≥ 4 points present"
         mean_pct = 100.0 * sum(s.asymmetry_relative for s in deep) / len(deep)
@@ -115,14 +117,14 @@ class TestPhase1Statistics:
             f"claim in CHANGELOG is +10.8%."
         )
 
-    def test_seven_of_eight_depths_significant(self, summaries):
+    def test_seven_of_eight_depths_significant(self, summaries: list[Any]) -> None:
         significant = sum(1 for s in summaries if not math.isnan(s.welch_p) and s.welch_p < 0.05)
         assert significant >= 7, (
             f"Only {significant}/8 depths have Welch p < 0.05; the "
             f"CHANGELOG claims 7/8 are individually significant."
         )
 
-    def test_fisher_combined_chi2(self, analyse, summaries):
+    def test_fisher_combined_chi2(self, analyse: ModuleType, summaries: list[Any]) -> None:
         pvals = [s.welch_p for s in summaries if not math.isnan(s.welch_p)]
         chi2, combined_p = analyse.fisher_combined_pvalue(pvals)
         assert math.isclose(chi2, 123.4, abs_tol=10.0), (
@@ -135,7 +137,13 @@ class TestPhase1Statistics:
 class TestAnalysisScriptEndToEnd:
     """Full `main()` smoke run, no figures."""
 
-    def test_main_callable(self, analyse, monkeypatch, tmp_path, capsys):
+    def test_main_callable(
+        self,
+        analyse: ModuleType,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
         # Avoid polluting the working tree with figure artefacts; the
         # test contract is only that main() completes and prints the
         # headline combined-p line, not that it produces PNGs.
