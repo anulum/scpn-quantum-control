@@ -45,9 +45,9 @@ def test_projector_jvp_vjp_match_central_difference_and_adjoint_identity() -> No
     """Verify exact linear derivatives and self-adjoint parity projection."""
     rng = np.random.default_rng(54)
     projector = ParitySectorProjector(4, ParitySector.EVEN)
-    state = rng.normal(size=16) + 1j * rng.normal(size=16)
-    tangent = rng.normal(size=16) + 1j * rng.normal(size=16)
-    cotangent = rng.normal(size=16) + 1j * rng.normal(size=16)
+    state = np.asarray(rng.normal(size=16) + 1j * rng.normal(size=16), dtype=np.complex128)
+    tangent = np.asarray(rng.normal(size=16) + 1j * rng.normal(size=16), dtype=np.complex128)
+    cotangent = np.asarray(rng.normal(size=16) + 1j * rng.normal(size=16), dtype=np.complex128)
     epsilon = 1.0e-6
     central = (
         projector.project(state + epsilon * tangent) - projector.project(state - epsilon * tangent)
@@ -86,7 +86,7 @@ def test_normalised_leakage_gradient_matches_directional_difference() -> None:
     """Differentiate the outside-sector fraction through its norm quotient."""
     projector = ParitySectorProjector(2, ParitySector.ODD)
     state = np.array([0.7 + 0.2j, 0.5 - 0.3j, -0.4 + 0.1j, 0.2 + 0.6j], dtype=complex)
-    direction = np.array([0.3j, -0.2, 0.4 + 0.1j, -0.1j], dtype=complex)
+    direction = np.array([0.3j, -0.2, 0.4 + 0.1j, -0.1j], dtype=np.complex128)
     evaluation = projector.leakage_value_and_gradient(state, normalised=True)
     epsilon = 1.0e-6
     central = (
@@ -155,7 +155,8 @@ def test_leakage_evaluation_contract_rejects_invalid_custody() -> None:
         # One field per case is replaced with an invalid value; the
         # rejection is the subject and mypy cannot express a failing call.
         ParityLeakageEvaluation(**(valid | {"gradient": np.ones((2, 2))}))  # type: ignore[arg-type]
+    nan_gradient = np.array([1.0, np.nan], dtype=np.complex128)
     with pytest.raises(ValueError, match="gradient"):
-        ParityLeakageEvaluation(
-            **(valid | {"gradient": np.array([1.0, np.nan], dtype=np.complex128)})
-        )
+        # One field per case is replaced with an invalid value; the
+        # rejection is the subject and mypy cannot express a failing call.
+        ParityLeakageEvaluation(**(valid | {"gradient": nan_gradient}))  # type: ignore[arg-type]
