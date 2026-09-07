@@ -12,7 +12,9 @@ from __future__ import annotations
 import json
 import sys
 import time
+from contextlib import AbstractContextManager
 from pathlib import Path
+from types import ModuleType
 from unittest.mock import patch
 
 import numpy as np
@@ -24,7 +26,7 @@ from scpn_quantum_control.bridge.knm_hamiltonian import (
 )
 
 
-def _hide_engine():
+def _hide_engine() -> AbstractContextManager[dict[str, ModuleType]]:
     """Context manager to hide scpn_quantum_engine from imports."""
 
     return patch.dict(sys.modules, {"scpn_quantum_engine": None})

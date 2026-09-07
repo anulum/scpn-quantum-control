@@ -7,8 +7,11 @@
 # SCPN Quantum Control — Tests for the Wirtinger (CR) calculus module
 """Tests for wirtinger_calculus.py against analytic Wirtinger derivatives."""
 
+from typing import Any
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.wirtinger_calculus import (
     holomorphic_gradient,
@@ -69,11 +72,11 @@ def test_wirtinger_product_rule() -> None:
     """Satisfy the Wirtinger product rule."""
     z = np.array([0.7 + 0.3j])
 
-    def f(v):
-        return v[0] ** 2
+    def f(v: NDArray[np.complex128]) -> complex:
+        return complex(v[0] ** 2)
 
-    def g(v):
-        return np.conj(v[0]) + 1.0
+    def g(v: NDArray[np.complex128]) -> complex:
+        return complex(np.conj(v[0]) + 1.0)
 
     df = wirtinger_partials(f, z).df_dz
     dg = wirtinger_partials(g, z).df_dz
@@ -114,7 +117,7 @@ def test_real_objective_gradient_is_conjugate_of_df_dz() -> None:
     z = np.array([0.6 - 0.2j, 0.1 + 0.4j])
     target = np.array([0.8 - 0.3j, -0.4 + 0.6j])
 
-    def loss(v):
+    def loss(v: NDArray[np.complex128]) -> float:
         return float(np.sum(np.abs(v - target) ** 2))
 
     gradient = real_objective_gradient(loss, z)
@@ -126,7 +129,7 @@ def test_complex_descent_converges_to_target() -> None:
     """Converge locally to the complex quadratic target."""
     target = np.array([0.8 - 0.3j, -0.4 + 0.6j])
 
-    def loss(v):
+    def loss(v: NDArray[np.complex128]) -> float:
         return float(np.sum(np.abs(v - target) ** 2))
 
     result = minimise_real_objective(loss, np.zeros(2, dtype=complex), learning_rate=0.3, steps=80)
@@ -160,14 +163,14 @@ def test_descent_reduces_holomorphic_modulus_objective() -> None:
         np.array([1j * np.inf]),
     ],
 )
-def test_wirtinger_rejects_bad_point(z):
+def test_wirtinger_rejects_bad_point(z: NDArray[np.complex128]) -> None:
     """Reject empty, malformed, or non-finite evaluation points."""
     with pytest.raises(ValueError):
         wirtinger_partials(lambda v: v[0], z)
 
 
 @pytest.mark.parametrize("step", [0.0, -1e-6, np.inf])
-def test_wirtinger_rejects_bad_step(step):
+def test_wirtinger_rejects_bad_step(step: float) -> None:
     """Reject non-positive and non-finite difference steps."""
     with pytest.raises(ValueError):
         wirtinger_partials(lambda v: v[0], np.array([1.0 + 0j]), step=step)
@@ -180,7 +183,7 @@ def test_is_holomorphic_rejects_negative_tolerance() -> None:
 
 
 @pytest.mark.parametrize("kwargs", [{"learning_rate": 0.0}, {"learning_rate": -1.0}, {"steps": 0}])
-def test_minimise_rejects_bad_args(kwargs):
+def test_minimise_rejects_bad_args(kwargs: dict[str, Any]) -> None:
     """Reject invalid optimizer rates and iteration counts."""
     with pytest.raises(ValueError):
         minimise_real_objective(

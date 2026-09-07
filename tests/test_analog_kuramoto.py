@@ -9,6 +9,7 @@
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.hardware import backends as be
 from scpn_quantum_control.hardware.analog_kuramoto import (
@@ -23,7 +24,7 @@ from scpn_quantum_control.hardware.analog_kuramoto import (
 from scpn_quantum_control.kuramoto_core import build_kuramoto_problem, compile_analog_program
 
 
-def _inputs():
+def _inputs() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     K = np.array(
         [
             [0.0, 0.5, -0.25],
