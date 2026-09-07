@@ -13,6 +13,8 @@ properties hold universally, not just for hand-picked examples.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 from conftest import st_angles, st_coupling_matrix, st_dt, st_frequencies, st_statevector
 from hypothesis import assume, given, settings
@@ -33,6 +35,9 @@ from scpn_quantum_control.hardware.classical import (
     classical_kuramoto_reference,
 )
 
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
 # ---------------------------------------------------------------------------
 # Kuramoto order parameter properties
 # ---------------------------------------------------------------------------
@@ -41,7 +46,7 @@ from scpn_quantum_control.hardware.classical import (
 class TestOrderParameterProperties:
     @given(st_angles(min_n=2, max_n=8))
     @settings(max_examples=100)
-    def test_R_bounded_01(self, theta):
+    def test_R_bounded_01(self, theta: NDArray[np.float64]) -> None:
         """R(theta) in [0, 1] for any set of angles."""
         R = _order_param(theta)
         assert -1e-10 <= R <= 1.0 + 1e-10
@@ -56,7 +61,7 @@ class TestOrderParameterProperties:
 
     @given(st_angles(min_n=2, max_n=6))
     @settings(max_examples=50)
-    def test_R_shift_invariant(self, theta):
+    def test_R_shift_invariant(self, theta: NDArray[np.float64]) -> None:
         """R(theta + c) = R(theta) for any constant c."""
         c = 1.234
         R1 = _order_param(theta)
@@ -132,7 +137,7 @@ class TestHamiltonianProperties:
 
     @given(st_coupling_matrix(n=3), st_frequencies(n=3))
     @settings(max_examples=30)
-    def test_hermiticity_random(self, K, omega):
+    def test_hermiticity_random(self, K: NDArray[np.float64], omega: NDArray[np.float64]) -> None:
         H = knm_to_hamiltonian(K, omega)
         H_mat = np.array(H.to_matrix())
         np.testing.assert_allclose(H_mat, H_mat.conj().T, atol=1e-12)
@@ -143,14 +148,16 @@ class TestHamiltonianProperties:
         st.floats(min_value=-2.0, max_value=2.0, allow_nan=False, allow_infinity=False),
     )
     @settings(max_examples=30)
-    def test_xxz_hermiticity_random(self, K, omega, delta):
+    def test_xxz_hermiticity_random(
+        self, K: NDArray[np.float64], omega: NDArray[np.float64], delta: float
+    ) -> None:
         H = knm_to_xxz_hamiltonian(K, omega, delta=delta)
         H_mat = np.array(H.to_matrix())
         np.testing.assert_allclose(H_mat, H_mat.conj().T, atol=1e-12)
 
     @given(st_frequencies(n=3))
     @settings(max_examples=20)
-    def test_zero_coupling_diagonal(self, omega):
+    def test_zero_coupling_diagonal(self, omega: NDArray[np.float64]) -> None:
         """K=0 -> H is diagonal (only Z terms)."""
         K = np.zeros((3, 3))
         H = knm_to_hamiltonian(K, omega)
@@ -160,7 +167,7 @@ class TestHamiltonianProperties:
 
     @given(st_coupling_matrix(n=3))
     @settings(max_examples=20)
-    def test_zero_field_traceless(self, K):
+    def test_zero_field_traceless(self, K: NDArray[np.float64]) -> None:
         """omega=0 -> H is traceless (all Paulis except I are traceless)."""
         assume(np.any(K != 0))
         omega = np.zeros(3)
@@ -201,7 +208,7 @@ class TestStatePreparationProperties:
 
     @given(st.integers(min_value=1, max_value=6), st_frequencies(n=None, min_n=1, max_n=1))
     @settings(max_examples=20)
-    def test_deterministic(self, n, omega_base):
+    def test_deterministic(self, n: int, omega_base: NDArray[np.float64]) -> None:
         omega = np.full(n, omega_base[0])
         psi1 = _build_initial_state(n, omega)
         psi2 = _build_initial_state(n, omega)
@@ -216,7 +223,7 @@ class TestStatePreparationProperties:
 class TestSparseVsDenseProperties:
     @given(st_statevector(min_n=2, max_n=4))
     @settings(max_examples=50)
-    def test_agreement(self, psi_n):
+    def test_agreement(self, psi_n: tuple[NDArray[np.complex128], int]) -> None:
         psi, n = psi_n
         R_dense = _state_order_param(psi, n)
         R_sparse = _state_order_param_sparse(psi, n)
@@ -224,7 +231,7 @@ class TestSparseVsDenseProperties:
 
     @given(st_statevector(min_n=2, max_n=4))
     @settings(max_examples=50)
-    def test_both_bounded(self, psi_n):
+    def test_both_bounded(self, psi_n: tuple[NDArray[np.complex128], int]) -> None:
         psi, n = psi_n
         R_dense = _state_order_param(psi, n)
         R_sparse = _state_order_param_sparse(psi, n)

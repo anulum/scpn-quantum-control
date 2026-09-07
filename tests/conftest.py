@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pytest
@@ -34,12 +35,16 @@ from scpn_quantum_control.bridge.knm_hamiltonian import (
 )
 from scpn_quantum_control.hardware.runner import HardwareRunner
 
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+    from qiskit.quantum_info import SparsePauliOp
+
 # ---------------------------------------------------------------------------
 # Markers
 # ---------------------------------------------------------------------------
 
 
-def pytest_configure(config):
+def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "slow: marks tests as slow")
     config.addinivalue_line(
         "markers",
@@ -51,7 +56,7 @@ def pytest_configure(config):
     )
 
 
-def pytest_collection_modifyitems(items):
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
     """Mark tests that require ignored local manuscript extraction artefacts."""
     internal_marker = pytest.mark.internal_corpus
     performance_marker = pytest.mark.performance
@@ -75,27 +80,31 @@ TMAX_VALUES = [0.1, 0.5, 1.0]
 
 
 @pytest.fixture(params=SMALL_SIZES, ids=lambda n: f"{n}q")
-def n_qubits_small(request):
+def n_qubits_small(request: pytest.FixtureRequest) -> int:
     """System size from {2, 3, 4}."""
-    return request.param
+    size: int = request.param
+    return size
 
 
 @pytest.fixture(params=MEDIUM_SIZES, ids=lambda n: f"{n}q")
-def n_qubits_medium(request):
+def n_qubits_medium(request: pytest.FixtureRequest) -> int:
     """System size from {2, 3, 4, 6}."""
-    return request.param
+    size: int = request.param
+    return size
 
 
 @pytest.fixture(params=ALL_SIZES, ids=lambda n: f"{n}q")
-def n_qubits(request):
+def n_qubits(request: pytest.FixtureRequest) -> int:
     """System size from {2, 3, 4, 6, 8}."""
-    return request.param
+    size: int = request.param
+    return size
 
 
 @pytest.fixture(params=DT_VALUES, ids=lambda dt: f"dt={dt}")
-def dt(request):
+def dt(request: pytest.FixtureRequest) -> float:
     """Time step from {0.01, 0.05, 0.1}."""
-    return request.param
+    step: float = request.param
+    return step
 
 
 # ---------------------------------------------------------------------------
@@ -104,28 +113,30 @@ def dt(request):
 
 
 @pytest.fixture
-def knm_4q():
+def knm_4q() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     return build_knm_paper27(L=4), OMEGA_N_16[:4]
 
 
 @pytest.fixture
-def knm_8q():
+def knm_8q() -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     return build_knm_paper27(L=8), OMEGA_N_16[:8]
 
 
-def _knm_for_size(n):
+def _knm_for_size(n: int) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Build (K, omega) pair for a given system size."""
     return build_knm_paper27(L=n), OMEGA_N_16[:n].copy()
 
 
 @pytest.fixture
-def knm(n_qubits):
+def knm(n_qubits: int) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Parametrized (K, omega) pair — follows n_qubits fixture."""
     return _knm_for_size(n_qubits)
 
 
 @pytest.fixture
-def knm_medium(n_qubits_medium):
+def knm_medium(
+    n_qubits_medium: int,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Parametrized (K, omega) pair — follows n_qubits_medium fixture."""
     return _knm_for_size(n_qubits_medium)
 
@@ -139,7 +150,9 @@ def knm_medium(n_qubits_medium):
     params=["paper27", "ring", "zero", "identity"],
     ids=lambda v: f"K={v}",
 )
-def coupling_variant_4q(request):
+def coupling_variant_4q(
+    request: pytest.FixtureRequest,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], str]:
     """4-qubit coupling matrix variants for testing coupling sensitivity."""
     n = 4
     omega = OMEGA_N_16[:n].copy()
@@ -151,7 +164,8 @@ def coupling_variant_4q(request):
         K = np.zeros((n, n))
     elif request.param == "identity":
         K = np.ones((n, n)) - np.eye(n)
-    return K, omega, request.param
+    variant: str = request.param
+    return K, omega, variant
 
 
 # ---------------------------------------------------------------------------
@@ -160,13 +174,17 @@ def coupling_variant_4q(request):
 
 
 @pytest.fixture
-def hamiltonian_4q(knm_4q):
+def hamiltonian_4q(
+    knm_4q: tuple[NDArray[np.float64], NDArray[np.float64]],
+) -> SparsePauliOp:
     K, omega = knm_4q
     return knm_to_hamiltonian(K, omega)
 
 
 @pytest.fixture
-def hamiltonian(knm):
+def hamiltonian(
+    knm: tuple[NDArray[np.float64], NDArray[np.float64]],
+) -> SparsePauliOp:
     K, omega = knm
     return knm_to_hamiltonian(K, omega)
 
@@ -176,19 +194,22 @@ def hamiltonian(knm):
 # ---------------------------------------------------------------------------
 
 
-def random_statevector(n_qubits, rng=None):
+def random_statevector(
+    n_qubits: int, rng: np.random.Generator | None = None
+) -> NDArray[np.complex128]:
     """Generate a random normalised statevector for n_qubits."""
     if rng is None:
         rng = np.random.default_rng()
     dim = 2**n_qubits
     psi = rng.standard_normal(dim) + 1j * rng.standard_normal(dim)
-    return psi / np.linalg.norm(psi)
+    normalised: NDArray[np.complex128] = psi / np.linalg.norm(psi)
+    return normalised
 
 
-def computational_basis_state(n_qubits, index=0):
+def computational_basis_state(n_qubits: int, index: int = 0) -> NDArray[np.complex128]:
     """Return |index> in the computational basis."""
     dim = 2**n_qubits
-    psi = np.zeros(dim, dtype=complex)
+    psi = np.zeros(dim, dtype=np.complex128)
     psi[index] = 1.0
     return psi
 
@@ -199,7 +220,7 @@ def computational_basis_state(n_qubits, index=0):
 
 
 @pytest.fixture
-def sim_runner(tmp_path):
+def sim_runner(tmp_path: Path) -> HardwareRunner:
     runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "results"))
     runner.connect()
     return runner
@@ -213,12 +234,13 @@ _REFERENCE_PATH = Path(__file__).parent.parent / "results" / "classical_16q_refe
 
 
 @pytest.fixture(scope="session")
-def classical_reference():
+def classical_reference() -> dict[str, Any]:
     """Load pre-computed classical reference data (session-scoped for speed)."""
     if not _REFERENCE_PATH.exists():
         pytest.skip(f"Reference file not found: {_REFERENCE_PATH}")
     with open(_REFERENCE_PATH) as f:
-        return json.load(f)
+        reference: dict[str, Any] = json.load(f)
+    return reference
 
 
 # ---------------------------------------------------------------------------
@@ -227,7 +249,7 @@ def classical_reference():
 
 
 @pytest.fixture
-def rng():
+def rng() -> np.random.Generator:
     return np.random.default_rng(42)
 
 
@@ -237,13 +259,16 @@ def rng():
 
 
 @st.composite
-def st_system_size(draw, min_n=2, max_n=8):
+def st_system_size(draw: st.DrawFn, min_n: int = 2, max_n: int = 8) -> int:
     """Draw a system size (number of qubits/oscillators)."""
-    return draw(st.integers(min_value=min_n, max_value=max_n))
+    size: int = draw(st.integers(min_value=min_n, max_value=max_n))
+    return size
 
 
 @st.composite
-def st_coupling_matrix(draw, n=None, min_n=2, max_n=6):
+def st_coupling_matrix(
+    draw: st.DrawFn, n: int | None = None, min_n: int = 2, max_n: int = 6
+) -> NDArray[np.float64]:
     """Draw a symmetric non-negative coupling matrix."""
     if n is None:
         n = draw(st.integers(min_value=min_n, max_value=max_n))
@@ -258,14 +283,16 @@ def st_coupling_matrix(draw, n=None, min_n=2, max_n=6):
             max_size=n,
         )
     )
-    K = np.array(raw)
+    K = np.array(raw, dtype=np.float64)
     K = (K + K.T) / 2.0
     np.fill_diagonal(K, 0.0)
     return K
 
 
 @st.composite
-def st_frequencies(draw, n=None, min_n=2, max_n=6):
+def st_frequencies(
+    draw: st.DrawFn, n: int | None = None, min_n: int = 2, max_n: int = 6
+) -> NDArray[np.float64]:
     """Draw natural frequencies for n oscillators."""
     if n is None:
         n = draw(st.integers(min_value=min_n, max_value=max_n))
@@ -276,11 +303,13 @@ def st_frequencies(draw, n=None, min_n=2, max_n=6):
             max_size=n,
         )
     )
-    return np.array(freqs)
+    return np.array(freqs, dtype=np.float64)
 
 
 @st.composite
-def st_angles(draw, n=None, min_n=2, max_n=8):
+def st_angles(
+    draw: st.DrawFn, n: int | None = None, min_n: int = 2, max_n: int = 8
+) -> NDArray[np.float64]:
     """Draw n angles in [0, 2pi)."""
     if n is None:
         n = draw(st.integers(min_value=min_n, max_value=max_n))
@@ -293,19 +322,22 @@ def st_angles(draw, n=None, min_n=2, max_n=8):
             max_size=n,
         )
     )
-    return np.array(angles)
+    return np.array(angles, dtype=np.float64)
 
 
 @st.composite
-def st_dt(draw, min_val=0.001, max_val=0.5):
+def st_dt(draw: st.DrawFn, min_val: float = 0.001, max_val: float = 0.5) -> float:
     """Draw a time step."""
-    return draw(
+    step: float = draw(
         st.floats(min_value=min_val, max_value=max_val, allow_nan=False, allow_infinity=False)
     )
+    return step
 
 
 @st.composite
-def st_statevector(draw, n_qubits=None, min_n=2, max_n=4):
+def st_statevector(
+    draw: st.DrawFn, n_qubits: int | None = None, min_n: int = 2, max_n: int = 4
+) -> tuple[NDArray[np.complex128], int]:
     """Draw a normalised random statevector."""
     if n_qubits is None:
         n_qubits = draw(st.integers(min_value=min_n, max_value=max_n))
@@ -324,9 +356,9 @@ def st_statevector(draw, n_qubits=None, min_n=2, max_n=4):
             max_size=dim,
         )
     )
-    psi = np.array(real) + 1j * np.array(imag)
+    psi = np.array(real, dtype=np.complex128) + 1j * np.array(imag, dtype=np.complex128)
     norm = np.linalg.norm(psi)
     if norm < 1e-10:
         psi[0] = 1.0
-        norm = 1.0
+        norm = np.float64(1.0)
     return psi / norm, n_qubits
