@@ -8,18 +8,20 @@
 """Tests for qec/control_qec.py."""
 
 import numpy as np
+import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.qec.control_qec import ControlQEC, MWPMDecoder, SurfaceCode
 
 
-def test_surface_code_dimensions():
+def test_surface_code_dimensions() -> None:
     code = SurfaceCode(distance=3)
     assert code.num_data == 18  # 2*3^2
     assert code.Hx.shape == (9, 18)
     assert code.Hz.shape == (9, 18)
 
 
-def test_stabilizer_weight():
+def test_stabilizer_weight() -> None:
     """Each stabilizer should have weight 4 (toric code)."""
     code = SurfaceCode(distance=3)
     for row in code.Hx:
@@ -28,7 +30,7 @@ def test_stabilizer_weight():
         assert np.sum(row) == 4
 
 
-def test_no_errors_no_syndrome():
+def test_no_errors_no_syndrome() -> None:
     qec = ControlQEC(distance=3)
     err_x = np.zeros(18, dtype=np.int8)
     err_z = np.zeros(18, dtype=np.int8)
@@ -37,7 +39,7 @@ def test_no_errors_no_syndrome():
     assert np.all(syn_x == 0)
 
 
-def test_single_error_produces_syndrome():
+def test_single_error_produces_syndrome() -> None:
     """A single X error should produce exactly 2 syndrome bits."""
     qec = ControlQEC(distance=3)
     err_x = np.zeros(18, dtype=np.int8)
@@ -47,25 +49,24 @@ def test_single_error_produces_syndrome():
     assert np.sum(syn_z) == 2
 
 
-def test_simulate_errors_shape():
+def test_simulate_errors_shape() -> None:
     qec = ControlQEC(distance=3)
     err_x, err_z = qec.simulate_errors(0.1, rng=np.random.default_rng(0))
     assert err_x.shape == (18,)
     assert err_z.shape == (18,)
 
 
-def test_simulate_errors_uses_default_rng(monkeypatch):
+def test_simulate_errors_uses_default_rng(monkeypatch: pytest.MonkeyPatch) -> None:
     """Omitted RNG uses NumPy default_rng and preserves binary int8 output."""
-    from scpn_quantum_control.qec import control_qec as module
 
     calls = []
 
     class FakeRng:
-        def binomial(self, n, p, size):
+        def binomial(self, n: int, p: float, size: int) -> NDArray[np.int_]:
             calls.append((n, p, size))
             return np.arange(size) % 2
 
-    monkeypatch.setattr(module.np.random, "default_rng", lambda: FakeRng())
+    monkeypatch.setattr(np.random, "default_rng", lambda: FakeRng())
 
     qec = ControlQEC(distance=3)
     err_x, err_z = qec.simulate_errors(0.125)
@@ -77,7 +78,7 @@ def test_simulate_errors_uses_default_rng(monkeypatch):
     assert np.array_equal(err_z, np.arange(18, dtype=np.int8) % 2)
 
 
-def test_decode_returns_correction():
+def test_decode_returns_correction() -> None:
     """Decoder should return a correction vector of correct length."""
     decoder = MWPMDecoder(distance=3)
     syndrome = np.zeros(9, dtype=np.int8)
@@ -87,14 +88,14 @@ def test_decode_returns_correction():
     assert corr.shape == (18,)
 
 
-def test_no_defects_empty_correction():
+def test_no_defects_empty_correction() -> None:
     decoder = MWPMDecoder(distance=3)
     syndrome = np.zeros(9, dtype=np.int8)
     corr = decoder.decode(syndrome)
     assert np.all(corr == 0)
 
 
-def test_low_error_rate_some_success():
+def test_low_error_rate_some_success() -> None:
     """At low error rate, decoder should succeed at least sometimes."""
     qec = ControlQEC(distance=3)
     rng = np.random.default_rng(42)
@@ -107,7 +108,7 @@ def test_low_error_rate_some_success():
     assert successes >= 10, f"Only {successes}/50 corrected at p=0.02, expected >=10"
 
 
-def test_knm_weighted_decoder_runs():
+def test_knm_weighted_decoder_runs() -> None:
     """Decoder with Knm weights should run without error."""
     K = np.random.default_rng(0).uniform(0, 0.5, (9, 9))
     K = (K + K.T) / 2
@@ -119,7 +120,7 @@ def test_knm_weighted_decoder_runs():
     assert isinstance(result, bool)
 
 
-def test_threshold_below_vs_above():
+def test_threshold_below_vs_above() -> None:
     """Success rate at p=0.01 should exceed success rate at p=0.08 for d=3.
 
     d=3 toric code has threshold ~10.3% for independent X/Z noise (Dennis et al. 2002).
@@ -128,7 +129,7 @@ def test_threshold_below_vs_above():
     rng = np.random.default_rng(123)
     trials = 200
 
-    def success_rate(p_error):
+    def success_rate(p_error: float) -> float:
         ok = 0
         for _ in range(trials):
             ex, ez = qec.simulate_errors(p_error, rng=rng)
@@ -141,7 +142,7 @@ def test_threshold_below_vs_above():
     assert rate_low > rate_high
 
 
-def test_distance_5_constructs_and_decodes():
+def test_distance_5_constructs_and_decodes() -> None:
     """d=5 surface code should construct and decode single errors."""
     qec = ControlQEC(distance=5)
     assert qec.code.num_data == 50  # 2*5^2
@@ -154,7 +155,7 @@ def test_distance_5_constructs_and_decodes():
     assert qec.decode_and_correct(err_x, err_z)
 
 
-def test_very_low_error_rate_high_success():
+def test_very_low_error_rate_high_success() -> None:
     """At p=0.005, d=3 decoder should succeed > 80% of trials."""
     qec = ControlQEC(distance=3)
     rng = np.random.default_rng(42)
@@ -164,7 +165,7 @@ def test_very_low_error_rate_high_success():
     assert successes / 200 > 0.80
 
 
-def test_d5_beats_d3_below_threshold():
+def test_d5_beats_d3_below_threshold() -> None:
     """Below threshold (p=0.03), d=5 should match or beat d=3.
 
     Dennis et al. 2002: toric code MWPM threshold ~10.3% per channel.
@@ -183,7 +184,7 @@ def test_d5_beats_d3_below_threshold():
     assert ok5 >= ok3 - 10  # d=5 at least within noise of d=3
 
 
-def test_logical_error_detected_shifted_cycle():
+def test_logical_error_detected_shifted_cycle() -> None:
     """Logical operators at any row/column must be detected, not just row/col 0."""
     d = 5
     qec = ControlQEC(distance=d)
@@ -203,7 +204,7 @@ def test_logical_error_detected_shifted_cycle():
         assert qec._has_logical_error(cycle, zero), f"missed vertical cycle at col {col}"
 
 
-def test_decode_odd_defects():
+def test_decode_odd_defects() -> None:
     """Odd number of syndrome defects triggers duplication (line 79)."""
     d = 3
     decoder = MWPMDecoder(distance=d)
@@ -216,7 +217,7 @@ def test_decode_odd_defects():
     assert corr.shape == (2 * d**2,)
 
 
-def test_correction_residual_syndrome():
+def test_correction_residual_syndrome() -> None:
     """Uncorrectable errors leave residual syndrome → return False (line 216-217)."""
     d = 3
     qec = ControlQEC(distance=d)
@@ -228,7 +229,7 @@ def test_correction_residual_syndrome():
     assert isinstance(result, bool)
 
 
-def test_uncleared_syndrome_rejects_failed_decoder(monkeypatch):
+def test_uncleared_syndrome_rejects_failed_decoder(monkeypatch: pytest.MonkeyPatch) -> None:
     """A decoder correction that leaves syndrome defects is rejected."""
     qec = ControlQEC(distance=3)
     n_data = qec.code.num_data
@@ -237,7 +238,7 @@ def test_uncleared_syndrome_rejects_failed_decoder(monkeypatch):
     err_z = np.zeros(n_data, dtype=np.int8)
     syn_z, syn_x = qec.get_syndrome(err_x, err_z)
 
-    def no_correction(syndrome, dual=False):
+    def no_correction(syndrome: NDArray[np.float64], dual: bool = False) -> NDArray[np.float64]:
         assert syndrome.shape == syn_z.shape
         assert isinstance(dual, bool)
         return np.zeros(n_data, dtype=np.int8)
@@ -249,7 +250,7 @@ def test_uncleared_syndrome_rejects_failed_decoder(monkeypatch):
     assert not qec.decode_and_correct(err_x, err_z)
 
 
-def test_single_z_error_corrected():
+def test_single_z_error_corrected() -> None:
     """Single Z error should be decoded correctly (dual path)."""
     for d in (3, 5):
         qec = ControlQEC(distance=d)
@@ -263,7 +264,7 @@ def test_single_z_error_corrected():
             )
 
 
-def test_single_x_error_corrected():
+def test_single_x_error_corrected() -> None:
     """Single X error should be decoded correctly (primal path)."""
     for d in (3, 5):
         qec = ControlQEC(distance=d)
