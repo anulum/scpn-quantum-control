@@ -18,8 +18,9 @@ from scpn_quantum_control.mitigation import (
 )
 
 
-def _problem(**overrides) -> SymmetrySectorProblem:
-    kwargs = {
+def _problem(**overrides: object) -> SymmetrySectorProblem:
+    """Build the four-qubit replay problem, with any field overridden per case."""
+    kwargs: dict[str, object] = {
         "n_qubits": 4,
         "coupling_matrix": (
             (0.0, 0.45, 0.0, 0.45),
@@ -34,7 +35,9 @@ def _problem(**overrides) -> SymmetrySectorProblem:
         "has_noise_scaled_symmetry_observables": True,
     }
     kwargs.update(overrides)
-    return SymmetrySectorProblem(**kwargs)
+    # Callers override one field at a time, sometimes with a value the contract
+    # must reject, so mypy cannot type this construction for every caller.
+    return SymmetrySectorProblem(**kwargs)  # type: ignore[arg-type]
 
 
 def test_replay_applies_raw_count_primitives_and_defers_guess() -> None:

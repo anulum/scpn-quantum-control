@@ -11,9 +11,10 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 
-def _system(n: int = 4):
+def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
@@ -21,7 +22,7 @@ def _system(n: int = 4):
     return n, K, omega
 
 
-def _homogeneous_system(n: int = 4):
+def _homogeneous_system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Circulant K + uniform omega for translation symmetry."""
     K = np.zeros((n, n))
     for i in range(n):
@@ -36,7 +37,7 @@ class TestSymmetryPipeline:
     """Symmetry sectors and sparse methods should give consistent eigenvalues
     as the pipeline progresses from full ED to sector ED to sparse."""
 
-    def test_z2_eigenvalues_match_full_ed(self):
+    def test_z2_eigenvalues_match_full_ed(self) -> None:
         """Z₂ sector eigenvalues should reconstruct the full spectrum."""
         from scpn_quantum_control.analysis.symmetry_sectors import eigh_by_sector
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
@@ -55,7 +56,7 @@ class TestSymmetryPipeline:
             err_msg="Z₂ sector eigenvalues should match full ED",
         )
 
-    def test_u1_eigenvalues_match_full_ed(self):
+    def test_u1_eigenvalues_match_full_ed(self) -> None:
         """U(1) sector eigenvalues should reconstruct the full spectrum."""
         from scpn_quantum_control.analysis.magnetisation_sectors import eigh_by_magnetisation
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
@@ -74,7 +75,7 @@ class TestSymmetryPipeline:
             err_msg="U(1) sector eigenvalues should match full ED",
         )
 
-    def test_z2_u1_ground_energies_agree(self):
+    def test_z2_u1_ground_energies_agree(self) -> None:
         """Z₂ and U(1) decompositions should find the same ground energy."""
         from scpn_quantum_control.analysis.magnetisation_sectors import eigh_by_magnetisation
         from scpn_quantum_control.analysis.symmetry_sectors import eigh_by_sector
@@ -91,7 +92,7 @@ class TestSymmetryPipeline:
             err_msg="Z₂ and U(1) ground energies must agree",
         )
 
-    def test_sparse_matches_dense_ground_energy(self):
+    def test_sparse_matches_dense_ground_energy(self) -> None:
         """Sparse eigsh ground energy should match dense eigh."""
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
         from scpn_quantum_control.bridge.sparse_hamiltonian import sparse_eigsh
@@ -110,7 +111,7 @@ class TestSymmetryPipeline:
             err_msg="Sparse eigsh should match dense ground energy",
         )
 
-    def test_sparse_sector_matches_u1_sector(self):
+    def test_sparse_sector_matches_u1_sector(self) -> None:
         """Sparse eigsh within M=0 should match U(1) sector ED for M=0."""
         from scpn_quantum_control.analysis.magnetisation_sectors import eigh_by_magnetisation
         from scpn_quantum_control.bridge.sparse_hamiltonian import sparse_eigsh
@@ -130,7 +131,7 @@ class TestSymmetryPipeline:
             err_msg="Sparse M=0 eigsh should match dense U(1) M=0 sector",
         )
 
-    def test_full_symmetry_pipeline_n8(self):
+    def test_full_symmetry_pipeline_n8(self) -> None:
         """Full pipeline: Z₂ → U(1) → sparse at n=8, all giving same ground."""
         from scpn_quantum_control.analysis.magnetisation_sectors import eigh_by_magnetisation
         from scpn_quantum_control.analysis.symmetry_sectors import eigh_by_sector
@@ -145,7 +146,7 @@ class TestSymmetryPipeline:
         np.testing.assert_allclose(E_z2, E_u1, atol=1e-10)
         np.testing.assert_allclose(E_z2, E_sparse, atol=1e-8)
 
-    def test_translation_within_full_spectrum(self):
+    def test_translation_within_full_spectrum(self) -> None:
         """Translation symmetry k=0 ground energy ≥ full ground energy."""
         from scpn_quantum_control.analysis.translation_symmetry import eigh_with_translation
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
@@ -160,7 +161,7 @@ class TestSymmetryPipeline:
         # k=0 ground may or may not be the global ground
         assert E_k0 >= E_full - 1e-8, f"k=0 ground {E_k0:.6f} below full ground {E_full:.6f}"
 
-    def test_memory_estimates_consistent(self):
+    def test_memory_estimates_consistent(self) -> None:
         """Memory estimates should decrease: full > Z₂ > U(1)."""
         from scpn_quantum_control.analysis.magnetisation_sectors import memory_estimate
         from scpn_quantum_control.analysis.symmetry_sectors import memory_estimate_mb
@@ -177,7 +178,7 @@ class TestSymmetryPipeline:
 class TestCrossModuleConsistency:
     """Verify that different modules agree on shared computations."""
 
-    def test_sparse_hermiticity(self):
+    def test_sparse_hermiticity(self) -> None:
         """Sparse Hamiltonian should be Hermitian."""
         from scpn_quantum_control.bridge.sparse_hamiltonian import (
             build_sparse_hamiltonian,
@@ -188,7 +189,7 @@ class TestCrossModuleConsistency:
         diff = H - H.T.conj()
         assert diff.nnz == 0 or abs(diff).max() < 1e-12
 
-    def test_sparse_vs_dense_matrix(self):
+    def test_sparse_vs_dense_matrix(self) -> None:
         """Sparse and dense Hamiltonians should be identical."""
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
         from scpn_quantum_control.bridge.sparse_hamiltonian import (
@@ -206,7 +207,7 @@ class TestCrossModuleConsistency:
             err_msg="Sparse and dense Hamiltonians must match",
         )
 
-    def test_sparsity_stats_consistent(self):
+    def test_sparsity_stats_consistent(self) -> None:
         """Sparsity stats should match actual sparse matrix properties."""
         from scpn_quantum_control.bridge.sparse_hamiltonian import (
             build_sparse_hamiltonian,
@@ -222,7 +223,7 @@ class TestCrossModuleConsistency:
         assert stats["nnz_estimate"] > 0
         assert H.nnz > 0
 
-    def test_lindblad_order_parameter_bounded(self):
+    def test_lindblad_order_parameter_bounded(self) -> None:
         """Lindblad R(t) should stay in [0, 1] for all time steps."""
         from scpn_quantum_control.phase.lindblad import LindbladKuramotoSolver
 
@@ -234,7 +235,7 @@ class TestCrossModuleConsistency:
             f"R out of bounds: {[r for r in result['R'] if r < 0 or r > 1.01]}"
         )
 
-    def test_mcwf_ensemble_produces_valid_statistics(self):
+    def test_mcwf_ensemble_produces_valid_statistics(self) -> None:
         """MCWF ensemble should produce bounded R with finite std."""
         from scpn_quantum_control.phase.tensor_jump import mcwf_ensemble
 
@@ -259,7 +260,7 @@ class TestCrossModuleConsistency:
         assert result["R_trajectories"].shape == (50, len(result["times"]))
 
     @pytest.mark.parametrize("n", [4, 6, 8])
-    def test_all_ed_methods_agree(self, n):
+    def test_all_ed_methods_agree(self, n: int) -> None:
         """Full ED, Z₂, U(1), and sparse should all agree on ground energy."""
         from scpn_quantum_control.analysis.magnetisation_sectors import (
             eigh_by_magnetisation,
