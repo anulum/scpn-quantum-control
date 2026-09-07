@@ -175,6 +175,7 @@
         "tests/test_differentiable_catalyst_comparison.py",
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_claim_rendering.py",
+        "tests/test_differentiable_competitive_baselines.py",
         "tests/test_differentiable_consistency.py",
         "tests/test_differentiable_consistency_quality_gate.py",
         "tests/test_differentiable_custom_derivatives.py",

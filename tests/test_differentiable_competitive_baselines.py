@@ -166,8 +166,10 @@ def test_competitive_baseline_row_rejects_ambiguous_evidence(
     """Row construction must reject coercion, duplicates, and boundary drift."""
     row = run_competitive_baseline_refresh().rows[0]
 
+    # The replacement values are deliberately invalid; mypy cannot express a
+    # call that is meant to fail.
     with pytest.raises(ValueError, match=message):
-        replace(row, **changes)
+        replace(row, **changes)  # type: ignore[arg-type]
 
 
 def test_competitive_baseline_age_rejects_datetime_subclass() -> None:
@@ -199,8 +201,10 @@ def test_competitive_baseline_refresh_rejects_structural_drift(
     """Bundle construction must preserve canonical identity and exact runtime types."""
     refresh = run_competitive_baseline_refresh()
 
+    # The replacement values are deliberately invalid; mypy cannot express a
+    # call that is meant to fail.
     with pytest.raises(ValueError, match=message):
-        replace(refresh, **changes)
+        replace(refresh, **changes)  # type: ignore[arg-type]
 
 
 def test_competitive_baseline_refresh_rejects_conflicting_rows() -> None:
@@ -281,8 +285,10 @@ def test_competitive_baseline_validation_result_rejects_incoherence(
         as_of=date(2026, 8, 25),
     )
 
+    # The replacement values are deliberately invalid; mypy cannot express a
+    # call that is meant to fail.
     with pytest.raises(ValueError, match=message):
-        replace(validation, **changes)
+        replace(validation, **changes)  # type: ignore[arg-type]
 
 
 def test_competitive_baseline_promotion_gate_combines_language_and_freshness() -> None:
@@ -365,8 +371,10 @@ def test_competitive_baseline_promotion_result_rejects_incoherence(
     )
     assert audit.passed
 
+    # The replacement values are deliberately invalid; mypy cannot express a
+    # call that is meant to fail.
     with pytest.raises(ValueError, match=message):
-        replace(audit, **changes)
+        replace(audit, **changes)  # type: ignore[arg-type]
 
 
 def test_competitive_baseline_promotion_rejects_incoherent_components() -> None:
@@ -390,17 +398,17 @@ def test_competitive_baseline_loader_rejects_schema_smuggling(tmp_path: Path) ->
     """The JSON boundary must reject duplicate, missing, and unknown object members."""
     payload = run_competitive_baseline_refresh().to_dict()
     missing = copy.deepcopy(payload)
-    cast(dict[str, object], missing).pop("schema")
+    missing.pop("schema")
     with pytest.raises(ValueError, match=r"missing: schema; unexpected: none"):
         load_competitive_baseline_refresh(_write_refresh_payload(tmp_path, missing))
 
     unexpected = copy.deepcopy(payload)
-    cast(dict[str, object], unexpected)["promoted"] = True
+    unexpected["promoted"] = True
     with pytest.raises(ValueError, match=r"missing: none; unexpected: promoted"):
         load_competitive_baseline_refresh(_write_refresh_payload(tmp_path, unexpected))
 
     row_extra = copy.deepcopy(payload)
-    rows = cast(list[dict[str, object]], cast(dict[str, object], row_extra)["rows"])
+    rows = cast(list[dict[str, object]], row_extra["rows"])
     rows[0]["unreviewed"] = "accepted"
     with pytest.raises(ValueError, match="unexpected: unreviewed"):
         load_competitive_baseline_refresh(_write_refresh_payload(tmp_path, row_extra))
@@ -438,7 +446,7 @@ def test_competitive_baseline_loader_rejects_coerced_row_fields(
 ) -> None:
     """The committed-artifact loader must validate every row field without coercion."""
     payload = run_competitive_baseline_refresh().to_dict()
-    rows = cast(list[dict[str, object]], cast(dict[str, object], payload)["rows"])
+    rows = cast(list[dict[str, object]], payload["rows"])
     rows[0][field] = value
 
     with pytest.raises(ValueError, match=message):
@@ -462,7 +470,7 @@ def test_competitive_baseline_loader_rejects_coerced_bundle_fields(
     message: str,
 ) -> None:
     """The JSON loader must reject scalar and container drift at the bundle boundary."""
-    payload = cast(dict[str, object], run_competitive_baseline_refresh().to_dict())
+    payload = run_competitive_baseline_refresh().to_dict()
     payload[field] = value
 
     with pytest.raises(ValueError, match=message):
