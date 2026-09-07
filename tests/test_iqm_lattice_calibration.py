@@ -33,8 +33,13 @@ class _StubCouplingMap:
 
 @dataclass
 class _StubErrorProfile:
-    two_qubit_gate_depolarizing_error_parameters: dict[str, dict[tuple[str, str], float]]
-    readout_errors: dict[str, dict[str, float]]
+    # `_qubit_index` accepts an int or an IQM label such as 'QB7', and one test
+    # below exists to prove the int path. The stub declares both so it stands in
+    # for the surface the extractor documents, not a narrower half of it.
+    two_qubit_gate_depolarizing_error_parameters: dict[
+        str, dict[tuple[str | int, str | int], float]
+    ]
+    readout_errors: dict[str | int, dict[str, float]]
 
 
 @dataclass
@@ -221,7 +226,14 @@ class TestChainEnumeration:
 )
 class TestAgainstRealFakeGarnet:
     def test_fake_garnet_extraction_is_complete(self) -> None:
-        from iqm.qiskit_iqm.fake_backends.fake_garnet import IQMFakeGarnet
+        # The IQM provider SDK is an optional extra and is absent from the pinned
+        # type-check environment; the class-level `find_spec` guard above skips
+        # this test when it is missing. Suppressed here rather than in
+        # `pyproject.toml`, because a global override would be the only one
+        # unused by the `src/` file set and would report on every run.
+        from iqm.qiskit_iqm.fake_backends.fake_garnet import (  # type: ignore[import-not-found]
+            IQMFakeGarnet,
+        )
 
         cal = lattice_calibration_from_backend(IQMFakeGarnet())
         assert cal.num_qubits == 20

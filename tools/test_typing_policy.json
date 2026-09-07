@@ -110,6 +110,7 @@
         "tests/test_hardware_safe_execution_quality_gate.py",
         "tests/test_identity_coherence_budget.py",
         "tests/test_identity_coherence_budget_quality_gate.py",
+        "tests/test_iqm_lattice_calibration.py",
         "tests/test_multi_hal_federation_product.py",
         "tests/test_multi_hal_federation_product_quality_gate.py",
         "tests/test_phase_hardware_gradient_campaign.py",
