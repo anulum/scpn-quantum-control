@@ -9,8 +9,11 @@
 
 from __future__ import annotations
 
+from typing import NoReturn
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.analysis import entanglement_percolation as percolation_module
 from scpn_quantum_control.analysis.entanglement_percolation import (
@@ -32,55 +35,55 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestConcurrenceMapExact:
-    def test_product_state_zero_concurrence(self):
+    def test_product_state_zero_concurrence(self) -> None:
         """Product state |00⟩ has zero concurrence."""
         psi = np.array([1.0, 0.0, 0.0, 0.0])
         cmap = concurrence_map_exact(psi, 2)
         assert cmap[0, 1] < 1e-6
 
-    def test_bell_state_max_concurrence(self):
+    def test_bell_state_max_concurrence(self) -> None:
         """Bell state (|00⟩+|11⟩)/√2 has concurrence ≈ 1."""
         psi = np.array([1.0, 0.0, 0.0, 1.0]) / np.sqrt(2)
         cmap = concurrence_map_exact(psi, 2)
         assert cmap[0, 1] > 0.9
 
-    def test_symmetric(self):
+    def test_symmetric(self) -> None:
         psi = np.array([1.0, 0.0, 0.0, 1.0]) / np.sqrt(2)
         cmap = concurrence_map_exact(psi, 2)
         assert abs(cmap[0, 1] - cmap[1, 0]) < 1e-10
 
-    def test_3qubit_ghz(self):
+    def test_3qubit_ghz(self) -> None:
         """GHZ state has pairwise concurrence 0 (multipartite only)."""
-        psi = np.zeros(8)
+        psi = np.zeros(8, dtype=np.complex128)
         psi[0] = psi[7] = 1.0 / np.sqrt(2)
         cmap = concurrence_map_exact(psi, 3)
         # GHZ: pairwise reduced states are maximally mixed → C = 0
         assert np.max(cmap) < 0.1
 
-    def test_3qubit_w_state(self):
+    def test_3qubit_w_state(self) -> None:
         """W state has nonzero pairwise concurrence."""
-        psi = np.zeros(8)
+        psi = np.zeros(8, dtype=np.complex128)
         psi[1] = psi[2] = psi[4] = 1.0 / np.sqrt(3)
         cmap = concurrence_map_exact(psi, 3)
         assert cmap[0, 1] > 0.3
 
 
 class TestFiedlerEigenvalue:
-    def test_disconnected_graph(self):
+    def test_disconnected_graph(self) -> None:
         adj = np.zeros((3, 3))
         assert fiedler_eigenvalue(adj) < 1e-10
 
-    def test_connected_graph(self):
+    def test_connected_graph(self) -> None:
         adj = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]], dtype=float)
         assert fiedler_eigenvalue(adj) > 0
 
-    def test_complete_graph(self):
+    def test_complete_graph(self) -> None:
         adj = np.ones((3, 3)) - np.eye(3)
         assert fiedler_eigenvalue(adj) > 2.5
 
 
 class TestPercolationScan:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -88,7 +91,7 @@ class TestPercolationScan:
         assert isinstance(result, PercolationScanResult)
         assert len(result.k_values) == 2
 
-    def test_weak_coupling_no_percolation(self):
+    def test_weak_coupling_no_percolation(self) -> None:
         """Very weak coupling → product ground state → no entanglement."""
         n = 3
         T = _ring_topology(n)
@@ -96,7 +99,7 @@ class TestPercolationScan:
         result = percolation_scan(omega, T, k_range=np.array([0.01]))
         assert result.fiedler_values[0] < 1e-6
 
-    def test_strong_coupling_percolation(self):
+    def test_strong_coupling_percolation(self) -> None:
         """Strong coupling → entangled ground state → percolation."""
         n = 3
         T = _ring_topology(n)
@@ -105,7 +108,7 @@ class TestPercolationScan:
         assert result.fiedler_values[0] > 0
         assert result.max_concurrence[0] > 0
 
-    def test_percolation_threshold_exists(self):
+    def test_percolation_threshold_exists(self) -> None:
         """Scanning K should find a percolation threshold."""
         n = 3
         T = _ring_topology(n)
@@ -114,7 +117,7 @@ class TestPercolationScan:
         # At some K, percolation should kick in
         assert result.k_percolation is not None or np.any(result.fiedler_values > 0)
 
-    def test_R_values_are_valid(self):
+    def test_R_values_are_valid(self) -> None:
         """Order parameter R should be in [0, 1]."""
         n = 3
         T = _ring_topology(n)
@@ -123,19 +126,21 @@ class TestPercolationScan:
         for r in result.R_values:
             assert 0.0 <= r <= 1.0 + 1e-10
 
-    def test_4qubit_scan(self):
+    def test_4qubit_scan(self) -> None:
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
         result = percolation_scan(omega, T, k_range=np.array([2.0, 5.0]))
         assert len(result.n_entangled_pairs) == 2
 
-    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+    def test_rejects_dense_budget_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
 
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(
@@ -152,13 +157,15 @@ class TestPercolationScan:
                 max_dense_gib=1e-12,
             )
 
-    def test_scan_propagates_dense_budget_to_bridge(self, monkeypatch):
+    def test_scan_propagates_dense_budget_to_bridge(self, monkeypatch: pytest.MonkeyPatch) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
         seen_budgets = []
 
-        def fake_dense_matrix(K, omega_arg, **kwargs):  # noqa: ARG001
+        def fake_dense_matrix(
+            K: NDArray[np.float64], omega_arg: NDArray[np.float64], **kwargs: object
+        ) -> NDArray[np.complex128]:  # noqa: ARG001
             seen_budgets.append(kwargs.get("max_dense_gib"))
             return np.diag([0.0, 1.0, 2.0, 3.0]).astype(np.complex128)
 
@@ -181,7 +188,7 @@ class TestPercolationScan:
 
 
 class TestConcurrence2Qubit:
-    def test_product_state(self):
+    def test_product_state(self) -> None:
         from scpn_quantum_control.analysis.entanglement_percolation import (
             _concurrence_2qubit,
         )
@@ -189,48 +196,48 @@ class TestConcurrence2Qubit:
         rho = np.diag([1.0, 0, 0, 0]).astype(complex)
         assert _concurrence_2qubit(rho) < 1e-6
 
-    def test_bell_state(self):
+    def test_bell_state(self) -> None:
         from scpn_quantum_control.analysis.entanglement_percolation import (
             _concurrence_2qubit,
         )
 
-        psi = np.array([1, 0, 0, 1], dtype=complex) / np.sqrt(2)
+        psi = np.array([1, 0, 0, 1], dtype=np.complex128) / np.sqrt(2)
         rho = np.outer(psi, psi.conj())
         c = _concurrence_2qubit(rho)
         np.testing.assert_allclose(c, 1.0, atol=0.01)
 
-    def test_maximally_mixed(self):
+    def test_maximally_mixed(self) -> None:
         from scpn_quantum_control.analysis.entanglement_percolation import (
             _concurrence_2qubit,
         )
 
-        rho = np.eye(4, dtype=complex) / 4.0
+        rho = np.eye(4, dtype=np.complex128) / 4.0
         assert _concurrence_2qubit(rho) < 1e-6
 
 
 class TestOrderParameterFromState:
-    def test_all_up_r_one(self):
+    def test_all_up_r_one(self) -> None:
         from scpn_quantum_control.analysis.entanglement_percolation import (
             _order_parameter_from_state,
         )
 
-        psi = np.zeros(4, dtype=complex)
+        psi = np.zeros(4, dtype=np.complex128)
         psi[0] = 1.0  # |00⟩
         r = _order_parameter_from_state(psi, 2)
         assert 0 <= r <= 1.0
 
-    def test_superposition(self):
+    def test_superposition(self) -> None:
         from scpn_quantum_control.analysis.entanglement_percolation import (
             _order_parameter_from_state,
         )
 
-        psi = np.ones(4, dtype=complex) / 2.0
+        psi = np.ones(4, dtype=np.complex128) / 2.0
         r = _order_parameter_from_state(psi, 2)
         assert 0 <= r <= 1.0 + 1e-6
 
 
 class TestPercolationScanDefaults:
-    def test_default_k_range(self):
+    def test_default_k_range(self) -> None:
         """percolation_scan with k_range=None uses default linspace(0.1, 5.0, 20)."""
         n = 2
         T = _ring_topology(n)
@@ -242,10 +249,10 @@ class TestPercolationScanDefaults:
 
 
 class TestFiedlerEdgeCases:
-    def test_single_node(self):
+    def test_single_node(self) -> None:
         adj = np.zeros((1, 1))
         assert fiedler_eigenvalue(adj) == 0.0
 
-    def test_two_connected(self):
+    def test_two_connected(self) -> None:
         adj = np.array([[0, 1], [1, 0]], dtype=float)
         assert fiedler_eigenvalue(adj) > 0
