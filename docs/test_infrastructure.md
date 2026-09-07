@@ -99,7 +99,7 @@ reported 6,301 errors in 388 of 968 tracked Python test files; 5,076 were
 `no-untyped-def`. Adding the whole directory to one gate would therefore mix
 mechanical annotations with intentional invalid-input tests and hide ownership.
 
-`tools/test_typing_policy.json` is the machine-readable policy. The 485-file enforced cohort set
+`tools/test_typing_policy.json` is the machine-readable policy. The 519-file enforced cohort set
 consists of the 17-file `repository_policy` cohort covering coverage,
 coverage debt, licence, release, generated-surface, commit, secret, TODO, version,
 branch, module-responsibility, CI/pre-push, local preflight, and built-wheel
@@ -107,10 +107,21 @@ publication gate tests, the 2-file `claim_release_contracts`
 entanglement-sync scientific and evidence slice, and the 90-file
 `hardware_provider_boundaries` cohort covering the provider adapters, HAL
 contract and conformance guards, approval, budget, attestation and result-pack
-tests, and the 376-file `scientific_runtime_contracts` cohort holding the whole differentiable and phase
+tests, and the 410-file `scientific_runtime_contracts` cohort holding the whole differentiable and phase
 families plus the smaller runtime-contract groups, which are promoted together
 because none of them reaches a sliceable size alone — every file of
-them that passes strict mypy, added in slices under the policy's 40-file cap. Neither of those two slices needed annotation work: every
+them that passes strict mypy, added in slices under the policy's 40-file cap.
+
+**What strict typing does and does not reach in the Studio slice.** Twenty-six
+of the enrolled `test_studio_*` files import `scpn_studio_platform`, which is an
+optional extra (`pyproject.toml` `[project.optional-dependencies] studio`) and is
+absent from `requirements-ci-py312-linux.txt`. The mypy override for it sets
+`ignore_missing_imports` and `follow_imports = "skip"`, so every value crossing
+that boundary is `Any` — locally and in CI alike, since neither installs it.
+Enrolment therefore enforces strict typing on everything in those files except
+expressions flowing from the Studio platform itself. Most of their runtime tests
+skip for the same reason, so the strict-mypy pass, not the focused pytest run, is
+the evidence these files carry here. Neither of those two slices needed annotation work: every
 file in them already passed strict mypy, and enforcing them converts existing
 quality into something that cannot regress rather than paying debt down. The
 files in the same families that do carry errors are deliberately left out, so
