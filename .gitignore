@@ -19,6 +19,7 @@ coverage/
 
 .venv/
 .venv-iqm/
+.venv-julia/
 .venv-linux/
 .venv-metriq/
 .venv-rocm/
