@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import sys
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -20,11 +21,14 @@ from scpn_quantum_control.bridge.knm_hamiltonian import (
     knm_to_hamiltonian,
 )
 
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
 OMEGA_2 = np.array([1.0, 1.2])
 K_TOPO_2 = build_knm_paper27(L=2)
 
 
-def _dense_H(K: float = 1.0):
+def _dense_H(K: float = 1.0) -> NDArray[np.complex128]:
     H = knm_to_hamiltonian(K_TOPO_2 * K, OMEGA_2).to_matrix()
     if hasattr(H, "toarray"):
         H = H.toarray()
@@ -39,7 +43,7 @@ def _ring(n: int) -> np.ndarray:
     return T
 
 
-def test_entanglement_entropy_single_qubit_partition():
+def test_entanglement_entropy_single_qubit_partition() -> None:
     """Verifies 105: n_A = 1 when n//2 == 0 (single-qubit system)."""
     from scpn_quantum_control.analysis.entanglement_entropy import entanglement_at_coupling
 
@@ -49,7 +53,7 @@ def test_entanglement_entropy_single_qubit_partition():
     assert hasattr(result, "entropy")
 
 
-def test_qfi_precision_zero_diagonal():
+def test_qfi_precision_zero_diagonal() -> None:
     """Verifies 49: zero QFI diagonal gives infinite precision bound."""
     from scpn_quantum_control.analysis.qfi import QFIResult
 
@@ -63,7 +67,7 @@ def test_qfi_precision_zero_diagonal():
     assert result.precision_for(0, 1) == float("inf")
 
 
-def test_otoc_default_times():
+def test_otoc_default_times() -> None:
     """Verifies 99: times defaults to linspace when None."""
     from scpn_quantum_control.analysis.otoc import compute_otoc
 
@@ -73,7 +77,7 @@ def test_otoc_default_times():
     assert len(result.times) == 30
 
 
-def test_otoc_lyapunov_zero_f0():
+def test_otoc_lyapunov_zero_f0() -> None:
     """Verifies 152: _estimate_lyapunov returns None when f0 near zero."""
     from scpn_quantum_control.analysis.otoc import _estimate_lyapunov
 
@@ -83,7 +87,7 @@ def test_otoc_lyapunov_zero_f0():
     assert result is None
 
 
-def test_otoc_lyapunov_few_positive():
+def test_otoc_lyapunov_few_positive() -> None:
     """Verifies 163: _estimate_lyapunov returns None when < 3 positive points."""
     from scpn_quantum_control.analysis.otoc import _estimate_lyapunov
 
@@ -95,7 +99,7 @@ def test_otoc_lyapunov_few_positive():
     assert result is None
 
 
-def test_otoc_scrambling_time_zero_f0():
+def test_otoc_scrambling_time_zero_f0() -> None:
     """Verifies 176: _estimate_scrambling_time returns None for f0~0."""
     from scpn_quantum_control.analysis.otoc import _estimate_scrambling_time
 
@@ -105,7 +109,7 @@ def test_otoc_scrambling_time_zero_f0():
     assert result is None
 
 
-def test_self_consistency_zero_counts():
+def test_self_consistency_zero_counts() -> None:
     """Verifies 74-75: _two_point_from_counts returns zeros for empty counts."""
     from scpn_quantum_control.analysis.hamiltonian_self_consistency import (
         _two_point_from_counts,
@@ -115,7 +119,7 @@ def test_self_consistency_zero_counts():
     np.testing.assert_array_equal(result, np.zeros((3, 3)))
 
 
-def test_self_consistency_from_counts():
+def test_self_consistency_from_counts() -> None:
     """Verifies 137-144: self_consistency_from_counts with synthetic counts."""
     from scpn_quantum_control.analysis.hamiltonian_self_consistency import (
         self_consistency_from_counts,
@@ -130,7 +134,7 @@ def test_self_consistency_from_counts():
 
 
 class TestEntanglementEntropyJaxPath:
-    def test_scan_falls_through_without_jax(self):
+    def test_scan_falls_through_without_jax(self) -> None:
         from scpn_quantum_control.analysis.entanglement_entropy import entanglement_vs_coupling
 
         K_topo = np.array([[0, 1], [1, 0]], dtype=float)
@@ -140,7 +144,7 @@ class TestEntanglementEntropyJaxPath:
 
 
 class TestSyncWitnessTopological:
-    def test_topological_witness_no_ripser(self):
+    def test_topological_witness_no_ripser(self) -> None:
         from scpn_quantum_control.analysis.sync_witness import (
             topological_witness_from_correlator,
         )
@@ -150,7 +154,7 @@ class TestSyncWitnessTopological:
             result = topological_witness_from_correlator(corr)
         assert result.witness_name == "topological"
 
-    def test_topological_witness_empty_h1(self):
+    def test_topological_witness_empty_h1(self) -> None:
         from scpn_quantum_control.analysis.sync_witness import (
             topological_witness_from_correlator,
         )
@@ -163,7 +167,7 @@ class TestSyncWitnessTopological:
 
 
 class TestSyncEntanglementWitnessEdge:
-    def test_certified_entanglement_depth_is_conservative(self):
+    def test_certified_entanglement_depth_is_conservative(self) -> None:
         from scpn_quantum_control.analysis.sync_entanglement_witness import (
             _certified_entanglement_depth,
         )
@@ -171,7 +175,7 @@ class TestSyncEntanglementWitnessEdge:
         assert _certified_entanglement_depth(False) == 1
         assert _certified_entanglement_depth(True) == 2
 
-    def test_R_from_statevector(self):
+    def test_R_from_statevector(self) -> None:
         from scpn_quantum_control.analysis.sync_entanglement_witness import (
             R_from_statevector,
         )
@@ -183,7 +187,7 @@ class TestSyncEntanglementWitnessEdge:
 
 
 class TestQFICriticalityDefaults:
-    def test_default_k_range(self):
+    def test_default_k_range(self) -> None:
         from scpn_quantum_control.analysis.qfi_criticality import qfi_vs_coupling
 
         result = qfi_vs_coupling(OMEGA_N_16[:2], _ring(2))
@@ -191,13 +195,13 @@ class TestQFICriticalityDefaults:
 
 
 class TestEntanglementPercolationEdge:
-    def test_default_k_range(self):
+    def test_default_k_range(self) -> None:
         from scpn_quantum_control.analysis.entanglement_percolation import percolation_scan
 
         result = percolation_scan(OMEGA_N_16[:2], _ring(2))
         assert len(result.k_values) == 20
 
-    def test_no_entangled_pairs(self):
+    def test_no_entangled_pairs(self) -> None:
         from scpn_quantum_control.analysis.entanglement_percolation import percolation_scan
 
         result = percolation_scan(OMEGA_N_16[:2], _ring(2), k_range=np.array([0.001]))
@@ -205,7 +209,7 @@ class TestEntanglementPercolationEdge:
 
 
 class TestOTOCProbeDefaults:
-    def test_default_k_range(self):
+    def test_default_k_range(self) -> None:
         from scpn_quantum_control.analysis.otoc_sync_probe import otoc_sync_scan
 
         result = otoc_sync_scan(_ring(2), OMEGA_N_16[:2])
@@ -213,7 +217,7 @@ class TestOTOCProbeDefaults:
 
 
 class TestSelfConsistencyEdge:
-    def test_correlator_shot_noise(self):
+    def test_correlator_shot_noise(self) -> None:
         from scpn_quantum_control.analysis.hamiltonian_self_consistency import (
             correlator_shot_noise,
         )
@@ -225,13 +229,13 @@ class TestSelfConsistencyEdge:
 
 
 class TestMagicNonstabilizerness:
-    def test_magic_at_coupling(self):
+    def test_magic_at_coupling(self) -> None:
         from scpn_quantum_control.analysis.magic_nonstabilizerness import magic_at_coupling
 
         result = magic_at_coupling(OMEGA_2, K_TOPO_2, K_base=1.0)
         assert result.sre_m2 >= 0
 
-    def test_magic_scan(self):
+    def test_magic_scan(self) -> None:
         from scpn_quantum_control.analysis.magic_nonstabilizerness import magic_vs_coupling
 
         scan = magic_vs_coupling(OMEGA_2, K_TOPO_2, k_range=np.array([0.5, 1.0, 2.0]))
@@ -240,27 +244,27 @@ class TestMagicNonstabilizerness:
 
 
 class TestKrylovComplexity:
-    def test_lanczos_coefficients(self):
+    def test_lanczos_coefficients(self) -> None:
         from scpn_quantum_control.analysis.krylov_complexity import lanczos_coefficients
 
         H = _dense_H()
-        op = np.zeros((4, 4))
+        op = np.zeros((4, 4), dtype=np.complex128)
         op[0, 1] = 1.0
         b_n = lanczos_coefficients(H, op, max_steps=3)
         assert len(b_n) <= 3
 
-    def test_krylov_at_coupling(self):
+    def test_krylov_at_coupling(self) -> None:
         from scpn_quantum_control.analysis.krylov_complexity import krylov_complexity
 
         H = _dense_H()
-        op = np.zeros((4, 4))
+        op = np.zeros((4, 4), dtype=np.complex128)
         op[0, 1] = 1.0
         result = krylov_complexity(H, op, t_max=0.5, n_times=5, max_lanczos=3)
         assert result.lanczos_b is not None
 
 
 class TestLoschmidtEcho:
-    def test_quench(self):
+    def test_quench(self) -> None:
         from scpn_quantum_control.analysis.loschmidt_echo import loschmidt_quench
 
         result = loschmidt_quench(
@@ -268,7 +272,7 @@ class TestLoschmidtEcho:
         )
         assert len(result.loschmidt_amplitude) == 5
 
-    def test_quench_scan(self):
+    def test_quench_scan(self) -> None:
         from scpn_quantum_control.analysis.loschmidt_echo import quench_scan
 
         scan = quench_scan(
@@ -283,13 +287,13 @@ class TestLoschmidtEcho:
 
 
 class TestEntanglementEntropy:
-    def test_at_coupling(self):
+    def test_at_coupling(self) -> None:
         from scpn_quantum_control.analysis.entanglement_entropy import entanglement_at_coupling
 
         result = entanglement_at_coupling(OMEGA_2, K_TOPO_2, K_base=1.0)
         assert result.entropy >= 0
 
-    def test_scan(self):
+    def test_scan(self) -> None:
         from scpn_quantum_control.analysis.entanglement_entropy import entanglement_vs_coupling
 
         scan = entanglement_vs_coupling(OMEGA_2, K_TOPO_2, k_range=np.array([0.5, 1.0, 2.0]))
@@ -297,13 +301,13 @@ class TestEntanglementEntropy:
 
 
 class TestPairingCorrelator:
-    def test_pairing_map(self):
+    def test_pairing_map(self) -> None:
         from scpn_quantum_control.analysis.pairing_correlator import pairing_map
 
         result = pairing_map(OMEGA_2, K_TOPO_2, K_base=1.0)
         assert result is not None
 
-    def test_pairing_vs_anisotropy(self):
+    def test_pairing_vs_anisotropy(self) -> None:
         from scpn_quantum_control.analysis.pairing_correlator import pairing_vs_anisotropy
 
         scan = pairing_vs_anisotropy(
@@ -313,7 +317,7 @@ class TestPairingCorrelator:
 
 
 class TestOTOCSyncProbe:
-    def test_otoc_sync_scan(self):
+    def test_otoc_sync_scan(self) -> None:
         from scpn_quantum_control.analysis.otoc_sync_probe import otoc_sync_scan
 
         scan = otoc_sync_scan(
@@ -321,7 +325,7 @@ class TestOTOCSyncProbe:
         )
         assert len(scan.K_base_values) == 2
 
-    def test_compare_otoc_vs_R(self):
+    def test_compare_otoc_vs_R(self) -> None:
         from scpn_quantum_control.analysis.otoc_sync_probe import compare_otoc_vs_R, otoc_sync_scan
 
         scan = otoc_sync_scan(

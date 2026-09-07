@@ -33,7 +33,7 @@ Inspired by QuSpin (Weinberg & Bukov, SciPost 2017).
 from __future__ import annotations
 
 from math import comb
-from typing import Any
+from typing import Any, TypeVar
 
 import numpy as np
 from numpy.typing import NDArray
@@ -106,12 +106,33 @@ def largest_sector_dim(n: int) -> int:
     return comb(n, n // 2)
 
 
+_ScalarT = TypeVar("_ScalarT", bound=np.generic)
+
+
 def project_to_sector(
-    H_full: NDArray[np.complex128],
+    H_full: NDArray[_ScalarT],
     sector_indices: NDArray[np.intp],
-) -> NDArray[np.complex128]:
-    """Project full Hamiltonian onto a magnetisation sector."""
-    return np.asarray(H_full[np.ix_(sector_indices, sector_indices)])
+) -> NDArray[_ScalarT]:
+    """Project full Hamiltonian onto a magnetisation sector.
+
+    The projection is a symmetric index selection, so the block carries the
+    dtype of ``H_full`` unchanged — a real Hamiltonian projects to a real
+    block, a complex one to a complex block.
+
+    Parameters
+    ----------
+    H_full : ndarray of shape (2**n, 2**n)
+        Full Hamiltonian in the computational basis.
+    sector_indices : ndarray of intp
+        Basis-state indices spanning one magnetisation sector.
+
+    Returns
+    -------
+    ndarray of shape (len(sector_indices), len(sector_indices))
+        The sector block, in the dtype of ``H_full``.
+    """
+    block: NDArray[_ScalarT] = np.asarray(H_full[np.ix_(sector_indices, sector_indices)])
+    return block
 
 
 def _require_sector_dense_workspace(

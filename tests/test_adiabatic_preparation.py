@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pytest
 
@@ -21,6 +23,9 @@ from scpn_quantum_control.phase.adiabatic_preparation import (
     adiabatic_time_scaling,
 )
 
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
 
 def _ring_topology(n: int) -> np.ndarray:
     T = np.zeros((n, n))
@@ -31,7 +36,7 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestAdiabaticRamp:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -39,14 +44,14 @@ class TestAdiabaticRamp:
         assert isinstance(result, AdiabaticResult)
         assert len(result.times) == 21
 
-    def test_fidelity_starts_at_one(self):
+    def test_fidelity_starts_at_one(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
         result = adiabatic_ramp(omega, T, K_target=2.0, T_total=5.0, n_steps=15)
         assert result.fidelity[0] > 0.99
 
-    def test_slow_ramp_before_transition(self):
+    def test_slow_ramp_before_transition(self) -> None:
         """Slow ramp below the small-system gap minimum should maintain fidelity."""
         n = 2
         T = _ring_topology(n)
@@ -55,7 +60,7 @@ class TestAdiabaticRamp:
         result = adiabatic_ramp(omega, T, K_target=1.0, T_total=30.0, n_steps=30)
         assert result.final_fidelity > 0.5
 
-    def test_fast_ramp_lower_fidelity(self):
+    def test_fast_ramp_lower_fidelity(self) -> None:
         """Very fast ramp → diabatic transitions → lower fidelity."""
         n = 2
         T = _ring_topology(n)
@@ -65,14 +70,14 @@ class TestAdiabaticRamp:
         # Slow should generally have better fidelity
         assert slow.final_fidelity >= fast.final_fidelity - 0.1
 
-    def test_gap_always_positive(self):
+    def test_gap_always_positive(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
         result = adiabatic_ramp(omega, T, K_target=3.0, T_total=5.0, n_steps=15)
         assert np.all(result.gap > 0)
 
-    def test_min_gap_location(self):
+    def test_min_gap_location(self) -> None:
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -80,7 +85,7 @@ class TestAdiabaticRamp:
         assert result.min_gap > 0
         assert 0 <= result.min_gap_K <= 5.0
 
-    def test_3qubit_ramp(self):
+    def test_3qubit_ramp(self) -> None:
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -88,11 +93,13 @@ class TestAdiabaticRamp:
         assert isinstance(result, AdiabaticResult)
         assert np.all(np.isfinite(result.fidelity))
 
-    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+    def test_rejects_dense_budget_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         T = _ring_topology(3)
         omega = OMEGA_N_16[:3]
 
-        def fail_dense(*args, **kwargs):
+        def fail_dense(*args: object, **kwargs: object) -> None:
             raise AssertionError("dense Hamiltonian builder must not run after budget rejection")
 
         monkeypatch.setattr(adiabatic_module, "knm_to_dense_matrix", fail_dense)
@@ -120,33 +127,49 @@ class TestAdiabaticRamp:
             (np.ones(2), np.array([[0.0, 1.0], [0.2, 0.0]]), {}, "symmetric"),
         ],
     )
-    def test_rejects_invalid_inputs(self, omega, topology, kwargs, match):
+    def test_rejects_invalid_inputs(
+        self,
+        omega: NDArray[np.float64],
+        topology: NDArray[np.float64],
+        kwargs: dict[str, float],
+        match: str,
+    ) -> None:
         call_kwargs = {"K_target": 2.0, "T_total": 5.0, "n_steps": 10}
         call_kwargs.update(kwargs)
         with pytest.raises(ValueError, match=match):
-            adiabatic_ramp(omega, topology, **call_kwargs)
+            # A **dict splat is matched against every keyword of the signature,
+            # including n_steps: int, which mypy cannot narrow per row.
+            adiabatic_ramp(omega, topology, **call_kwargs)  # type: ignore[arg-type]
 
-    def test_rejects_string_topology_coercion(self):
+    def test_rejects_string_topology_coercion(self) -> None:
         omega = OMEGA_N_16[:2]
         topology = [["0.0", "1.0"], ["1.0", "0.0"]]
 
         with pytest.raises(ValueError, match="K_topology must contain real numeric scalars"):
-            adiabatic_ramp(omega, topology, K_target=2.0, T_total=5.0, n_steps=10)
+            # A string topology is the input under test.
+            adiabatic_ramp(omega, topology, K_target=2.0, T_total=5.0, n_steps=10)  # type: ignore[arg-type]
 
-    def test_rejects_boolean_schedule_coercion(self):
+    def test_rejects_boolean_schedule_coercion(self) -> None:
         omega = OMEGA_N_16[:2]
         topology = _ring_topology(2)
 
         with pytest.raises(ValueError, match="T_total must be a real numeric scalar"):
             adiabatic_ramp(omega, topology, K_target=2.0, T_total=True, n_steps=10)
 
-    def test_rejects_ragged_omega_before_coercion(self):
+    def test_rejects_ragged_omega_before_coercion(self) -> None:
         topology = _ring_topology(2)
 
         with pytest.raises(ValueError, match="omega must be a rectangular numeric array"):
-            adiabatic_ramp([[1.0], [2.0, 3.0]], topology, K_target=2.0, T_total=5.0, n_steps=10)
+            # A ragged omega is the input under test.
+            adiabatic_ramp(
+                [[1.0], [2.0, 3.0]],  # type: ignore[arg-type]
+                topology,
+                K_target=2.0,
+                T_total=5.0,
+                n_steps=10,
+            )
 
-    def test_rejects_structured_topology_dtype(self):
+    def test_rejects_structured_topology_dtype(self) -> None:
         omega = OMEGA_N_16[:2]
         topology = np.array(
             [[(0.0, 0.0), (1.0, 0.0)], [(1.0, 0.0), (0.0, 0.0)]],
@@ -156,7 +179,7 @@ class TestAdiabaticRamp:
         with pytest.raises(ValueError, match="K_topology must contain real numeric scalars"):
             adiabatic_ramp(omega, topology, K_target=2.0, T_total=5.0, n_steps=10)
 
-    def test_rejects_vector_target_scalar(self):
+    def test_rejects_vector_target_scalar(self) -> None:
         omega = OMEGA_N_16[:2]
         topology = _ring_topology(2)
 
@@ -164,12 +187,13 @@ class TestAdiabaticRamp:
             adiabatic_ramp(
                 omega,
                 topology,
-                K_target=np.array([1.0, 2.0]),
+                # A vector where a scalar target is required is the input under test.
+                K_target=np.array([1.0, 2.0]),  # type: ignore[arg-type]
                 T_total=5.0,
                 n_steps=10,
             )
 
-    def test_rejects_nonvector_omega_shape(self):
+    def test_rejects_nonvector_omega_shape(self) -> None:
         topology = _ring_topology(2)
 
         with pytest.raises(ValueError, match="omega must be a one-dimensional vector"):
@@ -183,7 +207,7 @@ class TestAdiabaticRamp:
 
 
 class TestAdiabaticTimeScaling:
-    def test_returns_dict(self):
+    def test_returns_dict(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -194,14 +218,14 @@ class TestAdiabaticTimeScaling:
         assert "final_fidelity" in result
         assert len(result["T_total"]) == 2
 
-    def test_uses_default_time_grid(self):
+    def test_uses_default_time_grid(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
         result = adiabatic_time_scaling(omega, T, K_target=2.0, n_steps_per_T=5)
         assert result["T_total"] == [1.0, 2.0, 5.0, 10.0, 20.0]
 
-    def test_fidelity_increases_with_time(self):
+    def test_fidelity_increases_with_time(self) -> None:
         """Longer ramps should keep finite values in this finite-size diagnostic."""
         n = 2
         T = _ring_topology(n)
@@ -212,11 +236,11 @@ class TestAdiabaticTimeScaling:
         # Not guaranteed for all T, but large gap should show trend
         assert all(np.isfinite(f) for f in result["final_fidelity"])
 
-    def test_time_scaling_propagates_dense_budget(self, monkeypatch):
+    def test_time_scaling_propagates_dense_budget(self, monkeypatch: pytest.MonkeyPatch) -> None:
         T = _ring_topology(3)
         omega = OMEGA_N_16[:3]
 
-        def fail_dense(*args, **kwargs):
+        def fail_dense(*args: object, **kwargs: object) -> None:
             raise AssertionError("dense Hamiltonian builder must not run after budget rejection")
 
         monkeypatch.setattr(adiabatic_module, "knm_to_dense_matrix", fail_dense)
@@ -240,7 +264,9 @@ class TestAdiabaticTimeScaling:
             (np.array([1.0]), 0, "n_steps_per_T"),
         ],
     )
-    def test_time_scaling_rejects_invalid_inputs(self, T_values, n_steps_per_T, match):
+    def test_time_scaling_rejects_invalid_inputs(
+        self, T_values: NDArray[np.float64], n_steps_per_T: int, match: str
+    ) -> None:
         T = _ring_topology(2)
         omega = OMEGA_N_16[:2]
 
@@ -253,7 +279,7 @@ class TestAdiabaticTimeScaling:
                 n_steps_per_T=n_steps_per_T,
             )
 
-    def test_time_scaling_rejects_string_time_grid_coercion(self):
+    def test_time_scaling_rejects_string_time_grid_coercion(self) -> None:
         T = _ring_topology(2)
         omega = OMEGA_N_16[:2]
 
@@ -262,7 +288,8 @@ class TestAdiabaticTimeScaling:
                 omega,
                 T,
                 K_target=2.0,
-                T_values=["1.0", "2.0"],
+                # A string time grid is the input under test.
+                T_values=["1.0", "2.0"],  # type: ignore[arg-type]
                 n_steps_per_T=10,
             )
 
@@ -273,7 +300,7 @@ class TestAdiabaticTimeScaling:
 
 
 class TestAdiabaticPhysics:
-    def test_fidelity_bounded_0_1(self):
+    def test_fidelity_bounded_0_1(self) -> None:
         """Fidelity must be in [0, 1]."""
         T = _ring_topology(2)
         omega = OMEGA_N_16[:2]
@@ -281,7 +308,7 @@ class TestAdiabaticPhysics:
         assert np.all(result.fidelity >= -1e-10)
         assert np.all(result.fidelity <= 1.0 + 1e-10)
 
-    def test_K_ramp_monotonic(self):
+    def test_K_ramp_monotonic(self) -> None:
         """Coupling should ramp from 0 to K_target monotonically."""
         T = _ring_topology(2)
         omega = OMEGA_N_16[:2]
@@ -295,7 +322,7 @@ class TestAdiabaticPhysics:
 
 
 class TestAdiabaticPipeline:
-    def test_pipeline_knm_to_adiabatic(self):
+    def test_pipeline_knm_to_adiabatic(self) -> None:
         """Full pipeline: Knm topology → adiabatic ramp → fidelity tracking.
         Verifies adiabatic module is wired end-to-end.
         """

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import sys
 from math import comb
+from typing import TYPE_CHECKING, NoReturn
 
 import numpy as np
 import pytest
@@ -27,8 +28,11 @@ from scpn_quantum_control.analysis.magnetisation_sectors import (
 )
 from scpn_quantum_control.dense_budget import DenseAllocationError
 
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
-def _system(n: int = 4):
+
+def _system(n: int = 4) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     omega = np.linspace(0.8, 1.2, n)
     return K, omega
@@ -37,14 +41,14 @@ def _system(n: int = 4):
 class TestBasisPartition:
     """Verify exhaustive, disjoint basis partitioning by magnetisation."""
 
-    def test_total_count(self):
+    def test_total_count(self) -> None:
         """Keep every computational-basis state in exactly one sector count."""
         for n in [2, 4, 6, 8]:
             sectors = basis_by_magnetisation(n)
             total = sum(len(v) for v in sectors.values())
             assert total == 2**n, f"n={n}: {total} != {2**n}"
 
-    def test_no_overlap(self):
+    def test_no_overlap(self) -> None:
         """Keep sector index sets disjoint."""
         sectors = basis_by_magnetisation(4)
         all_indices = []
@@ -52,12 +56,12 @@ class TestBasisPartition:
             all_indices.extend(v.tolist())
         assert len(all_indices) == len(set(all_indices))
 
-    def test_correct_M_values(self):
+    def test_correct_M_values(self) -> None:
         """Enumerate the allowed even four-spin magnetisations."""
         sectors = basis_by_magnetisation(4)
         assert set(sectors.keys()) == {-4, -2, 0, 2, 4}
 
-    def test_sector_sizes_match_binomial(self):
+    def test_sector_sizes_match_binomial(self) -> None:
         """Match enumerated sector sizes to their binomial dimensions."""
         n = 6
         sectors = basis_by_magnetisation(n)
@@ -65,7 +69,7 @@ class TestBasisPartition:
         for m, indices in sectors.items():
             assert len(indices) == dims[m], f"M={m}: {len(indices)} != {dims[m]}"
 
-    def test_n2_explicit(self):
+    def test_n2_explicit(self) -> None:
         """Match every two-spin basis state to its explicit sector."""
         sectors = basis_by_magnetisation(2)
         # |00⟩=M+2, |01⟩=|10⟩=M0, |11⟩=M-2
@@ -77,18 +81,18 @@ class TestBasisPartition:
 class TestSectorDimensions:
     """Verify analytic magnetisation-sector dimensions."""
 
-    def test_sum_equals_hilbert_dim(self):
+    def test_sum_equals_hilbert_dim(self) -> None:
         """Recover the full Hilbert dimension by summing all sectors."""
         for n in [4, 6, 8, 10, 12]:
             dims = sector_dimensions(n)
             assert sum(dims.values()) == 2**n
 
-    def test_largest_is_central(self):
+    def test_largest_is_central(self) -> None:
         """Identify the central binomial sector as the largest."""
         for n in [4, 6, 8]:
             assert largest_sector_dim(n) == comb(n, n // 2)
 
-    def test_n16_largest(self):
+    def test_n16_largest(self) -> None:
         """Lock the exact largest-sector size for sixteen spins."""
         assert largest_sector_dim(16) == comb(16, 8)
         assert largest_sector_dim(16) == 12870
@@ -97,7 +101,7 @@ class TestSectorDimensions:
 class TestEighByMagnetisation:
     """Verify sector eigensolvers, budgets, and sparse-only allocation."""
 
-    def test_ground_energy_matches_full_ed(self):
+    def test_ground_energy_matches_full_ed(self) -> None:
         """Match the sector ground energy to full exact diagonalisation."""
         K, omega = _system(4)
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
@@ -113,7 +117,7 @@ class TestEighByMagnetisation:
             err_msg="U(1) sector ED must match full ED ground energy",
         )
 
-    def test_all_eigenvalues_match_full(self):
+    def test_all_eigenvalues_match_full(self) -> None:
         """Recover the complete full-space spectrum across all sectors."""
         K, omega = _system(4)
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
@@ -129,14 +133,14 @@ class TestEighByMagnetisation:
             err_msg="All U(1) sector eigenvalues must match full spectrum",
         )
 
-    def test_selective_sectors(self):
+    def test_selective_sectors(self) -> None:
         """Diagonalise only explicitly requested valid sectors."""
         K, omega = _system(4)
         result = eigh_by_magnetisation(K, omega, sectors=[0, 2])
         assert set(result["results"].keys()) == {0, 2}
         assert result["n_sectors_computed"] == 2
 
-    def test_invalid_requested_sector_returns_empty_result(self):
+    def test_invalid_requested_sector_returns_empty_result(self) -> None:
         """Return a typed empty summary for an entirely invalid selection."""
         K, omega = _system(4)
         result = eigh_by_magnetisation(K, omega, sectors=[3])
@@ -147,11 +151,15 @@ class TestEighByMagnetisation:
         assert result["ground_sector"] is None
         assert result["n_sectors_computed"] == 0
 
-    def test_rejects_sector_budget_before_sparse_sector_hamiltonian(self, monkeypatch):
+    def test_rejects_sector_budget_before_sparse_sector_hamiltonian(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Reject oversized eigensolver workspaces before sparse construction."""
         K, omega = _system(4)
 
-        def fail_if_sparse_sector_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_sparse_sector_hamiltonian_is_requested(
+            *args: object, **kwargs: object
+        ) -> NoReturn:  # noqa: ARG001
             raise AssertionError(
                 "sparse sector Hamiltonian allocation happened before budget gate"
             )
@@ -165,18 +173,22 @@ class TestEighByMagnetisation:
         with pytest.raises(DenseAllocationError, match="magnetisation sector"):
             eigh_by_magnetisation(K, omega, max_dense_gib=1e-12)
 
-    def test_ground_sector_identified(self):
+    def test_ground_sector_identified(self) -> None:
         """Report a ground sector present in the computed result map."""
         K, omega = _system(4)
         result = eigh_by_magnetisation(K, omega)
         gs = result["ground_sector"]
         assert gs in result["results"]
 
-    def test_build_sector_rejects_budget_before_sparse_sector_hamiltonian(self, monkeypatch):
+    def test_build_sector_rejects_budget_before_sparse_sector_hamiltonian(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Reject oversized dense conversion before sparse construction."""
         K, omega = _system(4)
 
-        def fail_if_sparse_sector_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_sparse_sector_hamiltonian_is_requested(
+            *args: object, **kwargs: object
+        ) -> NoReturn:  # noqa: ARG001
             raise AssertionError(
                 "sparse sector Hamiltonian allocation happened before budget gate"
             )
@@ -190,11 +202,15 @@ class TestEighByMagnetisation:
         with pytest.raises(DenseAllocationError, match="magnetisation sector"):
             build_sector_hamiltonian(K, omega, M=0, max_dense_gib=1e-12)
 
-    def test_sector_builder_does_not_use_full_dense_hamiltonian(self, monkeypatch):
+    def test_sector_builder_does_not_use_full_dense_hamiltonian(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Build a sector without allocating the full dense Hamiltonian."""
         K, omega = _system(4)
 
-        def fail_if_full_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_full_dense_hamiltonian_is_requested(
+            *args: object, **kwargs: object
+        ) -> NoReturn:  # noqa: ARG001
             raise AssertionError("full dense Hamiltonian path was used")
 
         monkeypatch.setattr(
@@ -209,11 +225,15 @@ class TestEighByMagnetisation:
         assert H_sec.shape == (len(indices), len(indices))
         np.testing.assert_allclose(H_sec, H_sec.conj().T, atol=1e-12)
 
-    def test_sector_builder_does_not_use_full_sparse_hamiltonian(self, monkeypatch):
+    def test_sector_builder_does_not_use_full_sparse_hamiltonian(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Build a sector without constructing the full sparse Hamiltonian."""
         K, omega = _system(4)
 
-        def fail_if_full_sparse_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_full_sparse_hamiltonian_is_requested(
+            *args: object, **kwargs: object
+        ) -> NoReturn:  # noqa: ARG001
             raise AssertionError("full sparse Hamiltonian path was used")
 
         monkeypatch.setattr(
@@ -228,11 +248,15 @@ class TestEighByMagnetisation:
         assert H_sec.shape == (len(indices), len(indices))
         np.testing.assert_allclose(H_sec, H_sec.conj().T, atol=1e-12)
 
-    def test_eigh_by_magnetisation_does_not_use_full_dense_hamiltonian(self, monkeypatch):
+    def test_eigh_by_magnetisation_does_not_use_full_dense_hamiltonian(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Diagonalise a sector without allocating the full dense matrix."""
         K, omega = _system(4)
 
-        def fail_if_full_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_full_dense_hamiltonian_is_requested(
+            *args: object, **kwargs: object
+        ) -> NoReturn:  # noqa: ARG001
             raise AssertionError("full dense Hamiltonian path was used")
 
         monkeypatch.setattr(
@@ -247,11 +271,15 @@ class TestEighByMagnetisation:
         assert result["n_sectors_computed"] == 1
         assert 0 in result["results"]
 
-    def test_eigh_by_magnetisation_does_not_use_full_sparse_hamiltonian(self, monkeypatch):
+    def test_eigh_by_magnetisation_does_not_use_full_sparse_hamiltonian(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Diagonalise a sector without constructing the full sparse matrix."""
         K, omega = _system(4)
 
-        def fail_if_full_sparse_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_full_sparse_hamiltonian_is_requested(
+            *args: object, **kwargs: object
+        ) -> NoReturn:  # noqa: ARG001
             raise AssertionError("full sparse Hamiltonian path was used")
 
         monkeypatch.setattr(
@@ -266,7 +294,7 @@ class TestEighByMagnetisation:
         assert result["n_sectors_computed"] == 1
         assert 0 in result["results"]
 
-    def test_n6_all_eigenvalues(self):
+    def test_n6_all_eigenvalues(self) -> None:
         """Match the full six-spin spectrum across sector blocks."""
         K, omega = _system(6)
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
@@ -277,7 +305,7 @@ class TestEighByMagnetisation:
         result = eigh_by_magnetisation(K, omega)
         np.testing.assert_allclose(result["eigvals_all"], e_full, atol=1e-10)
 
-    def test_n8_ground_energy(self):
+    def test_n8_ground_energy(self) -> None:
         """Match the full eight-spin ground energy across all sectors."""
         K, omega = _system(8)
         from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
@@ -293,19 +321,19 @@ class TestEighByMagnetisation:
 class TestLevelSpacing:
     """Verify within-sector level-spacing summaries."""
 
-    def test_r_bar_bounded(self):
+    def test_r_bar_bounded(self) -> None:
         """Keep the mean adjacent-gap ratio inside its mathematical bounds."""
         K, omega = _system(6)
         result = level_spacing_by_magnetisation(K, omega, M=0)
         assert 0 < result["r_bar"] < 1
 
-    def test_dimension_correct(self):
+    def test_dimension_correct(self) -> None:
         """Report the central sector's binomial dimension."""
         K, omega = _system(6)
         result = level_spacing_by_magnetisation(K, omega, M=0)
         assert result["dim"] == comb(6, 3)  # C(6,3) = 20
 
-    def test_default_m_is_zero_for_even_n(self):
+    def test_default_m_is_zero_for_even_n(self) -> None:
         """Default even systems to their zero-magnetisation sector."""
         K, omega = _system(4)
         result = level_spacing_by_magnetisation(K, omega)
@@ -315,22 +343,22 @@ class TestLevelSpacing:
 class TestMemoryEstimate:
     """Verify analytic memory and dimension estimates."""
 
-    def test_u1_smaller_than_z2(self):
+    def test_u1_smaller_than_z2(self) -> None:
         """Keep the largest U(1) block smaller than the Z2 block."""
         est = memory_estimate(16)
         assert est["u1_largest_mb"] < est["z2_sector_mb"]
 
-    def test_reduction_factor(self):
+    def test_reduction_factor(self) -> None:
         """Expose a material full-space reduction for sixteen spins."""
         est = memory_estimate(16)
         assert est["reduction_factor"] > 4  # 65536/12870 ≈ 5.1
 
-    def test_n16_u1_fits_32gb(self):
+    def test_n16_u1_fits_32gb(self) -> None:
         """Estimate the sixteen-spin U(1) block below 32 GB."""
         est = memory_estimate(16)
         assert est["u1_largest_mb"] < 32000
 
-    def test_n20_dimensions(self):
+    def test_n20_dimensions(self) -> None:
         """Lock full and largest-sector dimensions for twenty spins."""
         est = memory_estimate(20)
         assert est["full_dim"] == 2**20
@@ -346,28 +374,28 @@ class TestMemoryEstimate:
 class TestMagnetisationFunction:
     """Verify computational-basis magnetisation labels."""
 
-    def test_all_up(self):
+    def test_all_up(self) -> None:
         """Assign maximal magnetisation to the all-up state."""
         from scpn_quantum_control.analysis.magnetisation_sectors import _magnetisation
 
         # |0000⟩ = k=0, all spin-up → M = +N
         assert _magnetisation(0, 4) == 4
 
-    def test_all_down(self):
+    def test_all_down(self) -> None:
         """Assign minimal magnetisation to the all-down state."""
         from scpn_quantum_control.analysis.magnetisation_sectors import _magnetisation
 
         # |1111⟩ = k=15 → M = -4
         assert _magnetisation(15, 4) == -4
 
-    def test_single_flip(self):
+    def test_single_flip(self) -> None:
         """Reduce magnetisation by two for one flipped spin."""
         from scpn_quantum_control.analysis.magnetisation_sectors import _magnetisation
 
         # |0001⟩ = k=1 → 1 one → M = 4-2 = 2
         assert _magnetisation(1, 4) == 2
 
-    def test_half_filled(self):
+    def test_half_filled(self) -> None:
         """Assign zero magnetisation to a half-filled even system."""
         from scpn_quantum_control.analysis.magnetisation_sectors import _magnetisation
 
@@ -378,7 +406,7 @@ class TestMagnetisationFunction:
 class TestProjectToSector:
     """Verify dense indexing into selected sector subspaces."""
 
-    def test_sector_matrix_shape(self):
+    def test_sector_matrix_shape(self) -> None:
         """Return a square block sized by the selected indices."""
         from scpn_quantum_control.analysis.magnetisation_sectors import project_to_sector
 
@@ -388,7 +416,7 @@ class TestProjectToSector:
         H_sec = project_to_sector(H, indices)
         assert H_sec.shape == (3, 3)
 
-    def test_full_hilbert_identity(self):
+    def test_full_hilbert_identity(self) -> None:
         """Preserve an identity matrix when every index is selected."""
         from scpn_quantum_control.analysis.magnetisation_sectors import project_to_sector
 
@@ -401,7 +429,7 @@ class TestProjectToSector:
 class TestBuildSectorHamiltonian:
     """Verify direct dense-sector Hamiltonian construction."""
 
-    def test_m0_sector_4qubit(self):
+    def test_m0_sector_4qubit(self) -> None:
         """Build the six-dimensional central block for four spins."""
         from scpn_quantum_control.analysis.magnetisation_sectors import (
             build_sector_hamiltonian,
@@ -412,7 +440,7 @@ class TestBuildSectorHamiltonian:
         assert H_sec.shape[0] == comb(4, 2)  # C(4,2) = 6
         assert len(indices) == 6
 
-    def test_invalid_m_raises(self):
+    def test_invalid_m_raises(self) -> None:
         """Reject a magnetisation outside the system's parity ladder."""
         import pytest
 
@@ -424,7 +452,7 @@ class TestBuildSectorHamiltonian:
         with pytest.raises(ValueError, match="not valid"):
             build_sector_hamiltonian(K, omega, M=3)  # 3 not in {-4,-2,0,2,4}
 
-    def test_sector_hermitian(self):
+    def test_sector_hermitian(self) -> None:
         """Preserve Hermiticity after sector construction."""
         from scpn_quantum_control.analysis.magnetisation_sectors import (
             build_sector_hamiltonian,
@@ -438,18 +466,18 @@ class TestBuildSectorHamiltonian:
 class TestOddN:
     """Verify odd-system sector enumeration and defaults."""
 
-    def test_odd_n_default_m_is_one(self):
+    def test_odd_n_default_m_is_one(self) -> None:
         """Default odd systems to positive unit magnetisation."""
         K, omega = _system(3)
         result = level_spacing_by_magnetisation(K, omega)
         assert result["M"] == 1  # odd N → default M=1
 
-    def test_odd_n_sectors(self):
+    def test_odd_n_sectors(self) -> None:
         """Enumerate only odd magnetisations for an odd system."""
         sectors = basis_by_magnetisation(3)
         assert set(sectors.keys()) == {-3, -1, 1, 3}
 
-    def test_odd_n_eigenvalues(self):
+    def test_odd_n_eigenvalues(self) -> None:
         """Recover the full odd-system spectrum from its sectors."""
         K, omega = _system(3)
         result = eigh_by_magnetisation(K, omega)
@@ -463,7 +491,7 @@ class TestOddN:
 class TestLevelSpacingEdgeCases:
     """Verify level-spacing refusal and small-spectrum summaries."""
 
-    def test_invalid_sector_nan(self):
+    def test_invalid_sector_nan(self) -> None:
         """Return NaN and zero dimension for an invalid sector."""
         K, omega = _system(4)
         result = level_spacing_by_magnetisation(K, omega, M=3)
@@ -472,7 +500,7 @@ class TestLevelSpacingEdgeCases:
         assert result["M"] == 3
         assert result["dim"] == 0
 
-    def test_one_state_sector_has_nan_spacing(self):
+    def test_one_state_sector_has_nan_spacing(self) -> None:
         """Return NaN when a one-state sector has no adjacent gaps."""
         K, omega = _system(4)
         result = level_spacing_by_magnetisation(K, omega, M=4)
@@ -480,7 +508,7 @@ class TestLevelSpacingEdgeCases:
         assert np.isnan(result["r_bar"])
         assert result["dim"] == 1
 
-    def test_n_gaps_present(self):
+    def test_n_gaps_present(self) -> None:
         """Report a positive gap count for a nontrivial central sector."""
         K, omega = _system(6)
         result = level_spacing_by_magnetisation(K, omega, M=0)
@@ -491,7 +519,7 @@ class TestLevelSpacingEdgeCases:
 class TestPythonFallback:
     """Verify accelerator fallback and runtime-error boundaries."""
 
-    def test_basis_by_magnetisation_python_path(self):
+    def test_basis_by_magnetisation_python_path(self) -> None:
         """Force Python fallback by mocking Rust import failure."""
         from unittest.mock import patch
 
@@ -511,12 +539,14 @@ class TestPythonFallback:
             # Reload back to normal
             importlib.reload(_mod)
 
-    def test_basis_by_magnetisation_does_not_swallow_engine_runtime_errors(self, monkeypatch):
+    def test_basis_by_magnetisation_does_not_swallow_engine_runtime_errors(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Propagate accelerator runtime failures instead of falling back."""
 
         class BrokenEngine:
             @staticmethod
-            def magnetisation_labels(n):  # noqa: ARG004
+            def magnetisation_labels(n: int) -> NoReturn:  # noqa: ARG004
                 raise RuntimeError("accelerator failed")
 
         monkeypatch.setitem(sys.modules, "scpn_quantum_engine", BrokenEngine())
@@ -528,7 +558,7 @@ class TestPythonFallback:
 class TestEighInvalidSector:
     """Verify mixed valid and invalid sector selections."""
 
-    def test_invalid_sector_skipped(self):
+    def test_invalid_sector_skipped(self) -> None:
         """Requesting a non-existent M value is silently skipped."""
         K, omega = _system(4)
         result = eigh_by_magnetisation(K, omega, sectors=[0, 99])
