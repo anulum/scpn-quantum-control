@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import Statevector
 
 from scpn_quantum_control.bridge import knm_to_hamiltonian
@@ -20,7 +21,9 @@ from scpn_quantum_control.hardware.classical import (
 from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
 
 
-def test_kuramoto_solver_vs_classical_ground_energy(knm_4q):
+def test_kuramoto_solver_vs_classical_ground_energy(
+    knm_4q: tuple[NDArray[np.float64], NDArray[np.float64]],
+) -> None:
     """QuantumKuramotoSolver Hamiltonian matches classical_exact_diag ground energy."""
     K, omega = knm_4q
 
@@ -39,7 +42,9 @@ def test_kuramoto_solver_vs_classical_ground_energy(knm_4q):
     assert np.allclose(mat_solver, mat_bridge, atol=1e-10)
 
 
-def test_classical_diag_vs_numpy_eigvalsh(knm_4q):
+def test_classical_diag_vs_numpy_eigvalsh(
+    knm_4q: tuple[NDArray[np.float64], NDArray[np.float64]],
+) -> None:
     """classical_exact_diag matches direct numpy eigvalsh."""
     K, omega = knm_4q
 
@@ -55,14 +60,16 @@ def test_classical_diag_vs_numpy_eigvalsh(knm_4q):
     assert abs(E0_classical - E0_numpy) < 1e-10
 
 
-def test_classical_kuramoto_R_positive():
+def test_classical_kuramoto_R_positive() -> None:
     """Classical Kuramoto integration produces R in [0, 1]."""
     result = classical_kuramoto_reference(n_osc=4, t_max=1.0, dt=0.01)
     R_final = result["R"][-1]
     assert 0.0 <= R_final <= 1.0 + 1e-10
 
 
-def test_energy_expectation_ground_state(knm_4q):
+def test_energy_expectation_ground_state(
+    knm_4q: tuple[NDArray[np.float64], NDArray[np.float64]],
+) -> None:
     """Ground state of H has energy matching the lowest eigenvalue."""
     K, omega = knm_4q
 
@@ -79,7 +86,9 @@ def test_energy_expectation_ground_state(knm_4q):
     assert abs(E - eigvals[0]) < 1e-8
 
 
-def test_hamiltonian_commutes_with_total_z_parity(knm_4q):
+def test_hamiltonian_commutes_with_total_z_parity(
+    knm_4q: tuple[NDArray[np.float64], NDArray[np.float64]],
+) -> None:
     """XY Hamiltonian conserves total Z parity (XX+YY preserves excitation number mod 2)."""
     K, omega = knm_4q
 
@@ -97,7 +106,9 @@ def test_hamiltonian_commutes_with_total_z_parity(knm_4q):
     assert np.allclose(commutator, 0, atol=1e-10), "H should commute with Z-parity"
 
 
-def test_solver_energy_matches_bridge_energy(knm_4q):
+def test_solver_energy_matches_bridge_energy(
+    knm_4q: tuple[NDArray[np.float64], NDArray[np.float64]],
+) -> None:
     """QuantumKuramotoSolver energy matches bridge Hamiltonian matrix energy."""
     K, omega = knm_4q
 
@@ -111,7 +122,7 @@ def test_solver_energy_matches_bridge_energy(knm_4q):
     np.testing.assert_allclose(exact_diag["ground_energy"], eigvals[0], atol=1e-10)
 
 
-def test_bridge_hamiltonian_matches_solver_for_multiple_sizes():
+def test_bridge_hamiltonian_matches_solver_for_multiple_sizes() -> None:
     """Verify Hamiltonian consistency for L=2,3,4."""
     from scpn_quantum_control.bridge import OMEGA_N_16, build_knm_paper27
 
@@ -132,14 +143,14 @@ def test_bridge_hamiltonian_matches_solver_for_multiple_sizes():
         assert np.allclose(mat_s, mat_b, atol=1e-10), f"L={L}: mismatch"
 
 
-def test_classical_R_trajectory_all_positive():
+def test_classical_R_trajectory_all_positive() -> None:
     """All R values in classical trajectory must be in [0, 1]."""
     result = classical_kuramoto_reference(n_osc=4, t_max=2.0, dt=0.01)
     for R in result["R"]:
         assert 0.0 <= R <= 1.0 + 1e-10
 
 
-def test_classical_kuramoto_theta_finite():
+def test_classical_kuramoto_theta_finite() -> None:
     """All theta values from classical Kuramoto must be finite."""
     result = classical_kuramoto_reference(n_osc=4, t_max=1.0, dt=0.01)
     assert np.all(np.isfinite(result["theta"][-1]))
@@ -150,7 +161,7 @@ def test_classical_kuramoto_theta_finite():
 # ---------------------------------------------------------------------------
 
 
-def test_pipeline_cross_module_full():
+def test_pipeline_cross_module_full() -> None:
     """Full cross-module pipeline: Knm → solver H → bridge H → exact diag → classical.
     Verifies all three computation paths agree and are wired end-to-end.
     """
@@ -180,7 +191,7 @@ def test_pipeline_cross_module_full():
     print(f"  E_0 = {exact['ground_energy']:.4f}")
 
 
-def test_rust_and_python_kuramoto_both_evolve():
+def test_rust_and_python_kuramoto_both_evolve() -> None:
     """Rust Euler and Python reference both evolve phases — cross-validated."""
     try:
         import scpn_quantum_engine as eng

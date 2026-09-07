@@ -9,9 +9,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.hardware.classical as classical_backend
 import scpn_quantum_control.phase.cross_domain_transfer as transfer_module
@@ -34,6 +37,8 @@ class _FakeAnsatz:
 
 
 class _FakeStatevector:
+    _instruction: NDArray[np.float64]
+
     @classmethod
     def from_instruction(cls, instruction: np.ndarray) -> _FakeStatevector:
         instance = cls()
@@ -44,7 +49,9 @@ class _FakeStatevector:
         return complex(float(np.sum(self._instruction**2)), 0.0)
 
 
-def _install_fake_transfer_boundaries(monkeypatch, *, n_params: int = 4) -> list[np.ndarray]:
+def _install_fake_transfer_boundaries(
+    monkeypatch: pytest.MonkeyPatch, *, n_params: int = 4
+) -> list[np.ndarray]:
     calls: list[np.ndarray] = []
 
     def fake_ansatz(_K: np.ndarray, *, reps: int = 2) -> _FakeAnsatz:
@@ -75,30 +82,30 @@ def _install_fake_transfer_boundaries(monkeypatch, *, n_params: int = 4) -> list
 
 
 class TestBuildSystems:
-    def test_returns_four_systems(self):
+    def test_returns_four_systems(self) -> None:
         systems = build_systems(n_qubits=3)
         assert len(systems) == 4
 
-    def test_system_shapes(self):
+    def test_system_shapes(self) -> None:
         systems = build_systems(n_qubits=4)
         for s in systems:
             assert isinstance(s, PhysicalSystem)
             assert s.K.shape == (4, 4)
             assert len(s.omega) == 4
 
-    def test_names_unique(self):
+    def test_names_unique(self) -> None:
         systems = build_systems(n_qubits=3)
         names = [s.name for s in systems]
         assert len(names) == len(set(names))
 
-    def test_K_symmetric(self):
+    def test_K_symmetric(self) -> None:
         systems = build_systems(n_qubits=4)
         for s in systems:
             np.testing.assert_array_almost_equal(s.K, s.K.T)
 
 
 class TestTransferExperiment:
-    def test_returns_result(self, monkeypatch):
+    def test_returns_result(self, monkeypatch: pytest.MonkeyPatch) -> None:
         _install_fake_transfer_boundaries(monkeypatch)
         systems = build_systems(n_qubits=3)
         result = transfer_experiment(systems[0], systems[1], reps=1, maxiter=10)
@@ -106,7 +113,7 @@ class TestTransferExperiment:
         assert result.source_system == systems[0].name
         assert result.target_system == systems[1].name
 
-    def test_energies_finite(self, monkeypatch):
+    def test_energies_finite(self, monkeypatch: pytest.MonkeyPatch) -> None:
         _install_fake_transfer_boundaries(monkeypatch)
         systems = build_systems(n_qubits=3)
         result = transfer_experiment(systems[0], systems[1], reps=1, maxiter=10)
@@ -114,7 +121,7 @@ class TestTransferExperiment:
         assert np.isfinite(result.transfer_init_energy)
         assert np.isfinite(result.exact_energy)
 
-    def test_exact_is_lower_bound(self, monkeypatch):
+    def test_exact_is_lower_bound(self, monkeypatch: pytest.MonkeyPatch) -> None:
         _install_fake_transfer_boundaries(monkeypatch)
         systems = build_systems(n_qubits=3)
         result = transfer_experiment(systems[0], systems[1], reps=1, maxiter=20)
@@ -122,7 +129,7 @@ class TestTransferExperiment:
         assert result.random_init_energy >= result.exact_energy - 0.1
         assert result.transfer_init_energy >= result.exact_energy - 0.1
 
-    def test_speedup_positive(self, monkeypatch):
+    def test_speedup_positive(self, monkeypatch: pytest.MonkeyPatch) -> None:
         calls = _install_fake_transfer_boundaries(monkeypatch, n_params=3)
         systems = build_systems(n_qubits=3)
         result = transfer_experiment(systems[0], systems[1], reps=1, maxiter=15)
@@ -130,8 +137,14 @@ class TestTransferExperiment:
         assert len(calls) == 3
         assert calls[2].shape == calls[1].shape
 
-    def test_vqe_optimize_uses_cost_function(self, monkeypatch):
-        def fake_minimize(cost, init_params, *, method, options):
+    def test_vqe_optimize_uses_cost_function(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        def fake_minimize(
+            cost: Callable[[NDArray[np.float64]], float],
+            init_params: NDArray[np.float64],
+            *,
+            method: str,
+            options: dict[str, int],
+        ) -> SimpleNamespace:
             assert method == "COBYLA"
             assert options["maxiter"] == 7
             value = cost(np.asarray(init_params, dtype=np.float64))
@@ -153,13 +166,13 @@ class TestTransferExperiment:
 
 
 class TestRunTransferMatrix:
-    def test_all_pairs(self, monkeypatch):
+    def test_all_pairs(self, monkeypatch: pytest.MonkeyPatch) -> None:
         _install_fake_transfer_boundaries(monkeypatch)
         results = run_transfer_matrix(n_qubits=2, reps=1, maxiter=5)
         # 4 systems × 3 targets each = 12 pairs
         assert len(results) == 12
 
-    def test_no_self_transfer(self, monkeypatch):
+    def test_no_self_transfer(self, monkeypatch: pytest.MonkeyPatch) -> None:
         _install_fake_transfer_boundaries(monkeypatch)
         results = run_transfer_matrix(n_qubits=2, reps=1, maxiter=5)
         for r in results:
@@ -167,7 +180,7 @@ class TestRunTransferMatrix:
 
 
 class TestSummarizeTransfer:
-    def test_summary_keys(self, monkeypatch):
+    def test_summary_keys(self, monkeypatch: pytest.MonkeyPatch) -> None:
         _install_fake_transfer_boundaries(monkeypatch)
         results = run_transfer_matrix(n_qubits=2, reps=1, maxiter=5)
         summary = summarize_transfer(results)
@@ -177,6 +190,6 @@ class TestSummarizeTransfer:
         assert "mean_speedup" in summary
         assert summary["n_pairs"] == 12
 
-    def test_empty_results(self):
+    def test_empty_results(self) -> None:
         summary = summarize_transfer([])
         assert summary["n_pairs"] == 0

@@ -42,10 +42,16 @@ property of the physics, not of the specific solver we used.
 
 from __future__ import annotations
 
+from typing import Any, TypeAlias
+
 import numpy as np
 import pytest
 
 qutip = pytest.importorskip("qutip")
+
+# `qutip` arrives through `importorskip`, so it is a runtime value rather than
+# an importable module for the type checker; `Qobj` cannot be named statically.
+QobjLike: TypeAlias = Any
 
 # JAX defaults to complex64. Our tolerance of 1e-10 against Qiskit's
 # complex128 build would trigger a false negative, so the Dynamiqs
@@ -82,12 +88,12 @@ def _H_qutip(K: np.ndarray, omega: np.ndarray) -> np.ndarray:
     """
     n = len(omega)
 
-    def _single(i: int, op: qutip.Qobj) -> qutip.Qobj:
+    def _single(i: int, op: QobjLike) -> QobjLike:
         ops = [qutip.qeye(2)] * n
         ops[i] = op
         return qutip.tensor(list(reversed(ops)))
 
-    def _pair(i: int, j: int, op1: qutip.Qobj, op2: qutip.Qobj) -> qutip.Qobj:
+    def _pair(i: int, j: int, op1: QobjLike, op2: QobjLike) -> QobjLike:
         ops = [qutip.qeye(2)] * n
         ops[i] = op1
         ops[j] = op2
@@ -136,7 +142,7 @@ def _H_dynamiqs(K: np.ndarray, omega: np.ndarray) -> np.ndarray:
     SY = jnp.array([[0, -1j], [1j, 0]], dtype=jnp.complex64)
     SZ = jnp.array([[1, 0], [0, -1]], dtype=jnp.complex64)
 
-    def _kron_list(ops: list) -> object:
+    def _kron_list(ops: list[Any]) -> object:
         out = ops[0]
         for op in ops[1:]:
             out = jnp.kron(out, op)
@@ -282,7 +288,7 @@ def _evolve_exact(H: np.ndarray, t: float) -> np.ndarray:
     psi0 = np.zeros(dim, dtype=complex)
     psi0[0] = 1.0  # |0...0⟩ in big-endian Qiskit convention
     U = expm(-1j * H * t)
-    return U @ psi0
+    return np.asarray(U @ psi0)
 
 
 @pytest.mark.parametrize(

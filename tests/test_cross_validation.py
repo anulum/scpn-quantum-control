@@ -50,7 +50,7 @@ EVEN_SIZES = [2, 4, 6, 8]
 
 class TestXYvsXXZ:
     @pytest.mark.parametrize("n", SIZES)
-    def test_xy_equals_xxz_delta0(self, n):
+    def test_xy_equals_xxz_delta0(self, n: int) -> None:
         """knm_to_hamiltonian(K,w) == knm_to_xxz_hamiltonian(K,w, delta=0)."""
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -69,7 +69,7 @@ class TestXYvsXXZ:
 
 class TestSparseVsDenseR:
     @pytest.mark.parametrize("n", SIZES)
-    def test_initial_state(self, n):
+    def test_initial_state(self, n: int) -> None:
         omega = OMEGA_N_16[:n]
         psi = _build_initial_state(n, omega)
         R_d = _state_order_param(psi, n)
@@ -77,7 +77,7 @@ class TestSparseVsDenseR:
         np.testing.assert_allclose(R_s, R_d, atol=1e-14)
 
     @pytest.mark.parametrize("n", SIZES)
-    def test_evolved_state(self, n):
+    def test_evolved_state(self, n: int) -> None:
         """After 5 evolution steps, sparse and dense R still agree."""
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -92,7 +92,7 @@ class TestSparseVsDenseR:
         np.testing.assert_allclose(R_s, R_d, atol=1e-13)
 
     @pytest.mark.parametrize("n", SMALL_SIZES)
-    def test_computational_basis_states(self, n):
+    def test_computational_basis_states(self, n: int) -> None:
         """R on each computational basis state agrees between paths."""
         dim = 2**n
         for idx in range(min(8, dim)):
@@ -103,7 +103,7 @@ class TestSparseVsDenseR:
             np.testing.assert_allclose(R_s, R_d, atol=1e-14)
 
     @pytest.mark.parametrize("n", SMALL_SIZES)
-    def test_random_states(self, n):
+    def test_random_states(self, n: int) -> None:
         """10 random normalised states, sparse == dense."""
         rng = np.random.default_rng(7777)
         dim = 2**n
@@ -115,7 +115,7 @@ class TestSparseVsDenseR:
             np.testing.assert_allclose(R_s, R_d, atol=1e-13)
 
     @pytest.mark.parametrize("n", SMALL_SIZES)
-    def test_bell_states(self, n):
+    def test_bell_states(self, n: int) -> None:
         """Bell-like entangled states: sparse == dense."""
         if n < 2:
             pytest.skip("Need at least 2 qubits for Bell state")
@@ -135,7 +135,7 @@ class TestSparseVsDenseR:
 
 class TestEvolutionConsistency:
     @pytest.mark.parametrize("n", SMALL_SIZES)
-    def test_evolution_R_matches_manual(self, n):
+    def test_evolution_R_matches_manual(self, n: int) -> None:
         """classical_exact_evolution R(t) should match manual U@psi loop."""
         K = build_knm_paper27(L=n)
         omega = OMEGA_N_16[:n]
@@ -160,7 +160,7 @@ class TestEvolutionConsistency:
             )
 
     @pytest.mark.parametrize("n", SMALL_SIZES)
-    def test_dt_independence(self, n):
+    def test_dt_independence(self, n: int) -> None:
         """Total unitary is same regardless of dt subdivision."""
         t_total = 0.1
         r_coarse = classical_exact_evolution(n, t_max=t_total, dt=t_total)
@@ -175,7 +175,7 @@ class TestEvolutionConsistency:
 
 class TestDiagConsistency:
     @pytest.mark.parametrize("n", [4, 6, 8])
-    def test_sparse_vs_dense_ground_energy(self, n):
+    def test_sparse_vs_dense_ground_energy(self, n: int) -> None:
         """k_eigenvalues sparse solver agrees with full dense diag.
 
         n=2 excluded: eigsh requires k < 2^n - 1, so k=4 fails for dim=4.
@@ -187,7 +187,7 @@ class TestDiagConsistency:
         )
 
     @pytest.mark.parametrize("n", [4, 6, 8])
-    def test_sparse_vs_dense_spectral_gap(self, n):
+    def test_sparse_vs_dense_spectral_gap(self, n: int) -> None:
         """n=2 excluded: eigsh k >= N-1 constraint."""
         result_dense = classical_exact_diag(n)
         result_sparse = classical_exact_diag(n, k_eigenvalues=4)
@@ -196,7 +196,7 @@ class TestDiagConsistency:
         )
 
     @pytest.mark.parametrize("n", SMALL_SIZES)
-    def test_sparse_vs_dense_eigenvalues(self, n):
+    def test_sparse_vs_dense_eigenvalues(self, n: int) -> None:
         """First k eigenvalues from sparse should match dense."""
         result_dense = classical_exact_diag(n)
         k = min(4, 2**n - 2)
@@ -213,7 +213,7 @@ class TestDiagConsistency:
 
 class TestRustVsPython:
     @pytest.mark.parametrize("n", SMALL_SIZES)
-    def test_kuramoto_trajectory_agreement(self, n):
+    def test_kuramoto_trajectory_agreement(self, n: int) -> None:
         """If Rust engine is available, trajectories should agree with Python."""
         try:
             import scpn_quantum_engine  # noqa: F401
@@ -257,7 +257,7 @@ class TestRustVsPython:
 
 class TestTrotterConvergence:
     @pytest.mark.parametrize("n", SMALL_SIZES)
-    def test_trotter_converges_to_exact(self, n):
+    def test_trotter_converges_to_exact(self, n: int) -> None:
         """Trotter R should approach exact R as reps increase."""
         from qiskit.quantum_info import Operator
 
@@ -268,6 +268,7 @@ class TestTrotterConvergence:
         solver = QuantumKuramotoSolver(n, K, omega)
         solver.build_hamiltonian()
 
+        assert solver._hamiltonian is not None
         H_mat = np.array(solver._hamiltonian.to_matrix())
         U_exact = expm(-1j * H_mat * t)
 

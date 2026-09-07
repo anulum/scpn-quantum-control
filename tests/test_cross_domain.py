@@ -16,36 +16,36 @@ from scpn_quantum_control.applications.cross_domain import (
 
 
 class TestCrossDomainValidation:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         result = run_cross_domain_validation()
         assert isinstance(result, CrossDomainResult)
 
-    def test_five_systems(self):
+    def test_five_systems(self) -> None:
         result = run_cross_domain_validation()
         assert len(result.system_names) == 5
         assert len(result.topology_correlations) == 5
         assert len(result.frequency_correlations) == 5
 
-    def test_correlations_bounded(self):
+    def test_correlations_bounded(self) -> None:
         result = run_cross_domain_validation()
         for r in result.topology_correlations:
             assert -1 <= r <= 1
         assert result.topology_similarity_proxies == result.topology_correlations
 
-    def test_best_system_in_list(self):
+    def test_best_system_in_list(self) -> None:
         result = run_cross_domain_validation()
         assert result.best_system in result.system_names
 
-    def test_mean_correlation_positive(self):
+    def test_mean_correlation_positive(self) -> None:
         result = run_cross_domain_validation()
         assert result.mean_correlation >= 0
         assert result.mean_similarity_proxy == result.mean_correlation
 
-    def test_n_above_threshold_bounded(self):
+    def test_n_above_threshold_bounded(self) -> None:
         result = run_cross_domain_validation()
         assert 0 <= result.n_above_threshold <= 5
 
-    def test_gap1_summary(self):
+    def test_gap1_summary(self) -> None:
         """Record the Gap 1 cross-domain validation results."""
         result = run_cross_domain_validation()
         print("\n  Cross-domain validation (Gap 1):")
@@ -62,26 +62,26 @@ class TestCrossDomainValidation:
         assert isinstance(result.best_correlation, float)
 
 
-def test_cross_domain_system_names_nonempty():
+def test_cross_domain_system_names_nonempty() -> None:
     result = run_cross_domain_validation()
     assert len(result.system_names) > 0
     for name in result.system_names:
         assert isinstance(name, str)
 
 
-def test_cross_domain_frequency_correlations_bounded():
+def test_cross_domain_frequency_correlations_bounded() -> None:
     result = run_cross_domain_validation()
     for r in result.frequency_correlations:
         assert -1 <= r <= 1
 
 
-def test_cross_domain_best_correlation_positive():
+def test_cross_domain_best_correlation_positive() -> None:
     result = run_cross_domain_validation()
     assert result.best_correlation > 0
     assert result.best_similarity_proxy == result.best_correlation
 
 
-def test_cross_domain_correlations_count():
+def test_cross_domain_correlations_count() -> None:
     result = run_cross_domain_validation()
     assert len(result.topology_correlations) == len(result.system_names)
     assert len(result.frequency_correlations) == len(result.system_names)

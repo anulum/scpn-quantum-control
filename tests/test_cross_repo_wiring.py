@@ -25,7 +25,7 @@ from scpn_quantum_control.identity.binding_spec import (
 
 
 class TestArcaneNeuronBridge:
-    def test_import_error_without_sc_neurocore(self):
+    def test_import_error_without_sc_neurocore(self) -> None:
         """ArcaneNeuronBridge raises ImportError if sc-neurocore not installed."""
         try:
             bridge = ArcaneNeuronBridge(2, 3)
@@ -36,24 +36,24 @@ class TestArcaneNeuronBridge:
             pass  # expected when sc-neurocore not available
 
     @pytest.fixture
-    def bridge(self):
+    def bridge(self) -> ArcaneNeuronBridge:
         try:
             return ArcaneNeuronBridge(2, 3, seed=42)
         except ImportError:
             pytest.skip("sc-neurocore not installed")
 
-    def test_step_neurons(self, bridge):
+    def test_step_neurons(self, bridge: ArcaneNeuronBridge) -> None:
         currents = np.array([0.5, 1.0, 1.5])
         spikes = bridge.step_neurons(currents)
         assert spikes.shape == (3,)
         assert all(s in (0.0, 1.0) for s in spikes)
 
-    def test_quantum_forward_empty(self, bridge):
+    def test_quantum_forward_empty(self, bridge: ArcaneNeuronBridge) -> None:
         out = bridge.quantum_forward()
         assert out.shape == (2,)
         np.testing.assert_array_equal(out, 0.0)
 
-    def test_full_step(self, bridge):
+    def test_full_step(self, bridge: ArcaneNeuronBridge) -> None:
         result = bridge.step(np.array([1.0, 1.0, 1.0]))
         assert "spikes" in result
         assert "output_currents" in result
@@ -61,7 +61,7 @@ class TestArcaneNeuronBridge:
         assert "confidence" in result
         assert result["v_deep"].shape == (3,)
 
-    def test_reset_preserves_identity(self, bridge):
+    def test_reset_preserves_identity(self, bridge: ArcaneNeuronBridge) -> None:
         for _ in range(10):
             bridge.step(np.array([1.0, 1.0, 1.0]))
         deep_before = np.array([n.get_state()["v_deep"] for n in bridge.neurons])
@@ -69,7 +69,7 @@ class TestArcaneNeuronBridge:
         deep_after = np.array([n.get_state()["v_deep"] for n in bridge.neurons])
         np.testing.assert_array_equal(deep_before, deep_after)
 
-    def test_multiple_steps_accumulate_history(self, bridge):
+    def test_multiple_steps_accumulate_history(self, bridge: ArcaneNeuronBridge) -> None:
         for _ in range(5):
             bridge.step(np.array([1.0, 0.5, 0.0]))
         assert len(bridge._spike_history) == 5
@@ -81,7 +81,7 @@ class TestArcaneNeuronBridge:
 class MockNodeSpace:
     """Minimal mock of SSGF NodeSpace for testing."""
 
-    def __init__(self, n: int = 4):
+    def __init__(self, n: int = 4) -> None:
         self.theta = np.random.default_rng(42).uniform(0, 2 * np.pi, n)
         self.W = np.array(
             [
@@ -96,26 +96,26 @@ class MockNodeSpace:
 class MockSSGFEngine:
     """Minimal mock of SSGFEngine for testing."""
 
-    def __init__(self, n: int = 4):
+    def __init__(self, n: int = 4) -> None:
         self.ns = MockNodeSpace(n)
 
 
 class TestSSGFQuantumLoop:
-    def test_read_engine(self):
+    def test_read_engine(self) -> None:
         engine = MockSSGFEngine(4)
         loop = SSGFQuantumLoop(engine, dt=0.1)
         W, theta = loop._read_engine()
         assert W.shape == (4, 4)
         assert theta.shape == (4,)
 
-    def test_write_theta(self):
+    def test_write_theta(self) -> None:
         engine = MockSSGFEngine(4)
         loop = SSGFQuantumLoop(engine, dt=0.1)
         new_theta = np.array([0.0, 1.0, 2.0, 3.0])
         loop._write_theta(new_theta)
         np.testing.assert_array_equal(engine.ns.theta, new_theta)
 
-    def test_quantum_step_returns_state(self):
+    def test_quantum_step_returns_state(self) -> None:
         engine = MockSSGFEngine(4)
         loop = SSGFQuantumLoop(engine, dt=0.05, trotter_reps=1)
         result = loop.quantum_step()
@@ -124,7 +124,7 @@ class TestSSGFQuantumLoop:
         assert len(result["theta"]) == 4
         assert 0.0 <= result["R_global"] <= 1.0
 
-    def test_quantum_step_modifies_engine_theta(self):
+    def test_quantum_step_modifies_engine_theta(self) -> None:
         engine = MockSSGFEngine(4)
         theta_before = engine.ns.theta.copy()
         loop = SSGFQuantumLoop(engine, dt=0.1, trotter_reps=2)
@@ -137,7 +137,7 @@ class TestSSGFQuantumLoop:
 
 
 class TestOrchestratorMapping:
-    def test_mapping_covers_all_quantum_ids(self):
+    def test_mapping_covers_all_quantum_ids(self) -> None:
         from scpn_quantum_control.identity.binding_spec import ARCANE_SAPIENCE_SPEC
 
         all_ids = [oid for lay in ARCANE_SAPIENCE_SPEC["layers"] for oid in lay["oscillator_ids"]]
@@ -145,11 +145,11 @@ class TestOrchestratorMapping:
         for qid in all_ids:
             assert qid in ORCHESTRATOR_MAPPING
 
-    def test_mapping_covers_all_orchestrator_ids(self):
+    def test_mapping_covers_all_orchestrator_ids(self) -> None:
         total = sum(len(v) for v in ORCHESTRATOR_MAPPING.values())
         assert total == 35  # 5+5+5+5+8+7 from identity_coherence domainpack
 
-    def test_quantum_to_orchestrator_roundtrip(self):
+    def test_quantum_to_orchestrator_roundtrip(self) -> None:
         theta_q = np.linspace(0, 2 * np.pi, 18, endpoint=False)
         orch_phases = quantum_to_orchestrator_phases(theta_q)
         assert len(orch_phases) == 35
@@ -159,7 +159,7 @@ class TestOrchestratorMapping:
         diff = np.angle(np.exp(1j * (theta_back - theta_q)))
         np.testing.assert_allclose(diff, 0.0, atol=1e-10)
 
-    def test_orchestrator_to_quantum_circular_mean(self):
+    def test_orchestrator_to_quantum_circular_mean(self) -> None:
         # Two sub-oscillators at 0 and pi/2 -> circular mean at pi/4
         orch_phases = {"ws_action_first": 0.0, "ws_verify_before_claim": np.pi / 2}
         for key in ORCHESTRATOR_MAPPING:
@@ -174,7 +174,7 @@ class TestOrchestratorMapping:
 
 
 class TestFusionCoreShot:
-    def test_from_fusion_core_shot_basic(self):
+    def test_from_fusion_core_shot_basic(self) -> None:
         shot = {
             "Ip_MA": np.array([14.5, 14.8, 15.0]),
             "q95": np.array([3.1, 3.0, 2.9]),
@@ -199,7 +199,7 @@ class TestFusionCoreShot:
         assert np.all(features >= 0.0) and np.all(features <= 1.0)
         assert len(warnings) == 6  # 6 of 11 features defaulted
 
-    def test_from_fusion_core_shot_disruption(self):
+    def test_from_fusion_core_shot_disruption(self) -> None:
         shot = {
             "Ip_MA": np.array([10.0]),
             "q95": np.array([2.0]),
@@ -212,7 +212,7 @@ class TestFusionCoreShot:
         assert features.shape == (11,)
         assert len(warnings) == 7  # 7 of 11 defaulted (no ne_1e19)
 
-    def test_from_fusion_core_shot_missing_keys(self):
+    def test_from_fusion_core_shot_missing_keys(self) -> None:
         shot = {"is_disruption": 0}
         with pytest.raises(ValueError, match="missing required ITER features"):
             from_fusion_core_shot(shot)
