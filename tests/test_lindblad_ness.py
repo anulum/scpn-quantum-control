@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import NoReturn
+
 import numpy as np
 import pytest
 
@@ -31,14 +33,14 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestComputeNESS:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
         result = compute_ness(omega, T, K_base=2.0, gamma=0.2)
         assert isinstance(result, NESSResult)
 
-    def test_purity_bounded(self):
+    def test_purity_bounded(self) -> None:
         """Purity should be between 1/d and 1."""
         n = 2
         T = _ring_topology(n)
@@ -47,7 +49,7 @@ class TestComputeNESS:
         assert result.purity >= 1.0 / 4.0 - 0.01
         assert result.purity <= 1.0 + 0.01
 
-    def test_R_bounded(self):
+    def test_R_bounded(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -55,7 +57,7 @@ class TestComputeNESS:
         assert 0 <= result.R_ness <= 1.0 + 1e-10
         assert 0 <= result.R_ideal <= 1.0 + 1e-10
 
-    def test_strong_noise_destroys_order(self):
+    def test_strong_noise_destroys_order(self) -> None:
         """Strong noise → high purity loss, NESS far from ground state."""
         n = 2
         T = _ring_topology(n)
@@ -64,20 +66,22 @@ class TestComputeNESS:
         # Strong damping drives toward |0⟩ → purity high but state different
         assert result.purity > 0.5
 
-    def test_3qubit(self):
+    def test_3qubit(self) -> None:
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
         result = compute_ness(omega, T, K_base=1.5, gamma=0.2)
         assert isinstance(result, NESSResult)
 
-    def test_rejects_rank4_superoperator_before_allocation(self, monkeypatch):
+    def test_rejects_rank4_superoperator_before_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """A low dense budget must stop the Lindblad rank-4 path before H builds."""
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
 
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(
@@ -90,7 +94,7 @@ class TestComputeNESS:
 
 
 class TestNESSVsCoupling:
-    def test_returns_scan(self):
+    def test_returns_scan(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -98,7 +102,7 @@ class TestNESSVsCoupling:
         assert isinstance(result, NESSScanResult)
         assert len(result.k_values) == 2
 
-    def test_noise_resilience_in_range(self):
+    def test_noise_resilience_in_range(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -106,7 +110,7 @@ class TestNESSVsCoupling:
         result = ness_vs_coupling(omega, T, k_range=k_range, gamma=0.1)
         assert result.noise_resilience in k_range
 
-    def test_all_values_finite(self):
+    def test_all_values_finite(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -115,7 +119,7 @@ class TestNESSVsCoupling:
         assert np.all(np.isfinite(result.R_ideal))
         assert np.all(np.isfinite(result.purity))
 
-    def test_scan_propagates_dense_budget_gate(self):
+    def test_scan_propagates_dense_budget_gate(self) -> None:
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -135,7 +139,7 @@ class TestNESSVsCoupling:
 
 
 class TestNESSPhysicalInvariants:
-    def test_zero_gamma_matches_ideal(self):
+    def test_zero_gamma_matches_ideal(self) -> None:
         """gamma=0 → NESS = ground state → R_ness ≈ R_ideal."""
         n = 2
         T = _ring_topology(n)
@@ -143,7 +147,7 @@ class TestNESSPhysicalInvariants:
         result = compute_ness(omega, T, K_base=2.0, gamma=1e-6)
         np.testing.assert_allclose(result.R_ness, result.R_ideal, atol=0.1)
 
-    def test_purity_decreases_with_noise(self):
+    def test_purity_decreases_with_noise(self) -> None:
         """More noise → lower purity (generally)."""
         n = 2
         T = _ring_topology(n)
@@ -152,7 +156,7 @@ class TestNESSPhysicalInvariants:
         r_strong = compute_ness(omega, T, K_base=2.0, gamma=2.0)
         assert r_weak.purity >= r_strong.purity - 0.1
 
-    def test_R_ness_finite_for_all_gammas(self):
+    def test_R_ness_finite_for_all_gammas(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -167,7 +171,7 @@ class TestNESSPhysicalInvariants:
 
 
 class TestNESSPipeline:
-    def test_knm_to_ness_pipeline(self):
+    def test_knm_to_ness_pipeline(self) -> None:
         """Full pipeline: build_knm_paper27 → Lindblad → NESS → R and purity."""
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
 

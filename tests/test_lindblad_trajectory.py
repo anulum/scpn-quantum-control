@@ -17,7 +17,7 @@ from scpn_quantum_control.phase.lindblad_engine import LindbladSyncEngine
 
 
 class TestLindbladTrajectory:
-    def test_trajectory_matches_density_matrix(self):
+    def test_trajectory_matches_density_matrix(self) -> None:
         """Verify trajectory average converges to density matrix solution for N=2."""
 
         K = np.array([[0.0, 1.0], [1.0, 0.0]])
@@ -43,7 +43,7 @@ class TestLindbladTrajectory:
         # Check end point
         assert abs(val_dm[-1] - val_tj[-1]) < 0.1
 
-    def test_large_n_no_memory_error(self):
+    def test_large_n_no_memory_error(self) -> None:
         """Verify that N=12 (trajectory) doesn't crash but N=12 (density_matrix) raises."""
         # We use N=12 instead of 16 for faster test
         n = 12

@@ -9,11 +9,14 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 
-def _system(n: int = 4):
+def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
@@ -21,7 +24,7 @@ def _system(n: int = 4):
     return n, K, omega
 
 
-def _zero_coupling(n: int = 4):
+def _zero_coupling(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Decoupled system — K=0, eigenstates are product states."""
     K = np.zeros((n, n))
     omega = np.linspace(0.8, 1.2, n)
@@ -32,7 +35,7 @@ class TestAncillaLindblad:
     """Tests for single-ancilla open-system circuit."""
 
     @pytest.mark.parametrize("n", [2, 3, 4])
-    def test_circuit_has_correct_qubit_count(self, n):
+    def test_circuit_has_correct_qubit_count(self, n: int) -> None:
         from scpn_quantum_control.phase.ancilla_lindblad import (
             build_ancilla_lindblad_circuit,
         )
@@ -48,7 +51,7 @@ class TestAncillaLindblad:
         assert qc.num_qubits == n + 1  # system + 1 ancilla
 
     @pytest.mark.parametrize("n_steps", [1, 2, 3, 5])
-    def test_reset_count_scales_with_steps(self, n_steps):
+    def test_reset_count_scales_with_steps(self, n_steps: int) -> None:
         from scpn_quantum_control.phase.ancilla_lindblad import (
             build_ancilla_lindblad_circuit,
         )
@@ -64,7 +67,7 @@ class TestAncillaLindblad:
         # Each dissipation step resets the ancilla after interacting with each system qubit
         assert reset_count == 3 * n_steps  # n_system * n_dissipation_steps
 
-    def test_circuit_stats_all_keys(self):
+    def test_circuit_stats_all_keys(self) -> None:
         from scpn_quantum_control.phase.ancilla_lindblad import ancilla_circuit_stats
 
         _, K, omega = _system(4)
@@ -76,7 +79,7 @@ class TestAncillaLindblad:
         assert stats["n_cx_gates"] > 0
         assert stats["total_gates"] > 0
 
-    def test_circuit_has_measurements(self):
+    def test_circuit_has_measurements(self) -> None:
         from scpn_quantum_control.phase.ancilla_lindblad import (
             build_ancilla_lindblad_circuit,
         )
@@ -85,7 +88,7 @@ class TestAncillaLindblad:
         qc = build_ancilla_lindblad_circuit(K, omega)
         assert any(i.operation.name == "measure" for i in qc.data)
 
-    def test_stats_consistent_with_circuit(self):
+    def test_stats_consistent_with_circuit(self) -> None:
         """Stats should match actual circuit properties."""
         from scpn_quantum_control.phase.ancilla_lindblad import (
             ancilla_circuit_stats,
@@ -93,7 +96,12 @@ class TestAncillaLindblad:
         )
 
         _, K, omega = _system(3)
-        kwargs = {"t": 0.1, "trotter_reps": 3, "gamma": 0.05, "n_dissipation_steps": 2}
+        kwargs: dict[str, Any] = {
+            "t": 0.1,
+            "trotter_reps": 3,
+            "gamma": 0.05,
+            "n_dissipation_steps": 2,
+        }
         qc = build_ancilla_lindblad_circuit(K, omega, **kwargs)
         stats = ancilla_circuit_stats(K, omega, **kwargs)
 
@@ -102,7 +110,7 @@ class TestAncillaLindblad:
         assert stats["n_resets"] == actual_resets
 
     @pytest.mark.parametrize("gamma", [0.0, 0.01, 0.05, 0.1, 0.5])
-    def test_gamma_range(self, gamma):
+    def test_gamma_range(self, gamma: float) -> None:
         """Circuit should build for all valid gamma values."""
         from scpn_quantum_control.phase.ancilla_lindblad import (
             build_ancilla_lindblad_circuit,

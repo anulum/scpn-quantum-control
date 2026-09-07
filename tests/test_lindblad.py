@@ -15,8 +15,11 @@ zero-dissipation consistency, physical bounds.
 
 from __future__ import annotations
 
+from typing import NoReturn
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase import lindblad as lindblad_module
@@ -29,33 +32,33 @@ from scpn_quantum_control.phase.lindblad import LindbladKuramotoSolver, _sigma
 class TestSigmaOperators:
     """Verify single-qubit Pauli operator construction."""
 
-    def test_sigma_x_shape_and_values(self):
+    def test_sigma_x_shape_and_values(self) -> None:
         sx = _sigma("X", 0, 2)
         assert sx.shape == (4, 4)
         assert sx[0, 2] == 1.0
         assert sx[2, 0] == 1.0
 
-    def test_sigma_z_diagonal_and_eigenvalues(self):
+    def test_sigma_z_diagonal_and_eigenvalues(self) -> None:
         sz = _sigma("Z", 0, 1)
         assert sz[0, 0] == 1.0
         assert sz[1, 1] == -1.0
         eigvals = np.linalg.eigvalsh(sz)
         np.testing.assert_allclose(sorted(eigvals), [-1.0, 1.0])
 
-    def test_sigma_plus_structure(self):
+    def test_sigma_plus_structure(self) -> None:
         sp = _sigma("+", 0, 1)
         assert sp[0, 1] == 1.0
         assert sp[1, 0] == 0.0
         assert np.count_nonzero(sp) == 1
 
-    def test_pauli_anticommutation(self):
+    def test_pauli_anticommutation(self) -> None:
         """{X, Y} = 0 — fundamental Pauli algebra."""
         sx = _sigma("X", 0, 1)
         sy = _sigma("Y", 0, 1)
         anticomm = sx @ sy + sy @ sx
         np.testing.assert_allclose(anticomm, np.zeros((2, 2)), atol=1e-14)
 
-    def test_pauli_commutation_xy(self):
+    def test_pauli_commutation_xy(self) -> None:
         """[X, Y] = 2iZ."""
         sx = _sigma("X", 0, 1)
         sy = _sigma("Y", 0, 1)
@@ -63,21 +66,21 @@ class TestSigmaOperators:
         comm = sx @ sy - sy @ sx
         np.testing.assert_allclose(comm, 2j * sz, atol=1e-14)
 
-    def test_pauli_squared_is_identity(self):
+    def test_pauli_squared_is_identity(self) -> None:
         """X² = Y² = Z² = I."""
         for pauli in ["X", "Y", "Z"]:
             s = _sigma(pauli, 0, 1)
             np.testing.assert_allclose(s @ s, np.eye(2), atol=1e-14)
 
     @pytest.mark.parametrize("qubit", [0, 1, 2])
-    def test_sigma_on_different_qubits(self, qubit):
+    def test_sigma_on_different_qubits(self, qubit: int) -> None:
         """Pauli on different qubits should be Hermitian and unitary."""
         sx = _sigma("X", qubit, 3)
         assert sx.shape == (8, 8)
         np.testing.assert_allclose(sx, sx.conj().T, atol=1e-14)
         np.testing.assert_allclose(sx @ sx, np.eye(8), atol=1e-14)
 
-    def test_sigma_minus_is_adjoint_of_plus(self):
+    def test_sigma_minus_is_adjoint_of_plus(self) -> None:
         sp = _sigma("+", 0, 1)
         sm = _sigma("-", 0, 1)
         np.testing.assert_allclose(sm, sp.conj().T, atol=1e-14)
@@ -89,13 +92,13 @@ class TestSigmaOperators:
 class TestDensityMatrixInvariants:
     """Verify density matrix properties are preserved during evolution."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         self.n = 3
         self.K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(self.n), range(self.n))))
         np.fill_diagonal(self.K, 0.0)
         self.omega = np.linspace(0.8, 1.2, self.n)
 
-    def test_trace_preserved(self):
+    def test_trace_preserved(self) -> None:
         """Tr(ρ) = 1 at all times."""
         solver = LindbladKuramotoSolver(
             self.n,
@@ -108,7 +111,7 @@ class TestDensityMatrixInvariants:
         rho = result["rho_final"]
         np.testing.assert_allclose(np.trace(rho), 1.0, atol=1e-6)
 
-    def test_hermiticity_preserved(self):
+    def test_hermiticity_preserved(self) -> None:
         """ρ must be Hermitian: ρ = ρ†."""
         solver = LindbladKuramotoSolver(
             self.n,
@@ -120,7 +123,7 @@ class TestDensityMatrixInvariants:
         rho = result["rho_final"]
         np.testing.assert_allclose(rho, rho.conj().T, atol=1e-8)
 
-    def test_positive_semidefinite(self):
+    def test_positive_semidefinite(self) -> None:
         """All eigenvalues of ρ must be ≥ 0."""
         solver = LindbladKuramotoSolver(
             self.n,
@@ -133,7 +136,7 @@ class TestDensityMatrixInvariants:
         eigvals = np.linalg.eigvalsh(result["rho_final"])
         assert all(v > -1e-8 for v in eigvals), f"Negative eigenvalue: {min(eigvals)}"
 
-    def test_purity_bounded(self):
+    def test_purity_bounded(self) -> None:
         """1/d ≤ Tr(ρ²) ≤ 1 for d-dimensional system."""
         dim = 2**self.n
         solver = LindbladKuramotoSolver(
@@ -146,8 +149,10 @@ class TestDensityMatrixInvariants:
         for p in result["purity"]:
             assert 1.0 / dim - 1e-6 <= p <= 1.0 + 1e-6, f"Purity {p} out of [1/{dim}, 1]"
 
-    def test_build_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
-        def fail_dense(*args, **kwargs):
+    def test_build_rejects_dense_budget_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        def fail_dense(*args: object, **kwargs: object) -> NoReturn:
             raise AssertionError("dense Hamiltonian builder must not run after budget rejection")
 
         monkeypatch.setattr(lindblad_module, "knm_to_dense_matrix", fail_dense)
@@ -162,8 +167,8 @@ class TestDensityMatrixInvariants:
         with pytest.raises(DenseAllocationError, match="Lindblad dense density workspace"):
             solver.build()
 
-    def test_run_forwards_explicit_dense_budget(self, monkeypatch):
-        def fail_dense(*args, **kwargs):
+    def test_run_forwards_explicit_dense_budget(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        def fail_dense(*args: object, **kwargs: object) -> NoReturn:
             raise AssertionError("dense Hamiltonian builder must not run after budget rejection")
 
         monkeypatch.setattr(lindblad_module, "knm_to_dense_matrix", fail_dense)
@@ -190,18 +195,25 @@ class TestDensityMatrixInvariants:
             (2, np.eye(2), np.ones(2), {"gamma_deph": np.nan}, "gamma_deph"),
         ],
     )
-    def test_constructor_rejects_invalid_inputs(self, n, K, omega, kwargs, match):
+    def test_constructor_rejects_invalid_inputs(
+        self,
+        n: int,
+        K: NDArray[np.float64],
+        omega: NDArray[np.float64],
+        kwargs: dict[str, float],
+        match: str,
+    ) -> None:
         with pytest.raises(ValueError, match=match):
             LindbladKuramotoSolver(n, K, omega, **kwargs)
 
-    def test_constructor_rejects_string_coupling_coercion(self):
+    def test_constructor_rejects_string_coupling_coercion(self) -> None:
         K = [["0.0", "0.5"], ["0.5", "0.0"]]
         omega = np.array([1.0, 1.2])
 
         with pytest.raises(ValueError, match="K_coupling must contain real numeric scalars"):
-            LindbladKuramotoSolver(2, K, omega)
+            LindbladKuramotoSolver(2, K, omega)  # type: ignore[arg-type] # deliberate string coupling, coercion refusal asserted
 
-    def test_constructor_rejects_boolean_damping_rate_coercion(self):
+    def test_constructor_rejects_boolean_damping_rate_coercion(self) -> None:
         K = np.eye(2)
         omega = np.array([1.0, 1.2])
 
@@ -217,13 +229,15 @@ class TestDensityMatrixInvariants:
             (0.1, np.inf, "dt"),
         ],
     )
-    def test_run_rejects_invalid_time_grid(self, t_max, dt, match):
+    def test_run_rejects_invalid_time_grid(self, t_max: float, dt: float, match: str) -> None:
         solver = LindbladKuramotoSolver(self.n, self.K, self.omega)
         with pytest.raises(ValueError, match=match):
             solver.run(t_max=t_max, dt=dt)
 
-    def test_zero_horizon_returns_initial_state_without_integrator(self, monkeypatch):
-        def fail_solve_ivp(*args, **kwargs):  # noqa: ARG001
+    def test_zero_horizon_returns_initial_state_without_integrator(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        def fail_solve_ivp(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("zero-horizon Lindblad run must not call solve_ivp")
 
         monkeypatch.setattr(lindblad_module, "solve_ivp", fail_solve_ivp)
@@ -237,7 +251,7 @@ class TestDensityMatrixInvariants:
         assert result["purity"].shape == (1,)
         np.testing.assert_allclose(np.trace(result["rho_final"]), 1.0, atol=1e-12)
 
-    def test_time_grid_respects_requested_maximum_step(self):
+    def test_time_grid_respects_requested_maximum_step(self) -> None:
         """Returned density samples must not be spaced farther apart than dt."""
         solver = LindbladKuramotoSolver(self.n, self.K, self.omega)
 
@@ -247,7 +261,7 @@ class TestDensityMatrixInvariants:
         assert result["times"][-1] == pytest.approx(0.25)
         assert np.max(np.diff(result["times"])) <= 0.1 + 1e-12
 
-    def test_run_raises_on_integrator_failure(self, monkeypatch):
+    def test_run_raises_on_integrator_failure(self, monkeypatch: pytest.MonkeyPatch) -> None:
         class FailedSolution:
             success = False
             message = "integration failed"
@@ -266,12 +280,12 @@ class TestDensityMatrixInvariants:
 class TestUnitaryEvolution:
     """With γ=0, Lindblad reduces to von Neumann: dρ/dt = -i[H,ρ]."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         self.n = 2
         self.K = np.array([[0, 0.5], [0.5, 0]])
         self.omega = np.array([1.0, 1.2])
 
-    def test_purity_preserved_exactly(self):
+    def test_purity_preserved_exactly(self) -> None:
         solver = LindbladKuramotoSolver(
             self.n,
             self.K,
@@ -286,7 +300,7 @@ class TestUnitaryEvolution:
             atol=1e-6,
         )
 
-    def test_matches_unitary_solver(self):
+    def test_matches_unitary_solver(self) -> None:
         """Zero-dissipation Lindblad should match unitary R(t)."""
         from scpn_quantum_control.phase.xy_kuramoto import QuantumKuramotoSolver
 
@@ -309,7 +323,7 @@ class TestUnitaryEvolution:
             err_msg="Zero-dissipation Lindblad should match unitary R(t)",
         )
 
-    def test_trace_exactly_one(self):
+    def test_trace_exactly_one(self) -> None:
         solver = LindbladKuramotoSolver(
             self.n,
             self.K,
@@ -330,12 +344,12 @@ class TestUnitaryEvolution:
 class TestDissipationRegimes:
     """Test various dissipation strengths and channels."""
 
-    def setup_method(self):
+    def setup_method(self) -> None:
         self.n = 2
         self.K = np.array([[0, 0.5], [0.5, 0]])
         self.omega = np.array([1.0, 1.2])
 
-    def test_damping_reduces_purity(self):
+    def test_damping_reduces_purity(self) -> None:
         solver = LindbladKuramotoSolver(
             self.n,
             self.K,
@@ -345,7 +359,7 @@ class TestDissipationRegimes:
         result = solver.run(t_max=1.0, dt=0.1)
         assert result["purity"][-1] < result["purity"][0]
 
-    def test_dephasing_reduces_purity(self):
+    def test_dephasing_reduces_purity(self) -> None:
         solver = LindbladKuramotoSolver(
             self.n,
             self.K,
@@ -355,7 +369,7 @@ class TestDissipationRegimes:
         result = solver.run(t_max=1.0, dt=0.1)
         assert result["purity"][-1] < result["purity"][0]
 
-    def test_strong_damping_kills_sync(self):
+    def test_strong_damping_kills_sync(self) -> None:
         solver = LindbladKuramotoSolver(
             self.n,
             self.K,
@@ -368,7 +382,7 @@ class TestDissipationRegimes:
             f"Strong damping should destroy sync, got R={result['R'][-1]:.3f}"
         )
 
-    def test_purity_monotonically_decreases_under_damping(self):
+    def test_purity_monotonically_decreases_under_damping(self) -> None:
         """Purity should not increase under dissipation (Markovian)."""
         solver = LindbladKuramotoSolver(
             self.n,
@@ -385,7 +399,7 @@ class TestDissipationRegimes:
             )
 
     @pytest.mark.parametrize("gamma_amp", [0.01, 0.05, 0.1, 0.5, 1.0])
-    def test_r_bounded_across_damping_rates(self, gamma_amp):
+    def test_r_bounded_across_damping_rates(self, gamma_amp: float) -> None:
         """R ∈ [0, 1] for all damping rates."""
         solver = LindbladKuramotoSolver(
             self.n,
@@ -404,7 +418,7 @@ class TestMultipleSizes:
     """Test across different oscillator counts."""
 
     @pytest.mark.parametrize("n", [2, 3, 4, 6])
-    def test_runs_and_produces_correct_shapes(self, n):
+    def test_runs_and_produces_correct_shapes(self, n: int) -> None:
         K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
         np.fill_diagonal(K, 0.0)
         omega = np.linspace(0.8, 1.2, n)
@@ -418,7 +432,7 @@ class TestMultipleSizes:
         assert len(result["purity"]) == len(result["times"])
 
     @pytest.mark.parametrize("n", [2, 3, 4])
-    def test_decoupled_system(self, n):
+    def test_decoupled_system(self, n: int) -> None:
         """K=0: decoupled oscillators, purity preserved."""
         K = np.zeros((n, n))
         omega = np.linspace(0.8, 1.2, n)
@@ -433,7 +447,7 @@ class TestMultipleSizes:
 # Output Keys and Types
 # =====================================================================
 class TestOutputFormat:
-    def test_output_keys(self):
+    def test_output_keys(self) -> None:
         solver = LindbladKuramotoSolver(
             2,
             np.array([[0, 0.3], [0.3, 0]]),
@@ -442,7 +456,7 @@ class TestOutputFormat:
         result = solver.run(t_max=0.2, dt=0.1)
         assert set(result.keys()) == {"times", "R", "purity", "rho_final"}
 
-    def test_output_types(self):
+    def test_output_types(self) -> None:
         solver = LindbladKuramotoSolver(
             2,
             np.array([[0, 0.3], [0.3, 0]]),
@@ -454,7 +468,7 @@ class TestOutputFormat:
         assert isinstance(result["purity"], np.ndarray)
         assert isinstance(result["rho_final"], np.ndarray)
 
-    def test_all_values_finite(self):
+    def test_all_values_finite(self) -> None:
         K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(3), range(3))))
         np.fill_diagonal(K, 0.0)
         solver = LindbladKuramotoSolver(

@@ -11,6 +11,9 @@ from __future__ import annotations
 
 import importlib
 import sys
+from collections.abc import Sequence
+from types import ModuleType
+from typing import NoReturn
 
 import numpy as np
 import pytest
@@ -20,7 +23,7 @@ from scpn_quantum_control.phase.lindblad_engine import LindbladSyncEngine
 
 
 class TestLindbladSyncEngine:
-    def test_lindblad_evolution_preserves_trace(self):
+    def test_lindblad_evolution_preserves_trace(self) -> None:
         """Verify that the Lindbladian preserves trace of the density matrix."""
         K = np.array([[0.0, 1.0], [1.0, 0.0]])
         omega = np.array([5.0, 5.0])
@@ -32,7 +35,7 @@ class TestLindbladSyncEngine:
             tr = np.trace(rho)
             assert abs(tr - 1.0) < 1e-6
 
-    def test_dissipator_construction(self):
+    def test_dissipator_construction(self) -> None:
         K = np.array([[0.0, 1.0, 0.0], [1.0, 0.0, 1.0], [0.0, 1.0, 0.0]])
         omega = np.array([1.0, 1.0, 1.0])
         engine = LindbladSyncEngine(K, omega)
@@ -40,7 +43,7 @@ class TestLindbladSyncEngine:
         # Should have 4 jump operators (0->1, 1->0, 1->2, 2->1)
         assert len(engine.L_ops_dense) == 4
 
-    def test_invalid_method_raises(self):
+    def test_invalid_method_raises(self) -> None:
         """Unknown method argument must raise ValueError."""
         K = np.array([[0.0, 1.0], [1.0, 0.0]])
         omega = np.array([1.0, 1.0])
@@ -50,7 +53,7 @@ class TestLindbladSyncEngine:
         with pytest.raises(ValueError, match="Unknown method"):
             engine.evolve(t_max=0.1, method="bogus")
 
-    def test_trajectory_with_observables(self):
+    def test_trajectory_with_observables(self) -> None:
         """Trajectory path must propagate observable expectations."""
         from qiskit.quantum_info import SparsePauliOp
 
@@ -63,7 +66,7 @@ class TestLindbladSyncEngine:
         key = list(res["observables"].keys())[0]
         assert len(res["observables"][key]) == 6  # n_steps + 1
 
-    def test_density_matrix_with_observables(self):
+    def test_density_matrix_with_observables(self) -> None:
         """Density matrix path must track observable history."""
         from qiskit.quantum_info import SparsePauliOp
 
@@ -76,7 +79,7 @@ class TestLindbladSyncEngine:
         key = list(res["observables"].keys())[0]
         assert len(res["observables"][key]) == 6
 
-    def test_density_matrix_stays_positive_semidefinite(self):
+    def test_density_matrix_stays_positive_semidefinite(self) -> None:
         """Density matrix eigenvalues must remain >= 0 throughout."""
         K = np.array([[0.0, 0.5], [0.5, 0.0]])
         omega = np.array([1.0, 2.0])
@@ -86,7 +89,7 @@ class TestLindbladSyncEngine:
             eigvals = np.linalg.eigvalsh(rho)
             assert np.all(eigvals > -1e-8), f"Negative eigenvalue: {eigvals.min()}"
 
-    def test_gamma_zero_unitary(self):
+    def test_gamma_zero_unitary(self) -> None:
         """gamma=0 should produce unitary evolution (pure state preserved)."""
         K = np.array([[0.0, 0.5], [0.5, 0.0]])
         omega = np.array([1.0, 1.0])
@@ -98,7 +101,7 @@ class TestLindbladSyncEngine:
             assert abs(tr - 1.0) < 1e-6
             assert abs(purity - 1.0) < 1e-4
 
-    def test_strong_dissipation_approaches_steady_state(self):
+    def test_strong_dissipation_approaches_steady_state(self) -> None:
         """Strong gamma drives system toward a steady state (lower purity)."""
         K = np.array([[0.0, 1.0], [1.0, 0.0]])
         omega = np.array([1.0, 1.0])
@@ -108,7 +111,7 @@ class TestLindbladSyncEngine:
         purity_end = np.trace(res["states"][-1] @ res["states"][-1]).real
         assert purity_end <= purity_start + 1e-6
 
-    def test_three_qubit_chain_jump_operators(self):
+    def test_three_qubit_chain_jump_operators(self) -> None:
         """3-qubit chain: 4 jump operators (bidirectional on 2 active edges)."""
         K = np.array([[0, 0.5, 0], [0.5, 0, 0.3], [0, 0.3, 0]])
         omega = np.ones(3)
@@ -117,11 +120,13 @@ class TestLindbladSyncEngine:
         engine.evolve(t_max=0.01, n_steps=1, method="density_matrix")
         assert len(engine.L_ops_dense) == 4
 
-    def test_constructor_does_not_build_dense_density_path(self, monkeypatch):
+    def test_constructor_does_not_build_dense_density_path(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Trajectory-only users must not pay dense density-matrix allocation at construction."""
         import scpn_quantum_control.phase.lindblad_engine as le_mod
 
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened during construction")
 
         monkeypatch.setattr(le_mod, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested)
@@ -133,10 +138,12 @@ class TestLindbladSyncEngine:
         assert engine.H_dense is None
         assert engine.L_ops_dense == []
 
-    def test_density_matrix_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
+    def test_density_matrix_rejects_dense_budget_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         import scpn_quantum_control.phase.lindblad_engine as le_mod
 
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(le_mod, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested)
@@ -152,7 +159,7 @@ class TestLindbladSyncEngine:
                 max_dense_gib=1e-12,
             )
 
-    def test_trajectory_density_matrix_agreement(self):
+    def test_trajectory_density_matrix_agreement(self) -> None:
         """Trajectory and density matrix methods should give similar final states."""
         K = np.array([[0.0, 0.5], [0.5, 0.0]])
         omega = np.array([1.0, 1.0])
@@ -161,7 +168,7 @@ class TestLindbladSyncEngine:
         res_tr = engine.evolve(t_max=0.5, n_steps=10, method="trajectory", n_traj=200, seed=42)
         np.testing.assert_allclose(res_dm["final_state"], res_tr["final_state"], atol=0.15)
 
-    def test_anti_hermitian_sum_values(self):
+    def test_anti_hermitian_sum_values(self) -> None:
         """Anti-Hermitian diagonal must count active jump channels per state."""
         K = np.array([[0.0, 1.0], [1.0, 0.0]])
         omega = np.array([1.0, 1.0])
@@ -175,7 +182,7 @@ class TestLindbladSyncEngine:
         assert diag[0b10] == 1.0
         assert diag[0b11] == 0.0
 
-    def test_rust_python_jump_ops_parity(self):
+    def test_rust_python_jump_ops_parity(self) -> None:
         """Rust-built jump operators match Python implementation."""
         try:
             import scpn_quantum_engine as eng
@@ -216,12 +223,17 @@ class TestLindbladSyncEngine:
 class TestLindbladPythonFallback:
     """Cover Python fallback paths when Rust unavailable."""
 
-    def test_import_guard_without_rust_engine(self):
+    def test_import_guard_without_rust_engine(self) -> None:
         """Reloading with the compiled engine blocked selects Python fallback."""
         import scpn_quantum_control.phase.lindblad_engine as le_mod
 
         class BlockEngineImport:
-            def find_spec(self, fullname, path=None, target=None):
+            def find_spec(
+                self,
+                fullname: str,
+                path: Sequence[str] | None = None,
+                target: ModuleType | None = None,
+            ) -> None:
                 if fullname == "scpn_quantum_engine":
                     raise ImportError("blocked compiled engine")
                 return None
@@ -239,7 +251,7 @@ class TestLindbladPythonFallback:
                 sys.modules["scpn_quantum_engine"] = original_engine
             importlib.reload(le_mod)
 
-    def test_build_jump_operators_no_rust(self):
+    def test_build_jump_operators_no_rust(self) -> None:
         """Cover lines 95-112: Python jump operator construction."""
         import scpn_quantum_control.phase.lindblad_engine as le_mod
 
@@ -258,7 +270,7 @@ class TestLindbladPythonFallback:
         for L in L_ops:
             assert L.shape == (4, 4)
 
-    def test_build_anti_hermitian_no_rust(self):
+    def test_build_anti_hermitian_no_rust(self) -> None:
         """Cover lines 118-125: Python anti-Hermitian sum."""
         import scpn_quantum_control.phase.lindblad_engine as le_mod
 
@@ -276,7 +288,7 @@ class TestLindbladPythonFallback:
         assert diag.shape == (4,)
         assert np.all(diag >= 0)
 
-    def test_evolve_with_initial_rho(self):
+    def test_evolve_with_initial_rho(self) -> None:
         """Cover line 171: initial_rho provided (not None)."""
         K = np.array([[0.0, 0.5], [0.5, 0.0]])
         omega = np.array([1.0, 1.5])
@@ -289,7 +301,7 @@ class TestLindbladPythonFallback:
         result = engine.evolve(t_max=0.2, n_steps=5, method="density_matrix", initial_state=rho0)
         assert "times" in result
 
-    def test_mcwf_quantum_jump(self):
+    def test_mcwf_quantum_jump(self) -> None:
         """Cover lines 243-245: quantum jump branch in MCWF.
 
         High gamma with strong coupling increases jump probability.
@@ -301,7 +313,7 @@ class TestLindbladPythonFallback:
         result = engine.evolve(t_max=2.0, n_steps=20, method="trajectory", n_traj=50, seed=42)
         assert "times" in result
 
-    def test_build_jump_operators_sparse_no_rust(self):
+    def test_build_jump_operators_sparse_no_rust(self) -> None:
         """Cover lines 95-112: Python sparse jump operator construction."""
         import scpn_quantum_control.phase.lindblad_engine as le_mod
 
@@ -321,7 +333,7 @@ class TestLindbladPythonFallback:
         for L in L_sparse:
             assert L.shape == (4, 4)
 
-    def test_trajectory_quantum_jump_no_rust(self):
+    def test_trajectory_quantum_jump_no_rust(self) -> None:
         """Cover lines 243-245: quantum jump with Python sparse ops.
 
         Forces Rust off before constructing engine so sparse ops use
@@ -344,15 +356,17 @@ class TestLindbladPythonFallback:
         assert "times" in result
         assert len(result["times"]) == 21
 
-    def test_trajectory_quantum_jump_branch_deterministic(self, monkeypatch):
+    def test_trajectory_quantum_jump_branch_deterministic(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Force the MCWF jump branch without relying on random sampling."""
         import scpn_quantum_control.phase.lindblad_engine as le_mod
 
         class JumpRng:
-            def random(self):
+            def random(self) -> float:
                 return 1.0
 
-            def choice(self, n_items, p):
+            def choice(self, n_items: int, p: Sequence[float]) -> int:
                 assert n_items == 2
                 assert p[0] > 0
                 return 0
@@ -361,7 +375,7 @@ class TestLindbladPythonFallback:
         omega = np.array([1.0, 1.5])
         engine = LindbladSyncEngine(K, omega, gamma=1.0)
 
-        monkeypatch.setattr(le_mod.np.random, "default_rng", lambda seed: JumpRng())
+        monkeypatch.setattr(np.random, "default_rng", lambda seed: JumpRng())
         monkeypatch.setattr(
             le_mod,
             "expm_multiply",

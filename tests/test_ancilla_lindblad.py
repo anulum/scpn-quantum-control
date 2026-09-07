@@ -20,9 +20,11 @@ Covers:
 from __future__ import annotations
 
 import warnings
+from typing import Any
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 
 from scpn_quantum_control.phase.ancilla_lindblad import (
@@ -31,7 +33,7 @@ from scpn_quantum_control.phase.ancilla_lindblad import (
 )
 
 
-def _system(n: int = 3):
+def _system(n: int = 3) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
     omega = np.linspace(0.8, 1.2, n)
@@ -43,35 +45,35 @@ def _cry_angles(qc: QuantumCircuit) -> list[float]:
 
 
 class TestBuildCircuit:
-    def test_returns_circuit(self):
+    def test_returns_circuit(self) -> None:
         K, omega = _system(3)
         qc = build_ancilla_lindblad_circuit(K, omega)
         assert isinstance(qc, QuantumCircuit)
 
-    def test_qubit_count(self):
+    def test_qubit_count(self) -> None:
         """n system + 1 ancilla."""
         K, omega = _system(4)
         qc = build_ancilla_lindblad_circuit(K, omega)
         assert qc.num_qubits == 5  # 4 + 1
 
-    def test_has_measurement(self):
+    def test_has_measurement(self) -> None:
         K, omega = _system(3)
         qc = build_ancilla_lindblad_circuit(K, omega)
         op_names = [inst.operation.name for inst in qc.data]
         assert "measure" in op_names
 
-    def test_has_reset(self):
+    def test_has_reset(self) -> None:
         K, omega = _system(3)
         qc = build_ancilla_lindblad_circuit(K, omega)
         op_names = [inst.operation.name for inst in qc.data]
         assert "reset" in op_names
 
-    def test_n2_circuit(self):
+    def test_n2_circuit(self) -> None:
         K, omega = _system(2)
         qc = build_ancilla_lindblad_circuit(K, omega)
         assert qc.num_qubits == 3
 
-    def test_zero_coupling_no_cx(self):
+    def test_zero_coupling_no_cx(self) -> None:
         """Zero K → no CX gates from coupling (only from dissipation CRY)."""
         n = 3
         K = np.zeros((n, n))
@@ -83,7 +85,7 @@ class TestBuildCircuit:
         # CX from coupling should be absent; CRY from dissipation present
         assert "cry" in op_names
 
-    def test_zero_omega_no_rz(self):
+    def test_zero_omega_no_rz(self) -> None:
         """Zero omega → no Rz gates."""
         n = 3
         K = np.eye(n) * 0
@@ -93,13 +95,13 @@ class TestBuildCircuit:
         # Rz would only appear from omega terms — but initial Ry still present
         assert isinstance(qc, QuantumCircuit)
 
-    def test_high_gamma_clamps_angle(self):
+    def test_high_gamma_clamps_angle(self) -> None:
         """Large gamma → angle clamped to π."""
         K, omega = _system(3)
         qc = build_ancilla_lindblad_circuit(K, omega, gamma=10.0, t=1.0)
         assert isinstance(qc, QuantumCircuit)
 
-    def test_dissipation_angle_uses_exact_finite_time_decay_probability(self):
+    def test_dissipation_angle_uses_exact_finite_time_decay_probability(self) -> None:
         """The repeated-interaction angle must encode p=1-exp(-gamma*dt)."""
         K, omega = _system(2)
         gamma = 0.8
@@ -119,7 +121,7 @@ class TestBuildCircuit:
         assert _cry_angles(qc)
         np.testing.assert_allclose(_cry_angles(qc), expected_angle, rtol=1e-12, atol=1e-12)
 
-    def test_large_gamma_time_product_remains_finite_without_runtime_warning(self):
+    def test_large_gamma_time_product_remains_finite_without_runtime_warning(self) -> None:
         """Large rates are valid finite-time damping, not a source of NaN angles."""
         K, omega = _system(2)
 
@@ -147,20 +149,22 @@ class TestBuildCircuit:
             ({"n_dissipation_steps": 0}, "n_dissipation_steps must be positive"),
         ],
     )
-    def test_invalid_physical_parameters_are_rejected(self, kwargs, message):
+    def test_invalid_physical_parameters_are_rejected(
+        self, kwargs: dict[str, Any], message: str
+    ) -> None:
         K, omega = _system(2)
 
         with pytest.raises(ValueError, match=message):
             build_ancilla_lindblad_circuit(K, omega, **kwargs)
 
-    def test_single_dissipation_step(self):
+    def test_single_dissipation_step(self) -> None:
         K, omega = _system(3)
         qc = build_ancilla_lindblad_circuit(K, omega, n_dissipation_steps=1)
         assert isinstance(qc, QuantumCircuit)
 
 
 class TestCircuitStats:
-    def test_output_keys(self):
+    def test_output_keys(self) -> None:
         K, omega = _system(4)
         stats = ancilla_circuit_stats(K, omega)
         expected = {
@@ -175,25 +179,25 @@ class TestCircuitStats:
         }
         assert set(stats.keys()) == expected
 
-    def test_qubit_count(self):
+    def test_qubit_count(self) -> None:
         K, omega = _system(4)
         stats = ancilla_circuit_stats(K, omega)
         assert stats["n_qubits"] == 5
         assert stats["n_system"] == 4
         assert stats["n_ancilla"] == 1
 
-    def test_resets_count(self):
+    def test_resets_count(self) -> None:
         K, omega = _system(3)
         stats = ancilla_circuit_stats(K, omega, n_dissipation_steps=5)
         assert stats["n_resets"] == 3 * 5
 
-    def test_zero_coupling_no_cx(self):
+    def test_zero_coupling_no_cx(self) -> None:
         K = np.zeros((4, 4))
         omega = np.ones(4)
         stats = ancilla_circuit_stats(K, omega)
         assert stats["n_cx_gates"] == 0
 
-    def test_total_gates_positive(self):
+    def test_total_gates_positive(self) -> None:
         K, omega = _system(3)
         stats = ancilla_circuit_stats(K, omega)
         assert stats["total_gates"] > 0
