@@ -9,8 +9,13 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from qiskit.quantum_info import SparsePauliOp
+
 import numpy as np
-from qiskit import transpile
+from qiskit import QuantumCircuit, transpile
 from qiskit.quantum_info import Statevector
 from qiskit_aer import AerSimulator
 
@@ -20,7 +25,7 @@ from scpn_quantum_control.hardware.experiments import _build_evo_base
 from scpn_quantum_control.phase.phase_vqe import PhaseVQE
 
 
-def _statevector_from_circuit(qc):
+def _statevector_from_circuit(qc: QuantumCircuit) -> Statevector:
     """Transpile + statevector simulate."""
     qc_t = transpile(qc, basis_gates=["cx", "u3", "u2", "u1", "id"], optimization_level=0)
     qc_t.save_statevector()
@@ -28,7 +33,7 @@ def _statevector_from_circuit(qc):
     return Statevector(sim.run(qc_t).result().get_statevector())
 
 
-def test_2q_ground_energy_exact():
+def test_2q_ground_energy_exact() -> None:
     """2-qubit system: exact diag matches direct numpy eigvalsh."""
     K = build_knm_paper27(L=2)
     omega = OMEGA_N_16[:2]
@@ -44,7 +49,7 @@ def test_2q_ground_energy_exact():
     assert abs(E0 - E0_direct) < 1e-10
 
 
-def test_4q_trotter_tracks_classical_short_time():
+def test_4q_trotter_tracks_classical_short_time() -> None:
     """4-qubit Trotter at short time tracks classical evolution."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
@@ -72,7 +77,7 @@ def test_4q_trotter_tracks_classical_short_time():
     )
 
 
-def test_energy_conservation_trotter():
+def test_energy_conservation_trotter() -> None:
     """Energy expectation under Trotter evolution stays near initial value."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
@@ -92,7 +97,7 @@ def test_energy_conservation_trotter():
     assert abs(E_evo - E_init) < 0.30, f"Energy drift: E_init={E_init:.4f}, E_evo={E_evo:.4f}"
 
 
-def test_vqe_4q_beats_random():
+def test_vqe_4q_beats_random() -> None:
     """VQE optimized energy is lower than random parameter energy."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
@@ -108,11 +113,12 @@ def test_vqe_4q_beats_random():
 
     result = vqe.solve(maxiter=30, seed=0)
     E_opt = result["ground_energy"]
+    assert isinstance(E_opt, float)
 
     assert E_opt < E_random_avg, f"VQE ({E_opt:.3f}) should beat random ({E_random_avg:.3f})"
 
 
-def test_hamiltonian_traceless():
+def test_hamiltonian_traceless() -> None:
     """XY Hamiltonian is traceless (all Pauli terms are traceless)."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
@@ -123,7 +129,7 @@ def test_hamiltonian_traceless():
     assert abs(np.trace(mat)) < 1e-8, f"Tr(H) = {np.trace(mat)}"
 
 
-def test_ground_energy_decreases_with_coupling():
+def test_ground_energy_decreases_with_coupling() -> None:
     """Stronger coupling lowers ground energy (more negative)."""
     omega = OMEGA_N_16[:4]
 
@@ -148,7 +154,7 @@ def test_ground_energy_decreases_with_coupling():
     )
 
 
-def _single_qubit_op(pauli: str, qubit: int, n: int):
+def _single_qubit_op(pauli: str, qubit: int, n: int) -> SparsePauliOp:
     """SparsePauliOp for single-qubit Pauli."""
     from qiskit.quantum_info import SparsePauliOp
 
@@ -157,7 +163,7 @@ def _single_qubit_op(pauli: str, qubit: int, n: int):
     return SparsePauliOp("".join(reversed(label)))
 
 
-def test_3q_ground_energy_exact():
+def test_3q_ground_energy_exact() -> None:
     """3-qubit system: exact diag matches numpy eigvalsh."""
     K = build_knm_paper27(L=3)
     omega = OMEGA_N_16[:3]
@@ -170,7 +176,7 @@ def test_3q_ground_energy_exact():
     assert abs(result["ground_energy"] - E0_direct) < 1e-10
 
 
-def test_statevector_normalised():
+def test_statevector_normalised() -> None:
     """Statevector from Trotter circuit must be normalised."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
@@ -179,7 +185,7 @@ def test_statevector_normalised():
     np.testing.assert_allclose(float(np.sum(np.abs(sv) ** 2)), 1.0, atol=1e-10)
 
 
-def test_hamiltonian_spectrum_real():
+def test_hamiltonian_spectrum_real() -> None:
     """Hermitian H → real eigenvalues."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
@@ -191,7 +197,7 @@ def test_hamiltonian_spectrum_real():
     assert np.all(np.isreal(eigvals))
 
 
-def test_ground_energy_negative_4q():
+def test_ground_energy_negative_4q() -> None:
     """4-qubit coupled system should have negative ground energy."""
     K = build_knm_paper27(L=4)
     omega = OMEGA_N_16[:4]
@@ -199,7 +205,7 @@ def test_ground_energy_negative_4q():
     assert result["ground_energy"] < 0
 
 
-def test_pipeline_full_physics_accuracy():
+def test_pipeline_full_physics_accuracy() -> None:
     """Full pipeline: Knm → H → Trotter → sv → energy expectation.
     Verifies physics accuracy module is wired end-to-end.
     """
