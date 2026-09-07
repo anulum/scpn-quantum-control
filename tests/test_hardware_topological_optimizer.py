@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import cast
 
 import numpy as np
 import pytest
@@ -135,7 +136,7 @@ class TestHardwareTopologicalOptimizer:
         )
 
         opt = HardwareTopologicalOptimizer(
-            runner=RecordingRunner(),
+            runner=cast(HardwareRunner, RecordingRunner()),
             n_qubits=2,
             initial_K=initial_K,
             omega=np.array([5.0, 10.0]),

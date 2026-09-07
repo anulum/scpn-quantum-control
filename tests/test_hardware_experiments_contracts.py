@@ -9,8 +9,12 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+from typing import Any, cast
+
 import numpy as np
 import pytest
+from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
@@ -48,7 +52,7 @@ from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
 
 
 @pytest.fixture(scope="module")
-def sim_runner(tmp_path_factory):
+def sim_runner(tmp_path_factory: pytest.TempPathFactory) -> HardwareRunner:
     """Shared AerSimulator runner for all experiment tests."""
     results_dir = tmp_path_factory.mktemp("results")
     runner = HardwareRunner(
@@ -67,14 +71,14 @@ class _MockRunner:
     classical comparison) executes fully without 2^16 state simulation.
     """
 
-    def __init__(self, tmp_dir):
+    def __init__(self, tmp_dir: str) -> None:
         from pathlib import Path
 
         self.results_dir = Path(tmp_dir)
         self.results_dir.mkdir(parents=True, exist_ok=True)
         self._pm = True  # sentinel so transpile_with_dd doesn't raise
 
-    def run_sampler(self, circuits, shots=100, name="mock"):
+    def run_sampler(self, circuits: Any, shots: int = 100, name: str = "mock") -> list[JobResult]:
         from qiskit import QuantumCircuit
 
         if isinstance(circuits, QuantumCircuit):
@@ -105,7 +109,9 @@ class _MockRunner:
             )
         return results
 
-    def run_estimator(self, circuit, observables, name="mock", parameter_values=None):
+    def run_estimator(
+        self, circuit: Any, observables: Any, name: str = "mock", parameter_values: Any = None
+    ) -> JobResult:
         n_obs = len(observables)
         evs = np.random.default_rng(42).uniform(-1, 1, n_obs)
         return JobResult(
@@ -123,13 +129,15 @@ class _MockRunner:
             },
         )
 
-    def transpile(self, circuit):
+    def transpile(self, circuit: QuantumCircuit) -> QuantumCircuit:
         return circuit
 
-    def transpile_with_dd(self, circuit, dd_sequence=None):
+    def transpile_with_dd(
+        self, circuit: QuantumCircuit, dd_sequence: Any = None
+    ) -> QuantumCircuit:
         return circuit
 
-    def save_result(self, result, filename=None):
+    def save_result(self, result: Any, filename: str | None = None) -> Path:
         import json
 
         data = result.to_dict() if isinstance(result, JobResult) else [r.to_dict() for r in result]
@@ -140,7 +148,7 @@ class _MockRunner:
 
 
 @pytest.fixture(scope="module")
-def mock_runner(tmp_path_factory):
+def mock_runner(tmp_path_factory: pytest.TempPathFactory) -> _MockRunner:
     """Mock runner for heavy (16-qubit) experiments."""
     return _MockRunner(str(tmp_path_factory.mktemp("mock_results")))
 
@@ -148,21 +156,21 @@ def mock_runner(tmp_path_factory):
 class TestBuildEvoBase:
     """Verify base evolution-circuit construction."""
 
-    def test_returns_circuit(self):
+    def test_returns_circuit(self) -> None:
         """Return a circuit with the requested oscillator width."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         qc = _build_evo_base(2, K, omega, t=0.1, trotter_reps=1)
         assert qc.num_qubits == 2
 
-    def test_trotter_order_2(self):
+    def test_trotter_order_2(self) -> None:
         """Support second-order Trotter synthesis."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         qc = _build_evo_base(2, K, omega, t=0.1, trotter_reps=1, trotter_order=2)
         assert qc.num_qubits == 2
 
-    def test_4_qubit(self):
+    def test_4_qubit(self) -> None:
         """Construct a four-qubit evolution circuit."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -173,7 +181,7 @@ class TestBuildEvoBase:
 class TestBuildXYZCircuits:
     """Verify measurement-basis circuit expansion."""
 
-    def test_returns_three_circuits(self):
+    def test_returns_three_circuits(self) -> None:
         """Return one circuit for each Cartesian measurement basis."""
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
@@ -187,25 +195,25 @@ class TestBuildXYZCircuits:
 class TestExpectationPerQubit:
     """Verify per-qubit expectation and uncertainty extraction."""
 
-    def test_all_zeros(self):
+    def test_all_zeros(self) -> None:
         """Map all-zero counts to positive unit expectations."""
         counts = {"00": 1000}
         exp, std = _expectation_per_qubit(counts, 2)
         np.testing.assert_allclose(exp, [1.0, 1.0], atol=0.01)
 
-    def test_all_ones(self):
+    def test_all_ones(self) -> None:
         """Map all-one counts to negative unit expectations."""
         counts = {"11": 1000}
         exp, std = _expectation_per_qubit(counts, 2)
         np.testing.assert_allclose(exp, [-1.0, -1.0], atol=0.01)
 
-    def test_mixed(self):
+    def test_mixed(self) -> None:
         """Map balanced opposite outcomes to zero expectations."""
         counts = {"00": 500, "11": 500}
         exp, std = _expectation_per_qubit(counts, 2)
         np.testing.assert_allclose(exp, [0.0, 0.0], atol=0.01)
 
-    def test_std_nonzero(self):
+    def test_std_nonzero(self) -> None:
         """Report nonzero uncertainty for balanced opposite outcomes."""
         counts = {"00": 500, "11": 500}
         _, std = _expectation_per_qubit(counts, 2)
@@ -215,7 +223,7 @@ class TestExpectationPerQubit:
 class TestRFromXYZ:
     """Verify order-parameter reconstruction from XYZ counts."""
 
-    def test_coherent_state(self):
+    def test_coherent_state(self) -> None:
         """Produce a coherent order parameter and scalar uncertainty."""
         z = {"00": 1000}
         x = {"00": 1000}
@@ -224,7 +232,7 @@ class TestRFromXYZ:
         assert R > 0.5
         assert isinstance(R_std, float)
 
-    def test_returns_all_fields(self):
+    def test_returns_all_fields(self) -> None:
         """Return all reconstructed means and standard deviations."""
         z = {"00": 500, "11": 500}
         x = {"00": 500, "11": 500}
@@ -239,21 +247,21 @@ class TestRFromXYZ:
 class TestQAOACost:
     """Verify count-based QAOA Hamiltonian evaluation."""
 
-    def test_returns_float(self):
+    def test_returns_float(self) -> None:
         """Return a scalar cost for diagonal Pauli terms."""
         ham = SparsePauliOp.from_list([("ZZ", 1.0), ("IZ", 0.5), ("ZI", -0.3)])
         counts = {"00": 400, "01": 200, "10": 200, "11": 200}
         cost = _qaoa_cost_from_counts(counts, ham, 2)
         assert isinstance(cost, float)
 
-    def test_identity_term(self):
+    def test_identity_term(self) -> None:
         """Evaluate an identity term to its coefficient."""
         ham = SparsePauliOp.from_list([("II", 1.0)])
         counts = {"00": 1000}
         cost = _qaoa_cost_from_counts(counts, ham, 2)
         assert abs(cost - 1.0) < 0.01
 
-    def test_x_pauli_zeroes(self):
+    def test_x_pauli_zeroes(self) -> None:
         """Ignore non-diagonal Pauli terms in count-based evaluation."""
         ham = SparsePauliOp.from_list([("XI", 1.0)])
         counts = {"00": 500, "01": 500}
@@ -264,19 +272,19 @@ class TestQAOACost:
 class TestCorrelatorFromCounts:
     """Verify pair-correlator extraction from sampled counts."""
 
-    def test_perfect_correlation(self):
+    def test_perfect_correlation(self) -> None:
         """Return positive unity for perfectly correlated outcomes."""
         counts = {"00": 500, "11": 500}
         c = _correlator_from_counts(counts, 0, 1)
         assert abs(c - 1.0) < 0.01
 
-    def test_anti_correlation(self):
+    def test_anti_correlation(self) -> None:
         """Return negative unity for perfectly anticorrelated outcomes."""
         counts = {"01": 500, "10": 500}
         c = _correlator_from_counts(counts, 0, 1)
         assert abs(c - (-1.0)) < 0.01
 
-    def test_empty_counts(self):
+    def test_empty_counts(self) -> None:
         """Return zero when no observations are available."""
         c = _correlator_from_counts({}, 0, 1)
         assert c == 0.0
@@ -285,7 +293,7 @@ class TestCorrelatorFromCounts:
 class TestRunVQE:
     """Verify the shared statevector VQE execution path."""
 
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         """Return energy, gap, and optimization-history fields."""
         result = _run_vqe(2, maxiter=30)
         assert "vqe_energy" in result
@@ -298,7 +306,7 @@ class TestRunVQE:
 class TestKuramoto4Osc:
     """Verify the four-oscillator simulator experiment."""
 
-    def test_runs(self, sim_runner):
+    def test_runs(self, sim_runner: HardwareRunner) -> None:
         """Return hardware and classical trajectories for four oscillators."""
         result = kuramoto_4osc_experiment(sim_runner, shots=100, n_time_steps=2, dt=0.05)
         assert result["experiment"] == "kuramoto_4osc"
@@ -312,9 +320,11 @@ class TestKuramoto4Osc:
 class TestKuramoto8Osc:
     """Verify the eight-oscillator injected-runner experiment."""
 
-    def test_runs(self, mock_runner):
+    def test_runs(self, mock_runner: _MockRunner) -> None:
         """Return a two-step eight-oscillator trajectory."""
-        result = kuramoto_8osc_experiment(mock_runner, shots=100, n_time_steps=2, dt=0.05)
+        result = kuramoto_8osc_experiment(
+            cast(HardwareRunner, mock_runner), shots=100, n_time_steps=2, dt=0.05
+        )
         assert result["experiment"] == "kuramoto_8osc"
         assert result["n_oscillators"] == 8
         assert len(result["hw_R"]) == 2
@@ -323,7 +333,7 @@ class TestKuramoto8Osc:
 class TestVQE4Q:
     """Verify the four-qubit statevector VQE experiment."""
 
-    def test_runs(self, sim_runner):
+    def test_runs(self, sim_runner: HardwareRunner) -> None:
         """Return variational and exact energies for four qubits."""
         result = vqe_4q_experiment(sim_runner, shots=100, maxiter=10)
         assert result["experiment"] == "vqe_4q"
@@ -334,9 +344,9 @@ class TestVQE4Q:
 class TestVQE8Q:
     """Verify the eight-qubit statevector VQE experiment."""
 
-    def test_runs(self, mock_runner):
+    def test_runs(self, mock_runner: _MockRunner) -> None:
         """Return variational energy fields for eight qubits."""
-        result = vqe_8q_experiment(mock_runner, shots=100, maxiter=10)
+        result = vqe_8q_experiment(cast(HardwareRunner, mock_runner), shots=100, maxiter=10)
         assert result["experiment"] == "vqe_8q"
         assert "vqe_energy" in result
 
@@ -344,7 +354,7 @@ class TestVQE8Q:
 class TestQAOAMPC4:
     """Verify the four-qubit QAOA model-predictive controller."""
 
-    def test_runs(self, sim_runner):
+    def test_runs(self, sim_runner: HardwareRunner) -> None:
         """Return brute-force and both QAOA-depth results."""
         result = qaoa_mpc_4_experiment(sim_runner, shots=100)
         assert result["experiment"] == "qaoa_mpc_4"
@@ -356,7 +366,7 @@ class TestQAOAMPC4:
 class TestUPDE16Snapshot:
     """Verify the injected-runner 16-layer UPDE snapshot."""
 
-    def test_runs(self, mock_runner):
+    def test_runs(self, mock_runner: _MockRunner) -> None:
         """Return quantum and patched classical snapshot fields."""
         from unittest.mock import patch
 
@@ -370,7 +380,9 @@ class TestUPDE16Snapshot:
             "scpn_quantum_control.hardware.experiment_control.classical_exact_evolution",
             return_value=fake_classical,
         ):
-            result = upde_16_snapshot_experiment(mock_runner, shots=100, trotter_steps=1)
+            result = upde_16_snapshot_experiment(
+                cast(HardwareRunner, mock_runner), shots=100, trotter_steps=1
+            )
         assert result["experiment"] == "upde_16_snapshot"
         assert result["n_layers"] == 16
         assert "hw_R" in result
@@ -381,7 +393,7 @@ class TestUPDE16Snapshot:
 class TestKuramoto4OscZNE:
     """Verify four-oscillator zero-noise extrapolation."""
 
-    def test_runs(self, sim_runner):
+    def test_runs(self, sim_runner: HardwareRunner) -> None:
         """Return results at both scales and an extrapolated value."""
         result = kuramoto_4osc_zne_experiment(sim_runner, shots=100, dt=0.05, scales=[1, 3])
         assert result["experiment"] == "kuramoto_4osc_zne"
@@ -393,7 +405,7 @@ class TestKuramoto4OscZNE:
 class TestNoiseBaseline:
     """Verify the local noise-baseline experiment."""
 
-    def test_runs(self, sim_runner):
+    def test_runs(self, sim_runner: HardwareRunner) -> None:
         """Return bounded four-qubit baseline observables."""
         result = noise_baseline_experiment(sim_runner, shots=100)
         assert result["experiment"] == "noise_baseline"
@@ -405,9 +417,11 @@ class TestNoiseBaseline:
 class TestKuramoto8OscZNE:
     """Verify eight-oscillator zero-noise extrapolation."""
 
-    def test_runs(self, mock_runner):
+    def test_runs(self, mock_runner: _MockRunner) -> None:
         """Return an eight-oscillator extrapolated synchronization value."""
-        result = kuramoto_8osc_zne_experiment(mock_runner, shots=100, dt=0.05, scales=[1, 3])
+        result = kuramoto_8osc_zne_experiment(
+            cast(HardwareRunner, mock_runner), shots=100, dt=0.05, scales=[1, 3]
+        )
         assert result["experiment"] == "kuramoto_8osc_zne"
         assert result["n_oscillators"] == 8
         assert "zne_R" in result
@@ -416,9 +430,11 @@ class TestKuramoto8OscZNE:
 class TestVQE8QHardware:
     """Verify the injected-runner eight-qubit VQE boundary."""
 
-    def test_runs(self, mock_runner):
+    def test_runs(self, mock_runner: _MockRunner) -> None:
         """Return simulated, injected-runner, and exact energies."""
-        result = vqe_8q_hardware_experiment(mock_runner, shots=100, maxiter=10)
+        result = vqe_8q_hardware_experiment(
+            cast(HardwareRunner, mock_runner), shots=100, maxiter=10
+        )
         assert result["experiment"] == "vqe_8q_hardware"
         assert "sim_energy" in result
         assert "hw_energy" in result
@@ -428,7 +444,7 @@ class TestVQE8QHardware:
 class TestUPDE16DD:
     """Verify the injected-runner dynamical-decoupling experiment."""
 
-    def test_runs(self, mock_runner):
+    def test_runs(self, mock_runner: _MockRunner) -> None:
         """Return raw, decoupled, and patched classical observables."""
         from unittest.mock import patch
 
@@ -442,7 +458,9 @@ class TestUPDE16DD:
             "scpn_quantum_control.hardware.experiment_mitigation.classical_exact_evolution",
             return_value=fake_classical,
         ):
-            result = upde_16_dd_experiment(mock_runner, shots=100, trotter_steps=1)
+            result = upde_16_dd_experiment(
+                cast(HardwareRunner, mock_runner), shots=100, trotter_steps=1
+            )
         assert result["experiment"] == "upde_16_dd"
         assert "hw_R_raw" in result
         assert "hw_R_dd" in result
@@ -452,7 +470,7 @@ class TestUPDE16DD:
 class TestKuramoto4OscTrotter2:
     """Verify second-order four-oscillator Trotter evolution."""
 
-    def test_runs(self, sim_runner):
+    def test_runs(self, sim_runner: HardwareRunner) -> None:
         """Return the requested second-order trajectory."""
         result = kuramoto_4osc_trotter2_experiment(sim_runner, shots=100, n_time_steps=2, dt=0.05)
         assert result["experiment"] == "kuramoto_4osc_trotter2"
@@ -463,7 +481,7 @@ class TestKuramoto4OscTrotter2:
 class TestSyncThreshold:
     """Verify the synchronization-threshold sweep."""
 
-    def test_runs(self, sim_runner):
+    def test_runs(self, sim_runner: HardwareRunner) -> None:
         """Return quantum and classical values at each coupling."""
         result = sync_threshold_experiment(sim_runner, shots=100, k_values=[0.1, 0.5])
         assert result["experiment"] == "sync_threshold"
@@ -477,7 +495,7 @@ class TestSyncThreshold:
 class TestAnsatzComparisonHW:
     """Verify injected-runner VQE ansatz comparison."""
 
-    def test_runs(self, sim_runner):
+    def test_runs(self, sim_runner: HardwareRunner) -> None:
         """Compare all three configured ansatz families."""
         result = ansatz_comparison_hw_experiment(sim_runner, shots=100, maxiter=10)
         assert result["experiment"] == "ansatz_comparison_hw"
@@ -491,7 +509,7 @@ class TestAnsatzComparisonHW:
 class TestZNEHigherOrder:
     """Verify higher-order zero-noise extrapolation."""
 
-    def test_runs(self, sim_runner):
+    def test_runs(self, sim_runner: HardwareRunner) -> None:
         """Return linear and quadratic extrapolations."""
         result = zne_higher_order_experiment(
             sim_runner, shots=100, dt=0.05, scales=[1, 3, 5], poly_order=2
@@ -505,7 +523,7 @@ class TestZNEHigherOrder:
 class TestDecoherenceScaling:
     """Verify local decoherence-scaling estimation."""
 
-    def test_runs(self, sim_runner):
+    def test_runs(self, sim_runner: HardwareRunner) -> None:
         """Return two width samples and fitted decay statistics."""
         result = decoherence_scaling_experiment(sim_runner, shots=100, qubit_counts=[2, 4])
         assert result["experiment"] == "decoherence_scaling"
@@ -517,7 +535,7 @@ class TestDecoherenceScaling:
 class TestVQELandscape:
     """Verify sampled VQE landscape statistics."""
 
-    def test_runs(self, sim_runner):
+    def test_runs(self, sim_runner: HardwareRunner) -> None:
         """Return statistics for informed and generic ansatz landscapes."""
         result = vqe_landscape_experiment(sim_runner, shots=100, n_samples=5)
         assert result["experiment"] == "vqe_landscape"
@@ -531,7 +549,7 @@ class TestVQELandscape:
 class TestBellTest4Q:
     """Verify the four-qubit Bell experiment."""
 
-    def test_runs(self, sim_runner):
+    def test_runs(self, sim_runner: HardwareRunner) -> None:
         """Return simulated and sampled Bell statistics."""
         result = bell_test_4q_experiment(sim_runner, shots=100, maxiter=10)
         assert result["experiment"] == "bell_test_4q"
@@ -543,7 +561,7 @@ class TestBellTest4Q:
 class TestCorrelator4Q:
     """Verify the four-qubit correlator experiment."""
 
-    def test_runs(self, sim_runner):
+    def test_runs(self, sim_runner: HardwareRunner) -> None:
         """Return all four correlators and their aggregate error."""
         result = correlator_4q_experiment(sim_runner, shots=100, maxiter=10)
         assert result["experiment"] == "correlator_4q"
@@ -554,7 +572,7 @@ class TestCorrelator4Q:
 class TestQKDQBER4Q:
     """Verify the four-qubit QKD error-rate experiment."""
 
-    def test_runs(self, sim_runner):
+    def test_runs(self, sim_runner: HardwareRunner) -> None:
         """Return both basis error rates and security fields."""
         result = qkd_qber_4q_experiment(sim_runner, shots=100, maxiter=10)
         assert result["experiment"] == "qkd_qber_4q"
@@ -567,11 +585,11 @@ class TestQKDQBER4Q:
 class TestAllExperimentsRegistry:
     """Verify completeness of the hardware experiment registry."""
 
-    def test_has_20_entries(self):
+    def test_has_20_entries(self) -> None:
         """Retain all twenty registered experiment entry points."""
         assert len(ALL_EXPERIMENTS) == 20
 
-    def test_all_callables(self):
+    def test_all_callables(self) -> None:
         """Expose every registry entry as a callable."""
         for name, fn in ALL_EXPERIMENTS.items():
             assert callable(fn), f"{name} is not callable"

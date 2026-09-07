@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from types import ModuleType
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -17,7 +18,7 @@ import pytest
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 
 
-def _import_pennylane_adapter():
+def _import_pennylane_adapter() -> ModuleType | None:
     try:
         import scpn_quantum_control.hardware.pennylane_adapter as mod
 
@@ -26,7 +27,7 @@ def _import_pennylane_adapter():
         return None
 
 
-def test_circuit_cutting_default_n_values():
+def test_circuit_cutting_default_n_values() -> None:
     """Verifies 119: n_values defaults to [16,24,32,48,64]."""
     from scpn_quantum_control.hardware.circuit_cutting import scaling_analysis
 
@@ -34,7 +35,7 @@ def test_circuit_cutting_default_n_values():
     assert len(result["n_oscillators"]) == 1
 
 
-def test_classical_rust_fast_path():
+def test_classical_rust_fast_path() -> None:
     """Verifies 56-62: Rust engine import attempted for kuramoto trajectory."""
     from scpn_quantum_control.hardware.classical import classical_kuramoto_reference
 
@@ -46,7 +47,7 @@ def test_classical_rust_fast_path():
     assert len(result["times"]) > 0
 
 
-def test_classical_exact_diag_gpu_path():
+def test_classical_exact_diag_gpu_path() -> None:
     """Verifies 133: exact_diag with GPU eigh path (mocked gpu_accel)."""
     from unittest.mock import patch
 
@@ -70,7 +71,7 @@ def test_classical_exact_diag_gpu_path():
         assert "ground_energy" in result
 
 
-def test_qiskit_compat_pauli_evolution_gate():
+def test_qiskit_compat_pauli_evolution_gate() -> None:
     """Verifies 37-41: get_pauli_evolution_gate import."""
     from scpn_quantum_control.hardware.qiskit_compat import get_pauli_evolution_gate
 
@@ -78,7 +79,7 @@ def test_qiskit_compat_pauli_evolution_gate():
     assert PEG is not None
 
 
-def test_qiskit_compat_lie_trotter():
+def test_qiskit_compat_lie_trotter() -> None:
     """Verifies 50-53: get_lie_trotter import."""
     from scpn_quantum_control.hardware.qiskit_compat import get_lie_trotter
 
@@ -86,7 +87,7 @@ def test_qiskit_compat_lie_trotter():
     assert LT is not None
 
 
-def test_qiskit_compat_check():
+def test_qiskit_compat_check() -> None:
     """Verifies 77: check_qiskit_compatibility."""
     from scpn_quantum_control.hardware.qiskit_compat import check_qiskit_compatibility
 
@@ -95,7 +96,7 @@ def test_qiskit_compat_check():
     assert "major" in result
 
 
-def test_gpu_accel_device_name_cpu():
+def test_gpu_accel_device_name_cpu() -> None:
     """Verify gpu_device_name returns 'cpu' when no GPU."""
     from scpn_quantum_control.hardware.gpu_accel import gpu_device_name
 
@@ -103,7 +104,7 @@ def test_gpu_accel_device_name_cpu():
     assert isinstance(name, str)
 
 
-def test_gpu_accel_eigvalsh_cpu():
+def test_gpu_accel_eigvalsh_cpu() -> None:
     """Verify eigvalsh falls back to numpy."""
     from scpn_quantum_control.hardware.gpu_accel import eigvalsh
 
@@ -112,7 +113,7 @@ def test_gpu_accel_eigvalsh_cpu():
     np.testing.assert_allclose(eigs, np.linalg.eigvalsh(m))
 
 
-def test_gpu_accel_eigh_cpu():
+def test_gpu_accel_eigh_cpu() -> None:
     """Verify eigh falls back to numpy."""
     from scpn_quantum_control.hardware.gpu_accel import eigh
 
@@ -121,7 +122,7 @@ def test_gpu_accel_eigh_cpu():
     np.testing.assert_allclose(eigs, np.linalg.eigvalsh(m))
 
 
-def test_gpu_accel_expm_cpu():
+def test_gpu_accel_expm_cpu() -> None:
     """Verify expm falls back to scipy."""
     from scpn_quantum_control.hardware.gpu_accel import expm
 
@@ -130,7 +131,7 @@ def test_gpu_accel_expm_cpu():
     assert result.shape == (2, 2)
 
 
-def test_gpu_accel_matmul_cpu():
+def test_gpu_accel_matmul_cpu() -> None:
     """Verify matmul falls back to numpy."""
     from scpn_quantum_control.hardware.gpu_accel import matmul
 
@@ -140,14 +141,14 @@ def test_gpu_accel_matmul_cpu():
     np.testing.assert_allclose(result, b)
 
 
-def test_gpu_accel_memory_free_cpu():
+def test_gpu_accel_memory_free_cpu() -> None:
     """Verify gpu_memory_free_mb returns 0 when no GPU."""
     from scpn_quantum_control.hardware.gpu_accel import gpu_memory_free_mb
 
     assert gpu_memory_free_mb() == 0.0
 
 
-def test_gpu_accel_mocked_cupy_eigvalsh():
+def test_gpu_accel_mocked_cupy_eigvalsh() -> None:
     """Verify eigvalsh GPU path with mocked cupy."""
     import scpn_quantum_control.hardware.gpu_accel as gpu_mod
 
@@ -170,7 +171,7 @@ def test_gpu_accel_mocked_cupy_eigvalsh():
         gpu_mod._cp = orig_cp
 
 
-def test_gpu_accel_mocked_cupy_eigh():
+def test_gpu_accel_mocked_cupy_eigh() -> None:
     """Verify eigh GPU path with mocked cupy."""
     import scpn_quantum_control.hardware.gpu_accel as gpu_mod
 
@@ -193,7 +194,7 @@ def test_gpu_accel_mocked_cupy_eigh():
         gpu_mod._cp = orig_cp
 
 
-def test_gpu_accel_mocked_cupy_expm():
+def test_gpu_accel_mocked_cupy_expm() -> None:
     """Verify expm GPU path with mocked cupy for Hermitian matrix."""
     import scpn_quantum_control.hardware.gpu_accel as gpu_mod
 
@@ -230,7 +231,7 @@ def test_gpu_accel_mocked_cupy_expm():
         gpu_mod._cp = orig_cp
 
 
-def test_gpu_accel_mocked_cupy_matmul():
+def test_gpu_accel_mocked_cupy_matmul() -> None:
     """Verify matmul GPU path with mocked cupy."""
     import scpn_quantum_control.hardware.gpu_accel as gpu_mod
 
@@ -256,7 +257,7 @@ def test_gpu_accel_mocked_cupy_matmul():
         gpu_mod._cp = orig_cp
 
 
-def test_gpu_accel_mocked_cupy_memory():
+def test_gpu_accel_mocked_cupy_memory() -> None:
     """Verify gpu_memory_free_mb with mocked cupy."""
     import scpn_quantum_control.hardware.gpu_accel as gpu_mod
 
@@ -274,7 +275,7 @@ def test_gpu_accel_mocked_cupy_memory():
         gpu_mod._cp = orig_cp
 
 
-def test_gpu_accel_mocked_cupy_device_name():
+def test_gpu_accel_mocked_cupy_device_name() -> None:
     """Verify gpu_device_name with mocked cupy."""
     import scpn_quantum_control.hardware.gpu_accel as gpu_mod
 
@@ -292,7 +293,7 @@ def test_gpu_accel_mocked_cupy_device_name():
         gpu_mod._cp = orig_cp
 
 
-def test_cirq_adapter_availability():
+def test_cirq_adapter_availability() -> None:
     """Verify is_cirq_available check."""
     from scpn_quantum_control.hardware.cirq_adapter import is_cirq_available
 
@@ -300,7 +301,7 @@ def test_cirq_adapter_availability():
     assert isinstance(result, bool)
 
 
-def test_cirq_adapter_import_error():
+def test_cirq_adapter_import_error() -> None:
     """Verify CirqRunner raises ImportError when cirq unavailable."""
     import scpn_quantum_control.hardware.cirq_adapter as cirq_mod
 
@@ -313,7 +314,7 @@ def test_cirq_adapter_import_error():
         cirq_mod._CIRQ_AVAILABLE = orig
 
 
-def test_cirq_runner_mocked():
+def test_cirq_runner_mocked(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify CirqRunner.run_trotter with mocked cirq module."""
     import scpn_quantum_control.hardware.cirq_adapter as cirq_mod
 
@@ -328,22 +329,16 @@ def test_cirq_runner_mocked():
     mock_sim_result.final_state_vector = np.array([1, 0, 0, 0], dtype=complex)
     mock_cirq.Simulator.return_value.simulate.return_value = mock_sim_result
 
-    orig_avail = cirq_mod._CIRQ_AVAILABLE
-    orig_cirq = cirq_mod.cirq
-    try:
-        cirq_mod._CIRQ_AVAILABLE = True
-        cirq_mod.cirq = mock_cirq
-        K = np.array([[0, 0.5], [0.5, 0]])
-        omega = np.array([1.0, 2.0])
-        runner = cirq_mod.CirqRunner(K, omega)
-        result = runner.run_trotter(t=0.5, reps=2)
-        assert result.n_qubits == 2
-    finally:
-        cirq_mod._CIRQ_AVAILABLE = orig_avail
-        cirq_mod.cirq = orig_cirq
+    monkeypatch.setattr(cirq_mod, "_CIRQ_AVAILABLE", True)
+    monkeypatch.setattr(cirq_mod, "cirq", mock_cirq)
+    K = np.array([[0, 0.5], [0.5, 0]])
+    omega = np.array([1.0, 2.0])
+    runner = cirq_mod.CirqRunner(K, omega)
+    result = runner.run_trotter(t=0.5, reps=2)
+    assert result.n_qubits == 2
 
 
-def test_pennylane_availability():
+def test_pennylane_availability() -> None:
     """Verify is_pennylane_available check."""
     pl_mod = _import_pennylane_adapter()
     if pl_mod is None:
@@ -352,29 +347,21 @@ def test_pennylane_availability():
     assert isinstance(result, bool)
 
 
-def test_pennylane_import_error():
+def test_pennylane_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify PennyLaneRunner raises ImportError when pennylane unavailable."""
     pl_mod = _import_pennylane_adapter()
     if pl_mod is None:
         pytest.skip("pennylane not importable")
-    orig = pl_mod._PL_AVAILABLE
-    try:
-        pl_mod._PL_AVAILABLE = False
-        with pytest.raises(ImportError, match="PennyLane not installed"):
-            pl_mod.PennyLaneRunner(np.eye(2), np.ones(2))
-    finally:
-        pl_mod._PL_AVAILABLE = orig
+    monkeypatch.setattr(pl_mod, "_PL_AVAILABLE", False)
+    with pytest.raises(ImportError, match="PennyLane not installed"):
+        pl_mod.PennyLaneRunner(np.eye(2), np.ones(2))
 
 
-def test_pennylane_hamiltonian_import_error():
+def test_pennylane_hamiltonian_import_error(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify _xy_hamiltonian_pl raises when PennyLane unavailable."""
     pl_mod = _import_pennylane_adapter()
     if pl_mod is None:
         pytest.skip("pennylane not importable")
-    orig = pl_mod._PL_AVAILABLE
-    try:
-        pl_mod._PL_AVAILABLE = False
-        with pytest.raises(ImportError, match="PennyLane not installed"):
-            pl_mod._xy_hamiltonian_pl(np.eye(2), np.ones(2))
-    finally:
-        pl_mod._PL_AVAILABLE = orig
+    monkeypatch.setattr(pl_mod, "_PL_AVAILABLE", False)
+    with pytest.raises(ImportError, match="PennyLane not installed"):
+        pl_mod._xy_hamiltonian_pl(np.eye(2), np.ones(2))

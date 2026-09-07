@@ -22,6 +22,7 @@ from qiskit.quantum_info import SparsePauliOp
 
 from scpn_quantum_control.hardware import runner as runner_mod
 from scpn_quantum_control.hardware.runner import HardwareRunner, JobResult
+from scpn_quantum_control.structured_log_fallback import get_structured_logger
 
 
 class _CountsRegister:
@@ -39,12 +40,12 @@ def _pub_result(counts: dict[str, int]) -> SimpleNamespace:
 
 
 @pytest.fixture()
-def tmp_results(tmp_path):
+def tmp_results(tmp_path: Path) -> str:
     return str(tmp_path / "results")
 
 
 class TestJobResult:
-    def test_to_dict_with_counts(self):
+    def test_to_dict_with_counts(self) -> None:
         jr = JobResult(
             job_id="j1",
             backend_name="aer",
@@ -62,7 +63,7 @@ class TestJobResult:
         assert d["wall_time_s"] == 1.5
         assert "expectation_values" not in d
 
-    def test_to_dict_with_expectation_values(self):
+    def test_to_dict_with_expectation_values(self) -> None:
         evs = np.array([0.5, -0.3])
         jr = JobResult(
             job_id="j2",
@@ -76,7 +77,7 @@ class TestJobResult:
         assert d["expectation_values"] == [0.5, -0.3]
         assert "counts" not in d
 
-    def test_to_dict_minimal(self):
+    def test_to_dict_minimal(self) -> None:
         jr = JobResult(job_id="j3", backend_name="aer", experiment_name="exp3")
         d = jr.to_dict()
         assert d["job_id"] == "j3"
@@ -85,20 +86,20 @@ class TestJobResult:
 
 
 class TestRunnerInit:
-    def test_simulator_init(self, tmp_path):
+    def test_simulator_init(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         assert runner.use_simulator is True
         assert runner.results_dir.exists()
 
-    def test_default_resilience_level(self, tmp_path):
+    def test_default_resilience_level(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         assert runner.resilience_level == 2
 
-    def test_fractional_gates_default(self, tmp_path):
+    def test_fractional_gates_default(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         assert runner.use_fractional_gates is True
 
-    def test_optimization_level(self, tmp_path):
+    def test_optimization_level(self, tmp_path: Path) -> None:
         runner = HardwareRunner(
             use_simulator=True,
             optimization_level=3,
@@ -106,14 +107,14 @@ class TestRunnerInit:
         )
         assert runner.optimization_level == 3
 
-    def test_results_dir_fallback(self, tmp_path):
+    def test_results_dir_fallback(self, tmp_path: Path) -> None:
         runner = HardwareRunner(
             use_simulator=True,
             results_dir=str(tmp_path / "no_such_dir" / "deep" / "path"),
         )
         assert runner.results_dir.exists()
 
-    def test_custom_noise_model(self, tmp_path):
+    def test_custom_noise_model(self, tmp_path: Path) -> None:
         runner = HardwareRunner(
             use_simulator=True,
             noise_model="placeholder",
@@ -121,7 +122,7 @@ class TestRunnerInit:
         )
         assert runner._noise_model == "placeholder"
 
-    def test_custom_token_channel_instance(self, tmp_path):
+    def test_custom_token_channel_instance(self, tmp_path: Path) -> None:
         runner = HardwareRunner(
             token="fake_token",
             channel="ibm_quantum",
@@ -134,33 +135,33 @@ class TestRunnerInit:
 
 
 class TestRunnerProperties:
-    def test_backend_none_before_connect(self, tmp_path):
+    def test_backend_none_before_connect(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         assert runner.backend is None
 
-    def test_backend_name_before_connect(self, tmp_path):
+    def test_backend_name_before_connect(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         assert runner.backend_name == "not_connected"
 
-    def test_backend_after_connect(self, tmp_path):
+    def test_backend_after_connect(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         assert runner.backend is not None
 
-    def test_backend_name_after_connect(self, tmp_path):
+    def test_backend_name_after_connect(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         assert "aer" in runner.backend_name.lower() or runner.backend_name != "not_connected"
 
 
 class TestRunnerConnect:
-    def test_connect_simulator(self, tmp_path):
+    def test_connect_simulator(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         assert runner._backend is not None
         assert runner._pm is not None
 
-    def test_connect_simulator_with_noise_model(self, tmp_path):
+    def test_connect_simulator_with_noise_model(self, tmp_path: Path) -> None:
         from qiskit_aer.noise import NoiseModel
 
         nm = NoiseModel()
@@ -172,7 +173,7 @@ class TestRunnerConnect:
         runner.connect()
         assert runner._backend is not None
 
-    def test_connect_simulator_no_fractional_gates(self, tmp_path):
+    def test_connect_simulator_no_fractional_gates(self, tmp_path: Path) -> None:
         runner = HardwareRunner(
             use_simulator=True,
             use_fractional_gates=False,
@@ -183,7 +184,7 @@ class TestRunnerConnect:
 
 
 class TestRunnerTranspile:
-    def test_transpile_raises_before_connect(self, tmp_path):
+    def test_transpile_raises_before_connect(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         qc = QuantumCircuit(2)
         qc.h(0)
@@ -191,7 +192,7 @@ class TestRunnerTranspile:
         with pytest.raises(RuntimeError, match="connect"):
             runner.transpile(qc)
 
-    def test_transpile_returns_circuit(self, tmp_path):
+    def test_transpile_returns_circuit(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         qc = QuantumCircuit(2)
@@ -200,7 +201,7 @@ class TestRunnerTranspile:
         isa = runner.transpile(qc)
         assert isinstance(isa, QuantumCircuit)
 
-    def test_transpile_observable(self, tmp_path):
+    def test_transpile_observable(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         qc = QuantumCircuit(2)
@@ -211,7 +212,7 @@ class TestRunnerTranspile:
         mapped = runner.transpile_observable(obs, isa)
         assert isinstance(mapped, SparsePauliOp)
 
-    def test_circuit_stats(self, tmp_path):
+    def test_circuit_stats(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         qc = QuantumCircuit(2)
@@ -227,7 +228,7 @@ class TestRunnerTranspile:
 
 
 class TestRunnerSampler:
-    def test_run_sampler_single_circuit(self, tmp_path):
+    def test_run_sampler_single_circuit(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         qc = QuantumCircuit(2)
@@ -239,7 +240,7 @@ class TestRunnerSampler:
         assert results[0].counts is not None
         assert sum(results[0].counts.values()) == 1000
 
-    def test_run_sampler_multiple_circuits(self, tmp_path):
+    def test_run_sampler_multiple_circuits(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         circuits = []
@@ -255,7 +256,7 @@ class TestRunnerSampler:
             assert r.counts is not None
             assert r.backend_name in {"aer_simulator", "basic_simulator"}
 
-    def test_run_sampler_fields(self, tmp_path):
+    def test_run_sampler_fields(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         qc = QuantumCircuit(1)
@@ -270,7 +271,7 @@ class TestRunnerSampler:
 
 
 class TestRunnerEstimator:
-    def test_run_estimator_basic(self, tmp_path):
+    def test_run_estimator_basic(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         qc = QuantumCircuit(2)
@@ -281,7 +282,7 @@ class TestRunnerEstimator:
         assert result.expectation_values is not None
         assert abs(result.expectation_values[0] - 1.0) < 0.01
 
-    def test_run_estimator_with_parameters(self, tmp_path):
+    def test_run_estimator_with_parameters(self, tmp_path: Path) -> None:
         from qiskit.circuit import Parameter
 
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
@@ -296,7 +297,7 @@ class TestRunnerEstimator:
         assert result.expectation_values is not None
         assert result.expectation_values.shape[0] == 2
 
-    def test_run_estimator_fields(self, tmp_path):
+    def test_run_estimator_fields(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         qc = QuantumCircuit(1)
@@ -309,7 +310,7 @@ class TestRunnerEstimator:
 
 
 class TestRunnerZNE:
-    def test_run_estimator_zne(self, tmp_path):
+    def test_run_estimator_zne(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         qc = QuantumCircuit(2)
@@ -322,7 +323,7 @@ class TestRunnerZNE:
 
 
 class TestRunnerDD:
-    def test_transpile_with_dd_default(self, tmp_path):
+    def test_transpile_with_dd_default(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         qc = QuantumCircuit(2)
@@ -331,7 +332,7 @@ class TestRunnerDD:
         dd_circuit = runner.transpile_with_dd(qc)
         assert isinstance(dd_circuit, QuantumCircuit)
 
-    def test_transpile_with_dd_custom_sequence(self, tmp_path):
+    def test_transpile_with_dd_custom_sequence(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         qc = QuantumCircuit(2)
@@ -340,7 +341,7 @@ class TestRunnerDD:
         dd_circuit = runner.transpile_with_dd(qc, dd_sequence=["x", "y", "x", "y"])
         assert isinstance(dd_circuit, QuantumCircuit)
 
-    def test_transpile_with_dd_raises_before_connect(self, tmp_path):
+    def test_transpile_with_dd_raises_before_connect(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         qc = QuantumCircuit(2)
         qc.h(0)
@@ -349,7 +350,7 @@ class TestRunnerDD:
 
 
 class TestRunnerLogSave:
-    def test_log_job_creates_file(self, tmp_path):
+    def test_log_job_creates_file(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         runner._log_job("job_123", "my_experiment")
@@ -360,7 +361,7 @@ class TestRunnerLogSave:
         assert len(entries) == 1
         assert entries[0]["job_id"] == "job_123"
 
-    def test_log_job_appends(self, tmp_path):
+    def test_log_job_appends(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         runner._log_job("job_1", "exp1")
@@ -369,7 +370,7 @@ class TestRunnerLogSave:
             entries = json.load(f)
         assert len(entries) == 2
 
-    def test_save_result_single(self, tmp_path):
+    def test_save_result_single(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         jr = JobResult(
@@ -384,7 +385,7 @@ class TestRunnerLogSave:
             data = json.load(f)
         assert data["job_id"] == "j1"
 
-    def test_save_result_list(self, tmp_path):
+    def test_save_result_list(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         results = [
@@ -397,7 +398,7 @@ class TestRunnerLogSave:
             data = json.load(f)
         assert len(data["results"]) == 2
 
-    def test_save_result_custom_filename(self, tmp_path):
+    def test_save_result_custom_filename(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         jr = JobResult(job_id="j1", backend_name="aer", experiment_name="exp")
@@ -406,7 +407,7 @@ class TestRunnerLogSave:
 
 
 class TestRunnerRetrieveJob:
-    def test_retrieve_job_raises_without_service(self, tmp_path):
+    def test_retrieve_job_raises_without_service(self, tmp_path: Path) -> None:
         runner = HardwareRunner(use_simulator=True, results_dir=str(tmp_path / "res"))
         runner.connect()
         with pytest.raises(RuntimeError, match="connect.*hardware"):
@@ -414,7 +415,7 @@ class TestRunnerRetrieveJob:
 
 
 class TestRunnerSaveToken:
-    def test_save_token_calls_qiskit(self):
+    def test_save_token_calls_qiskit(self) -> None:
         try:
             import qiskit_ibm_runtime  # noqa: F401
         except ImportError:
@@ -425,11 +426,11 @@ class TestRunnerSaveToken:
 
 
 class TestHardwareRunnerInit:
-    def test_structured_logger_exposes_logging_interface(self):
-        logger = runner_mod._get_structured_logger("scpn.test")
+    def test_structured_logger_exposes_logging_interface(self) -> None:
+        logger = get_structured_logger("scpn.test")
         assert isinstance(logger, logging.Logger) or hasattr(logger, "bind")
 
-    def test_default_instance_env_fallback(self, monkeypatch):
+    def test_default_instance_env_fallback(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("SCPN_IBM_CRN", "crn:v1:test")
         monkeypatch.delenv("SCPN_IBM_INSTANCE", raising=False)
 
@@ -444,19 +445,19 @@ class TestHardwareRunnerInit:
         ):
             assert HardwareRunner._default_instance() == "crn:v1:test"
 
-    def test_results_dir_fallback(self, monkeypatch):
+    def test_results_dir_fallback(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """If results_dir creation fails, falls back to tempdir."""
         bad_path = "/nonexistent_root_1234567890/results"
         runner = HardwareRunner(results_dir=bad_path)
         assert runner.results_dir.exists()
 
-    def test_backend_name_not_connected(self, tmp_results):
+    def test_backend_name_not_connected(self, tmp_results: str) -> None:
         runner = HardwareRunner(results_dir=tmp_results)
         assert runner.backend_name == "not_connected"
 
 
 class TestHardwareConnect:
-    def test_connect_ibm_service_none_raises(self, tmp_results):
+    def test_connect_ibm_service_none_raises(self, tmp_results: str) -> None:
         runner = HardwareRunner(results_dir=tmp_results)
         with (
             patch.dict(
@@ -471,7 +472,7 @@ class TestHardwareConnect:
         ):
             runner.connect()
 
-    def test_connect_ibm_backend_none_raises(self, tmp_results):
+    def test_connect_ibm_backend_none_raises(self, tmp_results: str) -> None:
         mock_service = MagicMock()
         mock_service.least_busy.return_value = None
         runner = HardwareRunner(results_dir=tmp_results)
@@ -488,7 +489,7 @@ class TestHardwareConnect:
         ):
             runner.connect()
 
-    def test_connect_simulator_uses_aer_when_available(self, tmp_results):
+    def test_connect_simulator_uses_aer_when_available(self, tmp_results: str) -> None:
         mock_backend = MagicMock()
         mock_backend.name = "aer_simulator"
         mock_backend.num_qubits = 32
@@ -510,7 +511,7 @@ class TestHardwareConnect:
         assert runner.backend is mock_backend
         assert runner.backend_name == "aer_simulator"
 
-    def test_connect_simulator_passes_noise_model_to_aer(self, tmp_results):
+    def test_connect_simulator_passes_noise_model_to_aer(self, tmp_results: str) -> None:
         mock_backend = MagicMock()
         mock_backend.name = "aer_simulator"
         noise_model = object()
@@ -532,7 +533,7 @@ class TestHardwareConnect:
 
         mock_aer.assert_called_once_with(noise_model=noise_model)
 
-    def test_connect_ibm_with_token(self, tmp_results):
+    def test_connect_ibm_with_token(self, tmp_results: str) -> None:
         mock_service = MagicMock()
         mock_backend = MagicMock()
         mock_backend.name = "ibm_fez"
@@ -565,7 +566,7 @@ class TestHardwareConnect:
         assert runner.backend_descriptor.can_submit is True
         assert runner.backend_descriptor.submit_requires_approval is True
 
-    def test_connect_ibm_least_busy(self, tmp_results):
+    def test_connect_ibm_least_busy(self, tmp_results: str) -> None:
         mock_service = MagicMock()
         mock_backend = MagicMock()
         mock_backend.name = "ibm_brisbane"
@@ -591,12 +592,12 @@ class TestHardwareConnect:
 
         assert runner._backend is mock_backend
 
-    def test_retrieve_job_requires_connect(self, tmp_results):
+    def test_retrieve_job_requires_connect(self, tmp_results: str) -> None:
         runner = HardwareRunner(results_dir=tmp_results)
         with pytest.raises(RuntimeError, match="connect"):
             runner.retrieve_job("job_123")
 
-    def test_retrieve_job(self, tmp_results):
+    def test_retrieve_job(self, tmp_results: str) -> None:
         runner = HardwareRunner(results_dir=tmp_results)
         runner._service = MagicMock()
         runner._service.job.return_value = MagicMock(name="job_obj")
@@ -605,18 +606,18 @@ class TestHardwareConnect:
 
 
 class TestHardwareRunSampler:
-    def test_extract_counts_custom_register_fallback(self):
+    def test_extract_counts_custom_register_fallback(self) -> None:
         pub_result = SimpleNamespace(data=SimpleNamespace(custom_reg=_CountsRegister({"01": 7})))
 
         assert runner_mod._extract_counts(pub_result) == {"01": 7}
 
-    def test_extract_counts_missing_register_raises(self):
+    def test_extract_counts_missing_register_raises(self) -> None:
         pub_result = SimpleNamespace(data=SimpleNamespace(alpha=object()))
 
         with pytest.raises(RuntimeError, match="Could not find classical register"):
             runner_mod._extract_counts(pub_result)
 
-    def test_run_sampler_hardware(self, tmp_results):
+    def test_run_sampler_hardware(self, tmp_results: str) -> None:
         runner = HardwareRunner(results_dir=tmp_results)
         runner.use_simulator = False
         runner._backend = MagicMock()
@@ -655,7 +656,7 @@ class TestHardwareRunSampler:
 
 
 class TestHardwareRunEstimator:
-    def test_run_estimator_hardware(self, tmp_results):
+    def test_run_estimator_hardware(self, tmp_results: str) -> None:
         from qiskit.quantum_info import SparsePauliOp
 
         runner = HardwareRunner(results_dir=tmp_results)
@@ -692,7 +693,7 @@ class TestHardwareRunEstimator:
 
         assert result.job_id == "hw_est_001"
 
-    def test_run_estimator_hardware_with_params(self, tmp_results):
+    def test_run_estimator_hardware_with_params(self, tmp_results: str) -> None:
         from qiskit.quantum_info import SparsePauliOp
 
         runner = HardwareRunner(results_dir=tmp_results)
@@ -730,11 +731,13 @@ class TestHardwareRunEstimator:
 
         assert result.job_id == "hw_est_002"
 
-    def test_run_estimator_zne_uses_default_scales(self, tmp_results):
+    def test_run_estimator_zne_uses_default_scales(
+        self, tmp_results: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         from qiskit.quantum_info import SparsePauliOp
 
         runner = HardwareRunner(results_dir=tmp_results)
-        runner.run_estimator = MagicMock(
+        estimator = MagicMock(
             return_value=JobResult(
                 job_id="zne",
                 backend_name="sim",
@@ -742,6 +745,7 @@ class TestHardwareRunEstimator:
                 expectation_values=np.array([0.25]),
             )
         )
+        monkeypatch.setattr(runner, "run_estimator", estimator)
 
         qc = QuantumCircuit(1)
         qc.h(0)
@@ -749,13 +753,15 @@ class TestHardwareRunEstimator:
         result = runner.run_estimator_zne(qc, obs)
 
         assert result.noise_scales == [1, 3, 5]
-        assert runner.run_estimator.call_count == 3
+        assert estimator.call_count == 3
 
-    def test_run_estimator_zne_requires_expectation_values(self, tmp_results):
+    def test_run_estimator_zne_requires_expectation_values(
+        self, tmp_results: str, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         from qiskit.quantum_info import SparsePauliOp
 
         runner = HardwareRunner(results_dir=tmp_results)
-        runner.run_estimator = MagicMock(
+        estimator = MagicMock(
             return_value=JobResult(
                 job_id="zne",
                 backend_name="sim",
@@ -763,6 +769,7 @@ class TestHardwareRunEstimator:
                 expectation_values=None,
             )
         )
+        monkeypatch.setattr(runner, "run_estimator", estimator)
 
         qc = QuantumCircuit(1)
         qc.h(0)
@@ -773,7 +780,7 @@ class TestHardwareRunEstimator:
 
 
 class TestSaveResult:
-    def test_save_single(self, tmp_results):
+    def test_save_single(self, tmp_results: str) -> None:
         runner = HardwareRunner(results_dir=tmp_results)
         jr = JobResult(
             job_id="j1",
@@ -786,7 +793,7 @@ class TestSaveResult:
         data = json.loads(path.read_text())
         assert data["job_id"] == "j1"
 
-    def test_save_batch(self, tmp_results):
+    def test_save_batch(self, tmp_results: str) -> None:
         runner = HardwareRunner(results_dir=tmp_results)
         batch = [
             JobResult(job_id="j1", backend_name="sim", experiment_name="e1"),
@@ -795,7 +802,7 @@ class TestSaveResult:
         path = runner.save_result(batch)
         assert path.exists()
 
-    def test_save_token(self):
+    def test_save_token(self) -> None:
         mock_service_cls = MagicMock()
         with patch.dict(
             "sys.modules",
@@ -808,7 +815,7 @@ class TestSaveResult:
 
 
 class TestLogJob:
-    def test_log_job_creates_file(self, tmp_results):
+    def test_log_job_creates_file(self, tmp_results: str) -> None:
         runner = HardwareRunner(results_dir=tmp_results)
         runner._log_job("job123", "my_exp")
         jobs_path = runner.results_dir / "jobs.json"
@@ -817,7 +824,7 @@ class TestLogJob:
         assert len(entries) == 1
         assert entries[0]["job_id"] == "job123"
 
-    def test_log_job_appends(self, tmp_results):
+    def test_log_job_appends(self, tmp_results: str) -> None:
         runner = HardwareRunner(results_dir=tmp_results)
         runner._log_job("job1", "exp1")
         runner._log_job("job2", "exp2")
