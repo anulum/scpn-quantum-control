@@ -208,6 +208,7 @@
         "tests/test_chimera_control_schema.py",
         "tests/test_chimera_control_synthetic.py",
         "tests/test_chimera_control_topology.py",
+        "tests/test_classical_baselines.py",
         "tests/test_classical_reference_regression.py",
         "tests/test_closed_loop_analysis.py",
         "tests/test_closed_loop_analysis_wall_clock.py",

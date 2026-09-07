@@ -13,6 +13,7 @@ import importlib
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.benchmarks.classical_baselines import (
     ClassicalBaselineRun,
@@ -22,6 +23,7 @@ from scpn_quantum_control.benchmarks.classical_baselines import (
     run_documented_classical_baselines,
     scipy_ode_baseline,
 )
+from scpn_quantum_control.phase import mps_evolution
 
 
 def _chain_problem(n: int = 3) -> tuple[np.ndarray, np.ndarray]:
@@ -33,13 +35,13 @@ def _chain_problem(n: int = 3) -> tuple[np.ndarray, np.ndarray]:
     return K, omega
 
 
-def test_available_baselines_reports_all_three_names():
+def test_available_baselines_reports_all_three_names() -> None:
     availability = available_baselines()
     assert set(availability) == {"scipy_ode", "qutip_lindblad", "mps_tebd"}
     assert availability["scipy_ode"] is True
 
 
-def test_scipy_ode_baseline_returns_bounded_order_parameter():
+def test_scipy_ode_baseline_returns_bounded_order_parameter() -> None:
     K, omega = _chain_problem()
     result = scipy_ode_baseline(K, omega, t_max=0.2, dt=0.1)
 
@@ -52,7 +54,7 @@ def test_scipy_ode_baseline_returns_bounded_order_parameter():
     assert result.r_final == pytest.approx(float(result.order_parameter[-1]))
 
 
-def test_scipy_ode_baseline_accepts_explicit_initial_phase():
+def test_scipy_ode_baseline_accepts_explicit_initial_phase() -> None:
     K, omega = _chain_problem()
     theta0 = np.array([0.0, 0.2, 0.4])
     result = scipy_ode_baseline(K, omega, t_max=0.1, dt=0.1, theta0=theta0)
@@ -70,12 +72,14 @@ def test_scipy_ode_baseline_accepts_explicit_initial_phase():
         (np.eye(2), np.array([1.0, np.inf]), "omega must contain"),
     ],
 )
-def test_baseline_input_validation(K: np.ndarray, omega: np.ndarray, match: str):
+def test_baseline_input_validation(
+    K: NDArray[np.float64], omega: NDArray[np.float64], match: str
+) -> None:
     with pytest.raises(ValueError, match=match):
         scipy_ode_baseline(K, omega)
 
 
-def test_baseline_time_grid_validation():
+def test_baseline_time_grid_validation() -> None:
     K, omega = _chain_problem()
     with pytest.raises(ValueError, match="dt must be finite and positive"):
         scipy_ode_baseline(K, omega, dt=0.0)
@@ -83,11 +87,11 @@ def test_baseline_time_grid_validation():
         scipy_ode_baseline(K, omega, t_max=-0.1)
 
 
-def test_qutip_lindblad_reports_unavailable_when_missing(monkeypatch):
+def test_qutip_lindblad_reports_unavailable_when_missing(monkeypatch: pytest.MonkeyPatch) -> None:
     K, omega = _chain_problem()
     original_find_spec = importlib.util.find_spec
 
-    def fake_find_spec(name: str):
+    def fake_find_spec(name: str) -> object | None:
         if name == "qutip":
             return None
         return original_find_spec(name)
@@ -101,7 +105,7 @@ def test_qutip_lindblad_reports_unavailable_when_missing(monkeypatch):
     assert result.r_final is None
 
 
-def test_qutip_lindblad_runs_when_installed():
+def test_qutip_lindblad_runs_when_installed() -> None:
     pytest.importorskip("qutip")
     K, omega = _chain_problem(n=2)
 
@@ -113,17 +117,16 @@ def test_qutip_lindblad_runs_when_installed():
     assert np.all((result.order_parameter >= 0.0) & (result.order_parameter <= 1.01))
 
 
-def test_qutip_lindblad_validates_gamma():
+def test_qutip_lindblad_validates_gamma() -> None:
     K, omega = _chain_problem()
     with pytest.raises(ValueError, match="gamma must be finite and non-negative"):
         qutip_lindblad_baseline(K, omega, gamma=-0.1)
 
 
-def test_mps_tebd_reports_unavailable_when_quimb_missing(monkeypatch):
+def test_mps_tebd_reports_unavailable_when_quimb_missing(monkeypatch: pytest.MonkeyPatch) -> None:
     K, omega = _chain_problem()
-    import scpn_quantum_control.benchmarks.classical_baselines as baselines
 
-    monkeypatch.setattr(baselines.mps_evolution, "is_quimb_available", lambda: False)
+    monkeypatch.setattr(mps_evolution, "is_quimb_available", lambda: False)
 
     result = mps_tebd_baseline(K, omega)
 
@@ -131,7 +134,7 @@ def test_mps_tebd_reports_unavailable_when_quimb_missing(monkeypatch):
     assert result.unavailable_reason == "quimb missing"
 
 
-def test_mps_tebd_runs_when_quimb_installed():
+def test_mps_tebd_runs_when_quimb_installed() -> None:
     pytest.importorskip("quimb")
     K, omega = _chain_problem(n=4)
 
@@ -143,7 +146,7 @@ def test_mps_tebd_runs_when_quimb_installed():
     assert np.all((result.order_parameter >= 0.0) & (result.order_parameter <= 1.01))
 
 
-def test_mps_tebd_validates_parameters():
+def test_mps_tebd_validates_parameters() -> None:
     K, omega = _chain_problem()
     with pytest.raises(ValueError, match="bond_dim must be positive"):
         mps_tebd_baseline(K, omega, bond_dim=0)
@@ -151,7 +154,7 @@ def test_mps_tebd_validates_parameters():
         mps_tebd_baseline(K, omega, cutoff=0.0)
 
 
-def test_documented_baseline_suite_runs_scipy_only():
+def test_documented_baseline_suite_runs_scipy_only() -> None:
     K, omega = _chain_problem()
 
     results = run_documented_classical_baselines(
@@ -166,14 +169,15 @@ def test_documented_baseline_suite_runs_scipy_only():
     assert results["scipy_ode"].available
 
 
-def test_documented_baseline_suite_includes_optional_statuses(monkeypatch):
+def test_documented_baseline_suite_includes_optional_statuses(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     K, omega = _chain_problem()
-    import scpn_quantum_control.benchmarks.classical_baselines as baselines
 
     monkeypatch.setattr(
         importlib.util, "find_spec", lambda name: None if name == "qutip" else object()
     )
-    monkeypatch.setattr(baselines.mps_evolution, "is_quimb_available", lambda: False)
+    monkeypatch.setattr(mps_evolution, "is_quimb_available", lambda: False)
 
     results = run_documented_classical_baselines(K, omega, t_max=0.1, dt=0.1)
 
