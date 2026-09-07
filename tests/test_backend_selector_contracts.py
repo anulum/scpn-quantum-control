@@ -11,9 +11,10 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 
-def _system(n: int = 4):
+def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
@@ -21,7 +22,7 @@ def _system(n: int = 4):
     return n, K, omega
 
 
-def _zero_coupling(n: int = 4):
+def _zero_coupling(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Decoupled system — K=0, eigenstates are product states."""
     K = np.zeros((n, n))
     omega = np.linspace(0.8, 1.2, n)
@@ -40,7 +41,7 @@ class TestBackendSelector:
             (14, "exact_diag"),
         ],
     )
-    def test_small_systems_select_ed(self, n, expected):
+    def test_small_systems_select_ed(self, n: int, expected: str) -> None:
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(n)
@@ -48,38 +49,38 @@ class TestBackendSelector:
         assert rec["feasible"]
         assert rec["memory_mb"] > 0
 
-    def test_medium_system_selects_sector(self):
+    def test_medium_system_selects_sector(self) -> None:
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(16, ram_gb=32.0)
         assert rec["backend"] in ("u1_sector_ed", "sector_ed", "statevector")
         assert rec["feasible"]
 
-    def test_large_system_selects_mps(self):
+    def test_large_system_selects_mps(self) -> None:
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(32, has_quimb=True)
         assert rec["backend"] == "mps_dmrg"
 
-    def test_huge_system_selects_hardware(self):
+    def test_huge_system_selects_hardware(self) -> None:
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(100, ram_gb=32.0, has_quimb=False)
         assert rec["backend"] == "hardware"
 
-    def test_open_system_selects_lindblad(self):
+    def test_open_system_selects_lindblad(self) -> None:
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(4, want_open_system=True)
         assert rec["backend"] == "lindblad_scipy"
 
-    def test_open_system_large_selects_mcwf(self):
+    def test_open_system_large_selects_mcwf(self) -> None:
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(14, want_open_system=True)
         assert rec["backend"] in ("mcwf", "lindblad_scipy")
 
-    def test_recommendation_output_keys(self):
+    def test_recommendation_output_keys(self) -> None:
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         rec = recommend_backend(4)
@@ -89,7 +90,7 @@ class TestBackendSelector:
         assert isinstance(rec["memory_mb"], (int, float))
         assert isinstance(rec["feasible"], bool)
 
-    def test_memory_increases_with_n(self):
+    def test_memory_increases_with_n(self) -> None:
         from scpn_quantum_control.phase.backend_selector import recommend_backend
 
         mem_4 = recommend_backend(4)["memory_mb"]
@@ -98,7 +99,7 @@ class TestBackendSelector:
         assert mem_4 < mem_8 < mem_12, "Memory should increase with system size"
 
     @pytest.mark.parametrize("n", [4, 6, 8])
-    def test_auto_solve_produces_ground_energy(self, n):
+    def test_auto_solve_produces_ground_energy(self, n: int) -> None:
         from scpn_quantum_control.phase.backend_selector import auto_solve
 
         _, K, omega = _system(n)
@@ -108,7 +109,7 @@ class TestBackendSelector:
         assert result["result"]["ground_energy"] < 0
         assert np.isfinite(result["result"]["ground_energy"])
 
-    def test_auto_solve_zero_coupling(self):
+    def test_auto_solve_zero_coupling(self) -> None:
         """Decoupled system: ground energy = -sum(|omega|)."""
         from scpn_quantum_control.phase.backend_selector import auto_solve
 
@@ -118,7 +119,7 @@ class TestBackendSelector:
         E_expected = -np.sum(np.abs(omega))
         np.testing.assert_allclose(E, E_expected, atol=1e-8)
 
-    def test_auto_solve_matches_recommend(self):
+    def test_auto_solve_matches_recommend(self) -> None:
         from scpn_quantum_control.phase.backend_selector import (
             auto_solve,
             recommend_backend,

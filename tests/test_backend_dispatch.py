@@ -19,6 +19,7 @@ Covers:
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from unittest.mock import patch
 
 import numpy as np
@@ -35,7 +36,7 @@ from scpn_quantum_control.backend_dispatch import (
 
 
 @pytest.fixture(autouse=True)
-def _reset_backend():
+def _reset_backend() -> Iterator[None]:
     """Ensure numpy backend after each test."""
     yield
     set_backend("numpy")
@@ -45,11 +46,11 @@ def _reset_backend():
 
 
 class TestDefaultState:
-    def test_default_backend_is_numpy(self):
+    def test_default_backend_is_numpy(self) -> None:
         set_backend("numpy")
         assert get_backend() == "numpy"
 
-    def test_default_array_module_is_numpy(self):
+    def test_default_array_module_is_numpy(self) -> None:
         set_backend("numpy")
         assert get_array_module() is np
 
@@ -58,21 +59,21 @@ class TestDefaultState:
 
 
 class TestNumpyBackend:
-    def test_set_numpy(self):
+    def test_set_numpy(self) -> None:
         set_backend("numpy")
         assert get_backend() == "numpy"
 
-    def test_to_numpy_passthrough(self):
+    def test_to_numpy_passthrough(self) -> None:
         arr = np.array([1.0, 2.0, 3.0])
         result = to_numpy(arr)
         assert result is arr
 
-    def test_from_numpy_passthrough(self):
+    def test_from_numpy_passthrough(self) -> None:
         arr = np.array([1.0, 2.0])
         result = from_numpy(arr)
         assert result is arr
 
-    def test_round_trip(self):
+    def test_round_trip(self) -> None:
         arr = np.array([[1.0, 2.0], [3.0, 4.0]])
         result = to_numpy(from_numpy(arr))
         np.testing.assert_array_equal(result, arr)
@@ -82,14 +83,14 @@ class TestNumpyBackend:
 
 
 class TestJAXBackend:
-    def test_jax_import_error(self):
+    def test_jax_import_error(self) -> None:
         with (
             patch.dict("sys.modules", {"jax": None, "jax.numpy": None}),
             pytest.raises(ImportError, match="JAX unavailable"),
         ):
             set_backend("jax")
 
-    def test_jax_if_available(self):
+    def test_jax_if_available(self) -> None:
         try:
             import jax.numpy as _jnp  # noqa: F401
 
@@ -108,14 +109,14 @@ class TestJAXBackend:
 
 
 class TestTorchBackend:
-    def test_torch_import_error(self):
+    def test_torch_import_error(self) -> None:
         with (
             patch.dict("sys.modules", {"torch": None}),
             pytest.raises(ImportError, match="PyTorch not installed"),
         ):
             set_backend("torch")
 
-    def test_pytorch_alias(self):
+    def test_pytorch_alias(self) -> None:
         """'pytorch' alias also works for set_backend."""
         with (
             patch.dict("sys.modules", {"torch": None}),
@@ -123,7 +124,7 @@ class TestTorchBackend:
         ):
             set_backend("pytorch")
 
-    def test_torch_if_available(self):
+    def test_torch_if_available(self) -> None:
         try:
             import torch
 
@@ -142,11 +143,11 @@ class TestTorchBackend:
 
 
 class TestInvalidBackend:
-    def test_unknown_backend_raises(self):
+    def test_unknown_backend_raises(self) -> None:
         with pytest.raises(ValueError, match="Unknown backend"):
             set_backend("tensorflow")
 
-    def test_case_insensitive(self):
+    def test_case_insensitive(self) -> None:
         set_backend("NUMPY")
         assert get_backend() == "numpy"
 
@@ -155,11 +156,11 @@ class TestInvalidBackend:
 
 
 class TestAvailableBackends:
-    def test_numpy_always_available(self):
+    def test_numpy_always_available(self) -> None:
         backends = available_backends()
         assert "numpy" in backends
 
-    def test_returns_list(self):
+    def test_returns_list(self) -> None:
         backends = available_backends()
         assert isinstance(backends, list)
 
@@ -168,7 +169,7 @@ class TestAvailableBackends:
 
 
 class TestToNumpyEdgeCases:
-    def test_non_array_input(self):
+    def test_non_array_input(self) -> None:
         """to_numpy should handle plain lists.
 
         This test claimed list handling but passed an ndarray, so it could not
@@ -180,7 +181,7 @@ class TestToNumpyEdgeCases:
         assert isinstance(result, np.ndarray)
         np.testing.assert_array_equal(result, np.array([1, 2, 3]))
 
-    def test_from_numpy_unknown_backend_passthrough(self):
+    def test_from_numpy_unknown_backend_passthrough(self) -> None:
         """When backend is unknown in module dict, from_numpy returns input."""
         arr = np.array([5.0])
         result = from_numpy(arr)
@@ -200,7 +201,7 @@ class TestMockedJaxPath:
     dedicated owner in ``tests/test_backend_dispatch_conversion_contract.py``.
     """
 
-    def test_to_numpy_converts_a_buffer_under_the_jax_selection(self):
+    def test_to_numpy_converts_a_buffer_under_the_jax_selection(self) -> None:
         """A memoryview converts, and the jax selection does not change that."""
         import scpn_quantum_control.backend_dispatch as mod
 
@@ -208,12 +209,12 @@ class TestMockedJaxPath:
         try:
             mod._STATE.backend = "jax"
             buf = np.array([1.0, 2.0])
-            result = to_numpy(memoryview(buf))
+            result = to_numpy(buf.data)
             np.testing.assert_array_equal(result, [1.0, 2.0])
         finally:
             mod._STATE.backend = old_backend
 
-    def test_to_numpy_uses_the_tensor_protocol_not_the_selection(self):
+    def test_to_numpy_uses_the_tensor_protocol_not_the_selection(self) -> None:
         """A mock exposing detach/cpu/numpy takes the tensor path."""
         from unittest.mock import MagicMock
 
@@ -231,7 +232,7 @@ class TestMockedJaxPath:
         finally:
             mod._STATE.backend = old_backend
 
-    def test_to_numpy_converts_under_an_unknown_selection(self):
+    def test_to_numpy_converts_under_an_unknown_selection(self) -> None:
         """An unrecognised selection is simply irrelevant to the conversion."""
         import scpn_quantum_control.backend_dispatch as mod
 
@@ -239,12 +240,12 @@ class TestMockedJaxPath:
         try:
             mod._STATE.backend = "unknown"
             buf = np.array([4.0, 5.0])
-            result = to_numpy(memoryview(buf))
+            result = to_numpy(buf.data)
             np.testing.assert_array_equal(result, [4.0, 5.0])
         finally:
             mod._STATE.backend = old_backend
 
-    def test_from_numpy_jax_branch(self):
+    def test_from_numpy_jax_branch(self) -> None:
         """Exercise from_numpy jax branch with mock jnp."""
         from types import ModuleType
         from unittest.mock import MagicMock
@@ -265,7 +266,7 @@ class TestMockedJaxPath:
         finally:
             mod._STATE.backend = old_backend
 
-    def test_from_numpy_torch_branch(self):
+    def test_from_numpy_torch_branch(self) -> None:
         """Exercise from_numpy torch branch with mock torch."""
         from unittest.mock import MagicMock
 
@@ -283,7 +284,7 @@ class TestMockedJaxPath:
         finally:
             mod._STATE.backend = old_backend
 
-    def test_from_numpy_unknown_returns_arr(self):
+    def test_from_numpy_unknown_returns_arr(self) -> None:
         """from_numpy with unknown backend falls through to return arr."""
         import scpn_quantum_control.backend_dispatch as mod
 
@@ -297,7 +298,7 @@ class TestMockedJaxPath:
 
 
 class TestAvailableBackendsMocked:
-    def test_jax_detected_when_importable(self):
+    def test_jax_detected_when_importable(self) -> None:
         """available_backends includes jax when import succeeds."""
         from types import ModuleType
         from unittest.mock import MagicMock
@@ -309,7 +310,7 @@ class TestAvailableBackendsMocked:
             backends = available_backends()
             assert "jax" in backends
 
-    def test_torch_detected_when_importable(self):
+    def test_torch_detected_when_importable(self) -> None:
         """available_backends includes torch when import succeeds."""
         from types import ModuleType
 
@@ -318,7 +319,7 @@ class TestAvailableBackendsMocked:
             backends = available_backends()
             assert "torch" in backends
 
-    def test_torch_absence_is_ignored(self):
+    def test_torch_absence_is_ignored(self) -> None:
         """available_backends ignores an unavailable torch import."""
         with patch.dict("sys.modules", {"torch": None}):
             backends = available_backends()
@@ -327,7 +328,7 @@ class TestAvailableBackendsMocked:
 
 
 class TestSetBackendMockedSuccess:
-    def test_set_jax_success(self):
+    def test_set_jax_success(self) -> None:
         """set_backend('jax') success path with a mock jax.numpy module."""
         from types import ModuleType
         from unittest.mock import MagicMock
@@ -347,7 +348,7 @@ class TestSetBackendMockedSuccess:
             mod._STATE.backend = old_backend
             mod._BACKEND_MODULES.pop("jax", None)
 
-    def test_set_torch_success(self):
+    def test_set_torch_success(self) -> None:
         """set_backend('torch') success path with mock torch module."""
         from types import ModuleType
 

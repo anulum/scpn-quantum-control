@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import builtins
 import importlib.metadata
+from collections.abc import Mapping, Sequence
+from types import ModuleType
 from unittest.mock import patch
 
 import pytest
@@ -120,7 +122,7 @@ class TestRegistration:
         class NotABackend:
             pass
 
-        registry.register("broken", NotABackend)
+        registry.register("broken", NotABackend)  # type: ignore[arg-type] # deliberate protocol violation, refusal asserted below
         with pytest.raises(be.BackendRegistrationError, match="does not satisfy"):
             registry.get("broken")
 
@@ -360,7 +362,9 @@ class TestModuleSingleton:
         names = be.list_backends(auto_discover=False)
         assert "qiskit_ibm" in names
 
-    def test_list_backends_auto_discovers_by_default(self, monkeypatch) -> None:
+    def test_list_backends_auto_discovers_by_default(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         calls: list[bool] = []
 
         def mark_discovered(*, force: bool = False) -> list[str]:
@@ -380,10 +384,18 @@ class TestModuleSingleton:
         finally:
             be.unregister_backend(unique)
 
-    def test_qiskit_ibm_backend_unavailable_when_sdk_missing(self, monkeypatch) -> None:
+    def test_qiskit_ibm_backend_unavailable_when_sdk_missing(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         original_import = builtins.__import__
 
-        def blocked_import(name, globals=None, locals=None, fromlist=(), level=0):
+        def blocked_import(
+            name: str,
+            globals: Mapping[str, object] | None = None,
+            locals: Mapping[str, object] | None = None,
+            fromlist: Sequence[str] = (),
+            level: int = 0,
+        ) -> ModuleType:
             if name == "qiskit_ibm_runtime":
                 raise ImportError("runtime SDK absent")
             return original_import(name, globals, locals, fromlist, level)

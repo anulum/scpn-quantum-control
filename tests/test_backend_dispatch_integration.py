@@ -10,9 +10,10 @@
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 
 
-def _system(n: int = 4):
+def _system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Standard heterogeneous Kuramoto-XY system."""
     K = 0.45 * np.exp(-0.3 * np.abs(np.subtract.outer(range(n), range(n))))
     np.fill_diagonal(K, 0.0)
@@ -20,7 +21,7 @@ def _system(n: int = 4):
     return n, K, omega
 
 
-def _homogeneous_system(n: int = 4):
+def _homogeneous_system(n: int = 4) -> tuple[int, NDArray[np.float64], NDArray[np.float64]]:
     """Circulant K + uniform omega for translation symmetry."""
     K = np.zeros((n, n))
     for i in range(n):
@@ -34,7 +35,7 @@ def _homogeneous_system(n: int = 4):
 class TestBackendDispatchIntegration:
     """Backend dispatch should work transparently with solver modules."""
 
-    def test_set_numpy_then_solve(self):
+    def test_set_numpy_then_solve(self) -> None:
         """Setting numpy backend, then solving should work."""
         from scpn_quantum_control.backend_dispatch import get_backend, set_backend
         from scpn_quantum_control.phase.backend_selector import auto_solve
@@ -49,7 +50,7 @@ class TestBackendDispatchIntegration:
         # Clean up
         set_backend("numpy")
 
-    def test_available_backends_are_usable(self):
+    def test_available_backends_are_usable(self) -> None:
         """All reported available backends should be settable."""
         from scpn_quantum_control.backend_dispatch import (
             available_backends,
@@ -64,7 +65,7 @@ class TestBackendDispatchIntegration:
         # Reset to numpy
         set_backend("numpy")
 
-    def test_to_from_numpy_roundtrip(self):
+    def test_to_from_numpy_roundtrip(self) -> None:
         """to_numpy(from_numpy(arr)) should be identity."""
         from scpn_quantum_control.backend_dispatch import (
             from_numpy,
@@ -81,25 +82,27 @@ class TestBackendDispatchIntegration:
 class TestPluginRegistryIntegration:
     """Plugin registry should instantiate runners that work with real data."""
 
-    def test_qiskit_runner_available(self):
+    def test_qiskit_runner_available(self) -> None:
         """Qiskit should be listed as an available backend."""
         from scpn_quantum_control.hardware.plugin_registry import registry
 
         assert registry.is_available("qiskit")
         assert "qiskit" in registry.list_backends()
 
-    def test_custom_backend_registration_and_use(self):
+    def test_custom_backend_registration_and_use(self) -> None:
         """Register a custom backend, get runner, and call it."""
         from scpn_quantum_control.hardware.plugin_registry import registry
 
         @registry.register("e2e_test_backend")
         class E2ETestRunner:
-            def __init__(self, K, omega, **kwargs):
+            def __init__(
+                self, K: NDArray[np.float64], omega: NDArray[np.float64], **kwargs: object
+            ) -> None:
                 self.n = K.shape[0]
                 self.K = K
                 self.omega = omega
 
-            def run_trotter(self, t=0.1, reps=5):
+            def run_trotter(self, t: float = 0.1, reps: int = 5) -> dict[str, float]:
                 return {"energy": -1.0, "n": self.n}
 
         _, K, omega = _system(4)
