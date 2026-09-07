@@ -9,8 +9,11 @@
 
 from __future__ import annotations
 
+from typing import NoReturn
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.analysis.quantum_speed_limit as qsl_mod
 from scpn_quantum_control.analysis.quantum_speed_limit import (
@@ -23,7 +26,7 @@ from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 class TestComputeQSL:
-    def test_stationary_product_state_has_zero_speed_limit_branches(self):
+    def test_stationary_product_state_has_zero_speed_limit_branches(self) -> None:
         """A stationary zero-energy product state has zero MT and ML bounds."""
         result = compute_qsl(
             np.zeros((1, 1)),
@@ -36,26 +39,26 @@ class TestComputeQSL:
         assert result.tau_MT == 0.0
         assert result.tau_ML == 0.0
 
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qsl(K, omega, t_target=1.0)
         assert isinstance(result, QSLResult)
         assert result.n_qubits == 3
 
-    def test_MT_bound_positive(self):
+    def test_MT_bound_positive(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qsl(K, omega, t_target=1.0)
         assert result.tau_MT >= 0.0
 
-    def test_ML_bound_positive(self):
+    def test_ML_bound_positive(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qsl(K, omega, t_target=1.0)
         assert result.tau_ML >= 0.0
 
-    def test_actual_exceeds_bounds(self):
+    def test_actual_exceeds_bounds(self) -> None:
         K = build_knm_paper27(L=3) * 2.0
         omega = OMEGA_N_16[:3]
         result = compute_qsl(K * 2, omega, t_target=2.0, R_threshold=0.3)
@@ -65,26 +68,28 @@ class TestComputeQSL:
                 result.tau_actual >= result.tau_MT - 0.02
             )  # small tolerance for dt discretization
 
-    def test_overlap_bounded(self):
+    def test_overlap_bounded(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = compute_qsl(K, omega, t_target=1.0)
         assert 0.0 <= result.overlap <= 1.0
 
-    def test_delta_E_nonneg(self):
+    def test_delta_E_nonneg(self) -> None:
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
         result = compute_qsl(K, omega, t_target=0.5)
         assert result.delta_E >= 0.0
 
-    def test_two_qubit(self):
+    def test_two_qubit(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         result = compute_qsl(K, omega, t_target=1.0)
         assert result.n_qubits == 2
 
-    def test_rejects_dense_budget_before_hamiltonian_allocation(self, monkeypatch):
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+    def test_rejects_dense_budget_before_hamiltonian_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(qsl_mod, "knm_to_dense_matrix", fail_if_dense_hamiltonian_is_requested)
@@ -94,19 +99,25 @@ class TestComputeQSL:
         with pytest.raises(DenseAllocationError, match="QSL dense evolution workspace"):
             compute_qsl(K, omega, t_target=0.2, max_dense_gib=1e-12)
 
-    def test_mt_arccos_branch_for_nonstationary_initial_state(self, monkeypatch):
+    def test_mt_arccos_branch_for_nonstationary_initial_state(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         import scpn_quantum_control.analysis.entanglement_enhanced_sync as sync_mod
 
-        def fake_hamiltonian(K, omega):
+        def fake_hamiltonian(K: NDArray[np.float64], omega: NDArray[np.float64]) -> None:
             del K, omega
             return None
 
-        def fake_dense_matrix(K, omega, **kwargs):
+        def fake_dense_matrix(
+            K: NDArray[np.float64], omega: NDArray[np.float64], **kwargs: object
+        ) -> NDArray[np.float64]:
             del K, omega
             assert kwargs == {"max_dense_gib": None}
             return np.array([[0.0, 1.0], [1.0, 0.0]])
 
-        def fake_exact_diag(n, *, K, omega):
+        def fake_exact_diag(
+            n: int, *, K: NDArray[np.float64], omega: NDArray[np.float64]
+        ) -> dict[str, float]:
             del n, K, omega
             return {"ground_energy": -1.0}
 
@@ -127,20 +138,26 @@ class TestComputeQSL:
         assert result.delta_E == 1.0
         np.testing.assert_allclose(result.tau_MT, 0.2, atol=1e-12)
 
-    def test_non_integer_time_grid_evolves_to_reported_target_time(self, monkeypatch):
+    def test_non_integer_time_grid_evolves_to_reported_target_time(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """If the threshold is not reached, the target state must be at t_target."""
         import scpn_quantum_control.analysis.entanglement_enhanced_sync as sync_mod
 
-        def fake_hamiltonian(K, omega):
+        def fake_hamiltonian(K: NDArray[np.float64], omega: NDArray[np.float64]) -> None:
             del K, omega
             return None
 
-        def fake_dense_matrix(K, omega, **kwargs):
+        def fake_dense_matrix(
+            K: NDArray[np.float64], omega: NDArray[np.float64], **kwargs: object
+        ) -> NDArray[np.float64]:
             del K, omega
             assert kwargs == {"max_dense_gib": None}
             return np.array([[0.0, 1.0], [1.0, 0.0]])
 
-        def fake_exact_diag(n, *, K, omega):
+        def fake_exact_diag(
+            n: int, *, K: NDArray[np.float64], omega: NDArray[np.float64]
+        ) -> dict[str, float]:
             del n, K, omega
             return {"ground_energy": -1.0}
 
@@ -171,7 +188,9 @@ class TestComputeQSL:
             ({"R_threshold": 1.1}, "R_threshold must be in \\[0, 1\\]"),
         ],
     )
-    def test_invalid_qsl_time_grid_parameters_are_rejected(self, kwargs, message):
+    def test_invalid_qsl_time_grid_parameters_are_rejected(
+        self, kwargs: dict[str, float], message: str
+    ) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
 
@@ -180,7 +199,7 @@ class TestComputeQSL:
 
 
 class TestQSLvsCoupling:
-    def test_returns_lists(self):
+    def test_returns_lists(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         scan = qsl_vs_coupling(K, omega, n_K_values=5, t_target=1.0)
@@ -189,7 +208,7 @@ class TestQSLvsCoupling:
         assert len(scan["tau_ML"]) == 5
         assert len(scan["tau_actual"]) == 5
 
-    def test_stronger_coupling_faster_sync(self):
+    def test_stronger_coupling_faster_sync(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         scan = qsl_vs_coupling(
@@ -203,7 +222,7 @@ class TestQSLvsCoupling:
         # (but not guaranteed for all parameter regimes)
         assert len(scan["tau_actual"]) == 2
 
-    def test_R_final_values_finite(self):
+    def test_R_final_values_finite(self) -> None:
         K = build_knm_paper27(L=2)
         omega = OMEGA_N_16[:2]
         scan = qsl_vs_coupling(
@@ -224,7 +243,7 @@ class TestQSLvsCoupling:
 
 
 class TestQSLPhysics:
-    def test_mt_bound_formula(self):
+    def test_mt_bound_formula(self) -> None:
         """τ_MT = arccos(|⟨ψ(0)|ψ(t)⟩|) / ΔE. Must be non-negative."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -232,7 +251,7 @@ class TestQSLPhysics:
         assert result.tau_MT >= 0
         assert result.delta_E >= 0
 
-    def test_ml_bound_formula(self):
+    def test_ml_bound_formula(self) -> None:
         """τ_ML = π/(2⟨E⟩). Must be non-negative for positive energy."""
         K = build_knm_paper27(L=3)
         omega = OMEGA_N_16[:3]
@@ -246,7 +265,7 @@ class TestQSLPhysics:
 
 
 class TestQSLPipeline:
-    def test_pipeline_knm_to_qsl(self):
+    def test_pipeline_knm_to_qsl(self) -> None:
         """Full pipeline: build_knm → compute_qsl → MT and ML bounds.
         Verifies QSL module is wired end-to-end.
         """
@@ -268,7 +287,7 @@ class TestQSLPipeline:
 
 
 class TestNonTrivialOverlap:
-    def test_mt_bound_formula(self):
+    def test_mt_bound_formula(self) -> None:
         """Verify the arccos branch formula directly.
 
         For the XY Hamiltonian, |0...0⟩ is always an eigenstate so

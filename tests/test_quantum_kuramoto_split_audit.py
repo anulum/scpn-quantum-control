@@ -35,7 +35,9 @@ def test_split_audit_keeps_package_publish_blocked() -> None:
 
 def test_split_audit_classifies_core_and_scpn_specific_modules() -> None:
     payload = build_split_audit()
-    rows = {row["module"]: row for row in payload["rows"]}
+    rows_payload = payload["rows"]
+    assert isinstance(rows_payload, list)
+    rows = {row["module"]: row for row in rows_payload}
 
     assert rows["scpn_quantum_control.phase.xy_kuramoto"]["status"] == "reusable"
     assert rows["scpn_quantum_control.bridge.ssgf_adapter"]["status"] == "scpn_specific"

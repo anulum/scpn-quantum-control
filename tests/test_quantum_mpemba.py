@@ -9,8 +9,11 @@
 
 from __future__ import annotations
 
+from typing import Any, NoReturn
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.analysis.quantum_mpemba import (
     MpembaResult,
@@ -29,7 +32,7 @@ def _ring_topology(n: int) -> np.ndarray:
 
 
 class TestMpembaExperiment:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -37,7 +40,7 @@ class TestMpembaExperiment:
         assert isinstance(result, MpembaResult)
         assert len(result.times) == 11
 
-    def test_fidelity_bounded(self):
+    def test_fidelity_bounded(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -47,7 +50,7 @@ class TestMpembaExperiment:
         assert np.all(result.fidelity_far >= -0.01)
         assert np.all(result.fidelity_far <= 1.01)
 
-    def test_initial_distances_differ(self):
+    def test_initial_distances_differ(self) -> None:
         """The two initial states should have different distances from NESS."""
         n = 2
         T = _ring_topology(n)
@@ -58,7 +61,7 @@ class TestMpembaExperiment:
         assert result.initial_distance_far >= 0
         assert result.initial_distance_near + result.initial_distance_far > 0
 
-    def test_both_approach_steady_state(self):
+    def test_both_approach_steady_state(self) -> None:
         """Both states should get closer to steady state over time."""
         n = 2
         T = _ring_topology(n)
@@ -68,7 +71,7 @@ class TestMpembaExperiment:
         assert result.fidelity_near[-1] >= result.fidelity_near[0] - 0.1
         assert result.fidelity_far[-1] >= result.fidelity_far[0] - 0.1
 
-    def test_R_values_bounded(self):
+    def test_R_values_bounded(self) -> None:
         n = 2
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -78,7 +81,7 @@ class TestMpembaExperiment:
         assert np.all(result.R_far >= 0)
         assert np.all(result.R_far <= 1.0 + 1e-10)
 
-    def test_crossing_time_if_mpemba(self):
+    def test_crossing_time_if_mpemba(self) -> None:
         """If Mpemba detected, crossing time should be positive."""
         n = 2
         T = _ring_topology(n)
@@ -88,7 +91,7 @@ class TestMpembaExperiment:
             assert result.crossing_time is not None
             assert result.crossing_time > 0
 
-    def test_3qubit_runs(self):
+    def test_3qubit_runs(self) -> None:
         n = 3
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
@@ -96,13 +99,15 @@ class TestMpembaExperiment:
         assert isinstance(result, MpembaResult)
         assert len(result.R_far) == 9
 
-    def test_rejects_rank4_superoperator_before_allocation(self, monkeypatch):
+    def test_rejects_rank4_superoperator_before_allocation(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """A low dense budget must stop the Lindblad rank-4 path before H builds."""
         n = 4
         T = _ring_topology(n)
         omega = OMEGA_N_16[:n]
 
-        def fail_if_dense_hamiltonian_is_requested(*args, **kwargs):  # noqa: ARG001
+        def fail_if_dense_hamiltonian_is_requested(*args: object, **kwargs: object) -> NoReturn:  # noqa: ARG001
             raise AssertionError("dense Hamiltonian allocation happened before budget gate")
 
         monkeypatch.setattr(
@@ -133,13 +138,19 @@ class TestMpembaExperiment:
             (np.ones(2), np.eye(2), {"n_steps": 0}, "n_steps"),
         ],
     )
-    def test_invalid_physical_inputs_are_rejected(self, omega, topology, kwargs, match):
+    def test_invalid_physical_inputs_are_rejected(
+        self,
+        omega: NDArray[np.float64],
+        topology: NDArray[np.float64],
+        kwargs: dict[str, Any],
+        match: str,
+    ) -> None:
         k_base = kwargs.pop("K_base", 1.0)
         with pytest.raises(ValueError, match=match):
             mpemba_experiment(omega, topology, K_base=k_base, **kwargs)
 
 
-def test_mpemba_result_fields():
+def test_mpemba_result_fields() -> None:
     n = 2
     T = _ring_topology(n)
     omega = OMEGA_N_16[:n]
@@ -150,7 +161,7 @@ def test_mpemba_result_fields():
     assert hasattr(result, "crossing_time")
 
 
-def test_mpemba_R_length():
+def test_mpemba_R_length() -> None:
     n = 2
     T = _ring_topology(n)
     omega = OMEGA_N_16[:n]
@@ -159,7 +170,7 @@ def test_mpemba_R_length():
     assert len(result.R_far) == 11
 
 
-def test_mpemba_R_near_bounded():
+def test_mpemba_R_near_bounded() -> None:
     n = 2
     T = _ring_topology(n)
     omega = OMEGA_N_16[:n]
@@ -168,7 +179,7 @@ def test_mpemba_R_near_bounded():
     assert np.all(result.R_near <= 1.0 + 1e-10)
 
 
-def test_mpemba_4qubit():
+def test_mpemba_4qubit() -> None:
     n = 4
     T = _ring_topology(n)
     omega = OMEGA_N_16[:n]

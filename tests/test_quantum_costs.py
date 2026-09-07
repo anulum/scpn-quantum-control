@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.ssgf.quantum_costs import (
     QuantumCosts,
@@ -18,7 +19,7 @@ from scpn_quantum_control.ssgf.quantum_costs import (
 )
 
 
-def _test_system():
+def _test_system() -> tuple[NDArray[np.float64], NDArray[np.float64], int]:
     n = 3
     W = np.array([[0, 0.5, 0.3], [0.5, 0, 0.4], [0.3, 0.4, 0]])
     theta = np.array([0.0, 0.3, 0.6])
@@ -26,59 +27,59 @@ def _test_system():
 
 
 class TestComputeQuantumCosts:
-    def test_returns_costs(self):
+    def test_returns_costs(self) -> None:
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert isinstance(costs, QuantumCosts)
 
-    def test_c_micro_bounded(self):
+    def test_c_micro_bounded(self) -> None:
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert 0 <= costs.c_micro <= 1.0
 
-    def test_c4_tcbo_bounded(self):
+    def test_c4_tcbo_bounded(self) -> None:
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert 0 <= costs.c4_tcbo <= 1.0
 
-    def test_c_pgbo_bounded(self):
+    def test_c_pgbo_bounded(self) -> None:
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert 0 <= costs.c_pgbo <= 1.0
 
-    def test_r_global_bounded(self):
+    def test_r_global_bounded(self) -> None:
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert 0 <= costs.r_global <= 1.0
 
-    def test_c_micro_plus_r_equals_one(self):
+    def test_c_micro_plus_r_equals_one(self) -> None:
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert costs.c_micro + costs.r_global == pytest.approx(1.0, abs=1e-10)
 
-    def test_entropy_non_negative(self):
+    def test_entropy_non_negative(self) -> None:
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert costs.half_chain_entropy >= -1e-10
 
-    def test_variance_non_negative(self):
+    def test_variance_non_negative(self) -> None:
         W, theta, _n = _test_system()
         costs = compute_quantum_costs(W, theta)
         assert costs.correlator_variance >= -1e-10
 
-    def test_with_omega(self):
+    def test_with_omega(self) -> None:
         W, theta, _n = _test_system()
         omega = np.array([1.0, 1.5, 0.8])
         costs = compute_quantum_costs(W, theta, omega=omega)
         assert isinstance(costs.c_micro, float)
 
-    def test_2_oscillators(self):
+    def test_2_oscillators(self) -> None:
         W = np.array([[0, 0.5], [0.5, 0]])
         theta = np.array([0.0, 0.5])
         costs = compute_quantum_costs(W, theta)
         assert isinstance(costs, QuantumCosts)
 
-    def test_synchronized_low_c_micro(self):
+    def test_synchronized_low_c_micro(self) -> None:
         """All phases aligned → high R → low C_micro."""
         W = np.array([[0, 1.0], [1.0, 0]])
         theta = np.array([0.0, 0.0])
