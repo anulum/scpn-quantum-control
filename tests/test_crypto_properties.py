@@ -13,6 +13,7 @@ import numpy as np
 import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
+from numpy.typing import NDArray
 
 from scpn_quantum_control.crypto.hierarchical_keys import (
     derive_layer_key,
@@ -31,16 +32,16 @@ from scpn_quantum_control.crypto.hierarchical_keys import (
 # ---------------------------------------------------------------------------
 
 
-def _random_symmetric_K(rng, n):
+def _random_symmetric_K(rng: np.random.Generator, n: int) -> NDArray[np.float64]:
     K = rng.uniform(0, 1, (n, n))
     return (K + K.T) / 2
 
 
-def _random_phases(rng, n):
+def _random_phases(rng: np.random.Generator, n: int) -> NDArray[np.float64]:
     return rng.uniform(0, 2 * np.pi, n)
 
 
-def _random_R(rng, phases):
+def _random_R(rng: np.random.Generator, phases: NDArray[np.float64]) -> float:
     return float(abs(np.mean(np.exp(1j * phases))))
 
 
@@ -50,32 +51,32 @@ def _random_R(rng, phases):
 
 
 class TestDeriveMasterKey:
-    def test_returns_32_bytes(self):
+    def test_returns_32_bytes(self) -> None:
         K = np.eye(4)
         key = derive_master_key(K, R_global=0.5)
         assert isinstance(key, bytes)
         assert len(key) == 32
 
-    def test_deterministic(self):
+    def test_deterministic(self) -> None:
         K = np.eye(4)
         k1 = derive_master_key(K, R_global=0.5, nonce=b"test")
         k2 = derive_master_key(K, R_global=0.5, nonce=b"test")
         assert k1 == k2
 
-    def test_different_R_gives_different_key(self):
+    def test_different_R_gives_different_key(self) -> None:
         K = np.eye(4)
         k1 = derive_master_key(K, R_global=0.5)
         k2 = derive_master_key(K, R_global=0.9)
         assert k1 != k2
 
-    def test_different_nonce_gives_different_key(self):
+    def test_different_nonce_gives_different_key(self) -> None:
         K = np.eye(4)
         k1 = derive_master_key(K, R_global=0.5, nonce=b"a")
         k2 = derive_master_key(K, R_global=0.5, nonce=b"b")
         assert k1 != k2
 
     @pytest.mark.parametrize("n", [2, 4, 8])
-    def test_various_sizes(self, n):
+    def test_various_sizes(self, n: int) -> None:
         K = np.eye(n)
         key = derive_master_key(K, R_global=0.5)
         assert len(key) == 32
@@ -87,19 +88,19 @@ class TestDeriveMasterKey:
 
 
 class TestDeriveLayerKey:
-    def test_returns_32_bytes(self):
+    def test_returns_32_bytes(self) -> None:
         K = np.eye(4)
         phases = np.zeros(1)
         key = derive_layer_key(K, 0, phases)
         assert len(key) == 32
 
-    def test_different_layers_different_keys(self):
+    def test_different_layers_different_keys(self) -> None:
         K = np.eye(4)
         phases = np.zeros(1)
         keys = [derive_layer_key(K, i, phases) for i in range(4)]
         assert len(set(keys)) == 4
 
-    def test_deterministic(self):
+    def test_deterministic(self) -> None:
         K = np.eye(4) * 0.5
         phases = np.array([1.0])
         k1 = derive_layer_key(K, 2, phases, nonce=b"x")
@@ -145,7 +146,7 @@ def test_verify_key_chain_roundtrip(seed: int) -> None:
 
 
 class TestKeyHierarchyStructure:
-    def test_has_master_and_layers(self):
+    def test_has_master_and_layers(self) -> None:
         K = np.eye(4) * 0.3
         phases = np.zeros(4)
         h = key_hierarchy(K, phases, R_global=0.5)
@@ -153,7 +154,7 @@ class TestKeyHierarchyStructure:
         assert "layers" in h
         assert len(h["layers"]) == 4
 
-    def test_all_keys_are_32_bytes(self):
+    def test_all_keys_are_32_bytes(self) -> None:
         K = np.eye(4)
         phases = np.ones(4)
         h = key_hierarchy(K, phases, R_global=0.8)
@@ -162,7 +163,7 @@ class TestKeyHierarchyStructure:
             assert len(key) == 32
 
     @pytest.mark.parametrize("n", [2, 3, 6, 8])
-    def test_layers_count_matches_n(self, n):
+    def test_layers_count_matches_n(self, n: int) -> None:
         K = np.eye(n)
         phases = np.zeros(n)
         h = key_hierarchy(K, phases, R_global=0.5)
@@ -175,14 +176,14 @@ class TestKeyHierarchyStructure:
 
 
 class TestVerifyKeyChain:
-    def test_tampered_master_fails(self):
+    def test_tampered_master_fails(self) -> None:
         K = np.eye(4) * 0.3
         phases = np.zeros(4)
         h = key_hierarchy(K, phases, R_global=0.5, nonce=b"n")
         bad_master = b"\x00" * 32
         assert not verify_key_chain(bad_master, h["layers"], K, phases, 0.5, nonce=b"n")
 
-    def test_tampered_layer_key_fails(self):
+    def test_tampered_layer_key_fails(self) -> None:
         K = np.eye(4) * 0.3
         phases = np.zeros(4)
         h = key_hierarchy(K, phases, R_global=0.5, nonce=b"n")
@@ -190,7 +191,7 @@ class TestVerifyKeyChain:
         bad_layers[0] = b"\xff" * 32
         assert not verify_key_chain(h["master"], bad_layers, K, phases, 0.5, nonce=b"n")
 
-    def test_wrong_nonce_fails(self):
+    def test_wrong_nonce_fails(self) -> None:
         K = np.eye(4) * 0.3
         phases = np.zeros(4)
         h = key_hierarchy(K, phases, R_global=0.5, nonce=b"a")
@@ -214,29 +215,29 @@ def test_hmac_sign_verify_roundtrip(seed: int) -> None:
 
 
 class TestHMAC:
-    def test_tag_is_32_bytes(self):
+    def test_tag_is_32_bytes(self) -> None:
         tag = hmac_sign(b"key123", b"message")
         assert len(tag) == 32
 
-    def test_wrong_key_fails(self):
+    def test_wrong_key_fails(self) -> None:
         tag = hmac_sign(b"correct_key", b"message")
         assert not hmac_verify_key(b"wrong_key", b"message", tag)
 
-    def test_wrong_message_fails(self):
+    def test_wrong_message_fails(self) -> None:
         tag = hmac_sign(b"key", b"correct_message")
         assert not hmac_verify_key(b"key", b"wrong_message", tag)
 
-    def test_tampered_tag_fails(self):
+    def test_tampered_tag_fails(self) -> None:
         tag = hmac_sign(b"key", b"message")
         bad_tag = bytes([b ^ 0xFF for b in tag])
         assert not hmac_verify_key(b"key", b"message", bad_tag)
 
-    def test_deterministic(self):
+    def test_deterministic(self) -> None:
         t1 = hmac_sign(b"k", b"m")
         t2 = hmac_sign(b"k", b"m")
         assert t1 == t2
 
-    def test_empty_message(self):
+    def test_empty_message(self) -> None:
         tag = hmac_sign(b"key", b"")
         assert hmac_verify_key(b"key", b"", tag)
 
@@ -247,14 +248,14 @@ class TestHMAC:
 
 
 class TestEvolveKeyPhases:
-    def test_output_shape(self):
+    def test_output_shape(self) -> None:
         K = np.array([[0, 0.3], [0.3, 0]])
         omega = np.array([1.0, -1.0])
         theta_0 = np.array([0.0, np.pi / 4])
         traj = evolve_key_phases(K, omega, theta_0, t_window=1.0, n_samples=16)
         assert traj.shape == (2, 16)
 
-    def test_initial_condition_preserved(self):
+    def test_initial_condition_preserved(self) -> None:
         K = np.eye(3) * 0.1
         omega = np.zeros(3)
         theta_0 = np.array([0.1, 0.2, 0.3])
@@ -262,7 +263,7 @@ class TestEvolveKeyPhases:
         np.testing.assert_allclose(traj[:, 0], theta_0, atol=1e-6)
 
     @pytest.mark.parametrize("n", [2, 4, 6])
-    def test_various_sizes(self, n):
+    def test_various_sizes(self, n: int) -> None:
         rng = np.random.default_rng(42)
         K = _random_symmetric_K(rng, n)
         omega = rng.uniform(-1, 1, n)
@@ -270,7 +271,7 @@ class TestEvolveKeyPhases:
         traj = evolve_key_phases(K, omega, theta_0, t_window=0.5, n_samples=8)
         assert traj.shape == (n, 8)
 
-    def test_all_values_finite(self):
+    def test_all_values_finite(self) -> None:
         K = np.array([[0, 0.5], [0.5, 0]])
         omega = np.array([1.0, 2.0])
         theta_0 = np.zeros(2)
@@ -284,14 +285,14 @@ class TestEvolveKeyPhases:
 
 
 class TestRotatingKeySchedule:
-    def test_returns_correct_number_of_windows(self):
+    def test_returns_correct_number_of_windows(self) -> None:
         K = np.array([[0, 0.3], [0.3, 0]])
         omega = np.array([1.0, -1.0])
         theta_0 = np.zeros(2)
         schedule = rotating_key_schedule(K, omega, theta_0, n_windows=3)
         assert len(schedule) == 3
 
-    def test_each_window_has_expected_keys(self):
+    def test_each_window_has_expected_keys(self) -> None:
         K = np.array([[0, 0.5], [0.5, 0]])
         omega = np.array([1.0, -1.0])
         theta_0 = np.zeros(2)
@@ -304,7 +305,7 @@ class TestRotatingKeySchedule:
             assert "final_phases" in entry
             assert 0.0 <= entry["R_global"] <= 1.0
 
-    def test_different_windows_produce_different_master_keys(self):
+    def test_different_windows_produce_different_master_keys(self) -> None:
         K = np.array([[0, 0.5], [0.5, 0]])
         omega = np.array([1.0, -1.0])
         theta_0 = np.array([0.0, np.pi / 3])
@@ -312,7 +313,7 @@ class TestRotatingKeySchedule:
         masters = [s["master"] for s in schedule]
         assert len(set(masters)) == 4
 
-    def test_window_indices_sequential(self):
+    def test_window_indices_sequential(self) -> None:
         K = np.array([[0, 0.3], [0.3, 0]])
         omega = np.ones(2)
         theta_0 = np.zeros(2)
@@ -326,27 +327,27 @@ class TestRotatingKeySchedule:
 
 
 class TestGroupKey:
-    def test_returns_32_bytes(self):
+    def test_returns_32_bytes(self) -> None:
         K = np.eye(4)
         phases = np.zeros(4)
         gk = group_key(K, [0, 1], phases)
         assert len(gk) == 32
 
-    def test_different_subsets_different_keys(self):
+    def test_different_subsets_different_keys(self) -> None:
         K = np.eye(4) * 0.5
         phases = np.linspace(0, np.pi, 4)
         gk1 = group_key(K, [0, 1], phases)
         gk2 = group_key(K, [2, 3], phases)
         assert gk1 != gk2
 
-    def test_deterministic(self):
+    def test_deterministic(self) -> None:
         K = np.eye(4)
         phases = np.ones(4)
         g1 = group_key(K, [0, 2], phases, nonce=b"x")
         g2 = group_key(K, [0, 2], phases, nonce=b"x")
         assert g1 == g2
 
-    def test_single_member_group(self):
+    def test_single_member_group(self) -> None:
         K = np.eye(4)
         phases = np.zeros(4)
         gk = group_key(K, [0], phases)

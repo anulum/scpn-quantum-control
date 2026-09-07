@@ -17,17 +17,17 @@ import scpn_quantum_control.crypto as crypto
 
 
 class TestCryptoExports:
-    def test_all_exists(self):
+    def test_all_exists(self) -> None:
         assert hasattr(crypto, "__all__")
         assert len(crypto.__all__) > 0
 
-    def test_all_entries_importable(self):
+    def test_all_entries_importable(self) -> None:
         """Every name in __all__ must be accessible via getattr."""
         for name in crypto.__all__:
             obj = getattr(crypto, name)
             assert obj is not None, f"{name} resolved to None"
 
-    def test_functions_are_callable(self):
+    def test_functions_are_callable(self) -> None:
         """Non-constant exports must be callable."""
         for name in crypto.__all__:
             if name.isupper():
@@ -35,34 +35,34 @@ class TestCryptoExports:
             obj = getattr(crypto, name)
             assert callable(obj), f"{name} is not callable"
 
-    def test_spectral_fingerprint_importable(self):
+    def test_spectral_fingerprint_importable(self) -> None:
         from scpn_quantum_control.crypto import spectral_fingerprint
 
         assert callable(spectral_fingerprint)
 
-    def test_key_hierarchy_importable(self):
+    def test_key_hierarchy_importable(self) -> None:
         from scpn_quantum_control.crypto import key_hierarchy
 
         assert callable(key_hierarchy)
 
-    def test_scpn_qkd_protocol_importable(self):
+    def test_scpn_qkd_protocol_importable(self) -> None:
         from scpn_quantum_control.crypto import scpn_qkd_protocol
 
         assert callable(scpn_qkd_protocol)
 
-    def test_topology_commitment_importable(self):
+    def test_topology_commitment_importable(self) -> None:
         from scpn_quantum_control.crypto import topology_commitment
 
         assert callable(topology_commitment)
 
-    def test_no_duplicate_exports(self):
+    def test_no_duplicate_exports(self) -> None:
         assert len(crypto.__all__) == len(set(crypto.__all__))
 
-    def test_export_count_at_least_20(self):
+    def test_export_count_at_least_20(self) -> None:
         """Crypto module should export ≥20 symbols."""
         assert len(crypto.__all__) >= 20
 
-    def test_constants_are_numeric(self):
+    def test_constants_are_numeric(self) -> None:
         """UPPERCASE exports should be numeric constants."""
         for name in crypto.__all__:
             if name.isupper():
@@ -76,7 +76,7 @@ class TestCryptoExports:
 
 
 class TestCryptoWiring:
-    def test_key_hierarchy_produces_keys(self):
+    def test_key_hierarchy_produces_keys(self) -> None:
         """key_hierarchy must produce actual 32-byte keys, not stubs."""
 
         from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
@@ -88,7 +88,7 @@ class TestCryptoWiring:
         assert len(h["master"]) == 32
         assert len(h["layers"]) == 4
 
-    def test_spectral_fingerprint_produces_data(self):
+    def test_spectral_fingerprint_produces_data(self) -> None:
         """spectral_fingerprint must return dict with eigenvalues."""
 
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
@@ -99,7 +99,7 @@ class TestCryptoWiring:
         assert "eigenvalues" in fp
         assert len(fp["eigenvalues"]) == 4
 
-    def test_topology_commitment_produces_hash(self):
+    def test_topology_commitment_produces_hash(self) -> None:
         """topology_commitment must produce a hex string."""
 
         from scpn_quantum_control.bridge.knm_hamiltonian import build_knm_paper27
@@ -117,7 +117,7 @@ class TestCryptoWiring:
 
 
 class TestCryptoPipeline:
-    def test_pipeline_crypto_full(self):
+    def test_pipeline_crypto_full(self) -> None:
         """Full pipeline: Knm → key_hierarchy + spectral_fingerprint + commitment.
         Verifies crypto module is not decorative — all functions produce output.
         """
